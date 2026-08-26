@@ -56,7 +56,9 @@ function renderSidebar(organization: { name: string | null; slug: string }) {
   )
 }
 
-function orgFactory(overrides: Partial<{ name: string | null; slug: string }> = {}) {
+function orgFactory(
+  overrides: Partial<{ name: string | null; slug: string }> = {}
+) {
   return {
     name: overrides.name ?? 'Island Logistics',
     slug: overrides.slug ?? 'island-logistics',
@@ -69,7 +71,10 @@ describe('Enterprise sidebar — org identity header (goldbergyoni AAA, isolated
     renderSidebar({ name: 'Island Logistics', slug: 'island-logistics' })
     // Assert — behavior, not implementation
     const organizationName = screen.getByText('Island Logistics')
-    expect(organizationName.closest('a')).toHaveAttribute('href', '/island-logistics')
+    expect(organizationName.closest('a')).toHaveAttribute(
+      'href',
+      '/island-logistics'
+    )
     expect(organizationName).toBeVisible()
     expect(screen.getByText('Enterprise')).toBeVisible()
   })
@@ -122,9 +127,9 @@ describe('Enterprise sidebar — org identity header (goldbergyoni AAA, isolated
   it('keeps org name and Enterprise stacked vertically', () => {
     const { container } = renderSidebar(orgFactory())
     const nameEl = screen.getByText('Island Logistics')
-    const enterpriseEl = screen.getByText('Enterprise')
+    const productLabelEl = screen.getByText('Enterprise')
     // Both inside same hidden group span
-    expect(nameEl.parentElement).toBe(enterpriseEl.parentElement)
+    expect(nameEl.parentElement).toBe(productLabelEl.parentElement)
   })
 
   it('is isolated — second render with different org does not leak previous name', () => {
@@ -147,7 +152,10 @@ describe('Enterprise sidebar — org identity header (goldbergyoni AAA, isolated
   it('handles slug with hyphens and numbers', () => {
     renderSidebar({ name: null, slug: 'acme-123-corp' })
     expect(screen.getByText('acme-123-corp')).toBeVisible()
-    expect(screen.getByText('acme-123-corp').closest('a')).toHaveAttribute('href', '/acme-123-corp')
+    expect(screen.getByText('acme-123-corp').closest('a')).toHaveAttribute(
+      'href',
+      '/acme-123-corp'
+    )
   })
 
   it('renders Logo alongside org identity', () => {
