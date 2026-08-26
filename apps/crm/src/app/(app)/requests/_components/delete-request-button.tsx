@@ -30,8 +30,13 @@ export function DeleteRequestButton({ requestId }: { requestId: string }) {
 
   return (
     <div className="space-y-2">
-      <Button type="button" variant="destructive" onClick={remove} disabled={deleting}>
-        {deleting ? 'Deleting…' : 'Delete request'}
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={remove}
+        disabled={deleting}
+      >
+        {deleting ? 'Deleting…' : 'Delete'}
       </Button>
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
     </div>

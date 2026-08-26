@@ -1,7 +1,15 @@
 'use client'
 
 import { Button } from '@876/ui/button'
+import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@876/ui/select'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -35,6 +43,8 @@ const EMPTY: Values = {
   source: 'CRM',
   assigneeId: '',
 }
+
+const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
 export function RequestForm({
   customers,
@@ -70,8 +80,14 @@ export function RequestForm({
     }
 
     const result = requestId
-      ? await client.requests.update(requestId, { ...base, status: values.status })
-      : await client.requests.create({ ...base, customerId: values.customerId })
+      ? await client.requests.update(requestId, {
+          ...base,
+          status: values.status,
+        })
+      : await client.requests.create({
+          ...base,
+          customerId: values.customerId,
+        })
 
     if (result.error) {
       setError(result.error.message)
@@ -84,89 +100,177 @@ export function RequestForm({
   }
 
   return (
-    <form onSubmit={submit} className="max-w-2xl space-y-5">
-      <Field label="Customer">
-        <select
-          className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
-          value={values.customerId}
-          onChange={(event) => set('customerId', event.target.value)}
-          disabled={Boolean(requestId)}
+    <form onSubmit={submit} className="max-w-3xl space-y-6">
+      <div className="876-card space-y-5 p-5">
+        <FormRow label="Customer" required className={rowClassName}>
+          <Select
+            value={values.customerId}
+            onValueChange={(value) => set('customerId', value)}
+            disabled={Boolean(requestId) || saving}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select customer" />
+            </SelectTrigger>
+            <SelectContent>
+              {customers.map(({ profile, customer }) => (
+                <SelectItem key={profile.id} value={profile.id}>
+                  {customer?.name ?? profile.billingCustomerId}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormRow>
+
+        <FormRow
+          htmlFor="request-subject"
+          label="Subject"
           required
+          className={rowClassName}
         >
-          <option value="">Select customer</option>
-          {customers.map(({ profile, customer }) => (
-            <option key={profile.id} value={profile.id}>
-              {customer?.name ?? profile.billingCustomerId}
-            </option>
-          ))}
-        </select>
-      </Field>
+          <Input
+            id="request-subject"
+            value={values.subject}
+            onChange={(event) => set('subject', event.target.value)}
+            disabled={saving}
+            required
+          />
+        </FormRow>
 
-      <Field label="Subject">
-        <Input value={values.subject} onChange={(event) => set('subject', event.target.value)} required />
-      </Field>
+        <FormRow
+          htmlFor="request-description"
+          label="Description"
+          className={rowClassName}
+        >
+          <textarea
+            id="request-description"
+            className="border-input bg-background min-h-32 w-full rounded-md border px-3 py-2 text-sm"
+            value={values.description}
+            onChange={(event) => set('description', event.target.value)}
+            disabled={saving}
+          />
+        </FormRow>
 
-      <Field label="Description">
-        <textarea
-          className="border-input bg-background min-h-32 w-full rounded-md border px-3 py-2 text-sm"
-          value={values.description}
-          onChange={(event) => set('description', event.target.value)}
-        />
-      </Field>
+        <FormRow label="Category" className={rowClassName}>
+          <RequestSelect
+            value={values.category}
+            options={[
+              'GENERAL',
+              'SUPPORT',
+              'BILLING',
+              'SALES',
+              'COMPLAINT',
+              'FEEDBACK',
+              'OTHER',
+            ]}
+            onValueChange={(value) =>
+              set('category', value as RequestCategory)
+            }
+            disabled={saving}
+          />
+        </FormRow>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SelectField label="Category" value={values.category} onChange={(value) => set('category', value as RequestCategory)} options={['GENERAL', 'SUPPORT', 'BILLING', 'SALES', 'COMPLAINT', 'FEEDBACK', 'OTHER']} />
-        <SelectField label="Priority" value={values.priority} onChange={(value) => set('priority', value as RequestPriority)} options={['LOW', 'NORMAL', 'HIGH', 'URGENT']} />
-      </div>
+        <FormRow label="Priority" className={rowClassName}>
+          <RequestSelect
+            value={values.priority}
+            options={['LOW', 'NORMAL', 'HIGH', 'URGENT']}
+            onValueChange={(value) =>
+              set('priority', value as RequestPriority)
+            }
+            disabled={saving}
+          />
+        </FormRow>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SelectField label="Source" value={values.source} onChange={(value) => set('source', value as RequestSource)} options={['CRM', 'EMAIL', 'PHONE', 'CHAT', 'WEB', 'API', 'OTHER']} />
+        <FormRow label="Source" className={rowClassName}>
+          <RequestSelect
+            value={values.source}
+            options={['CRM', 'EMAIL', 'PHONE', 'CHAT', 'WEB', 'API', 'OTHER']}
+            onValueChange={(value) => set('source', value as RequestSource)}
+            disabled={saving}
+          />
+        </FormRow>
+
         {requestId ? (
-          <SelectField label="Status" value={values.status} onChange={(value) => set('status', value as RequestStatus)} options={['OPEN', 'IN_PROGRESS', 'WAITING', 'RESOLVED', 'CLOSED', 'CANCELLED']} />
+          <FormRow label="Status" className={rowClassName}>
+            <RequestSelect
+              value={values.status}
+              options={[
+                'OPEN',
+                'IN_PROGRESS',
+                'WAITING',
+                'RESOLVED',
+                'CLOSED',
+                'CANCELLED',
+              ]}
+              onValueChange={(value) =>
+                set('status', value as RequestStatus)
+              }
+              disabled={saving}
+            />
+          </FormRow>
         ) : null}
+
+        <FormRow
+          htmlFor="request-assignee"
+          label="Assignee"
+          hint="Optional 876 user ID for the person responsible for this request."
+          className={rowClassName}
+        >
+          <Input
+            id="request-assignee"
+            value={values.assigneeId}
+            onChange={(event) => set('assigneeId', event.target.value)}
+            disabled={saving}
+          />
+        </FormRow>
       </div>
 
-      <Field label="Assignee ID">
-        <Input value={values.assigneeId} onChange={(event) => set('assigneeId', event.target.value)} placeholder="Optional 876 user ID" />
-      </Field>
+      {error ? (
+        <p className="text-destructive text-sm" role="alert">
+          {error}
+        </p>
+      ) : null}
 
-      {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
-
-      <div className="flex gap-2">
-        <Button type="submit" variant="info" disabled={saving}>{saving ? 'Saving…' : 'Save request'}</Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+      <div className="flex gap-3">
+        <Button type="submit" variant="info" disabled={saving}>
+          {requestId ? 'Save' : 'Add'}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={saving}
+        >
+          Cancel
+        </Button>
       </div>
     </form>
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block space-y-2"><span className="text-sm font-medium">{label}</span>{children}</label>
-}
-
-function SelectField({
-  label,
+function RequestSelect({
   value,
   options,
-  onChange,
+  onValueChange,
+  disabled,
 }: {
-  label: string
   value: string
   options: readonly string[]
-  onChange: (value: string) => void
+  onValueChange: (value: string) => void
+  disabled?: boolean
 }) {
   return (
-    <Field label={label}>
-      <select
-        className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
         {options.map((option) => (
-          <option key={option} value={option}>{option.replaceAll('_', ' ')}</option>
+          <SelectItem key={option} value={option}>
+            {option.replaceAll('_', ' ')}
+          </SelectItem>
         ))}
-      </select>
-    </Field>
+      </SelectContent>
+    </Select>
   )
 }
 

@@ -30,8 +30,13 @@ export function DeleteCustomerButton({ customerId }: { customerId: string }) {
 
   return (
     <div className="space-y-2">
-      <Button type="button" variant="destructive" onClick={remove} disabled={deleting}>
-        {deleting ? 'Removing…' : 'Remove from CRM'}
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={remove}
+        disabled={deleting}
+      >
+        {deleting ? 'Deleting…' : 'Delete'}
       </Button>
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
     </div>
