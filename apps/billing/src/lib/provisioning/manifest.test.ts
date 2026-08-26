@@ -116,8 +116,10 @@ describe('loadBillingProvisioningManifest', () => {
   })
 
   it('resolves typed values and opaque references from the control plane', async () => {
-    const manifest = await loadBillingProvisioningManifest()
+    const manifest = await loadBillingProvisioningManifest('jamaica')
 
+    expect(manifest.target).toBe('finance/jamaica')
+    expect(mocks.retrievePublished).toHaveBeenCalledWith('finance', 'jamaica')
     expect(manifest.manifestVersion).toBe(1)
     expect(manifest.revision).toBe(3)
     expect(manifest.defaults.baseCurrency).toBe('JMD')
@@ -143,7 +145,9 @@ describe('loadBillingProvisioningManifest', () => {
       },
     })
 
-    await expect(loadBillingProvisioningManifest()).rejects.toThrow('Missing.')
+    await expect(loadBillingProvisioningManifest('jamaica')).rejects.toThrow(
+      'Missing.'
+    )
   })
 })
 

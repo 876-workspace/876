@@ -32,6 +32,7 @@ model Organization {
   regionId              String?             @map("region_id") @db.VarChar
   countryCode           String?             @map("country_code") @db.VarChar(2)
   currencyCode          String?             @default("JMD") @map("currency_code") @db.VarChar(3)
+  provisioningSetupKey  String?             @map("provisioning_setup_key") @db.VarChar
   enrollmentCompletedAt BigInt?             @map("enrollment_completed_at")
   metadata              Json?               @db.Json
   deletedAt             BigInt?             @map("deleted_at")

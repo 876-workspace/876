@@ -4,7 +4,8 @@ import { createBackgroundPlatformClient } from '@/lib/876/platform-client'
 
 export interface BillingProvisioningManifest {
   object: 'provisioning_manifest'
-  target: 'finance/shared'
+  /** The setup this recipe belongs to, as `finance/<setup key>`. */
+  target: string
   manifestVersion: 1
   revision: number
   reconciliation: 'create_missing'
@@ -59,12 +60,20 @@ export interface BillingApplicationProvisioningManifest {
   }>
 }
 
-/** Loads Billing's typed day-zero recipe from the platform control plane. */
-export async function loadBillingProvisioningManifest(): Promise<BillingProvisioningManifest> {
+/**
+ * Loads Billing's typed day-zero recipe from the platform control plane.
+ *
+ * The recipe belongs to a named provisioning setup — Jamaica, United States,
+ * and so on — so the caller names the setup an organization is provisioned
+ * with rather than assuming a single shared configuration.
+ */
+export async function loadBillingProvisioningManifest(
+  setupKey: string
+): Promise<BillingProvisioningManifest> {
   const result =
     await createBackgroundPlatformClient().provisioning.retrievePublished(
       'finance',
-      'shared'
+      setupKey
     )
   if (result.error || !result.data)
     throw new Error(
@@ -138,7 +147,7 @@ export async function loadBillingProvisioningManifest(): Promise<BillingProvisio
 
   return {
     object: 'provisioning_manifest',
-    target: 'finance/shared',
+    target: `finance/${setupKey}`,
     manifestVersion: profile.manifest_version,
     revision: profile.revision,
     reconciliation: 'create_missing',

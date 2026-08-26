@@ -2,7 +2,7 @@ import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 
 const TABS: RouteTabItem[] = [
   {
-    label: 'Shared defaults',
+    label: 'Setups',
     href: '/settings/orgs/provisioning',
     exact: true,
   },

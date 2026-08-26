@@ -66,6 +66,12 @@ describe('admin core resource projections', () => {
       apiKeys: {},
       modules: {},
       provisioning: {
+        setups: {
+          list: vi.fn(),
+          retrieve: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+        },
         retrieve: vi.fn(),
         retrievePublished: vi.fn(),
         retrieveCatalog: vi.fn(),

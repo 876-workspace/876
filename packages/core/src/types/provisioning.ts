@@ -192,3 +192,48 @@ export type ProvisioningReconciliationResult = {
   enqueued: number
   next_cursor: string | null
 }
+
+export type ProvisioningSetupStatus = 'active' | 'archived'
+
+/**
+ * A named day-zero configuration — Jamaica, United States, and so on. Its
+ * finance manifest is stored at `finance/<key>`, and exactly one setup is the
+ * platform default that new organizations are provisioned with.
+ */
+export type ProvisioningSetup = {
+  object: 'provisioning_setup'
+  id: string
+  key: string
+  name: string
+  description: string | null
+  country_code: string | null
+  currency_code: string | null
+  status: ProvisioningSetupStatus
+  is_default: boolean
+  manifest_target: string
+  published_revision: number | null
+  has_draft: boolean
+  organization_count: number
+  created_at: number
+  updated_at: number
+}
+
+export type ProvisioningSetupCreateParams = {
+  key: string
+  name: string
+  description?: string | null
+  country_code?: string | null
+  currency_code?: string | null
+  is_default?: boolean
+  /** Setup whose published finance manifest seeds the new one. */
+  copy_from?: string | null
+}
+
+export type ProvisioningSetupUpdateParams = {
+  name?: string
+  description?: string | null
+  country_code?: string | null
+  currency_code?: string | null
+  status?: ProvisioningSetupStatus
+  is_default?: boolean
+}

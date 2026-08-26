@@ -158,6 +158,9 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     ])
       expect(has($876, controlOnly), `$876.${controlOnly}`).toBe(false)
 
+    expect(workspace.provisioning.setups.list).toBeTypeOf('function')
+    expect(workspace.provisioning.setups.create).toBeTypeOf('function')
+    expect(workspace.provisioning.setups.update).toBeTypeOf('function')
     expect(workspace.provisioning.published.retrieve).toBeTypeOf('function')
     expect(workspace.provisioning.catalog.retrieve).toBeTypeOf('function')
     expect(workspace.provisioning.draft.retrieve).toBeTypeOf('function')
@@ -323,7 +326,14 @@ describe('facade delegation parity', () => {
     const notesList = vi.fn()
     const notesCreate = vi.fn()
     const notesDelete = vi.fn()
+    const setups: any = {
+      list: vi.fn(),
+      retrieve: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    }
     const provisioning: any = {
+      setups,
       retrieve,
       retrievePublished,
       retrieveCatalog,

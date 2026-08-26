@@ -577,6 +577,10 @@ export type AdminProvisioningRun = ProvisioningRun
 export type AdminProvisioningRunStatus = ProvisioningRunStatus
 export type AdminProvisioningReconciliationResult =
   ProvisioningReconciliationResult
+export type AdminProvisioningSetup = ProvisioningSetup
+export type AdminProvisioningSetupStatus = ProvisioningSetupStatus
+export type AdminProvisioningSetupCreateParams = ProvisioningSetupCreateParams
+export type AdminProvisioningSetupUpdateParams = ProvisioningSetupUpdateParams
 
 export type AdminDeletedProvisioningNote = {
   object: 'provisioning_note'
@@ -1699,6 +1703,10 @@ import type {
   ProvisioningResource,
   ProvisioningRun,
   ProvisioningRunStatus,
+  ProvisioningSetup,
+  ProvisioningSetupCreateParams,
+  ProvisioningSetupStatus,
+  ProvisioningSetupUpdateParams,
   ProvisioningStep,
   ProvisioningTargetType,
   ProvisioningValidation,

@@ -1,0 +1,20 @@
+// ProvisioningSetup — table `provisioning_setups`.
+// Module: provisioning. A named day-zero configuration (Jamaica, United
+// States, …). Its finance manifest is `finance/<key>`; exactly one setup is
+// the platform default that new organizations are provisioned with.
+
+model ProvisioningSetup {
+  id           String  @id @db.VarChar
+  key          String  @unique(map: "uq_provisioning_setups_key") @db.VarChar
+  name         String  @db.VarChar
+  description  String?
+  countryCode  String? @map("country_code") @db.VarChar(2)
+  currencyCode String? @map("currency_code") @db.VarChar(3)
+  status       String  @default("active") @db.VarChar
+  isDefault    Boolean @default(false) @unique(map: "uq_provisioning_setups_default", where: raw("(is_default = true)")) @map("is_default")
+  createdAt    BigInt  @map("created_at")
+  updatedAt    BigInt  @map("updated_at")
+
+  @@index([status], map: "ix_provisioning_setups_status")
+  @@map("provisioning_setups")
+}

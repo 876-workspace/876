@@ -348,3 +348,73 @@ export async function publishDraft(
   if (!published) return null
   return published as unknown as ProvisioningRevisionRow
 }
+
+export type ProvisioningSetupSeedRow = {
+  id: string
+  key: string
+  isDefault: boolean
+}
+
+export function findSetupByKey(
+  key: string
+): Promise<ProvisioningSetupSeedRow | null> {
+  return prisma.provisioningSetup.findFirst({
+    where: { key },
+    select: { id: true, key: true, isDefault: true },
+  })
+}
+
+export function countSetups(): Promise<number> {
+  return prisma.provisioningSetup.count()
+}
+
+export function createSetup(params: {
+  id: string
+  key: string
+  name: string
+  description: string
+  countryCode: string
+  currencyCode: string
+  isDefault: boolean
+  now: bigint
+}): Promise<ProvisioningSetupSeedRow> {
+  return prisma.provisioningSetup.create({
+    data: {
+      id: params.id,
+      key: params.key,
+      name: params.name,
+      description: params.description,
+      countryCode: params.countryCode,
+      currencyCode: params.currencyCode,
+      status: 'active',
+      isDefault: params.isDefault,
+      createdAt: params.now,
+      updatedAt: params.now,
+    },
+    select: { id: true, key: true, isDefault: true },
+  })
+}
+
+/** Re-keys the pre-setup `finance/shared` manifest onto its named setup. */
+export async function renameManifestTargetKey(
+  targetType: string,
+  fromKey: string,
+  toKey: string,
+  now: bigint
+): Promise<boolean> {
+  const source = await prisma.provisioningManifest.findFirst({
+    where: { targetType, targetKey: fromKey },
+    select: { id: true },
+  })
+  if (!source) return false
+  const conflict = await prisma.provisioningManifest.findFirst({
+    where: { targetType, targetKey: toKey },
+    select: { id: true },
+  })
+  if (conflict) return false
+  await prisma.provisioningManifest.update({
+    where: { id: source.id },
+    data: { targetKey: toKey, updatedAt: now },
+  })
+  return true
+}
