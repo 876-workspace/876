@@ -70,7 +70,13 @@ export type OrganizationBootstrapRepository = {
   }): Promise<MembershipRow>
 }
 
-type OrganizationBootstrapWorkspace = {
+/**
+ * The organization-workspace control plane, narrowed to what bootstrap needs.
+ *
+ * `setup` is split from `finance.ensure` so bootstrap can establish the durable
+ * owner membership *before* crossing the finance barrier.
+ */
+export type OrganizationBootstrapWorkspace = {
   setup(
     organizationId: string,
     options?: {
@@ -84,45 +90,10 @@ type OrganizationBootstrapWorkspace = {
   }
 }
 
-type ProvisionOrganizationFn = (
-  organizationId: string,
-  now: number,
-  options?: { sourceAppId?: string | null; deferFinanceReadiness?: boolean }
-) => Promise<Record<string, { id: string }>>
-
-type EnsureOrgFinanceReadyFn = (organizationId: string) => Promise<void>
-
 export type OrganizationBootstrapDeps = {
   provider: OrganizationBootstrapProvider
   repository: OrganizationBootstrapRepository
-  workspace?: OrganizationBootstrapWorkspace
-  /** Legacy narrow test seam. Default runtime wiring uses `workspace`. */
-  provisionOrganization?: ProvisionOrganizationFn
-  /** Legacy narrow test seam. Default runtime wiring uses `workspace.finance`. */
-  ensureOrgFinanceReady?: EnsureOrgFinanceReadyFn
-}
-
-function workspaceFor(deps: OrganizationBootstrapDeps): OrganizationBootstrapWorkspace {
-  if (deps.workspace) return deps.workspace
-
-  const provisionOrganization = deps.provisionOrganization
-  const ensureOrgFinanceReady = deps.ensureOrgFinanceReady
-  if (!provisionOrganization || !ensureOrgFinanceReady)
-    throw new Error('Organization bootstrap requires workspace dependencies.')
-
-  return {
-    setup(organizationId, options = {}) {
-      return provisionOrganization(organizationId, options.now ?? nowUnixSeconds(), {
-        sourceAppId: options.sourceAppId ?? null,
-        deferFinanceReadiness: options.finance === 'defer',
-      })
-    },
-    finance: {
-      ensure({ organizationId }) {
-        return ensureOrgFinanceReady(organizationId)
-      },
-    },
-  }
+  workspace: OrganizationBootstrapWorkspace
 }
 
 // ---------------------------------------------------------------------------
@@ -298,12 +269,10 @@ export async function bootstrapExistingUser(
       updatedAt: nowBigint,
     })
 
-    const control = workspaceFor(deps)
-
     // Prepare the durable workspace first, but defer the finance barrier until
     // the owner membership exists. A finance outage must not strand an org that
     // its owner cannot route back to on retry.
-    const orgRoles = await control.setup(organization.id, {
+    const orgRoles = await deps.workspace.setup(organization.id, {
       sourceAppId: params.sourceAppId ?? null,
       finance: 'defer',
       now,
@@ -326,7 +295,7 @@ export async function bootstrapExistingUser(
 
     // The durable workspace identity now exists, so finish the shared finance
     // readiness barrier. A failure is preserved for an idempotent retry.
-    await control.finance.ensure({ organizationId: organization.id })
+    await deps.workspace.finance.ensure({ organizationId: organization.id })
 
     return organization
   } catch (error) {

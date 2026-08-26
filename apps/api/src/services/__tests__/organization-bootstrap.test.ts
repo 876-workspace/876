@@ -57,22 +57,21 @@ function makeDeps(
 ): OrganizationBootstrapDeps & {
   provider: ReturnType<typeof makeProvider>
   repository: ReturnType<typeof makeRepository>
-  provisionOrganization: ReturnType<typeof vi.fn>
-  ensureOrgFinanceReady: ReturnType<typeof vi.fn>
+  setupWorkspace: ReturnType<typeof vi.fn>
+  ensureFinance: ReturnType<typeof vi.fn>
 } {
   const repository = makeRepository(overrides.repository as never)
   const provider = makeProvider(overrides.provider as never)
-  const provisionOrganization =
-    (overrides.provisionOrganization as unknown as ReturnType<typeof vi.fn>) ??
-    vi.fn().mockResolvedValue({ owner: { id: 'rol_owner' } })
-  const ensureOrgFinanceReady =
-    (overrides.ensureOrgFinanceReady as unknown as ReturnType<typeof vi.fn>) ??
-    vi.fn().mockResolvedValue(undefined)
+  const setupWorkspace = vi
+    .fn()
+    .mockResolvedValue({ owner: { id: 'rol_owner' } })
+  const ensureFinance = vi.fn().mockResolvedValue(undefined)
   return {
     provider,
     repository,
-    provisionOrganization,
-    ensureOrgFinanceReady,
+    workspace: { setup: setupWorkspace, finance: { ensure: ensureFinance } },
+    setupWorkspace,
+    ensureFinance,
   } as never
 }
 
@@ -343,11 +342,11 @@ describe('bootstrapExistingUser', () => {
         updatedAt: BigInt(NOW),
       })
     )
-    expect(deps.provisionOrganization).toHaveBeenCalledWith(
-      expect.any(String),
-      NOW,
-      { sourceAppId: null, deferFinanceReadiness: true }
-    )
+    expect(deps.setupWorkspace).toHaveBeenCalledWith(expect.any(String), {
+      sourceAppId: null,
+      finance: 'defer',
+      now: NOW,
+    })
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
         role: 'owner',
@@ -357,10 +356,12 @@ describe('bootstrapExistingUser', () => {
     )
     // The finance barrier runs only after the durable owner membership exists,
     // so a finance outage cannot strand an org without a routable membership.
-    expect(deps.ensureOrgFinanceReady).toHaveBeenCalledWith(expect.any(String))
+    expect(deps.ensureFinance).toHaveBeenCalledWith({
+      organizationId: expect.any(String),
+    })
     const membershipOrder =
       deps.repository.createMembership.mock.invocationCallOrder[0]!
-    const financeOrder = deps.ensureOrgFinanceReady.mock.invocationCallOrder[0]!
+    const financeOrder = deps.ensureFinance.mock.invocationCallOrder[0]!
     expect(membershipOrder).toBeLessThan(financeOrder)
   })
 
@@ -394,11 +395,10 @@ describe('bootstrapExistingUser', () => {
       sourceAppId: 'app_couriers',
     })
 
-    expect(deps.provisionOrganization).toHaveBeenCalledTimes(1)
-    expect(deps.provisionOrganization).toHaveBeenCalledWith(
+    expect(deps.setupWorkspace).toHaveBeenCalledTimes(1)
+    expect(deps.setupWorkspace).toHaveBeenCalledWith(
       expect.stringMatching(/^org_/),
-      NOW,
-      { sourceAppId: 'app_couriers', deferFinanceReadiness: true }
+      { sourceAppId: 'app_couriers', finance: 'defer', now: NOW }
     )
   })
 
@@ -434,7 +434,7 @@ describe('bootstrapExistingUser', () => {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     }))
-    deps.provisionOrganization = vi.fn().mockResolvedValue({})
+    deps.setupWorkspace.mockResolvedValue({})
 
     await bootstrapExistingUser(deps, {
       ownerUserId: 'user_1',
@@ -677,7 +677,7 @@ describe('bootstrapExistingUser', () => {
     deps.repository.createMembership.mockResolvedValue({} as never)
     // The finance barrier fails the way a Billing outage does — after the
     // durable org and owner membership already exist.
-    deps.ensureOrgFinanceReady.mockRejectedValue(
+    deps.ensureFinance.mockRejectedValue(
       new AppHttpError({
         code: 'provisioning/finance-workspace-unavailable',
         message: 'Billing is unavailable.',
@@ -725,9 +725,7 @@ describe('bootstrapExistingUser', () => {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     }))
-    deps.provisionOrganization = vi
-      .fn()
-      .mockResolvedValue({ owner: { id: 'rol_1' } })
+    deps.setupWorkspace.mockResolvedValue({ owner: { id: 'rol_1' } })
     deps.repository.createMembership.mockResolvedValue({} as never)
 
     await bootstrapExistingUser(deps, {
