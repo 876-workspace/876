@@ -4,9 +4,12 @@ import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
 
+import { ThemeProvider } from '@876/ui/theme'
+import { ThemeScript } from '@876/ui/theme-script'
 import './globals.css'
 
-const CRM_URL = process.env.NEXT_PUBLIC_CRM_URL?.trim() || 'http://localhost:3007'
+const CRM_URL =
+  process.env.NEXT_PUBLIC_CRM_URL?.trim() || 'http://localhost:3007'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({
@@ -18,7 +21,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(CRM_URL),
   applicationName: '876 CRM',
   title: { default: '876 CRM', template: '%s | 876 CRM' },
-  description: 'Simple customer relationship and ticket management for 876 organizations.',
+  description:
+    'Simple customer relationship and ticket management for 876 organizations.',
   robots: { index: false, follow: false },
 }
 
@@ -35,8 +39,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <Toaster />
       </body>
     </html>
