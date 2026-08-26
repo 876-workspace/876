@@ -1,14 +1,16 @@
 // Widgets bounded-context database (Prisma 7).
 // Only apps/widgets-api may connect. Hosts never receive this URL.
 
-// runtime = "workerd" makes the generated client import Prisma's query-compiler
-// WASM as a module. The default (nodejs) compiles it from bytes at runtime,
-// which Cloudflare Workers refuses: "WebAssembly.Module(): Wasm code generation
-// disallowed by embedder".
+// runtime = "nodejs" loads the query compiler from a base64 `.mjs` module, so
+// Vercel's output tracer follows a plain import and ships the compiler inside
+// the function. The "workerd" runtime instead imports
+// `./query_compiler_fast_bg.wasm?module`, whose emitted `.wasm` the tracer
+// cannot follow — it is left out of the lambda and every query throws
+// `ENOENT … .wasm` at runtime.
 generator client {
   provider = "prisma-client"
   output   = "../../src/lib/db/generated/prisma"
-  runtime  = "workerd"
+  runtime  = "nodejs"
 }
 
 datasource db {
