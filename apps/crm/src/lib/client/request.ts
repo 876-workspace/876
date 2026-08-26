@@ -1,27 +1,12 @@
 'use client'
 
-export type ClientResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: { code?: string; message: string } }
+import { requestApiResult, type ClientApiResult } from '@876/core/client'
 
-export async function request<T>(
+export type ClientResult<T> = ClientApiResult<T>
+
+export function request<T>(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<ClientResult<T>> {
-  const response = await fetch(input, init)
-  const body = (await response.json().catch(() => null)) as
-    | { data?: T; error?: string; code?: string }
-    | null
-
-  if (!response.ok || !body?.data) {
-    return {
-      data: null,
-      error: {
-        code: body?.code,
-        message: body?.error ?? 'Something went wrong.',
-      },
-    }
-  }
-
-  return { data: body.data, error: null }
+  return requestApiResult<T>(input, init)
 }

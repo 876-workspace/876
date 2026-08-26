@@ -11,7 +11,7 @@ export async function GET() {
       { status: 401 }
     )
 
-  const result = await $876.customerProfiles.list(context.orgId)
+  const result = await $876.requests.list(context.orgId)
   return Response.json(result, { status: result.error ? 502 : 200 })
 }
 
@@ -24,22 +24,9 @@ export async function POST(request: NextRequest) {
     )
 
   const input = await request.json().catch(() => null)
-  const idempotencyKey = request.headers.get('x-idempotency-key')?.trim()
-  if (!idempotencyKey)
-    return Response.json(
-      {
-        data: null,
-        error: {
-          code: 'crm/idempotency-key-required',
-          message: 'Missing idempotency key.',
-        },
-      },
-      { status: 400 }
-    )
-
-  const result = await $876.customerProfiles.create(context.orgId, {
+  const result = await $876.requests.create(context.orgId, {
     ...(input as Record<string, unknown>),
-    idempotencyKey,
+    createdBy: context.userId,
   } as never)
 
   return Response.json(result, { status: result.error ? 400 : 201 })

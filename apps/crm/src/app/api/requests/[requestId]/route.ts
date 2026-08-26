@@ -3,10 +3,10 @@ import type { NextRequest } from 'next/server'
 import { $876 } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
 
-type Context = { params: Promise<{ customerId: string }> }
+type Context = { params: Promise<{ requestId: string }> }
 
 function statusFor(code: string | undefined) {
-  return code === 'crm/customer-not-found' ? 404 : 400
+  return code === 'crm/request-not-found' ? 404 : 400
 }
 
 export async function GET(_request: NextRequest, route: Context) {
@@ -17,8 +17,8 @@ export async function GET(_request: NextRequest, route: Context) {
       { status: 401 }
     )
 
-  const { customerId } = await route.params
-  const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
+  const { requestId } = await route.params
+  const result = await $876.requests.retrieve(context.orgId, requestId)
   return Response.json(result, { status: result.error ? statusFor(result.error.code) : 200 })
 }
 
@@ -30,13 +30,9 @@ export async function PATCH(request: NextRequest, route: Context) {
       { status: 401 }
     )
 
-  const { customerId } = await route.params
+  const { requestId } = await route.params
   const input = await request.json().catch(() => null)
-  const result = await $876.customerProfiles.update(
-    context.orgId,
-    customerId,
-    input as never
-  )
+  const result = await $876.requests.update(context.orgId, requestId, input as never)
   return Response.json(result, { status: result.error ? statusFor(result.error.code) : 200 })
 }
 
@@ -48,9 +44,9 @@ export async function DELETE(request: NextRequest, route: Context) {
       { status: 401 }
     )
 
-  const { customerId } = await route.params
+  const { requestId } = await route.params
   const input = (await request.json().catch(() => ({}))) as { reason?: string | null }
-  const result = await $876.customerProfiles.delete(context.orgId, customerId, {
+  const result = await $876.requests.delete(context.orgId, requestId, {
     deletedBy: context.userId,
     reason: input.reason ?? null,
   })
