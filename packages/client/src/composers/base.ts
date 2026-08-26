@@ -40,49 +40,18 @@ function createAdminSessionSurface(
   }
 }
 
-function createProvisioningSurface(
-  provisioning: Admin876Client['provisioning']
-) {
-  return {
-    ...provisioning,
-    published: {
-      retrieve: provisioning.retrievePublished,
-    },
-    catalog: {
-      retrieve: provisioning.retrieveCatalog,
-    },
-    draft: {
-      update: provisioning.replaceDraft,
-    },
-    runs: {
-      ...provisioning.runs,
-      claim: provisioning.runs.claimApplication,
-      complete: provisioning.runs.completeApplication,
-    },
-  }
-}
-
-interface AdminNamespaces {
+interface AdminResourceNamespaces {
   auditEvents: Admin876Client['auditEvents']
-  apiKeys: Admin876Client['apiKeys']
-  modules: Admin876Client['modules']
-  provisioning: ReturnType<typeof createProvisioningSurface>
-  onboarding: Admin876Client['onboarding']
   addresses: Admin876Client['addresses']
-  reservedUsernames: Admin876Client['reservedUsernames']
   billingAccounts: Admin876Client['billingAccounts']
-  authAttempts: Admin876Client['authAttempts']
-  devices: Admin876Client['devices']
-  appFeatures: Admin876Client['appFeatures']
   appSubscriptions: Admin876Client['appSubscriptions']
-  organizationFeatures: Admin876Client['organizationFeatures']
   identifications: Admin876Client['identifications']
   messages: Admin876Client['messages']
   calls: Admin876Client['calls']
   phoneLookups: Admin876Client['phoneLookups']
 }
 
-/** The platform-only core surface, without admin projections. */
+/** The platform-only resource surface, without admin projections. */
 export type CoreSurfaceBase = {
   auth: SDK876Client['auth']
   sessions: SessionNamespace
@@ -110,9 +79,13 @@ export type CoreSurfaceBase = {
 }
 
 /**
- * The admin-projected core surface: shared resources keep their platform
- * methods alongside an `admin` namespace, and admin-only namespaces are
- * surfaced directly.
+ * Admin-projected resource surface.
+ *
+ * Organization control-plane operations (provisioning, onboarding, modules,
+ * organization feature grants, app assignment/entitlement administration) are
+ * intentionally not composed here; they live on `workspace`. 876-operator
+ * controls (API keys, auth attempts, devices, reserved usernames, app feature
+ * wiring) live on `platform`.
  */
 export type CoreSurfaceAdmin = Omit<
   CoreSurfaceBase,
@@ -122,10 +95,8 @@ export type CoreSurfaceAdmin = Omit<
   | 'apps'
   | 'memberships'
   | 'features'
-  | 'entitlements'
   | 'roles'
   | 'organizationMembers'
-  | 'appAssignments'
   | 'invites'
   | 'sessions'
 > & {
@@ -140,22 +111,14 @@ export type CoreSurfaceAdmin = Omit<
     Admin876Client['memberships']
   >
   features: WithAdmin<SDK876Client['features'], Admin876Client['features']>
-  entitlements: WithAdmin<
-    SDK876Client['subscriptions'],
-    Admin876Client['subscriptions']
-  >
   roles: WithAdmin<SDK876Client['roles'], Admin876Client['roles']>
   organizationMembers: WithAdmin<
     SDK876Client['organizationMembers'],
     Admin876Client['organizationMembers']
   >
-  appAssignments: WithAdmin<
-    SDK876Client['appAssignments'],
-    Admin876Client['appAssignments']
-  >
   invites: WithAdmin<SDK876Client['invites'], Admin876Client['invites']>
   sessions: AdminSessionSurface
-} & AdminNamespaces
+} & AdminResourceNamespaces
 
 export function createCoreSurface(args: {
   platform: SDK876Client
@@ -213,28 +176,17 @@ function createCoreSurfaceAdmin(
     apps: withAdmin(platform.apps, admin.apps),
     memberships: withAdmin(platform.memberships, admin.memberships),
     features: withAdmin(platform.features, admin.features),
-    entitlements: withAdmin(platform.subscriptions, admin.subscriptions),
     roles: withAdmin(platform.roles, admin.roles),
     organizationMembers: withAdmin(
       platform.organizationMembers,
       admin.organizationMembers
     ),
-    appAssignments: withAdmin(platform.appAssignments, admin.appAssignments),
     invites: withAdmin(platform.invites, admin.invites),
     sessions: createAdminSessionSurface(platform, admin.sessions),
     auditEvents: admin.auditEvents,
-    apiKeys: admin.apiKeys,
-    modules: admin.modules,
-    provisioning: createProvisioningSurface(admin.provisioning),
-    onboarding: admin.onboarding,
     addresses: admin.addresses,
-    reservedUsernames: admin.reservedUsernames,
     billingAccounts: admin.billingAccounts,
-    authAttempts: admin.authAttempts,
-    devices: admin.devices,
-    appFeatures: admin.appFeatures,
     appSubscriptions: admin.appSubscriptions,
-    organizationFeatures: admin.organizationFeatures,
     identifications: admin.identifications,
     messages: admin.messages,
     calls: admin.calls,
