@@ -9,6 +9,41 @@ export function list(tenantId: string) {
   })
 }
 
+/**
+ * Lazily ensures a CRM profile exists for every supplied billing customer ID,
+ * creating missing ones in a single bulk insert (skipping duplicates via the
+ * @@unique([tenantId, billingCustomerId]) constraint).
+ *
+ * Returns a Map<billingCustomerId, profile> for all active profiles in the set.
+ */
+export async function ensureMany(
+  tenantId: string,
+  billingCustomerIds: string[]
+): Promise<Map<string, Awaited<ReturnType<typeof list>>[number]>> {
+  if (!billingCustomerIds.length)
+    return new Map()
+
+  await prisma.customerProfile.createMany({
+    data: billingCustomerIds.map((billingCustomerId) => ({
+      id: `crm_cus_${randomUUID().replaceAll('-', '')}`,
+      tenantId,
+      billingCustomerId,
+      ownerId: null,
+    })),
+    skipDuplicates: true,
+  })
+
+  const profiles = await prisma.customerProfile.findMany({
+    where: {
+      tenantId,
+      billingCustomerId: { in: billingCustomerIds },
+      deletedAt: null,
+    },
+  })
+
+  return new Map(profiles.map((p) => [p.billingCustomerId, p]))
+}
+
 export function retrieve(tenantId: string, id: string) {
   return prisma.customerProfile.findFirst({
     where: { tenantId, id, deletedAt: null },
