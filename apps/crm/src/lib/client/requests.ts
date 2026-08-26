@@ -3,6 +3,8 @@
 import type {
   CrmRequest,
   CrmRequestCreateInput,
+  CrmRequestNote,
+  CrmRequestNoteList,
   CrmRequestUpdateInput,
 } from '@876/client'
 
@@ -33,6 +35,42 @@ export const requests = {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ reason: reason ?? null }),
+      }
+    )
+  },
+}
+
+export const requestNotes = {
+  list(requestId: string) {
+    return request<CrmRequestNoteList>(
+      `/api/requests/${encodeURIComponent(requestId)}/notes`
+    )
+  },
+  create(requestId: string, params: { body: string; internal?: boolean }) {
+    return request<CrmRequestNote>(
+      `/api/requests/${encodeURIComponent(requestId)}/notes`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(params),
+      }
+    )
+  },
+  update(requestId: string, noteId: string, params: { body: string }) {
+    return request<CrmRequestNote>(
+      `/api/requests/${encodeURIComponent(requestId)}/notes/${encodeURIComponent(noteId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(params),
+      }
+    )
+  },
+  delete(requestId: string, noteId: string) {
+    return request<{ object: 'request_note'; id: string; deleted: true }>(
+      `/api/requests/${encodeURIComponent(requestId)}/notes/${encodeURIComponent(noteId)}`,
+      {
+        method: 'DELETE',
       }
     )
   },
