@@ -10,9 +10,9 @@ const COLUMNS = [
 ]
 
 /**
- * Scoped to this route. Held at the segment above, this fallback was also the
- * boundary over every sibling that ships its own shaped skeleton, so one
- * navigation painted neutral filler and then the real thing.
+ * Scoped to the pricing list alone. It sits inside the `(list)` group because a
+ * `loading.tsx` at the `pricing/` segment is also the boundary above `new/`,
+ * so opening the price form painted this table skeleton first.
  */
 export default function Loading() {
   return <DataTableSkeleton columns={COLUMNS} rows={4} />
