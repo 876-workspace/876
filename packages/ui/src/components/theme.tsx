@@ -10,7 +10,13 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 
+import { silenceScriptTagWarning } from '../lib/silence-script-tag-warning'
 import { THEME_STORAGE_KEY } from '../lib/theme-storage'
+
+// Installed at module scope so it is in place before React hydrates the tree
+// containing ThemeScript. See the helper for why the warning is a false
+// positive here.
+silenceScriptTagWarning()
 
 /** The user's explicit choice. `system` follows the OS preference. */
 export type Theme = 'light' | 'dark' | 'system'
