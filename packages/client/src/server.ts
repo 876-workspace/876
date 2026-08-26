@@ -1,10 +1,16 @@
 import 'server-only'
 import { createConsoleClient, type Console876Client } from './composers/console'
-import { createCouriersClient, type Couriers876Client } from './composers/couriers'
+import {
+  createCouriersClient,
+  type Couriers876Client,
+} from './composers/couriers'
 import { createCrmClient, type Crm876Client } from './composers/crm'
 import { createBillingClient, type Billing876Client } from './composers/billing'
 import { createInvoiceClient, type Invoice876Client } from './composers/invoice'
-import { createPlatformServerClient, type Platform876Client } from './composers/platform'
+import {
+  createPlatformServerClient,
+  type Platform876Client,
+} from './composers/platform'
 import type {
   InvoiceServerClientOptions,
   BillingServerClientOptions,
@@ -15,15 +21,33 @@ import type {
   ServerClientOptions,
 } from './internal/types'
 
-export function create876ServerClient(options: ConsoleServerClientOptions): Console876Client
-export function create876ServerClient(options: CouriersServerClientOptions): Couriers876Client
-export function create876ServerClient(options: CrmServerClientOptions): Crm876Client
-export function create876ServerClient(options: BillingServerClientOptions): Billing876Client
-export function create876ServerClient(options: InvoiceServerClientOptions): Invoice876Client
-export function create876ServerClient(options: PlatformServerClientOptions): Platform876Client
+export function create876ServerClient(
+  options: ConsoleServerClientOptions
+): Console876Client
+export function create876ServerClient(
+  options: CouriersServerClientOptions
+): Couriers876Client
+export function create876ServerClient(
+  options: CrmServerClientOptions
+): Crm876Client
+export function create876ServerClient(
+  options: BillingServerClientOptions
+): Billing876Client
+export function create876ServerClient(
+  options: InvoiceServerClientOptions
+): Invoice876Client
+export function create876ServerClient(
+  options: PlatformServerClientOptions
+): Platform876Client
 export function create876ServerClient(
   options: ServerClientOptions
-): Console876Client | Couriers876Client | Crm876Client | Billing876Client | Invoice876Client | Platform876Client {
+):
+  | Console876Client
+  | Couriers876Client
+  | Crm876Client
+  | Billing876Client
+  | Invoice876Client
+  | Platform876Client {
   switch (options.app) {
     case 'console':
       return createConsoleClient(options)
@@ -43,9 +67,17 @@ export function create876ServerClient(
   }
 }
 
+/**
+ * Exhaustiveness guard for the app dispatch above. If a new app id is added to
+ * `ServerClientOptions` without a matching composer, `options` is no longer
+ * `never` here and this fails to compile — a new app can never silently fall
+ * through to the platform surface.
+ */
 function assertNever(options: never): never {
   const app = (options as { app?: string }).app
-  throw new Error(`Unsupported 876 app for create876ServerClient: ${String(app)}`)
+  throw new Error(
+    `Unsupported 876 app for create876ServerClient: ${String(app)}`
+  )
 }
 
 export type ServerClient876 =
