@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -17,10 +17,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, assignmentId } = await params
-  const { data, error } = await $876.appAssignments.admin.revoke(
-    id,
-    assignmentId
-  )
+  const { data, error } = await workspace.apps.unassign(id, assignmentId)
 
   if (error || !data) {
     return apiJson(
