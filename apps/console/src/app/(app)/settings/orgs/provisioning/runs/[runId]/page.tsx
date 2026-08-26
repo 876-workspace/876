@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
 import { ProvisioningNav } from '../../_components/provisioning-nav'
@@ -48,7 +48,7 @@ export default function ProvisioningRunPage({ params }: Props) {
 
 async function ProvisioningRunData({ params }: Props) {
   const { runId } = await params
-  const result = await $876.provisioning.runs.retrieve(runId)
+  const result = await workspace.provisioning.runs.retrieve(runId)
   if (result.error?.code === 'provisioning/run-not-found') notFound()
   if (result.error || !result.data)
     throw new Error(result.error?.message ?? 'Failed to load provisioning run.')
