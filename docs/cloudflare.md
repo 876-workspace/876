@@ -125,6 +125,16 @@ their static offline page and install icons. HTML, RSC, API, auth, tenant image,
 and cross-origin responses are network-only so user or tenant data never enters
 Cache Storage.
 
+Every offline fallback loads `/pwa/offline-recovery.js`, a precached,
+dependency-free script bundled from `scripts/offline-recovery.ts`. It does not
+wait for the `online` event — that event only reports that the device has an
+interface, so a router that lost its uplink, or a captive portal, never fires it
+and the fallback becomes a dead end. Instead it polls a cheap same-origin `HEAD`
+probe on a capped backoff (also re-armed on `online`, tab visibility, and
+bfcache restore) and reloads the page as soon as bytes come back from the
+origin. `HEAD` is deliberate: Serwist registers its routes for `GET`, so the
+probe bypasses Cache Storage and always measures the real network.
+
 The general rule stands: anything needing a Node built-in or a bundler belongs
 in a build script, never in a route.
 
