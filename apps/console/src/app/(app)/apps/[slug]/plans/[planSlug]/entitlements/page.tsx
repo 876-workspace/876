@@ -8,7 +8,7 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { resolveApp, resolveProduct } from '../../../_data'
 import { EntitlementsTable } from './_components/entitlements-table'
 
@@ -70,7 +70,7 @@ async function PlanEntitlementsData({
 
   const [product, modulesResult] = await Promise.all([
     resolveProduct(app.id, planSlug),
-    $876.modules.list(app.id, { includeArchived: true }),
+    workspace.modules.list(app.id, { includeArchived: true }),
   ])
   if (!product) notFound()
 
