@@ -1,6 +1,6 @@
 import { apiJson } from '@876/core/api'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 type Context = { params: Promise<{ id: string }> }
@@ -22,7 +22,7 @@ export async function POST(
   const { id } = await context.params
   const body = (await request.json()) as Body
 
-  const result = await $876.devices.update(id, {
+  const result = await platform.devices.update(id, {
     label: body.label,
     trusted: body.trusted,
     blocked: body.blocked,

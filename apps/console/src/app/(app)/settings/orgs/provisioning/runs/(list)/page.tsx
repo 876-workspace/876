@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
 import { ProvisioningNav } from '../../_components/provisioning-nav'
@@ -45,7 +45,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
   const appId = query.app_id?.trim() || undefined
   const organizationId = query.organization_id?.trim() || undefined
   const [runsResult, appsResult, organizationsResult] = await Promise.all([
-    $876.provisioning.runs.list({
+    workspace.provisioning.runs.list({
       status,
       appId,
       organizationId,

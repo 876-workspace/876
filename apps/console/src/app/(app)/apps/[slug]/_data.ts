@@ -1,7 +1,7 @@
 import type { AdminSubscription } from '@876/admin'
 import { cache } from 'react'
 
-import { $876, coreAdmin } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { listConsoleApps } from '@/lib/apps-catalog'
 
 export const resolveApp = cache(async (slug: string) => {
@@ -53,7 +53,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   const organizationIds = [
     ...new Set(summaries.map((subscription) => subscription.organization_id)),
   ]
-  const hydratedResult = await coreAdmin.organizations.subscriptions.list({
+  const hydratedResult = await workspace.apps.entitlements.list({
     organizationIds,
   })
 

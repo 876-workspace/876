@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 import { ProvisioningNav } from './_components/provisioning-nav'
 
@@ -27,8 +27,8 @@ export default function FinanceProvisioningPage() {
 
 async function FinanceProvisioningData() {
   const [catalogResult, manifestResult] = await Promise.all([
-    $876.provisioning.retrieveCatalog('finance', 'shared'),
-    $876.provisioning.retrieve('finance', 'shared'),
+    workspace.provisioning.catalog.retrieve('finance', 'shared'),
+    workspace.provisioning.draft.retrieve('finance', 'shared'),
   ])
   if (catalogResult.error || !catalogResult.data)
     throw new Error(

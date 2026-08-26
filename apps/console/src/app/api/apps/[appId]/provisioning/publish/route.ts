@@ -1,6 +1,6 @@
 import { apiJson } from '@876/core/api'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -10,7 +10,7 @@ export async function POST(_request: Request, context: Context) {
   const { response } = await requireConsolePermission('console:apps')
   if (response) return response
   const { appId } = await context.params
-  const result = await $876.provisioning.publish('application', appId)
+  const result = await workspace.provisioning.draft.publish('application', appId)
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'Failed to publish provisioning.' },

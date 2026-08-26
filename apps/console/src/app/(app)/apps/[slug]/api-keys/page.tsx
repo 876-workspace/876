@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { resolveApp } from '../_data'
 import { ApiKeysTable } from './_components/api-keys-table'
 import { CreateApiKeyDialog } from './_components/create-api-key-dialog'
@@ -25,7 +25,7 @@ export default async function AppApiKeysPage({ params, searchParams }: Props) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const { data } = await $876.apiKeys.list(app.id, {
+  const { data } = await platform.apiKeys.list(app.id, {
     limit: 25,
     startingAfter: after,
     endingBefore: before,

@@ -13,10 +13,7 @@ import type {
   OrganizationRow,
   UserRow,
 } from './organization-bootstrap.repository'
-import {
-  ensureOrgAppsFinanceReady,
-  provisionOrganization,
-} from './provisioning'
+import { workspace } from './workspace'
 
 const log = getLogger('organization-bootstrap')
 
@@ -73,24 +70,30 @@ export type OrganizationBootstrapRepository = {
   }): Promise<MembershipRow>
 }
 
-export type ProvisionOrganizationFn = (
-  organizationId: string,
-  now: number,
-  options?: { sourceAppId?: string | null; deferFinanceReadiness?: boolean }
-) => Promise<Record<string, { id: string }>>
-
 /**
- * Run the finance-workspace readiness pass for an org's provisioned apps. Split
- * out from {@link ProvisionOrganizationFn} so bootstrap can establish the
- * durable owner membership *before* crossing this barrier.
+ * The organization-workspace control plane, narrowed to what bootstrap needs.
+ *
+ * `setup` is split from `finance.ensure` so bootstrap can establish the durable
+ * owner membership *before* crossing the finance barrier.
  */
-export type EnsureOrgFinanceReadyFn = (organizationId: string) => Promise<void>
+export type OrganizationBootstrapWorkspace = {
+  setup(
+    organizationId: string,
+    options?: {
+      sourceAppId?: string | null
+      finance?: 'ready' | 'defer'
+      now?: number
+    }
+  ): Promise<Record<string, { id: string }>>
+  finance: {
+    ensure(params: { organizationId: string }): Promise<unknown>
+  }
+}
 
 export type OrganizationBootstrapDeps = {
   provider: OrganizationBootstrapProvider
   repository: OrganizationBootstrapRepository
-  provisionOrganization: ProvisionOrganizationFn
-  ensureOrgFinanceReady: EnsureOrgFinanceReadyFn
+  workspace: OrganizationBootstrapWorkspace
 }
 
 // ---------------------------------------------------------------------------
@@ -147,9 +150,7 @@ async function resolveSlug(
 ): Promise<string> {
   const explicitSlug = slug?.trim() ?? ''
 
-  if (!explicitSlug) {
-    return generateUniqueOrgSlug(repository, name)
-  }
+  if (!explicitSlug) return generateUniqueOrgSlug(repository, name)
 
   if (
     explicitSlug.length < 3 ||
@@ -268,14 +269,13 @@ export async function bootstrapExistingUser(
       updatedAt: nowBigint,
     })
 
-    // Provision the durable identity first — roles and subscription rows — but
-    // defer the finance-workspace barrier. A finance outage must not be able to
-    // interrupt bootstrap before the owner membership exists, or the org
-    // survives (PR #308 stopped compensating it) while `memberships.listRouting`
-    // cannot find it, and the next onboarding attempt creates a *second* org.
-    const orgRoles = await deps.provisionOrganization(organization.id, now, {
+    // Prepare the durable workspace first, but defer the finance barrier until
+    // the owner membership exists. A finance outage must not strand an org that
+    // its owner cannot route back to on retry.
+    const orgRoles = await deps.workspace.setup(organization.id, {
       sourceAppId: params.sourceAppId ?? null,
-      deferFinanceReadiness: true,
+      finance: 'defer',
+      now,
     })
     const ownerRole = (orgRoles as Record<string, { id: string } | undefined>)[
       OWNER_ROLE_NAME
@@ -293,11 +293,9 @@ export async function bootstrapExistingUser(
       updatedAt: nowBigint,
     })
 
-    // The owner membership now exists, so the org is discoverable on retry even
-    // if this barrier throws. A `finance-workspace-unavailable` failure is
-    // preserved (not compensated) by the catch below, and the next activation
-    // reuses this same org and re-runs readiness to completion.
-    await deps.ensureOrgFinanceReady(organization.id)
+    // The durable workspace identity now exists, so finish the shared finance
+    // readiness barrier. A failure is preserved for an idempotent retry.
+    await deps.workspace.finance.ensure({ organizationId: organization.id })
 
     return organization
   } catch (error) {
@@ -305,9 +303,8 @@ export async function bootstrapExistingUser(
       error instanceof AppHttpError &&
       (error as AppHttpError).code ===
         'provisioning/finance-workspace-unavailable'
-    if (isFinanceUnavailable) {
-      throw error
-    }
+    if (isFinanceUnavailable) throw error
+
     if (workosOrganizationId !== null) {
       try {
         await deps.provider.deleteOrganization(workosOrganizationId)
@@ -380,7 +377,7 @@ function requireProviderId(
 
 /**
  * The dependency set wired to the real repository, WorkOS adapter, and the
- * ported provisioning service.
+ * workspace control plane.
  *
  * Built per call rather than cached at module scope: `getSettings()` is
  * resolved once at boot, but a test that reconfigures it must not be handed a
@@ -405,9 +402,6 @@ export function createOrganizationBootstrapDeps(): OrganizationBootstrapDeps {
         workos.deleteOrganization(organizationId),
     },
     repository,
-    provisionOrganization: (organizationId, now, options) =>
-      provisionOrganization(organizationId, now, options),
-    ensureOrgFinanceReady: (organizationId) =>
-      ensureOrgAppsFinanceReady(organizationId),
+    workspace,
   }
 }

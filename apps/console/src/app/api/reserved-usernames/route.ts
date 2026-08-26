@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -10,7 +10,7 @@ export async function GET(): Promise<Response> {
   const { response } = await requireConsolePermission('console:settings')
   if (response) return response
 
-  const { data, error } = await $876.reservedUsernames.list()
+  const { data, error } = await platform.reservedUsernames.list()
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to load reserved usernames.' },
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     return apiJson({ error: 'username is required.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.reservedUsernames.create({
+  const { data, error } = await platform.reservedUsernames.create({
     username: body.username.trim(),
     reason: typeof body.reason === 'string' ? body.reason.trim() || null : null,
   })

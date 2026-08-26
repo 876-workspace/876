@@ -10,7 +10,7 @@ import {
   ensureProviderMembership,
   updateProviderMembershipRole,
 } from '@/services/identity-sync'
-import { assignMemberApps, linkMembershipRole } from '@/services/provisioning'
+import { workspace } from '@/services/workspace'
 
 import * as repository from './memberships.repository'
 import type { MembershipDeleteOptions } from './memberships.repository'
@@ -131,7 +131,7 @@ export async function createMembership(
     updatedAt: BigInt(now),
   })
 
-  await linkMembershipRole(
+  await workspace.roles.link(
     {
       id: membership.id,
       organizationId: membership.organizationId,
@@ -140,13 +140,12 @@ export async function createMembership(
     },
     now
   )
-  if (membership.status === 'active') {
-    await assignMemberApps({
+  if (membership.status === 'active')
+    await workspace.apps.assign({
       organizationId: body.organization_id,
       userId: body.user_id,
       now,
     })
-  }
 
   log.info(
     {
@@ -158,7 +157,7 @@ export async function createMembership(
     'memberships.create'
   )
 
-  // linkMembershipRole may have populated roleId after the create returned.
+  // Role linking may have populated roleId after the create returned.
   return serializeMembership(await requireMembership(membership.id))
 }
 
@@ -229,8 +228,8 @@ export async function updateMembership(
       httpStatus: 404,
     })
 
-  if (body.role !== undefined && body.role !== null) {
-    await linkMembershipRole(
+  if (body.role !== undefined && body.role !== null)
+    await workspace.roles.link(
       {
         id: updated.id,
         organizationId: updated.organizationId,
@@ -239,7 +238,6 @@ export async function updateMembership(
       },
       now
     )
-  }
 
   log.info(
     {
@@ -253,7 +251,7 @@ export async function updateMembership(
   )
 
   // Role linking is a separate repository write; refetch so the response never
-  // exposes a stale roleId from before linkMembershipRole ran.
+  // exposes a stale roleId from before the workspace role link ran.
   return serializeMembership(await requireMembership(membershipId))
 }
 
@@ -327,7 +325,7 @@ export async function upsertMembershipFromWorkos(params: {
       status: params.status,
       updatedAt: BigInt(now),
     })
-    await linkMembershipRole(
+    await workspace.roles.link(
       {
         id: existing.id,
         organizationId: existing.organizationId,
@@ -336,13 +334,12 @@ export async function upsertMembershipFromWorkos(params: {
       },
       now
     )
-    if (params.status === 'active') {
-      await assignMemberApps({
+    if (params.status === 'active')
+      await workspace.apps.assign({
         organizationId: existing.organizationId,
         userId: existing.userId,
         now,
       })
-    }
     return 'updated'
   }
 
@@ -359,7 +356,7 @@ export async function upsertMembershipFromWorkos(params: {
     createdAt: BigInt(now),
     updatedAt: BigInt(now),
   })
-  await linkMembershipRole(
+  await workspace.roles.link(
     {
       id: created.id,
       organizationId: created.organizationId,
@@ -368,13 +365,12 @@ export async function upsertMembershipFromWorkos(params: {
     },
     now
   )
-  if (created.status === 'active') {
-    await assignMemberApps({
+  if (created.status === 'active')
+    await workspace.apps.assign({
       organizationId: created.organizationId,
       userId: created.userId,
       now,
     })
-  }
   return 'created'
 }
 

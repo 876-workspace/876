@@ -1,5 +1,10 @@
 import 'server-only'
-import { createConsoleClient, type Console876Client } from './composers/console'
+import {
+  createConsoleClient,
+  createConsoleSurfaces,
+  type Console876Client,
+  type ConsoleSurfaces,
+} from './composers/console'
 import {
   createCouriersClient,
   type Couriers876Client,
@@ -18,6 +23,9 @@ import type {
   PlatformServerClientOptions,
   ServerClientOptions,
 } from './internal/types'
+
+export { createConsoleSurfaces }
+export type { ConsoleSurfaces }
 
 export function create876ServerClient(
   options: ConsoleServerClientOptions

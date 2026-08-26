@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -15,7 +15,11 @@ export async function POST(request: NextRequest) {
       { error: 'Invalid finance provisioning draft.' },
       { status: 400 }
     )
-  const result = await $876.provisioning.validate('finance', 'shared', body)
+  const result = await workspace.provisioning.draft.validate(
+    'finance',
+    'shared',
+    body
+  )
   if (result.error || !result.data)
     return apiJson(
       {

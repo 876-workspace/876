@@ -60,7 +60,7 @@ describe('Console product API boundary', () => {
     const source = readFileSync(join(APP_ROOT, 'src/lib/876/index.ts'), 'utf8')
 
     expect(source).toContain('createConsole876Client')
-    expect(source).toContain('create876ServerClient')
+    expect(source).toContain('createConsoleSurfaces')
     expect(source).toContain('createBillingAdminClient')
     expect(source).toContain('create876BillingIntegrationClient')
     expect(source).toContain('createWidgetsAdminClient')

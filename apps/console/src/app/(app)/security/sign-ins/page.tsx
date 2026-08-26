@@ -9,11 +9,11 @@ import {
   TableRow,
 } from '@876/ui/table'
 import { Badge } from '@876/ui/badge'
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 
 export const metadata = { title: 'Sign-ins' }
 export default async function SignInsPage() {
-  const result = await $876.authAttempts.list({ limit: 50 })
+  const result = await platform.authAttempts.list({ limit: 50 })
   if (result.error) throw new Error(result.error.message)
   return (
     <Page>

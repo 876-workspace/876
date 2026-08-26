@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { resolveFeature } from '../../../../features/[id]/_data'
 import { resolveApp } from '../../_data'
 import { FeatureChildrenPanel } from './_components/feature-children-panel'
@@ -40,7 +40,7 @@ async function AppFeatureDetailData({ params }: Props) {
   ])
   if (!app || !feature || feature.app_id !== app.id) notFound()
 
-  const { data: appFeaturesData } = await $876.appFeatures.list(app.id, {
+  const { data: appFeaturesData } = await platform.appFeatures.list(app.id, {
     limit: 100,
   })
   const childFeatures =

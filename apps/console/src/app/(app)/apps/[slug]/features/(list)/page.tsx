@@ -12,7 +12,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { resolveApp } from '../../_data'
 import { AppFeaturesTable } from '../_components/features-table'
 import { Suspense } from 'react'
@@ -70,7 +70,7 @@ async function FeaturesTableData({
       endingBefore: query ? undefined : before,
     }),
     app.app_kind === 'product'
-      ? $876.modules.list(app.id, { includeArchived: false })
+      ? workspace.modules.list(app.id, { includeArchived: false })
       : Promise.resolve({ data: null, error: null }),
   ])
 

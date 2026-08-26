@@ -11,7 +11,7 @@ import {
 import { Building2 } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isOrgStatus } from '@/lib/org-status'
@@ -92,7 +92,7 @@ async function OrganizationsTableData({
   const orgIds = orgs.map((o) => o.id)
   const subscriptionsMap: Record<string, AdminSubscription[]> = {}
   if (orgIds.length > 0) {
-    const batchResult = await $876.organizations.admin.subscriptions.list({
+    const batchResult = await workspace.apps.entitlements.list({
       organizationIds: orgIds,
     })
     if (batchResult.data?.data) {

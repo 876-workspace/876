@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -11,7 +11,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   const { response } = await requireConsolePermission('console:apps')
   if (response) return response
   const { appId, noteId } = await context.params
-  const result = await $876.provisioning.notes.delete(
+  const result = await workspace.provisioning.notes.delete(
     'application',
     appId,
     noteId

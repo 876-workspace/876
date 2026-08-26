@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export async function POST(
   if (response) return response
 
   const { appId, keyId } = await params
-  const { data, error } = await $876.apiKeys.revoke(appId, keyId)
+  const { data, error } = await platform.apiKeys.revoke(appId, keyId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to revoke API key.' },

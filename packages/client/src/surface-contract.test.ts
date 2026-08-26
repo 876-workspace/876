@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('server-only', () => ({}))
 
 import { create876Client } from './index.ts'
-import { create876ServerClient } from './server.ts'
+import { create876ServerClient, createConsoleSurfaces } from './server.ts'
 import {
   KNOWN_COLLISIONS,
   RESOURCE_MANIFEST,
@@ -141,19 +141,52 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     expect($876.sessions.revokeForUser).toBeTypeOf('function')
   })
 
-  it('exposes provisioning nested aliases on console', () => {
-    const $876 = create876ServerClient(consoleOptions())
-    expect($876.provisioning.retrieve).toBeTypeOf('function')
-    expect($876.provisioning.published.retrieve).toBeTypeOf('function')
-    expect($876.provisioning.catalog.retrieve).toBeTypeOf('function')
-    expect($876.provisioning.draft.update).toBeTypeOf('function')
-    expect($876.provisioning.runs.claim).toBeTypeOf('function')
-    expect($876.provisioning.runs.complete).toBeTypeOf('function')
-    expect($876.provisioning.retrievePublished).toBeTypeOf('function')
-    expect($876.provisioning.retrieveCatalog).toBeTypeOf('function')
-    expect($876.provisioning.replaceDraft).toBeTypeOf('function')
-    expect($876.provisioning.runs.claimApplication).toBeTypeOf('function')
-    expect($876.provisioning.runs.completeApplication).toBeTypeOf('function')
+  it('separates resource, workspace, and operator control planes on console', () => {
+    const { $876, workspace, platform } =
+      createConsoleSurfaces(consoleOptions())
+
+    for (const controlOnly of [
+      'provisioning',
+      'onboarding',
+      'modules',
+      'organizationFeatures',
+      'apiKeys',
+      'authAttempts',
+      'devices',
+      'appFeatures',
+      'reservedUsernames',
+    ])
+      expect(has($876, controlOnly), `$876.${controlOnly}`).toBe(false)
+
+    expect(workspace.provisioning.published.retrieve).toBeTypeOf('function')
+    expect(workspace.provisioning.catalog.retrieve).toBeTypeOf('function')
+    expect(workspace.provisioning.draft.retrieve).toBeTypeOf('function')
+    expect(workspace.provisioning.draft.update).toBeTypeOf('function')
+    expect(workspace.provisioning.draft.validate).toBeTypeOf('function')
+    expect(workspace.provisioning.draft.publish).toBeTypeOf('function')
+    expect(workspace.provisioning.runs.claim).toBeTypeOf('function')
+    expect(workspace.provisioning.runs.complete).toBeTypeOf('function')
+    expect(workspace.onboarding.retrieve).toBeTypeOf('function')
+    expect(workspace.modules.list).toBeTypeOf('function')
+    expect(workspace.features.grant).toBeTypeOf('function')
+    expect(workspace.apps.list).toBeTypeOf('function')
+    expect(workspace.apps.assign).toBeTypeOf('function')
+    expect(workspace.apps.unassign).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.list).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.retrieve).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.grant).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.update).toBeTypeOf('function')
+
+    // Org-to-app entitlement administration has exactly one path. Billing's
+    // own subscription records are a different resource and stay on `$876`.
+    expect(has($876.organizations.admin, 'subscriptions')).toBe(false)
+    expect($876.subscriptions.admin.retrieve).toBeTypeOf('function')
+
+    expect(platform.apiKeys.create).toBeTypeOf('function')
+    expect(platform.authAttempts.list).toBeTypeOf('function')
+    expect(platform.devices.retrieve).toBeTypeOf('function')
+    expect(platform.appFeatures.list).toBeTypeOf('function')
+    expect(platform.reservedUsernames.list).toBeTypeOf('function')
   })
 })
 
@@ -198,6 +231,8 @@ describe('browser surface never leaks server-only resources', () => {
       'billing',
       'couriers',
       'admin',
+      'workspace',
+      'platform',
     ]) {
       expect(has(browser, forbidden), `browser.${forbidden}`).toBe(false)
     }
@@ -272,7 +307,7 @@ describe('facade delegation parity', () => {
     expect(revokeSession).toHaveBeenCalledWith('session_123')
   })
 
-  it('provisioning aliases delegate and admin session compatibility preserves references', async () => {
+  it('control-plane aliases delegate while admin session compatibility stays intact', async () => {
     const retrieve = vi.fn()
     const retrievePublished = vi.fn()
     const retrieveCatalog = vi.fn()
@@ -313,7 +348,9 @@ describe('facade delegation parity', () => {
     const listSessions = vi.fn()
     const revokeSession = vi.fn()
     const { createCoreSurface } = await import('./composers/base.ts')
-    const platform: any = {
+    const { createWorkspaceControlPlane, createPlatformControlPlane } =
+      await import('./composers/control-planes.ts')
+    const platformClient: any = {
       auth: { getSession, me: { listSessions, revokeSession } },
       oauth: {},
       oauthGrants: {},
@@ -343,9 +380,13 @@ describe('facade delegation parity', () => {
       revoke: vi.fn(),
       revokeForUser: vi.fn(),
     }
+    const assignmentCreate = vi.fn()
+    const assignmentRevoke = vi.fn()
+    const apiKeyCreate = vi.fn()
+    const entitlementGrant = vi.fn()
     const admin: any = {
       auditEvents: {},
-      apiKeys: {},
+      apiKeys: { create: apiKeyCreate },
       modules: {},
       provisioning,
       onboarding: {},
@@ -363,14 +404,30 @@ describe('facade delegation parity', () => {
       calls: {},
       phoneLookups: {},
       users: {},
-      organizations: {},
+      organizations: {
+        subscriptions: {
+          list: vi.fn(),
+          retrieve: vi.fn(),
+          create: entitlementGrant,
+          update: vi.fn(),
+        },
+      },
       apps: {},
       memberships: {},
       features: {},
       subscriptions: {},
       roles: {},
+      organizationMembers: {},
+      appAssignments: {
+        list: vi.fn(),
+        create: assignmentCreate,
+        revoke: assignmentRevoke,
+      },
+      invites: {},
     }
-    const core = createCoreSurface({ platform, admin }) as any
+    const core = createCoreSurface({ platform: platformClient, admin }) as any
+    const workspace = createWorkspaceControlPlane(admin)
+    const platform = createPlatformControlPlane(admin)
 
     expect(core.sessions.list).toBe(adminSessions.list)
     expect(core.sessions.retrieve).toBe(adminSessions.retrieve)
@@ -386,15 +443,18 @@ describe('facade delegation parity', () => {
     expect(core.sessions.me.list).toBe(listSessions)
     expect(core.sessions.me.revoke).toBe(revokeSession)
 
-    await core.provisioning.published.retrieve('application', 'app_123')
+    expect(has(core, 'provisioning')).toBe(false)
+    expect(has(core, 'apiKeys')).toBe(false)
+
+    await workspace.provisioning.published.retrieve('application', 'app_123')
     expect(retrievePublished).toHaveBeenCalledTimes(1)
     expect(retrievePublished).toHaveBeenCalledWith('application', 'app_123')
 
-    await core.provisioning.catalog.retrieve('application', 'app_123')
+    await workspace.provisioning.catalog.retrieve('application', 'app_123')
     expect(retrieveCatalog).toHaveBeenCalledTimes(1)
     expect(retrieveCatalog).toHaveBeenCalledWith('application', 'app_123')
 
-    await core.provisioning.draft.update('application', 'app_123', {
+    await workspace.provisioning.draft.update('application', 'app_123', {
       foo: 'bar',
     } as any)
     expect(replaceDraft).toHaveBeenCalledTimes(1)
@@ -402,7 +462,7 @@ describe('facade delegation parity', () => {
       foo: 'bar',
     })
 
-    await core.provisioning.runs.claim({
+    await workspace.provisioning.runs.claim({
       organizationId: 'org_1',
       appId: 'app_1',
     } as any)
@@ -412,7 +472,7 @@ describe('facade delegation parity', () => {
       appId: 'app_1',
     })
 
-    await core.provisioning.runs.complete('run_123', {
+    await workspace.provisioning.runs.complete('run_123', {
       status: 'succeeded',
     } as any)
     expect(completeApplication).toHaveBeenCalledTimes(1)
@@ -420,10 +480,10 @@ describe('facade delegation parity', () => {
       status: 'succeeded',
     })
 
-    expect(core.provisioning.retrievePublished).toBe(retrievePublished)
-    expect(core.provisioning.retrieveCatalog).toBe(retrieveCatalog)
-    expect(core.provisioning.replaceDraft).toBe(replaceDraft)
-    expect(core.provisioning.runs.claimApplication).toBe(claimApplication)
-    expect(core.provisioning.runs.completeApplication).toBe(completeApplication)
+    expect(workspace.apps.assign).toBe(assignmentCreate)
+    expect(workspace.apps.unassign).toBe(assignmentRevoke)
+    expect(workspace.apps.entitlements.grant).toBe(entitlementGrant)
+    expect(has(core.organizations.admin, 'subscriptions')).toBe(false)
+    expect(platform.apiKeys.create).toBe(apiKeyCreate)
   })
 })

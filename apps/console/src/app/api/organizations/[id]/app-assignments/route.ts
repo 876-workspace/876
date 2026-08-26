@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -22,7 +22,7 @@ export async function GET(
   const appId = searchParams.get('app_id') ?? undefined
   const includeRevoked = searchParams.get('include_revoked') === 'true'
 
-  const { data, error } = await $876.appAssignments.admin.list(id, {
+  const { data, error } = await workspace.apps.list(id, {
     userId,
     appId,
     includeRevoked,
@@ -66,7 +66,7 @@ export async function POST(
     )
   }
 
-  const { data, error } = await $876.appAssignments.admin.create(id, {
+  const { data, error } = await workspace.apps.assign(id, {
     user_id: userId,
     ...(appId ? { app_id: appId } : { app_slug: appSlug }),
   })
