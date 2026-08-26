@@ -5,7 +5,9 @@ preserve while it replaces the Next.js implementation.
 
 - `openapi.json` is the serialized public OpenAPI document.
 - `route-manifest.json` inventories every versioned tenant, integration, and
-  administration route implemented by the legacy service. It records exported
+  administration route implemented by the legacy service, plus the endpoints
+  added after it that only ever existed in `@876/billing-api` (payment methods
+  and payment intents); each entry's `source` says which it is. It records exported
   methods, authorization tiers, declared permissions and integration scopes,
   and explicitly declared HTTP status codes.
 
