@@ -22,7 +22,7 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 const AUTH_TOKEN = 'test-twilio-auth-token'
 const BASE_URL = 'https://api.876.test'

@@ -242,7 +242,7 @@ vi.mock('@/providers/workos/adapter', () => ({
   })),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 const APP_KEY = '876_app_secret_kQ8vN2xLpR7wT4mB'
 const ADMIN = {

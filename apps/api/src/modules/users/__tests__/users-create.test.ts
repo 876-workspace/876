@@ -42,7 +42,7 @@ vi.mock('@/modules/users/users.service', () => usersService)
 vi.mock('@/providers/workos/adapter', () => ({ getAuthProvider }))
 vi.mock('@/services/identity-sync', () => ({ deleteProviderUser }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 const APP_KEY = '876_app_secret_kQ8vN2xLpR7wT4mB'
 const ADMIN_HEADERS = {

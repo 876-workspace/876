@@ -33,7 +33,7 @@ function appHarness(executionOrder?: string[]) {
   const createAppMock = vi.fn(() => {
     executionOrder?.push('createApp')
     return { listen: listenMock }
-  }) as unknown as typeof import('../app').createApp
+  }) as unknown as typeof import('../application').createApp
 
   return { closeMock, listenMock, createAppMock }
 }

@@ -35,7 +35,7 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 const APP_KEY = '876_app_secret_kQ8vN2xLpR7wT4mB'
 const KEY_ONLY = { 'X-876-API-Key': APP_KEY }
