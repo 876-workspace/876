@@ -15,8 +15,8 @@ import { createBillingCustomerSyncRepository } from './billing-customer-sync.rep
  * assignments.
  *
  * 1. When an organization is created — by business registration, the admin API,
- *    or a product-app onboarding flow — it is provisioned with its default role
- *    set and an active subscription to the default apps.
+ *    or a product-app onboarding flow — it receives its default role set, the
+ *    Enterprise entitlement, and its independent financial registry record.
  * 2. When a member joins — creation, invite accept, or SSO — their membership
  *    is linked to the org role matching their role name, and they are assigned
  *    the Enterprise app plus the source app when they arrived through one.
@@ -35,22 +35,18 @@ const log = getLogger('provisioning')
 export const ENTERPRISE_APP_SLUG = '876-enterprise'
 
 /**
- * Billing is the organization's financial plane — invoices, payment methods and
- * the customer registry all hang off it — so an org has it from the moment it
- * exists, the way a Google account reaches Drive without a separate sign-up.
- * Heavier surfaces stay behind explicit setup.
+ * The slug of the standalone Billing application, which an organization
+ * activates deliberately. Its customer registry record and embedded-finance
+ * workspaces stay automatic without granting access to the Billing application.
  */
 export const BILLING_APP_SLUG = '876-billing'
 
 /** Provisioned for every new organization, wherever it signed up. */
-export const DEFAULT_ORG_APP_SLUGS = [
-  ENTERPRISE_APP_SLUG,
-  BILLING_APP_SLUG,
-] as const
+export const DEFAULT_ORG_APP_SLUGS = [ENTERPRISE_APP_SLUG] as const
 
 /**
- * Called once an organization has been provisioned, so the billing registry
- * learns about it.
+ * Called once an organization has been provisioned so the shared customer
+ * registry learns about it, independently of Billing application entitlements.
  *
  * Injected rather than imported so provisioning does not depend on the billing
  * customer sync — the two are ported independently, and a service that reaches
@@ -63,8 +59,10 @@ export type EnqueueCustomerEnsure = (
 
 /**
  * The default `customer.ensure` enqueue used by every org-creation path (admin
- * create, business signup, product-app onboarding), so a new org lands in the
- * Billing registry at creation rather than only on the reconcile sweep.
+ * create, business signup, product-app onboarding), so every new org lands in
+ * the shared Billing registry at creation rather than only on the reconcile
+ * sweep. This is deliberately independent of the Billing application
+ * entitlement.
  *
  * Best-effort: a failure is logged, never raised — an org must be creatable even
  * when the billing outbox write hiccups, and the reconcile sweep re-ensures any
