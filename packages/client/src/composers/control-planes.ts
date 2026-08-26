@@ -37,7 +37,7 @@ function createProvisioningSurface(
  */
 export function createWorkspaceControlPlane(admin: Admin876Client) {
   return {
-    setup: admin.onboarding,
+    onboarding: admin.onboarding,
     apps: {
       assignments: admin.appAssignments,
       entitlements: admin.organizations.subscriptions,
