@@ -7,6 +7,7 @@ import type {
 } from '../../types/customer.js'
 import * as tenants from '../tenants/tenants.service.js'
 
+import { crmError } from '../../http/errors.js'
 import * as repository from './customers.repository.js'
 
 function finance() {
@@ -26,8 +27,8 @@ type FinanceCustomer = NonNullable<
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw new Error('CRM tenant not found.')
-  if (tenant.status !== 'ACTIVE') throw new Error('CRM tenant is not active.')
+  if (!tenant) throw crmError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
   return tenant
 }
 
@@ -83,7 +84,8 @@ export async function list(organizationId: string) {
     ids: profiles.map((profile) => profile.billingCustomerId),
     limit: Math.min(profiles.length, 100),
   })
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    throw crmError('crm/registry-unavailable', result.error.message)
 
   const byId = new Map(
     result.data.data.map((customer) => [customer.id, customer])
@@ -103,7 +105,8 @@ export async function retrieve(organizationId: string, id: string) {
     ids: [profile.billingCustomerId],
     limit: 1,
   })
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    throw crmError('crm/registry-unavailable', result.error.message)
 
   return compose(profile, result.data.data[0] ?? null)
 }
@@ -129,7 +132,8 @@ export async function create(
     },
     { idempotencyKey: key }
   )
-  if (shared.error) throw new Error(shared.error.message)
+  if (shared.error)
+    throw crmError('crm/registry-unavailable', shared.error.message)
 
   const profile = await repository.create({
     tenantId: tenant.id,
@@ -162,7 +166,8 @@ export async function update(
         phone: input.phone ?? null,
       }
     )
-    if (shared.error) throw new Error(shared.error.message)
+    if (shared.error)
+      throw crmError('crm/registry-unavailable', shared.error.message)
     customer = shared.data
   }
 

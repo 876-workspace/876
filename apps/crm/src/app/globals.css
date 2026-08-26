@@ -1,11 +1,33 @@
-@import 'tailwindcss';
+@import '@876/ui/styles.css';
 @import '@876/ui/876.css';
 
+/* App-local content sources so Tailwind generates every utility used here. */
+@source '../';
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CRM-specific overrides only — everything else comes from 876.css.
+   ───────────────────────────────────────────────────────────────────────── */
 :root {
-  color-scheme: light dark;
+  /* Soften Tailwind's blue-700/800 to the 876 brand blue — makes the "info"
+     variant Add buttons match the shell accent (same as Console/Couriers). */
+  --color-blue-700: var(--876-blue);
+  --color-blue-800: color-mix(in oklab, var(--876-blue) 82%, black);
+  /* Sidebar nav active state — 876 blue, scoped to nav only. */
+  --876-nav-active-bg: color-mix(in oklab, var(--876-blue) 11%, transparent);
+  --876-nav-active-bg-hover: color-mix(
+    in oklab,
+    var(--876-blue) 15%,
+    transparent
+  );
+  --876-nav-active-fg: oklch(0.38 0.18 255);
 }
 
-html,
-body {
-  min-height: 100%;
+.dark {
+  --876-nav-active-bg: color-mix(in oklab, var(--876-blue) 20%, transparent);
+  --876-nav-active-bg-hover: color-mix(
+    in oklab,
+    var(--876-blue) 26%,
+    transparent
+  );
+  --876-nav-active-fg: oklch(0.82 0.12 255);
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { Monitor, Moon, Sun } from '../icons'
-import { useTheme } from 'next-themes'
+import { useTheme } from './theme'
 import { useSyncExternalStore } from 'react'
 
 import { cn } from '../lib/utils'

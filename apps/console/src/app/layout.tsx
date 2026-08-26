@@ -6,6 +6,7 @@ import { Toaster } from '@876/ui/sonner'
 import { ThemeProvider } from '@/components/providers/providers'
 import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 import './globals.css'
+import { ThemeScript } from '@876/ui/theme-script'
 
 const APP_NAME = '876 Console'
 const APP_DESCRIPTION =
@@ -54,6 +55,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>{children}</ThemeProvider>
         <ServiceWorkerRegistration />
