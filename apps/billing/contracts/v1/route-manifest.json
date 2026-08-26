@@ -1,5 +1,5 @@
 {
-  "generated_from": "src/app/api/{admin,billing}/**/route.ts",
+  "generated_from": "src/app/api/{admin,billing}/**/route.ts, plus post-legacy endpoints owned by apps/billing-api/src/modules/*/**.routes.ts",
   "routes": [
     {
       "operations": [
@@ -1963,6 +1963,151 @@
       ],
       "path": "/vendors",
       "source": "src/app/api/billing/vendors/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:read"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:write"],
+          "declared_scopes": [],
+          "declared_statuses": [201],
+          "method": "POST"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-methods",
+      "source": "apps/billing-api/src/modules/payment-methods/payment-methods.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:read"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:write"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "PATCH"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:write"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-methods/{paymentMethodId}",
+      "source": "apps/billing-api/src/modules/payment-methods/payment-methods.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:write"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-methods/{paymentMethodId}/default",
+      "source": "apps/billing-api/src/modules/payment-methods/payment-methods.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payment_methods:read"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/organizations/{organizationId}/customers/{customerId}/payment-methods",
+      "source": "apps/billing-api/src/modules/payment-methods/payment-methods.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payments:read"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payments:write"],
+          "declared_scopes": [],
+          "declared_statuses": [201],
+          "method": "POST"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-intents",
+      "source": "apps/billing-api/src/modules/payment-intents/payment-intents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payments:read"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-intents/{paymentIntentId}",
+      "source": "apps/billing-api/src/modules/payment-intents/payment-intents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payments:write"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-intents/{paymentIntentId}/confirm",
+      "source": "apps/billing-api/src/modules/payment-intents/payment-intents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payments:write"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-intents/{paymentIntentId}/capture",
+      "source": "apps/billing-api/src/modules/payment-intents/payment-intents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": ["payments:write"],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/organizations/{organizationId}/payment-intents/{paymentIntentId}/cancel",
+      "source": "apps/billing-api/src/modules/payment-intents/payment-intents.routes.ts"
     }
   ],
   "version": 1

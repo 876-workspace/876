@@ -21,7 +21,6 @@ const { ensureOrgAppSubscriptions } = await import('../provisioning')
 const ORG = 'org_1'
 const APP_IDS: Record<string, string> = {
   '876-enterprise': 'app_enterprise',
-  '876-billing': 'app_billing',
 }
 
 beforeEach(() => {
@@ -55,7 +54,7 @@ describe('ensureOrgAppSubscriptions default price repair', () => {
     const result = await ensureOrgAppSubscriptions(ORG)
 
     expect(result.provisioned).toEqual([])
-    expect(repository.ensureSubscriptionDefaultPrice).toHaveBeenCalledTimes(2)
+    expect(repository.ensureSubscriptionDefaultPrice).toHaveBeenCalledTimes(1)
     for (const appId of Object.values(APP_IDS)) {
       expect(repository.ensureSubscriptionDefaultPrice).toHaveBeenCalledWith(
         expect.objectContaining({

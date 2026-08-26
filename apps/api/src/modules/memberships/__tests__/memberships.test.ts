@@ -58,7 +58,7 @@ vi.mock('@/providers/workos/adapter', () => ({
   }),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { ensureProviderMembership } = await import('@/services/identity-sync')
 
 const APP_KEY = '876_app_secret_kQ8vN2xLpR7wT4mB'
@@ -177,7 +177,9 @@ describe('POST /memberships', () => {
       role: 'missing-role',
     })
 
-    expect(res.status).toBe(400)
+    // `role/not-found` is registered at 404, and the registry's status wins
+    // over the one the service passes.
+    expect(res.status).toBe(404)
     expect(res.body.error).toEqual({
       code: 'role/not-found',
       message: 'No role exists with the provided name.',
@@ -249,7 +251,7 @@ describe('POST /organizations/:organization_id/memberships', () => {
       .set(AUTH)
       .send({ user_id: 'user_01', role: 'missing-role', status: 'active' })
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(404)
     expect(res.body.error.code).toBe('role/not-found')
     expect(vi.mocked(ensureProviderMembership)).not.toHaveBeenCalled()
     expect(membership.create).not.toHaveBeenCalled()

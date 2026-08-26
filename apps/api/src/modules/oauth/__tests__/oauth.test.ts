@@ -47,7 +47,7 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { signProviderJwt } = await import('@/platform/jwt')
 
 const INTERNAL = { 'x-internal-key': 'test-internal-key' }

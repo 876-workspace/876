@@ -14,7 +14,7 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 describe('GET /health', () => {
   it('returns the liveness resource', async () => {

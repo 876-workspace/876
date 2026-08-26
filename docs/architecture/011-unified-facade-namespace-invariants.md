@@ -146,8 +146,9 @@ change:
   exchange/BFF assertion rather than widening admin-client fallbacks.
 - **Three Billing relationships** kept as distinct lifecycles: Efesto billing an
   org (platform tenant), the org's own finance workspace, and Billing app
-  entitlement. Verify the default `876-billing` provisioning entitlement's
-  intent before changing it.
+  entitlement. `876-billing` is activated deliberately; it is not a default
+  entitlement. The shared customer registry record and embedded-finance
+  workspaces remain automatic without granting access to the Billing app.
 - **Verify the customer-ensure outbox wiring** survives the TypeScript
   provisioning port end-to-end. Finding from this review: `provisionOrganization`
   accepts an optional `enqueueCustomerEnsure` hook that defaults to a

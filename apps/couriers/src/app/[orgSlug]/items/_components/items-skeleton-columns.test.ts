@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
 
 import { columns } from './items-table'
@@ -8,6 +9,30 @@ import { ITEMS_SKELETON_COLUMNS } from './items-skeleton-columns'
  * to be the table's column set. When the two drift the header visibly rewrites
  * itself as the rows stream in — the flash the skeleton exists to prevent.
  */
+/**
+ * The columns are sortable, so `header` is a render function rather than a
+ * string. Read the title it hands `DataTableColumnHeader` — comparing against
+ * the function itself only ever asserts that both sides are functions.
+ */
+function headerTitles(): string[] {
+  return columns.map((column) => {
+    const header = column.header
+    if (typeof header === 'string') return header
+    if (typeof header !== 'function')
+      throw new Error('A column header must be a string or a render function.')
+
+    const rendered = (header as (context: unknown) => ReactElement)({
+      column: {},
+      header: {},
+      table: {},
+    })
+    const { title } = rendered.props as { title?: string }
+    if (!title) throw new Error('A column header must render a title.')
+
+    return title
+  })
+}
+
 describe('ITEMS_SKELETON_COLUMNS', () => {
   it('mirrors the items table columns, in order', () => {
     expect(ITEMS_SKELETON_COLUMNS.map((column) => column.label)).toEqual([
@@ -20,7 +45,7 @@ describe('ITEMS_SKELETON_COLUMNS', () => {
 
   it('matches the headers the loaded table renders', () => {
     expect(ITEMS_SKELETON_COLUMNS.map((column) => column.label)).toEqual(
-      columns.map((column) => column.header)
+      headerTitles()
     )
   })
 })

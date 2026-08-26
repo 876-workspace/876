@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
@@ -89,11 +88,23 @@ export default async function GetStartedPage() {
     )
   }
 
-  if (context.tenant) redirect('/')
+  if (context.tenant && context.accessStatus === 'active') redirect('/')
+  if (context.accessStatus === 'blocked') redirect('/no-access')
   if (context.role === 'member') redirect('/no-access')
 
   const organizationName = context.orgName ?? 'Your organization'
   const slug = `${context.orgSlug ?? 'billing'}-billing`
+
+  if (context.tenant) {
+    return (
+      <GetStartedCard
+        title="Activate 876 Billing"
+        description="Your organization’s financial data is ready. Activate Billing to open the application."
+      >
+        <SetupButton workspaceExists />
+      </GetStartedCard>
+    )
+  }
 
   // The workspace inherits the organization's single operating currency — it is
   // never chosen again here.
@@ -111,7 +122,7 @@ export default async function GetStartedPage() {
         name={organizationName}
         slug={slug}
         defaultCurrency={currency}
-        workspaceExists={Boolean(context.tenant)}
+        workspaceExists={false}
       />
     </GetStartedCard>
   )

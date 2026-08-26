@@ -1,7 +1,7 @@
 import { apiError, apiSuccess } from '@876/core/api'
 
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
-import { getContext } from '@/lib/auth/billing-context'
+import { canManageBilling, getContext } from '@/lib/auth/billing-context'
 import { getPlatformClient } from '@/lib/876/platform-client'
 
 export const runtime = 'nodejs'
@@ -11,7 +11,7 @@ export async function POST() {
   if (!context) {
     return apiError('Billing workspace access is required.', { status: 401 })
   }
-  if (context.role === 'member') {
+  if (!canManageBilling(context.role)) {
     return apiError('Insufficient Billing permissions.', { status: 403 })
   }
   if (context.accessStatus === 'blocked') {

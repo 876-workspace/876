@@ -19,8 +19,10 @@ describe('Billing API v1 contract baseline', () => {
       0
     )
 
-    expect(routeManifest.routes).toHaveLength(109)
-    expect(operationCount).toBe(187)
+    // 109 legacy Next.js routes / 187 operations, plus the payment-method and
+    // payment-intent surface that only ever existed in @876/billing-api.
+    expect(routeManifest.routes).toHaveLength(118)
+    expect(operationCount).toBe(200)
   })
 
   it('records authorization per operation instead of per route file', () => {

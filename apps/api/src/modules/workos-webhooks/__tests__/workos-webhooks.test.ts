@@ -31,7 +31,7 @@ vi.mock('@/modules/users', async () => {
   }
 })
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 const SECRET = 'test-workos-webhook-secret'
 const NOW = 1_785_000_000

@@ -20,7 +20,7 @@ dependency, and every processor — Stripe, a Caribbean acquirer, a bank, a manu
 cash receipt — is an adapter behind the same interface.**
 
 Stripe is not available in Jamaica, which is why 876 runs its own subscription
-and invoicing engine. Stripe's *object model* is nevertheless the most mature one
+and invoicing engine. Stripe's _object model_ is nevertheless the most mature one
 in the industry, so 876 deliberately mirrors its **shapes, names, statuses, and
 lifecycle transitions** — closely enough that an integrator who knows Stripe (or
 Zoho Billing, which is a subset of the same ideas) can read 876 Billing without a
@@ -38,12 +38,12 @@ Mirroring the model is not the same as adopting the vendor. Concretely:
 
 ## Placement — the financial plane is `apps/billing-api`
 
-| Concern                                                                     | Owner                            |
-| --------------------------------------------------------------------------- | -------------------------------- |
-| Who a user/org is; which app an org is entitled to (`subscriptions` table)  | `apps/api` (core identity)       |
-| Customers, products, prices, subscriptions, invoices, payments, credits, tax | `apps/billing-api`               |
-| Payment methods, credentials, intents, attempts, refunds, disputes, mandates | `apps/billing-api`               |
-| Rendering, admin action, oversight                                          | `apps/console`, `apps/billing`   |
+| Concern                                                                      | Owner                          |
+| ---------------------------------------------------------------------------- | ------------------------------ |
+| Who a user/org is; which app an org is entitled to (`subscriptions` table)   | `apps/api` (core identity)     |
+| Customers, products, prices, subscriptions, invoices, payments, credits, tax | `apps/billing-api`             |
+| Payment methods, credentials, intents, attempts, refunds, disputes, mandates | `apps/billing-api`             |
+| Rendering, admin action, oversight                                           | `apps/console`, `apps/billing` |
 
 Core's `subscriptions` table is an **entitlement** record (org → platform app).
 The money behind it — the customer, the price actually charged, the invoice, the
@@ -51,6 +51,11 @@ payment method — lives in Billing and is referenced from core by opaque id onl
 with no cross-database foreign key. Console resolves both sides through `$876`
 and presents them as one screen; that composition is a Console concern, not a
 schema one.
+
+An organization's finance data plane is automatic: it receives a customer
+registry record, and finance-dependent products can open embedded workspaces.
+An entitlement to the standalone 876 Billing application is not automatic and
+must be activated explicitly.
 
 ## The canonical hierarchy
 
@@ -79,7 +84,7 @@ Every financial movement   ──> Ledger Entry
 
 A **billing account is the payer**: the thing a payment method is attached to,
 the thing an invoice is addressed to, and the thing a subscription is billed
-against. It is emphatically *not* a payment method, and a payment method is not
+against. It is emphatically _not_ a payment method, and a payment method is not
 a smaller billing account.
 
 The model is Google Cloud's, and it is the right one for a platform where one
@@ -123,21 +128,21 @@ Consequences worth stating, because getting them wrong is expensive later:
 
 ## Vocabulary — fixed, do not invent synonyms
 
-| Term                   | Meaning                                                                                     | Never call it                       |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------- |
-| **Product**            | What is provisioned/sold.                                                                   | "plan" in new code                  |
-| **Price**              | How a product is charged: currency, amount, interval, scheme, tiers.                        | "plan", "rate card"                 |
-| **Subscription**       | A customer's recurring agreement. Holds items, never an amount of its own.                  | "plan"                              |
-| **Subscription Item**  | One price on a subscription, with a quantity.                                                | "line"                              |
-| **Invoice**            | A finalized, immutable-by-default demand for money.                                         | "bill" (UI copy may say bill)       |
-| **Payment Intent**     | A stateful attempt to collect a specific amount.                                            | "charge"                            |
-| **Payment**            | The durable record of money actually moving.                                                | "charge", "transaction"             |
-| **Payment Attempt**    | One processor round trip inside an intent. Preserved even after a later attempt succeeds.   | "retry"                             |
-| **Payment Method**     | Reusable, **non-secret** instrument metadata belonging to a customer.                       | "card" (a card is one type)         |
-| **Payment Credential** | The pointer to the secret behind a payment method — a Vault object or a provider token.     | "the card number"                   |
-| **Mandate**            | Recorded customer authorization to charge a method again.                                   | "consent" alone                     |
-| **Provider Reference** | The link between an 876 record and a processor's id for it.                                 | "external id" on the record itself  |
-| **Ledger Entry**       | A double-entry line describing one financial movement.                                      | "transaction"                       |
+| Term                   | Meaning                                                                                   | Never call it                      |
+| ---------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Product**            | What is provisioned/sold.                                                                 | "plan" in new code                 |
+| **Price**              | How a product is charged: currency, amount, interval, scheme, tiers.                      | "plan", "rate card"                |
+| **Subscription**       | A customer's recurring agreement. Holds items, never an amount of its own.                | "plan"                             |
+| **Subscription Item**  | One price on a subscription, with a quantity.                                             | "line"                             |
+| **Invoice**            | A finalized, immutable-by-default demand for money.                                       | "bill" (UI copy may say bill)      |
+| **Payment Intent**     | A stateful attempt to collect a specific amount.                                          | "charge"                           |
+| **Payment**            | The durable record of money actually moving.                                              | "charge", "transaction"            |
+| **Payment Attempt**    | One processor round trip inside an intent. Preserved even after a later attempt succeeds. | "retry"                            |
+| **Payment Method**     | Reusable, **non-secret** instrument metadata belonging to a customer.                     | "card" (a card is one type)        |
+| **Payment Credential** | The pointer to the secret behind a payment method — a Vault object or a provider token.   | "the card number"                  |
+| **Mandate**            | Recorded customer authorization to charge a method again.                                 | "consent" alone                    |
+| **Provider Reference** | The link between an 876 record and a processor's id for it.                               | "external id" on the record itself |
+| **Ledger Entry**       | A double-entry line describing one financial movement.                                    | "transaction"                      |
 
 **Stripe's legacy `Plan` object must not be reproduced.** Product + Price is the
 model. Where a customer-facing tier name is genuinely a marketing concept, it is
@@ -179,7 +184,7 @@ encryption does not lift it.
 
 Therefore: **no schema in this repo may contain a `cvc`, `cvv`, `cid`, `pin`,
 `pin_block`, or `track_data` column, in any table, in any app, ever.** A
-verification *result* (`checks.cvc = "pass"`) is a Tier‑1 value and is fine; the
+verification _result_ (`checks.cvc = "pass"`) is a Tier‑1 value and is fine; the
 digits the cardholder typed are not.
 
 ### And a fourth rule that spans all three

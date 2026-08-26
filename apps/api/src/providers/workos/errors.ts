@@ -43,13 +43,25 @@ export function isWorkOsHttpError(value: unknown): value is WorkOsHttpError {
   return value instanceof WorkOsHttpError
 }
 
-/** WorkOS error code → [platform code, HTTP status]. */
+/**
+ * WorkOS error code → [platform code, fallback HTTP status].
+ *
+ * The status here applies only to a code the shared error registry does not
+ * carry: `AppHttpError` normalizes a registered code to the registry's status,
+ * which is the platform's single source of truth for it.
+ *
+ * The "not found" codes stay deliberately vague as `auth/oauth-failed`: a
+ * sign-in that answered `user/not-found` would confirm which addresses have
+ * accounts. A caller that legitimately needs to know — password recovery — reads
+ * {@link isWorkOsNotFound} instead of the status, because the registry pins
+ * `auth/oauth-failed` at 401 and no 404 ever survives normalization.
+ */
 const CODE_MAP: ReadonlyMap<string, [string, number]> = new Map([
   ['email_address_conflict', ['auth/email-already-exists', 409]],
-  ['email_verification_required', ['auth/email-not-verified', 401]],
+  ['email_verification_required', ['auth/email-not-verified', 403]],
   ['invalid_credentials', ['auth/invalid-credentials', 401]],
   ['password_reset_required', ['auth/invalid-credentials', 401]],
-  ['account_selection_required', ['auth/oauth-failed', 400]],
+  ['account_selection_required', ['auth/oauth-failed', 401]],
   ['organization_not_found', ['auth/oauth-failed', 404]],
   ['membership_not_found', ['auth/oauth-failed', 404]],
   ['user_not_found', ['auth/oauth-failed', 404]],
@@ -79,9 +91,9 @@ const SAFE_MESSAGE_BY_CODE: Readonly<Record<string, string>> = {
 /**
  * Normalize a WorkOS HTTP failure into a platform {@link AppHttpError}.
  *
- * An unmapped code becomes `auth/oauth-failed` at WorkOS's own status, falling
- * back to 502 — an unrecognised provider failure is a bad gateway, not a
- * generic 500, because the fault is upstream.
+ * An unmapped code becomes `auth/oauth-failed`, whose registered status (401)
+ * wins over WorkOS's own. The upstream status is still logged, so an outage is
+ * diagnosable even though the client is told only that authentication failed.
  */
 export function normalizeWorkOsError(error: WorkOsHttpError): AppHttpError {
   const mapped = CODE_MAP.get(error.code)
@@ -110,5 +122,34 @@ export function normalizeWorkOsError(error: WorkOsHttpError): AppHttpError {
     'workos.error_normalized'
   )
 
-  return new AppHttpError({ code: mappedCode, message, httpStatus })
+  // The raw WorkOS failure is carried as the cause: server-only (never part of
+  // toClientError) and the only way a caller can tell the vague
+  // `auth/oauth-failed` cases apart. See isWorkOsNotFound below.
+  return new AppHttpError({
+    code: mappedCode,
+    message,
+    httpStatus,
+    cause: error,
+  })
+}
+
+/** WorkOS codes that mean "the thing you named does not exist". */
+const NOT_FOUND_UPSTREAM_CODES: ReadonlySet<string> = new Set([
+  'organization_not_found',
+  'membership_not_found',
+  'user_not_found',
+])
+
+/**
+ * Whether a normalized error came from a WorkOS "not found" failure.
+ *
+ * Reads the server-only cause rather than the HTTP status, which the shared
+ * error registry pins to `auth/oauth-failed`'s 401. A caller must not infer
+ * this from the client-facing code or status — both are deliberately vague so
+ * an authentication response cannot be used to enumerate accounts.
+ */
+export function isWorkOsNotFound(error: unknown): boolean {
+  if (!(error instanceof AppHttpError)) return false
+  const cause = (error as { cause?: unknown }).cause
+  return isWorkOsHttpError(cause) && NOT_FOUND_UPSTREAM_CODES.has(cause.code)
 }

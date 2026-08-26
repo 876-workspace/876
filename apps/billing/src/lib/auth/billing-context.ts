@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
+import { BILLING_APP_SLUG } from '@/lib/billing-app'
 import { getFeatures } from '@/lib/features'
 import { service } from '@/lib/service'
 import type { Context, OrgRole } from '@/types/auth'
@@ -13,6 +14,34 @@ import type { BillingProductFeature } from '@/types/features'
 import type { Tenant } from '@/types/tenant'
 
 import { getAuthSession, isSignedSession } from './session'
+
+function toAccessStatus(
+  status: string | null | undefined
+): Context['accessStatus'] {
+  if (status === 'active' || status === 'trialing') return 'active'
+  if (status === 'blocked') return 'blocked'
+  return 'none'
+}
+
+async function resolveBillingAccessStatus(
+  platform: Awaited<ReturnType<typeof getPlatformClient>>,
+  organizationId: string
+): Promise<Context['accessStatus']> {
+  try {
+    const subscription = await platform.subscriptions.retrieve({
+      organizationId,
+      appSlug: BILLING_APP_SLUG,
+    })
+    if (subscription.error) return 'none'
+
+    // Only a platform block is restricted access. A canceled or past-due
+    // subscription stays re-activatable by an owner or admin, so it is setup
+    // rather than a blocked state.
+    return toAccessStatus(subscription.data?.status)
+  } catch {
+    return 'none'
+  }
+}
 
 export const getContext = cache(
   async function getContext(): Promise<Context | null> {
@@ -71,9 +100,15 @@ export const getContext = cache(
     const organizationId = selectedMembership.organization.id
     const tenant = tenantByOrganizationId.get(organizationId) ?? null
     const role = normalizeOrgRole(selectedMembership.role)
-    const access = tenant
-      ? await service.members.resolve(tenant.id, session.user.id, role)
-      : null
+    const accessPromise = tenant
+      ? service.members.resolve(tenant.id, session.user.id, role)
+      : Promise.resolve(null)
+    // Workspace membership governs what a user can do inside the workspace;
+    // the platform subscription governs whether the Billing application opens.
+    const [access, accessStatus] = await Promise.all([
+      accessPromise,
+      resolveBillingAccessStatus(platform, organizationId),
+    ])
 
     return {
       userId: session.user.id,
@@ -82,10 +117,7 @@ export const getContext = cache(
       orgSlug: selectedMembership.organization.slug,
       role,
       organizations,
-      // Billing workspaces are provisioned by dependent products such as
-      // Couriers. Platform subscription state must not block enterprise
-      // members from those existing workspaces.
-      accessStatus: 'active',
+      accessStatus,
       tenant,
       access,
       permissions: access?.status === 'ACTIVE' ? access.permissions : [],
