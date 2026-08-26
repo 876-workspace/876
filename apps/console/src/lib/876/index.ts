@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { create876AdminClient } from '@876/admin'
-import { create876ServerClient } from '@876/client/server'
+import { createConsoleSurfaces as composeConsoleSurfaces } from '@876/client/server'
 import { create876AdminClient as createBillingAdminClient } from '@876/billing/admin'
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 import { createWidgetsAdminClient } from '@876/widgets/server/admin'
@@ -31,9 +31,9 @@ function getPlatformAdminOptions(requestId?: string) {
   }
 }
 
-export function createConsole876Client(requestId?: string) {
-  return create876ServerClient({
-    app: 'console',
+function getConsoleOptions(requestId?: string) {
+  return {
+    app: 'console' as const,
     apiKey: process.env.API_876_KEY,
     requestId,
     services: {
@@ -59,10 +59,29 @@ export function createConsole876Client(requestId?: string) {
         admin: getWidgetsOptions(requestId),
       },
     },
-  })
+  }
 }
 
-export const $876 = createConsole876Client()
+/** Creates the request-scoped resource and control-plane surfaces for Console. */
+export function createConsoleSurfaces(requestId?: string) {
+  return composeConsoleSurfaces(getConsoleOptions(requestId))
+}
+
+/** Backwards-compatible factory for code that only needs the resource plane. */
+export function createConsole876Client(requestId?: string) {
+  return createConsoleSurfaces(requestId).$876
+}
+
+const defaultSurfaces = createConsoleSurfaces()
+
+/** Resource/data plane: users, organizations, invoices, customers, files, etc. */
+export const $876 = defaultSurfaces.$876
+
+/** Organization control plane: setup, app grants, modules, and provisioning. */
+export const workspace = defaultSurfaces.workspace
+
+/** 876 operator control plane: API keys, auth attempts, devices, and app flags. */
+export const platform = defaultSurfaces.platform
 
 export const coreAdmin = create876AdminClient(getPlatformAdminOptions())
 
