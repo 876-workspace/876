@@ -5,7 +5,8 @@ import type { ReactNode } from 'react'
 import { Toaster } from '@876/ui/sonner'
 
 import { PwaProvider } from '@/components/providers/pwa-provider'
-import { ThemeProvider } from '@/components/providers/providers'
+import { ThemeProvider } from '@876/ui/theme'
+import { ThemeScript } from '@876/ui/theme-script'
 import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 
 import './globals.css'
@@ -50,6 +51,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <PwaProvider>

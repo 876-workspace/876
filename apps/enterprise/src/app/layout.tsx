@@ -4,7 +4,8 @@ import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
 
-import { ThemeProvider } from '@/components/providers/theme-provider'
+import { ThemeProvider } from '@876/ui/theme'
+import { ThemeScript } from '@876/ui/theme-script'
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { AnalyticsProvider } from '@/lib/analytics/provider'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
@@ -52,6 +53,9 @@ export default async function RootLayout({
       className={`${geistSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <AnalyticsProvider user={initialUser}>
           <ThemeProvider>

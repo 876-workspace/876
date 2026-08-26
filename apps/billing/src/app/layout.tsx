@@ -10,6 +10,7 @@ import { FocusRevalidate } from '@/components/providers/focus-revalidate'
 
 import { ThemeProvider } from '@/components/providers/providers'
 import './globals.css'
+import { ThemeScript } from '@876/ui/theme-script'
 
 const BILLING_URL =
   process.env.NEXT_PUBLIC_BILLING_URL?.trim() || 'http://localhost:3004'
@@ -59,6 +60,9 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider
           forcedTheme={uiFeatures.themeSwitcher ? undefined : 'light'}

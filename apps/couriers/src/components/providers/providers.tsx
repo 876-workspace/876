@@ -1,6 +1,6 @@
 'use client'
 
-import { ThemeProvider as NextThemeProvider } from 'next-themes'
+import { ThemeProvider as BaseThemeProvider } from '@876/ui/theme'
 import type { ReactNode } from 'react'
 
 import type { AnalyticsGroup, AnalyticsUser } from '@876/analytics'
@@ -18,14 +18,7 @@ export function ThemeProvider({
 }) {
   return (
     <AnalyticsProvider user={analyticsUser} groups={analyticsGroups}>
-      <NextThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        {children}
-      </NextThemeProvider>
+      <BaseThemeProvider>{children}</BaseThemeProvider>
     </AnalyticsProvider>
   )
 }

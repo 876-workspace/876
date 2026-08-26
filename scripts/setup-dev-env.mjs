@@ -88,11 +88,15 @@ function syncCrmCredentials() {
   }
 
   if (platformAppKey) {
-    mergeEnvFile(
-      join(root, 'apps', 'crm-api', '.env.development.local'),
-      { CRM_API_876_KEY: platformAppKey },
-      HEADER
-    )
+    // Both the CRM app (its /api/auth bridge sends this as X-876-API-Key) and
+    // the CRM API need the platform app key under the same name.
+    for (const app of ['crm', 'crm-api']) {
+      mergeEnvFile(
+        join(root, 'apps', app, '.env.development.local'),
+        { CRM_API_876_KEY: platformAppKey },
+        HEADER
+      )
+    }
     synced = true
   }
 

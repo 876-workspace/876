@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Providers } from '@/components/providers/providers'
 import { ServiceWorkerProvider } from '@/components/providers/serwist'
-import { ThemeProvider } from '@/components/providers/theme-provider'
+import { ThemeProvider } from '@876/ui/theme'
+import { ThemeScript } from '@876/ui/theme-script'
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import type { UserStoreSourceUser } from '@/stores/user'
@@ -92,6 +93,9 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <Providers user={initialUser}>
           <ThemeProvider>

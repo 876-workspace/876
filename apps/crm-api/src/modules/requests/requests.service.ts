@@ -5,12 +5,13 @@ import type {
 } from '../../types/request.js'
 import * as tenants from '../tenants/tenants.service.js'
 
+import { crmError } from '../../http/errors.js'
 import * as repository from './requests.repository.js'
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw new Error('CRM tenant not found.')
-  if (tenant.status !== 'ACTIVE') throw new Error('CRM tenant is not active.')
+  if (!tenant) throw crmError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
 
   return tenant
 }
@@ -63,7 +64,7 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   const customer = await repository.customerExists(tenant.id, input.customerId)
-  if (!customer) throw new Error('CRM customer not found.')
+  if (!customer) throw crmError('crm/customer-not-found')
 
   return serialize(await repository.create({ tenantId: tenant.id, ...input }))
 }
@@ -86,7 +87,9 @@ export async function update(
     ...(input.status && input.status !== 'RESOLVED' && current.resolvedAt
       ? { resolvedAt: null }
       : {}),
-    ...(input.status === 'CLOSED' && !current.closedAt ? { closedAt: now } : {}),
+    ...(input.status === 'CLOSED' && !current.closedAt
+      ? { closedAt: now }
+      : {}),
     ...(input.status && input.status !== 'CLOSED' && current.closedAt
       ? { closedAt: null }
       : {}),
