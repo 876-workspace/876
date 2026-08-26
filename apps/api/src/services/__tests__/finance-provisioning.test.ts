@@ -40,6 +40,7 @@ function makeRepository(
     findAppById: vi.fn(),
     listSubscriptionsByOrgAndApp: vi.fn(),
     findPublishedRevision: vi.fn(),
+    resolveFinanceSetupKey: vi.fn().mockResolvedValue('jamaica'),
     findLatestOutboxEvent: vi.fn(),
     createOutboxEvent: vi.fn(),
     updateOutboxEventRunId: vi.fn(),
