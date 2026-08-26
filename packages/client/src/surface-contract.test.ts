@@ -169,8 +169,18 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     expect(workspace.onboarding.retrieve).toBeTypeOf('function')
     expect(workspace.modules.list).toBeTypeOf('function')
     expect(workspace.features.grant).toBeTypeOf('function')
+    expect(workspace.apps.list).toBeTypeOf('function')
     expect(workspace.apps.assign).toBeTypeOf('function')
     expect(workspace.apps.unassign).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.list).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.retrieve).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.grant).toBeTypeOf('function')
+    expect(workspace.apps.entitlements.update).toBeTypeOf('function')
+
+    // Org-to-app entitlement administration has exactly one path. Billing's
+    // own subscription records are a different resource and stay on `$876`.
+    expect(has($876.organizations.admin, 'subscriptions')).toBe(false)
+    expect($876.subscriptions.admin.retrieve).toBeTypeOf('function')
 
     expect(platform.apiKeys.create).toBeTypeOf('function')
     expect(platform.authAttempts.list).toBeTypeOf('function')
@@ -373,6 +383,7 @@ describe('facade delegation parity', () => {
     const assignmentCreate = vi.fn()
     const assignmentRevoke = vi.fn()
     const apiKeyCreate = vi.fn()
+    const entitlementGrant = vi.fn()
     const admin: any = {
       auditEvents: {},
       apiKeys: { create: apiKeyCreate },
@@ -393,7 +404,14 @@ describe('facade delegation parity', () => {
       calls: {},
       phoneLookups: {},
       users: {},
-      organizations: { subscriptions: {} },
+      organizations: {
+        subscriptions: {
+          list: vi.fn(),
+          retrieve: vi.fn(),
+          create: entitlementGrant,
+          update: vi.fn(),
+        },
+      },
       apps: {},
       memberships: {},
       features: {},
@@ -464,6 +482,8 @@ describe('facade delegation parity', () => {
 
     expect(workspace.apps.assign).toBe(assignmentCreate)
     expect(workspace.apps.unassign).toBe(assignmentRevoke)
+    expect(workspace.apps.entitlements.grant).toBe(entitlementGrant)
+    expect(has(core.organizations.admin, 'subscriptions')).toBe(false)
     expect(platform.apiKeys.create).toBe(apiKeyCreate)
   })
 })

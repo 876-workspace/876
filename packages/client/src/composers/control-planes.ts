@@ -42,6 +42,20 @@ export function createWorkspaceControlPlane(admin: Admin876Client) {
       list: admin.appAssignments.list,
       assign: admin.appAssignments.create,
       unassign: admin.appAssignments.revoke,
+      /**
+       * Org-to-app entitlement administration (`/organizations/{id}/apps`).
+       *
+       * Distinct from `$876.subscriptions.*`, which are Billing's own
+       * subscription records. An entitlement decides whether an organization
+       * may open a product app at all, so it is workspace configuration
+       * rather than a business resource.
+       */
+      entitlements: {
+        list: admin.organizations.subscriptions.list,
+        retrieve: admin.organizations.subscriptions.retrieve,
+        grant: admin.organizations.subscriptions.create,
+        update: admin.organizations.subscriptions.update,
+      },
     },
     modules: admin.modules,
     features: admin.organizationFeatures,

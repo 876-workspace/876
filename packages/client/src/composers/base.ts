@@ -101,9 +101,14 @@ export type CoreSurfaceAdmin = Omit<
   | 'sessions'
 > & {
   users: WithAdmin<{ me: SDK876Client['users'] }, Admin876Client['users']>
+  /**
+   * `admin.subscriptions` is deliberately absent: org-to-app entitlement
+   * administration lives on `workspace.apps.entitlements`, not on the
+   * resource plane. See `workspace-control-plane.md`.
+   */
   organizations: WithAdmin<
     SDK876Client['organizations'],
-    Admin876Client['organizations']
+    Omit<Admin876Client['organizations'], 'subscriptions'>
   >
   apps: WithAdmin<SDK876Client['apps'], Admin876Client['apps']>
   memberships: WithAdmin<
@@ -165,6 +170,19 @@ function createCoreSurfaceBase(platform: SDK876Client): CoreSurfaceBase {
   }
 }
 
+/**
+ * Drops the org-to-app entitlement family from the admin organizations
+ * projection. Entitlement administration is workspace configuration and is
+ * reached through `workspace.apps.entitlements`; leaving a copy on `$876`
+ * would give one operation two permanent paths.
+ */
+function omitEntitlements(
+  organizations: Admin876Client['organizations']
+): Omit<Admin876Client['organizations'], 'subscriptions'> {
+  const { subscriptions: _entitlements, ...rest } = organizations
+  return rest
+}
+
 function createCoreSurfaceAdmin(
   platform: SDK876Client,
   admin: Admin876Client
@@ -172,7 +190,10 @@ function createCoreSurfaceAdmin(
   return {
     ...createCoreSurfaceBase(platform),
     users: withAdmin({ me: platform.users }, admin.users),
-    organizations: withAdmin(platform.organizations, admin.organizations),
+    organizations: withAdmin(
+      platform.organizations,
+      omitEntitlements(admin.organizations)
+    ),
     apps: withAdmin(platform.apps, admin.apps),
     memberships: withAdmin(platform.memberships, admin.memberships),
     features: withAdmin(platform.features, admin.features),
