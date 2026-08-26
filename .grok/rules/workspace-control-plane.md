@@ -9,11 +9,11 @@ administration code.
 876 has three deliberately separate developer surfaces. They solve different
 problems and must not become aliases for one another.
 
-| Plane | Root | Purpose | Examples |
-| --- | --- | --- | --- |
-| Resource/data plane | `$876` | Operate on actual platform and product resources | `$876.invoices.create()`, `$876.customers.list()`, `$876.packages.create()`, `$876.files.retrieve()` |
+| Plane                      | Root        | Purpose                                                                                   | Examples                                                                                                                          |
+| -------------------------- | ----------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Resource/data plane        | `$876`      | Operate on actual platform and product resources                                          | `$876.invoices.create()`, `$876.customers.list()`, `$876.packages.create()`, `$876.files.retrieve()`                              |
 | Organization control plane | `workspace` | Prepare, configure, govern, assign, connect, and repair an organization's 876 environment | `workspace.provisioning.runs.list()`, `workspace.modules.list()`, `workspace.apps.assign()`, backend `workspace.finance.ensure()` |
-| 876 operator control plane | `platform` | Configure or inspect 876-wide operator infrastructure | `platform.apiKeys.create()`, `platform.authAttempts.list()`, `platform.devices.retrieve()`, `platform.appFeatures.list()` |
+| 876 operator control plane | `platform`  | Configure or inspect 876-wide operator infrastructure                                     | `platform.apiKeys.create()`, `platform.authAttempts.list()`, `platform.devices.retrieve()`, `platform.appFeatures.list()`         |
 
 The concise rule is:
 
@@ -85,19 +85,23 @@ environment ready or changing how that environment is configured.
 Current client-side Console control-plane families:
 
 - `workspace.onboarding.*` — organization onboarding catalogs, answers, validation, submission.
-- `workspace.apps.*` — app assignment and entitlement administration.
+- `workspace.apps.list()` / `.assign()` / `.unassign()` — member app assignment administration.
 - `workspace.modules.*` — application modules that shape organization-available functionality.
 - `workspace.features.*` — organization-level feature grants/overrides.
 - `workspace.provisioning.*` — provisioning manifests, drafts, runs, notes, and reconciliation.
 
 Current Core backend orchestration families:
 
-- `workspace.setup()` — durable workspace bootstrap over roles, app entitlements, registry synchronization, and optional finance readiness.
-- `workspace.apps.ensure()` / `workspace.apps.assign()` — default/source-app entitlement and member assignment orchestration.
-- `workspace.roles.ensure()` / `workspace.roles.link()` — default role and membership-role wiring.
-- `workspace.contacts.ensure()` — default organization contact setup.
-- `workspace.customers.ensure()` / `.archive()` — system-level relationship-registry synchronization. This is **not** user-facing customer CRUD.
-- `workspace.finance.ensure()` / `.reconcile()` / `.archive()` / `.restore()` — shared financial workspace lifecycle. These are **not** invoice/payment/customer CRUD methods.
+- `workspace.setup()` — durable workspace bootstrap over roles, app entitlements, and registry synchronization, with the finance barrier optionally deferred.
+- `workspace.apps.assign()` — member app assignment orchestration.
+- `workspace.roles.link()` — membership-role wiring.
+- `workspace.finance.ensure()` — the shared financial workspace readiness barrier. This is **not** an invoice/payment/customer CRUD method.
+
+**Only add a facade method when a call site migrates onto it.** A wrapper with no
+caller is a second permanent path to the same operation — the very thing the
+composition rules below forbid. Org app entitlement administration, for example,
+still lives at `$876.organizations.admin.subscriptions.*`; migrate those call
+sites before adding a `workspace` alias for them.
 
 Specialized verbs such as `ensure`, `assign`, `reconcile`, `archive`, `restore`,
 and `publish` are allowed on the control planes because they describe workflow
@@ -136,8 +140,9 @@ already exists.
   defeat the boundary.
 - A resource may still have an org-scoped `$876` representation while its
   administrative lifecycle lives under `workspace`. Example: session-tier
-  `$876.appAssignments.list()` can remain a resource read while privileged
-  assignment administration lives under `workspace.apps`.
+  `$876.appAssignments.list()` remains a resource read while privileged
+  assignment administration lives under `workspace.apps`. Console's
+  `$876.appAssignments` therefore carries **no** `.admin` projection.
 
 ## Backend implementation rule
 
@@ -152,6 +157,10 @@ await workspace.finance.ensure({ organizationId: orgId })
 await workspace.roles.link(membership)
 await workspace.apps.assign({ organizationId: orgId, userId })
 ```
+
+A facade method must not re-apply a default the helper underneath already owns
+(`assignedBy ?? null`, for instance). Pass the caller's arguments through, so
+each default has exactly one definition site.
 
 The facade is not permission enforcement and is not a new bounded context. The
 owning service, repository, provider, auth, idempotency, and transaction rules
