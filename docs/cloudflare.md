@@ -1,3 +1,9 @@
+> **PARKED (2026-08-26).** 876 deploys to Vercel. Every Cloudflare config file,
+> deploy workflow, and preflight script described below now lives under
+> `parked/cloudflare/` and is not built, installed, or run. This document is kept
+> as the record of how the Cloudflare deployment worked, and as the restore
+> instructions if it is ever revived — see `parked/cloudflare/README.md`.
+
 # Cloudflare Deployment Guide
 
 Deploy the **876 monorepo** on [Cloudflare](https://developers.cloudflare.com/) as
@@ -118,6 +124,16 @@ OpenNext collects static assets, and their root layouts register it at scope
 their static offline page and install icons. HTML, RSC, API, auth, tenant image,
 and cross-origin responses are network-only so user or tenant data never enters
 Cache Storage.
+
+Every offline fallback loads `/pwa/offline-recovery.js`, a precached,
+dependency-free script bundled from `scripts/offline-recovery.ts`. It does not
+wait for the `online` event — that event only reports that the device has an
+interface, so a router that lost its uplink, or a captive portal, never fires it
+and the fallback becomes a dead end. Instead it polls a cheap same-origin `HEAD`
+probe on a capped backoff (also re-armed on `online`, tab visibility, and
+bfcache restore) and reloads the page as soon as bytes come back from the
+origin. `HEAD` is deliberate: Serwist registers its routes for `GET`, so the
+probe bypasses Cache Storage and always measures the real network.
 
 The general rule stands: anything needing a Node built-in or a bundler belongs
 in a build script, never in a route.
