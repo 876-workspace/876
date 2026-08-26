@@ -37,16 +37,6 @@
     "dev:couriers:core": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing couriers && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/billing-api --filter=@876/couriers-api --filter=@876/couriers-app",
     "dev:couriers:console": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing console couriers widgets-api && pnpm widgets:env:check couriers && pnpm widgets:env:check console && turbo run dev --filter=@876/api --filter=@876/storage-api --filter=@876/widgets-api --filter=@876/billing-api --filter=@876/couriers-api --filter=@876/billing-app --filter=@876/couriers-app --filter=@876/console",
     "widgets:env:check": "node scripts/check-widgets-env.mjs",
-    "preview:app": "pnpm --filter @876/app preview",
-    "preview:enterprise": "pnpm --filter @876/enterprise preview",
-    "preview:console": "pnpm --filter @876/console preview",
-    "preview:billing": "pnpm --filter @876/billing-app preview",
-    "preview:couriers": "pnpm --filter @876/couriers-app preview",
-    "deploy:app": "pnpm --filter @876/app deploy",
-    "deploy:enterprise": "pnpm --filter @876/enterprise deploy",
-    "deploy:console": "pnpm --filter @876/console deploy",
-    "deploy:billing": "pnpm --filter @876/billing-app deploy",
-    "deploy:couriers": "pnpm --filter @876/couriers-app deploy",
     "build": "turbo run build",
     "lint": "turbo lint",
     "check:structure": "node scripts/check-app-structure.mjs console billing couriers 876 enterprise",
@@ -58,20 +48,12 @@
     "test:ui:update": "playwright test --update-snapshots",
     "format": "prettier --write package.json pnpm-workspace.yaml turbo.json README.md && prettier --write .",
     "format:check": "prettier --check package.json pnpm-workspace.yaml turbo.json README.md && prettier --check .",
-    "check": "pnpm format:check && pnpm lint && pnpm check:structure && pnpm check:service-bundle && pnpm check:cloudflare-release && pnpm typecheck && pnpm boundaries && pnpm test",
+    "check": "pnpm format:check && pnpm lint && pnpm check:structure && pnpm check:service-bundle && pnpm typecheck && pnpm boundaries && pnpm test",
     "clean": "turbo clean && rm -rf node_modules",
-    "deploy:api": "pnpm --filter @876/api deploy",
-    "deploy:billing-api": "pnpm --filter @876/billing-api deploy",
-    "deploy:storage-api": "pnpm --filter @876/storage-api deploy",
-    "deploy:widgets": "pnpm --filter @876/widgets-api deploy",
-    "preview:widgets": "pnpm --filter @876/widgets-api preview",
     "dev:env": "node scripts/setup-dev-env.mjs",
     "check:session-secret": "node scripts/check-session-secret.mjs",
     "check:database-env": "node scripts/check-database-env.mjs",
-    "check:worker-secrets": "node scripts/check-worker-secrets.mjs",
-    "check:cloudflare-release": "node scripts/check-cloudflare-release-contract.mjs",
-    "check:service-bundle": "node scripts/check-service-bundle.mjs",
-    "check:worker-readiness": "node scripts/check-worker-readiness.mjs"
+    "check:service-bundle": "node scripts/check-service-bundle.mjs"
   },
   "dependencies": {
     "@876/admin": "workspace:*",
@@ -138,7 +120,6 @@
     "turbo": "2.10.11",
     "typescript": "5.9.3",
     "vitest": "4.1.11",
-    "vitest-browser-react": "2.2.0",
-    "wrangler": "4.124.0"
+    "vitest-browser-react": "2.2.0"
   }
 }
