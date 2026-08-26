@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('server-only', () => ({}))
 
 import { createCoreSurface } from './composers/base.ts'
+import { createWorkspaceControlPlane } from './composers/control-planes.ts'
 import { createConsoleClient } from './composers/console.ts'
 
 describe('admin core resource projections', () => {
@@ -24,7 +25,7 @@ describe('admin core resource projections', () => {
     expect($876.paymentIntents.list).toBeTypeOf('function')
   })
 
-  it('preserves platform methods while exposing internal-key admin namespaces', () => {
+  it('keeps resource reads on core and workspace administration on workspace', () => {
     const platformMemberList = vi.fn()
     const platformAssignmentList = vi.fn()
     const platformInviteList = vi.fn()
@@ -65,13 +66,21 @@ describe('admin core resource projections', () => {
       apiKeys: {},
       modules: {},
       provisioning: {
+        retrieve: vi.fn(),
         retrievePublished: vi.fn(),
         retrieveCatalog: vi.fn(),
         replaceDraft: vi.fn(),
+        validate: vi.fn(),
+        publish: vi.fn(),
         runs: {
+          list: vi.fn(),
+          retrieve: vi.fn(),
+          retry: vi.fn(),
+          reconcile: vi.fn(),
           claimApplication: vi.fn(),
           completeApplication: vi.fn(),
         },
+        notes: {},
       },
       onboarding: {},
       addresses: {},
@@ -88,7 +97,7 @@ describe('admin core resource projections', () => {
       calls: {},
       phoneLookups: {},
       users: {},
-      organizations: {},
+      organizations: { subscriptions: {} },
       apps: {},
       memberships: {},
       features: {},
@@ -103,12 +112,14 @@ describe('admin core resource projections', () => {
     }
 
     const core = createCoreSurface({ platform, admin }) as any
+    const workspace = createWorkspaceControlPlane(admin)
 
     expect(core.organizationMembers.list).toBe(platformMemberList)
     expect(core.organizationMembers.admin.create).toBe(adminMemberCreate)
     expect(core.organizationMembers.admin.list).toBe(adminMemberList)
     expect(core.appAssignments.list).toBe(platformAssignmentList)
-    expect(core.appAssignments.admin.list).toBe(adminAssignmentList)
+    expect(core.appAssignments.admin).toBeUndefined()
+    expect(workspace.apps.assignments.list).toBe(adminAssignmentList)
     expect(core.invites.list).toBe(platformInviteList)
     expect(core.invites.admin.list).toBe(adminInviteList)
   })
