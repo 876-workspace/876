@@ -1,6 +1,6 @@
 import { getSettings } from '@/config'
 import { listObject, type ListObject } from '@/http/envelope'
-import { AppHttpError } from '@/platform/errors'
+import { AppHttpError, appError } from '@/platform/errors'
 import { generateId } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
@@ -96,10 +96,8 @@ export async function createMembership(
   const status = body.status ?? 'active'
   const orgRole = await repository.findRoleByName(body.organization_id, role)
   if (!orgRole) {
-    throw new AppHttpError({
-      code: 'role/not-found',
+    throw appError('role/not-found', {
       message: 'No role exists with the provided name.',
-      httpStatus: 400,
     })
   }
 

@@ -170,7 +170,7 @@ describe('requireApiKey', () => {
     expect(response.status).toBe(401)
     expect(response.body.error).toEqual({
       code: 'api-key/invalid',
-      message: 'Invalid API key.',
+      message: 'The API key provided is invalid.',
     })
   })
 
@@ -181,10 +181,12 @@ describe('requireApiKey', () => {
       .get('/api-key')
       .set('X-876-API-Key', VALID_KEY)
 
-    expect(response.status).toBe(401)
+    // A revoked or expired key is a known credential the caller may no longer
+    // use, so the shared registry answers 403 rather than 401.
+    expect(response.status).toBe(403)
     expect(response.body.error).toEqual({
       code: 'api-key/revoked',
-      message: 'API key has been revoked.',
+      message: 'This API key has been revoked. Please generate a new key.',
     })
     expect(markApiKeyUsed).not.toHaveBeenCalled()
   })
@@ -198,10 +200,10 @@ describe('requireApiKey', () => {
       .get('/api-key')
       .set('X-876-API-Key', VALID_KEY)
 
-    expect(response.status).toBe(401)
+    expect(response.status).toBe(403)
     expect(response.body.error).toEqual({
       code: 'api-key/expired',
-      message: 'API key has expired.',
+      message: 'This API key has expired. Please generate a new key.',
     })
     expect(markApiKeyUsed).not.toHaveBeenCalled()
   })
@@ -281,7 +283,10 @@ describe('requireSession', () => {
     expect(response.status).toBe(401)
     expect(response.body).toEqual({
       data: null,
-      error: { code: 'auth/no-session', message: 'No active session.' },
+      error: {
+        code: 'auth/no-session',
+        message: 'You are not signed in. Please sign in to continue.',
+      },
     })
   })
 
@@ -422,7 +427,7 @@ describe('requireAdmin', () => {
     expect(response.status).toBe(401)
     expect(response.body.error).toEqual({
       code: 'auth/no-session',
-      message: 'No active session.',
+      message: 'You are not signed in. Please sign in to continue.',
     })
   })
 
@@ -490,7 +495,7 @@ describe('realm guards', () => {
     expect(response.status).toBe(403)
     expect(response.body.error).toEqual({
       code: 'auth/wrong-realm',
-      message: 'This account cannot access this resource.',
+      message: 'This account cannot sign in through this portal.',
     })
   })
 
