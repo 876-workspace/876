@@ -4,6 +4,7 @@ export type AppId =
   | 'enterprise'
   | 'billing'
   | 'couriers'
+  | 'crm'
   | 'widgets'
   | 'storage'
 

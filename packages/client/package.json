@@ -25,6 +25,7 @@
     "@876/admin": "workspace:*",
     "@876/billing": "workspace:*",
     "@876/couriers": "workspace:*",
+    "@876/crm": "workspace:*",
     "@876/sdk": "workspace:*",
     "@876/storage": "workspace:*",
     "@876/widgets": "workspace:*",
