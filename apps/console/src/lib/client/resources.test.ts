@@ -8,6 +8,7 @@ import * as features from './features'
 import * as orgs from './orgs'
 import * as prices from './prices'
 import { provisioningRuns } from './provisioning-runs'
+import { provisioningSetups } from './provisioning-setups'
 import * as products from './products'
 import * as reservedUsernames from './reserved-usernames'
 import * as roles from './roles'
@@ -181,6 +182,43 @@ const cases: RequestCase[] = [
       method: 'POST',
       body: '{"app_id":"app_1","organization_id":"org_1"}',
     },
+  },
+  {
+    name: 'creates a provisioning setup',
+    act: () =>
+      provisioningSetups.create({
+        key: 'united-states',
+        name: 'United States',
+      }),
+    url: '/api/organizations/provisioning/setups',
+    init: {
+      method: 'POST',
+      body: '{"key":"united-states","name":"United States"}',
+    },
+  },
+  {
+    name: 'makes a provisioning setup the platform default',
+    act: () => provisioningSetups.update('setup /1', { is_default: true }),
+    url: '/api/organizations/provisioning/setups/setup%20%2F1',
+    init: { method: 'PATCH', body: '{"is_default":true}' },
+  },
+  {
+    name: "replaces a provisioning setup's finance draft",
+    act: () => provisioningSetups.replaceDraft('setup /1', EMPTY),
+    url: '/api/organizations/provisioning/setups/setup%20%2F1/draft',
+    init: { method: 'PUT', body: '{}' },
+  },
+  {
+    name: "validates a provisioning setup's finance draft",
+    act: () => provisioningSetups.validate('setup /1', EMPTY),
+    url: '/api/organizations/provisioning/setups/setup%20%2F1/validate',
+    init: { method: 'POST', body: '{}' },
+  },
+  {
+    name: "publishes a provisioning setup's finance draft",
+    act: () => provisioningSetups.publish('setup /1'),
+    url: '/api/organizations/provisioning/setups/setup%20%2F1/publish',
+    init: { method: 'POST' },
   },
   {
     name: 'creates a feature',

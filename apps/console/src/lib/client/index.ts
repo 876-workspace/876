@@ -4,7 +4,6 @@ import { billing } from './billing'
 import { billingIntegrations } from './billing-integrations'
 import { devices } from './devices'
 import { features } from './features'
-import { financeProvisioning } from './finance-provisioning'
 import {
   appAssignments,
   invites,
@@ -17,6 +16,7 @@ import { modules } from './modules'
 import { prices } from './prices'
 import { products } from './products'
 import { provisioning } from './provisioning'
+import { provisioningSetups } from './provisioning-setups'
 import { provisioningRuns } from './provisioning-runs'
 import { reservedUsernames } from './reserved-usernames'
 import { roles } from './roles'
@@ -32,7 +32,6 @@ export const client = {
   billingIntegrations,
   devices,
   features,
-  financeProvisioning,
   organizations,
   members,
   appAssignments,
@@ -43,6 +42,7 @@ export const client = {
   prices,
   products,
   provisioning,
+  provisioningSetups,
   provisioningRuns,
   reservedUsernames,
   roles,
@@ -57,7 +57,6 @@ export { apps } from './apps'
 export { billing } from './billing'
 export { billingIntegrations } from './billing-integrations'
 export { features } from './features'
-export { financeProvisioning } from './finance-provisioning'
 export {
   appAssignments,
   invites,
@@ -70,6 +69,7 @@ export { modules } from './modules'
 export { prices } from './prices'
 export { products } from './products'
 export { provisioning } from './provisioning'
+export { provisioningSetups } from './provisioning-setups'
 export { provisioningRuns } from './provisioning-runs'
 export { reservedUsernames } from './reserved-usernames'
 export { pin } from './pin'
