@@ -170,19 +170,24 @@ export function MembersSplit({
 
   const [closing, setClosing] = useState(false)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const entrance = useRef<{ id?: string; kind: 'open' | 'switch' }>({
-    id: selectedId,
-    kind: 'switch',
-  })
+  // Whether the panel is opening from nothing or switching between rows drives
+  // which entrance animation runs. It is derived by comparing the selection
+  // against the one the last render saw, which is React's adjust-state-during-
+  // render pattern — a ref cannot hold it, because reading or writing one
+  // during render is exactly what `react-hooks/refs` forbids.
+  const [entrance, setEntrance] = useState<{
+    id?: string
+    kind: 'open' | 'switch'
+  }>({ id: selectedId, kind: 'switch' })
 
-  if (entrance.current.id !== selectedId) {
-    entrance.current = {
+  if (entrance.id !== selectedId) {
+    setEntrance({
       id: selectedId,
-      kind: entrance.current.id === undefined ? 'open' : 'switch',
-    }
+      kind: entrance.id === undefined ? 'open' : 'switch',
+    })
   }
 
-  const isSwitch = entrance.current.kind === 'switch'
+  const isSwitch = entrance.kind === 'switch'
 
   useEffect(
     () => () => {

@@ -7,7 +7,8 @@ import {
   type TopbarSearchItem,
 } from '@876/ui/topbar-search'
 
-import { navConfig, SETTINGS_SECTIONS } from '@/components/shell/nav-config'
+import { navConfig } from '@/components/shell/nav-config'
+import { SETTINGS_OPTIONS } from '@/components/shell/settings-options'
 
 export function TopbarSearch() {
   const router = useRouter()
@@ -37,7 +38,7 @@ const CONSOLE_SEARCH_ITEMS: TopbarSearchItem[] = [
       }))
     )
   ),
-  ...SETTINGS_SECTIONS.map((section) => ({
+  ...SETTINGS_OPTIONS.map((section) => ({
     group: 'Settings',
     title: section.title,
     href: section.href,

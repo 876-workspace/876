@@ -2,7 +2,7 @@
 
 import { Button } from '@876/ui/button'
 
-import { Field } from '@/app/(app)/orgs/[slug]/billing/_components/billing-shared'
+import { Field } from '@/features/billing/components/billing-fields'
 import type { BillingAccountDraft } from '../_lib/account-utils'
 
 type Props = {

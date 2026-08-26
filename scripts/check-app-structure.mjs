@@ -105,6 +105,18 @@ function exists(p) {
   }
 }
 
+/**
+ * Blanks out `import …`/`export … from …` statements so a declaration scan
+ * cannot mistake a specifier for a declaration. Newlines are preserved so any
+ * line numbers derived from the result stay honest.
+ */
+function stripImports(source) {
+  return source.replace(
+    /^[ \t]*(?:import|export)\s[^;]*?\sfrom\s*['"][^'"]+['"];?/gms,
+    (match) => match.replace(/[^\n]/g, ' ')
+  )
+}
+
 for (const app of APPS) {
   const root = `apps/${app}/src`
   if (!exists(root)) continue
@@ -217,7 +229,10 @@ for (const app of APPS) {
     const Pascal = `${prefix[0].toUpperCase()}${prefix.slice(1)}`
     // Only flag symbols *declared* here. A type imported from src/types/ (e.g.
     // ConsoleUser) is that module's name to own, and renaming those is a
-    // separate change with a much wider blast radius.
+    // separate change with a much wider blast radius. Import and re-export
+    // statements are stripped first, because an inline `type` specifier
+    // (`import { type ConsoleUser } from …`) otherwise reads to the regex
+    // exactly like a `type ConsoleUser = …` declaration.
     // Catches both PascalCase (ConsoleSidebar) and camelCase
     // (consoleWidgetCatalog) declarations. The trailing [A-Z] is what stops
     // `consoles` or `Consolidated` from matching.
@@ -233,7 +248,7 @@ for (const app of APPS) {
         }
         if (!prefixCfg.symbols) continue
         if (!/\.tsx?$/.test(file)) continue
-        const src = readFileSync(file, 'utf8')
+        const src = stripImports(readFileSync(file, 'utf8'))
         const hits = new Set([...src.matchAll(symbolRe)].map((m) => m[1]))
         for (const hit of hits) {
           fail(app, 'app-name-symbol-prefix', `${file}: ${hit}`)

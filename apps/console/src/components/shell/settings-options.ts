@@ -5,7 +5,7 @@ import { Building2, KeyRound, Settings, Users, Waves } from '@876/ui/icons'
  * A top-level settings option displayed on the /settings hub page and indexed
  * by global console search.
  */
-export type ConsoleSettingsOption = {
+export type SettingsOption = {
   key: string
   title: string
   description: string
@@ -16,12 +16,16 @@ export type ConsoleSettingsOption = {
 }
 
 /**
- * The single source of truth for all top-level settings options in Console.
+ * The single source of truth for all top-level settings options.
+ *
+ * It sits beside the nav config because the topbar's global search indexes it,
+ * and a shell component may not reach into a route's `_lib`. The /settings hub
+ * page reads it from here — a route importing the shell is the legal direction.
  *
  * Hand-maintained so every destination, label, icon, and permission is
  * visible at the line it is defined.
  */
-export const CONSOLE_SETTINGS_OPTIONS: ConsoleSettingsOption[] = [
+export const SETTINGS_OPTIONS: SettingsOption[] = [
   {
     key: 'general',
     title: 'General',
