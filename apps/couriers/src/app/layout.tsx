@@ -7,6 +7,7 @@ import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 import { ThemeProvider } from '@/components/providers/providers'
 import './globals.css'
+import { ThemeScript } from '@876/ui/theme-script'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({
@@ -67,6 +68,9 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider
           analyticsUser={sessionUser}
