@@ -20,9 +20,14 @@ describe('ResourceManifest / contract / billing nouns exist', () => {
 
   it('all manifest entries have owner and meaning (contract)', () => {
     for (const [name, entry] of Object.entries(RESOURCE_MANIFEST)) {
-      expect(['core', 'billing', 'couriers', 'storage', 'widgets']).toContain(
-        entry.owner
-      )
+      expect([
+        'core',
+        'billing',
+        'couriers',
+        'crm',
+        'storage',
+        'widgets',
+      ]).toContain(entry.owner)
       expect(entry.meaning.trim().length, `${name} meaning`).toBeGreaterThan(5)
     }
   })
