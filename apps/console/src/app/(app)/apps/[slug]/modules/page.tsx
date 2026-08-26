@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { AdminApplicationModule } from '@876/admin'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { resolveApp } from '../_data'
 import {
   ModulesManager,
@@ -33,7 +33,7 @@ async function loadModules(
   context: Promise<ModulesContext>
 ): Promise<AdminApplicationModule[]> {
   const { appId } = await context
-  const result = await $876.modules.list(appId, { includeArchived: true })
+  const result = await workspace.modules.list(appId, { includeArchived: true })
   if (result.error) throw new Error(result.error.message)
   return result.data?.data ?? []
 }
