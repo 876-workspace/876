@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-billing-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      // Cloudflare rejects a Container application name that starts with a
+      // digit, so this cannot default to the Worker name (`876-billing-api`).
+      "name": "billing-api-876",
+      "class_name": "BillingApiContainer",
+      "image": "./Dockerfile",
+      "image_build_context": "../../",
+      "max_instances": 3,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "BILLING_API_CONTAINER",
+        "class_name": "BillingApiContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["BillingApiContainer"],
+    },
+  ],
+  // The Worker checks BILLING_SWEEP_ENABLED before contacting the scheduler
+  // container and authenticates the internal route with a dedicated secret.
+  "triggers": {
+    "crons": ["*/5 * * * *"],
+  },
+  "vars": {
+    "API_URL": "https://876-api.1876.workers.dev",
+    // Bump to restart primary container for BILLING_WRITER activation.
+    "BILLING_API_PRIMARY_INSTANCE": "primary-20260815-express",
+    "BILLING_DUNNING_ENABLED": "false",
+    "BILLING_LATE_FEES_ENABLED": "false",
+    "BILLING_PAYOUTS_ENABLED": "false",
+    "BILLING_SWEEP_ENABLED": "false",
+    "ENVIRONMENT": "production",
+    "LOG_LEVEL": "info",
+    "PORT": "4004",
+    // Express is the active writer (FastAPI→Express cutover completed).
+    "BILLING_WRITER": "express",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

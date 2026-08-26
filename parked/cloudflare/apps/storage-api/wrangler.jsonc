@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-storage-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      // Cloudflare rejects a Container application name that starts with a
+      // digit, so this cannot default to the Worker name (`876-storage-api`).
+      "name": "storage-api-876",
+      "class_name": "StorageApiContainer",
+      "image": "./Dockerfile",
+      "max_instances": 3,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "STORAGE_API_CONTAINER",
+        "class_name": "StorageApiContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["StorageApiContainer"],
+    },
+  ],
+  // Daily at 03:17 UTC. Reclamation is deliberately low urgency.
+  "triggers": {
+    "crons": ["17 3 * * *"],
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "LOG_LEVEL": "info",
+    "PORT": "4005",
+    "DELETION_MODE": "soft",
+    "STORAGE_UPLOAD_TTL_SECONDS": "600",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

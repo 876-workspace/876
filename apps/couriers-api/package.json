@@ -11,17 +11,13 @@
     "db:generate": "prisma generate",
     "test": "vitest run",
     "lint": "eslint src",
-    "boundaries": "depcruise src --config .dependency-cruiser.cjs",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler dev",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "boundaries": "depcruise src --config .dependency-cruiser.cjs"
   },
   "dependencies": {
     "@876/billing": "workspace:*",
     "@876/core": "workspace:*",
     "@876/server": "workspace:*",
     "@876/settings": "workspace:*",
-    "@cloudflare/containers": "0.3.7",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@prisma/extension-accelerate": "3.0.1",
@@ -50,7 +46,6 @@
     "tsup": "8.5.1",
     "tsx": "4.23.12",
     "typescript": "5.9.3",
-    "vitest": "4.1.11",
-    "wrangler": "4.124.0"
+    "vitest": "4.1.11"
   }
 }

@@ -88,7 +88,3 @@ export default withSentryConfig(nextConfig, {
     disable: true,
   },
 })
-
-// OpenNext Cloudflare local bindings (no-op when not using wrangler preview).
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
-initOpenNextCloudflareForDev()

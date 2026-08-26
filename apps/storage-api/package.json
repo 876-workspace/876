@@ -12,17 +12,11 @@
     "format": ".venv/bin/python -m ruff format .",
     "format:check": ".venv/bin/python -m ruff format --check .",
     "db:migrate": ".venv/bin/python -m alembic upgrade head",
-    "storage:check": ".venv/bin/python -m scripts.check_storage",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler dev",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "storage:check": ".venv/bin/python -m scripts.check_storage"
   },
-  "dependencies": {
-    "@cloudflare/containers": "0.3.7"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "26.2.0",
-    "typescript": "5.9.3",
-    "wrangler": "4.124.0"
+    "typescript": "5.9.3"
   }
 }

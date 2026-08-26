@@ -1,0 +1,65 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      // Cloudflare rejects a Container application name that starts with a
+      // digit, so this cannot default to the Worker name (`876-api`).
+      "name": "api-876",
+      "class_name": "ApiContainer",
+      "image": "./Dockerfile",
+      // The build context is the repository root because pnpm keeps a single
+      // lockfile there; a context of `apps/api` has none and the image's
+      // `--frozen-lockfile` install fails.
+      "image_build_context": "../../",
+      // Raise after traffic validation; Containers are billed per instance-time.
+      "max_instances": 5,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "API_CONTAINER",
+        "class_name": "ApiContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ApiContainer"],
+    },
+  ],
+  // Non-secret defaults. Secrets: wrangler secret put <NAME> --name 876-api
+  "vars": {
+    "ENVIRONMENT": "production",
+    "IS_PRODUCTION": "true",
+    "LOG_LEVEL": "info",
+    "PORT": "4000",
+    // The Billing data plane. Without this the finance-provisioning dispatcher
+    // resolves an empty URL and silently reports `configured: false`, leaving
+    // every `finance_connection.ensure` event pending forever — which is what
+    // left organizations with subscriptions but no Billing workspace.
+    "BILLING_API_URL": "https://876-billing-api.1876.workers.dev",
+    // Twilio ships inert. Every channel is enabled one at a time, in production,
+    // by editing this block — so each activation is a reviewed diff rather than a
+    // console click nobody can find later. Credentials are secrets, never vars:
+    // see docs/twilio-activation.md.
+    "TWILIO_MODE": "disabled",
+    "TWILIO_LOOKUP_ENABLED": "false",
+    // Billed per lookup — the paid line_type_intelligence package.
+    "TWILIO_LOOKUP_LINE_TYPE_ENABLED": "false",
+    "TWILIO_VERIFY_SMS_ENABLED": "false",
+    "TWILIO_VERIFY_CALL_ENABLED": "false",
+    "TWILIO_VERIFY_WHATSAPP_ENABLED": "false",
+    "TWILIO_SMS_ENABLED": "false",
+    "TWILIO_WHATSAPP_ENABLED": "false",
+    "TWILIO_VOICE_ENABLED": "false",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

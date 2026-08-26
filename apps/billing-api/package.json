@@ -26,16 +26,12 @@
     "api:contract:check": "tsx scripts/generate_v1_contract_manifest.ts --check && tsx scripts/check_express_contract.ts",
     "api:contract:generate": "tsx scripts/generate_v1_contract_manifest.ts",
     "api:contract:manifest:generate": "tsx scripts/generate_v1_contract_manifest.ts",
-    "api:contract:manifest:check": "tsx scripts/generate_v1_contract_manifest.ts --check",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler dev",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "api:contract:manifest:check": "tsx scripts/generate_v1_contract_manifest.ts --check"
   },
   "dependencies": {
     "@876/core": "workspace:*",
     "@workos-inc/node": "10.10.0",
     "@876/server": "workspace:*",
-    "@cloudflare/containers": "0.3.7",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@prisma/extension-accelerate": "3.0.1",
@@ -64,7 +60,6 @@
     "tsup": "8.5.1",
     "tsx": "4.23.12",
     "typescript": "5.9.3",
-    "vitest": "4.1.11",
-    "wrangler": "4.124.0"
+    "vitest": "4.1.11"
   }
 }
