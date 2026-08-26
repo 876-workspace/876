@@ -10,8 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@876/ui/select'
+import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { client } from '@/lib/client'
 import type {
@@ -22,9 +23,20 @@ import type {
   RequestStatus,
 } from '@/types/crm'
 
+import {
+  CustomerPicker,
+  toPickerCustomer,
+  type PickerCustomer,
+} from './customer-picker'
+
 type Values = {
   customerId: string
   subject: string
+  /**
+   * The opening message. On create this becomes the request's first note
+   * (`kind: 'DESCRIPTION'`); a request itself no longer stores a description,
+   * so this field is absent when editing.
+   */
   description: string
   category: RequestCategory
   status: RequestStatus
@@ -60,19 +72,37 @@ export function RequestForm({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const pickerCustomers = useMemo(
+    () => customers.map(toPickerCustomer),
+    [customers]
+  )
+  const [customer, setCustomer] = useState<PickerCustomer | null>(
+    () =>
+      pickerCustomers.find((entry) => entry.id === initial.customerId) ?? null
+  )
+
   const set = <K extends keyof Values>(key: K, value: Values[K]) =>
     setValues((current) => ({ ...current, [key]: value }))
+
+  function chooseCustomer(next: PickerCustomer | null) {
+    setCustomer(next)
+    set('customerId', next?.id ?? '')
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (saving) return
+
+    if (!requestId && !values.customerId) {
+      setError('Select the customer this request is for.')
+      return
+    }
 
     setSaving(true)
     setError(null)
 
     const base = {
       subject: values.subject.trim(),
-      description: values.description.trim() || null,
       category: values.category,
       priority: values.priority,
       source: values.source,
@@ -87,6 +117,7 @@ export function RequestForm({
       : await client.requests.create({
           ...base,
           customerId: values.customerId,
+          description: values.description.trim() || null,
         })
 
     if (result.error) {
@@ -103,22 +134,13 @@ export function RequestForm({
     <form onSubmit={submit} className="max-w-3xl space-y-6">
       <div className="876-card space-y-5 p-5">
         <FormRow label="Customer" required className={rowClassName}>
-          <Select
-            value={values.customerId}
-            onValueChange={(value) => set('customerId', value ?? '')}
-            disabled={Boolean(requestId) || saving}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select customer" />
-            </SelectTrigger>
-            <SelectContent>
-              {customers.map(({ profile, customer }) => (
-                <SelectItem key={profile.id} value={profile.id}>
-                  {customer?.name ?? profile.billingCustomerId}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CustomerPicker
+            customers={pickerCustomers}
+            value={customer}
+            onSelect={chooseCustomer}
+            disabled={saving}
+            locked={Boolean(requestId)}
+          />
         </FormRow>
 
         <FormRow
@@ -131,24 +153,29 @@ export function RequestForm({
             id="request-subject"
             value={values.subject}
             onChange={(event) => set('subject', event.target.value)}
+            placeholder="What is this request about?"
             disabled={saving}
             required
           />
         </FormRow>
 
-        <FormRow
-          htmlFor="request-description"
-          label="Description"
-          className={rowClassName}
-        >
-          <textarea
-            id="request-description"
-            className="border-input bg-background min-h-32 w-full rounded-md border px-3 py-2 text-sm"
-            value={values.description}
-            onChange={(event) => set('description', event.target.value)}
-            disabled={saving}
-          />
-        </FormRow>
+        {requestId ? null : (
+          <FormRow
+            htmlFor="request-description"
+            label="Description"
+            hint="The opening message. It is filed as the first note on this request; everything added afterwards is a note too."
+            className={rowClassName}
+          >
+            <Textarea
+              id="request-description"
+              className="min-h-32"
+              value={values.description}
+              onChange={(event) => set('description', event.target.value)}
+              placeholder="What did the customer ask for?"
+              disabled={saving}
+            />
+          </FormRow>
+        )}
 
         <FormRow label="Category" className={rowClassName}>
           <RequestSelect
