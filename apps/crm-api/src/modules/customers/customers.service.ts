@@ -16,6 +16,14 @@ function finance() {
   })
 }
 
+/**
+ * The registry customer as the Billing integration client actually returns it.
+ * Derived from the client so the two cannot drift.
+ */
+type FinanceCustomer = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof finance>['customers']['list']>>['data']
+>['data'][number]
+
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
   if (!tenant) throw new Error('CRM tenant not found.')
@@ -40,7 +48,9 @@ function resolveName(params: {
     : person || company
 }
 
-function serializeProfile(profile: Awaited<ReturnType<typeof repository.retrieve>> & {}) {
+function serializeProfile(
+  profile: Awaited<ReturnType<typeof repository.retrieve>> & {}
+) {
   if (!profile) return null
 
   return {
@@ -55,7 +65,7 @@ function serializeProfile(profile: Awaited<ReturnType<typeof repository.retrieve
 
 function compose(
   profile: NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>,
-  customer: Record<string, unknown> | null
+  customer: FinanceCustomer | null
 ) {
   return {
     object: 'customer_profile' as const,
