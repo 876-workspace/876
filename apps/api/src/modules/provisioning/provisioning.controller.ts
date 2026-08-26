@@ -2,7 +2,11 @@ import type { Request, Response } from 'express'
 
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
-import type { ProvisioningDraftReplace } from './provisioning.schemas'
+import type {
+  ProvisioningDraftReplace,
+  ProvisioningSetupCreate,
+  ProvisioningSetupUpdate,
+} from './provisioning.schemas'
 import * as service from './provisioning.service'
 
 export async function retrieveCatalog(
@@ -169,5 +173,32 @@ export async function deleteNote(req: Request, res: Response): Promise<void> {
     note_id: string
   }>(req)
   const result = await service.deleteNote(target_type, target_key, note_id)
+  res.status(200).json(result)
+}
+
+export async function listSetups(_req: Request, res: Response): Promise<void> {
+  const result = await service.listSetups()
+  res.status(200).json(result)
+}
+
+export async function retrieveSetup(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const { setup_key } = validParams<{ setup_key: string }>(req)
+  const result = await service.retrieveSetup(setup_key)
+  res.status(200).json(result)
+}
+
+export async function createSetup(req: Request, res: Response): Promise<void> {
+  const body = validBody<ProvisioningSetupCreate>(req)
+  const result = await service.createSetup(body)
+  res.status(201).json(result)
+}
+
+export async function updateSetup(req: Request, res: Response): Promise<void> {
+  const { setup_key } = validParams<{ setup_key: string }>(req)
+  const body = validBody<ProvisioningSetupUpdate>(req)
+  const result = await service.updateSetup(setup_key, body)
   res.status(200).json(result)
 }

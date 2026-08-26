@@ -622,3 +622,154 @@ export async function completeApplicationRun(
   }
   return findRunById(runId)
 }
+
+// ---------------------------------------------------------------------------
+// Setups
+// ---------------------------------------------------------------------------
+
+const SETUP_SELECT = {
+  id: true,
+  key: true,
+  name: true,
+  description: true,
+  countryCode: true,
+  currencyCode: true,
+  status: true,
+  isDefault: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
+
+export type SetupRow = {
+  id: string
+  key: string
+  name: string
+  description: string | null
+  countryCode: string | null
+  currencyCode: string | null
+  status: string
+  isDefault: boolean
+  createdAt: bigint
+  updatedAt: bigint
+}
+
+export function listSetups(): Promise<SetupRow[]> {
+  return prisma.provisioningSetup.findMany({
+    select: SETUP_SELECT,
+    orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+  })
+}
+
+export function findSetupByKey(key: string): Promise<SetupRow | null> {
+  return prisma.provisioningSetup.findFirst({
+    where: { key },
+    select: SETUP_SELECT,
+  })
+}
+
+export function findDefaultSetup(): Promise<SetupRow | null> {
+  return prisma.provisioningSetup.findFirst({
+    where: { isDefault: true },
+    select: SETUP_SELECT,
+  })
+}
+
+export function createSetup(data: {
+  key: string
+  name: string
+  description: string | null
+  countryCode: string | null
+  currencyCode: string | null
+  now: number
+}): Promise<SetupRow> {
+  const now = BigInt(data.now)
+  return prisma.provisioningSetup.create({
+    data: {
+      id: generateId('provisioningSetup'),
+      key: data.key,
+      name: data.name,
+      description: data.description,
+      countryCode: data.countryCode,
+      currencyCode: data.currencyCode,
+      status: 'active',
+      isDefault: false,
+      createdAt: now,
+      updatedAt: now,
+    },
+    select: SETUP_SELECT,
+  })
+}
+
+export function updateSetup(
+  id: string,
+  data: {
+    name?: string
+    description?: string | null
+    countryCode?: string | null
+    currencyCode?: string | null
+    status?: string
+    now: number
+  }
+): Promise<SetupRow> {
+  const { now, ...fields } = data
+  return prisma.provisioningSetup.update({
+    where: { id },
+    data: { ...fields, updatedAt: BigInt(now) },
+    select: SETUP_SELECT,
+  })
+}
+
+/**
+ * Moves the platform default onto one setup. Run as a transaction because the
+ * partial unique index permits exactly one `is_default = true` row: clearing
+ * and setting in two statements would leave a window where two rows claim it.
+ */
+export async function setDefaultSetup(
+  id: string,
+  now: number
+): Promise<SetupRow> {
+  const updatedAt = BigInt(now)
+  const [, updated] = await prisma.$transaction([
+    prisma.provisioningSetup.updateMany({
+      where: { isDefault: true, NOT: { id } },
+      data: { isDefault: false, updatedAt },
+    }),
+    prisma.provisioningSetup.update({
+      where: { id },
+      data: { isDefault: true, updatedAt },
+      select: SETUP_SELECT,
+    }),
+  ])
+  return updated
+}
+
+export function countOrganizationsForSetup(key: string): Promise<number> {
+  return prisma.organization.count({
+    where: { provisioningSetupKey: key, deletedAt: null },
+  })
+}
+
+export function findRevisionSummaries(
+  targetType: string,
+  targetKeys: string[]
+): Promise<Array<{ targetKey: string; revision: number; status: string }>> {
+  return prisma.provisioningManifestRevision
+    .findMany({
+      where: {
+        provisioningManifest: { targetType, targetKey: { in: targetKeys } },
+        status: { in: ['draft', 'published'] },
+      },
+      select: {
+        revision: true,
+        status: true,
+        provisioningManifest: { select: { targetKey: true } },
+      },
+    })
+    .then((rows) =>
+      rows.map((row) => ({
+        targetKey: row.provisioningManifest.targetKey,
+        revision: row.revision,
+        status: row.status,
+      }))
+    )
+}

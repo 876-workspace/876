@@ -273,3 +273,43 @@ export function serializeCatalog(
     })),
   }
 }
+
+type SetupRow = {
+  id: string
+  key: string
+  name: string
+  description: string | null
+  countryCode: string | null
+  currencyCode: string | null
+  status: string
+  isDefault: boolean
+  createdAt: bigint
+  updatedAt: bigint
+}
+
+export function serializeSetup(
+  row: SetupRow,
+  context: {
+    publishedRevision: number | null
+    hasDraft: boolean
+    organizationCount: number
+  }
+) {
+  return {
+    object: 'provisioning_setup' as const,
+    id: row.id,
+    key: row.key,
+    name: row.name,
+    description: row.description,
+    country_code: row.countryCode,
+    currency_code: row.currencyCode,
+    status: row.status as 'active' | 'archived',
+    is_default: row.isDefault,
+    manifest_target: `finance/${row.key}`,
+    published_revision: context.publishedRevision,
+    has_draft: context.hasDraft,
+    organization_count: context.organizationCount,
+    created_at: fromDbUnixSeconds(row.createdAt),
+    updated_at: fromDbUnixSeconds(row.updatedAt),
+  }
+}
