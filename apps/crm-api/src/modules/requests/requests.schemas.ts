@@ -58,7 +58,6 @@ export const createRequestBodySchema = z.object({
 export const updateRequestBodySchema = z
   .object({
     subject: z.string().trim().min(1).max(240).optional(),
-    description: z.string().trim().max(20_000).nullable().optional(),
     category: requestCategorySchema.optional(),
     status: requestStatusSchema.optional(),
     priority: requestPrioritySchema.optional(),
@@ -72,4 +71,23 @@ export const updateRequestBodySchema = z
 export const deleteRequestBodySchema = z.object({
   deletedBy: z.string().min(1),
   reason: z.string().trim().max(300).nullable().optional(),
+})
+
+export const requestNoteParamsSchema = requestParamsSchema.extend({
+  noteId: z.string().min(1),
+})
+
+export const createRequestNoteBodySchema = z.object({
+  body: z.string().trim().min(1).max(10_000),
+  authorId: z.string().min(1),
+  internal: z.boolean().optional(),
+})
+
+export const deleteRequestNoteBodySchema = z.object({
+  deletedBy: z.string().min(1),
+})
+
+export const updateRequestNoteBodySchema = z.object({
+  body: z.string().trim().min(1).max(10_000),
+  editedBy: z.string().min(1),
 })

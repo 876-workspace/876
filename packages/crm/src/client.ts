@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createCustomersResource } from './resources/customers'
+import { createRequestNotesResource } from './resources/request-notes'
 import { createRequestsResource } from './resources/requests'
 import { buildRuntime } from './runtime'
 import type { ClientOptions } from './types'
@@ -11,7 +12,9 @@ export function create876CrmClient(options: ClientOptions = {}) {
   return {
     customers: createCustomersResource(runtime),
     requests: createRequestsResource(runtime),
+    requestNotes: createRequestNotesResource(runtime),
   }
 }
 
 export type CrmClient = ReturnType<typeof create876CrmClient>
+

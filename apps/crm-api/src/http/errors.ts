@@ -19,6 +19,18 @@ const ERRORS = {
     message: 'Customer not found.',
     httpStatus: 404,
   },
+  'crm/request-not-found': {
+    message: 'Request not found.',
+    httpStatus: 404,
+  },
+  'crm/request-note-not-found': {
+    message: 'Request note not found.',
+    httpStatus: 404,
+  },
+  'crm/description-note-immutable': {
+    message: 'A request’s opening note cannot be deleted.',
+    httpStatus: 409,
+  },
   'crm/registry-unavailable': {
     message: 'The customer registry could not be reached.',
     httpStatus: 502,

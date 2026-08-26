@@ -34,13 +34,17 @@ enum RequestSource {
   OTHER
 }
 
+enum RequestNoteKind {
+  DESCRIPTION
+  NOTE
+}
+
 model Request {
   id             String          @id
   tenantId       String          @map("tenant_id")
   customerId     String          @map("customer_id")
   number         Int
   subject        String
-  description    String?
   category       RequestCategory @default(GENERAL)
   status         RequestStatus   @default(OPEN)
   priority       RequestPriority @default(NORMAL)
@@ -68,21 +72,24 @@ model Request {
 }
 
 model RequestNote {
-  id        String    @id
-  tenantId  String    @map("tenant_id")
-  requestId String    @map("request_id")
+  id        String          @id
+  tenantId  String          @map("tenant_id")
+  requestId String          @map("request_id")
   body      String
-  authorId  String    @map("author_id")
-  internal  Boolean   @default(true)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  deletedBy String?   @map("deleted_by")
+  authorId  String          @map("author_id")
+  internal  Boolean         @default(true)
+  kind      RequestNoteKind @default(NOTE)
+  editedAt  DateTime?       @map("edited_at")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  deletedAt DateTime?       @map("deleted_at")
+  deletedBy String?         @map("deleted_by")
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   request Request @relation(fields: [tenantId, requestId], references: [tenantId, id], onDelete: Cascade)
 
   @@index([tenantId, requestId, createdAt])
   @@index([tenantId, authorId, createdAt])
+  // The partial unique index for active DESCRIPTION notes lives in the migration.
   @@map("crm_request_notes")
 }

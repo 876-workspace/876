@@ -13,7 +13,7 @@ import * as repository from './customers.repository.js'
 function finance() {
   return create876BillingIntegrationClient({
     baseUrl: process.env.BILLING_API_URL,
-    apiKey: process.env.CRM_API_876_KEY,
+    internalKey: process.env.BILLING_INTERNAL_KEY,
   })
 }
 
@@ -77,23 +77,28 @@ function compose(
 
 export async function list(organizationId: string) {
   const tenant = await requireTenant(organizationId)
-  const profiles = await repository.list(tenant.id)
-  if (!profiles.length) return []
 
-  const result = await finance().customers.list(organizationId, {
-    ids: profiles.map((profile) => profile.billingCustomerId),
-    limit: Math.min(profiles.length, 100),
-  })
+  // Pull all customers from the shared billing registry for this org.
+  // The registry is the source of truth; CRM profiles are metadata extensions.
+  const result = await finance().customers.list(organizationId, { limit: 100 })
   if (result.error)
     throw crmError('crm/registry-unavailable', result.error.message)
 
-  const byId = new Map(
-    result.data.data.map((customer) => [customer.id, customer])
+  const billingCustomers = result.data.data
+  if (!billingCustomers.length) return { customers: [], hasMore: false }
+
+  // Lazily create CRM profiles for any billing customers that don't have one.
+  const profileByBillingId = await repository.ensureMany(
+    tenant.id,
+    billingCustomers.map((c) => c.id)
   )
 
-  return profiles.map((profile) =>
-    compose(profile, byId.get(profile.billingCustomerId) ?? null)
-  )
+  return {
+    customers: billingCustomers.map((customer) =>
+      compose(profileByBillingId.get(customer.id)!, customer)
+    ),
+    hasMore: result.data.has_more,
+  }
 }
 
 export async function retrieve(organizationId: string, id: string) {

@@ -118,6 +118,7 @@ export const requestSourceSchema = z.enum([
   'API',
   'OTHER',
 ])
+export const requestNoteKindSchema = z.enum(['DESCRIPTION', 'NOTE'])
 
 export const crmRequestSchema = z.object({
   object: z.literal('request'),
@@ -126,7 +127,6 @@ export const crmRequestSchema = z.object({
   customerId: z.string(),
   number: z.number().int().positive(),
   subject: z.string(),
-  description: z.string().nullable(),
   category: requestCategorySchema,
   status: requestStatusSchema,
   priority: requestPrioritySchema,
@@ -151,12 +151,14 @@ export type RequestStatus = z.infer<typeof requestStatusSchema>
 export type RequestPriority = z.infer<typeof requestPrioritySchema>
 export type RequestCategory = z.infer<typeof requestCategorySchema>
 export type RequestSource = z.infer<typeof requestSourceSchema>
+export type RequestNoteKind = z.infer<typeof requestNoteKindSchema>
 export type CrmRequest = z.infer<typeof crmRequestSchema>
 export type RequestList = z.infer<typeof requestListSchema>
 
 export interface CreateRequestInput {
   customerId: string
   subject: string
+  /** The opening message. The service stores it as the request's DESCRIPTION note. */
   description?: string | null
   category?: RequestCategory
   priority?: RequestPriority
@@ -167,7 +169,6 @@ export interface CreateRequestInput {
 
 export interface UpdateRequestInput {
   subject?: string
-  description?: string | null
   category?: RequestCategory
   status?: RequestStatus
   priority?: RequestPriority
@@ -178,6 +179,46 @@ export interface UpdateRequestInput {
 export interface DeleteInput {
   deletedBy: string
   reason?: string | null
+}
+
+export const crmRequestNoteSchema = z.object({
+  object: z.literal('request_note'),
+  id: z.string(),
+  tenantId: z.string(),
+  requestId: z.string(),
+  body: z.string(),
+  authorId: z.string(),
+  internal: z.boolean(),
+  kind: requestNoteKindSchema,
+  editedAt: z.number().int().nullable(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+})
+
+export const requestNoteListSchema = z.object({
+  object: z.literal('list'),
+  data: z.array(crmRequestNoteSchema),
+  has_more: z.boolean(),
+  total_count: z.number().int().nullable(),
+  url: z.string(),
+})
+
+export type CrmRequestNote = z.infer<typeof crmRequestNoteSchema>
+export type RequestNoteList = z.infer<typeof requestNoteListSchema>
+
+export interface CreateRequestNoteInput {
+  body: string
+  authorId: string
+  internal?: boolean
+}
+
+export interface UpdateRequestNoteInput {
+  body: string
+  editedBy: string
+}
+
+export interface DeleteRequestNoteInput {
+  deletedBy: string
 }
 
 export const deletedSchema = z.object({

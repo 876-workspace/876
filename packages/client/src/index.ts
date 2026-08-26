@@ -85,4 +85,10 @@ export type {
   RequestSource,
   CreateRequestInput as CrmRequestCreateInput,
   UpdateRequestInput as CrmRequestUpdateInput,
+  CrmRequestNote,
+  RequestNoteList as CrmRequestNoteList,
+  CreateRequestNoteInput as CrmRequestNoteCreateInput,
+  UpdateRequestNoteInput as CrmRequestNoteUpdateInput,
+  RequestNoteKind,
+  DeleteRequestNoteInput as CrmRequestNoteDeleteInput,
 } from '@876/crm'

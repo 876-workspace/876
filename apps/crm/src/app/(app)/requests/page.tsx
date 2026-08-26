@@ -1,15 +1,37 @@
-import Link from 'next/link'
-
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@876/ui/empty'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { Suspense } from 'react'
 
 import { $876 } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
+import { REQUESTS_SKELETON_COLUMNS } from './_components/requests-skeleton-columns'
+import { RequestsTable, type CrmRequestRow } from './_components/requests-table'
+
 export const metadata = { title: 'Requests' }
 
-export default async function RequestsPage() {
+export default function RequestsPage() {
+  return (
+    <Page>
+      <ResourceToolbar
+        title="Requests"
+        primaryLabel="Add"
+        primaryHref="/requests/new"
+        primaryVariant="info"
+        refresh
+      />
+
+      <Suspense
+        fallback={<DataTableSkeleton columns={REQUESTS_SKELETON_COLUMNS} />}
+      >
+        <RequestsTableData />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function RequestsTableData() {
   const context = await requireCrmContext()
   const [requestsResult, customersResult] = await Promise.all([
     $876.requests.list(context.orgId),
@@ -24,47 +46,19 @@ export default async function RequestsPage() {
       customer?.name ?? profile.billingCustomerId,
     ])
   )
-  const requests = requestsResult.data.data
 
-  return (
-    <Page>
-      <ResourceToolbar title="Requests" primaryLabel="Add" primaryHref="/requests/new" primaryVariant="info" />
+  const rows: CrmRequestRow[] = requestsResult.data.data.map((request) => ({
+    id: request.id,
+    number: request.number,
+    subject: request.subject,
+    customerId: request.customerId,
+    customerName: customerNames.get(request.customerId) ?? request.customerId,
+    category: request.category,
+    status: request.status,
+    priority: request.priority,
+    source: request.source,
+    createdAt: request.createdAt,
+  }))
 
-      {requests.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>No requests yet</EmptyTitle>
-            <EmptyDescription>Create a request to track customer support, billing, sales, complaints, feedback, and other relationship work.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="overflow-hidden rounded-xl border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-left">
-              <tr>
-                <th className="px-4 py-3 font-medium">Request</th>
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Priority</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((request) => (
-                <tr key={request.id} className="border-t">
-                  <td className="px-4 py-3">
-                    <Link href={`/requests/${request.id}`} className="font-medium hover:underline">
-                      #{request.number} · {request.subject}
-                    </Link>
-                  </td>
-                  <td className="text-muted-foreground px-4 py-3">{customerNames.get(request.customerId) ?? request.customerId}</td>
-                  <td className="px-4 py-3">{request.status.replaceAll('_', ' ')}</td>
-                  <td className="px-4 py-3">{request.priority}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </Page>
-  )
+  return <RequestsTable requests={rows} />
 }

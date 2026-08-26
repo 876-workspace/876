@@ -12,6 +12,7 @@ export function createCrmClient(options: CrmServerClientOptions) {
     ...core,
     customerProfiles: crm.customers,
     requests: crm.requests,
+    requestNotes: crm.requestNotes,
   }
 }
 

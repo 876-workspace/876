@@ -13,4 +13,10 @@ export type {
   RequestSource,
   CrmRequestCreateInput,
   CrmRequestUpdateInput,
+  CrmRequestNote,
+  CrmRequestNoteList,
+  CrmRequestNoteCreateInput,
+  CrmRequestNoteUpdateInput,
+  RequestNoteKind,
+  CrmRequestNoteDeleteInput,
 } from '@876/client'

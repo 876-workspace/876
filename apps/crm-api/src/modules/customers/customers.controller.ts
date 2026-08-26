@@ -18,14 +18,14 @@ function notFound(res: Response) {
 
 export async function listCustomers(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
-  const data = await service.list(organizationId)
+  const result = await service.list(organizationId)
 
   res.json({
     data: {
       object: 'list',
-      data,
-      has_more: false,
-      total_count: data.length,
+      data: result.customers,
+      has_more: result.hasMore,
+      total_count: result.hasMore ? null : result.customers.length,
       url: `/v1/organizations/${organizationId}/customers`,
     },
     error: null,
