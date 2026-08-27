@@ -102,3 +102,27 @@ export const loadNotes = cache(async (requestId: string) => {
   if (result.error) throw new Error(result.error.message)
   return result.data.data
 })
+
+/**
+ * The request's tasks.
+ *
+ * Like the thread, a failed read is an outage rather than an empty checklist —
+ * rendering "no tasks" over a broken service hides the real cause and invites
+ * someone to re-create work that already exists.
+ */
+export const loadTasks = cache(async (requestId: string) => {
+  const context = await loadCrmContext()
+  const $876 = await get876Client()
+  const result = await $876.requestTasks.list(context.orgId, requestId)
+  if (result.error) throw new Error(result.error.message)
+  return result.data.data
+})
+
+/** The request's reminders, on the same terms as its tasks. */
+export const loadReminders = cache(async (requestId: string) => {
+  const context = await loadCrmContext()
+  const $876 = await get876Client()
+  const result = await $876.requestReminders.list(context.orgId, requestId)
+  if (result.error) throw new Error(result.error.message)
+  return result.data.data
+})
