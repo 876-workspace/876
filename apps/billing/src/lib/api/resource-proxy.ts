@@ -4,6 +4,10 @@ import { proxy876BillingRequest } from '@876/billing/proxy'
 import { apiError } from '@876/core/api'
 import { cookies, headers } from 'next/headers'
 
+import {
+  isProxiedResource,
+  type ProxiedResource,
+} from '@/lib/api/resource-manifest'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export type ResourceRouteContext = {
@@ -44,11 +48,14 @@ export async function proxyBillingResourceRequest(
 }
 
 /** Creates the transport handler used by a named Billing app resource route. */
-export function createBillingResourceRoute(resource: string) {
+export function createBillingResourceRoute(resource: ProxiedResource) {
   return async function billingResourceRoute(
     request: Request,
     context: ResourceRouteContext
   ): Promise<Response> {
+    if (!isProxiedResource(resource))
+      return apiError('Unknown resource.', { status: 404 })
+
     const { path = [] } = await context.params
     return proxyBillingResourceRequest(request, resource, path)
   }
