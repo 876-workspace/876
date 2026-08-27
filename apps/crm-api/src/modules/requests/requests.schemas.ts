@@ -22,6 +22,19 @@ export const requestSourceSchema = z.enum([
 ])
 
 /**
+ * Serialized Editor.js documents include block metadata around the authored
+ * text. Keep the API transport string-based while leaving enough room for that
+ * structure; UI-side helpers still enforce semantic emptiness.
+ */
+const richContentSchema = z.string().trim().min(1).max(100_000)
+const optionalRichContentSchema = z
+  .string()
+  .trim()
+  .max(100_000)
+  .nullable()
+  .optional()
+
+/**
  * A timestamp on the wire.
  *
  * Unix **seconds**, never an ISO string and never milliseconds — the platform
@@ -54,7 +67,7 @@ export const listRequestsQuerySchema = z.object({
 export const createRequestBodySchema = z.object({
   customerId: z.string().min(1),
   subject: z.string().trim().min(1).max(240),
-  description: z.string().trim().max(20_000).nullable().optional(),
+  description: optionalRichContentSchema,
   categoryId: z.string().trim().max(160).nullable().optional(),
   subcategoryId: z.string().trim().max(160).nullable().optional(),
   ownerId: z.string().trim().max(160).nullable().optional(),
@@ -91,7 +104,7 @@ export const requestNoteParamsSchema = requestParamsSchema.extend({
 })
 
 export const createRequestNoteBodySchema = z.object({
-  body: z.string().trim().min(1).max(10_000),
+  body: richContentSchema,
   authorId: z.string().min(1),
   internal: z.boolean().optional(),
 })
@@ -101,7 +114,7 @@ export const deleteRequestNoteBodySchema = z.object({
 })
 
 export const updateRequestNoteBodySchema = z.object({
-  body: z.string().trim().min(1).max(10_000),
+  body: richContentSchema,
   editedBy: z.string().min(1),
 })
 
@@ -113,7 +126,7 @@ export const reminderParamsSchema = requestParamsSchema.extend({
 })
 export const createTaskBodySchema = z.object({
   title: z.string().trim().min(1).max(240),
-  description: z.string().trim().max(10_000).nullable().optional(),
+  description: optionalRichContentSchema,
   status: z.enum(['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED']).optional(),
   priority: requestPrioritySchema.optional(),
   assigneeId: z.string().nullable().optional(),
