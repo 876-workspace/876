@@ -286,6 +286,11 @@ export async function revokeAppAssignment(
 
 // ---------------------------------------------------------------------------
 // Membership reads and writes
+//
+// These live here, not in the service, because a service that queries Prisma
+// directly is a boundary violation `pnpm boundaries` fails on — and a module
+// whose data access is scattered across both layers cannot be reasoned about
+// from the repository alone.
 // ---------------------------------------------------------------------------
 
 const MEMBER_USER_SELECT = {

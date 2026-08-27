@@ -17,7 +17,9 @@ const SELECT = {
   updatedAt: true,
 } as const
 
-export function findMembershipById(membershipId: string): Promise<MembershipRow | null> {
+export function findMembershipById(
+  membershipId: string
+): Promise<MembershipRow | null> {
   return prisma.membership.findFirst({
     where: { id: membershipId, deletedAt: null },
     select: SELECT,
@@ -44,7 +46,9 @@ export function findMembershipsByOrgAndUsers(
   }) as Promise<MembershipRow[]>
 }
 
-export function findMembershipByWorkosId(workosMembershipId: string): Promise<MembershipRow | null> {
+export function findMembershipByWorkosId(
+  workosMembershipId: string
+): Promise<MembershipRow | null> {
   return prisma.membership.findFirst({
     where: { workosMembershipId, deletedAt: null },
     select: SELECT,
@@ -110,7 +114,8 @@ export async function updateMembership(
   }>
 ): Promise<MembershipRow | null> {
   const mapped: Record<string, unknown> = {}
-  if ('workosMembershipId' in data) mapped.workosMembershipId = data.workosMembershipId
+  if ('workosMembershipId' in data)
+    mapped.workosMembershipId = data.workosMembershipId
   if ('role' in data) mapped.role = data.role
   if ('position' in data) mapped.position = data.position
   if ('status' in data) mapped.status = data.status
@@ -128,8 +133,11 @@ export async function updateMembership(
 }
 
 export type MembershipDeleteOptions = {
+  /** Optional lifecycle status to persist alongside the soft-delete marker. */
   status?: string
+  /** Actor responsible for an organization-scoped removal. */
   deletedBy?: string | null
+  /** Shared timestamp so callers can keep related lifecycle writes consistent. */
   deletedAt?: bigint
 }
 
@@ -151,7 +159,9 @@ export async function deleteMembership(
         deletedAt: now,
         updatedAt: now,
         ...(options.status !== undefined ? { status: options.status } : {}),
-        ...(options.deletedBy !== undefined ? { deletedBy: options.deletedBy } : {}),
+        ...(options.deletedBy !== undefined
+          ? { deletedBy: options.deletedBy }
+          : {}),
       },
     })
     return true
@@ -174,7 +184,9 @@ export function listMemberships(
     fetch: ({ take, cursor, order }) =>
       prisma.membership.findMany({
         where: cursor
-          ? { AND: [where, { createdAt: { [cursor.direction]: cursor.value } }] }
+          ? {
+              AND: [where, { createdAt: { [cursor.direction]: cursor.value } }],
+            }
           : where,
         orderBy: { createdAt: order },
         take,
