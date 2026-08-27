@@ -226,7 +226,43 @@ Seed definitions exist for:
 
 There is intentionally no `876-enterprise` definition.
 
-The Couriers permission catalog includes the current module CRUD keys plus customer import/export and package export.
+Catalogs are **not declared in the seeds**. The canonical definition of each
+product's permission vocabulary is code, in `@876/core/access/catalogs`, and the
+seeds adapt it to rows. Add or change a permission there, never in
+`apps/api/src/seeds/app-access.ts`.
+
+### Couriers already has a role store, and it is being retired
+
+`apps/couriers-api` owns `roles` and `team_members` (per tenant), with the
+matching catalog in `apps/couriers/src/lib/permissions/catalog.ts` and a role
+editor under `settings/users/roles`. That is a second source of truth for the
+same question, so it retires rather than coexisting.
+
+**The platform store wins.** `app_roles` + `app_assignments` become authoritative
+for who may use Couriers and with what permissions, because that is the only
+plane Console can administer and the only one an invite can reference.
+
+The order matters, and each step is independently shippable:
+
+1. **Freeze the vocabulary (done in this PR).** Both catalogs are now checked
+   against each other by `apps/couriers/src/lib/permissions/catalog-drift.test.ts`,
+   so they cannot diverge while both exist. A key present only in the local
+   catalog would otherwise be grantable in the Couriers role editor and then
+   silently dropped by the platform resolver's catalog intersection — a
+   permission that appears to work and does nothing.
+2. **Read through the platform.** Point the Couriers guards at
+   `$876.appMemberships.me.retrieve()` and resolve permissions from the returned
+   effective set. Keep writing to the local store so nothing is lost.
+3. **Migrate the data.** For each tenant, map `roles` → org-scoped `app_roles`
+   (`systemKey` → `templateKey`) and `team_members` → `app_assignments`, keyed by
+   the tenant's `orgId`. Migration must be idempotent and re-runnable.
+4. **Move the writes.** Repoint the Couriers role editor at
+   `workspace.apps.orgRoles` and member management at `workspace.apps.memberships`.
+5. **Drop `roles` and `team_members`,** and delete the local catalog in favour of
+   the shared one.
+
+Do not start at step 4. A write path that has moved while the read path has not
+leaves an org whose staff lose access at the moment of the switch.
 
 ## Internal/admin client
 
@@ -316,7 +352,8 @@ The next agent may wire these primitives into:
 - provisioning manifest catalog/publish;
 - invite create/accept;
 - Console and Enterprise pages;
-- CRM and Couriers product guards/settings;
+- CRM and Couriers product guards/settings — for Couriers, follow the retirement
+  sequence above rather than wiring alongside the existing role store;
 - app-specific UI/tests.
 
 It should not add replacement tables or another permission resolver. If a call site seems to need direct access to `app_permissions`, `app_roles`, or rich `app_assignments`, add a bounded public app-access service function instead.
