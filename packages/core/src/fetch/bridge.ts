@@ -29,6 +29,21 @@ const defaultRetryOptions = {
   maxDelayMs: 1_000,
 } satisfies Required<ApiBridgeRetryOptions>
 
+/**
+ * Methods a retry may repeat on its own initiative.
+ *
+ * Everything else carries a side effect the caller only authorized once, so an
+ * automatic replay is not a resilience feature — it is a second, unintended
+ * request. The OAuth authorization code exchange is the case that proved it:
+ * a 500 from the API left the code already spent at the provider, the retry
+ * came back `invalid_grant`, and every app surfaced a bare redirect to
+ * `/login` instead of the server error that actually happened.
+ *
+ * A caller that knows its non-idempotent request is safe to repeat can still
+ * opt in by passing `retry` explicitly.
+ */
+const idempotentMethods = new Set(['GET', 'HEAD', 'OPTIONS', 'TRACE'])
+
 export type ApiBridgeRequestInit = Omit<
   RequestInit,
   'body' | 'headers' | 'method'
@@ -98,7 +113,7 @@ export async function fetchApiBridge(
   const request = requestInit as RequestInit & {
     next?: { revalidate?: number }
   }
-  const retryOptions = resolveRetryOptions(retry)
+  const retryOptions = resolveRetryOptions(retry, request.method)
   const url = apiBridgeUrl(path, search, baseUrl)
 
   for (let attempt = 1; attempt <= retryOptions.attempts; attempt += 1) {
@@ -186,9 +201,16 @@ export function getSetCookies(headers: Headers): string[] {
 }
 
 function resolveRetryOptions(
-  retry: ApiBridgeRetryOptions | false | undefined
+  retry: ApiBridgeRetryOptions | false | undefined,
+  method: string | undefined
 ): Required<ApiBridgeRetryOptions> {
   if (retry === false) return { attempts: 1, delayMs: 0, maxDelayMs: 0 }
+
+  // Retrying is opt-in for a non-idempotent method: `undefined` means "no
+  // preference", and repeating a side effect nobody asked to repeat is worse
+  // than surfacing the error.
+  if (retry === undefined && !isIdempotentMethod(method))
+    return { attempts: 1, delayMs: 0, maxDelayMs: 0 }
 
   return {
     attempts: Math.max(1, retry?.attempts ?? defaultRetryOptions.attempts),
@@ -202,6 +224,11 @@ function resolveRetryOptions(
 
 function shouldRetryStatus(status: number): boolean {
   return transientStatusCodes.has(status)
+}
+
+function isIdempotentMethod(method: string | undefined): boolean {
+  // `fetch` defaults to GET when no method is given.
+  return idempotentMethods.has((method ?? 'GET').toUpperCase())
 }
 
 function bridgeNetworkErrorResponse(): Response {
