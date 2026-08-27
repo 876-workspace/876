@@ -11,18 +11,6 @@ export {
 } from './app-access-policy.service'
 
 export {
-  applyInviteAppAccess,
-  resolveInviteAppAccessSelection,
-  setInviteAppAccessSelection,
-  validateInviteAppAccessSelection,
-  type ValidatedInviteAppAccessSelection,
-} from './invite-app-access.service'
-export {
-  inviteAppAccessSelectionBodySchema,
-  type InviteAppAccessSelectionBody,
-} from './invite-app-access.schemas'
-
-export {
   subscriptionItemSchema,
   subscriptionSchema,
   type Subscription,
