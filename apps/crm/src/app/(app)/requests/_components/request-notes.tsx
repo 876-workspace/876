@@ -11,7 +11,7 @@ import {
   TrashIcon,
   UserIcon,
 } from '@876/ui/icons'
-import { cn } from '@876/ui/lib/utils'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
@@ -19,6 +19,12 @@ import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 import type { CrmRequestNote } from '@/types/crm'
+
+/** A member as the thread needs them: who they are, and what they look like. */
+export type NoteAuthor = {
+  name: string
+  avatar?: string | null
+}
 
 /** `busyId` sentinel for the composer, which has no note id of its own. */
 const COMPOSER = 'composer'
@@ -47,10 +53,18 @@ export function RequestNotesSection({
   requestId,
   notes,
   currentUserId,
+  authors = {},
 }: {
   requestId: string
   notes: CrmRequestNote[]
   currentUserId?: string
+  /**
+   * Author id → display name and picture. A note only carries an opaque
+   * `authorId`, and rendering two characters of that id ("69") names nobody
+   * and pictures nobody; the page already loads the org's members, so it
+   * resolves both and passes them down.
+   */
+  authors?: Record<string, NoteAuthor>
 }) {
   const router = useRouter()
   const [body, setBody] = useState('')
@@ -132,17 +146,17 @@ export function RequestNotesSection({
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <DocumentTextIcon
             className="text-muted-foreground size-4 shrink-0"
             aria-hidden="true"
           />
-          <h2 className="text-base font-semibold">Conversation</h2>
+          <h2 className="876-section-title">Conversation</h2>
+          <Badge variant="secondary" className="px-1.5 tabular-nums">
+            {thread.length + (description ? 1 : 0)}
+          </Badge>
         </div>
-        <span className="text-muted-foreground text-sm">
-          {thread.length} {thread.length === 1 ? 'note' : 'notes'}
-        </span>
       </div>
 
       {/*
@@ -154,10 +168,11 @@ export function RequestNotesSection({
         {thread.map((note) => (
           <TimelineEntry
             key={note.id}
-            node={<AuthorNode label={note.authorId} />}
+            node={<AuthorNode author={resolveAuthor(note.authorId, authors)} />}
           >
             <NoteCard
               note={note}
+              authorName={resolveAuthor(note.authorId, authors).name}
               currentUserId={currentUserId}
               busy={busyId === note.id || isPending}
               editing={editingId === note.id}
@@ -170,9 +185,16 @@ export function RequestNotesSection({
         ))}
 
         {description ? (
-          <TimelineEntry node={<AuthorNode label={description.authorId} />}>
+          <TimelineEntry
+            node={
+              <AuthorNode
+                author={resolveAuthor(description.authorId, authors)}
+              />
+            }
+          >
             <NoteCard
               note={description}
+              authorName={resolveAuthor(description.authorId, authors).name}
               currentUserId={currentUserId}
               busy={busyId === description.id || isPending}
               editing={editingId === description.id}
@@ -184,14 +206,20 @@ export function RequestNotesSection({
         ) : null}
 
         {empty ? (
-          <TimelineEntry node={<AuthorNode label="" subdued />}>
+          <TimelineEntry node={<AuthorNode subdued />}>
             <p className="border-border/60 bg-muted/20 text-muted-foreground rounded-lg border border-dashed px-4 py-10 text-center text-sm">
               Nothing has been logged on this request yet.
             </p>
           </TimelineEntry>
         ) : null}
 
-        <TimelineEntry node={<AuthorNode label="" subdued />}>
+        <TimelineEntry
+          node={
+            <AuthorNode
+              author={currentUserId ? authors[currentUserId] : undefined}
+            />
+          }
+        >
           <form onSubmit={addNote} className="876-card flex flex-col gap-3 p-4">
             <Textarea
               id={NEW_NOTE_FIELD_ID}
@@ -265,37 +293,49 @@ function TimelineEntry({
   )
 }
 
-/** The rail node for an author — initials, or a neutral glyph when unknown. */
+/**
+ * Resolve a note's opaque author id against the org's members. Falling back to
+ * the id is deliberate — inventing a name for an author who has left the org
+ * would be worse than showing the raw identifier the record actually holds.
+ */
+function resolveAuthor(
+  authorId: string,
+  authors: Record<string, NoteAuthor>
+): NoteAuthor {
+  return authors[authorId] ?? { name: authorId }
+}
+
+/** The rail node for an author — picture, monogram, or a neutral glyph. */
 function AuthorNode({
-  label,
+  author,
   subdued = false,
 }: {
-  label: string
+  author?: NoteAuthor
   subdued?: boolean
 }) {
-  const initials =
-    label
-      .replace(/^user_/, '')
-      .slice(0, 2)
-      .toUpperCase() || '?'
+  if (subdued || !author) {
+    return (
+      <span
+        className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full"
+        aria-hidden="true"
+      >
+        <UserIcon className="size-4" />
+      </span>
+    )
+  }
 
   return (
-    <span
-      className={cn(
-        'flex size-8 items-center justify-center rounded-full text-[0.6875rem] font-semibold',
-        subdued
-          ? 'bg-muted text-muted-foreground'
-          : 'bg-muted text-foreground border-border border'
-      )}
-      aria-hidden="true"
-    >
-      {subdued ? <UserIcon className="size-4" /> : initials}
-    </span>
+    <CustomerAvatar
+      name={author.name}
+      src={author.avatar}
+      className="size-8 rounded-full text-[0.6875rem] after:rounded-full [&_[data-slot=avatar-fallback]]:rounded-full [&_[data-slot=avatar-fallback]]:text-[0.6875rem] [&_[data-slot=avatar-fallback]]:font-semibold [&_[data-slot=avatar-image]]:rounded-full"
+    />
   )
 }
 
 function NoteCard({
   note,
+  authorName: author,
   currentUserId,
   busy,
   editing,
@@ -305,6 +345,7 @@ function NoteCard({
   onDelete,
 }: {
   note: CrmRequestNote
+  authorName: string
   currentUserId?: string
   busy: boolean
   editing: boolean
@@ -330,10 +371,10 @@ function NoteCard({
         issue comment does. The opening note is distinguished by its label, not
         by tinting the whole surface.
       */}
-      <div className="bg-muted/40 flex items-center justify-between gap-2 border-b px-4 py-2">
+      <div className="bg-muted/25 flex items-center justify-between gap-2 border-b px-4 py-2">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="text-foreground font-medium">
-            {isAuthor ? 'You' : note.authorId}
+            {isAuthor ? 'You' : author}
           </span>
           <span className="text-muted-foreground">
             {isDescription ? 'opened this request' : 'added a note'}

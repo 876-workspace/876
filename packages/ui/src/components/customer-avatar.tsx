@@ -1,6 +1,6 @@
 'use client'
 
-import { Avatar, AvatarFallback } from './avatar'
+import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 import { cn } from '../lib/utils'
 
 const AVATAR_COLORS = [
@@ -33,15 +33,24 @@ function avatarColor(name: string): string {
 }
 
 /**
- * Monogram avatar for a customer with a deterministic tint derived from a hash
- * of their name so each customer keeps the same color everywhere.
+ * Avatar for a customer or member: their picture when one exists, otherwise a
+ * monogram with a deterministic tint derived from a hash of their name, so the
+ * same person keeps the same color everywhere.
+ *
+ * `src` is optional because most parties in the registry are hand-entered and
+ * have no picture at all. The monogram is the fallback in both senses — it is
+ * what renders with no `src`, and what Base UI swaps back to if the image
+ * fails to load.
  */
 export function CustomerAvatar({
   name,
+  src,
   size = 'sm',
   className,
 }: {
   name: string
+  /** Picture URL. Falls back to the monogram when absent or broken. */
+  src?: string | null
   size?: 'sm' | 'lg'
   className?: string
 }) {
@@ -57,6 +66,7 @@ export function CustomerAvatar({
           className
         )}
       >
+        {src ? <AvatarImage src={src} alt="" /> : null}
         <AvatarFallback className={colorClass}>{initials}</AvatarFallback>
       </Avatar>
     )
@@ -67,6 +77,7 @@ export function CustomerAvatar({
       size="sm"
       className={cn('size-6 shrink-0 rounded-md after:rounded-md', className)}
     >
+      {src ? <AvatarImage src={src} alt="" className="rounded-md" /> : null}
       <AvatarFallback className={cn('rounded-md text-[0.5625rem]', colorClass)}>
         {initials}
       </AvatarFallback>

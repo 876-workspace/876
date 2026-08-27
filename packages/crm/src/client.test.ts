@@ -36,6 +36,7 @@ const crmRequest = {
   status: 'OPEN',
   priority: 'NORMAL',
   source: 'CRM',
+  teamId: null,
   assigneeId: null,
   createdBy: 'usr_1',
   resolvedAt: null,
@@ -154,6 +155,31 @@ describe('@876/crm client', () => {
     expect(created.data?.status).toBe('OPEN')
     expect(updated.data?.status).toBe('IN_PROGRESS')
     expect(deleted.data?.deleted).toBe(true)
+  })
+
+  it('sends request list with query filters', async () => {
+    fetch.mockResolvedValueOnce(
+      json({
+        object: 'list',
+        data: [{ ...crmRequest, teamId: 'dept_1', assigneeId: 'usr_2' }],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org_1/requests',
+      })
+    )
+
+    const result = await client.requests.list('org_1', {
+      status: 'OPEN',
+      teamId: 'dept_1',
+      assigneeId: 'usr_2',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.data[0]?.teamId).toBe('dept_1')
+    expect(fetch).toHaveBeenCalledWith(
+      'http://crm.test/v1/organizations/org_1/requests?status=OPEN&teamId=dept_1&assigneeId=usr_2',
+      expect.objectContaining({ method: 'GET' })
+    )
   })
 
   it('returns a created request without a stored description', async () => {

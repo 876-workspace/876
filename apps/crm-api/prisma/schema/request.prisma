@@ -49,6 +49,7 @@ model Request {
   status         RequestStatus   @default(OPEN)
   priority       RequestPriority @default(NORMAL)
   source         RequestSource   @default(CRM)
+  teamId         String?         @map("team_id")
   assigneeId     String?         @map("assignee_id")
   createdBy      String          @map("created_by")
   resolvedAt     DateTime?       @map("resolved_at")
@@ -67,6 +68,7 @@ model Request {
   @@unique([tenantId, id])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, customerId, createdAt])
+  @@index([tenantId, teamId, status])
   @@index([tenantId, assigneeId, status])
   @@map("crm_requests")
 }

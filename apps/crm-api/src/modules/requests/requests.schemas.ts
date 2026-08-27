@@ -9,12 +9,7 @@ export const requestStatusSchema = z.enum([
   'CANCELLED',
 ])
 
-export const requestPrioritySchema = z.enum([
-  'LOW',
-  'NORMAL',
-  'HIGH',
-  'URGENT',
-])
+export const requestPrioritySchema = z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT'])
 
 export const requestCategorySchema = z.enum([
   'GENERAL',
@@ -44,6 +39,15 @@ export const requestParamsSchema = organizationParamsSchema.extend({
   id: z.string().min(1),
 })
 
+export const listRequestsQuerySchema = z.object({
+  status: requestStatusSchema.optional(),
+  teamId: z.string().trim().optional(),
+  assigneeId: z.string().trim().optional(),
+  customerId: z.string().trim().optional(),
+  category: requestCategorySchema.optional(),
+  priority: requestPrioritySchema.optional(),
+})
+
 export const createRequestBodySchema = z.object({
   customerId: z.string().min(1),
   subject: z.string().trim().min(1).max(240),
@@ -51,6 +55,7 @@ export const createRequestBodySchema = z.object({
   category: requestCategorySchema.optional(),
   priority: requestPrioritySchema.optional(),
   source: requestSourceSchema.optional(),
+  teamId: z.string().trim().max(160).nullable().optional(),
   assigneeId: z.string().trim().max(160).nullable().optional(),
   createdBy: z.string().min(1),
 })
@@ -62,6 +67,7 @@ export const updateRequestBodySchema = z
     status: requestStatusSchema.optional(),
     priority: requestPrioritySchema.optional(),
     source: requestSourceSchema.optional(),
+    teamId: z.string().trim().max(160).nullable().optional(),
     assigneeId: z.string().trim().max(160).nullable().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {

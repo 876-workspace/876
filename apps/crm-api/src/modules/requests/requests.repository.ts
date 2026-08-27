@@ -2,15 +2,53 @@ import { randomUUID } from 'node:crypto'
 
 import { prisma } from '../../db/index.js'
 import type {
+  ListRequestsFilter,
   RequestCategory,
   RequestPriority,
   RequestSource,
   RequestStatus,
 } from '../../types/request.js'
 
-export function list(tenantId: string) {
+export function list(tenantId: string, filters?: ListRequestsFilter) {
+  const where: NonNullable<
+    Parameters<typeof prisma.request.findMany>[0]
+  >['where'] = {
+    tenantId,
+    deletedAt: null,
+  }
+
+  if (filters?.status) {
+    where.status = filters.status
+  }
+
+  if (filters?.teamId !== undefined) {
+    where.teamId =
+      filters.teamId === 'unassigned' || filters.teamId === 'none'
+        ? null
+        : filters.teamId
+  }
+
+  if (filters?.assigneeId !== undefined) {
+    where.assigneeId =
+      filters.assigneeId === 'unassigned' || filters.assigneeId === 'none'
+        ? null
+        : filters.assigneeId
+  }
+
+  if (filters?.customerId) {
+    where.customerId = filters.customerId
+  }
+
+  if (filters?.category) {
+    where.category = filters.category
+  }
+
+  if (filters?.priority) {
+    where.priority = filters.priority
+  }
+
   return prisma.request.findMany({
-    where: { tenantId, deletedAt: null },
+    where,
     orderBy: { createdAt: 'desc' },
   })
 }
@@ -36,6 +74,7 @@ export function create(params: {
   category?: RequestCategory
   priority?: RequestPriority
   source?: RequestSource
+  teamId?: string | null
   assigneeId?: string | null
   createdBy: string
 }) {
@@ -56,6 +95,7 @@ export function create(params: {
         category: params.category ?? 'GENERAL',
         priority: params.priority ?? 'NORMAL',
         source: params.source ?? 'CRM',
+        teamId: params.teamId ?? null,
         assigneeId: params.assigneeId ?? null,
         createdBy: params.createdBy,
       },
@@ -88,6 +128,7 @@ export function update(
     status?: RequestStatus
     priority?: RequestPriority
     source?: RequestSource
+    teamId?: string | null
     assigneeId?: string | null
     resolvedAt?: Date | null
     closedAt?: Date | null
@@ -124,11 +165,7 @@ export function listNotes(tenantId: string, requestId: string) {
   })
 }
 
-export function retrieveNote(
-  tenantId: string,
-  requestId: string,
-  id: string
-) {
+export function retrieveNote(tenantId: string, requestId: string, id: string) {
   return prisma.requestNote.findFirst({
     where: { tenantId, requestId, id, deletedAt: null },
   })
@@ -164,10 +201,7 @@ export function updateNote(
   })
 }
 
-export async function removeNote(params: {
-  id: string
-  deletedBy: string
-}) {
+export async function removeNote(params: { id: string; deletedBy: string }) {
   if (process.env.DELETION_MODE === 'hard') {
     await prisma.requestNote.delete({ where: { id: params.id } })
   } else {

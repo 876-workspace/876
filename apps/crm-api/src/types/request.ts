@@ -1,10 +1,5 @@
 export type RequestStatus =
-  | 'OPEN'
-  | 'IN_PROGRESS'
-  | 'WAITING'
-  | 'RESOLVED'
-  | 'CLOSED'
-  | 'CANCELLED'
+  'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED' | 'CANCELLED'
 
 export type RequestPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
 
@@ -18,13 +13,7 @@ export type RequestCategory =
   | 'OTHER'
 
 export type RequestSource =
-  | 'CRM'
-  | 'EMAIL'
-  | 'PHONE'
-  | 'CHAT'
-  | 'WEB'
-  | 'API'
-  | 'OTHER'
+  'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
 
 export type RequestNoteKind = 'DESCRIPTION' | 'NOTE'
 
@@ -39,12 +28,22 @@ export interface CrmRequest {
   status: RequestStatus
   priority: RequestPriority
   source: RequestSource
+  teamId: string | null
   assigneeId: string | null
   createdBy: string
   resolvedAt: number | null
   closedAt: number | null
   createdAt: number
   updatedAt: number
+}
+
+export interface ListRequestsFilter {
+  status?: RequestStatus
+  teamId?: string | null
+  assigneeId?: string | null
+  customerId?: string
+  category?: RequestCategory
+  priority?: RequestPriority
 }
 
 export interface CreateRequestInput {
@@ -55,6 +54,7 @@ export interface CreateRequestInput {
   category?: RequestCategory
   priority?: RequestPriority
   source?: RequestSource
+  teamId?: string | null
   assigneeId?: string | null
   createdBy: string
 }
@@ -65,6 +65,7 @@ export interface UpdateRequestInput {
   status?: RequestStatus
   priority?: RequestPriority
   source?: RequestSource
+  teamId?: string | null
   assigneeId?: string | null
 }
 
