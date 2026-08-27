@@ -91,6 +91,9 @@ ALTER TABLE "app_permissions" ADD CONSTRAINT "app_permissions_app_id_fkey" FOREI
 ALTER TABLE "app_roles" ADD CONSTRAINT "app_roles_app_id_fkey" FOREIGN KEY ("app_id") REFERENCES "apps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "app_roles" ADD CONSTRAINT "app_roles_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
 ALTER TABLE "app_assignments" ADD CONSTRAINT "app_assignments_app_role_id_fkey" FOREIGN KEY ("app_role_id") REFERENCES "app_roles"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
 -- AddForeignKey
