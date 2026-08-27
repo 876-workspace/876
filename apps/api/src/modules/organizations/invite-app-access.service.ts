@@ -18,6 +18,14 @@ export type ValidatedInviteAppAccessSelection = {
   orgRoleName: string | null
 }
 
+function inviteNotFound(): AppHttpError {
+  return new AppHttpError({
+    code: 'invite/not-found',
+    message: 'No invite exists with the provided identifier.',
+    httpStatus: 404,
+  })
+}
+
 /**
  * Validates role selections captured by an organization invite.
  *
@@ -94,7 +102,20 @@ export async function setInviteAppAccessSelection(params: {
   appRoleId?: string | null
   orgRoleId?: string | null
 }): Promise<ValidatedInviteAppAccessSelection> {
-  const selection = await validateInviteAppAccessSelection(params)
+  const invite = await repository.findInviteAppAccessSelectionById(
+    params.inviteId
+  )
+  if (!invite || invite.organizationId !== params.organizationId)
+    throw inviteNotFound()
+
+  const sourceAppId = params.sourceAppId ?? invite.sourceAppId
+  const selection = await validateInviteAppAccessSelection({
+    organizationId: params.organizationId,
+    sourceAppId,
+    appRoleId: params.appRoleId,
+    orgRoleId: params.orgRoleId,
+  })
+
   const updated = await repository.updateInviteAppAccessSelection(
     params.inviteId,
     {
@@ -103,12 +124,7 @@ export async function setInviteAppAccessSelection(params: {
       updatedAt: BigInt(nowUnixSeconds()),
     }
   )
-  if (!updated || updated.organizationId !== params.organizationId)
-    throw new AppHttpError({
-      code: 'invite/not-found',
-      message: 'No invite exists with the provided identifier.',
-      httpStatus: 404,
-    })
+  if (!updated) throw inviteNotFound()
   return selection
 }
 
@@ -120,12 +136,7 @@ export async function resolveInviteAppAccessSelection(
   token: string
 ): Promise<ValidatedInviteAppAccessSelection> {
   const invite = await repository.findInviteAppAccessSelectionByToken(token)
-  if (!invite)
-    throw new AppHttpError({
-      code: 'invite/not-found',
-      message: 'No invite exists with the provided token.',
-      httpStatus: 404,
-    })
+  if (!invite) throw inviteNotFound()
 
   return validateInviteAppAccessSelection({
     organizationId: invite.organizationId,
