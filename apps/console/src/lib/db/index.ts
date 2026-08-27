@@ -93,9 +93,18 @@ function createPrisma() {
   // applied at runtime for pooling; cacheStrategy is intentionally deferred.
   // Accelerate's extension only applies when the URL is actually an
   // Accelerate URL; the driver adapter needs no extension.
-  return (accelerated
-    ? client.$extends(withAccelerate())
-    : client) as unknown as typeof client
+  if (!accelerated) return client
+
+  // `$extends` computes a deeply nested result type that this function throws
+  // away anyway. Letting tsc resolve it pushes the program past its
+  // instantiation-depth limit (TS2589), so call it through a narrowed
+  // signature: the extension is still applied at runtime, on `client`, and the
+  // service-facing type stays exactly what it was.
+  return (
+    client as unknown as {
+      $extends: (extension: unknown) => typeof client
+    }
+  ).$extends(withAccelerate())
 }
 
 type ConsolePrisma = ReturnType<typeof createPrisma>
