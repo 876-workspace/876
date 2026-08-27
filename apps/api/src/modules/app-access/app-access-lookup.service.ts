@@ -16,3 +16,12 @@ export function findOrgAppRoleForAccess(params: {
     params.roleId
   )
 }
+
+/** Permission keys registered for an app, for provisioning validation only. */
+export async function listAppPermissionKeysForProvisioning(
+  appId: string
+): Promise<string[]> {
+  return (await repository.listPermissions(appId)).map(
+    (permission) => permission.key
+  )
+}
