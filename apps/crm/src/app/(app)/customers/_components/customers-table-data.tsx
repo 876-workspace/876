@@ -9,6 +9,7 @@ import {
 
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { CustomersTable, type CrmCustomerRow } from './customers-table'
 
 /**
@@ -23,14 +24,26 @@ export async function CustomersTableData() {
   if (result.error) throw new Error(result.error.message)
 
   const rows: CrmCustomerRow[] = result.data.data.map(
-    ({ profile, customer }) => ({
-      profileId: profile.id,
-      billingCustomerId: profile.billingCustomerId,
-      name: customer?.name ?? profile.billingCustomerId,
-      email: customer?.email ?? null,
-      phone: customer?.phone ?? null,
-      status: profile.status,
-    })
+    ({ profile, customer }) => {
+      // The row is about the party; the contact is a second column, not the
+      // party's own email. Reading `customer.email` for both put a business's
+      // owner in the customer's email cell.
+      const identity = resolveCustomerIdentity(
+        customer,
+        profile.billingCustomerId
+      )
+      return {
+        profileId: profile.id,
+        billingCustomerId: profile.billingCustomerId,
+        name: identity.name,
+        isBusiness: identity.isBusiness,
+        email: identity.email,
+        phone: identity.phone,
+        contactName: identity.contact?.name ?? null,
+        contactEmail: identity.contact?.email ?? null,
+        status: profile.status,
+      }
+    }
   )
 
   if (rows.length === 0) {
