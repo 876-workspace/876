@@ -12,6 +12,10 @@
       "types": "./src/access/index.ts",
       "default": "./src/access/index.ts"
     },
+    "./access/catalogs": {
+      "types": "./src/access/catalogs.ts",
+      "default": "./src/access/catalogs.ts"
+    },
     "./countries.json": {
       "default": "./src/countries.json"
     },
