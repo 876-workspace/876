@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
-  createRequestBodySchema,
-  listRequestsQuerySchema,
-  updateRequestBodySchema,
-  createTaskBodySchema,
-  updateTaskBodySchema,
   createReminderBodySchema,
-  updateReminderBodySchema,
+  createRequestBodySchema,
+  createRequestNoteBodySchema,
+  createTaskBodySchema,
+  listRequestsQuerySchema,
   organizationParamsSchema,
   requestParamsSchema,
+  updateReminderBodySchema,
+  updateRequestBodySchema,
+  updateRequestNoteBodySchema,
+  updateTaskBodySchema,
 } from '../requests.schemas.js'
 
 describe('requests.schemas - organization and request params', () => {
@@ -122,15 +124,21 @@ describe('requests.schemas - createRequestBodySchema', () => {
       createRequestBodySchema.parse({ ...base, source: 'SLACK' })
     ).toThrow()
   })
-  it('accepts description up to 20_000 and trims', () => {
+  it('accepts serialized descriptions up to 100_000 characters', () => {
     expect(
       createRequestBodySchema.parse({ ...base, description: '  details  ' })
         .description
     ).toBe('details')
+    expect(
+      createRequestBodySchema.parse({
+        ...base,
+        description: 'a'.repeat(100_000),
+      }).description
+    ).toHaveLength(100_000)
     expect(() =>
       createRequestBodySchema.parse({
         ...base,
-        description: 'a'.repeat(20_001),
+        description: 'a'.repeat(100_001),
       })
     ).toThrow()
     expect(
@@ -160,6 +168,44 @@ describe('requests.schemas - updateRequestBodySchema', () => {
   })
 })
 
+describe('requests.schemas - request note rich content', () => {
+  const document = JSON.stringify({
+    time: 1,
+    blocks: [{ type: 'paragraph', data: { text: '<b>Hello</b>' } }],
+    version: '2.31.6',
+  })
+
+  it('accepts serialized Editor.js bodies for create and update', () => {
+    expect(
+      createRequestNoteBodySchema.parse({
+        body: document,
+        authorId: 'usr_1',
+      }).body
+    ).toBe(document)
+    expect(
+      updateRequestNoteBodySchema.parse({
+        body: document,
+        editedBy: 'usr_1',
+      }).body
+    ).toBe(document)
+  })
+
+  it('keeps legacy plain text valid and rejects oversized transport strings', () => {
+    expect(
+      createRequestNoteBodySchema.parse({
+        body: 'Legacy note',
+        authorId: 'usr_1',
+      }).body
+    ).toBe('Legacy note')
+    expect(() =>
+      createRequestNoteBodySchema.parse({
+        body: 'a'.repeat(100_001),
+        authorId: 'usr_1',
+      })
+    ).toThrow()
+  })
+})
+
 describe('requests.schemas - task schemas', () => {
   it('creates task with required title', () => {
     const parsed = createTaskBodySchema.parse({
@@ -177,11 +223,13 @@ describe('requests.schemas - task schemas', () => {
       createTaskBodySchema.parse({ title: '  ', createdBy: 'usr_1' })
     ).toThrow()
   })
-  it('accepts optional description, status, priority, assignee, dueAt', () => {
+  it('accepts optional rich description, status, priority, assignee, dueAt', () => {
     const parsed = createTaskBodySchema.parse({
       title: 'Task',
       createdBy: 'usr_1',
-      description: 'Do it',
+      description: JSON.stringify({
+        blocks: [{ type: 'paragraph', data: { text: 'Do it' } }],
+      }),
       status: 'OPEN',
       priority: 'HIGH',
       assigneeId: 'usr_2',
