@@ -2,17 +2,12 @@ import Link from 'next/link'
 
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Skeleton } from '@876/ui/skeleton'
-import { Calendar, Clock, TagIcon, User, Users } from '@876/ui/icons'
-import { formatDate, formatDateTime } from '@876/core/timestamps'
+import { Clock, TagIcon, User, Users } from '@876/ui/icons'
+import { formatDateTime } from '@876/core/timestamps'
 
 import { RequestHeaderActions } from '../../_components/request-header-actions'
 import { RequestPriorityBadge } from '../../_components/request-priority-badge'
-import { RequestSourceIcon } from '../../_components/request-source-icon'
-import {
-  formatAge,
-  formatCategory,
-  formatSource,
-} from '../../_lib/request-format'
+import { formatAge, formatCategory } from '../../_lib/request-format'
 import { loadCustomer, loadDirectory, loadRequest } from '../_data'
 
 /**
@@ -39,7 +34,7 @@ export async function RequestToolbar({ requestId }: { requestId: string }) {
       {/* The subject leads; priority reads as a qualifier on it. Status is not
           repeated here — the toolbar's own selector already states it. */}
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 pt-1">
-        <span className="text-muted-foreground font-mono text-base font-semibold">
+        <span className="text-muted-foreground font-mono text-base">
           #{request.number}
         </span>
         <h1 className="876-page-title min-w-0 text-balance">
@@ -74,10 +69,11 @@ export function RequestToolbarSkeleton() {
 }
 
 /**
- * The record's fact band: who the request is for, where it came from, who owns
- * it, and how stale it is — the questions asked before any tab is chosen, so
- * it sits above them and does not change when one is. The subject itself lives
- * in the title row above, level with the toolbar.
+ * The record's fact line: who the request is for, who owns it, what kind it is,
+ * and how stale it is — the questions asked before any tab is chosen, so it
+ * sits above them and does not change when one is. The subject lives in the
+ * title row above, level with the toolbar; the reference data (source, created,
+ * id) lives in the aside's Details card and is deliberately not repeated here.
  */
 export async function RequestIdentity({ requestId }: { requestId: string }) {
   const { request } = await loadRequest(requestId)
@@ -101,95 +97,79 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
     : null
 
   return (
-    <>
-      <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
-        <Link
-          href={`/customers/${request.customerId}`}
-          className="text-foreground hover:text-primary inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
-        >
-          <User className="size-4 shrink-0" aria-hidden="true" />
-          <span>{customerName}</span>
-        </Link>
+    /*
+      One quiet metadata line, not two banded rows.
+
+      What was here before repeated the aside twice over: the source and the
+      opened date are both in the Details card a few hundred pixels to the
+      right, and the customer's name is the headline of the card above it. A
+      header that restates its own sidebar is not denser, only louder — so the
+      line keeps the facts that describe the *work* (who has it, what kind it
+      is, how stale it is) and the customer link, which is the one duplicate
+      worth keeping because the aside drops below the fold on a narrow screen.
+
+      These state facts; they are not controls. The toolbar's Assign menu is
+      where ownership changes. One group carries both halves of it — a person
+      and the team behind them are one answer to "who has this", so splitting
+      them read as two questions.
+
+      No pills, either. A bordered fill sitting directly above the tab strip
+      reads as a row of buttons and competes with the three card surfaces
+      beside it; a muted label against a plain value separates the pairs
+      without adding a fourth surface.
+    */
+    <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+      <Link
+        href={`/customers/${request.customerId}`}
+        className="text-foreground hover:text-primary inline-flex min-w-0 items-center gap-1.5 transition-colors hover:underline"
+      >
+        <User className="size-4 shrink-0" aria-hidden="true" />
+        <span className="truncate">{customerName}</span>
+      </Link>
+
+      <Fact label="Owner">
+        {assignee ? (
+          <>
+            <CustomerAvatar
+              name={assignee.name}
+              src={assignee.avatar}
+              className="size-4.5 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.5rem]"
+            />
+            <span className="text-foreground truncate">{assignee.name}</span>
+          </>
+        ) : (
+          <span>Unassigned</span>
+        )}
         <span aria-hidden="true" className="text-border">
           ·
         </span>
-        <span className="inline-flex items-center gap-1.5">
-          <RequestSourceIcon source={request.source} />
-          <span>{formatSource(request.source)}</span>
+        <Users className="size-3.5 shrink-0" aria-hidden="true" />
+        {teamName ? (
+          <span className="text-foreground truncate">{teamName}</span>
+        ) : (
+          <span>No team</span>
+        )}
+      </Fact>
+
+      <Fact label="Category">
+        <TagIcon className="size-3.5 shrink-0" aria-hidden="true" />
+        <span className="text-foreground truncate">
+          {formatCategory(request.category)}
         </span>
-        <span aria-hidden="true" className="text-border">
-          ·
+      </Fact>
+
+      <Fact label="Last activity" title={formatDateTime(request.updatedAt)}>
+        <Clock className="size-3.5 shrink-0" aria-hidden="true" />
+        <span className="text-foreground truncate">
+          {formatAge(request.updatedAt)}
         </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Calendar className="size-4 shrink-0" aria-hidden="true" />
-          <span>Opened {formatDate(request.createdAt)}</span>
-        </span>
-      </div>
-
-      {/*
-        Ownership, classification and staleness as chips rather than a bordered
-        stat card: this row sits directly above a tab strip, and a second boxed
-        surface there reads as two competing headers.
-
-        These state facts; they are not a second set of controls. The toolbar's
-        Assign menu is where ownership is *changed*, and one chip carries both
-        halves of it — a person and the team behind them are one answer to "who
-        has this", so splitting them across two chips read as two questions.
-      */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Chip label="Owner">
-          {assignee ? (
-            <>
-              <CustomerAvatar
-                name={assignee.name}
-                src={assignee.avatar}
-                className="size-4.5 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.5rem]"
-              />
-              <span className="truncate font-medium">{assignee.name}</span>
-            </>
-          ) : (
-            <span className="text-muted-foreground">Unassigned</span>
-          )}
-          <span aria-hidden="true" className="text-border">
-            ·
-          </span>
-          <Users
-            className="text-muted-foreground size-3.5 shrink-0"
-            aria-hidden="true"
-          />
-          {teamName ? (
-            <span className="truncate font-medium">{teamName}</span>
-          ) : (
-            <span className="text-muted-foreground">No team</span>
-          )}
-        </Chip>
-
-        <Chip label="Category">
-          <TagIcon
-            className="text-muted-foreground size-3.5"
-            aria-hidden="true"
-          />
-          <span className="truncate font-medium">
-            {formatCategory(request.category)}
-          </span>
-        </Chip>
-
-        <Chip label="Last activity" title={formatDateTime(request.updatedAt)}>
-          <Clock
-            className="text-muted-foreground size-3.5"
-            aria-hidden="true"
-          />
-          <span className="truncate font-medium">
-            {formatAge(request.updatedAt)}
-          </span>
-        </Chip>
-      </div>
-    </>
+      </Fact>
+    </div>
   )
 }
 
-/** A labelled fact pill. The label is muted so the value carries the row. */
-function Chip({
+/** A labelled fact: a muted label, then the value in the foreground. */
+function Fact({
   label,
   title,
   children,
@@ -199,11 +179,8 @@ function Chip({
   children: React.ReactNode
 }) {
   return (
-    <span
-      title={title}
-      className="bg-muted/40 flex min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[0.8125rem]"
-    >
-      <span className="text-muted-foreground shrink-0">{label}</span>
+    <span title={title} className="flex min-w-0 items-center gap-1.5">
+      <span className="shrink-0">{label}</span>
       {children}
     </span>
   )
@@ -215,13 +192,11 @@ function Chip({
  */
 export function RequestIdentitySkeleton() {
   return (
-    <>
-      <Skeleton className="h-5 w-96" />
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-8 w-36" />
-      </div>
-    </>
+    <div className="flex flex-wrap items-center gap-5">
+      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-5 w-48" />
+      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-5 w-36" />
+    </div>
   )
 }

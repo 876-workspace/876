@@ -48,7 +48,7 @@ export async function RequestAside({ requestId }: { requestId: string }) {
           <div className="min-w-0 flex-1">
             <Link
               href={`/customers/${request.customerId}`}
-              className="block truncate text-base font-semibold hover:underline"
+              className="block truncate font-medium hover:underline"
             >
               {customerName}
             </Link>
@@ -107,21 +107,15 @@ export async function RequestAside({ requestId }: { requestId: string }) {
 
         <dl className="mt-3 space-y-3 text-sm">
           <DetailRow label="Source">
-            <span className="text-foreground flex items-center gap-1.5 font-medium">
+            <span className="text-foreground flex items-center gap-1.5">
               <RequestSourceIcon source={request.source} />
               {formatSource(request.source)}
             </span>
           </DetailRow>
 
           <DetailRow label="Created">
-            <span className="text-foreground font-medium">
+            <span className="text-foreground">
               {formatDateTime(request.createdAt)}
-            </span>
-          </DetailRow>
-
-          <DetailRow label="Updated">
-            <span className="text-foreground font-medium">
-              {formatDateTime(request.updatedAt)}
             </span>
           </DetailRow>
 

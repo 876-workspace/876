@@ -83,7 +83,7 @@ export default async function RequestRecordLayout({ children, params }: Props) {
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
-          <header className="mb-6">
+          <header className="mb-5">
             <Suspense fallback={<RequestIdentitySkeleton />}>
               <RequestIdentity requestId={requestId} />
             </Suspense>
