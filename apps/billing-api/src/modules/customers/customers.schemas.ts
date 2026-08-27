@@ -111,6 +111,7 @@ export const customerEnsureBodySchema = z.strictObject({
       phone: nullableText(160),
       workPhone: nullableText(160),
       mobilePhone: nullableText(160),
+      avatar: nullableText(2048),
     })
     .nullable()
     .optional(),

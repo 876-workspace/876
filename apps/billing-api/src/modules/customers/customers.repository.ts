@@ -379,35 +379,80 @@ export function ensureCoreCustomerRows(
           },
         })
     if (body.primaryContact !== undefined) {
-      await tx.contact.deleteMany({
+      const incoming = body.primaryContact
+      const existingPrimary = await tx.contact.findFirst({
         where: {
           tenantId: tenant.id,
           customerId: customer.id,
           isPrimary: true,
         },
       })
-      if (body.primaryContact)
-        await tx.contact.create({
-          data: {
-            id: contactId,
-            tenantId: tenant.id,
-            customerId: customer.id,
-            userId: body.primaryContact.userId ?? null,
-            salutation: body.primaryContact.salutation ?? null,
-            firstName: body.primaryContact.firstName ?? null,
-            lastName: body.primaryContact.lastName ?? null,
-            email: body.primaryContact.email ?? null,
-            workPhone: body.primaryContact.workPhone ?? null,
-            mobilePhone:
-              body.primaryContact.mobilePhone ??
-              body.primaryContact.phone ??
-              null,
-            isPrimary: true,
-            coreSyncedAt: now,
-            createdAt: now,
-            updatedAt: now,
-          },
-        })
+
+      if (!incoming) {
+        // Core says the party has no contact. Demote whatever is primary rather
+        // than deleting it — a hand-added person is the workspace's own data.
+        if (existingPrimary)
+          await tx.contact.update({
+            where: { id: existingPrimary.id },
+            data: { isPrimary: false, updatedAt: now },
+          })
+      } else {
+        const fields = {
+          userId: incoming.userId ?? null,
+          salutation: incoming.salutation ?? null,
+          firstName: incoming.firstName ?? null,
+          lastName: incoming.lastName ?? null,
+          email: incoming.email ?? null,
+          workPhone: incoming.workPhone ?? null,
+          mobilePhone: incoming.mobilePhone ?? incoming.phone ?? null,
+          avatar: incoming.avatar ?? null,
+          isPrimary: true,
+          coreSyncedAt: now,
+          updatedAt: now,
+        }
+
+        // Refresh the row that already represents this 876 user, so a resync
+        // updates the same contact instead of minting a new id every time.
+        //
+        // When Core names a user and no row matches them, the fallback is
+        // deliberately *not* `existingPrimary`: overwriting whoever is primary
+        // would silently repurpose a hand-added person's record into the
+        // owner's. That row is the workspace's own data, so it is demoted
+        // below and the owner gets a contact of their own.
+        const target = incoming.userId
+          ? await tx.contact.findFirst({
+              where: {
+                tenantId: tenant.id,
+                customerId: customer.id,
+                userId: incoming.userId,
+              },
+            })
+          : existingPrimary
+
+        if (target) {
+          if (existingPrimary && existingPrimary.id !== target.id)
+            await tx.contact.update({
+              where: { id: existingPrimary.id },
+              data: { isPrimary: false, updatedAt: now },
+            })
+          await tx.contact.update({ where: { id: target.id }, data: fields })
+        } else {
+          if (existingPrimary)
+            await tx.contact.update({
+              where: { id: existingPrimary.id },
+              data: { isPrimary: false, updatedAt: now },
+            })
+          await tx.contact.create({
+            data: {
+              id: contactId,
+              tenantId: tenant.id,
+              customerId: customer.id,
+              ...fields,
+              createdAt: now,
+            },
+          })
+        }
+      }
     }
     return customer
   })
