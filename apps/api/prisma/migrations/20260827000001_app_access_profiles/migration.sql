@@ -70,6 +70,13 @@ CREATE INDEX "ix_app_permissions_app_id" ON "app_permissions"("app_id");
 CREATE UNIQUE INDEX "app_roles_app_id_organization_id_key_key" ON "app_roles"("app_id", "organization_id", "key");
 
 -- CreateIndex
+-- Postgres treats NULLs as distinct in a unique index, so the index above does
+-- not constrain platform role TEMPLATES, which are exactly the rows with a null
+-- organization. The seeds are read-then-write, so without this partial index two
+-- concurrent runs insert duplicate templates and materialize both into every org.
+CREATE UNIQUE INDEX "uq_app_roles_template_app_id_key" ON "app_roles"("app_id", "key") WHERE "organization_id" IS NULL;
+
+-- CreateIndex
 CREATE INDEX "ix_app_roles_app_id" ON "app_roles"("app_id");
 
 -- CreateIndex

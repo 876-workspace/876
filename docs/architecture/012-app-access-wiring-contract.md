@@ -108,13 +108,23 @@ DB-backed validation already ensures every role permission exists in the persist
 
 ## Invite primitives
 
-Invite persistence/validation helpers live inside the organizations module because the existing invite lifecycle is owned there:
+Invite persistence and validation are split across the two modules:
 
-- `invite-app-access.schemas.ts`
-- `invite-app-access.repository.ts`
-- `invite-app-access.service.ts`
+- `organizations/invite-app-access.schemas.ts` — the additive request body.
+- `organizations/invite-app-access.repository.ts` — the invite-token reads/writes.
+- `organizations/invite-app-access-lookup.service.ts` — those reads plus the
+  organization-role lookup, exported from `organizations/index.ts`.
+- `app-access/invite-app-access.service.ts` — the validation and application
+  logic, exported from `app-access/index.ts`.
 
-Use sibling imports from `organizations.service.ts` when wiring the existing create/accept flow. Do not export these helpers from `organizations/index.ts`; keeping them internal avoids an app-access ↔ organizations public-index cycle.
+Import them from `@/modules/app-access` when wiring the existing create/accept flow.
+
+The service lives in the app-access module rather than organizations because it imports
+`@/modules/app-access`, which already imports `@/modules/organizations` — keeping it on the
+organizations side produced an app-access ↔ organizations cycle that dependency-cruiser
+rejects the moment the module becomes reachable. The organization-owned invite and role
+reads it needs are exposed through `organizations/invite-app-access-lookup.service.ts`, so
+the dependency arrow stays one-way.
 
 ### Create-time wiring
 
