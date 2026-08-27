@@ -78,6 +78,12 @@ CREATE INDEX "ix_app_roles_organization_id" ON "app_roles"("organization_id");
 -- CreateIndex
 CREATE INDEX "ix_app_assignments_app_role_id" ON "app_assignments"("app_role_id");
 
+-- CreateIndex
+CREATE INDEX "ix_invite_tokens_app_role_id" ON "invite_tokens"("app_role_id");
+
+-- CreateIndex
+CREATE INDEX "ix_invite_tokens_org_role_id" ON "invite_tokens"("org_role_id");
+
 -- AddForeignKey
 ALTER TABLE "app_permissions" ADD CONSTRAINT "app_permissions_app_id_fkey" FOREIGN KEY ("app_id") REFERENCES "apps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
@@ -86,3 +92,9 @@ ALTER TABLE "app_roles" ADD CONSTRAINT "app_roles_app_id_fkey" FOREIGN KEY ("app
 
 -- AddForeignKey
 ALTER TABLE "app_assignments" ADD CONSTRAINT "app_assignments_app_role_id_fkey" FOREIGN KEY ("app_role_id") REFERENCES "app_roles"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "invite_tokens" ADD CONSTRAINT "invite_tokens_app_role_id_fkey" FOREIGN KEY ("app_role_id") REFERENCES "app_roles"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "invite_tokens" ADD CONSTRAINT "invite_tokens_org_role_id_fkey" FOREIGN KEY ("org_role_id") REFERENCES "organization_roles"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
