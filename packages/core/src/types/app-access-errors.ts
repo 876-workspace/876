@@ -12,6 +12,7 @@ export const appAccessErrorCodeValues = [
   'app-membership/not-found',
   'app-permission/duplicate',
   'app-permission/not-found',
+  'app-role/default-required',
   'app-role/duplicate-key',
   'app-role/in-use',
   'app-role/last-admin',
