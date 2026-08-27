@@ -11,6 +11,7 @@ export function orgTabs(base: string, _slug: string): RouteTabItem[] {
     { label: 'Overview', href: base, exact: true },
     { label: 'Members', href: `${base}/members` },
     { label: 'Customers', href: `${base}/customers` },
+    { label: 'Requests', href: `${base}/requests` },
     { label: 'Subscriptions', href: `${base}/subscriptions` },
     { label: 'Onboarding', href: `${base}/onboarding` },
     { label: 'Billing', href: `${base}/billing` },
@@ -18,4 +19,3 @@ export function orgTabs(base: string, _slug: string): RouteTabItem[] {
     { label: 'Notes', href: `${base}/notes` },
   ]
 }
-
