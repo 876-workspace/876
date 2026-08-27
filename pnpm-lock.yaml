@@ -989,6 +989,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/crm':
+        specifier: workspace:*
+        version: link:../../packages/crm
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui
