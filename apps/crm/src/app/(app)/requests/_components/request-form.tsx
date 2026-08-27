@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@876/ui/button'
+import { CategoryIcon } from '@876/ui/category-icons'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import {
@@ -15,9 +16,10 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
 import { client } from '@/lib/client'
+import { categoryColorClass } from '@/features/categories/category-color'
 import type {
   CrmCustomer,
-  RequestCategory,
+  CrmRequestCategory,
   RequestPriority,
   RequestSource,
   RequestStatus,
@@ -49,7 +51,11 @@ type Values = {
    * so this field is absent when editing.
    */
   description: string
-  category: RequestCategory
+  /**
+   * The chosen category, or `''` for none. Optional at the database level and
+   * therefore optional here — the UI may require it later, the schema does not.
+   */
+  categoryId: string
   status: RequestStatus
   priority: RequestPriority
   source: RequestSource
@@ -61,7 +67,7 @@ const EMPTY: Values = {
   customerId: '',
   subject: '',
   description: '',
-  category: 'GENERAL',
+  categoryId: '',
   status: 'OPEN',
   priority: 'NORMAL',
   source: 'CRM',
@@ -73,12 +79,15 @@ const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
 export function RequestForm({
   customers,
+  categories = [],
   departments = [],
   members = [],
   requestId,
   initial = EMPTY,
 }: {
   customers: CrmCustomer[]
+  /** The org's active request categories. Empty is a valid, working state. */
+  categories?: CrmRequestCategory[]
   departments?: FormDepartment[]
   members?: FormMember[]
   requestId?: string
@@ -120,7 +129,7 @@ export function RequestForm({
 
     const base = {
       subject: values.subject.trim(),
-      category: values.category,
+      categoryId: values.categoryId || null,
       priority: values.priority,
       source: values.source,
       teamId: values.teamId.trim() || null,
@@ -196,20 +205,35 @@ export function RequestForm({
         )}
 
         <FormRow label="Category" className={rowClassName}>
-          <RequestSelect
-            value={values.category}
-            options={[
-              'GENERAL',
-              'SUPPORT',
-              'BILLING',
-              'SALES',
-              'COMPLAINT',
-              'FEEDBACK',
-              'OTHER',
-            ]}
-            onValueChange={(value) => set('category', value as RequestCategory)}
-            disabled={saving}
-          />
+          {/*
+            Categories are org-managed, so the options come from the workspace's
+            own catalog rather than a hard-coded enum. Only active categories are
+            offered for new selections; an archived one already on a request is
+            preserved by the API and still renders elsewhere.
+          */}
+          <Select
+            value={values.categoryId || 'none'}
+            onValueChange={(value) =>
+              set('categoryId', value === 'none' ? '' : (value ?? ''))
+            }
+            disabled={saving || categories.length === 0}
+          >
+            <SelectTrigger aria-label="Category">
+              <SelectValue placeholder="No category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No category</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  <CategoryIcon
+                    name={category.icon}
+                    className={`size-4 ${categoryColorClass(category.color)}`}
+                  />
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormRow>
 
         <FormRow label="Priority" className={rowClassName}>

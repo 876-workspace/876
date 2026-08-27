@@ -1,24 +1,4 @@
-import type { RequestCategory, RequestSource } from '@/types/crm'
-
-/** Enum → sentence case. Shared so the list and the detail page cannot drift. */
-export function formatCategory(category: RequestCategory): string {
-  switch (category) {
-    case 'GENERAL':
-      return 'General'
-    case 'SUPPORT':
-      return 'Support'
-    case 'BILLING':
-      return 'Billing'
-    case 'SALES':
-      return 'Sales'
-    case 'COMPLAINT':
-      return 'Complaint'
-    case 'FEEDBACK':
-      return 'Feedback'
-    default:
-      return category.replaceAll('_', ' ')
-  }
-}
+import type { RequestSource } from '@/types/crm'
 
 export function formatSource(source: RequestSource): string {
   switch (source) {

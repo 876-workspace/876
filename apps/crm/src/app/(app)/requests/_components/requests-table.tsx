@@ -20,14 +20,11 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { ClipboardDocumentListIcon } from '@876/ui/icons'
-import type {
-  RequestCategory,
-  RequestPriority,
-  RequestSource,
-  RequestStatus,
-} from '@/types/crm'
+import { CategoryIcon } from '@876/ui/category-icons'
+import { categoryColorClass } from '@/features/categories/category-color'
+import type { RequestPriority, RequestSource, RequestStatus } from '@/types/crm'
 
-import { formatAge, formatCategory, formatSource } from '../_lib/request-format'
+import { formatAge, formatSource } from '../_lib/request-format'
 
 import { RequestPriorityBadge } from './request-priority-badge'
 import { RequestSourceIcon } from './request-source-icon'
@@ -44,7 +41,16 @@ export type CrmRequestRow = {
   assigneeId: string | null
   assigneeName: string | null
   assigneeAvatar: string | null
-  category: RequestCategory
+  /**
+   * The category's display name, resolved from the org's catalog by the page.
+   * A request may have none — the column is optional at the database level —
+   * and a category that has since been archived still resolves, because the
+   * page maps every category it loads rather than only the active ones.
+   */
+  categoryName: string | null
+  /** The category's icon key, narrowed by `CategoryIcon` at render time. */
+  categoryIcon: string | null
+  categoryColor: string | null
   status: RequestStatus
   priority: RequestPriority
   source: RequestSource
@@ -117,9 +123,18 @@ export function RequestsTable({ requests, filterBar }: Props) {
               source={row.original.source}
               className="size-3 shrink-0"
             />
-            <span className="truncate">
-              {formatSource(row.original.source)} ·{' '}
-              {formatCategory(row.original.category)}
+            <span className="flex min-w-0 items-center gap-1.5 truncate">
+              {formatSource(row.original.source)}
+              {row.original.categoryName ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <CategoryIcon
+                    name={row.original.categoryIcon}
+                    className={`size-3 shrink-0 ${categoryColorClass(row.original.categoryColor)}`}
+                  />
+                  <span className="truncate">{row.original.categoryName}</span>
+                </>
+              ) : null}
             </span>
           </div>
         </div>

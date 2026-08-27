@@ -7,8 +7,15 @@ import { formatDateTime } from '@876/core/timestamps'
 
 import { RequestHeaderActions } from '../../_components/request-header-actions'
 import { RequestPriorityBadge } from '../../_components/request-priority-badge'
-import { formatAge, formatCategory } from '../../_lib/request-format'
-import { loadCustomer, loadDirectory, loadRequest } from '../_data'
+import { formatAge } from '../../_lib/request-format'
+import { CategoryIcon } from '@876/ui/category-icons'
+
+import {
+  loadCategoryIndex,
+  loadCustomer,
+  loadDirectory,
+  loadRequest,
+} from '../_data'
 
 /**
  * The record's title row: the subject on the left, the actions on the right.
@@ -77,10 +84,16 @@ export function RequestToolbarSkeleton() {
  */
 export async function RequestIdentity({ requestId }: { requestId: string }) {
   const { request } = await loadRequest(requestId)
-  const [{ departments, members }, { profile, customer }] = await Promise.all([
-    loadDirectory(),
-    loadCustomer(request.customerId),
-  ])
+  const [{ departments, members }, { profile, customer }, categoriesById] =
+    await Promise.all([
+      loadDirectory(),
+      loadCustomer(request.customerId),
+      loadCategoryIndex(),
+    ])
+
+  const category = request.categoryId
+    ? (categoriesById.get(request.categoryId) ?? null)
+    : null
 
   const customerName =
     customer?.name ?? profile?.billingCustomerId ?? request.customerId
@@ -152,10 +165,23 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
       </Fact>
 
       <Fact label="Category">
-        <TagIcon className="size-3.5 shrink-0" aria-hidden="true" />
-        <span className="text-foreground truncate">
-          {formatCategory(request.category)}
-        </span>
+        {category ? (
+          <>
+            <CategoryIcon
+              name={category.icon}
+              className="size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="text-foreground truncate">{category.name}</span>
+          </>
+        ) : (
+          <>
+            <TagIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            {/* A category is optional at the database level, so "none" is a
+                real state rather than missing data. */}
+            <span>No category</span>
+          </>
+        )}
       </Fact>
 
       <Fact label="Last activity" title={formatDateTime(request.updatedAt)}>

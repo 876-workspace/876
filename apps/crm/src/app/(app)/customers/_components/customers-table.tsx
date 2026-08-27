@@ -9,12 +9,7 @@ import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
-import {
-  Empty,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-} from '@876/ui/empty'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@876/ui/empty'
 
 export type CrmCustomerRow = {
   profileId: string
@@ -33,7 +28,9 @@ const emptyState = (
   <Empty className="py-14">
     <EmptyHeader>
       <EmptyTitle>No customers yet</EmptyTitle>
-      <EmptyDescription>Add your first customer to get started.</EmptyDescription>
+      <EmptyDescription>
+        Add your first customer to get started.
+      </EmptyDescription>
     </EmptyHeader>
   </Empty>
 )
@@ -107,7 +104,9 @@ export function CustomersTable({ customers }: Props) {
         columns={columns}
         data={customers}
         emptyState={emptyState}
-        onRowClick={(customer) => router.push(`/customers/${customer.profileId}`)}
+        onRowClick={(customer) =>
+          router.push(`/customers/${customer.profileId}`)
+        }
       />
     </div>
   )

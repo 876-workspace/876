@@ -40,9 +40,7 @@ export function DeleteRequestDialog({
       return
     }
 
-    toast.success(
-      `Request ${requestNumber ? `#${requestNumber}` : ''} deleted`
-    )
+    toast.success(`Request ${requestNumber ? `#${requestNumber}` : ''} deleted`)
     onOpenChange(false)
     router.replace('/requests')
     router.refresh()

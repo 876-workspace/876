@@ -10,11 +10,13 @@ export const metadata = { title: 'Add request' }
 export default async function NewRequestPage() {
   const context = await requireCrmContext()
   const $876 = await get876Client()
-  const [customers, departmentsResult, membersResult] = await Promise.all([
-    $876.customerProfiles.list(context.orgId),
-    $876.departments.list(context.orgId),
-    $876.organizationMembers.list(context.orgId),
-  ])
+  const [customers, departmentsResult, membersResult, categoriesResult] =
+    await Promise.all([
+      $876.customerProfiles.list(context.orgId),
+      $876.departments.list(context.orgId),
+      $876.organizationMembers.list(context.orgId),
+      $876.requestCategories.list(context.orgId),
+    ])
   if (customers.error) throw new Error(customers.error.message)
 
   const departments =
@@ -38,6 +40,7 @@ export default async function NewRequestPage() {
       <h1 className="876-page-title mb-6">Add request</h1>
       <RequestForm
         customers={customers.data.data}
+        categories={categoriesResult.data?.data ?? []}
         departments={departments}
         members={members}
       />
