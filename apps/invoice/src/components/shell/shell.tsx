@@ -46,7 +46,7 @@ export async function InvoiceShell({
         <InvoiceSidebar orgName={orgName} />
       </AppShellSidebarArea>
       <AppShellContent>
-        <AppShellHeader className="border-b-0">
+        <AppShellHeader>
           <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">

@@ -45,7 +45,10 @@ const AppShellHeader = React.forwardRef<
   <header
     ref={ref}
     className={cn(
-      '876-topbar border-876-surface-border z-20 flex h-14 shrink-0 items-center gap-3 border-b pr-4 pl-3 sm:pr-6 lg:pr-8',
+      // Surface, hairline colour, and elevation are owned by `876-topbar`
+      // in @876/ui/876.css so every shell app shares one treatment — apps
+      // must not re-style the bar locally.
+      '876-topbar z-20 flex h-14 shrink-0 items-center gap-3 border-b pr-4 pl-3 sm:pr-6 lg:pr-8',
       className
     )}
     {...props}

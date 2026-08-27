@@ -24,10 +24,7 @@ export function Sidebar({
   logoUrl?: string | null
 }) {
   return (
-    <SidebarRoot
-      collapsible="icon"
-      className="border-sidebar-border/50 bg-sidebar"
-    >
+    <SidebarRoot collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href={basePath}
@@ -40,7 +37,7 @@ export function Sidebar({
             className="size-8 rounded-xl"
           />
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="block truncate text-lg leading-6 font-medium tracking-[-0.02em] text-[#202124] dark:text-white">
+            <span className="text-sidebar-foreground block truncate text-lg leading-6 font-medium tracking-[-0.02em]">
               {tenantName}
             </span>
           </span>

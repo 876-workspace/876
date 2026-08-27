@@ -53,7 +53,7 @@ export async function Shell({
         <Sidebar orgName={orgName} />
       </AppShellSidebarArea>
       <AppShellContent>
-        <AppShellHeader className="border-b-0">
+        <AppShellHeader>
           <SidebarTrigger />
 
           <div className="flex min-w-0 flex-1 items-center">
