@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./access": {
+      "types": "./src/access/index.ts",
+      "default": "./src/access/index.ts"
+    },
     "./countries.json": {
       "default": "./src/countries.json"
     },
