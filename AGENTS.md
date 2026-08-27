@@ -63,6 +63,8 @@ pnpm --filter @876/couriers-api dev
   opening or updating pull requests, reviewing PR feedback, or merging.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
+- Read `.agents/rules/access-tiers.md` before making one 876 surface reach data owned by another; it fixes the operator/integration/session tiers.
+- Read `.agents/rules/app-api-routing.md` before adding or moving any `src/app/api/` route in a Next.js app.
 - Read `.agents/rules/product-org-signup.md` before changing authentication,
   sign-up, onboarding, or root dynamic organization routing in an org-workspace
   product app.
