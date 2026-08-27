@@ -6,15 +6,16 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch -C react-server --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local src/server.ts",
-    "prebuild": "prisma generate",
+    "prebuild": "node scripts/prisma-generate.mjs",
     "build": "tsup",
     "start": "node dist/server.js",
-    "typecheck": "prisma generate && tsc --noEmit",
+    "typecheck": "node scripts/prisma-generate.mjs && tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "test": "vitest run",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "generate": "node scripts/prisma-generate.mjs"
   },
   "dependencies": {
     "@876/billing": "workspace:*",
