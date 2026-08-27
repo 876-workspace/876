@@ -1,0 +1,21 @@
+// AppPermission — table `app_permissions`.
+// Module: app-access. Product-declared permission catalogs registered in core.
+
+model AppPermission {
+  id          String  @id @db.VarChar
+  appId       String  @map("app_id") @db.VarChar
+  key         String  @db.VarChar
+  moduleKey   String  @map("module_key") @db.VarChar
+  action      String  @db.VarChar
+  label       String  @db.VarChar
+  description String?
+  isDangerous Boolean @default(false) @map("is_dangerous")
+  position    Int     @default(0)
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+  app         App     @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([appId, key])
+  @@index([appId], map: "ix_app_permissions_app_id")
+  @@map("app_permissions")
+}
