@@ -22,7 +22,7 @@ describe('rich-content codec', () => {
     const result = parseEditorContent('<script>alert(1)</script>')
 
     expect(result.blocks[0]?.data).toEqual({
-      text: '&lt;script>alert(1)&lt;/script>',
+      text: '&lt;script&gt;alert(1)&lt;/script&gt;',
     })
   })
 
@@ -42,9 +42,7 @@ describe('rich-content codec', () => {
       type: 'list',
       data: {
         style: 'checklist',
-        items: [
-          { content: 'Ship it', meta: { checked: true }, items: [] },
-        ],
+        items: [{ content: 'Ship it', meta: { checked: true }, items: [] }],
       },
     })
   })
