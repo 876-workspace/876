@@ -1,0 +1,57 @@
+enum TeamStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeamAutoAssign {
+  NONE
+  ROUND_ROBIN
+  LEAST_BUSY
+}
+
+enum TeamMemberRole {
+  LEAD
+  MEMBER
+}
+
+model Team {
+  id String @id
+  tenantId String @map("tenant_id")
+  name String
+  slug String
+  description String?
+  color String?
+  isDefault Boolean @default(false) @map("is_default")
+  autoAssign TeamAutoAssign @default(NONE) @map("auto_assign")
+  status TeamStatus @default(ACTIVE)
+  createdBy String @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy String? @map("deleted_by")
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+  requests Request[]
+  categories RequestCategoryDef[] @relation("CategoryDefaultTeam")
+  subcategories RequestSubcategory[] @relation("SubcategoryDefaultTeam")
+  @@unique([tenantId, slug])
+  @@unique([tenantId, id])
+  @@index([tenantId, status, name])
+  @@map("crm_teams")
+}
+
+model TeamMember {
+  id String @id
+  tenantId String @map("tenant_id")
+  teamId String @map("team_id")
+  userId String @map("user_id")
+  role TeamMemberRole @default(MEMBER)
+  addedBy String @map("added_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [tenantId, teamId], references: [tenantId, id], onDelete: Cascade)
+  @@unique([tenantId, teamId, userId])
+  @@index([tenantId, userId])
+  @@map("crm_team_members")
+}
