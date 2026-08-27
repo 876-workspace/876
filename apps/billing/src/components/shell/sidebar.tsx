@@ -28,20 +28,17 @@ export function WorkspaceSidebar({
   const visibleNav = getVisibleNav(permissions, productFeatures)
 
   return (
-    <BaseSidebar
-      collapsible="icon"
-      className="border-sidebar-border/50 bg-sidebar"
-    >
+    <BaseSidebar collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href="/"
           className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
         >
-          <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border text-xs font-bold text-[#202124] dark:text-white">
+          <span className="border-sidebar-border text-sidebar-foreground flex size-8 shrink-0 items-center justify-center rounded-xl border text-xs font-bold">
             B
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em] text-[#202124] dark:text-white">
+            <span className="text-sidebar-foreground block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em]">
               {tenantName}
             </span>
           </span>
