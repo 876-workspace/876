@@ -55,3 +55,57 @@ export function formatAge(unixSeconds: number): string {
 
   return `${Math.floor(months / 12)}y ago`
 }
+
+/**
+ * A due/remind date as a scheduler needs to read it: the day, and the time when
+ * one was set. Rendered in a Client Component, so pair it with
+ * `suppressHydrationWarning` — the current year is read from the clock.
+ */
+export function formatDueDate(unixSeconds: number): string {
+  const date = new Date(unixSeconds * 1000)
+  const sameYear = date.getFullYear() === new Date().getFullYear()
+  const midnight =
+    date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
+    ...(midnight ? {} : { hour: 'numeric', minute: '2-digit' }),
+  }).format(date)
+}
+
+/** True once a due/remind moment has passed. */
+export function isOverdue(unixSeconds: number): boolean {
+  return unixSeconds * 1000 < Date.now()
+}
+
+/**
+ * Unix seconds → the `YYYY-MM-DDTHH:mm` an `<input type="datetime-local">`
+ * expects, in the viewer's own zone.
+ *
+ * `toISOString()` cannot be used here: it converts to UTC, so a 9am reminder in
+ * Kingston would populate the field as 2pm.
+ */
+export function toDateTimeLocal(unixSeconds: number): string {
+  const date = new Date(unixSeconds * 1000)
+  const pad = (value: number) => String(value).padStart(2, '0')
+
+  return [
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
+    `${pad(date.getHours())}:${pad(date.getMinutes())}`,
+  ].join('T')
+}
+
+/**
+ * A `datetime-local` value → Unix seconds, or `null` when the field is empty or
+ * holds something the browser could not parse.
+ */
+export function fromDateTimeLocal(value: string): number | null {
+  if (!value) return null
+
+  const parsed = new Date(value).getTime()
+  if (Number.isNaN(parsed)) return null
+
+  return Math.floor(parsed / 1000)
+}

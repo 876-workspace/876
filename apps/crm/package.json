@@ -16,6 +16,7 @@
   "dependencies": {
     "@876/client": "workspace:*",
     "@876/core": "workspace:*",
+    "@876/crm": "workspace:*",
     "@876/ui": "workspace:*",
     "@sentry/nextjs": "10.56.0",
     "@tanstack/react-table": "^9.1.2",

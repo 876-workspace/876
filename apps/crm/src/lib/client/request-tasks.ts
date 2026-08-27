@@ -1,0 +1,58 @@
+'use client'
+
+import type {
+  CrmRequestTask,
+  CrmRequestTaskCreateInput,
+  CrmRequestTaskList,
+  CrmRequestTaskUpdateInput,
+} from '@876/client'
+
+import { request } from './request'
+
+/**
+ * `createdBy` and `completedBy` are omitted deliberately: both name the acting
+ * user, and the route handler fills them from the signed-in session. Accepting
+ * either from the browser would let a caller attribute its own work to someone
+ * else.
+ */
+export type RequestTaskCreateInput = Omit<
+  CrmRequestTaskCreateInput,
+  'createdBy'
+>
+export type RequestTaskUpdateInput = Omit<
+  CrmRequestTaskUpdateInput,
+  'completedBy'
+>
+
+function root(requestId: string) {
+  return `/api/requests/${encodeURIComponent(requestId)}/tasks`
+}
+
+export const requestTasks = {
+  list(requestId: string) {
+    return request<CrmRequestTaskList>(root(requestId))
+  },
+  create(requestId: string, params: RequestTaskCreateInput) {
+    return request<CrmRequestTask>(root(requestId), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  update(requestId: string, taskId: string, params: RequestTaskUpdateInput) {
+    return request<CrmRequestTask>(
+      `${root(requestId)}/${encodeURIComponent(taskId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(params),
+      }
+    )
+  },
+  delete(requestId: string, taskId: string) {
+    return request<{ object: 'request_task'; id: string; deleted: true }>(
+      `${root(requestId)}/${encodeURIComponent(taskId)}`,
+      { method: 'DELETE' }
+    )
+  },
+}
