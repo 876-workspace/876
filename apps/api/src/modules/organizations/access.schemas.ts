@@ -29,9 +29,7 @@ export const organizationRoleCreateSchema = z.strictObject({
   permissions: z.array(z.string()),
 })
 
-export type OrganizationRoleCreate = z.infer<
-  typeof organizationRoleCreateSchema
->
+export type OrganizationRoleCreate = z.infer<typeof organizationRoleCreateSchema>
 
 export const organizationRoleUpdateSchema = z.strictObject({
   display_name: z.string().min(1).max(100).optional().nullable(),
@@ -39,9 +37,7 @@ export const organizationRoleUpdateSchema = z.strictObject({
   permissions: z.array(z.string()).optional().nullable(),
 })
 
-export type OrganizationRoleUpdate = z.infer<
-  typeof organizationRoleUpdateSchema
->
+export type OrganizationRoleUpdate = z.infer<typeof organizationRoleUpdateSchema>
 
 export const organizationRoleDeleteSchema = z.object({
   object: z.literal('organization_role'),
@@ -70,6 +66,7 @@ export const organizationMemberSchema = z
     user_id: z.string(),
     role: z.string(),
     role_id: z.string().nullable(),
+    position: z.string().nullable(),
     status: z.string(),
     first_name: z.string().nullable(),
     last_name: z.string().nullable(),
@@ -97,9 +94,25 @@ export const organizationMemberRoleUpdateSchema = z.strictObject({
   role: z.string().min(1).max(64),
 })
 
-export type OrganizationMemberRoleUpdate = z.infer<
-  typeof organizationMemberRoleUpdateSchema
->
+export type OrganizationMemberRoleUpdate = z.infer<typeof organizationMemberRoleUpdateSchema>
+
+const legacyAppRoleSchema = z.object({
+  object: z.literal('app_role'),
+  id: z.string(),
+  app_id: z.string(),
+  organization_id: z.string().nullable(),
+  key: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  permissions: z.array(z.string()),
+  is_system: z.boolean(),
+  is_default: z.boolean(),
+  template_key: z.string().nullable(),
+  position: z.number().int(),
+  members_count: z.number().int().nullable(),
+  created_at: z.number().int(),
+  updated_at: z.number().int(),
+})
 
 export const appAssignmentSchema = z
   .object({
@@ -112,6 +125,8 @@ export const appAssignmentSchema = z
     app_name: z.string().nullable(),
     status: z.string(),
     assigned_by: z.string().nullable(),
+    app_role: legacyAppRoleSchema.nullable().optional(),
+    title: z.string().nullable().optional(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })

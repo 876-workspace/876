@@ -86,13 +86,52 @@ export async function deleteRole(roleId: string): Promise<void> {
   await prisma.organizationRole.delete({ where: { id: roleId } })
 }
 
+const APP_ROLE_SELECT = {
+  id: true,
+  appId: true,
+  organizationId: true,
+  key: true,
+  name: true,
+  description: true,
+  permissions: true,
+  isSystem: true,
+  isDefault: true,
+  templateKey: true,
+  position: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
+
+const APP_ASSIGNMENT_INCLUDE = {
+  app: { select: { slug: true, name: true } },
+  appRole: { select: APP_ROLE_SELECT },
+} as const
+
 export async function listMembersByOrg(
   organizationId: string,
-  limit: number
+  limit: number,
+  query?: string
 ): Promise<{ data: MembershipRow[]; hasMore: boolean }> {
   const take = limit + 1
   const rows = await prisma.membership.findMany({
-    where: { organizationId, status: { not: 'removed' } },
+    where: {
+      organizationId,
+      deletedAt: null,
+      status: { not: 'removed' },
+      ...(query
+        ? {
+            user: {
+              is: {
+                OR: [
+                  { firstName: { contains: query, mode: 'insensitive' } },
+                  { lastName: { contains: query, mode: 'insensitive' } },
+                  { email: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+            },
+          }
+        : {}),
+    },
     include: {
       user: {
         select: { firstName: true, lastName: true, email: true, avatar: true },
@@ -102,23 +141,25 @@ export async function listMembersByOrg(
     take,
   })
   const hasMore = rows.length > limit
-  const data = rows.slice(0, limit).map((r) => ({
-    id: r.id,
-    userId: r.userId,
-    role: r.role,
-    roleId: r.roleId,
-    status: r.status,
-    createdAt: r.createdAt,
-    user: r.user,
-  })) as unknown as MembershipRow[]
+  const data = rows.slice(0, limit).map((row) => ({
+    id: row.id,
+    organizationId: row.organizationId,
+    userId: row.userId,
+    role: row.role,
+    roleId: row.roleId,
+    position: row.position,
+    status: row.status,
+    createdAt: row.createdAt,
+    user: row.user,
+  })) as MembershipRow[]
   return { data, hasMore }
 }
 
 export async function findMembershipById(
   membershipId: string
 ): Promise<MembershipRow | null> {
-  const row = await prisma.membership.findUnique({
-    where: { id: membershipId },
+  const row = await prisma.membership.findFirst({
+    where: { id: membershipId, deletedAt: null },
     include: {
       user: {
         select: { firstName: true, lastName: true, email: true, avatar: true },
@@ -132,10 +173,11 @@ export async function findMembershipById(
     userId: row.userId,
     role: row.role,
     roleId: row.roleId,
+    position: row.position,
     status: row.status,
     createdAt: row.createdAt,
     user: row.user,
-  } as unknown as MembershipRow
+  }
 }
 
 export async function listAppAssignmentsByOrg(
@@ -151,9 +193,11 @@ export async function listAppAssignmentsByOrg(
       organizationId,
       ...(filters.userId ? { userId: filters.userId } : {}),
       ...(filters.appId ? { appId: filters.appId } : {}),
-      ...(filters.includeRevoked ? {} : { status: { not: 'revoked' } }),
+      ...(filters.includeRevoked
+        ? {}
+        : { status: { not: 'revoked' }, revokedAt: null, deletedAt: null }),
     },
-    include: { app: { select: { slug: true, name: true } } },
+    include: APP_ASSIGNMENT_INCLUDE,
   })
   return rows as unknown as AppAssignmentRow[]
 }
@@ -163,7 +207,7 @@ export async function findAppAssignmentById(
 ): Promise<AppAssignmentRow | null> {
   const row = await prisma.appAssignment.findUnique({
     where: { id: assignmentId },
-    include: { app: { select: { slug: true, name: true } } },
+    include: APP_ASSIGNMENT_INCLUDE,
   })
   return row as unknown as AppAssignmentRow | null
 }
@@ -189,9 +233,15 @@ export async function assignApp(params: {
       data: {
         status: 'active',
         assignedBy: params.assignedBy,
+        assignedAt: params.now,
+        revokedAt: null,
+        revokedBy: null,
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
         updatedAt: params.now,
       },
-      include: { app: { select: { slug: true, name: true } } },
+      include: APP_ASSIGNMENT_INCLUDE,
     })
     return updated as unknown as AppAssignmentRow
   }
@@ -203,10 +253,11 @@ export async function assignApp(params: {
       appId: params.appId,
       status: 'active',
       assignedBy: params.assignedBy,
+      assignedAt: params.now,
       createdAt: params.now,
       updatedAt: params.now,
     },
-    include: { app: { select: { slug: true, name: true } } },
+    include: APP_ASSIGNMENT_INCLUDE,
   })
   return created as unknown as AppAssignmentRow
 }
@@ -218,8 +269,14 @@ export async function revokeAppAssignment(
   try {
     const row = await prisma.appAssignment.update({
       where: { id: assignmentId },
-      data: { status: 'revoked', updatedAt: now },
-      include: { app: { select: { slug: true, name: true } } },
+      data: {
+        status: 'revoked',
+        revokedAt: now,
+        deletedAt: now,
+        deletionReason: 'revoked',
+        updatedAt: now,
+      },
+      include: APP_ASSIGNMENT_INCLUDE,
     })
     return row as unknown as AppAssignmentRow
   } catch {
@@ -229,11 +286,6 @@ export async function revokeAppAssignment(
 
 // ---------------------------------------------------------------------------
 // Membership reads and writes
-//
-// These live here, not in the service, because a service that queries Prisma
-// directly is a boundary violation `pnpm node:boundaries` fails on — and a
-// module whose data access is scattered across both layers cannot be reasoned
-// about from the repository alone.
 // ---------------------------------------------------------------------------
 
 const MEMBER_USER_SELECT = {
@@ -245,13 +297,13 @@ const MEMBER_USER_SELECT = {
 
 export function findMembershipForUser(organizationId: string, userId: string) {
   return prisma.membership.findFirst({
-    where: { organizationId, userId },
+    where: { organizationId, userId, deletedAt: null },
   })
 }
 
 export function findMembershipWithUser(organizationId: string, userId: string) {
   return prisma.membership.findFirst({
-    where: { organizationId, userId },
+    where: { organizationId, userId, deletedAt: null },
     include: { user: { select: MEMBER_USER_SELECT } },
   })
 }
@@ -261,7 +313,7 @@ export function findMembershipByIdWithUser(
   organizationId: string
 ) {
   return prisma.membership.findFirst({
-    where: { id: membershipId, organizationId },
+    where: { id: membershipId, organizationId, deletedAt: null },
     include: { user: { select: MEMBER_USER_SELECT } },
   })
 }
@@ -283,6 +335,7 @@ export function findOtherActiveOwner(
       organizationId,
       role,
       status: 'active',
+      deletedAt: null,
       id: { not: excludeMembershipId },
     },
   })
@@ -311,11 +364,11 @@ export async function softDeleteMembership(
 }
 
 export function findAppById(appId: string) {
-  return prisma.app.findUnique({ where: { id: appId } })
+  return prisma.app.findFirst({ where: { id: appId, deletedAt: null } })
 }
 
 export function findAppBySlug(slug: string) {
-  return prisma.app.findFirst({ where: { slug } })
+  return prisma.app.findFirst({ where: { slug, deletedAt: null } })
 }
 
 export function findSubscription(organizationId: string, appId: string) {

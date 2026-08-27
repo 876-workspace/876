@@ -25,6 +25,7 @@ export type MembershipRow = {
   userId: string
   role: string
   roleId: string | null
+  position: string | null
   status: string
   createdAt: bigint
   user?: {
@@ -35,6 +36,22 @@ export type MembershipRow = {
   } | null
 }
 
+type LegacyAppRoleRow = {
+  id: string
+  appId: string
+  organizationId: string | null
+  key: string
+  name: string
+  description: string | null
+  permissions: string[]
+  isSystem: boolean
+  isDefault: boolean
+  templateKey: string | null
+  position: number
+  createdAt: bigint
+  updatedAt: bigint
+}
+
 export type AppAssignmentRow = {
   id: string
   organizationId: string
@@ -42,9 +59,11 @@ export type AppAssignmentRow = {
   appId: string
   status: string
   assignedBy: string | null
+  title: string | null
   createdAt: bigint
   updatedAt: bigint
   app?: { slug: string | null; name: string | null } | null
+  appRole?: LegacyAppRoleRow | null
 }
 
 export function serializeOrganizationRole(
@@ -66,15 +85,14 @@ export function serializeOrganizationRole(
   }
 }
 
-export function serializeOrganizationMember(
-  row: MembershipRow
-): OrganizationMember {
+export function serializeOrganizationMember(row: MembershipRow): OrganizationMember {
   return {
     object: 'organization_member',
     id: row.id,
     user_id: row.userId,
     role: row.role,
     role_id: row.roleId,
+    position: row.position,
     status: row.status,
     first_name: row.user?.firstName ?? null,
     last_name: row.user?.lastName ?? null,
@@ -105,6 +123,26 @@ export function serializeAppAssignment(row: AppAssignmentRow): AppAssignment {
     app_name: row.app?.name ?? null,
     status: row.status,
     assigned_by: row.assignedBy,
+    app_role: row.appRole
+      ? {
+          object: 'app_role',
+          id: row.appRole.id,
+          app_id: row.appRole.appId,
+          organization_id: row.appRole.organizationId,
+          key: row.appRole.key,
+          name: row.appRole.name,
+          description: row.appRole.description,
+          permissions: [...row.appRole.permissions].sort(),
+          is_system: row.appRole.isSystem,
+          is_default: row.appRole.isDefault,
+          template_key: row.appRole.templateKey,
+          position: row.appRole.position,
+          members_count: null,
+          created_at: fromDbUnixSeconds(row.appRole.createdAt),
+          updated_at: fromDbUnixSeconds(row.appRole.updatedAt),
+        }
+      : null,
+    title: row.title,
     created_at: fromDbUnixSeconds(row.createdAt),
     updated_at: fromDbUnixSeconds(row.updatedAt),
   }

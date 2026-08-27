@@ -34,10 +34,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     summary: docs.PERMISSION_CATALOG_SUMMARY,
     description: docs.PERMISSION_CATALOG_DESCRIPTION,
     responses: {
-      200: {
-        description: 'Catalog returned.',
-        schema: permissionCatalogSchema,
-      },
+      200: { description: 'Catalog returned.', schema: permissionCatalogSchema },
     },
     handler: controller.getPermissionCatalog,
   })
@@ -49,10 +46,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.LIST_ORG_ROLES_DESCRIPTION,
     request: { params: orgIdParamsSchema },
     responses: {
-      200: {
-        description: 'Roles returned.',
-        schema: listObjectSchema(organizationRoleSchema),
-      },
+      200: { description: 'Roles returned.', schema: listObjectSchema(organizationRoleSchema) },
     },
     handler: controller.listOrgRoles,
   })
@@ -116,7 +110,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     handler: controller.deleteOrgRole,
   })
 
-  // Members — /members/me before /:membership_id
+  // Members — /members/me before /:membership_id.
   api.get({
     path: '/:org_id/members/me',
     operationId: 'org-access-retrieve_org_member_me',
@@ -126,9 +120,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Member returned.',
-        schema: organizationMemberSchema.extend({
-          permissions: z.array(z.string()),
-        }),
+        schema: organizationMemberSchema.extend({ permissions: z.array(z.string()) }),
       },
     },
     handler: controller.retrieveOrgMemberMe,
@@ -143,13 +135,11 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
       params: orgIdParamsSchema,
       query: z.object({
         limit: z.coerce.number().int().min(1).max(100).default(50),
+        q: z.string().trim().min(1).max(160).optional(),
       }),
     },
     responses: {
-      200: {
-        description: 'Members returned.',
-        schema: listObjectSchema(organizationMemberSchema),
-      },
+      200: { description: 'Members returned.', schema: listObjectSchema(organizationMemberSchema) },
     },
     handler: controller.listOrgMembers,
   })
@@ -159,10 +149,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     operationId: 'org-access-update_org_member_role',
     summary: docs.UPDATE_ORG_MEMBER_ROLE_SUMMARY,
     description: docs.UPDATE_ORG_MEMBER_ROLE_DESCRIPTION,
-    request: {
-      params: membershipIdParamsSchema,
-      body: organizationMemberRoleUpdateSchema,
-    },
+    request: { params: membershipIdParamsSchema, body: organizationMemberRoleUpdateSchema },
     responses: {
       200: { description: 'Member updated.', schema: organizationMemberSchema },
       404: { description: 'Membership not found.' },
@@ -189,7 +176,6 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     handler: controller.deleteOrgMember,
   })
 
-  // App assignments
   api.get({
     path: '/:org_id/app-assignments',
     operationId: 'org-access-list_app_assignments',
@@ -204,10 +190,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
       }),
     },
     responses: {
-      200: {
-        description: 'Assignments returned.',
-        schema: listObjectSchema(appAssignmentSchema),
-      },
+      200: { description: 'Assignments returned.', schema: listObjectSchema(appAssignmentSchema) },
     },
     handler: controller.listAppAssignments,
   })
