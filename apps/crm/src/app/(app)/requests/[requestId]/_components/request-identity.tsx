@@ -2,13 +2,14 @@ import Link from 'next/link'
 
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Skeleton } from '@876/ui/skeleton'
-import { Clock, TagIcon, User, Users } from '@876/ui/icons'
+import { Building2, Clock, TagIcon, User, Users } from '@876/ui/icons'
 import { formatDateTime } from '@876/core/timestamps'
 
 import { RequestHeaderActions } from '../../_components/request-header-actions'
 import { RequestPriorityBadge } from '../../_components/request-priority-badge'
 import { formatAge } from '../../_lib/request-format'
 import { CategoryIcon } from '@876/ui/category-icons'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 
 import {
   loadCategoryIndex,
@@ -95,8 +96,10 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
     ? (categoriesById.get(request.categoryId) ?? null)
     : null
 
-  const customerName =
-    customer?.name ?? profile?.billingCustomerId ?? request.customerId
+  const identity = resolveCustomerIdentity(
+    customer,
+    profile?.billingCustomerId ?? request.customerId
+  )
   const assignee = request.assigneeId
     ? (members.find((m) => m.userId === request.assigneeId) ?? {
         userId: request.assigneeId,
@@ -132,13 +135,33 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
       without adding a fourth surface.
     */
     <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+      {/*
+        The customer and the person are two facts, not one. A business customer
+        is the organization; the name you greet in a reply is its primary
+        contact, and showing only one of them is what made the org look like it
+        had a personal email address. An individual is their own contact, so
+        only the one link renders for them.
+      */}
       <Link
         href={`/customers/${request.customerId}`}
         className="text-foreground hover:text-primary inline-flex min-w-0 items-center gap-1.5 transition-colors hover:underline"
       >
-        <User className="size-4 shrink-0" aria-hidden="true" />
-        <span className="truncate">{customerName}</span>
+        {identity.isBusiness ? (
+          <Building2 className="size-4 shrink-0" aria-hidden="true" />
+        ) : (
+          <User className="size-4 shrink-0" aria-hidden="true" />
+        )}
+        <span className="truncate">{identity.name}</span>
       </Link>
+
+      {identity.isBusiness && identity.contact ? (
+        <Fact label="Contact">
+          <User className="size-3.5 shrink-0" aria-hidden="true" />
+          <span className="text-foreground truncate">
+            {identity.contact.name}
+          </span>
+        </Fact>
+      ) : null}
 
       <Fact label="Owner">
         {assignee ? (

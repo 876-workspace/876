@@ -40,6 +40,8 @@ import type { RequestStatus } from '@/types/crm'
 
 import { DeleteRequestDialog } from './delete-request-dialog'
 import { NEW_NOTE_FIELD_ID } from './request-notes'
+import { NEW_REMINDER_FIELD_ID } from './request-reminders'
+import { NEW_TASK_FIELD_ID } from './request-tasks'
 import { QuickStatusSelector } from './quick-status-selector'
 
 export type HeaderDepartment = {
@@ -118,10 +120,17 @@ export function RequestHeaderActions({
     router.refresh()
   }
 
-  /** "Add note" already has a home — the composer at the end of the thread. */
-  function focusComposer() {
-    const field = document.getElementById(NEW_NOTE_FIELD_ID)
-    if (!field) return notYet('Adding a note')
+  /**
+   * Every "Add" item already has a home: the composer at the foot of its own
+   * tab. When that tab is the one on screen the action is a focus; otherwise it
+   * is a navigation, and the composer is waiting when the tab arrives.
+   */
+  function compose(fieldId: string, href: string) {
+    const field = document.getElementById(fieldId)
+    if (!field) {
+      router.push(href)
+      return
+    }
 
     field.scrollIntoView({ behavior: 'smooth', block: 'center' })
     field.focus({ preventScroll: true })
@@ -213,15 +222,25 @@ export function RequestHeaderActions({
           <ChevronDownIcon className="size-3.5 text-sky-600 dark:text-sky-400" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-44">
-          <DropdownMenuItem onClick={focusComposer}>
+          <DropdownMenuItem
+            onClick={() => compose(NEW_NOTE_FIELD_ID, `/requests/${requestId}`)}
+          >
             <StickyNote className="size-4" />
             Note
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => notYet('Tasks')}>
+          <DropdownMenuItem
+            onClick={() =>
+              compose(NEW_TASK_FIELD_ID, `/requests/${requestId}/tasks`)
+            }
+          >
             <ClipboardList className="size-4" />
             Task
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => notYet('Reminders')}>
+          <DropdownMenuItem
+            onClick={() =>
+              compose(NEW_REMINDER_FIELD_ID, `/requests/${requestId}/reminders`)
+            }
+          >
             <Bell className="size-4" />
             Reminder
           </DropdownMenuItem>

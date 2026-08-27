@@ -14,9 +14,15 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@876/ui/empty'
 export type CrmCustomerRow = {
   profileId: string
   billingCustomerId: string
+  /** The party's name — the company for a business, the person otherwise. */
   name: string
+  isBusiness: boolean
+  /** The party's own email/phone. For a business, never the contact's. */
   email: string | null
   phone: string | null
+  /** The person attached to a business customer. Null for an individual. */
+  contactName: string | null
+  contactEmail: string | null
   status: 'ACTIVE' | 'INACTIVE'
 }
 
@@ -58,15 +64,31 @@ export function CustomersTable({ customers }: Props) {
       ),
     },
     {
-      accessorKey: 'email',
+      // An individual is their own contact, so their party email fills this
+      // cell; a business shows the person it belongs to, on its own line.
+      accessorKey: 'contactName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Email" />
+        <DataTableColumnHeader column={column} title="Contact" />
       ),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.email ?? '—'}
-        </span>
-      ),
+      cell: ({ row }) =>
+        row.original.isBusiness ? (
+          row.original.contactName ? (
+            <div className="min-w-0">
+              <p className="truncate">{row.original.contactName}</p>
+              {row.original.contactEmail ? (
+                <p className="text-muted-foreground truncate text-xs">
+                  {row.original.contactEmail}
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )
+        ) : (
+          <span className="text-muted-foreground">
+            {row.original.email ?? '—'}
+          </span>
+        ),
     },
     {
       accessorKey: 'phone',

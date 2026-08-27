@@ -308,6 +308,7 @@ describe('create876BillingIntegrationClient', () => {
         email: 'ada@example.com',
         workPhone: null,
         mobilePhone: '+18765550111',
+        avatar: 'https://cdn.876.test/u/ada.png',
         isPrimary: true,
         coreSyncedAt: 42,
       },
@@ -325,7 +326,50 @@ describe('create876BillingIntegrationClient', () => {
 
     expect(result.error).toBeNull()
     expect(result.data?.primaryContact).toEqual(withContact.primaryContact)
+    expect(result.data?.primaryContact?.avatar).toBe(
+      'https://cdn.876.test/u/ada.png'
+    )
     expect(result.data?.customerType).toBe('CORE_ORGANIZATION')
+  })
+
+  it('normalizes a contact avatar that an older deployment omits', async () => {
+    const { avatar: _drop, ...contactWithoutAvatar } = {
+      object: 'contact' as const,
+      id: 'con_1',
+      userId: 'usr_owner',
+      salutation: null,
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      email: 'ada@example.com',
+      workPhone: null,
+      mobilePhone: null,
+      avatar: null,
+      isPrimary: true,
+      coreSyncedAt: 42,
+    }
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: {
+          ...customer,
+          customerType: 'CORE_ORGANIZATION' as const,
+          organizationId: 'org_1',
+          primaryContact: contactWithoutAvatar,
+        },
+        error: null,
+      })
+    )
+    const client = create876BillingIntegrationClient({
+      baseUrl: 'https://billing.example.test',
+      internalKey: 'service-secret',
+      fetch: fetchMock,
+    })
+
+    const result = await client.customers.retrieve('org_1', 'cus_1')
+
+    // The column ships after the client does, so a Billing deployment that
+    // predates it must not fail the whole customer read.
+    expect(result.error).toBeNull()
+    expect(result.data?.primaryContact?.avatar).toBeNull()
   })
 
   it('normalizes a missing primaryContact field to null', async () => {

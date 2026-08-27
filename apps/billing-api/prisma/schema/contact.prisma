@@ -14,6 +14,9 @@ model Contact {
   email        String?
   workPhone    String? @map("work_phone")
   mobilePhone  String? @map("mobile_phone")
+  /// Snapshot of the linked 876 account's picture. Null for a hand-entered
+  /// contact, and refreshed by the Core sync alongside the name and email.
+  avatar       String? @map("avatar")
   isPrimary    Boolean @default(false) @map("is_primary")
   /// Unix seconds of the last snapshot refresh for a core-linked contact.
   coreSyncedAt Int?    @map("core_synced_at")

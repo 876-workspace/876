@@ -7,8 +7,14 @@
    at the top of 876.css and set `data-876-theme="<name>"` on <html>.
 
    Ground rules:
-   • Variants restyle NEUTRAL CHROME ONLY (canvas/surface/border/elevation
-     ladders) — never brand hues, nav-active colours, or app accents.
+   • Variants restyle NEUTRAL CHROME ONLY (chrome/canvas/surface/border/
+     elevation ladders) — never brand hues, nav-active colours, or app
+     accents.
+   • A variant sets `--876-chrome` (never `--sidebar` directly): that one
+     dial drives BOTH halves of the frame, the sidebar and the topbar, so
+     they can never drift apart.
+   • `mist` preserves the white-chrome look that was the default before the
+     chrome/canvas/surface split.
    • Every variant is one self-contained block; each also resets the
      slate-tinted chip neutrals (muted/secondary/accent/sidebar) so it
      renders faithfully on top of the slate baseline.
@@ -19,37 +25,40 @@
 
 /* ═══ Styling: slate — cool blue-grey tinted neutrals ═════════════════════ */
 html[data-876-theme='slate'] {
-  --876-canvas: oklch(0.968 0.006 250);
-  --card: oklch(0.968 0.006 250);
+  --876-chrome: oklch(0.9845 0.005 256);
+  --sidebar: var(--876-chrome);
+  --876-canvas: oklch(0.9715 0.0065 256);
+  --card: var(--876-canvas);
+  --876-surface: oklch(1 0 0);
   --popover: oklch(1 0 0);
-  --876-surface: oklch(0.996 0.002 250);
-  --sidebar: oklch(0.982 0.004 250);
-  --876-surface-border: oklch(0.918 0.008 252);
-  --border: oklch(0.918 0.008 252);
-  --sidebar-border: oklch(0.918 0.008 252);
-  --border-strong: oklch(0.85 0.01 252);
-  --muted: oklch(0.955 0.007 250);
-  --secondary: oklch(0.955 0.007 250);
-  --accent: oklch(0.955 0.007 250);
-  --muted-foreground: oklch(0.52 0.02 255);
+  --876-surface-border: oklch(0.917 0.008 256);
+  --border: oklch(0.917 0.008 256);
+  --sidebar-border: oklch(0.917 0.008 256);
+  --border-strong: oklch(0.872 0.011 256);
+  --input: oklch(0.906 0.009 256);
+  --muted: oklch(0.951 0.008 256);
+  --secondary: oklch(0.951 0.008 256);
+  --accent: oklch(0.951 0.008 256);
+  --muted-foreground: oklch(0.545 0.019 258);
 }
 
 html.dark[data-876-theme='slate'] {
-  --background: oklch(0.175 0.012 255);
-  --876-canvas: oklch(0.195 0.012 255);
-  --card: oklch(0.195 0.012 255);
-  --popover: oklch(0.238 0.013 255);
-  --sidebar: oklch(0.215 0.013 255);
-  --876-surface: oklch(0.226 0.013 255);
-  --border: oklch(0.85 0.02 255 / 11%);
-  --876-surface-border: oklch(0.85 0.02 255 / 11%);
-  --sidebar-border: oklch(0.85 0.02 255 / 11%);
-  --border-strong: oklch(0.85 0.02 255 / 20%);
-  --input: oklch(0.85 0.02 255 / 13%);
-  --muted: oklch(0.27 0.014 255);
-  --secondary: oklch(0.27 0.014 255);
-  --accent: oklch(0.27 0.014 255);
-  --muted-foreground: oklch(0.73 0.014 255);
+  --background: oklch(0.178 0.012 258);
+  --876-chrome: oklch(0.209 0.013 258);
+  --sidebar: var(--876-chrome);
+  --876-canvas: oklch(0.198 0.012 258);
+  --card: var(--876-canvas);
+  --876-surface: oklch(0.238 0.014 258);
+  --popover: oklch(0.252 0.014 258);
+  --border: oklch(0.85 0.02 258 / 10%);
+  --876-surface-border: oklch(0.85 0.02 258 / 10%);
+  --sidebar-border: oklch(0.85 0.02 258 / 10%);
+  --border-strong: oklch(0.85 0.02 258 / 20%);
+  --input: oklch(0.85 0.02 258 / 13%);
+  --muted: oklch(0.272 0.014 258);
+  --secondary: oklch(0.272 0.014 258);
+  --accent: oklch(0.272 0.014 258);
+  --muted-foreground: oklch(0.735 0.015 258);
 }
 
 /* ═══ Styling: mist — the original neutral chrome ═════════════════════════
@@ -62,7 +71,8 @@ html[data-876-theme='mist'] {
   --card: oklch(0.97 0.002 255);
   --popover: oklch(1 0 0);
   --876-surface: oklch(1 0 0);
-  --sidebar: oklch(1 0 0);
+  --876-chrome: oklch(1 0 0);
+  --sidebar: var(--876-chrome);
   --876-surface-border: oklch(0.93 0.003 258);
   --border: oklch(0.93 0.003 258);
   --sidebar-border: oklch(0.93 0.003 258);
@@ -78,7 +88,8 @@ html.dark[data-876-theme='mist'] {
   --876-canvas: oklch(0.205 0.005 250);
   --card: oklch(0.205 0.005 250);
   --popover: oklch(0.222 0.005 250);
-  --sidebar: oklch(0.222 0.005 250);
+  --876-chrome: oklch(0.222 0.005 250);
+  --sidebar: var(--876-chrome);
   --876-surface: oklch(0.23 0.005 250);
   --border: oklch(1 0 0 / 8%);
   --876-surface-border: oklch(1 0 0 / 8%);
@@ -101,7 +112,8 @@ html[data-876-theme='porcelain'] {
   --card: oklch(0.988 0.002 255);
   --popover: oklch(1 0 0);
   --876-surface: oklch(1 0 0);
-  --sidebar: oklch(1 0 0);
+  --876-chrome: oklch(1 0 0);
+  --sidebar: var(--876-chrome);
   /* Hairlines do the elevation work, so one visible step stronger. */
   --876-surface-border: oklch(0.922 0.004 258);
   --border: oklch(0.922 0.004 258);
@@ -129,7 +141,8 @@ html.dark[data-876-theme='porcelain'] {
   --background: oklch(0.185 0.004 250);
   --876-canvas: oklch(0.185 0.004 250);
   --card: oklch(0.185 0.004 250);
-  --sidebar: oklch(0.185 0.004 250);
+  --876-chrome: oklch(0.185 0.004 250);
+  --sidebar: var(--876-chrome);
   --876-surface: oklch(0.215 0.004 250);
   --popover: oklch(0.24 0.004 250);
   --border: oklch(1 0 0 / 10%);
@@ -164,7 +177,8 @@ html[data-876-theme='graphite'] {
   --card: oklch(0.955 0.004 255);
   --popover: oklch(1 0 0);
   --876-surface: oklch(1 0 0);
-  --sidebar: oklch(1 0 0);
+  --876-chrome: oklch(1 0 0);
+  --sidebar: var(--876-chrome);
   --876-surface-border: oklch(0.905 0.005 258);
   --border: oklch(0.905 0.005 258);
   --sidebar-border: oklch(0.905 0.005 258);
@@ -185,7 +199,8 @@ html[data-876-theme='graphite']:not(.dark)
 html.dark[data-876-theme='graphite'] {
   --background: oklch(0.15 0.005 250);
   /* Sidebar darkest → canvas lighter → cards lighter still. */
-  --sidebar: oklch(0.165 0.005 250);
+  --876-chrome: oklch(0.165 0.005 250);
+  --sidebar: var(--876-chrome);
   --876-canvas: oklch(0.205 0.005 250);
   --card: oklch(0.205 0.005 250);
   --876-surface: oklch(0.24 0.005 250);
@@ -207,7 +222,8 @@ html[data-876-theme='onyx'] {
   --card: oklch(0.99 0 0);
   --popover: oklch(1 0 0);
   --876-surface: oklch(1 0 0);
-  --sidebar: oklch(0.98 0 0);
+  --876-chrome: oklch(0.98 0 0);
+  --sidebar: var(--876-chrome);
   --876-surface-border: oklch(0.85 0 0);
   --border: oklch(0.85 0 0);
   --sidebar-border: oklch(0.85 0 0);
@@ -222,7 +238,8 @@ html.dark[data-876-theme='onyx'] {
   --background: oklch(0 0 0);
   --876-canvas: oklch(0 0 0);
   --card: oklch(0 0 0);
-  --sidebar: oklch(0 0 0);
+  --876-chrome: oklch(0 0 0);
+  --sidebar: var(--876-chrome);
   --876-surface: oklch(0.12 0 0);
   --popover: oklch(0.12 0 0);
   --border: oklch(0.25 0 0);
@@ -247,7 +264,8 @@ html[data-876-theme='cosmic'] {
   --card: oklch(0.97 0.01 290);
   --popover: oklch(1 0 0);
   --876-surface: oklch(0.995 0.005 290);
-  --sidebar: oklch(0.96 0.015 290);
+  --876-chrome: oklch(0.96 0.015 290);
+  --sidebar: var(--876-chrome);
   --876-surface-border: oklch(0.9 0.02 290);
   --border: oklch(0.9 0.02 290);
   --sidebar-border: oklch(0.9 0.02 290);
@@ -262,7 +280,8 @@ html.dark[data-876-theme='cosmic'] {
   --background: oklch(0.14 0.02 290);
   --876-canvas: oklch(0.16 0.02 290);
   --card: oklch(0.16 0.02 290);
-  --sidebar: oklch(0.15 0.02 290);
+  --876-chrome: oklch(0.15 0.02 290);
+  --sidebar: var(--876-chrome);
   --876-surface: oklch(0.2 0.02 290);
   --popover: oklch(0.22 0.02 290);
   --border: oklch(0.28 0.03 290);
@@ -282,7 +301,8 @@ html[data-876-theme='sand'] {
   --card: oklch(0.97 0.01 50);
   --popover: oklch(1 0 0);
   --876-surface: oklch(0.995 0.002 50);
-  --sidebar: oklch(0.95 0.015 50);
+  --876-chrome: oklch(0.95 0.015 50);
+  --sidebar: var(--876-chrome);
   --876-surface-border: oklch(0.9 0.02 50);
   --border: oklch(0.9 0.02 50);
   --sidebar-border: oklch(0.9 0.02 50);
@@ -297,7 +317,8 @@ html.dark[data-876-theme='sand'] {
   --background: oklch(0.16 0.01 50);
   --876-canvas: oklch(0.18 0.01 50);
   --card: oklch(0.18 0.01 50);
-  --sidebar: oklch(0.17 0.01 50);
+  --876-chrome: oklch(0.17 0.01 50);
+  --sidebar: var(--876-chrome);
   --876-surface: oklch(0.22 0.01 50);
   --popover: oklch(0.24 0.01 50);
   --border: oklch(0.28 0.015 50);

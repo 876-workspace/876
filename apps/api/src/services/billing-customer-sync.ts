@@ -20,6 +20,7 @@ export type PartySnapshot = {
   contactLastName: string | null
   contactEmail: string | null
   contactPhone: string | null
+  contactAvatar: string | null
 }
 
 export type OrganizationRow = {
@@ -43,6 +44,7 @@ export type UserRow = {
   lastName?: string | null
   username?: string | null
   phone?: string | null
+  avatar?: string | null
   deletedAt?: bigint | null
   status?: string | null
 }
@@ -82,6 +84,7 @@ export type BillingCustomerOutboxRow = {
   contactLastName: string | null
   contactEmail: string | null
   contactPhone: string | null
+  contactAvatar: string | null
   payloadHash: string | null
 }
 
@@ -192,16 +195,23 @@ export async function snapshotForOrganization(
     status: lifecycleStatus(organization.deletedAt, organization.status),
     customerKind: 'BUSINESS',
     name,
-    email: (primaryEmail as string | null) ?? contact?.email ?? null,
+    // The organization's own contact details only. Falling back to the primary
+    // contact's email here is what made every business customer render its
+    // owner's personal address as if it were the company's — the person is
+    // carried separately, on `contact*` below, and surfaces as `primaryContact`.
+    email: (primaryEmail as string | null) ?? null,
     companyName: legalName,
-    firstName: contact?.firstName ?? null,
-    lastName: contact?.lastName ?? null,
+    // A business customer is the company. Its person lives on the contact, so
+    // these stay null rather than mirroring the contact onto the party record.
+    firstName: null,
+    lastName: null,
     phone: (primaryPhone as string | null) ?? null,
     contactUserId: contact?.id ?? null,
     contactFirstName: contact?.firstName ?? null,
     contactLastName: contact?.lastName ?? null,
     contactEmail: contact?.email ?? null,
     contactPhone,
+    contactAvatar: contact?.avatar ?? null,
   }
 }
 
@@ -223,6 +233,7 @@ export function snapshotForUser(user: UserRow): PartySnapshot {
     contactLastName: null,
     contactEmail: null,
     contactPhone: null,
+    contactAvatar: null,
   }
 }
 
@@ -254,6 +265,7 @@ function applySnapshot(
   event.contactLastName = snapshot.contactLastName
   event.contactEmail = snapshot.contactEmail
   event.contactPhone = snapshot.contactPhone
+  event.contactAvatar = snapshot.contactAvatar
   event.payloadHash = hash
   event.occurredAt = BigInt(now)
 }
@@ -288,6 +300,7 @@ async function enqueueCustomerEnsure(
           contactLastName: latest.contactLastName,
           contactEmail: latest.contactEmail,
           contactPhone: latest.contactPhone,
+          contactAvatar: latest.contactAvatar,
           payloadHash: latest.payloadHash,
           occurredAt: latest.occurredAt,
           updatedAt: latest.updatedAt,
@@ -328,6 +341,7 @@ async function enqueueCustomerEnsure(
     contactLastName: null,
     contactEmail: null,
     contactPhone: null,
+    contactAvatar: null,
     payloadHash: null,
   }
   applySnapshot(event, snapshot, hash, now)
@@ -415,6 +429,7 @@ function contactPayload(
     lastName: event.contactLastName,
     email: event.contactEmail,
     phone: event.contactPhone,
+    avatar: event.contactAvatar,
   }
 }
 

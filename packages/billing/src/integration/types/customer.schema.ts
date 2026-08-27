@@ -38,6 +38,9 @@ export const BillingContactSchema = z.object({
   email: z.string().nullable(),
   workPhone: z.string().nullable(),
   mobilePhone: z.string().nullable(),
+  // Older Billing deployments predate the column, so a missing value is
+  // normalized to null rather than failing the whole customer read.
+  avatar: z.string().nullable().default(null),
   isPrimary: z.boolean(),
   coreSyncedAt: z.number().int().nullable(),
 }) satisfies z.ZodType<BillingContact>

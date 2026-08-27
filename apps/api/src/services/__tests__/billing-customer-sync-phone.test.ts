@@ -25,6 +25,7 @@ describe('Billing customer sync contact contract', () => {
       contactLastName: 'Owner',
       contactEmail: 'owner@test.example',
       contactPhone: '+18765550123',
+      contactAvatar: null,
       payloadHash: 'hash',
       occurredAt: 1_787_050_000n,
       status: 'pending',

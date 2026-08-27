@@ -15,20 +15,17 @@ import { NavLink } from './nav-link'
 
 export function Sidebar({ orgName }: { orgName: string }) {
   return (
-    <SidebarRoot
-      collapsible="icon"
-      className="border-sidebar-border/50 bg-sidebar"
-    >
+    <SidebarRoot collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href="/"
           className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
         >
           <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
-            <Logo className="text-[0.8125rem] leading-none text-[#202124] dark:text-white" />
+            <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em] text-[#202124] dark:text-white">
+            <span className="text-sidebar-foreground block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em]">
               {orgName}
             </span>
             <span className="text-muted-foreground block truncate text-xs">
