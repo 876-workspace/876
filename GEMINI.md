@@ -132,6 +132,8 @@ Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) 
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
 - Read `.agents/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
+- Read `.agents/rules/access-tiers.md` before making one 876 surface reach data owned by another; it fixes the operator/integration/session tiers.
+- Read `.agents/rules/app-api-routing.md` before adding or moving any `src/app/api/` route in a Next.js app.
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.agents/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - For Next.js routing/rendering/config/metadata/proxy changes, read the matching local guide in `node_modules/next/dist/docs/` first.

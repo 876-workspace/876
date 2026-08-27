@@ -4,6 +4,10 @@ import { proxy876BillingRequest } from '@876/billing/proxy'
 import { apiError } from '@876/core/api'
 import { headers } from 'next/headers'
 
+import {
+  isProxiedResource,
+  type ProxiedResource,
+} from '@/lib/api/resource-manifest'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -52,11 +56,14 @@ export async function proxyInvoiceResourceRequest(
 }
 
 /** Creates the transport handler used by a named Invoice app resource route. */
-export function createInvoiceResourceRoute(resource: string) {
+export function createInvoiceResourceRoute(resource: ProxiedResource) {
   return async function invoiceResourceRoute(
     request: Request,
     context: ResourceRouteContext
   ): Promise<Response> {
+    if (!isProxiedResource(resource))
+      return apiError('Unknown resource.', { status: 404 })
+
     const { path = [] } = await context.params
     return proxyInvoiceResourceRequest(request, resource, path)
   }

@@ -13,6 +13,10 @@ RSC/page -> Console server facade -> owning service
 
 The canonical server facade is `createConsole876Client()` / `$876` in `apps/console/src/lib/876`. It is allowed to compose platform admin, Billing, Couriers, Storage, and Widgets clients. Feature code should not recreate those service clients.
 
+**Console composes those clients at the operator tier.** It authenticates to every service it administers with that service's secret internal key, and never with an app integration credential. The integration boundary Billing publishes — the one 876 Invoice consumes and third parties will build on — is defined by an organization's scoped grant, so it cannot carry the cross-organization operations Console exists for, and widening it to carry them would hand those operations to every integrator. See `.claude/rules/access-tiers.md` and `docs/architecture/016-console-access-tiers-and-app-api-routing.md`.
+
+That is a statement about credentials, not about code. Console reuses the owning service's own capability — the same service function the integration route calls — rather than growing a second implementation of it.
+
 ## Browser vocabulary
 
 Console URLs describe what the administrator is acting on rather than which backend receives the call.
@@ -43,6 +47,7 @@ Route ownership does not move domain ownership. Examples:
 - `/api/organizations/:id/customers` still uses Billing's formal organization integration capability.
 - `/api/widget-features/:id` still verifies the target is a widget-tagged feature and uses Widgets/feature administration internally.
 - `/api/finance/reconcile` still runs the Core-to-Billing mirror operation.
+- `/api/organizations/:id/requests` still runs CRM's own org-scoped request, task, reminder and note operations; Console adds no domain logic of its own.
 
 The route handler owns authentication, Console permission checks, transport parsing, request metadata, and canonical response envelopes. The backend/service owns domain rules and persistence.
 

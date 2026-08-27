@@ -22,6 +22,14 @@ function getWidgetsOptions(requestId?: string) {
   }
 }
 
+function getCrmOptions(requestId?: string) {
+  return {
+    baseUrl: process.env.CRM_API_URL,
+    internalKey: process.env.CRM_INTERNAL_KEY!,
+    requestId,
+  }
+}
+
 function getPlatformAdminOptions(requestId?: string) {
   return {
     baseUrl: process.env.API_URL,
@@ -50,6 +58,7 @@ function getConsoleOptions(requestId?: string) {
           requestId,
         },
       },
+      crm: getCrmOptions(requestId),
       storage: {
         internalKey: process.env.STORAGE_INTERNAL_KEY!,
         requestId,

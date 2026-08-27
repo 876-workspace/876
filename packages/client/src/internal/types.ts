@@ -61,6 +61,7 @@ export interface ConsoleServerClientOptions extends BaseServerOptions {
       integration: BillingIntegrationClientOptions
     }
     couriers: { admin: CouriersAdminClientOptions }
+    crm: CrmClientOptions
     storage: StorageClientOptions
     widgets: {
       member: CreateWidgetsClientOptions

@@ -34,6 +34,7 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     services.couriers?.admin,
     'couriers.admin'
   )
+  const crm = requireCapability(services.crm, 'crm')
   const storage = requireCapability(services.storage, 'storage')
   const widgetsMember = requireCapability(
     services.widgets?.member,
@@ -62,6 +63,11 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     branches: { admin: couriersAdmin.branches },
     warehouses: { admin: couriersAdmin.warehouses },
     mailboxes: { admin: couriersAdmin.mailboxes },
+    requests: crm.requests,
+    requestTasks: crm.requestTasks,
+    requestReminders: crm.requestReminders,
+    requestNotes: crm.requestNotes,
+    requestCategories: crm.requestCategories,
     files: storage.files,
     uploads: storage.uploads,
     notes: withAdmin(widgetsMember.notes, widgetsAdmin.notes),
