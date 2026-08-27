@@ -18,6 +18,12 @@ import { products } from './products'
 import { provisioning } from './provisioning'
 import { provisioningSetups } from './provisioning-setups'
 import { provisioningRuns } from './provisioning-runs'
+import {
+  requestNotes,
+  requestReminders,
+  requests,
+  requestTasks,
+} from './requests'
 import { reservedUsernames } from './reserved-usernames'
 import { roles } from './roles'
 import { pin } from './pin'
@@ -44,6 +50,10 @@ export const client = {
   provisioning,
   provisioningSetups,
   provisioningRuns,
+  requests,
+  requestTasks,
+  requestReminders,
+  requestNotes,
   reservedUsernames,
   roles,
   pin,
@@ -71,6 +81,12 @@ export { products } from './products'
 export { provisioning } from './provisioning'
 export { provisioningSetups } from './provisioning-setups'
 export { provisioningRuns } from './provisioning-runs'
+export {
+  requestNotes,
+  requestReminders,
+  requests,
+  requestTasks,
+} from './requests'
 export { reservedUsernames } from './reserved-usernames'
 export { pin } from './pin'
 export { roles } from './roles'
