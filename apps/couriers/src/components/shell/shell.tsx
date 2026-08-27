@@ -70,7 +70,7 @@ export async function Shell({
       </AppShellSidebarArea>
 
       <AppShellContent>
-        <AppShellHeader className="dark:bg-876-canvas h-16 border-b-0 backdrop-blur-md dark:shadow-none dark:backdrop-blur-none">
+        <AppShellHeader>
           <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
