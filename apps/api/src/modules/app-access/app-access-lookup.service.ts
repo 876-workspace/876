@@ -10,11 +10,7 @@ export function findOrgAppRoleForAccess(params: {
   organizationId: string
   roleId: string
 }): Promise<AppRoleRow | null> {
-  return repository.findRole(
-    params.appId,
-    params.organizationId,
-    params.roleId
-  )
+  return repository.findRole(params.appId, params.organizationId, params.roleId)
 }
 
 /** Permission keys registered for an app, for provisioning validation only. */

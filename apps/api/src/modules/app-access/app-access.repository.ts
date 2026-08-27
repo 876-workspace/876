@@ -71,7 +71,9 @@ export function listPermissions(appId: string): Promise<AppPermissionRow[]> {
   }) as Promise<AppPermissionRow[]>
 }
 
-export function listPermissionsForApps(appIds: readonly string[]): Promise<AppPermissionRow[]> {
+export function listPermissionsForApps(
+  appIds: readonly string[]
+): Promise<AppPermissionRow[]> {
   return prisma.appPermission.findMany({
     where: { appId: { in: [...appIds] } },
     orderBy: [{ appId: 'asc' }, { position: 'asc' }, { key: 'asc' }],
@@ -79,14 +81,20 @@ export function listPermissionsForApps(appIds: readonly string[]): Promise<AppPe
   }) as Promise<AppPermissionRow[]>
 }
 
-export function findPermission(appId: string, permissionId: string): Promise<AppPermissionRow | null> {
+export function findPermission(
+  appId: string,
+  permissionId: string
+): Promise<AppPermissionRow | null> {
   return prisma.appPermission.findFirst({
     where: { id: permissionId, appId },
     select: PERMISSION_SELECT,
   }) as Promise<AppPermissionRow | null>
 }
 
-export function findPermissionByKey(appId: string, key: string): Promise<AppPermissionRow | null> {
+export function findPermissionByKey(
+  appId: string,
+  key: string
+): Promise<AppPermissionRow | null> {
   return prisma.appPermission.findFirst({
     where: { appId, key },
     select: PERMISSION_SELECT,
@@ -106,7 +114,10 @@ export function createPermission(data: {
   createdAt: bigint
   updatedAt: bigint
 }): Promise<AppPermissionRow> {
-  return prisma.appPermission.create({ data, select: PERMISSION_SELECT }) as Promise<AppPermissionRow>
+  return prisma.appPermission.create({
+    data,
+    select: PERMISSION_SELECT,
+  }) as Promise<AppPermissionRow>
 }
 
 export async function updatePermission(
@@ -139,7 +150,10 @@ export async function deletePermission(permissionId: string): Promise<boolean> {
   }
 }
 
-export function countRolesUsingPermission(appId: string, permissionKey: string): Promise<number> {
+export function countRolesUsingPermission(
+  appId: string,
+  permissionKey: string
+): Promise<number> {
   return prisma.appRole.count({
     where: { appId, deletedAt: null, permissions: { has: permissionKey } },
   })
@@ -161,9 +175,13 @@ export async function syncPermissions(
 ): Promise<AppPermissionRow[]> {
   await prisma.$transaction(async (tx) => {
     const keys = rows.map((row) => row.key)
-    await tx.appPermission.deleteMany({ where: { appId, key: { notIn: keys } } })
+    await tx.appPermission.deleteMany({
+      where: { appId, key: { notIn: keys } },
+    })
     for (const row of rows) {
-      const existing = await tx.appPermission.findFirst({ where: { appId, key: row.key } })
+      const existing = await tx.appPermission.findFirst({
+        where: { appId, key: row.key },
+      })
       if (existing) {
         await tx.appPermission.update({
           where: { id: existing.id },
@@ -191,7 +209,10 @@ function roleScope(appId: string, organizationId: string | null) {
   return { appId, organizationId, deletedAt: null }
 }
 
-export function listRoles(appId: string, organizationId: string | null): Promise<AppRoleRow[]> {
+export function listRoles(
+  appId: string,
+  organizationId: string | null
+): Promise<AppRoleRow[]> {
   return prisma.appRole.findMany({
     where: roleScope(appId, organizationId),
     orderBy: [{ position: 'asc' }, { key: 'asc' }],
@@ -221,7 +242,10 @@ export function findRoleByKey(
   }) as Promise<AppRoleRow | null>
 }
 
-export function findDefaultRole(appId: string, organizationId: string | null): Promise<AppRoleRow | null> {
+export function findDefaultRole(
+  appId: string,
+  organizationId: string | null
+): Promise<AppRoleRow | null> {
   return prisma.appRole.findFirst({
     where: { ...roleScope(appId, organizationId), isDefault: true },
     orderBy: [{ position: 'asc' }, { key: 'asc' }],
@@ -229,7 +253,10 @@ export function findDefaultRole(appId: string, organizationId: string | null): P
   }) as Promise<AppRoleRow | null>
 }
 
-export function countRoles(appId: string, organizationId: string | null): Promise<number> {
+export function countRoles(
+  appId: string,
+  organizationId: string | null
+): Promise<number> {
   return prisma.appRole.count({ where: roleScope(appId, organizationId) })
 }
 
@@ -254,7 +281,10 @@ export async function createRole(data: {
         where: roleScope(data.appId, data.organizationId),
         data: { isDefault: false, updatedAt: data.updatedAt },
       })
-    return (await tx.appRole.create({ data, select: ROLE_SELECT })) as AppRoleRow
+    return (await tx.appRole.create({
+      data,
+      select: ROLE_SELECT,
+    })) as AppRoleRow
   })
 }
 
@@ -333,7 +363,12 @@ export function countAssignmentsForRole(roleId: string): Promise<number> {
 
 export function countActiveAssignmentsForRole(roleId: string): Promise<number> {
   return prisma.appAssignment.count({
-    where: { appRoleId: roleId, status: 'active', revokedAt: null, deletedAt: null },
+    where: {
+      appRoleId: roleId,
+      status: 'active',
+      revokedAt: null,
+      deletedAt: null,
+    },
   })
 }
 
@@ -352,7 +387,9 @@ export function listAssignments(
       ...(filters.userId ? { userId: filters.userId } : {}),
       ...(filters.appId ? { appId: filters.appId } : {}),
       ...(filters.status ? { status: filters.status } : {}),
-      ...(filters.includeRevoked ? {} : { deletedAt: null, revokedAt: null, status: { not: 'revoked' } }),
+      ...(filters.includeRevoked
+        ? {}
+        : { deletedAt: null, revokedAt: null, status: { not: 'revoked' } }),
     },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     select: ASSIGNMENT_SELECT,
@@ -379,7 +416,9 @@ export function listAssignmentsForApp(
     where: {
       organizationId,
       appId,
-      ...(includeRevoked ? {} : { deletedAt: null, revokedAt: null, status: 'active' }),
+      ...(includeRevoked
+        ? {}
+        : { deletedAt: null, revokedAt: null, status: 'active' }),
     },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     select: ASSIGNMENT_SELECT,
@@ -423,7 +462,10 @@ export function createAssignment(data: {
   createdAt: bigint
   updatedAt: bigint
 }): Promise<AppAssignmentRow> {
-  return prisma.appAssignment.create({ data: data as never, select: ASSIGNMENT_SELECT }) as Promise<AppAssignmentRow>
+  return prisma.appAssignment.create({
+    data: data as never,
+    select: ASSIGNMENT_SELECT,
+  }) as Promise<AppAssignmentRow>
 }
 
 export function reactivateAssignment(

@@ -29,7 +29,10 @@ export async function requireOrgAppAccessRead(
   if (principal.internal) return
   if (!principal.userId) throw noSession()
 
-  const membership = await repository.findPolicyMembership(organizationId, principal.userId)
+  const membership = await repository.findPolicyMembership(
+    organizationId,
+    principal.userId
+  )
   if (!membership || membership.status !== 'active') throw forbidden()
 }
 
@@ -42,12 +45,18 @@ export async function requireOrgAppAccessPermission(
   if (principal.internal) return
   if (!principal.userId) throw noSession()
 
-  const membership = await repository.findPolicyMembership(organizationId, principal.userId)
+  const membership = await repository.findPolicyMembership(
+    organizationId,
+    principal.userId
+  )
   if (!membership || membership.status !== 'active') throw forbidden()
 
   let permissions: Set<string>
   if (membership.roleId) {
-    const role = await repository.findPolicyRole(organizationId, membership.roleId)
+    const role = await repository.findPolicyRole(
+      organizationId,
+      membership.roleId
+    )
     permissions = role ? new Set(role.permissions) : new Set()
   } else {
     permissions = new Set(defaultPermissionsForRoleName(membership.role))

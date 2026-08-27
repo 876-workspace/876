@@ -87,11 +87,7 @@ export async function updateOrgAppRole(
   body: UpdateAppRoleBody,
   principal: OrgAccessPrincipal
 ): Promise<AppRole> {
-  await requireOrgAppAccessPermission(
-    organizationId,
-    principal,
-    'apps:assign'
-  )
+  await requireOrgAppAccessPermission(organizationId, principal, 'apps:assign')
   await requireDefaultInvariant({
     appId,
     organizationId,
@@ -114,21 +110,12 @@ export async function deleteOrgAppRole(
   roleId: string,
   principal: OrgAccessPrincipal
 ): Promise<{ object: 'app_role'; id: string; deleted: true }> {
-  await requireOrgAppAccessPermission(
-    organizationId,
-    principal,
-    'apps:assign'
-  )
+  await requireOrgAppAccessPermission(organizationId, principal, 'apps:assign')
   await requireDeleteInvariant({
     appId,
     organizationId,
     roleId,
     protectSystem: true,
   })
-  return service.deleteOrgAppRole(
-    organizationId,
-    appId,
-    roleId,
-    principal
-  )
+  return service.deleteOrgAppRole(organizationId, appId, roleId, principal)
 }

@@ -1,6 +1,13 @@
-import { fromDbUnixSeconds, nullableFromDbUnixSeconds } from '@/platform/timestamps'
+import {
+  fromDbUnixSeconds,
+  nullableFromDbUnixSeconds,
+} from '@/platform/timestamps'
 
-import type { AppMembership, AppPermission, AppRole } from './app-access.schemas'
+import type {
+  AppMembership,
+  AppPermission,
+  AppRole,
+} from './app-access.schemas'
 
 export type AppPermissionRow = {
   id: string
@@ -113,7 +120,9 @@ export function serializeAppMembership(params: {
   const assignment = params.assignment
   return {
     object: 'app_membership',
-    id: assignment?.id ?? `asg_unassigned_${params.membershipId}_${params.app.id}`,
+    id:
+      assignment?.id ??
+      `asg_unassigned_${params.membershipId}_${params.app.id}`,
     organization_id: params.organizationId,
     user_id: params.userId,
     membership_id: params.membershipId,

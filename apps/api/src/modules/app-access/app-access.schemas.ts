@@ -132,7 +132,10 @@ export const createAppMembershipBodySchema = z
   })
   .superRefine((value, ctx) => {
     if (!value.user_id && !value.membership_id)
-      ctx.addIssue({ code: 'custom', message: 'Provide user_id or membership_id.' })
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Provide user_id or membership_id.',
+      })
     if (!value.app_id && !value.app_slug)
       ctx.addIssue({ code: 'custom', message: 'Provide app_id or app_slug.' })
   })
@@ -186,11 +189,23 @@ export const listAppMembershipsQuerySchema = z.strictObject({
 export type AppPermission = z.infer<typeof appPermissionSchema>
 export type AppRole = z.infer<typeof appRoleSchema>
 export type AppMembership = z.infer<typeof appMembershipSchema>
-export type CreateAppPermissionBody = z.infer<typeof createAppPermissionBodySchema>
-export type UpdateAppPermissionBody = z.infer<typeof updateAppPermissionBodySchema>
-export type SyncAppPermissionsBody = z.infer<typeof syncAppPermissionsBodySchema>
+export type CreateAppPermissionBody = z.infer<
+  typeof createAppPermissionBodySchema
+>
+export type UpdateAppPermissionBody = z.infer<
+  typeof updateAppPermissionBodySchema
+>
+export type SyncAppPermissionsBody = z.infer<
+  typeof syncAppPermissionsBodySchema
+>
 export type CreateAppRoleBody = z.infer<typeof createAppRoleBodySchema>
 export type UpdateAppRoleBody = z.infer<typeof updateAppRoleBodySchema>
-export type CreateAppMembershipBody = z.infer<typeof createAppMembershipBodySchema>
-export type UpdateAppMembershipBody = z.infer<typeof updateAppMembershipBodySchema>
-export type ListAppMembershipsQuery = z.infer<typeof listAppMembershipsQuerySchema>
+export type CreateAppMembershipBody = z.infer<
+  typeof createAppMembershipBodySchema
+>
+export type UpdateAppMembershipBody = z.infer<
+  typeof updateAppMembershipBodySchema
+>
+export type ListAppMembershipsQuery = z.infer<
+  typeof listAppMembershipsQuerySchema
+>

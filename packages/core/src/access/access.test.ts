@@ -29,7 +29,12 @@ function crmCatalog(): AppPermissionCatalog {
         permissions: [
           { action: 'view', label: 'View requests', position: 1 },
           { action: 'edit', label: 'Edit requests', position: 2 },
-          { action: 'delete', label: 'Delete requests', isDangerous: true, position: 3 },
+          {
+            action: 'delete',
+            label: 'Delete requests',
+            isDangerous: true,
+            position: 3,
+          },
         ],
       },
       {
@@ -61,12 +66,13 @@ describe('defineAppPermissionCatalog', () => {
   it('sorts modules and permissions by position without mutating keys', () => {
     const result = crmCatalog()
 
-    expect(result.modules.map((module) => module.key)).toEqual(['requests', 'customers'])
-    expect(result.modules[0]?.permissions.map((permission) => permission.key)).toEqual([
-      'requests.view',
-      'requests.edit',
-      'requests.delete',
+    expect(result.modules.map((module) => module.key)).toEqual([
+      'requests',
+      'customers',
     ])
+    expect(
+      result.modules[0]?.permissions.map((permission) => permission.key)
+    ).toEqual(['requests.view', 'requests.edit', 'requests.delete'])
   })
 
   it('rejects duplicate module keys', () => {
@@ -155,7 +161,10 @@ describe('resolveEffectivePermissions', () => {
   })
 
   it('fails closed when the role is missing', () => {
-    const result = resolveEffectivePermissions({ role: null, catalog: crmCatalog() })
+    const result = resolveEffectivePermissions({
+      role: null,
+      catalog: crmCatalog(),
+    })
 
     expect(result).toEqual([])
   })
@@ -203,7 +212,9 @@ describe('resolveEffectivePermissions', () => {
 
   it('deduplicates and sorts effective permissions', () => {
     const result = resolveEffectivePermissions({
-      role: { permissions: ['requests.view', 'customers.view', 'requests.view'] },
+      role: {
+        permissions: ['requests.view', 'customers.view', 'requests.view'],
+      },
       grants: ['customers.view', 'requests.edit'],
       catalog: crmCatalog(),
     })
@@ -213,7 +224,9 @@ describe('resolveEffectivePermissions', () => {
 
   it('degrades a malformed role permission value to no base permissions', () => {
     const result = resolveEffectivePermissions({
-      role: { permissions: 'requests.view' } as unknown as { permissions: string[] },
+      role: { permissions: 'requests.view' } as unknown as {
+        permissions: string[]
+      },
       catalog: crmCatalog(),
     })
 
@@ -267,7 +280,10 @@ describe('resolveEffectivePermissions', () => {
 
 describe('hasPermission', () => {
   it('returns true when the effective set contains the permission', () => {
-    const result = hasPermission(['requests.view', 'requests.edit'], 'requests.edit')
+    const result = hasPermission(
+      ['requests.view', 'requests.edit'],
+      'requests.edit'
+    )
 
     expect(result).toBe(true)
   })
@@ -287,7 +303,10 @@ describe('hasPermission', () => {
 
 describe('groupByModule', () => {
   it('returns every catalog permission with explicit granted state', () => {
-    const result = groupByModule(crmCatalog(), ['requests.edit', 'customers.view'])
+    const result = groupByModule(crmCatalog(), [
+      'requests.edit',
+      'customers.view',
+    ])
 
     expect(result).toEqual([
       {
@@ -360,12 +379,10 @@ describe('groupByModule', () => {
   it('marks every permission false when effective permissions are missing', () => {
     const result = groupByModule(crmCatalog(), undefined)
 
-    expect(result.flatMap((module) => module.permissions.map((permission) => permission.granted))).toEqual([
-      false,
-      false,
-      false,
-      false,
-      false,
-    ])
+    expect(
+      result.flatMap((module) =>
+        module.permissions.map((permission) => permission.granted)
+      )
+    ).toEqual([false, false, false, false, false])
   })
 })

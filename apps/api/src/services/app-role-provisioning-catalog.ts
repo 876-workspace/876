@@ -65,7 +65,9 @@ function field(
 }
 
 function properties(resource: ProvisioningResourceInput) {
-  return new Map(resource.properties.map((property) => [property.key, property]))
+  return new Map(
+    resource.properties.map((property) => [property.key, property])
+  )
 }
 
 function readString(
@@ -92,9 +94,18 @@ function readInteger(
   return property?.valueType === 'integer' ? property.integerValue : null
 }
 
-export function parseProvisioningPermissionList(value: string | null): string[] {
+export function parseProvisioningPermissionList(
+  value: string | null
+): string[] {
   if (!value) return []
-  return [...new Set(value.split(',').map((key) => key.trim()).filter(Boolean))].sort()
+  return [
+    ...new Set(
+      value
+        .split(',')
+        .map((key) => key.trim())
+        .filter(Boolean)
+    ),
+  ].sort()
 }
 
 /** Converts provisioning property rows back to role-template domain values. */
@@ -103,7 +114,10 @@ export function parseAppRoleProvisioningResources(
   resources: readonly ProvisioningResourceInput[]
 ): ProvisioningAppRoleTemplate[] {
   return resources
-    .filter((resource) => resource.resourceType === APP_ROLE_PROVISIONING_RESOURCE_TYPE)
+    .filter(
+      (resource) =>
+        resource.resourceType === APP_ROLE_PROVISIONING_RESOURCE_TYPE
+    )
     .map((resource) => ({
       key: readString(resource, 'role_key') ?? '',
       name: readString(resource, 'name') ?? '',
@@ -137,7 +151,8 @@ export function validateAppRoleProvisioningResources(
       issues.push({
         path: 'resources',
         code: 'app_role_not_supported',
-        message: '876 Enterprise is governed by organization roles and cannot declare app roles.',
+        message:
+          '876 Enterprise is governed by organization roles and cannot declare app roles.',
       })
     return issues
   }
@@ -236,7 +251,8 @@ export function validateAppRoleProvisioningResources(
     issues.push({
       path: 'resources',
       code: 'app_role_default_count',
-      message: 'Application manifests must declare exactly one default app role.',
+      message:
+        'Application manifests must declare exactly one default app role.',
     })
 
   return issues
@@ -260,7 +276,8 @@ export async function validateAppRoleProvisioningPermissions(params: {
 
   params.resources
     .filter(
-      (resource) => resource.resourceType === APP_ROLE_PROVISIONING_RESOURCE_TYPE
+      (resource) =>
+        resource.resourceType === APP_ROLE_PROVISIONING_RESOURCE_TYPE
     )
     .forEach((resource, index) => {
       const permissions = parseProvisioningPermissionList(

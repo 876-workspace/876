@@ -53,10 +53,12 @@ export const sdk876AppMembershipListSchema = z.strictObject({
 })
 
 export const sdk876EntitledAppsSchema = z.array(
-  z.object({
-    app_id: z.string(),
-    status: z.string(),
-  }).passthrough()
+  z
+    .object({
+      app_id: z.string(),
+      status: z.string(),
+    })
+    .passthrough()
 )
 
 export type AppRole = z.infer<typeof sdk876AppRoleSchema>

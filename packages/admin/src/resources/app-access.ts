@@ -73,11 +73,20 @@ type PermissionCreate = Omit<
   'object' | 'id' | 'app_id' | 'created_at' | 'updated_at'
 >
 type PermissionUpdate = Partial<
-  Pick<AdminAppPermission, 'label' | 'description' | 'is_dangerous' | 'position'>
+  Pick<
+    AdminAppPermission,
+    'label' | 'description' | 'is_dangerous' | 'position'
+  >
 >
 type RoleCreate = Pick<
   AdminAppRole,
-  'key' | 'name' | 'description' | 'permissions' | 'is_system' | 'is_default' | 'position'
+  | 'key'
+  | 'name'
+  | 'description'
+  | 'permissions'
+  | 'is_system'
+  | 'is_default'
+  | 'position'
 >
 type RoleUpdate = Partial<RoleCreate>
 type MembershipCreate = {

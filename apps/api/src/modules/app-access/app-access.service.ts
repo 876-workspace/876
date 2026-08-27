@@ -70,7 +70,9 @@ export type EffectiveAppPermissionResolution = {
 
 function safeStrings(value: unknown): Set<string> {
   if (!Array.isArray(value)) return new Set()
-  return new Set(value.filter((item): item is string => typeof item === 'string'))
+  return new Set(
+    value.filter((item): item is string => typeof item === 'string')
+  )
 }
 
 /**
@@ -114,7 +116,9 @@ export function resolveEffectiveAppPermissions(input: {
       rawRole !== null &&
       (rawRole.deletedAt === null || rawRole.deletedAt === undefined)
     const role = roleIsLive ? (input.appRole as AppRoleRow) : null
-    const effective = role ? safeStrings(rawRole?.permissions) : new Set<string>()
+    const effective = role
+      ? safeStrings(rawRole?.permissions)
+      : new Set<string>()
     const grants = safeStrings(assignment.permissionGrants)
     const denies = safeStrings(assignment.permissionDenies)
 
@@ -145,7 +149,9 @@ export function resolveEffectiveAppPermissions(input: {
   }
 }
 
-function appOrNotFound(app: Awaited<ReturnType<typeof findAppForAccessById>>): AccessApp {
+function appOrNotFound(
+  app: Awaited<ReturnType<typeof findAppForAccessById>>
+): AccessApp {
   if (!app)
     throw new AppHttpError({
       code: 'app/not-found',
@@ -168,7 +174,8 @@ async function resolveApp(input: {
 }
 
 function ensureAssignableApp(app: AccessApp): void {
-  if (app.slug === ENTERPRISE_SLUG) throw appError('app-membership/app-not-assignable')
+  if (app.slug === ENTERPRISE_SLUG)
+    throw appError('app-membership/app-not-assignable')
 }
 
 function isEntitled(entitlement: { status: string } | null): boolean {
@@ -189,7 +196,10 @@ function normalizePermissions(permissions: readonly string[]): string[] {
   return [...new Set(permissions)].sort()
 }
 
-async function validateCatalogSubset(appId: string, permissions: readonly string[]): Promise<string[]> {
+async function validateCatalogSubset(
+  appId: string,
+  permissions: readonly string[]
+): Promise<string[]> {
   const normalized = normalizePermissions(permissions)
   const catalog = await repository.listPermissions(appId)
   const allowed = new Set(catalog.map((permission) => permission.key))
@@ -211,7 +221,10 @@ async function requireTargetMembership(params: {
   membershipId?: string
 }): Promise<AccessMembership> {
   const membership = params.membershipId
-    ? await findMembershipForAccessById(params.organizationId, params.membershipId)
+    ? await findMembershipForAccessById(
+        params.organizationId,
+        params.membershipId
+      )
     : params.userId
       ? await findMembershipForAccess(params.organizationId, params.userId)
       : null
@@ -236,7 +249,11 @@ async function requireRole(params: {
   organizationId: string | null
   roleId: string
 }): Promise<AppRoleRow> {
-  const role = await repository.findRole(params.appId, params.organizationId, params.roleId)
+  const role = await repository.findRole(
+    params.appId,
+    params.organizationId,
+    params.roleId
+  )
   if (!role) throw appError('app-role/not-found')
   return role
 }
@@ -288,10 +305,16 @@ async function ensureNotLastAdmin(
 // Platform permission catalog
 // ---------------------------------------------------------------------------
 
-export async function listAppPermissions(appId: string): Promise<ListObject<AppPermission>> {
+export async function listAppPermissions(
+  appId: string
+): Promise<ListObject<AppPermission>> {
   appOrNotFound(await findAppForAccessById(appId))
   const rows = await repository.listPermissions(appId)
-  return listObject({ data: rows.map(serializeAppPermission), hasMore: false, url: `/apps/${appId}/permissions` })
+  return listObject({
+    data: rows.map(serializeAppPermission),
+    hasMore: false,
+    url: `/apps/${appId}/permissions`,
+  })
 }
 
 export async function createAppPermission(
@@ -330,8 +353,12 @@ export async function updateAppPermission(
   if (!existing) throw appError('app-permission/not-found')
   const row = await repository.updatePermission(permissionId, {
     ...(body.label !== undefined ? { label: body.label } : {}),
-    ...(body.description !== undefined ? { description: body.description } : {}),
-    ...(body.is_dangerous !== undefined ? { isDangerous: body.is_dangerous } : {}),
+    ...(body.description !== undefined
+      ? { description: body.description }
+      : {}),
+    ...(body.is_dangerous !== undefined
+      ? { isDangerous: body.is_dangerous }
+      : {}),
     ...(body.position !== undefined ? { position: body.position } : {}),
     updatedAt: BigInt(nowUnixSeconds()),
   })
@@ -368,9 +395,13 @@ export async function syncAppPermissions(
 
   const existing = await repository.listPermissions(appId)
   for (const permission of existing) {
-    if (!seen.has(permission.key) && (await repository.countRolesUsingPermission(appId, permission.key)) > 0)
+    if (
+      !seen.has(permission.key) &&
+      (await repository.countRolesUsingPermission(appId, permission.key)) > 0
+    )
       throw appError('app-role/in-use', {
-        message: 'A permission being removed is still referenced by an app role.',
+        message:
+          'A permission being removed is still referenced by an app role.',
       })
   }
 
@@ -388,7 +419,11 @@ export async function syncAppPermissions(
     })),
     BigInt(nowUnixSeconds())
   )
-  return listObject({ data: rows.map(serializeAppPermission), hasMore: false, url: `/apps/${appId}/permissions` })
+  return listObject({
+    data: rows.map(serializeAppPermission),
+    hasMore: false,
+    url: `/apps/${appId}/permissions`,
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -402,7 +437,9 @@ async function listRolesSerialized(
 ): Promise<ListObject<AppRole>> {
   const rows = await repository.listRoles(appId, organizationId)
   const data = await Promise.all(
-    rows.map(async (role) => serializeAppRole(role, await repository.countAssignmentsForRole(role.id)))
+    rows.map(async (role) =>
+      serializeAppRole(role, await repository.countAssignmentsForRole(role.id))
+    )
   )
   return listObject({ data, hasMore: false, url })
 }
@@ -414,10 +451,22 @@ async function createRole(params: {
   templateKey?: string | null
 }): Promise<AppRole> {
   ensureAssignableApp(params.app)
-  if (await repository.findRoleByKey(params.app.id, params.organizationId, params.body.key))
+  if (
+    await repository.findRoleByKey(
+      params.app.id,
+      params.organizationId,
+      params.body.key
+    )
+  )
     throw appError('app-role/duplicate-key')
-  const permissions = await validateCatalogSubset(params.app.id, params.body.permissions)
-  const roleCount = await repository.countRoles(params.app.id, params.organizationId)
+  const permissions = await validateCatalogSubset(
+    params.app.id,
+    params.body.permissions
+  )
+  const roleCount = await repository.countRoles(
+    params.app.id,
+    params.organizationId
+  )
   const now = BigInt(nowUnixSeconds())
   const row = await repository.createRole({
     id: generateId('role'),
@@ -451,7 +500,10 @@ async function updateRole(params: {
   })
 
   if (role.isSystem) {
-    if (!params.allowSystemTemplatePresentation || params.organizationId !== null)
+    if (
+      !params.allowSystemTemplatePresentation ||
+      params.organizationId !== null
+    )
       throw appError('app-role/system-immutable')
     const changesManagedFields =
       params.body.key !== undefined ||
@@ -467,7 +519,11 @@ async function updateRole(params: {
   if (
     params.body.key !== undefined &&
     params.body.key !== role.key &&
-    (await repository.findRoleByKey(params.app.id, params.organizationId, params.body.key))
+    (await repository.findRoleByKey(
+      params.app.id,
+      params.organizationId,
+      params.body.key
+    ))
   )
     throw appError('app-role/duplicate-key')
 
@@ -483,16 +539,27 @@ async function updateRole(params: {
     {
       ...(params.body.key !== undefined ? { key: params.body.key } : {}),
       ...(params.body.name !== undefined ? { name: params.body.name } : {}),
-      ...(params.body.description !== undefined ? { description: params.body.description } : {}),
+      ...(params.body.description !== undefined
+        ? { description: params.body.description }
+        : {}),
       ...(permissions !== undefined ? { permissions } : {}),
-      ...(params.body.is_system !== undefined ? { isSystem: params.body.is_system } : {}),
-      ...(params.body.is_default !== undefined ? { isDefault: params.body.is_default } : {}),
-      ...(params.body.position !== undefined ? { position: params.body.position } : {}),
+      ...(params.body.is_system !== undefined
+        ? { isSystem: params.body.is_system }
+        : {}),
+      ...(params.body.is_default !== undefined
+        ? { isDefault: params.body.is_default }
+        : {}),
+      ...(params.body.position !== undefined
+        ? { position: params.body.position }
+        : {}),
       updatedAt: BigInt(nowUnixSeconds()),
     }
   )
   if (!updated) throw appError('app-role/not-found')
-  return serializeAppRole(updated, await repository.countAssignmentsForRole(updated.id))
+  return serializeAppRole(
+    updated,
+    await repository.countAssignmentsForRole(updated.id)
+  )
 }
 
 async function deleteRole(params: {
@@ -507,14 +574,24 @@ async function deleteRole(params: {
     organizationId: params.organizationId,
     roleId: params.roleId,
   })
-  if (params.protectSystem && role.isSystem) throw appError('app-role/system-immutable')
-  if ((await repository.countAssignmentsForRole(role.id)) > 0) throw appError('app-role/in-use')
-  if (!(await repository.softDeleteRole(role, params.actorId, BigInt(nowUnixSeconds()))))
+  if (params.protectSystem && role.isSystem)
+    throw appError('app-role/system-immutable')
+  if ((await repository.countAssignmentsForRole(role.id)) > 0)
+    throw appError('app-role/in-use')
+  if (
+    !(await repository.softDeleteRole(
+      role,
+      params.actorId,
+      BigInt(nowUnixSeconds())
+    ))
+  )
     throw appError('app-role/not-found')
   return { object: 'app_role', id: role.id, deleted: true }
 }
 
-export async function listAppRoleTemplates(appId: string): Promise<ListObject<AppRole>> {
+export async function listAppRoleTemplates(
+  appId: string
+): Promise<ListObject<AppRole>> {
   const app = appOrNotFound(await findAppForAccessById(appId))
   ensureAssignableApp(app)
   return listRolesSerialized(app.id, null, `/apps/${app.id}/roles`)
@@ -528,10 +605,20 @@ export async function createAppRoleTemplate(
   return createRole({ app, organizationId: null, body })
 }
 
-export async function retrieveAppRoleTemplate(appId: string, roleId: string): Promise<AppRole> {
+export async function retrieveAppRoleTemplate(
+  appId: string,
+  roleId: string
+): Promise<AppRole> {
   const app = appOrNotFound(await findAppForAccessById(appId))
-  const role = await requireRole({ appId: app.id, organizationId: null, roleId })
-  return serializeAppRole(role, await repository.countAssignmentsForRole(role.id))
+  const role = await requireRole({
+    appId: app.id,
+    organizationId: null,
+    roleId,
+  })
+  return serializeAppRole(
+    role,
+    await repository.countAssignmentsForRole(role.id)
+  )
 }
 
 export async function updateAppRoleTemplate(
@@ -540,7 +627,13 @@ export async function updateAppRoleTemplate(
   body: UpdateAppRoleBody
 ): Promise<AppRole> {
   const app = appOrNotFound(await findAppForAccessById(appId))
-  return updateRole({ app, organizationId: null, roleId, body, allowSystemTemplatePresentation: true })
+  return updateRole({
+    app,
+    organizationId: null,
+    roleId,
+    body,
+    allowSystemTemplatePresentation: true,
+  })
 }
 
 export async function deleteAppRoleTemplate(
@@ -548,7 +641,13 @@ export async function deleteAppRoleTemplate(
   roleId: string
 ): Promise<{ object: 'app_role'; id: string; deleted: true }> {
   const app = appOrNotFound(await findAppForAccessById(appId))
-  return deleteRole({ app, organizationId: null, roleId, actorId: null, protectSystem: false })
+  return deleteRole({
+    app,
+    organizationId: null,
+    roleId,
+    actorId: null,
+    protectSystem: false,
+  })
 }
 
 export async function listOrgAppRoles(
@@ -560,7 +659,11 @@ export async function listOrgAppRoles(
   const app = appOrNotFound(await findAppForAccessById(appId))
   ensureAssignableApp(app)
   await requireEntitlement(organizationId, app.id)
-  return listRolesSerialized(app.id, organizationId, `/organizations/${organizationId}/apps/${app.id}/roles`)
+  return listRolesSerialized(
+    app.id,
+    organizationId,
+    `/organizations/${organizationId}/apps/${app.id}/roles`
+  )
 }
 
 export async function createOrgAppRole(
@@ -573,7 +676,11 @@ export async function createOrgAppRole(
   const app = appOrNotFound(await findAppForAccessById(appId))
   ensureAssignableApp(app)
   await requireEntitlement(organizationId, app.id)
-  return createRole({ app, organizationId, body: { ...body, is_system: false } })
+  return createRole({
+    app,
+    organizationId,
+    body: { ...body, is_system: false },
+  })
 }
 
 export async function retrieveOrgAppRole(
@@ -586,7 +693,10 @@ export async function retrieveOrgAppRole(
   const app = appOrNotFound(await findAppForAccessById(appId))
   await requireEntitlement(organizationId, app.id)
   const role = await requireRole({ appId: app.id, organizationId, roleId })
-  return serializeAppRole(role, await repository.countAssignmentsForRole(role.id))
+  return serializeAppRole(
+    role,
+    await repository.countAssignmentsForRole(role.id)
+  )
 }
 
 export async function updateOrgAppRole(
@@ -599,7 +709,13 @@ export async function updateOrgAppRole(
   await requireOrgAppAccessPermission(organizationId, principal, 'apps:assign')
   const app = appOrNotFound(await findAppForAccessById(appId))
   await requireEntitlement(organizationId, app.id)
-  return updateRole({ app, organizationId, roleId, body, allowSystemTemplatePresentation: false })
+  return updateRole({
+    app,
+    organizationId,
+    roleId,
+    body,
+    allowSystemTemplatePresentation: false,
+  })
 }
 
 export async function deleteOrgAppRole(
@@ -633,7 +749,10 @@ export async function listAppMemberships(
 
   let userId = query.user_id ?? null
   if (query.membership_id) {
-    const membership = await findMembershipForAccessById(organizationId, query.membership_id)
+    const membership = await findMembershipForAccessById(
+      organizationId,
+      query.membership_id
+    )
     if (!membership) throw appError('app-membership/not-found')
     userId = membership.user_id
   }
@@ -650,12 +769,22 @@ export async function listAppMemberships(
     organizationId,
     assignments.map((assignment) => assignment.userId)
   )
-  const apps = await listAppsForAccess(assignments.map((assignment) => assignment.appId))
+  const apps = await listAppsForAccess(
+    assignments.map((assignment) => assignment.appId)
+  )
   const entitlements = await listOrgAppEntitlements(organizationId)
-  const catalogs = await repository.listPermissionsForApps(apps.map((app) => app.id))
-  const membershipByUser = new Map(memberships.map((membership) => [membership.user_id, membership]))
-  const appById = new Map(apps.map((app) => [app.id, { id: app.id, slug: app.slug, name: app.name }]))
-  const entitlementByApp = new Map(entitlements.map((entitlement) => [entitlement.appId, entitlement]))
+  const catalogs = await repository.listPermissionsForApps(
+    apps.map((app) => app.id)
+  )
+  const membershipByUser = new Map(
+    memberships.map((membership) => [membership.user_id, membership])
+  )
+  const appById = new Map(
+    apps.map((app) => [app.id, { id: app.id, slug: app.slug, name: app.name }])
+  )
+  const entitlementByApp = new Map(
+    entitlements.map((entitlement) => [entitlement.appId, entitlement])
+  )
   const catalogByApp = new Map<string, AppPermissionRow[]>()
   for (const permission of catalogs) {
     const rows = catalogByApp.get(permission.appId) ?? []
@@ -678,7 +807,11 @@ export async function listAppMemberships(
       })
     )
   }
-  return listObject({ data, hasMore: false, url: `/organizations/${organizationId}/app-memberships` })
+  return listObject({
+    data,
+    hasMore: false,
+    url: `/organizations/${organizationId}/app-memberships`,
+  })
 }
 
 export async function createAppMembership(
@@ -697,14 +830,27 @@ export async function createAppMembership(
   })
 
   const role = body.app_role_id
-    ? await requireRole({ appId: app.id, organizationId, roleId: body.app_role_id })
+    ? await requireRole({
+        appId: app.id,
+        organizationId,
+        roleId: body.app_role_id,
+      })
     : await repository.findDefaultRole(app.id, organizationId)
   if (!role) throw appError('app-role/not-found')
 
   const grants = await validateCatalogSubset(app.id, body.permission_grants)
   const denies = await validateCatalogSubset(app.id, body.permission_denies)
-  const existing = await repository.findAssignmentForUserApp(organizationId, membership.user_id, app.id)
-  if (existing && existing.status === 'active' && existing.deletedAt === null && existing.revokedAt === null)
+  const existing = await repository.findAssignmentForUserApp(
+    organizationId,
+    membership.user_id,
+    app.id
+  )
+  if (
+    existing &&
+    existing.status === 'active' &&
+    existing.deletedAt === null &&
+    existing.revokedAt === null
+  )
     throw appError('app-membership/duplicate')
 
   const now = BigInt(nowUnixSeconds())
@@ -738,7 +884,13 @@ export async function createAppMembership(
       })
 
   const catalog = await repository.listPermissions(app.id)
-  return profileFromLoaded({ assignment, membership, app, entitlement, catalog })
+  return profileFromLoaded({
+    assignment,
+    membership,
+    app,
+    entitlement,
+    catalog,
+  })
 }
 
 export async function retrieveAppMembership(
@@ -747,13 +899,25 @@ export async function retrieveAppMembership(
   principal: OrgAccessPrincipal
 ): Promise<AppMembership> {
   await requireOrgAppAccessRead(organizationId, principal)
-  const assignment = await repository.findAssignment(organizationId, assignmentId)
+  const assignment = await repository.findAssignment(
+    organizationId,
+    assignmentId
+  )
   if (!assignment) throw appError('app-membership/not-found')
-  const membership = await requireTargetMembership({ organizationId, userId: assignment.userId })
+  const membership = await requireTargetMembership({
+    organizationId,
+    userId: assignment.userId,
+  })
   const app = appOrNotFound(await findAppForAccessById(assignment.appId))
   const entitlement = await getOrgAppEntitlement(organizationId, app.id)
   const catalog = await repository.listPermissions(app.id)
-  return profileFromLoaded({ assignment, membership, app, entitlement, catalog })
+  return profileFromLoaded({
+    assignment,
+    membership,
+    app,
+    entitlement,
+    catalog,
+  })
 }
 
 export async function updateAppMembership(
@@ -763,13 +927,19 @@ export async function updateAppMembership(
   principal: OrgAccessPrincipal
 ): Promise<AppMembership> {
   await requireOrgAppAccessPermission(organizationId, principal, 'apps:assign')
-  const assignment = await repository.findAssignment(organizationId, assignmentId)
+  const assignment = await repository.findAssignment(
+    organizationId,
+    assignmentId
+  )
   if (!assignment) throw appError('app-membership/not-found')
   const app = appOrNotFound(await findAppForAccessById(assignment.appId))
   const entitlement = await requireEntitlement(organizationId, app.id)
-  const membership = await requireTargetMembership({ organizationId, userId: assignment.userId })
+  const membership = await requireTargetMembership({
+    organizationId,
+    userId: assignment.userId,
+  })
 
-  let nextRoleId = body.app_role_id
+  const nextRoleId = body.app_role_id
   if (typeof nextRoleId === 'string')
     await requireRole({ appId: app.id, organizationId, roleId: nextRoleId })
   await ensureNotLastAdmin(assignment, {
@@ -806,7 +976,13 @@ export async function updateAppMembership(
     updatedAt: now,
   })
   const catalog = await repository.listPermissions(app.id)
-  return profileFromLoaded({ assignment: updated, membership, app, entitlement, catalog })
+  return profileFromLoaded({
+    assignment: updated,
+    membership,
+    app,
+    entitlement,
+    catalog,
+  })
 }
 
 export async function deleteAppMembership(
@@ -815,10 +991,18 @@ export async function deleteAppMembership(
   principal: OrgAccessPrincipal
 ): Promise<{ object: 'app_membership'; id: string; deleted: true }> {
   await requireOrgAppAccessPermission(organizationId, principal, 'apps:assign')
-  const assignment = await repository.findAssignment(organizationId, assignmentId)
-  if (!assignment || assignment.deletedAt !== null) throw appError('app-membership/not-found')
+  const assignment = await repository.findAssignment(
+    organizationId,
+    assignmentId
+  )
+  if (!assignment || assignment.deletedAt !== null)
+    throw appError('app-membership/not-found')
   await ensureNotLastAdmin(assignment, { deleting: true })
-  await repository.revokeAssignment(assignment.id, principal.userId, BigInt(nowUnixSeconds()))
+  await repository.revokeAssignment(
+    assignment.id,
+    principal.userId,
+    BigInt(nowUnixSeconds())
+  )
   return { object: 'app_membership', id: assignment.id, deleted: true }
 }
 
@@ -828,7 +1012,10 @@ export async function listAppMembershipsForMember(
   principal: OrgAccessPrincipal
 ): Promise<ListObject<AppMembership>> {
   await requireOrgAppAccessRead(organizationId, principal)
-  const membership = await findMembershipForAccessById(organizationId, membershipId)
+  const membership = await findMembershipForAccessById(
+    organizationId,
+    membershipId
+  )
   if (!membership) throw appError('app-membership/not-found')
   const target: AccessMembership = {
     id: membership.id,
@@ -837,10 +1024,14 @@ export async function listAppMembershipsForMember(
     status: membership.status,
   }
 
-  const entitlements = (await listOrgAppEntitlements(organizationId)).filter((entitlement) =>
-    ENTITLED_STATUSES.has(entitlement.status)
+  const entitlements = (await listOrgAppEntitlements(organizationId)).filter(
+    (entitlement) => ENTITLED_STATUSES.has(entitlement.status)
   )
-  const apps = (await listAppsForAccess(entitlements.map((entitlement) => entitlement.appId)))
+  const apps = (
+    await listAppsForAccess(
+      entitlements.map((entitlement) => entitlement.appId)
+    )
+  )
     .filter((app) => app.slug !== ENTERPRISE_SLUG)
     .map((app) => ({ id: app.id, slug: app.slug, name: app.name }))
   const appIds = apps.map((app) => app.id)
@@ -850,8 +1041,12 @@ export async function listAppMembershipsForMember(
     appIds
   )
   const catalogs = await repository.listPermissionsForApps(appIds)
-  const assignmentByApp = new Map(assignments.map((assignment) => [assignment.appId, assignment]))
-  const entitlementByApp = new Map(entitlements.map((entitlement) => [entitlement.appId, entitlement]))
+  const assignmentByApp = new Map(
+    assignments.map((assignment) => [assignment.appId, assignment])
+  )
+  const entitlementByApp = new Map(
+    entitlements.map((entitlement) => [entitlement.appId, entitlement])
+  )
   const catalogByApp = new Map<string, AppPermissionRow[]>()
   for (const permission of catalogs) {
     const rows = catalogByApp.get(permission.appId) ?? []
@@ -886,12 +1081,17 @@ export async function listMembersForApp(
   const app = appOrNotFound(await findAppForAccessById(appId))
   ensureAssignableApp(app)
   const entitlement = await requireEntitlement(organizationId, app.id)
-  const assignments = await repository.listAssignmentsForApp(organizationId, app.id)
+  const assignments = await repository.listAssignmentsForApp(
+    organizationId,
+    app.id
+  )
   const memberships = await listMembershipsForAccess(
     organizationId,
     assignments.map((assignment) => assignment.userId)
   )
-  const membershipByUser = new Map(memberships.map((membership) => [membership.user_id, membership]))
+  const membershipByUser = new Map(
+    memberships.map((membership) => [membership.user_id, membership])
+  )
   const catalog = await repository.listPermissions(app.id)
   const data: AppMembership[] = []
   for (const assignment of assignments) {
@@ -939,7 +1139,13 @@ export async function retrieveMyAppMembership(
     app.id
   )
   const catalog = await repository.listPermissions(app.id)
-  return profileFromLoaded({ assignment, membership, app, entitlement, catalog })
+  return profileFromLoaded({
+    assignment,
+    membership,
+    app,
+    entitlement,
+    catalog,
+  })
 }
 
 export async function materializeRoleTemplatesForApp(params: {
@@ -952,7 +1158,13 @@ export async function materializeRoleTemplatesForApp(params: {
   let seeded = 0
   let skipped = 0
   for (const template of templates) {
-    if (await repository.findRoleByKey(app.id, params.organizationId, template.key)) {
+    if (
+      await repository.findRoleByKey(
+        app.id,
+        params.organizationId,
+        template.key
+      )
+    ) {
       skipped += 1
       continue
     }

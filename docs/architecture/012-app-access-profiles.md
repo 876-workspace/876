@@ -37,15 +37,15 @@ Organization entitlements remain upstream of this entire stack. A subscription d
 
 ## Vocabulary
 
-| Term | Meaning | Table |
-| --- | --- | --- |
-| **App permission** | One `<module>.<action>` capability declared by an app. | `app_permissions` |
-| **App role** | A named permission bundle for one app. System roles are platform-managed. | `app_roles` |
-| **Role template** | An `app_roles` row with `organization_id = NULL`; copied into organizations when the app is provisioned. | `app_roles` |
-| **App membership profile** | A member's per-app role, overrides, attributes, status, and lifecycle. | `app_assignments` |
-| **Effective permissions** | Role permissions plus grants, minus denies, intersected with the current app catalog. | computed |
-| **Entitlement** | Whether an organization may open an app at all. | `subscriptions` |
-| **Position** | A member's free-text job position in the organization. | `memberships.position` |
+| Term                       | Meaning                                                                                                  | Table                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------- |
+| **App permission**         | One `<module>.<action>` capability declared by an app.                                                   | `app_permissions`      |
+| **App role**               | A named permission bundle for one app. System roles are platform-managed.                                | `app_roles`            |
+| **Role template**          | An `app_roles` row with `organization_id = NULL`; copied into organizations when the app is provisioned. | `app_roles`            |
+| **App membership profile** | A member's per-app role, overrides, attributes, status, and lifecycle.                                   | `app_assignments`      |
+| **Effective permissions**  | Role permissions plus grants, minus denies, intersected with the current app catalog.                    | computed               |
+| **Entitlement**            | Whether an organization may open an app at all.                                                          | `subscriptions`        |
+| **Position**               | A member's free-text job position in the organization.                                                   | `memberships.position` |
 
 An app role is never called a feature. An app permission is never called a feature flag. An entitlement is never called a role.
 

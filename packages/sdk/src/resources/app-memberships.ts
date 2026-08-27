@@ -49,15 +49,17 @@ export function createAppMembershipsResource(runtime: SdkRuntime) {
         sdk876EntitledAppsSchema,
         requestOptions
       )
-      if (entitlements.error)
-        return { data: null, error: entitlements.error }
+      if (entitlements.error) return { data: null, error: entitlements.error }
 
       const profiles = await Promise.all(
         entitlements.data
           .filter((entitlement) => ENTITLED_STATUSES.has(entitlement.status))
           .map((entitlement) =>
             retrieveMe(
-              { organizationId: params.organizationId, appId: entitlement.app_id },
+              {
+                organizationId: params.organizationId,
+                appId: entitlement.app_id,
+              },
               requestOptions
             )
           )

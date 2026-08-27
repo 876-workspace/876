@@ -136,14 +136,14 @@ $876.appMemberships.list({ organizationId })
 
 When wiring the branch locally, use these stable data surfaces instead of querying core tables or product role tables directly.
 
-| Console page | Read | Mutations |
-| --- | --- | --- |
-| `/apps/[slug]/permissions` | `appPermissions.list` | create/update/delete/sync |
-| `/apps/[slug]/roles` | `appRoles.list` + permission catalog | role template CRUD |
-| `/orgs/[slug]/apps` | `orgAppRoles.list`, `appMemberships.listForApp` | role CRUD, assign/change/revoke |
-| `/orgs/[slug]/members` accordion | `appMemberships.listForMember` | assign/change role/overrides/revoke |
-| member overview | existing org role + `memberships.update(position)` | role/position/status update |
-| user detail apps panel | per-org `listForMember` | links to org member view |
+| Console page                     | Read                                               | Mutations                           |
+| -------------------------------- | -------------------------------------------------- | ----------------------------------- |
+| `/apps/[slug]/permissions`       | `appPermissions.list`                              | create/update/delete/sync           |
+| `/apps/[slug]/roles`             | `appRoles.list` + permission catalog               | role template CRUD                  |
+| `/orgs/[slug]/apps`              | `orgAppRoles.list`, `appMemberships.listForApp`    | role CRUD, assign/change/revoke     |
+| `/orgs/[slug]/members` accordion | `appMemberships.listForMember`                     | assign/change role/overrides/revoke |
+| member overview                  | existing org role + `memberships.update(position)` | role/position/status update         |
+| user detail apps panel           | per-org `listForMember`                            | links to org member view            |
 
 Keep the existing Console route-handler pattern: browser → typed Console client → thin `app/api/...` handler → `workspace`/`$876`; no server actions and no service namespace in browser URLs.
 

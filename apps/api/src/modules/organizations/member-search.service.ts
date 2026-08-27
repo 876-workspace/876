@@ -1,6 +1,9 @@
 import { listObject, type ListObject } from '@/http/envelope'
 
-import { requireOrgAppAccessPermission, type OrgAccessPrincipal } from './app-access-policy.service'
+import {
+  requireOrgAppAccessPermission,
+  type OrgAccessPrincipal,
+} from './app-access-policy.service'
 import * as repository from './access.repository'
 import type { OrganizationMember } from './access.schemas'
 import { serializeOrganizationMember } from './access.serializers'

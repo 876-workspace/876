@@ -46,14 +46,16 @@ describe('app access seed catalog', () => {
         definition.permissions.map((permission) => permission.key)
       )
       for (const role of definition.roles)
-        expect(role.permissions.every((permission) => catalog.has(permission))).toBe(
-          true
-        )
+        expect(
+          role.permissions.every((permission) => catalog.has(permission))
+        ).toBe(true)
     }
   )
 
   it('ports every Couriers module and extra permission', () => {
-    expect(app('876-couriers').permissions.map((permission) => permission.key)).toEqual([
+    expect(
+      app('876-couriers').permissions.map((permission) => permission.key)
+    ).toEqual([
       'items.view',
       'items.create',
       'items.edit',
@@ -101,12 +103,14 @@ describe('app access seed catalog', () => {
 
   it('keeps Couriers staff away from Reports and Settings', () => {
     const staff = app('876-couriers').roles.find((role) => role.key === 'staff')
-    expect(staff?.permissions.some((permission) => permission.startsWith('reports.'))).toBe(
-      false
-    )
-    expect(staff?.permissions.some((permission) => permission.startsWith('settings.'))).toBe(
-      false
-    )
+    expect(
+      staff?.permissions.some((permission) => permission.startsWith('reports.'))
+    ).toBe(false)
+    expect(
+      staff?.permissions.some((permission) =>
+        permission.startsWith('settings.')
+      )
+    ).toBe(false)
   })
 
   it('defines the CRM role vocabulary from most to least privileged', () => {

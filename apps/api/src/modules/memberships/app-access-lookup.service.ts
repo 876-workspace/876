@@ -6,7 +6,10 @@ export async function findMembershipForAccess(
   organizationId: string,
   userId: string
 ): Promise<Membership | null> {
-  const row = await repository.findMembershipByOrgAndUser(organizationId, userId)
+  const row = await repository.findMembershipByOrgAndUser(
+    organizationId,
+    userId
+  )
   return row ? serializeMembership(row) : null
 }
 
@@ -25,6 +28,9 @@ export async function listMembershipsForAccess(
 ): Promise<Membership[]> {
   const ids = [...new Set(userIds)]
   if (ids.length === 0) return []
-  const rows = await repository.findMembershipsByOrgAndUsers(organizationId, ids)
+  const rows = await repository.findMembershipsByOrgAndUsers(
+    organizationId,
+    ids
+  )
   return rows.map(serializeMembership)
 }

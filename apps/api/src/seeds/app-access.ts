@@ -62,7 +62,10 @@ function keysFor(
 
 const couriersPermissions = catalog([
   { key: 'items', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'customers', actions: ['view', 'create', 'edit', 'delete', 'import', 'export'] },
+  {
+    key: 'customers',
+    actions: ['view', 'create', 'edit', 'delete', 'import', 'export'],
+  },
   { key: 'packages', actions: ['view', 'create', 'edit', 'delete', 'export'] },
   { key: 'pre_alerts', actions: ['view', 'create', 'edit', 'delete'] },
   { key: 'warehouse', actions: ['view', 'create', 'edit', 'delete'] },
@@ -111,7 +114,9 @@ const invoicePermissions = catalog([
   { key: 'settings', actions: ['view', 'edit'] },
 ])
 
-function viewerPermissions(permissions: readonly AppPermissionSeed[]): string[] {
+function viewerPermissions(
+  permissions: readonly AppPermissionSeed[]
+): string[] {
   return keysFor(permissions, (permission) => permission.action === 'view')
 }
 
@@ -133,10 +138,12 @@ function standardRoles(
     {
       key: middleKey,
       name: middleName,
-      description: 'Operational access without application-administration privileges.',
+      description:
+        'Operational access without application-administration privileges.',
       permissions: keysFor(
         permissions,
-        (permission) => permission.moduleKey !== 'settings' && permission.action !== 'delete'
+        (permission) =>
+          permission.moduleKey !== 'settings' && permission.action !== 'delete'
       ),
       isSystem: true,
       isDefault: false,
@@ -174,7 +181,8 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
         description: 'Access to every module except Reports and Settings.',
         permissions: keysFor(
           couriersPermissions,
-          (permission) => !['reports', 'settings'].includes(permission.moduleKey)
+          (permission) =>
+            !['reports', 'settings'].includes(permission.moduleKey)
         ),
         isSystem: true,
         isDefault: true,
@@ -198,10 +206,12 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
       {
         key: 'manager',
         name: 'Manager',
-        description: 'Manages CRM operations, customers, requests, tasks, and teams.',
+        description:
+          'Manages CRM operations, customers, requests, tasks, and teams.',
         permissions: keysFor(
           crmPermissions,
-          (permission) => permission.moduleKey !== 'settings' || permission.action === 'view'
+          (permission) =>
+            permission.moduleKey !== 'settings' || permission.action === 'view'
         ),
         isSystem: true,
         isDefault: false,
@@ -210,12 +220,14 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
       {
         key: 'agent',
         name: 'Agent',
-        description: 'Works customer requests and tasks without role administration.',
+        description:
+          'Works customer requests and tasks without role administration.',
         permissions: keysFor(
           crmPermissions,
           (permission) =>
-            ['requests', 'customers', 'tasks', 'categories'].includes(permission.moduleKey) &&
-            permission.action !== 'delete'
+            ['requests', 'customers', 'tasks', 'categories'].includes(
+              permission.moduleKey
+            ) && permission.action !== 'delete'
         ),
         isSystem: true,
         isDefault: false,
@@ -235,12 +247,20 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
   {
     appSlug: '876-billing',
     permissions: billingPermissions,
-    roles: standardRoles(billingPermissions, 'finance_manager', 'Finance Manager'),
+    roles: standardRoles(
+      billingPermissions,
+      'finance_manager',
+      'Finance Manager'
+    ),
   },
   {
     appSlug: '876-invoice',
     permissions: invoicePermissions,
-    roles: standardRoles(invoicePermissions, 'finance_manager', 'Finance Manager'),
+    roles: standardRoles(
+      invoicePermissions,
+      'finance_manager',
+      'Finance Manager'
+    ),
   },
 ] as const
 
@@ -270,7 +290,9 @@ export async function seedAppAccess(): Promise<{
 
     const defaults = definition.roles.filter((role) => role.isDefault)
     if (defaults.length !== 1)
-      throw new Error(`${definition.appSlug} app access seed must define exactly one default role.`)
+      throw new Error(
+        `${definition.appSlug} app access seed must define exactly one default role.`
+      )
 
     apps += 1
     for (const permission of definition.permissions) {

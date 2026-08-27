@@ -49,7 +49,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_PERMISSION_DESCRIPTION,
     security: 'admin',
     request: { params: appIdParamsSchema },
-    responses: { 200: { description: 'Permission catalog returned.', schema: listObjectSchema(appPermissionSchema) } },
+    responses: {
+      200: {
+        description: 'Permission catalog returned.',
+        schema: listObjectSchema(appPermissionSchema),
+      },
+    },
     handler: controller.listAppPermissions,
   })
   api.post({
@@ -59,7 +64,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_PERMISSION_DESCRIPTION,
     security: 'admin',
     request: { params: appIdParamsSchema, body: createAppPermissionBodySchema },
-    responses: { 201: { description: 'App permission created.', schema: appPermissionSchema } },
+    responses: {
+      201: {
+        description: 'App permission created.',
+        schema: appPermissionSchema,
+      },
+    },
     handler: controller.createAppPermission,
   })
   api.post({
@@ -69,7 +79,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_PERMISSION_DESCRIPTION,
     security: 'admin',
     request: { params: appIdParamsSchema, body: syncAppPermissionsBodySchema },
-    responses: { 200: { description: 'Permission catalog synchronized.', schema: listObjectSchema(appPermissionSchema) } },
+    responses: {
+      200: {
+        description: 'Permission catalog synchronized.',
+        schema: listObjectSchema(appPermissionSchema),
+      },
+    },
     handler: controller.syncAppPermissions,
   })
   api.patch({
@@ -78,8 +93,16 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     summary: docs.UPDATE_APP_PERMISSION_SUMMARY,
     description: docs.APP_PERMISSION_DESCRIPTION,
     security: 'admin',
-    request: { params: appPermissionIdParamsSchema, body: updateAppPermissionBodySchema },
-    responses: { 200: { description: 'App permission updated.', schema: appPermissionSchema } },
+    request: {
+      params: appPermissionIdParamsSchema,
+      body: updateAppPermissionBodySchema,
+    },
+    responses: {
+      200: {
+        description: 'App permission updated.',
+        schema: appPermissionSchema,
+      },
+    },
     handler: controller.updateAppPermission,
   })
   api.delete({
@@ -89,7 +112,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_PERMISSION_DESCRIPTION,
     security: 'admin',
     request: { params: appPermissionIdParamsSchema },
-    responses: { 200: { description: 'App permission deleted.', schema: appPermissionDeleteSchema } },
+    responses: {
+      200: {
+        description: 'App permission deleted.',
+        schema: appPermissionDeleteSchema,
+      },
+    },
     handler: controller.deleteAppPermission,
   })
 
@@ -100,7 +128,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'admin',
     request: { params: appIdParamsSchema },
-    responses: { 200: { description: 'App role templates returned.', schema: listObjectSchema(appRoleSchema) } },
+    responses: {
+      200: {
+        description: 'App role templates returned.',
+        schema: listObjectSchema(appRoleSchema),
+      },
+    },
     handler: controller.listAppRoleTemplates,
   })
   api.post({
@@ -110,7 +143,9 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'admin',
     request: { params: appIdParamsSchema, body: createAppRoleBodySchema },
-    responses: { 201: { description: 'App role template created.', schema: appRoleSchema } },
+    responses: {
+      201: { description: 'App role template created.', schema: appRoleSchema },
+    },
     handler: controller.createAppRoleTemplate,
   })
   api.get({
@@ -120,7 +155,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'admin',
     request: { params: appRoleIdParamsSchema },
-    responses: { 200: { description: 'App role template returned.', schema: appRoleSchema } },
+    responses: {
+      200: {
+        description: 'App role template returned.',
+        schema: appRoleSchema,
+      },
+    },
     handler: controller.retrieveAppRoleTemplate,
   })
   api.patch({
@@ -130,7 +170,9 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'admin',
     request: { params: appRoleIdParamsSchema, body: updateAppRoleBodySchema },
-    responses: { 200: { description: 'App role template updated.', schema: appRoleSchema } },
+    responses: {
+      200: { description: 'App role template updated.', schema: appRoleSchema },
+    },
     handler: controller.updateAppRoleTemplate,
   })
   api.delete({
@@ -140,7 +182,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'admin',
     request: { params: appRoleIdParamsSchema },
-    responses: { 200: { description: 'App role template deleted.', schema: appRoleDeleteSchema } },
+    responses: {
+      200: {
+        description: 'App role template deleted.',
+        schema: appRoleDeleteSchema,
+      },
+    },
     handler: controller.deleteAppRoleTemplate,
   })
 
@@ -151,7 +198,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'session',
     request: { params: orgAppParamsSchema },
-    responses: { 200: { description: 'Organization app roles returned.', schema: listObjectSchema(appRoleSchema) } },
+    responses: {
+      200: {
+        description: 'Organization app roles returned.',
+        schema: listObjectSchema(appRoleSchema),
+      },
+    },
     handler: controller.listOrgAppRoles,
   })
   api.post({
@@ -161,7 +213,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'session',
     request: { params: orgAppParamsSchema, body: createAppRoleBodySchema },
-    responses: { 201: { description: 'Organization app role created.', schema: appRoleSchema } },
+    responses: {
+      201: {
+        description: 'Organization app role created.',
+        schema: appRoleSchema,
+      },
+    },
     handler: controller.createOrgAppRole,
   })
   api.get({
@@ -171,7 +228,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'session',
     request: { params: orgAppRoleIdParamsSchema },
-    responses: { 200: { description: 'Organization app role returned.', schema: appRoleSchema } },
+    responses: {
+      200: {
+        description: 'Organization app role returned.',
+        schema: appRoleSchema,
+      },
+    },
     handler: controller.retrieveOrgAppRole,
   })
   api.patch({
@@ -180,8 +242,16 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     summary: docs.UPDATE_ORG_APP_ROLE_SUMMARY,
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'session',
-    request: { params: orgAppRoleIdParamsSchema, body: updateAppRoleBodySchema },
-    responses: { 200: { description: 'Organization app role updated.', schema: appRoleSchema } },
+    request: {
+      params: orgAppRoleIdParamsSchema,
+      body: updateAppRoleBodySchema,
+    },
+    responses: {
+      200: {
+        description: 'Organization app role updated.',
+        schema: appRoleSchema,
+      },
+    },
     handler: controller.updateOrgAppRole,
   })
   api.delete({
@@ -191,7 +261,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_ROLE_DESCRIPTION,
     security: 'session',
     request: { params: orgAppRoleIdParamsSchema },
-    responses: { 200: { description: 'Organization app role deleted.', schema: appRoleDeleteSchema } },
+    responses: {
+      200: {
+        description: 'Organization app role deleted.',
+        schema: appRoleDeleteSchema,
+      },
+    },
     handler: controller.deleteOrgAppRole,
   })
 
@@ -201,8 +276,16 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     summary: docs.LIST_APP_MEMBERSHIPS_SUMMARY,
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
-    request: { params: orgIdParamsSchema, query: listAppMembershipsQuerySchema },
-    responses: { 200: { description: 'App memberships returned.', schema: listObjectSchema(appMembershipSchema) } },
+    request: {
+      params: orgIdParamsSchema,
+      query: listAppMembershipsQuerySchema,
+    },
+    responses: {
+      200: {
+        description: 'App memberships returned.',
+        schema: listObjectSchema(appMembershipSchema),
+      },
+    },
     handler: controller.listAppMemberships,
   })
   api.post({
@@ -212,7 +295,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
     request: { params: orgIdParamsSchema, body: createAppMembershipBodySchema },
-    responses: { 201: { description: 'App membership created.', schema: appMembershipSchema } },
+    responses: {
+      201: {
+        description: 'App membership created.',
+        schema: appMembershipSchema,
+      },
+    },
     handler: controller.createAppMembership,
   })
   api.get({
@@ -222,7 +310,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
     request: { params: assignmentIdParamsSchema },
-    responses: { 200: { description: 'App membership returned.', schema: appMembershipSchema } },
+    responses: {
+      200: {
+        description: 'App membership returned.',
+        schema: appMembershipSchema,
+      },
+    },
     handler: controller.retrieveAppMembership,
   })
   api.patch({
@@ -231,8 +324,16 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     summary: docs.UPDATE_APP_MEMBERSHIP_SUMMARY,
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
-    request: { params: assignmentIdParamsSchema, body: updateAppMembershipBodySchema },
-    responses: { 200: { description: 'App membership updated.', schema: appMembershipSchema } },
+    request: {
+      params: assignmentIdParamsSchema,
+      body: updateAppMembershipBodySchema,
+    },
+    responses: {
+      200: {
+        description: 'App membership updated.',
+        schema: appMembershipSchema,
+      },
+    },
     handler: controller.updateAppMembership,
   })
   api.delete({
@@ -242,7 +343,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
     request: { params: assignmentIdParamsSchema },
-    responses: { 200: { description: 'App membership revoked.', schema: appMembershipDeleteSchema } },
+    responses: {
+      200: {
+        description: 'App membership revoked.',
+        schema: appMembershipDeleteSchema,
+      },
+    },
     handler: controller.deleteAppMembership,
   })
 
@@ -253,7 +359,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
     request: { params: memberAppMembershipsParamsSchema },
-    responses: { 200: { description: 'Member app memberships returned.', schema: listObjectSchema(appMembershipSchema) } },
+    responses: {
+      200: {
+        description: 'Member app memberships returned.',
+        schema: listObjectSchema(appMembershipSchema),
+      },
+    },
     handler: controller.listAppMembershipsForMember,
   })
 
@@ -265,7 +376,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
     request: { params: orgAppParamsSchema },
-    responses: { 200: { description: 'Acting member app access returned.', schema: appMembershipSchema } },
+    responses: {
+      200: {
+        description: 'Acting member app access returned.',
+        schema: appMembershipSchema,
+      },
+    },
     handler: controller.retrieveMyAppMembership,
   })
   api.get({
@@ -275,7 +391,12 @@ export function registerAppAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.APP_MEMBERSHIP_DESCRIPTION,
     security: 'session',
     request: { params: orgAppParamsSchema },
-    responses: { 200: { description: 'App member roster returned.', schema: listObjectSchema(appMembershipSchema) } },
+    responses: {
+      200: {
+        description: 'App member roster returned.',
+        schema: listObjectSchema(appMembershipSchema),
+      },
+    },
     handler: controller.listMembersForApp,
   })
 

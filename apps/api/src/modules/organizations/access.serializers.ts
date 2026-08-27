@@ -85,7 +85,9 @@ export function serializeOrganizationRole(
   }
 }
 
-export function serializeOrganizationMember(row: MembershipRow): OrganizationMember {
+export function serializeOrganizationMember(
+  row: MembershipRow
+): OrganizationMember {
   return {
     object: 'organization_member',
     id: row.id,

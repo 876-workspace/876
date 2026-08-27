@@ -34,7 +34,10 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     summary: docs.PERMISSION_CATALOG_SUMMARY,
     description: docs.PERMISSION_CATALOG_DESCRIPTION,
     responses: {
-      200: { description: 'Catalog returned.', schema: permissionCatalogSchema },
+      200: {
+        description: 'Catalog returned.',
+        schema: permissionCatalogSchema,
+      },
     },
     handler: controller.getPermissionCatalog,
   })
@@ -46,7 +49,10 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     description: docs.LIST_ORG_ROLES_DESCRIPTION,
     request: { params: orgIdParamsSchema },
     responses: {
-      200: { description: 'Roles returned.', schema: listObjectSchema(organizationRoleSchema) },
+      200: {
+        description: 'Roles returned.',
+        schema: listObjectSchema(organizationRoleSchema),
+      },
     },
     handler: controller.listOrgRoles,
   })
@@ -120,7 +126,9 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Member returned.',
-        schema: organizationMemberSchema.extend({ permissions: z.array(z.string()) }),
+        schema: organizationMemberSchema.extend({
+          permissions: z.array(z.string()),
+        }),
       },
     },
     handler: controller.retrieveOrgMemberMe,
@@ -139,7 +147,10 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
       }),
     },
     responses: {
-      200: { description: 'Members returned.', schema: listObjectSchema(organizationMemberSchema) },
+      200: {
+        description: 'Members returned.',
+        schema: listObjectSchema(organizationMemberSchema),
+      },
     },
     handler: controller.listOrgMembers,
   })
@@ -149,7 +160,10 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     operationId: 'org-access-update_org_member_role',
     summary: docs.UPDATE_ORG_MEMBER_ROLE_SUMMARY,
     description: docs.UPDATE_ORG_MEMBER_ROLE_DESCRIPTION,
-    request: { params: membershipIdParamsSchema, body: organizationMemberRoleUpdateSchema },
+    request: {
+      params: membershipIdParamsSchema,
+      body: organizationMemberRoleUpdateSchema,
+    },
     responses: {
       200: { description: 'Member updated.', schema: organizationMemberSchema },
       404: { description: 'Membership not found.' },
@@ -190,7 +204,10 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
       }),
     },
     responses: {
-      200: { description: 'Assignments returned.', schema: listObjectSchema(appAssignmentSchema) },
+      200: {
+        description: 'Assignments returned.',
+        schema: listObjectSchema(appAssignmentSchema),
+      },
     },
     handler: controller.listAppAssignments,
   })

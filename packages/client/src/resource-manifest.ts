@@ -41,7 +41,8 @@ export const RESOURCE_MANIFEST = {
   },
   entitlements: {
     owner: 'core',
-    meaning: 'whether an organization may open an app (org-to-app subscription)',
+    meaning:
+      'whether an organization may open an app (org-to-app subscription)',
   },
   entitlementPlans: {
     owner: 'core',
@@ -74,7 +75,8 @@ export const RESOURCE_MANIFEST = {
   },
   appMemberships: {
     owner: 'core',
-    meaning: 'per-member per-app role, overrides, attributes and lifecycle profile',
+    meaning:
+      'per-member per-app role, overrides, attributes and lifecycle profile',
   },
   invites: { owner: 'core', meaning: 'membership invitations' },
   mobileNumbers: {
@@ -112,7 +114,8 @@ export const RESOURCE_MANIFEST = {
   paymentTerms: { owner: 'billing', meaning: 'payment terms' },
   subscriptions: {
     owner: 'billing',
-    meaning: 'commercial recurring agreements, NOT core org-to-app entitlements',
+    meaning:
+      'commercial recurring agreements, NOT core org-to-app entitlements',
   },
   taxRates: { owner: 'billing', meaning: 'tax rates' },
   taxAuthorities: { owner: 'billing', meaning: 'tax authorities' },
