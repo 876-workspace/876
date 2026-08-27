@@ -11,4 +11,7 @@ export {
   upsertMembershipFromWorkos,
   removeMembershipByWorkosId,
 } from './memberships.service'
-export { updateMembershipProfile as updateMembership } from './membership-position.service'
+export {
+  createMembershipProfile,
+  updateMembershipProfile as updateMembership,
+} from './membership-position.service'
