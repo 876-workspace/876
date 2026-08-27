@@ -7,7 +7,10 @@ import type {
   ListMembershipsQuery,
   UpdateMembershipBody,
 } from './memberships.schemas'
-import { updateMembershipProfile } from './membership-position.service'
+import {
+  createMembershipProfile,
+  updateMembershipProfile,
+} from './membership-position.service'
 import * as service from './memberships.service'
 
 export async function listMemberships(req: Request, res: Response) {
@@ -18,7 +21,7 @@ export async function listMemberships(req: Request, res: Response) {
 
 export async function createMembership(req: Request, res: Response) {
   const body = validBody<CreateMembershipBody>(req)
-  const data = await service.createMembership(body)
+  const data = await createMembershipProfile(body)
   res.status(201).json(data)
 }
 
