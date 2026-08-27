@@ -30,6 +30,7 @@ model BillingCustomerOutbox {
   contactLastName  String? @map("contact_last_name") @db.VarChar
   contactEmail     String? @map("contact_email") @db.VarChar
   contactPhone     String? @map("contact_phone") @db.VarChar
+  contactAvatar    String? @map("contact_avatar") @db.VarChar
   payloadHash      String? @map("payload_hash") @db.VarChar
 
   @@index([status, availableAt, createdAt], map: "ix_billing_customer_outbox_delivery")

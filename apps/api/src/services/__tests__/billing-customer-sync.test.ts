@@ -100,9 +100,11 @@ describe('snapshotForOrganization', () => {
     expect(snapshot.contactFirstName).toBe('Ada')
     expect(snapshot.contactLastName).toBe('Lovelace')
     expect(snapshot.contactEmail).toBe('ada@example.com')
-    // Party first/last mirror the contact
-    expect(snapshot.firstName).toBe('Ada')
-    expect(snapshot.lastName).toBe('Lovelace')
+    // The party is the company; the person lives only on the contact fields.
+    // Mirroring them onto the party is what made a business customer render
+    // its owner as if the organization itself were a person.
+    expect(snapshot.firstName).toBeNull()
+    expect(snapshot.lastName).toBeNull()
   })
 
   it('prefers declared primary contact without consulting memberships', async () => {
@@ -169,7 +171,7 @@ describe('snapshotForOrganization', () => {
     expect(snapshot.email).toBe('ap@efesto.test')
   })
 
-  it('falls back to contact email when org has no primary email', async () => {
+  it("leaves the party email null rather than borrowing the contact's", async () => {
     const repo = makeRepository()
     repo.listMembershipsByOrganizationId.mockResolvedValue([
       membership() as never,
@@ -180,7 +182,46 @@ describe('snapshotForOrganization', () => {
       { repository: repo },
       organization() as never
     )
-    expect(snapshot.email).toBe('ada@example.com')
+
+    // The organization has no email of its own, and its owner's personal
+    // address is not one. It stays on the contact, where it belongs.
+    expect(snapshot.email).toBeNull()
+    expect(snapshot.contactEmail).toBe('ada@example.com')
+  })
+
+  it('carries the contact avatar so Billing needs no live user lookup', async () => {
+    const repo = makeRepository()
+    repo.listMembershipsByOrganizationId.mockResolvedValue([
+      membership() as never,
+    ])
+    repo.findUserById.mockResolvedValue(
+      user({ avatar: 'https://cdn.876.test/u/ada.png' }) as never
+    )
+
+    const snapshot = await snapshotForOrganization(
+      { repository: repo },
+      organization() as never
+    )
+
+    // An app reading the registry cannot list another organization's members,
+    // so the picture has to travel with the snapshot or it is unreachable.
+    expect(snapshot.contactAvatar).toBe('https://cdn.876.test/u/ada.png')
+  })
+
+  it('keeps the org email when it has one, contact notwithstanding', async () => {
+    const repo = makeRepository()
+    repo.listMembershipsByOrganizationId.mockResolvedValue([
+      membership() as never,
+    ])
+    repo.findUserById.mockResolvedValue(user() as never)
+
+    const snapshot = await snapshotForOrganization(
+      { repository: repo },
+      organization({ primaryEmail: 'ap@efesto.test' }) as never
+    )
+
+    expect(snapshot.email).toBe('ap@efesto.test')
+    expect(snapshot.contactEmail).toBe('ada@example.com')
   })
 
   it('prefers owner over earlier admin', async () => {
@@ -325,6 +366,7 @@ describe('customerEventPayload', () => {
       contactLastName: 'Lovelace',
       contactEmail: 'ada@example.com',
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: 'hash',
       occurredAt: BigInt(1_700_000_000),
       status: 'pending',
@@ -355,6 +397,7 @@ describe('customerEventPayload', () => {
       contactLastName: null,
       contactEmail: null,
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: 'hash',
       occurredAt: BigInt(1_700_000_000),
       status: 'pending',
@@ -385,6 +428,7 @@ describe('customerEventPayload', () => {
         lastName: 'Lovelace',
         email: 'ada@example.com',
         phone: null,
+        avatar: null,
       },
     })
 
@@ -419,6 +463,7 @@ describe('customerEventPayload', () => {
       contactLastName: null,
       contactEmail: null,
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: null,
       occurredAt: BigInt(1_700_000_000),
       status: 'pending',
@@ -451,6 +496,7 @@ describe('customerEventPayload', () => {
       contactLastName: null,
       contactEmail: null,
       contactPhone: null,
+      contactAvatar: null,
     } as BillingCustomerOutboxRow
 
     const payload = customerEventPayload(event)
@@ -507,6 +553,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       contactLastName: 'Lovelace',
       contactEmail: 'ada@example.com',
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: 'placeholder',
       occurredAt: BigInt(NOW),
       status: 'pending',
@@ -570,6 +617,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       contactLastName: 'Lovelace',
       contactEmail: 'ada@example.com',
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: 'old_hash',
       occurredAt: BigInt(NOW),
       status: 'pending',
@@ -648,6 +696,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       contactLastName: 'Lovelace',
       contactEmail: 'ada@example.com',
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: deliveredHash,
       occurredAt: BigInt(NOW),
       status: 'delivered',
@@ -707,6 +756,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       contactLastName: 'Lovelace',
       contactEmail: 'ada@example.com',
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: firstHash,
       occurredAt: BigInt(NOW),
       status: 'delivered',
@@ -773,6 +823,7 @@ describe('enqueueCustomerEnsureForUser', () => {
       contactLastName: null,
       contactEmail: null,
       contactPhone: null,
+      contactAvatar: null,
       payloadHash: null,
       occurredAt: BigInt(NOW),
       status: 'pending',
