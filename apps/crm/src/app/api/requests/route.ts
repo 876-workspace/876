@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
 
 export async function GET(request: NextRequest) {
@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
       },
       { status: 401 }
     )
+
+  const $876 = await get876Client()
 
   const searchParams = request.nextUrl.searchParams
   const status = searchParams.get('status') ?? undefined
@@ -39,6 +41,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 401 }
     )
+
+  const $876 = await get876Client()
 
   const input = await request.json().catch(() => null)
   const result = await $876.requests.create(context.orgId, {

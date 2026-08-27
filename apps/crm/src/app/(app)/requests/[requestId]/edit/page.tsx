@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 import {
@@ -14,6 +14,7 @@ type Props = { params: Promise<{ requestId: string }> }
 
 export default async function EditRequestPage({ params }: Props) {
   const context = await requireCrmContext()
+  const $876 = await get876Client()
   const { requestId } = await params
   const [requestResult, customersResult, departmentsResult, membersResult] =
     await Promise.all([

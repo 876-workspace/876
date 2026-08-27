@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { Page } from '@876/ui/page'
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 import {
@@ -29,6 +29,7 @@ export async function generateMetadata({
   params: Promise<{ requestId: string }>
 }): Promise<Metadata> {
   const context = await requireCrmContext()
+  const $876 = await get876Client()
   const { requestId } = await params
   const result = await $876.requests.retrieve(context.orgId, requestId)
   if (!result.data) return { title: 'Request' }

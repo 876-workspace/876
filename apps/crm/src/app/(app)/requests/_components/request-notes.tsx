@@ -4,8 +4,7 @@ import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import {
   ArrowPathIcon,
-  DocumentTextIcon,
-  LockClosedIcon,
+  ChatBubbleLeftIcon,
   Pencil,
   PlusIcon,
   TrashIcon,
@@ -33,10 +32,14 @@ const COMPOSER = 'composer'
 export const NEW_NOTE_FIELD_ID = 'new-request-note'
 
 function formatNoteDate(timestamp: number): string {
+  const date = new Date(timestamp * 1000)
+  const currentYear = new Date().getFullYear()
+
   return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(timestamp * 1000))
+    month: 'short',
+    day: 'numeric',
+    ...(date.getFullYear() === currentYear ? {} : { year: 'numeric' }),
+  }).format(date)
 }
 
 /**
@@ -148,7 +151,7 @@ export function RequestNotesSection({
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <DocumentTextIcon
+          <ChatBubbleLeftIcon
             className="text-muted-foreground size-4 shrink-0"
             aria-hidden="true"
           />
@@ -241,10 +244,7 @@ export function RequestNotesSection({
                   className="border-input text-primary focus:ring-ring size-4 rounded focus:ring-offset-0"
                   disabled={isSubmitting}
                 />
-                <span className="flex items-center gap-1">
-                  <LockClosedIcon className="size-4" aria-hidden="true" />
-                  Internal note (team only)
-                </span>
+                <span>Internal note (team only)</span>
               </label>
 
               <Button
@@ -376,9 +376,13 @@ function NoteCard({
           <span className="text-foreground font-medium">
             {isAuthor ? 'You' : author}
           </span>
-          <span className="text-muted-foreground">
-            {isDescription ? 'opened this request' : 'added a note'}
-          </span>
+          {isDescription ? (
+            <span className="text-muted-foreground">opened this request</span>
+          ) : (
+            <span className="text-muted-foreground" aria-hidden="true">
+              ·
+            </span>
+          )}
           <span
             className="text-muted-foreground text-xs"
             suppressHydrationWarning
@@ -397,15 +401,6 @@ function NoteCard({
           {isDescription ? (
             <Badge variant="secondary" className="px-1.5 text-[0.6875rem]">
               Description
-            </Badge>
-          ) : null}
-          {note.internal ? (
-            <Badge
-              variant="outline"
-              className="text-muted-foreground gap-1 px-1.5 text-[0.6875rem]"
-            >
-              <LockClosedIcon className="size-2.5" aria-hidden="true" />
-              Internal
             </Badge>
           ) : null}
         </div>

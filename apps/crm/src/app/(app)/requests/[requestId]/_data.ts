@@ -3,7 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 /**
@@ -31,6 +31,7 @@ export type RequestDepartment = {
 /** The request itself. Calls `notFound()` for an id this org cannot see. */
 export const loadRequest = cache(async (requestId: string) => {
   const context = await loadCrmContext()
+  const $876 = await get876Client()
   const result = await $876.requests.retrieve(context.orgId, requestId)
   if (result.error?.code === 'crm/request-not-found') notFound()
   if (result.error) throw new Error(result.error.message)
@@ -41,6 +42,7 @@ export const loadRequest = cache(async (requestId: string) => {
 /** The org's teams and members — what assignment and authorship resolve against. */
 export const loadDirectory = cache(async () => {
   const context = await loadCrmContext()
+  const $876 = await get876Client()
   const [departmentsResult, membersResult] = await Promise.all([
     $876.departments.list(context.orgId),
     $876.organizationMembers.list(context.orgId),
@@ -68,6 +70,7 @@ export const loadDirectory = cache(async () => {
 /** The customer this request belongs to, as the registry holds them. */
 export const loadCustomer = cache(async (customerId: string) => {
   const context = await loadCrmContext()
+  const $876 = await get876Client()
   const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
   return {
     profile: result.data?.profile,
@@ -83,6 +86,7 @@ export const loadCustomer = cache(async (customerId: string) => {
  */
 export const loadNotes = cache(async (requestId: string) => {
   const context = await loadCrmContext()
+  const $876 = await get876Client()
   const result = await $876.requestNotes.list(context.orgId, requestId)
   if (result.error) throw new Error(result.error.message)
   return result.data.data

@@ -7,7 +7,7 @@ import {
 } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import type { RequestStatus } from '@/types/crm'
 
@@ -106,6 +106,7 @@ async function RequestsTableData({
   assignee: string
 }) {
   const context = await requireCrmContext()
+  const $876 = await get876Client()
 
   let teamId: string | undefined = undefined
   if (team === 'none') teamId = 'unassigned'

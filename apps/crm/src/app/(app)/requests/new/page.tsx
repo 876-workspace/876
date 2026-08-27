@@ -1,6 +1,6 @@
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 import { RequestForm } from '../_components/request-form'
@@ -9,6 +9,7 @@ export const metadata = { title: 'Add request' }
 
 export default async function NewRequestPage() {
   const context = await requireCrmContext()
+  const $876 = await get876Client()
   const [customers, departmentsResult, membersResult] = await Promise.all([
     $876.customerProfiles.list(context.orgId),
     $876.departments.list(context.orgId),

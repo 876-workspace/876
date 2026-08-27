@@ -16,13 +16,16 @@ import {
 import { loadCustomer, loadDirectory, loadRequest } from '../_data'
 
 /**
- * The record's action row.
+ * The record's title row: the subject on the left, the actions on the right.
  *
- * Split from the identity band because it spans the full width of the record
- * while the band does not: the customer column starts directly beneath this
- * row, so the toolbar has to sit above the grid rather than inside its
- * reading column. It shares the band's cached loaders, so the split costs no
- * extra request.
+ * They share a row because they are the same line of the page — a title
+ * indented a row below its own toolbar reads as belonging to the content
+ * underneath rather than to the record. Keeping them together also keeps this
+ * row full-width, which is what lets the customer column start immediately
+ * beneath it instead of below the whole identity band.
+ *
+ * Split from the identity band for that reason alone; it shares the band's
+ * cached loaders, so the split costs no extra request.
  *
  * There is no back-link — the sidebar already carries Requests, so a second
  * route to the list spent a control on navigation nobody needed from here.
@@ -32,33 +35,49 @@ export async function RequestToolbar({ requestId }: { requestId: string }) {
   const { departments, members } = await loadDirectory()
 
   return (
-    <div className="mb-5 flex flex-wrap items-center justify-end gap-3">
-      <RequestHeaderActions
-        requestId={request.id}
-        requestNumber={request.number}
-        status={request.status}
-        customerId={request.customerId}
-        currentUserId={context.userId}
-        departments={departments}
-        members={members}
-      />
+    <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+      {/* The subject leads; priority reads as a qualifier on it. Status is not
+          repeated here — the toolbar's own selector already states it. */}
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 pt-1">
+        <span className="text-muted-foreground font-mono text-base font-semibold">
+          #{request.number}
+        </span>
+        <h1 className="876-page-title min-w-0 text-balance">
+          {request.subject}
+        </h1>
+        <RequestPriorityBadge priority={request.priority} />
+      </div>
+
+      <div className="flex shrink-0 flex-wrap items-center gap-3">
+        <RequestHeaderActions
+          requestId={request.id}
+          requestNumber={request.number}
+          status={request.status}
+          customerId={request.customerId}
+          currentUserId={context.userId}
+          departments={departments}
+          members={members}
+        />
+      </div>
     </div>
   )
 }
 
-/** Holds the toolbar's height so the record below it does not jump. */
+/** Holds the title row's height so the record below it does not jump. */
 export function RequestToolbarSkeleton() {
   return (
-    <div className="mb-5 flex items-center justify-end gap-3">
-      <Skeleton className="h-9 w-80" />
+    <div className="mb-5 flex items-start justify-between gap-x-6">
+      <Skeleton className="mt-1 h-7 w-72" />
+      <Skeleton className="h-9 w-80 shrink-0" />
     </div>
   )
 }
 
 /**
- * The record's identity band: what this request is, who owns it, and how stale
- * it is — the questions asked before any tab is chosen, so it sits above them
- * and does not change when one is.
+ * The record's fact band: who the request is for, where it came from, who owns
+ * it, and how stale it is — the questions asked before any tab is chosen, so
+ * it sits above them and does not change when one is. The subject itself lives
+ * in the title row above, level with the toolbar.
  */
 export async function RequestIdentity({ requestId }: { requestId: string }) {
   const { request } = await loadRequest(requestId)
@@ -83,22 +102,7 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
 
   return (
     <>
-      {/*
-        The subject leads; priority reads as a qualifier on it. Status is not
-        repeated here — the toolbar's selector already states it, and a badge
-        beside the subject made the same fact look like two.
-      */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2.5">
-        <span className="text-muted-foreground font-mono text-base font-semibold">
-          #{request.number}
-        </span>
-        <h1 className="876-page-title min-w-0 text-balance">
-          {request.subject}
-        </h1>
-        <RequestPriorityBadge priority={request.priority} />
-      </div>
-
-      <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
         <Link
           href={`/customers/${request.customerId}`}
           className="text-foreground hover:text-primary inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
@@ -212,8 +216,7 @@ function Chip({
 export function RequestIdentitySkeleton() {
   return (
     <>
-      <Skeleton className="h-7 w-80" />
-      <Skeleton className="mt-4 h-5 w-96" />
+      <Skeleton className="h-5 w-96" />
       <div className="mt-4 flex flex-wrap gap-2">
         <Skeleton className="h-8 w-56" />
         <Skeleton className="h-8 w-32" />
