@@ -60,7 +60,7 @@ describe('ResourceManifest / contract / billing nouns exist', () => {
       'bankAccounts',
     ] as const
     for (const noun of billingNouns) {
-      const entry = (RESOURCE_MANIFEST as any)[noun]
+      const entry = RESOURCE_MANIFEST[noun]
       if (entry) expect(entry.owner, `${noun} owner`).toBe('billing')
     }
   })

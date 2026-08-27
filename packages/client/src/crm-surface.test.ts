@@ -32,13 +32,42 @@ describe('CRM unified client surface', () => {
     }
   })
 
+  it('exposes CRM teams with member operations', () => {
+    const $876 = create876ServerClient(crmOptions())
+
+    expect($876.teams.list).toBeTypeOf('function')
+    expect($876.teams.retrieve).toBeTypeOf('function')
+    expect($876.teams.create).toBeTypeOf('function')
+    expect($876.teams.update).toBeTypeOf('function')
+    expect($876.teams.delete).toBeTypeOf('function')
+    expect($876.teams.members.list).toBeTypeOf('function')
+    expect($876.teams.members.add).toBeTypeOf('function')
+    expect($876.teams.members.update).toBeTypeOf('function')
+    expect($876.teams.members.remove).toBeTypeOf('function')
+  })
+
+  it('exposes CRM category, task, and reminder resources', () => {
+    const $876 = create876ServerClient(crmOptions())
+
+    expect($876.requestCategories.list).toBeTypeOf('function')
+    expect($876.requestCategories.subcategories.create).toBeTypeOf('function')
+    expect($876.requestTasks.list).toBeTypeOf('function')
+    expect($876.requestTasks.create).toBeTypeOf('function')
+    expect($876.requestReminders.list).toBeTypeOf('function')
+    expect($876.requestReminders.create).toBeTypeOf('function')
+  })
+
   it('keeps the shared customer registry distinct from CRM profiles', () => {
     const $876 = create876ServerClient(crmOptions())
 
     expect('customers' in $876).toBe(false)
     expect(RESOURCE_MANIFEST.customers.owner).toBe('billing')
     expect(RESOURCE_MANIFEST.customerProfiles.owner).toBe('crm')
+    expect(RESOURCE_MANIFEST.requestCategories.owner).toBe('crm')
+    expect(RESOURCE_MANIFEST.requestReminders.owner).toBe('crm')
     expect(RESOURCE_MANIFEST.requests.owner).toBe('crm')
+    expect(RESOURCE_MANIFEST.requestTasks.owner).toBe('crm')
+    expect(RESOURCE_MANIFEST.teams.owner).toBe('crm')
   })
 
   it('retains the core identity surface in CRM', () => {

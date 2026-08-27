@@ -7,7 +7,7 @@ import { createConsoleClient } from './composers/console.ts'
 
 describe('admin core resource projections', () => {
   it('exposes payment instrument resources only on the server Console surface', () => {
-    const options: any = {
+    const options = {
       app: 'console',
       apiKey: '876_app_secret_test1234567890123456',
       services: {
@@ -17,7 +17,7 @@ describe('admin core resource projections', () => {
         storage: {},
         widgets: { member: {}, admin: {} },
       },
-    }
+    } as unknown as Parameters<typeof createConsoleClient>[0]
 
     const $876 = createConsoleClient(options)
 
@@ -34,7 +34,7 @@ describe('admin core resource projections', () => {
     const adminAssignmentList = vi.fn()
     const adminInviteList = vi.fn()
 
-    const platform: any = {
+    const platform = {
       auth: {
         getSession: vi.fn(),
         me: { listSessions: vi.fn(), revokeSession: vi.fn() },
@@ -60,8 +60,8 @@ describe('admin core resource projections', () => {
       mobileNumbers: {},
       mobileNumberVerifications: {},
       products: {},
-    }
-    const admin: any = {
+    } as unknown as Parameters<typeof createCoreSurface>[0]['platform']
+    const admin = {
       auditEvents: {},
       apiKeys: {},
       modules: {},
@@ -115,16 +115,16 @@ describe('admin core resource projections', () => {
       },
       appAssignments: { list: adminAssignmentList },
       invites: { list: adminInviteList },
-    }
+    } as unknown as Parameters<typeof createWorkspaceControlPlane>[0]
 
-    const core = createCoreSurface({ platform, admin }) as any
+    const core = createCoreSurface({ platform, admin })
     const workspace = createWorkspaceControlPlane(admin)
 
     expect(core.organizationMembers.list).toBe(platformMemberList)
     expect(core.organizationMembers.admin.create).toBe(adminMemberCreate)
     expect(core.organizationMembers.admin.list).toBe(adminMemberList)
     expect(core.appAssignments.list).toBe(platformAssignmentList)
-    expect(core.appAssignments.admin).toBeUndefined()
+    expect('admin' in core.appAssignments).toBe(false)
     expect(workspace.apps.list).toBe(adminAssignmentList)
     expect(core.invites.list).toBe(platformInviteList)
     expect(core.invites.admin.list).toBe(adminInviteList)

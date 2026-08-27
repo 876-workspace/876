@@ -20,12 +20,7 @@
  */
 
 export type ServiceOwner =
-  | 'core'
-  | 'billing'
-  | 'couriers'
-  | 'crm'
-  | 'storage'
-  | 'widgets'
+  'core' | 'billing' | 'couriers' | 'crm' | 'storage' | 'widgets'
 
 export interface ResourceOwnership {
   /** The service that is authoritative for this canonical noun. */
@@ -133,11 +128,28 @@ export const RESOURCE_MANIFEST = {
   // CRM (owned by @876/crm)
   customerProfiles: {
     owner: 'crm',
-    meaning: 'CRM enrollment/profile for a shared billing customer relationship',
+    meaning:
+      'CRM enrollment/profile for a shared billing customer relationship',
+  },
+  requestCategories: {
+    owner: 'crm',
+    meaning: 'org-managed CRM request category and subcategory catalog',
+  },
+  requestReminders: {
+    owner: 'crm',
+    meaning: 'time-based reminders on a CRM request',
   },
   requests: {
     owner: 'crm',
     meaning: 'CRM customer service and relationship requests',
+  },
+  requestTasks: {
+    owner: 'crm',
+    meaning: 'actionable follow-up items on a CRM request',
+  },
+  teams: {
+    owner: 'crm',
+    meaning: 'CRM routing teams (queues) an organization assigns requests to',
   },
 
   // Shared infrastructure
