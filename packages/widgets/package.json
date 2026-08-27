@@ -33,11 +33,8 @@
   },
   "dependencies": {
     "@876/core": "workspace:*",
+    "@876/editor": "workspace:*",
     "@876/ui": "workspace:*",
-    "@editorjs/editorjs": "2.31.6",
-    "@editorjs/header": "2.8.9",
-    "@editorjs/list": "2.0.9",
-    "@editorjs/underline": "1.2.1",
     "motion": "13.1.0",
     "server-only": "0.0.1",
     "zod": "4.4.3"
