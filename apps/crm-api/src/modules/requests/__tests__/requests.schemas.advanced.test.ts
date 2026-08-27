@@ -124,22 +124,29 @@ describe('requests.schemas - createRequestBodySchema', () => {
       createRequestBodySchema.parse({ ...base, source: 'SLACK' })
     ).toThrow()
   })
-  it('accepts serialized descriptions up to 100_000 characters', () => {
+  it('keeps the 20_000 authored-character description limit', () => {
     expect(
       createRequestBodySchema.parse({ ...base, description: '  details  ' })
         .description
     ).toBe('details')
+
+    const atLimit = JSON.stringify({
+      blocks: [
+        { type: 'paragraph', data: { text: 'a'.repeat(20_000) } },
+      ],
+    })
+    const overLimit = JSON.stringify({
+      blocks: [
+        { type: 'paragraph', data: { text: 'a'.repeat(20_001) } },
+      ],
+    })
+
     expect(
-      createRequestBodySchema.parse({
-        ...base,
-        description: 'a'.repeat(100_000),
-      }).description
-    ).toHaveLength(100_000)
+      createRequestBodySchema.parse({ ...base, description: atLimit })
+        .description
+    ).toBe(atLimit)
     expect(() =>
-      createRequestBodySchema.parse({
-        ...base,
-        description: 'a'.repeat(100_001),
-      })
+      createRequestBodySchema.parse({ ...base, description: overLimit })
     ).toThrow()
     expect(
       createRequestBodySchema.parse({ ...base, description: null }).description
@@ -190,16 +197,38 @@ describe('requests.schemas - request note rich content', () => {
     ).toBe(document)
   })
 
-  it('keeps legacy plain text valid and rejects oversized transport strings', () => {
+  it('keeps legacy plain text valid and preserves the 10_000 text limit', () => {
     expect(
       createRequestNoteBodySchema.parse({
         body: 'Legacy note',
         authorId: 'usr_1',
       }).body
     ).toBe('Legacy note')
+
+    const overLimit = JSON.stringify({
+      blocks: [
+        { type: 'paragraph', data: { text: 'a'.repeat(10_001) } },
+      ],
+    })
     expect(() =>
       createRequestNoteBodySchema.parse({
-        body: 'a'.repeat(100_001),
+        body: overLimit,
+        authorId: 'usr_1',
+      })
+    ).toThrow()
+  })
+
+  it('rejects documents with more than 250 blocks', () => {
+    const tooManyBlocks = JSON.stringify({
+      blocks: Array.from({ length: 251 }, () => ({
+        type: 'paragraph',
+        data: { text: 'x' },
+      })),
+    })
+
+    expect(() =>
+      createRequestNoteBodySchema.parse({
+        body: tooManyBlocks,
         authorId: 'usr_1',
       })
     ).toThrow()
