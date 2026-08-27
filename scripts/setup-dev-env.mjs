@@ -87,6 +87,19 @@ function syncCrmCredentials() {
     synced = true
   }
 
+  // Console administers CRM at the operator tier, so it needs the same CRM
+  // service key the CRM app uses. Without it Console's CRM surface answers
+  // `crm/not-configured` on every call rather than failing at startup, which
+  // reads as an empty organization instead of a misconfiguration.
+  if (crmInternalKey) {
+    mergeEnvFile(
+      join(root, 'apps', 'console', '.env.development.local'),
+      { CRM_INTERNAL_KEY: crmInternalKey },
+      HEADER
+    )
+    synced = true
+  }
+
   if (platformAppKey) {
     // Both the CRM app (its /api/auth bridge sends this as X-876-API-Key) and
     // the CRM API need the platform app key under the same name.
