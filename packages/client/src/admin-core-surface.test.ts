@@ -14,6 +14,7 @@ describe('admin core resource projections', () => {
         platformAdmin: {},
         billing: { admin: {}, integration: {} },
         couriers: { admin: {} },
+        crm: {},
         storage: {},
         widgets: { member: {}, admin: {} },
       },
@@ -23,6 +24,51 @@ describe('admin core resource projections', () => {
 
     expect($876.paymentMethods.list).toBeTypeOf('function')
     expect($876.paymentIntents.list).toBeTypeOf('function')
+  })
+
+  it('exposes only the canonical CRM request resources on Console', () => {
+    const options = {
+      app: 'console',
+      apiKey: '876_app_secret_test1234567890123456',
+      services: {
+        platformAdmin: {},
+        billing: { admin: {}, integration: {} },
+        couriers: { admin: {} },
+        crm: {},
+        storage: {},
+        widgets: { member: {}, admin: {} },
+      },
+    } as unknown as Parameters<typeof createConsoleClient>[0]
+
+    const $876 = createConsoleClient(options)
+    const crmResources = [
+      'requests',
+      'requestTasks',
+      'requestReminders',
+      'requestNotes',
+      'requestCategories',
+    ] as const
+
+    expect(
+      Object.fromEntries(
+        crmResources.map((resource) => [resource, Object.keys($876[resource])])
+      )
+    ).toEqual({
+      requests: ['list', 'retrieve', 'create', 'update', 'delete'],
+      requestTasks: ['list', 'create', 'update', 'delete'],
+      requestReminders: ['list', 'create', 'update', 'delete'],
+      requestNotes: ['list', 'create', 'update', 'delete'],
+      requestCategories: [
+        'list',
+        'retrieve',
+        'create',
+        'update',
+        'delete',
+        'subcategories',
+      ],
+    })
+    expect('teams' in $876).toBe(false)
+    expect('customerProfiles' in $876).toBe(false)
   })
 
   it('keeps resource reads on core and workspace administration on workspace', () => {

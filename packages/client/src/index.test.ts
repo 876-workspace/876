@@ -24,6 +24,7 @@ function consoleOptions() {
           apiKey: '876_app_secret_test1234567890123456',
         },
       },
+      crm: { internalKey: 'crm-internal' },
       storage: { internalKey: 'storage-internal' },
       widgets: {
         member: { baseUrl: 'http://localhost:4003', serviceKey: 'widgets-key' },

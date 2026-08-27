@@ -25,6 +25,7 @@ function consoleOptions() {
       couriers: {
         admin: { internalKey: 'couriers-internal', apiKey: API_KEY },
       },
+      crm: { internalKey: 'crm-internal' },
       storage: { internalKey: 'storage-internal' },
       widgets: {
         member: { baseUrl: 'http://localhost:4003', serviceKey: 'widgets-key' },
