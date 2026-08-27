@@ -25,7 +25,7 @@ import { join, relative, dirname, sep } from 'node:path'
 
 const APPS = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['console', 'billing', 'couriers', '876', 'enterprise', 'invoice']
+  : ['console', 'billing', 'couriers', '876', 'enterprise', 'invoice', 'crm']
 
 /** Next.js special files that legitimately live in a route directory. */
 const ROUTE_FILES = new Set([
@@ -68,6 +68,10 @@ const APP_PREFIX = {
   couriers: { name: 'couriers', symbols: true },
   enterprise: { name: 'enterprise', symbols: true },
   invoice: { name: 'invoice', symbols: false },
+  // "CRM" is a real noun in this app's shared contracts (`CrmRequest`,
+  // `CrmRequestNote` come from `@876/client`), so the symbol heuristic would be
+  // all false positives here. A filename like `crm-sidebar.tsx` is still redundant.
+  crm: { name: 'crm', symbols: false },
   876: null, // numeric; no meaningful prefix form
 }
 

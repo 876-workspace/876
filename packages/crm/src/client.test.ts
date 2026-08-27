@@ -32,12 +32,14 @@ const crmRequest = {
   customerId: 'crm_cus_1',
   number: 1,
   subject: 'Need help',
-  category: 'SUPPORT',
+  categoryId: 'crm_cat_1',
+  subcategoryId: null,
   status: 'OPEN',
   priority: 'NORMAL',
   source: 'CRM',
   teamId: null,
   assigneeId: null,
+  ownerId: null,
   createdBy: 'usr_1',
   resolvedAt: null,
   closedAt: null,
@@ -140,7 +142,7 @@ describe('@876/crm client', () => {
     const created = await client.requests.create('org_1', {
       customerId: 'crm_cus_1',
       subject: 'Need help',
-      category: 'SUPPORT',
+      categoryId: 'crm_cat_1',
       createdBy: 'usr_1',
     })
     const updated = await client.requests.update('org_1', 'crm_req_1', {
@@ -157,7 +159,7 @@ describe('@876/crm client', () => {
     expect(deleted.data?.deleted).toBe(true)
   })
 
-  it('sends request list with query filters', async () => {
+  it('sends managed category and ownership filters without the removed category key', async () => {
     fetch.mockResolvedValueOnce(
       json({
         object: 'list',
@@ -172,14 +174,18 @@ describe('@876/crm client', () => {
       status: 'OPEN',
       teamId: 'dept_1',
       assigneeId: 'usr_2',
+      categoryId: 'crm_cat_1',
+      subcategoryId: 'unassigned',
+      ownerId: 'unassigned',
     })
 
     expect(result.error).toBeNull()
     expect(result.data?.data[0]?.teamId).toBe('dept_1')
     expect(fetch).toHaveBeenCalledWith(
-      'http://crm.test/v1/organizations/org_1/requests?status=OPEN&teamId=dept_1&assigneeId=usr_2',
+      'http://crm.test/v1/organizations/org_1/requests?status=OPEN&teamId=dept_1&assigneeId=usr_2&categoryId=crm_cat_1&subcategoryId=unassigned&ownerId=unassigned',
       expect.objectContaining({ method: 'GET' })
     )
+    expect(String(fetch.mock.calls[0]?.[0])).not.toContain('category=')
   })
 
   it('returns a created request without a stored description', async () => {
@@ -298,6 +304,228 @@ describe('@876/crm client', () => {
     })
     expect(result.data).toEqual(crmNote)
     expect(result.error).toBeNull()
+  })
+
+  it('creates a team at the encoded organization URL with members unchanged', async () => {
+    const team = {
+      object: 'team',
+      id: 'crm_team_1',
+      tenantId: 'crm_tenant_1',
+      name: 'Customer Success',
+      slug: 'customer-success',
+      description: null,
+      color: '#2563eb',
+      isDefault: true,
+      autoAssign: 'ROUND_ROBIN',
+      status: 'ACTIVE',
+      createdBy: 'usr_1',
+      createdAt: 1,
+      updatedAt: 1,
+      members: [],
+    }
+    const input = {
+      name: 'Customer Success',
+      color: '#2563eb',
+      isDefault: true,
+      autoAssign: 'ROUND_ROBIN' as const,
+      createdBy: 'usr_1',
+      members: [{ userId: 'usr_2', role: 'LEAD' as const }],
+    }
+    fetch.mockResolvedValueOnce(json(team, 201))
+
+    const result = await client.teams.create('org /north', input)
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(
+      'http://crm.test/v1/organizations/org%20%2Fnorth/teams',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'crm-internal',
+        },
+        body: JSON.stringify(input),
+      }
+    )
+    expect(result).toEqual({ data: team, error: null })
+  })
+
+  it('lists request categories at the encoded organization URL', async () => {
+    const subcategory = {
+      object: 'request_subcategory',
+      id: 'crm_subcat_1',
+      tenantId: 'crm_tenant_1',
+      categoryId: 'crm_cat_1',
+      name: 'Damaged parcel',
+      slug: 'damaged-parcel',
+      description: null,
+      icon: 'package-x',
+      sortOrder: 0,
+      isActive: true,
+      defaultTeamId: null,
+      defaultPriority: 'HIGH',
+      createdBy: 'usr_1',
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      deletedBy: null,
+    }
+    const category = {
+      object: 'request_category',
+      id: 'crm_cat_1',
+      tenantId: 'crm_tenant_1',
+      name: 'Delivery',
+      slug: 'delivery',
+      description: 'Delivery-related requests.',
+      color: '#2563eb',
+      icon: 'package',
+      sortOrder: 0,
+      isActive: true,
+      defaultTeamId: 'crm_team_1',
+      defaultPriority: 'NORMAL',
+      createdBy: 'usr_1',
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      deletedBy: null,
+      subcategories: [subcategory],
+    }
+    fetch.mockResolvedValueOnce(
+      json({
+        object: 'list',
+        data: [category],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org%20%2Fnorth/request-categories',
+      })
+    )
+
+    const result = await client.requestCategories.list('org /north')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(
+      'http://crm.test/v1/organizations/org%20%2Fnorth/request-categories',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'crm-internal',
+        },
+      }
+    )
+    expect(result.data?.data).toEqual([category])
+    expect(result.error).toBeNull()
+  })
+
+  it('lists request tasks at encoded organization and request URLs', async () => {
+    const task = {
+      object: 'request_task',
+      id: 'crm_task_1',
+      tenantId: 'crm_tenant_1',
+      requestId: 'req /42',
+      title: 'Call the customer',
+      description: null,
+      status: 'OPEN',
+      priority: 'HIGH',
+      assigneeId: 'usr_2',
+      dueAt: 2,
+      completedAt: null,
+      completedBy: null,
+      sortOrder: 0,
+      createdBy: 'usr_1',
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      deletedBy: null,
+    }
+    fetch.mockResolvedValueOnce(
+      json({
+        object: 'list',
+        data: [task],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org%20%2Fnorth/requests/req%20%2F42/tasks',
+      })
+    )
+
+    const result = await client.requestTasks.list('org /north', 'req /42')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(
+      'http://crm.test/v1/organizations/org%20%2Fnorth/requests/req%20%2F42/tasks',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'crm-internal',
+        },
+      }
+    )
+    expect(result.data?.data).toEqual([task])
+    expect(result.error).toBeNull()
+  })
+
+  it('lists request reminders at encoded organization and request URLs', async () => {
+    const reminder = {
+      object: 'request_reminder',
+      id: 'crm_rem_1',
+      tenantId: 'crm_tenant_1',
+      requestId: 'req /42',
+      title: 'Check for a reply',
+      note: null,
+      remindAt: 2,
+      userId: 'usr_2',
+      status: 'SCHEDULED',
+      sentAt: null,
+      dismissedAt: null,
+      createdBy: 'usr_1',
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      deletedBy: null,
+    }
+    fetch.mockResolvedValueOnce(
+      json({
+        object: 'list',
+        data: [reminder],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org%20%2Fnorth/requests/req%20%2F42/reminders',
+      })
+    )
+
+    const result = await client.requestReminders.list('org /north', 'req /42')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(
+      'http://crm.test/v1/organizations/org%20%2Fnorth/requests/req%20%2F42/reminders',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'crm-internal',
+        },
+      }
+    )
+    expect(result.data?.data).toEqual([reminder])
+    expect(result.error).toBeNull()
+  })
+
+  it('returns an invalid-response result for a malformed team payload', async () => {
+    fetch.mockResolvedValueOnce(
+      json({ object: 'team', id: 'crm_team_1', name: 'Incomplete team' })
+    )
+
+    const result = await client.teams.retrieve('org_1', 'crm_team_1')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(result).toEqual({
+      data: null,
+      error: {
+        code: 'crm/invalid-response',
+        message: 'CRM API returned an invalid response.',
+      },
+    })
   })
 
   it('fails closed when the internal credential is absent', async () => {

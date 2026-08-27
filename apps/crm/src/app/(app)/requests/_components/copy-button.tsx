@@ -34,13 +34,13 @@ export function CopyButton({
       onClick={copy}
       title={`Copy ${label.toLowerCase()}`}
       className={cn(
-        'text-muted-foreground hover:text-foreground inline-flex size-6 items-center justify-center rounded-md transition-colors hover:bg-muted',
+        'text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-6 items-center justify-center rounded-md transition-colors',
         className
       )}
       aria-label={`Copy ${label.toLowerCase()}`}
     >
       {copied ? (
-        <CheckIcon className="size-3.5 text-primary" aria-hidden="true" />
+        <CheckIcon className="text-primary size-3.5" aria-hidden="true" />
       ) : (
         <Copy className="size-3.5" aria-hidden="true" />
       )}

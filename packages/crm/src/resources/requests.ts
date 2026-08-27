@@ -24,7 +24,9 @@ function toQueryString(params?: ListRequestsQuery): string {
   if (params.teamId) search.set('teamId', params.teamId)
   if (params.assigneeId) search.set('assigneeId', params.assigneeId)
   if (params.customerId) search.set('customerId', params.customerId)
-  if (params.category) search.set('category', params.category)
+  if (params.categoryId) search.set('categoryId', params.categoryId)
+  if (params.subcategoryId) search.set('subcategoryId', params.subcategoryId)
+  if (params.ownerId) search.set('ownerId', params.ownerId)
   if (params.priority) search.set('priority', params.priority)
   const qs = search.toString()
   return qs ? `?${qs}` : ''

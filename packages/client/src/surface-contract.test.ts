@@ -271,7 +271,7 @@ describe('facade delegation parity', () => {
       .mockResolvedValue({ data: { object: 'session' }, error: null })
 
     const { createCoreSurface } = await import('./composers/base.ts')
-    const platform: any = {
+    const platform = {
       auth: {
         getSession,
         me: { listSessions, revokeSession },
@@ -299,8 +299,8 @@ describe('facade delegation parity', () => {
       mobileNumbers: {},
       mobileNumberVerifications: {},
       products: {},
-    }
-    const core = createCoreSurface({ platform }) as any
+    } as unknown as Parameters<typeof createCoreSurface>[0]['platform']
+    const core = createCoreSurface({ platform })
     await core.sessions.me.retrieve()
     expect(getSession).toHaveBeenCalledTimes(1)
     await core.sessions.me.list()
@@ -326,13 +326,13 @@ describe('facade delegation parity', () => {
     const notesList = vi.fn()
     const notesCreate = vi.fn()
     const notesDelete = vi.fn()
-    const setups: any = {
+    const setups = {
       list: vi.fn(),
       retrieve: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     }
-    const provisioning: any = {
+    const provisioning = {
       setups,
       retrieve,
       retrievePublished,
@@ -360,7 +360,7 @@ describe('facade delegation parity', () => {
     const { createCoreSurface } = await import('./composers/base.ts')
     const { createWorkspaceControlPlane, createPlatformControlPlane } =
       await import('./composers/control-planes.ts')
-    const platformClient: any = {
+    const platformClient = {
       auth: { getSession, me: { listSessions, revokeSession } },
       oauth: {},
       oauthGrants: {},
@@ -383,7 +383,7 @@ describe('facade delegation parity', () => {
       mobileNumbers: {},
       mobileNumberVerifications: {},
       products: {},
-    }
+    } as unknown as Parameters<typeof createCoreSurface>[0]['platform']
     const adminSessions = {
       list: vi.fn(),
       retrieve: vi.fn(),
@@ -394,7 +394,7 @@ describe('facade delegation parity', () => {
     const assignmentRevoke = vi.fn()
     const apiKeyCreate = vi.fn()
     const entitlementGrant = vi.fn()
-    const admin: any = {
+    const admin = {
       auditEvents: {},
       apiKeys: { create: apiKeyCreate },
       modules: {},
@@ -434,8 +434,8 @@ describe('facade delegation parity', () => {
         revoke: assignmentRevoke,
       },
       invites: {},
-    }
-    const core = createCoreSurface({ platform: platformClient, admin }) as any
+    } as unknown as Parameters<typeof createWorkspaceControlPlane>[0]
+    const core = createCoreSurface({ platform: platformClient, admin })
     const workspace = createWorkspaceControlPlane(admin)
     const platform = createPlatformControlPlane(admin)
 
@@ -466,7 +466,7 @@ describe('facade delegation parity', () => {
 
     await workspace.provisioning.draft.update('application', 'app_123', {
       foo: 'bar',
-    } as any)
+    } as unknown as Parameters<typeof workspace.provisioning.draft.update>[2])
     expect(replaceDraft).toHaveBeenCalledTimes(1)
     expect(replaceDraft).toHaveBeenCalledWith('application', 'app_123', {
       foo: 'bar',
@@ -475,7 +475,7 @@ describe('facade delegation parity', () => {
     await workspace.provisioning.runs.claim({
       organizationId: 'org_1',
       appId: 'app_1',
-    } as any)
+    } as unknown as Parameters<typeof workspace.provisioning.runs.claim>[0])
     expect(claimApplication).toHaveBeenCalledTimes(1)
     expect(claimApplication).toHaveBeenCalledWith({
       organizationId: 'org_1',
@@ -484,7 +484,7 @@ describe('facade delegation parity', () => {
 
     await workspace.provisioning.runs.complete('run_123', {
       status: 'succeeded',
-    } as any)
+    } as unknown as Parameters<typeof workspace.provisioning.runs.complete>[1])
     expect(completeApplication).toHaveBeenCalledTimes(1)
     expect(completeApplication).toHaveBeenCalledWith('run_123', {
       status: 'succeeded',

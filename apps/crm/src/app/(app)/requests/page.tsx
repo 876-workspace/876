@@ -117,13 +117,19 @@ async function RequestsTableData({
   else if (assignee === 'unassigned') assigneeId = 'unassigned'
   else if (assignee !== 'all') assigneeId = assignee
 
-  const [requestsResult, customersResult, departmentsResult, membersResult] =
-    await Promise.all([
-      $876.requests.list(context.orgId, { status, teamId, assigneeId }),
-      $876.customerProfiles.list(context.orgId),
-      $876.departments.list(context.orgId),
-      $876.organizationMembers.list(context.orgId),
-    ])
+  const [
+    requestsResult,
+    customersResult,
+    departmentsResult,
+    membersResult,
+    categoriesResult,
+  ] = await Promise.all([
+    $876.requests.list(context.orgId, { status, teamId, assigneeId }),
+    $876.customerProfiles.list(context.orgId),
+    $876.departments.list(context.orgId),
+    $876.organizationMembers.list(context.orgId),
+    $876.requestCategories.list(context.orgId),
+  ])
   if (requestsResult.error) throw new Error(requestsResult.error.message)
   if (customersResult.error) throw new Error(customersResult.error.message)
 
@@ -153,6 +159,16 @@ async function RequestsTableData({
 
   const membersByUserId = new Map(members.map((m) => [m.userId, m]))
 
+  // Every category the org has, not only the active ones: a request keeps its
+  // category after that category is archived, and resolving only active rows
+  // would blank the column for exactly the historical requests that need it.
+  const categoriesById = new Map(
+    (categoriesResult.data?.data ?? []).map((category) => [
+      category.id,
+      category,
+    ])
+  )
+
   const customerNames = new Map(
     customersResult.data.data.map(({ profile, customer }) => [
       profile.id,
@@ -177,7 +193,15 @@ async function RequestsTableData({
     assigneeAvatar: request.assigneeId
       ? (membersByUserId.get(request.assigneeId)?.avatar ?? null)
       : null,
-    category: request.category,
+    categoryName: request.categoryId
+      ? (categoriesById.get(request.categoryId)?.name ?? null)
+      : null,
+    categoryIcon: request.categoryId
+      ? (categoriesById.get(request.categoryId)?.icon ?? null)
+      : null,
+    categoryColor: request.categoryId
+      ? (categoriesById.get(request.categoryId)?.color ?? null)
+      : null,
     status: request.status,
     priority: request.priority,
     source: request.source,

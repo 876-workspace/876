@@ -14,16 +14,6 @@ enum RequestPriority {
   URGENT
 }
 
-enum RequestCategory {
-  GENERAL
-  SUPPORT
-  BILLING
-  SALES
-  COMPLAINT
-  FEEDBACK
-  OTHER
-}
-
 enum RequestSource {
   CRM
   EMAIL
@@ -37,6 +27,12 @@ enum RequestSource {
 enum RequestNoteKind {
   DESCRIPTION
   NOTE
+  EMAIL
+}
+
+enum EmailDirection {
+  INBOUND
+  OUTBOUND
 }
 
 model Request {
@@ -45,12 +41,14 @@ model Request {
   customerId     String          @map("customer_id")
   number         Int
   subject        String
-  category       RequestCategory @default(GENERAL)
+  categoryId     String?         @map("category_id")
+  subcategoryId  String?         @map("subcategory_id")
   status         RequestStatus   @default(OPEN)
   priority       RequestPriority @default(NORMAL)
   source         RequestSource   @default(CRM)
   teamId         String?         @map("team_id")
   assigneeId     String?         @map("assignee_id")
+  ownerId        String?         @map("owner_id")
   createdBy      String          @map("created_by")
   resolvedAt     DateTime?       @map("resolved_at")
   closedAt       DateTime?       @map("closed_at")
@@ -60,9 +58,17 @@ model Request {
   deletedBy      String?         @map("deleted_by")
   deletionReason String?         @map("deletion_reason")
 
-  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer CustomerProfile @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
-  notes    RequestNote[]
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer    CustomerProfile     @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  // Team-reference cleanup is deliberate service behavior; NoAction protects required tenantId.
+  team        Team?               @relation(fields: [tenantId, teamId], references: [tenantId, id], onDelete: NoAction)
+  // Category deletion is refused while referenced; NoAction is the database backstop.
+  category    RequestCategoryDef? @relation(fields: [tenantId, categoryId], references: [tenantId, id], onDelete: NoAction)
+  // Subcategory deletion is refused while referenced; NoAction is the database backstop.
+  subcategory RequestSubcategory? @relation(fields: [tenantId, subcategoryId], references: [tenantId, id], onDelete: NoAction)
+  notes       RequestNote[]
+  tasks       RequestTask[]
+  reminders   RequestReminder[]
 
   @@unique([tenantId, number])
   @@unique([tenantId, id])
@@ -70,6 +76,8 @@ model Request {
   @@index([tenantId, customerId, createdAt])
   @@index([tenantId, teamId, status])
   @@index([tenantId, assigneeId, status])
+  @@index([tenantId, categoryId, status])
+  @@index([tenantId, ownerId, status])
   @@map("crm_requests")
 }
 
@@ -81,6 +89,12 @@ model RequestNote {
   authorId  String          @map("author_id")
   internal  Boolean         @default(true)
   kind      RequestNoteKind @default(NOTE)
+  emailMessageId String? @map("email_message_id")
+  emailDirection EmailDirection? @map("email_direction")
+  emailFrom String? @map("email_from")
+  emailTo String[] @default([]) @map("email_to")
+  emailCc String[] @default([]) @map("email_cc")
+  emailSubject String? @map("email_subject")
   editedAt  DateTime?       @map("edited_at")
   createdAt DateTime        @default(now()) @map("created_at")
   updatedAt DateTime        @updatedAt @map("updated_at")
@@ -92,6 +106,7 @@ model RequestNote {
 
   @@index([tenantId, requestId, createdAt])
   @@index([tenantId, authorId, createdAt])
+  @@index([tenantId, kind, createdAt])
   // The partial unique index for active DESCRIPTION notes lives in the migration.
   @@map("crm_request_notes")
 }

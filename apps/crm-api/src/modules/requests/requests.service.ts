@@ -30,12 +30,14 @@ function serialize(
     customerId: request.customerId,
     number: request.number,
     subject: request.subject,
-    category: request.category,
+    categoryId: request.categoryId,
+    subcategoryId: request.subcategoryId,
     status: request.status,
     priority: request.priority,
     source: request.source,
     teamId: request.teamId,
     assigneeId: request.assigneeId,
+    ownerId: request.ownerId,
     createdBy: request.createdBy,
     resolvedAt: request.resolvedAt
       ? Math.floor(request.resolvedAt.getTime() / 1000)
@@ -91,7 +93,35 @@ export async function create(
   const customer = await repository.customerExists(tenant.id, input.customerId)
   if (!customer) throw crmError('crm/customer-not-found')
 
-  return serialize(await repository.create({ tenantId: tenant.id, ...input }))
+  const category = input.categoryId
+    ? await repository.categoryExists(tenant.id, input.categoryId)
+    : null
+  if (input.categoryId && !category) throw crmError('crm/category-not-found')
+  const subcategory = input.subcategoryId
+    ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
+    : null
+  if (input.subcategoryId && !subcategory)
+    throw crmError('crm/subcategory-not-found')
+  if (subcategory && subcategory.categoryId !== input.categoryId)
+    throw crmError('crm/subcategory-category-mismatch')
+  if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
+    throw crmError('crm/team-not-found')
+
+  // Category routing is useful only as a default; an explicit caller selection wins.
+  const defaults = subcategory ?? category
+  const effective = {
+    ...input,
+    ...(input.teamId === undefined && defaults?.defaultTeamId
+      ? { teamId: defaults.defaultTeamId }
+      : {}),
+    ...(input.priority === undefined && defaults?.defaultPriority
+      ? { priority: defaults.defaultPriority }
+      : {}),
+  }
+
+  return serialize(
+    await repository.create({ tenantId: tenant.id, ...effective })
+  )
 }
 
 export async function update(
@@ -103,9 +133,43 @@ export async function update(
   const current = await repository.retrieve(tenant.id, id)
   if (!current) return null
 
+  const resultingCategoryId =
+    input.categoryId === undefined ? current.categoryId : input.categoryId
+  if (
+    input.categoryId &&
+    !(await repository.categoryExists(tenant.id, input.categoryId))
+  )
+    throw crmError('crm/category-not-found')
+  const subcategory = input.subcategoryId
+    ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
+    : null
+  if (input.subcategoryId && !subcategory)
+    throw crmError('crm/subcategory-not-found')
+  if (input.subcategoryId) {
+    if (subcategory?.categoryId !== resultingCategoryId)
+      throw crmError('crm/subcategory-category-mismatch')
+  }
+  if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
+    throw crmError('crm/team-not-found')
+
+  const teamChanged =
+    input.teamId !== undefined && input.teamId !== current.teamId
+  const assigneeMustClear =
+    teamChanged &&
+    input.teamId &&
+    current.assigneeId &&
+    !(await repository.isTeamMember(
+      tenant.id,
+      input.teamId,
+      current.assigneeId
+    ))
+
   const now = new Date()
   const next = await repository.update(id, {
     ...input,
+    ...(assigneeMustClear && input.assigneeId === undefined
+      ? { assigneeId: null }
+      : {}),
     ...(input.status === 'RESOLVED' && !current.resolvedAt
       ? { resolvedAt: now }
       : {}),

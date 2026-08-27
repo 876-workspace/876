@@ -14,6 +14,12 @@ model Tenant {
   customers    CustomerProfile[]
   requests     Request[]
   requestNotes RequestNote[]
+  teams Team[]
+  teamMembers TeamMember[]
+  requestCategories RequestCategoryDef[]
+  requestSubcategories RequestSubcategory[]
+  requestTasks RequestTask[]
+  requestReminders RequestReminder[]
 
   @@map("crm_tenants")
 }

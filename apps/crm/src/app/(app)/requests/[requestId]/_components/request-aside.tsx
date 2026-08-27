@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { Badge } from '@876/ui/badge'
+import { CategoryIcon } from '@876/ui/category-icons'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Separator } from '@876/ui/separator'
 import { Skeleton } from '@876/ui/skeleton'
@@ -11,11 +12,12 @@ import {
   Phone,
 } from '@876/ui/icons'
 import { formatDateTime } from '@876/core/timestamps'
+import { categoryColorClass } from '@/features/categories/category-color'
 
 import { CopyButton } from '../../_components/copy-button'
 import { RequestSourceIcon } from '../../_components/request-source-icon'
 import { formatCustomerType, formatSource } from '../../_lib/request-format'
-import { loadCustomer, loadRequest } from '../_data'
+import { loadCategoryIndex, loadCustomer, loadRequest } from '../_data'
 
 /**
  * The record's right column: who the request is for, and the request's own
@@ -24,7 +26,13 @@ import { loadCustomer, loadRequest } from '../_data'
  */
 export async function RequestAside({ requestId }: { requestId: string }) {
   const { request } = await loadRequest(requestId)
-  const { profile, customer } = await loadCustomer(request.customerId)
+  const [{ profile, customer }, categories] = await Promise.all([
+    loadCustomer(request.customerId),
+    loadCategoryIndex(),
+  ])
+  const category = request.categoryId
+    ? categories.get(request.categoryId)
+    : undefined
 
   const customerName =
     customer?.name ?? profile?.billingCustomerId ?? request.customerId
@@ -106,6 +114,20 @@ export async function RequestAside({ requestId }: { requestId: string }) {
         </h2>
 
         <dl className="mt-3 space-y-3 text-sm">
+          <DetailRow label="Category">
+            {category ? (
+              <span className="text-foreground flex items-center gap-1.5">
+                <CategoryIcon
+                  name={category.icon}
+                  className={`size-4 ${categoryColorClass(category.color)}`}
+                />
+                {category.name}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
+          </DetailRow>
+
           <DetailRow label="Source">
             <span className="text-foreground flex items-center gap-1.5">
               <RequestSourceIcon source={request.source} />

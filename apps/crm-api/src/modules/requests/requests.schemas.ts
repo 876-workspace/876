@@ -11,16 +11,6 @@ export const requestStatusSchema = z.enum([
 
 export const requestPrioritySchema = z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT'])
 
-export const requestCategorySchema = z.enum([
-  'GENERAL',
-  'SUPPORT',
-  'BILLING',
-  'SALES',
-  'COMPLAINT',
-  'FEEDBACK',
-  'OTHER',
-])
-
 export const requestSourceSchema = z.enum([
   'CRM',
   'EMAIL',
@@ -31,8 +21,19 @@ export const requestSourceSchema = z.enum([
   'OTHER',
 ])
 
+/**
+ * A timestamp on the wire.
+ *
+ * Unix **seconds**, never an ISO string and never milliseconds — the platform
+ * contract (`.claude/rules/express-api.md`) makes every timestamp seconds in
+ * both directions, and these fields serialize that way on the way out. Taking
+ * an ISO string on the way in left the same field with two different types
+ * depending on which way it was travelling.
+ */
+const unixSecondsSchema = z.number().int()
+
 export const organizationParamsSchema = z.object({
-  organizationId: z.string().min(1),
+  organizationId: z.string().trim().min(1),
 })
 
 export const requestParamsSchema = organizationParamsSchema.extend({
@@ -44,7 +45,9 @@ export const listRequestsQuerySchema = z.object({
   teamId: z.string().trim().optional(),
   assigneeId: z.string().trim().optional(),
   customerId: z.string().trim().optional(),
-  category: requestCategorySchema.optional(),
+  categoryId: z.string().trim().optional(),
+  subcategoryId: z.string().trim().optional(),
+  ownerId: z.string().trim().optional(),
   priority: requestPrioritySchema.optional(),
 })
 
@@ -52,7 +55,9 @@ export const createRequestBodySchema = z.object({
   customerId: z.string().min(1),
   subject: z.string().trim().min(1).max(240),
   description: z.string().trim().max(20_000).nullable().optional(),
-  category: requestCategorySchema.optional(),
+  categoryId: z.string().trim().max(160).nullable().optional(),
+  subcategoryId: z.string().trim().max(160).nullable().optional(),
+  ownerId: z.string().trim().max(160).nullable().optional(),
   priority: requestPrioritySchema.optional(),
   source: requestSourceSchema.optional(),
   teamId: z.string().trim().max(160).nullable().optional(),
@@ -63,7 +68,9 @@ export const createRequestBodySchema = z.object({
 export const updateRequestBodySchema = z
   .object({
     subject: z.string().trim().min(1).max(240).optional(),
-    category: requestCategorySchema.optional(),
+    categoryId: z.string().trim().max(160).nullable().optional(),
+    subcategoryId: z.string().trim().max(160).nullable().optional(),
+    ownerId: z.string().trim().max(160).nullable().optional(),
     status: requestStatusSchema.optional(),
     priority: requestPrioritySchema.optional(),
     source: requestSourceSchema.optional(),
@@ -97,3 +104,38 @@ export const updateRequestNoteBodySchema = z.object({
   body: z.string().trim().min(1).max(10_000),
   editedBy: z.string().min(1),
 })
+
+export const taskParamsSchema = requestParamsSchema.extend({
+  taskId: z.string().min(1),
+})
+export const reminderParamsSchema = requestParamsSchema.extend({
+  reminderId: z.string().min(1),
+})
+export const createTaskBodySchema = z.object({
+  title: z.string().trim().min(1).max(240),
+  description: z.string().trim().max(10_000).nullable().optional(),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED']).optional(),
+  priority: requestPrioritySchema.optional(),
+  assigneeId: z.string().nullable().optional(),
+  dueAt: unixSecondsSchema.nullable().optional(),
+  sortOrder: z.number().int().optional(),
+  createdBy: z.string().min(1),
+})
+export const updateTaskBodySchema = createTaskBodySchema
+  .omit({ createdBy: true })
+  .extend({ completedBy: z.string().nullable().optional() })
+  .partial()
+  .refine((x) => Object.keys(x).length > 0)
+export const createReminderBodySchema = z.object({
+  title: z.string().trim().min(1).max(240),
+  note: z.string().trim().max(10_000).nullable().optional(),
+  remindAt: unixSecondsSchema,
+  userId: z.string().min(1),
+  status: z.enum(['SCHEDULED', 'SENT', 'DISMISSED', 'CANCELLED']).optional(),
+  createdBy: z.string().min(1),
+})
+export const updateReminderBodySchema = createReminderBodySchema
+  .omit({ createdBy: true })
+  .partial()
+  .refine((x) => Object.keys(x).length > 0)
+export const deleteNestedBodySchema = z.object({ deletedBy: z.string().min(1) })

@@ -43,7 +43,10 @@ export async function request<T>(
   if (response.networkError)
     return {
       data: null,
-      error: { code: 'network/offline', message: 'CRM API could not be reached.' },
+      error: {
+        code: 'network/offline',
+        message: 'CRM API could not be reached.',
+      },
     }
 
   const envelope = envelopeSchema.safeParse(response.payload)
@@ -56,8 +59,7 @@ export async function request<T>(
       },
     }
 
-  if (envelope.data.error)
-    return { data: null, error: envelope.data.error }
+  if (envelope.data.error) return { data: null, error: envelope.data.error }
 
   const parsed = dataSchema.safeParse(envelope.data.data)
   if (!response.ok || !parsed.success)

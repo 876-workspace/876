@@ -28,11 +28,16 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.5",
     "@types/node": "26.2.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "5.1.1",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.1",
+    "jsdom": "30.0.1",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "4.1.11"

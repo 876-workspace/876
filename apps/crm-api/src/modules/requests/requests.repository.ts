@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../db/index.js'
 import type {
   ListRequestsFilter,
-  RequestCategory,
   RequestPriority,
   RequestSource,
   RequestStatus,
@@ -39,8 +38,17 @@ export function list(tenantId: string, filters?: ListRequestsFilter) {
     where.customerId = filters.customerId
   }
 
-  if (filters?.category) {
-    where.category = filters.category
+  if (filters?.categoryId !== undefined) {
+    where.categoryId = filters.categoryId
+  }
+  if (filters?.subcategoryId !== undefined) {
+    where.subcategoryId = filters.subcategoryId
+  }
+  if (filters?.ownerId !== undefined) {
+    where.ownerId =
+      filters.ownerId === 'unassigned' || filters.ownerId === 'none'
+        ? null
+        : filters.ownerId
   }
 
   if (filters?.priority) {
@@ -71,7 +79,9 @@ export function create(params: {
   customerId: string
   subject: string
   description?: string | null
-  category?: RequestCategory
+  categoryId?: string | null
+  subcategoryId?: string | null
+  ownerId?: string | null
   priority?: RequestPriority
   source?: RequestSource
   teamId?: string | null
@@ -92,11 +102,13 @@ export function create(params: {
         customerId: params.customerId,
         number: tenant.nextRequestNumber - 1,
         subject: params.subject,
-        category: params.category ?? 'GENERAL',
+        categoryId: params.categoryId ?? null,
+        subcategoryId: params.subcategoryId ?? null,
         priority: params.priority ?? 'NORMAL',
         source: params.source ?? 'CRM',
         teamId: params.teamId ?? null,
         assigneeId: params.assigneeId ?? null,
+        ownerId: params.ownerId ?? null,
         createdBy: params.createdBy,
       },
     })
@@ -124,7 +136,9 @@ export function update(
   id: string,
   params: {
     subject?: string
-    category?: RequestCategory
+    categoryId?: string | null
+    subcategoryId?: string | null
+    ownerId?: string | null
     status?: RequestStatus
     priority?: RequestPriority
     source?: RequestSource
@@ -135,6 +149,31 @@ export function update(
   }
 ) {
   return prisma.request.update({ where: { id }, data: params })
+}
+
+export function categoryExists(tenantId: string, id: string) {
+  return prisma.requestCategoryDef.findFirst({
+    where: { tenantId, id, deletedAt: null, isActive: true },
+  })
+}
+
+export function subcategoryExists(tenantId: string, id: string) {
+  return prisma.requestSubcategory.findFirst({
+    where: { tenantId, id, deletedAt: null, isActive: true },
+  })
+}
+
+export function teamExists(tenantId: string, id: string) {
+  return prisma.team.findFirst({
+    where: { tenantId, id, deletedAt: null, status: 'ACTIVE' },
+  })
+}
+
+export function isTeamMember(tenantId: string, teamId: string, userId: string) {
+  return prisma.teamMember.findFirst({
+    where: { tenantId, teamId, userId },
+    select: { id: true },
+  })
 }
 
 export async function remove(params: {

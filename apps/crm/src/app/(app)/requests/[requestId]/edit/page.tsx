@@ -16,13 +16,19 @@ export default async function EditRequestPage({ params }: Props) {
   const context = await requireCrmContext()
   const $876 = await get876Client()
   const { requestId } = await params
-  const [requestResult, customersResult, departmentsResult, membersResult] =
-    await Promise.all([
-      $876.requests.retrieve(context.orgId, requestId),
-      $876.customerProfiles.list(context.orgId),
-      $876.departments.list(context.orgId),
-      $876.organizationMembers.list(context.orgId),
-    ])
+  const [
+    requestResult,
+    customersResult,
+    departmentsResult,
+    membersResult,
+    categoriesResult,
+  ] = await Promise.all([
+    $876.requests.retrieve(context.orgId, requestId),
+    $876.customerProfiles.list(context.orgId),
+    $876.departments.list(context.orgId),
+    $876.organizationMembers.list(context.orgId),
+    $876.requestCategories.list(context.orgId),
+  ])
   if (requestResult.error?.code === 'crm/request-not-found') notFound()
   if (requestResult.error) throw new Error(requestResult.error.message)
   if (customersResult.error) throw new Error(customersResult.error.message)
@@ -49,7 +55,7 @@ export default async function EditRequestPage({ params }: Props) {
     customerId: request.customerId,
     description: '',
     subject: request.subject,
-    category: request.category,
+    categoryId: request.categoryId ?? '',
     status: request.status,
     priority: request.priority,
     source: request.source,
@@ -67,6 +73,7 @@ export default async function EditRequestPage({ params }: Props) {
       <h1 className="876-page-title mb-6">Edit request</h1>
       <RequestForm
         customers={customersResult.data.data}
+        categories={categoriesResult.data?.data ?? []}
         departments={departments}
         members={members}
         requestId={request.id}

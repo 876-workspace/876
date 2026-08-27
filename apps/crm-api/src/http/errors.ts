@@ -7,6 +7,18 @@
  * tells a caller nothing and reads as an outage.
  */
 const ERRORS = {
+  'crm/category-in-use': {
+    message: 'Category is in use by a live request.',
+    httpStatus: 409,
+  },
+  'crm/category-not-found': {
+    message: 'Request category not found.',
+    httpStatus: 404,
+  },
+  'crm/category-slug-taken': {
+    message: 'That category slug is already in use.',
+    httpStatus: 409,
+  },
   'crm/tenant-not-found': {
     message: 'This organization has no CRM workspace yet.',
     httpStatus: 404,
@@ -22,6 +34,33 @@ const ERRORS = {
   'crm/request-not-found': {
     message: 'Request not found.',
     httpStatus: 404,
+  },
+  'crm/reminder-not-found': {
+    message: 'Request reminder not found.',
+    httpStatus: 404,
+  },
+  'crm/subcategory-category-mismatch': {
+    message: 'The subcategory does not belong to this category.',
+    httpStatus: 422,
+  },
+  'crm/subcategory-in-use': {
+    message: 'Subcategory is in use by a live request.',
+    httpStatus: 409,
+  },
+  'crm/subcategory-not-found': {
+    message: 'Request subcategory not found.',
+    httpStatus: 404,
+  },
+  'crm/subcategory-slug-taken': {
+    message: 'That subcategory slug is already in use.',
+    httpStatus: 409,
+  },
+  'crm/task-not-found': { message: 'Request task not found.', httpStatus: 404 },
+  'crm/team-in-use': { message: 'Team is in use.', httpStatus: 409 },
+  'crm/team-not-found': { message: 'Team not found.', httpStatus: 404 },
+  'crm/team-slug-taken': {
+    message: 'That team slug is already in use.',
+    httpStatus: 409,
   },
   'crm/request-note-not-found': {
     message: 'Request note not found.',
