@@ -19,12 +19,16 @@ export type {
   GroupedAppPermissions,
 } from './types'
 
-const KEY_PART = /^[a-z][a-z0-9_]*$/
-const APP_SLUG = /^876-[a-z][a-z0-9-]*$/
+// Bounded on purpose: a permission key is a stable, persisted identifier, so an
+// unbounded one is both a storage hazard and an unusable UI label.
+const KEY_PART = /^[a-z][a-z0-9_]{0,63}$/
+const APP_SLUG = /^876-[a-z][a-z0-9-]{0,63}$/
 
 function assertKeyPart(value: string, field: string): void {
   if (!KEY_PART.test(value))
-    throw new TypeError(`${field} must use lowercase letters, digits, or underscores.`)
+    throw new TypeError(
+      `${field} must be at most 64 lowercase letters, digits, or underscores.`
+    )
 }
 
 function assertLabel(value: string, field: string): void {
@@ -47,7 +51,8 @@ function permissionRows(
       assertKeyPart(permission.action, 'Permission action')
       assertLabel(permission.label, 'Permission label')
       const key = `${module.key}.${permission.action}`
-      if (seen.has(key)) throw new TypeError(`Duplicate app permission: ${key}.`)
+      if (seen.has(key))
+        throw new TypeError(`Duplicate app permission: ${key}.`)
       seen.add(key)
       rows.push({
         key,
@@ -103,13 +108,17 @@ export function defineAppPermissionCatalog(
         (left, right) =>
           left.position - right.position || left.key.localeCompare(right.key)
       ),
-    permissions: [...permissions].sort((left, right) => left.key.localeCompare(right.key)),
+    permissions: [...permissions].sort((left, right) =>
+      left.key.localeCompare(right.key)
+    ),
   }
 }
 
 function stringSet(value: unknown): Set<string> {
   if (!Array.isArray(value)) return new Set()
-  return new Set(value.filter((item): item is string => typeof item === 'string'))
+  return new Set(
+    value.filter((item): item is string => typeof item === 'string')
+  )
 }
 
 function catalogPermissions(
