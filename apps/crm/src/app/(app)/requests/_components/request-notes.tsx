@@ -1,7 +1,17 @@
 'use client'
 
+import {
+  editorContentEqual,
+  isEditorContentEmpty,
+} from '@876/editor'
+import {
+  Editor,
+  EditorContent,
+  type EditorHandle,
+} from '@876/editor/react'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import {
   ArrowPathIcon,
   ChatBubbleLeftIcon,
@@ -10,10 +20,8 @@ import {
   TrashIcon,
   UserIcon,
 } from '@876/ui/icons'
-import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
@@ -70,7 +78,9 @@ export function RequestNotesSection({
   authors?: Record<string, NoteAuthor>
 }) {
   const router = useRouter()
+  const composerRef = useRef<EditorHandle>(null)
   const [body, setBody] = useState('')
+  const [composerKey, setComposerKey] = useState(0)
   const [isInternal, setIsInternal] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -94,12 +104,17 @@ export function RequestNotesSection({
 
   async function addNote(event: React.FormEvent) {
     event.preventDefault()
-    const trimmed = body.trim()
-    if (!trimmed) return
+    if (isSubmitting) return
 
     setBusyId(COMPOSER)
+    const nextBody = (await composerRef.current?.flush()) ?? body
+    if (isEditorContentEmpty(nextBody)) {
+      setBusyId(null)
+      return
+    }
+
     const result = await client.requestNotes.create(requestId, {
-      body: trimmed,
+      body: nextBody,
       internal: isInternal,
     })
     setBusyId(null)
@@ -109,19 +124,19 @@ export function RequestNotesSection({
     }
 
     setBody('')
+    setComposerKey((current) => current + 1)
     startTransition(() => router.refresh())
   }
 
   async function saveEdit(noteId: string, nextBody: string) {
-    const trimmed = nextBody.trim()
-    if (!trimmed) {
+    if (isEditorContentEmpty(nextBody)) {
       toast.error('A note cannot be empty.')
       return
     }
 
     setBusyId(noteId)
     const result = await client.requestNotes.update(requestId, noteId, {
-      body: trimmed,
+      body: nextBody,
     })
     setBusyId(null)
     if (result.error) {
@@ -162,11 +177,6 @@ export function RequestNotesSection({
         </div>
       </div>
 
-      {/*
-        The avatar is the timeline node. A separate coloured dot beside an
-        avatar is decoration that says nothing the avatar does not already say,
-        and it is what made the thread read as ornament rather than a record.
-      */}
       <ol className="border-border relative ml-4 flex flex-col gap-4 border-l pl-8">
         {thread.map((note) => (
           <TimelineEntry
@@ -224,15 +234,18 @@ export function RequestNotesSection({
           }
         >
           <form onSubmit={addNote} className="876-card flex flex-col gap-3 p-4">
-            <Textarea
+            <Editor
+              key={composerKey}
+              ref={composerRef}
               id={NEW_NOTE_FIELD_ID}
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              rows={3}
+              initialValue={body}
+              onChange={setBody}
               placeholder="Add a note or progress update…"
-              className="min-h-24"
+              ariaLabel="New note"
               disabled={isSubmitting}
-              aria-label="New note"
+              minHeight={100}
+              className="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border px-3 py-2 shadow-xs focus-within:ring-[3px]"
+              holderClassName="min-h-24"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -251,7 +264,7 @@ export function RequestNotesSection({
                 type="submit"
                 variant="info"
                 size="sm"
-                disabled={isSubmitting || !body.trim()}
+                disabled={isSubmitting || isEditorContentEmpty(body)}
                 className="gap-1.5"
               >
                 {isSubmitting ? (
@@ -272,10 +285,7 @@ export function RequestNotesSection({
   )
 }
 
-/**
- * One entry on the rail. `node` straddles the line at the entry's top-left;
- * everything else flows in the entry's own width.
- */
+/** One entry on the rail; the node straddles the timeline at the top-left. */
 function TimelineEntry({
   node,
   children,
@@ -293,11 +303,6 @@ function TimelineEntry({
   )
 }
 
-/**
- * Resolve a note's opaque author id against the org's members. Falling back to
- * the id is deliberate — inventing a name for an author who has left the org
- * would be worse than showing the raw identifier the record actually holds.
- */
 function resolveAuthor(
   authorId: string,
   authors: Record<string, NoteAuthor>
@@ -305,7 +310,6 @@ function resolveAuthor(
   return authors[authorId] ?? { name: authorId }
 }
 
-/** The rail node for an author — picture, monogram, or a neutral glyph. */
 function AuthorNode({
   author,
   subdued = false,
@@ -355,6 +359,7 @@ function NoteCard({
   /** Omitted for the opening note, which cannot be deleted. */
   onDelete?: () => void
 }) {
+  const editorRef = useRef<EditorHandle>(null)
   const [draft, setDraft] = useState(note.body)
   const isDescription = note.kind === 'DESCRIPTION'
   const isAuthor = Boolean(currentUserId) && note.authorId === currentUserId
@@ -364,13 +369,14 @@ function NoteCard({
     onEdit()
   }
 
+  async function save() {
+    const nextBody = (await editorRef.current?.flush()) ?? draft
+    setDraft(nextBody)
+    onSave(nextBody)
+  }
+
   return (
     <article className="876-card group overflow-hidden">
-      {/*
-        A header strip separates who-and-when from what-was-said, the way an
-        issue comment does. The opening note is distinguished by its label, not
-        by tinting the whole surface.
-      */}
       <div className="bg-muted/25 flex items-center justify-between gap-2 border-b px-4 py-2">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="text-foreground font-medium">
@@ -447,24 +453,30 @@ function NoteCard({
       <div className="px-4 py-3">
         {editing ? (
           <div className="flex flex-col gap-2">
-            <Textarea
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              className="min-h-24"
+            <Editor
+              key={note.id}
+              ref={editorRef}
+              initialValue={draft}
+              onChange={setDraft}
+              placeholder="Update this note…"
+              ariaLabel="Edit note"
               disabled={busy}
               autoFocus
-              aria-label="Edit note"
-              onKeyDown={(event) => {
-                if (event.key === 'Escape') onCancelEdit()
-              }}
+              minHeight={100}
+              className="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border px-3 py-2 focus-within:ring-[3px]"
+              holderClassName="min-h-24"
             />
             <div className="flex gap-2">
               <Button
                 type="button"
                 variant="info"
                 size="sm"
-                onClick={() => onSave(draft)}
-                disabled={busy || !draft.trim() || draft.trim() === note.body}
+                onClick={() => void save()}
+                disabled={
+                  busy ||
+                  isEditorContentEmpty(draft) ||
+                  editorContentEqual(draft, note.body)
+                }
               >
                 {busy ? 'Saving' : 'Save'}
               </Button>
@@ -480,14 +492,7 @@ function NoteCard({
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={beginEdit}
-            className="text-foreground/90 block w-full cursor-text text-left text-sm leading-relaxed break-words whitespace-pre-wrap"
-            aria-label="Edit note"
-          >
-            {note.body}
-          </button>
+          <EditorContent value={note.body} className="text-foreground/90" />
         )}
       </div>
     </article>
