@@ -11,14 +11,13 @@ const SELECT = {
   workosMembershipId: true,
   role: true,
   roleId: true,
+  position: true,
   status: true,
   createdAt: true,
   updatedAt: true,
 } as const
 
-export function findMembershipById(
-  membershipId: string
-): Promise<MembershipRow | null> {
+export function findMembershipById(membershipId: string): Promise<MembershipRow | null> {
   return prisma.membership.findFirst({
     where: { id: membershipId, deletedAt: null },
     select: SELECT,
@@ -35,9 +34,17 @@ export function findMembershipByOrgAndUser(
   }) as Promise<MembershipRow | null>
 }
 
-export function findMembershipByWorkosId(
-  workosMembershipId: string
-): Promise<MembershipRow | null> {
+export function findMembershipsByOrgAndUsers(
+  organizationId: string,
+  userIds: readonly string[]
+): Promise<MembershipRow[]> {
+  return prisma.membership.findMany({
+    where: { organizationId, userId: { in: [...userIds] }, deletedAt: null },
+    select: SELECT,
+  }) as Promise<MembershipRow[]>
+}
+
+export function findMembershipByWorkosId(workosMembershipId: string): Promise<MembershipRow | null> {
   return prisma.membership.findFirst({
     where: { workosMembershipId, deletedAt: null },
     select: SELECT,
@@ -71,6 +78,7 @@ export function createMembership(data: {
   userId: string
   workosMembershipId: string | null
   role: string
+  position?: string | null
   status: string
   createdAt: bigint
   updatedAt: bigint
@@ -82,6 +90,7 @@ export function createMembership(data: {
       userId: data.userId,
       workosMembershipId: data.workosMembershipId,
       role: data.role,
+      position: data.position ?? null,
       status: data.status,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -95,14 +104,15 @@ export async function updateMembership(
   data: Partial<{
     workosMembershipId: string | null
     role: string
+    position: string | null
     status: string
     updatedAt: bigint
   }>
 ): Promise<MembershipRow | null> {
   const mapped: Record<string, unknown> = {}
-  if ('workosMembershipId' in data)
-    mapped.workosMembershipId = data.workosMembershipId
+  if ('workosMembershipId' in data) mapped.workosMembershipId = data.workosMembershipId
   if ('role' in data) mapped.role = data.role
+  if ('position' in data) mapped.position = data.position
   if ('status' in data) mapped.status = data.status
   if ('updatedAt' in data) mapped.updatedAt = data.updatedAt
 
@@ -118,11 +128,8 @@ export async function updateMembership(
 }
 
 export type MembershipDeleteOptions = {
-  /** Optional lifecycle status to persist alongside the soft-delete marker. */
   status?: string
-  /** Actor responsible for an organization-scoped removal. */
   deletedBy?: string | null
-  /** Shared timestamp so callers can keep related lifecycle writes consistent. */
   deletedAt?: bigint
 }
 
@@ -144,9 +151,7 @@ export async function deleteMembership(
         deletedAt: now,
         updatedAt: now,
         ...(options.status !== undefined ? { status: options.status } : {}),
-        ...(options.deletedBy !== undefined
-          ? { deletedBy: options.deletedBy }
-          : {}),
+        ...(options.deletedBy !== undefined ? { deletedBy: options.deletedBy } : {}),
       },
     })
     return true
@@ -169,9 +174,7 @@ export function listMemberships(
     fetch: ({ take, cursor, order }) =>
       prisma.membership.findMany({
         where: cursor
-          ? {
-              AND: [where, { createdAt: { [cursor.direction]: cursor.value } }],
-            }
+          ? { AND: [where, { createdAt: { [cursor.direction]: cursor.value } }] }
           : where,
         orderBy: { createdAt: order },
         take,

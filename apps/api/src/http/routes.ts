@@ -3,6 +3,7 @@ import { Router } from 'express'
 import type { GuardResolver } from '@/http/api-router'
 import { createAuthGuards, type AuthGuards } from '@/http/auth'
 import { createAddressesRouter } from '@/modules/addresses'
+import { registerAppAccessRoutes } from '@/modules/app-access'
 import { createAuditEventsRouter } from '@/modules/audit-events'
 import { createAuthRouter, findLiveSession } from '@/modules/auth'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
@@ -53,37 +54,20 @@ import { createWorkosWebhooksRouter } from '@/modules/workos-webhooks'
  * this is the composition root where the service's surface is assembled, and
  * where the auth guards are given the credential lookup they cannot import
  * themselves.
- *
- * Mounting order mirrors api/v1.py:
- *
- *   - public routers first (health, OAuth, geo, webhooks) — each enforces its
- *     own credential rules, because an OIDC client or a Twilio webhook cannot
- *     present a first-party 876 API key;
- *   - then the protected modules, each built with the guard resolver.
  */
 export function buildRoutes(): Router {
   const root = Router()
   const resolveGuards = createGuardResolver(buildAuthGuards())
 
   root.use(healthRouter)
-  // Geo reference data is public: a sign-up form needs the country and currency
-  // lists before the visitor has any credential to present.
   root.use(geoRouter)
-  // Twilio cannot present a first-party 876 API key, so these routes are public
-  // and authenticate on the request signature instead. They need no special
-  // mounting order: Twilio's scheme signs the URL plus the sorted form
-  // parameters, not the raw bytes, so parsing the body first is harmless.
-  // The OAuth Authorization Server is public for the same reason: an OIDC
-  // client cannot present a first-party 876 API key. Each endpoint carries its
-  // own credential rule.
   root.use(createOAuthRouter(resolveGuards))
-  // The app-metadata lookup an OAuth client hits before it holds any
-  // credential, mounted outside the protected router exactly as api/v1.py does.
   root.use(createAppsPublicRouter())
   root.use(createTwilioWebhooksRouter(resolveGuards))
   root.use(createWorkosWebhooksRouter(resolveGuards))
 
   root.use(createAddressesRouter(resolveGuards))
+  root.use(registerAppAccessRoutes(resolveGuards))
   root.use(createAuditEventsRouter(resolveGuards))
   root.use(createAuthRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
@@ -105,8 +89,6 @@ export function buildRoutes(): Router {
   root.use(createProductsRouter(resolveGuards))
   root.use(createProvisioningRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
-  // `self` and the literal-prefixed groups mount before the core router, whose
-  // `/:user_id` would otherwise match `me`, `username`, and friends as an id.
   root.use(registerSelfRoutes(resolveGuards))
   root.use(registerProfileRoutes(resolveGuards))
   root.use(registerAddressRoutes(resolveGuards))
@@ -118,26 +100,12 @@ export function buildRoutes(): Router {
   return root
 }
 
-/**
- * The auth guards, wired to the `apps` module's credential lookup and the
- * `auth` module's session-liveness check.
- *
- * Exposed separately so a test can build the same guards over stub lookups.
- */
+/** The auth guards, wired to canonical credential lookups. */
 export function buildAuthGuards(): AuthGuards {
   return createAuthGuards({ findApiKeyByHash, markApiKeyUsed, findLiveSession })
 }
 
-/**
- * The tier → middleware mapping, mirroring how api/v1.py composes its routers:
- * every protected route sits behind the app API key, and the session and admin
- * dependencies stack on top of it rather than replacing it.
- *
- * The guards are attached per route rather than with `router.use`, so they run
- * only after a path matches — the same order FastAPI's router-level dependency
- * runs in. Mounted as middleware they would answer every unknown path with 401
- * instead of 404.
- */
+/** Maps each declared route security tier to its concrete middleware chain. */
 export function createGuardResolver(guards: AuthGuards): GuardResolver {
   return (security) => {
     switch (security) {

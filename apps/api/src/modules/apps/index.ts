@@ -1,8 +1,8 @@
-/**
- * The `apps` module's public surface.
- *
- * Only the credential lookups the auth guards need are exported so far; the
- * app CRUD routes arrive with the module's own router.
- */
+/** The `apps` module's public surface. */
 export { findApiKeyByHash, markApiKeyUsed } from './apps.service'
+export {
+  findAppForAccessById,
+  findAppForAccessBySlug,
+  listAppsForAccess,
+} from './app-access-lookup.service'
 export { createAppsRouter, createAppsPublicRouter } from './apps.routes'
