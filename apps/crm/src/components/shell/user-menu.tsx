@@ -7,7 +7,13 @@ import {
 
 import { request } from '@/lib/client/request'
 
-export function UserMenu({ user }: { user: SidebarUserMenuUser }) {
+export function UserMenu({
+  user,
+  showThemeSwitcher,
+}: {
+  user: SidebarUserMenuUser
+  showThemeSwitcher: boolean
+}) {
   async function handleSignOut() {
     await request<unknown>('/api/auth/logout', { method: 'POST' })
     window.location.assign('/login')
@@ -18,7 +24,7 @@ export function UserMenu({ user }: { user: SidebarUserMenuUser }) {
       user={user}
       onSignOut={handleSignOut}
       showSystemTheme={false}
-      showThemeSwitcher
+      showThemeSwitcher={showThemeSwitcher}
     />
   )
 }
