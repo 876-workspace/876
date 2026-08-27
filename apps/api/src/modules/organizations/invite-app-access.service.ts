@@ -92,8 +92,8 @@ export async function validateInviteAppAccessSelection(params: {
 
 /**
  * Persists already-selected invite roles after validating ownership and
- * entitlement. This is intentionally separate from the legacy invite create
- * function so existing transport behavior remains unchanged until wired.
+ * entitlement. The source app is immutable here: role selection may only be
+ * attached to the source app already stored on the invite.
  */
 export async function setInviteAppAccessSelection(params: {
   inviteId: string
@@ -108,10 +108,19 @@ export async function setInviteAppAccessSelection(params: {
   if (!invite || invite.organizationId !== params.organizationId)
     throw inviteNotFound()
 
-  const sourceAppId = params.sourceAppId ?? invite.sourceAppId
+  if (
+    params.sourceAppId !== undefined &&
+    params.sourceAppId !== invite.sourceAppId
+  )
+    throw new AppHttpError({
+      code: 'invite/app-mismatch',
+      message: 'The selected app role must belong to the invite source app.',
+      httpStatus: 400,
+    })
+
   const selection = await validateInviteAppAccessSelection({
     organizationId: params.organizationId,
-    sourceAppId,
+    sourceAppId: invite.sourceAppId,
     appRoleId: params.appRoleId,
     orgRoleId: params.orgRoleId,
   })
