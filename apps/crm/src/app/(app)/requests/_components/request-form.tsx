@@ -29,6 +29,17 @@ import {
   type PickerCustomer,
 } from './customer-picker'
 
+export type FormDepartment = {
+  id: string
+  name: string
+}
+
+export type FormMember = {
+  userId: string
+  name: string
+  email: string | null
+}
+
 type Values = {
   customerId: string
   subject: string
@@ -42,6 +53,7 @@ type Values = {
   status: RequestStatus
   priority: RequestPriority
   source: RequestSource
+  teamId: string
   assigneeId: string
 }
 
@@ -53,6 +65,7 @@ const EMPTY: Values = {
   status: 'OPEN',
   priority: 'NORMAL',
   source: 'CRM',
+  teamId: '',
   assigneeId: '',
 }
 
@@ -60,10 +73,14 @@ const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
 export function RequestForm({
   customers,
+  departments = [],
+  members = [],
   requestId,
   initial = EMPTY,
 }: {
   customers: CrmCustomer[]
+  departments?: FormDepartment[]
+  members?: FormMember[]
   requestId?: string
   initial?: Values
 }) {
@@ -106,6 +123,7 @@ export function RequestForm({
       category: values.category,
       priority: values.priority,
       source: values.source,
+      teamId: values.teamId.trim() || null,
       assigneeId: values.assigneeId.trim() || null,
     }
 
@@ -231,17 +249,77 @@ export function RequestForm({
         ) : null}
 
         <FormRow
-          htmlFor="request-assignee"
-          label="Assignee"
-          hint="Optional 876 user ID for the person responsible for this request."
+          htmlFor="request-team"
+          label="Team"
+          hint="Optional department or team queue responsible for this request."
           className={rowClassName}
         >
-          <Input
-            id="request-assignee"
-            value={values.assigneeId}
-            onChange={(event) => set('assigneeId', event.target.value)}
-            disabled={saving}
-          />
+          {departments.length > 0 ? (
+            <Select
+              value={values.teamId || 'none'}
+              onValueChange={(val) =>
+                set('teamId', val === 'none' ? '' : (val ?? ''))
+              }
+              disabled={saving}
+            >
+              <SelectTrigger id="request-team">
+                <SelectValue placeholder="No team assigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No team assigned</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id="request-team"
+              value={values.teamId}
+              onChange={(event) => set('teamId', event.target.value)}
+              placeholder="Team ID (optional)"
+              disabled={saving}
+            />
+          )}
+        </FormRow>
+
+        <FormRow
+          htmlFor="request-assignee"
+          label="Assignee"
+          hint="Optional individual team member assigned to handle this request."
+          className={rowClassName}
+        >
+          {members.length > 0 ? (
+            <Select
+              value={values.assigneeId || 'none'}
+              onValueChange={(val) =>
+                set('assigneeId', val === 'none' ? '' : (val ?? ''))
+              }
+              disabled={saving}
+            >
+              <SelectTrigger id="request-assignee">
+                <SelectValue placeholder="Unassigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Unassigned</SelectItem>
+                {members.map((member) => (
+                  <SelectItem key={member.userId} value={member.userId}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id="request-assignee"
+              value={values.assigneeId}
+              onChange={(event) => set('assigneeId', event.target.value)}
+              placeholder="Assignee user ID (optional)"
+              disabled={saving}
+            />
+          )}
         </FormRow>
       </div>
 

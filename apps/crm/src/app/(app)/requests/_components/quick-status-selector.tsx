@@ -13,9 +13,10 @@ import {
 } from '@876/ui/dropdown-menu'
 import { Button } from '@876/ui/button'
 import { ChevronDown, CheckIcon } from '@876/ui/icons'
+import { cn } from '@876/core/utils'
 import { client } from '@/lib/client'
 import type { RequestStatus } from '@/types/crm'
-import { RequestStatusBadge } from './request-status-badge'
+import { RequestStatusBadge, requestStatusConfig } from './request-status-badge'
 
 const STATUSES: { value: RequestStatus; label: string }[] = [
   { value: 'OPEN', label: 'Open' },
@@ -54,21 +55,35 @@ export function QuickStatusSelector({
     router.refresh()
   }
 
+  const config = requestStatusConfig(currentStatus)
+  const Icon = config.icon
+
   return (
     <DropdownMenu>
+      {/*
+        The whole control is the status. It used to be a neutral button
+        captioned "Status:" wrapping a coloured pill — three elements to say one
+        thing, and the caption was the loudest of them. Colouring the trigger
+        itself says it in one, and the accessible name carries the word the
+        caption used to.
+      */}
       <DropdownMenuTrigger
         render={
           <Button
             variant="outline"
             size="sm"
             disabled={updating}
-            className="h-8 gap-1.5 px-2.5 font-normal"
+            aria-label={`Status: ${config.label}. Change status`}
+            className={cn(
+              'h-8 gap-1.5 px-2.5 text-xs font-medium',
+              config.trigger
+            )}
           />
         }
       >
-        <span className="text-muted-foreground text-xs">Status:</span>
-        <RequestStatusBadge status={currentStatus} />
-        <ChevronDown className="size-3.5 opacity-60" />
+        <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+        <span>{config.label}</span>
+        <ChevronDown className="size-3.5 opacity-70" aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>Update status</DropdownMenuLabel>
@@ -81,7 +96,7 @@ export function QuickStatusSelector({
           >
             <RequestStatusBadge status={item.value} />
             {item.value === currentStatus ? (
-              <CheckIcon className="size-4 text-primary" />
+              <CheckIcon className="text-primary size-4" />
             ) : null}
           </DropdownMenuItem>
         ))}

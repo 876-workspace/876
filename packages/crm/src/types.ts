@@ -6,8 +6,7 @@ export interface ClientError {
 }
 
 export type Result<T> =
-  | { data: T; error: null }
-  | { data: null; error: ClientError }
+  { data: T; error: null } | { data: null; error: ClientError }
 
 export interface ClientOptions {
   baseUrl?: string
@@ -131,6 +130,7 @@ export const crmRequestSchema = z.object({
   status: requestStatusSchema,
   priority: requestPrioritySchema,
   source: requestSourceSchema,
+  teamId: z.string().nullable(),
   assigneeId: z.string().nullable(),
   createdBy: z.string(),
   resolvedAt: z.number().int().nullable(),
@@ -155,6 +155,15 @@ export type RequestNoteKind = z.infer<typeof requestNoteKindSchema>
 export type CrmRequest = z.infer<typeof crmRequestSchema>
 export type RequestList = z.infer<typeof requestListSchema>
 
+export interface ListRequestsQuery {
+  status?: RequestStatus
+  teamId?: string
+  assigneeId?: string
+  customerId?: string
+  category?: RequestCategory
+  priority?: RequestPriority
+}
+
 export interface CreateRequestInput {
   customerId: string
   subject: string
@@ -163,6 +172,7 @@ export interface CreateRequestInput {
   category?: RequestCategory
   priority?: RequestPriority
   source?: RequestSource
+  teamId?: string | null
   assigneeId?: string | null
   createdBy: string
 }
@@ -173,6 +183,7 @@ export interface UpdateRequestInput {
   status?: RequestStatus
   priority?: RequestPriority
   source?: RequestSource
+  teamId?: string | null
   assigneeId?: string | null
 }
 

@@ -7,6 +7,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
 import {
@@ -28,14 +31,26 @@ import {
   Users,
 } from '@876/ui/icons'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { client } from '@/lib/client'
 import type { RequestStatus } from '@/types/crm'
 
 import { DeleteRequestDialog } from './delete-request-dialog'
 import { NEW_NOTE_FIELD_ID } from './request-notes'
 import { QuickStatusSelector } from './quick-status-selector'
+
+export type HeaderDepartment = {
+  id: string
+  name: string
+}
+
+export type HeaderMember = {
+  userId: string
+  name: string
+}
 
 /**
  * Announces an action that is designed but not built yet.
@@ -53,17 +68,54 @@ export function RequestHeaderActions({
   requestNumber,
   status,
   customerId,
+  currentUserId,
+  departments = [],
+  members = [],
 }: {
   requestId: string
   requestNumber: number
   status: RequestStatus
   customerId: string
+  currentUserId?: string
+  departments?: HeaderDepartment[]
+  members?: HeaderMember[]
 }) {
+  const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   function copyId() {
     navigator.clipboard.writeText(requestId)
     toast.success('Request ID copied to clipboard')
+  }
+
+  async function assignToUser(userId: string | null, userName?: string) {
+    const result = await client.requests.update(requestId, {
+      assigneeId: userId,
+    })
+    if (result.error) {
+      toast.error(result.error.message)
+      return
+    }
+    toast.success(
+      userId
+        ? userId === currentUserId
+          ? 'Assigned to you'
+          : `Assigned to ${userName ?? 'member'}`
+        : 'Unassigned'
+    )
+    router.refresh()
+  }
+
+  async function assignToTeam(teamId: string | null, teamName?: string) {
+    const result = await client.requests.update(requestId, { teamId })
+    if (result.error) {
+      toast.error(result.error.message)
+      return
+    }
+    toast.success(
+      teamId ? `Assigned to ${teamName ?? 'team'}` : 'Removed from team'
+    )
+    router.refresh()
   }
 
   /** "Add note" already has a home — the composer at the end of the thread. */
@@ -91,13 +143,61 @@ export function RequestHeaderActions({
           <ChevronDownIcon className="size-3.5 opacity-60" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-44">
-          <DropdownMenuItem onClick={() => notYet('Assigning a request')}>
-            <User className="size-4" />
-            Assign to me
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => notYet('Assigning to a team')}>
-            <Users className="size-4" />
-            Assign to team
+          {currentUserId && (
+            <DropdownMenuItem onClick={() => assignToUser(currentUserId)}>
+              <User className="size-4" />
+              Assign to me
+            </DropdownMenuItem>
+          )}
+
+          {departments.length > 0 && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Users className="size-4" />
+                Assign to team
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-auto min-w-44">
+                <DropdownMenuItem onClick={() => assignToTeam(null)}>
+                  No team
+                </DropdownMenuItem>
+                {departments.map((dept) => (
+                  <DropdownMenuItem
+                    key={dept.id}
+                    onClick={() => assignToTeam(dept.id, dept.name)}
+                  >
+                    {dept.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
+
+          {members.length > 0 && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <User className="size-4" />
+                Assign to member
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-auto min-w-44">
+                <DropdownMenuItem onClick={() => assignToUser(null)}>
+                  Unassigned
+                </DropdownMenuItem>
+                {members.map((member) => (
+                  <DropdownMenuItem
+                    key={member.userId}
+                    onClick={() => assignToUser(member.userId, member.name)}
+                  >
+                    {member.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem onClick={() => assignToUser(null)}>
+            Unassign
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -6,6 +6,7 @@ import {
   createRequestNoteBodySchema,
   deleteRequestBodySchema,
   deleteRequestNoteBodySchema,
+  listRequestsQuerySchema,
   organizationParamsSchema,
   requestNoteParamsSchema,
   requestParamsSchema,
@@ -22,7 +23,8 @@ function notFound(res: Response) {
 
 export async function listRequests(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
-  const data = await service.list(organizationId)
+  const query = listRequestsQuerySchema.parse(req.query)
+  const data = await service.list(organizationId, query)
 
   res.json({
     data: {
@@ -48,7 +50,9 @@ export async function createRequest(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const input = createRequestBodySchema.parse(req.body)
 
-  res.status(201).json({ data: await service.create(organizationId, input), error: null })
+  res
+    .status(201)
+    .json({ data: await service.create(organizationId, input), error: null })
 }
 
 export async function updateRequest(req: Request, res: Response) {
@@ -70,7 +74,9 @@ export async function deleteRequest(req: Request, res: Response) {
 }
 
 export async function listRequestNotes(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const data = await service.listNotes(organizationId, requestId)
 
   res.json({
@@ -86,7 +92,9 @@ export async function listRequestNotes(req: Request, res: Response) {
 }
 
 export async function createRequestNote(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const input = createRequestNoteBodySchema.parse(req.body)
 
   res.status(201).json({
@@ -96,18 +104,36 @@ export async function createRequestNote(req: Request, res: Response) {
 }
 
 export async function deleteRequestNote(req: Request, res: Response) {
-  const { organizationId, id: requestId, noteId } = requestNoteParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    noteId,
+  } = requestNoteParamsSchema.parse(req.params)
   const input = deleteRequestNoteBodySchema.parse(req.body)
-  const data = await service.removeNote(organizationId, requestId, noteId, input)
+  const data = await service.removeNote(
+    organizationId,
+    requestId,
+    noteId,
+    input
+  )
   if (!data) return notFound(res)
 
   res.json({ data, error: null })
 }
 
 export async function updateRequestNote(req: Request, res: Response) {
-  const { organizationId, id: requestId, noteId } = requestNoteParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    noteId,
+  } = requestNoteParamsSchema.parse(req.params)
   const input = updateRequestNoteBodySchema.parse(req.body)
-  const data = await service.updateNote(organizationId, requestId, noteId, input)
+  const data = await service.updateNote(
+    organizationId,
+    requestId,
+    noteId,
+    input
+  )
   if (!data) return notFound(res)
 
   res.json({ data, error: null })

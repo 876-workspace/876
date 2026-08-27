@@ -3,6 +3,7 @@ import type {
   CreateRequestNoteInput,
   DeleteRequestInput,
   DeleteRequestNoteInput,
+  ListRequestsFilter,
   UpdateRequestInput,
   UpdateRequestNoteInput,
 } from '../../types/request.js'
@@ -33,6 +34,7 @@ function serialize(
     status: request.status,
     priority: request.priority,
     source: request.source,
+    teamId: request.teamId,
     assigneeId: request.assigneeId,
     createdBy: request.createdBy,
     resolvedAt: request.resolvedAt
@@ -64,9 +66,12 @@ function serializeNote(
   }
 }
 
-export async function list(organizationId: string) {
+export async function list(
+  organizationId: string,
+  filters?: ListRequestsFilter
+) {
   const tenant = await requireTenant(organizationId)
-  const requests = await repository.list(tenant.id)
+  const requests = await repository.list(tenant.id, filters)
 
   return requests.map(serialize)
 }
@@ -130,10 +135,7 @@ export async function remove(
   return repository.remove({ id, ...input })
 }
 
-export async function listNotes(
-  organizationId: string,
-  requestId: string
-) {
+export async function listNotes(organizationId: string, requestId: string) {
   const tenant = await requireTenant(organizationId)
   const notes = await repository.listNotes(tenant.id, requestId)
 

@@ -79,6 +79,7 @@ export type {
   UpdateCustomerInput as CrmCustomerUpdateInput,
   CrmRequest,
   RequestList as CrmRequestList,
+  ListRequestsQuery as CrmListRequestsQuery,
   RequestStatus,
   RequestPriority,
   RequestCategory,

@@ -7,7 +7,7 @@ import {
   EmptyDescription,
 } from '@876/ui/empty'
 
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import { CustomersTable, type CrmCustomerRow } from './customers-table'
 
@@ -18,17 +18,20 @@ import { CustomersTable, type CrmCustomerRow } from './customers-table'
  */
 export async function CustomersTableData() {
   const context = await requireCrmContext()
+  const $876 = await get876Client()
   const result = await $876.customerProfiles.list(context.orgId)
   if (result.error) throw new Error(result.error.message)
 
-  const rows: CrmCustomerRow[] = result.data.data.map(({ profile, customer }) => ({
-    profileId: profile.id,
-    billingCustomerId: profile.billingCustomerId,
-    name: customer?.name ?? profile.billingCustomerId,
-    email: customer?.email ?? null,
-    phone: customer?.phone ?? null,
-    status: profile.status,
-  }))
+  const rows: CrmCustomerRow[] = result.data.data.map(
+    ({ profile, customer }) => ({
+      profileId: profile.id,
+      billingCustomerId: profile.billingCustomerId,
+      name: customer?.name ?? profile.billingCustomerId,
+      email: customer?.email ?? null,
+      phone: customer?.phone ?? null,
+      status: profile.status,
+    })
+  )
 
   if (rows.length === 0) {
     return (
@@ -38,7 +41,9 @@ export async function CustomersTableData() {
             <UsersIcon />
           </EmptyMedia>
           <EmptyTitle>No customers yet</EmptyTitle>
-          <EmptyDescription>Add your first customer to get started.</EmptyDescription>
+          <EmptyDescription>
+            Add your first customer to get started.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     )

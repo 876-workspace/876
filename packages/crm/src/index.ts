@@ -13,6 +13,7 @@ export type {
   UpdateCustomerInput,
   CrmRequest,
   RequestList,
+  ListRequestsQuery,
   RequestStatus,
   RequestPriority,
   RequestCategory,
