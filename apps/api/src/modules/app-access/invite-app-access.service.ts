@@ -1,13 +1,15 @@
 import {
-  ensureAppMembershipForProvisioning,
-  findOrgAppRoleForAccess,
-} from '@/modules/app-access'
+  findInviteAccessSelectionById,
+  findInviteAccessSelectionByToken,
+  findOrgRoleForInvite,
+  getOrgAppEntitlement,
+  updateInviteAccessSelection,
+} from '@/modules/organizations'
 import { AppHttpError, appError } from '@/platform/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
-import { findRoleByIdForOrg } from './access.repository'
-import { getOrgAppEntitlement } from './app-access-policy.service'
-import * as repository from './invite-app-access.repository'
+import { findOrgAppRoleForAccess } from './app-access-lookup.service'
+import { ensureAppMembershipForProvisioning } from './app-access-provisioning.service'
 
 const ENTITLED_STATUSES = new Set(['active', 'trialing'])
 
@@ -47,7 +49,7 @@ export async function validateInviteAppAccessSelection(params: {
 
   let orgRoleName: string | null = null
   if (orgRoleId) {
-    const orgRole = await findRoleByIdForOrg(orgRoleId, params.organizationId)
+    const orgRole = await findOrgRoleForInvite(orgRoleId, params.organizationId)
     if (!orgRole)
       throw new AppHttpError({
         code: 'role/not-found',
@@ -102,9 +104,7 @@ export async function setInviteAppAccessSelection(params: {
   appRoleId?: string | null
   orgRoleId?: string | null
 }): Promise<ValidatedInviteAppAccessSelection> {
-  const invite = await repository.findInviteAppAccessSelectionById(
-    params.inviteId
-  )
+  const invite = await findInviteAccessSelectionById(params.inviteId)
   if (!invite || invite.organizationId !== params.organizationId)
     throw inviteNotFound()
 
@@ -125,14 +125,11 @@ export async function setInviteAppAccessSelection(params: {
     orgRoleId: params.orgRoleId,
   })
 
-  const updated = await repository.updateInviteAppAccessSelection(
-    params.inviteId,
-    {
-      appRoleId: selection.appRoleId,
-      orgRoleId: selection.orgRoleId,
-      updatedAt: BigInt(nowUnixSeconds()),
-    }
-  )
+  const updated = await updateInviteAccessSelection(params.inviteId, {
+    appRoleId: selection.appRoleId,
+    orgRoleId: selection.orgRoleId,
+    updatedAt: BigInt(nowUnixSeconds()),
+  })
   if (!updated) throw inviteNotFound()
   return selection
 }
@@ -144,7 +141,7 @@ export async function setInviteAppAccessSelection(params: {
 export async function resolveInviteAppAccessSelection(
   token: string
 ): Promise<ValidatedInviteAppAccessSelection> {
-  const invite = await repository.findInviteAppAccessSelectionByToken(token)
+  const invite = await findInviteAccessSelectionByToken(token)
   if (!invite) throw inviteNotFound()
 
   return validateInviteAppAccessSelection({
