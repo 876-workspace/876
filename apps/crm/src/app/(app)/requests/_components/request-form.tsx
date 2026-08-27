@@ -1,5 +1,7 @@
 'use client'
 
+import { isEditorContentEmpty } from '@876/editor'
+import { Editor, type EditorHandle } from '@876/editor/react'
 import { Button } from '@876/ui/button'
 import { CategoryIcon } from '@876/ui/category-icons'
 import { FormRow } from '@876/ui/form-row'
@@ -11,12 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@876/ui/select'
-import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
-import { client } from '@/lib/client'
 import { categoryColorClass } from '@/features/categories/category-color'
+import { client } from '@/lib/client'
 import type {
   CrmCustomer,
   CrmRequestCategory,
@@ -94,6 +95,7 @@ export function RequestForm({
   initial?: Values
 }) {
   const router = useRouter()
+  const descriptionEditorRef = useRef<EditorHandle>(null)
   const [values, setValues] = useState(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -127,6 +129,9 @@ export function RequestForm({
     setSaving(true)
     setError(null)
 
+    const description = requestId
+      ? values.description
+      : ((await descriptionEditorRef.current?.flush()) ?? values.description)
     const base = {
       subject: values.subject.trim(),
       categoryId: values.categoryId || null,
@@ -144,7 +149,7 @@ export function RequestForm({
       : await client.requests.create({
           ...base,
           customerId: values.customerId,
-          description: values.description.trim() || null,
+          description: isEditorContentEmpty(description) ? null : description,
         })
 
     if (result.error) {
@@ -188,18 +193,20 @@ export function RequestForm({
 
         {requestId ? null : (
           <FormRow
-            htmlFor="request-description"
             label="Description"
             hint="The opening message. It is filed as the first note on this request; everything added afterwards is a note too."
             className={rowClassName}
           >
-            <Textarea
+            <Editor
+              ref={descriptionEditorRef}
               id="request-description"
-              className="min-h-32"
-              value={values.description}
-              onChange={(event) => set('description', event.target.value)}
+              initialValue={values.description}
+              onChange={(value) => set('description', value)}
               placeholder="What did the customer ask for?"
+              ariaLabel="Request description"
               disabled={saving}
+              minHeight={180}
+              className="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border px-3 py-2 shadow-xs focus-within:ring-[3px]"
             />
           </FormRow>
         )}

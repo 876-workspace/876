@@ -1,5 +1,11 @@
 'use client'
 
+import { isEditorContentEmpty } from '@876/editor'
+import {
+  Editor,
+  EditorContent,
+  type EditorHandle,
+} from '@876/editor/react'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
@@ -14,9 +20,14 @@ import {
 } from '@876/ui/icons'
 import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
-import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import {
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type RefObject,
+} from 'react'
 import { toast } from 'sonner'
 
 import { MemberPicker } from '@/features/directory/components/member-picker'
@@ -109,6 +120,8 @@ export function RequestTasksSection({
   members?: DirectoryMember[]
 }) {
   const router = useRouter()
+  const composerEditorRef = useRef<EditorHandle>(null)
+  const [composerKey, setComposerKey] = useState(0)
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [expanded, setExpanded] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -138,12 +151,14 @@ export function RequestTasksSection({
   async function addTask(event: React.FormEvent) {
     event.preventDefault()
     const title = draft.title.trim()
-    if (!title) return
+    if (!title || isSubmitting) return
 
     setBusyId(COMPOSER)
+    const description =
+      (await composerEditorRef.current?.flush()) ?? draft.description
     const result = await client.requestTasks.create(requestId, {
       title,
-      description: draft.description.trim() || null,
+      description: isEditorContentEmpty(description) ? null : description,
       priority: draft.priority,
       assigneeId: draft.assigneeId,
       dueAt: fromDateTimeLocal(draft.dueAt),
@@ -155,6 +170,7 @@ export function RequestTasksSection({
     }
 
     setDraft(emptyDraft())
+    setComposerKey((current) => current + 1)
     setExpanded(false)
     startTransition(() => router.refresh())
   }
@@ -187,7 +203,9 @@ export function RequestTasksSection({
       taskId,
       {
         title,
-        description: next.description.trim() || null,
+        description: isEditorContentEmpty(next.description)
+          ? null
+          : next.description,
         priority: next.priority,
         assigneeId: next.assigneeId,
         dueAt: fromDateTimeLocal(next.dueAt),
@@ -296,17 +314,14 @@ export function RequestTasksSection({
           </Button>
         </div>
 
-        {/*
-          The details stay folded away until the title field is touched. A
-          checklist is mostly one-line entries, and five controls sitting under
-          an empty box makes adding one feel like filling in a form.
-        */}
         {expanded ? (
           <TaskFields
             draft={draft}
             members={members}
             disabled={isSubmitting}
             idPrefix="new-task"
+            editorRef={composerEditorRef}
+            editorKey={composerKey}
             onChange={setDraft}
           />
         ) : null}
@@ -321,12 +336,16 @@ function TaskFields({
   members,
   disabled,
   idPrefix,
+  editorRef,
+  editorKey,
   onChange,
 }: {
   draft: Draft
   members: DirectoryMember[]
   disabled: boolean
   idPrefix: string
+  editorRef: RefObject<EditorHandle | null>
+  editorKey: string | number
   onChange: (next: Draft) => void
 }) {
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
@@ -335,13 +354,17 @@ function TaskFields({
 
   return (
     <div className="flex flex-col gap-3">
-      <Textarea
-        value={draft.description}
-        onChange={(event) => set('description', event.target.value)}
-        rows={2}
+      <Editor
+        key={editorKey}
+        ref={editorRef}
+        initialValue={draft.description}
+        onChange={(value) => set('description', value)}
         placeholder="Details (optional)"
+        ariaLabel="Task details"
         disabled={disabled}
-        aria-label="Task details"
+        minHeight={90}
+        className="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border px-3 py-2 focus-within:ring-[3px]"
+        holderClassName="min-h-20"
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -428,6 +451,7 @@ function TaskRow({
   onStatusChange: (status: CrmTaskStatus) => void
   onDelete: () => void
 }) {
+  const editorRef = useRef<EditorHandle>(null)
   const [draft, setDraft] = useState<Draft>(() => draftFrom(task))
   const done = task.status === 'DONE'
   const cancelled = task.status === 'CANCELLED'
@@ -435,6 +459,13 @@ function TaskRow({
   function beginEdit() {
     setDraft(draftFrom(task))
     onEdit()
+  }
+
+  async function save() {
+    const description = (await editorRef.current?.flush()) ?? draft.description
+    const next = { ...draft, description }
+    setDraft(next)
+    onSave(next)
   }
 
   if (editing) {
@@ -457,6 +488,8 @@ function TaskRow({
           members={members}
           disabled={busy}
           idPrefix={`task-${task.id}`}
+          editorRef={editorRef}
+          editorKey={task.id}
           onChange={setDraft}
         />
         <div className="flex gap-2">
@@ -464,7 +497,7 @@ function TaskRow({
             type="button"
             variant="info"
             size="sm"
-            onClick={() => onSave(draft)}
+            onClick={() => void save()}
             disabled={busy || !draft.title.trim()}
           >
             {busy ? 'Saving' : 'Save'}
@@ -507,9 +540,10 @@ function TaskRow({
         </button>
 
         {task.description ? (
-          <p className="text-muted-foreground text-sm leading-relaxed break-words whitespace-pre-wrap">
-            {task.description}
-          </p>
+          <EditorContent
+            value={task.description}
+            className="text-muted-foreground"
+          />
         ) : null}
 
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
