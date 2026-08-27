@@ -1,15 +1,31 @@
 /* ─────────────────────────────────────────────────────────────────────────
    876 neutral chrome — shared across every 876-shell app (Console, Couriers,
-   and any future management surface). Import after @876/ui/styles.css.
+   Enterprise, Billing, Invoice, CRM, and any future management surface).
+   Import after @876/ui/styles.css. The consumer app (apps/876) deliberately
+   does NOT import this file; it has its own account-style layout.
 
    Only neutral surface/elevation tokens and visual chrome classes live here.
    Brand primary, nav-active colours, and per-app accent overrides stay in
    each app's own globals.css.
 
-   The default theme is "slate": cool blue-grey tinted neutrals in both
-   modes — richer than untinted grey without becoming a colour theme.
+   ── The surface rule: "quiet frame, soft field, white objects." ──────────
+   Three planes, in this order from back to front:
+
+     1. chrome   (--876-chrome)  sidebar + topbar. A near-white tinted plane
+                                 that FRAMES the app. It recedes.
+     2. canvas   (--876-canvas)  the field pages are laid out on.
+     3. surface  (--876-surface) pure white. Content objects only — cards,
+                                 tables, popovers, inputs.
+
+   Chrome and canvas sit ~1% apart in lightness, so where they meet there is
+   a hairline and nothing else: no heavy divider, no cast shadow, no step
+   from pure white into grey. Pure white is spent exclusively on content, so
+   a card reads as an object lifted off the page rather than as one more
+   white rectangle among three.
+
    Alternative chrome stylings are stashed (dormant, not imported) in
-   876-themes.css for a future user-preference feature.
+   876-themes.css for a future user-preference feature. The previous
+   white-chrome default is preserved there as `mist`.
 
    Chrome class names are 876-branded (`876-page`, `876-card`, …). CSS
    `[class~='876-…']` — identical specificity to a class selector.
@@ -18,31 +34,50 @@
 @import './876-themes.css';
 
 :root {
-  /* Surface rule: "white frame, slate field, white objects." Chrome
-     (sidebar, topbar, detail-header bands) and content objects (cards,
-     tables, popovers) sit on --876-surface white; --876-canvas is the cool
-     slate field between them. Gray never appears above canvas level. */
-  --876-canvas: oklch(0.966 0.007 250);
-  /* Card tracks the canvas (secondary chrome stays flush); white lift is
-     carried by 876-surface. Popovers stay white — they're transient overlays
-     that must float above the canvas. */
-  --card: oklch(0.966 0.007 250);
-  --popover: oklch(1 0 0);
+  /* ── The three planes ── */
+  --876-chrome: oklch(0.9845 0.005 256);
+  --876-canvas: oklch(0.9715 0.0065 256);
   --876-surface: oklch(1 0 0);
-  --sidebar: oklch(1 0 0);
-  /* Crisp hairline — the frame's primary light-mode elevation signal.
-     Slate-tinted so it reads as structure, not as a warm-grey mismatch. */
-  --876-surface-border: oklch(0.915 0.008 252);
-  --border: oklch(0.915 0.008 252);
-  --sidebar-border: oklch(0.915 0.008 252);
-  /* Interactive-control border — one clear step darker than the hairline. */
-  --border-strong: oklch(0.86 0.01 252);
-  /* Chip/muted neutrals re-tinted to match the canvas so nothing reads
-     as a mismatched warm grey. */
-  --muted: oklch(0.958 0.007 250);
-  --secondary: oklch(0.958 0.007 250);
-  --accent: oklch(0.958 0.007 250);
-  --muted-foreground: oklch(0.52 0.02 255);
+  --sidebar: var(--876-chrome);
+  /* Card tracks the canvas (secondary chrome stays flush); the white lift is
+     carried by 876-surface / 876-card. Popovers stay white — they are
+     transient overlays that must float above everything. */
+  --card: var(--876-canvas);
+  --popover: oklch(1 0 0);
+
+  /* ── Hairlines ──
+     With chrome and canvas ~1% apart, the hairline is the ONLY separator the
+     frame needs. It is tinted to match the planes so it reads as structure
+     rather than as a stray warm grey. */
+  --876-surface-border: oklch(0.917 0.008 256);
+  --border: oklch(0.917 0.008 256);
+  --sidebar-border: oklch(0.917 0.008 256);
+  /* Interactive-control border — one clear step darker than the hairline, so
+     an outline button or select trigger reads as a control, not a divider. */
+  --border-strong: oklch(0.872 0.011 256);
+  --input: oklch(0.906 0.009 256);
+
+  /* ── Text ──
+     Body text is a soft near-black, not #000-adjacent. The old 0.23 read as
+     printer-ink black against a white card and made every screen feel harsh;
+     0.285 still clears WCAG AAA on white (~9.5:1) while reading calm. */
+  --foreground: oklch(0.285 0.016 259);
+  --card-foreground: oklch(0.285 0.016 259);
+  --popover-foreground: oklch(0.285 0.016 259);
+  --sidebar-foreground: oklch(0.285 0.016 259);
+  --secondary-foreground: oklch(0.305 0.016 259);
+  --accent-foreground: oklch(0.305 0.016 259);
+  --sidebar-accent-foreground: oklch(0.305 0.016 259);
+  --muted-foreground: oklch(0.545 0.019 258);
+
+  /* ── Chip / hover neutrals ──
+     Tinted to the same family, and pitched to stay visible on BOTH the
+     near-white chrome and a pure-white card. */
+  --muted: oklch(0.951 0.008 256);
+  --secondary: oklch(0.951 0.008 256);
+  --accent: oklch(0.951 0.008 256);
+  --sidebar-accent: oklch(0.947 0.009 256);
+
   /* Enrich the green accent surface slightly vs the base 14/18% defaults. */
   --876-accent-surface: color-mix(in oklab, var(--876-green) 13%, transparent);
   --876-accent-surface-hover: color-mix(
@@ -53,28 +88,41 @@
 }
 
 .dark {
-  /* Slate elevation ladder: background 0.175 → canvas/card 0.195 →
-     sidebar 0.215 → surface 0.226 → popover 0.238. Monotonic 255-hue,
-     blue-tinted so dark mode carries the same slate identity as light. */
-  --background: oklch(0.175 0.012 255);
-  --876-canvas: oklch(0.195 0.012 255);
-  --card: oklch(0.195 0.012 255);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.238 0.013 255);
-  --popover-foreground: oklch(0.985 0 0);
-  --sidebar: oklch(0.215 0.013 255);
-  --876-surface: oklch(0.226 0.013 255);
+  /* Same three planes, same rule: chrome sits close to the canvas so their
+     seam is a hairline, and the content surface carries the lift.
+     Ladder: background 0.178 → canvas/card 0.198 → chrome 0.209 →
+     surface 0.238 → popover 0.252. Monotonic, 258-hue slate. */
+  --background: oklch(0.178 0.012 258);
+  --876-chrome: oklch(0.209 0.013 258);
+  --876-canvas: oklch(0.198 0.012 258);
+  --876-surface: oklch(0.238 0.014 258);
+  --sidebar: var(--876-chrome);
+  --card: var(--876-canvas);
+  --popover: oklch(0.252 0.014 258);
+
   /* Hairlines — cool-tinted glow against the slate ladder. */
-  --border: oklch(0.85 0.02 255 / 11%);
-  --876-surface-border: oklch(0.85 0.02 255 / 11%);
-  --sidebar-border: oklch(0.85 0.02 255 / 11%);
-  /* Interactive-control border: stronger than the hairlines. */
-  --border-strong: oklch(0.85 0.02 255 / 20%);
-  --input: oklch(0.85 0.02 255 / 13%);
-  --muted: oklch(0.27 0.014 255);
-  --secondary: oklch(0.27 0.014 255);
-  --accent: oklch(0.27 0.014 255);
-  --muted-foreground: oklch(0.73 0.014 255);
+  --border: oklch(0.85 0.02 258 / 10%);
+  --876-surface-border: oklch(0.85 0.02 258 / 10%);
+  --sidebar-border: oklch(0.85 0.02 258 / 10%);
+  --border-strong: oklch(0.85 0.02 258 / 20%);
+  --input: oklch(0.85 0.02 258 / 13%);
+
+  /* Mirror of the light-mode softening: pure white body text glares against
+     a dark slate card, so back it off a step. */
+  --foreground: oklch(0.955 0.003 258);
+  --card-foreground: oklch(0.955 0.003 258);
+  --popover-foreground: oklch(0.955 0.003 258);
+  --sidebar-foreground: oklch(0.955 0.003 258);
+  --secondary-foreground: oklch(0.955 0.003 258);
+  --accent-foreground: oklch(0.955 0.003 258);
+  --sidebar-accent-foreground: oklch(0.955 0.003 258);
+  --muted-foreground: oklch(0.735 0.015 258);
+
+  --muted: oklch(0.272 0.014 258);
+  --secondary: oklch(0.272 0.014 258);
+  --accent: oklch(0.272 0.014 258);
+  --sidebar-accent: oklch(0.278 0.014 258);
+
   /* Richer green stays vivid on the lighter dark surfaces. */
   --876-green: oklch(0.55 0.19 148);
 }
@@ -90,8 +138,8 @@
 :where(:not(.dark)) [class~='876-surface'] {
   border-color: var(--876-surface-border);
   box-shadow:
-    0 1px 2px oklch(0.23 0.02 262 / 4%),
-    0 6px 16px oklch(0.23 0.02 262 / 4%);
+    0 1px 2px oklch(0.28 0.02 259 / 4%),
+    0 8px 24px oklch(0.28 0.02 259 / 5%);
 }
 
 :where(.dark) [class~='876-surface'] {
@@ -116,8 +164,8 @@
     border: 1px solid var(--876-surface-border);
     border-radius: var(--radius-xl);
     box-shadow:
-      0 1px 2px oklch(0.23 0.02 262 / 4%),
-      0 6px 16px oklch(0.23 0.02 262 / 4%);
+      0 1px 2px oklch(0.28 0.02 259 / 4%),
+      0 8px 24px oklch(0.28 0.02 259 / 5%);
   }
 
   .dark [class~='876-card'] {
@@ -211,23 +259,23 @@
 }
 
 /* ── Top bar ─────────────────────────────────────────────────────────────
-   Part of the white frame: solid surface, but lifted off the page — a
-   strong hairline plus a soft cast shadow so the bar reads as its own
-   plane even when white content (detail-header bands) sits directly
-   beneath it. Dark: sidebar-level elevation carries the separation. */
+   The horizontal half of the chrome frame. It shares the sidebar's plane
+   exactly, so the corner where the two meet is continuous rather than a
+   join between two differently-treated bars.
+
+   Separation is a hairline plus a barely-there cast shadow. The old bar
+   used --border-strong and a double shadow, which is what made the edge
+   read hard: a strong divider is only needed when the two planes either
+   side of it are far apart, and they no longer are. */
 [class~='876-topbar'] {
-  background-color: var(--876-surface);
+  background-color: var(--876-chrome);
+  border-bottom-color: var(--876-surface-border);
 }
 :where(:not(.dark)) [class~='876-topbar'] {
-  border-bottom-color: var(--border-strong);
-  box-shadow:
-    0 1px 2px oklch(0.23 0.02 262 / 5%),
-    0 4px 12px oklch(0.23 0.02 262 / 5%);
+  box-shadow: 0 1px 3px oklch(0.28 0.02 259 / 3.5%);
 }
 .dark [class~='876-topbar'] {
-  background-color: var(--sidebar);
-  border-bottom-color: var(--876-surface-border);
-  box-shadow: 0 1px 0 oklch(0 0 0 / 25%);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 18%);
 }
 
 /* ── Detail header band ──────────────────────────────────────────────────
@@ -264,32 +312,48 @@
 }
 
 /* ── Sidebar frame edge ──────────────────────────────────────────────────
-   Left wall of the white frame. Same plane language as the topbar and
-   widget rail: strong hairline + a rightward cast shadow onto the field.
-   Targets the shared shadcn slot so every 876 shell app gets it without
-   per-app sidebar edits. Dark: a hard 1px seam carries the separation. */
-:where(:not(.dark)) [data-slot='sidebar-container'][data-side='left'] {
-  border-right-color: var(--border-strong);
-  box-shadow:
-    1px 0 2px oklch(0.23 0.02 262 / 4%),
-    6px 0 16px oklch(0.23 0.02 262 / 4%);
-}
-.dark [data-slot='sidebar-container'][data-side='left'] {
+   Left wall of the chrome frame. This edge is the one the eye tracks for
+   the entire height of the window, so it gets the lightest possible
+   treatment: a hairline, and no cast shadow at all. A shadow here was
+   painting a grey gradient down the full length of the content column —
+   the "hard meet" that made an open sidebar look worse than a closed one.
+
+   Targets the shared shadcn slot so every 876 shell app inherits it with
+   no per-app sidebar edits. */
+[data-slot='sidebar-container'][data-side='left'] {
   border-right-color: var(--876-surface-border);
-  box-shadow: 1px 0 0 oklch(0 0 0 / 25%);
+  box-shadow: none;
+}
+
+/* A whisper of vertical shading inside the sidebar. Roughly half a percent
+   of lightness top-to-bottom — invisible as a gradient, but it keeps a tall
+   flat panel from reading as dead space. */
+[data-slot='sidebar-inner'] {
+  background-image: linear-gradient(
+    180deg,
+    oklch(1 0 0 / 55%) 0%,
+    oklch(1 0 0 / 0%) 42%
+  );
+}
+.dark [data-slot='sidebar-inner'] {
+  background-image: linear-gradient(
+    180deg,
+    oklch(1 0 0 / 2.5%) 0%,
+    oklch(1 0 0 / 0%) 42%
+  );
 }
 
 /* ── Widget dock ─────────────────────────────────────────────────────────
    Default (popout): floating rounded rail + panel cards over the body.
    Docked: in-flow full-height rail strip + panel column beside main. */
 :where(:not(.dark)) [class~='876-widget-rail'] {
-  border-color: var(--border-strong);
+  border-color: var(--876-surface-border);
 }
 .dark [class~='876-widget-rail'] {
   border-color: oklch(1 0 0 / 10%);
 }
 :where(:not(.dark)) [class~='876-widget-panel'] {
-  border-color: var(--border-strong);
+  border-color: var(--876-surface-border);
 }
 .dark [class~='876-widget-panel'] {
   border-color: oklch(1 0 0 / 10%);
@@ -309,9 +373,9 @@
 }
 
 /* ── Form controls ───────────────────────────────────────────────────────
-   Light-mode fields default to bg-transparent; give them a solid white
-   surface so they read clearly on the slate canvas, inside or outside
-   cards. */
+   Light-mode fields default to bg-transparent; give them the white content
+   surface so they read as objects on the canvas and on the chrome alike,
+   inside or outside cards. */
 :where(:not(.dark)) [data-slot='input'],
 :where(:not(.dark)) [data-slot='select-trigger'] {
   background-color: var(--876-surface);
