@@ -1,6 +1,7 @@
 import { resolve876ApiBaseUrl } from '@876/core/client'
 
 import { createOAuthMethods } from './oauth.ts'
+import { createAppMembershipsResource } from './resources/app-memberships.ts'
 import { createAppsResource } from './resources/apps.ts'
 import { createAuditEventsResource } from './resources/audit-events.ts'
 import { createAuthResource } from './resources/auth.ts'
@@ -38,17 +39,6 @@ function resolveApiBaseUrl(baseUrl?: string): string {
  * bound to one shared runtime. Only API-key/session-tier (non-`AdminDep`)
  * operations exist here; privileged platform administration lives in
  * `@876/admin` so it never reaches consumer bundles.
- *
- * @param options - Optional client configuration (`apiKey`, `fetch`, `credentials`).
- * @returns A resource-first client whose privilege is fixed by this factory.
- *
- * @example
- * ```typescript
- * const $876 = create876Client({ apiKey: '876_app_secret_public' })
- * const result = await $876.auth.login({ identifier: 'alejandra@example.com', password: '...' })
- * if (result.error) return
- * console.log(result.data.object) // 'session' | 'auth_event'
- * ```
  */
 export function create876Client(options: ClientOptions = {}) {
   const parsed = auth876ClientOptionsSchema.parse(options)
@@ -87,31 +77,12 @@ export function create876Client(options: ClientOptions = {}) {
   } = createOrgsResource(runtime)
 
   return {
-    /** Authentication methods (login, register, social login, session, OTP, …). */
     auth: createAuthResource(runtime),
-    /**
-     * OAuth/OIDC methods for "Sign in with 876" relying-party flows. Requires
-     * an `oauth` config block on {@link create876Client}; otherwise each method
-     * returns an `oauth/client-not-configured` error.
-     */
     oauth,
-    /**
-     * Developer apps owned by the current user/org (register/list/retrieve your
-     * own OAuth clients). API-key tier; runs server-side with the app API key.
-     */
     apps: createAppsResource(runtime),
-    /**
-     * Apps the user has connected via "Sign in with 876" (list/revoke). API-key
-     * tier; runs server-side with the app API key.
-     */
     oauthGrants: createOAuthGrantsResource(runtime),
     auditEvents: createAuditEventsResource(runtime),
     features: createFeaturesResource(runtime),
-    /**
-     * Org-self-scoped organization structure (locations, departments, employee
-     * profiles). Session tier — every method targets the caller's own org and
-     * is authorized by org membership on the API.
-     */
     users,
     memberships,
     organizations,
@@ -123,6 +94,8 @@ export function create876Client(options: ClientOptions = {}) {
     roles,
     organizationMembers,
     appAssignments,
+    /** Self-scoped app role and effective-permission reads. */
+    appMemberships: createAppMembershipsResource(runtime),
     invites,
     subscriptions,
     products: createProductsResource(runtime),
