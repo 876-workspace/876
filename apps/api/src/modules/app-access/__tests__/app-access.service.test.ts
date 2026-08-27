@@ -38,17 +38,22 @@ const role = {
   updatedAt: 1n,
 }
 
-function resolve(overrides: {
-  entitlement?: unknown
-  assignment?: unknown
-  appRole?: unknown
-  catalog?: unknown
-} = {}) {
+function resolve(
+  overrides: {
+    entitlement?: unknown
+    assignment?: unknown
+    appRole?: unknown
+    catalog?: unknown
+  } = {}
+) {
+  // `in` rather than `??`: an explicit `null` override is the whole point of
+  // these fail-closed cases, and `??` would silently restore the default.
   return resolveEffectiveAppPermissions({
-    entitlement: overrides.entitlement ?? entitlement,
-    assignment: overrides.assignment ?? assignment,
-    appRole: overrides.appRole ?? role,
-    catalog: overrides.catalog ?? catalog,
+    entitlement:
+      'entitlement' in overrides ? overrides.entitlement : entitlement,
+    assignment: 'assignment' in overrides ? overrides.assignment : assignment,
+    appRole: 'appRole' in overrides ? overrides.appRole : role,
+    catalog: 'catalog' in overrides ? overrides.catalog : catalog,
   })
 }
 
@@ -429,7 +434,10 @@ describe('resolveEffectiveAppPermissions', () => {
     const permissions = ['requests.view', 'customers.view']
     const storedRole = { ...role, permissions }
 
-    resolve({ appRole: storedRole, assignment: { ...assignment, permissionDenies: ['requests.view'] } })
+    resolve({
+      appRole: storedRole,
+      assignment: { ...assignment, permissionDenies: ['requests.view'] },
+    })
 
     expect(permissions).toEqual(['requests.view', 'customers.view'])
   })
@@ -437,7 +445,11 @@ describe('resolveEffectiveAppPermissions', () => {
   it('does not mutate stored grants or denies while resolving', () => {
     const grants = ['requests.edit']
     const denies = ['requests.create']
-    const storedAssignment = { ...assignment, permissionGrants: grants, permissionDenies: denies }
+    const storedAssignment = {
+      ...assignment,
+      permissionGrants: grants,
+      permissionDenies: denies,
+    }
 
     resolve({ assignment: storedAssignment })
 
@@ -449,7 +461,12 @@ describe('resolveEffectiveAppPermissions', () => {
     const act = () =>
       resolveEffectiveAppPermissions({
         entitlement: { status: 'active' },
-        assignment: { status: 'active', deletedAt: null, revokedAt: null, permissionGrants: [Symbol('grant')] },
+        assignment: {
+          status: 'active',
+          deletedAt: null,
+          revokedAt: null,
+          permissionGrants: [Symbol('grant')],
+        },
         appRole: { permissions: [Symbol('role')] },
         catalog: [{ key: Symbol('catalog') }],
       })
@@ -460,7 +477,12 @@ describe('resolveEffectiveAppPermissions', () => {
   it('degrades deeply malformed persisted inputs to a safe empty permission set', () => {
     const result = resolveEffectiveAppPermissions({
       entitlement: { status: 'active' },
-      assignment: { status: 'active', deletedAt: null, revokedAt: null, permissionGrants: [Symbol('grant')] },
+      assignment: {
+        status: 'active',
+        deletedAt: null,
+        revokedAt: null,
+        permissionGrants: [Symbol('grant')],
+      },
       appRole: { permissions: [Symbol('role')] },
       catalog: [{ key: Symbol('catalog') }],
     })
