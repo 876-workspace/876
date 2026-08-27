@@ -12,6 +12,10 @@
       "types": "./src/icons.ts",
       "default": "./src/icons.ts"
     },
+    "./category-icons": {
+      "types": "./src/category-icons.tsx",
+      "default": "./src/category-icons.tsx"
+    },
     "./lib/utils": {
       "types": "./src/lib/utils.ts",
       "default": "./src/lib/utils.ts"
