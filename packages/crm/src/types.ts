@@ -44,6 +44,7 @@ export const registryCustomerSchema = z
         email: z.string().nullable(),
         workPhone: z.string().nullable(),
         mobilePhone: z.string().nullable(),
+        avatar: z.string().nullable().optional(),
         isPrimary: z.boolean(),
       })
       .nullable()

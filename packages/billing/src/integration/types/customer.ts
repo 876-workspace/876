@@ -213,6 +213,12 @@ export interface BillingContact {
   mobilePhone: string | null
 
   /**
+   * The linked 876 account's picture, when the contact has one. Null for a
+   * hand-entered contact.
+   */
+  avatar: string | null
+
+  /**
    * Whether this is the customer's primary contact.
    */
   isPrimary: boolean
