@@ -3,19 +3,10 @@ export type RequestStatus =
 
 export type RequestPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
 
-export type RequestCategory =
-  | 'GENERAL'
-  | 'SUPPORT'
-  | 'BILLING'
-  | 'SALES'
-  | 'COMPLAINT'
-  | 'FEEDBACK'
-  | 'OTHER'
-
 export type RequestSource =
   'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
 
-export type RequestNoteKind = 'DESCRIPTION' | 'NOTE'
+export type RequestNoteKind = 'DESCRIPTION' | 'NOTE' | 'EMAIL'
 
 export interface CrmRequest {
   object: 'request'
@@ -24,12 +15,14 @@ export interface CrmRequest {
   customerId: string
   number: number
   subject: string
-  category: RequestCategory
+  categoryId: string | null
+  subcategoryId: string | null
   status: RequestStatus
   priority: RequestPriority
   source: RequestSource
   teamId: string | null
   assigneeId: string | null
+  ownerId: string | null
   createdBy: string
   resolvedAt: number | null
   closedAt: number | null
@@ -42,7 +35,9 @@ export interface ListRequestsFilter {
   teamId?: string | null
   assigneeId?: string | null
   customerId?: string
-  category?: RequestCategory
+  categoryId?: string | null
+  subcategoryId?: string | null
+  ownerId?: string | null
   priority?: RequestPriority
 }
 
@@ -51,22 +46,26 @@ export interface CreateRequestInput {
   subject: string
   /** The opening message. The service stores it as the request's DESCRIPTION note. */
   description?: string | null
-  category?: RequestCategory
+  categoryId?: string | null
+  subcategoryId?: string | null
   priority?: RequestPriority
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
+  ownerId?: string | null
   createdBy: string
 }
 
 export interface UpdateRequestInput {
   subject?: string
-  category?: RequestCategory
+  categoryId?: string | null
+  subcategoryId?: string | null
   status?: RequestStatus
   priority?: RequestPriority
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
+  ownerId?: string | null
 }
 
 export interface DeleteRequestInput {

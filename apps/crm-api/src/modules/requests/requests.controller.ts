@@ -12,7 +12,15 @@ import {
   requestParamsSchema,
   updateRequestBodySchema,
   updateRequestNoteBodySchema,
+  taskParamsSchema,
+  reminderParamsSchema,
+  createTaskBodySchema,
+  updateTaskBodySchema,
+  createReminderBodySchema,
+  updateReminderBodySchema,
+  deleteNestedBodySchema,
 } from './requests.schemas.js'
+import * as tasks from './requests.tasks.service.js'
 
 function notFound(res: Response) {
   return res.status(404).json({
@@ -137,4 +145,112 @@ export async function updateRequestNote(req: Request, res: Response) {
   if (!data) return notFound(res)
 
   res.json({ data, error: null })
+}
+
+const nestedNotFound = (res: Response, code: string, message: string) =>
+  res.status(404).json({ data: null, error: { code, message } })
+const nestedList = (res: Response, data: unknown[], url: string) =>
+  res.json({
+    data: {
+      object: 'list',
+      data,
+      has_more: false,
+      total_count: data.length,
+      url,
+    },
+    error: null,
+  })
+export async function listTasks(req: Request, res: Response) {
+  const p = requestParamsSchema.parse(req.params)
+  nestedList(
+    res,
+    await tasks.tasks(p.organizationId, p.id),
+    `/v1/organizations/${p.organizationId}/requests/${p.id}/tasks`
+  )
+}
+export async function createTask(req: Request, res: Response) {
+  const p = requestParamsSchema.parse(req.params)
+  res.status(201).json({
+    data: await tasks.createTask(
+      p.organizationId,
+      p.id,
+      createTaskBodySchema.parse(req.body)
+    ),
+    error: null,
+  })
+}
+export async function updateTask(req: Request, res: Response) {
+  const p = taskParamsSchema.parse(req.params),
+    d = await tasks.updateTask(
+      p.organizationId,
+      p.id,
+      p.taskId,
+      updateTaskBodySchema.parse(req.body)
+    )
+  if (!d)
+    return nestedNotFound(res, 'crm/task-not-found', 'Request task not found.')
+  res.json({ data: d, error: null })
+}
+export async function deleteTask(req: Request, res: Response) {
+  const p = taskParamsSchema.parse(req.params),
+    d = await tasks.removeTask(
+      p.organizationId,
+      p.id,
+      p.taskId,
+      deleteNestedBodySchema.parse(req.body).deletedBy
+    )
+  if (!d)
+    return nestedNotFound(res, 'crm/task-not-found', 'Request task not found.')
+  res.json({ data: d, error: null })
+}
+export async function listReminders(req: Request, res: Response) {
+  const p = requestParamsSchema.parse(req.params)
+  nestedList(
+    res,
+    await tasks.reminders(p.organizationId, p.id),
+    `/v1/organizations/${p.organizationId}/requests/${p.id}/reminders`
+  )
+}
+export async function createReminder(req: Request, res: Response) {
+  const p = requestParamsSchema.parse(req.params)
+  res.status(201).json({
+    data: await tasks.createReminder(
+      p.organizationId,
+      p.id,
+      createReminderBodySchema.parse(req.body)
+    ),
+    error: null,
+  })
+}
+export async function updateReminder(req: Request, res: Response) {
+  const p = reminderParamsSchema.parse(req.params),
+    d = await tasks.updateReminder(
+      p.organizationId,
+      p.id,
+      p.reminderId,
+      updateReminderBodySchema.parse(req.body)
+    )
+  if (!d)
+    return nestedNotFound(
+      res,
+      'crm/reminder-not-found',
+      'Request reminder not found.'
+    )
+  res.json({ data: d, error: null })
+}
+export async function deleteReminder(req: Request, res: Response) {
+  const p = reminderParamsSchema.parse(req.params),
+    d = await tasks.removeReminder(
+      p.organizationId,
+      p.id,
+      p.reminderId,
+      deleteNestedBodySchema.parse(req.body).deletedBy
+    )
+  if (!d)
+    return nestedNotFound(
+      res,
+      'crm/reminder-not-found',
+      'Request reminder not found.'
+    )
+  res.json({ data: d, error: null })
 }
