@@ -221,6 +221,33 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       parentSlug: 'couriers_operations',
     },
   ],
+  '876-crm': [
+    {
+      slug: 'crm_theme_switcher',
+      name: 'Theme switcher',
+      description: 'Light/dark appearance toggle in the account menu.',
+    },
+    {
+      slug: 'crm_global_add',
+      name: 'Global add',
+      description: 'Universal create button in the top nav.',
+    },
+    {
+      slug: 'crm_app_switcher',
+      name: 'App switcher',
+      description: '876 app launcher in the top nav.',
+    },
+    {
+      slug: 'crm_search_bar',
+      name: 'Search bar',
+      description: 'Global search bar in the CRM top nav.',
+    },
+    {
+      slug: 'crm_org_switcher',
+      name: 'Org switcher',
+      description: 'Organization switcher in the top nav.',
+    },
+  ],
   '876-billing': [
     {
       slug: 'billing_widgets',
@@ -363,6 +390,7 @@ function featurePrefixForAppSlug(appSlug: string): string {
     console: 'console',
     '876-couriers': 'couriers',
     '876-billing': 'billing',
+    '876-crm': 'crm',
   }
   if (map[appSlug]) return map[appSlug]!
   return normalizeSlug(appSlug.replace(/^876-/, '')).replace(/-/g, '_')
@@ -677,6 +705,14 @@ export async function seedCouriersFeatures(): Promise<FeatureSeedSummary> {
   })
 }
 
+export async function seedCrmFeatures(): Promise<FeatureSeedSummary> {
+  validateFeatureSeeds('876-crm', FEATURE_SEEDS_BY_APP['876-crm'] ?? [])
+  return seedPosthogFeatures({
+    appSlug: '876-crm',
+    featureSeeds: FEATURE_SEEDS_BY_APP['876-crm'] ?? [],
+  })
+}
+
 export async function seedPlatformWidgetFeatures(): Promise<FeatureSeedSummary> {
   validateFeatureSeeds(null, PLATFORM_FEATURE_SEEDS)
   return seedPosthogFeatures({
@@ -716,7 +752,12 @@ export async function seedAllFeatures(): Promise<FeatureSeedSummary> {
   let totalCreated = 0
   let totalUpdated = 0
 
-  for (const appSlug of ['console', '876-billing', '876-couriers'] as const) {
+  for (const appSlug of [
+    'console',
+    '876-billing',
+    '876-couriers',
+    '876-crm',
+  ] as const) {
     const result = await seedPosthogFeatures({
       appSlug,
       featureSeeds: FEATURE_SEEDS_BY_APP[appSlug] ?? [],

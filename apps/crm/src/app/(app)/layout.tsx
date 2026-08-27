@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
 import { Shell } from '@/components/shell/shell'
+import { getAppsDirectory } from '@/lib/apps-directory'
 import { getCrmContextResult } from '@/lib/auth/context'
+import { getFeatures } from '@/lib/features'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -12,7 +14,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   if (result.status === 'unavailable') redirect('/unavailable')
   if (result.status === 'no-organization') redirect('/onboarding')
 
-  const { accessStatus, orgName, role, organizations, orgId, orgSlug } =
+  const { accessStatus, orgName, role, organizations, orgId, orgSlug, userId } =
     result.context
   if (accessStatus === 'blocked') redirect('/no-access')
   if (accessStatus !== 'active' && accessStatus !== 'trialing') {
@@ -41,6 +43,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       slug: orgSlug ?? orgId,
     }
 
+  const { uiFeatures } = await getFeatures({
+    userId,
+    organizationId: orgId,
+  })
+
   return (
     <Shell
       orgName={orgName}
@@ -51,6 +58,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       }}
       currentOrg={currentOrg}
       orgs={orgs}
+      apps={getAppsDirectory()}
+      uiFeatures={uiFeatures}
     >
       {children}
     </Shell>
