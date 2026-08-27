@@ -1,0 +1,35 @@
+export const LIST_APP_PERMISSIONS_SUMMARY = 'List an app permission catalog'
+export const CREATE_APP_PERMISSION_SUMMARY = 'Create an app permission'
+export const UPDATE_APP_PERMISSION_SUMMARY = 'Update an app permission'
+export const DELETE_APP_PERMISSION_SUMMARY = 'Delete an app permission'
+export const SYNC_APP_PERMISSIONS_SUMMARY =
+  'Synchronize an app permission catalog'
+export const LIST_APP_ROLE_TEMPLATES_SUMMARY = 'List app role templates'
+export const CREATE_APP_ROLE_TEMPLATE_SUMMARY = 'Create an app role template'
+export const RETRIEVE_APP_ROLE_TEMPLATE_SUMMARY =
+  'Retrieve an app role template'
+export const UPDATE_APP_ROLE_TEMPLATE_SUMMARY = 'Update an app role template'
+export const DELETE_APP_ROLE_TEMPLATE_SUMMARY = 'Delete an app role template'
+export const LIST_ORG_APP_ROLES_SUMMARY = 'List organization app roles'
+export const CREATE_ORG_APP_ROLE_SUMMARY = 'Create an organization app role'
+export const RETRIEVE_ORG_APP_ROLE_SUMMARY = 'Retrieve an organization app role'
+export const UPDATE_ORG_APP_ROLE_SUMMARY = 'Update an organization app role'
+export const DELETE_ORG_APP_ROLE_SUMMARY = 'Delete an organization app role'
+export const LIST_APP_MEMBERSHIPS_SUMMARY = 'List organization app memberships'
+export const CREATE_APP_MEMBERSHIP_SUMMARY =
+  'Assign an organization member to an app'
+export const RETRIEVE_APP_MEMBERSHIP_SUMMARY = 'Retrieve an app membership'
+export const UPDATE_APP_MEMBERSHIP_SUMMARY = 'Update an app membership'
+export const DELETE_APP_MEMBERSHIP_SUMMARY = 'Revoke an app membership'
+export const LIST_MEMBER_APP_MEMBERSHIPS_SUMMARY =
+  'List app memberships for an organization member'
+export const LIST_APP_MEMBERS_SUMMARY = 'List members assigned to an app'
+export const RETRIEVE_APP_MEMBER_ME_SUMMARY =
+  'Retrieve the acting member app permissions'
+
+export const APP_PERMISSION_DESCRIPTION =
+  'App permission keys are permanent product-declared capabilities registered in core.'
+export const APP_ROLE_DESCRIPTION =
+  'App roles bundle registered app permissions without merging organization-role permissions.'
+export const APP_MEMBERSHIP_DESCRIPTION =
+  'An app membership is the per-member app assignment profile, role, overrides, and lifecycle.'

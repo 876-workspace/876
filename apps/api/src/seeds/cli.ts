@@ -17,10 +17,11 @@ async function main(): Promise<void> {
   const help = args.includes('--help') || args.includes('-h')
 
   if (help) {
-    console.log(`Usage: pnpm node:seed [--only=bootstrap,geo,provisioning,features,plans,defaultPrices]
+    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,provisioning,features,plans,defaultPrices]
 
 Seeds the platform database idempotently. Each seed only creates absent rows
-and never clobbers operator-changed values. Re-running is safe.
+or refreshes platform-owned catalogs/templates and never clobbers tenant roles.
+Re-running is safe.
 
 Options:
   --only=<names>  Run only the named seeds (comma-separated).
@@ -30,6 +31,7 @@ Options:
 
   const valid = new Set([
     'bootstrap',
+    'appAccess',
     'geo',
     'provisioning',
     'features',
@@ -54,7 +56,6 @@ Options:
     console.error(error)
     process.exit(1)
   } finally {
-    // Disconnect Prisma to allow process to exit.
     try {
       const { disconnectDb } = await import('@/db/client')
       await disconnectDb()

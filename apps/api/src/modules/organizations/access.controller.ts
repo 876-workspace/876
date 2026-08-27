@@ -9,6 +9,7 @@ import type {
   OrganizationRoleCreate,
   OrganizationRoleUpdate,
 } from './access.schemas'
+import { listOrgMembersForDirectory } from './member-search.service'
 import * as service from './access.service'
 
 function principal(req: Request) {
@@ -75,11 +76,16 @@ export async function listOrgMembers(
   res: Response
 ): Promise<void> {
   const { org_id } = validParams<{ org_id: string }>(req)
-  const query = validQuery<{ limit?: number }>(req)
+  const query = validQuery<{ limit?: number; q?: string }>(req)
   res
     .status(200)
     .json(
-      await service.listOrgMembers(org_id, principal(req), query.limit ?? 50)
+      await listOrgMembersForDirectory(
+        org_id,
+        principal(req),
+        query.limit ?? 50,
+        query.q
+      )
     )
 }
 export async function retrieveOrgMemberMe(

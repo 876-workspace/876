@@ -2,9 +2,14 @@ export { registerOrganizationRoutes } from './organizations.routes'
 export { registerOrgStructureRoutes } from './structure.routes'
 export { registerOrgAccessRoutes } from './access.routes'
 
-// The subscription contract is owned here and consumed by `billing`, mirroring
-// `domains/billing/router.py`, which imports it from the organizations domain
-// rather than declaring its own.
+export {
+  getOrgAppEntitlement,
+  listOrgAppEntitlements,
+  requireOrgAppAccessPermission,
+  requireOrgAppAccessRead,
+  type OrgAccessPrincipal,
+} from './app-access-policy.service'
+
 export {
   subscriptionItemSchema,
   subscriptionSchema,
@@ -19,3 +24,19 @@ export {
   syncOrganizationFromWorkos,
   findLocalOrgIdByWorkosId,
 } from './organizations.service'
+
+// Invite and organization-role reads consumed by the app-access module.
+export {
+  findInviteAccessSelectionById,
+  findInviteAccessSelectionByToken,
+  findOrgRoleForInvite,
+  updateInviteAccessSelection,
+  type InviteAppAccessSelectionRow,
+} from './invite-app-access-lookup.service'
+
+// Additive invite role-selection request body, used by the invite create/update
+// wiring described in `docs/architecture/012-app-access-wiring-contract.md`.
+export {
+  inviteAppAccessSelectionBodySchema,
+  type InviteAppAccessSelectionBody,
+} from './invite-app-access.schemas'

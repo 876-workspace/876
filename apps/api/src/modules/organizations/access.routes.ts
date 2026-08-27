@@ -116,7 +116,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     handler: controller.deleteOrgRole,
   })
 
-  // Members — /members/me before /:membership_id
+  // Members — /members/me before /:membership_id.
   api.get({
     path: '/:org_id/members/me',
     operationId: 'org-access-retrieve_org_member_me',
@@ -143,6 +143,7 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
       params: orgIdParamsSchema,
       query: z.object({
         limit: z.coerce.number().int().min(1).max(100).default(50),
+        q: z.string().trim().min(1).max(160).optional(),
       }),
     },
     responses: {
@@ -189,7 +190,6 @@ export function registerOrgAccessRoutes(resolveGuards: GuardResolver) {
     handler: controller.deleteOrgMember,
   })
 
-  // App assignments
   api.get({
     path: '/:org_id/app-assignments',
     operationId: 'org-access-list_app_assignments',

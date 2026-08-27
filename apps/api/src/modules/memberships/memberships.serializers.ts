@@ -9,6 +9,7 @@ export type MembershipRow = {
   workosMembershipId: string | null
   role: string
   roleId: string | null
+  position: string | null
   status: string
   createdAt: bigint
   updatedAt: bigint
@@ -23,6 +24,7 @@ export function serializeMembership(row: MembershipRow): Membership {
     workos_membership_id: row.workosMembershipId,
     role: row.role,
     role_id: row.roleId,
+    position: row.position,
     status: row.status,
     created_at: fromDbUnixSeconds(row.createdAt),
     updated_at: fromDbUnixSeconds(row.updatedAt),

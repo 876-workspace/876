@@ -48,6 +48,14 @@ export function createWorkspaceControlPlane(admin: Admin876Client) {
       list: admin.appAssignments.list,
       assign: admin.appAssignments.create,
       unassign: admin.appAssignments.revoke,
+      /** Stable permission catalogs declared by each product app. */
+      permissions: admin.appPermissions,
+      /** Platform role templates for each product app. */
+      roles: admin.appRoles,
+      /** Organization-specific materialized and custom app roles. */
+      orgRoles: admin.orgAppRoles,
+      /** Per-member app role/profile/override administration. */
+      memberships: admin.appMemberships,
       /**
        * Org-to-app entitlement administration (`/organizations/{id}/apps`).
        *

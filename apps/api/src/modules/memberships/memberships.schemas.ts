@@ -25,6 +25,10 @@ export const membershipSchema = z
     role_id: z.string().nullable().meta({
       description: 'ID of the organization role this membership is linked to.',
     }),
+    position: z.string().nullable().meta({
+      description:
+        "The member's free-text job position within the organization.",
+    }),
     status: z.string().meta({ description: 'The membership status.' }),
     created_at: z.number().int().meta({
       description:
@@ -42,18 +46,15 @@ export const createMembershipBodySchema = z.strictObject({
   organization_id: z
     .string()
     .meta({ description: 'Unique identifier for the organization.' }),
-  role: z
-    .string()
-    .min(1)
-    .max(64)
-    .optional()
-    .nullable()
-    .meta({ description: "The member's role. Defaults to 'member'." }),
-  status: z
-    .string()
-    .optional()
-    .nullable()
-    .meta({ description: "Initial membership status. Defaults to 'active'." }),
+  role: z.string().min(1).max(64).optional().nullable().meta({
+    description: "The member's role. Defaults to 'member'.",
+  }),
+  position: z.string().trim().min(1).max(160).optional().nullable().meta({
+    description: "The member's free-text job position.",
+  }),
+  status: z.string().optional().nullable().meta({
+    description: "Initial membership status. Defaults to 'active'.",
+  }),
 })
 
 export const updateMembershipBodySchema = z.strictObject({
@@ -61,13 +62,13 @@ export const updateMembershipBodySchema = z.strictObject({
     description:
       'Unique identifier for the matching WorkOS membership. Set to null to clear it.',
   }),
-  role: z
-    .string()
-    .min(1)
-    .max(64)
-    .optional()
-    .nullable()
-    .meta({ description: "The member's role within the organization." }),
+  role: z.string().min(1).max(64).optional().nullable().meta({
+    description: "The member's role within the organization.",
+  }),
+  position: z.string().trim().min(1).max(160).nullable().optional().meta({
+    description:
+      "The member's free-text job position. Set to null to clear it.",
+  }),
   status: z
     .string()
     .optional()

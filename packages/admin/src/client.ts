@@ -9,6 +9,7 @@
 
 import { buildAdminRuntime } from './runtime'
 import { createAdminAddressesResource } from './resources/addresses'
+import { createAdminAppAccessResource } from './resources/app-access'
 import { createAdminApiKeysResource } from './resources/api-keys'
 import { createAdminAppsResource } from './resources/apps'
 import { createAdminAuditEventsResource } from './resources/audit-events'
@@ -35,6 +36,7 @@ export type Admin876ClientOptions = AdminPlatformClientOptions
 
 export function create876AdminClient(options: Admin876ClientOptions = {}) {
   const runtime = buildAdminRuntime(options)
+  const appAccess = createAdminAppAccessResource(runtime)
   const { identifications, ...users } = createAdminUsersResource(runtime)
   const {
     features: appFeatures,
@@ -77,6 +79,10 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     apps,
     appFeatures,
     appSubscriptions,
+    appPermissions: appAccess.appPermissions,
+    appRoles: appAccess.appRoles,
+    orgAppRoles: appAccess.orgAppRoles,
+    appMemberships: appAccess.appMemberships,
     features,
     organizationFeatures,
     apiKeys: createAdminApiKeysResource(runtime),

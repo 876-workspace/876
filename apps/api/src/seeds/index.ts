@@ -11,6 +11,7 @@
 
 import { getLogger } from '@/platform/logger'
 
+import { seedAppAccess } from './app-access'
 import { seedBootstrap } from './bootstrap'
 import { seedDefaultAppPrices } from './default-prices'
 import { seedGeoCatalog } from './geo'
@@ -26,6 +27,7 @@ export type RunSeedsOptions = {
 
 export type RunSeedsSummary = {
   bootstrap: Awaited<ReturnType<typeof seedBootstrap>> | null
+  appAccess: Awaited<ReturnType<typeof seedAppAccess>> | null
   geo: Awaited<ReturnType<typeof seedGeoCatalog>> | null
   provisioning: Awaited<
     ReturnType<typeof seedFirstPartyProvisioningManifests>
@@ -35,16 +37,6 @@ export type RunSeedsSummary = {
   defaultPrices: Awaited<ReturnType<typeof seedDefaultAppPrices>> | null
 }
 
-/**
- * Run seeds in the order `main.py` runs them:
- *
- * 1. bootstrap — platform_apps (Efesto org + first-party apps)
- * 2. geo — geo_regions (countries + regions)
- * 3. provisioning — first_party_provisioning (manifests)
- * 4. features — feature_catalog (PostHog + local catalog)
- * 5. plans — platform_plan_modules + billing_plan_assignments
- * 6. defaultPrices — free default prices for subscribable apps
- */
 export async function runSeeds(
   options: RunSeedsOptions = {}
 ): Promise<RunSeedsSummary> {
@@ -53,6 +45,7 @@ export async function runSeeds(
 
   const summary: RunSeedsSummary = {
     bootstrap: null,
+    appAccess: null,
     geo: null,
     provisioning: null,
     features: null,
@@ -64,6 +57,15 @@ export async function runSeeds(
     log.info('seeds.bootstrap.started')
     summary.bootstrap = await seedBootstrap()
     log.info({ summary: summary.bootstrap }, 'seeds.bootstrap.completed')
+  }
+
+  // App access follows bootstrap because the catalogs resolve stable first-party
+  // app slugs to their opaque app ids. It is safe to rerun and never writes
+  // organization-scoped roles.
+  if (shouldRun('appAccess')) {
+    log.info('seeds.app_access.started')
+    summary.appAccess = await seedAppAccess()
+    log.info({ summary: summary.appAccess }, 'seeds.app_access.completed')
   }
 
   if (shouldRun('geo')) {

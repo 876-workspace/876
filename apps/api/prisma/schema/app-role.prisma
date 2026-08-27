@@ -1,0 +1,36 @@
+// AppRole — table `app_roles`.
+// Module: app-access. Platform role templates and organization-scoped app roles.
+
+model AppRole {
+  id             String          @id @db.VarChar
+  appId          String          @map("app_id") @db.VarChar
+  organizationId String?         @map("organization_id") @db.VarChar
+  key            String          @db.VarChar
+  name           String          @db.VarChar
+  description    String?
+  permissions    String[]        @default([]) @db.VarChar
+  isSystem       Boolean         @default(false) @map("is_system")
+  isDefault      Boolean         @default(false) @map("is_default")
+  templateKey    String?         @map("template_key") @db.VarChar
+  position       Int             @default(0)
+  deletedAt      BigInt?         @map("deleted_at")
+  deletedBy      String?         @map("deleted_by") @db.VarChar
+  deletionReason String?         @map("deletion_reason")
+  createdAt      BigInt          @map("created_at")
+  updatedAt      BigInt          @map("updated_at")
+  app            App             @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  organization   Organization?   @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  appAssignments AppAssignment[]
+  inviteTokens   InviteToken[]
+
+  // The composite unique below enforces nothing for platform role TEMPLATES:
+  // Postgres treats NULLs as distinct in a unique index, and a template is
+  // exactly the row whose organization is null. The seeds are read-then-write,
+  // so without the partial index two concurrent runs insert duplicate templates
+  // and materialize both into every organization.
+  @@unique([appId, organizationId, key])
+  @@unique([appId, key], where: { organizationId: null }, map: "uq_app_roles_template_app_id_key")
+  @@index([appId], map: "ix_app_roles_app_id")
+  @@index([organizationId], map: "ix_app_roles_organization_id")
+  @@map("app_roles")
+}

@@ -8,6 +8,7 @@ model Membership {
   workosMembershipId                  String?           @unique @map("workos_membership_id") @db.VarChar
   roleId                              String?           @map("role_id") @db.VarChar
   role                                String            @default("member") @db.VarChar
+  position                            String?           @db.VarChar
   status                              String            @default("active") @db.VarChar
   deletedAt                           BigInt?           @map("deleted_at")
   deletedBy                           String?           @map("deleted_by") @db.VarChar

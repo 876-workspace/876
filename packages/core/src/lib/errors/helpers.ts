@@ -3,6 +3,7 @@ import type { AppError, Error, ErrorDef } from '../../types/errors'
 import { ACCOUNT_ERRORS } from './accounts'
 import { ADDRESS_ERRORS } from './addresses'
 import { API_KEY_ERRORS } from './api-keys'
+import { APP_ACCESS_ERRORS } from './app-access'
 import { APP_ASSIGNMENT_ERRORS } from './app-assignments'
 import { APP_ERRORS } from './apps'
 import { AUTH_ERRORS } from './auth'
@@ -29,6 +30,7 @@ export const ERRORS = {
   ...ACCOUNT_ERRORS,
   ...ADDRESS_ERRORS,
   ...API_KEY_ERRORS,
+  ...APP_ACCESS_ERRORS,
   ...APP_ASSIGNMENT_ERRORS,
   ...APP_ERRORS,
   ...AUTH_ERRORS,
@@ -58,13 +60,7 @@ type ErrorOptions = {
   param?: string
 }
 
-/**
- * Creates an application error object for the given error code.
- *
- * @param code - The error code to look up in the error registry.
- * @param options - Optional configuration including a param field.
- * @returns An app error object with code, message, and optional fields.
- */
+/** Creates an application error object for the given error code. */
 export function getError<Code extends ErrorCode>(
   code: Code,
   options?: ErrorOptions
@@ -89,23 +85,12 @@ export function getError(
   return error
 }
 
-/**
- * Checks whether the given string is a registered error code.
- *
- * @param code - The string to check.
- * @returns True when the code exists in the error registry.
- */
+/** Checks whether the given string is a registered error code. */
 export function isErrorCode(code: string): code is ErrorCode {
   return Object.hasOwn(ERRORS, code)
 }
 
-/**
- * Converts a full server-side error into a client-safe app error by
- * stripping server-only fields such as httpStatus.
- *
- * @param error - The full error to convert.
- * @returns A client-safe error with only code and message.
- */
+/** Converts a server-side error into a client-safe app error. */
 export function toAppError<Code extends string>(
   error: Error<Code>
 ): AppError<Code> {
@@ -115,9 +100,7 @@ export function toAppError<Code extends string>(
   }
 }
 
-/**
- * Type guard that checks whether a service result is an app error.
- */
+/** Type guard that checks whether a service result is an app error. */
 export function isError<Code extends string>(
   result: unknown
 ): result is Error<Code> {
@@ -134,6 +117,13 @@ export function isError<Code extends string>(
 }
 
 function getFallbackErrorCode(code: string): ErrorCode {
+  if (
+    code.startsWith('app-access/') ||
+    code.startsWith('app-membership/') ||
+    code.startsWith('app-permission/') ||
+    code.startsWith('app-role/')
+  )
+    return 'app-access/internal-error'
   if (code.startsWith('account/')) return 'account/internal-error'
   if (code.startsWith('user/')) return 'user/internal-error'
   if (code.startsWith('api-key/')) return 'api-key/internal-error'

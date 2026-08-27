@@ -70,6 +70,7 @@ export const organizationMemberSchema = z
     user_id: z.string(),
     role: z.string(),
     role_id: z.string().nullable(),
+    position: z.string().nullable(),
     status: z.string(),
     first_name: z.string().nullable(),
     last_name: z.string().nullable(),
@@ -101,6 +102,24 @@ export type OrganizationMemberRoleUpdate = z.infer<
   typeof organizationMemberRoleUpdateSchema
 >
 
+const legacyAppRoleSchema = z.object({
+  object: z.literal('app_role'),
+  id: z.string(),
+  app_id: z.string(),
+  organization_id: z.string().nullable(),
+  key: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  permissions: z.array(z.string()),
+  is_system: z.boolean(),
+  is_default: z.boolean(),
+  template_key: z.string().nullable(),
+  position: z.number().int(),
+  members_count: z.number().int().nullable(),
+  created_at: z.number().int(),
+  updated_at: z.number().int(),
+})
+
 export const appAssignmentSchema = z
   .object({
     object: z.literal('app_assignment'),
@@ -112,6 +131,8 @@ export const appAssignmentSchema = z
     app_name: z.string().nullable(),
     status: z.string(),
     assigned_by: z.string().nullable(),
+    app_role: legacyAppRoleSchema.nullable().optional(),
+    title: z.string().nullable().optional(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })

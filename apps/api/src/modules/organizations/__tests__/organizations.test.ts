@@ -513,10 +513,14 @@ describe('GET /organizations/:id/members/me', () => {
 })
 
 describe('DELETE /organizations/:orgId/members/:membershipId', () => {
+  // `findMembershipById` filters soft-deleted rows, so the target lookup is a
+  // `findFirst` in the same queue as the permission check — not a `findUnique`.
   it('refuses self-removal with the exact code', async () => {
-    membership.findUnique.mockResolvedValue(
-      membershipRow({ id: 'mem_01', userId: 'user_2kL9' }) as never
-    )
+    membership.findFirst
+      .mockResolvedValueOnce(membershipRow() as never) // permission check
+      .mockResolvedValueOnce(
+        membershipRow({ id: 'mem_01', userId: 'user_2kL9' }) as never
+      ) // target membership
 
     const response = await request(createApp())
       .delete('/organizations/org_4qR8/members/mem_01')
@@ -528,17 +532,17 @@ describe('DELETE /organizations/:orgId/members/:membershipId', () => {
   })
 
   it('refuses to remove the last owner', async () => {
-    membership.findUnique.mockResolvedValue(
-      membershipRow({
-        id: 'mem_02',
-        userId: 'user_other',
-        role: 'owner',
-      }) as never
-    )
     // The caller is an owner; no other active owner exists.
     membership.findFirst
       .mockResolvedValueOnce(membershipRow() as never) // permission check
-      .mockResolvedValueOnce(membershipRow() as never) // caller is owner
+      .mockResolvedValueOnce(
+        membershipRow({
+          id: 'mem_02',
+          userId: 'user_other',
+          role: 'owner',
+        }) as never
+      ) // target membership
+      .mockResolvedValueOnce(membershipRow({ role: 'owner' }) as never) // caller is owner
       .mockResolvedValueOnce(null) // no other active owner
 
     const response = await request(createApp())
@@ -551,9 +555,11 @@ describe('DELETE /organizations/:orgId/members/:membershipId', () => {
   })
 
   it('404s for a membership belonging to another organization', async () => {
-    membership.findUnique.mockResolvedValue(
-      membershipRow({ id: 'mem_03', organizationId: 'org_other' }) as never
-    )
+    membership.findFirst
+      .mockResolvedValueOnce(membershipRow() as never) // permission check
+      .mockResolvedValueOnce(
+        membershipRow({ id: 'mem_03', organizationId: 'org_other' }) as never
+      ) // target membership in another organization
 
     const response = await request(createApp())
       .delete('/organizations/org_4qR8/members/mem_03')

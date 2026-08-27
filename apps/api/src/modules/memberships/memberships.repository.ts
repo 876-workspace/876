@@ -11,6 +11,7 @@ const SELECT = {
   workosMembershipId: true,
   role: true,
   roleId: true,
+  position: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -33,6 +34,16 @@ export function findMembershipByOrgAndUser(
     where: { organizationId, userId, deletedAt: null },
     select: SELECT,
   }) as Promise<MembershipRow | null>
+}
+
+export function findMembershipsByOrgAndUsers(
+  organizationId: string,
+  userIds: readonly string[]
+): Promise<MembershipRow[]> {
+  return prisma.membership.findMany({
+    where: { organizationId, userId: { in: [...userIds] }, deletedAt: null },
+    select: SELECT,
+  }) as Promise<MembershipRow[]>
 }
 
 export function findMembershipByWorkosId(
@@ -71,6 +82,7 @@ export function createMembership(data: {
   userId: string
   workosMembershipId: string | null
   role: string
+  position?: string | null
   status: string
   createdAt: bigint
   updatedAt: bigint
@@ -82,6 +94,7 @@ export function createMembership(data: {
       userId: data.userId,
       workosMembershipId: data.workosMembershipId,
       role: data.role,
+      position: data.position ?? null,
       status: data.status,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -95,6 +108,7 @@ export async function updateMembership(
   data: Partial<{
     workosMembershipId: string | null
     role: string
+    position: string | null
     status: string
     updatedAt: bigint
   }>
@@ -103,6 +117,7 @@ export async function updateMembership(
   if ('workosMembershipId' in data)
     mapped.workosMembershipId = data.workosMembershipId
   if ('role' in data) mapped.role = data.role
+  if ('position' in data) mapped.position = data.position
   if ('status' in data) mapped.status = data.status
   if ('updatedAt' in data) mapped.updatedAt = data.updatedAt
 
