@@ -1,3 +1,9 @@
+import type { AppPermissionCatalog } from '@876/core/access'
+import {
+  couriersPermissionCatalog,
+  crmPermissionCatalog,
+} from '@876/core/access/catalogs'
+
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
@@ -53,6 +59,22 @@ function catalog(
   )
 }
 
+/** Adapts a canonical `@876/core/access` catalog to the seed row shape. */
+function fromCatalog(source: AppPermissionCatalog): AppPermissionSeed[] {
+  let position = 0
+  return source.modules.flatMap((module) =>
+    module.permissions.map((permission) => ({
+      key: permission.key,
+      moduleKey: permission.moduleKey,
+      action: permission.action,
+      label: permission.label,
+      description: permission.description ?? null,
+      isDangerous: permission.isDangerous ?? false,
+      position: position++,
+    }))
+  )
+}
+
 function keysFor(
   permissions: readonly AppPermissionSeed[],
   predicate: (permission: AppPermissionSeed) => boolean = () => true
@@ -60,32 +82,12 @@ function keysFor(
   return permissions.filter(predicate).map((permission) => permission.key)
 }
 
-const couriersPermissions = catalog([
-  { key: 'items', actions: ['view', 'create', 'edit', 'delete'] },
-  {
-    key: 'customers',
-    actions: ['view', 'create', 'edit', 'delete', 'import', 'export'],
-  },
-  { key: 'packages', actions: ['view', 'create', 'edit', 'delete', 'export'] },
-  { key: 'pre_alerts', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'warehouse', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'manifests', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'deliveries', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'invoices', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'payments', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'reports', actions: ['view'] },
-  { key: 'settings', actions: ['view', 'edit'] },
-])
-
-const crmPermissions = catalog([
-  { key: 'requests', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'customers', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'tasks', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'teams', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'categories', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'reports', actions: ['view'] },
-  { key: 'settings', actions: ['view', 'edit'] },
-])
+// Couriers and CRM are seeded from the canonical catalogs in
+// `@876/core/access/catalogs`, which the product apps resolve their guards
+// against. Re-declaring either vocabulary here would put the same permission
+// keys in two places with nothing keeping them equal.
+const couriersPermissions = fromCatalog(couriersPermissionCatalog)
+const crmPermissions = fromCatalog(crmPermissionCatalog)
 
 const billingPermissions = catalog([
   { key: 'dashboard', actions: ['view'] },
