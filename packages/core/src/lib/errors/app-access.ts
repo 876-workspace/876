@@ -36,6 +36,10 @@ export const APP_ACCESS_ERRORS = {
     message: 'App permission not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'app-role/default-required': {
+    message: 'This app must keep exactly one default role.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'app-role/duplicate-key': {
     message: 'An app role with this key already exists.',
     httpStatus: HttpStatus.CONFLICT,
