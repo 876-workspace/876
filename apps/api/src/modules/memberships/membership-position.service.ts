@@ -13,6 +13,14 @@ import {
   updateMembership as updateMembershipLifecycle,
 } from './memberships.service'
 
+function membershipNotFound(): AppHttpError {
+  return new AppHttpError({
+    code: 'membership/not-found',
+    message: 'No membership exists with the provided identifier.',
+    httpStatus: 404,
+  })
+}
+
 /**
  * Extends the canonical membership create lifecycle with the core-owned
  * position field without changing the provider/org-role synchronization path.
@@ -29,12 +37,7 @@ export async function createMembershipProfile(
     position,
     updatedAt: BigInt(nowUnixSeconds()),
   })
-  if (!updated)
-    throw new AppHttpError({
-      code: 'membership/not-found',
-      message: 'No membership exists with the provided identifier.',
-      httpStatus: 404,
-    })
+  if (!updated) throw membershipNotFound()
 
   return serializeMembership(updated)
 }
@@ -49,28 +52,24 @@ export async function updateMembershipProfile(
     (value) => value !== undefined
   )
 
-  if (hasLifecycleUpdate) await updateMembershipLifecycle(membershipId, lifecycle)
+  const lifecycleResult = hasLifecycleUpdate
+    ? await updateMembershipLifecycle(membershipId, lifecycle)
+    : null
 
   if (position !== undefined) {
     const updated = await repository.updateMembership(membershipId, {
       position,
       updatedAt: BigInt(nowUnixSeconds()),
     })
-    if (!updated)
-      throw new AppHttpError({
-        code: 'membership/not-found',
-        message: 'No membership exists with the provided identifier.',
-        httpStatus: 404,
-      })
+    if (!updated) throw membershipNotFound()
     return serializeMembership(updated)
   }
 
+  // The lifecycle update already returns the post-update membership; re-reading
+  // it here would add a second round trip to every role/status change.
+  if (lifecycleResult) return lifecycleResult
+
   const row = await repository.findMembershipById(membershipId)
-  if (!row)
-    throw new AppHttpError({
-      code: 'membership/not-found',
-      message: 'No membership exists with the provided identifier.',
-      httpStatus: 404,
-    })
+  if (!row) throw membershipNotFound()
   return serializeMembership(row)
 }
