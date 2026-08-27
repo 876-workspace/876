@@ -4,8 +4,9 @@ const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
   customerCreate: vi.fn(),
   customerUpdate: vi.fn(),
-  contactDeleteMany: vi.fn(),
+  contactFindFirst: vi.fn(),
   contactCreate: vi.fn(),
+  contactUpdate: vi.fn(),
 }))
 
 vi.mock('@/db/client', () => ({
@@ -22,8 +23,9 @@ type TransactionMock = {
     update: typeof mocks.customerUpdate
   }
   contact: {
-    deleteMany: typeof mocks.contactDeleteMany
+    findFirst: typeof mocks.contactFindFirst
     create: typeof mocks.contactCreate
+    update: typeof mocks.contactUpdate
   }
 }
 
@@ -32,8 +34,9 @@ describe('ensureCoreCustomerRows', () => {
     vi.clearAllMocks()
     mocks.customerCreate.mockResolvedValue({ id: 'cust_123' })
     mocks.customerUpdate.mockResolvedValue({ id: 'cust_123' })
-    mocks.contactDeleteMany.mockResolvedValue({ count: 0 })
+    mocks.contactFindFirst.mockResolvedValue(null)
     mocks.contactCreate.mockResolvedValue({ id: 'contact_123' })
+    mocks.contactUpdate.mockResolvedValue({ id: 'contact_123' })
     mocks.transaction.mockImplementation(
       async (run: (tx: TransactionMock) => unknown) =>
         run({
@@ -42,8 +45,9 @@ describe('ensureCoreCustomerRows', () => {
             update: mocks.customerUpdate,
           },
           contact: {
-            deleteMany: mocks.contactDeleteMany,
+            findFirst: mocks.contactFindFirst,
             create: mocks.contactCreate,
+            update: mocks.contactUpdate,
           },
         })
     )
@@ -106,5 +110,122 @@ describe('ensureCoreCustomerRows', () => {
     expect(mocks.contactCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({ mobilePhone: '+18765550999' }),
     })
+  })
+
+  it('refreshes the existing contact for the same 876 user instead of recreating it', async () => {
+    mocks.contactFindFirst.mockResolvedValue({
+      id: 'contact_existing',
+      userId: 'user_owner',
+      isPrimary: true,
+    })
+
+    await ensureCoreCustomerRows(
+      { id: 'ten_platform', defaultCurrency: 'JMD', defaultLanguage: 'en' },
+      'cust_123',
+      {
+        customerType: 'CORE_ORGANIZATION',
+        organizationId: 'org_customer',
+        name: 'Test Org',
+        primaryContact: { userId: 'user_owner', email: 'ada@example.com' },
+      },
+      'cust_123',
+      'contact_new',
+      1_787_050_000
+    )
+
+    // Recreating the row on every resync churns the contact id that quotes,
+    // invoices, and CRM records point at.
+    expect(mocks.contactCreate).not.toHaveBeenCalled()
+    expect(mocks.contactUpdate).toHaveBeenCalledTimes(1)
+    expect(mocks.contactUpdate).toHaveBeenCalledWith({
+      where: { id: 'contact_existing' },
+      data: expect.objectContaining({
+        userId: 'user_owner',
+        email: 'ada@example.com',
+        isPrimary: true,
+      }),
+    })
+  })
+
+  it('demotes a hand-added primary contact rather than deleting it', async () => {
+    // The row that is primary belongs to no 876 user — someone typed it in.
+    mocks.contactFindFirst.mockImplementation(
+      async ({ where }: { where: Record<string, unknown> }) =>
+        where.isPrimary
+          ? { id: 'contact_typed', userId: null, isPrimary: true }
+          : null
+    )
+
+    await ensureCoreCustomerRows(
+      { id: 'ten_platform', defaultCurrency: 'JMD', defaultLanguage: 'en' },
+      'cust_123',
+      {
+        customerType: 'CORE_ORGANIZATION',
+        organizationId: 'org_customer',
+        name: 'Test Org',
+        primaryContact: { userId: 'user_owner', email: 'ada@example.com' },
+      },
+      'cust_123',
+      'contact_new',
+      1_787_050_000
+    )
+
+    // Locally-entered people are the workspace's own data — Core promoting its
+    // owner must not delete them.
+    expect(mocks.contactUpdate).toHaveBeenCalledWith({
+      where: { id: 'contact_typed' },
+      data: { isPrimary: false, updatedAt: 1_787_050_000 },
+    })
+    expect(mocks.contactCreate).toHaveBeenCalledTimes(1)
+    expect(mocks.contactCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({ id: 'contact_new', isPrimary: true }),
+    })
+  })
+
+  it('demotes the primary contact when Core reports the party has none', async () => {
+    mocks.contactFindFirst.mockResolvedValue({
+      id: 'contact_typed',
+      userId: null,
+      isPrimary: true,
+    })
+
+    await ensureCoreCustomerRows(
+      { id: 'ten_platform', defaultCurrency: 'JMD', defaultLanguage: 'en' },
+      'cust_123',
+      {
+        customerType: 'CORE_ORGANIZATION',
+        organizationId: 'org_customer',
+        name: 'Test Org',
+        primaryContact: null,
+      },
+      'cust_123',
+      'contact_new',
+      1_787_050_000
+    )
+
+    expect(mocks.contactCreate).not.toHaveBeenCalled()
+    expect(mocks.contactUpdate).toHaveBeenCalledWith({
+      where: { id: 'contact_typed' },
+      data: { isPrimary: false, updatedAt: 1_787_050_000 },
+    })
+  })
+
+  it('leaves contacts untouched when the payload omits primaryContact', async () => {
+    await ensureCoreCustomerRows(
+      { id: 'ten_platform', defaultCurrency: 'JMD', defaultLanguage: 'en' },
+      'cust_123',
+      {
+        customerType: 'CORE_ORGANIZATION',
+        organizationId: 'org_customer',
+        name: 'Test Org',
+      },
+      'cust_123',
+      'contact_new',
+      1_787_050_000
+    )
+
+    expect(mocks.contactFindFirst).not.toHaveBeenCalled()
+    expect(mocks.contactCreate).not.toHaveBeenCalled()
+    expect(mocks.contactUpdate).not.toHaveBeenCalled()
   })
 })

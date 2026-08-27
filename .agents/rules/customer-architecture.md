@@ -5,8 +5,8 @@ about a **customer**, a **consumer account**, or a **per-app customer profile**
 in any 876 app. It fixes the platform terminology and the three-layer placement
 model so every current and future app (billing, couriers, events/ticketing,
 commerce, …) models customers the same way. Companion to
-`.agents/rules/platform-services.md` (three-bucket placement) and
-`.agents/rules/sdk-conventions.md` (client surface).
+`.claude/rules/platform-services.md` (three-bucket placement) and
+`.claude/rules/sdk-conventions.md` (client surface).
 
 ## Fixed terminology
 
@@ -51,16 +51,44 @@ defect in this area. The rule:
   3. the earliest membership.
      If the org has no members, the customer is still written with its company
      name and simply has no contact.
-- The customer's own `firstName`/`lastName` **mirror the primary contact**, so a
-  single "customer name" column renders a person for both party kinds.
+- **The party record carries the company; the contact carries the person.** A
+  `CORE_ORGANIZATION` customer's `firstName`, `lastName`, `email`, and `phone`
+  are the **organization's own** — `primary_email` / `primary_phone`, and null
+  when the org has none. They must **never** fall back to the primary contact.
+
+  This was inverted until 2026-08-27: the snapshot mirrored the contact onto the
+  party and fell back to the contact's email, so every business customer in the
+  registry rendered its owner's personal address as the company's own, and 876
+  CRM showed an organization with a person's email attached. An org with no
+  email of its own has no email — its owner's is not a substitute.
+
 - Members are **never bulk-imported**. Only the primary contact is seeded.
 - A hand-added primary contact is **demoted, never deleted**, when a Core sync
-  promotes the owner — locally-entered people are the workspace's data.
-- An **individual is their own contact**: `primaryContact` is null, and no
-  contact row is created.
+  promotes the owner — locally-entered people are the workspace's data. A Core
+  contact is matched by `user_id` and refreshed in place, so a resync does not
+  churn the contact id that quotes, invoices, and CRM records point at.
+- An **individual is their own contact**: `primaryContact` is null, no contact
+  row is created, and UI must not synthesize a second party for them.
 
 The serialized customer exposes `primaryContact` (a `contact` object or null) on
-both list and retrieve, so no app has to resolve the org owner itself.
+both list and retrieve, so no app has to resolve the org owner itself. The
+contact carries `avatar` — a snapshot of the linked 876 account's picture,
+delivered by the same `customer.ensure` event as the name and email. It travels
+with the snapshot because a consuming app **cannot** resolve it live: listing
+another organization's members requires `members:read` on that org, which no
+product app holds for its own customers.
+
+### Rendering rule for consuming apps
+
+Any UI that displays a customer resolves the party and the contact through one
+helper and renders them as **two labelled things**, never one merged block.
+Reference implementation: `apps/crm/src/features/customers/customer-identity.ts`.
+
+- Never print a business customer's `primaryContact.email` under the company's
+  name without a label saying whose address it is.
+- Never fall back to the contact's email to fill an empty organization email —
+  render the empty state instead.
+- Never render a second "contact" block for an individual.
 
 ## The three layers
 
@@ -79,7 +107,7 @@ Layer 3  App profiles    each app's own datastore, opaque-ID references
   data**: they belong to the person, not to any org's relationship with them.
   They are stored once, on the account, in `user_identifications` — typed rows
   (`type`, normalized `value`, `country_code`, verification state), soft-deleted
-  per `.agents/rules/deletions.md`, unique per `(user_id, type)`.
+  per `.claude/rules/deletions.md`, unique per `(user_id, type)`.
 - **Disclosure is entitlement-gated.** List/read endpoints return **masked**
   values only. The full value is returned solely by the dedicated disclosure
   endpoint, which requires: (a) an active org→app subscription

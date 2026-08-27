@@ -11,6 +11,7 @@ export function serializeContact(row: Contact) {
     email: row.email,
     workPhone: row.workPhone,
     mobilePhone: row.mobilePhone,
+    avatar: row.avatar,
     isPrimary: row.isPrimary,
     coreSyncedAt: row.coreSyncedAt,
   }

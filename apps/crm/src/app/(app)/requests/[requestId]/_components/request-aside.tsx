@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { Badge } from '@876/ui/badge'
 import { CategoryIcon } from '@876/ui/category-icons'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Separator } from '@876/ui/separator'
 import { Skeleton } from '@876/ui/skeleton'
 import {
   ArrowRight,
@@ -16,7 +15,8 @@ import { categoryColorClass } from '@/features/categories/category-color'
 
 import { CopyButton } from '../../_components/copy-button'
 import { RequestSourceIcon } from '../../_components/request-source-icon'
-import { formatCustomerType, formatSource } from '../../_lib/request-format'
+import { formatSource } from '../../_lib/request-format'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { loadCategoryIndex, loadCustomer, loadRequest } from '../_data'
 
 /**
@@ -34,74 +34,156 @@ export async function RequestAside({ requestId }: { requestId: string }) {
     ? categories.get(request.categoryId)
     : undefined
 
-  const customerName =
-    customer?.name ?? profile?.billingCustomerId ?? request.customerId
-  // The registry stores a business's legal name beside its trading name, and
-  // for most orgs the two are identical — printing both reads as a rendering
-  // bug, so the second line only earns its place when it says something new.
-  const customerSubtitle =
-    customer?.companyName && customer.companyName !== customerName
-      ? customer.companyName
-      : formatCustomerType(customer?.customerType)
+  const identity = resolveCustomerIdentity(
+    customer,
+    profile?.billingCustomerId ?? request.customerId
+  )
+  // The legal name is the only subtitle worth a line: for most orgs it equals
+  // the trading name, and printing both reads as a rendering bug, so
+  // `resolveCustomerIdentity` returns it only when it actually differs.
+  const customerSubtitle = identity.legalName ?? identity.typeLabel
 
   return (
     <>
-      <section className="876-card p-4">
-        <div className="flex items-center gap-3">
+      {/*
+        Two parties, one card.
+
+        876 has organizations *and* customers, and for a business the customer
+        is the organization while the person you actually reply to is its
+        primary contact. The card used to merge them: the company's name over
+        the contact's email address, which read as the company's own. So the
+        organization leads the card, a labelled divider breaks the two apart,
+        and the contact gets their own row — with their own avatar, because a
+        face is how a person is recognized in a list of facts.
+
+        An individual is their own contact and gets one block, not two.
+      */}
+      <section className="876-card overflow-hidden">
+        <div className="flex items-start gap-3 p-4">
           <CustomerAvatar
-            name={customerName}
+            name={identity.name}
             size="lg"
-            className="size-12 text-base sm:size-12 sm:text-base"
+            className="size-11 rounded-lg text-sm ring-0 after:rounded-lg sm:size-11 sm:text-sm [&_[data-slot=avatar-fallback]]:rounded-lg"
           />
           <div className="min-w-0 flex-1">
-            <Link
-              href={`/customers/${request.customerId}`}
-              className="block truncate font-medium hover:underline"
-            >
-              {customerName}
-            </Link>
-            <p className="text-muted-foreground truncate text-sm">
+            <div className="flex items-start justify-between gap-2">
+              <Link
+                href={`/customers/${request.customerId}`}
+                className="min-w-0 truncate font-medium hover:underline"
+              >
+                {identity.name}
+              </Link>
+              {customer?.customerKind ? (
+                <Badge
+                  variant="secondary"
+                  className="shrink-0 text-[0.65rem] capitalize"
+                >
+                  {customer.customerKind.toLowerCase()}
+                </Badge>
+              ) : null}
+            </div>
+            <p className="text-muted-foreground mt-0.5 truncate text-xs">
               {customerSubtitle}
             </p>
+            <div className="mt-2.5 flex flex-col gap-1.5">
+              <ContactRow
+                icon={
+                  <EnvelopeIcon
+                    className="size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                }
+                href={identity.email ? `mailto:${identity.email}` : undefined}
+                value={identity.email}
+                empty={
+                  identity.isBusiness
+                    ? 'No organization email'
+                    : 'No email on file'
+                }
+              />
+              <ContactRow
+                icon={
+                  <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                }
+                href={identity.phone ? `tel:${identity.phone}` : undefined}
+                value={identity.phone}
+                empty={
+                  identity.isBusiness
+                    ? 'No organization phone'
+                    : 'No phone on file'
+                }
+              />
+            </div>
           </div>
-          {customer?.customerKind ? (
-            <Badge variant="secondary" className="shrink-0 capitalize">
-              {customer.customerKind.toLowerCase()}
-            </Badge>
-          ) : null}
         </div>
 
-        <Separator className="my-4" />
+        {identity.isBusiness ? (
+          <div className="bg-muted/40 border-t px-4 py-3">
+            <p className="text-muted-foreground mb-2 text-[0.65rem] font-medium tracking-wider uppercase">
+              Primary contact
+            </p>
+            {identity.contact ? (
+              <div className="flex items-start gap-2.5">
+                <CustomerAvatar
+                  name={identity.contact.name}
+                  src={identity.contact.avatar}
+                  className="size-8 shrink-0 text-xs"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {identity.contact.name}
+                  </p>
+                  <div className="mt-1.5 flex flex-col gap-1.5">
+                    <ContactRow
+                      icon={
+                        <EnvelopeIcon
+                          className="size-3.5 shrink-0"
+                          aria-hidden="true"
+                        />
+                      }
+                      href={
+                        identity.contact.email
+                          ? `mailto:${identity.contact.email}`
+                          : undefined
+                      }
+                      value={identity.contact.email}
+                      empty="No contact email"
+                    />
+                    <ContactRow
+                      icon={
+                        <Phone
+                          className="size-3.5 shrink-0"
+                          aria-hidden="true"
+                        />
+                      }
+                      href={
+                        identity.contact.phone
+                          ? `tel:${identity.contact.phone}`
+                          : undefined
+                      }
+                      value={identity.contact.phone}
+                      empty="No contact phone"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                No contact on file
+              </p>
+            )}
+          </div>
+        ) : null}
 
-        {/*
-          The contact rows are always on screen. They used to sit behind an
-          accordion, which charged a click for the page's most-used control and
-          left the column looking empty.
-        */}
-        <div className="flex flex-col gap-2.5">
-          <ContactRow
-            icon={
-              <EnvelopeIcon className="size-4 shrink-0" aria-hidden="true" />
-            }
-            href={customer?.email ? `mailto:${customer.email}` : undefined}
-            value={customer?.email}
-            empty="No email on file"
-          />
-          <ContactRow
-            icon={<Phone className="size-4 shrink-0" aria-hidden="true" />}
-            href={customer?.phone ? `tel:${customer.phone}` : undefined}
-            value={customer?.phone}
-            empty="No phone on file"
-          />
+        <div className="border-t px-4 py-2.5">
+          <Link
+            href={`/customers/${request.customerId}`}
+            className="text-primary inline-flex items-center gap-1 text-sm font-medium no-underline! hover:underline!"
+          >
+            <span>View customer profile</span>
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </Link>
         </div>
-
-        <Link
-          href={`/customers/${request.customerId}`}
-          className="text-primary mt-4 inline-flex items-center gap-1 text-sm font-medium no-underline! hover:underline!"
-        >
-          <span>View customer profile</span>
-          <ArrowRight className="size-3.5" aria-hidden="true" />
-        </Link>
       </section>
 
       <section className="876-card p-4">
@@ -160,17 +242,29 @@ export async function RequestAside({ requestId }: { requestId: string }) {
 export function RequestAsideSkeleton() {
   return (
     <>
-      <section className="876-card p-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="size-12 rounded-full" />
+      <section className="876-card overflow-hidden">
+        <div className="flex items-start gap-3 p-4">
+          <Skeleton className="size-11 rounded-lg" />
           <div className="min-w-0 flex-1">
             <Skeleton className="h-5 w-32" />
-            <Skeleton className="mt-1.5 h-4 w-24" />
+            <Skeleton className="mt-1.5 h-3 w-24" />
+            <Skeleton className="mt-3 h-3.5 w-40" />
+            <Skeleton className="mt-1.5 h-3.5 w-28" />
           </div>
         </div>
-        <Separator className="my-4" />
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="mt-2.5 h-4 w-32" />
+        <div className="bg-muted/40 border-t px-4 py-3">
+          <Skeleton className="h-2.5 w-24" />
+          <div className="mt-2 flex items-start gap-2.5">
+            <Skeleton className="size-8 rounded-full" />
+            <div className="min-w-0 flex-1">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="mt-1.5 h-3.5 w-36" />
+            </div>
+          </div>
+        </div>
+        <div className="border-t px-4 py-2.5">
+          <Skeleton className="h-4 w-36" />
+        </div>
       </section>
       <section className="876-card p-4">
         <Skeleton className="h-5 w-20" />

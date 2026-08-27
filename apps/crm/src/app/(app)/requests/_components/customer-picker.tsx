@@ -14,6 +14,7 @@ import { cn } from '@876/ui/lib/utils'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import type { CrmCustomer } from '@/types/crm'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 
 export type PickerCustomer = {
   id: string
@@ -22,6 +23,9 @@ export type PickerCustomer = {
   phone: string | null
   companyName: string | null
   kind: 'INDIVIDUAL' | 'BUSINESS' | null
+  /** The person attached to a business customer; null for an individual. */
+  contactName: string | null
+  contactEmail: string | null
 }
 
 /** Flattens the profile/registry pair into the one shape the picker renders. */
@@ -29,22 +33,30 @@ export function toPickerCustomer({
   profile,
   customer,
 }: CrmCustomer): PickerCustomer {
+  const identity = resolveCustomerIdentity(customer, profile.billingCustomerId)
   return {
     id: profile.id,
-    name: customer?.name?.trim() || profile.billingCustomerId,
-    email: customer?.email ?? null,
-    phone: customer?.phone ?? null,
+    name: identity.name,
+    email: identity.email,
+    phone: identity.phone,
     companyName: customer?.companyName ?? null,
     kind: customer?.customerKind ?? null,
+    contactName: identity.contact?.name ?? null,
+    contactEmail: identity.contact?.email ?? null,
   }
 }
 
 function matches(customer: PickerCustomer, query: string): boolean {
+  // A business is most often looked up by the person who called, so the
+  // contact is part of the haystack — but it is never shown as the company's
+  // own address.
   const haystack = [
     customer.name,
     customer.email,
     customer.phone,
     customer.companyName,
+    customer.contactName,
+    customer.contactEmail,
   ]
     .filter(Boolean)
     .join(' ')

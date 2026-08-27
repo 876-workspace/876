@@ -21,6 +21,7 @@ export function createBillingCustomerSyncRepository(): BillingCustomerSyncReposi
           lastName: true,
           username: true,
           phone: true,
+          avatar: true,
           status: true,
           deletedAt: true,
         },
