@@ -48,7 +48,7 @@ function editorListItemLength(value: unknown): number {
         ? plainInlineLength(item.text)
         : 0
   const nested = Array.isArray(item.items)
-    ? item.items.reduce(
+    ? item.items.reduce<number>(
         (total, child) => total + editorListItemLength(child),
         0
       )
@@ -69,7 +69,7 @@ function richContentStats(value: string) {
       Array.isArray((parsed as { blocks?: unknown }).blocks)
     ) {
       const blocks = (parsed as { blocks: unknown[] }).blocks
-      const textLength = blocks.reduce((total, block) => {
+      const textLength = blocks.reduce<number>((total, block) => {
         if (!block || typeof block !== 'object') return total
         const data = (block as { data?: unknown }).data
         if (!data || typeof data !== 'object') return total
@@ -78,7 +78,7 @@ function richContentStats(value: string) {
         if (Array.isArray(record.items)) {
           return (
             total +
-            record.items.reduce(
+            record.items.reduce<number>(
               (sum, item) => sum + editorListItemLength(item),
               0
             )
@@ -87,9 +87,7 @@ function richContentStats(value: string) {
 
         return (
           total +
-          (typeof record.text === 'string'
-            ? plainInlineLength(record.text)
-            : 0)
+          (typeof record.text === 'string' ? plainInlineLength(record.text) : 0)
         )
       }, 0)
 
