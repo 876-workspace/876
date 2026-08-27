@@ -3,10 +3,6 @@ import type { Request, Response } from 'express'
 import { getPrincipal } from '@/http/auth/principal'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
-import {
-  assertRoleDeleteInvariants,
-  assertRoleUpdateInvariants,
-} from './app-access-invariants.service'
 import type {
   CreateAppMembershipBody,
   CreateAppPermissionBody,
@@ -17,6 +13,7 @@ import type {
   UpdateAppPermissionBody,
   UpdateAppRoleBody,
 } from './app-access.schemas'
+import * as roleMutations from './app-access-role-mutations.service'
 import * as service from './app-access.service'
 
 function principal(req: Request) {
@@ -78,26 +75,16 @@ export async function retrieveAppRoleTemplate(req: Request, res: Response): Prom
 export async function updateAppRoleTemplate(req: Request, res: Response): Promise<void> {
   const { app_id, role_id } = validParams<{ app_id: string; role_id: string }>(req)
   const body = validBody<UpdateAppRoleBody>(req)
-  await assertRoleUpdateInvariants({
-    appId: app_id,
-    organizationId: null,
-    roleId: role_id,
-    body,
-  })
   res
     .status(200)
-    .json(await service.updateAppRoleTemplate(app_id, role_id, body))
+    .json(await roleMutations.updateAppRoleTemplate(app_id, role_id, body))
 }
 
 export async function deleteAppRoleTemplate(req: Request, res: Response): Promise<void> {
   const { app_id, role_id } = validParams<{ app_id: string; role_id: string }>(req)
-  await assertRoleDeleteInvariants({
-    appId: app_id,
-    organizationId: null,
-    roleId: role_id,
-    protectSystem: true,
-  })
-  res.status(200).json(await service.deleteAppRoleTemplate(app_id, role_id))
+  res
+    .status(200)
+    .json(await roleMutations.deleteAppRoleTemplate(app_id, role_id))
 }
 
 export async function listOrgAppRoles(req: Request, res: Response): Promise<void> {
@@ -133,15 +120,17 @@ export async function updateOrgAppRole(req: Request, res: Response): Promise<voi
     role_id: string
   }>(req)
   const body = validBody<UpdateAppRoleBody>(req)
-  await assertRoleUpdateInvariants({
-    appId: app_id,
-    organizationId: org_id,
-    roleId: role_id,
-    body,
-  })
   res
     .status(200)
-    .json(await service.updateOrgAppRole(org_id, app_id, role_id, body, principal(req)))
+    .json(
+      await roleMutations.updateOrgAppRole(
+        org_id,
+        app_id,
+        role_id,
+        body,
+        principal(req)
+      )
+    )
 }
 
 export async function deleteOrgAppRole(req: Request, res: Response): Promise<void> {
@@ -150,15 +139,16 @@ export async function deleteOrgAppRole(req: Request, res: Response): Promise<voi
     app_id: string
     role_id: string
   }>(req)
-  await assertRoleDeleteInvariants({
-    appId: app_id,
-    organizationId: org_id,
-    roleId: role_id,
-    protectSystem: true,
-  })
   res
     .status(200)
-    .json(await service.deleteOrgAppRole(org_id, app_id, role_id, principal(req)))
+    .json(
+      await roleMutations.deleteOrgAppRole(
+        org_id,
+        app_id,
+        role_id,
+        principal(req)
+      )
+    )
 }
 
 export async function listAppMemberships(req: Request, res: Response): Promise<void> {
