@@ -1,8 +1,12 @@
-import type { AppError as AppErrorValue } from '@876/core'
 import type { ReactNode } from 'react'
 
 import { ExclamationTriangleIcon } from '../icons'
 import { cn } from '../lib/utils'
+
+type AppErrorValue = {
+  code: string
+  message: string
+}
 
 type AppErrorVariant = 'page' | 'section' | 'form' | 'inline'
 
@@ -32,10 +36,7 @@ export function AppError({
 
   if (isInline)
     return (
-      <div
-        role="alert"
-        className={cn('space-y-0.5 text-sm', className)}
-      >
+      <div role="alert" className={cn('space-y-0.5 text-sm', className)}>
         {title ? <p className="font-medium">{title}</p> : null}
         <p className="text-muted-foreground">{error.message}</p>
         <AppErrorCode code={error.code} />
