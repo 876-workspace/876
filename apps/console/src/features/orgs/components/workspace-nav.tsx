@@ -53,16 +53,16 @@ export function WorkspaceNav({
                     aria-label={link.label}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'group relative flex size-9.5 items-center justify-center rounded-xl transition-all duration-150',
+                      'group relative flex size-8.5 items-center justify-center rounded-xl transition-all duration-150',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground ring-border/50 font-medium shadow-xs ring-1'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground ring-border/40 font-medium shadow-xs ring-1'
                         : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
                     )}
                   >
                     <WorkspaceIcon
                       iconKey={link.iconKey}
                       colored
-                      className="size-4.5 shrink-0 transition-transform duration-150 group-hover:scale-110"
+                      className="size-4 shrink-0 transition-transform duration-150 group-hover:scale-110"
                     />
                   </Link>
                 }
