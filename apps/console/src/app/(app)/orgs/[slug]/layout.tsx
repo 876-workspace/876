@@ -18,7 +18,7 @@ import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { Skeleton } from '@876/ui/skeleton'
 import { formatDate, statusBadgeClass } from '@/lib/format'
 import { resolveOrg, resolveOrgMembers, resolveOrgSubscriptions } from './_data'
-import { orgTabs } from './_components/org-tabs'
+import { orgTabs } from '@/features/orgs/app-tabs'
 import { OrgActions } from './_components/org-actions'
 
 type Props = {

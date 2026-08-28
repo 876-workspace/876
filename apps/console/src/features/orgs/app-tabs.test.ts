@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { orgTabs } from '@/app/(app)/orgs/[slug]/_components/org-tabs'
-
-import { ALWAYS_PRESENT_TABS, APP_OWNED_TABS } from './app-tabs'
+import { ALWAYS_PRESENT_TABS, APP_OWNED_TABS, orgTabs } from './app-tabs'
 
 const BASE = '/orgs/test-org'
 
