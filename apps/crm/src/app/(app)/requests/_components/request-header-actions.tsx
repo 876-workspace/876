@@ -1,7 +1,8 @@
 'use client'
 
-import { buttonVariants } from '@876/ui/button'
 import { cn } from '@876/core/utils'
+import { showAppErrorToast } from '@876/ui/app-error-toast'
+import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,13 +55,6 @@ export type HeaderMember = {
   name: string
 }
 
-/**
- * Announces an action that is designed but not built yet.
- *
- * A control that silently does nothing is worse than no control: the user
- * cannot tell a missing feature from a broken one. Saying so costs a toast and
- * keeps the toolbar honest while the surface fills in.
- */
 function notYet(label: string) {
   toast(`${label} isn’t available yet.`)
 }
@@ -95,7 +89,9 @@ export function RequestHeaderActions({
       assigneeId: userId,
     })
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, {
+        title: 'Request could not be assigned',
+      })
       return
     }
     toast.success(
@@ -111,7 +107,9 @@ export function RequestHeaderActions({
   async function assignToTeam(teamId: string | null, teamName?: string) {
     const result = await client.requests.update(requestId, { teamId })
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, {
+        title: 'Team assignment could not be updated',
+      })
       return
     }
     toast.success(
@@ -120,11 +118,6 @@ export function RequestHeaderActions({
     router.refresh()
   }
 
-  /**
-   * Every "Add" item already has a home: the composer at the foot of its own
-   * tab. When that tab is the one on screen the action is a focus; otherwise it
-   * is a navigation, and the composer is waiting when the tab arrives.
-   */
   function compose(fieldId: string, href: string) {
     const field = document.getElementById(fieldId)
     if (!field) {
