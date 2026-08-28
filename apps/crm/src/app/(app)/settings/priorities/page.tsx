@@ -13,6 +13,7 @@ export default async function PrioritiesPage() {
   const context = await requireCrmContext()
   const $876 = await get876Client()
   const result = await $876.requestPriorities.list(context.orgId)
+  const priorities = result.data?.data ?? []
 
   return (
     <Page>
@@ -24,15 +25,16 @@ export default async function PrioritiesPage() {
         primaryVariant="info"
         refresh
       />
-      {result.error ? (
-        <AppError
-          title="Priorities couldn't be loaded"
-          error={result.error}
-          variant="page"
-        />
-      ) : (
-        <PrioritiesList priorities={result.data.data} />
-      )}
+      <div className="space-y-3">
+        {result.error ? (
+          <AppError
+            title="Some priority data could not be loaded"
+            error={result.error}
+            variant="banner"
+          />
+        ) : null}
+        <PrioritiesList priorities={priorities} />
+      </div>
     </Page>
   )
 }
