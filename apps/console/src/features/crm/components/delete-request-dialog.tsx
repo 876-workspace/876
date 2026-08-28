@@ -79,6 +79,7 @@ export function DeleteRequestDialog({
             title="Request could not be deleted"
             error={error}
             variant="form"
+            showCode
           />
         ) : null}
         <AlertDialogFooter>
