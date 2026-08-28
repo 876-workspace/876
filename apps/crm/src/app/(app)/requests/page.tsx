@@ -1,4 +1,3 @@
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
@@ -9,6 +8,7 @@ import { Suspense } from 'react'
 
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import type { RequestStatus } from '@/types/crm'
 
 import {
@@ -16,8 +16,11 @@ import {
   type FilterDepartment,
   type FilterMember,
 } from './_components/requests-filter-bar'
-import { REQUESTS_SKELETON_COLUMNS } from './_components/requests-skeleton-columns'
-import { RequestsTable, type CrmRequestRow } from './_components/requests-table'
+import {
+  RequestsList,
+  RequestsListSkeleton,
+  type RequestListRow,
+} from './_components/requests-list'
 
 export const metadata = { title: 'Requests' }
 
@@ -79,10 +82,8 @@ export default async function RequestsPage({ searchParams }: Props) {
         refresh
       />
 
-      <Suspense
-        fallback={<DataTableSkeleton columns={REQUESTS_SKELETON_COLUMNS} />}
-      >
-        <RequestsTableData
+      <Suspense fallback={<RequestsListSkeleton />}>
+        <RequestsListData
           status={
             selectedStatus === 'all'
               ? undefined
@@ -96,7 +97,7 @@ export default async function RequestsPage({ searchParams }: Props) {
   )
 }
 
-async function RequestsTableData({
+async function RequestsListData({
   status,
   team,
   assignee,
@@ -117,21 +118,30 @@ async function RequestsTableData({
   else if (assignee === 'unassigned') assigneeId = 'unassigned'
   else if (assignee !== 'all') assigneeId = assignee
 
-  const [
-    requestsResult,
-    customersResult,
-    departmentsResult,
-    membersResult,
-    categoriesResult,
-  ] = await Promise.all([
-    $876.requests.list(context.orgId, { status, teamId, assigneeId }),
-    $876.customerProfiles.list(context.orgId),
-    $876.departments.list(context.orgId),
-    $876.organizationMembers.list(context.orgId),
-    $876.requestCategories.list(context.orgId),
-  ])
+  const [requestsResult, customersResult, departmentsResult, membersResult] =
+    await Promise.all([
+      $876.requests.list(context.orgId, { status, teamId, assigneeId }),
+      $876.customerProfiles.list(context.orgId),
+      $876.departments.list(context.orgId),
+      $876.organizationMembers.list(context.orgId),
+    ])
   if (requestsResult.error) throw new Error(requestsResult.error.message)
   if (customersResult.error) throw new Error(customersResult.error.message)
+
+  // The directory is enrichment, so a failure here must not take the queue
+  // down — but it must not pass silently either. Swallowing it with `?? []` is
+  // what made a broken members call look like a page full of raw `user_…` ids
+  // instead of an error anyone could find.
+  if (departmentsResult.error)
+    console.error(
+      '[crm/requests] team directory unavailable:',
+      departmentsResult.error
+    )
+  if (membersResult.error)
+    console.error(
+      '[crm/requests] member directory unavailable:',
+      membersResult.error
+    )
 
   const departments: FilterDepartment[] =
     departmentsResult.data?.data.map((dept) => ({
@@ -159,57 +169,45 @@ async function RequestsTableData({
 
   const membersByUserId = new Map(members.map((m) => [m.userId, m]))
 
-  // Every category the org has, not only the active ones: a request keeps its
-  // category after that category is archived, and resolving only active rows
-  // would blank the column for exactly the historical requests that need it.
-  const categoriesById = new Map(
-    (categoriesResult.data?.data ?? []).map((category) => [
-      category.id,
-      category,
-    ])
-  )
-
-  const customerNames = new Map(
+  // The party, not its contact: a business row is titled by the company and
+  // drawn with a squared avatar, which is what `isBusiness` carries.
+  const customersById = new Map(
     customersResult.data.data.map(({ profile, customer }) => [
       profile.id,
-      customer?.name ?? profile.billingCustomerId,
+      resolveCustomerIdentity(customer, profile.billingCustomerId),
     ])
   )
 
-  const rows: CrmRequestRow[] = requestsResult.data.data.map((request) => ({
-    id: request.id,
-    number: request.number,
-    subject: request.subject,
-    customerId: request.customerId,
-    customerName: customerNames.get(request.customerId) ?? request.customerId,
-    teamId: request.teamId,
-    teamName: request.teamId
-      ? (departmentNames.get(request.teamId) ?? null)
-      : null,
-    assigneeId: request.assigneeId,
-    assigneeName: request.assigneeId
-      ? (membersByUserId.get(request.assigneeId)?.name ?? request.assigneeId)
-      : null,
-    assigneeAvatar: request.assigneeId
-      ? (membersByUserId.get(request.assigneeId)?.avatar ?? null)
-      : null,
-    categoryName: request.categoryId
-      ? (categoriesById.get(request.categoryId)?.name ?? null)
-      : null,
-    categoryIcon: request.categoryId
-      ? (categoriesById.get(request.categoryId)?.icon ?? null)
-      : null,
-    categoryColor: request.categoryId
-      ? (categoriesById.get(request.categoryId)?.color ?? null)
-      : null,
-    status: request.status,
-    priority: request.priority,
-    source: request.source,
-    createdAt: request.createdAt,
-  }))
+  const rows: RequestListRow[] = requestsResult.data.data.map((request) => {
+    const customer = customersById.get(request.customerId)
+    const assignee = request.assigneeId
+      ? membersByUserId.get(request.assigneeId)
+      : undefined
+
+    return {
+      id: request.id,
+      number: request.number,
+      subject: request.subject,
+      status: request.status,
+      priority: request.priority,
+      source: request.source,
+      createdAt: request.createdAt,
+      customerName: customer?.name ?? 'Unknown customer',
+      customerIsBusiness: customer?.isBusiness ?? false,
+      // An opaque id is not a name. When the directory cannot resolve the
+      // assignee, the row says the request is assigned without inventing a
+      // label for whom — and never claims it is unassigned.
+      isAssigned: Boolean(request.assigneeId),
+      assigneeName: assignee?.name ?? null,
+      assigneeAvatar: assignee?.avatar ?? null,
+      teamName: request.teamId
+        ? (departmentNames.get(request.teamId) ?? null)
+        : null,
+    }
+  })
 
   return (
-    <RequestsTable
+    <RequestsList
       requests={rows}
       filterBar={
         <RequestsFilterBar
