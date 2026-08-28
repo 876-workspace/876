@@ -1,4 +1,10 @@
-import { BarChart3, ClipboardList, Settings, Users } from '@876/ui/icons'
+import {
+  BarChart3,
+  ClipboardList,
+  DocumentTextIcon,
+  Settings,
+  Users,
+} from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 
 /** A top-level sidebar item. */
@@ -25,6 +31,7 @@ export const navConfig: NavGroup[] = [
       },
       { title: 'Customers', href: '/customers', icon: Users },
       { title: 'Requests', href: '/requests', icon: ClipboardList },
+      { title: 'Forms', href: '/forms', icon: DocumentTextIcon },
     ],
   },
   {
