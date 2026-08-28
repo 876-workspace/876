@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
+import { AppError } from '@876/ui/app-error'
 import { Building2, Calendar, Globe, Hash, Mail, Trash } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
 
@@ -17,7 +18,12 @@ import {
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { Skeleton } from '@876/ui/skeleton'
 import { formatDate, statusBadgeClass } from '@/lib/format'
-import { resolveOrg, resolveOrgMembers, resolveOrgSubscriptions } from './_data'
+import {
+  resolveOrg,
+  resolveOrgMembers,
+  resolveOrgResult,
+  resolveOrgSubscriptions,
+} from './_data'
 import { orgTabs } from '@/features/orgs/app-tabs'
 import { OrgActions } from './_components/org-actions'
 
@@ -29,19 +35,10 @@ type Props = {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
-  if (!org) return { title: 'Organization not found' }
+  if (!org) return { title: 'Organization' }
   return { title: `${org.name ?? org.slug} - Organizations` }
 }
 
-/**
- * The organization detail shell.
- *
- * It awaits `params` and nothing else, for the reason spelled out in the user
- * detail layout: a layout renders outside its own `loading.tsx`, so an await here
- * suspends into the parent boundary and tears down the list the record was
- * opened from. Frame, padding and tabs are synchronous; the identity band and
- * actions stream into boundaries sized to match.
- */
 export default async function OrganizationDetailLayout({
   children,
   params,
@@ -141,9 +138,20 @@ function CondensedTitleFallback() {
   )
 }
 
-/** Decides the route exists, so `notFound()` belongs here rather than in the shell. */
 async function Identity({ slug }: { slug: string }) {
-  const org = await resolveOrg(slug)
+  const result = await resolveOrgResult(slug)
+  if (result.error?.code === 'organization/not-found') notFound()
+  if (result.error)
+    return (
+      <AppError
+        title="Organization details are temporarily unavailable"
+        error={result.error}
+        variant="inline"
+        showCode
+      />
+    )
+
+  const org = result.data
   if (!org) notFound()
 
   return (
@@ -221,7 +229,6 @@ async function Identity({ slug }: { slug: string }) {
   )
 }
 
-/** Sized to the resolved identity band so nothing shifts on hand-off. */
 function IdentityFallback() {
   return (
     <>
@@ -269,7 +276,17 @@ function MemberCount({ orgId }: { orgId: string }) {
 
 async function MemberCountValue({ orgId }: { orgId: string }) {
   const membersResult = await resolveOrgMembers(orgId)
-  const memberCount = membersResult?.data.length ?? 0
+  if (membersResult.error)
+    return (
+      <AppError
+        title="Members unavailable"
+        error={membersResult.error}
+        variant="inline"
+        showCode
+      />
+    )
+
+  const memberCount = membersResult.data.length
   return (
     <span className="flex shrink-0 items-center gap-1.5">
       <Building2 className="size-3.5 shrink-0" />
@@ -278,28 +295,27 @@ async function MemberCountValue({ orgId }: { orgId: string }) {
   )
 }
 
-/**
- * Streams the full, entitlement-aware tab strip.
- *
- * Resolves the org and then its active/trialing app entitlements. Because
- * `resolveOrg` is memoised with `React.cache`, the call here dedupes with the
- * parallel `Identity` fetch. The parent layout renders this inside a
- * `<Suspense>` whose fallback is the always-present baseline tabs — real,
- * clickable, and never a skeleton — so navigation is instant regardless of how
- * long the entitlement fetch takes.
- */
 async function EntitledTabs({ base, slug }: { base: string; slug: string }) {
   const org = await resolveOrg(slug)
-  if (!org) {
-    // notFound() is called by the Identity component in its own boundary;
-    // return the baseline strip here so the fallback doesn't flicker.
-    return <RouteTabs tabs={orgTabs(base, [])} />
-  }
+  if (!org) return <RouteTabs tabs={orgTabs(base, [])} />
 
   const subscriptions = await resolveOrgSubscriptions(org.id)
-  const activeSubscriptions = (subscriptions ?? []).filter(
-    (s) => s.status === 'active' || s.status === 'trialing'
+  const activeSubscriptions = subscriptions.data.filter(
+    (subscription) =>
+      subscription.status === 'active' || subscription.status === 'trialing'
   )
 
-  return <RouteTabs tabs={orgTabs(base, activeSubscriptions)} />
+  return (
+    <div className="space-y-2">
+      <RouteTabs tabs={orgTabs(base, activeSubscriptions)} />
+      {subscriptions.error ? (
+        <AppError
+          title="App entitlement data is temporarily unavailable"
+          error={subscriptions.error}
+          variant="inline"
+          showCode
+        />
+      ) : null}
+    </div>
+  )
 }
