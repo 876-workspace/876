@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { ExclamationTriangleIcon } from '../icons'
 import { cn } from '../lib/utils'
 
-type AppErrorValue = {
+export type AppErrorValue = {
   code: string
   message: string
 }
