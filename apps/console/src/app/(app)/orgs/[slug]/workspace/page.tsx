@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { ChevronRight, Squares2X2Icon } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 import {
@@ -17,7 +18,11 @@ import {
   workspaceBase,
 } from '@/features/orgs/app-workspaces'
 import { WorkspaceIcon } from '@/features/orgs/components/workspace-icon'
-import { resolveOrg, resolveOrgEntitledAppSlugs } from '../_data'
+import {
+  resolveOrg,
+  resolveOrgEntitledAppSlugs,
+  resolveOrgResult,
+} from '../_data'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -29,14 +34,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Workspaces - Organizations` }
 }
 
-/**
- * The workspace index — every app this organization is actually working in.
- *
- * This page is the answer to "how does Console scale to N apps without N tabs".
- * The organization detail strip carries one `Workspaces` tab; the list of apps
- * behind it is derived from entitlements, so a new app costs a registry row and
- * never a layout change.
- */
 export default async function OrganizationWorkspacePage({ params }: Props) {
   const { slug } = await params
 
@@ -53,56 +50,76 @@ export default async function OrganizationWorkspacePage({ params }: Props) {
 }
 
 async function WorkspaceCards({ slug }: { slug: string }) {
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
-  const workspaces = entitledWorkspaces(
-    await resolveOrgEntitledAppSlugs(org.id)
-  )
-
-  if (workspaces.length === 0) {
+  const orgResult = await resolveOrgResult(slug)
+  if (orgResult.error?.code === 'organization/not-found') notFound()
+  if (orgResult.error)
     return (
-      <Empty className="py-14">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <Squares2X2Icon aria-hidden="true" />
-          </EmptyMedia>
-          <EmptyTitle>No app workspaces</EmptyTitle>
-          <EmptyDescription>
-            This organization is not entitled to an app Console can open yet.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <AppError
+        title="Organization workspaces are temporarily unavailable"
+        error={orgResult.error}
+        variant="banner"
+        showCode
+      />
     )
-  }
+  if (!orgResult.data) notFound()
+
+  const entitlementResult = await resolveOrgEntitledAppSlugs(orgResult.data.id)
+  const workspaces = entitledWorkspaces(entitlementResult.data)
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {workspaces.map((workspace) => (
-        <li key={workspace.key}>
-          <Link
-            href={workspaceBase(slug, workspace.key)}
-            className="876-card hover:border-876-accent-fg/40 group flex h-full items-start gap-3 p-4 transition-colors"
-          >
-            <span className="bg-876-accent-surface text-876-accent-fg flex size-9 shrink-0 items-center justify-center rounded-lg">
-              <WorkspaceIcon iconKey={workspace.iconKey} className="size-5" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1 font-medium">
-                {workspace.label}
-                <ChevronRight
-                  className="text-muted-foreground size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </span>
-              <span className="text-muted-foreground mt-0.5 block text-[0.8125rem]">
-                {workspace.summary}
-              </span>
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-4">
+      {entitlementResult.error ? (
+        <AppError
+          title="App entitlement data is temporarily unavailable"
+          error={entitlementResult.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+
+      {workspaces.length === 0 && !entitlementResult.error ? (
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Squares2X2Icon aria-hidden="true" />
+            </EmptyMedia>
+            <EmptyTitle>No app workspaces</EmptyTitle>
+            <EmptyDescription>
+              This organization is not entitled to an app Console can open yet.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : null}
+
+      {workspaces.length > 0 ? (
+        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {workspaces.map((workspace) => (
+            <li key={workspace.key}>
+              <Link
+                href={workspaceBase(slug, workspace.key)}
+                className="876-card hover:border-876-accent-fg/40 group flex h-full items-start gap-3 p-4 transition-colors"
+              >
+                <span className="bg-876-accent-surface text-876-accent-fg flex size-9 shrink-0 items-center justify-center rounded-lg">
+                  <WorkspaceIcon iconKey={workspace.iconKey} className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1 font-medium">
+                    {workspace.label}
+                    <ChevronRight
+                      className="text-muted-foreground size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="text-muted-foreground mt-0.5 block text-[0.8125rem]">
+                    {workspace.summary}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   )
 }
 
