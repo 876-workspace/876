@@ -22,10 +22,11 @@ export default async function EditTeamPage({ params }: Props) {
     return (
       <Page>
         <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
+        <h1 className="876-page-title mb-4">Edit team</h1>
         <AppError
-          title="Team couldn't be loaded"
+          title="Team data is temporarily unavailable"
           error={result.error}
-          variant="page"
+          variant="banner"
         />
       </Page>
     )
