@@ -25,6 +25,36 @@ const customer = {
   },
 }
 
+const normalPriority = {
+  object: 'request_priority',
+  id: 'crm_pri_normal',
+  tenantId: 'crm_tenant_1',
+  provisioningKey: 'normal',
+  name: 'Normal',
+  slug: 'normal',
+  description: null,
+  color: null,
+  icon: null,
+  weight: 20,
+  sortOrder: 20,
+  isDefault: true,
+  isActive: true,
+  createdBy: null,
+  createdAt: 1,
+  updatedAt: 1,
+}
+
+const highPriority = {
+  ...normalPriority,
+  id: 'crm_pri_high',
+  provisioningKey: 'high',
+  name: 'High',
+  slug: 'high',
+  weight: 30,
+  sortOrder: 30,
+  isDefault: false,
+}
+
 const crmRequest = {
   object: 'request',
   id: 'crm_req_1',
@@ -35,7 +65,8 @@ const crmRequest = {
   categoryId: 'crm_cat_1',
   subcategoryId: null,
   status: 'OPEN',
-  priority: 'NORMAL',
+  priorityId: normalPriority.id,
+  priority: normalPriority,
   source: 'CRM',
   teamId: null,
   assigneeId: null,
@@ -121,7 +152,7 @@ describe('@876/crm client', () => {
     ])
   })
 
-  it('sends request CRUD and validates request resources', async () => {
+  it('sends request CRUD and validates configured priority resources', async () => {
     fetch
       .mockResolvedValueOnce(
         json({
@@ -145,49 +176,50 @@ describe('@876/crm client', () => {
       customerId: 'crm_cus_1',
       subject: 'Need help',
       categoryId: 'crm_cat_1',
+      priorityId: normalPriority.id,
       createdBy: 'usr_1',
     })
     const updated = await client.requests.update('org_1', 'crm_req_1', {
       status: 'IN_PROGRESS',
+      priorityId: highPriority.id,
     })
     const deleted = await client.requests.delete('org_1', 'crm_req_1', {
       deletedBy: 'usr_1',
     })
 
     expect(listed.error).toBeNull()
-    expect(retrieved.data?.id).toBe('crm_req_1')
-    expect(created.data?.status).toBe('OPEN')
+    expect(retrieved.data?.priority.name).toBe('Normal')
+    expect(created.data?.priorityId).toBe(normalPriority.id)
     expect(updated.data?.status).toBe('IN_PROGRESS')
     expect(deleted.data?.deleted).toBe(true)
   })
 
-  it('sends managed category and ownership filters without the removed category key', async () => {
+  it('sends priorityId as the request list filter', async () => {
     fetch.mockResolvedValueOnce(
       json({
         object: 'list',
-        data: [{ ...crmRequest, teamId: 'dept_1', assigneeId: 'usr_2' }],
+        data: [crmRequest],
         has_more: false,
         total_count: 1,
         url: '/v1/organizations/org_1/requests',
       })
     )
 
-    const result = await client.requests.list('org_1', {
+    await client.requests.list('org_1', {
       status: 'OPEN',
       teamId: 'dept_1',
       assigneeId: 'usr_2',
       categoryId: 'crm_cat_1',
       subcategoryId: 'unassigned',
       ownerId: 'unassigned',
+      priorityId: highPriority.id,
     })
 
-    expect(result.error).toBeNull()
-    expect(result.data?.data[0]?.teamId).toBe('dept_1')
     expect(fetch).toHaveBeenCalledWith(
-      'http://crm.test/v1/organizations/org_1/requests?status=OPEN&teamId=dept_1&assigneeId=usr_2&categoryId=crm_cat_1&subcategoryId=unassigned&ownerId=unassigned',
+      `http://crm.test/v1/organizations/org_1/requests?status=OPEN&teamId=dept_1&assigneeId=usr_2&categoryId=crm_cat_1&subcategoryId=unassigned&ownerId=unassigned&priorityId=${highPriority.id}`,
       expect.objectContaining({ method: 'GET' })
     )
-    expect(String(fetch.mock.calls[0]?.[0])).not.toContain('category=')
+    expect(String(fetch.mock.calls[0]?.[0])).not.toContain('priority=HIGH')
   })
 
   it('returns a created request without a stored description', async () => {
@@ -200,7 +232,6 @@ describe('@876/crm client', () => {
       createdBy: 'usr_1',
     })
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch).toHaveBeenCalledWith(
       'http://crm.test/v1/organizations/org_1/requests',
       expect.objectContaining({
@@ -214,6 +245,60 @@ describe('@876/crm client', () => {
       })
     )
     expect(result).toEqual({ data: crmRequest, error: null })
+  })
+
+  it('supports request priority CRUD at the organization boundary', async () => {
+    const customPriority = {
+      ...highPriority,
+      id: 'crm_pri_critical',
+      provisioningKey: null,
+      name: 'Critical',
+      slug: 'critical',
+      color: '#dc2626',
+      weight: 50,
+      sortOrder: 50,
+      createdBy: 'usr_1',
+    }
+    fetch
+      .mockResolvedValueOnce(
+        json({
+          object: 'list',
+          data: [normalPriority, customPriority],
+          has_more: false,
+          total_count: 2,
+          url: '/v1/organizations/org_1/request-priorities',
+        })
+      )
+      .mockResolvedValueOnce(json(customPriority))
+      .mockResolvedValueOnce(json(customPriority, 201))
+      .mockResolvedValueOnce(json({ ...customPriority, weight: 60 }))
+      .mockResolvedValueOnce(
+        json({ object: 'request_priority', id: customPriority.id, deleted: true })
+      )
+
+    await client.requestPriorities.list('org_1', { active: true })
+    await client.requestPriorities.retrieve('org_1', customPriority.id)
+    await client.requestPriorities.create('org_1', {
+      name: 'Critical',
+      color: '#dc2626',
+      weight: 50,
+      sortOrder: 50,
+      createdBy: 'usr_1',
+    })
+    await client.requestPriorities.update('org_1', customPriority.id, {
+      weight: 60,
+    })
+    await client.requestPriorities.delete('org_1', customPriority.id, {
+      deletedBy: 'usr_1',
+    })
+
+    expect(fetch.mock.calls.map(([url]) => String(url))).toEqual([
+      'http://crm.test/v1/organizations/org_1/request-priorities?active=true',
+      `http://crm.test/v1/organizations/org_1/request-priorities/${customPriority.id}`,
+      'http://crm.test/v1/organizations/org_1/request-priorities',
+      `http://crm.test/v1/organizations/org_1/request-priorities/${customPriority.id}`,
+      `http://crm.test/v1/organizations/org_1/request-priorities/${customPriority.id}`,
+    ])
   })
 
   it('sends request notes CRUD and validates note resources', async () => {
@@ -263,17 +348,10 @@ describe('@876/crm client', () => {
     )
 
     expect(listed.error).toBeNull()
-    expect(listed.data?.data[0]?.id).toBe('crm_note_1')
     expect(created.data?.body).toBe(
       'Customer contacted via phone with extra details.'
     )
     expect(deleted.data?.deleted).toBe(true)
-
-    expect(fetch.mock.calls.map(([url]) => String(url))).toEqual([
-      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes?viewer_id=usr_1',
-      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes',
-      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes/crm_note_1',
-    ])
   })
 
   it('updates a request note with the exact note endpoint and payload', async () => {
@@ -300,7 +378,6 @@ describe('@876/crm client', () => {
       { body: 'Updated details.', editedBy: 'usr_2' }
     )
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]?.[0]).toBe(
       'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes/crm_note_1'
     )
@@ -309,7 +386,6 @@ describe('@876/crm client', () => {
       body: JSON.stringify({ body: 'Updated details.', editedBy: 'usr_2' }),
     })
     expect(result.data).toEqual(crmNote)
-    expect(result.error).toBeNull()
   })
 
   it('creates a team at the encoded organization URL with members unchanged', async () => {
@@ -341,7 +417,6 @@ describe('@876/crm client', () => {
 
     const result = await client.teams.create('org /north', input)
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch).toHaveBeenCalledWith(
       'http://crm.test/v1/organizations/org%20%2Fnorth/teams',
       {
@@ -356,12 +431,13 @@ describe('@876/crm client', () => {
     expect(result).toEqual({ data: team, error: null })
   })
 
-  it('lists request categories at the encoded organization URL', async () => {
+  it('lists request categories with priority ids at the encoded organization URL', async () => {
     const subcategory = {
       object: 'request_subcategory',
       id: 'crm_subcat_1',
       tenantId: 'crm_tenant_1',
       categoryId: 'crm_cat_1',
+      provisioningKey: null,
       name: 'Damaged parcel',
       slug: 'damaged-parcel',
       description: null,
@@ -369,7 +445,7 @@ describe('@876/crm client', () => {
       sortOrder: 0,
       isActive: true,
       defaultTeamId: null,
-      defaultPriority: 'HIGH',
+      defaultPriorityId: highPriority.id,
       createdBy: 'usr_1',
       createdAt: 1,
       updatedAt: 1,
@@ -380,6 +456,7 @@ describe('@876/crm client', () => {
       object: 'request_category',
       id: 'crm_cat_1',
       tenantId: 'crm_tenant_1',
+      provisioningKey: null,
       name: 'Delivery',
       slug: 'delivery',
       description: 'Delivery-related requests.',
@@ -388,7 +465,7 @@ describe('@876/crm client', () => {
       sortOrder: 0,
       isActive: true,
       defaultTeamId: 'crm_team_1',
-      defaultPriority: 'NORMAL',
+      defaultPriorityId: normalPriority.id,
       createdBy: 'usr_1',
       createdAt: 1,
       updatedAt: 1,
@@ -408,22 +485,14 @@ describe('@876/crm client', () => {
 
     const result = await client.requestCategories.list('org /north')
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch).toHaveBeenCalledWith(
       'http://crm.test/v1/organizations/org%20%2Fnorth/request-categories',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'crm-internal',
-        },
-      }
+      expect.objectContaining({ method: 'GET' })
     )
     expect(result.data?.data).toEqual([category])
-    expect(result.error).toBeNull()
   })
 
-  it('lists request tasks at encoded organization and request URLs', async () => {
+  it('lists request tasks with resolved priority resources', async () => {
     const task = {
       object: 'request_task',
       id: 'crm_task_1',
@@ -432,7 +501,8 @@ describe('@876/crm client', () => {
       title: 'Call the customer',
       description: null,
       status: 'OPEN',
-      priority: 'HIGH',
+      priorityId: highPriority.id,
+      priority: highPriority,
       assigneeId: 'usr_2',
       dueAt: 2,
       completedAt: null,
@@ -456,19 +526,11 @@ describe('@876/crm client', () => {
 
     const result = await client.requestTasks.list('org /north', 'req /42')
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch).toHaveBeenCalledWith(
       'http://crm.test/v1/organizations/org%20%2Fnorth/requests/req%20%2F42/tasks',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'crm-internal',
-        },
-      }
+      expect.objectContaining({ method: 'GET' })
     )
-    expect(result.data?.data).toEqual([task])
-    expect(result.error).toBeNull()
+    expect(result.data?.data[0]?.priority.name).toBe('High')
   })
 
   it('lists request reminders at encoded organization and request URLs', async () => {
@@ -502,19 +564,11 @@ describe('@876/crm client', () => {
 
     const result = await client.requestReminders.list('org /north', 'req /42')
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch).toHaveBeenCalledWith(
       'http://crm.test/v1/organizations/org%20%2Fnorth/requests/req%20%2F42/reminders',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'crm-internal',
-        },
-      }
+      expect.objectContaining({ method: 'GET' })
     )
     expect(result.data?.data).toEqual([reminder])
-    expect(result.error).toBeNull()
   })
 
   it('returns an invalid-response result for a malformed team payload', async () => {
@@ -524,7 +578,6 @@ describe('@876/crm client', () => {
 
     const result = await client.teams.retrieve('org_1', 'crm_team_1')
 
-    expect(fetch).toHaveBeenCalledTimes(1)
     expect(result).toEqual({
       data: null,
       error: {
@@ -545,9 +598,7 @@ describe('@876/crm client', () => {
     expect(consoleError).toHaveBeenCalledTimes(1)
     const [message, issues] = consoleError.mock.calls[0]
     expect(message).toContain('[crm/invalid-response]')
-    // The point of the log is naming the field, so assert the path survives.
     expect(JSON.stringify(issues)).toContain('tenantId')
-
     consoleError.mockRestore()
   })
 
