@@ -151,12 +151,12 @@ The database also has a partial unique index enforcing one non-deleted default p
 
 The Core application provisioning seed defines these initial `request_priority` resources:
 
-| provisioning key | name | slug | weight | sort order | default |
-| --- | --- | --- | ---: | ---: | --- |
-| `low` | Low | low | 10 | 10 | no |
-| `normal` | Normal | normal | 20 | 20 | yes |
-| `high` | High | high | 30 | 30 | no |
-| `urgent` | Urgent | urgent | 40 | 40 | no |
+| provisioning key | name   | slug   | weight | sort order | default |
+| ---------------- | ------ | ------ | -----: | ---------: | ------- |
+| `low`            | Low    | low    |     10 |         10 | no      |
+| `normal`         | Normal | normal |     20 |         20 | yes     |
+| `high`           | High   | high   |     30 |         30 | no      |
+| `urgent`         | Urgent | urgent |     40 |         40 | no      |
 
 The existing CRM category defaults are also represented by platform provisioning resources so they can be created for new/existing tenants using the same reconciliation mechanism.
 
@@ -652,6 +652,97 @@ Before marking the PR ready/merging:
 - [ ] Console generic provisioning editor renders CRM resource schemas.
 - [ ] Manual priority/settings/request/task/form smoke tests pass.
 - [ ] PR is conflict-free with current `main`.
+
+## Verification actually run (2026-08-28)
+
+Everything below was executed locally on the merged branch, not merely listed.
+
+| Workspace            | typecheck | tests                |
+| -------------------- | --------- | -------------------- |
+| `@876/crm-api`       | pass      | 35 files / 560 tests |
+| `@876/crm-app`       | pass      | 17 files / 142 tests |
+| `@876/console`       | pass      | 92 files / 863 tests |
+| `@876/crm` (package) | pass      | 13 files / 169 tests |
+| `@876/api`           | pass      | —                    |
+
+For reference, `main` carries 20 files / 380 tests in `crm-api`, so the branch
+roughly doubles that module's coverage.
+
+The migration **has been applied** to the dev CRM database. It backfilled 8
+priority rows across 2 tenants and moved 5 requests and 1 task onto priority
+ids with no `NOT NULL` violation, so the enum-to-row conversion is proven
+against real data rather than only in principle.
+
+### Defects found and fixed while verifying
+
+- The migration was numbered `20260828210000`, which sorts **before**
+  `20260828230000_request_form_placement` — already applied on `main`.
+  Renumbered to `20260828235000`.
+- The request module split left five suites importing
+  `requests.tasks.service` and `requests.schemas` exports that no longer
+  exist; they failed to compile, so notes, tasks and reminders shipped with
+  no coverage at all. Each suite now mocks at its own module boundary.
+- Console's request **create** form still posted the retired
+  `LOW|NORMAL|HIGH|URGENT` enum. It did not typecheck and the API would have
+  refused it. It now loads the org's configured priorities.
+- `settings/priorities/[priorityId]/edit/page.tsx` collapsed the
+  `{ data, error }` union to `never` by testing both arms in one condition.
+- The CRM settings-nav test asserted a frozen inventory under a name that
+  promised an invariant, so adding a page failed it for an unrelated reason.
+
+## Outstanding design concern: who loads the provisioning manifest
+
+**Not fixed in this PR — deliberately, because it is a layering issue rather
+than a security hole, and restructuring it belongs in its own change.**
+
+Today `apps/crm/src/lib/provisioning/manifest.ts` runs in the **Next app**: it
+fetches the published platform profile, parses every property, enforces domain
+invariants ("exactly one default priority"), and then posts the finished
+manifest to `POST /v1/tenants` as a request body. `crm-api` accepts that body
+and reconciles from it.
+
+Three consequences:
+
+1. **Domain logic sits in a Next app.** `.claude/rules/api-access.md` is
+   explicit that route handlers authorize and adapt transport only; the manifest
+   parser and its invariants are business rules in the wrong tier.
+2. **The service is told its own configuration rather than reading it.** The
+   route is `requireInternal`, so this is not browser-reachable — but the
+   platform manifest is platform-owned truth, and a service that accepts it as
+   input can be handed a manifest that does not match what the platform
+   published.
+3. **A manifest revision can never reach an existing tenant.** Reconciliation
+   only happens on the onboarding request. `Tenant.provisioningRevision` exists
+   and is written, but nothing ever compares it against the published revision,
+   so the "preserve tenant overrides, apply new defaults" behaviour the model is
+   built for cannot actually fire for an org that already exists.
+
+The shape this should take: move the loader into `crm-api` (it already builds
+with the `react-server` condition, so `@876/core/platform` imports cleanly; it
+needs `@876/core` as a dependency plus `API_URL`/`API_INTERNAL_KEY`), have
+`tenants.create` load the manifest itself, and add an explicit
+`POST /v1/tenants/:id/provisioning/reconcile` for the revision-bump path. The
+CRM app then goes back to posting `{ organizationId }` alone.
+
+Note that `apps/billing/src/lib/provisioning/manifest.ts` — the file this
+pattern was modelled on — has **no callers outside its own test**. It is not a
+live precedent.
+
+## Environment note: `CRM_API_876_KEY`
+
+While verifying, both `apps/crm/.env.development.local` and
+`apps/crm-api/.env.development.local` were found to hold the **876-consumer**
+app's key. `crm-api` authenticates to Billing's integration tier with that key,
+so Billing resolved the wrong app, found no finance connection for it, and
+answered `billing/connection-forbidden` — "The app finance connection lacks the
+required scope." This is the exact failure mode
+`.claude/rules/env-configuration.md` records: a credential problem that surfaces
+as a scope error. A dedicated `876-crm` key was issued and both files corrected.
+
+**The same value was set in Vercel production for `876-crm` and `876-crm-api`
+in the same six-hour window, and Vercel returns `[SENSITIVE]` rather than the
+value, so it could not be verified from here.** Confirm it before trusting a
+production CRM customers page.
 
 ## Pull / continuation
 
