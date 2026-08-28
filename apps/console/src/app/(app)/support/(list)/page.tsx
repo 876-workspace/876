@@ -63,21 +63,24 @@ async function RequestsData({ status }: { status: CrmRequestStatus | 'all' }) {
     status: status === 'all' ? undefined : status,
   })
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
-  if (result.error)
-    return (
-      <AppError
-        title="Requests couldn't be loaded"
-        error={result.error}
-        variant="page"
-      />
-    )
 
-  const context = await loadRequestRowContext(orgId)
+  const context = result.data ? await loadRequestRowContext(orgId) : null
+  const rows =
+    result.data && context
+      ? toRequestListRows({ requests: result.data.data, ...context })
+      : []
 
   return (
-    <RequestsList
-      requestsHref="/support"
-      requests={toRequestListRows({ requests: result.data.data, ...context })}
-    />
+    <div className="space-y-3">
+      {result.error ? (
+        <AppError
+          title="Some request data could not be loaded"
+          error={result.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      <RequestsList requestsHref="/support" requests={rows} />
+    </div>
   )
 }
