@@ -224,9 +224,11 @@ curl -sS -X POST "$API_URL/billing/customer-sync/dispatch" \
 | `BILLING_PLATFORM_TENANT_SLUG`      | Billing | Platform tenant receiving customers                                   |
 
 The long-running container starts the worker when both `BILLING_API_URL` and
-`BILLING_INTERNAL_KEY` are set. Vercel instead invokes
-`GET /billing/customer-sync/cron` every minute with `CRON_SECRET`; serverless
-functions do not own persistent worker loops.
+`BILLING_INTERNAL_KEY` are set. On Vercel, organization provisioning performs
+one bounded dispatch pass immediately after writing the durable event, and a
+daily `GET /billing/customer-sync/cron` invocation with `CRON_SECRET` retries
+anything left behind. Serverless functions do not own persistent worker loops,
+and Vercel Hobby cron schedules cannot run more than once per day.
 
 ---
 
