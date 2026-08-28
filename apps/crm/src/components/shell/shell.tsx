@@ -73,9 +73,11 @@ export async function Shell({
             more of them are added.
 
             Sizes match the shared AppSwitcher trigger (32px); the breathing
-            room comes from the gaps, not from resizing one app's buttons.
+            room comes from the gaps, not from resizing one app's buttons. The
+            seams stay narrow — the user menu ends the row, it is not a
+            separate island floating away from it.
           */}
-          <div className="ml-auto flex items-center gap-3 sm:gap-4">
+          <div className="ml-auto flex items-center gap-2 sm:gap-2.5">
             {uiFeatures.orgSwitcher ? (
               <>
                 <OrgSwitcher current={currentOrg} orgs={orgs} />
@@ -86,7 +88,7 @@ export async function Shell({
               </>
             ) : null}
 
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5">
               {/* Sits where a help button would: raising a bug or a piece of
                   feedback should not require leaving the page you are on. */}
               <SupportWidget categories={supportCategories} />
