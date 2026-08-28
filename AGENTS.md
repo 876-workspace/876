@@ -33,7 +33,7 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 pnpm dev                          # Product apps + API + Widgets API in parallel
 pnpm dev:api                      # Express identity API only
 pnpm dev:app                      # Consumer app only
-pnpm dev:console                  # Console app + API + Widgets API
+pnpm dev:console                  # Console app + API + Widgets API + Billing API + CRM API
 
 # Per-workspace checks and testing
 pnpm --filter @876/app typecheck
