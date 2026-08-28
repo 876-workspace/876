@@ -1,20 +1,22 @@
 'use client'
 
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
+import { InformationCircleIcon } from '@876/ui/icons'
 import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Textarea } from '@876/ui/textarea'
-import { InformationCircleIcon } from '@876/ui/icons'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
-import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 
 import type { RequestCustomerOption } from '../request-customer-option'
 import type { RequestPriority } from '../types'
 import { CustomerSelectionCard } from './request-customer-picker'
+
+type ErrorValue = { code: string; message: string }
 
 type Props = {
   organizationId: string
@@ -34,6 +36,7 @@ export function RequestCreateForm({
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [customerId, setCustomerId] = useState('')
+  const [error, setError] = useState<ErrorValue | null>(null)
   const activePriorities = priorities.filter((priority) => priority.isActive)
   const defaultPriority = activePriorities.find(
     (priority) => priority.isDefault
@@ -50,6 +53,7 @@ export function RequestCreateForm({
     if (!customerId || !subject) return
 
     setSubmitting(true)
+    setError(null)
     const result = await client.requests.create(organizationId, {
       customerId,
       subject,
@@ -60,7 +64,10 @@ export function RequestCreateForm({
     })
     setSubmitting(false)
 
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setError(result.error)
+      return
+    }
     router.push(`${requestsHref}/${result.data.id}`)
     router.refresh()
   }
@@ -74,6 +81,13 @@ export function RequestCreateForm({
           </div>
 
           <div className="space-y-5 p-5">
+            {error ? (
+              <AppError
+                title="Request could not be created"
+                error={error}
+                variant="form"
+              />
+            ) : null}
             <FormRow label="Subject" htmlFor="subject" required>
               <Input
                 id="subject"
