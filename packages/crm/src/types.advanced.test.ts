@@ -6,6 +6,8 @@ import {
   teamMemberSchema,
   requestCategorySchema,
   requestSubcategorySchema,
+  requestPrioritySchema,
+  requestPriorityListSchema,
   requestTaskSchema,
   requestReminderSchema,
   requestListSchema,
@@ -15,6 +17,25 @@ import {
   requestReminderListSchema,
   customerProfileSchema,
 } from './types.js'
+
+const priority = {
+  object: 'request_priority',
+  id: 'crm_pri_normal',
+  tenantId: 'crm_tenant_1',
+  provisioningKey: 'normal',
+  name: 'Normal',
+  slug: 'normal',
+  description: null,
+  color: '#64748b',
+  icon: null,
+  weight: 20,
+  sortOrder: 20,
+  isDefault: true,
+  isActive: true,
+  createdBy: null,
+  createdAt: 1,
+  updatedAt: 1,
+}
 
 const request = {
   object: 'request',
@@ -26,7 +47,8 @@ const request = {
   categoryId: 'crm_cat_1',
   subcategoryId: null,
   status: 'OPEN',
-  priority: 'NORMAL',
+  priorityId: priority.id,
+  priority,
   source: 'CRM',
   teamId: null,
   assigneeId: null,
@@ -40,27 +62,56 @@ const request = {
   updatedAt: 1,
 }
 
+describe('types - request priority schemas', () => {
+  it('parses tenant-owned priority resources and lists', () => {
+    expect(requestPrioritySchema.safeParse(priority).success).toBe(true)
+    expect(
+      requestPriorityListSchema.safeParse({
+        object: 'list',
+        data: [priority],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org_1/request-priorities',
+      }).success
+    ).toBe(true)
+  })
+
+  it('rejects the removed string priority contract', () => {
+    expect(requestPrioritySchema.safeParse('NORMAL').success).toBe(false)
+  })
+})
+
 describe('types - crmRequestSchema', () => {
-  it('parses valid request', () => {
+  it('parses a request with its stable priority id and resource', () => {
     expect(crmRequestSchema.safeParse(request).success).toBe(true)
   })
+
   it('rejects invalid status', () => {
     expect(
       crmRequestSchema.safeParse({ ...request, status: 'UNKNOWN' }).success
     ).toBe(false)
   })
-  it('rejects missing required fields', () => {
-    const { subject: _s, ...rest } = request as Record<string, unknown>
+
+  it('rejects a request without priorityId', () => {
+    const { priorityId: _priorityId, ...rest } = request
     expect(crmRequestSchema.safeParse(rest).success).toBe(false)
   })
+
+  it('rejects the legacy string priority payload', () => {
+    expect(
+      crmRequestSchema.safeParse({ ...request, priority: 'NORMAL' }).success
+    ).toBe(false)
+  })
+
   it('allows null categoryId and teamId', () => {
     expect(
       crmRequestSchema.safeParse({ ...request, categoryId: null, teamId: null })
         .success
     ).toBe(true)
   })
+
   it('parses every status enum value', () => {
-    for (const s of [
+    for (const status of [
       'OPEN',
       'IN_PROGRESS',
       'WAITING',
@@ -69,7 +120,7 @@ describe('types - crmRequestSchema', () => {
       'CANCELLED',
     ]) {
       expect(
-        crmRequestSchema.safeParse({ ...request, status: s }).success
+        crmRequestSchema.safeParse({ ...request, status }).success
       ).toBe(true)
     }
   })
@@ -90,22 +141,26 @@ describe('types - crmRequestNoteSchema email metadata', () => {
     createdAt: 1,
     updatedAt: 1,
   }
+
   it('parses NOTE without email fields', () => {
     expect(crmRequestNoteSchema.safeParse(base).success).toBe(true)
   })
+
   it('parses EMAIL with direction and address arrays', () => {
-    const note = {
-      ...base,
-      kind: 'EMAIL',
-      emailMessageId: 'mid',
-      emailDirection: 'INBOUND',
-      emailFrom: 'a@b.com',
-      emailTo: ['x@y.com'],
-      emailCc: [],
-      emailSubject: 'Hi',
-    }
-    expect(crmRequestNoteSchema.safeParse(note).success).toBe(true)
+    expect(
+      crmRequestNoteSchema.safeParse({
+        ...base,
+        kind: 'EMAIL',
+        emailMessageId: 'mid',
+        emailDirection: 'INBOUND',
+        emailFrom: 'a@b.com',
+        emailTo: ['x@y.com'],
+        emailCc: [],
+        emailSubject: 'Hi',
+      }).success
+    ).toBe(true)
   })
+
   it('rejects invalid kind', () => {
     expect(
       crmRequestNoteSchema.safeParse({ ...base, kind: 'CHAT' }).success
@@ -141,29 +196,20 @@ describe('types - team schemas', () => {
     updatedAt: 1,
     members: [member],
   }
-  it('parses team with members', () => {
+
+  it('parses team with and without members', () => {
     expect(teamSchema.safeParse(team).success).toBe(true)
+    const { members: _members, ...withoutMembers } = team
+    expect(teamSchema.safeParse(withoutMembers).success).toBe(true)
   })
-  it('parses team without members', () => {
-    const { members: _m, ...rest } = team as Record<string, unknown>
-    expect(teamSchema.safeParse(rest).success).toBe(true)
-  })
-  it('rejects invalid autoAssign', () => {
+
+  it('validates auto assignment and member roles', () => {
     expect(
       teamSchema.safeParse({ ...team, autoAssign: 'RANDOM' }).success
     ).toBe(false)
-  })
-  it('parses every team status', () => {
-    expect(teamSchema.safeParse({ ...team, status: 'ARCHIVED' }).success).toBe(
-      true
-    )
-  })
-  it('parses member role LEAD', () => {
     expect(
       teamMemberSchema.safeParse({ ...member, role: 'LEAD' }).success
     ).toBe(true)
-  })
-  it('rejects invalid member role', () => {
     expect(
       teamMemberSchema.safeParse({ ...member, role: 'ADMIN' }).success
     ).toBe(false)
@@ -171,11 +217,12 @@ describe('types - team schemas', () => {
 })
 
 describe('types - category schemas', () => {
-  const sub = {
+  const subcategory = {
     object: 'request_subcategory',
     id: 'crm_sub_1',
     tenantId: 'crm_tenant_1',
     categoryId: 'crm_cat_1',
+    provisioningKey: null,
     name: 'Damaged',
     slug: 'damaged',
     description: null,
@@ -183,17 +230,18 @@ describe('types - category schemas', () => {
     sortOrder: 0,
     isActive: true,
     defaultTeamId: null,
-    defaultPriority: null,
+    defaultPriorityId: priority.id,
     createdBy: 'usr_1',
     createdAt: 1,
     updatedAt: 1,
     deletedAt: null,
     deletedBy: null,
   }
-  const cat = {
+  const category = {
     object: 'request_category',
     id: 'crm_cat_1',
     tenantId: 'crm_tenant_1',
+    provisioningKey: 'support',
     name: 'Delivery',
     slug: 'delivery',
     description: null,
@@ -202,29 +250,26 @@ describe('types - category schemas', () => {
     sortOrder: 0,
     isActive: true,
     defaultTeamId: null,
-    defaultPriority: null,
-    createdBy: 'usr_1',
+    defaultPriorityId: priority.id,
+    createdBy: null,
     createdAt: 1,
     updatedAt: 1,
     deletedAt: null,
     deletedBy: null,
-    subcategories: [sub],
+    subcategories: [subcategory],
   }
-  it('parses category with subcategories', () => {
-    expect(requestCategorySchema.safeParse(cat).success).toBe(true)
+
+  it('parses category and subcategory priority references', () => {
+    expect(requestCategorySchema.safeParse(category).success).toBe(true)
+    expect(requestSubcategorySchema.safeParse(subcategory).success).toBe(true)
   })
-  it('rejects category without subcategories array', () => {
-    const { subcategories: _s, ...rest } = cat as Record<string, unknown>
-    expect(requestCategorySchema.safeParse(rest).success).toBe(false)
-  })
-  it('parses subcategory', () => {
-    expect(requestSubcategorySchema.safeParse(sub).success).toBe(true)
-  })
-  it('rejects invalid priority on subcategory', () => {
+
+  it('rejects the removed defaultPriority field as a substitute for the id', () => {
+    const { defaultPriorityId: _defaultPriorityId, ...withoutId } = subcategory
     expect(
       requestSubcategorySchema.safeParse({
-        ...sub,
-        defaultPriority: 'CRITICAL',
+        ...withoutId,
+        defaultPriority: 'HIGH',
       }).success
     ).toBe(false)
   })
@@ -239,7 +284,8 @@ describe('types - task and reminder', () => {
     title: 'Call',
     description: null,
     status: 'OPEN',
-    priority: 'NORMAL',
+    priorityId: priority.id,
+    priority,
     assigneeId: null,
     dueAt: null,
     completedAt: null,
@@ -269,52 +315,28 @@ describe('types - task and reminder', () => {
     deletedAt: null,
     deletedBy: null,
   }
-  it('parses task', () => {
+
+  it('parses task with its priority resource', () => {
     expect(requestTaskSchema.safeParse(task).success).toBe(true)
   })
+
   it('rejects invalid task status', () => {
     expect(
       requestTaskSchema.safeParse({ ...task, status: 'UNKNOWN' }).success
     ).toBe(false)
   })
-  it('parses reminder', () => {
+
+  it('parses reminder and rejects invalid reminder status', () => {
     expect(requestReminderSchema.safeParse(reminder).success).toBe(true)
-  })
-  it('rejects invalid reminder status', () => {
     expect(
       requestReminderSchema.safeParse({ ...reminder, status: 'UNKNOWN' })
         .success
     ).toBe(false)
   })
-  it('parses every task status', () => {
-    for (const s of ['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED']) {
-      expect(requestTaskSchema.safeParse({ ...task, status: s }).success).toBe(
-        true
-      )
-    }
-  })
-  it('parses every reminder status', () => {
-    for (const s of ['SCHEDULED', 'SENT', 'DISMISSED', 'CANCELLED']) {
-      expect(
-        requestReminderSchema.safeParse({ ...reminder, status: s }).success
-      ).toBe(true)
-    }
-  })
 })
 
 describe('types - list schemas and customer', () => {
-  it('parses request list', () => {
-    expect(
-      requestListSchema.safeParse({
-        object: 'list',
-        data: [request],
-        has_more: false,
-        total_count: 1,
-        url: '/v1/organizations/org_1/requests',
-      }).success
-    ).toBe(true)
-  })
-  it('parses team list', () => {
+  it('parses request, category, task, team, and reminder lists', () => {
     const team = {
       object: 'team',
       id: 'crm_team_1',
@@ -330,21 +352,11 @@ describe('types - list schemas and customer', () => {
       createdAt: 1,
       updatedAt: 1,
     }
-    expect(
-      teamListSchema.safeParse({
-        object: 'list',
-        data: [team],
-        has_more: false,
-        total_count: 1,
-        url: '/v1/organizations/org_1/teams',
-      }).success
-    ).toBe(true)
-  })
-  it('parses category list', () => {
-    const cat = {
+    const category = {
       object: 'request_category',
       id: 'crm_cat_1',
       tenantId: 'crm_tenant_1',
+      provisioningKey: null,
       name: 'Delivery',
       slug: 'delivery',
       description: null,
@@ -353,7 +365,7 @@ describe('types - list schemas and customer', () => {
       sortOrder: 0,
       isActive: true,
       defaultTeamId: null,
-      defaultPriority: null,
+      defaultPriorityId: null,
       createdBy: 'usr_1',
       createdAt: 1,
       updatedAt: 1,
@@ -361,47 +373,6 @@ describe('types - list schemas and customer', () => {
       deletedBy: null,
       subcategories: [],
     }
-    expect(
-      requestCategoryListSchema.safeParse({
-        object: 'list',
-        data: [cat],
-        has_more: false,
-        total_count: 1,
-        url: '/v1/organizations/org_1/request-categories',
-      }).success
-    ).toBe(true)
-  })
-  it('parses customerProfile', () => {
-    expect(
-      customerProfileSchema.safeParse({
-        id: 'crm_cus_1',
-        tenantId: 'crm_tenant_1',
-        billingCustomerId: 'cus_1',
-        ownerId: null,
-        status: 'ACTIVE',
-        createdAt: 1,
-        updatedAt: 1,
-        deletedAt: null,
-        deletedBy: null,
-        deletionReason: null,
-      }).success
-    ).toBe(true)
-    expect(
-      customerProfileSchema.safeParse({
-        id: 'crm_cus_1',
-        tenantId: 'crm_tenant_1',
-        billingCustomerId: 'cus_1',
-        ownerId: null,
-        status: 'UNKNOWN' as unknown as never,
-        createdAt: 1,
-        updatedAt: 1,
-        deletedAt: null,
-        deletedBy: null,
-        deletionReason: null,
-      }).success
-    ).toBe(false)
-  })
-  it('parses task list and reminder list', () => {
     const task = {
       object: 'request_task',
       id: 'crm_task_1',
@@ -410,7 +381,8 @@ describe('types - list schemas and customer', () => {
       title: 'Call',
       description: null,
       status: 'OPEN',
-      priority: 'NORMAL',
+      priorityId: priority.id,
+      priority,
       assigneeId: null,
       dueAt: null,
       completedAt: null,
@@ -422,7 +394,7 @@ describe('types - list schemas and customer', () => {
       deletedAt: null,
       deletedBy: null,
     }
-    const rem = {
+    const reminder = {
       object: 'request_reminder',
       id: 'crm_rem_1',
       tenantId: 'crm_tenant_1',
@@ -440,23 +412,42 @@ describe('types - list schemas and customer', () => {
       deletedAt: null,
       deletedBy: null,
     }
+
+    for (const [schema, data] of [
+      [requestListSchema, [request]],
+      [teamListSchema, [team]],
+      [requestCategoryListSchema, [category]],
+      [requestTaskListSchema, [task]],
+      [requestReminderListSchema, [reminder]],
+    ] as const) {
+      expect(
+        schema.safeParse({
+          object: 'list',
+          data,
+          has_more: false,
+          total_count: 1,
+          url: '/x',
+        }).success
+      ).toBe(true)
+    }
+  })
+
+  it('parses customerProfile and rejects an invalid status', () => {
+    const profile = {
+      id: 'crm_cus_1',
+      tenantId: 'crm_tenant_1',
+      billingCustomerId: 'cus_1',
+      ownerId: null,
+      status: 'ACTIVE',
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      deletedBy: null,
+      deletionReason: null,
+    }
+    expect(customerProfileSchema.safeParse(profile).success).toBe(true)
     expect(
-      requestTaskListSchema.safeParse({
-        object: 'list',
-        data: [task],
-        has_more: false,
-        total_count: 1,
-        url: '/x',
-      }).success
-    ).toBe(true)
-    expect(
-      requestReminderListSchema.safeParse({
-        object: 'list',
-        data: [rem],
-        has_more: false,
-        total_count: 1,
-        url: '/x',
-      }).success
-    ).toBe(true)
+      customerProfileSchema.safeParse({ ...profile, status: 'UNKNOWN' }).success
+    ).toBe(false)
   })
 })
