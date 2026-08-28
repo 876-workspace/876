@@ -143,7 +143,7 @@ export function useAuthFlow() {
     pendingToken: null,
     canResendAt: null,
     status: 'idle',
-    notice: null,
+    notice: config.initialNotice ?? null,
   })
 
   useEffect(() => {

@@ -150,6 +150,16 @@ export type AuthUIConfig = {
   labels?: Partial<AuthLabels>
   /** Theme accent applied via CSS custom property. */
   accentColor?: string
+  /**
+   * A banner to show on first render, before the user has done anything.
+   *
+   * The social callback is the reason this exists: when a provider hands back
+   * an error, or the code exchange fails, the app's `/callback` route redirects
+   * to `/login?authError=<code>`. Without a way to seed the flow's notice, that
+   * reason was dropped on the floor and the user saw an ordinary blank sign-in
+   * form — which reads as "nothing happened" rather than "that failed".
+   */
+  initialNotice?: { type: 'error' | 'success' | 'info'; message: string }
 }
 
 /**
