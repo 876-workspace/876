@@ -24,3 +24,13 @@ export async function ensure(organizationId: string) {
     return winner
   }
 }
+
+export function markProvisioned(id: string, revision: number) {
+  return prisma.tenant.update({
+    where: { id },
+    data: {
+      provisioningRevision: revision,
+      provisionedAt: new Date(),
+    },
+  })
+}

@@ -63,6 +63,10 @@ const ERRORS = {
     message: 'Request priority not found.',
     httpStatus: 404,
   },
+  'crm/provisioning-invalid': {
+    message: 'CRM provisioning configuration contains an invalid reference.',
+    httpStatus: 500,
+  },
   'crm/registry-unavailable': {
     message: 'The customer registry could not be reached.',
     httpStatus: 502,

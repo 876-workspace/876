@@ -9,6 +9,7 @@ import { getPlatformClient } from '@/lib/876/platform-client'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { CRM_APP_SLUG } from '@/lib/crm-app'
 import { crmApi } from '@/lib/crm-api'
+import { loadCrmProvisioningManifest } from '@/lib/provisioning/manifest'
 
 export const runtime = 'nodejs'
 
@@ -106,9 +107,22 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  const provisioning = await loadCrmProvisioningManifest().catch((error) => {
+    Sentry.captureException(error, {
+      tags: { category: 'platform_client', phase: 'crm_provisioning_manifest' },
+      extra: { organizationId, userId: session.user.id },
+    })
+    return null
+  })
+  if (!provisioning)
+    return apiJson(
+      { error: '876 CRM provisioning configuration is unavailable.' },
+      { status: 502, code: 'crm/provisioning-config-unavailable' }
+    )
+
   const tenant = await crmApi('/v1/tenants', {
     method: 'POST',
-    body: JSON.stringify({ organizationId }),
+    body: JSON.stringify({ organizationId, provisioning }),
   }).catch(() => null)
 
   if (!tenant?.ok) {

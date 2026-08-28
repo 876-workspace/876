@@ -1,5 +1,7 @@
 import { BILLING_APP_SLUG } from './provisioning'
 
+const CRM_APP_SLUG = '876-crm'
+
 // Provisioning catalog — the closed set of resource types each provisioning
 // target may declare, and the validation that keeps a draft consistent.
 //
@@ -63,11 +65,6 @@ export type ProvisioningDraftReplace = {
   resources: ProvisioningResourceInput[]
   steps?: unknown[]
 }
-
-// ---------------------------------------------------------------------------
-// Internal registry types — kept private so callers only see the serialised
-// definitions, the same way the Python dataclasses are module-private.
-// ---------------------------------------------------------------------------
 
 type Field = {
   label: string
@@ -150,9 +147,7 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
     'Payment methods available on new workspaces.',
     true,
     1,
-    {
-      name: field('Name', 'string'),
-    }
+    { name: field('Name', 'string') }
   ),
   payment_term: resource(
     'Payment terms',
@@ -257,6 +252,61 @@ export const APPLICATION_RESOURCES: Record<string, Record<string, Resource>> = {
       }
     ),
   },
+  [CRM_APP_SLUG]: {
+    request_priority: resource(
+      'Request priorities',
+      'Priorities created for newly provisioned CRM workspaces.',
+      true,
+      1,
+      {
+        name: field('Name', 'string'),
+        description: field('Description', 'string', { required: false }),
+        color: field('Color', 'string', { required: false }),
+        icon: field('Icon', 'string', { required: false }),
+        weight: field('Weight', 'integer'),
+        sortOrder: field('Sort order', 'integer'),
+        isDefault: field('Default', 'boolean'),
+      }
+    ),
+    request_category: resource(
+      'Request categories',
+      'Categories created for newly provisioned CRM workspaces.',
+      true,
+      1,
+      {
+        name: field('Name', 'string'),
+        description: field('Description', 'string', { required: false }),
+        color: field('Color', 'string', { required: false }),
+        icon: field('Icon', 'string', { required: false }),
+        sortOrder: field('Sort order', 'integer'),
+        isActive: field('Active', 'boolean'),
+        defaultPriority: field('Default priority', 'reference', {
+          required: false,
+          referenceNamespace: 'request_priority',
+        }),
+      }
+    ),
+    request_subcategory: resource(
+      'Request subcategories',
+      'Optional subcategories created beneath provisioned CRM categories.',
+      true,
+      0,
+      {
+        category: field('Category', 'reference', {
+          referenceNamespace: 'request_category',
+        }),
+        name: field('Name', 'string'),
+        description: field('Description', 'string', { required: false }),
+        icon: field('Icon', 'string', { required: false }),
+        sortOrder: field('Sort order', 'integer'),
+        isActive: field('Active', 'boolean'),
+        defaultPriority: field('Default priority', 'reference', {
+          required: false,
+          referenceNamespace: 'request_priority',
+        }),
+      }
+    ),
+  },
 }
 
 export function resourceRegistry(
@@ -339,113 +389,97 @@ export function validateDraft(
       const prop = values.get(key)
 
       if (!prop) {
-        if (fieldDef.required) {
+        if (fieldDef.required)
           issues.push({
             path: `${path}.properties.${key}`,
             code: 'missing_property',
             message: `Property '${key}' is required.`,
           })
-        }
         continue
       }
 
-      if (prop.valueType !== fieldDef.valueType) {
+      if (prop.valueType !== fieldDef.valueType)
         issues.push({
           path: `${path}.properties.${key}.value_type`,
           code: 'invalid_property_type',
           message: `Property '${key}' must use value type '${fieldDef.valueType}'.`,
         })
-      }
 
       if (
         fieldDef.referenceNamespace &&
         prop.referenceNamespace !== fieldDef.referenceNamespace
-      ) {
+      )
         issues.push({
           path: `${path}.properties.${key}.reference_namespace`,
           code: 'invalid_reference_namespace',
           message: `Property '${key}' must reference '${fieldDef.referenceNamespace}'.`,
         })
-      }
 
       const scalar = prop.stringValue
       if (
         fieldDef.allowedValues &&
         !fieldDef.allowedValues.includes(scalar as string)
-      ) {
+      )
         issues.push({
           path: `${path}.properties.${key}`,
           code: 'invalid_property_value',
           message: `Property '${key}' must be one of: ${fieldDef.allowedValues.join(', ')}.`,
         })
-      }
     }
 
-    for (const key of values.keys()) {
-      if (!(key in definition.fields)) {
+    for (const key of values.keys())
+      if (!(key in definition.fields))
         issues.push({
           path: `${path}.properties.${key}`,
           code: 'unknown_property',
           message: `Property '${key}' is not registered for resource type '${resource.resourceType}'.`,
         })
-      }
-    }
   })
 
-  for (const [resourceType, count] of Object.entries(counts)) {
-    if (count > 1 && !registry[resourceType]!.multiple) {
+  for (const [resourceType, count] of Object.entries(counts))
+    if (count > 1 && !registry[resourceType]!.multiple)
       issues.push({
         path: 'resources',
         code: 'resource_cardinality',
         message: `Resource type '${resourceType}' permits only one row.`,
       })
-    }
-  }
 
   for (const [resourceType, definition] of Object.entries(registry)) {
     const count = counts[resourceType] ?? 0
-    if (count < definition.minimumItems) {
+    if (count < definition.minimumItems)
       issues.push({
         path: 'resources',
         code: 'resource_minimum',
         message: `Resource type '${resourceType}' requires at least ${definition.minimumItems} row(s).`,
       })
-    }
   }
 
   const referenceNamespaces = new Set<string>()
-  for (const definition of Object.values(registry)) {
-    for (const fieldDef of Object.values(definition.fields)) {
+  for (const definition of Object.values(registry))
+    for (const fieldDef of Object.values(definition.fields))
       if (
         fieldDef.referenceNamespace &&
         fieldDef.referenceNamespace in registry
-      ) {
+      )
         referenceNamespaces.add(fieldDef.referenceNamespace)
-      }
-    }
-  }
 
   const referenceTargets: Record<string, Set<string>> = {}
-  for (const ns of referenceNamespaces) {
+  for (const ns of referenceNamespaces)
     referenceTargets[ns] = new Set(
       draft.resources.filter((r) => r.resourceType === ns).map((r) => r.key)
     )
-  }
 
   draft.resources.forEach((resource, index) => {
     for (const prop of resource.properties) {
       const ns = prop.referenceNamespace
       if (ns && ns in referenceTargets) {
         const targets = referenceTargets[ns]!
-        // Python checks `property_.reference_key not in reference_targets[namespace]`
-        // — a None/null key is never in the set, so it flags unresolved.
-        if (!targets.has(prop.referenceKey as string)) {
+        if (!targets.has(prop.referenceKey as string))
           issues.push({
             path: `resources.${index}.properties.${prop.key}`,
             code: 'unresolved_reference',
             message: `Reference '${ns}/${prop.referenceKey}' does not exist in this draft.`,
           })
-        }
       }
     }
   })
@@ -453,17 +487,13 @@ export function validateDraft(
   for (const [resourceType, definition] of Object.entries(registry)) {
     for (const [fieldKey, fieldDef] of Object.entries(definition.fields)) {
       if (!fieldDef.unique) continue
-
       const seen = new Set<string>()
 
       draft.resources.forEach((resource, index) => {
         if (resource.resourceType !== resourceType) return
-
         const prop = resource.properties.find((p) => p.key === fieldKey)
         if (!prop) return
 
-        // Tuple mirroring Python: (value_type, string_value, integer_value,
-        // decimal_value, boolean_value, reference_namespace, reference_key)
         const tuple = JSON.stringify([
           prop.valueType,
           prop.stringValue,
@@ -474,17 +504,31 @@ export function validateDraft(
           prop.referenceKey,
         ])
 
-        if (seen.has(tuple)) {
+        if (seen.has(tuple))
           issues.push({
             path: `resources.${index}.properties.${fieldKey}`,
             code: 'duplicate_unique_property',
             message: `Property '${fieldKey}' must be unique within resource type '${resourceType}'.`,
           })
-        } else {
-          seen.add(tuple)
-        }
+        else seen.add(tuple)
       })
     }
+  }
+
+  if (targetType === 'application' && targetKey === CRM_APP_SLUG) {
+    const defaults = draft.resources.filter((resource) => {
+      if (resource.resourceType !== 'request_priority') return false
+      return resource.properties.some(
+        (property) =>
+          property.key === 'isDefault' && property.booleanValue === true
+      )
+    })
+    if (defaults.length !== 1)
+      issues.push({
+        path: 'resources',
+        code: 'crm_default_priority',
+        message: 'CRM provisioning requires exactly one default request priority.',
+      })
   }
 
   return issues

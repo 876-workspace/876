@@ -1,5 +1,5 @@
-import { getLogger } from '@/platform/logger'
 import { generateId } from '@/platform/ids'
+import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
@@ -79,11 +79,6 @@ function resourceDef(
   return { resource_type: resourceType, key, position, properties }
 }
 
-/**
- * The platform's day-zero setup. Its finance manifest lives at
- * `finance/jamaica`; further setups (United States, other Caribbean markets)
- * are created in Console by copying this one and editing the values.
- */
 export const DEFAULT_PROVISIONING_SETUP = {
   key: 'jamaica',
   name: 'Jamaica',
@@ -162,35 +157,71 @@ export const FINANCE_BOOTSTRAP_RESOURCES: ResourceDef[] = [
 ]
 
 export const FINANCE_BOOTSTRAP_STEPS: StepDef[] = [
-  {
-    key: 'workspace',
-    description: 'Create the finance workspace.',
-    position: 0,
-  },
-  {
-    key: 'currencies',
-    description: 'Create configured currencies.',
-    position: 10,
-  },
+  { key: 'workspace', description: 'Create the finance workspace.', position: 0 },
+  { key: 'currencies', description: 'Create configured currencies.', position: 10 },
   { key: 'payment-modes', description: 'Create payment modes.', position: 20 },
   { key: 'payment-terms', description: 'Create payment terms.', position: 30 },
-  {
-    key: 'invoice-preferences',
-    description: 'Create invoice preferences.',
-    position: 40,
-  },
-  {
-    key: 'tax-authorities',
-    description: 'Create tax authorities.',
-    position: 50,
-  },
+  { key: 'invoice-preferences', description: 'Create invoice preferences.', position: 40 },
+  { key: 'tax-authorities', description: 'Create tax authorities.', position: 50 },
   { key: 'tax-rates', description: 'Create tax rates.', position: 60 },
+]
+
+const CRM_BOOTSTRAP_RESOURCES: ResourceDef[] = [
+  resourceDef('request_priority', 'low', 10, [
+    stringProp('name', 'Low'),
+    integerProp('weight', 10),
+    integerProp('sortOrder', 10),
+    booleanProp('isDefault', false),
+  ]),
+  resourceDef('request_priority', 'normal', 20, [
+    stringProp('name', 'Normal'),
+    integerProp('weight', 20),
+    integerProp('sortOrder', 20),
+    booleanProp('isDefault', true),
+  ]),
+  resourceDef('request_priority', 'high', 30, [
+    stringProp('name', 'High'),
+    integerProp('weight', 30),
+    integerProp('sortOrder', 30),
+    booleanProp('isDefault', false),
+  ]),
+  resourceDef('request_priority', 'urgent', 40, [
+    stringProp('name', 'Urgent'),
+    integerProp('weight', 40),
+    integerProp('sortOrder', 40),
+    booleanProp('isDefault', false),
+  ]),
+  ...[
+    ['general', 'General', 0],
+    ['support', 'Support', 1],
+    ['billing', 'Billing', 2],
+    ['sales', 'Sales', 3],
+    ['complaint', 'Complaint', 4],
+    ['feedback', 'Feedback', 5],
+    ['other', 'Other', 6],
+  ].map(([key, name, sortOrder]) =>
+    resourceDef('request_category', String(key), 100 + Number(sortOrder) * 10, [
+      stringProp('name', String(name)),
+      integerProp('sortOrder', Number(sortOrder)),
+      booleanProp('isActive', true),
+    ])
+  ),
+  // request_subcategory is intentionally supported by the catalog but the
+  // default CRM manifest contains none. Operators can add them in later revisions.
+]
+
+const CRM_BOOTSTRAP_STEPS: StepDef[] = [
+  { key: 'request-priorities', description: 'Create CRM request priorities.', position: 10 },
+  { key: 'request-categories', description: 'Create CRM request categories.', position: 20 },
+  { key: 'request-subcategories', description: 'Create configured CRM request subcategories.', position: 30 },
 ]
 
 type PlatformAppProvisioningDef = {
   slug: string
   financeDependency: 'none' | 'embedded'
   financeScopes: string[]
+  resources?: ResourceDef[]
+  steps?: StepDef[]
 }
 
 const PLATFORM_APPS_FOR_PROVISIONING: PlatformAppProvisioningDef[] = [
@@ -215,9 +246,6 @@ const PLATFORM_APPS_FOR_PROVISIONING: PlatformAppProvisioningDef[] = [
   {
     slug: '876-invoice',
     financeDependency: 'embedded',
-    // The entry-level invoicing set: the customer registry plus items,
-    // invoices, and payments. Catalogue, subscriptions, and ledger scopes stay
-    // with 876 Billing, which is what an organization upgrades to.
     financeScopes: [
       'billing.customers.read',
       'billing.customers.write',
@@ -232,9 +260,9 @@ const PLATFORM_APPS_FOR_PROVISIONING: PlatformAppProvisioningDef[] = [
   {
     slug: '876-crm',
     financeDependency: 'embedded',
-    // CRM owns the contact workspace but delegates the organization-wide
-    // customer record to Billing, keeping that shared resource canonical.
     financeScopes: ['billing.customers.read', 'billing.customers.write'],
+    resources: CRM_BOOTSTRAP_RESOURCES,
+    steps: CRM_BOOTSTRAP_STEPS,
   },
 ]
 
@@ -271,9 +299,7 @@ function revisionContent(revision: {
           valueType: property.valueType,
           stringValue: property.stringValue,
           integerValue: property.integerValue?.toString() ?? null,
-          decimalValue: property.decimalValue
-            ? String(property.decimalValue)
-            : null,
+          decimalValue: property.decimalValue ? String(property.decimalValue) : null,
           booleanValue: property.booleanValue,
           referenceNamespace: property.referenceNamespace,
           referenceKey: property.referenceKey,
@@ -281,7 +307,6 @@ function revisionContent(revision: {
         .sort((a, b) => a.key.localeCompare(b.key)),
     }))
     .sort((a, b) => a.position - b.position)
-
   const steps = [...revision.steps].sort((a, b) => a.position - b.position)
 
   return JSON.stringify({
@@ -305,9 +330,9 @@ async function hasUnpublishedChanges(
   if (
     revisionContent(draftRevision) ===
     revisionContent(published as unknown as typeof draftRevision)
-  ) {
+  )
     return false
-  }
+
   log.warn(
     {
       target_type: targetType,
@@ -328,9 +353,7 @@ async function seedStaticTarget(params: {
 }): Promise<boolean> {
   const published = await findPublished(params.targetType, params.targetKey)
   if (published) return false
-  if (
-    await hasUnpublishedChanges(params.targetType, params.targetKey, published)
-  )
+  if (await hasUnpublishedChanges(params.targetType, params.targetKey, published))
     return false
 
   const now = BigInt(nowUnixSeconds())
@@ -350,8 +373,7 @@ async function seedStaticTarget(params: {
         valueType: property.value_type,
         stringValue: property.string_value ?? null,
         integerValue:
-          property.integer_value !== null &&
-          property.integer_value !== undefined
+          property.integer_value !== null && property.integer_value !== undefined
             ? BigInt(property.integer_value)
             : null,
         decimalValue: property.decimal_value ?? null,
@@ -367,13 +389,6 @@ async function seedStaticTarget(params: {
   return true
 }
 
-/**
- * Ensures the Jamaica setup exists and owns the finance manifest.
- *
- * Installations that predate provisioning setups keep their manifest content:
- * `finance/shared` is re-keyed rather than replaced, so the currencies, tax
- * authority, and GCT rate an operator already edited survive.
- */
 async function seedDefaultSetup(): Promise<void> {
   const now = BigInt(nowUnixSeconds())
   const existing = await findSetupByKey(DEFAULT_PROVISIONING_SETUP.key)
@@ -408,6 +423,10 @@ async function seedDefaultSetup(): Promise<void> {
     )
 }
 
+function resourceKey(resource: ResourceDef) {
+  return `${resource.resource_type}:${resource.key}`
+}
+
 async function seedApplication(
   definition: PlatformAppProvisioningDef
 ): Promise<boolean> {
@@ -419,22 +438,12 @@ async function seedApplication(
 
   const published = await findPublished('application', app.id)
   const desiredScopes = [...new Set(definition.financeScopes)].sort()
-
-  if (
-    published &&
-    published.financeDependency === definition.financeDependency &&
-    [...published.financeScopes].sort().join(',') === desiredScopes.join(',')
-  ) {
-    return false
-  }
   if (await hasUnpublishedChanges('application', app.id, published))
     return false
 
   let resources: ResourceDef[] = []
   let steps: StepDef[] = []
-
   if (published) {
-    // Preserve existing content when only scopes changed.
     const full = await findRevision('application', app.id, 'published')
     if (full) {
       resources = full.resources.map((resource) => ({
@@ -445,12 +454,8 @@ async function seedApplication(
           key: property.key,
           value_type: property.valueType,
           string_value: property.stringValue,
-          integer_value: property.integerValue
-            ? Number(property.integerValue)
-            : null,
-          decimal_value: property.decimalValue
-            ? String(property.decimalValue)
-            : null,
+          integer_value: property.integerValue ? Number(property.integerValue) : null,
+          decimal_value: property.decimalValue ? String(property.decimalValue) : null,
           boolean_value: property.booleanValue,
           reference_namespace: property.referenceNamespace,
           reference_key: property.referenceKey,
@@ -463,6 +468,25 @@ async function seedApplication(
       }))
     }
   }
+
+  const existingResources = new Set(resources.map(resourceKey))
+  const missingResources = (definition.resources ?? []).filter(
+    (resource) => !existingResources.has(resourceKey(resource))
+  )
+  const existingSteps = new Set(steps.map((step) => step.key))
+  const missingSteps = (definition.steps ?? []).filter(
+    (step) => !existingSteps.has(step.key)
+  )
+  const financeMatches =
+    published &&
+    published.financeDependency === definition.financeDependency &&
+    [...published.financeScopes].sort().join(',') === desiredScopes.join(',')
+
+  if (published && financeMatches && missingResources.length === 0 && missingSteps.length === 0)
+    return false
+
+  resources = [...resources, ...missingResources]
+  steps = [...steps, ...missingSteps]
 
   const now = BigInt(nowUnixSeconds())
   await replaceDraft({
@@ -481,8 +505,7 @@ async function seedApplication(
         valueType: property.value_type,
         stringValue: property.string_value ?? null,
         integerValue:
-          property.integer_value !== null &&
-          property.integer_value !== undefined
+          property.integer_value !== null && property.integer_value !== undefined
             ? BigInt(property.integer_value)
             : null,
         decimalValue: property.decimal_value ?? null,
@@ -500,6 +523,8 @@ async function seedApplication(
       app_id: app.id,
       app_slug: definition.slug,
       finance_dependency: definition.financeDependency,
+      resources_added: missingResources.length,
+      steps_added: missingSteps.length,
     },
     'provisioning.seed.application_published'
   )
