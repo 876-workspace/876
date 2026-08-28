@@ -1,11 +1,15 @@
 'use client'
 
-import type { AppError } from '@876/core'
 import { toast } from 'sonner'
+
+type AppErrorValue = {
+  code: string
+  message: string
+}
 
 /** Shows a registered app error without dropping its stable support code. */
 export function showAppErrorToast(
-  error: AppError,
+  error: AppErrorValue,
   options: { title?: string } = {}
 ) {
   toast.error(options.title ?? error.message, {
