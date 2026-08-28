@@ -25,7 +25,7 @@ export function WorkspaceEntitlementNotice({
   return (
     <p
       role="status"
-      className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-amber-400/30 bg-amber-500/10 px-4 py-2.5 text-[0.8125rem] text-amber-800 dark:text-amber-300"
+      className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-amber-400/30 bg-amber-500/10 px-4 py-2.5 text-[0.8125rem] text-amber-800 dark:text-amber-300"
     >
       <ExclamationTriangleIcon className="size-4 shrink-0" aria-hidden="true" />
       This organization has no active {appLabel} entitlement. Existing data is

@@ -15,17 +15,9 @@ export type WorkspaceNavLink = {
 }
 
 /**
- * The workspace rail — the app's own navigation, rendered inside Console.
+ * The workspace sidebar navigation — the app's sections rendered inside Console.
  *
- * It is a rail rather than another tab strip on purpose. The organization page
- * already has a tab strip about the organization; a second horizontal strip
- * directly beneath it would read as more of the same, when the point is that
- * you have crossed into a different product. A rail down the side is the shape
- * the app itself uses, so an operator recognises where they are without a label
- * telling them.
- *
- * It collapses to a horizontal scroller below `lg`, where a rail would eat half
- * the viewport.
+ * Renders as a vertical list in the left column on desktop, and a horizontal bar on mobile.
  */
 export function WorkspaceNav({ links }: { links: WorkspaceNavLink[] }) {
   const pathname = usePathname()
@@ -33,7 +25,7 @@ export function WorkspaceNav({ links }: { links: WorkspaceNavLink[] }) {
   return (
     <nav
       aria-label="Workspace sections"
-      className="flex gap-1 overflow-x-auto p-2 lg:w-52 lg:shrink-0 lg:flex-col lg:overflow-visible"
+      className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible"
     >
       {links.map((link) => {
         const isActive = link.exact
@@ -46,10 +38,10 @@ export function WorkspaceNav({ links }: { links: WorkspaceNavLink[] }) {
             href={link.href}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
+              'flex items-center gap-2 rounded-md px-3 py-2 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
               isActive
-                ? 'bg-876-accent-fg/10 text-876-accent-fg'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                ? 'bg-muted text-foreground/90 font-medium'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80'
             )}
           >
             <WorkspaceIcon iconKey={link.iconKey} className="size-4 shrink-0" />
