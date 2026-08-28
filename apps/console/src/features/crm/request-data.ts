@@ -109,6 +109,53 @@ export const loadOrgReminders = cache(
   }
 )
 
+/**
+ * The organization a request surface is scoped to.
+ *
+ * An organization workspace route already knows the organization; the platform
+ * support desk resolves 876's own organization. That is the *only* difference
+ * between the two surfaces — everything below this line loads a request the
+ * same way for both, which is what lets them share one component set.
+ */
+export const resolveRequestOrgId = cache(
+  async (organizationId?: string): Promise<string | null> => {
+    if (organizationId) return organizationId
+    const org = await getPlatformOrganization()
+    return org?.id ?? null
+  }
+)
+
+/** The customer link for a request, relative to the surface it is opened from. */
+export function requestCustomerHref(
+  baseHref: string,
+  customerId: string
+): string {
+  const workspaceBase = baseHref.split('/requests')[0]
+  return baseHref.startsWith('/orgs/')
+    ? `${workspaceBase}/customers/${customerId}`
+    : `/customers/${customerId}`
+}
+
+/**
+ * The name indexes a request queue is rendered with.
+ *
+ * A row shows the customer, the assignee, and the team by name, and those come
+ * from two different lists. Both are fetched once per organization per request
+ * and joined in memory, so a page of 50 requests still costs two calls.
+ */
+export const loadRequestRowContext = cache(async (orgId: string) => {
+  const [profiles, directory] = await Promise.all([
+    $876.customerProfiles.list(orgId),
+    loadOrgDirectory(orgId),
+  ])
+
+  return {
+    customerProfiles: profiles.data?.data ?? [],
+    members: directory.members,
+    departments: directory.departments,
+  }
+})
+
 /** The request itself in the platform support desk context. */
 export const loadRequest = cache(async (requestId: string) => {
   const { org, session } = await loadSupportContext(requestId)

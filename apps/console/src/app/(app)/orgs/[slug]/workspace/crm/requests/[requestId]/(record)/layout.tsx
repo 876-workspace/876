@@ -1,19 +1,8 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 
+import { RequestRecordShell } from '@/features/crm/components/request-record-shell'
 import { $876 } from '@/lib/876'
-import {
-  RequestIdentity,
-  RequestIdentitySkeleton,
-  RequestToolbar,
-  RequestToolbarSkeleton,
-} from '@/features/crm/components/request-identity'
-import {
-  RequestAside,
-  RequestAsideSkeleton,
-} from '@/features/crm/components/request-aside'
 import { resolveOrg } from '../../../../../_data'
 
 type Props = {
@@ -37,9 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * The org-scoped CRM request record shell.
+ * An organization's CRM request, opened from its Console workspace.
  *
- * Implements the full split record layout matching 876 CRM and the Console support desk.
+ * Renders the same shell as the support desk and as 876 CRM itself; the only
+ * difference is the organization it is scoped to and the path it lives at. The
+ * workspace shell already supplies the page padding, so the record only sets
+ * its own measure here.
  */
 export default async function OrgRequestRecordLayout({
   children,
@@ -49,44 +41,14 @@ export default async function OrgRequestRecordLayout({
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const base = `/orgs/${slug}/workspace/crm/requests/${requestId}`
-
-  const tabs: RouteTabItem[] = [
-    { label: 'Conversation', href: base, exact: true },
-    { label: 'Customer', href: `${base}/customer` },
-    { label: 'Tasks', href: `${base}/tasks` },
-    { label: 'Reminders', href: `${base}/reminders` },
-    { label: 'Audit', href: `${base}/audit` },
-  ]
-
   return (
-    <div className="space-y-4">
-      <Suspense fallback={<RequestToolbarSkeleton />}>
-        <RequestToolbar
-          organizationId={org.id}
-          requestId={requestId}
-          baseHref={base}
-        />
-      </Suspense>
-
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0">
-          <header className="mb-5">
-            <Suspense fallback={<RequestIdentitySkeleton />}>
-              <RequestIdentity organizationId={org.id} requestId={requestId} />
-            </Suspense>
-          </header>
-
-          <RouteTabs tabs={tabs} className="876-detail-header-tabs mb-5" />
-          {children}
-        </div>
-
-        <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-6">
-          <Suspense fallback={<RequestAsideSkeleton />}>
-            <RequestAside organizationId={org.id} requestId={requestId} />
-          </Suspense>
-        </aside>
-      </div>
-    </div>
+    <RequestRecordShell
+      className="mx-auto w-full max-w-[1400px]"
+      organizationId={org.id}
+      requestId={requestId}
+      baseHref={`/orgs/${slug}/workspace/crm/requests/${requestId}`}
+    >
+      {children}
+    </RequestRecordShell>
   )
 }

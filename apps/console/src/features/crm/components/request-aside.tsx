@@ -19,12 +19,11 @@ import { categoryColorClass } from '../category-color'
 import { formatSource } from '../request-format'
 import { resolveCustomerIdentity } from '../customer-identity'
 import {
-  loadCategoryIndex,
-  loadCustomer,
   loadOrgCategoryIndex,
   loadOrgCustomer,
   loadOrgRequest,
-  loadRequest,
+  requestCustomerHref,
+  resolveRequestOrgId,
 } from '../request-data'
 
 /**
@@ -34,43 +33,32 @@ import {
 export async function RequestAside({
   requestId,
   organizationId,
+  baseHref = `/support/${requestId}`,
   customerHref,
 }: {
   requestId: string
   organizationId?: string
+  baseHref?: string
   customerHref?: string
 }) {
-  let orgId = organizationId
-  let requestData: any = null
+  const orgId = await resolveRequestOrgId(organizationId)
+  if (!orgId) return null
 
-  if (organizationId) {
-    const data = await loadOrgRequest(
-      organizationId,
-      requestId,
-      `/support/${requestId}`
-    )
-    orgId = data.org.id
-    requestData = data.request
-  } else {
-    const data = await loadRequest(requestId)
-    if (!data.org || !data.request) return null
-    orgId = data.org.id
-    requestData = data.request
-  }
+  const { request } = await loadOrgRequest(orgId, requestId, baseHref)
 
   const [{ customer }, categories] = await Promise.all([
-    loadOrgCustomer(orgId, requestData.customerId),
+    loadOrgCustomer(orgId, request.customerId),
     loadOrgCategoryIndex(orgId),
   ])
-  const category = requestData.categoryId
-    ? categories.get(requestData.categoryId)
+  const category = request.categoryId
+    ? categories.get(request.categoryId)
     : undefined
 
-  const identity = resolveCustomerIdentity(customer, requestData.customerId)
+  const identity = resolveCustomerIdentity(customer, request.customerId)
   const customerSubtitle = identity.legalName ?? identity.typeLabel
 
   const targetCustomerHref =
-    customerHref ?? `/customers/${requestData.customerId}`
+    customerHref ?? requestCustomerHref(baseHref, request.customerId)
 
   return (
     <>
@@ -233,14 +221,14 @@ export async function RequestAside({
 
           <DetailRow label="Source">
             <span className="text-foreground flex items-center gap-1.5">
-              <RequestSourceIcon source={requestData.source} />
-              {formatSource(requestData.source)}
+              <RequestSourceIcon source={request.source} />
+              {formatSource(request.source)}
             </span>
           </DetailRow>
 
           <DetailRow label="Created">
             <span className="text-foreground">
-              {formatDateTime(requestData.createdAt)}
+              {formatDateTime(request.createdAt)}
             </span>
           </DetailRow>
 
@@ -248,9 +236,9 @@ export async function RequestAside({
             <DetailRow label="Request ID">
               <span className="flex items-center gap-1">
                 <code className="bg-muted max-w-[150px] truncate rounded px-1.5 py-0.5 font-mono text-xs">
-                  {requestData.id}
+                  {request.id}
                 </code>
-                <CopyButton value={requestData.id} label="Request ID" />
+                <CopyButton value={request.id} label="Request ID" />
               </span>
             </DetailRow>
           </div>

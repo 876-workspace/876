@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { Page } from '@876/ui/page'
-import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
+import { RecordSplitView } from '@876/ui/record-split-view'
+import type { RouteTabItem } from '@876/ui/route-tabs'
 
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
@@ -47,10 +48,12 @@ export async function generateMetadata({
 /**
  * The request record shell.
  *
- * Only the middle column is a route: the identity band above and the customer
- * column beside it belong to the record, not to any one section, so switching
- * tabs swaps the thread for tasks or audit and leaves everything else in
- * place.
+ * The split itself is `RecordSplitView` from `@876/ui`, shared with Console's
+ * support desk and its organization CRM workspaces, so all three surfaces stay
+ * the same record — only the middle column is a route: the identity band above
+ * and the customer column beside it belong to the record, not to any one
+ * section, so switching tabs swaps the thread for tasks or audit and leaves
+ * everything else in place.
  *
  * The layout itself awaits `params` and nothing else — a layout that awaits
  * data suspends into the *list's* boundary, so the click would land back on
@@ -71,34 +74,26 @@ export default async function RequestRecordLayout({ children, params }: Props) {
 
   return (
     <Page className="mx-auto w-full max-w-[1400px]">
-      {/*
-        The toolbar spans the record; everything below it is two columns. The
-        customer column is a sibling of the identity band rather than a block
-        under it, so it starts level with the subject instead of a third of
-        the way down an empty gutter.
-      */}
-      <Suspense fallback={<RequestToolbarSkeleton />}>
-        <RequestToolbar requestId={requestId} />
-      </Suspense>
-
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0">
-          <header className="mb-5">
-            <Suspense fallback={<RequestIdentitySkeleton />}>
-              <RequestIdentity requestId={requestId} />
-            </Suspense>
-          </header>
-
-          <RouteTabs tabs={tabs} className="876-detail-header-tabs mb-5" />
-          {children}
-        </div>
-
-        <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-6">
+      <RecordSplitView
+        tabs={tabs}
+        toolbar={
+          <Suspense fallback={<RequestToolbarSkeleton />}>
+            <RequestToolbar requestId={requestId} />
+          </Suspense>
+        }
+        header={
+          <Suspense fallback={<RequestIdentitySkeleton />}>
+            <RequestIdentity requestId={requestId} />
+          </Suspense>
+        }
+        aside={
           <Suspense fallback={<RequestAsideSkeleton />}>
             <RequestAside requestId={requestId} />
           </Suspense>
-        </aside>
-      </div>
+        }
+      >
+        {children}
+      </RecordSplitView>
     </Page>
   )
 }

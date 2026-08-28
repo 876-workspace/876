@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Skeleton } from '@876/ui/skeleton'
@@ -12,14 +11,12 @@ import { RequestHeaderActions } from './request-header-actions'
 import { formatAge } from '../request-format'
 import { resolveCustomerIdentity } from '../customer-identity'
 import {
-  loadCategoryIndex,
-  loadCustomer,
-  loadDirectory,
   loadOrgCategoryIndex,
   loadOrgCustomer,
   loadOrgDirectory,
   loadOrgRequest,
-  loadRequest,
+  requestCustomerHref,
+  resolveRequestOrgId,
 } from '../request-data'
 
 /**
@@ -36,52 +33,34 @@ export async function RequestToolbar({
   baseHref?: string
   customerHref?: string
 }) {
-  let orgId = organizationId
-  let sessionUser: { id: string } | null = null
-  let requestData: any = null
+  const orgId = await resolveRequestOrgId(organizationId)
+  if (!orgId) return null
 
-  if (organizationId) {
-    const data = await loadOrgRequest(organizationId, requestId, baseHref)
-    orgId = data.org.id
-    sessionUser = data.session
-    requestData = data.request
-  } else {
-    const data = await loadRequest(requestId)
-    if (!data.org || !data.request) return null
-    orgId = data.org.id
-    sessionUser = data.session
-    requestData = data.request
-  }
-
-  const { departments, members } = await (orgId
-    ? loadOrgDirectory(orgId)
-    : loadDirectory())
+  const { session, request } = await loadOrgRequest(orgId, requestId, baseHref)
+  const { departments, members } = await loadOrgDirectory(orgId)
 
   const resolvedCustomerHref =
-    customerHref ??
-    (baseHref.startsWith('/orgs/')
-      ? `${baseHref.split('/requests')[0]}/customers/${requestData.customerId}`
-      : `/customers/${requestData.customerId}`)
+    customerHref ?? requestCustomerHref(baseHref, request.customerId)
 
   return (
     <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 pt-1">
         <span className="text-info font-mono text-base font-semibold">
-          #{requestData.number}
+          #{request.number}
         </span>
         <h1 className="876-page-title min-w-0 text-balance">
-          {requestData.subject}
+          {request.subject}
         </h1>
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-3">
         <RequestHeaderActions
           organizationId={orgId}
-          requestId={requestData.id}
-          requestNumber={requestData.number}
-          status={requestData.status}
-          customerId={requestData.customerId}
-          currentUserId={sessionUser?.id}
+          requestId={request.id}
+          requestNumber={request.number}
+          status={request.status}
+          customerId={request.customerId}
+          currentUserId={session?.id}
           departments={departments}
           members={members}
           baseHref={baseHref}
@@ -108,58 +87,45 @@ export function RequestToolbarSkeleton() {
 export async function RequestIdentity({
   requestId,
   organizationId,
+  baseHref = `/support/${requestId}`,
   customerHref,
 }: {
   requestId: string
   organizationId?: string
+  baseHref?: string
   customerHref?: string
 }) {
-  let orgId = organizationId
-  let requestData: any = null
+  const orgId = await resolveRequestOrgId(organizationId)
+  if (!orgId) return <PlatformOrganizationUnavailable />
 
-  if (organizationId) {
-    const data = await loadOrgRequest(
-      organizationId,
-      requestId,
-      `/support/${requestId}`
-    )
-    orgId = data.org.id
-    requestData = data.request
-  } else {
-    const data = await loadRequest(requestId)
-    if (!data.org) return <PlatformOrganizationUnavailable />
-    if (!data.request) notFound()
-    orgId = data.org.id
-    requestData = data.request
-  }
+  const { request } = await loadOrgRequest(orgId, requestId, baseHref)
 
   const [{ departments, members }, { customer }, categoriesById] =
     await Promise.all([
       loadOrgDirectory(orgId),
-      loadOrgCustomer(orgId, requestData.customerId),
+      loadOrgCustomer(orgId, request.customerId),
       loadOrgCategoryIndex(orgId),
     ])
 
-  const category = requestData.categoryId
-    ? (categoriesById.get(requestData.categoryId) ?? null)
+  const category = request.categoryId
+    ? (categoriesById.get(request.categoryId) ?? null)
     : null
 
-  const identity = resolveCustomerIdentity(customer, requestData.customerId)
-  const assignee = requestData.assigneeId
-    ? (members.find((m) => m.userId === requestData.assigneeId) ?? {
-        userId: requestData.assigneeId,
-        name: requestData.assigneeId,
+  const identity = resolveCustomerIdentity(customer, request.customerId)
+  const assignee = request.assigneeId
+    ? (members.find((m) => m.userId === request.assigneeId) ?? {
+        userId: request.assigneeId,
+        name: request.assigneeId,
         email: null,
         avatar: null,
       })
     : null
-  const teamName = requestData.teamId
-    ? (departments.find((d) => d.id === requestData.teamId)?.name ??
-      requestData.teamId)
+  const teamName = request.teamId
+    ? (departments.find((d) => d.id === request.teamId)?.name ?? request.teamId)
     : null
 
   const targetCustomerHref =
-    customerHref ?? `/customers/${requestData.customerId}`
+    customerHref ?? requestCustomerHref(baseHref, request.customerId)
 
   return (
     <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8125rem]">
@@ -230,7 +196,7 @@ export async function RequestIdentity({
 
       <div
         className="flex items-center gap-1.5"
-        title={formatDateTime(requestData.updatedAt)}
+        title={formatDateTime(request.updatedAt)}
       >
         <span className="text-border" aria-hidden="true">
           ·
@@ -240,7 +206,7 @@ export async function RequestIdentity({
           aria-hidden="true"
         />
         <span className="text-muted-foreground truncate">
-          Updated {formatAge(requestData.updatedAt)}
+          Updated {formatAge(request.updatedAt)}
         </span>
       </div>
 
