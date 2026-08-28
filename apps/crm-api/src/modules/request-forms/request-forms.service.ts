@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   CreateRequestFormInput,
   RequestFormAnswers,
@@ -17,9 +17,8 @@ import * as repository from './request-forms.repository.js'
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
-
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
   return tenant
 }
 
@@ -69,12 +68,12 @@ function isEmpty(value: unknown) {
   )
 }
 
-function invalid(): never {
-  throw crmError('crm/form-invalid-submission')
+function invalidSubmission() {
+  return getError('crm/form-invalid-submission')
 }
 
 function asText(value: unknown, max: number) {
-  if (typeof value !== 'string' || value.length > max) invalid()
+  if (typeof value !== 'string' || value.length > max) return invalidSubmission()
   return value.trim()
 }
 
@@ -87,13 +86,15 @@ function normalizeAnswer(field: RequestFormField, value: unknown): unknown {
       return asText(value, 2_000)
     case 'EMAIL': {
       const email = asText(value, 2_000)
-      if (!/^\S+@\S+\.\S+$/.test(email)) invalid()
+      if (isError(email)) return email
+      if (!/^\S+@\S+\.\S+$/.test(email)) return invalidSubmission()
       return email
     }
     case 'DATE': {
       const date = asText(value, 2_000)
+      if (isError(date)) return date
       const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
-      if (!match) invalid()
+      if (!match) return invalidSubmission()
       const [year, month, day] = match.slice(1).map(Number)
       const parsed = new Date(Date.UTC(year, month - 1, day))
       if (
@@ -101,21 +102,22 @@ function normalizeAnswer(field: RequestFormField, value: unknown): unknown {
         parsed.getUTCMonth() !== month - 1 ||
         parsed.getUTCDate() !== day
       )
-        invalid()
+        return invalidSubmission()
       return date
     }
     case 'LONG_TEXT':
       return asText(value, 20_000)
     case 'NUMBER':
-      if (typeof value !== 'number' || !Number.isFinite(value)) invalid()
-      return value
+      return typeof value === 'number' && Number.isFinite(value)
+        ? value
+        : invalidSubmission()
     case 'CHECKBOX':
-      if (typeof value !== 'boolean') invalid()
-      return value
+      return typeof value === 'boolean' ? value : invalidSubmission()
     case 'SELECT': {
       const allowed = new Set(field.options.map((option) => option.value))
-      if (typeof value !== 'string' || !allowed.has(value)) invalid()
-      return value
+      return typeof value === 'string' && allowed.has(value)
+        ? value
+        : invalidSubmission()
     }
     case 'MULTI_SELECT': {
       const allowed = new Set(field.options.map((option) => option.value))
@@ -123,7 +125,7 @@ function normalizeAnswer(field: RequestFormField, value: unknown): unknown {
         !Array.isArray(value) ||
         value.some((entry) => typeof entry !== 'string' || !allowed.has(entry))
       )
-        invalid()
+        return invalidSubmission()
       return [...new Set(value as string[])]
     }
   }
@@ -139,14 +141,18 @@ function validateAnswers(
   const allowedKeys = new Set(fields.map((field) => field.key))
 
   for (const key of Object.keys(answers)) {
-    if (!allowedKeys.has(key)) invalid()
+    if (!allowedKeys.has(key)) return invalidSubmission()
   }
 
   const normalized: RequestFormAnswers = {}
   for (const field of fields) {
     const value = answers[field.key]
-    if (field.required && isEmpty(value)) invalid()
-    if (!isEmpty(value)) normalized[field.key] = normalizeAnswer(field, value)
+    if (field.required && isEmpty(value)) return invalidSubmission()
+    if (!isEmpty(value)) {
+      const next = normalizeAnswer(field, value)
+      if (isError(next)) return next
+      normalized[field.key] = next
+    }
   }
 
   return normalized
@@ -168,7 +174,6 @@ function mappedText(
 ) {
   const field = mappedField(definition, mapping)
   if (!field) return null
-
   const value = answers[field.key]
   return typeof value === 'string' ? value.trim() : null
 }
@@ -184,13 +189,11 @@ function describeAnswers(
     const value = answers[field.key]
     if (isEmpty(value)) return []
     const display = Array.isArray(value) ? value.join(', ') : String(value)
-
     return [`${field.label}\n${display}`]
   })
 
   const description = rows.join('\n\n')
-  if (description.length > 20_000) invalid()
-
+  if (description.length > 20_000) return invalidSubmission()
   return description || null
 }
 
@@ -200,21 +203,21 @@ async function ensureSlugAvailable(
   currentId?: string
 ) {
   const existing = await repository.retrieveBySlug(tenantId, slug)
-  if (existing && existing.id !== currentId)
-    throw crmError('crm/form-slug-taken')
+  return existing && existing.id !== currentId
+    ? getError('crm/form-slug-taken')
+    : null
 }
 
 export async function list(organizationId: string, status?: RequestFormStatus) {
   const tenant = await requireTenant(organizationId)
-  const forms = await repository.list(tenant.id, status)
-
-  return forms.map(serialize)
+  if (isError(tenant)) return tenant
+  return (await repository.list(tenant.id, status)).map(serialize)
 }
 
 export async function retrieve(organizationId: string, formId: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const form = await repository.retrieve(tenant.id, formId)
-
   return form ? serialize(form) : null
 }
 
@@ -227,7 +230,7 @@ async function assertRoutingDefaults(
     defaultPriorityId?: string | null
   }
 ) {
-  await requests.assertRouting(organizationId, {
+  return requests.assertRouting(organizationId, {
     categoryId: input.defaultCategoryId ?? null,
     subcategoryId: input.defaultSubcategoryId ?? null,
     teamId: input.defaultTeamId ?? null,
@@ -240,9 +243,11 @@ export async function create(
   input: CreateRequestFormInput
 ) {
   const tenant = await requireTenant(organizationId)
-  await ensureSlugAvailable(tenant.id, input.slug)
-  await assertRoutingDefaults(organizationId, input)
-
+  if (isError(tenant)) return tenant
+  const slugError = await ensureSlugAvailable(tenant.id, input.slug)
+  if (slugError) return slugError
+  const routingError = await assertRoutingDefaults(organizationId, input)
+  if (routingError) return routingError
   return serialize(await repository.create(tenant.id, input))
 }
 
@@ -252,10 +257,16 @@ export async function update(
   input: UpdateRequestFormInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, formId)
   if (!current) return null
-  if (input.slug) await ensureSlugAvailable(tenant.id, input.slug, current.id)
-  await assertRoutingDefaults(organizationId, {
+
+  if (input.slug) {
+    const slugError = await ensureSlugAvailable(tenant.id, input.slug, current.id)
+    if (slugError) return slugError
+  }
+
+  const routingError = await assertRoutingDefaults(organizationId, {
     defaultCategoryId:
       input.defaultCategoryId === undefined
         ? current.defaultCategoryId
@@ -273,10 +284,11 @@ export async function update(
         ? current.defaultPriorityId
         : input.defaultPriorityId,
   })
+  if (routingError) return routingError
 
   const publishing = input.status === 'PUBLISHED'
   const definition = input.definition ?? readDefinition(current.definition)
-  if (publishing && !definition) throw crmError('crm/form-invalid-definition')
+  if (publishing && !definition) return getError('crm/form-invalid-definition')
 
   const updated = await repository.update(formId, {
     ...input,
@@ -289,7 +301,6 @@ export async function update(
         }
       : {}),
   })
-
   return serialize(updated)
 }
 
@@ -299,6 +310,7 @@ export async function remove(
   input: { deletedBy: string; reason?: string | null }
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, formId)
   if (!current) return null
 
@@ -306,7 +318,7 @@ export async function remove(
     process.env.DELETION_MODE === 'hard' &&
     (await repository.submissionCount(tenant.id, formId)) > 0
   )
-    throw crmError('crm/form-in-use')
+    return getError('crm/form-in-use')
 
   return repository.remove({ id: formId, slug: current.slug, ...input })
 }
@@ -317,27 +329,31 @@ export async function submit(
   input: SubmitRequestFormInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const form = await repository.retrieve(tenant.id, formId)
-  if (!form) throw crmError('crm/form-not-found')
+  if (!form) return getError('crm/form-not-found')
   if (form.status !== 'PUBLISHED' || !form.publishedDefinition)
-    throw crmError('crm/form-not-published')
+    return getError('crm/form-not-published')
 
   const definition = readDefinition(form.publishedDefinition)
-  if (!definition) throw crmError('crm/form-invalid-definition')
+  if (!definition) return getError('crm/form-invalid-definition')
 
   const answers = validateAnswers(definition, input.answers)
+  if (isError(answers)) return answers
+
   const customerResult = await customers.list(organizationId, {
     ...(input.customerOrganizationId
       ? { customerOrganizationId: input.customerOrganizationId }
       : {}),
     ...(input.customerUserId ? { customerUserId: input.customerUserId } : {}),
   })
+  if (isError(customerResult)) return customerResult
   const customer = customerResult.customers[0]
-  if (!customer) throw crmError('crm/customer-not-found')
+  if (!customer) return getError('crm/customer-not-found')
 
   const subject = mappedText(definition, answers, 'REQUEST_SUBJECT')
   if (!subject || subject.length > 240)
-    throw crmError('crm/form-invalid-submission')
+    return getError('crm/form-invalid-submission')
 
   const mappedDescription = mappedText(
     definition,
@@ -345,8 +361,9 @@ export async function submit(
     'REQUEST_DESCRIPTION'
   )
   const description = mappedDescription ?? describeAnswers(definition, answers)
+  if (isError(description)) return description
   if (description && description.length > 20_000)
-    throw crmError('crm/form-invalid-submission')
+    return getError('crm/form-invalid-submission')
 
   const result = await requests.createFromIntake(
     organizationId,
@@ -370,8 +387,11 @@ export async function submit(
       answers,
       customerOrganizationId: input.customerOrganizationId ?? null,
       customerUserId: input.customerUserId ?? null,
+      requesterUserId: input.requesterUserId ?? null,
+      requesterContactId: input.requesterContactId ?? null,
     }
   )
+  if (isError(result)) return result
 
   return {
     object: 'request_form_submission' as const,
@@ -392,10 +412,12 @@ export async function listCustomerRequests(
   }
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const form = await repository.retrieve(tenant.id, formId)
-  if (!form) throw crmError('crm/form-not-found')
+  if (!form) return getError('crm/form-not-found')
 
   const customerResult = await customers.list(organizationId, identity)
+  if (isError(customerResult)) return customerResult
   const customer = customerResult.customers[0]
   if (!customer) return []
 
@@ -404,8 +426,9 @@ export async function listCustomerRequests(
 
 export async function listSubmissions(organizationId: string, formId: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const form = await repository.retrieve(tenant.id, formId)
-  if (!form) throw crmError('crm/form-not-found')
+  if (!form) return getError('crm/form-not-found')
 
   const submissions = await repository.listSubmissions(tenant.id, formId)
   return submissions.map((submission) => ({
