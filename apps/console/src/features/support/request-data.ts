@@ -38,9 +38,13 @@ export const loadDirectory = cache(async () => {
   const { org } = await loadSupportContext()
   if (!org) return { departments: [], members: [] }
 
+  // Console reaches members at the operator tier. `organizationMembers.list` is
+  // the session-tier method: called from here, with an internal key and no
+  // session, it resolves nothing, and every note then falls back to rendering
+  // two characters of a raw user id instead of a name and a picture.
   const [departmentsResult, membersResult] = await Promise.all([
     $876.departments.list(org.id),
-    $876.organizationMembers.list(org.id),
+    $876.organizationMembers.admin.list(org.id, { limit: 100 }),
   ])
 
   const departments: RequestDepartment[] =
