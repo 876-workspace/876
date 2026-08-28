@@ -9,6 +9,7 @@ const ALWAYS_PRESENT = [
   'Overview',
   'Members',
   'Customers',
+  'Support',
   'Subscriptions',
   'Onboarding',
   'Activity',
@@ -20,18 +21,33 @@ describe('orgTabs', () => {
     expect(orgTabs(BASE, []).map((tab) => tab.label)).toEqual(ALWAYS_PRESENT)
   })
 
-  it('shows Requests but not Billing for a CRM-only organization', () => {
+  it('shows Workspace but not Billing for a CRM-only organization', () => {
     const labels = orgTabs(BASE, ['876-crm']).map((tab) => tab.label)
 
-    expect(labels).toContain('Requests')
+    expect(labels).toContain('Workspace')
     expect(labels).not.toContain('Billing')
   })
 
-  it('shows Billing but not Requests for a Billing-only organization', () => {
+  it('links the Workspace tab at the organization workspace index', () => {
+    const workspaceTab = orgTabs(BASE, ['876-crm']).find(
+      (tab) => tab.label === 'Workspace'
+    )
+
+    expect(workspaceTab?.href).toBe('/orgs/test-org/workspace')
+  })
+
+  it('does not give any app its own tab, however many are entitled', () => {
+    const labels = orgTabs(BASE, ['876-crm']).map((tab) => tab.label)
+
+    expect(labels).not.toContain('Requests')
+    expect(labels.filter((label) => label === 'Workspace')).toHaveLength(1)
+  })
+
+  it('omits Workspace when no entitled app has a workspace registered', () => {
     const labels = orgTabs(BASE, ['876-billing']).map((tab) => tab.label)
 
     expect(labels).toContain('Billing')
-    expect(labels).not.toContain('Requests')
+    expect(labels).not.toContain('Workspace')
   })
 
   it('places each app tab after its anchor when both are entitled', () => {
@@ -43,10 +59,11 @@ describe('orgTabs', () => {
       'Overview',
       'Members',
       'Customers',
-      'Requests',
+      'Support',
       'Subscriptions',
       'Onboarding',
       'Billing',
+      'Workspace',
       'Activity',
       'Notes',
     ])
@@ -76,11 +93,11 @@ describe('orgTabs', () => {
   })
 
   it('builds an app tab href from its registered segment', () => {
-    const requests = orgTabs(BASE, ['876-crm']).find(
-      (tab) => tab.label === 'Requests'
+    const billing = orgTabs(BASE, ['876-billing']).find(
+      (tab) => tab.label === 'Billing'
     )
 
-    expect(requests).toEqual({ label: 'Requests', href: `${BASE}/requests` })
+    expect(billing).toEqual({ label: 'Billing', href: `${BASE}/billing` })
   })
 
   it('marks no tab but Overview as exact', () => {
