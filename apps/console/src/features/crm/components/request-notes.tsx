@@ -445,16 +445,11 @@ function NoteCard({
   const internal = note.internal && !isDescription
 
   return (
-    <article
-      className={cn(
-        '876-card group overflow-hidden',
-        internal && 'border-warning/30 bg-warning/[0.04]'
-      )}
-    >
+    <article className="876-card group overflow-hidden">
       <div
         className={cn(
           'flex items-center justify-between gap-2 border-b px-4 py-2',
-          internal ? 'border-warning/25 bg-warning/[0.07]' : 'bg-muted/25'
+          internal ? 'bg-warning/[0.07]' : 'bg-muted/25'
         )}
       >
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
