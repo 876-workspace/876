@@ -1,7 +1,12 @@
 'use client'
 
 import { isEditorContentEmpty } from '@876/editor'
-import { Editor, EditorContent, type EditorHandle } from '@876/editor/react'
+import {
+  Editor,
+  EditorContent,
+  type EditorHandle,
+} from '@876/editor/react'
+import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
@@ -24,7 +29,6 @@ import {
   useTransition,
   type RefObject,
 } from 'react'
-import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 import type {
@@ -106,6 +110,7 @@ export function RequestTasksSection({
   const [expanded, setExpanded] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [error, setError] = useState<AppErrorValue | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const memberIndex = useMemo(
@@ -131,6 +136,7 @@ export function RequestTasksSection({
     const title = draft.title.trim()
     if (!title || isSubmitting) return
 
+    setError(null)
     setBusyId(COMPOSER)
     const description =
       (await composerEditorRef.current?.flush()) ?? draft.description
@@ -144,7 +150,7 @@ export function RequestTasksSection({
     })
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to add task.')
+      setError(result.error)
       return
     }
 
@@ -156,9 +162,9 @@ export function RequestTasksSection({
 
   async function patchTask(
     taskId: string,
-    params: Parameters<typeof client.requestTasks.update>[3],
-    failure: string
+    params: Parameters<typeof client.requestTasks.update>[3]
   ) {
+    setError(null)
     setBusyId(taskId)
     const result = await client.requestTasks.update(
       organizationId,
@@ -168,7 +174,7 @@ export function RequestTasksSection({
     )
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? failure)
+      setError(result.error)
       return false
     }
 
@@ -178,28 +184,22 @@ export function RequestTasksSection({
 
   async function saveEdit(taskId: string, next: Draft) {
     const title = next.title.trim()
-    if (!title) {
-      toast.error('A task needs a title.')
-      return
-    }
+    if (!title) return
 
-    const saved = await patchTask(
-      taskId,
-      {
-        title,
-        description: isEditorContentEmpty(next.description)
-          ? null
-          : next.description,
-        ...(next.priorityId ? { priorityId: next.priorityId } : {}),
-        assigneeId: next.assigneeId,
-        dueAt: fromDateTimeLocal(next.dueAt),
-      },
-      'Failed to save task.'
-    )
+    const saved = await patchTask(taskId, {
+      title,
+      description: isEditorContentEmpty(next.description)
+        ? null
+        : next.description,
+      ...(next.priorityId ? { priorityId: next.priorityId } : {}),
+      assigneeId: next.assigneeId,
+      dueAt: fromDateTimeLocal(next.dueAt),
+    })
     if (saved) setEditingId(null)
   }
 
   async function deleteTask(taskId: string) {
+    setError(null)
     setBusyId(taskId)
     const result = await client.requestTasks.delete(
       organizationId,
@@ -209,7 +209,7 @@ export function RequestTasksSection({
     )
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to delete task.')
+      setError(result.error)
       return
     }
 
@@ -234,6 +234,15 @@ export function RequestTasksSection({
         ) : null}
       </div>
 
+      {error ? (
+        <AppError
+          title="Task change could not be saved"
+          error={error}
+          variant="form"
+          showCode
+        />
+      ) : null}
+
       {tasks.length === 0 ? (
         <p className="border-border/60 bg-muted/20 text-muted-foreground rounded-lg border border-dashed px-4 py-10 text-center text-sm">
           No tasks on this request yet.
@@ -255,18 +264,9 @@ export function RequestTasksSection({
                 onCancelEdit={() => setEditingId(null)}
                 onSave={(next) => saveEdit(task.id, next)}
                 onToggleDone={(done) =>
-                  patchTask(
-                    task.id,
-                    {
-                      status: done ? 'DONE' : 'OPEN',
-                      completedBy: done ? currentUserId : null,
-                    },
-                    'Failed to update task.'
-                  )
+                  patchTask(task.id, { status: done ? 'DONE' : 'OPEN' })
                 }
-                onStatusChange={(status) =>
-                  patchTask(task.id, { status }, 'Failed to update task.')
-                }
+                onStatusChange={(status) => patchTask(task.id, { status })}
                 onDelete={() => deleteTask(task.id)}
               />
             </li>
