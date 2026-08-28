@@ -1,46 +1,55 @@
+import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockAppendSetCookies, mockFetchApiBridge } = vi.hoisted(() => ({
-  mockAppendSetCookies: vi.fn(),
-  mockFetchApiBridge: vi.fn(),
+import { GET } from './route'
+
+const mocks = vi.hoisted(() => ({
+  fetchApiBridge: vi.fn(),
+  hasEstablishedSession: vi.fn(),
 }))
 
-vi.mock('@876/core/fetch/bridge', () => ({
-  appendSetCookies: mockAppendSetCookies,
-  fetchApiBridge: mockFetchApiBridge,
+vi.mock('@876/core/fetch/bridge', async () => {
+  const actual = await vi.importActual<typeof import('@876/core/fetch/bridge')>(
+    '@876/core/fetch/bridge'
+  )
+  return { ...actual, fetchApiBridge: mocks.fetchApiBridge }
+})
+
+vi.mock('@876/core/auth/callback-session', () => ({
+  hasEstablishedSession: mocks.hasEstablishedSession,
 }))
 
-const { GET } = await import('./route')
+const ORIGIN = 'https://876-invoice.1876.workers.dev'
 
-function createRequest(search: string) {
-  const url = `https://876-invoice.1876.workers.dev/callback${search}`
-  const request = new Request(url, {
-    headers: { 'user-agent': 'Mozilla/5.0' },
-  }) as unknown as Parameters<typeof GET>[0] & {
-    nextUrl: URL
-    cookies: unknown
-  }
+function createRequest(
+  search: string,
+  cookies: Record<string, string> = {}
+): NextRequest {
+  const headers = new Headers({ host: '876-invoice.1876.workers.dev' })
+  const cookieHeader = Object.entries(cookies)
+    .map(([name, value]) => `${name}=${value}`)
+    .join('; ')
+  if (cookieHeader) headers.set('cookie', cookieHeader)
 
-  Object.defineProperty(request, 'nextUrl', { value: new URL(url) })
-  Object.defineProperty(request, 'cookies', { value: { get: () => undefined } })
-
-  return request as Parameters<typeof GET>[0]
+  return new NextRequest(`${ORIGIN}/callback${search}`, { headers })
 }
 
-/** The headers the callback sent to the API on its single bridge call. */
-function sentHeaders(): Record<string, string> {
-  expect(mockFetchApiBridge).toHaveBeenCalledTimes(1)
-  const [, init] = mockFetchApiBridge.mock.calls[0]
-  return (init as { headers: Record<string, string> }).headers
+function sessionResponse(): Response {
+  return new Response(JSON.stringify({ user: { id: 'user_1' } }), {
+    status: 200,
+    headers: {
+      'content-type': 'application/json',
+      'set-cookie': '876-session=sealed.value; Path=/; HttpOnly; SameSite=Lax',
+    },
+  })
 }
+
+beforeEach(() => {
+  mocks.hasEstablishedSession.mockResolvedValue(false)
+  mocks.fetchApiBridge.mockResolvedValue(sessionResponse())
+})
 
 describe('social sign-in callback', () => {
-  beforeEach(() => {
-    mockFetchApiBridge.mockResolvedValue(
-      new Response(JSON.stringify({ data: {}, error: null }), { status: 200 })
-    )
-  })
-
   describe('realm', () => {
     // Regression: the callback sent no X-876-Realm, and the API defaults an
     // absent realm to `consumer`. Invoice's /api/auth/* bridge signs in as
@@ -49,60 +58,169 @@ describe('social sign-in callback', () => {
     it('exchanges the code in the enterprise realm', async () => {
       await GET(createRequest('?code=01JQ2ZK9'))
 
-      expect(sentHeaders()['X-876-Realm']).toBe('enterprise')
+      expect(mocks.fetchApiBridge).toHaveBeenCalledTimes(1)
+      const [, init] = mocks.fetchApiBridge.mock.calls[0] as [
+        string,
+        { headers: Record<string, string>; body: string },
+      ]
+      expect(init.headers['X-876-Realm']).toBe('enterprise')
     })
 
     it('exchanges the code at the API callback endpoint', async () => {
       await GET(createRequest('?code=01JQ2ZK9'))
 
-      expect(mockFetchApiBridge).toHaveBeenCalledWith(
+      expect(mocks.fetchApiBridge).toHaveBeenCalledWith(
         '/auth/callback',
         expect.objectContaining({ method: 'POST' })
       )
     })
   })
 
-  describe('failure paths', () => {
-    it('redirects to login without calling the API when the provider errors', async () => {
-      const response = await GET(createRequest('?error=access_denied'))
-
-      expect(response.headers.get('location')).toContain(
-        '/login?authError=auth%2Foauth-failed'
-      )
-      expect(mockFetchApiBridge).not.toHaveBeenCalled()
-    })
-
-    it('redirects to login without calling the API when the code is absent', async () => {
-      const response = await GET(createRequest(''))
-
-      expect(response.headers.get('location')).toContain(
-        '/login?authError=auth%2Fmissing-code'
-      )
-      expect(mockFetchApiBridge).not.toHaveBeenCalled()
-    })
-
-    it('redirects to login when the API rejects the exchange', async () => {
-      mockFetchApiBridge.mockResolvedValue(
-        new Response(JSON.stringify({ error: {} }), { status: 401 })
-      )
-
+  describe('happy path', () => {
+    it('exchanges the code and forwards the session cookie to the app', async () => {
       const response = await GET(createRequest('?code=01JQ2ZK9'))
 
-      expect(response.headers.get('location')).toContain(
-        '/login?authError=auth%2Foauth-failed'
+      expect(response.status).toBe(307)
+      expect(response.headers.get('location')).toBe(`${ORIGIN}/`)
+      expect(response.headers.getSetCookie()).toContain(
+        '876-session=sealed.value; Path=/; HttpOnly; SameSite=Lax'
       )
-      expect(mockAppendSetCookies).not.toHaveBeenCalled()
+      expect(mocks.fetchApiBridge).toHaveBeenCalledTimes(1)
+    })
+
+    it('honours the return-to cookie the login page set', async () => {
+      const response = await GET(
+        createRequest('?code=01JQ2ZK9', {
+          efesto_auth_return_to: encodeURIComponent('/invoices'),
+        })
+      )
+
+      expect(response.headers.get('location')).toBe(`${ORIGIN}/invoices`)
+    })
+
+    it('clears the return-to cookie once it has been consumed', async () => {
+      const response = await GET(
+        createRequest('?code=01JQ2ZK9', {
+          efesto_auth_return_to: encodeURIComponent('/invoices'),
+        })
+      )
+
+      expect(response.headers.getSetCookie()).toContain(
+        'efesto_auth_return_to=; Path=/; Max-Age=0; SameSite=Lax'
+      )
     })
   })
 
-  describe('success', () => {
-    it('forwards the session cookie and lands on the app root', async () => {
+  describe('duplicate requests (the mobile failure)', () => {
+    it('sends an already-signed-in visitor into the app without spending a code', async () => {
+      mocks.hasEstablishedSession.mockResolvedValue(true)
+
+      const response = await GET(createRequest('?code=01JQ2ZK9'))
+
+      expect(response.status).toBe(307)
+      expect(response.headers.get('location')).toBe(`${ORIGIN}/`)
+      expect(mocks.fetchApiBridge).not.toHaveBeenCalled()
+    })
+
+    it('does not bounce an already-signed-in visitor to login when the code is gone', async () => {
+      mocks.hasEstablishedSession.mockResolvedValue(true)
+
+      const response = await GET(createRequest(''))
+
+      expect(response.headers.get('location')).toBe(`${ORIGIN}/`)
+      expect(mocks.fetchApiBridge).not.toHaveBeenCalled()
+    })
+
+    it('still honours the return-to cookie on the duplicate request', async () => {
+      mocks.hasEstablishedSession.mockResolvedValue(true)
+
+      const response = await GET(
+        createRequest('?code=01JQ2ZK9', {
+          efesto_auth_return_to: encodeURIComponent('/invoices'),
+        })
+      )
+
+      expect(response.headers.get('location')).toBe(`${ORIGIN}/invoices`)
+    })
+  })
+
+  describe('failures', () => {
+    it('reports a cancelled sign-in when the provider returns access_denied', async () => {
+      const response = await GET(createRequest('?error=access_denied'))
+
+      expect(response.headers.get('location')).toBe(
+        `${ORIGIN}/login?authError=auth%2Foauth-cancelled`
+      )
+      expect(mocks.fetchApiBridge).not.toHaveBeenCalled()
+    })
+
+    it('reports a failed sign-in for any other provider error', async () => {
+      const response = await GET(createRequest('?error=server_error'))
+
+      expect(response.headers.get('location')).toBe(
+        `${ORIGIN}/login?authError=auth%2Foauth-failed`
+      )
+    })
+
+    it('reports a missing code when no session exists yet', async () => {
+      const response = await GET(createRequest(''))
+
+      expect(response.headers.get('location')).toBe(
+        `${ORIGIN}/login?authError=auth%2Fmissing-code`
+      )
+      expect(mocks.fetchApiBridge).not.toHaveBeenCalled()
+    })
+
+    it('reports a failed sign-in when the API rejects the code', async () => {
+      mocks.fetchApiBridge.mockResolvedValue(
+        new Response('{}', { status: 401 })
+      )
+
+      const response = await GET(createRequest('?code=spent_code'))
+
+      expect(response.headers.get('location')).toBe(
+        `${ORIGIN}/login?authError=auth%2Foauth-failed`
+      )
+      expect(response.headers.getSetCookie()).not.toContain(
+        '876-session=sealed.value; Path=/; HttpOnly; SameSite=Lax'
+      )
+    })
+
+    it('reports a failed sign-in when the bridge throws', async () => {
+      mocks.fetchApiBridge.mockRejectedValue(new Error('socket hang up'))
+
       const response = await GET(createRequest('?code=01JQ2ZK9'))
 
       expect(response.headers.get('location')).toBe(
-        'https://876-invoice.1876.workers.dev/'
+        `${ORIGIN}/login?authError=auth%2Foauth-failed`
       )
-      expect(mockAppendSetCookies).toHaveBeenCalledTimes(1)
+    })
+
+    it('carries the intended destination through to the retried sign-in', async () => {
+      mocks.fetchApiBridge.mockResolvedValue(
+        new Response('{}', { status: 401 })
+      )
+
+      const response = await GET(
+        createRequest('?code=spent_code', {
+          efesto_auth_return_to: encodeURIComponent('/invoices'),
+        })
+      )
+
+      const location = new URL(response.headers.get('location') ?? '')
+      expect(location.pathname).toBe('/login')
+      expect(location.searchParams.get('authError')).toBe('auth/oauth-failed')
+      expect(location.searchParams.get('returnTo')).toBe('/invoices')
+    })
+
+    it('ignores an off-site return-to cookie', async () => {
+      const response = await GET(
+        createRequest('?code=01JQ2ZK9', {
+          efesto_auth_return_to: encodeURIComponent('https://evil.example.com'),
+        })
+      )
+
+      expect(response.headers.get('location')).toBe(`${ORIGIN}/`)
     })
   })
 })

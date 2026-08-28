@@ -1,3 +1,5 @@
+import { AUTH_CALLBACK_ERROR_PARAM } from '@876/core/auth/callback-error'
+import { hasEstablishedSession } from '@876/core/auth/callback-session'
 import {
   AUTH_RETURN_TO_COOKIE,
   resolveRelativeReturnTo,
@@ -10,13 +12,45 @@ import { requestUrl } from '@/lib/auth/request-origin'
 export const runtime = 'nodejs'
 
 const API_KEY = process.env.INVOICE_API_876_KEY
+const DEFAULT_DESTINATION = '/'
 
+/**
+ * GET /callback — WorkOS social-auth landing for the invoice app.
+ *
+ * Embedded auth derives the WorkOS `redirect_uri` from this app's own origin
+ * (`{origin}/callback`), so the provider returns the browser here. We exchange
+ * the `code` with the API server-side (`POST /auth/callback`), copy the API's
+ * session cookie onto the response (set on THIS app's origin), clear the
+ * return-to cookie, and redirect into the workspace.
+ *
+ * The route is deliberately **idempotent**: an authorization code is single-use,
+ * and mobile browsers request this URL more than once often enough that a
+ * duplicate hit was undoing an otherwise successful sign-in. See
+ * `@876/core/auth/callback-session` for why.
+ */
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const returnTo = resolveReturnTo(request)
+
   const oauthError = request.nextUrl.searchParams.get('error')
-  if (oauthError) return redirectToLogin(request, 'auth/oauth-failed')
+  if (oauthError) {
+    return redirectToLogin(
+      request,
+      oauthError === 'access_denied'
+        ? 'auth/oauth-cancelled'
+        : 'auth/oauth-failed',
+      returnTo
+    )
+  }
 
   const code = request.nextUrl.searchParams.get('code')
-  if (!code) return redirectToLogin(request, 'auth/missing-code')
+
+  // A repeat request carries the cookie the first one set. Both the missing
+  // code and the spent code land here, and in both cases the user is already
+  // signed in — sending them to /login would sign them back out.
+  if (await hasEstablishedSession(request))
+    return continueIntoApp(request, returnTo)
+
+  if (!code) return redirectToLogin(request, 'auth/missing-code', returnTo)
 
   let apiResponse: Response
   try {
@@ -38,36 +72,46 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }),
     })
   } catch {
-    return redirectToLogin(request, 'auth/oauth-failed')
+    return redirectToLogin(request, 'auth/oauth-failed', returnTo)
   }
 
-  if (!apiResponse.ok) return redirectToLogin(request, 'auth/oauth-failed')
+  if (!apiResponse.ok)
+    return redirectToLogin(request, 'auth/oauth-failed', returnTo)
 
-  const response = NextResponse.redirect(
-    requestUrl(request, resolveReturnTo(request))
-  )
+  const response = continueIntoApp(request, returnTo)
   appendSetCookies(apiResponse, response)
+  return response
+}
+
+function continueIntoApp(request: NextRequest, returnTo: string): NextResponse {
+  const response = NextResponse.redirect(requestUrl(request, returnTo))
   clearReturnToCookie(response)
   return response
 }
 
 function resolveReturnTo(request: NextRequest): string {
   const raw = request.cookies.get(AUTH_RETURN_TO_COOKIE)?.value
-  if (!raw) return '/'
+  if (!raw) return DEFAULT_DESTINATION
 
   try {
-    return resolveRelativeReturnTo(decodeURIComponent(raw), '/')
+    return resolveRelativeReturnTo(decodeURIComponent(raw), DEFAULT_DESTINATION)
   } catch {
-    return '/'
+    return DEFAULT_DESTINATION
   }
 }
 
 function redirectToLogin(
   request: NextRequest,
-  authError: string
+  authError: string,
+  returnTo: string
 ): NextResponse {
   const url = requestUrl(request, '/login')
-  url.searchParams.set('authError', authError)
+  url.searchParams.set(AUTH_CALLBACK_ERROR_PARAM, authError)
+  // Keep the destination the user was originally headed for, so retrying the
+  // sign-in still lands them where they meant to go.
+  if (returnTo !== DEFAULT_DESTINATION)
+    url.searchParams.set('returnTo', returnTo)
+
   const response = NextResponse.redirect(url)
   clearReturnToCookie(response)
   return response
