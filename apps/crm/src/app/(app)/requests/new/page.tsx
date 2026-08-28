@@ -1,3 +1,4 @@
+import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { get876Client } from '@/lib/876'
@@ -23,8 +24,8 @@ export default async function NewRequestPage() {
     $876.requestCategories.list(context.orgId),
     $876.requestPriorities.list(context.orgId, { active: true }),
   ])
-  if (customers.error) throw new Error(customers.error.message)
-  if (prioritiesResult.error) throw new Error(prioritiesResult.error.message)
+
+  const blockingError = customers.error ?? prioritiesResult.error
 
   const departments =
     departmentsResult.data?.data.map((d) => ({ id: d.id, name: d.name })) ?? []
@@ -43,13 +44,44 @@ export default async function NewRequestPage() {
         <PageBreadcrumb href="/requests" label="Requests" className="mb-2" />
         <h1 className="876-page-title mt-2">New request</h1>
       </div>
-      <RequestForm
-        customers={customers.data.data}
-        categories={categoriesResult.data?.data ?? []}
-        priorities={prioritiesResult.data.data}
-        departments={departments}
-        members={members}
-      />
+      {blockingError ? (
+        <AppError
+          title="This request form isn't ready"
+          error={blockingError}
+          variant="page"
+        />
+      ) : (
+        <div className="space-y-3">
+          {categoriesResult.error ? (
+            <AppError
+              title="Category options are temporarily unavailable"
+              error={categoriesResult.error}
+              variant="inline"
+            />
+          ) : null}
+          {departmentsResult.error ? (
+            <AppError
+              title="Team options are temporarily unavailable"
+              error={departmentsResult.error}
+              variant="inline"
+            />
+          ) : null}
+          {membersResult.error ? (
+            <AppError
+              title="Assignee options are temporarily unavailable"
+              error={membersResult.error}
+              variant="inline"
+            />
+          ) : null}
+          <RequestForm
+            customers={customers.data.data}
+            categories={categoriesResult.data?.data ?? []}
+            priorities={prioritiesResult.data.data}
+            departments={departments}
+            members={members}
+          />
+        </div>
+      )}
     </Page>
   )
 }
