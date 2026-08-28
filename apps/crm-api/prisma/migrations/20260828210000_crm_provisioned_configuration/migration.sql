@@ -77,6 +77,8 @@ ALTER TABLE "crm_request_subcategories"
   ADD COLUMN "provisioning_key" TEXT,
   ADD COLUMN "default_priority_id" TEXT,
   ALTER COLUMN "created_by" DROP NOT NULL;
+ALTER TABLE "crm_request_forms"
+  ADD COLUMN "default_priority_id" TEXT;
 
 UPDATE "crm_request_categories"
 SET "provisioning_key" = "slug"
@@ -124,6 +126,13 @@ WHERE p."tenant_id" = s."tenant_id"
   AND s."default_priority" IS NOT NULL
   AND p."provisioning_key" = lower(s."default_priority"::text);
 
+UPDATE "crm_request_forms" f
+SET "default_priority_id" = p."id"
+FROM "crm_request_priorities" p
+WHERE p."tenant_id" = f."tenant_id"
+  AND f."default_priority" IS NOT NULL
+  AND p."provisioning_key" = lower(f."default_priority"::text);
+
 ALTER TABLE "crm_requests" ALTER COLUMN "priority_id" SET NOT NULL;
 ALTER TABLE "crm_request_tasks" ALTER COLUMN "priority_id" SET NOT NULL;
 
@@ -147,14 +156,22 @@ ALTER TABLE "crm_request_subcategories"
   FOREIGN KEY ("tenant_id", "default_priority_id")
   REFERENCES "crm_request_priorities"("tenant_id", "id")
   ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "crm_request_forms"
+  ADD CONSTRAINT "crm_request_forms_tenant_id_default_priority_id_fkey"
+  FOREIGN KEY ("tenant_id", "default_priority_id")
+  REFERENCES "crm_request_priorities"("tenant_id", "id")
+  ON DELETE NO ACTION ON UPDATE CASCADE;
 
 CREATE INDEX "crm_requests_tenant_id_priority_id_status_idx"
   ON "crm_requests"("tenant_id", "priority_id", "status");
 CREATE INDEX "crm_request_tasks_tenant_id_priority_id_status_idx"
   ON "crm_request_tasks"("tenant_id", "priority_id", "status");
+CREATE INDEX "crm_request_forms_tenant_id_default_priority_id_idx"
+  ON "crm_request_forms"("tenant_id", "default_priority_id");
 
 ALTER TABLE "crm_requests" DROP COLUMN "priority";
 ALTER TABLE "crm_request_tasks" DROP COLUMN "priority";
 ALTER TABLE "crm_request_categories" DROP COLUMN "default_priority";
 ALTER TABLE "crm_request_subcategories" DROP COLUMN "default_priority";
+ALTER TABLE "crm_request_forms" DROP COLUMN "default_priority";
 DROP TYPE "RequestPriority";

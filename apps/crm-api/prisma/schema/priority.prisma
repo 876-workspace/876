@@ -1,27 +1,28 @@
 model RequestPriorityDef {
-  id              String   @id
-  tenantId        String   @map("tenant_id")
-  provisioningKey String?  @map("provisioning_key")
+  id              String    @id
+  tenantId        String    @map("tenant_id")
+  provisioningKey String?   @map("provisioning_key")
   name            String
   slug            String
   description     String?
   color           String?
   icon            String?
-  weight          Int      @default(0)
-  sortOrder       Int      @default(0) @map("sort_order")
-  isDefault       Boolean  @default(false) @map("is_default")
-  isActive        Boolean  @default(true) @map("is_active")
-  createdBy       String?  @map("created_by")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  weight          Int       @default(0)
+  sortOrder       Int       @default(0) @map("sort_order")
+  isDefault       Boolean   @default(false) @map("is_default")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
   deletedBy       String?   @map("deleted_by")
 
-  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   requests            Request[]
   tasks               RequestTask[]
-  categoryDefaults    RequestCategoryDef[]  @relation("CategoryDefaultPriority")
-  subcategoryDefaults RequestSubcategory[]  @relation("SubcategoryDefaultPriority")
+  categoryDefaults    RequestCategoryDef[] @relation("CategoryDefaultPriority")
+  subcategoryDefaults RequestSubcategory[] @relation("SubcategoryDefaultPriority")
+  formDefaults        RequestForm[]        @relation("FormDefaultPriority")
 
   @@unique([tenantId, id])
   @@unique([tenantId, slug])
