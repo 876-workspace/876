@@ -1,10 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-
+import { showAppErrorToast } from '@876/ui/app-error-toast'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
 import { CategoryIcon, isCategoryIconKey } from '@876/ui/category-icons'
@@ -24,9 +20,13 @@ import {
   Plus,
   Trash,
 } from '@876/ui/icons'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
-import { client } from '@/lib/client'
 import { categoryColorClass } from '@/features/categories/category-color'
+import { client } from '@/lib/client'
 import type {
   CrmRequestCategory,
   CrmRequestSubcategory,
@@ -55,7 +55,9 @@ export function CategoriesList({
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft>()
   const [subcategoryDialogOpen, setSubcategoryDialogOpen] = useState(false)
   const [subcategoryDraft, setSubcategoryDraft] = useState<SubcategoryDraft>()
-  const priorityNames = new Map(priorities.map((priority) => [priority.id, priority.name]))
+  const priorityNames = new Map(
+    priorities.map((priority) => [priority.id, priority.name])
+  )
 
   function editCategory(category: CrmRequestCategory) {
     setCategoryDraft({
@@ -99,7 +101,10 @@ export function CategoriesList({
     input: { isActive?: boolean; sortOrder?: number }
   ) {
     const result = await client.requestCategories.update(category.id, input)
-    if (result.error) toast.error(result.error.message)
+    if (result.error)
+      showAppErrorToast(result.error, {
+        title: 'Category could not be updated',
+      })
     else router.refresh()
   }
 
@@ -107,19 +112,19 @@ export function CategoriesList({
     if (!window.confirm('Delete this category?')) return
     const result = await client.requestCategories.delete(category.id)
     if (result.error?.code === 'crm/category-in-use') {
-      toast.error(
-        'This category is used by existing requests. Archive it instead.',
-        {
-          action: {
-            label: 'Archive',
-            onClick: () => updateCategory(category, { isActive: false }),
-          },
-        }
-      )
+      toast.error(result.error.message, {
+        description: result.error.code,
+        action: {
+          label: 'Archive',
+          onClick: () => updateCategory(category, { isActive: false }),
+        },
+      })
       return
     }
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, {
+        title: 'Category could not be deleted',
+      })
       return
     }
     router.refresh()
@@ -131,7 +136,10 @@ export function CategoriesList({
       categoryId,
       subcategoryId
     )
-    if (result.error) toast.error(result.error.message)
+    if (result.error)
+      showAppErrorToast(result.error, {
+        title: 'Subcategory could not be deleted',
+      })
     else router.refresh()
   }
 
@@ -183,7 +191,8 @@ export function CategoriesList({
                   <span>
                     Team:{' '}
                     {category.defaultTeamId
-                      ? (teamNames[category.defaultTeamId] ?? category.defaultTeamId)
+                      ? (teamNames[category.defaultTeamId] ??
+                        category.defaultTeamId)
                       : '—'}
                   </span>
                   <span>
