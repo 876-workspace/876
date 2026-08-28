@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import type { DirectoryMember } from '@/features/directory/types'
-import type { CrmRequestTask } from '@/types/crm'
+import type { CrmRequestTask, RequestPriority } from '@/types/crm'
 
 import { RequestTasksSection } from './request-tasks'
 
@@ -30,6 +30,45 @@ vi.mock('@/lib/client', () => ({
 
 vi.mock('sonner', () => ({ toast: { error: mocks.error } }))
 
+const priorities: RequestPriority[] = [
+  {
+    object: 'request_priority',
+    id: 'crm_pri_normal',
+    tenantId: 'crm_tenant_island',
+    provisioningKey: 'normal',
+    name: 'Normal',
+    slug: 'normal',
+    description: null,
+    color: null,
+    icon: null,
+    weight: 20,
+    sortOrder: 20,
+    isDefault: true,
+    isActive: true,
+    createdBy: null,
+    createdAt: 1,
+    updatedAt: 1,
+  },
+  {
+    object: 'request_priority',
+    id: 'crm_pri_critical',
+    tenantId: 'crm_tenant_island',
+    provisioningKey: null,
+    name: 'Critical',
+    slug: 'critical',
+    description: null,
+    color: '#dc2626',
+    icon: null,
+    weight: 50,
+    sortOrder: 50,
+    isDefault: false,
+    isActive: true,
+    createdBy: 'user_althea_123',
+    createdAt: 2,
+    updatedAt: 2,
+  },
+]
+
 function createTask(overrides: Partial<CrmRequestTask> = {}): CrmRequestTask {
   return {
     object: 'request_task',
@@ -39,7 +78,8 @@ function createTask(overrides: Partial<CrmRequestTask> = {}): CrmRequestTask {
     title: 'Call the customer back',
     description: null,
     status: 'OPEN',
-    priority: 'NORMAL',
+    priorityId: priorities[0].id,
+    priority: priorities[0],
     assigneeId: null,
     dueAt: null,
     completedAt: null,
@@ -70,6 +110,7 @@ function renderSection(tasks: CrmRequestTask[]) {
     <RequestTasksSection
       requestId="crm_req_1042"
       tasks={tasks}
+      priorities={priorities}
       members={createMembers()}
     />
   )
@@ -135,10 +176,21 @@ describe('RequestTasksSection', () => {
       expect(screen.getByText('Althea Morgan')).toBeInTheDocument()
       expect(screen.queryByText('user_althea_123')).not.toBeInTheDocument()
     })
+
+    it('shows a non-default configured priority by name', () => {
+      renderSection([
+        createTask({
+          priorityId: priorities[1].id,
+          priority: priorities[1],
+        }),
+      ])
+
+      expect(screen.getByText('Critical')).toBeInTheDocument()
+    })
   })
 
   describe('adding a task', () => {
-    it('sends the trimmed title and refreshes the server list', async () => {
+    it('uses the tenant default when no explicit priority is selected', async () => {
       const user = userEvent.setup()
       renderSection([])
 
@@ -149,11 +201,28 @@ describe('RequestTasksSection', () => {
       expect(mocks.create).toHaveBeenCalledWith('crm_req_1042', {
         title: 'Chase courier',
         description: null,
-        priority: 'NORMAL',
         assigneeId: null,
         dueAt: null,
       })
       await waitFor(() => expect(mocks.refresh).toHaveBeenCalledTimes(1))
+    })
+
+    it('sends an explicitly selected configured priority id', async () => {
+      const user = userEvent.setup()
+      renderSection([])
+
+      await user.type(screen.getByLabelText('New task'), 'Escalate')
+      await user.selectOptions(
+        screen.getByLabelText('Priority'),
+        priorities[1].id
+      )
+      await user.click(screen.getByRole('button', { name: 'Add task' }))
+
+      await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
+      expect(mocks.create).toHaveBeenCalledWith(
+        'crm_req_1042',
+        expect.objectContaining({ priorityId: priorities[1].id })
+      )
     })
 
     it('keeps the submit button disabled while the title is empty', () => {
