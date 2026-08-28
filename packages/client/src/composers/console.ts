@@ -63,6 +63,7 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     branches: { admin: couriersAdmin.branches },
     warehouses: { admin: couriersAdmin.warehouses },
     mailboxes: { admin: couriersAdmin.mailboxes },
+    customerProfiles: crm.customers,
     requests: crm.requests,
     requestTasks: crm.requestTasks,
     requestReminders: crm.requestReminders,

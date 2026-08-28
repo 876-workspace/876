@@ -12,11 +12,11 @@ import {
   RequestIdentitySkeleton,
   RequestToolbar,
   RequestToolbarSkeleton,
-} from '@/features/support/components/request-identity'
+} from '@/features/crm/components/request-identity'
 import {
   RequestAside,
   RequestAsideSkeleton,
-} from '@/features/support/components/request-aside'
+} from '@/features/crm/components/request-aside'
 
 type Props = {
   children: React.ReactNode

@@ -36,6 +36,11 @@ export const organizationParamsSchema = z.object({
   organizationId: z.string().min(1),
 })
 
+export const listCustomersQuerySchema = z.object({
+  customerOrganizationId: z.string().trim().max(160).optional(),
+  customerUserId: z.string().trim().max(160).optional(),
+})
+
 export const customerParamsSchema = organizationParamsSchema.extend({
   id: z.string().min(1),
 })

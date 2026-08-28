@@ -5,9 +5,9 @@ import { Suspense } from 'react'
 
 import { $876 } from '@/lib/876'
 import { requireSession } from '@/lib/auth/guards'
-import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
-import { RequestManager } from '@/features/support/components/request-manager'
-import { resolveOrg } from '../../_data'
+import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
+import { RequestManager } from '@/features/crm/components/request-manager'
+import { resolveOrg } from '../../../../_data'
 
 type Props = {
   params: Promise<{ slug: string; requestId: string }>
@@ -25,7 +25,9 @@ export default function RequestDetailPage({ params }: Props) {
 
 async function RequestData({ params }: Props) {
   const { slug, requestId } = await params
-  const sessionPromise = requireSession(`/orgs/${slug}/requests/${requestId}`)
+  const sessionPromise = requireSession(
+    `/orgs/${slug}/workspace/crm/requests/${requestId}`
+  )
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
@@ -49,7 +51,7 @@ async function RequestData({ params }: Props) {
   return (
     <>
       <PageBreadcrumb
-        href={`/orgs/${slug}/requests`}
+        href={`/orgs/${slug}/workspace/crm/requests`}
         label="Requests"
         className="mb-4"
       />

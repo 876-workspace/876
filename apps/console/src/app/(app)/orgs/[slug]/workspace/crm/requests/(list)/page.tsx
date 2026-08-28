@@ -9,12 +9,12 @@ import { $876 } from '@/lib/876'
 import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
-} from '@/features/support/request-status'
-import { REQUESTS_SKELETON_COLUMNS } from '@/features/support/components/requests-skeleton-columns'
-import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
-import { RequestsTable } from '@/features/support/components/requests-table'
+} from '@/features/crm/request-status'
+import { REQUESTS_SKELETON_COLUMNS } from '@/features/crm/components/requests-skeleton-columns'
+import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
+import { RequestsTable } from '@/features/crm/components/requests-table'
 import type { CrmRequestStatus } from '@/types/crm'
-import { resolveOrg } from '../../_data'
+import { resolveOrg } from '../../../../_data'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -58,7 +58,7 @@ export default async function OrganizationRequestsPage({
           />
         }
         primaryLabel="Add"
-        primaryHref={`/orgs/${slug}/requests/new`}
+        primaryHref={`/orgs/${slug}/workspace/crm/requests/new`}
         primaryVariant="info"
         refresh
       />
@@ -92,7 +92,7 @@ async function RequestsData({
 
   return (
     <RequestsTable
-      requestsHref={`/orgs/${slug}/requests`}
+      requestsHref={`/orgs/${slug}/workspace/crm/requests`}
       requests={result.data.data.map((request) => ({
         id: request.id,
         number: request.number,

@@ -67,3 +67,16 @@ export interface DeleteCustomerInput {
   deletedBy: string
   reason?: string | null
 }
+
+/**
+ * Narrows a customer list to the one linked to a given 876 party.
+ *
+ * Named `customer*` because the route already carries an `organizationId` — the
+ * tenant whose workspace is being read. These name the party a customer *is*,
+ * which is a different organization entirely when Console asks "is org X a
+ * customer in 876's own workspace?".
+ */
+export interface ListCustomersFilter {
+  customerOrganizationId?: string
+  customerUserId?: string
+}

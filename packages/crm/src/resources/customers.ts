@@ -8,6 +8,7 @@ import {
   deletedSchema,
   type CreateCustomerInput,
   type DeleteInput,
+  type ListCustomersQuery,
   type RequestOptions,
   type UpdateCustomerInput,
 } from '../types'
@@ -18,10 +19,24 @@ function root(organizationId: string) {
 
 export function createCustomersResource(runtime: Runtime) {
   return {
-    list(organizationId: string, options: RequestOptions = {}) {
+    list(
+      organizationId: string,
+      options: ListCustomersQuery & RequestOptions = {}
+    ) {
+      const search = new URLSearchParams()
+      if (options.customerOrganizationId)
+        search.set('customerOrganizationId', options.customerOrganizationId)
+      if (options.customerUserId)
+        search.set('customerUserId', options.customerUserId)
+      const qs = search.toString()
+
       return request(
         runtime,
-        { method: 'GET', path: root(organizationId), signal: options.signal },
+        {
+          method: 'GET',
+          path: `${root(organizationId)}${qs ? `?${qs}` : ''}`,
+          signal: options.signal,
+        },
         customerListSchema
       )
     },

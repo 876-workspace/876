@@ -580,3 +580,15 @@ export const deletedSchema = z.object({
 })
 
 export type Deleted = z.infer<typeof deletedSchema>
+
+/**
+ * Narrows a customer list to the one linked to a given 876 party.
+ *
+ * The call already carries the tenant's `organizationId`; these name the party a
+ * customer *is*, which is a different organization when asking "is org X a
+ * customer in this workspace?".
+ */
+export interface ListCustomersQuery {
+  customerOrganizationId?: string
+  customerUserId?: string
+}

@@ -1,5 +1,7 @@
 import type { RouteTabItem } from '@876/ui/route-tabs'
 
+import { entitledWorkspaces, WORKSPACE_SEGMENT } from './app-workspaces'
+
 /**
  * A tab on the organization detail page that belongs to a product app rather
  * than to the platform, and is shown only when the organization holds an
@@ -32,6 +34,10 @@ export const ALWAYS_PRESENT_TABS = [
   { label: 'Overview', segment: '', exact: true },
   { label: 'Members', segment: 'members' },
   { label: 'Customers', segment: 'customers' },
+  // Always present, and deliberately not entitlement-gated: every organization
+  // is a customer of 876 from the moment it exists, so it can always have
+  // raised something with us — including one entitled to no product at all.
+  { label: 'Support', segment: 'support' },
   { label: 'Subscriptions', segment: 'subscriptions' },
   { label: 'Onboarding', segment: 'onboarding' },
   { label: 'Activity', segment: 'activity' },
@@ -43,12 +49,6 @@ export type AlwaysPresentTabLabel =
 
 export const APP_OWNED_TABS: AppOwnedTab[] = [
   {
-    appSlug: '876-crm',
-    label: 'Requests',
-    segment: 'requests',
-    after: 'Customers',
-  },
-  {
     appSlug: '876-billing',
     label: 'Billing',
     segment: 'billing',
@@ -56,6 +56,20 @@ export const APP_OWNED_TABS: AppOwnedTab[] = [
   },
   // Add a future app here — one row, no change to orgTabs.
 ]
+
+/**
+ * The single tab behind which every app workspace lives.
+ *
+ * One tab, not one per app. An app-owned tab per product looked reasonable at
+ * two apps and stops working at five, and it also blurred a distinction that
+ * matters: the other tabs answer what the organization has *with 876*, while a
+ * workspace answers what it is doing *inside a product*. Keeping the second
+ * question behind one door leaves the strip stable as apps are added.
+ *
+ * It is still entitlement-gated — an organization working in no app Console can
+ * open has nothing behind the door, so the door is not drawn.
+ */
+const WORKSPACE_TAB_AFTER: AlwaysPresentTabLabel = 'Onboarding'
 
 /**
  * The organization detail tab set.
@@ -76,6 +90,7 @@ export function orgTabs(
 ): RouteTabItem[] {
   const entitled = new Set(entitledAppSlugs)
   const active = APP_OWNED_TABS.filter((tab) => entitled.has(tab.appSlug))
+  const hasWorkspace = entitledWorkspaces(entitledAppSlugs).length > 0
 
   return ALWAYS_PRESENT_TABS.flatMap((tab) => [
     {
@@ -89,5 +104,8 @@ export function orgTabs(
         label: appTab.label,
         href: `${base}/${appTab.segment}`,
       })),
+    ...(hasWorkspace && tab.label === WORKSPACE_TAB_AFTER
+      ? [{ label: 'Workspace', href: `${base}/${WORKSPACE_SEGMENT}` }]
+      : []),
   ])
 }

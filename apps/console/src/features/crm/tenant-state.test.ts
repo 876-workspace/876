@@ -5,8 +5,8 @@ import { join } from 'node:path'
 const ROOT = join(process.cwd(), 'src/app/(app)')
 
 const PAGES = [
-  'orgs/[slug]/requests/(list)/page.tsx',
-  'orgs/[slug]/requests/[requestId]/page.tsx',
+  'orgs/[slug]/workspace/crm/requests/(list)/page.tsx',
+  'orgs/[slug]/workspace/crm/requests/[requestId]/page.tsx',
   'support/(list)/page.tsx',
 ]
 

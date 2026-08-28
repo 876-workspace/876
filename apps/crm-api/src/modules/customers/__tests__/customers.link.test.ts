@@ -12,7 +12,8 @@ vi.mock('@876/billing/integration', () => ({
   create876BillingIntegrationClient: () => ({ customers: finance }),
 }))
 
-const { createCustomerBodySchema } = await import('../customers.schemas.js')
+const { createCustomerBodySchema, listCustomersQuerySchema } =
+  await import('../customers.schemas.js')
 
 const tenant = { id: 'crm_tenant_1', organizationId: 'org_1', status: 'ACTIVE' }
 
@@ -167,5 +168,71 @@ describe('customers.create - deriving the customer type', () => {
       organizationId: 'org_7fA2',
       userId: null,
     })
+  })
+})
+
+describe('customers.list - resolving a party to a customer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    tenants.retrieveByOrganization.mockResolvedValue(tenant)
+    finance.list.mockResolvedValue({
+      data: { data: [], has_more: false },
+      error: null,
+    })
+    repository.ensureMany.mockResolvedValue(new Map())
+  })
+
+  async function list(filter?: Record<string, unknown>) {
+    const service = await import('../customers.service.js')
+    return service.list('org_1', filter as never)
+  }
+
+  it('asks the registry for every customer when no party is named', async () => {
+    await list()
+
+    expect(finance.list).toHaveBeenCalledWith('org_1', { limit: 100 })
+  })
+
+  it('narrows to the customer linked to an 876 organization', async () => {
+    await list({ customerOrganizationId: 'org_7fA2' })
+
+    expect(finance.list).toHaveBeenCalledWith('org_1', {
+      limit: 100,
+      organizationId: 'org_7fA2',
+    })
+  })
+
+  it('narrows to the customer linked to an 876 account', async () => {
+    await list({ customerUserId: 'user_2kL9mN4q' })
+
+    expect(finance.list).toHaveBeenCalledWith('org_1', {
+      limit: 100,
+      userId: 'user_2kL9mN4q',
+    })
+  })
+
+  // The route's own organizationId is the tenant being read; the filter names a
+  // different organization entirely. Conflating them would silently return the
+  // tenant's own customer record instead of the one asked for.
+  it('does not confuse the tenant with the party being resolved', async () => {
+    await list({ customerOrganizationId: 'org_7fA2' })
+
+    const [tenantOrgId, params] = finance.list.mock.calls[0]
+    expect(tenantOrgId).toBe('org_1')
+    expect(params.organizationId).toBe('org_7fA2')
+  })
+})
+
+describe('listCustomersQuerySchema', () => {
+  it('accepts an empty query', () => {
+    expect(listCustomersQuerySchema.safeParse({}).success).toBe(true)
+  })
+
+  it('rejects a party id longer than the column allows', () => {
+    const result = listCustomersQuerySchema.safeParse({
+      customerOrganizationId: 'o'.repeat(161),
+    })
+
+    expect(result.success).toBe(false)
   })
 })
