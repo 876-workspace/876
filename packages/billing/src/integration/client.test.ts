@@ -565,7 +565,12 @@ describe('create876BillingIntegrationClient', () => {
     })
 
     expect(result.error).toBeNull()
-    expect(result.data?.primaryContact).toBeNull()
+    // The replay (200) branch of the create union carries the full record.
+    expect(
+      result.data && 'primaryContact' in result.data
+        ? result.data.primaryContact
+        : undefined
+    ).toBeNull()
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/integrations/organizations/org_1/customers',
       expect.objectContaining({

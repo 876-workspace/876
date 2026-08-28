@@ -36,9 +36,11 @@ export {
   sourceSchema,
   BillingContactSchema,
   BillingCustomerSchema,
+  BillingCustomerCreatedSchema,
   BillingCustomerListSchema,
   DeletedBillingCustomerSchema,
 } from './customer.schema'
+export type { BillingCustomerCreated } from './customer.schema'
 export type {
   BillingItem,
   BillingItemCreateParams,
