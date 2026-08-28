@@ -1,15 +1,15 @@
+import { formatDateTime } from '@876/core/timestamps'
+import { AppError } from '@876/ui/app-error'
+import { CategoryIcon } from '@876/ui/category-icons'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
+import { Building2, Clock, User, Users } from '@876/ui/icons'
+import { Skeleton } from '@876/ui/skeleton'
 import Link from 'next/link'
 
-import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Skeleton } from '@876/ui/skeleton'
-import { Building2, Clock, User, Users } from '@876/ui/icons'
-import { formatDateTime } from '@876/core/timestamps'
-import { CategoryIcon } from '@876/ui/category-icons'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 
 import { RequestHeaderActions } from '../../_components/request-header-actions'
 import { formatAge } from '../../_lib/request-format'
-import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
-
 import {
   loadCategoryIndex,
   loadCustomer,
@@ -17,40 +17,70 @@ import {
   loadRequest,
 } from '../_data'
 
-/**
- * The record's title row: the subject on the left, the actions on the right.
- */
 export async function RequestToolbar({ requestId }: { requestId: string }) {
-  const { context, request } = await loadRequest(requestId)
-  const { departments, members } = await loadDirectory()
+  const [requestResult, directory] = await Promise.all([
+    loadRequest(requestId),
+    loadDirectory(),
+  ])
+
+  if (!requestResult.request)
+    return (
+      <div className="mb-5 space-y-3">
+        <h1 className="876-page-title">Request</h1>
+        {requestResult.error ? (
+          <AppError
+            title="Request data is temporarily unavailable"
+            error={requestResult.error}
+            variant="banner"
+          />
+        ) : null}
+      </div>
+    )
+
+  const request = requestResult.request
 
   return (
-    <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 pt-1">
-        <span className="text-info font-mono text-base font-semibold">
-          #{request.number}
-        </span>
-        <h1 className="876-page-title min-w-0 text-balance">
-          {request.subject}
-        </h1>
-      </div>
+    <div className="mb-5 space-y-2">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 pt-1">
+          <span className="text-info font-mono text-base font-semibold">
+            #{request.number}
+          </span>
+          <h1 className="876-page-title min-w-0 text-balance">
+            {request.subject}
+          </h1>
+        </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-3">
-        <RequestHeaderActions
-          requestId={request.id}
-          requestNumber={request.number}
-          status={request.status}
-          customerId={request.customerId}
-          currentUserId={context.userId}
-          departments={departments}
-          members={members}
-        />
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <RequestHeaderActions
+            requestId={request.id}
+            requestNumber={request.number}
+            status={request.status}
+            customerId={request.customerId}
+            currentUserId={requestResult.context.userId}
+            departments={directory.departments}
+            members={directory.members}
+          />
+        </div>
       </div>
+      {directory.departmentsError ? (
+        <AppError
+          title="Team options are temporarily incomplete"
+          error={directory.departmentsError}
+          variant="inline"
+        />
+      ) : null}
+      {directory.membersError ? (
+        <AppError
+          title="Member options are temporarily incomplete"
+          error={directory.membersError}
+          variant="inline"
+        />
+      ) : null}
     </div>
   )
 }
 
-/** Holds the title row's height so the record below it does not jump. */
 export function RequestToolbarSkeleton() {
   return (
     <div className="mb-5 flex items-start justify-between gap-x-6">
@@ -60,28 +90,34 @@ export function RequestToolbarSkeleton() {
   )
 }
 
-/**
- * The record's fact line: who the request is for, who owns it, and when it was active.
- */
 export async function RequestIdentity({ requestId }: { requestId: string }) {
-  const { request } = await loadRequest(requestId)
-  const [{ departments, members }, { profile, customer }, categoriesById] =
-    await Promise.all([
-      loadDirectory(),
-      loadCustomer(request.customerId),
-      loadCategoryIndex(),
-    ])
+  const requestResult = await loadRequest(requestId)
+  if (!requestResult.request)
+    return requestResult.error ? (
+      <AppError
+        title="Request details are temporarily unavailable"
+        error={requestResult.error}
+        variant="inline"
+      />
+    ) : null
+
+  const request = requestResult.request
+  const [directory, customerResult, categoryResult] = await Promise.all([
+    loadDirectory(),
+    loadCustomer(request.customerId),
+    loadCategoryIndex(),
+  ])
 
   const category = request.categoryId
-    ? (categoriesById.get(request.categoryId) ?? null)
+    ? (categoryResult.categories.get(request.categoryId) ?? null)
     : null
 
   const identity = resolveCustomerIdentity(
-    customer,
-    profile?.billingCustomerId ?? request.customerId
+    customerResult.customer,
+    customerResult.profile?.billingCustomerId ?? request.customerId
   )
   const assignee = request.assigneeId
-    ? (members.find((m) => m.userId === request.assigneeId) ?? {
+    ? (directory.members.find((m) => m.userId === request.assigneeId) ?? {
         userId: request.assigneeId,
         name: request.assigneeId,
         email: null,
@@ -89,95 +125,119 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
       })
     : null
   const teamName = request.teamId
-    ? (departments.find((d) => d.id === request.teamId)?.name ?? request.teamId)
+    ? (directory.departments.find((d) => d.id === request.teamId)?.name ??
+      request.teamId)
     : null
 
   return (
-    <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8125rem]">
-      <Link
-        href={`/customers/${request.customerId}`}
-        className="text-foreground/85 hover:text-info inline-flex min-w-0 items-center gap-1.5 font-medium transition-colors"
-      >
-        {identity.isBusiness ? (
-          <Building2
-            className="text-muted-foreground size-3.5 shrink-0"
-            aria-hidden="true"
-          />
-        ) : (
-          <User
-            className="text-muted-foreground size-3.5 shrink-0"
-            aria-hidden="true"
-          />
-        )}
-        <span className="truncate">{identity.name}</span>
-      </Link>
-
-      <div className="flex items-center gap-1.5">
-        <span className="text-border" aria-hidden="true">
-          ·
-        </span>
-        <span className="text-muted-foreground/80">Owner</span>
-        {assignee ? (
-          <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
-            <CustomerAvatar
-              name={assignee.name}
-              src={assignee.avatar}
-              className="size-4 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.45rem]"
-            />
-            <span>{assignee.name}</span>
-          </span>
-        ) : (
-          <span className="text-muted-foreground">Unassigned</span>
-        )}
-        {teamName ? (
-          <>
-            <span className="text-border/60" aria-hidden="true">
-              /
-            </span>
-            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
-              <Users
-                className="text-muted-foreground size-3 shrink-0"
-                aria-hidden="true"
-              />
-              <span>{teamName}</span>
-            </span>
-          </>
-        ) : null}
-      </div>
-
-      <div
-        className="flex items-center gap-1.5"
-        title={formatDateTime(request.updatedAt)}
-      >
-        <span className="text-border" aria-hidden="true">
-          ·
-        </span>
-        <Clock
-          className="text-muted-foreground size-3.5 shrink-0"
-          aria-hidden="true"
+    <div className="space-y-2">
+      {customerResult.error ? (
+        <AppError
+          title="Customer details are temporarily incomplete"
+          error={customerResult.error}
+          variant="inline"
         />
-        <span className="text-muted-foreground truncate">
-          Updated {formatAge(request.updatedAt)}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <span className="text-border" aria-hidden="true">
-          ·
-        </span>
-        <span className="text-muted-foreground/80">Category</span>
-        {category ? (
-          <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate font-medium transition-colors">
-            <CategoryIcon
-              name={category.icon}
-              className="size-3.5 shrink-0"
+      ) : null}
+      {directory.membersError || directory.departmentsError ? (
+        <AppError
+          title="Assignment details are temporarily incomplete"
+          error={directory.membersError ?? directory.departmentsError!}
+          variant="inline"
+        />
+      ) : null}
+      {categoryResult.error ? (
+        <AppError
+          title="Category details are temporarily incomplete"
+          error={categoryResult.error}
+          variant="inline"
+        />
+      ) : null}
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8125rem]">
+        <Link
+          href={`/customers/${request.customerId}`}
+          className="text-foreground/85 hover:text-info inline-flex min-w-0 items-center gap-1.5 font-medium transition-colors"
+        >
+          {identity.isBusiness ? (
+            <Building2
+              className="text-muted-foreground size-3.5 shrink-0"
               aria-hidden="true"
             />
-            <span>{category.name}</span>
+          ) : (
+            <User
+              className="text-muted-foreground size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+          )}
+          <span className="truncate">{identity.name}</span>
+        </Link>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-border" aria-hidden="true">
+            ·
           </span>
-        ) : (
-          <span className="text-muted-foreground">None</span>
-        )}
+          <span className="text-muted-foreground/80">Owner</span>
+          {assignee ? (
+            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
+              <CustomerAvatar
+                name={assignee.name}
+                src={assignee.avatar}
+                className="size-4 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.45rem]"
+              />
+              <span>{assignee.name}</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground">Unassigned</span>
+          )}
+          {teamName ? (
+            <>
+              <span className="text-border/60" aria-hidden="true">
+                /
+              </span>
+              <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
+                <Users
+                  className="text-muted-foreground size-3 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>{teamName}</span>
+              </span>
+            </>
+          ) : null}
+        </div>
+
+        <div
+          className="flex items-center gap-1.5"
+          title={formatDateTime(request.updatedAt)}
+        >
+          <span className="text-border" aria-hidden="true">
+            ·
+          </span>
+          <Clock
+            className="text-muted-foreground size-3.5 shrink-0"
+            aria-hidden="true"
+          />
+          <span className="text-muted-foreground truncate">
+            Updated {formatAge(request.updatedAt)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-border" aria-hidden="true">
+            ·
+          </span>
+          <span className="text-muted-foreground/80">Category</span>
+          {category ? (
+            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate font-medium transition-colors">
+              <CategoryIcon
+                name={category.icon}
+                className="size-3.5 shrink-0"
+                aria-hidden="true"
+              />
+              <span>{category.name}</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground">None</span>
+          )}
+        </div>
       </div>
     </div>
   )
