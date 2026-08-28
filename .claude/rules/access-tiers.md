@@ -131,6 +131,14 @@ Then, before writing anything:
 5. Compose it onto the calling app's `$876` facade.
 6. Call it from a route handler that authorizes first.
 
+## The Console-facing shape of all this
+
+`docs/architecture/017-console-app-data-management.md` records how these tiers
+turn into a repeatable pathway for reaching **any** organization's data in **any**
+app from Console: five fixed joints (capability → operator route → tier client →
+facade → entitlement-gated surface), so adding an app is a registration rather
+than a rewrite. Read it before wiring a new app into Console's org view.
+
 ## Do not
 
 - Do not give Console an integration credential or an app connection.
