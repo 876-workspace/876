@@ -142,6 +142,10 @@ export const crmRequestSchema = z.object({
   teamId: z.string().nullable(),
   assigneeId: z.string().nullable(),
   ownerId: z.string().nullable(),
+  /** The 876 account that raised this, when a named person did. */
+  requesterUserId: z.string().nullable(),
+  /** The registry contact that raised this, when one is known. */
+  requesterContactId: z.string().nullable(),
   createdBy: z.string(),
   resolvedAt: z.number().int().nullable(),
   closedAt: z.number().int().nullable(),
@@ -172,6 +176,8 @@ export interface ListRequestsQuery {
   categoryId?: string
   subcategoryId?: string
   ownerId?: string
+  /** `'unassigned'` selects requests raised for the organization as a whole. */
+  requesterUserId?: string
   priority?: RequestPriority
 }
 
@@ -187,6 +193,8 @@ export interface CreateRequestInput {
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
+  requesterUserId?: string | null
+  requesterContactId?: string | null
   createdBy: string
 }
 
@@ -200,6 +208,8 @@ export interface UpdateRequestInput {
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
+  requesterUserId?: string | null
+  requesterContactId?: string | null
 }
 
 export interface DeleteInput {
