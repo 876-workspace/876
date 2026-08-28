@@ -16,20 +16,8 @@ export async function CustomersTableData() {
   const $876 = await get876Client()
   const result = await $876.customerProfiles.list(context.orgId)
 
-  if (result.error)
-    return (
-      <AppError
-        title="Customers couldn't be loaded"
-        error={result.error}
-        variant="page"
-      />
-    )
-
-  const rows: CrmCustomerRow[] = result.data.data.map(
+  const rows: CrmCustomerRow[] = (result.data?.data ?? []).map(
     ({ profile, customer }) => {
-      // The row is about the party; the contact is a second column, not the
-      // party's own email. Reading `customer.email` for both put a business's
-      // owner in the customer's email cell.
       const identity = resolveCustomerIdentity(
         customer,
         profile.billingCustomerId
@@ -48,5 +36,16 @@ export async function CustomersTableData() {
     }
   )
 
-  return <CustomersTable customers={rows} />
+  return (
+    <div className="space-y-3">
+      {result.error ? (
+        <AppError
+          title="Some customer data could not be loaded"
+          error={result.error}
+          variant="banner"
+        />
+      ) : null}
+      <CustomersTable customers={rows} />
+    </div>
+  )
 }
