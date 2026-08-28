@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@876/ui/popover'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Skeleton } from '@876/ui/skeleton'
 import { Textarea } from '@876/ui/textarea'
-import { ChatBubbleLeftIcon, ChevronLeftIcon, PlusIcon } from '@876/ui/icons'
+import { ChevronLeftIcon, FlagIcon, PlusIcon } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
 
 import { client } from '@/lib/client'
@@ -63,7 +63,7 @@ export function SupportWidget({
           'h-8 w-8 rounded-lg'
         )}
       >
-        <ChatBubbleLeftIcon className="size-4" />
+        <FlagIcon className="size-4" />
       </PopoverTrigger>
       <PopoverContent
         align="end"
