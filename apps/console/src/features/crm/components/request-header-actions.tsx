@@ -1,7 +1,8 @@
 'use client'
 
-import { buttonVariants } from '@876/ui/button'
 import { cn } from '@876/core/utils'
+import { showAppErrorToast } from '@876/ui/app-error-toast'
+import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,8 +37,8 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
-import type { RequestStatus } from '../types'
 
+import type { RequestStatus } from '../types'
 import { DeleteRequestDialog } from './delete-request-dialog'
 import { NEW_NOTE_FIELD_ID } from './request-notes'
 import { NEW_REMINDER_FIELD_ID } from './request-reminders'
@@ -94,7 +95,9 @@ export function RequestHeaderActions({
       assigneeId: userId,
     })
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, {
+        title: 'Request could not be assigned',
+      })
       return
     }
     toast.success(
@@ -112,7 +115,9 @@ export function RequestHeaderActions({
       teamId,
     })
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, {
+        title: 'Team assignment could not be updated',
+      })
       return
     }
     toast.success(
