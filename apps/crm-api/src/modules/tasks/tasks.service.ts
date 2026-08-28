@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   CreateTaskInput,
   RequestTask,
@@ -44,15 +44,14 @@ async function resolvePriority(tenantId: string, priorityId?: string) {
   if (priorityId) return priorities.requireActiveForTenant(tenantId, priorityId)
 
   const priority = await priorities.retrieveDefaultForTenant(tenantId)
-  if (!priority) throw crmError('crm/priority-not-found')
-
+  if (!priority) return getError('crm/priority-not-found')
   return priority
 }
 
 export async function list(organizationId: string, requestId: string) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const tasks = await repository.list(context.tenantId, requestId)
-
   return tasks.map(serialize)
 }
 
@@ -62,7 +61,10 @@ export async function create(
   input: CreateTaskInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const priority = await resolvePriority(context.tenantId, input.priorityId)
+  if (isError(priority)) return priority
+
   const task = await repository.create({
     tenantId: context.tenantId,
     requestId,
@@ -81,11 +83,17 @@ export async function update(
   input: UpdateTaskInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const current = await repository.retrieve(context.tenantId, requestId, taskId)
   if (!current) return null
 
-  if (input.priorityId)
-    await priorities.requireActiveForTenant(context.tenantId, input.priorityId)
+  if (input.priorityId) {
+    const priority = await priorities.requireActiveForTenant(
+      context.tenantId,
+      input.priorityId
+    )
+    if (isError(priority)) return priority
+  }
 
   const completionStamp =
     input.status === 'DONE' && !current.completedAt
@@ -115,8 +123,8 @@ export async function remove(
   deletedBy: string
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const task = await repository.retrieve(context.tenantId, requestId, taskId)
   if (!task) return null
-
   return repository.remove(taskId, deletedBy)
 }
