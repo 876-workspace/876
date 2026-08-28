@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation'
-
+import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
+import { notFound } from 'next/navigation'
 
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
@@ -17,7 +17,18 @@ export default async function EditTeamPage({ params }: Props) {
   const $876 = await get876Client()
   const result = await $876.teams.retrieve(context.orgId, teamId)
   if (result.error?.code === 'crm/team-not-found') notFound()
-  if (result.error) throw new Error(result.error.message)
+
+  if (result.error)
+    return (
+      <Page>
+        <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
+        <AppError
+          title="Team couldn't be loaded"
+          error={result.error}
+          variant="page"
+        />
+      </Page>
+    )
 
   const initial: TeamFormValues = {
     name: result.data.name,
