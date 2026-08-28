@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   CreateRequestNoteInput,
   CrmRequestNote,
@@ -38,8 +38,8 @@ export async function list(
   access: ListRequestNotesInput = {}
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const notes = await repository.list(context.tenantId, requestId, access)
-
   return notes.map(serialize)
 }
 
@@ -49,12 +49,12 @@ export async function create(
   input: CreateRequestNoteInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const note = await repository.create({
     tenantId: context.tenantId,
     requestId,
     ...input,
   })
-
   return serialize(note)
 }
 
@@ -65,6 +65,7 @@ export async function update(
   input: UpdateRequestNoteInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const current = await repository.retrieve(context.tenantId, requestId, noteId)
   if (!current) return null
   if (
@@ -84,6 +85,7 @@ export async function remove(
   input: DeleteRequestNoteInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const current = await repository.retrieve(context.tenantId, requestId, noteId)
   if (!current) return null
   if (
@@ -93,7 +95,7 @@ export async function remove(
   )
     return null
   if (current.kind === 'DESCRIPTION')
-    throw crmError('crm/description-note-immutable')
+    return getError('crm/description-note-immutable')
 
   return repository.remove(noteId, input.deletedBy)
 }
