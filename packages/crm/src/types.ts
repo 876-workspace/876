@@ -94,6 +94,16 @@ export interface CreateCustomerInput {
   email?: string | null
   phone?: string | null
   ownerId?: string | null
+  /**
+   * Links this customer to an 876 account, making it a `CORE_USER` customer.
+   * Only valid with `customerKind: 'INDIVIDUAL'`.
+   */
+  userId?: string | null
+  /**
+   * Links this customer to an 876 organization, making it a
+   * `CORE_ORGANIZATION` customer. Only valid with `customerKind: 'BUSINESS'`.
+   */
+  organizationId?: string | null
 }
 
 export interface UpdateCustomerInput {
