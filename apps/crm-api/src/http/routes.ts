@@ -1,7 +1,8 @@
 import { Router } from 'express'
 
-import { createCustomersRouter } from '../modules/customers/customers.routes.js'
 import { createCategoriesRouter } from '../modules/categories/categories.routes.js'
+import { createCustomersRouter } from '../modules/customers/customers.routes.js'
+import { createPrioritiesRouter } from '../modules/priorities/index.js'
 import { createRequestFormsRouter } from '../modules/request-forms/request-forms.routes.js'
 import { createRequestsRouter } from '../modules/requests/requests.routes.js'
 import { createTeamsRouter } from '../modules/teams/teams.routes.js'
@@ -15,6 +16,10 @@ export function buildRoutes() {
     createCustomersRouter()
   )
   router.use('/v1/organizations/:organizationId/teams', createTeamsRouter())
+  router.use(
+    '/v1/organizations/:organizationId/request-priorities',
+    createPrioritiesRouter()
+  )
   router.use(
     '/v1/organizations/:organizationId/request-categories',
     createCategoriesRouter()
