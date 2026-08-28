@@ -20,12 +20,16 @@ import { cn } from '../lib/utils'
  */
 const DetailHeader = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { condensedTitle?: React.ReactNode }
->(({ className, children, condensedTitle, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & {
+    condensedTitle?: React.ReactNode
+    condensed?: boolean
+  }
+>(({ className, children, condensedTitle, condensed, ...props }, ref) => {
   const sentinelRef = React.useRef<HTMLDivElement>(null)
   const shellRef = React.useRef<HTMLDivElement>(null)
   const expandedHeightRef = React.useRef(0)
   const [pinned, setPinned] = React.useState(false)
+  const isCondensed = Boolean(condensed || pinned)
   // Height the condensed state gives back, reserved below the header so the
   // document does not shrink when it collapses. Without this the page can
   // shorten past its own scroll offset, which scrolls the sentinel back into
@@ -34,6 +38,7 @@ const DetailHeader = React.forwardRef<
   const [reserved, setReserved] = React.useState(0)
 
   React.useEffect(() => {
+    if (condensed) return
     const sentinel = sentinelRef.current
     if (!sentinel) return
 
@@ -44,32 +49,39 @@ const DetailHeader = React.forwardRef<
     observer.observe(sentinel)
 
     return () => observer.disconnect()
-  }, [])
+  }, [condensed])
 
   React.useLayoutEffect(() => {
     const shell = shellRef.current
     if (!shell) return
 
-    if (!pinned) {
+    if (!isCondensed) {
       expandedHeightRef.current = shell.offsetHeight
+      setReserved(0)
+      return
+    }
+
+    if (condensed) {
       setReserved(0)
       return
     }
 
     const delta = expandedHeightRef.current - shell.offsetHeight
     setReserved(delta > 0 ? delta : 0)
-  }, [pinned])
+  }, [isCondensed, condensed])
 
   return (
     <>
-      <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+      {!condensed && (
+        <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+      )}
       <div
         ref={(node) => {
           shellRef.current = node
           if (typeof ref === 'function') ref(node)
           else if (ref) ref.current = node
         }}
-        data-condensed={pinned ? 'true' : undefined}
+        data-condensed={isCondensed ? 'true' : undefined}
         className={cn(
           '876-detail-header-shell sm:sticky sm:top-0 sm:z-10',
           className
