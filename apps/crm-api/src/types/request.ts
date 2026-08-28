@@ -1,21 +1,10 @@
 export type RequestStatus =
-  | 'OPEN'
-  | 'IN_PROGRESS'
-  | 'WAITING'
-  | 'RESOLVED'
-  | 'CLOSED'
-  | 'CANCELLED'
+  'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED' | 'CANCELLED'
 
 export type RequestPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
 
 export type RequestSource =
-  | 'CRM'
-  | 'EMAIL'
-  | 'PHONE'
-  | 'CHAT'
-  | 'WEB'
-  | 'API'
-  | 'OTHER'
+  'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
 
 export type RequestNoteKind = 'DESCRIPTION' | 'NOTE' | 'EMAIL'
 export type RequestNoteVisibility = 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
@@ -35,7 +24,12 @@ export interface CrmRequest {
   teamId: string | null
   assigneeId: string | null
   ownerId: string | null
+  /**
+   * The 876 account that raised this request, when a named person did. Null on
+   * a request standing for the customer organization as a whole.
+   */
   requesterUserId: string | null
+  /** The registry contact that raised this request, when one is known. */
   requesterContactId: string | null
   createdBy: string
   resolvedAt: number | null
