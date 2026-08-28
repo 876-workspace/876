@@ -4,6 +4,7 @@ import {
   DEFAULT_ORG_ROLES,
   defaultPermissionsForRoleName,
 } from '@/platform/permissions'
+import { dispatchBillingCustomerSyncOnce } from '@/workers/billing-customer-dispatch'
 
 import * as repository from './provisioning.repository'
 import type { OrgRoleRow } from './provisioning.repository'
@@ -65,8 +66,11 @@ export type EnqueueCustomerEnsure = (
  * entitlement.
  *
  * Best-effort: a failure is logged, never raised — an org must be creatable even
- * when the billing outbox write hiccups, and the reconcile sweep re-ensures any
- * org it finds. Tests inject their own enqueue and never reach this.
+ * when Billing is unavailable. After the durable event is written, one bounded
+ * dispatch pass runs in the signup request so Vercel's serverless runtime does
+ * not depend on a persistent worker. The daily reconcile sweep repairs anything
+ * that remains after a transient failure. Tests inject their own enqueue unless
+ * they are exercising this production default.
  */
 const defaultEnqueueCustomerEnsure: EnqueueCustomerEnsure = async (
   organizationId,
@@ -81,6 +85,7 @@ const defaultEnqueueCustomerEnsure: EnqueueCustomerEnsure = async (
       organization,
       now
     )
+    await dispatchBillingCustomerSyncOnce({ limit: 1 })
   } catch (error) {
     log.error(
       { err: error, org_id: organizationId },
