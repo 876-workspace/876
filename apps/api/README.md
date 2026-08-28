@@ -87,8 +87,9 @@ A large surface is split further per resource group — see `directory`,
 
 Background loops live in `src/workers/`. The long-running container entrypoint
 starts finance provisioning when enabled and starts Billing customer sync when
-the Billing URL and internal key are configured. The seed CLI lives in
-`src/seeds/`.
+the Billing URL and internal key are configured. On Vercel, a secured cron calls
+the same one-batch customer dispatcher every minute because serverless functions
+cannot own persistent loops. The seed CLI lives in `src/seeds/`.
 
 ## Frontend Access
 

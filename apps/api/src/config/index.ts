@@ -104,6 +104,7 @@ const envSchema = z.object({
   WORKOS_WEBHOOK_SECRET: str(),
 
   API_INTERNAL_KEY: str(),
+  CRON_SECRET: str(),
   CORS_ALLOWED_ORIGINS: z
     .string()
     .optional()
@@ -201,6 +202,7 @@ function build(env: NodeJS.ProcessEnv) {
 
     databaseUrl: e.DATABASE_URL,
     internalKey: e.API_INTERNAL_KEY,
+    cronSecret: e.CRON_SECRET,
 
     corsOrigins: e.CORS_ALLOWED_ORIGINS.split(',')
       .map((origin) => origin.trim())

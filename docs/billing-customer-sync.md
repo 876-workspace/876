@@ -22,7 +22,7 @@ org provision / user create
 billing_customer_outbox  (same DB transaction)
         │
         ▼
-run_billing_sync_worker  (API lifespan)
+Vercel Cron or run_billing_sync_worker  (one dispatcher owner per runtime)
         │
         ▼
 POST {BILLING_API_URL}/api/v1/admin/customers/ensure
@@ -220,10 +220,13 @@ curl -sS -X POST "$API_URL/billing/customer-sync/dispatch" \
 | `BILLING_RUN_INTERVAL_SECONDS`      | Core    | Cadence for `POST …/admin/billing/run` (default `3600`; `0` disables) |
 | `FINANCE_PROVISIONING_POLL_SECONDS` | Core    | Worker sleep between loops (default `30`; shared with finance outbox) |
 | `FINANCE_PROVISIONING_BATCH_SIZE`   | Core    | Claim batch size (default `25`)                                       |
+| `CRON_SECRET`                       | Core    | Bearer secret Vercel presents to the scheduled customer-sync route    |
 | `BILLING_PLATFORM_TENANT_SLUG`      | Billing | Platform tenant receiving customers                                   |
 
-Worker starts in API lifespan only when both `BILLING_API_URL` and
-`BILLING_INTERNAL_KEY` are set.
+The long-running container starts the worker when both `BILLING_API_URL` and
+`BILLING_INTERNAL_KEY` are set. Vercel instead invokes
+`GET /billing/customer-sync/cron` every minute with `CRON_SECRET`; serverless
+functions do not own persistent worker loops.
 
 ---
 

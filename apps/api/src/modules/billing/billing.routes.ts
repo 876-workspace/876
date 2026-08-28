@@ -53,6 +53,22 @@ export function createBillingRouter(resolveGuards: GuardResolver): Router {
     handler: controller.dispatchBillingCustomerSync,
   })
 
+  api.get({
+    path: '/customer-sync/cron',
+    operationId: 'billing-schedule_billing_customer_sync',
+    summary: docs.SCHEDULE_BILLING_CUSTOMER_SYNC_SUMMARY,
+    description: docs.SCHEDULE_BILLING_CUSTOMER_SYNC_DESCRIPTION,
+    security: 'scheduler',
+    responses: {
+      200: {
+        description: 'Dispatched.',
+        schema: billingCustomerSyncDispatchSchema,
+      },
+      401: docs.SCHEDULE_BILLING_CUSTOMER_SYNC_RESPONSES[401],
+    },
+    handler: controller.dispatchBillingCustomerSync,
+  })
+
   api.post({
     path: '/customer-sync/reconcile',
     operationId: 'billing-reconcile_billing_customer_sync',

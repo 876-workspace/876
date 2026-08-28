@@ -117,6 +117,8 @@ export function createGuardResolver(guards: AuthGuards): GuardResolver {
         return [guards.requireApiKey, guards.requireSession]
       case 'admin':
         return [guards.requireApiKey, guards.requireAdmin]
+      case 'scheduler':
+        return [guards.requireScheduler]
     }
   }
 }

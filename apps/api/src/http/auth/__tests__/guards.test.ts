@@ -64,6 +64,9 @@ function createGuardedApp(): Express {
     app.get('/admin', guards.requireAdmin, (req, res) => {
       res.json(getPrincipal(req))
     })
+    app.get('/scheduler', guards.requireScheduler, (_req, res) => {
+      res.json({ object: 'scheduler_probe' })
+    })
     app.get('/consumer', guards.requireConsumerSession, (req, res) => {
       res.json(getPrincipal(req))
     })
@@ -91,6 +94,31 @@ beforeEach(() => {
   findApiKeyByHash.mockResolvedValue(createApiKey())
   markApiKeyUsed.mockResolvedValue(undefined)
   findLiveSession.mockResolvedValue(true)
+})
+
+describe('requireScheduler', () => {
+  it('accepts the configured Vercel Cron bearer secret', async () => {
+    const response = await request(createGuardedApp())
+      .get('/scheduler')
+      .set('Authorization', 'Bearer test-cron-secret')
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({ object: 'scheduler_probe' })
+  })
+
+  it('rejects missing and invalid scheduler credentials', async () => {
+    const missing = await request(createGuardedApp()).get('/scheduler')
+    const invalid = await request(createGuardedApp())
+      .get('/scheduler')
+      .set('Authorization', 'Bearer wrong-secret')
+
+    expect(missing.status).toBe(401)
+    expect(invalid.status).toBe(401)
+    expect(invalid.body.error).toEqual({
+      code: 'auth/invalid-token',
+      message: 'The scheduler credential is invalid.',
+    })
+  })
 })
 
 describe('requireApiKey', () => {

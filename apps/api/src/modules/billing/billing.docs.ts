@@ -13,6 +13,15 @@ export const DISPATCH_BILLING_CUSTOMER_SYNC_RESPONSES = {
   403: { description: 'Caller is not an admin.' },
 } as const
 
+export const SCHEDULE_BILLING_CUSTOMER_SYNC_SUMMARY =
+  'Schedule billing customer sync'
+export const SCHEDULE_BILLING_CUSTOMER_SYNC_DESCRIPTION =
+  'Claims and delivers one billing customer outbox batch. Called by Vercel Cron with the scheduler credential.'
+
+export const SCHEDULE_BILLING_CUSTOMER_SYNC_RESPONSES = {
+  401: { description: 'Missing or invalid scheduler credential.' },
+} as const
+
 export const RECONCILE_BILLING_CUSTOMER_SYNC_SUMMARY =
   'Reconcile billing customer sync'
 export const RECONCILE_BILLING_CUSTOMER_SYNC_DESCRIPTION =

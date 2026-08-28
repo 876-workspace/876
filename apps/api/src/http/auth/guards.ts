@@ -52,6 +52,7 @@ export type AuthGuards = {
   requireApiKey: RequestHandler
   requireSession: RequestHandler
   requireAdmin: RequestHandler
+  requireScheduler: RequestHandler
   requireConsumerSession: RequestHandler
   requireEnterpriseSession: RequestHandler
 }
@@ -302,6 +303,19 @@ export function createAuthGuards(deps: AuthDependencies): AuthGuards {
     throw errors.noSession()
   })
 
+  const requireScheduler = guard((req) => {
+    const configured = getSettings().cronSecret
+    const presented = readBearerToken(req)
+
+    if (configured && presented && secretsMatch(presented, configured)) return
+
+    log.warn(
+      { reason: configured ? 'invalid' : 'unconfigured', path: req.path },
+      'scheduler.rejected'
+    )
+    throw errors.invalidToken('The scheduler credential is invalid.')
+  })
+
   /**
    * Consumer and enterprise are separate identities: a consumer session must
    * not reach enterprise-scoped APIs, or the reverse. The internal key is
@@ -332,6 +346,7 @@ export function createAuthGuards(deps: AuthDependencies): AuthGuards {
     requireApiKey,
     requireSession,
     requireAdmin,
+    requireScheduler,
     requireConsumerSession: requireRealm('consumer'),
     requireEnterpriseSession: requireRealm('enterprise'),
   }

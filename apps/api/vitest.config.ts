@@ -22,6 +22,7 @@ export default defineConfig({
       LOG_LEVEL: 'silent',
       IS_PRODUCTION: 'false',
       API_INTERNAL_KEY: 'test-internal-key',
+      CRON_SECRET: 'test-cron-secret',
       SESSION_COOKIE_SECRET: 'test-session-cookie-secret-32-chars!!',
       // Accelerate-shaped, because the config schema now requires it, but
       // pointed at a closed port so nothing is ever dialed. A real Accelerate

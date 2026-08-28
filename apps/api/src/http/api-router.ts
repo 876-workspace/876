@@ -28,7 +28,7 @@ import {
  */
 
 /** Auth tier, mapped to the OpenAPI security requirement for the operation. */
-export type Security = 'public' | 'apiKey' | 'session' | 'admin'
+export type Security = 'public' | 'apiKey' | 'session' | 'admin' | 'scheduler'
 
 /** The status-code key shape zod-openapi indexes its responses object by. */
 type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`
@@ -41,6 +41,7 @@ const SECURITY_REQUIREMENTS: Record<
   apiKey: [{ ApiKey: [] }],
   session: [{ BearerToken: [] }, { InternalKey: [] }],
   admin: [{ InternalKey: [] }],
+  scheduler: [{ SchedulerSecret: [] }],
 }
 
 export type ResponseSpec = {

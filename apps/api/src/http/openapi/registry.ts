@@ -100,6 +100,12 @@ export const SECURITY_SCHEMES = {
     description:
       'Secret service key. Server-to-server only; never reaches a browser.',
   },
+  SchedulerSecret: {
+    type: 'http',
+    scheme: 'bearer',
+    description:
+      'Vercel Cron secret. Scheduler-only; never accepted as user or operator authority.',
+  },
 } as const
 
 export function buildOpenApiDocument(options: {
