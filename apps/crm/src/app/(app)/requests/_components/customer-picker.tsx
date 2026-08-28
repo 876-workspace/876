@@ -5,9 +5,11 @@ import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import {
+  Building2,
   EnvelopeIcon,
   MagnifyingGlassIcon,
   Phone,
+  User,
   XMarkIcon,
 } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
@@ -26,6 +28,11 @@ export type PickerCustomer = {
   /** The person attached to a business customer; null for an individual. */
   contactName: string | null
   contactEmail: string | null
+  /** The registered company name, when it differs from the display name. */
+  legalName: string | null
+  isBusiness: boolean
+  typeLabel: string
+  status: 'ACTIVE' | 'INACTIVE'
 }
 
 /** Flattens the profile/registry pair into the one shape the picker renders. */
@@ -43,6 +50,10 @@ export function toPickerCustomer({
     kind: customer?.customerKind ?? null,
     contactName: identity.contact?.name ?? null,
     contactEmail: identity.contact?.email ?? null,
+    legalName: identity.legalName,
+    isBusiness: identity.isBusiness,
+    typeLabel: identity.typeLabel,
+    status: profile.status,
   }
 }
 
@@ -254,5 +265,110 @@ export function CustomerPicker({
         </div>
       ) : null}
     </div>
+  )
+}
+
+/**
+ * The customer half of the create-request flow, as a card of its own.
+ *
+ * Choosing the customer is the one decision that gates the whole form — the
+ * request cannot be filed without it — so it gets its own column rather than a
+ * row buried among the other fields, and confirms the choice by showing who
+ * was picked. Matches the card Console renders for the same flow.
+ */
+export function CustomerSelectionCard({
+  customers,
+  value,
+  onSelect,
+  disabled = false,
+}: {
+  customers: PickerCustomer[]
+  value: PickerCustomer | null
+  onSelect: (customer: PickerCustomer | null) => void
+  disabled?: boolean
+}) {
+  return (
+    <section className="876-card overflow-hidden">
+      <div className="bg-muted/20 flex items-center justify-between gap-2 border-b px-4 py-3">
+        <span className="876-eyebrow text-[0.6875rem]">Customer</span>
+        {value ? (
+          <Badge
+            variant="secondary"
+            className="text-muted-foreground text-[0.625rem] font-medium tracking-wider uppercase"
+          >
+            {value.isBusiness ? 'Business' : 'Individual'}
+          </Badge>
+        ) : null}
+      </div>
+
+      <div className="space-y-4 p-4">
+        <CustomerPicker
+          customers={customers}
+          value={value}
+          onSelect={onSelect}
+          disabled={disabled}
+        />
+
+        {value ? (
+          <div className="space-y-3.5 border-t pt-4">
+            <div className="flex items-start gap-3">
+              <CustomerAvatar
+                name={value.name}
+                className="size-10 rounded-lg text-sm ring-0 after:rounded-lg [&_[data-slot=avatar-fallback]]:rounded-lg"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground/90 truncate text-sm font-medium">
+                  {value.name}
+                </p>
+                <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                  {value.legalName ?? value.typeLabel}
+                </p>
+              </div>
+              <Badge
+                variant={value.status === 'ACTIVE' ? 'success' : 'secondary'}
+              >
+                {value.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+
+            <div className="bg-muted/30 flex flex-col gap-2 rounded-md p-2.5 text-xs">
+              <div className="text-foreground/80 flex min-w-0 items-center gap-1.5">
+                {value.isBusiness ? (
+                  <Building2 className="text-muted-foreground size-3.5 shrink-0" />
+                ) : (
+                  <User className="text-muted-foreground size-3.5 shrink-0" />
+                )}
+                <span className="truncate">{value.typeLabel}</span>
+              </div>
+              {value.email ? (
+                <div className="text-foreground/80 flex min-w-0 items-center gap-1.5">
+                  <EnvelopeIcon className="text-muted-foreground size-3.5 shrink-0" />
+                  <span className="truncate">{value.email}</span>
+                </div>
+              ) : null}
+              {value.phone ? (
+                <div className="text-foreground/80 flex min-w-0 items-center gap-1.5">
+                  <Phone className="text-muted-foreground size-3.5 shrink-0" />
+                  <span className="truncate">{value.phone}</span>
+                </div>
+              ) : null}
+            </div>
+
+            {value.contactName ? (
+              <div className="border-border/60 border-t pt-3">
+                <p className="text-muted-foreground text-[0.6875rem] font-medium tracking-wider uppercase">
+                  Primary contact
+                </p>
+                <p className="mt-1 text-xs font-medium">{value.contactName}</p>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="876-empty-dashed px-4 py-8 text-center text-xs">
+            Search for and select the customer this request is for.
+          </div>
+        )}
+      </div>
+    </section>
   )
 }

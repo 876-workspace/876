@@ -5,7 +5,7 @@ import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 import { RequestForm } from '../_components/request-form'
 
-export const metadata = { title: 'Add request' }
+export const metadata = { title: 'New request' }
 
 export default async function NewRequestPage() {
   const context = await requireCrmContext()
@@ -36,8 +36,10 @@ export default async function NewRequestPage() {
 
   return (
     <Page>
-      <PageBreadcrumb href="/requests" label="Requests" className="mb-4" />
-      <h1 className="876-page-title mb-6">Add request</h1>
+      <div className="mb-5">
+        <PageBreadcrumb href="/requests" label="Requests" className="mb-2" />
+        <h1 className="876-page-title mt-2">New request</h1>
+      </div>
       <RequestForm
         customers={customers.data.data}
         categories={categoriesResult.data?.data ?? []}
