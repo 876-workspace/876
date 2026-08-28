@@ -1,13 +1,13 @@
 'use client'
 
+import { showAppErrorToast } from '@876/ui/app-error-toast'
+import { Badge } from '@876/ui/badge'
+import { Button, buttonVariants } from '@876/ui/button'
+import { Empty, EmptyContent, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-
-import { Badge } from '@876/ui/badge'
-import { Button, buttonVariants } from '@876/ui/button'
-import { Empty, EmptyContent, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 
 import { client } from '@/lib/client'
 import type { RequestPriority } from '@/types/crm'
@@ -21,11 +21,6 @@ export function PrioritiesList({
   const [busyId, setBusyId] = useState<string | null>(null)
 
   async function toggleActive(priority: RequestPriority) {
-    if (priority.isDefault && priority.isActive) {
-      toast.error('Choose another default priority before archiving this one.')
-      return
-    }
-
     setBusyId(priority.id)
     const result = await client.requestPriorities.update(priority.id, {
       isActive: !priority.isActive,
@@ -33,7 +28,11 @@ export function PrioritiesList({
     setBusyId(null)
 
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, {
+        title: priority.isActive
+          ? 'Priority could not be archived'
+          : 'Priority could not be restored',
+      })
       return
     }
 
