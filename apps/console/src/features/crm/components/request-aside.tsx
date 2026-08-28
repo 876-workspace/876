@@ -17,26 +17,59 @@ import { RequestSourceIcon } from './request-source-icon'
 import { categoryColorClass } from '../category-color'
 import { formatSource } from '../request-format'
 import { resolveCustomerIdentity } from '../customer-identity'
-import { loadCategoryIndex, loadCustomer, loadRequest } from '../request-data'
+import {
+  loadCategoryIndex,
+  loadCustomer,
+  loadOrgCategoryIndex,
+  loadOrgCustomer,
+  loadOrgRequest,
+  loadRequest,
+} from '../request-data'
 
 /**
  * The record's right column: who the request is for, and the request's own
  * reference data.
  */
-export async function RequestAside({ requestId }: { requestId: string }) {
-  const { org, request } = await loadRequest(requestId)
-  if (!org || !request) return null
+export async function RequestAside({
+  requestId,
+  organizationId,
+  customerHref,
+}: {
+  requestId: string
+  organizationId?: string
+  customerHref?: string
+}) {
+  let orgId = organizationId
+  let requestData: any = null
+
+  if (organizationId) {
+    const data = await loadOrgRequest(
+      organizationId,
+      requestId,
+      `/support/${requestId}`
+    )
+    orgId = data.org.id
+    requestData = data.request
+  } else {
+    const data = await loadRequest(requestId)
+    if (!data.org || !data.request) return null
+    orgId = data.org.id
+    requestData = data.request
+  }
 
   const [{ customer }, categories] = await Promise.all([
-    loadCustomer(request.customerId),
-    loadCategoryIndex(),
+    loadOrgCustomer(orgId, requestData.customerId),
+    loadOrgCategoryIndex(orgId),
   ])
-  const category = request.categoryId
-    ? categories.get(request.categoryId)
+  const category = requestData.categoryId
+    ? categories.get(requestData.categoryId)
     : undefined
 
-  const identity = resolveCustomerIdentity(customer, request.customerId)
+  const identity = resolveCustomerIdentity(customer, requestData.customerId)
   const customerSubtitle = identity.legalName ?? identity.typeLabel
+
+  const targetCustomerHref =
+    customerHref ?? `/customers/${requestData.customerId}`
 
   return (
     <>
@@ -50,7 +83,7 @@ export async function RequestAside({ requestId }: { requestId: string }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <Link
-                href={`/customers/${request.customerId}`}
+                href={targetCustomerHref}
                 className="min-w-0 truncate font-medium hover:underline"
               >
                 {identity.name}
@@ -159,7 +192,7 @@ export async function RequestAside({ requestId }: { requestId: string }) {
 
         <div className="border-t px-4 py-2.5">
           <Link
-            href={`/customers/${request.customerId}`}
+            href={targetCustomerHref}
             className="text-primary inline-flex items-center gap-1 text-sm font-medium no-underline! hover:underline!"
           >
             <span>View customer profile</span>
@@ -194,14 +227,14 @@ export async function RequestAside({ requestId }: { requestId: string }) {
 
           <DetailRow label="Source">
             <span className="text-foreground flex items-center gap-1.5">
-              <RequestSourceIcon source={request.source} />
-              {formatSource(request.source)}
+              <RequestSourceIcon source={requestData.source} />
+              {formatSource(requestData.source)}
             </span>
           </DetailRow>
 
           <DetailRow label="Created">
             <span className="text-foreground">
-              {formatDateTime(request.createdAt)}
+              {formatDateTime(requestData.createdAt)}
             </span>
           </DetailRow>
 
@@ -209,9 +242,9 @@ export async function RequestAside({ requestId }: { requestId: string }) {
             <DetailRow label="Request ID">
               <span className="flex items-center gap-1">
                 <code className="bg-muted max-w-[150px] truncate rounded px-1.5 py-0.5 font-mono text-xs">
-                  {request.id}
+                  {requestData.id}
                 </code>
-                <CopyButton value={request.id} label="Request ID" />
+                <CopyButton value={requestData.id} label="Request ID" />
               </span>
             </DetailRow>
           </div>

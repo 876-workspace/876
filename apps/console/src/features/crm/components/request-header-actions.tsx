@@ -67,6 +67,8 @@ export function RequestHeaderActions({
   currentUserId,
   departments = [],
   members = [],
+  baseHref = `/support/${requestId}`,
+  customerHref = `/customers/${customerId}`,
 }: {
   organizationId: string
   requestId: string
@@ -76,6 +78,8 @@ export function RequestHeaderActions({
   currentUserId?: string
   departments?: HeaderDepartment[]
   members?: HeaderMember[]
+  baseHref?: string
+  customerHref?: string
 }) {
   const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -219,22 +223,20 @@ export function RequestHeaderActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-44">
           <DropdownMenuItem
-            onClick={() => compose(NEW_NOTE_FIELD_ID, `/support/${requestId}`)}
+            onClick={() => compose(NEW_NOTE_FIELD_ID, baseHref)}
           >
             <StickyNote className="size-4" />
             Note
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() =>
-              compose(NEW_TASK_FIELD_ID, `/support/${requestId}/tasks`)
-            }
+            onClick={() => compose(NEW_TASK_FIELD_ID, `${baseHref}/tasks`)}
           >
             <ClipboardList className="size-4" />
             Task
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
-              compose(NEW_REMINDER_FIELD_ID, `/support/${requestId}/reminders`)
+              compose(NEW_REMINDER_FIELD_ID, `${baseHref}/reminders`)
             }
           >
             <Bell className="size-4" />
@@ -289,7 +291,7 @@ export function RequestHeaderActions({
             <Copy className="size-4" />
             Copy ID
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`/customers/${customerId}`} />}>
+          <DropdownMenuItem render={<Link href={customerHref} />}>
             <User className="size-4" />
             View customer
           </DropdownMenuItem>
