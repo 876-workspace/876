@@ -17,6 +17,7 @@ CREATE TABLE "crm_request_forms" (
   "confirmation_title" TEXT,
   "confirmation_message" TEXT,
   "created_by" TEXT NOT NULL,
+  "updated_by" TEXT,
   "published_at" TIMESTAMP(3),
   "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TIMESTAMP(3) NOT NULL,
