@@ -66,10 +66,15 @@ function syncBillingPlatformCredentials() {
 /** Keeps CRM's server-to-server credentials aligned across local env files. */
 function syncCrmCredentials() {
   const platformEnvPath = join(root, 'apps', 'api', '.env')
-  const appEnvPath = join(root, 'apps', '876', '.env')
   const crmApiEnvPath = join(root, 'apps', 'crm-api', '.env')
   const platformInternalKey = readEnvValue(platformEnvPath, 'API_INTERNAL_KEY')
-  const platformAppKey = readEnvValue(appEnvPath, 'API_876_KEY')
+  // CRM authenticates to Billing's integration tier with this, and Billing
+  // resolves the *app* from it. Borrowing the consumer app's key therefore
+  // authenticates as 876-consumer, which has no CRM finance connection, and
+  // surfaces as "the app finance connection lacks the required scope" — a
+  // credential problem wearing a scope error's clothes. See
+  // `.claude/rules/env-configuration.md`. It must be the 876-crm key.
+  const crmAppKey = readEnvValue(crmApiEnvPath, 'CRM_API_876_KEY')
   const crmInternalKey = readEnvValue(crmApiEnvPath, 'CRM_INTERNAL_KEY')
   let synced = false
 
@@ -100,17 +105,26 @@ function syncCrmCredentials() {
     synced = true
   }
 
-  if (platformAppKey) {
+  if (crmAppKey) {
     // Both the CRM app (its /api/auth bridge sends this as X-876-API-Key) and
-    // the CRM API need the platform app key under the same name.
+    // the CRM API need the CRM app key under the same name.
     for (const app of ['crm', 'crm-api']) {
       mergeEnvFile(
         join(root, 'apps', app, '.env.development.local'),
-        { CRM_API_876_KEY: platformAppKey },
+        { CRM_API_876_KEY: crmAppKey },
         HEADER
       )
     }
     synced = true
+  } else {
+    // Silence here is what made this expensive to find: the CRM surfaces come
+    // up, authenticate as the wrong app, and fail three layers away.
+    console.warn(
+      '[setup-dev-env] CRM_API_876_KEY is not set in apps/crm-api/.env. ' +
+        'CRM cannot reach Billing without it. Issue a key for the 876-crm app ' +
+        '(Console -> Apps -> 876 CRM -> API Keys) and add it there. Do not ' +
+        "reuse another app's key."
+    )
   }
 
   return synced
