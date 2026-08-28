@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { cn } from '@876/core/utils'
+import { Button } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { Button } from '@876/ui/button'
-import { ChevronDown, CheckIcon } from '@876/ui/icons'
-import { cn } from '@876/core/utils'
+import { showAppErrorToast } from '@876/ui/app-error-toast'
+import { CheckIcon, ChevronDown } from '@876/ui/icons'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+
 import { client } from '@/lib/client'
+
 import type { RequestStatus } from '../types'
 import { RequestStatusBadge, requestStatusConfig } from './request-status-badge'
 
@@ -47,7 +50,7 @@ export function QuickStatusSelector({
       status,
     })
     if (result.error) {
-      toast.error(result.error.message)
+      showAppErrorToast(result.error, { title: 'Status could not be updated' })
       setUpdating(false)
       return
     }
