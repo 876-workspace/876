@@ -12,36 +12,9 @@ The registered error catalogs are the **only source of truth** for public applic
 - Do not pass raw provider, database, framework, or caught exception messages through as public application messages.
 - Provider/database details belong in structured logs/Sentry; the client receives the registered application error.
 
-```ts
-// Good
-return getError('crm/request-not-found')
-
-// Bad: second source of truth
-return {
-  code: 'crm/request-not-found',
-  message: 'Could not find request',
-  httpStatus: 404,
-}
-
-// Bad: provider owns public copy
-return getError('crm/registry-unavailable', {
-  message: providerError.message,
-})
-```
-
 ## Expected failures are values
 
-Expected failures are part of an operation's contract and must be returned as values, not thrown. This includes:
-
-- validation and invalid input;
-- authentication and authorization failures;
-- missing resources;
-- conflicts and business invariants;
-- inactive/invalid lifecycle states;
-- normalized provider rejections;
-- expected dependency/network/service-unavailable outcomes.
-
-Service methods use the surrounding established value style (`T | FullError<Code>`, `ServiceResult<T>`, or another typed result). SDK and JSON API boundaries use the canonical `{ data, error }` envelope.
+Expected failures are part of an operation's contract and must be returned as values, not thrown. Validation, missing resources, conflicts, authorization failures, lifecycle states, provider rejections, and deliberately normalized dependency failures are values.
 
 ```ts
 const customer = await repository.retrieve(id)
@@ -49,125 +22,68 @@ if (!customer) return getError('customer/not-found')
 return customer
 ```
 
-A caller narrows the value explicitly:
-
-```ts
-const result = await service.retrieve(id)
-if (isError(result)) return result
-return result
-```
-
-## What may throw
-
-Throw only for genuinely unexpected failures that are not part of the operation contract:
-
-- programming bugs and impossible invariants;
-- corrupt internal state;
-- unrecoverable startup/configuration failures;
-- unexpected library/runtime failures;
-- unexpected infrastructure failures that have not been deliberately normalized at the current boundary.
-
-Global framework error boundaries and Express error middleware are safety nets for these unexpected exceptions. They are not normal domain-control-flow mechanisms.
-
-## HTTP and SDK boundaries
-
-HTTP status is server-only. Client errors contain the public contract, never server implementation metadata.
-
-```ts
-interface AppError<Code extends string = string> {
-  code: Code
-  message: string
-  description?: string
-  param?: string
-}
-
-interface FullError<Code extends string = string> extends AppError<Code> {
-  httpStatus: HttpStatusCode
-}
-```
-
-At an HTTP boundary:
-
-```ts
-if (isError(result))
-  return Response.json(
-    { data: null, error: toAppError(result) },
-    { status: result.httpStatus }
-  )
-```
-
-Do not turn an SDK/application error back into an exception:
+SDK and JSON API boundaries use the canonical `{ data, error }` envelope. Never turn a returned application error back into an exception:
 
 ```ts
 // Forbidden for expected failures
 if (result.error) throw new Error(result.error.message)
 ```
 
-## UI rule: preserve the error value
+## What may throw
 
-The UI must preserve both the human-readable registered message and the stable code. The message is visually primary; the code is secondary and copyable/searchable for support and debugging.
+Throw only for genuinely unexpected failures: programming bugs, corrupt internal state, unrecoverable startup/configuration failures, or runtime/infrastructure faults that have not been deliberately normalized at the current boundary.
 
-Use shared `@876/ui` error presentation primitives. Do not invent per-app error cards or strip errors down to strings.
+Even then, user-facing app routes should contain unexpected failures as locally as practical and report them to Sentry/logging. A framework/Vercel full-page error boundary is a last-resort safety net, not the normal UX.
 
-Choose the smallest meaningful scope:
+## UI rule: errors do not own the page
 
-| Failure scope | Presentation |
+An error should **not take over the page, remove the toolbar, destroy the table shell, or replace otherwise usable UI**. Keep the surrounding UI mounted and show the failure in context.
+
+`AppError` is a compact notice, not an error screen.
+
+| Failure scope | Required behaviour |
 | --- | --- |
-| Primary page/list cannot load | `AppError` with `variant="page"` inside the live region |
-| One independent card/section fails | `AppError` with `variant="section"` |
-| Create/edit submission fails | persistent `AppError` with `variant="form"`; map `param` to a field when supported |
-| Small independent mutation fails | `showAppErrorToast(error, { title })` |
-| Optional enrichment fails | keep truthful primary content and show an inline/section warning |
-| Resource genuinely does not exist | resource-aware `notFound()` / not-found UI when appropriate |
-| Unauthorized/forbidden | dedicated access state where appropriate, still showing the registered code |
-| Unexpected exception | framework/global error boundary using a registered internal error |
+| List/table request fails | keep toolbar, filters, table/list shell and pagination region mounted; show a compact banner above the data region |
+| Some enrichment fails | render truthful primary data and show a small inline notice for the missing enrichment |
+| One card/section fails | keep sibling sections; show a notice only inside that section |
+| Create/edit submission fails | keep the form and entered values; show a persistent form notice near the affected controls |
+| Small mutation fails | keep the control in place and show a local inline/form notice; do **not** default to an error toast |
+| Resource does not exist | use resource-aware not-found UI when that is truly the state |
+| Unauthorized/forbidden | keep app chrome and show a scoped access state |
+| Unexpected exception | capture/report it and preserve as much shell/content as safely possible; framework error page is last resort |
 
-Never silently turn a failed primary dataset into `[]`, `{}`, `null`, or "No results". Optional enrichment may degrade only when the remaining UI is truthful, and the failure must remain visible when it affects what the user can understand or operate.
+Do not confuse "no data" with "failed to load data". When a primary dataset fails, an empty table may remain mounted for structural continuity, but it must be paired with a visible failure notice.
+
+## Console versus product apps
+
+Console is an internal operator surface and may expose more safe diagnostic context directly in the UI: stable error code, safe descriptions/params, and request/Sentry correlation when available. Never expose secrets, raw SQL, credentials, stack traces, or sensitive payloads.
+
+Product apps such as CRM should prefer user-friendly registered copy and normally hide the machine code from the main visual hierarchy. The code still travels through the result for logging, support, analytics, and Sentry correlation.
 
 ## Toasts
 
-Do not use message-only application error toasts:
+Success toasts are fine. Error toasts are **not the default application-error pattern** because they disappear, interrupt the user, and detach the failure from the control that caused it.
 
-```ts
-// Bad: loses the code
-if (result.error) toast.error(result.error.message)
-
-// Good
-if (result.error)
-  showAppErrorToast(result.error, { title: 'Status could not be updated' })
-```
-
-## Provider and database mapping
-
-Catch only known provider/database outcomes that the domain deliberately maps. Do not wrap every exception in a generic value.
-
-Examples:
-
-- known unique constraint -> registered conflict value;
-- provider says access denied -> registered authorization/provider value;
-- provider is unavailable at an integration boundary -> registered dependency value plus internal logging;
-- database driver unexpectedly crashes -> throw and let the unexpected-error boundary capture it.
+Use an error toast only for a genuinely transient action with no durable place in the UI. Otherwise store `result.error` in local state and render `AppError` next to the form/control/section.
 
 ## Future app checklist
-
-Before a new app or resource family is considered complete:
 
 - [ ] Every expected public error has one registered catalog definition.
 - [ ] No route/service/component duplicates a registered message or HTTP status.
 - [ ] Expected service failures are returned as values.
 - [ ] SDK/API methods preserve `{ data, error }` without requiring `try/catch` for expected failures.
 - [ ] Provider/database errors are normalized at their owning boundary and raw details stay internal.
-- [ ] Primary load failures render a designed error state rather than a framework crash.
-- [ ] Independent section failures do not unnecessarily destroy usable sibling sections.
-- [ ] Form failures remain visible in the form and use `param` for field placement when available.
-- [ ] Mutation toasts preserve both message and code.
-- [ ] Not-found and access-denied states have appropriate UX.
-- [ ] Tests assert stable code/message behavior and verify `httpStatus` does not leak into client JSON.
-- [ ] Tests distinguish expected value failures from genuinely thrown exceptions.
+- [ ] Page chrome and data-region structure remain mounted during recoverable failures.
+- [ ] A failed primary dataset is visibly distinguished from a real empty dataset.
+- [ ] Independent section failures do not destroy usable sibling sections.
+- [ ] Forms preserve entered data when submission fails.
+- [ ] Mutation errors are rendered beside their originating control/form rather than defaulting to toasts.
+- [ ] Console can expose safe diagnostic codes/details; product apps keep public copy friendly.
+- [ ] Tests verify expected failures do not trigger framework error boundaries.
 
 ## Review grep
 
-Treat these shapes as migration/review failures unless the code is explicitly handling an unexpected exception:
+Treat these as migration/review failures unless explicitly handling an unexpected exception:
 
 ```txt
 throw appError(...)
@@ -176,5 +92,3 @@ throw getError(...)
 if (result.error) throw new Error(result.error.message)
 toast.error(result.error.message)
 ```
-
-When reviewing old code, do not mechanically replace every `throw`. Classify the failure first; preserve throws for true exceptions and convert expected application outcomes to values.
