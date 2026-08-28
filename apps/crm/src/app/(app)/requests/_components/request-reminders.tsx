@@ -1,5 +1,6 @@
 'use client'
 
+import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import type { badgeVariants } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
@@ -19,7 +20,6 @@ import { Textarea } from '@876/ui/textarea'
 import type { VariantProps } from 'class-variance-authority'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 import { MemberPicker } from '@/features/directory/components/member-picker'
 import type { DirectoryMember } from '@/features/directory/types'
@@ -33,10 +33,7 @@ import {
   toDateTimeLocal,
 } from '../_lib/request-format'
 
-/** Lets the header's "Add → Reminder" action jump straight to the composer. */
 export const NEW_REMINDER_FIELD_ID = 'new-request-reminder'
-
-/** `busyId` sentinel for the composer, which has no reminder id of its own. */
 const COMPOSER = 'composer'
 
 type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
@@ -51,7 +48,6 @@ const STATUS_LABEL: Record<
   CANCELLED: { label: 'Cancelled', variant: 'secondary' },
 }
 
-/** Only a scheduled reminder is still going to fire. */
 function isActive(status: CrmReminderStatus) {
   return status === 'SCHEDULED'
 }
@@ -76,17 +72,6 @@ function draftFrom(reminder: CrmRequestReminder): Draft {
   }
 }
 
-/**
- * The request's reminders.
- *
- * A reminder is a promise to look at this request again, so the list is ordered
- * by when that happens — soonest first — and the ones that have already fired,
- * been dismissed, or been cancelled fall to the bottom rather than out of the
- * record.
- *
- * The owner defaults to the signed-in member, which is what makes "remind me"
- * a title and a time rather than a form.
- */
 export function RequestRemindersSection({
   requestId,
   reminders,
@@ -96,13 +81,13 @@ export function RequestRemindersSection({
   requestId: string
   reminders: CrmRequestReminder[]
   currentUserId?: string
-  /** Resolves a reminder's opaque `userId` to a name and a face. */
   members?: DirectoryMember[]
 }) {
   const router = useRouter()
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [error, setError] = useState<AppErrorValue | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const memberIndex = useMemo(
@@ -127,24 +112,19 @@ export function RequestRemindersSection({
     event.preventDefault()
     const title = draft.title.trim()
     const remindAt = fromDateTimeLocal(draft.remindAt)
-    if (!title) return
-    if (remindAt === null) {
-      toast.error('Pick when this reminder should fire.')
-      return
-    }
+    if (!title || remindAt === null) return
 
+    setError(null)
     setBusyId(COMPOSER)
     const result = await client.requestReminders.create(requestId, {
       title,
       note: draft.note.trim() || null,
       remindAt,
-      // Omitted rather than guessed: the route handler defaults the owner to
-      // the session, so "remind me" needs nothing from the browser.
       ...(draft.userId ? { userId: draft.userId } : {}),
     })
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to add reminder.')
+      setError(result.error)
       return
     }
 
@@ -154,9 +134,9 @@ export function RequestRemindersSection({
 
   async function patchReminder(
     reminderId: string,
-    params: Parameters<typeof client.requestReminders.update>[2],
-    failure: string
+    params: Parameters<typeof client.requestReminders.update>[2]
   ) {
+    setError(null)
     setBusyId(reminderId)
     const result = await client.requestReminders.update(
       requestId,
@@ -165,7 +145,7 @@ export function RequestRemindersSection({
     )
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? failure)
+      setError(result.error)
       return false
     }
 
@@ -176,34 +156,24 @@ export function RequestRemindersSection({
   async function saveEdit(reminderId: string, next: Draft) {
     const title = next.title.trim()
     const remindAt = fromDateTimeLocal(next.remindAt)
-    if (!title) {
-      toast.error('A reminder needs a title.')
-      return
-    }
-    if (remindAt === null) {
-      toast.error('Pick when this reminder should fire.')
-      return
-    }
+    if (!title || remindAt === null) return
 
-    const saved = await patchReminder(
-      reminderId,
-      {
-        title,
-        note: next.note.trim() || null,
-        remindAt,
-        ...(next.userId ? { userId: next.userId } : {}),
-      },
-      'Failed to save reminder.'
-    )
+    const saved = await patchReminder(reminderId, {
+      title,
+      note: next.note.trim() || null,
+      remindAt,
+      ...(next.userId ? { userId: next.userId } : {}),
+    })
     if (saved) setEditingId(null)
   }
 
   async function deleteReminder(reminderId: string) {
+    setError(null)
     setBusyId(reminderId)
     const result = await client.requestReminders.delete(requestId, reminderId)
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to delete reminder.')
+      setError(result.error)
       return
     }
 
@@ -228,6 +198,14 @@ export function RequestRemindersSection({
         ) : null}
       </div>
 
+      {error ? (
+        <AppError
+          title="Reminder change could not be saved"
+          error={error}
+          variant="form"
+        />
+      ) : null}
+
       {reminders.length === 0 ? (
         <p className="border-border/60 bg-muted/20 text-muted-foreground rounded-lg border border-dashed px-4 py-10 text-center text-sm">
           No reminders on this request yet.
@@ -247,11 +225,7 @@ export function RequestRemindersSection({
                 onCancelEdit={() => setEditingId(null)}
                 onSave={(next) => saveEdit(reminder.id, next)}
                 onStatusChange={(status) =>
-                  patchReminder(
-                    reminder.id,
-                    { status },
-                    'Failed to update reminder.'
-                  )
+                  patchReminder(reminder.id, { status })
                 }
                 onDelete={() => deleteReminder(reminder.id)}
               />
@@ -304,7 +278,6 @@ export function RequestRemindersSection({
   )
 }
 
-/** The when/who/note controls, shared by the composer and the inline editor. */
 function ReminderFields({
   draft,
   members,
