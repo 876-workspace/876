@@ -1,6 +1,9 @@
+import { AppError } from '@876/ui/app-error'
+
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
+
 import { CustomersTable, type CrmCustomerRow } from './customers-table'
 
 /**
@@ -12,7 +15,15 @@ export async function CustomersTableData() {
   const context = await requireCrmContext()
   const $876 = await get876Client()
   const result = await $876.customerProfiles.list(context.orgId)
-  if (result.error) throw new Error(result.error.message)
+
+  if (result.error)
+    return (
+      <AppError
+        title="Customers couldn't be loaded"
+        error={result.error}
+        variant="page"
+      />
+    )
 
   const rows: CrmCustomerRow[] = result.data.data.map(
     ({ profile, customer }) => {
