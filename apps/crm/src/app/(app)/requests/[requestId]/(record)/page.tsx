@@ -1,33 +1,64 @@
+import { AppError } from '@876/ui/app-error'
+
+import { canCreatePrivateRequestNote } from '@/lib/auth/roles'
+
 import {
   RequestNotesSection,
   type NoteAuthor,
 } from '../../_components/request-notes'
 import { loadDirectory, loadNotes, loadRequest } from '../_data'
-import { canCreatePrivateRequestNote } from '@/lib/auth/roles'
 
 type Props = { params: Promise<{ requestId: string }> }
 
 export default async function RequestConversationPage({ params }: Props) {
   const { requestId } = await params
-  const [{ context, request }, notes, { members }] = await Promise.all([
+  const [requestResult, notesResult, directory] = await Promise.all([
     loadRequest(requestId),
     loadNotes(requestId),
     loadDirectory(),
   ])
 
-  // The thread only carries opaque author ids; resolving them here is what puts
-  // a real name and a real picture on every note.
+  if (!requestResult.request)
+    return requestResult.error ? (
+      <AppError
+        title="Request data is temporarily unavailable"
+        error={requestResult.error}
+        variant="banner"
+      />
+    ) : null
+
   const authors: Record<string, NoteAuthor> = Object.fromEntries(
-    members.map((m) => [m.userId, { name: m.name, avatar: m.avatar }])
+    directory.members.map((m) => [
+      m.userId,
+      { name: m.name, avatar: m.avatar },
+    ])
   )
 
   return (
-    <RequestNotesSection
-      requestId={request.id}
-      notes={notes}
-      currentUserId={context.userId}
-      canCreatePrivateNote={canCreatePrivateRequestNote(context.role)}
-      authors={authors}
-    />
+    <div className="space-y-3">
+      {notesResult.error ? (
+        <AppError
+          title="Some conversation data could not be loaded"
+          error={notesResult.error}
+          variant="banner"
+        />
+      ) : null}
+      {directory.membersError ? (
+        <AppError
+          title="Author details are temporarily incomplete"
+          error={directory.membersError}
+          variant="inline"
+        />
+      ) : null}
+      <RequestNotesSection
+        requestId={requestResult.request.id}
+        notes={notesResult.notes}
+        currentUserId={requestResult.context.userId}
+        canCreatePrivateNote={canCreatePrivateRequestNote(
+          requestResult.context.role
+        )}
+        authors={authors}
+      />
+    </div>
   )
 }
