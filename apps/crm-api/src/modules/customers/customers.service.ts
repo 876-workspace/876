@@ -108,8 +108,7 @@ export async function list(
       : {}),
     ...(filter.customerUserId ? { userId: filter.customerUserId } : {}),
   })
-  if (result.error)
-    throw crmError('crm/registry-unavailable', result.error.message)
+  if (result.error) throw crmError('crm/registry-unavailable')
 
   const billingCustomers = result.data.data
   if (!billingCustomers.length) return { customers: [], hasMore: false }
@@ -137,8 +136,7 @@ export async function retrieve(organizationId: string, id: string) {
     ids: [profile.billingCustomerId],
     limit: 1,
   })
-  if (result.error)
-    throw crmError('crm/registry-unavailable', result.error.message)
+  if (result.error) throw crmError('crm/registry-unavailable')
 
   return compose(profile, result.data.data[0] ?? null)
 }
@@ -175,8 +173,7 @@ export async function create(
     },
     { idempotencyKey: key }
   )
-  if (shared.error)
-    throw crmError('crm/registry-unavailable', shared.error.message)
+  if (shared.error) throw crmError('crm/registry-unavailable')
 
   const profile = await repository.create({
     tenantId: tenant.id,
@@ -232,8 +229,7 @@ export async function update(
         phone: input.phone ?? null,
       }
     )
-    if (shared.error)
-      throw crmError('crm/registry-unavailable', shared.error.message)
+    if (shared.error) throw crmError('crm/registry-unavailable')
     customer = shared.data
   }
 
