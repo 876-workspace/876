@@ -1,14 +1,10 @@
-import type { Metadata } from 'next'
+import { AppError } from '@876/ui/app-error'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
-import { $876 } from '@/lib/876'
-import {
-  isRequestStatus,
-  REQUEST_STATUS_OPTIONS,
-} from '@/features/crm/request-status'
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
 import {
   RequestsList,
@@ -16,7 +12,13 @@ import {
 } from '@/features/crm/components/requests-list'
 import { loadRequestRowContext } from '@/features/crm/request-data'
 import { toRequestListRows } from '@/features/crm/request-list-rows'
+import {
+  isRequestStatus,
+  REQUEST_STATUS_OPTIONS,
+} from '@/features/crm/request-status'
+import { $876 } from '@/lib/876'
 import type { CrmRequestStatus } from '@/types/crm'
+
 import { resolveOrg } from '../../../../_data'
 
 type Props = {
@@ -32,15 +34,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Requests - Organizations` }
 }
 
-/**
- * The organization requests tab.
- *
- * `params` and `searchParams` carry no I/O, so they are awaited here and the
- * toolbar renders synchronously; only the component that resolves the org and
- * calls CRM sits inside the boundary. The status is resolved here rather than
- * read from `useSearchParams()` in a client toolbar so this tab filters exactly
- * the way the Customers tab beside it does.
- */
 export default async function OrganizationRequestsPage({
   params,
   searchParams,
@@ -85,11 +78,15 @@ async function RequestsData({
   const result = await $876.requests.list(org.id, {
     status: status === 'all' ? undefined : status,
   })
-  // A missing workspace is a state, not a failure — an organization gets one the
-  // first time it uses CRM. Everything else still reaches the error boundary,
-  // because an unreachable CRM must not read as an organization with no requests.
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    return (
+      <AppError
+        title="Requests couldn't be loaded"
+        error={result.error}
+        variant="page"
+      />
+    )
 
   const context = await loadRequestRowContext(org.id)
 
