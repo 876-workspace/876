@@ -136,7 +136,8 @@ describe('requestFormFieldSchema', () => {
 
   it('enforces field key, label, id, and select-option bounds', () => {
     expect(
-      requestFormFieldSchema.safeParse({ ...textField(), key: 'Bad-Key' }).success
+      requestFormFieldSchema.safeParse({ ...textField(), key: 'Bad-Key' })
+        .success
     ).toBe(false)
     expect(
       requestFormFieldSchema.safeParse({
@@ -149,16 +150,17 @@ describe('requestFormFieldSchema', () => {
         .success
     ).toBe(false)
     expect(
-      requestFormFieldSchema.safeParse({ ...selectField(), options: [] }).success
+      requestFormFieldSchema.safeParse({ ...selectField(), options: [] })
+        .success
     ).toBe(false)
   })
 })
 
 describe('requestFormDefinitionSchema', () => {
   it('accepts a valid subject + description definition', () => {
-    expect(requestFormDefinitionSchema.safeParse(validDefinition()).success).toBe(
-      true
-    )
+    expect(
+      requestFormDefinitionSchema.safeParse(validDefinition()).success
+    ).toBe(true)
   })
 
   it('requires at least one field and at most fifty', () => {
@@ -173,7 +175,9 @@ describe('requestFormDefinitionSchema', () => {
       required: false,
       ...(i === 0 ? { mapping: 'REQUEST_SUBJECT' as const } : {}),
     }))
-    expect(requestFormDefinitionSchema.safeParse({ fields }).success).toBe(false)
+    expect(requestFormDefinitionSchema.safeParse({ fields }).success).toBe(
+      false
+    )
   })
 
   it('rejects duplicate ids and keys', () => {
@@ -284,16 +288,20 @@ describe('createRequestFormInputSchema', () => {
     expect(parsed.defaultPriorityId).toBe('crm_pri_high')
   })
 
-  it('rejects the removed defaultPriority enum field', () => {
-    expect(
-      createRequestFormInputSchema.safeParse({
-        name: 'Form',
-        slug: 'form',
-        definition: validDefinition(),
-        defaultPriority: 'HIGH',
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(false)
+  it('strips the removed defaultPriority enum field (replaced by defaultPriorityId)', () => {
+    const parsed = createRequestFormInputSchema.safeParse({
+      name: 'Form',
+      slug: 'form',
+      definition: validDefinition(),
+      defaultPriority: 'HIGH',
+      createdBy: 'usr_1',
+    })
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(
+        (parsed.data as unknown as Record<string, unknown>).defaultPriority
+      ).toBeUndefined()
+    }
   })
 
   it('rejects invalid slugs and empty names', () => {

@@ -699,7 +699,7 @@ describe('request-forms.service - submit validation', () => {
       defaultCategoryId: 'cat_1',
       defaultSubcategoryId: 'sub_1',
       defaultTeamId: 'team_1',
-      defaultPriority: 'HIGH' as const,
+      defaultPriorityId: 'crm_pri_high',
     })
     repository.retrieve.mockResolvedValue(rowWithDefaults)
     await service.submit('org_1', 'crm_form_1', {
@@ -712,7 +712,7 @@ describe('request-forms.service - submit validation', () => {
       unknown
     >
     expect(intake.categoryId).toBe('cat_1')
-    expect(intake.priority).toBe('HIGH')
+    expect(intake.priorityId).toBe('crm_pri_high')
     expect(intake.teamId).toBe('team_1')
   })
   it('passes requester ids and strips INSTRUCTIONS from intake answers', async () => {
