@@ -14,8 +14,16 @@ import {
 } from '@876/ui/dialog'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@876/ui/select'
 
 import { client } from '@/lib/client'
+import type { RequestPriority } from '@/types/crm'
 
 export type SubcategoryDraft = {
   id?: string
@@ -23,31 +31,40 @@ export type SubcategoryDraft = {
   name: string
   color: string | null
   icon: string | null
+  defaultPriorityId: string | null
 }
 
 export function SubcategoryFormDialog({
   open,
   onOpenChange,
   subcategory,
+  priorities,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   subcategory?: SubcategoryDraft
+  priorities: RequestPriority[]
 }) {
   const router = useRouter()
   const [name, setName] = useState(subcategory?.name ?? '')
+  const [defaultPriorityId, setDefaultPriorityId] = useState(
+    subcategory?.defaultPriorityId ?? ''
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Reset on open, during render rather than in an effect — see the note in
-  // category-form-dialog.tsx for why an effect flashes the previous value.
   const openedFor = open ? (subcategory?.id ?? 'new') : null
   const [lastOpenedFor, setLastOpenedFor] = useState(openedFor)
   if (openedFor !== lastOpenedFor) {
     setLastOpenedFor(openedFor)
     setName(subcategory?.name ?? '')
+    setDefaultPriorityId(subcategory?.defaultPriorityId ?? '')
     setError(null)
   }
+
+  const availablePriorities = priorities.filter(
+    (priority) => priority.isActive || priority.id === defaultPriorityId
+  )
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -59,11 +76,12 @@ export function SubcategoryFormDialog({
     }
 
     setSaving(true)
+    const priority = defaultPriorityId || null
     const result = subcategory.id
       ? await client.requestCategories.subcategories.update(
           subcategory.categoryId,
           subcategory.id,
-          { name: normalizedName }
+          { name: normalizedName, defaultPriorityId: priority }
         )
       : await client.requestCategories.subcategories.create(
           subcategory.categoryId,
@@ -71,6 +89,7 @@ export function SubcategoryFormDialog({
             name: normalizedName,
             color: subcategory.color,
             icon: subcategory.icon,
+            defaultPriorityId: priority,
           }
         )
     setSaving(false)
@@ -102,6 +121,27 @@ export function SubcategoryFormDialog({
               disabled={saving}
               aria-invalid={error === 'Name is required.'}
             />
+          </FormRow>
+          <FormRow label="Default priority">
+            <Select
+              value={defaultPriorityId || 'none'}
+              onValueChange={(value) =>
+                setDefaultPriorityId(value === 'none' ? '' : (value ?? ''))
+              }
+              disabled={saving}
+            >
+              <SelectTrigger aria-label="Default priority">
+                <SelectValue placeholder="Inherit category default" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Inherit category default</SelectItem>
+                {availablePriorities.map((priority) => (
+                  <SelectItem key={priority.id} value={priority.id}>
+                    {priority.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormRow>
           {error ? (
             <p className="text-destructive text-sm" role="alert">

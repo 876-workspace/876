@@ -36,11 +36,13 @@ export default async function CategoriesPage({ searchParams }: Props) {
 async function CategoriesData({ createOpen }: { createOpen: boolean }) {
   const context = await requireCrmContext()
   const $876 = await get876Client()
-  const [categoriesResult, teamsResult] = await Promise.all([
+  const [categoriesResult, teamsResult, prioritiesResult] = await Promise.all([
     $876.requestCategories.list(context.orgId),
     $876.teams.list(context.orgId),
+    $876.requestPriorities.list(context.orgId),
   ])
   if (categoriesResult.error) throw new Error(categoriesResult.error.message)
+  if (prioritiesResult.error) throw new Error(prioritiesResult.error.message)
 
   const teamNames = Object.fromEntries(
     (teamsResult.data?.data ?? []).map((team) => [team.id, team.name])
@@ -49,6 +51,7 @@ async function CategoriesData({ createOpen }: { createOpen: boolean }) {
   return (
     <CategoriesList
       categories={categoriesResult.data.data}
+      priorities={prioritiesResult.data.data}
       teamNames={teamNames}
       createOpen={createOpen}
     />
