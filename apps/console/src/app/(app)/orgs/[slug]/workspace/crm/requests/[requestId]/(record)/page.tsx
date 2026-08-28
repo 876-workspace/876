@@ -40,6 +40,7 @@ export default async function OrgRequestConversationPage({ params }: Props) {
       requestId={request.id}
       notes={notes}
       currentUserId={session.id}
+      canCreatePrivateNote
       authors={authors}
     />
   )

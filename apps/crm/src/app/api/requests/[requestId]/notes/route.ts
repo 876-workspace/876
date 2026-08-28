@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 
 import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { canCreatePrivateRequestNote } from '@/lib/auth/roles'
 
 type Context = { params: Promise<{ requestId: string }> }
 
@@ -25,7 +26,9 @@ export async function GET(_request: NextRequest, route: Context) {
   const $876 = await get876Client()
 
   const { requestId } = await route.params
-  const result = await $876.requestNotes.list(context.orgId, requestId)
+  const result = await $876.requestNotes.list(context.orgId, requestId, {
+    viewerId: context.userId,
+  })
   return Response.json(result, {
     status: result.error ? statusFor(result.error.code) : 200,
   })
@@ -48,7 +51,7 @@ export async function POST(request: NextRequest, route: Context) {
   const { requestId } = await route.params
   const input = (await request.json().catch(() => null)) as {
     body?: string
-    internal?: boolean
+    visibility?: 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
   } | null
 
   if (!input?.body?.trim()) {
@@ -64,10 +67,26 @@ export async function POST(request: NextRequest, route: Context) {
     )
   }
 
+  if (
+    input.visibility === 'PRIVATE' &&
+    !canCreatePrivateRequestNote(context.role)
+  ) {
+    return Response.json(
+      {
+        data: null,
+        error: {
+          code: 'crm/forbidden',
+          message: 'Only organization administrators can create private notes.',
+        },
+      },
+      { status: 403 }
+    )
+  }
+
   const result = await $876.requestNotes.create(context.orgId, requestId, {
     body: input.body.trim(),
     authorId: context.userId,
-    internal: input.internal ?? true,
+    visibility: input.visibility ?? 'INTERNAL',
   })
 
   return Response.json(result, {

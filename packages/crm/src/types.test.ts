@@ -54,6 +54,7 @@ describe('crmRequestNoteSchema', () => {
       body: 'Your request has been received.',
       authorId: 'usr_1',
       internal: false,
+      visibility: 'PUBLIC',
       kind: 'EMAIL',
       emailMessageId: 'message_1',
       emailDirection: 'OUTBOUND',

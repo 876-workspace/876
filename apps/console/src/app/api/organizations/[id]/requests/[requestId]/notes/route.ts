@@ -21,7 +21,8 @@ export async function GET(request: NextRequest, context: Context) {
   const $876 = createConsole876Client(traceId)
   const { data, error } = await $876.requestNotes.list(
     organizationId,
-    requestId
+    requestId,
+    { includePrivate: true }
   )
   if (error || !data)
     return apiJson(
@@ -33,7 +34,9 @@ export async function GET(request: NextRequest, context: Context) {
 }
 
 export async function POST(request: NextRequest, context: Context) {
-  const { response } = await requireConsolePermission('console:organizations')
+  const { response, sessionUser } = await requireConsolePermission(
+    'console:organizations'
+  )
   if (response) return response
 
   const { id: organizationId, requestId } = await context.params
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest, context: Context) {
   const { data, error } = await $876.requestNotes.create(
     organizationId,
     requestId,
-    body as CreateRequestNoteInput
+    { ...(body as CreateRequestNoteInput), authorId: sessionUser.id }
   )
   if (error || !data)
     return apiJson(

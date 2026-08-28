@@ -222,19 +222,30 @@ export const requestNoteParamsSchema = requestParamsSchema.extend({
   noteId: z.string().min(1),
 })
 
+export const listRequestNotesQuerySchema = z.object({
+  viewer_id: z.string().trim().min(1).optional(),
+  include_private: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true')
+    .optional(),
+})
+
 export const createRequestNoteBodySchema = z.object({
   body: richContentSchema(10_000),
   authorId: z.string().min(1),
+  visibility: z.enum(['PUBLIC', 'INTERNAL', 'PRIVATE']).optional(),
   internal: z.boolean().optional(),
 })
 
 export const deleteRequestNoteBodySchema = z.object({
   deletedBy: z.string().min(1),
+  includePrivate: z.boolean().optional(),
 })
 
 export const updateRequestNoteBodySchema = z.object({
   body: richContentSchema(10_000),
   editedBy: z.string().min(1),
+  includePrivate: z.boolean().optional(),
 })
 
 export const taskParamsSchema = requestParamsSchema.extend({

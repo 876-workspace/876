@@ -8,6 +8,7 @@ import {
   requestNoteListSchema,
   type CreateRequestNoteInput,
   type DeleteRequestNoteInput,
+  type ListRequestNotesInput,
   type RequestOptions,
   type UpdateRequestNoteInput,
 } from '../types'
@@ -21,13 +22,18 @@ export function createRequestNotesResource(runtime: Runtime) {
     list(
       organizationId: string,
       requestId: string,
-      options: RequestOptions = {}
+      options: ListRequestNotesInput & RequestOptions = {}
     ) {
+      const search = new URLSearchParams()
+      if (options.viewerId) search.set('viewer_id', options.viewerId)
+      if (options.includePrivate) search.set('include_private', 'true')
+      const query = search.toString()
+
       return request(
         runtime,
         {
           method: 'GET',
-          path: root(organizationId, requestId),
+          path: `${root(organizationId, requestId)}${query ? `?${query}` : ''}`,
           signal: options.signal,
         },
         requestNoteListSchema

@@ -98,7 +98,9 @@ export const loadCustomer = cache(async (customerId: string) => {
 export const loadNotes = cache(async (requestId: string) => {
   const context = await loadCrmContext()
   const $876 = await get876Client()
-  const result = await $876.requestNotes.list(context.orgId, requestId)
+  const result = await $876.requestNotes.list(context.orgId, requestId, {
+    viewerId: context.userId,
+  })
   if (result.error) throw new Error(result.error.message)
   return result.data.data
 })

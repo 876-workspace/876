@@ -84,6 +84,7 @@ describe('types - crmRequestNoteSchema email metadata', () => {
     body: 'hi',
     authorId: 'usr_1',
     internal: true,
+    visibility: 'INTERNAL',
     kind: 'NOTE',
     editedAt: null,
     createdAt: 1,

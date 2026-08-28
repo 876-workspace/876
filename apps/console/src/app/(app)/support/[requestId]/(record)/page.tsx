@@ -36,6 +36,7 @@ export default async function SupportRequestConversationPage({
       requestId={request.id}
       notes={notes}
       currentUserId={session.id}
+      canCreatePrivateNote
       authors={authors}
     />
   )

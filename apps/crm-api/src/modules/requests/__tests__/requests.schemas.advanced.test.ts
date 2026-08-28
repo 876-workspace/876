@@ -4,6 +4,7 @@ import {
   createRequestBodySchema,
   createRequestNoteBodySchema,
   createTaskBodySchema,
+  listRequestNotesQuerySchema,
   listRequestsQuerySchema,
   organizationParamsSchema,
   requestParamsSchema,
@@ -131,14 +132,10 @@ describe('requests.schemas - createRequestBodySchema', () => {
     ).toBe('details')
 
     const atLimit = JSON.stringify({
-      blocks: [
-        { type: 'paragraph', data: { text: 'a'.repeat(20_000) } },
-      ],
+      blocks: [{ type: 'paragraph', data: { text: 'a'.repeat(20_000) } }],
     })
     const overLimit = JSON.stringify({
-      blocks: [
-        { type: 'paragraph', data: { text: 'a'.repeat(20_001) } },
-      ],
+      blocks: [{ type: 'paragraph', data: { text: 'a'.repeat(20_001) } }],
     })
 
     expect(
@@ -197,6 +194,22 @@ describe('requests.schemas - request note rich content', () => {
     ).toBe(document)
   })
 
+  it('accepts private visibility and parses private list access', () => {
+    expect(
+      createRequestNoteBodySchema.parse({
+        body: document,
+        authorId: 'usr_1',
+        visibility: 'PRIVATE',
+      }).visibility
+    ).toBe('PRIVATE')
+    expect(
+      listRequestNotesQuerySchema.parse({
+        viewer_id: 'usr_1',
+        include_private: 'true',
+      })
+    ).toEqual({ viewer_id: 'usr_1', include_private: true })
+  })
+
   it('keeps legacy plain text valid and preserves the 10_000 text limit', () => {
     expect(
       createRequestNoteBodySchema.parse({
@@ -206,9 +219,7 @@ describe('requests.schemas - request note rich content', () => {
     ).toBe('Legacy note')
 
     const overLimit = JSON.stringify({
-      blocks: [
-        { type: 'paragraph', data: { text: 'a'.repeat(10_001) } },
-      ],
+      blocks: [{ type: 'paragraph', data: { text: 'a'.repeat(10_001) } }],
     })
     expect(() =>
       createRequestNoteBodySchema.parse({

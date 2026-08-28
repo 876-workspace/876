@@ -88,7 +88,9 @@ export const loadOrgRequest = cache(
 
 /** The request's notes for any organization. */
 export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
-  const result = await $876.requestNotes.list(orgId, requestId)
+  const result = await $876.requestNotes.list(orgId, requestId, {
+    includePrivate: true,
+  })
   if (result.error) throw new Error(result.error.message)
   return result.data.data
 })

@@ -81,6 +81,7 @@ beforeEach(() => {
     body: 'x',
     kind: 'NOTE',
     internal: true,
+    privateToUserId: null,
     authorId: 'usr_1',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -285,6 +286,44 @@ describe('requests.service - update edge cases', () => {
 })
 
 describe('requests.service - notes and deletion', () => {
+  it('passes viewer scope to the note repository', async () => {
+    await service.listNotes('org_1', 'crm_req_1', { viewerId: 'usr_1' })
+    expect(repository.listNotes).toHaveBeenCalledWith(
+      'crm_tenant_1',
+      'crm_req_1',
+      { viewerId: 'usr_1' }
+    )
+  })
+
+  it('hides a private note from another CRM user', async () => {
+    repository.retrieveNote.mockResolvedValue({
+      id: 'n1',
+      kind: 'NOTE',
+      privateToUserId: 'usr_owner',
+    })
+    expect(
+      await service.updateNote('org_1', 'crm_req_1', 'n1', {
+        body: 'x',
+        editedBy: 'usr_other',
+      })
+    ).toBeNull()
+    expect(repository.updateNote).not.toHaveBeenCalled()
+  })
+
+  it('lets Console update a private note with audit access', async () => {
+    repository.retrieveNote.mockResolvedValue({
+      id: 'n1',
+      kind: 'NOTE',
+      privateToUserId: 'usr_owner',
+    })
+    await service.updateNote('org_1', 'crm_req_1', 'n1', {
+      body: 'x',
+      editedBy: 'console_usr',
+      includePrivate: true,
+    })
+    expect(repository.updateNote).toHaveBeenCalled()
+  })
+
   it('throws request-not-found when creating note for missing request', async () => {
     repository.retrieve.mockResolvedValue(null)
     await expect(

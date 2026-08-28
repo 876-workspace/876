@@ -7,6 +7,7 @@ export type RequestSource =
   'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
 
 export type RequestNoteKind = 'DESCRIPTION' | 'NOTE' | 'EMAIL'
+export type RequestNoteVisibility = 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
 
 export interface CrmRequest {
   object: 'request'
@@ -93,6 +94,7 @@ export interface CrmRequestNote {
   body: string
   authorId: string
   internal: boolean
+  visibility: RequestNoteVisibility
   kind: RequestNoteKind
   editedAt: number | null
   createdAt: number
@@ -102,14 +104,23 @@ export interface CrmRequestNote {
 export interface CreateRequestNoteInput {
   body: string
   authorId: string
+  visibility?: RequestNoteVisibility
+  /** @deprecated Use `visibility`. */
   internal?: boolean
+}
+
+export interface ListRequestNotesInput {
+  viewerId?: string
+  includePrivate?: boolean
 }
 
 export interface UpdateRequestNoteInput {
   body: string
   editedBy: string
+  includePrivate?: boolean
 }
 
 export interface DeleteRequestNoteInput {
   deletedBy: string
+  includePrivate?: boolean
 }
