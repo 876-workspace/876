@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { ClipboardList, Clock, Users } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 
@@ -16,10 +17,7 @@ import { resolveOrg } from '../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
 
-/** Statuses that mean the organization still owes someone an answer. */
 const OPEN_STATUSES = new Set(['OPEN', 'IN_PROGRESS', 'WAITING'])
-
-/** How many of the most recent requests the landing view shows. */
 const RECENT_LIMIT = 5
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -30,13 +28,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • CRM - Organizations` }
 }
 
-/**
- * The CRM workspace landing view.
- *
- * The point of landing somewhere rather than on a list is orientation: an
- * operator opening an organization's CRM usually wants to know how much is
- * outstanding before they want to read any single record.
- */
 export default async function CrmWorkspaceOverviewPage({ params }: Props) {
   const { slug } = await params
 
@@ -54,8 +45,6 @@ async function OverviewData({ slug }: { slug: string }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  // Two independent reads, started together. Both lists are also the source of
-  // every figure below, so the counts cost no extra round trip.
   const [requestsResult, customersResult] = await Promise.all([
     $876.requests.list(org.id),
     $876.customerProfiles.list(org.id),
@@ -66,11 +55,9 @@ async function OverviewData({ slug }: { slug: string }) {
     customersResult.error?.code === 'crm/tenant-not-found'
   )
     return <NoCrmWorkspace />
-  if (requestsResult.error) throw new Error(requestsResult.error.message)
-  if (customersResult.error) throw new Error(customersResult.error.message)
 
   const base = workspaceBase(slug, 'crm')
-  const requests = requestsResult.data.data
+  const requests = requestsResult.data?.data ?? []
   const openCount = requests.filter((request) =>
     OPEN_STATUSES.has(request.status)
   ).length
@@ -79,19 +66,48 @@ async function OverviewData({ slug }: { slug: string }) {
     .slice(0, RECENT_LIMIT)
 
   return (
-    <>
+    <div className="space-y-5">
+      {requestsResult.error ? (
+        <AppError
+          title="Request data is temporarily unavailable"
+          error={requestsResult.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      {customersResult.error ? (
+        <AppError
+          title="Customer data is temporarily unavailable"
+          error={customersResult.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile icon={Clock} label="Open requests" value={openCount} />
+        <StatTile
+          icon={Clock}
+          label="Open requests"
+          value={requestsResult.error ? '—' : openCount}
+        />
         <StatTile
           icon={ClipboardList}
           label="Total requests"
-          value={requestsResult.data.total_count ?? requests.length}
+          value={
+            requestsResult.error
+              ? '—'
+              : (requestsResult.data?.total_count ?? requests.length)
+          }
         />
         <StatTile
           icon={Users}
           label="Customers"
           value={
-            customersResult.data.total_count ?? customersResult.data.data.length
+            customersResult.error
+              ? '—'
+              : (customersResult.data?.total_count ??
+                customersResult.data?.data.length ??
+                0)
           }
         />
       </div>
@@ -106,15 +122,17 @@ async function OverviewData({ slug }: { slug: string }) {
             View all
           </Link>
         </div>
-        <RequestsList
-          requestsHref={`${base}/requests`}
-          requests={toRequestListRows({
-            requests: recent,
-            ...(await loadRequestRowContext(org.id)),
-          })}
-        />
+        {requestsResult.error ? null : (
+          <RequestsList
+            requestsHref={`${base}/requests`}
+            requests={toRequestListRows({
+              requests: recent,
+              ...(await loadRequestRowContext(org.id)),
+            })}
+          />
+        )}
       </div>
-    </>
+    </div>
   )
 }
 
