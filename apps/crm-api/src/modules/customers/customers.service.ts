@@ -1,29 +1,15 @@
 import { create876BillingIntegrationClient } from '@876/billing/integration'
+import { getError, isError } from '@876/core'
 
 import type {
   CreateCustomerInput,
-  ListCustomersFilter,
   DeleteCustomerInput,
+  ListCustomersFilter,
   UpdateCustomerInput,
 } from '../../types/customer.js'
 import * as tenants from '../tenants/tenants.service.js'
-
-import { crmError } from '../../http/errors.js'
 import * as repository from './customers.repository.js'
 
-/**
- * The Billing registry, reached as the CRM **product app**.
- *
- * The app API key is what makes Billing resolve `principal.appId`, which the
- * integration tier requires before it accepts a `sourceExternalReference` and
- * an idempotency key on a write. An internal key authenticates as platform
- * admin instead and is refused with "Source external references require a
- * product app credential."
- *
- * Exactly one credential may be sent — Billing rejects a request carrying both
- * as ambiguous — so the internal key is deliberately absent rather than a
- * fallback.
- */
 function finance() {
   return create876BillingIntegrationClient({
     baseUrl: process.env.BILLING_API_URL,
@@ -31,18 +17,14 @@ function finance() {
   })
 }
 
-/**
- * The registry customer as the Billing integration client actually returns it.
- * Derived from the client so the two cannot drift.
- */
 type FinanceCustomer = NonNullable<
   Awaited<ReturnType<ReturnType<typeof finance>['customers']['list']>>['data']
 >['data'][number]
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
   return tenant
 }
 
@@ -94,13 +76,8 @@ export async function list(
   filter: ListCustomersFilter = {}
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
 
-  // Pull all customers from the shared billing registry for this org.
-  // The registry is the source of truth; CRM profiles are metadata extensions.
-  //
-  // `customerOrganizationId` / `customerUserId` filter by the *party* a customer
-  // links to, not by the tenant — the registry resolves at most one customer per
-  // linked party, so these answer "is this 876 org/account a customer here?".
   const result = await finance().customers.list(organizationId, {
     limit: 100,
     ...(filter.customerOrganizationId
@@ -108,15 +85,14 @@ export async function list(
       : {}),
     ...(filter.customerUserId ? { userId: filter.customerUserId } : {}),
   })
-  if (result.error) throw crmError('crm/registry-unavailable')
+  if (result.error) return getError('crm/registry-unavailable')
 
   const billingCustomers = result.data.data
   if (!billingCustomers.length) return { customers: [], hasMore: false }
 
-  // Lazily create CRM profiles for any billing customers that don't have one.
   const profileByBillingId = await repository.ensureMany(
     tenant.id,
-    billingCustomers.map((c) => c.id)
+    billingCustomers.map((customer) => customer.id)
   )
 
   return {
@@ -129,6 +105,7 @@ export async function list(
 
 export async function retrieve(organizationId: string, id: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const profile = await repository.retrieve(tenant.id, id)
   if (!profile) return null
 
@@ -136,7 +113,7 @@ export async function retrieve(organizationId: string, id: string) {
     ids: [profile.billingCustomerId],
     limit: 1,
   })
-  if (result.error) throw crmError('crm/registry-unavailable')
+  if (result.error) return getError('crm/registry-unavailable')
 
   return compose(profile, result.data.data[0] ?? null)
 }
@@ -146,10 +123,8 @@ export async function create(
   input: CreateCustomerInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const key = `crm:create:${input.idempotencyKey}`
-  // The party kind and the party link are independent axes; the registry owns
-  // both, so CRM derives the link from whichever id the caller supplied and
-  // passes it straight through rather than modelling a second customer concept.
   const customerType = input.userId
     ? ('CORE_USER' as const)
     : input.organizationId
@@ -173,36 +148,22 @@ export async function create(
     },
     { idempotencyKey: key }
   )
-  if (shared.error) throw crmError('crm/registry-unavailable')
+  if (shared.error) return getError('crm/registry-unavailable')
 
   const profile = await repository.create({
     tenantId: tenant.id,
     billingCustomerId: shared.data.id,
     ownerId: input.ownerId ?? null,
   })
-
-  // A newly created customer comes back as `{ object, id }`; only an
-  // idempotent replay returns the whole record. Read it back so this endpoint
-  // always answers with a complete customer rather than an identity-less shell
-  // the caller would render as "Unknown customer".
   const created = await resolveCreated(organizationId, shared.data)
-
   return compose(profile, created)
 }
 
-/**
- * Normalizes Billing's two create responses into the full customer.
- *
- * A failed read-back is not a failed create — the customer and its CRM profile
- * both exist — so this degrades to `null` and lets the caller render what it
- * has rather than reporting an error for work that succeeded.
- */
 async function resolveCreated(
   organizationId: string,
   created: { id: string } | FinanceCustomer
 ): Promise<FinanceCustomer | null> {
   if ('customerType' in created) return created
-
   const result = await finance().customers.retrieve(organizationId, created.id)
   return result.data ?? null
 }
@@ -213,7 +174,7 @@ export async function update(
   input: UpdateCustomerInput
 ) {
   const current = await retrieve(organizationId, id)
-  if (!current) return null
+  if (!current || isError(current)) return current
 
   let customer = current.customer
   if (customer?.customerType === 'EXTERNAL') {
@@ -229,7 +190,7 @@ export async function update(
         phone: input.phone ?? null,
       }
     )
-    if (shared.error) throw crmError('crm/registry-unavailable')
+    if (shared.error) return getError('crm/registry-unavailable')
     customer = shared.data
   }
 
@@ -247,8 +208,8 @@ export async function remove(
   params: DeleteCustomerInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, id)
   if (!current) return null
-
   return repository.remove({ id: current.id, ...params })
 }
