@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation'
 
-import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
-import { RequestRemindersSection } from '@/features/support/components/request-reminders'
+import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { RequestRemindersSection } from '@/features/crm/components/request-reminders'
 import {
   loadDirectory,
   loadReminders,
   loadRequest,
-} from '@/features/support/request-data'
+} from '@/features/crm/request-data'
 
 export const metadata = { title: 'Reminders' }
 

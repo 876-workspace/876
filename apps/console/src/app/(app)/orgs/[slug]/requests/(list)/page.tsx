@@ -9,10 +9,10 @@ import { $876 } from '@/lib/876'
 import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
-} from '@/features/support/request-status'
-import { REQUESTS_SKELETON_COLUMNS } from '@/features/support/components/requests-skeleton-columns'
-import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
-import { RequestsTable } from '@/features/support/components/requests-table'
+} from '@/features/crm/request-status'
+import { REQUESTS_SKELETON_COLUMNS } from '@/features/crm/components/requests-skeleton-columns'
+import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
+import { RequestsTable } from '@/features/crm/components/requests-table'
 import type { CrmRequestStatus } from '@/types/crm'
 import { resolveOrg } from '../../_data'
 

@@ -2,7 +2,7 @@ import { PageBreadcrumb } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { requireSession } from '@/lib/auth/guards'
-import { RequestCreateForm } from '@/features/support/components/request-create-form'
+import { RequestCreateForm } from '@/features/crm/components/request-create-form'
 import { resolveOrg } from '../../_data'
 
 type Props = { params: Promise<{ slug: string }> }

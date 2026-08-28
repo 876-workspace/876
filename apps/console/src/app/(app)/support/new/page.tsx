@@ -2,8 +2,8 @@ import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { Suspense } from 'react'
 
-import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
-import { RequestCreateForm } from '@/features/support/components/request-create-form'
+import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { RequestCreateForm } from '@/features/crm/components/request-create-form'
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
 

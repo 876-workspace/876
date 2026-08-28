@@ -1,15 +1,15 @@
 import { notFound } from 'next/navigation'
 
-import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
+import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
 import {
   RequestNotesSection,
   type NoteAuthor,
-} from '@/features/support/components/request-notes'
+} from '@/features/crm/components/request-notes'
 import {
   loadDirectory,
   loadNotes,
   loadRequest,
-} from '@/features/support/request-data'
+} from '@/features/crm/request-data'
 
 type Props = { params: Promise<{ requestId: string }> }
 

@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation'
 
-import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
-import { RequestTasksSection } from '@/features/support/components/request-tasks'
+import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { RequestTasksSection } from '@/features/crm/components/request-tasks'
 import {
   loadDirectory,
   loadRequest,
   loadTasks,
-} from '@/features/support/request-data'
+} from '@/features/crm/request-data'
 
 export const metadata = { title: 'Tasks' }
 

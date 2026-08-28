@@ -5,8 +5,8 @@ import { Suspense } from 'react'
 
 import { $876 } from '@/lib/876'
 import { requireSession } from '@/lib/auth/guards'
-import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
-import { RequestManager } from '@/features/support/components/request-manager'
+import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
+import { RequestManager } from '@/features/crm/components/request-manager'
 import { resolveOrg } from '../../_data'
 
 type Props = {

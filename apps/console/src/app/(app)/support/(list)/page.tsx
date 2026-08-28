@@ -4,14 +4,14 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
-import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
-import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
-import { REQUESTS_SKELETON_COLUMNS } from '@/features/support/components/requests-skeleton-columns'
-import { RequestsTable } from '@/features/support/components/requests-table'
+import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
+import { REQUESTS_SKELETON_COLUMNS } from '@/features/crm/components/requests-skeleton-columns'
+import { RequestsTable } from '@/features/crm/components/requests-table'
 import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
-} from '@/features/support/request-status'
+} from '@/features/crm/request-status'
 import { $876 } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
 import type { CrmRequestStatus } from '@/types/crm'
