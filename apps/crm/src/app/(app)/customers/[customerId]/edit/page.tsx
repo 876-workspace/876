@@ -23,10 +23,11 @@ export default async function EditCustomerPage({ params }: Props) {
     return (
       <Page>
         <PageBreadcrumb href="/customers" label="Customers" className="mb-4" />
+        <h1 className="876-page-title mb-4">Edit customer</h1>
         <AppError
-          title="Customer couldn't be loaded"
+          title="Customer data is temporarily unavailable"
           error={result.error}
-          variant="page"
+          variant="banner"
         />
       </Page>
     )
