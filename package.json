@@ -52,6 +52,7 @@
     "clean": "turbo clean && rm -rf node_modules",
     "dev:env": "node scripts/setup-dev-env.mjs",
     "check:session-secret": "node scripts/check-session-secret.mjs",
+    "check:env": "node scripts/check-env-parity.mjs",
     "check:database-env": "node scripts/check-database-env.mjs",
     "check:service-bundle": "node scripts/check-service-bundle.mjs"
   },
