@@ -165,11 +165,11 @@ Two consequences that have both bitten this platform:
 
 ### 3.1 The three kinds of value
 
-| Kind               | Set where                               | Visible to browser | Example                      |
-| ------------------ | --------------------------------------- | ------------------ | ---------------------------- |
-| **Build variable** | Workers Builds → Settings → Build       | **Yes**            | `NEXT_PUBLIC_API_URL`        |
-| **Runtime var**    | `wrangler.jsonc` → `vars`               | No                 | `API_URL`, `BILLING_API_URL` |
-| **Runtime secret** | `wrangler secret put` / deploy workflow | No                 | `SESSION_COOKIE_SECRET`      |
+| Kind               | Set where                               | Visible to browser | Example                                     |
+| ------------------ | --------------------------------------- | ------------------ | ------------------------------------------- |
+| **Build variable** | Workers Builds → Settings → Build       | **Yes**            | `NEXT_PUBLIC_API_URL`                       |
+| **Runtime var**    | `wrangler.jsonc` → `vars`               | No                 | `API_URL`, `BILLING_API_URL`, `CRM_API_URL` |
+| **Runtime secret** | `wrangler secret put` / deploy workflow | No                 | `SESSION_COOKIE_SECRET`                     |
 
 A `NEXT_PUBLIC_*` value set only as a runtime var is **not** available to the
 browser bundle — it is inlined at build time, and Workers Builds does not
@@ -185,6 +185,7 @@ after the session secret.
 | `BILLING_INTERNAL_KEY`  | `876-api`, `console`, `billing`, `billing-api` | Billing admin calls fail                          |
 | `WIDGETS_SERVICE_KEY`   | `widgets-api` + every host that calls it       | Widgets fail to load                              |
 | `STORAGE_INTERNAL_KEY`  | `storage-api` + every uploader                 | Uploads rejected                                  |
+| `CRM_INTERNAL_KEY`      | `crm-api`, `crm`, `console`                    | CRM reads 401; Console shows an empty workspace   |
 
 Rotating any of these means setting it on **every** holder. Miss one and that
 service breaks in the way described above — usually silently.
@@ -201,10 +202,12 @@ so a new app cannot skip the preflight.
 | `876-api`        | `API_INTERNAL_KEY`, `BILLING_INTERNAL_KEY`, `CORS_ALLOWED_ORIGINS`, `DATABASE_URL`, `OAUTH_KEY_ID`, `POSTHOG_*`, `SENTRY_DSN`, `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `SESSION_COOKIE_SECRET` |
 | `876-app`        | `SESSION_COOKIE_SECRET`                                                                                                                                                                      |
 | `876-enterprise` | `API_876_KEY`, `API_INTERNAL_KEY`, `SESSION_COOKIE_SECRET`                                                                                                                                   |
-| `876-console`    | `API_876_KEY`, `API_INTERNAL_KEY`, `BILLING_INTERNAL_KEY`, `CONSOLE_DATABASE_URL`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                                            |
+| `876-console`    | `API_876_KEY`, `API_INTERNAL_KEY`, `BILLING_INTERNAL_KEY`, `CRM_INTERNAL_KEY`, `CONSOLE_DATABASE_URL`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                        |
 | `876-couriers`   | `API_876_KEY`, `API_INTERNAL_KEY`, `DATABASE_URL`, `STORAGE_INTERNAL_KEY`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                                                    |
 | `876-billing`    | `API_INTERNAL_KEY`, `BILLING_API_876_KEY`, `BILLING_INTERNAL_KEY`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                                                            |
 | `876-invoice`    | `API_INTERNAL_KEY`, `INVOICE_API_876_KEY`, `SESSION_COOKIE_SECRET`                                                                                                                           |
+| `876-crm`        | `API_INTERNAL_KEY`, `CRM_API_876_KEY`, `CRM_INTERNAL_KEY`, `SESSION_COOKIE_SECRET`                                                                                                           |
+| `876-crm-api`    | `BILLING_INTERNAL_KEY`, `CRM_API_876_KEY`, `CRM_DATABASE_URL`, `CRM_INTERNAL_KEY`                                                                                                            |
 
 Note that the app API key is named **per app** (`API_876_KEY`,
 `BILLING_API_876_KEY`, `INVOICE_API_876_KEY`). Copying a bridge route from
