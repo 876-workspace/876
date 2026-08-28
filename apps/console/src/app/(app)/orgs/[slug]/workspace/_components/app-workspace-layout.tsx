@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Suspense, type ReactNode } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { Skeleton } from '@876/ui/skeleton'
 import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 
@@ -115,7 +116,16 @@ async function EntitlementNotice({
   if (!org) return null
 
   const entitled = await resolveOrgEntitledAppSlugs(org.id)
-  if (entitled.includes(appSlug)) return null
+  if (entitled.error)
+    return (
+      <AppError
+        title="Workspace entitlement could not be verified"
+        error={entitled.error}
+        variant="inline"
+        showCode
+      />
+    )
+  if (entitled.data.includes(appSlug)) return null
 
   return (
     <WorkspaceEntitlementNotice
