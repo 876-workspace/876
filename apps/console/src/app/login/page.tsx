@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import {
+  AUTH_CALLBACK_ERROR_PARAM,
+  resolveAuthCallbackMessage,
+} from '@876/core/auth/callback-error'
+import {
   AUTH_RETURN_TO_PARAM,
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
@@ -24,7 +28,7 @@ export default async function ConsoleLoginPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    authError?: string | string[]
+    [AUTH_CALLBACK_ERROR_PARAM]?: string | string[]
     returnTo?: string | string[]
   }>
 }) {
@@ -32,13 +36,18 @@ export default async function ConsoleLoginPage({
   const returnTo = resolveReturnTo(
     firstSearchParam(params[AUTH_RETURN_TO_PARAM])
   )
+  const authError = resolveAuthCallbackMessage(
+    params[AUTH_CALLBACK_ERROR_PARAM]
+  )
 
   const result = await getAuthSession()
   if (isSignedSession(result)) redirect(returnTo)
 
   const logoUrl = await getConsoleLogoUrl()
 
-  return <EmbeddedAuth returnTo={returnTo} logoUrl={logoUrl} />
+  return (
+    <EmbeddedAuth returnTo={returnTo} logoUrl={logoUrl} authError={authError} />
+  )
 }
 
 /**

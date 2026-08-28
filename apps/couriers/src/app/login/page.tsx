@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import {
+  AUTH_CALLBACK_ERROR_PARAM,
+  resolveAuthCallbackMessage,
+} from '@876/core/auth/callback-error'
+import {
   AUTH_RETURN_TO_PARAM,
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
@@ -26,11 +30,14 @@ export default async function LoginPage({
     firstParam(params[AUTH_RETURN_TO_PARAM]),
     '/'
   )
+  const authError = resolveAuthCallbackMessage(
+    params[AUTH_CALLBACK_ERROR_PARAM]
+  )
 
   const ctx = await getManageContext()
   if (ctx) redirect(returnTo)
 
-  return <AppEmbeddedAuth returnTo={returnTo} />
+  return <AppEmbeddedAuth returnTo={returnTo} authError={authError} />
 }
 
 function firstParam(value: string | string[] | undefined): string {
