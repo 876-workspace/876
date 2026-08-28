@@ -8,6 +8,7 @@ import { APP_ASSIGNMENT_ERRORS } from './app-assignments'
 import { APP_ERRORS } from './apps'
 import { AUTH_ERRORS } from './auth'
 import { CONTACT_ERRORS } from './contacts'
+import { CRM_ERRORS } from './crm'
 import { DEPARTMENT_ERRORS } from './departments'
 import { EMPLOYEE_ERRORS } from './employees'
 import { FEATURE_ERRORS } from './features'
@@ -35,6 +36,7 @@ export const ERRORS = {
   ...APP_ERRORS,
   ...AUTH_ERRORS,
   ...CONTACT_ERRORS,
+  ...CRM_ERRORS,
   ...DEPARTMENT_ERRORS,
   ...EMPLOYEE_ERRORS,
   ...FEATURE_ERRORS,
@@ -131,6 +133,7 @@ function getFallbackErrorCode(code: string): ErrorCode {
   if (code.startsWith('organization/')) return 'organization/internal-error'
   if (code.startsWith('provider/')) return 'provider/internal-error'
   if (code.startsWith('feature/')) return 'feature/internal-error'
+  if (code.startsWith('crm/')) return 'crm/internal'
 
   return 'auth/unknown-error'
 }
