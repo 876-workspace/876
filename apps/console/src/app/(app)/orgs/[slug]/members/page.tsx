@@ -1,12 +1,18 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveUser } from '@/app/(app)/users/[username]/_data'
-import { resolveOrg, resolveOrgMembers, resolveOrgRoles } from '../_data'
+import {
+  resolveOrg,
+  resolveOrgMembers,
+  resolveOrgResult,
+  resolveOrgRoles,
+} from '../_data'
 import { PendingInvitesTable } from './_components/members-table'
 import { MembersSplit } from './_components/members-split'
 import { MemberApps, MemberAppsFallback } from './_components/member-apps'
@@ -27,11 +33,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Members - Organizations` }
 }
 
-/**
- * Keep the Members chrome synchronous, matching the fast /users and /orgs
- * list-page streaming shape. Route data resolves only inside the Suspense
- * children below.
- */
 export default function OrganizationMembersPage({
   params,
   searchParams,
@@ -68,23 +69,47 @@ async function MembersToolbarData({
   ])
   if (query.member) return null
 
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const orgResult = await resolveOrgResult(slug)
+  if (orgResult.error?.code === 'organization/not-found') notFound()
+  if (orgResult.error)
+    return (
+      <AppError
+        title="Organization details are temporarily unavailable"
+        error={orgResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+  if (!orgResult.data) notFound()
 
-  const roles = await resolveOrgRoles(org.id)
+  const rolesResult = await resolveOrgRoles(orgResult.data.id)
 
   return (
-    <div className="mb-5 flex items-center justify-between gap-4">
-      <Suspense fallback={<h2 className="876-page-title">Members</h2>}>
-        <MembersHeading />
-      </Suspense>
-      <Suspense fallback={<AddMemberButton />}>
-        <AddMemberDialog
-          orgId={org.id}
-          orgName={org.name ?? org.slug}
-          roles={roles}
+    <div className="mb-5 space-y-3">
+      <div className="flex items-center justify-between gap-4">
+        <Suspense fallback={<h2 className="876-page-title">Members</h2>}>
+          <MembersHeading />
+        </Suspense>
+        {rolesResult.error ? (
+          <AddMemberButton />
+        ) : (
+          <Suspense fallback={<AddMemberButton />}>
+            <AddMemberDialog
+              orgId={orgResult.data.id}
+              orgName={orgResult.data.name ?? orgResult.data.slug}
+              roles={rolesResult.data}
+            />
+          </Suspense>
+        )}
+      </div>
+      {rolesResult.error ? (
+        <AppError
+          title="Role options are temporarily unavailable"
+          error={rolesResult.error}
+          variant="inline"
+          showCode
         />
-      </Suspense>
+      ) : null}
     </div>
   )
 }
@@ -97,8 +122,17 @@ async function MemberAppsData({
   userId: string
 }) {
   const result = await $876.appAssignments.list(organizationId, { userId })
-  const assignments = result.data?.data ?? []
-  return <MemberApps assignments={assignments} />
+  if (result.error)
+    return (
+      <AppError
+        title="App assignments are temporarily unavailable"
+        error={result.error}
+        variant="inline"
+        showCode
+      />
+    )
+
+  return <MemberApps assignments={result.data?.data ?? []} />
 }
 
 async function MembersTableData({
@@ -112,12 +146,31 @@ async function MembersTableData({
     params,
     searchParams ?? Promise.resolve({} as { member?: string }),
   ])
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const orgResult = await resolveOrgResult(slug)
+  if (orgResult.error?.code === 'organization/not-found') notFound()
+  if (orgResult.error)
+    return (
+      <AppError
+        title="Organization details are temporarily unavailable"
+        error={orgResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+  if (!orgResult.data) notFound()
 
-  const membersResult = await resolveOrgMembers(org.id)
-  const members = membersResult?.data ?? []
+  const membersResult = await resolveOrgMembers(orgResult.data.id)
+  if (membersResult.error)
+    return (
+      <AppError
+        title="Members are temporarily unavailable"
+        error={membersResult.error}
+        variant="banner"
+        showCode
+      />
+    )
 
+  const members = membersResult.data
   const selectedId = query?.member
   const selected = members.find(
     (item) => item.id === selectedId || item.user_id === selectedId
@@ -126,7 +179,10 @@ async function MembersTableData({
   const user = selected ? await resolveUser(selected.user_id) : null
   const apps = selected ? (
     <Suspense fallback={<MemberAppsFallback />}>
-      <MemberAppsData organizationId={org.id} userId={selected.user_id} />
+      <MemberAppsData
+        organizationId={orgResult.data.id}
+        userId={selected.user_id}
+      />
     </Suspense>
   ) : null
   const activity = selected ? (
@@ -145,11 +201,6 @@ async function MembersTableData({
   )
 }
 
-/**
- * Invites are independent of the member roster and must never extend the
- * member table's critical path. A slow invite lookup simply streams this
- * optional section later.
- */
 async function PendingInvitesData({
   params,
   searchParams,
@@ -163,13 +214,21 @@ async function PendingInvitesData({
   ])
   if (query.member) return null
 
-  const org = await resolveOrg(slug)
-  if (!org) return null
+  const orgResult = await resolveOrgResult(slug)
+  if (!orgResult.data) return null
 
-  const invitesResult = await $876.invites.admin.list(org.id)
-  const invites = invitesResult.data?.data ?? []
+  const invitesResult = await $876.invites.admin.list(orgResult.data.id)
+  if (invitesResult.error)
+    return (
+      <AppError
+        title="Pending invitations are temporarily unavailable"
+        error={invitesResult.error}
+        variant="inline"
+        showCode
+      />
+    )
 
-  return <PendingInvitesTable invites={invites} />
+  return <PendingInvitesTable invites={invitesResult.data?.data ?? []} />
 }
 
 function AddMemberButton() {
