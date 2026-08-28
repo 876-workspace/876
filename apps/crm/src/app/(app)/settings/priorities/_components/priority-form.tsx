@@ -1,17 +1,19 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { toast } from 'sonner'
-
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { Textarea } from '@876/ui/textarea'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 import type { RequestPriority } from '@/types/crm'
+
+type ErrorValue = { code: string; message: string }
 
 export function PriorityForm({ priority }: { priority?: RequestPriority }) {
   const router = useRouter()
@@ -24,7 +26,8 @@ export function PriorityForm({ priority }: { priority?: RequestPriority }) {
   const [isDefault, setIsDefault] = useState(priority?.isDefault ?? false)
   const [isActive, setIsActive] = useState(priority?.isActive ?? true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ErrorValue | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const editing = Boolean(priority)
   const lockedDefault = priority?.isDefault === true
@@ -37,7 +40,7 @@ export function PriorityForm({ priority }: { priority?: RequestPriority }) {
     const parsedWeight = Number(weight)
     const parsedSortOrder = Number(sortOrder)
     if (!normalizedName) {
-      setError('Name is required.')
+      setValidationError('Name is required.')
       return
     }
     if (
@@ -45,7 +48,9 @@ export function PriorityForm({ priority }: { priority?: RequestPriority }) {
       parsedWeight < 0 ||
       parsedWeight > 1_000_000
     ) {
-      setError('Severity weight must be a whole number between 0 and 1,000,000.')
+      setValidationError(
+        'Severity weight must be a whole number between 0 and 1,000,000.'
+      )
       return
     }
     if (
@@ -53,12 +58,15 @@ export function PriorityForm({ priority }: { priority?: RequestPriority }) {
       parsedSortOrder < 0 ||
       parsedSortOrder > 1_000_000
     ) {
-      setError('Sort order must be a whole number between 0 and 1,000,000.')
+      setValidationError(
+        'Sort order must be a whole number between 0 and 1,000,000.'
+      )
       return
     }
 
     setSaving(true)
     setError(null)
+    setValidationError(null)
     const common = {
       name: normalizedName,
       description: description.trim() || null,
@@ -81,7 +89,7 @@ export function PriorityForm({ priority }: { priority?: RequestPriority }) {
     setSaving(false)
 
     if (result.error) {
-      setError(result.error.message)
+      setError(result.error)
       return
     }
 
@@ -216,16 +224,24 @@ export function PriorityForm({ priority }: { priority?: RequestPriority }) {
 
         {priority?.provisioningKey ? (
           <p className="text-muted-foreground rounded-md border border-dashed px-3 py-2 text-xs">
-            Provisioned resource key: <span className="font-mono">{priority.provisioningKey}</span>.
-            Your edits are tenant-owned and are preserved when the platform manifest
+            Provisioned resource key:{' '}
+            <span className="font-mono">{priority.provisioningKey}</span>. Your
+            edits are tenant-owned and are preserved when the platform manifest
             is reconciled again.
           </p>
         ) : null}
 
-        {error ? (
+        {validationError ? (
           <p className="text-destructive text-sm" role="alert">
-            {error}
+            {validationError}
           </p>
+        ) : null}
+        {error ? (
+          <AppError
+            title={editing ? 'Priority could not be saved' : 'Priority could not be added'}
+            error={error}
+            variant="form"
+          />
         ) : null}
       </div>
 
