@@ -1,6 +1,7 @@
 'use client'
 
 import { listDialCodes, parsePhone } from '@876/core/phone'
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { EmailInput } from '@876/ui/email-input'
 import { FormRow } from '@876/ui/form-row'
@@ -18,6 +19,8 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 
 import { client } from '@/lib/client'
+
+type ErrorValue = { code: string; message: string }
 
 type Values = {
   customerKind: 'INDIVIDUAL' | 'BUSINESS'
@@ -89,7 +92,7 @@ export function CustomerForm({
   const [phone, setPhone] = useState<PhoneInputValue>(() =>
     splitPhone(initial.phone)
   )
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ErrorValue | null>(null)
   const [saving, setSaving] = useState(false)
 
   const set = <K extends keyof Values>(key: K, value: Values[K]) =>
@@ -127,7 +130,7 @@ export function CustomerForm({
       : await client.customers.create(base, idempotencyKey.current)
 
     if (result.error) {
-      setError(result.error.message)
+      setError(result.error)
       setSaving(false)
       return
     }
@@ -267,9 +270,11 @@ export function CustomerForm({
       </div>
 
       {error ? (
-        <p className="text-destructive text-sm" role="alert">
-          {error}
-        </p>
+        <AppError
+          title={customerId ? 'Customer could not be saved' : 'Customer could not be added'}
+          error={error}
+          variant="form"
+        />
       ) : null}
 
       <div className="flex gap-3">
