@@ -30,10 +30,11 @@ export default async function EditPriorityPage({ params }: Props) {
           label="Priorities"
           className="mb-4"
         />
+        <h1 className="876-page-title mb-4">Edit priority</h1>
         <AppError
-          title="Priority couldn't be loaded"
+          title="Priority data is temporarily unavailable"
           error={result.error}
-          variant="page"
+          variant="banner"
         />
       </Page>
     )
