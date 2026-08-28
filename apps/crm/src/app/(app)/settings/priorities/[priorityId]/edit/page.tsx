@@ -5,7 +5,7 @@ import { Page, PageBreadcrumb } from '@876/ui/page'
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
-import { PriorityForm } from '../../../_components/priority-form'
+import { PriorityForm } from '../../_components/priority-form'
 
 type Props = { params: Promise<{ priorityId: string }> }
 
