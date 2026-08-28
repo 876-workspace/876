@@ -5,6 +5,7 @@ import {
   BillingCustomerListSchema,
   BillingCustomerSchema,
   DeletedBillingCustomerSchema,
+  BillingCustomerCreatedSchema,
 } from './customer.schema'
 
 const primaryContact = {
@@ -405,6 +406,29 @@ describe('BillingCustomerSchema edge cases', () => {
         has_more: false,
         total_count: 0,
       }).success
+    ).toBe(false)
+  })
+})
+
+describe('BillingCustomerCreatedSchema', () => {
+  /**
+   * Billing answers 201 with only an acknowledgement for a new customer.
+   * Rejecting that shape reported "invalid response" for a create that had in
+   * fact succeeded, so the caller never learned the customer's id.
+   */
+  it('accepts the acknowledgement Billing returns for a new customer', () => {
+    const result = BillingCustomerCreatedSchema.safeParse({
+      object: 'customer',
+      id: 'cus_9f2a',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ object: 'customer', id: 'cus_9f2a' })
+  })
+
+  it('rejects an acknowledgement that carries no id', () => {
+    expect(
+      BillingCustomerCreatedSchema.safeParse({ object: 'customer' }).success
     ).toBe(false)
   })
 })

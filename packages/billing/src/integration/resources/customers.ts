@@ -2,6 +2,7 @@ import { toCursorQuery } from '@876/core/client'
 
 import {
   BillingCustomerListSchema,
+  BillingCustomerCreatedSchema,
   BillingCustomerSchema,
   DeletedBillingCustomerSchema,
 } from '../schemas'
@@ -9,6 +10,7 @@ import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
 import type {
   BillingCustomer,
+  BillingCustomerCreated,
   BillingCustomerCreateParams,
   BillingCustomerList,
   BillingCustomerListParams,
@@ -63,7 +65,7 @@ export function createIntegrationCustomersResource(
       params: BillingCustomerCreateParams,
       options: IntegrationCreateOptions
     ) {
-      return IntegrationRequest<BillingCustomer>(
+      return IntegrationRequest<BillingCustomerCreated>(
         runtime,
         {
           method: 'POST',
@@ -71,7 +73,7 @@ export function createIntegrationCustomersResource(
           body: params,
           headers: { 'Idempotency-Key': options.idempotencyKey },
         },
-        BillingCustomerSchema
+        BillingCustomerCreatedSchema
       )
     },
 

@@ -5,6 +5,7 @@
 export {
   BillingBankAccountListSchema,
   BillingBankAccountSchema,
+  BillingCustomerCreatedSchema,
   BillingCustomerListSchema,
   BillingCustomerSchema,
   BillingInvoiceListSchema,

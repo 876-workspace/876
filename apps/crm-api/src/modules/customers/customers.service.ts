@@ -12,19 +12,22 @@ import { crmError } from '../../http/errors.js'
 import * as repository from './customers.repository.js'
 
 /**
- * The Billing registry.
+ * The Billing registry, reached as the CRM **product app**.
  *
- * NOTE: this authenticates as platform admin. Writes that carry a
- * `sourceExternalReference` are refused on that credential — Billing requires
- * a product app identity for those — so customer creation cannot work until
- * 876-crm has an API key of its own and this switches to
- * `apiKey: process.env.CRM_API_876_KEY`. Billing accepts exactly one
- * credential, so the two cannot both be sent.
+ * The app API key is what makes Billing resolve `principal.appId`, which the
+ * integration tier requires before it accepts a `sourceExternalReference` and
+ * an idempotency key on a write. An internal key authenticates as platform
+ * admin instead and is refused with "Source external references require a
+ * product app credential."
+ *
+ * Exactly one credential may be sent — Billing rejects a request carrying both
+ * as ambiguous — so the internal key is deliberately absent rather than a
+ * fallback.
  */
 function finance() {
   return create876BillingIntegrationClient({
     baseUrl: process.env.BILLING_API_URL,
-    internalKey: process.env.BILLING_INTERNAL_KEY,
+    apiKey: process.env.CRM_API_876_KEY,
   })
 }
 
@@ -181,7 +184,30 @@ export async function create(
     ownerId: input.ownerId ?? null,
   })
 
-  return compose(profile, shared.data)
+  // A newly created customer comes back as `{ object, id }`; only an
+  // idempotent replay returns the whole record. Read it back so this endpoint
+  // always answers with a complete customer rather than an identity-less shell
+  // the caller would render as "Unknown customer".
+  const created = await resolveCreated(organizationId, shared.data)
+
+  return compose(profile, created)
+}
+
+/**
+ * Normalizes Billing's two create responses into the full customer.
+ *
+ * A failed read-back is not a failed create — the customer and its CRM profile
+ * both exist — so this degrades to `null` and lets the caller render what it
+ * has rather than reporting an error for work that succeeded.
+ */
+async function resolveCreated(
+  organizationId: string,
+  created: { id: string } | FinanceCustomer
+): Promise<FinanceCustomer | null> {
+  if ('customerType' in created) return created
+
+  const result = await finance().customers.retrieve(organizationId, created.id)
+  return result.data ?? null
 }
 
 export async function update(

@@ -115,3 +115,21 @@ export const DeletedBillingCustomerSchema = z.strictObject({
   id: z.string().min(1),
   deleted: z.literal(true),
 }) satisfies z.ZodType<DeletedBillingCustomer>
+
+/**
+ * What a create returns, which depends on whether it was a replay.
+ *
+ * Billing answers **201** with a thin `{ object, id }` acknowledgement for a
+ * newly created customer, and **200** with the full record when an idempotency
+ * key replays an earlier create. Accepting only the full shape made every
+ * first-time create fail as "The Billing service returned an invalid
+ * response" — the customer was created, and the caller was told it was not.
+ */
+export const BillingCustomerCreatedSchema = z.union([
+  BillingCustomerSchema,
+  z.object({ object: z.literal('customer'), id: z.string() }),
+])
+
+export type BillingCustomerCreated = z.infer<
+  typeof BillingCustomerCreatedSchema
+>
