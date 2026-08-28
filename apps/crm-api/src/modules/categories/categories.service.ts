@@ -2,8 +2,11 @@ import { crmError } from '../../http/errors.js'
 import type {
   CreateCategoryInput,
   DeleteCategoryInput,
+  ProvisionedCategoryInput,
+  ProvisionedSubcategoryInput,
   UpdateCategoryInput,
 } from '../../types/category.js'
+import * as priorities from '../priorities/index.js'
 import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './categories.repository.js'
 
@@ -12,7 +15,6 @@ type SubcategoryRow = NonNullable<
   Awaited<ReturnType<typeof repository.retrieveSub>>
 >
 
-/** Derives the stable URL-safe identifier used for categories and subcategories. */
 export function slugify(name: string) {
   return (
     name
@@ -51,32 +53,32 @@ function serializeCategory(categoryRow: CategoryRow) {
   }
 }
 
-/** Lists every visible category and its visible subcategories for a tenant. */
+async function validateDefaultPriority(
+  tenantId: string,
+  defaultPriorityId: string | null | undefined
+) {
+  if (defaultPriorityId)
+    await priorities.requireActiveForTenant(tenantId, defaultPriorityId)
+}
+
 export async function list(organizationId: string) {
   const tenant = await requireTenant(organizationId)
-
-  const categories = await repository.list(tenant.id)
-
-  return categories.map(serializeCategory)
+  return (await repository.list(tenant.id)).map(serializeCategory)
 }
 
-/** Retrieves one visible category with its visible subcategories. */
 export async function retrieve(organizationId: string, categoryId: string) {
   const tenant = await requireTenant(organizationId)
-
   const category = await repository.retrieve(tenant.id, categoryId)
-  if (!category) return null
 
-  return serializeCategory(category)
+  return category ? serializeCategory(category) : null
 }
 
-/** Creates a category with a stable slug derived from its display name. */
 export async function create(
   organizationId: string,
   input: CreateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-
+  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
   const category = await repository.create({
     tenantId: tenant.id,
     ...input,
@@ -86,61 +88,58 @@ export async function create(
   return serializeCategory(category)
 }
 
-/** Updates an existing visible category while preserving tenant ownership. */
 export async function update(
   organizationId: string,
   categoryId: string,
   input: UpdateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) return null
 
-  const updatedCategory = await repository.update(categoryId, input)
+  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const updatedCategory = await repository.update(categoryId, {
+    ...input,
+    ...(input.name === undefined ? {} : { slug: slugify(input.name) }),
+  })
 
   return serializeCategory(updatedCategory)
 }
 
-/** Refuses in-use deletion because categories are a reporting dimension whose history must remain intact; archive them instead. */
 export async function remove(
   organizationId: string,
   categoryId: string,
   input: DeleteCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) return null
-
   if (await repository.used(tenant.id, categoryId))
     throw crmError('crm/category-in-use')
 
   return repository.remove({ id: categoryId, ...input })
 }
 
-/** Creates a subcategory beneath an existing visible category. */
 export async function createSub(
   organizationId: string,
   categoryId: string,
   input: CreateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) throw crmError('crm/category-not-found')
 
-  const subcategory = await repository.createSub({
-    tenantId: tenant.id,
-    categoryId,
-    ...input,
-    slug: slugify(input.name),
-  })
-
-  return serializeSubcategory(subcategory)
+  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  return serializeSubcategory(
+    await repository.createSub({
+      tenantId: tenant.id,
+      categoryId,
+      ...input,
+      slug: slugify(input.name),
+    })
+  )
 }
 
-/** Updates one visible subcategory within its parent category. */
 export async function updateSub(
   organizationId: string,
   categoryId: string,
@@ -148,7 +147,6 @@ export async function updateSub(
   input: UpdateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-
   const subcategory = await repository.retrieveSub(
     tenant.id,
     categoryId,
@@ -156,12 +154,15 @@ export async function updateSub(
   )
   if (!subcategory) return null
 
-  const updatedSubcategory = await repository.updateSub(subcategoryId, input)
-
-  return serializeSubcategory(updatedSubcategory)
+  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  return serializeSubcategory(
+    await repository.updateSub(subcategoryId, {
+      ...input,
+      ...(input.name === undefined ? {} : { slug: slugify(input.name) }),
+    })
+  )
 }
 
-/** Refuses in-use deletion so a request's historical reporting dimension remains intact. */
 export async function removeSub(
   organizationId: string,
   categoryId: string,
@@ -169,16 +170,64 @@ export async function removeSub(
   input: DeleteCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-
   const subcategory = await repository.retrieveSub(
     tenant.id,
     categoryId,
     subcategoryId
   )
   if (!subcategory) return null
-
   if (await repository.usedSub(tenant.id, subcategoryId))
     throw crmError('crm/subcategory-in-use')
 
   return repository.removeSub({ id: subcategoryId, ...input })
+}
+
+export async function ensureProvisionedCategory(
+  tenantId: string,
+  input: ProvisionedCategoryInput
+) {
+  const existing = await repository.retrieveByProvisioningKey(
+    tenantId,
+    input.provisioningKey
+  )
+  if (existing) return existing
+
+  return repository.create({
+    tenantId,
+    provisioningKey: input.provisioningKey,
+    name: input.name,
+    slug: slugify(input.name),
+    description: input.description,
+    color: input.color,
+    icon: input.icon,
+    sortOrder: input.sortOrder,
+    isActive: input.isActive,
+    defaultPriorityId: input.defaultPriorityId,
+    createdBy: null,
+  })
+}
+
+export async function ensureProvisionedSubcategory(
+  tenantId: string,
+  input: ProvisionedSubcategoryInput
+) {
+  const existing = await repository.retrieveSubByProvisioningKey(
+    tenantId,
+    input.provisioningKey
+  )
+  if (existing) return existing
+
+  return repository.createSub({
+    tenantId,
+    categoryId: input.categoryId,
+    provisioningKey: input.provisioningKey,
+    name: input.name,
+    slug: slugify(input.name),
+    description: input.description,
+    icon: input.icon,
+    sortOrder: input.sortOrder,
+    isActive: input.isActive,
+    defaultPriorityId: input.defaultPriorityId,
+    createdBy: null,
+  })
 }
