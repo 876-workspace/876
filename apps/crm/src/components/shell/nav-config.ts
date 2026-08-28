@@ -13,6 +13,7 @@ export type NavItem = {
   href: string
   icon: IconComponent
   color?: string
+  colorClassName?: string
 }
 
 export type NavGroup = {
@@ -27,14 +28,36 @@ export const navConfig: NavGroup[] = [
         title: 'Dashboard',
         href: '/',
         icon: BarChart3,
-        color: 'var(--876-blue)',
+        colorClassName: 'text-blue-500 dark:text-blue-400',
       },
-      { title: 'Customers', href: '/customers', icon: Users },
-      { title: 'Requests', href: '/requests', icon: ClipboardList },
-      { title: 'Forms', href: '/forms', icon: DocumentTextIcon },
+      {
+        title: 'Customers',
+        href: '/customers',
+        icon: Users,
+        colorClassName: 'text-amber-500 dark:text-amber-400',
+      },
+      {
+        title: 'Requests',
+        href: '/requests',
+        icon: ClipboardList,
+        colorClassName: 'text-purple-500 dark:text-purple-400',
+      },
+      {
+        title: 'Forms',
+        href: '/forms',
+        icon: DocumentTextIcon,
+        colorClassName: 'text-emerald-500 dark:text-emerald-400',
+      },
     ],
   },
   {
-    items: [{ title: 'Settings', href: '/settings', icon: Settings }],
+    items: [
+      {
+        title: 'Settings',
+        href: '/settings',
+        icon: Settings,
+        colorClassName: 'text-slate-500 dark:text-slate-400',
+      },
+    ],
   },
 ]
