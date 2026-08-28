@@ -69,6 +69,7 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     requestReminders: crm.requestReminders,
     requestNotes: crm.requestNotes,
     requestCategories: crm.requestCategories,
+    requestPriorities: crm.requestPriorities,
     files: storage.files,
     uploads: storage.uploads,
     notes: withAdmin(widgetsMember.notes, widgetsAdmin.notes),
