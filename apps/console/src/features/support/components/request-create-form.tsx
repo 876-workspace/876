@@ -13,13 +13,13 @@ import { client } from '@/lib/client'
 
 type Props = {
   organizationId: string
-  slug: string
+  requestsHref: string
   currentUserId: string
 }
 
 export function RequestCreateForm({
   organizationId,
-  slug,
+  requestsHref,
   currentUserId,
 }: Props) {
   const router = useRouter()
@@ -47,7 +47,7 @@ export function RequestCreateForm({
     setSubmitting(false)
 
     if (result.error) return toast.error(result.error.message)
-    router.push(`/orgs/${slug}/requests/${result.data.id}`)
+    router.push(`${requestsHref}/${result.data.id}`)
     router.refresh()
   }
 
@@ -74,7 +74,7 @@ export function RequestCreateForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push(`/orgs/${slug}/requests`)}
+          onClick={() => router.push(requestsHref)}
         >
           Cancel
         </Button>

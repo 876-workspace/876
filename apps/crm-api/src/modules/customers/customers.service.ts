@@ -122,10 +122,21 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   const key = `crm:create:${input.idempotencyKey}`
+  // The party kind and the party link are independent axes; the registry owns
+  // both, so CRM derives the link from whichever id the caller supplied and
+  // passes it straight through rather than modelling a second customer concept.
+  const customerType = input.userId
+    ? ('CORE_USER' as const)
+    : input.organizationId
+      ? ('CORE_ORGANIZATION' as const)
+      : ('EXTERNAL' as const)
+
   const shared = await finance().customers.create(
     organizationId,
     {
-      customerType: 'EXTERNAL',
+      customerType,
+      userId: input.userId ?? null,
+      organizationId: input.organizationId ?? null,
       customerKind: input.customerKind,
       name: resolveName(input),
       firstName: input.firstName ?? null,

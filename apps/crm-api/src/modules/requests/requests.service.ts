@@ -38,6 +38,8 @@ function serialize(
     teamId: request.teamId,
     assigneeId: request.assigneeId,
     ownerId: request.ownerId,
+    requesterUserId: request.requesterUserId,
+    requesterContactId: request.requesterContactId,
     createdBy: request.createdBy,
     resolvedAt: request.resolvedAt
       ? Math.floor(request.resolvedAt.getTime() / 1000)

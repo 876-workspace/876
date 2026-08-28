@@ -17,8 +17,8 @@ import {
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { Skeleton } from '@876/ui/skeleton'
 import { formatDate, statusBadgeClass } from '@/lib/format'
-import { resolveOrg, resolveOrgMembers } from './_data'
-import { orgTabs } from './_components/org-tabs'
+import { resolveOrg, resolveOrgMembers, resolveOrgSubscriptions } from './_data'
+import { orgTabs } from '@/features/orgs/app-tabs'
 import { OrgActions } from './_components/org-actions'
 
 type Props = {
@@ -78,7 +78,9 @@ export default async function OrganizationDetailLayout({
           </DetailHeaderTop>
 
           <DetailHeaderTabs>
-            <RouteTabs tabs={orgTabs(base, slug)} />
+            <Suspense fallback={<RouteTabs tabs={orgTabs(base, [])} />}>
+              <EntitledTabs base={base} slug={slug} />
+            </Suspense>
           </DetailHeaderTabs>
         </DetailHeader>
       </DetailChromeGate>
@@ -274,4 +276,30 @@ async function MemberCountValue({ orgId }: { orgId: string }) {
       {memberCount} {memberCount === 1 ? 'member' : 'members'}
     </span>
   )
+}
+
+/**
+ * Streams the full, entitlement-aware tab strip.
+ *
+ * Resolves the org and then its active/trialing app entitlements. Because
+ * `resolveOrg` is memoised with `React.cache`, the call here dedupes with the
+ * parallel `Identity` fetch. The parent layout renders this inside a
+ * `<Suspense>` whose fallback is the always-present baseline tabs — real,
+ * clickable, and never a skeleton — so navigation is instant regardless of how
+ * long the entitlement fetch takes.
+ */
+async function EntitledTabs({ base, slug }: { base: string; slug: string }) {
+  const org = await resolveOrg(slug)
+  if (!org) {
+    // notFound() is called by the Identity component in its own boundary;
+    // return the baseline strip here so the fallback doesn't flicker.
+    return <RouteTabs tabs={orgTabs(base, [])} />
+  }
+
+  const subscriptions = await resolveOrgSubscriptions(org.id)
+  const entitledAppSlugs = (subscriptions ?? [])
+    .filter((s) => s.status === 'active' || s.status === 'trialing')
+    .flatMap((s) => (s.app_slug ? [s.app_slug] : []))
+
+  return <RouteTabs tabs={orgTabs(base, entitledAppSlugs)} />
 }

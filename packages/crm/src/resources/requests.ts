@@ -27,6 +27,8 @@ function toQueryString(params?: ListRequestsQuery): string {
   if (params.categoryId) search.set('categoryId', params.categoryId)
   if (params.subcategoryId) search.set('subcategoryId', params.subcategoryId)
   if (params.ownerId) search.set('ownerId', params.ownerId)
+  if (params.requesterUserId)
+    search.set('requesterUserId', params.requesterUserId)
   if (params.priority) search.set('priority', params.priority)
   const qs = search.toString()
   return qs ? `?${qs}` : ''

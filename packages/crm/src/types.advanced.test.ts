@@ -31,6 +31,8 @@ const request = {
   teamId: null,
   assigneeId: null,
   ownerId: null,
+  requesterUserId: null,
+  requesterContactId: null,
   createdBy: 'usr_1',
   resolvedAt: null,
   closedAt: null,

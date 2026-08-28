@@ -51,6 +51,16 @@ export function list(tenantId: string, filters?: ListRequestsFilter) {
         : filters.ownerId
   }
 
+  // 'unassigned'/'none' selects requests raised for the customer organization as
+  // a whole, mirroring how ownerId spells its own null case.
+  if (filters?.requesterUserId !== undefined) {
+    where.requesterUserId =
+      filters.requesterUserId === 'unassigned' ||
+      filters.requesterUserId === 'none'
+        ? null
+        : filters.requesterUserId
+  }
+
   if (filters?.priority) {
     where.priority = filters.priority
   }
@@ -86,6 +96,8 @@ export function create(params: {
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
+  requesterUserId?: string | null
+  requesterContactId?: string | null
   createdBy: string
 }) {
   return prisma.$transaction(async (tx) => {
@@ -109,6 +121,8 @@ export function create(params: {
         teamId: params.teamId ?? null,
         assigneeId: params.assigneeId ?? null,
         ownerId: params.ownerId ?? null,
+        requesterUserId: params.requesterUserId ?? null,
+        requesterContactId: params.requesterContactId ?? null,
         createdBy: params.createdBy,
       },
     })
@@ -144,6 +158,8 @@ export function update(
     source?: RequestSource
     teamId?: string | null
     assigneeId?: string | null
+    requesterUserId?: string | null
+    requesterContactId?: string | null
     resolvedAt?: Date | null
     closedAt?: Date | null
   }

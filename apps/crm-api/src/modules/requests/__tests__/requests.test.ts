@@ -62,6 +62,9 @@ const requestRow = {
   source: 'CRM',
   teamId: null,
   assigneeId: null,
+  ownerId: null,
+  requesterUserId: 'usr_requester_1',
+  requesterContactId: 'con_1',
   createdBy: 'usr_1',
   resolvedAt: null,
   closedAt: null,
@@ -326,6 +329,99 @@ describe('CRM request routes', () => {
     expect(repository.update).toHaveBeenCalledWith('crm_req_1', {
       status: 'RESOLVED',
       resolvedAt: expect.any(Date),
+    })
+  })
+})
+
+describe('requests - the person who raised it', () => {
+  it('serializes the requester onto the resource', async () => {
+    const { body } = await requestJson(
+      'GET',
+      '/v1/organizations/org_1/requests/crm_req_1'
+    )
+
+    expect(body.data.requesterUserId).toBe('usr_requester_1')
+    expect(body.data.requesterContactId).toBe('con_1')
+    expect(body.error).toBeNull()
+  })
+
+  it('serializes a null requester for a request raised for the organization', async () => {
+    repository.retrieve.mockResolvedValue({
+      ...requestRow,
+      requesterUserId: null,
+      requesterContactId: null,
+    })
+
+    const { body } = await requestJson(
+      'GET',
+      '/v1/organizations/org_1/requests/crm_req_1'
+    )
+
+    expect(body.data.requesterUserId).toBeNull()
+    expect(body.data.requesterContactId).toBeNull()
+  })
+
+  it('persists the requester given on create', async () => {
+    await requestsService.create('org_1', {
+      customerId: 'crm_cus_1',
+      subject: 'Cannot sign in',
+      requesterUserId: 'usr_requester_1',
+      requesterContactId: 'con_1',
+      createdBy: 'usr_1',
+    })
+
+    expect(repository.create).toHaveBeenCalledTimes(1)
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: 'crm_tenant_1',
+        customerId: 'crm_cus_1',
+        requesterUserId: 'usr_requester_1',
+        requesterContactId: 'con_1',
+      })
+    )
+  })
+
+  it('creates a request with no requester when none is given', async () => {
+    await requestsService.create('org_1', {
+      customerId: 'crm_cus_1',
+      subject: 'Quarterly invoice query',
+      createdBy: 'usr_1',
+    })
+
+    const [params] = repository.create.mock.calls[0]
+    expect(params.requesterUserId).toBeUndefined()
+    expect(params.requesterContactId).toBeUndefined()
+  })
+
+  it('reassigns the requester on update', async () => {
+    await requestsService.update('org_1', 'crm_req_1', {
+      requesterUserId: 'usr_requester_2',
+      requesterContactId: 'con_2',
+    })
+
+    expect(repository.update).toHaveBeenCalledWith('crm_req_1', {
+      requesterUserId: 'usr_requester_2',
+      requesterContactId: 'con_2',
+    })
+  })
+
+  it('clears the requester when update passes null', async () => {
+    await requestsService.update('org_1', 'crm_req_1', {
+      requesterUserId: null,
+      requesterContactId: null,
+    })
+
+    expect(repository.update).toHaveBeenCalledWith('crm_req_1', {
+      requesterUserId: null,
+      requesterContactId: null,
+    })
+  })
+
+  it('forwards a requesterUserId filter to the repository', async () => {
+    await requestsService.list('org_1', { requesterUserId: 'usr_requester_1' })
+
+    expect(repository.list).toHaveBeenCalledWith('crm_tenant_1', {
+      requesterUserId: 'usr_requester_1',
     })
   })
 })

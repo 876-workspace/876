@@ -23,6 +23,13 @@ export interface CrmRequest {
   teamId: string | null
   assigneeId: string | null
   ownerId: string | null
+  /**
+   * The 876 account that raised this request, when a named person did. Null on
+   * a request standing for the customer organization as a whole.
+   */
+  requesterUserId: string | null
+  /** The registry contact that raised this request, when one is known. */
+  requesterContactId: string | null
   createdBy: string
   resolvedAt: number | null
   closedAt: number | null
@@ -39,6 +46,7 @@ export interface ListRequestsFilter {
   subcategoryId?: string | null
   ownerId?: string | null
   priority?: RequestPriority
+  requesterUserId?: string | null
 }
 
 export interface CreateRequestInput {
@@ -53,6 +61,8 @@ export interface CreateRequestInput {
   teamId?: string | null
   assigneeId?: string | null
   ownerId?: string | null
+  requesterUserId?: string | null
+  requesterContactId?: string | null
   createdBy: string
 }
 
@@ -66,6 +76,8 @@ export interface UpdateRequestInput {
   teamId?: string | null
   assigneeId?: string | null
   ownerId?: string | null
+  requesterUserId?: string | null
+  requesterContactId?: string | null
 }
 
 export interface DeleteRequestInput {

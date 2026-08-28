@@ -2,8 +2,8 @@ import { PageBreadcrumb } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { requireSession } from '@/lib/auth/guards'
+import { RequestCreateForm } from '@/features/support/components/request-create-form'
 import { resolveOrg } from '../../_data'
-import { RequestCreateForm } from './_components/request-create-form'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -27,7 +27,7 @@ export default async function NewRequestPage({ params }: Props) {
       </div>
       <RequestCreateForm
         organizationId={org.id}
-        slug={slug}
+        requestsHref={`/orgs/${slug}/requests`}
         currentUserId={session.id}
       />
     </div>

@@ -222,6 +222,32 @@ describe('requests.routes - validation and envelopes', () => {
     })
     expect(res.status).toBe(400)
   })
+  it('returns 400 when requesterUserId exceeds the column length', async () => {
+    const res = await req('POST', '/v1/organizations/org_1/requests', {
+      customerId: 'crm_cus_1',
+      subject: 'Too long',
+      requesterUserId: 'u'.repeat(161),
+      createdBy: 'usr_1',
+    })
+    expect(res.status).toBe(400)
+    expect(repository.create).not.toHaveBeenCalled()
+  })
+  it('accepts a request carrying a requester', async () => {
+    const res = await req('POST', '/v1/organizations/org_1/requests', {
+      customerId: 'crm_cus_1',
+      subject: 'Cannot sign in',
+      requesterUserId: 'usr_requester_1',
+      requesterContactId: 'con_1',
+      createdBy: 'usr_1',
+    })
+    expect(res.status).toBe(201)
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requesterUserId: 'usr_requester_1',
+        requesterContactId: 'con_1',
+      })
+    )
+  })
   it('returns 400 for empty body on update', async () => {
     const res = await req(
       'PATCH',

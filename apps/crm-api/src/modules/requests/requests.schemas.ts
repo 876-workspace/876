@@ -175,6 +175,7 @@ export const listRequestsQuerySchema = z.object({
   categoryId: z.string().trim().optional(),
   subcategoryId: z.string().trim().optional(),
   ownerId: z.string().trim().optional(),
+  requesterUserId: z.string().trim().optional(),
   priority: requestPrioritySchema.optional(),
 })
 
@@ -189,6 +190,8 @@ export const createRequestBodySchema = z.object({
   source: requestSourceSchema.optional(),
   teamId: z.string().trim().max(160).nullable().optional(),
   assigneeId: z.string().trim().max(160).nullable().optional(),
+  requesterUserId: z.string().trim().max(160).nullable().optional(),
+  requesterContactId: z.string().trim().max(160).nullable().optional(),
   createdBy: z.string().min(1),
 })
 
@@ -203,6 +206,8 @@ export const updateRequestBodySchema = z
     source: requestSourceSchema.optional(),
     teamId: z.string().trim().max(160).nullable().optional(),
     assigneeId: z.string().trim().max(160).nullable().optional(),
+    requesterUserId: z.string().trim().max(160).nullable().optional(),
+    requesterContactId: z.string().trim().max(160).nullable().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Provide at least one field to update.',
