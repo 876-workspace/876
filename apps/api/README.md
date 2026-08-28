@@ -85,8 +85,10 @@ A large surface is split further per resource group — see `directory`,
 | `billing`                                                                                                                                                                           | `/billing`       | Billing accounts, subscriptions, dispatch.           |
 | `directory`, `geo`, `addresses`, `products`, `modules`, `onboarding`, `communications`, `mobile-numbers`, `devices`, `sessions`, `auth-attempts`, `audit-events`, `twilio-webhooks` | various          | Reference data and supporting resources.             |
 
-Background loops live in `src/workers/` and are **not** started from the boot
-path; the seed CLI lives in `src/seeds/`.
+Background loops live in `src/workers/`. The long-running container entrypoint
+starts finance provisioning when enabled and starts Billing customer sync when
+the Billing URL and internal key are configured. The seed CLI lives in
+`src/seeds/`.
 
 ## Frontend Access
 

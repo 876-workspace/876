@@ -94,7 +94,7 @@ command is how a session ends up narrating a pass that never happened
 | Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
 | Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
 | Services            | **All 10** in `src/services/` — `identity-sync`, `provisioning`, `identification-secrets`, `features`, `provisioning-catalog`, `organization-bootstrap`, `finance-provisioning`, `billing-customer-sync`, `auth-telemetry`, `auth`                                                                |
-| Workers             | `src/workers/` — `billing-customer-dispatch`, `finance-provisioning-dispatch`. Exported but **not wired into the boot path**.                                                                                                                                                                     |
+| Workers             | `src/workers/` — `billing-customer-dispatch`, `finance-provisioning-dispatch`. Both are wired into the long-running container boot path.                                                                                                                                                          |
 | Test helpers        | `src/test/mocked.ts` — `Mocked<T>`, the only correct way to type a mocked repository or provider in this repo                                                                                                                                                                                     |
 
 ### Modules migrated (22 of 22)
@@ -383,9 +383,9 @@ per-resource-group files sharing one prefix — rather than one flat file set.
 #### Phase 3 — workers and seeds
 
 - `workers/` — **two of three done.** `billing-customer-dispatch` and
-  `finance-provisioning-dispatch` are ported and tested; they are exported but
-  **deliberately not wired into the boot path**, so whoever does the cutover
-  chooses where they start. `services/feature_flag_migration.py` (204) remains.
+  `finance-provisioning-dispatch` are ported, tested, and started by the
+  long-running container entrypoint. `services/feature_flag_migration.py` (204)
+  remains.
 - Startup seeds: `services/feature_seeds.py` (547),
   `services/provisioning_seeds.py` (361), `services/plan_seeds.py` (186),
   `services/geo_seeds.py` (184), `services/bootstrap.py` (167).
