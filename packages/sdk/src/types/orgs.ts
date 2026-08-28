@@ -351,6 +351,7 @@ export const sdk876OrgMemberSchema = z.strictObject({
   user_id: z.string(),
   role: z.string(),
   role_id: z.string().nullable(),
+  position: z.string().nullable(),
   status: z.string(),
   first_name: z.string().nullable(),
   last_name: z.string().nullable(),
