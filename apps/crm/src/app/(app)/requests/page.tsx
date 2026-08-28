@@ -1,3 +1,4 @@
+import { AppError } from '@876/ui/app-error'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
@@ -6,9 +7,9 @@ import {
 } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import type { RequestStatus } from '@/types/crm'
 
 import {
@@ -134,16 +135,27 @@ async function RequestsListData({
       $876.departments.list(context.orgId),
       $876.organizationMembers.list(context.orgId),
     ])
-  if (requestsResult.error) throw new Error(requestsResult.error.message)
-  if (customersResult.error) throw new Error(customersResult.error.message)
 
-  // The directory is enrichment, so a failure here must not take the queue
-  // down — but it must not pass silently either. Swallowing it with `?? []` is
-  // what made a broken members call look like a page full of raw `user_…` ids
-  // instead of an error anyone could find.
-  // Flattened to a string: an error object logged as a second argument renders
-  // as `{}` in the Next.js overlay, which is how the first pass at this told us
-  // the call failed without telling us why.
+  if (requestsResult.error)
+    return (
+      <AppError
+        title="Requests couldn't be loaded"
+        error={requestsResult.error}
+        variant="page"
+      />
+    )
+
+  if (customersResult.error)
+    return (
+      <AppError
+        title="Customer information couldn't be loaded"
+        error={customersResult.error}
+        variant="page"
+      />
+    )
+
+  // Directory data only enriches the queue. Keep the requests usable and show
+  // the registered failure instead of hiding it behind a console-only log.
   if (departmentsResult.error)
     console.error(
       `[crm/requests] team directory unavailable: ${describeError(departmentsResult.error)}`
@@ -179,8 +191,6 @@ async function RequestsListData({
 
   const membersByUserId = new Map(members.map((m) => [m.userId, m]))
 
-  // The party, not its contact: a business row is titled by the company and
-  // drawn with a squared avatar, which is what `isBusiness` carries.
   const customersById = new Map(
     customersResult.data.data.map(({ profile, customer }) => [
       profile.id,
@@ -204,9 +214,6 @@ async function RequestsListData({
       createdAt: request.createdAt,
       customerName: customer?.name ?? 'Unknown customer',
       customerIsBusiness: customer?.isBusiness ?? false,
-      // An opaque id is not a name. When the directory cannot resolve the
-      // assignee, the row says the request is assigned without inventing a
-      // label for whom — and never claims it is unassigned.
       isAssigned: Boolean(request.assigneeId),
       assigneeName: assignee?.name ?? null,
       assigneeAvatar: assignee?.avatar ?? null,
@@ -217,16 +224,32 @@ async function RequestsListData({
   })
 
   return (
-    <RequestsList
-      requests={rows}
-      filterBar={
-        <RequestsFilterBar
-          selectedTeam={team}
-          selectedAssignee={assignee}
-          departments={departments}
-          members={members}
+    <div className="space-y-3">
+      {departmentsResult.error ? (
+        <AppError
+          title="Team information is temporarily unavailable"
+          error={departmentsResult.error}
+          variant="inline"
         />
-      }
-    />
+      ) : null}
+      {membersResult.error ? (
+        <AppError
+          title="Member information is temporarily unavailable"
+          error={membersResult.error}
+          variant="inline"
+        />
+      ) : null}
+      <RequestsList
+        requests={rows}
+        filterBar={
+          <RequestsFilterBar
+            selectedTeam={team}
+            selectedAssignee={assignee}
+            departments={departments}
+            members={members}
+          />
+        }
+      />
+    </div>
   )
 }
