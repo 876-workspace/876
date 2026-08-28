@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
@@ -20,7 +21,11 @@ import {
 import { $876 } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
 import type { CrmRequestStatus } from '@/types/crm'
-import { resolveOrg, resolveOrgCustomerWithUs } from '../../_data'
+import {
+  resolveOrg,
+  resolveOrgCustomerWithUs,
+  resolveOrgResult,
+} from '../../_data'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -34,14 +39,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org?.name ?? slug} • Requests - Organizations` }
 }
 
-/**
- * Support requests this organization has raised **with 876**.
- *
- * The counterpart to `/orgs/[slug]/workspace/crm`, and the distinction is the
- * whole point: this reads *our* CRM tenant filtered to the customer record that
- * represents this organization, while the workspace reads the organization's
- * own tenant. Same product, opposite direction.
- */
 export default async function OrganizationSupportPage({
   params,
   searchParams,
@@ -77,23 +74,48 @@ async function SupportRequestsData({
   status: CrmRequestStatus | 'all'
 }) {
   const { slug } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const orgResult = await resolveOrgResult(slug)
+  if (orgResult.error?.code === 'organization/not-found') notFound()
+  if (orgResult.error)
+    return (
+      <AppError
+        title="Organization details are temporarily unavailable"
+        error={orgResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+  if (!orgResult.data) notFound()
 
   const platformOrg = await getPlatformOrganization()
   if (!platformOrg) return <NoCrmWorkspace />
 
-  const customer = await resolveOrgCustomerWithUs(org.id)
-  // No customer record means this organization has never been in contact — a
-  // state, not a failure, and a normal one for a brand-new organization.
-  if (!customer) return <NoSupportHistory />
+  const customerResult = await resolveOrgCustomerWithUs(orgResult.data.id)
+  if (customerResult.error)
+    return (
+      <AppError
+        title="Support customer record is temporarily unavailable"
+        error={customerResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+  if (!customerResult.data) return <NoSupportHistory />
 
   const result = await $876.requests.list(platformOrg.id, {
-    customerId: customer.profile.id,
+    customerId: customerResult.data.profile.id,
     status: status === 'all' ? undefined : status,
   })
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    return (
+      <AppError
+        title="Support requests are temporarily unavailable"
+        error={result.error}
+        variant="banner"
+        showCode
+      />
+    )
 
   const context = await loadRequestRowContext(platformOrg.id)
 
