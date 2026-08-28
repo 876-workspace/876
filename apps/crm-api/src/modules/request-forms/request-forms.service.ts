@@ -23,9 +23,6 @@ async function requireTenant(organizationId: string) {
   return tenant
 }
 
-// A stored definition that no longer satisfies the current schema must not take
-// the whole list endpoint down with it. Read paths degrade to an empty field
-// list; the write and submit paths still parse strictly.
 function readDefinition(value: unknown): RequestFormDefinition | null {
   const result = requestFormDefinitionSchema.safeParse(value)
   return result.success ? result.data : null
@@ -51,7 +48,7 @@ function serialize(
     defaultCategoryId: form.defaultCategoryId,
     defaultSubcategoryId: form.defaultSubcategoryId,
     defaultTeamId: form.defaultTeamId,
-    defaultPriority: form.defaultPriority,
+    defaultPriorityId: form.defaultPriorityId,
     confirmationTitle: form.confirmationTitle,
     confirmationMessage: form.confirmationMessage,
     createdBy: form.createdBy,
@@ -81,30 +78,22 @@ function asText(value: unknown, max: number) {
   return value.trim()
 }
 
-// Called only for a field that has a non-empty answer; empties are dropped by
-// `validateAnswers` before it gets here.
 function normalizeAnswer(field: RequestFormField, value: unknown): unknown {
   switch (field.type) {
     case 'INSTRUCTIONS':
       return undefined
-
     case 'TEXT':
     case 'PHONE':
       return asText(value, 2_000)
-
     case 'EMAIL': {
       const email = asText(value, 2_000)
       if (!/^\S+@\S+\.\S+$/.test(email)) invalid()
       return email
     }
-
     case 'DATE': {
-      // `Date.parse` is not a calendar check: it rolls 2026-02-30 forward into
-      // March rather than rejecting it. Round-trip the parts instead.
       const date = asText(value, 2_000)
       const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
       if (!match) invalid()
-
       const [year, month, day] = match.slice(1).map(Number)
       const parsed = new Date(Date.UTC(year, month - 1, day))
       if (
@@ -113,27 +102,21 @@ function normalizeAnswer(field: RequestFormField, value: unknown): unknown {
         parsed.getUTCDate() !== day
       )
         invalid()
-
       return date
     }
-
     case 'LONG_TEXT':
       return asText(value, 20_000)
-
     case 'NUMBER':
       if (typeof value !== 'number' || !Number.isFinite(value)) invalid()
       return value
-
     case 'CHECKBOX':
       if (typeof value !== 'boolean') invalid()
       return value
-
     case 'SELECT': {
       const allowed = new Set(field.options.map((option) => option.value))
       if (typeof value !== 'string' || !allowed.has(value)) invalid()
       return value
     }
-
     case 'MULTI_SELECT': {
       const allowed = new Set(field.options.map((option) => option.value))
       if (
@@ -163,7 +146,6 @@ function validateAnswers(
   for (const field of fields) {
     const value = answers[field.key]
     if (field.required && isEmpty(value)) invalid()
-
     if (!isEmpty(value)) normalized[field.key] = normalizeAnswer(field, value)
   }
 
@@ -236,21 +218,20 @@ export async function retrieve(organizationId: string, formId: string) {
   return form ? serialize(form) : null
 }
 
-// Routing defaults are resolved against the tenant when the form is saved. A
-// form that names a deleted category would otherwise fail at submission time,
-// in front of the customer filling it in.
 async function assertRoutingDefaults(
   organizationId: string,
   input: {
     defaultCategoryId?: string | null
     defaultSubcategoryId?: string | null
     defaultTeamId?: string | null
+    defaultPriorityId?: string | null
   }
 ) {
   await requests.assertRouting(organizationId, {
     categoryId: input.defaultCategoryId ?? null,
     subcategoryId: input.defaultSubcategoryId ?? null,
     teamId: input.defaultTeamId ?? null,
+    priorityId: input.defaultPriorityId ?? null,
   })
 }
 
@@ -287,12 +268,13 @@ export async function update(
       input.defaultTeamId === undefined
         ? current.defaultTeamId
         : input.defaultTeamId,
+    defaultPriorityId:
+      input.defaultPriorityId === undefined
+        ? current.defaultPriorityId
+        : input.defaultPriorityId,
   })
 
   const publishing = input.status === 'PUBLISHED'
-  // The definition being published is the contract every future submission is
-  // validated against, so it is parsed strictly here even when it is carried
-  // over unchanged from the stored draft.
   const definition = input.definition ?? readDefinition(current.definition)
   if (publishing && !definition) throw crmError('crm/form-invalid-definition')
 
@@ -374,7 +356,7 @@ export async function submit(
       description,
       categoryId: form.defaultCategoryId ?? undefined,
       subcategoryId: form.defaultSubcategoryId ?? undefined,
-      priority: form.defaultPriority ?? undefined,
+      priorityId: form.defaultPriorityId ?? undefined,
       source: 'WEB',
       teamId: form.defaultTeamId ?? undefined,
       requesterUserId: input.requesterUserId ?? null,

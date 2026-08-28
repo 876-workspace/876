@@ -74,6 +74,7 @@ export async function assertRouting(
     categoryId?: string | null
     subcategoryId?: string | null
     teamId?: string | null
+    priorityId?: string | null
   }
 ) {
   const tenant = await requireTenant(organizationId)
@@ -97,6 +98,9 @@ export async function assertRouting(
     !(await repository.teamExists(tenant.id, routing.teamId))
   )
     throw crmError('crm/team-not-found')
+
+  if (routing.priorityId)
+    await priorities.requireActiveForTenant(tenant.id, routing.priorityId)
 }
 
 async function resolvePriority(
