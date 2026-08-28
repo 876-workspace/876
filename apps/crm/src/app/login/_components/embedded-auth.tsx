@@ -19,7 +19,13 @@ import { useEffect } from 'react'
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'microsoft', 'apple']
 const authClient = create876Client({ baseUrl: '/api' })
 
-export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
+export function EmbeddedAuth({
+  returnTo,
+  authError,
+}: {
+  returnTo: string
+  authError?: string | null
+}) {
   useEffect(() => {
     const value = encodeURIComponent(resolveRelativeReturnTo(returnTo, '/'))
     const secure = window.location.protocol === 'https:' ? '; Secure' : ''
@@ -35,6 +41,9 @@ export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
           appName: '876 CRM',
           appLogo: <AppLogo name="876 CRM" />,
           socialProviders: SOCIAL_PROVIDERS,
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             window.location.assign(
               `/auth/complete?returnTo=${encodeURIComponent(returnTo)}`
@@ -48,7 +57,11 @@ export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
 
       <AuthFooterLink>
         New to 876 CRM?{' '}
-        <Link href="/register" prefetch={false} className="auth-link auth-link-primary">
+        <Link
+          href="/register"
+          prefetch={false}
+          className="auth-link auth-link-primary"
+        >
           Create a workspace
         </Link>
       </AuthFooterLink>

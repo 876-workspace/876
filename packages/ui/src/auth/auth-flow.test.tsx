@@ -42,3 +42,63 @@ describe('AuthFlow social login', () => {
     await waitFor(() => expect(googleButton).toBeEnabled())
   })
 })
+
+describe('AuthFlow initial notice', () => {
+  function renderWithNotice(initialNotice?: {
+    type: 'error' | 'success' | 'info'
+    message: string
+  }) {
+    const client = {
+      getProviders: vi.fn(() => new Promise<never>(() => undefined)),
+      socialLogin: vi.fn(() => new Promise<never>(() => undefined)),
+    } as unknown as SDK876AuthClient
+
+    render(
+      <AuthProvider
+        config={{
+          mode: 'enterprise',
+          client,
+          socialProviders: ['google'],
+          initialNotice,
+        }}
+      >
+        <AuthFlow />
+      </AuthProvider>
+    )
+
+    return client
+  }
+
+  it('shows a failed social callback instead of a blank sign-in form', () => {
+    renderWithNotice({
+      type: 'error',
+      message: 'We could not complete sign-in with that provider.',
+    })
+
+    expect(
+      screen.getByText('We could not complete sign-in with that provider.')
+    ).toBeInTheDocument()
+  })
+
+  it('renders no notice when the login page has nothing to report', () => {
+    renderWithNotice()
+
+    expect(
+      screen.queryByText(/could not complete sign-in/i)
+    ).not.toBeInTheDocument()
+  })
+
+  it('clears the notice once the user retries a provider', async () => {
+    renderWithNotice({ type: 'error', message: 'Sign-in was cancelled.' })
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' })
+    )
+
+    await waitFor(() =>
+      expect(
+        screen.queryByText('Sign-in was cancelled.')
+      ).not.toBeInTheDocument()
+    )
+  })
+})
