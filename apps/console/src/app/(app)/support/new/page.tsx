@@ -4,7 +4,10 @@ import { Suspense } from 'react'
 
 import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
 import { RequestCreateForm } from '@/features/crm/components/request-create-form'
-import { loadOrgRequestCustomers } from '@/features/crm/request-data'
+import {
+  loadOrgPriorities,
+  loadOrgRequestCustomers,
+} from '@/features/crm/request-data'
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
@@ -30,7 +33,10 @@ async function RequestCreateFormData() {
     requireSession('/support/new'),
   ])
   if (!org) return <PlatformOrganizationUnavailable />
-  const customers = await loadOrgRequestCustomers(org.id)
+  const [customers, priorities] = await Promise.all([
+    loadOrgRequestCustomers(org.id),
+    loadOrgPriorities(org.id),
+  ])
 
   return (
     <RequestCreateForm
@@ -38,6 +44,7 @@ async function RequestCreateFormData() {
       requestsHref="/support"
       currentUserId={session.id}
       customers={customers}
+      priorities={priorities}
     />
   )
 }
