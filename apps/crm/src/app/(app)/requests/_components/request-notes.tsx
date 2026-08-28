@@ -377,10 +377,15 @@ function NoteCard({
   const internal = note.internal && !isDescription
 
   return (
-    <article className="876-card group overflow-hidden">
+    <article
+      className={cn(
+        '876-card group before:border-border relative before:absolute before:top-3 before:-left-2 before:z-0 before:size-4 before:rotate-45 before:border-b before:border-l',
+        internal ? 'before:bg-warning/[0.07]' : 'before:bg-muted/25'
+      )}
+    >
       <div
         className={cn(
-          'flex items-center justify-between gap-2 border-b px-4 py-2',
+          'relative z-10 flex items-center justify-between gap-2 rounded-t-[inherit] border-b px-4 py-2',
           internal ? 'bg-warning/[0.07]' : 'bg-muted/25'
         )}
       >
@@ -416,9 +421,13 @@ function NoteCard({
             </Badge>
           ) : null}
           {internal ? (
-            <Badge variant="warning" className="px-1.5 text-[0.6875rem]">
+            <Badge
+              variant="warning"
+              className="size-5 p-0"
+              aria-label="Internal note"
+              title="Internal note"
+            >
               <LockClosedIcon className="size-3 shrink-0" aria-hidden="true" />
-              Internal note
             </Badge>
           ) : null}
         </div>
@@ -462,7 +471,7 @@ function NoteCard({
         )}
       </div>
 
-      <div className="px-4 py-3">
+      <div className="bg-background relative z-10 rounded-b-[inherit] px-4 py-3">
         {editing ? (
           <div className="flex flex-col gap-2">
             <Editor
