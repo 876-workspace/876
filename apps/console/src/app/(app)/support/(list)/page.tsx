@@ -5,6 +5,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
+import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
 import { REQUESTS_SKELETON_COLUMNS } from '@/features/support/components/requests-skeleton-columns'
 import { RequestsTable } from '@/features/support/components/requests-table'
 import {
@@ -57,6 +58,7 @@ async function RequestsData({ status }: { status: CrmRequestStatus | 'all' }) {
   const result = await $876.requests.list(org.id, {
     status: status === 'all' ? undefined : status,
   })
+  if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
   if (result.error) throw new Error(result.error.message)
 
   return (

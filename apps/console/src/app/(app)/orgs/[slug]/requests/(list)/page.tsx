@@ -11,6 +11,7 @@ import {
   REQUEST_STATUS_OPTIONS,
 } from '@/features/support/request-status'
 import { REQUESTS_SKELETON_COLUMNS } from '@/features/support/components/requests-skeleton-columns'
+import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
 import { RequestsTable } from '@/features/support/components/requests-table'
 import type { CrmRequestStatus } from '@/types/crm'
 import { resolveOrg } from '../../_data'
@@ -83,6 +84,10 @@ async function RequestsData({
   const result = await $876.requests.list(org.id, {
     status: status === 'all' ? undefined : status,
   })
+  // A missing workspace is a state, not a failure — an organization gets one the
+  // first time it uses CRM. Everything else still reaches the error boundary,
+  // because an unreachable CRM must not read as an organization with no requests.
+  if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
   if (result.error) throw new Error(result.error.message)
 
   return (

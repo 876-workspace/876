@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 
 import { $876 } from '@/lib/876'
 import { requireSession } from '@/lib/auth/guards'
+import { NoCrmWorkspace } from '@/features/support/components/no-crm-workspace'
 import { RequestManager } from '@/features/support/components/request-manager'
 import { resolveOrg } from '../../_data'
 
@@ -38,6 +39,8 @@ async function RequestData({ params }: Props) {
     ])
 
   if (requestResult.error?.code === 'crm/request-not-found') notFound()
+  if (requestResult.error?.code === 'crm/tenant-not-found')
+    return <NoCrmWorkspace />
   if (requestResult.error) throw new Error(requestResult.error.message)
   if (tasksResult.error) throw new Error(tasksResult.error.message)
   if (remindersResult.error) throw new Error(remindersResult.error.message)
