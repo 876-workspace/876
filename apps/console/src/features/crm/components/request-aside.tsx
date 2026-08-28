@@ -1,9 +1,10 @@
 import Link from 'next/link'
 
+import { formatDateTime } from '@876/core/timestamps'
+import { AppError } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { CategoryIcon } from '@876/ui/category-icons'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Skeleton } from '@876/ui/skeleton'
 import {
   ArrowRight,
   EnvelopeIcon,
@@ -11,13 +12,13 @@ import {
   InformationCircleIcon,
   Phone,
 } from '@876/ui/icons'
-import { formatDateTime } from '@876/core/timestamps'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { CopyButton } from './copy-button'
 import { RequestSourceIcon } from './request-source-icon'
 import { categoryColorClass } from '../category-color'
-import { formatSource } from '../request-format'
 import { resolveCustomerIdentity } from '../customer-identity'
+import { formatSource } from '../request-format'
 import {
   loadOrgCategoryIndex,
   loadOrgCustomer,
@@ -26,10 +27,6 @@ import {
   resolveRequestOrgId,
 } from '../request-data'
 
-/**
- * The record's right column: who the request is for, and the request's own
- * reference data.
- */
 export async function RequestAside({
   requestId,
   organizationId,
@@ -44,24 +41,46 @@ export async function RequestAside({
   const orgId = await resolveRequestOrgId(organizationId)
   if (!orgId) return null
 
-  const { request } = await loadOrgRequest(orgId, requestId, baseHref)
+  const requestResult = await loadOrgRequest(orgId, requestId, baseHref)
+  if (!requestResult.request)
+    return requestResult.error ? (
+      <AppError
+        title="Request details are temporarily unavailable"
+        error={requestResult.error}
+        variant="banner"
+        showCode
+      />
+    ) : null
 
-  const [{ customer }, categories] = await Promise.all([
+  const request = requestResult.request
+  const [customerResult, categoryResult] = await Promise.all([
     loadOrgCustomer(orgId, request.customerId),
     loadOrgCategoryIndex(orgId),
   ])
   const category = request.categoryId
-    ? categories.get(request.categoryId)
+    ? categoryResult.categories.get(request.categoryId)
     : undefined
 
-  const identity = resolveCustomerIdentity(customer, request.customerId)
+  const identity = resolveCustomerIdentity(
+    customerResult.customer,
+    request.customerId
+  )
   const customerSubtitle = identity.legalName ?? identity.typeLabel
-
   const targetCustomerHref =
     customerHref ?? requestCustomerHref(baseHref, request.customerId)
+  const enrichmentError = customerResult.error ?? categoryResult.error
 
   return (
-    <>
+    <div className="space-y-3">
+      {enrichmentError ? (
+        <AppError
+          title="Some customer or category details are temporarily incomplete"
+          error={enrichmentError}
+          variant="inline"
+          showCode
+        />
+      ) : null}
+
       <section className="876-card overflow-hidden">
         <div className="bg-muted/20 flex items-center justify-between gap-2 border-b px-4 py-3">
           <span className="876-eyebrow text-[0.6875rem]">Customer</span>
@@ -105,10 +124,7 @@ export async function RequestAside({
                     href={`mailto:${identity.email}`}
                     className="text-foreground/80 hover:text-info flex items-center gap-1.5 truncate transition-colors"
                   >
-                    <EnvelopeIcon
-                      className="text-muted-foreground size-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
+                    <EnvelopeIcon className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">{identity.email}</span>
                   </a>
                   <CopyButton value={identity.email} label="email" />
@@ -120,10 +136,7 @@ export async function RequestAside({
                     href={`tel:${identity.phone}`}
                     className="text-foreground/80 hover:text-info flex items-center gap-1.5 truncate transition-colors"
                   >
-                    <Phone
-                      className="text-muted-foreground size-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
+                    <Phone className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">{identity.phone}</span>
                   </a>
                   <CopyButton value={identity.phone} label="phone number" />
@@ -153,13 +166,8 @@ export async function RequestAside({
                         href={`mailto:${identity.contact.email}`}
                         className="text-muted-foreground hover:text-info mt-1 flex items-center gap-1.5 truncate text-[0.75rem] transition-colors"
                       >
-                        <EnvelopeIcon
-                          className="size-3 shrink-0"
-                          aria-hidden="true"
-                        />
-                        <span className="truncate">
-                          {identity.contact.email}
-                        </span>
+                        <EnvelopeIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <span className="truncate">{identity.contact.email}</span>
                       </a>
                     ) : null}
                     {identity.contact.phone ? (
@@ -168,17 +176,13 @@ export async function RequestAside({
                         className="text-muted-foreground hover:text-info mt-1 flex items-center gap-1.5 truncate text-[0.75rem] transition-colors"
                       >
                         <Phone className="size-3 shrink-0" aria-hidden="true" />
-                        <span className="truncate">
-                          {identity.contact.phone}
-                        </span>
+                        <span className="truncate">{identity.contact.phone}</span>
                       </a>
                     ) : null}
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-xs">
-                  No contact on file
-                </p>
+                <p className="text-muted-foreground text-xs">No contact on file</p>
               )}
             </div>
           ) : null}
@@ -197,10 +201,7 @@ export async function RequestAside({
 
       <section className="876-card p-4">
         <h2 className="876-section-title flex items-center gap-2 text-sm">
-          <InformationCircleIcon
-            className="text-muted-foreground size-4 shrink-0"
-            aria-hidden="true"
-          />
+          <InformationCircleIcon className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
           Details
         </h2>
 
@@ -218,20 +219,15 @@ export async function RequestAside({
               <span className="text-muted-foreground">—</span>
             )}
           </DetailRow>
-
           <DetailRow label="Source">
             <span className="text-foreground flex items-center gap-1.5">
               <RequestSourceIcon source={request.source} />
               {formatSource(request.source)}
             </span>
           </DetailRow>
-
           <DetailRow label="Created">
-            <span className="text-foreground">
-              {formatDateTime(request.createdAt)}
-            </span>
+            <span className="text-foreground">{formatDateTime(request.createdAt)}</span>
           </DetailRow>
-
           <div className="border-t pt-3">
             <DetailRow label="Request ID">
               <span className="flex items-center gap-1">
@@ -244,7 +240,7 @@ export async function RequestAside({
           </div>
         </dl>
       </section>
-    </>
+    </div>
   )
 }
 
@@ -280,13 +276,7 @@ export function RequestAsideSkeleton() {
   )
 }
 
-function DetailRow({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <dt className="text-muted-foreground">{label}</dt>
