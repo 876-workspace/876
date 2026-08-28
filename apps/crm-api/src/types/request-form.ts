@@ -32,14 +32,39 @@ const baseFieldSchema = z.object({
   mapping: requestFormFieldMappingSchema.nullable().optional(),
 })
 
+// Each member carries a single literal `type`. A member whose `type` is itself a
+// union does not narrow under `field.type === 'TEXT'`, which silently leaves
+// every text shape in the residual type of the select branches below.
+const placeholder = z.string().trim().max(240).nullable().optional()
+
 const textFieldSchema = baseFieldSchema.extend({
-  type: z.enum(['TEXT', 'LONG_TEXT', 'EMAIL', 'PHONE', 'DATE']),
-  placeholder: z.string().trim().max(240).nullable().optional(),
+  type: z.literal('TEXT'),
+  placeholder,
+})
+
+const longTextFieldSchema = baseFieldSchema.extend({
+  type: z.literal('LONG_TEXT'),
+  placeholder,
+})
+
+const emailFieldSchema = baseFieldSchema.extend({
+  type: z.literal('EMAIL'),
+  placeholder,
+})
+
+const phoneFieldSchema = baseFieldSchema.extend({
+  type: z.literal('PHONE'),
+  placeholder,
+})
+
+const dateFieldSchema = baseFieldSchema.extend({
+  type: z.literal('DATE'),
+  placeholder,
 })
 
 const numberFieldSchema = baseFieldSchema.extend({
   type: z.literal('NUMBER'),
-  placeholder: z.string().trim().max(240).nullable().optional(),
+  placeholder,
 })
 
 const optionSchema = z.object({
@@ -49,7 +74,12 @@ const optionSchema = z.object({
 })
 
 const selectFieldSchema = baseFieldSchema.extend({
-  type: z.enum(['SELECT', 'MULTI_SELECT']),
+  type: z.literal('SELECT'),
+  options: z.array(optionSchema).min(1).max(100),
+})
+
+const multiSelectFieldSchema = baseFieldSchema.extend({
+  type: z.literal('MULTI_SELECT'),
   options: z.array(optionSchema).min(1).max(100),
 })
 
@@ -73,8 +103,13 @@ const instructionsFieldSchema = z.object({
 
 export const requestFormFieldSchema = z.discriminatedUnion('type', [
   textFieldSchema,
+  longTextFieldSchema,
+  emailFieldSchema,
+  phoneFieldSchema,
+  dateFieldSchema,
   numberFieldSchema,
   selectFieldSchema,
+  multiSelectFieldSchema,
   checkboxFieldSchema,
   instructionsFieldSchema,
 ])
@@ -165,8 +200,11 @@ export const createRequestFormInputSchema = z.object({
   createdBy: z.string().trim().min(1).max(160),
 })
 
+// PATCH semantics: every editable field is optional, so publishing a form does
+// not require the caller to resend the whole definition it is publishing.
 export const updateRequestFormInputSchema = createRequestFormInputSchema
   .omit({ createdBy: true })
+  .partial()
   .extend({
     status: requestFormStatusSchema.optional(),
     updatedBy: z.string().trim().min(1).max(160),

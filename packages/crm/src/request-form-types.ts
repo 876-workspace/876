@@ -23,7 +23,27 @@ const baseFieldSchema = z.object({
 })
 
 const textFieldSchema = baseFieldSchema.extend({
-  type: z.enum(['TEXT', 'LONG_TEXT', 'EMAIL', 'PHONE', 'DATE']),
+  type: z.literal('TEXT'),
+  placeholder: z.string().nullable().optional(),
+})
+
+const longTextFieldSchema = baseFieldSchema.extend({
+  type: z.literal('LONG_TEXT'),
+  placeholder: z.string().nullable().optional(),
+})
+
+const emailFieldSchema = baseFieldSchema.extend({
+  type: z.literal('EMAIL'),
+  placeholder: z.string().nullable().optional(),
+})
+
+const phoneFieldSchema = baseFieldSchema.extend({
+  type: z.literal('PHONE'),
+  placeholder: z.string().nullable().optional(),
+})
+
+const dateFieldSchema = baseFieldSchema.extend({
+  type: z.literal('DATE'),
   placeholder: z.string().nullable().optional(),
 })
 
@@ -39,7 +59,12 @@ const optionSchema = z.object({
 })
 
 const selectFieldSchema = baseFieldSchema.extend({
-  type: z.enum(['SELECT', 'MULTI_SELECT']),
+  type: z.literal('SELECT'),
+  options: z.array(optionSchema),
+})
+
+const multiSelectFieldSchema = baseFieldSchema.extend({
+  type: z.literal('MULTI_SELECT'),
   options: z.array(optionSchema),
 })
 
@@ -56,10 +81,18 @@ const instructionsFieldSchema = z.object({
   required: z.literal(false),
 })
 
+// One literal `type` per member, so a consumer rendering a field narrows to the
+// shape it is actually holding — a member whose `type` is itself a union never
+// drops out of the residual type, leaving `options` unreachable.
 export const requestFormFieldSchema = z.discriminatedUnion('type', [
   textFieldSchema,
+  longTextFieldSchema,
+  emailFieldSchema,
+  phoneFieldSchema,
+  dateFieldSchema,
   numberFieldSchema,
   selectFieldSchema,
+  multiSelectFieldSchema,
   checkboxFieldSchema,
   instructionsFieldSchema,
 ])
@@ -140,9 +173,7 @@ export type RequestFormField = z.infer<typeof requestFormFieldSchema>
 export type RequestFormDefinition = z.infer<typeof requestFormDefinitionSchema>
 export type RequestForm = z.infer<typeof requestFormSchema>
 export type RequestFormList = z.infer<typeof requestFormListSchema>
-export type RequestFormSubmission = z.infer<
-  typeof requestFormSubmissionSchema
->
+export type RequestFormSubmission = z.infer<typeof requestFormSubmissionSchema>
 export type RequestFormSubmissionRecord = z.infer<
   typeof requestFormSubmissionRecordSchema
 >
@@ -164,8 +195,10 @@ export interface CreateRequestFormInput {
   createdBy: string
 }
 
-export interface UpdateRequestFormInput
-  extends Omit<CreateRequestFormInput, 'createdBy'> {
+/** PATCH semantics — send only the fields being changed. */
+export interface UpdateRequestFormInput extends Partial<
+  Omit<CreateRequestFormInput, 'createdBy'>
+> {
   status?: RequestFormStatus
   updatedBy: string
 }
