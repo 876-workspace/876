@@ -86,6 +86,7 @@ export function RequestCreateForm({
                 title="Request could not be created"
                 error={error}
                 variant="form"
+                showCode
               />
             ) : null}
             <FormRow label="Subject" htmlFor="subject" required>
