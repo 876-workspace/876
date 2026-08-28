@@ -110,7 +110,9 @@ describe('requestForms - list', () => {
         path: '/v1/organizations/org_1/request-forms',
       })
     )
-    expect(result.data?.data).toEqual([form])
+    // `placement` is defaulted by the schema, so a form serialized before the
+    // field existed still parses and arrives as HOSTED.
+    expect(result.data?.data).toEqual([{ ...form, placement: 'HOSTED' }])
     expect(result.error).toBeNull()
     expect(result.data?.object).toBe('list')
   })

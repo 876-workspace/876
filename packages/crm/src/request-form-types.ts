@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 import { crmRequestSchema, requestPrioritySchema } from './types'
 
+export const requestFormPlacementSchema = z.enum(['HOSTED', 'EMBEDDED'])
+
 export const requestFormStatusSchema = z.enum([
   'DRAFT',
   'PUBLISHED',
@@ -109,6 +111,10 @@ export const requestFormSchema = z.object({
   slug: z.string(),
   description: z.string().nullable(),
   status: requestFormStatusSchema,
+  // Defaulted rather than required: a client deployed ahead of the API must
+  // still parse a form serialized before `placement` existed. An additive
+  // field is not a breaking change, and a required schema would make it one.
+  placement: requestFormPlacementSchema.default('HOSTED'),
   definition: requestFormDefinitionSchema,
   publishedDefinition: requestFormDefinitionSchema.nullable(),
   version: z.number().int().nonnegative(),
@@ -166,6 +172,7 @@ export const requestFormSubmissionListSchema = z.object({
 })
 
 export type RequestFormStatus = z.infer<typeof requestFormStatusSchema>
+export type RequestFormPlacement = z.infer<typeof requestFormPlacementSchema>
 export type RequestFormFieldMapping = z.infer<
   typeof requestFormFieldMappingSchema
 >
@@ -186,6 +193,8 @@ export interface CreateRequestFormInput {
   slug: string
   description?: string | null
   definition: RequestFormDefinition
+  /** Where the form is filled in. Defaults to HOSTED. */
+  placement?: RequestFormPlacement
   defaultCategoryId?: string | null
   defaultSubcategoryId?: string | null
   defaultTeamId?: string | null

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { Shell } from '@/components/shell/shell'
 import { getAppsDirectory } from '@/lib/apps-directory'
+import { get876Client } from '@/lib/876'
 import { getCrmContextResult } from '@/lib/auth/context'
 import { getFeatures } from '@/lib/features'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
@@ -43,6 +44,18 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       slug: orgSlug ?? orgId,
     }
 
+  const $876 = await get876Client()
+  const categoriesResult = await $876.requestCategories.list(orgId)
+  // The widget's categories are the org's own catalog. A failed read leaves
+  // the widget usable without a category rather than taking the shell down.
+  if (categoriesResult.error)
+    console.error(
+      `[crm/shell] request categories unavailable: ${categoriesResult.error.code} — ${categoriesResult.error.message}`
+    )
+  const supportCategories = (categoriesResult.data?.data ?? [])
+    .filter((category) => category.isActive)
+    .map((category) => ({ id: category.id, name: category.name }))
+
   const { uiFeatures } = await getFeatures({
     userId,
     organizationId: orgId,
@@ -60,6 +73,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       orgs={orgs}
       apps={getAppsDirectory()}
       uiFeatures={uiFeatures}
+      supportCategories={supportCategories}
     >
       {children}
     </Shell>

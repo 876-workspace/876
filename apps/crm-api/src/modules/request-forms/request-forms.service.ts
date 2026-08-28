@@ -42,6 +42,7 @@ function serialize(
     slug: form.slug,
     description: form.description,
     status: form.status,
+    placement: form.placement,
     definition: readDefinition(form.definition) ?? { fields: [] },
     publishedDefinition: form.publishedDefinition
       ? readDefinition(form.publishedDefinition)

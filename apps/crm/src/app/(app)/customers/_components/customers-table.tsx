@@ -9,7 +9,9 @@ import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@876/ui/empty'
+import { buttonVariants } from '@876/ui/button'
+import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
+import { UsersIcon } from '@876/ui/icons'
 
 export type CrmCustomerRow = {
   profileId: string
@@ -28,20 +30,32 @@ export type CrmCustomerRow = {
 
 interface Props {
   customers: CrmCustomerRow[]
+  emptyState?: React.ReactNode
 }
 
 const emptyState = (
   <Empty className="py-14">
     <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <UsersIcon aria-hidden="true" />
+      </EmptyMedia>
       <EmptyTitle>No customers yet</EmptyTitle>
-      <EmptyDescription>
-        Add your first customer to get started.
-      </EmptyDescription>
     </EmptyHeader>
+    <EmptyContent>
+      <Link
+        href="/customers/new"
+        className={buttonVariants({ variant: 'info', size: 'sm' })}
+      >
+        Add
+      </Link>
+    </EmptyContent>
   </Empty>
 )
 
-export function CustomersTable({ customers }: Props) {
+export function CustomersTable({
+  customers,
+  emptyState: customEmptyState,
+}: Props) {
   const router = useRouter()
 
   const columns: ColumnDef<CrmCustomerRow, unknown>[] = [
@@ -125,7 +139,7 @@ export function CustomersTable({ customers }: Props) {
       <DataTable
         columns={columns}
         data={customers}
-        emptyState={emptyState}
+        emptyState={customEmptyState ?? emptyState}
         onRowClick={(customer) =>
           router.push(`/customers/${customer.profileId}`)
         }

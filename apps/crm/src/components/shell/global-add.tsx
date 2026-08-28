@@ -24,10 +24,12 @@ export function GlobalAdd() {
         aria-label="Create new"
         className={cn(
           buttonVariants({ variant: 'info', size: 'icon' }),
-          'h-8 w-8 rounded-lg shadow-sm'
+          // A filled button reads heavier than the ghost icons beside it, so it
+          // is set a step smaller to sit level with them optically.
+          'h-7 w-7 rounded-lg shadow-sm'
         )}
       >
-        <PlusIcon className="size-4" strokeWidth={2.5} />
+        <PlusIcon className="size-3.5" strokeWidth={2.5} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
         {CREATE_ACTIONS.map((action) => (

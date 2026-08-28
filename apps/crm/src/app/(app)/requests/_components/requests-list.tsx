@@ -1,8 +1,15 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { buttonVariants } from '@876/ui/button'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
+import {
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
 import { ClipboardDocumentListIcon, User } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 import { cn } from '@876/ui/lib/utils'
@@ -62,9 +69,11 @@ const OPEN_STATUSES = new Set<RequestStatus>(['OPEN', 'IN_PROGRESS'])
 export function RequestsList({
   requests,
   filterBar,
+  emptyState: customEmptyState,
 }: {
   requests: RequestListRow[]
   filterBar?: ReactNode
+  emptyState?: ReactNode
 }) {
   return (
     <div className="876-card overflow-hidden">
@@ -76,14 +85,24 @@ export function RequestsList({
       </div>
 
       {requests.length === 0 ? (
-        <Empty className="border-0">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <ClipboardDocumentListIcon aria-hidden="true" />
-            </EmptyMedia>
-            <EmptyTitle>No requests</EmptyTitle>
-          </EmptyHeader>
-        </Empty>
+        customEmptyState ?? (
+          <Empty className="border-0 py-14">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <ClipboardDocumentListIcon aria-hidden="true" />
+              </EmptyMedia>
+              <EmptyTitle>No requests yet</EmptyTitle>
+            </EmptyHeader>
+            <EmptyContent>
+              <Link
+                href="/requests/new"
+                className={buttonVariants({ variant: 'info', size: 'sm' })}
+              >
+                Add
+              </Link>
+            </EmptyContent>
+          </Empty>
+        )
       ) : (
         <ul className="divide-border/60 divide-y">
           {requests.map((request) => (

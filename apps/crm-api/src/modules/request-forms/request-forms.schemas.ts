@@ -11,11 +11,10 @@ export const requestFormOrganizationParamsSchema = z.object({
   organizationId: z.string().trim().min(1),
 })
 
-export const requestFormParamsSchema = requestFormOrganizationParamsSchema.extend(
-  {
+export const requestFormParamsSchema =
+  requestFormOrganizationParamsSchema.extend({
     id: z.string().trim().min(1),
-  }
-)
+  })
 
 export const listRequestFormsQuerySchema = z.object({
   status: requestFormStatusSchema.optional(),
@@ -39,7 +38,6 @@ export const listFormCustomerRequestsQuerySchema = z
     (value) =>
       Boolean(value.customerOrganizationId) !== Boolean(value.customerUserId),
     {
-      message:
-        'Provide exactly one customerOrganizationId or customerUserId.',
+      message: 'Provide exactly one customerOrganizationId or customerUserId.',
     }
   )

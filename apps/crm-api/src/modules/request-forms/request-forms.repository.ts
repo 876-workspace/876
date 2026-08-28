@@ -41,6 +41,7 @@ export function create(tenantId: string, input: CreateRequestFormInput) {
       slug: input.slug,
       description: input.description ?? null,
       definition: JSON.parse(JSON.stringify(input.definition)),
+      ...(input.placement ? { placement: input.placement } : {}),
       defaultCategoryId: input.defaultCategoryId ?? null,
       defaultSubcategoryId: input.defaultSubcategoryId ?? null,
       defaultTeamId: input.defaultTeamId ?? null,
