@@ -67,6 +67,16 @@ export interface CreateRequestInput {
   createdBy: string
 }
 
+/** Metadata persisted atomically when a Request is created from an intake form. */
+export interface RequestIntakeContext {
+  formId: string
+  formVersion: number
+  definitionSnapshot: unknown
+  answers: Record<string, unknown>
+  customerOrganizationId?: string | null
+  customerUserId?: string | null
+}
+
 export interface UpdateRequestInput {
   subject?: string
   categoryId?: string | null

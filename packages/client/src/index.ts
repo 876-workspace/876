@@ -2,7 +2,7 @@ import {
   create876Client as createPlatformClient,
   type ClientOptions as PlatformClientOptions,
 } from '@876/sdk'
-import { browserNotes, browserCollections } from '@876/widgets/browser'
+import { browserCollections, browserNotes } from '@876/widgets/browser'
 import type { AppId } from './context/types.ts'
 
 export interface ClientOptions extends PlatformClientOptions {
@@ -87,6 +87,20 @@ export type {
   DeleteRequestCategoryInput as CrmRequestCategoryDeleteInput,
   RequestCategoryList as CrmRequestCategoryList,
   UpdateRequestCategoryInput as CrmRequestCategoryUpdateInput,
+  RequestForm as CrmRequestForm,
+  CreateRequestFormInput as CrmRequestFormCreateInput,
+  ListFormCustomerRequestsQuery as CrmListFormCustomerRequestsQuery,
+  ListRequestFormsQuery as CrmListRequestFormsQuery,
+  RequestFormDefinition as CrmRequestFormDefinition,
+  RequestFormField as CrmRequestFormField,
+  RequestFormFieldMapping as CrmRequestFormFieldMapping,
+  RequestFormList as CrmRequestFormList,
+  RequestFormStatus as CrmRequestFormStatus,
+  RequestFormSubmission as CrmRequestFormSubmission,
+  RequestFormSubmissionList as CrmRequestFormSubmissionList,
+  RequestFormSubmissionRecord as CrmRequestFormSubmissionRecord,
+  SubmitRequestFormInput as CrmRequestFormSubmitInput,
+  UpdateRequestFormInput as CrmRequestFormUpdateInput,
   CrmRequestNote,
   CreateRequestNoteInput as CrmRequestNoteCreateInput,
   DeleteRequestNoteInput as CrmRequestNoteDeleteInput,

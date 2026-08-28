@@ -11,15 +11,17 @@ model Tenant {
   createdAt         DateTime     @default(now()) @map("created_at")
   updatedAt         DateTime     @updatedAt @map("updated_at")
 
-  customers            CustomerProfile[]
-  requests             Request[]
-  requestNotes         RequestNote[]
-  teams                Team[]
-  teamMembers          TeamMember[]
-  requestCategories    RequestCategoryDef[]
-  requestSubcategories RequestSubcategory[]
-  requestTasks         RequestTask[]
-  requestReminders     RequestReminder[]
+  customers              CustomerProfile[]
+  requests               Request[]
+  requestNotes           RequestNote[]
+  teams                  Team[]
+  teamMembers            TeamMember[]
+  requestCategories      RequestCategoryDef[]
+  requestSubcategories   RequestSubcategory[]
+  requestTasks           RequestTask[]
+  requestReminders       RequestReminder[]
+  requestForms           RequestForm[]
+  requestFormSubmissions RequestFormSubmission[]
 
   @@map("crm_tenants")
 }

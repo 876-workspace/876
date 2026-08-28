@@ -64,17 +64,18 @@ model Request {
   deletedBy          String?         @map("deleted_by")
   deletionReason     String?         @map("deletion_reason")
 
-  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer    CustomerProfile     @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  tenant         Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer       CustomerProfile        @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
   // Team-reference cleanup is deliberate service behavior; NoAction protects required tenantId.
-  team        Team?               @relation(fields: [tenantId, teamId], references: [tenantId, id], onDelete: NoAction)
+  team           Team?                  @relation(fields: [tenantId, teamId], references: [tenantId, id], onDelete: NoAction)
   // Category deletion is refused while referenced; NoAction is the database backstop.
-  category    RequestCategoryDef? @relation(fields: [tenantId, categoryId], references: [tenantId, id], onDelete: NoAction)
+  category       RequestCategoryDef?    @relation(fields: [tenantId, categoryId], references: [tenantId, id], onDelete: NoAction)
   // Subcategory deletion is refused while referenced; NoAction is the database backstop.
-  subcategory RequestSubcategory? @relation(fields: [tenantId, subcategoryId], references: [tenantId, id], onDelete: NoAction)
-  notes       RequestNote[]
-  tasks       RequestTask[]
-  reminders   RequestReminder[]
+  subcategory    RequestSubcategory?    @relation(fields: [tenantId, subcategoryId], references: [tenantId, id], onDelete: NoAction)
+  notes          RequestNote[]
+  tasks          RequestTask[]
+  reminders      RequestReminder[]
+  formSubmission RequestFormSubmission?
 
   @@unique([tenantId, number])
   @@unique([tenantId, id])

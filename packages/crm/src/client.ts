@@ -2,6 +2,9 @@ import 'server-only'
 
 import { createCustomersResource } from './resources/customers'
 import { createRequestCategoriesResource } from './resources/request-categories'
+import { createRequestFormRequestsResource } from './resources/request-form-requests'
+import { createRequestFormSubmissionsResource } from './resources/request-form-submissions'
+import { createRequestFormsResource } from './resources/request-forms'
 import { createRequestNotesResource } from './resources/request-notes'
 import { createRequestRemindersResource } from './resources/request-reminders'
 import { createRequestTasksResource } from './resources/request-tasks'
@@ -21,6 +24,9 @@ export function create876CrmClient(options: ClientOptions = {}) {
     requestCategories: createRequestCategoriesResource(runtime),
     requestTasks: createRequestTasksResource(runtime),
     requestReminders: createRequestRemindersResource(runtime),
+    requestForms: createRequestFormsResource(runtime),
+    requestFormSubmissions: createRequestFormSubmissionsResource(runtime),
+    requestFormRequests: createRequestFormRequestsResource(runtime),
   }
 }
 

@@ -1,0 +1,66 @@
+enum RequestFormStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model RequestForm {
+  id                       String            @id
+  tenantId                 String            @map("tenant_id")
+  name                     String
+  slug                     String
+  description              String?
+  status                   RequestFormStatus @default(DRAFT)
+  definition               Json
+  publishedDefinition      Json?             @map("published_definition")
+  version                  Int               @default(0)
+  defaultCategoryId        String?           @map("default_category_id")
+  defaultSubcategoryId     String?           @map("default_subcategory_id")
+  defaultTeamId            String?           @map("default_team_id")
+  defaultPriority          RequestPriority?  @map("default_priority")
+  confirmationTitle        String?           @map("confirmation_title")
+  confirmationMessage      String?           @map("confirmation_message")
+  createdBy                String            @map("created_by")
+  updatedBy                String?           @map("updated_by")
+  publishedAt              DateTime?         @map("published_at")
+  createdAt                DateTime          @default(now()) @map("created_at")
+  updatedAt                DateTime          @updatedAt @map("updated_at")
+  deletedAt                DateTime?         @map("deleted_at")
+  deletedBy                String?           @map("deleted_by")
+  deletionReason           String?           @map("deletion_reason")
+
+  tenant      Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  submissions RequestFormSubmission[]
+
+  @@unique([tenantId, slug])
+  @@unique([tenantId, id])
+  @@index([tenantId, status, updatedAt])
+  @@map("crm_request_forms")
+}
+
+model RequestFormSubmission {
+  id                     String   @id
+  tenantId               String   @map("tenant_id")
+  formId                 String   @map("form_id")
+  requestId              String   @map("request_id")
+  formVersion            Int      @map("form_version")
+  definitionSnapshot     Json     @map("definition_snapshot")
+  answers                Json
+  customerOrganizationId String?  @map("customer_organization_id")
+  customerUserId         String?  @map("customer_user_id")
+  requesterUserId        String?  @map("requester_user_id")
+  requesterContactId     String?  @map("requester_contact_id")
+  createdBy              String   @map("created_by")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  form    RequestForm @relation(fields: [tenantId, formId], references: [tenantId, id], onDelete: Restrict)
+  request Request     @relation(fields: [tenantId, requestId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, requestId])
+  @@index([tenantId, formId, createdAt])
+  @@index([tenantId, customerOrganizationId, createdAt])
+  @@index([tenantId, customerUserId, createdAt])
+  @@map("crm_request_form_submissions")
+}

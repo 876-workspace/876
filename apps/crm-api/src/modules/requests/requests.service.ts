@@ -5,6 +5,7 @@ import type {
   DeleteRequestNoteInput,
   ListRequestNotesInput,
   ListRequestsFilter,
+  RequestIntakeContext,
   UpdateRequestInput,
   UpdateRequestNoteInput,
 } from '../../types/request.js'
@@ -93,7 +94,44 @@ export async function retrieve(organizationId: string, id: string) {
   return request ? serialize(request) : null
 }
 
-export async function create(
+/**
+ * Validates that a category/subcategory/team triple names live records in this
+ * tenant and that the subcategory belongs to the category. Exported so intake
+ * forms can reject bad routing defaults when the form is saved, rather than at
+ * submission time in front of a customer.
+ */
+export async function assertRouting(
+  organizationId: string,
+  routing: {
+    categoryId?: string | null
+    subcategoryId?: string | null
+    teamId?: string | null
+  }
+) {
+  const tenant = await requireTenant(organizationId)
+
+  if (
+    routing.categoryId &&
+    !(await repository.categoryExists(tenant.id, routing.categoryId))
+  )
+    throw crmError('crm/category-not-found')
+
+  const subcategory = routing.subcategoryId
+    ? await repository.subcategoryExists(tenant.id, routing.subcategoryId)
+    : null
+  if (routing.subcategoryId && !subcategory)
+    throw crmError('crm/subcategory-not-found')
+  if (subcategory && subcategory.categoryId !== (routing.categoryId ?? null))
+    throw crmError('crm/subcategory-category-mismatch')
+
+  if (
+    routing.teamId &&
+    !(await repository.teamExists(tenant.id, routing.teamId))
+  )
+    throw crmError('crm/team-not-found')
+}
+
+async function validateCreate(
   organizationId: string,
   input: CreateRequestInput
 ) {
@@ -105,6 +143,7 @@ export async function create(
     ? await repository.categoryExists(tenant.id, input.categoryId)
     : null
   if (input.categoryId && !category) throw crmError('crm/category-not-found')
+
   const subcategory = input.subcategoryId
     ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
     : null
@@ -112,6 +151,7 @@ export async function create(
     throw crmError('crm/subcategory-not-found')
   if (subcategory && subcategory.categoryId !== input.categoryId)
     throw crmError('crm/subcategory-category-mismatch')
+
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
 
@@ -127,9 +167,35 @@ export async function create(
       : {}),
   }
 
+  return { tenant, effective }
+}
+
+export async function create(
+  organizationId: string,
+  input: CreateRequestInput
+) {
+  const { tenant, effective } = await validateCreate(organizationId, input)
+
   return serialize(
     await repository.create({ tenantId: tenant.id, ...effective })
   )
+}
+
+export async function createFromIntake(
+  organizationId: string,
+  input: CreateRequestInput,
+  intake: RequestIntakeContext
+) {
+  const { tenant, effective } = await validateCreate(organizationId, input)
+  const result = await repository.createFromIntake(
+    { tenantId: tenant.id, ...effective },
+    intake
+  )
+
+  return {
+    request: serialize(result.request),
+    submission: result.submission,
+  }
 }
 
 export async function update(
@@ -148,15 +214,15 @@ export async function update(
     !(await repository.categoryExists(tenant.id, input.categoryId))
   )
     throw crmError('crm/category-not-found')
+
   const subcategory = input.subcategoryId
     ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
     : null
   if (input.subcategoryId && !subcategory)
     throw crmError('crm/subcategory-not-found')
-  if (input.subcategoryId) {
-    if (subcategory?.categoryId !== resultingCategoryId)
-      throw crmError('crm/subcategory-category-mismatch')
-  }
+  if (input.subcategoryId && subcategory?.categoryId !== resultingCategoryId)
+    throw crmError('crm/subcategory-category-mismatch')
+
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
 
