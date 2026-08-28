@@ -19,6 +19,26 @@ const ERRORS = {
     message: 'That category slug is already in use.',
     httpStatus: 409,
   },
+  'crm/form-in-use': {
+    message: 'Request form has submissions and cannot be hard deleted.',
+    httpStatus: 409,
+  },
+  'crm/form-invalid-submission': {
+    message: 'The request form submission is invalid.',
+    httpStatus: 422,
+  },
+  'crm/form-not-found': {
+    message: 'Request form not found.',
+    httpStatus: 404,
+  },
+  'crm/form-not-published': {
+    message: 'This request form is not accepting submissions.',
+    httpStatus: 409,
+  },
+  'crm/form-slug-taken': {
+    message: 'That request form slug is already in use.',
+    httpStatus: 409,
+  },
   'crm/tenant-not-found': {
     message: 'This organization has no CRM workspace yet.',
     httpStatus: 404,

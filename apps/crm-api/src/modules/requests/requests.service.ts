@@ -5,6 +5,7 @@ import type {
   DeleteRequestNoteInput,
   ListRequestNotesInput,
   ListRequestsFilter,
+  RequestIntakeContext,
   UpdateRequestInput,
   UpdateRequestNoteInput,
 } from '../../types/request.js'
@@ -93,10 +94,7 @@ export async function retrieve(organizationId: string, id: string) {
   return request ? serialize(request) : null
 }
 
-export async function create(
-  organizationId: string,
-  input: CreateRequestInput
-) {
+async function validateCreate(organizationId: string, input: CreateRequestInput) {
   const tenant = await requireTenant(organizationId)
   const customer = await repository.customerExists(tenant.id, input.customerId)
   if (!customer) throw crmError('crm/customer-not-found')
@@ -105,6 +103,7 @@ export async function create(
     ? await repository.categoryExists(tenant.id, input.categoryId)
     : null
   if (input.categoryId && !category) throw crmError('crm/category-not-found')
+
   const subcategory = input.subcategoryId
     ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
     : null
@@ -112,10 +111,10 @@ export async function create(
     throw crmError('crm/subcategory-not-found')
   if (subcategory && subcategory.categoryId !== input.categoryId)
     throw crmError('crm/subcategory-category-mismatch')
+
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
 
-  // Category routing is useful only as a default; an explicit caller selection wins.
   const defaults = subcategory ?? category
   const effective = {
     ...input,
@@ -127,9 +126,35 @@ export async function create(
       : {}),
   }
 
+  return { tenant, effective }
+}
+
+export async function create(
+  organizationId: string,
+  input: CreateRequestInput
+) {
+  const { tenant, effective } = await validateCreate(organizationId, input)
+
   return serialize(
     await repository.create({ tenantId: tenant.id, ...effective })
   )
+}
+
+export async function createFromIntake(
+  organizationId: string,
+  input: CreateRequestInput,
+  intake: RequestIntakeContext
+) {
+  const { tenant, effective } = await validateCreate(organizationId, input)
+  const result = await repository.createFromIntake(
+    { tenantId: tenant.id, ...effective },
+    intake
+  )
+
+  return {
+    request: serialize(result.request),
+    submission: result.submission,
+  }
 }
 
 export async function update(
@@ -148,15 +173,15 @@ export async function update(
     !(await repository.categoryExists(tenant.id, input.categoryId))
   )
     throw crmError('crm/category-not-found')
+
   const subcategory = input.subcategoryId
     ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
     : null
   if (input.subcategoryId && !subcategory)
     throw crmError('crm/subcategory-not-found')
-  if (input.subcategoryId) {
-    if (subcategory?.categoryId !== resultingCategoryId)
-      throw crmError('crm/subcategory-category-mismatch')
-  }
+  if (input.subcategoryId && subcategory?.categoryId !== resultingCategoryId)
+    throw crmError('crm/subcategory-category-mismatch')
+
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
 
