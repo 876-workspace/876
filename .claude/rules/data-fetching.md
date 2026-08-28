@@ -39,22 +39,32 @@ export default function UsersPage() {
 
 async function UsersTableData() {
   const result = await $876.users.admin.list({ limit: 25 })
-  if (result.error)
-    return (
-      <AppError
-        title="Users couldn't be loaded"
-        error={result.error}
-        variant="page"
-      />
-    )
+  const rows = result.data?.data ?? []
 
-  return <UsersTable data={result.data.data} />
+  return (
+    <div className="space-y-3">
+      {result.error ? (
+        <AppError
+          title="Some user data could not be loaded"
+          error={result.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      <UsersTable data={rows} />
+    </div>
+  )
 }
 ```
 
 Expected SDK/application errors stay values all the way to the UI. Never replace
 `result.error` with `throw new Error(result.error.message)`; that discards its
 stable code and turns ordinary application state into a framework crash.
+
+A failed dataset is not allowed to own the page. Keep the toolbar, filters,
+table/list shell, and pagination region mounted. An empty structural dataset is
+acceptable during a failure only when a visible notice makes clear that the
+empty region represents unavailable data rather than a real "no records" state.
 
 The important boundary is deliberate: the page shell renders before the live
 request finishes. Do not copy the request into the top-level page merely because
