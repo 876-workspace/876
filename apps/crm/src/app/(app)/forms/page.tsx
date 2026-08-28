@@ -1,3 +1,4 @@
+import { AppError } from '@876/ui/app-error'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Suspense } from 'react'
@@ -39,7 +40,14 @@ async function FormsListData() {
   const $876 = await get876Client()
 
   const result = await $876.requestForms.list(context.orgId)
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    return (
+      <AppError
+        title="Forms couldn't be loaded"
+        error={result.error}
+        variant="page"
+      />
+    )
 
   const forms: RequestFormRow[] = result.data.data.map((form) => ({
     id: form.id,
