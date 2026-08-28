@@ -11,6 +11,16 @@ import * as tenants from '../tenants/tenants.service.js'
 import { crmError } from '../../http/errors.js'
 import * as repository from './customers.repository.js'
 
+/**
+ * The Billing registry.
+ *
+ * NOTE: this authenticates as platform admin. Writes that carry a
+ * `sourceExternalReference` are refused on that credential — Billing requires
+ * a product app identity for those — so customer creation cannot work until
+ * 876-crm has an API key of its own and this switches to
+ * `apiKey: process.env.CRM_API_876_KEY`. Billing accepts exactly one
+ * credential, so the two cannot both be sent.
+ */
 function finance() {
   return create876BillingIntegrationClient({
     baseUrl: process.env.BILLING_API_URL,
