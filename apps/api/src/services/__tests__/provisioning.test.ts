@@ -51,6 +51,13 @@ vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   ensureFinanceProvisioningDelivered,
 }))
 
+const { dispatchBillingCustomerSyncOnce } = vi.hoisted(() => ({
+  dispatchBillingCustomerSyncOnce: vi.fn(),
+}))
+vi.mock('@/workers/billing-customer-dispatch', () => ({
+  dispatchBillingCustomerSyncOnce,
+}))
+
 // provisionOrgApps now drives one unified readiness contract per subscribed
 // app rather than a single org-wide reconcile, so the finance behavior is
 // asserted through `ensureAppReady` (which owns the reconcile + delivery + the
@@ -101,6 +108,12 @@ beforeEach(() => {
     failed: 0,
     configured: true,
     ensured: 1,
+  })
+  dispatchBillingCustomerSyncOnce.mockResolvedValue({
+    claimed: 1,
+    delivered: 1,
+    failed: 0,
+    configured: true,
   })
   ensureAppReady.mockResolvedValue({
     ready: true,
@@ -315,6 +328,8 @@ describe('provisionOrganization', () => {
     expect(event.subjectType).toBe('organization')
     expect(event.subjectId).toBe(ORG)
     expect(event.customerStatus).toBe('ACTIVE')
+    expect(dispatchBillingCustomerSyncOnce).toHaveBeenCalledOnce()
+    expect(dispatchBillingCustomerSyncOnce).toHaveBeenCalledWith({ limit: 1 })
   })
 
   it('does not notify the registry when the organization is gone', async () => {

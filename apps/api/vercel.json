@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/billing/customer-sync/cron",
-      "schedule": "* * * * *"
+      "schedule": "0 5 * * *"
     }
   ]
 }

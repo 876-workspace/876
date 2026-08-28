@@ -51,7 +51,9 @@ async function postWithTimeout(
   }
 }
 
-export async function dispatchBillingCustomerSyncOnce(): Promise<BillingCustomerDispatchSummary> {
+export async function dispatchBillingCustomerSyncOnce(options?: {
+  limit?: number
+}): Promise<BillingCustomerDispatchSummary> {
   const settings = getSettings()
   const billingUrl = settings.billing.url.trim().replace(/\/+$/, '')
   const internalKey = settings.billing.internalKey.trim()
@@ -61,7 +63,7 @@ export async function dispatchBillingCustomerSyncOnce(): Promise<BillingCustomer
   }
 
   const now = nowUnixSeconds()
-  const limit = settings.billing.financeProvisioningBatchSize
+  const limit = options?.limit ?? settings.billing.financeProvisioningBatchSize
 
   const claimedRows = await claimBillingCustomerEvents(now, limit)
 
