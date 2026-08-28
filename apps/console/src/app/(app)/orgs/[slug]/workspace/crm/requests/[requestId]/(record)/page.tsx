@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { AppError } from '@876/ui/app-error'
 
 import {
   RequestNotesSection,
@@ -9,39 +10,79 @@ import {
   loadOrgNotes,
   loadOrgRequest,
 } from '@/features/crm/request-data'
-import { resolveOrg } from '../../../../../_data'
+import { resolveOrgResult } from '../../../../../_data'
 
 type Props = { params: Promise<{ slug: string; requestId: string }> }
 
 export default async function OrgRequestConversationPage({ params }: Props) {
   const { slug, requestId } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const orgResult = await resolveOrgResult(slug)
+  if (orgResult.error?.code === 'organization/not-found') notFound()
+  if (orgResult.error)
+    return (
+      <AppError
+        title="Organization details are temporarily unavailable"
+        error={orgResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+  if (!orgResult.data) notFound()
 
-  const [{ session, request }, notes, { members }] = await Promise.all([
+  const [requestResult, notesResult, directory] = await Promise.all([
     loadOrgRequest(
-      org.id,
+      orgResult.data.id,
       requestId,
       `/orgs/${slug}/workspace/crm/requests/${requestId}`
     ),
-    loadOrgNotes(org.id, requestId),
-    loadOrgDirectory(org.id),
+    loadOrgNotes(orgResult.data.id, requestId),
+    loadOrgDirectory(orgResult.data.id),
   ])
 
-  if (!request) notFound()
+  if (!requestResult.request) {
+    return requestResult.error ? (
+      <AppError
+        title="Request data is temporarily unavailable"
+        error={requestResult.error}
+        variant="banner"
+        showCode
+      />
+    ) : null
+  }
 
   const authors: Record<string, NoteAuthor> = Object.fromEntries(
-    members.map((m) => [m.userId, { name: m.name, avatar: m.avatar }])
+    directory.members.map((member) => [
+      member.userId,
+      { name: member.name, avatar: member.avatar },
+    ])
   )
 
   return (
-    <RequestNotesSection
-      organizationId={org.id}
-      requestId={request.id}
-      notes={notes}
-      currentUserId={session.id}
-      canCreatePrivateNote
-      authors={authors}
-    />
+    <div className="space-y-3">
+      {notesResult.error ? (
+        <AppError
+          title="Some conversation data could not be loaded"
+          error={notesResult.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      {directory.membersError ? (
+        <AppError
+          title="Author details are temporarily incomplete"
+          error={directory.membersError}
+          variant="inline"
+          showCode
+        />
+      ) : null}
+      <RequestNotesSection
+        organizationId={orgResult.data.id}
+        requestId={requestResult.request.id}
+        notes={notesResult.notes}
+        currentUserId={requestResult.session.id}
+        canCreatePrivateNote
+        authors={authors}
+      />
+    </div>
   )
 }
