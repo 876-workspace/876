@@ -39,10 +39,12 @@ const authClient = create876Client({ baseUrl: '/api' })
 export function EmbeddedAuth({
   returnTo,
   logoUrl,
+  authError,
 }: {
   returnTo: string
   /** Console's `apps.logo_url` from the DB; null falls back to initials. */
   logoUrl?: string | null
+  authError?: string | null
 }) {
   useEffect(() => {
     writeReturnToCookie(returnTo)
@@ -59,6 +61,9 @@ export function EmbeddedAuth({
           // "MC" initials fallback until a logo image is set on the app record.
           appLogo: <AppLogo name="Console" src={logoUrl} />,
           socialProviders: SOCIAL_PROVIDERS,
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             window.location.assign(getAuthCompleteHref(returnTo))
           },
