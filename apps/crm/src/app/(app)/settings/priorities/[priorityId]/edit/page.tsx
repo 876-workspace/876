@@ -15,9 +15,15 @@ export default async function EditPriorityPage({ params }: Props) {
   const { priorityId } = await params
   const context = await requireCrmContext()
   const $876 = await get876Client()
-  const result = await $876.requestPriorities.retrieve(context.orgId, priorityId)
-  if (result.error?.code === 'crm/priority-not-found' || !result.data) notFound()
-  if (result.error) throw new Error(result.error.message)
+  const result = await $876.requestPriorities.retrieve(
+    context.orgId,
+    priorityId
+  )
+  if (result.error) {
+    if (result.error.code === 'crm/priority-not-found') notFound()
+    throw new Error(result.error.message)
+  }
+  if (!result.data) notFound()
 
   return (
     <Page>
