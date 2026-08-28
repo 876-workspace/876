@@ -70,8 +70,16 @@ describe('entitledWorkspaces', () => {
     expect(entitledWorkspaces(['876-crm']).map((w) => w.key)).toEqual(['crm'])
   })
 
+  it('lists multiple workspaces when entitled', () => {
+    expect(
+      entitledWorkspaces(['876-crm', '876-billing', '876-couriers']).map(
+        (w) => w.key
+      )
+    ).toEqual(['crm', 'billing', 'couriers'])
+  })
+
   it('ignores an entitlement that has no workspace registered', () => {
-    expect(entitledWorkspaces(['876-couriers'])).toEqual([])
+    expect(entitledWorkspaces(['876-unregistered-app'])).toEqual([])
   })
 })
 

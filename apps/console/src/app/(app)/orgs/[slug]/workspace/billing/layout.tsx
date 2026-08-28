@@ -1,3 +1,3 @@
 import { createWorkspaceLayout } from '../_components/app-workspace-layout'
 
-export default createWorkspaceLayout('crm')
+export default createWorkspaceLayout('billing')
