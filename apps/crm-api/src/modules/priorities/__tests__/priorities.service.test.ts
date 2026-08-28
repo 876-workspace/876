@@ -177,7 +177,7 @@ describe('request priority service', () => {
       isDefault: false,
     })
     expect(mocks.setDefault).toHaveBeenCalledWith(tenant.id, current.id)
-    expect(result.isDefault).toBe(true)
+    expect(result?.isDefault).toBe(true)
   })
 
   it('blocks deletion of default and referenced priorities', async () => {

@@ -28,7 +28,14 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../tenants/tenants.service.js', () => mocks.tenants)
 vi.mock('../../priorities/index.js', () => mocks.priorities)
 vi.mock('../requests.repository.js', () => mocks.repository)
+// The requests router mounts the note/task/reminder child routers, whose
+// repositories open the database at import time. This suite covers only the
+// request routes, so the child repositories are stubbed out entirely.
+vi.mock('../../notes/notes.repository.js', () => ({}))
+vi.mock('../../tasks/tasks.repository.js', () => ({}))
+vi.mock('../../reminders/reminders.repository.js', () => ({}))
 
+const { errorHandler } = await import('../../../http/error-handler.js')
 const { createRequestsRouter } = await import('../requests.routes.js')
 const requestsService = await import('../requests.service.js')
 
@@ -122,6 +129,7 @@ async function requestJson(method: string, path: string, body?: unknown) {
   const app = express()
   app.use(express.json())
   app.use('/v1/organizations/:organizationId/requests', createRequestsRouter())
+  app.use(errorHandler)
   const server = app.listen(0)
   await new Promise<void>((resolve) => server.once('listening', resolve))
   const address = server.address()
@@ -192,12 +200,16 @@ describe('CRM request routes', () => {
   })
 
   it('rejects the removed priority query parameter', async () => {
+    // Priorities are tenant rows now, so `?priority=HIGH` is an unknown key on
+    // a strict schema. It must be refused rather than silently ignored, which
+    // would hand back an unfiltered queue that looks like a filtered one.
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_1/requests?priority=HIGH'
     )
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(422)
+    expect(response.body.error.code).toBe('crm/invalid-request')
     expect(mocks.repository.list).not.toHaveBeenCalled()
   })
 
@@ -484,7 +496,9 @@ describe('CRM request routes', () => {
     expect(response.body).toEqual({
       data: {
         object: 'list',
-        data: [expect.objectContaining({ object: 'request', id: requestRow.id })],
+        data: [
+          expect.objectContaining({ object: 'request', id: requestRow.id }),
+        ],
         has_more: false,
         total_count: 1,
         url: '/v1/organizations/org_1/requests',

@@ -7,9 +7,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CrmHttpError } from '../../../http/errors.js'
 
-const { tenants, repository } = vi.hoisted(() => ({
+const { tenants, repository, priorities } = vi.hoisted(() => ({
   tenants: {
     retrieveByOrganization: vi.fn(),
+  },
+  priorities: {
+    requireActiveForTenant: vi.fn(),
+    retrieveDefaultForTenant: vi.fn(),
+    serialize: vi.fn(),
   },
   repository: {
     list: vi.fn(),
@@ -28,6 +33,7 @@ const { tenants, repository } = vi.hoisted(() => ({
 
 vi.mock('../../tenants/tenants.service.js', () => tenants)
 vi.mock('../categories.repository.js', () => repository)
+vi.mock('../../priorities/index.js', () => priorities)
 
 const { createCategoriesRouter } = await import('../categories.routes.js')
 

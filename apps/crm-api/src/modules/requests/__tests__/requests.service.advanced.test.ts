@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { tenants, repository } = vi.hoisted(() => ({
+const { tenants, repository, priorities } = vi.hoisted(() => ({
   tenants: { retrieveByOrganization: vi.fn() },
   repository: {
     retrieve: vi.fn(),
@@ -19,10 +19,24 @@ const { tenants, repository } = vi.hoisted(() => ({
     isTeamMember: vi.fn(),
     customerExists: vi.fn(),
   },
+  priorities: {
+    requireActiveForTenant: vi
+      .fn()
+      .mockImplementation(async (_tid: string, pid: string) => ({
+        id: pid,
+        name: 'Priority',
+        object: 'request_priority',
+      })),
+    retrieveDefaultForTenant: vi
+      .fn()
+      .mockResolvedValue({ id: 'crm_pri_normal', name: 'Normal' }),
+    serialize: vi.fn((p: unknown) => p),
+  },
 }))
 
 vi.mock('../../tenants/tenants.service.js', () => tenants)
 vi.mock('../requests.repository.js', () => repository)
+vi.mock('../../priorities/index.js', () => priorities)
 
 const service = await import('../requests.service.js')
 const tenant = {
@@ -43,7 +57,8 @@ const baseRow = {
   assigneeId: null,
   ownerId: null,
   status: 'OPEN' as const,
-  priority: 'NORMAL' as const,
+  priorityId: 'crm_pri_normal',
+  priority: { id: 'crm_pri_normal', name: 'Normal' },
   source: 'CRM' as const,
   createdBy: 'usr_1',
   resolvedAt: null,
@@ -59,8 +74,12 @@ beforeEach(() => {
   repository.retrieve.mockResolvedValue(baseRow)
   repository.list.mockResolvedValue([])
   repository.customerExists.mockResolvedValue({ id: 'crm_cus_1' })
-  repository.categoryExists.mockResolvedValue(null)
-  repository.subcategoryExists.mockResolvedValue(null)
+  repository.categoryExists.mockResolvedValue(
+    null as unknown as Awaited<ReturnType<typeof repository.categoryExists>>
+  )
+  repository.subcategoryExists.mockResolvedValue(
+    null as unknown as Awaited<ReturnType<typeof repository.subcategoryExists>>
+  )
   repository.teamExists.mockResolvedValue({ id: 'crm_team_1' })
   repository.isTeamMember.mockResolvedValue(null)
   repository.create.mockResolvedValue(baseRow)
@@ -161,14 +180,14 @@ describe('requests.service - create edge cases', () => {
     repository.categoryExists.mockResolvedValue({
       id: 'crm_cat_1',
       defaultTeamId: 'crm_team_cat',
-      defaultPriority: 'LOW',
-    })
+      defaultPriorityId: 'crm_pri_low',
+    } as unknown as Awaited<ReturnType<typeof repository.categoryExists>>)
     repository.subcategoryExists.mockResolvedValue({
       id: 'crm_sub_1',
       categoryId: 'crm_cat_1',
       defaultTeamId: 'crm_team_sub',
-      defaultPriority: 'HIGH',
-    })
+      defaultPriorityId: 'crm_pri_high',
+    } as unknown as Awaited<ReturnType<typeof repository.subcategoryExists>>)
     await service.create('org_1', {
       customerId: 'crm_cus_1',
       subject: 'hi',
@@ -177,7 +196,10 @@ describe('requests.service - create edge cases', () => {
       subcategoryId: 'crm_sub_1',
     })
     expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ teamId: 'crm_team_sub', priority: 'HIGH' })
+      expect.objectContaining({
+        teamId: 'crm_team_sub',
+        priorityId: 'crm_pri_high',
+      })
     )
   })
   it('throws team-not-found for unknown team', async () => {
@@ -285,78 +307,8 @@ describe('requests.service - update edge cases', () => {
   })
 })
 
-describe('requests.service - notes and deletion', () => {
-  it('passes viewer scope to the note repository', async () => {
-    await service.listNotes('org_1', 'crm_req_1', { viewerId: 'usr_1' })
-    expect(repository.listNotes).toHaveBeenCalledWith(
-      'crm_tenant_1',
-      'crm_req_1',
-      { viewerId: 'usr_1' }
-    )
-  })
-
-  it('hides a private note from another CRM user', async () => {
-    repository.retrieveNote.mockResolvedValue({
-      id: 'n1',
-      kind: 'NOTE',
-      privateToUserId: 'usr_owner',
-    })
-    expect(
-      await service.updateNote('org_1', 'crm_req_1', 'n1', {
-        body: 'x',
-        editedBy: 'usr_other',
-      })
-    ).toBeNull()
-    expect(repository.updateNote).not.toHaveBeenCalled()
-  })
-
-  it('lets Console update a private note with audit access', async () => {
-    repository.retrieveNote.mockResolvedValue({
-      id: 'n1',
-      kind: 'NOTE',
-      privateToUserId: 'usr_owner',
-    })
-    await service.updateNote('org_1', 'crm_req_1', 'n1', {
-      body: 'x',
-      editedBy: 'console_usr',
-      includePrivate: true,
-    })
-    expect(repository.updateNote).toHaveBeenCalled()
-  })
-
-  it('throws request-not-found when creating note for missing request', async () => {
-    repository.retrieve.mockResolvedValue(null)
-    await expect(
-      service.createNote('org_1', 'crm_req_1', {
-        body: 'hi',
-        authorId: 'usr_1',
-      })
-    ).rejects.toMatchObject({ code: 'crm/request-not-found' })
-  })
-  it('returns null when removing non-existent note', async () => {
-    repository.retrieveNote.mockResolvedValue(null)
-    expect(
-      await service.removeNote('org_1', 'crm_req_1', 'bad', {
-        deletedBy: 'usr_1',
-      })
-    ).toBeNull()
-  })
-  it('throws description-note-immutable when deleting DESCRIPTION note', async () => {
-    repository.retrieveNote.mockResolvedValue({ id: 'n1', kind: 'DESCRIPTION' })
-    await expect(
-      service.removeNote('org_1', 'crm_req_1', 'n1', { deletedBy: 'usr_1' })
-    ).rejects.toMatchObject({ code: 'crm/description-note-immutable' })
-  })
-  it('returns null when updating non-existent note', async () => {
-    repository.retrieveNote.mockResolvedValue(null)
-    expect(
-      await service.updateNote('org_1', 'crm_req_1', 'bad', {
-        body: 'x',
-        editedBy: 'usr_1',
-      })
-    ).toBeNull()
-  })
-  it('remove returns null when request missing', async () => {
+describe('requests.service - deletion', () => {
+  it('returns null when removing a request that does not exist', async () => {
     repository.retrieve.mockResolvedValue(null)
     expect(
       await service.remove('org_1', 'missing', { deletedBy: 'usr_1' })

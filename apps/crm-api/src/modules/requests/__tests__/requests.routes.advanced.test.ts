@@ -2,7 +2,7 @@ import express from 'express'
 import type { ErrorRequestHandler } from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { tenants, repository } = vi.hoisted(() => ({
+const { tenants, repository, prioritiesMock } = vi.hoisted(() => ({
   tenants: { retrieveByOrganization: vi.fn() },
   repository: {
     retrieve: vi.fn(),
@@ -21,28 +21,52 @@ const { tenants, repository } = vi.hoisted(() => ({
     isTeamMember: vi.fn(),
     customerExists: vi.fn(),
   },
+  prioritiesMock: {
+    requireActiveForTenant: vi
+      .fn()
+      .mockResolvedValue({ id: 'crm_pri_normal', name: 'Normal' }),
+    retrieveDefaultForTenant: vi
+      .fn()
+      .mockResolvedValue({ id: 'crm_pri_normal', name: 'Normal' }),
+    serialize: vi.fn((p: unknown) => p),
+  },
 }))
+// Tasks, reminders and notes are their own modules now, each mounted by the
+// requests router. This suite covers the routing/envelope layer, so each child
+// service is mocked at its own module boundary.
 const tasksMock = vi.hoisted(() => ({
-  tasks: vi.fn().mockResolvedValue([]),
-  createTask: vi
+  list: vi.fn().mockResolvedValue([]),
+  create: vi
     .fn()
     .mockResolvedValue({ object: 'request_task', id: 'crm_task_1' }),
-  updateTask: vi
+  update: vi
     .fn()
     .mockResolvedValue({ object: 'request_task', id: 'crm_task_1' }),
-  removeTask: vi.fn().mockResolvedValue({
+  remove: vi.fn().mockResolvedValue({
     object: 'request_task',
     id: 'crm_task_1',
     deleted: true,
   }),
-  reminders: vi.fn().mockResolvedValue([]),
-  createReminder: vi
+}))
+// Notes keep the real service/serializer in the path and are mocked only at
+// their repository, so the route's list envelope and viewer scoping are
+// genuinely exercised rather than stubbed away.
+const notesRepo = vi.hoisted(() => ({
+  list: vi.fn().mockResolvedValue([]),
+  retrieve: vi.fn().mockResolvedValue(null),
+  create: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+}))
+const remindersMock = vi.hoisted(() => ({
+  list: vi.fn().mockResolvedValue([]),
+  create: vi
     .fn()
     .mockResolvedValue({ object: 'request_reminder', id: 'crm_rem_1' }),
-  updateReminder: vi
+  update: vi
     .fn()
     .mockResolvedValue({ object: 'request_reminder', id: 'crm_rem_1' }),
-  removeReminder: vi.fn().mockResolvedValue({
+  remove: vi.fn().mockResolvedValue({
     object: 'request_reminder',
     id: 'crm_rem_1',
     deleted: true,
@@ -51,7 +75,10 @@ const tasksMock = vi.hoisted(() => ({
 
 vi.mock('../../tenants/tenants.service.js', () => tenants)
 vi.mock('../requests.repository.js', () => repository)
-vi.mock('../requests.tasks.service.js', () => tasksMock)
+vi.mock('../../notes/notes.repository.js', () => notesRepo)
+vi.mock('../../tasks/tasks.service.js', () => tasksMock)
+vi.mock('../../reminders/reminders.service.js', () => remindersMock)
+vi.mock('../../priorities/index.js', () => prioritiesMock)
 
 const { createRequestsRouter } = await import('../requests.routes.js')
 
@@ -172,8 +199,8 @@ beforeEach(() => {
     id: 'crm_req_1',
     deleted: true,
   })
-  repository.listNotes.mockResolvedValue([])
-  repository.createNote.mockResolvedValue({
+  notesRepo.list.mockResolvedValue([])
+  notesRepo.create.mockResolvedValue({
     id: 'n1',
     body: 'hi',
     authorId: 'usr_1',
@@ -185,14 +212,14 @@ beforeEach(() => {
     tenantId: tenant.id,
     requestId: 'crm_req_1',
   })
-  repository.retrieveNote.mockResolvedValue(null)
+  notesRepo.retrieve.mockResolvedValue(null)
   repository.categoryExists.mockResolvedValue(null)
   repository.subcategoryExists.mockResolvedValue(null)
   repository.teamExists.mockResolvedValue({ id: 'crm_team_1' })
   repository.isTeamMember.mockResolvedValue(null)
-  tasksMock.tasks.mockResolvedValue([])
-  tasksMock.reminders.mockResolvedValue([])
-  tasksMock.createTask.mockResolvedValue({
+  tasksMock.list.mockResolvedValue([])
+  remindersMock.list.mockResolvedValue([])
+  tasksMock.create.mockResolvedValue({
     object: 'request_task',
     id: 'crm_task_1',
     tenantId: tenant.id,
@@ -202,7 +229,7 @@ beforeEach(() => {
     createdAt: 1,
     updatedAt: 1,
   })
-  tasksMock.createReminder.mockResolvedValue({
+  remindersMock.create.mockResolvedValue({
     object: 'request_reminder',
     id: 'crm_rem_1',
     tenantId: tenant.id,
@@ -270,11 +297,10 @@ describe('requests.routes - validation and envelopes', () => {
       'GET',
       '/v1/organizations/org_1/requests/crm_req_1/notes?viewer_id=usr_1'
     )
-    expect(repository.listNotes).toHaveBeenCalledWith(
-      'crm_tenant_1',
-      'crm_req_1',
-      { viewerId: 'usr_1', includePrivate: undefined }
-    )
+    expect(notesRepo.list).toHaveBeenCalledWith('crm_tenant_1', 'crm_req_1', {
+      viewerId: 'usr_1',
+      includePrivate: undefined,
+    })
   })
   it('returns 201 on create note', async () => {
     repository.retrieve.mockResolvedValue(requestRow)
@@ -310,7 +336,7 @@ describe('requests.routes - validation and envelopes', () => {
     expect(res.status).toBe(201)
   })
   it('update task returns 404 when not found', async () => {
-    tasksMock.updateTask.mockResolvedValue(null)
+    tasksMock.update.mockResolvedValue(null)
     const res = await req(
       'PATCH',
       '/v1/organizations/org_1/requests/crm_req_1/tasks/missing',
@@ -320,7 +346,7 @@ describe('requests.routes - validation and envelopes', () => {
     expect(res.body.error.code).toBe('crm/task-not-found')
   })
   it('delete task returns 404 when not found', async () => {
-    tasksMock.removeTask.mockResolvedValue(null)
+    tasksMock.remove.mockResolvedValue(null)
     const res = await req(
       'DELETE',
       '/v1/organizations/org_1/requests/crm_req_1/tasks/missing',
@@ -350,7 +376,7 @@ describe('requests.routes - validation and envelopes', () => {
     expect(res.status).toBe(201)
   })
   it('update reminder 404', async () => {
-    tasksMock.updateReminder.mockResolvedValue(null)
+    remindersMock.update.mockResolvedValue(null)
     const res = await req(
       'PATCH',
       '/v1/organizations/org_1/requests/crm_req_1/reminders/missing',
@@ -360,7 +386,7 @@ describe('requests.routes - validation and envelopes', () => {
     expect(res.body.error.code).toBe('crm/reminder-not-found')
   })
   it('delete reminder 404', async () => {
-    tasksMock.removeReminder.mockResolvedValue(null)
+    remindersMock.remove.mockResolvedValue(null)
     const res = await req(
       'DELETE',
       '/v1/organizations/org_1/requests/crm_req_1/reminders/missing',
