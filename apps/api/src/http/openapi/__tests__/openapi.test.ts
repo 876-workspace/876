@@ -34,7 +34,7 @@ describe('GET /openapi.json', () => {
     // can never carry admin scope, so the schemes must stay distinct.
     expect(
       Object.keys(response.body.components.securitySchemes).sort()
-    ).toEqual(['ApiKey', 'BearerToken', 'InternalKey'])
+    ).toEqual(['ApiKey', 'BearerToken', 'InternalKey', 'SchedulerSecret'])
   })
 
   it('leaves a public route without a security requirement', async () => {

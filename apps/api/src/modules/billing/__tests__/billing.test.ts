@@ -291,6 +291,25 @@ describe('POST /billing/customer-sync/dispatch', () => {
   })
 })
 
+describe('GET /billing/customer-sync/cron', () => {
+  it('dispatches with the Vercel Cron bearer secret', async () => {
+    const res = await request(createApp())
+      .get('/billing/customer-sync/cron')
+      .set('Authorization', 'Bearer test-cron-secret')
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.object).toBe('billing_customer_sync_dispatch')
+  })
+
+  it('rejects operator and app credentials without the scheduler secret', async () => {
+    const res = await request(createApp())
+      .get('/billing/customer-sync/cron')
+      .set(AUTH)
+
+    expect(res.status).toBe(401)
+  })
+})
+
 describe('POST /billing/subscriptions/:subscription_id/items', () => {
   it('creates item', async () => {
     const res = await request(createApp())
