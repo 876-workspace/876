@@ -1,15 +1,18 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { ChatBubbleLeftIcon } from '@876/ui/icons'
 
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
-import { REQUESTS_SKELETON_COLUMNS } from '@/features/crm/components/requests-skeleton-columns'
-import { RequestsTable } from '@/features/crm/components/requests-table'
+import {
+  RequestsList,
+  RequestsListSkeleton,
+} from '@/features/crm/components/requests-list'
+import { loadRequestRowContext } from '@/features/crm/request-data'
+import { toRequestListRows } from '@/features/crm/request-list-rows'
 import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
@@ -59,9 +62,7 @@ export default async function OrganizationSupportPage({
         }
         refresh
       />
-      <Suspense
-        fallback={<DataTableSkeleton columns={REQUESTS_SKELETON_COLUMNS} />}
-      >
+      <Suspense fallback={<RequestsListSkeleton />}>
         <SupportRequestsData params={params} status={selectedStatus} />
       </Suspense>
     </>
@@ -94,20 +95,12 @@ async function SupportRequestsData({
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
   if (result.error) throw new Error(result.error.message)
 
+  const context = await loadRequestRowContext(platformOrg.id)
+
   return (
-    <RequestsTable
+    <RequestsList
       requestsHref={`/orgs/${slug}/support`}
-      requests={result.data.data.map((request) => ({
-        id: request.id,
-        number: request.number,
-        subject: request.subject,
-        customerId: request.customerId,
-        assigneeId: request.assigneeId,
-        status: request.status,
-        priority: request.priority,
-        source: request.source,
-        createdAt: request.createdAt,
-      }))}
+      requests={toRequestListRows({ requests: result.data.data, ...context })}
     />
   )
 }

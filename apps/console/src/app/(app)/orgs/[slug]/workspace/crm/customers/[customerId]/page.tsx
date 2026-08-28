@@ -7,7 +7,9 @@ import { Skeleton } from '@876/ui/skeleton'
 import { $876 } from '@/lib/876'
 import { CustomerProfileCard } from '@/features/crm/components/customer-profile'
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
-import { RequestsTable } from '@/features/crm/components/requests-table'
+import { RequestsList } from '@/features/crm/components/requests-list'
+import { loadRequestRowContext } from '@/features/crm/request-data'
+import { toRequestListRows } from '@/features/crm/request-list-rows'
 import { resolveCustomerIdentity } from '@/features/crm/customer-identity'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
 import { resolveOrg } from '../../../../_data'
@@ -86,20 +88,12 @@ async function CustomerRequests({
   const result = await $876.requests.list(organizationId, { customerId })
   if (result.error) throw new Error(result.error.message)
 
+  const context = await loadRequestRowContext(organizationId)
+
   return (
-    <RequestsTable
+    <RequestsList
       requestsHref={requestsHref}
-      requests={result.data.data.map((request) => ({
-        id: request.id,
-        number: request.number,
-        subject: request.subject,
-        customerId: request.customerId,
-        assigneeId: request.assigneeId,
-        status: request.status,
-        priority: request.priority,
-        source: request.source,
-        createdAt: request.createdAt,
-      }))}
+      requests={toRequestListRows({ requests: result.data.data, ...context })}
     />
   )
 }
