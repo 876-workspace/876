@@ -14,6 +14,20 @@ const envelopeSchema = z.object({
   error: errorSchema.nullable(),
 })
 
+/**
+ * Reports why a response failed to parse — on the server only.
+ *
+ * The returned error stays deliberately opaque, because a client-safe error
+ * must not carry internals. But "CRM API returned an invalid response" with
+ * nothing else costs an afternoon to chase: the cause is almost always one
+ * field the API has added or dropped, and the Zod issue paths name it
+ * immediately.
+ */
+function reportInvalidResponse(stage: string, issues: unknown): void {
+  if (typeof window !== 'undefined') return
+  console.error(`[crm/invalid-response] ${stage} failed validation:`, issues)
+}
+
 export async function request<T>(
   runtime: Runtime,
   init: ClientRequestInit,
@@ -50,7 +64,8 @@ export async function request<T>(
     }
 
   const envelope = envelopeSchema.safeParse(response.payload)
-  if (!envelope.success)
+  if (!envelope.success) {
+    reportInvalidResponse('response envelope', envelope.error.issues)
     return {
       data: null,
       error: {
@@ -58,11 +73,16 @@ export async function request<T>(
         message: 'CRM API returned an invalid response.',
       },
     }
+  }
 
   if (envelope.data.error) return { data: null, error: envelope.data.error }
 
   const parsed = dataSchema.safeParse(envelope.data.data)
-  if (!response.ok || !parsed.success)
+  if (!response.ok || !parsed.success) {
+    reportInvalidResponse(
+      `${response.status} response body`,
+      parsed.success ? response.payload : parsed.error.issues
+    )
     return {
       data: null,
       error: {
@@ -70,6 +90,7 @@ export async function request<T>(
         message: 'CRM API returned an invalid response.',
       },
     }
+  }
 
   return { data: parsed.data, error: null }
 }

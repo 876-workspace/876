@@ -534,6 +534,23 @@ describe('@876/crm client', () => {
     })
   })
 
+  it('logs the failing field paths when a payload does not validate', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    fetch.mockResolvedValueOnce(
+      json({ object: 'team', id: 'crm_team_1', name: 'Incomplete team' })
+    )
+
+    await client.teams.retrieve('org_1', 'crm_team_1')
+
+    expect(consoleError).toHaveBeenCalledTimes(1)
+    const [message, issues] = consoleError.mock.calls[0]
+    expect(message).toContain('[crm/invalid-response]')
+    // The point of the log is naming the field, so assert the path survives.
+    expect(JSON.stringify(issues)).toContain('tenantId')
+
+    consoleError.mockRestore()
+  })
+
   it('fails closed when the internal credential is absent', async () => {
     const unconfigured = create876CrmClient({
       baseUrl: 'http://crm.test',
