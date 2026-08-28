@@ -34,33 +34,16 @@ import {
   type PickerCustomer,
 } from './customer-picker'
 
-export type FormDepartment = {
-  id: string
-  name: string
-}
-
-export type FormMember = {
-  userId: string
-  name: string
-  email: string | null
-}
+export type FormDepartment = { id: string; name: string }
+export type FormMember = { userId: string; name: string; email: string | null }
 
 type Values = {
   customerId: string
   subject: string
-  /**
-   * The opening message. On create this becomes the request's first note
-   * (`kind: 'DESCRIPTION'`); a request itself no longer stores a description,
-   * so this field is absent when editing.
-   */
   description: string
-  /**
-   * The chosen category, or `''` for none. Optional at the database level and
-   * therefore optional here — the UI may require it later, the schema does not.
-   */
   categoryId: string
   status: RequestStatus
-  priority: RequestPriority
+  priorityId: string
   source: RequestSource
   teamId: string
   assigneeId: string
@@ -72,7 +55,7 @@ const EMPTY: Values = {
   description: '',
   categoryId: '',
   status: 'OPEN',
-  priority: 'NORMAL',
+  priorityId: '',
   source: 'CRM',
   teamId: '',
   assigneeId: '',
@@ -83,14 +66,15 @@ const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 export function RequestForm({
   customers,
   categories = [],
+  priorities = [],
   departments = [],
   members = [],
   requestId,
   initial = EMPTY,
 }: {
   customers: CrmCustomer[]
-  /** The org's active request categories. Empty is a valid, working state. */
   categories?: CrmRequestCategory[]
+  priorities?: RequestPriority[]
   departments?: FormDepartment[]
   members?: FormMember[]
   requestId?: string
@@ -107,9 +91,16 @@ export function RequestForm({
     [customers]
   )
   const [customer, setCustomer] = useState<PickerCustomer | null>(
-    () =>
-      pickerCustomers.find((entry) => entry.id === initial.customerId) ?? null
+    () => pickerCustomers.find((entry) => entry.id === initial.customerId) ?? null
   )
+  const availablePriorities = useMemo(
+    () =>
+      priorities.filter(
+        (priority) => priority.isActive || priority.id === initial.priorityId
+      ),
+    [initial.priorityId, priorities]
+  )
+  const defaultPriority = priorities.find((priority) => priority.isDefault)
 
   const set = <K extends keyof Values>(key: K, value: Values[K]) =>
     setValues((current) => ({ ...current, [key]: value }))
@@ -137,7 +128,7 @@ export function RequestForm({
     const base = {
       subject: values.subject.trim(),
       categoryId: values.categoryId || null,
-      priority: values.priority,
+      ...(values.priorityId ? { priorityId: values.priorityId } : {}),
       source: values.source,
       teamId: values.teamId.trim() || null,
       assigneeId: values.assigneeId.trim() || null,
@@ -168,13 +159,6 @@ export function RequestForm({
 
   return (
     <form onSubmit={submit}>
-      {/*
-        Creating and editing are different jobs. Creating is "who is this for,
-        and what do they need", so the customer gets its own column and the
-        form is not submittable until one is chosen. Editing cannot change the
-        customer at all, so the record stays a single column and the locked
-        picker sits inline as a reminder of whose request this is.
-      */}
       <div
         className={
           creating
@@ -237,12 +221,6 @@ export function RequestForm({
             )}
 
             <FormRow label="Category" className={rowClassName}>
-              {/*
-            Categories are org-managed, so the options come from the workspace's
-            own catalog rather than a hard-coded enum. Only active categories are
-            offered for new selections; an archived one already on a request is
-            preserved by the API and still renders elsewhere.
-          */}
               <Select
                 value={values.categoryId || 'none'}
                 onValueChange={(value) =>
@@ -269,28 +247,33 @@ export function RequestForm({
             </FormRow>
 
             <FormRow label="Priority" className={rowClassName}>
-              <RequestSelect
-                value={values.priority}
-                options={['LOW', 'NORMAL', 'HIGH', 'URGENT']}
+              <Select
+                value={values.priorityId || 'default'}
                 onValueChange={(value) =>
-                  set('priority', value as RequestPriority)
+                  set('priorityId', value === 'default' ? '' : (value ?? ''))
                 }
-                disabled={saving}
-              />
+                disabled={saving || availablePriorities.length === 0}
+              >
+                <SelectTrigger aria-label="Priority">
+                  <SelectValue placeholder="Default priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">
+                    Default{defaultPriority ? ` (${defaultPriority.name})` : ''}
+                  </SelectItem>
+                  {availablePriorities.map((priority) => (
+                    <SelectItem key={priority.id} value={priority.id}>
+                      {priority.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </FormRow>
 
             <FormRow label="Source" className={rowClassName}>
               <RequestSelect
                 value={values.source}
-                options={[
-                  'CRM',
-                  'EMAIL',
-                  'PHONE',
-                  'CHAT',
-                  'WEB',
-                  'API',
-                  'OTHER',
-                ]}
+                options={['CRM', 'EMAIL', 'PHONE', 'CHAT', 'WEB', 'API', 'OTHER']}
                 onValueChange={(value) => set('source', value as RequestSource)}
                 disabled={saving}
               />
@@ -308,9 +291,7 @@ export function RequestForm({
                     'CLOSED',
                     'CANCELLED',
                   ]}
-                  onValueChange={(value) =>
-                    set('status', value as RequestStatus)
-                  }
+                  onValueChange={(value) => set('status', value as RequestStatus)}
                   disabled={saving}
                 />
               </FormRow>
@@ -392,10 +373,7 @@ export function RequestForm({
           </div>
 
           {error ? (
-            <p
-              className="text-destructive border-t px-5 py-3 text-sm"
-              role="alert"
-            >
+            <p className="text-destructive border-t px-5 py-3 text-sm" role="alert">
               {error}
             </p>
           ) : null}

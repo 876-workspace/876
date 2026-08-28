@@ -22,16 +22,19 @@ export default async function EditRequestPage({ params }: Props) {
     departmentsResult,
     membersResult,
     categoriesResult,
+    prioritiesResult,
   ] = await Promise.all([
     $876.requests.retrieve(context.orgId, requestId),
     $876.customerProfiles.list(context.orgId),
     $876.departments.list(context.orgId),
     $876.organizationMembers.list(context.orgId),
     $876.requestCategories.list(context.orgId),
+    $876.requestPriorities.list(context.orgId),
   ])
   if (requestResult.error?.code === 'crm/request-not-found') notFound()
   if (requestResult.error) throw new Error(requestResult.error.message)
   if (customersResult.error) throw new Error(customersResult.error.message)
+  if (prioritiesResult.error) throw new Error(prioritiesResult.error.message)
 
   const request = requestResult.data
   const departments =
@@ -42,22 +45,16 @@ export default async function EditRequestPage({ params }: Props) {
       const nameParts = [m.first_name, m.last_name].filter(Boolean)
       const name =
         nameParts.length > 0 ? nameParts.join(' ') : (m.email ?? m.user_id)
-      return {
-        userId: m.user_id,
-        name,
-        email: m.email,
-      }
+      return { userId: m.user_id, name, email: m.email }
     }) ?? []
 
-  // `description` is absent on an existing request — the opening message lives
-  // in the note thread, and the form hides the field when editing.
   const initial: RequestFormValues = {
     customerId: request.customerId,
     description: '',
     subject: request.subject,
     categoryId: request.categoryId ?? '',
     status: request.status,
-    priority: request.priority,
+    priorityId: request.priorityId,
     source: request.source,
     teamId: request.teamId ?? '',
     assigneeId: request.assigneeId ?? '',
@@ -74,6 +71,7 @@ export default async function EditRequestPage({ params }: Props) {
       <RequestForm
         customers={customersResult.data.data}
         categories={categoriesResult.data?.data ?? []}
+        priorities={prioritiesResult.data.data}
         departments={departments}
         members={members}
         requestId={request.id}
