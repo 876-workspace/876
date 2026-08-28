@@ -201,7 +201,7 @@ export async function runBillingSyncWorker(options?: {
 }
 
 export function startBillingSyncWorker(options?: { signal?: AbortSignal }): {
-  stop: () => void
+  stop: () => Promise<void>
 } {
   const controller = new AbortController()
   const externalSignal = options?.signal
@@ -214,9 +214,17 @@ export function startBillingSyncWorker(options?: { signal?: AbortSignal }): {
       })
   }
 
-  void runBillingSyncWorker({ signal: controller.signal })
+  const done = runBillingSyncWorker({ signal: controller.signal })
+  void done.catch((err) =>
+    logger.error({ err }, 'billing_customer_sync.worker_failed')
+  )
 
   return {
-    stop: () => controller.abort(),
+    stop: async () => {
+      controller.abort()
+      try {
+        await done
+      } catch {}
+    },
   }
 }
