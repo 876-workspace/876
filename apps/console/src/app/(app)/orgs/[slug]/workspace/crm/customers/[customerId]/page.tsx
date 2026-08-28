@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 
@@ -41,7 +42,18 @@ async function CustomerData({ params }: Props) {
   if (customerResult.error?.code === 'crm/tenant-not-found')
     return <NoCrmWorkspace />
   if (customerResult.error?.code === 'crm/customer-not-found') notFound()
-  if (customerResult.error) throw new Error(customerResult.error.message)
+  if (customerResult.error)
+    return (
+      <div className="space-y-4">
+        <PageBreadcrumb href={`${base}/customers`} label="Customers" />
+        <AppError
+          title="Customer details are temporarily unavailable"
+          error={customerResult.error}
+          variant="banner"
+          showCode
+        />
+      </div>
+    )
 
   const { profile, customer } = customerResult.data
   const identity = resolveCustomerIdentity(customer, profile.billingCustomerId)
@@ -69,13 +81,6 @@ async function CustomerData({ params }: Props) {
   )
 }
 
-/**
- * The customer's own requests.
- *
- * Filtered by the owning service through `customerId` rather than by listing
- * every request and trimming the result here — the API owns the filter, so the
- * count and any later pagination stay truthful.
- */
 async function CustomerRequests({
   organizationId,
   customerId,
@@ -86,7 +91,15 @@ async function CustomerRequests({
   requestsHref: string
 }) {
   const result = await $876.requests.list(organizationId, { customerId })
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    return (
+      <AppError
+        title="Request history is temporarily unavailable"
+        error={result.error}
+        variant="banner"
+        showCode
+      />
+    )
 
   const context = await loadRequestRowContext(organizationId)
 
