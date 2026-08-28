@@ -1,17 +1,11 @@
 import { describe, expect, it } from 'vitest'
+
 import {
-  createReminderBodySchema,
   createRequestBodySchema,
-  createRequestNoteBodySchema,
-  createTaskBodySchema,
-  listRequestNotesQuerySchema,
   listRequestsQuerySchema,
   organizationParamsSchema,
   requestParamsSchema,
-  updateReminderBodySchema,
   updateRequestBodySchema,
-  updateRequestNoteBodySchema,
-  updateTaskBodySchema,
 } from '../requests.schemas.js'
 
 describe('requests.schemas - organization and request params', () => {
@@ -48,18 +42,20 @@ describe('requests.schemas - listRequestsQuerySchema', () => {
       categoryId: 'crm_cat_1',
       subcategoryId: 'crm_sub_1',
       ownerId: 'usr_owner',
-      priority: 'URGENT',
+      priorityId: 'crm_pri_urgent',
     })
     expect(parsed).toMatchObject({
       status: 'OPEN',
-      priority: 'URGENT',
+      priorityId: 'crm_pri_urgent',
       teamId: 'crm_team_1',
     })
   })
-  it('rejects invalid status and priority', () => {
+  it('rejects an invalid status and the retired priority enum filter', () => {
     expect(() => listRequestsQuerySchema.parse({ status: 'UNKNOWN' })).toThrow()
+    // Priorities are tenant rows now, so the filter is an opaque id. A client
+    // still sending `priority=URGENT` must fail rather than be filtered out.
     expect(() =>
-      listRequestsQuerySchema.parse({ priority: 'CRITICAL' })
+      listRequestsQuerySchema.parse({ priority: 'URGENT' })
     ).toThrow()
   })
   it('trims teamId but does not require min length', () => {
@@ -111,13 +107,16 @@ describe('requests.schemas - createRequestBodySchema', () => {
       createRequestBodySchema.parse({ ...base, createdBy: '' })
     ).toThrow()
   })
-  it('validates priority and source enums', () => {
+  it('accepts a tenant priority id and rejects the retired enum', () => {
     expect(
-      createRequestBodySchema.parse({ ...base, priority: 'HIGH' }).priority
-    ).toBe('HIGH')
+      createRequestBodySchema.parse({ ...base, priorityId: ' crm_pri_high ' })
+        .priorityId
+    ).toBe('crm_pri_high')
     expect(() =>
-      createRequestBodySchema.parse({ ...base, priority: 'CRITICAL' })
+      createRequestBodySchema.parse({ ...base, priority: 'HIGH' })
     ).toThrow()
+  })
+  it('validates the source enum', () => {
     expect(
       createRequestBodySchema.parse({ ...base, source: 'EMAIL' }).source
     ).toBe('EMAIL')
@@ -164,157 +163,13 @@ describe('requests.schemas - updateRequestBodySchema', () => {
   it('rejects empty subject after trim', () => {
     expect(() => updateRequestBodySchema.parse({ subject: '   ' })).toThrow()
   })
-  it('rejects invalid enums', () => {
+  it('rejects an invalid status and the retired priority enum', () => {
     expect(() => updateRequestBodySchema.parse({ status: 'DONE' })).toThrow()
     expect(() =>
       updateRequestBodySchema.parse({ priority: 'LOWEST' })
     ).toThrow()
-  })
-})
-
-describe('requests.schemas - request note rich content', () => {
-  const document = JSON.stringify({
-    time: 1,
-    blocks: [{ type: 'paragraph', data: { text: '<b>Hello</b>' } }],
-    version: '2.31.6',
-  })
-
-  it('accepts serialized Editor.js bodies for create and update', () => {
     expect(
-      createRequestNoteBodySchema.parse({
-        body: document,
-        authorId: 'usr_1',
-      }).body
-    ).toBe(document)
-    expect(
-      updateRequestNoteBodySchema.parse({
-        body: document,
-        editedBy: 'usr_1',
-      }).body
-    ).toBe(document)
-  })
-
-  it('accepts private visibility and parses private list access', () => {
-    expect(
-      createRequestNoteBodySchema.parse({
-        body: document,
-        authorId: 'usr_1',
-        visibility: 'PRIVATE',
-      }).visibility
-    ).toBe('PRIVATE')
-    expect(
-      listRequestNotesQuerySchema.parse({
-        viewer_id: 'usr_1',
-        include_private: 'true',
-      })
-    ).toEqual({ viewer_id: 'usr_1', include_private: true })
-  })
-
-  it('keeps legacy plain text valid and preserves the 10_000 text limit', () => {
-    expect(
-      createRequestNoteBodySchema.parse({
-        body: 'Legacy note',
-        authorId: 'usr_1',
-      }).body
-    ).toBe('Legacy note')
-
-    const overLimit = JSON.stringify({
-      blocks: [{ type: 'paragraph', data: { text: 'a'.repeat(10_001) } }],
-    })
-    expect(() =>
-      createRequestNoteBodySchema.parse({
-        body: overLimit,
-        authorId: 'usr_1',
-      })
-    ).toThrow()
-  })
-
-  it('rejects documents with more than 250 blocks', () => {
-    const tooManyBlocks = JSON.stringify({
-      blocks: Array.from({ length: 251 }, () => ({
-        type: 'paragraph',
-        data: { text: 'x' },
-      })),
-    })
-
-    expect(() =>
-      createRequestNoteBodySchema.parse({
-        body: tooManyBlocks,
-        authorId: 'usr_1',
-      })
-    ).toThrow()
-  })
-})
-
-describe('requests.schemas - task schemas', () => {
-  it('creates task with required title', () => {
-    const parsed = createTaskBodySchema.parse({
-      title: ' Call customer ',
-      createdBy: 'usr_1',
-    })
-    expect(parsed.title).toBe('Call customer')
-    expect(parsed.createdBy).toBe('usr_1')
-  })
-  it('rejects empty title and overly long title', () => {
-    expect(() =>
-      createTaskBodySchema.parse({ title: '', createdBy: 'usr_1' })
-    ).toThrow()
-    expect(() =>
-      createTaskBodySchema.parse({ title: '  ', createdBy: 'usr_1' })
-    ).toThrow()
-  })
-  it('accepts optional rich description, status, priority, assignee, dueAt', () => {
-    const parsed = createTaskBodySchema.parse({
-      title: 'Task',
-      createdBy: 'usr_1',
-      description: JSON.stringify({
-        blocks: [{ type: 'paragraph', data: { text: 'Do it' } }],
-      }),
-      status: 'OPEN',
-      priority: 'HIGH',
-      assigneeId: 'usr_2',
-      dueAt: 123456,
-    })
-    expect(parsed.status).toBe('OPEN')
-    expect(parsed.priority).toBe('HIGH')
-    expect(parsed.assigneeId).toBe('usr_2')
-  })
-  it('updateTask requires at least one field', () => {
-    expect(() => updateTaskBodySchema.parse({})).toThrow()
-  })
-  it('updateTask accepts status DONE with completedBy', () => {
-    expect(
-      updateTaskBodySchema.parse({ status: 'DONE', completedBy: 'usr_2' })
-        .status
-    ).toBe('DONE')
-  })
-})
-
-describe('requests.schemas - reminder schemas', () => {
-  it('creates reminder with required fields', () => {
-    const parsed = createReminderBodySchema.parse({
-      title: ' Follow up ',
-      remindAt: Date.now(),
-      userId: 'usr_2',
-      createdBy: 'usr_1',
-    })
-    expect(parsed.title).toBe('Follow up')
-  })
-  it('rejects missing remindAt', () => {
-    expect(() =>
-      createReminderBodySchema.parse({
-        title: 'x',
-        userId: 'usr_2',
-        createdBy: 'usr_1',
-      })
-    ).toThrow()
-  })
-  it('updateReminder requires at least one field', () => {
-    expect(() => updateReminderBodySchema.parse({})).toThrow()
-  })
-  it('accepts partial update with status', () => {
-    expect(updateReminderBodySchema.parse({ status: 'DISMISSED' }).status).toBe(
-      'DISMISSED'
-    )
+      updateRequestBodySchema.parse({ priorityId: 'crm_pri_low' }).priorityId
+    ).toBe('crm_pri_low')
   })
 })

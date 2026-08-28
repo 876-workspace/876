@@ -2,15 +2,13 @@ import Link from 'next/link'
 import type { ComponentType, SVGProps } from 'react'
 
 import {
-  // `Activity` is this set's alias for Heroicons' BoltIcon — the lightning bolt.
-  // `@876/ui/icons` re-exports aliases, not the raw Heroicons names, so
-  // importing `BoltIcon` here fails the build.
   Activity,
   AdjustmentsHorizontalIcon,
   ClipboardDocumentListIcon,
   Cog6ToothIcon,
   EnvelopeIcon,
   TagIcon,
+  TrendingUp,
   UsersIcon,
 } from '@876/ui/icons'
 
@@ -24,6 +22,7 @@ export const SETTINGS_ICON_RESOLVER: Record<SettingsIconKey, Icon> = {
   email: EnvelopeIcon,
   members: UsersIcon,
   preferences: Cog6ToothIcon,
+  priorities: TrendingUp,
   statuses: AdjustmentsHorizontalIcon,
   teams: ClipboardDocumentListIcon,
 }

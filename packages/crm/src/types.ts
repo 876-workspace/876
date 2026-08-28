@@ -125,7 +125,34 @@ export const requestStatusSchema = z.enum([
   'CLOSED',
   'CANCELLED',
 ])
-export const requestPrioritySchema = z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT'])
+
+export const requestPrioritySchema = z.object({
+  object: z.literal('request_priority'),
+  id: z.string(),
+  tenantId: z.string(),
+  provisioningKey: z.string().nullable(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string().nullable(),
+  color: z.string().nullable(),
+  icon: z.string().nullable(),
+  weight: z.number().int(),
+  sortOrder: z.number().int(),
+  isDefault: z.boolean(),
+  isActive: z.boolean(),
+  createdBy: z.string().nullable(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+})
+
+export const requestPriorityListSchema = z.object({
+  object: z.literal('list'),
+  data: z.array(requestPrioritySchema),
+  has_more: z.boolean(),
+  total_count: z.number().int().nullable(),
+  url: z.string(),
+})
+
 export const requestSourceSchema = z.enum([
   'CRM',
   'EMAIL',
@@ -152,6 +179,7 @@ export const crmRequestSchema = z.object({
   categoryId: z.string().nullable(),
   subcategoryId: z.string().nullable(),
   status: requestStatusSchema,
+  priorityId: z.string(),
   priority: requestPrioritySchema,
   source: requestSourceSchema,
   teamId: z.string().nullable(),
@@ -178,11 +206,36 @@ export const requestListSchema = z.object({
 
 export type RequestStatus = z.infer<typeof requestStatusSchema>
 export type RequestPriority = z.infer<typeof requestPrioritySchema>
+export type RequestPriorityList = z.infer<typeof requestPriorityListSchema>
 export type RequestSource = z.infer<typeof requestSourceSchema>
 export type RequestNoteKind = z.infer<typeof requestNoteKindSchema>
 export type RequestNoteVisibility = z.infer<typeof requestNoteVisibilitySchema>
 export type CrmRequest = z.infer<typeof crmRequestSchema>
 export type RequestList = z.infer<typeof requestListSchema>
+
+export interface ListRequestPrioritiesQuery {
+  active?: boolean
+}
+
+export interface CreateRequestPriorityInput {
+  name: string
+  description?: string | null
+  color?: string | null
+  icon?: string | null
+  weight?: number
+  sortOrder?: number
+  isDefault?: boolean
+  isActive?: boolean
+  createdBy: string
+}
+
+export type UpdateRequestPriorityInput = Partial<
+  Omit<CreateRequestPriorityInput, 'createdBy'>
+>
+
+export interface DeleteRequestPriorityInput {
+  deletedBy: string
+}
 
 export interface ListRequestsQuery {
   status?: RequestStatus
@@ -194,7 +247,7 @@ export interface ListRequestsQuery {
   ownerId?: string
   /** `'unassigned'` selects requests raised for the organization as a whole. */
   requesterUserId?: string
-  priority?: RequestPriority
+  priorityId?: string
 }
 
 export interface CreateRequestInput {
@@ -205,7 +258,7 @@ export interface CreateRequestInput {
   categoryId?: string | null
   subcategoryId?: string | null
   ownerId?: string | null
-  priority?: RequestPriority
+  priorityId?: string
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
@@ -220,7 +273,7 @@ export interface UpdateRequestInput {
   subcategoryId?: string | null
   ownerId?: string | null
   status?: RequestStatus
-  priority?: RequestPriority
+  priorityId?: string
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
@@ -395,6 +448,7 @@ export const requestSubcategorySchema = z.object({
   id: z.string(),
   tenantId: z.string(),
   categoryId: z.string(),
+  provisioningKey: z.string().nullable().optional(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
@@ -402,8 +456,8 @@ export const requestSubcategorySchema = z.object({
   sortOrder: z.number().int(),
   isActive: z.boolean(),
   defaultTeamId: z.string().nullable(),
-  defaultPriority: requestPrioritySchema.nullable(),
-  createdBy: z.string(),
+  defaultPriorityId: z.string().nullable(),
+  createdBy: z.string().nullable(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.null(),
@@ -415,6 +469,7 @@ export const requestCategorySchema = z.object({
   object: z.literal('request_category'),
   id: z.string(),
   tenantId: z.string(),
+  provisioningKey: z.string().nullable().optional(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
@@ -423,8 +478,8 @@ export const requestCategorySchema = z.object({
   sortOrder: z.number().int(),
   isActive: z.boolean(),
   defaultTeamId: z.string().nullable(),
-  defaultPriority: requestPrioritySchema.nullable(),
-  createdBy: z.string(),
+  defaultPriorityId: z.string().nullable(),
+  createdBy: z.string().nullable(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.null(),
@@ -450,7 +505,7 @@ export interface CreateRequestCategoryInput {
   sortOrder?: number
   isActive?: boolean
   defaultTeamId?: string | null
-  defaultPriority?: RequestPriority | null
+  defaultPriorityId?: string | null
   createdBy: string
 }
 
@@ -482,6 +537,7 @@ export const requestTaskSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   status: taskStatusSchema,
+  priorityId: z.string(),
   priority: requestPrioritySchema,
   assigneeId: z.string().nullable(),
   dueAt: z.number().int().nullable(),
@@ -509,7 +565,7 @@ export interface CreateRequestTaskInput {
   title: string
   description?: string | null
   status?: TaskStatus
-  priority?: RequestPriority
+  priorityId?: string
   assigneeId?: string | null
   /** Unix seconds, matching every other timestamp on the wire. */
   dueAt?: number | null
@@ -521,7 +577,7 @@ export interface UpdateRequestTaskInput {
   title?: string
   description?: string | null
   status?: TaskStatus
-  priority?: RequestPriority
+  priorityId?: string
   assigneeId?: string | null
   /** Unix seconds, matching every other timestamp on the wire. */
   dueAt?: number | null

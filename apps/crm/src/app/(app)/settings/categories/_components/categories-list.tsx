@@ -27,7 +27,11 @@ import {
 
 import { client } from '@/lib/client'
 import { categoryColorClass } from '@/features/categories/category-color'
-import type { CrmRequestCategory, CrmRequestSubcategory } from '@/types/crm'
+import type {
+  CrmRequestCategory,
+  CrmRequestSubcategory,
+  RequestPriority,
+} from '@/types/crm'
 
 import { CategoryFormDialog, type CategoryDraft } from './category-form-dialog'
 import {
@@ -37,10 +41,12 @@ import {
 
 export function CategoriesList({
   categories,
+  priorities,
   teamNames,
   createOpen = false,
 }: {
   categories: CrmRequestCategory[]
+  priorities: RequestPriority[]
   teamNames: Record<string, string>
   createOpen?: boolean
 }) {
@@ -49,6 +55,7 @@ export function CategoriesList({
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft>()
   const [subcategoryDialogOpen, setSubcategoryDialogOpen] = useState(false)
   const [subcategoryDraft, setSubcategoryDraft] = useState<SubcategoryDraft>()
+  const priorityNames = new Map(priorities.map((priority) => [priority.id, priority.name]))
 
   function editCategory(category: CrmRequestCategory) {
     setCategoryDraft({
@@ -56,6 +63,7 @@ export function CategoriesList({
       name: category.name,
       color: category.color ?? 'blue',
       icon: isCategoryIconKey(category.icon) ? category.icon : 'tag',
+      defaultPriorityId: category.defaultPriorityId,
     })
     setCategoryDialogOpen(true)
   }
@@ -66,6 +74,7 @@ export function CategoriesList({
       name: '',
       color: category.color,
       icon: category.icon,
+      defaultPriorityId: null,
     })
     setSubcategoryDialogOpen(true)
   }
@@ -80,6 +89,7 @@ export function CategoriesList({
       name: subcategory.name,
       color: category.color,
       icon: subcategory.icon,
+      defaultPriorityId: subcategory.defaultPriorityId,
     })
     setSubcategoryDialogOpen(true)
   }
@@ -142,6 +152,7 @@ export function CategoriesList({
         <CategoryFormDialog
           open={categoryDialogOpen}
           onOpenChange={setCategoryDialogOpen}
+          priorities={priorities}
         />
       </Empty>
     )
@@ -172,14 +183,14 @@ export function CategoriesList({
                   <span>
                     Team:{' '}
                     {category.defaultTeamId
-                      ? (teamNames[category.defaultTeamId] ??
-                        category.defaultTeamId)
+                      ? (teamNames[category.defaultTeamId] ?? category.defaultTeamId)
                       : '—'}
                   </span>
                   <span>
                     Priority:{' '}
-                    {category.defaultPriority
-                      ? category.defaultPriority.toLowerCase()
+                    {category.defaultPriorityId
+                      ? (priorityNames.get(category.defaultPriorityId) ??
+                        category.defaultPriorityId)
                       : '—'}
                   </span>
                 </div>
@@ -254,6 +265,12 @@ export function CategoriesList({
                       className={`size-3.5 ${categoryColorClass(category.color)}`}
                     />
                     <span className="flex-1 text-sm">{subcategory.name}</span>
+                    {subcategory.defaultPriorityId ? (
+                      <span className="text-muted-foreground text-xs">
+                        {priorityNames.get(subcategory.defaultPriorityId) ??
+                          subcategory.defaultPriorityId}
+                      </span>
+                    ) : null}
                     <Button
                       type="button"
                       variant="ghost"
@@ -290,6 +307,7 @@ export function CategoriesList({
           if (!open) setCategoryDraft(undefined)
         }}
         category={categoryDraft}
+        priorities={priorities}
       />
       <SubcategoryFormDialog
         open={subcategoryDialogOpen}
@@ -298,6 +316,7 @@ export function CategoriesList({
           if (!open) setSubcategoryDraft(undefined)
         }}
         subcategory={subcategoryDraft}
+        priorities={priorities}
       />
     </>
   )

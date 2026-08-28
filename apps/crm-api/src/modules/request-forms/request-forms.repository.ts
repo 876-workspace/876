@@ -45,7 +45,7 @@ export function create(tenantId: string, input: CreateRequestFormInput) {
       defaultCategoryId: input.defaultCategoryId ?? null,
       defaultSubcategoryId: input.defaultSubcategoryId ?? null,
       defaultTeamId: input.defaultTeamId ?? null,
-      defaultPriority: input.defaultPriority ?? null,
+      defaultPriorityId: input.defaultPriorityId ?? null,
       confirmationTitle: input.confirmationTitle ?? null,
       confirmationMessage: input.confirmationMessage ?? null,
       createdBy: input.createdBy,
@@ -96,9 +96,6 @@ export async function remove(params: {
   if (process.env.DELETION_MODE === 'hard') {
     await prisma.requestForm.delete({ where: { id: params.id } })
   } else {
-    // `(tenant_id, slug)` is unique across every row, deleted or not, so a soft
-    // delete must release the slug — otherwise recreating a form under the name
-    // it used to have fails on a constraint the service cannot see.
     const deletedAt = new Date()
     await prisma.requestForm.update({
       where: { id: params.id },

@@ -6,6 +6,7 @@ import { createRequestFormRequestsResource } from './resources/request-form-requ
 import { createRequestFormSubmissionsResource } from './resources/request-form-submissions'
 import { createRequestFormsResource } from './resources/request-forms'
 import { createRequestNotesResource } from './resources/request-notes'
+import { createRequestPrioritiesResource } from './resources/request-priorities'
 import { createRequestRemindersResource } from './resources/request-reminders'
 import { createRequestTasksResource } from './resources/request-tasks'
 import { createRequestsResource } from './resources/requests'
@@ -22,6 +23,7 @@ export function create876CrmClient(options: ClientOptions = {}) {
     requestNotes: createRequestNotesResource(runtime),
     teams: createTeamsResource(runtime),
     requestCategories: createRequestCategoriesResource(runtime),
+    requestPriorities: createRequestPrioritiesResource(runtime),
     requestTasks: createRequestTasksResource(runtime),
     requestReminders: createRequestRemindersResource(runtime),
     requestForms: createRequestFormsResource(runtime),

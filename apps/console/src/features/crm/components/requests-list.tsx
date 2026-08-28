@@ -28,29 +28,8 @@ export type RequestListRow = {
   teamName: string | null
 }
 
-/** Urgency reads off the left edge before any text is read. */
-const PRIORITY_ACCENT: Record<RequestPriority, string> = {
-  URGENT: 'bg-destructive',
-  HIGH: 'bg-warning',
-  NORMAL: 'bg-info/40',
-  LOW: 'bg-transparent',
-}
-
-/** Statuses still owed an answer — the ones an agent scans for. */
 const OPEN_STATUSES = new Set<RequestStatus>(['OPEN', 'IN_PROGRESS'])
 
-/**
- * The request queue as a support desk reads it.
- *
- * A queue is worked top to bottom, one row at a time: whose request it is, what
- * it says, how old it is, and who owns it — which is why this is a stack of
- * full-width rows rather than a grid of columns. A table asks the eye to travel
- * across six columns per ticket and puts the subject, the only part anyone
- * actually reads, in a truncated cell.
- *
- * Rows arrive in the order CRM returns them; the queue does not offer its own
- * sort, so it can never disagree with the page it was given.
- */
 export function RequestsList({
   requests,
   requestsHref,
@@ -90,23 +69,19 @@ export function RequestsList({
   )
 }
 
-function RequestRow({
-  request,
-  href,
-}: {
-  request: RequestListRow
-  href: string
-}) {
+function RequestRow({ request, href }: { request: RequestListRow; href: string }) {
   const unresolved = OPEN_STATUSES.has(request.status)
 
   return (
     <li className="group hover:bg-muted/40 relative transition-colors">
       <span
         aria-hidden="true"
-        className={cn(
-          'absolute inset-y-2 left-0 w-[3px] rounded-r-full',
-          PRIORITY_ACCENT[request.priority] ?? 'bg-transparent'
-        )}
+        className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-transparent"
+        style={
+          request.priority.color
+            ? { backgroundColor: request.priority.color }
+            : undefined
+        }
       />
 
       <Link
@@ -158,8 +133,7 @@ function RequestRow({
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <div className="flex items-center gap-1.5">
             <RequestStatusBadge status={request.status} />
-            {request.priority === 'NORMAL' ||
-            request.priority === 'LOW' ? null : (
+            {request.priority.isDefault ? null : (
               <RequestPriorityBadge priority={request.priority} />
             )}
           </div>
@@ -187,7 +161,6 @@ function RequestRow({
   )
 }
 
-/** Holds the queue's shape while the page it belongs to is in flight. */
 export function RequestsListSkeleton({ rows = 6 }: { rows?: number }) {
   return (
     <div className="876-card overflow-hidden">

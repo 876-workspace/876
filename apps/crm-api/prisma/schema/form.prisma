@@ -15,37 +15,39 @@ enum RequestFormStatus {
 }
 
 model RequestForm {
-  id                       String            @id
-  tenantId                 String            @map("tenant_id")
-  name                     String
-  slug                     String
-  description              String?
-  status                   RequestFormStatus @default(DRAFT)
-  placement                RequestFormPlacement @default(HOSTED)
-  definition               Json
-  publishedDefinition      Json?             @map("published_definition")
-  version                  Int               @default(0)
-  defaultCategoryId        String?           @map("default_category_id")
-  defaultSubcategoryId     String?           @map("default_subcategory_id")
-  defaultTeamId            String?           @map("default_team_id")
-  defaultPriority          RequestPriority?  @map("default_priority")
-  confirmationTitle        String?           @map("confirmation_title")
-  confirmationMessage      String?           @map("confirmation_message")
-  createdBy                String            @map("created_by")
-  updatedBy                String?           @map("updated_by")
-  publishedAt              DateTime?         @map("published_at")
-  createdAt                DateTime          @default(now()) @map("created_at")
-  updatedAt                DateTime          @updatedAt @map("updated_at")
-  deletedAt                DateTime?         @map("deleted_at")
-  deletedBy                String?           @map("deleted_by")
-  deletionReason           String?           @map("deletion_reason")
+  id                   String               @id
+  tenantId             String               @map("tenant_id")
+  name                 String
+  slug                 String
+  description          String?
+  status               RequestFormStatus    @default(DRAFT)
+  placement            RequestFormPlacement @default(HOSTED)
+  definition           Json
+  publishedDefinition  Json?                @map("published_definition")
+  version              Int                  @default(0)
+  defaultCategoryId    String?              @map("default_category_id")
+  defaultSubcategoryId String?              @map("default_subcategory_id")
+  defaultTeamId        String?              @map("default_team_id")
+  defaultPriorityId    String?              @map("default_priority_id")
+  confirmationTitle    String?              @map("confirmation_title")
+  confirmationMessage  String?              @map("confirmation_message")
+  createdBy            String               @map("created_by")
+  updatedBy            String?              @map("updated_by")
+  publishedAt          DateTime?            @map("published_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  deletedAt            DateTime?            @map("deleted_at")
+  deletedBy            String?              @map("deleted_by")
+  deletionReason       String?              @map("deletion_reason")
 
-  tenant      Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  submissions RequestFormSubmission[]
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  defaultPriority RequestPriorityDef? @relation("FormDefaultPriority", fields: [tenantId, defaultPriorityId], references: [tenantId, id], onDelete: NoAction)
+  submissions     RequestFormSubmission[]
 
   @@unique([tenantId, slug])
   @@unique([tenantId, id])
   @@index([tenantId, status, updatedAt])
+  @@index([tenantId, defaultPriorityId])
   @@map("crm_request_forms")
 }
 

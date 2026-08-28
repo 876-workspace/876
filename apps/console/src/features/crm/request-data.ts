@@ -10,10 +10,6 @@ import { getPlatformOrganization } from '@/lib/platform-org'
 import { toRequestCustomerOption } from './request-customer-option'
 import type { DirectoryMember, RequestDepartment } from './types'
 
-/**
- * Resolves the platform support tenant and current authenticated session.
- * Cached per request.
- */
 export const loadSupportContext = cache(async (requestId?: string) => {
   const [org, session] = await Promise.all([
     getPlatformOrganization(),
@@ -22,7 +18,6 @@ export const loadSupportContext = cache(async (requestId?: string) => {
   return { org, session }
 })
 
-/** The org's teams and members for any organization. */
 export const loadOrgDirectory = cache(async (orgId: string) => {
   const [departmentsResult, membersResult] = await Promise.all([
     $876.departments.list(orgId),
@@ -31,7 +26,6 @@ export const loadOrgDirectory = cache(async (orgId: string) => {
 
   const departments: RequestDepartment[] =
     departmentsResult.data?.data.map((d) => ({ id: d.id, name: d.name })) ?? []
-
   const members: DirectoryMember[] =
     membersResult.data?.data.map((m) => {
       const nameParts = [m.first_name, m.last_name].filter(Boolean)
@@ -48,7 +42,6 @@ export const loadOrgDirectory = cache(async (orgId: string) => {
   return { departments, members }
 })
 
-/** The org's request-category catalog for any organization. */
 export const loadOrgCategoryIndex = cache(async (orgId: string) => {
   const result = await $876.requestCategories.list(orgId)
   return new Map(
@@ -56,7 +49,12 @@ export const loadOrgCategoryIndex = cache(async (orgId: string) => {
   )
 })
 
-/** Search-ready customer identities for request creation. */
+export const loadOrgPriorities = cache(async (orgId: string) => {
+  const result = await $876.requestPriorities.list(orgId)
+  if (result.error) throw new Error(result.error.message)
+  return result.data.data
+})
+
 export const loadOrgRequestCustomers = cache(async (orgId: string) => {
   const result = await $876.customerProfiles.list(orgId)
   if (result.error) throw new Error(result.error.message)
@@ -66,7 +64,6 @@ export const loadOrgRequestCustomers = cache(async (orgId: string) => {
     .sort((left, right) => left.name.localeCompare(right.name))
 })
 
-/** The customer this request belongs to for any organization. */
 export const loadOrgCustomer = cache(
   async (orgId: string, customerId: string) => {
     const result = await $876.customerProfiles.retrieve(orgId, customerId)
@@ -85,19 +82,16 @@ export const loadOrgCustomer = cache(
   }
 )
 
-/** The request itself for any organization. */
 export const loadOrgRequest = cache(
   async (orgId: string, requestId: string, returnPath = '/support') => {
     const session = await requireSession(returnPath)
     const result = await $876.requests.retrieve(orgId, requestId)
     if (result.error?.code === 'crm/request-not-found') notFound()
     if (result.error) throw new Error(result.error.message)
-
     return { org: { id: orgId }, session, request: result.data }
   }
 )
 
-/** The request's notes for any organization. */
 export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
   const result = await $876.requestNotes.list(orgId, requestId, {
     includePrivate: true,
@@ -106,14 +100,12 @@ export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
   return result.data.data
 })
 
-/** The request's tasks for any organization. */
 export const loadOrgTasks = cache(async (orgId: string, requestId: string) => {
   const result = await $876.requestTasks.list(orgId, requestId)
   if (result.error) throw new Error(result.error.message)
   return result.data.data
 })
 
-/** The request's reminders for any organization. */
 export const loadOrgReminders = cache(
   async (orgId: string, requestId: string) => {
     const result = await $876.requestReminders.list(orgId, requestId)
@@ -122,14 +114,6 @@ export const loadOrgReminders = cache(
   }
 )
 
-/**
- * The organization a request surface is scoped to.
- *
- * An organization workspace route already knows the organization; the platform
- * support desk resolves 876's own organization. That is the *only* difference
- * between the two surfaces — everything below this line loads a request the
- * same way for both, which is what lets them share one component set.
- */
 export const resolveRequestOrgId = cache(
   async (organizationId?: string): Promise<string | null> => {
     if (organizationId) return organizationId
@@ -138,7 +122,6 @@ export const resolveRequestOrgId = cache(
   }
 )
 
-/** The customer link for a request, relative to the surface it is opened from. */
 export function requestCustomerHref(
   baseHref: string,
   customerId: string
@@ -149,19 +132,11 @@ export function requestCustomerHref(
     : `/customers/${customerId}`
 }
 
-/**
- * The name indexes a request queue is rendered with.
- *
- * A row shows the customer, the assignee, and the team by name, and those come
- * from two different lists. Both are fetched once per organization per request
- * and joined in memory, so a page of 50 requests still costs two calls.
- */
 export const loadRequestRowContext = cache(async (orgId: string) => {
   const [profiles, directory] = await Promise.all([
     $876.customerProfiles.list(orgId),
     loadOrgDirectory(orgId),
   ])
-
   return {
     customerProfiles: profiles.data?.data ?? [],
     members: directory.members,
@@ -169,50 +144,48 @@ export const loadRequestRowContext = cache(async (orgId: string) => {
   }
 })
 
-/** The request itself in the platform support desk context. */
 export const loadRequest = cache(async (requestId: string) => {
   const { org, session } = await loadSupportContext(requestId)
   if (!org) return { org: null, session, request: null }
-
   return loadOrgRequest(org.id, requestId, `/support/${requestId}`)
 })
 
-/** The org's teams and members for the platform support desk. */
 export const loadDirectory = cache(async () => {
   const { org } = await loadSupportContext()
   if (!org) return { departments: [], members: [] }
   return loadOrgDirectory(org.id)
 })
 
-/** The org's request-category catalog for the platform support desk. */
 export const loadCategoryIndex = cache(async () => {
   const { org } = await loadSupportContext()
   if (!org) return new Map()
   return loadOrgCategoryIndex(org.id)
 })
 
-/** The customer this request belongs to for the platform support desk. */
+export const loadPriorities = cache(async () => {
+  const { org } = await loadSupportContext()
+  if (!org) return []
+  return loadOrgPriorities(org.id)
+})
+
 export const loadCustomer = cache(async (customerId: string) => {
   const { org } = await loadSupportContext()
   if (!org) return { profile: null, customer: null }
   return loadOrgCustomer(org.id, customerId)
 })
 
-/** The request's notes for the platform support desk. */
 export const loadNotes = cache(async (requestId: string) => {
   const { org } = await loadSupportContext(requestId)
   if (!org) return []
   return loadOrgNotes(org.id, requestId)
 })
 
-/** The request's tasks for the platform support desk. */
 export const loadTasks = cache(async (requestId: string) => {
   const { org } = await loadSupportContext(requestId)
   if (!org) return []
   return loadOrgTasks(org.id, requestId)
 })
 
-/** The request's reminders for the platform support desk. */
 export const loadReminders = cache(async (requestId: string) => {
   const { org } = await loadSupportContext(requestId)
   if (!org) return []

@@ -4,7 +4,6 @@ import { prisma } from '../../db/index.js'
 import type {
   ListRequestsFilter,
   RequestIntakeContext,
-  RequestPriority,
   RequestSource,
   RequestStatus,
 } from '../../types/request.js'
@@ -17,7 +16,7 @@ type CreateParams = {
   categoryId?: string | null
   subcategoryId?: string | null
   ownerId?: string | null
-  priority?: RequestPriority
+  priorityId: string
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
@@ -26,56 +25,44 @@ type CreateParams = {
   createdBy: string
 }
 
+const requestInclude = { priority: true } as const
+
 export function list(tenantId: string, filters?: ListRequestsFilter) {
   const where: NonNullable<
     Parameters<typeof prisma.request.findMany>[0]
-  >['where'] = {
-    tenantId,
-    deletedAt: null,
-  }
+  >['where'] = { tenantId, deletedAt: null }
 
   if (filters?.status) where.status = filters.status
-
-  if (filters?.teamId !== undefined) {
+  if (filters?.teamId !== undefined)
     where.teamId =
       filters.teamId === 'unassigned' || filters.teamId === 'none'
         ? null
         : filters.teamId
-  }
-
-  if (filters?.assigneeId !== undefined) {
+  if (filters?.assigneeId !== undefined)
     where.assigneeId =
       filters.assigneeId === 'unassigned' || filters.assigneeId === 'none'
         ? null
         : filters.assigneeId
-  }
-
   if (filters?.customerId) where.customerId = filters.customerId
   if (filters?.categoryId !== undefined) where.categoryId = filters.categoryId
   if (filters?.subcategoryId !== undefined)
     where.subcategoryId = filters.subcategoryId
-
-  if (filters?.ownerId !== undefined) {
+  if (filters?.ownerId !== undefined)
     where.ownerId =
       filters.ownerId === 'unassigned' || filters.ownerId === 'none'
         ? null
         : filters.ownerId
-  }
-
-  // 'unassigned'/'none' selects requests raised for the customer organization as
-  // a whole, mirroring how ownerId spells its own null case.
-  if (filters?.requesterUserId !== undefined) {
+  if (filters?.requesterUserId !== undefined)
     where.requesterUserId =
       filters.requesterUserId === 'unassigned' ||
       filters.requesterUserId === 'none'
         ? null
         : filters.requesterUserId
-  }
-
-  if (filters?.priority) where.priority = filters.priority
+  if (filters?.priorityId) where.priorityId = filters.priorityId
 
   return prisma.request.findMany({
     where,
+    include: requestInclude,
     orderBy: { createdAt: 'desc' },
   })
 }
@@ -83,6 +70,7 @@ export function list(tenantId: string, filters?: ListRequestsFilter) {
 export function retrieve(tenantId: string, id: string) {
   return prisma.request.findFirst({
     where: { tenantId, id, deletedAt: null },
+    include: requestInclude,
   })
 }
 
@@ -93,11 +81,6 @@ export function customerExists(tenantId: string, customerId: string) {
   })
 }
 
-/**
- * Allocates the tenant's next request number, creates the Request, and records
- * the opening description as its DESCRIPTION note. Runs inside the caller's
- * transaction so number allocation and creation cannot drift apart.
- */
 async function insertRequest(
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
   params: CreateParams
@@ -117,7 +100,7 @@ async function insertRequest(
       subject: params.subject,
       categoryId: params.categoryId ?? null,
       subcategoryId: params.subcategoryId ?? null,
-      priority: params.priority ?? 'NORMAL',
+      priorityId: params.priorityId,
       source: params.source ?? 'CRM',
       teamId: params.teamId ?? null,
       assigneeId: params.assigneeId ?? null,
@@ -126,10 +109,11 @@ async function insertRequest(
       requesterContactId: params.requesterContactId ?? null,
       createdBy: params.createdBy,
     },
+    include: requestInclude,
   })
 
   const description = params.description?.trim()
-  if (description) {
+  if (description)
     await tx.requestNote.create({
       data: {
         id: `crm_note_${randomUUID().replaceAll('-', '')}`,
@@ -141,7 +125,6 @@ async function insertRequest(
         kind: 'DESCRIPTION',
       },
     })
-  }
 
   return request
 }
@@ -150,17 +133,12 @@ export function create(params: CreateParams) {
   return prisma.$transaction((tx) => insertRequest(tx, params))
 }
 
-/**
- * Creates a Request and its intake submission in one transaction, so a form can
- * never record an answer set without the request it produced, or vice versa.
- */
 export function createFromIntake(
   params: CreateParams,
   intake: RequestIntakeContext
 ) {
   return prisma.$transaction(async (tx) => {
     const request = await insertRequest(tx, params)
-
     const submission = await tx.requestFormSubmission.create({
       data: {
         id: `crm_sub_${randomUUID().replaceAll('-', '')}`,
@@ -192,7 +170,7 @@ export function update(
     subcategoryId?: string | null
     ownerId?: string | null
     status?: RequestStatus
-    priority?: RequestPriority
+    priorityId?: string
     source?: RequestSource
     teamId?: string | null
     assigneeId?: string | null
@@ -202,7 +180,11 @@ export function update(
     closedAt?: Date | null
   }
 ) {
-  return prisma.request.update({ where: { id }, data: params })
+  return prisma.request.update({
+    where: { id },
+    data: params,
+    include: requestInclude,
+  })
 }
 
 export function categoryExists(tenantId: string, id: string) {
@@ -235,9 +217,9 @@ export async function remove(params: {
   deletedBy: string
   reason?: string | null
 }) {
-  if (process.env.DELETION_MODE === 'hard') {
+  if (process.env.DELETION_MODE === 'hard')
     await prisma.request.delete({ where: { id: params.id } })
-  } else {
+  else
     await prisma.request.update({
       where: { id: params.id },
       data: {
@@ -246,93 +228,6 @@ export async function remove(params: {
         deletionReason: params.reason?.trim() || null,
       },
     })
-  }
 
   return { object: 'request' as const, id: params.id, deleted: true as const }
-}
-
-export function listNotes(
-  tenantId: string,
-  requestId: string,
-  access: { viewerId?: string; includePrivate?: boolean } = {}
-) {
-  return prisma.requestNote.findMany({
-    where: {
-      tenantId,
-      requestId,
-      deletedAt: null,
-      ...(access.includePrivate
-        ? {}
-        : {
-            OR: [
-              { privateToUserId: null },
-              ...(access.viewerId
-                ? [{ privateToUserId: access.viewerId }]
-                : []),
-            ],
-          }),
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-}
-
-export function retrieveNote(tenantId: string, requestId: string, id: string) {
-  return prisma.requestNote.findFirst({
-    where: { tenantId, requestId, id, deletedAt: null },
-  })
-}
-
-export function createNote(params: {
-  tenantId: string
-  requestId: string
-  body: string
-  authorId: string
-  visibility?: 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
-  internal?: boolean
-}) {
-  const visibility =
-    params.visibility ?? (params.internal === false ? 'PUBLIC' : 'INTERNAL')
-
-  return prisma.requestNote.create({
-    data: {
-      id: `crm_note_${randomUUID().replaceAll('-', '')}`,
-      tenantId: params.tenantId,
-      requestId: params.requestId,
-      body: params.body,
-      authorId: params.authorId,
-      internal: visibility !== 'PUBLIC',
-      privateToUserId: visibility === 'PRIVATE' ? params.authorId : null,
-      kind: 'NOTE',
-    },
-  })
-}
-
-export function updateNote(
-  id: string,
-  params: { body: string; editedBy: string }
-) {
-  return prisma.requestNote.update({
-    where: { id },
-    data: { body: params.body, editedAt: new Date() },
-  })
-}
-
-export async function removeNote(params: { id: string; deletedBy: string }) {
-  if (process.env.DELETION_MODE === 'hard') {
-    await prisma.requestNote.delete({ where: { id: params.id } })
-  } else {
-    await prisma.requestNote.update({
-      where: { id: params.id },
-      data: {
-        deletedAt: new Date(),
-        deletedBy: params.deletedBy,
-      },
-    })
-  }
-
-  return {
-    object: 'request_note' as const,
-    id: params.id,
-    deleted: true as const,
-  }
 }

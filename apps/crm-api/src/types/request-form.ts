@@ -8,13 +8,6 @@ export const requestFormStatusSchema = z.enum([
 
 export const requestFormPlacementSchema = z.enum(['HOSTED', 'EMBEDDED'])
 
-export const requestFormPrioritySchema = z.enum([
-  'LOW',
-  'NORMAL',
-  'HIGH',
-  'URGENT',
-])
-
 export const requestFormFieldMappingSchema = z.enum([
   'REQUEST_SUBJECT',
   'REQUEST_DESCRIPTION',
@@ -197,7 +190,7 @@ export const createRequestFormInputSchema = z.object({
   defaultCategoryId: z.string().trim().max(160).nullable().optional(),
   defaultSubcategoryId: z.string().trim().max(160).nullable().optional(),
   defaultTeamId: z.string().trim().max(160).nullable().optional(),
-  defaultPriority: requestFormPrioritySchema.nullable().optional(),
+  defaultPriorityId: z.string().trim().max(160).nullable().optional(),
   confirmationTitle: z.string().trim().max(160).nullable().optional(),
   confirmationMessage: z.string().trim().max(1_000).nullable().optional(),
   createdBy: z.string().trim().min(1).max(160),
@@ -233,7 +226,6 @@ export const submitRequestFormInputSchema = z
 
 export type RequestFormStatus = z.infer<typeof requestFormStatusSchema>
 export type RequestFormPlacement = z.infer<typeof requestFormPlacementSchema>
-export type RequestFormPriority = z.infer<typeof requestFormPrioritySchema>
 export type RequestFormFieldMapping = z.infer<
   typeof requestFormFieldMappingSchema
 >

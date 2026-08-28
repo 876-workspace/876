@@ -17,7 +17,13 @@ import {
 import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { useRouter } from 'next/navigation'
-import { useMemo, useRef, useState, useTransition, type RefObject } from 'react'
+import {
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type RefObject,
+} from 'react'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
@@ -37,21 +43,9 @@ import {
 import { MemberPicker } from './member-picker'
 import { RequestPriorityBadge } from './request-priority-badge'
 
-/** Lets the header's "Add → Task" action jump straight to the composer. */
 export const NEW_TASK_FIELD_ID = 'new-request-task'
-
-/** `busyId` sentinel for the composer, which has no task id of its own. */
 const COMPOSER = 'composer'
 
-const PRIORITIES: RequestPriority[] = ['LOW', 'NORMAL', 'HIGH', 'URGENT']
-
-/**
- * The statuses a task can be *moved to* from the checklist.
- *
- * `DONE` is deliberately absent: it is owned by the checkbox, which is also
- * what stamps `completedAt`. Offering it twice would let the two controls
- * disagree about what "done" means.
- */
 const OPEN_STATUSES: { value: CrmTaskStatus; label: string }[] = [
   { value: 'OPEN', label: 'Open' },
   { value: 'IN_PROGRESS', label: 'In progress' },
@@ -65,7 +59,7 @@ function isSettled(status: CrmTaskStatus) {
 type Draft = {
   title: string
   description: string
-  priority: RequestPriority
+  priorityId: string
   assigneeId: string | null
   dueAt: string
 }
@@ -74,7 +68,7 @@ function emptyDraft(): Draft {
   return {
     title: '',
     description: '',
-    priority: 'NORMAL',
+    priorityId: '',
     assigneeId: null,
     dueAt: '',
   }
@@ -84,7 +78,7 @@ function draftFrom(task: CrmRequestTask): Draft {
   return {
     title: task.title,
     description: task.description ?? '',
-    priority: task.priority,
+    priorityId: task.priorityId,
     assigneeId: task.assigneeId,
     dueAt: task.dueAt === null ? '' : toDateTimeLocal(task.dueAt),
   }
@@ -94,12 +88,14 @@ export function RequestTasksSection({
   organizationId,
   requestId,
   tasks,
+  priorities,
   members = [],
   currentUserId,
 }: {
   organizationId: string
   requestId: string
   tasks: CrmRequestTask[]
+  priorities: RequestPriority[]
   members?: DirectoryMember[]
   currentUserId?: string
 }) {
@@ -141,7 +137,7 @@ export function RequestTasksSection({
     const result = await client.requestTasks.create(organizationId, requestId, {
       title,
       description: isEditorContentEmpty(description) ? null : description,
-      priority: draft.priority,
+      ...(draft.priorityId ? { priorityId: draft.priorityId } : {}),
       assigneeId: draft.assigneeId,
       dueAt: fromDateTimeLocal(draft.dueAt),
       createdBy: currentUserId ?? '',
@@ -194,7 +190,7 @@ export function RequestTasksSection({
         description: isEditorContentEmpty(next.description)
           ? null
           : next.description,
-        priority: next.priority,
+        ...(next.priorityId ? { priorityId: next.priorityId } : {}),
         assigneeId: next.assigneeId,
         dueAt: fromDateTimeLocal(next.dueAt),
       },
@@ -209,9 +205,7 @@ export function RequestTasksSection({
       organizationId,
       requestId,
       taskId,
-      {
-        deletedBy: currentUserId ?? '',
-      }
+      { deletedBy: currentUserId ?? '' }
     )
     setBusyId(null)
     if (result.error) {
@@ -250,6 +244,7 @@ export function RequestTasksSection({
             <li key={task.id}>
               <TaskRow
                 task={task}
+                priorities={priorities}
                 assignee={
                   task.assigneeId ? memberIndex.get(task.assigneeId) : undefined
                 }
@@ -315,6 +310,7 @@ export function RequestTasksSection({
         {expanded ? (
           <TaskFields
             draft={draft}
+            priorities={priorities}
             members={members}
             disabled={isSubmitting}
             idPrefix="new-task"
@@ -330,6 +326,7 @@ export function RequestTasksSection({
 
 function TaskFields({
   draft,
+  priorities,
   members,
   disabled,
   idPrefix,
@@ -338,6 +335,7 @@ function TaskFields({
   onChange,
 }: {
   draft: Draft
+  priorities: RequestPriority[]
   members: DirectoryMember[]
   disabled: boolean
   idPrefix: string
@@ -348,6 +346,11 @@ function TaskFields({
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     onChange({ ...draft, [key]: value })
   }
+
+  const availablePriorities = priorities.filter(
+    (priority) => priority.isActive || priority.id === draft.priorityId
+  )
+  const defaultPriority = priorities.find((priority) => priority.isDefault)
 
   return (
     <div className="flex flex-col gap-3">
@@ -375,15 +378,16 @@ function TaskFields({
           <NativeSelect
             id={`${idPrefix}-priority`}
             className="w-full"
-            value={draft.priority}
-            onChange={(event) =>
-              set('priority', event.target.value as RequestPriority)
-            }
-            disabled={disabled}
+            value={draft.priorityId}
+            onChange={(event) => set('priorityId', event.target.value)}
+            disabled={disabled || availablePriorities.length === 0}
           >
-            {PRIORITIES.map((priority) => (
-              <NativeSelectOption key={priority} value={priority}>
-                {priority.charAt(0) + priority.slice(1).toLowerCase()}
+            <NativeSelectOption value="">
+              Default{defaultPriority ? ` (${defaultPriority.name})` : ''}
+            </NativeSelectOption>
+            {availablePriorities.map((priority) => (
+              <NativeSelectOption key={priority.id} value={priority.id}>
+                {priority.name}
               </NativeSelectOption>
             ))}
           </NativeSelect>
@@ -425,6 +429,7 @@ function TaskFields({
 
 function TaskRow({
   task,
+  priorities,
   assignee,
   members,
   busy,
@@ -437,6 +442,7 @@ function TaskRow({
   onDelete,
 }: {
   task: CrmRequestTask
+  priorities: RequestPriority[]
   assignee?: DirectoryMember
   members: DirectoryMember[]
   busy: boolean
@@ -482,6 +488,7 @@ function TaskRow({
         />
         <TaskFields
           draft={draft}
+          priorities={priorities}
           members={members}
           disabled={busy}
           idPrefix={`task-${task.id}`}
@@ -544,7 +551,7 @@ function TaskRow({
         ) : null}
 
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          {task.priority === 'NORMAL' ? null : (
+          {task.priority.isDefault ? null : (
             <RequestPriorityBadge priority={task.priority} />
           )}
 

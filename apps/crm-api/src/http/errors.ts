@@ -19,6 +19,14 @@ const ERRORS = {
     message: 'That category slug is already in use.',
     httpStatus: 409,
   },
+  'crm/customer-not-found': {
+    message: 'Customer not found.',
+    httpStatus: 404,
+  },
+  'crm/description-note-immutable': {
+    message: 'A request’s opening note cannot be deleted.',
+    httpStatus: 409,
+  },
   'crm/form-in-use': {
     message: 'Request form has submissions and cannot be hard deleted.',
     httpStatus: 409,
@@ -43,24 +51,36 @@ const ERRORS = {
     message: 'That request form slug is already in use.',
     httpStatus: 409,
   },
-  'crm/tenant-not-found': {
-    message: 'This organization has no CRM workspace yet.',
-    httpStatus: 404,
-  },
-  'crm/tenant-inactive': {
-    message: 'This organization’s CRM workspace is not active.',
+  'crm/priority-default-required': {
+    message: 'Choose another default priority before changing this one.',
     httpStatus: 409,
   },
-  'crm/customer-not-found': {
-    message: 'Customer not found.',
+  'crm/priority-in-use': {
+    message: 'Priority is in use and must be archived instead.',
+    httpStatus: 409,
+  },
+  'crm/priority-not-found': {
+    message: 'Request priority not found.',
+    httpStatus: 404,
+  },
+  'crm/provisioning-invalid': {
+    message: 'CRM provisioning configuration contains an invalid reference.',
+    httpStatus: 500,
+  },
+  'crm/registry-unavailable': {
+    message: 'The customer registry could not be reached.',
+    httpStatus: 502,
+  },
+  'crm/reminder-not-found': {
+    message: 'Request reminder not found.',
     httpStatus: 404,
   },
   'crm/request-not-found': {
     message: 'Request not found.',
     httpStatus: 404,
   },
-  'crm/reminder-not-found': {
-    message: 'Request reminder not found.',
+  'crm/request-note-not-found': {
+    message: 'Request note not found.',
     httpStatus: 404,
   },
   'crm/subcategory-category-mismatch': {
@@ -79,24 +99,29 @@ const ERRORS = {
     message: 'That subcategory slug is already in use.',
     httpStatus: 409,
   },
-  'crm/task-not-found': { message: 'Request task not found.', httpStatus: 404 },
-  'crm/team-in-use': { message: 'Team is in use.', httpStatus: 409 },
-  'crm/team-not-found': { message: 'Team not found.', httpStatus: 404 },
+  'crm/task-not-found': {
+    message: 'Request task not found.',
+    httpStatus: 404,
+  },
+  'crm/team-in-use': {
+    message: 'Team is in use.',
+    httpStatus: 409,
+  },
+  'crm/team-not-found': {
+    message: 'Team not found.',
+    httpStatus: 404,
+  },
   'crm/team-slug-taken': {
     message: 'That team slug is already in use.',
     httpStatus: 409,
   },
-  'crm/request-note-not-found': {
-    message: 'Request note not found.',
-    httpStatus: 404,
-  },
-  'crm/description-note-immutable': {
-    message: 'A request’s opening note cannot be deleted.',
+  'crm/tenant-inactive': {
+    message: 'This organization’s CRM workspace is not active.',
     httpStatus: 409,
   },
-  'crm/registry-unavailable': {
-    message: 'The customer registry could not be reached.',
-    httpStatus: 502,
+  'crm/tenant-not-found': {
+    message: 'This organization has no CRM workspace yet.',
+    httpStatus: 404,
   },
 } as const
 

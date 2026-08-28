@@ -1,18 +1,23 @@
 import type { Request, Response } from 'express'
 import { z } from 'zod'
 
+import { crmProvisioningManifestSchema } from '../../types/provisioning.js'
 import * as service from './tenants.service.js'
 
-const ensureTenantBodySchema = z.object({ organizationId: z.string().min(1) })
-const retrieveTenantQuerySchema = z.object({
-  organizationId: z.string().min(1),
+const ensureTenantBodySchema = z.strictObject({
+  organizationId: z.string().trim().min(1),
+  provisioning: crmProvisioningManifestSchema.optional(),
+})
+const retrieveTenantQuerySchema = z.strictObject({
+  organizationId: z.string().trim().min(1),
 })
 
 export async function ensureTenant(req: Request, res: Response) {
-  const { organizationId } = ensureTenantBodySchema.parse(req.body)
-  res
-    .status(201)
-    .json({ data: await service.ensure(organizationId), error: null })
+  const { organizationId, provisioning } = ensureTenantBodySchema.parse(req.body)
+  res.status(201).json({
+    data: await service.ensure(organizationId, provisioning),
+    error: null,
+  })
 }
 
 export async function retrieveTenant(req: Request, res: Response) {

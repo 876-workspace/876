@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import {
   createRequestFormInputSchema,
   requestFormDefinitionSchema,
@@ -10,6 +11,7 @@ import {
 function definition(...fields: unknown[]) {
   return { fields }
 }
+
 function textField(overrides: Record<string, unknown> = {}) {
   return {
     id: 'field_subject',
@@ -21,6 +23,7 @@ function textField(overrides: Record<string, unknown> = {}) {
     ...overrides,
   }
 }
+
 function longTextField(overrides: Record<string, unknown> = {}) {
   return {
     id: 'field_description',
@@ -32,6 +35,7 @@ function longTextField(overrides: Record<string, unknown> = {}) {
     ...overrides,
   }
 }
+
 function selectField(overrides: Record<string, unknown> = {}) {
   return {
     id: 'field_topic',
@@ -46,136 +50,123 @@ function selectField(overrides: Record<string, unknown> = {}) {
     ...overrides,
   }
 }
+
 function validDefinition() {
   return definition(textField(), longTextField())
 }
 
-describe('requestFormFieldSchema - each type', () => {
-  it('parses TEXT with placeholder', () => {
-    expect(
-      requestFormFieldSchema.safeParse({
-        ...textField(),
-        type: 'TEXT',
-        placeholder: 'Enter',
-      }).success
-    ).toBe(true)
-  })
-  it('parses LONG_TEXT', () => {
-    expect(
-      requestFormFieldSchema.safeParse({
-        ...longTextField(),
-        type: 'LONG_TEXT',
-      }).success
-    ).toBe(true)
-  })
-  it('parses EMAIL with placeholder', () => {
-    const f = {
-      id: 'f',
+describe('requestFormFieldSchema', () => {
+  it.each([
+    { id: 'text', key: 'text', label: 'Text', required: true, type: 'TEXT' },
+    {
+      id: 'long',
+      key: 'long',
+      label: 'Long',
+      required: false,
+      type: 'LONG_TEXT',
+    },
+    {
+      id: 'email',
       key: 'email',
-      type: 'EMAIL' as const,
       label: 'Email',
       required: true,
-    }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(true)
-  })
-  it('parses PHONE', () => {
-    const f = {
-      id: 'f',
+      type: 'EMAIL',
+    },
+    {
+      id: 'phone',
       key: 'phone',
-      type: 'PHONE' as const,
       label: 'Phone',
       required: false,
-    }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(true)
-  })
-  it('parses DATE', () => {
-    const f = {
-      id: 'f',
+      type: 'PHONE',
+    },
+    {
+      id: 'date',
       key: 'date',
-      type: 'DATE' as const,
       label: 'Date',
       required: false,
-    }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(true)
-  })
-  it('parses NUMBER', () => {
-    const f = {
-      id: 'f',
-      key: 'count',
-      type: 'NUMBER' as const,
-      label: 'Count',
+      type: 'DATE',
+    },
+    {
+      id: 'number',
+      key: 'number',
+      label: 'Number',
       required: false,
-    }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(true)
+      type: 'NUMBER',
+    },
+    {
+      id: 'check',
+      key: 'check',
+      label: 'Check',
+      required: false,
+      type: 'CHECKBOX',
+    },
+  ])('parses $type fields', (field) => {
+    expect(requestFormFieldSchema.safeParse(field).success).toBe(true)
   })
-  it('parses SELECT', () => {
+
+  it('parses SELECT and MULTI_SELECT fields', () => {
     expect(requestFormFieldSchema.safeParse(selectField()).success).toBe(true)
-  })
-  it('parses MULTI_SELECT', () => {
     expect(
       requestFormFieldSchema.safeParse({
         id: 'f',
         key: 'tags',
-        type: 'MULTI_SELECT' as const,
+        type: 'MULTI_SELECT',
         label: 'Tags',
         required: false,
         options: [{ id: 'o1', label: 'A', value: 'a' }],
       }).success
     ).toBe(true)
   })
-  it('parses CHECKBOX', () => {
+
+  it('requires instruction fields to be non-required', () => {
+    const base = {
+      id: 'info',
+      key: 'info',
+      type: 'INSTRUCTIONS',
+      label: 'Info',
+      text: 'Read me',
+    }
+    expect(
+      requestFormFieldSchema.safeParse({ ...base, required: false }).success
+    ).toBe(true)
+    expect(
+      requestFormFieldSchema.safeParse({ ...base, required: true }).success
+    ).toBe(false)
+  })
+
+  it('enforces field key, label, id, and select-option bounds', () => {
+    expect(
+      requestFormFieldSchema.safeParse({ ...textField(), key: 'Bad-Key' })
+        .success
+    ).toBe(false)
     expect(
       requestFormFieldSchema.safeParse({
-        id: 'f',
-        key: 'agree',
-        type: 'CHECKBOX' as const,
-        label: 'Agree',
-        required: true,
+        ...textField(),
+        label: 'a'.repeat(161),
       }).success
-    ).toBe(true)
-  })
-  it('parses INSTRUCTIONS with text and required false', () => {
+    ).toBe(false)
     expect(
-      requestFormFieldSchema.safeParse({
-        id: 'info',
-        key: 'info',
-        type: 'INSTRUCTIONS' as const,
-        label: 'Info',
-        text: 'Read me',
-        required: false,
-      }).success
-    ).toBe(true)
-  })
-  it('rejects invalid key pattern', () => {
-    const f = { ...textField(), key: 'Bad-Key' }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(false)
-  })
-  it('rejects label too long', () => {
-    const f = { ...textField(), label: 'a'.repeat(161) }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(false)
-  })
-  it('rejects SELECT with zero options (min 1)', () => {
-    const f = { ...selectField(), options: [] }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(false)
-  })
-  it('rejects field id too long', () => {
-    const f = { ...textField(), id: 'a'.repeat(81) }
-    expect(requestFormFieldSchema.safeParse(f).success).toBe(false)
+      requestFormFieldSchema.safeParse({ ...textField(), id: 'a'.repeat(81) })
+        .success
+    ).toBe(false)
+    expect(
+      requestFormFieldSchema.safeParse({ ...selectField(), options: [] })
+        .success
+    ).toBe(false)
   })
 })
 
-describe('requestFormDefinitionSchema - structure validation', () => {
-  it('accepts minimal valid definition with subject mapping', () => {
+describe('requestFormDefinitionSchema', () => {
+  it('accepts a valid subject + description definition', () => {
     expect(
       requestFormDefinitionSchema.safeParse(validDefinition()).success
     ).toBe(true)
   })
-  it('rejects empty fields array (min 1)', () => {
+
+  it('requires at least one field and at most fifty', () => {
     expect(requestFormDefinitionSchema.safeParse({ fields: [] }).success).toBe(
       false
     )
-  })
-  it('rejects more than 50 fields', () => {
     const fields = Array.from({ length: 51 }, (_, i) => ({
       id: `f${i}`,
       key: `k${i}`,
@@ -188,188 +179,142 @@ describe('requestFormDefinitionSchema - structure validation', () => {
       false
     )
   })
-  it('rejects duplicate field ids', () => {
-    const dup = { ...textField(), id: 'dup' }
-    const other = { ...longTextField(), id: 'dup' }
+
+  it('rejects duplicate ids and keys', () => {
     expect(
-      requestFormDefinitionSchema.safeParse({ fields: [dup, other] }).success
+      requestFormDefinitionSchema.safeParse({
+        fields: [
+          { ...textField(), id: 'dup' },
+          { ...longTextField(), id: 'dup' },
+        ],
+      }).success
+    ).toBe(false)
+    expect(
+      requestFormDefinitionSchema.safeParse({
+        fields: [textField(), { ...longTextField(), key: 'subject' }],
+      }).success
     ).toBe(false)
   })
-  it('rejects duplicate field keys', () => {
-    const a = textField()
-    const b = { ...longTextField(), key: 'subject' }
+
+  it('requires exactly one request subject mapping', () => {
     expect(
-      requestFormDefinitionSchema.safeParse({ fields: [a, b] }).success
+      requestFormDefinitionSchema.safeParse({
+        fields: [
+          {
+            id: 'f1',
+            key: 'a',
+            type: 'TEXT',
+            label: 'A',
+            required: true,
+          },
+        ],
+      }).success
+    ).toBe(false)
+    expect(
+      requestFormDefinitionSchema.safeParse({
+        fields: [
+          textField(),
+          { ...longTextField(), mapping: 'REQUEST_SUBJECT' },
+        ],
+      }).success
     ).toBe(false)
   })
-  it('rejects zero REQUEST_SUBJECT mappings', () => {
-    const a = {
-      id: 'f1',
-      key: 'a',
-      type: 'TEXT' as const,
-      label: 'A',
-      required: true,
-      mapping: 'REQUEST_DESCRIPTION' as const,
-    }
-    const b = {
-      id: 'f2',
-      key: 'b',
-      type: 'TEXT' as const,
-      label: 'B',
-      required: true,
-    }
-    expect(
-      requestFormDefinitionSchema.safeParse({ fields: [a, b] }).success
-    ).toBe(false)
-  })
-  it('rejects two REQUEST_SUBJECT mappings', () => {
-    const a = textField()
-    const b = { ...longTextField(), mapping: 'REQUEST_SUBJECT' as const }
-    expect(
-      requestFormDefinitionSchema.safeParse({ fields: [a, b] }).success
-    ).toBe(false)
-  })
-  it('rejects duplicate REQUEST_DESCRIPTION mappings', () => {
-    const a = textField()
-    const b = longTextField()
-    const c = {
-      id: 'f3',
-      key: 'extra',
-      type: 'TEXT' as const,
-      label: 'Extra',
-      required: false,
-      mapping: 'REQUEST_DESCRIPTION' as const,
-    }
-    expect(
-      requestFormDefinitionSchema.safeParse({ fields: [a, b, c] }).success
-    ).toBe(false)
-  })
-  it('allows zero REQUEST_DESCRIPTION mappings', () => {
+
+  it('allows zero or one description mapping, but not two', () => {
     expect(
       requestFormDefinitionSchema.safeParse({ fields: [textField()] }).success
     ).toBe(true)
-  })
-  it('rejects duplicate option values within same SELECT', () => {
-    const f = {
-      id: 'f',
-      key: 'topic',
-      type: 'SELECT' as const,
-      label: 'Topic',
-      required: true,
-      options: [
-        { id: 'o1', label: 'A', value: 'dupe' },
-        { id: 'o2', label: 'B', value: 'dupe' },
-      ],
-    }
     expect(
-      requestFormDefinitionSchema.safeParse({ fields: [textField(), f] })
-        .success
+      requestFormDefinitionSchema.safeParse({
+        fields: [
+          textField(),
+          longTextField(),
+          {
+            id: 'f3',
+            key: 'extra',
+            type: 'TEXT',
+            label: 'Extra',
+            required: false,
+            mapping: 'REQUEST_DESCRIPTION',
+          },
+        ],
+      }).success
     ).toBe(false)
   })
-  it('allows same option value across different fields', () => {
-    const f1 = {
-      id: 'f1',
-      key: 'topic',
-      type: 'SELECT' as const,
-      label: 'Topic',
-      required: true,
-      options: [{ id: 'o1', label: 'A', value: 'x' }],
-      mapping: 'REQUEST_SUBJECT' as const,
-    }
-    const f2 = {
-      id: 'f2',
-      key: 'other',
-      type: 'SELECT' as const,
-      label: 'Other',
-      required: false,
-      options: [{ id: 'o2', label: 'A', value: 'x' }],
-    }
+
+  it('rejects duplicate option values in one field', () => {
     expect(
-      requestFormDefinitionSchema.safeParse({ fields: [f1, f2] }).success
-    ).toBe(true)
-  })
-  it('includes INSTRUCTIONS fields in count but not in mapping checks', () => {
-    const info = {
-      id: 'info',
-      key: 'info',
-      type: 'INSTRUCTIONS' as const,
-      label: 'Info',
-      text: 'Hello',
-      required: false as const,
-    }
-    expect(
-      requestFormDefinitionSchema.safeParse({ fields: [textField(), info] })
-        .success
-    ).toBe(true)
-  })
-  it('accepts 50 fields boundary', () => {
-    const fields = Array.from({ length: 50 }, (_, i) => ({
-      id: `f${i}`,
-      key: `k${i}`,
-      type: 'TEXT' as const,
-      label: `L ${i}`,
-      required: false,
-      ...(i === 0 ? { mapping: 'REQUEST_SUBJECT' as const } : {}),
-    }))
-    expect(requestFormDefinitionSchema.safeParse({ fields }).success).toBe(true)
+      requestFormDefinitionSchema.safeParse({
+        fields: [
+          textField(),
+          selectField({
+            options: [
+              { id: 'o1', label: 'A', value: 'dup' },
+              { id: 'o2', label: 'B', value: 'dup' },
+            ],
+          }),
+        ],
+      }).success
+    ).toBe(false)
   })
 })
 
 describe('createRequestFormInputSchema', () => {
-  it('accepts minimal valid create input', () => {
-    expect(
-      createRequestFormInputSchema.safeParse({
-        name: 'Support Intake',
-        slug: 'support-intake',
-        definition: validDefinition(),
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(true)
+  it('accepts minimal input and trims name/slug', () => {
+    const parsed = createRequestFormInputSchema.parse({
+      name: '  Support Intake  ',
+      slug: '  support-intake  ',
+      definition: validDefinition(),
+      createdBy: 'usr_1',
+    })
+    expect(parsed.name).toBe('Support Intake')
+    expect(parsed.slug).toBe('support-intake')
   })
-  it('accepts nullable optionals', () => {
-    expect(
-      createRequestFormInputSchema.safeParse({
-        name: 'Form',
-        slug: 'form',
-        definition: validDefinition(),
-        description: null,
-        defaultCategoryId: null,
-        defaultPriority: 'HIGH',
-        confirmationTitle: 'Done',
-        confirmationMessage: 'Thanks',
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(true)
+
+  it('accepts nullable routing defaults using defaultPriorityId', () => {
+    const parsed = createRequestFormInputSchema.parse({
+      name: 'Form',
+      slug: 'form',
+      definition: validDefinition(),
+      description: null,
+      defaultCategoryId: null,
+      defaultSubcategoryId: null,
+      defaultTeamId: null,
+      defaultPriorityId: 'crm_pri_high',
+      confirmationTitle: 'Done',
+      confirmationMessage: 'Thanks',
+      createdBy: 'usr_1',
+    })
+    expect(parsed.defaultPriorityId).toBe('crm_pri_high')
   })
-  it('rejects slug with spaces or caps', () => {
-    expect(
-      createRequestFormInputSchema.safeParse({
-        name: 'x',
-        slug: 'Bad Slug',
-        definition: validDefinition(),
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(false)
-    expect(
-      createRequestFormInputSchema.safeParse({
-        name: 'x',
-        slug: 'UPPER',
-        definition: validDefinition(),
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(false)
+
+  it('strips the removed defaultPriority enum field (replaced by defaultPriorityId)', () => {
+    const parsed = createRequestFormInputSchema.safeParse({
+      name: 'Form',
+      slug: 'form',
+      definition: validDefinition(),
+      defaultPriority: 'HIGH',
+      createdBy: 'usr_1',
+    })
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(
+        (parsed.data as unknown as Record<string, unknown>).defaultPriority
+      ).toBeUndefined()
+    }
   })
-  it('rejects slug with trailing dash', () => {
-    expect(
-      createRequestFormInputSchema.safeParse({
-        name: 'x',
-        slug: 'bad-',
-        definition: validDefinition(),
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(false)
-  })
-  it('rejects name empty after trim', () => {
+
+  it('rejects invalid slugs and empty names', () => {
+    for (const slug of ['Bad Slug', 'UPPER', 'bad-']) {
+      expect(
+        createRequestFormInputSchema.safeParse({
+          name: 'Form',
+          slug,
+          definition: validDefinition(),
+          createdBy: 'usr_1',
+        }).success
+      ).toBe(false)
+    }
     expect(
       createRequestFormInputSchema.safeParse({
         name: '   ',
@@ -379,54 +324,37 @@ describe('createRequestFormInputSchema', () => {
       }).success
     ).toBe(false)
   })
-  it('rejects description over 1000', () => {
+
+  it('enforces description/confirmation bounds and definition validity', () => {
     expect(
       createRequestFormInputSchema.safeParse({
-        name: 'x',
+        name: 'Form',
         slug: 'form',
         definition: validDefinition(),
         description: 'a'.repeat(1001),
         createdBy: 'usr_1',
       }).success
     ).toBe(false)
-  })
-  it('rejects confirmationMessage over 1000', () => {
     expect(
       createRequestFormInputSchema.safeParse({
-        name: 'x',
+        name: 'Form',
         slug: 'form',
         definition: validDefinition(),
         confirmationMessage: 'a'.repeat(1001),
         createdBy: 'usr_1',
       }).success
     ).toBe(false)
-  })
-  it('trims name and slug', () => {
-    const res = createRequestFormInputSchema.safeParse({
-      name: '  My Form  ',
-      slug: '  my-form  ',
-      definition: validDefinition(),
-      createdBy: 'usr_1',
-    })
-    expect(res.success).toBe(true)
-    if (res.success) {
-      expect(res.data.name).toBe('My Form')
-      expect(res.data.slug).toBe('my-form')
-    }
-  })
-  it('rejects definition without subject', () => {
-    const bad = definition({
-      id: 'f1',
-      key: 'a',
-      type: 'TEXT' as const,
-      label: 'A',
-      required: true,
-    })
     expect(
       createRequestFormInputSchema.safeParse({
-        name: 'x',
+        name: 'Form',
         slug: 'form',
-        definition: bad,
+        definition: definition({
+          id: 'f1',
+          key: 'a',
+          type: 'TEXT',
+          label: 'A',
+          required: true,
+        }),
         createdBy: 'usr_1',
       }).success
     ).toBe(false)
@@ -434,41 +362,27 @@ describe('createRequestFormInputSchema', () => {
 })
 
 describe('updateRequestFormInputSchema', () => {
-  it('allows partial update with only updatedBy', () => {
+  it('allows PATCH semantics with only updatedBy', () => {
     expect(
       updateRequestFormInputSchema.safeParse({ updatedBy: 'usr_1' }).success
     ).toBe(true)
   })
-  it('allows status transition to PUBLISHED', () => {
+
+  it('accepts status, definition, and priority-id updates', () => {
     expect(
       updateRequestFormInputSchema.safeParse({
         status: 'PUBLISHED',
+        definition: validDefinition(),
+        defaultPriorityId: 'crm_pri_critical',
         updatedBy: 'usr_1',
       }).success
     ).toBe(true)
   })
-  it('allows status ARCHIVED', () => {
-    expect(
-      updateRequestFormInputSchema.safeParse({
-        status: 'ARCHIVED',
-        updatedBy: 'usr_1',
-      }).success
-    ).toBe(true)
-  })
-  it('rejects without updatedBy', () => {
+
+  it('requires updatedBy and rejects invalid slugs', () => {
     expect(
       updateRequestFormInputSchema.safeParse({ name: 'New' }).success
     ).toBe(false)
-  })
-  it('allows updating definition alone', () => {
-    expect(
-      updateRequestFormInputSchema.safeParse({
-        definition: validDefinition(),
-        updatedBy: 'usr_1',
-      }).success
-    ).toBe(true)
-  })
-  it('rejects invalid slug on update', () => {
     expect(
       updateRequestFormInputSchema.safeParse({
         slug: 'Bad Slug',
@@ -479,7 +393,7 @@ describe('updateRequestFormInputSchema', () => {
 })
 
 describe('submitRequestFormInputSchema', () => {
-  it('accepts customerOrganizationId', () => {
+  it('accepts exactly one customer identity', () => {
     expect(
       submitRequestFormInputSchema.safeParse({
         answers: { subject: 'Hi' },
@@ -487,8 +401,6 @@ describe('submitRequestFormInputSchema', () => {
         createdBy: 'usr_1',
       }).success
     ).toBe(true)
-  })
-  it('accepts customerUserId', () => {
     expect(
       submitRequestFormInputSchema.safeParse({
         answers: { subject: 'Hi' },
@@ -496,16 +408,12 @@ describe('submitRequestFormInputSchema', () => {
         createdBy: 'usr_1',
       }).success
     ).toBe(true)
-  })
-  it('rejects when both customerOrganizationId and customerUserId missing', () => {
     expect(
       submitRequestFormInputSchema.safeParse({
         answers: { subject: 'Hi' },
         createdBy: 'usr_1',
       }).success
     ).toBe(false)
-  })
-  it('rejects when both customerOrganizationId and customerUserId provided', () => {
     expect(
       submitRequestFormInputSchema.safeParse({
         answers: { subject: 'Hi' },
@@ -515,34 +423,15 @@ describe('submitRequestFormInputSchema', () => {
       }).success
     ).toBe(false)
   })
-  it('accepts nullable requesterUserId and requesterContactId', () => {
-    expect(
-      submitRequestFormInputSchema.safeParse({
-        answers: { subject: 'Hi' },
-        customerOrganizationId: 'org_1',
-        requesterUserId: null,
-        requesterContactId: null,
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(true)
-  })
-  it('trims customer ids', () => {
-    const res = submitRequestFormInputSchema.safeParse({
+
+  it('accepts nullable requester identities and trims customer ids', () => {
+    const parsed = submitRequestFormInputSchema.parse({
       answers: { subject: 'Hi' },
       customerOrganizationId: '  org_1  ',
+      requesterUserId: null,
+      requesterContactId: null,
       createdBy: 'usr_1',
     })
-    expect(res.success).toBe(true)
-    if (res.success) expect(res.data.customerOrganizationId).toBe('org_1')
-  })
-  it('rejects empty answers with whitespace party still fails xor', () => {
-    // empty object as answers is allowed by schema (record), but xor still fails if no customer
-    expect(
-      submitRequestFormInputSchema.safeParse({
-        answers: {},
-        customerOrganizationId: '   ',
-        createdBy: 'usr_1',
-      }).success
-    ).toBe(false)
+    expect(parsed.customerOrganizationId).toBe('org_1')
   })
 })

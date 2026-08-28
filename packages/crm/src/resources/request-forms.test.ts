@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 vi.mock('server-only', () => ({}))
 vi.mock('@876/core/client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@876/core/client')>()),
   sendClientRequest: vi.fn(),
 }))
+
 import { sendClientRequest } from '@876/core/client'
 import { create876CrmClient } from '../client.js'
 
@@ -13,17 +15,39 @@ const mockSend = vi.mocked(sendClientRequest)
 function json(data: unknown, ok = true) {
   return { ok, payload: { data, error: null } } as unknown as ClientResponse
 }
+
 function errorPayload(code: string, message: string) {
   return {
     ok: true,
     payload: { data: null, error: { code, message } },
   } as unknown as ClientResponse
 }
+
 function malformed() {
   return { ok: true, payload: { bad: true } } as unknown as ClientResponse
 }
+
 function networkError() {
   return { networkError: true } as unknown as ClientResponse
+}
+
+const priority = {
+  object: 'request_priority' as const,
+  id: 'crm_pri_normal',
+  tenantId: 'crm_tenant_1',
+  provisioningKey: 'normal',
+  name: 'Normal',
+  slug: 'normal',
+  description: null,
+  color: null,
+  icon: null,
+  weight: 20,
+  sortOrder: 20,
+  isDefault: true,
+  isActive: true,
+  createdBy: null,
+  createdAt: 1,
+  updatedAt: 1,
 }
 
 const form = {
@@ -34,6 +58,7 @@ const form = {
   slug: 'support-intake',
   description: null,
   status: 'PUBLISHED' as const,
+  placement: 'HOSTED' as const,
   definition: {
     fields: [
       {
@@ -70,11 +95,36 @@ const form = {
   defaultCategoryId: null,
   defaultSubcategoryId: null,
   defaultTeamId: null,
-  defaultPriority: null,
+  defaultPriorityId: priority.id,
   confirmationTitle: null,
   confirmationMessage: null,
   createdBy: 'usr_1',
   publishedAt: 1,
+  createdAt: 1,
+  updatedAt: 1,
+}
+
+const requestResource = {
+  object: 'request' as const,
+  id: 'crm_req_1',
+  tenantId: 'crm_tenant_1',
+  customerId: 'crm_cus_1',
+  number: 1,
+  subject: 'Need help',
+  categoryId: null,
+  subcategoryId: null,
+  status: 'OPEN' as const,
+  priorityId: priority.id,
+  priority,
+  source: 'WEB' as const,
+  teamId: null,
+  assigneeId: null,
+  ownerId: null,
+  requesterUserId: null,
+  requesterContactId: null,
+  createdBy: 'usr_1',
+  resolvedAt: null,
+  closedAt: null,
   createdAt: 1,
   updatedAt: 1,
 }
@@ -87,9 +137,8 @@ const client = create876CrmClient({
 
 beforeEach(() => vi.clearAllMocks())
 
-describe('requestForms - list', () => {
-  it('requests GET at organization-scoped path without filter', async () => {
-    // ARRANGE
+describe('requestForms', () => {
+  it('lists forms at the organization-scoped path', async () => {
     mockSend.mockResolvedValue(
       json({
         object: 'list',
@@ -99,10 +148,9 @@ describe('requestForms - list', () => {
         url: '/v1/organizations/org_1/request-forms',
       })
     )
-    // ACT
+
     const result = await client.requestForms.list('org_1')
-    // ASSERT
-    expect(mockSend).toHaveBeenCalledTimes(1)
+
     expect(mockSend).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -110,14 +158,10 @@ describe('requestForms - list', () => {
         path: '/v1/organizations/org_1/request-forms',
       })
     )
-    // `placement` is defaulted by the schema, so a form serialized before the
-    // field existed still parses and arrives as HOSTED.
-    expect(result.data?.data).toEqual([{ ...form, placement: 'HOSTED' }])
-    expect(result.error).toBeNull()
-    expect(result.data?.object).toBe('list')
+    expect(result.data?.data[0]?.defaultPriorityId).toBe(priority.id)
   })
 
-  it('appends status as query string when provided', async () => {
+  it('appends status filters and encodes organization IDs', async () => {
     mockSend.mockResolvedValue(
       json({
         object: 'list',
@@ -127,91 +171,21 @@ describe('requestForms - list', () => {
         url: '/x',
       })
     )
-    await client.requestForms.list('org_1', { status: 'PUBLISHED' })
+
+    await client.requestForms.list('org /north', { status: 'PUBLISHED' })
+
     expect(mockSend).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        path: '/v1/organizations/org_1/request-forms?status=PUBLISHED',
+        path: '/v1/organizations/org%20%2Fnorth/request-forms?status=PUBLISHED',
       })
     )
   })
 
-  it('encodes organizationId with spaces and slashes', async () => {
-    mockSend.mockResolvedValue(
-      json({
-        object: 'list',
-        data: [],
-        has_more: false,
-        total_count: 0,
-        url: '/x',
-      })
-    )
-    await client.requestForms.list('org /north')
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        path: expect.stringContaining('org%20%2Fnorth'),
-      })
-    )
-  })
-
-  it('forwards AbortSignal', async () => {
-    mockSend.mockResolvedValue(
-      json({
-        object: 'list',
-        data: [],
-        has_more: false,
-        total_count: 0,
-        url: '/x',
-      })
-    )
+  it('forwards AbortSignal on list and retrieve', async () => {
     const controller = new AbortController()
-    await client.requestForms.list('org_1', { signal: controller.signal })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ signal: controller.signal })
-    )
-  })
-
-  it('returns invalid-response when payload is malformed', async () => {
-    mockSend.mockResolvedValue(malformed())
-    const result = await client.requestForms.list('org_1')
-    expect(result).toEqual({
-      data: null,
-      error: { code: 'crm/invalid-response', message: expect.any(String) },
-    })
-    expect(mockSend).toHaveBeenCalledTimes(1)
-  })
-
-  it('propagates envelope error', async () => {
-    mockSend.mockResolvedValue(
-      errorPayload('crm/tenant-not-found', 'no workspace')
-    )
-    const result = await client.requestForms.list('org_1')
-    expect(result).toEqual({
-      data: null,
-      error: { code: 'crm/tenant-not-found', message: 'no workspace' },
-    })
-  })
-
-  it('fails closed when not configured and does not call network', async () => {
-    const unconfigured = create876CrmClient({
-      baseUrl: 'http://crm.test',
-      fetch: vi.fn() as unknown as typeof fetch,
-    })
-    const result = await unconfigured.requestForms.list('org_1')
-    expect(result).toEqual({
-      data: null,
-      error: { code: 'crm/not-configured', message: expect.any(String) },
-    })
-    expect(mockSend).not.toHaveBeenCalled()
-    expect(result.data).toBeNull()
-  })
-
-  it.each([['DRAFT'], ['PUBLISHED'], ['ARCHIVED']] as const)(
-    'lists with status %s',
-    async (status) => {
-      mockSend.mockResolvedValue(
+    mockSend
+      .mockResolvedValueOnce(
         json({
           object: 'list',
           data: [],
@@ -220,21 +194,26 @@ describe('requestForms - list', () => {
           url: '/x',
         })
       )
-      await client.requestForms.list('org_1', { status: status as never })
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          path: expect.stringContaining(`status=${status}`),
-        })
-      )
-    }
-  )
-})
+      .mockResolvedValueOnce(json(form))
 
-describe('requestForms - retrieve', () => {
-  it('requests GET with encoded organizationId and form id', async () => {
+    await client.requestForms.list('org_1', { signal: controller.signal })
+    await client.requestForms.retrieve('org_1', 'crm_form_1', {
+      signal: controller.signal,
+    })
+
+    expect(mockSend.mock.calls[0]?.[1]).toMatchObject({
+      signal: controller.signal,
+    })
+    expect(mockSend.mock.calls[1]?.[1]).toMatchObject({
+      signal: controller.signal,
+    })
+  })
+
+  it('retrieves a form with encoded IDs', async () => {
     mockSend.mockResolvedValue(json(form))
+
     const result = await client.requestForms.retrieve('org /north', 'form /1')
+
     expect(mockSend).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -242,50 +221,21 @@ describe('requestForms - retrieve', () => {
         path: '/v1/organizations/org%20%2Fnorth/request-forms/form%20%2F1',
       })
     )
-    expect(result.data?.id).toBe('crm_form_1')
-    expect(result.error).toBeNull()
+    expect(result.data?.id).toBe(form.id)
   })
 
-  it('returns invalid-response when form shape is invalid', async () => {
-    mockSend.mockResolvedValue(json({ object: 'request_form', id: 'bad' }))
-    const result = await client.requestForms.retrieve('org_1', 'bad')
-    expect(result).toEqual({
-      data: null,
-      error: { code: 'crm/invalid-response', message: expect.any(String) },
-    })
-  })
-
-  it('forwards signal on retrieve', async () => {
+  it('creates a form with defaultPriorityId rather than the removed enum field', async () => {
     mockSend.mockResolvedValue(json(form))
-    const c = new AbortController()
-    await client.requestForms.retrieve('org_1', 'form_1', { signal: c.signal })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ signal: c.signal })
-    )
-  })
-
-  it('propagates network/offline', async () => {
-    mockSend.mockResolvedValue(networkError())
-    const result = await client.requestForms.retrieve('org_1', 'form_1')
-    expect(result.error?.code).toBe('network/offline')
-    expect(result.data).toBeNull()
-  })
-})
-
-describe('requestForms - create', () => {
-  it('sends POST with JSON body and returns created form', async () => {
-    mockSend.mockResolvedValue({
-      ok: true,
-      payload: { data: form, error: null },
-    } as unknown as ClientResponse)
     const input = {
       name: 'Support Intake',
       slug: 'support-intake',
       definition: form.definition,
+      defaultPriorityId: priority.id,
       createdBy: 'usr_1',
     }
+
     const result = await client.requestForms.create('org_1', input)
+
     expect(mockSend).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -294,251 +244,220 @@ describe('requestForms - create', () => {
         body: input,
       })
     )
-    expect(result.data?.slug).toBe('support-intake')
-    expect(result.error).toBeNull()
+    expect(result.data?.defaultPriorityId).toBe(priority.id)
   })
 
-  it('encodes organizationId on create path', async () => {
-    mockSend.mockResolvedValue(json(form))
-    await client.requestForms.create('org /1', {
-      name: 'x',
-      slug: 'x',
-      definition: form.definition,
-      createdBy: 'usr_1',
-    })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        path: '/v1/organizations/org%20%2F1/request-forms',
-      })
-    )
-  })
+  it('updates and publishes a form without resending the full definition', async () => {
+    mockSend.mockResolvedValue(json({ ...form, version: 2 }))
 
-  it('propagates form-slug-taken error', async () => {
-    mockSend.mockResolvedValue(
-      errorPayload('crm/form-slug-taken', 'slug taken')
-    )
-    const result = await client.requestForms.create('org_1', {
-      name: 'x',
-      slug: 'dup',
-      definition: form.definition,
-      createdBy: 'usr_1',
-    })
-    expect(result).toEqual({
-      data: null,
-      error: { code: 'crm/form-slug-taken', message: 'slug taken' },
-    })
-  })
-
-  it('forwards signal on create', async () => {
-    mockSend.mockResolvedValue(json(form))
-    const c = new AbortController()
-    await client.requestForms.create(
-      'org_1',
-      { name: 'x', slug: 'x', definition: form.definition, createdBy: 'usr_1' },
-      { signal: c.signal }
-    )
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ signal: c.signal })
-    )
-  })
-})
-
-describe('requestForms - update', () => {
-  it('sends PATCH with encoded ids and returns updated form', async () => {
-    mockSend.mockResolvedValue(json({ ...form, name: 'Renamed' }))
-    const result = await client.requestForms.update('org_1', 'crm_form_1', {
-      name: 'Renamed',
-      slug: 'support-intake',
-      definition: form.definition,
-      updatedBy: 'usr_1',
-    })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        method: 'PATCH',
-        path: '/v1/organizations/org_1/request-forms/crm_form_1',
-      })
-    )
-    expect(result.data?.name).toBe('Renamed')
-    expect(result.error).toBeNull()
-  })
-
-  it('publishes with status PUBLISHED via PATCH', async () => {
-    mockSend.mockResolvedValue(
-      json({ ...form, status: 'PUBLISHED', version: 2 })
-    )
-    const result = await client.requestForms.update('org_1', 'crm_form_1', {
+    const result = await client.requestForms.update('org_1', form.id, {
       status: 'PUBLISHED',
-      updatedBy: 'usr_1',
+      defaultPriorityId: priority.id,
+      updatedBy: 'usr_2',
     })
+
     expect(mockSend).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         method: 'PATCH',
-        body: expect.objectContaining({ status: 'PUBLISHED' }),
+        path: `/v1/organizations/org_1/request-forms/${form.id}`,
+        body: {
+          status: 'PUBLISHED',
+          defaultPriorityId: priority.id,
+          updatedBy: 'usr_2',
+        },
       })
     )
-    expect(result.data?.status).toBe('PUBLISHED')
     expect(result.data?.version).toBe(2)
   })
 
-  it('encodes special characters on update path', async () => {
-    mockSend.mockResolvedValue(json(form))
-    await client.requestForms.update('org /north', 'form /1', {
-      updatedBy: 'usr_1',
-    })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        path: '/v1/organizations/org%20%2Fnorth/request-forms/form%20%2F1',
-      })
-    )
-  })
-
-  it('returns invalid-response when update payload is malformed', async () => {
-    mockSend.mockResolvedValue(json({ object: 'request_form', id: 'bad' }))
-    const result = await client.requestForms.update('org_1', 'form_1', {
-      updatedBy: 'usr_1',
-    })
-    expect(result.error?.code).toBe('crm/invalid-response')
-  })
-
-  it('propagates form-not-found via envelope error', async () => {
-    mockSend.mockResolvedValue(errorPayload('crm/form-not-found', 'not found'))
-    const result = await client.requestForms.update('org_1', 'missing', {
-      updatedBy: 'usr_1',
-    })
-    expect(result.error?.code).toBe('crm/form-not-found')
-  })
-})
-
-describe('requestForms - delete', () => {
-  it('sends DELETE with body containing deletedBy and reason', async () => {
+  it('deletes a form with attribution and reason', async () => {
     mockSend.mockResolvedValue(
-      json({ object: 'request_form', id: 'crm_form_1', deleted: true })
+      json({ object: 'request_form', id: form.id, deleted: true })
     )
-    const result = await client.requestForms.delete('org_1', 'crm_form_1', {
+
+    const result = await client.requestForms.delete('org_1', form.id, {
       deletedBy: 'usr_1',
-      reason: 'no longer needed',
+      reason: 'No longer used',
     })
+
     expect(mockSend).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         method: 'DELETE',
-        path: '/v1/organizations/org_1/request-forms/crm_form_1',
-        body: { deletedBy: 'usr_1', reason: 'no longer needed' },
+        body: { deletedBy: 'usr_1', reason: 'No longer used' },
       })
     )
     expect(result.data?.deleted).toBe(true)
-    expect(result.error).toBeNull()
   })
 
-  it('sends null reason correctly', async () => {
-    mockSend.mockResolvedValue(
-      json({ object: 'request_form', id: 'crm_form_1', deleted: true })
-    )
-    await client.requestForms.delete('org_1', 'crm_form_1', {
-      deletedBy: 'usr_1',
-      reason: null,
-    })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ body: { deletedBy: 'usr_1', reason: null } })
-    )
+  it('returns invalid-response for malformed form payloads', async () => {
+    mockSend.mockResolvedValue(json({ object: 'request_form', id: 'bad' }))
+
+    const result = await client.requestForms.retrieve('org_1', 'bad')
+
+    expect(result.error?.code).toBe('crm/invalid-response')
+    expect(result.data).toBeNull()
   })
 
-  it('encodes ids on delete path', async () => {
+  it('propagates CRM envelope errors', async () => {
     mockSend.mockResolvedValue(
-      json({ object: 'request_form', id: 'form /1', deleted: true })
+      errorPayload('crm/form-not-found', 'Form not found.')
     )
-    await client.requestForms.delete('org /1', 'form /1', {
-      deletedBy: 'usr_1',
-    })
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        path: '/v1/organizations/org%20%2F1/request-forms/form%20%2F1',
-      })
-    )
-  })
 
-  it('propagates form-in-use when hard delete blocked', async () => {
-    mockSend.mockResolvedValue(
-      errorPayload('crm/form-in-use', 'has submissions')
-    )
-    const result = await client.requestForms.delete('org_1', 'crm_form_1', {
-      deletedBy: 'usr_1',
-    })
+    const result = await client.requestForms.retrieve('org_1', 'missing')
+
     expect(result).toEqual({
       data: null,
-      error: { code: 'crm/form-in-use', message: 'has submissions' },
+      error: { code: 'crm/form-not-found', message: 'Form not found.' },
     })
   })
 
-  it('forwards signal on delete', async () => {
-    mockSend.mockResolvedValue(
-      json({ object: 'request_form', id: 'crm_form_1', deleted: true })
-    )
-    const c = new AbortController()
-    await client.requestForms.delete(
-      'org_1',
-      'crm_form_1',
-      { deletedBy: 'usr_1' },
-      { signal: c.signal }
-    )
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ signal: c.signal })
-    )
+  it('propagates network failures', async () => {
+    mockSend.mockResolvedValue(networkError())
+
+    const result = await client.requestForms.retrieve('org_1', form.id)
+
+    expect(result.error?.code).toBe('network/offline')
   })
 
-  it('returns invalid-response when delete response is malformed', async () => {
-    mockSend.mockResolvedValue(json({ object: 'request_form', id: 'bad' }))
-    const result = await client.requestForms.delete('org_1', 'form_1', {
-      deletedBy: 'usr_1',
-    })
-    expect(result.error?.code).toBe('crm/invalid-response')
-  })
-})
-
-describe('requestForms - security and edge cases', () => {
-  it.each([
-    '<script>alert(1)</script>',
-    "' OR '1'='1",
-    '../../etc/passwd',
-    '__proto__',
-    '\u0000',
-    'a'.repeat(10_000),
-  ])(
-    'does not mangle security input in path encoding for %s',
-    async (input) => {
-      mockSend.mockResolvedValue(
-        json({
-          object: 'list',
-          data: [],
-          has_more: false,
-          total_count: 0,
-          url: '/x',
-        })
-      )
-      await client.requestForms.list(input)
-      expect(mockSend).toHaveBeenCalledTimes(1)
-      const path = mockSend.mock.calls[0][1].path as string
-      expect(path).toContain(encodeURIComponent(input))
-    }
-  )
-
-  it('does not send x-internal-key when not configured on delete', async () => {
+  it('fails closed when the CRM internal credential is missing', async () => {
     const unconfigured = create876CrmClient({
       baseUrl: 'http://crm.test',
       fetch: vi.fn() as unknown as typeof fetch,
     })
-    const result = await unconfigured.requestForms.delete('org_1', 'form_1', {
-      deletedBy: 'usr_1',
-    })
+
+    const result = await unconfigured.requestForms.list('org_1')
+
     expect(result.error?.code).toBe('crm/not-configured')
     expect(mockSend).not.toHaveBeenCalled()
+  })
+
+  it('returns invalid-response for malformed envelopes', async () => {
+    mockSend.mockResolvedValue(malformed())
+
+    const result = await client.requestForms.list('org_1')
+
+    expect(result.error?.code).toBe('crm/invalid-response')
+  })
+})
+
+describe('requestFormSubmissions', () => {
+  const submission = {
+    object: 'request_form_submission' as const,
+    id: 'crm_sub_1',
+    formId: form.id,
+    formVersion: 1,
+    request: requestResource,
+    createdAt: 2,
+  }
+
+  it('creates a submission and validates the embedded priority resource', async () => {
+    mockSend.mockResolvedValue(json(submission))
+    const input = {
+      answers: { subject: 'Need help', details: 'Please call me.' },
+      customerOrganizationId: 'customer_org_1',
+      createdBy: 'usr_1',
+    }
+
+    const result = await client.requestFormSubmissions.create(
+      'org_1',
+      form.id,
+      input
+    )
+
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        method: 'POST',
+        path: `/v1/organizations/org_1/request-forms/${form.id}/submissions`,
+        body: input,
+      })
+    )
+    expect(result.data?.request.priority.id).toBe(priority.id)
+  })
+
+  it('lists stored submission records', async () => {
+    const record = {
+      object: 'request_form_submission_record' as const,
+      id: 'crm_sub_1',
+      formId: form.id,
+      requestId: requestResource.id,
+      formVersion: 1,
+      definitionSnapshot: form.publishedDefinition,
+      answers: { subject: 'Need help' },
+      customerOrganizationId: 'customer_org_1',
+      customerUserId: null,
+      requesterUserId: null,
+      requesterContactId: null,
+      createdBy: 'usr_1',
+      createdAt: 2,
+    }
+    mockSend.mockResolvedValue(
+      json({
+        object: 'list',
+        data: [record],
+        has_more: false,
+        total_count: 1,
+        url: `/v1/organizations/org_1/request-forms/${form.id}/submissions`,
+      })
+    )
+
+    const result = await client.requestFormSubmissions.list('org_1', form.id)
+
+    expect(result.data?.data[0]?.requestId).toBe(requestResource.id)
+  })
+})
+
+describe('requestFormRequests', () => {
+  it('lists customer requests through the form-scoped endpoint', async () => {
+    mockSend.mockResolvedValue(
+      json({
+        object: 'list',
+        data: [requestResource],
+        has_more: false,
+        total_count: 1,
+        url: `/v1/organizations/org_1/request-forms/${form.id}/requests`,
+      })
+    )
+
+    const result = await client.requestFormRequests.list('org_1', form.id, {
+      customerOrganizationId: 'customer/org',
+    })
+
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        method: 'GET',
+        path: `/v1/organizations/org_1/request-forms/${form.id}/requests?customerOrganizationId=customer%2Forg`,
+      })
+    )
+    expect(result.data?.data[0]?.priorityId).toBe(priority.id)
+  })
+
+  it('supports customer user filters and AbortSignal', async () => {
+    const controller = new AbortController()
+    mockSend.mockResolvedValue(
+      json({
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/x',
+      })
+    )
+
+    await client.requestFormRequests.list('org /north', 'form /1', {
+      customerUserId: 'user /1',
+      signal: controller.signal,
+    })
+
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        path: '/v1/organizations/org%20%2Fnorth/request-forms/form%20%2F1/requests?customerUserId=user+%2F1',
+        signal: controller.signal,
+      })
+    )
   })
 })

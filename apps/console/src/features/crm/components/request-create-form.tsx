@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { client } from '@/lib/client'
 
 import type { RequestCustomerOption } from '../request-customer-option'
+import type { RequestPriority } from '../types'
 import { CustomerSelectionCard } from './request-customer-picker'
 
 type Props = {
@@ -20,6 +21,7 @@ type Props = {
   requestsHref: string
   currentUserId: string
   customers: RequestCustomerOption[]
+  priorities: RequestPriority[]
 }
 
 export function RequestCreateForm({
@@ -27,18 +29,22 @@ export function RequestCreateForm({
   requestsHref,
   currentUserId,
   customers,
+  priorities,
 }: Props) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [customerId, setCustomerId] = useState('')
+  const activePriorities = priorities.filter((priority) => priority.isActive)
+  const defaultPriority = activePriorities.find(
+    (priority) => priority.isDefault
+  )
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const subject = String(form.get('subject') ?? '').trim()
     const description = String(form.get('description') ?? '').trim()
-    const priority = String(form.get('priority') ?? 'NORMAL') as
-      'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
+    const priorityId = String(form.get('priorityId') ?? '').trim()
     const source = String(form.get('source') ?? 'CRM') as
       'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
     if (!customerId || !subject) return
@@ -48,7 +54,7 @@ export function RequestCreateForm({
       customerId,
       subject,
       description: description || null,
-      priority,
+      ...(priorityId ? { priorityId } : {}),
       source,
       createdBy: currentUserId,
     })
@@ -88,16 +94,18 @@ export function RequestCreateForm({
             </FormRow>
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <FormRow label="Priority" htmlFor="priority">
-                <NativeSelect
-                  id="priority"
-                  name="priority"
-                  defaultValue="NORMAL"
-                >
-                  <NativeSelectOption value="LOW">Low</NativeSelectOption>
-                  <NativeSelectOption value="NORMAL">Normal</NativeSelectOption>
-                  <NativeSelectOption value="HIGH">High</NativeSelectOption>
-                  <NativeSelectOption value="URGENT">Urgent</NativeSelectOption>
+              <FormRow label="Priority" htmlFor="priorityId">
+                <NativeSelect id="priorityId" name="priorityId" defaultValue="">
+                  <NativeSelectOption value="">
+                    {defaultPriority
+                      ? `Default (${defaultPriority.name})`
+                      : 'Default'}
+                  </NativeSelectOption>
+                  {activePriorities.map((priority) => (
+                    <NativeSelectOption key={priority.id} value={priority.id}>
+                      {priority.name}
+                    </NativeSelectOption>
+                  ))}
                 </NativeSelect>
               </FormRow>
 

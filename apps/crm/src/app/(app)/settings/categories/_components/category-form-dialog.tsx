@@ -24,6 +24,7 @@ import {
 } from '@876/ui/select'
 
 import { client } from '@/lib/client'
+import type { RequestPriority } from '@/types/crm'
 
 import { CategoryIconPicker } from './category-icon-picker'
 
@@ -41,31 +42,30 @@ export type CategoryDraft = {
   name: string
   color: string
   icon: CategoryIconKey
+  defaultPriorityId: string | null
 }
 
 export function CategoryFormDialog({
   open,
   onOpenChange,
   category,
+  priorities,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   category?: CategoryDraft
+  priorities: RequestPriority[]
 }) {
   const router = useRouter()
   const [name, setName] = useState(category?.name ?? '')
   const [color, setColor] = useState(category?.color ?? 'blue')
   const [icon, setIcon] = useState<CategoryIconKey>(category?.icon ?? 'tag')
+  const [defaultPriorityId, setDefaultPriorityId] = useState(
+    category?.defaultPriorityId ?? ''
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Reset the fields when the dialog opens on a different record.
-  //
-  // Adjusting state **during render** rather than in an effect: React re-runs
-  // this component immediately without committing the discarded pass, so there
-  // is no second paint and no cascading render. An effect would commit the
-  // stale values first, flashing the previous category's name into the inputs.
-  // https://react.dev/learn/you-might-not-need-an-effect
   const openedFor = open ? (category?.id ?? 'new') : null
   const [lastOpenedFor, setLastOpenedFor] = useState(openedFor)
   if (openedFor !== lastOpenedFor) {
@@ -73,8 +73,13 @@ export function CategoryFormDialog({
     setName(category?.name ?? '')
     setColor(category?.color ?? 'blue')
     setIcon(category?.icon ?? 'tag')
+    setDefaultPriorityId(category?.defaultPriorityId ?? '')
     setError(null)
   }
+
+  const availablePriorities = priorities.filter(
+    (priority) => priority.isActive || priority.id === defaultPriorityId
+  )
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -86,7 +91,12 @@ export function CategoryFormDialog({
 
     setSaving(true)
     setError(null)
-    const payload = { name: normalizedName, color, icon }
+    const payload = {
+      name: normalizedName,
+      color,
+      icon,
+      defaultPriorityId: defaultPriorityId || null,
+    }
     const result = category?.id
       ? await client.requestCategories.update(category.id, payload)
       : await client.requestCategories.create(payload)
@@ -105,7 +115,6 @@ export function CategoryFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Categories are intentionally managed in dialogs: this is the sanctioned low-stakes, three-field exception. */}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -146,6 +155,27 @@ export function CategoryFormDialog({
                 disabled={saving}
               />
             </FormRowGroup>
+          </FormRow>
+          <FormRow label="Default priority">
+            <Select
+              value={defaultPriorityId || 'none'}
+              onValueChange={(value) =>
+                setDefaultPriorityId(value === 'none' ? '' : (value ?? ''))
+              }
+              disabled={saving}
+            >
+              <SelectTrigger aria-label="Default priority">
+                <SelectValue placeholder="No category default" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No category default</SelectItem>
+                {availablePriorities.map((priority) => (
+                  <SelectItem key={priority.id} value={priority.id}>
+                    {priority.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormRow>
           {error ? (
             <p className="text-destructive text-sm" role="alert">

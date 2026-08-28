@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { RequestTasksSection } from '@/features/crm/components/request-tasks'
 import {
   loadOrgDirectory,
+  loadOrgPriorities,
   loadOrgRequest,
   loadOrgTasks,
 } from '@/features/crm/request-data'
@@ -17,15 +18,17 @@ export default async function OrgRequestTasksPage({ params }: Props) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const [{ session, request }, tasks, { members }] = await Promise.all([
-    loadOrgRequest(
-      org.id,
-      requestId,
-      `/orgs/${slug}/workspace/crm/requests/${requestId}/tasks`
-    ),
-    loadOrgTasks(org.id, requestId),
-    loadOrgDirectory(org.id),
-  ])
+  const [{ session, request }, tasks, priorities, { members }] =
+    await Promise.all([
+      loadOrgRequest(
+        org.id,
+        requestId,
+        `/orgs/${slug}/workspace/crm/requests/${requestId}/tasks`
+      ),
+      loadOrgTasks(org.id, requestId),
+      loadOrgPriorities(org.id),
+      loadOrgDirectory(org.id),
+    ])
 
   if (!request) notFound()
 
@@ -34,6 +37,7 @@ export default async function OrgRequestTasksPage({ params }: Props) {
       organizationId={org.id}
       requestId={request.id}
       tasks={tasks}
+      priorities={priorities}
       members={members}
       currentUserId={session.id}
     />

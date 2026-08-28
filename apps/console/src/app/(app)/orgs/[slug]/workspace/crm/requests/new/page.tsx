@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation'
 
 import { requireSession } from '@/lib/auth/guards'
 import { RequestCreateForm } from '@/features/crm/components/request-create-form'
-import { loadOrgRequestCustomers } from '@/features/crm/request-data'
+import {
+  loadOrgPriorities,
+  loadOrgRequestCustomers,
+} from '@/features/crm/request-data'
 import { resolveOrg } from '../../../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -15,7 +18,10 @@ export default async function NewRequestPage({ params }: Props) {
     requireSession(`/orgs/${slug}/workspace/crm/requests/new`),
   ])
   if (!org) notFound()
-  const customers = await loadOrgRequestCustomers(org.id)
+  const [customers, priorities] = await Promise.all([
+    loadOrgRequestCustomers(org.id),
+    loadOrgPriorities(org.id),
+  ])
 
   return (
     <div className="space-y-5">
@@ -32,6 +38,7 @@ export default async function NewRequestPage({ params }: Props) {
         requestsHref={`/orgs/${slug}/workspace/crm/requests`}
         currentUserId={session.id}
         customers={customers}
+        priorities={priorities}
       />
     </div>
   )

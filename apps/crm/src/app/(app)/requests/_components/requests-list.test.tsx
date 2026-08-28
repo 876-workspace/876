@@ -3,13 +3,44 @@ import { describe, expect, it } from 'vitest'
 
 import { RequestsList, type RequestListRow } from './requests-list'
 
+const normalPriority = {
+  object: 'request_priority' as const,
+  id: 'crm_pri_normal',
+  tenantId: 'crm_tenant_1',
+  provisioningKey: 'normal',
+  name: 'Normal',
+  slug: 'normal',
+  description: null,
+  color: null,
+  icon: null,
+  weight: 20,
+  sortOrder: 20,
+  isDefault: true,
+  isActive: true,
+  createdBy: null,
+  createdAt: 1,
+  updatedAt: 1,
+}
+
+const highPriority = {
+  ...normalPriority,
+  id: 'crm_pri_high',
+  provisioningKey: 'high',
+  name: 'High',
+  slug: 'high',
+  color: '#f59e0b',
+  weight: 30,
+  sortOrder: 30,
+  isDefault: false,
+}
+
 const sampleRequests: RequestListRow[] = [
   {
     id: 'crm_req_1',
     number: 101,
     subject: 'Cannot login to portal',
     status: 'OPEN',
-    priority: 'HIGH',
+    priority: highPriority,
     source: 'WEB',
     createdAt: 1_788_000_000,
     customerName: 'Island Traders Ltd',
@@ -24,7 +55,7 @@ const sampleRequests: RequestListRow[] = [
     number: 102,
     subject: 'Invoice inquiry',
     status: 'RESOLVED',
-    priority: 'NORMAL',
+    priority: normalPriority,
     source: 'EMAIL',
     createdAt: 1_788_000_000,
     customerName: 'Jane Doe',
@@ -37,12 +68,14 @@ const sampleRequests: RequestListRow[] = [
 ]
 
 describe('RequestsList', () => {
-  it('renders requests with details, numbers, and badges', () => {
+  it('renders requests with configured priority metadata', () => {
     render(<RequestsList requests={sampleRequests} />)
 
     expect(screen.getByText('2 requests')).toBeTruthy()
     expect(screen.getByText('#101')).toBeTruthy()
     expect(screen.getByText('Cannot login to portal')).toBeTruthy()
+    expect(screen.getByText('High')).toBeTruthy()
+    expect(screen.queryByText('Normal')).toBeNull()
     expect(screen.getByText('#102')).toBeTruthy()
     expect(screen.getByText('Invoice inquiry')).toBeTruthy()
     expect(

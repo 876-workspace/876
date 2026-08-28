@@ -1,10 +1,21 @@
-export type RequestStatus =
-  'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED' | 'CANCELLED'
+import type { RequestPriority } from './priority.js'
 
-export type RequestPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
+export type RequestStatus =
+  | 'OPEN'
+  | 'IN_PROGRESS'
+  | 'WAITING'
+  | 'RESOLVED'
+  | 'CLOSED'
+  | 'CANCELLED'
 
 export type RequestSource =
-  'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
+  | 'CRM'
+  | 'EMAIL'
+  | 'PHONE'
+  | 'CHAT'
+  | 'WEB'
+  | 'API'
+  | 'OTHER'
 
 export type RequestNoteKind = 'DESCRIPTION' | 'NOTE' | 'EMAIL'
 export type RequestNoteVisibility = 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
@@ -19,17 +30,13 @@ export interface CrmRequest {
   categoryId: string | null
   subcategoryId: string | null
   status: RequestStatus
+  priorityId: string
   priority: RequestPriority
   source: RequestSource
   teamId: string | null
   assigneeId: string | null
   ownerId: string | null
-  /**
-   * The 876 account that raised this request, when a named person did. Null on
-   * a request standing for the customer organization as a whole.
-   */
   requesterUserId: string | null
-  /** The registry contact that raised this request, when one is known. */
   requesterContactId: string | null
   createdBy: string
   resolvedAt: number | null
@@ -46,18 +53,17 @@ export interface ListRequestsFilter {
   categoryId?: string | null
   subcategoryId?: string | null
   ownerId?: string | null
-  priority?: RequestPriority
+  priorityId?: string
   requesterUserId?: string | null
 }
 
 export interface CreateRequestInput {
   customerId: string
   subject: string
-  /** The opening message. The service stores it as the request's DESCRIPTION note. */
   description?: string | null
   categoryId?: string | null
   subcategoryId?: string | null
-  priority?: RequestPriority
+  priorityId?: string
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null
@@ -67,7 +73,6 @@ export interface CreateRequestInput {
   createdBy: string
 }
 
-/** Metadata persisted atomically when a Request is created from an intake form. */
 export interface RequestIntakeContext {
   formId: string
   formVersion: number
@@ -82,7 +87,7 @@ export interface UpdateRequestInput {
   categoryId?: string | null
   subcategoryId?: string | null
   status?: RequestStatus
-  priority?: RequestPriority
+  priorityId?: string
   source?: RequestSource
   teamId?: string | null
   assigneeId?: string | null

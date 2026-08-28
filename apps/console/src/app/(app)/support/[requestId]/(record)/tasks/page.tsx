@@ -4,6 +4,7 @@ import { PlatformOrganizationUnavailable } from '@/features/crm/components/platf
 import { RequestTasksSection } from '@/features/crm/components/request-tasks'
 import {
   loadDirectory,
+  loadPriorities,
   loadRequest,
   loadTasks,
 } from '@/features/crm/request-data'
@@ -14,11 +15,13 @@ type Props = { params: Promise<{ requestId: string }> }
 
 export default async function SupportRequestTasksPage({ params }: Props) {
   const { requestId } = await params
-  const [{ org, session, request }, tasks, { members }] = await Promise.all([
-    loadRequest(requestId),
-    loadTasks(requestId),
-    loadDirectory(),
-  ])
+  const [{ org, session, request }, tasks, priorities, { members }] =
+    await Promise.all([
+      loadRequest(requestId),
+      loadTasks(requestId),
+      loadPriorities(),
+      loadDirectory(),
+    ])
 
   if (!org) return <PlatformOrganizationUnavailable />
   if (!request) notFound()
@@ -28,6 +31,7 @@ export default async function SupportRequestTasksPage({ params }: Props) {
       organizationId={org.id}
       requestId={request.id}
       tasks={tasks}
+      priorities={priorities}
       members={members}
       currentUserId={session.id}
     />

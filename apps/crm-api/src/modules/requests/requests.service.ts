@@ -1,17 +1,13 @@
+import { crmError } from '../../http/errors.js'
 import type {
   CreateRequestInput,
-  CreateRequestNoteInput,
   DeleteRequestInput,
-  DeleteRequestNoteInput,
-  ListRequestNotesInput,
   ListRequestsFilter,
   RequestIntakeContext,
   UpdateRequestInput,
-  UpdateRequestNoteInput,
 } from '../../types/request.js'
+import * as priorities from '../priorities/index.js'
 import * as tenants from '../tenants/tenants.service.js'
-
-import { crmError } from '../../http/errors.js'
 import * as repository from './requests.repository.js'
 
 async function requireTenant(organizationId: string) {
@@ -35,7 +31,8 @@ function serialize(
     categoryId: request.categoryId,
     subcategoryId: request.subcategoryId,
     status: request.status,
-    priority: request.priority,
+    priorityId: request.priorityId,
+    priority: priorities.serialize(request.priority),
     source: request.source,
     teamId: request.teamId,
     assigneeId: request.assigneeId,
@@ -51,29 +48,6 @@ function serialize(
       : null,
     createdAt: Math.floor(request.createdAt.getTime() / 1000),
     updatedAt: Math.floor(request.updatedAt.getTime() / 1000),
-  }
-}
-
-function serializeNote(
-  note: NonNullable<Awaited<ReturnType<typeof repository.retrieveNote>>>
-) {
-  return {
-    object: 'request_note' as const,
-    id: note.id,
-    tenantId: note.tenantId,
-    requestId: note.requestId,
-    body: note.body,
-    authorId: note.authorId,
-    internal: note.internal,
-    visibility: note.privateToUserId
-      ? ('PRIVATE' as const)
-      : note.internal
-        ? ('INTERNAL' as const)
-        : ('PUBLIC' as const),
-    kind: note.kind,
-    editedAt: note.editedAt ? Math.floor(note.editedAt.getTime() / 1000) : null,
-    createdAt: Math.floor(note.createdAt.getTime() / 1000),
-    updatedAt: Math.floor(note.updatedAt.getTime() / 1000),
   }
 }
 
@@ -94,18 +68,13 @@ export async function retrieve(organizationId: string, id: string) {
   return request ? serialize(request) : null
 }
 
-/**
- * Validates that a category/subcategory/team triple names live records in this
- * tenant and that the subcategory belongs to the category. Exported so intake
- * forms can reject bad routing defaults when the form is saved, rather than at
- * submission time in front of a customer.
- */
 export async function assertRouting(
   organizationId: string,
   routing: {
     categoryId?: string | null
     subcategoryId?: string | null
     teamId?: string | null
+    priorityId?: string | null
   }
 ) {
   const tenant = await requireTenant(organizationId)
@@ -129,6 +98,29 @@ export async function assertRouting(
     !(await repository.teamExists(tenant.id, routing.teamId))
   )
     throw crmError('crm/team-not-found')
+
+  if (routing.priorityId)
+    await priorities.requireActiveForTenant(tenant.id, routing.priorityId)
+}
+
+async function resolvePriority(
+  tenantId: string,
+  explicitPriorityId: string | undefined,
+  categoryDefaultPriorityId: string | null | undefined,
+  subcategoryDefaultPriorityId: string | null | undefined
+) {
+  const priorityId =
+    explicitPriorityId ??
+    subcategoryDefaultPriorityId ??
+    categoryDefaultPriorityId
+
+  if (priorityId)
+    return priorities.requireActiveForTenant(tenantId, priorityId)
+
+  const defaultPriority = await priorities.retrieveDefaultForTenant(tenantId)
+  if (!defaultPriority) throw crmError('crm/priority-not-found')
+
+  return defaultPriority
 }
 
 async function validateCreate(
@@ -155,15 +147,18 @@ async function validateCreate(
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
 
-  // Category routing is useful only as a default; an explicit caller selection wins.
+  const priority = await resolvePriority(
+    tenant.id,
+    input.priorityId,
+    category?.defaultPriorityId,
+    subcategory?.defaultPriorityId
+  )
   const defaults = subcategory ?? category
   const effective = {
     ...input,
+    priorityId: priority.id,
     ...(input.teamId === undefined && defaults?.defaultTeamId
       ? { teamId: defaults.defaultTeamId }
-      : {}),
-    ...(input.priority === undefined && defaults?.defaultPriority
-      ? { priority: defaults.defaultPriority }
       : {}),
   }
 
@@ -176,9 +171,7 @@ export async function create(
 ) {
   const { tenant, effective } = await validateCreate(organizationId, input)
 
-  return serialize(
-    await repository.create({ tenantId: tenant.id, ...effective })
-  )
+  return serialize(await repository.create({ tenantId: tenant.id, ...effective }))
 }
 
 export async function createFromIntake(
@@ -225,6 +218,8 @@ export async function update(
 
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
+  if (input.priorityId)
+    await priorities.requireActiveForTenant(tenant.id, input.priorityId)
 
   const teamChanged =
     input.teamId !== undefined && input.teamId !== current.teamId
@@ -271,76 +266,4 @@ export async function remove(
   if (!current) return null
 
   return repository.remove({ id, ...input })
-}
-
-export async function listNotes(
-  organizationId: string,
-  requestId: string,
-  access: ListRequestNotesInput = {}
-) {
-  const tenant = await requireTenant(organizationId)
-  const notes = await repository.listNotes(tenant.id, requestId, access)
-
-  return notes.map(serializeNote)
-}
-
-export async function createNote(
-  organizationId: string,
-  requestId: string,
-  input: CreateRequestNoteInput
-) {
-  const tenant = await requireTenant(organizationId)
-  const request = await repository.retrieve(tenant.id, requestId)
-  if (!request) throw crmError('crm/request-not-found')
-
-  const note = await repository.createNote({
-    tenantId: tenant.id,
-    requestId,
-    ...input,
-  })
-
-  return serializeNote(note)
-}
-
-export async function removeNote(
-  organizationId: string,
-  requestId: string,
-  id: string,
-  input: DeleteRequestNoteInput
-) {
-  const tenant = await requireTenant(organizationId)
-  const current = await repository.retrieveNote(tenant.id, requestId, id)
-  if (!current) return null
-  if (
-    current.privateToUserId &&
-    !input.includePrivate &&
-    current.privateToUserId !== input.deletedBy
-  )
-    return null
-  if (current.kind === 'DESCRIPTION')
-    throw crmError('crm/description-note-immutable')
-
-  return repository.removeNote({
-    id,
-    deletedBy: input.deletedBy,
-  })
-}
-
-export async function updateNote(
-  organizationId: string,
-  requestId: string,
-  id: string,
-  input: UpdateRequestNoteInput
-) {
-  const tenant = await requireTenant(organizationId)
-  const current = await repository.retrieveNote(tenant.id, requestId, id)
-  if (!current) return null
-  if (
-    current.privateToUserId &&
-    !input.includePrivate &&
-    current.privateToUserId !== input.editedBy
-  )
-    return null
-
-  return serializeNote(await repository.updateNote(id, input))
 }

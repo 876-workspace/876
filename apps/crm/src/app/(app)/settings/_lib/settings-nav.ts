@@ -4,6 +4,7 @@ export type SettingsIconKey =
   | 'email'
   | 'members'
   | 'preferences'
+  | 'priorities'
   | 'statuses'
   | 'teams'
 
@@ -40,6 +41,12 @@ export const SETTINGS_GROUPS: SettingsNavGroup[] = [
   {
     label: 'Requests',
     items: [
+      {
+        label: 'Priorities',
+        icon: 'priorities',
+        availability: 'available',
+        href: '/settings/priorities',
+      },
       { label: 'Statuses', icon: 'statuses', availability: 'planned' },
       {
         label: 'Automation rules',

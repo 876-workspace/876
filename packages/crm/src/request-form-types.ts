@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { crmRequestSchema, requestPrioritySchema } from './types'
+import { crmRequestSchema } from './types'
 
 export const requestFormPlacementSchema = z.enum(['HOSTED', 'EMBEDDED'])
 
@@ -83,9 +83,6 @@ const instructionsFieldSchema = z.object({
   required: z.literal(false),
 })
 
-// One literal `type` per member, so a consumer rendering a field narrows to the
-// shape it is actually holding — a member whose `type` is itself a union never
-// drops out of the residual type, leaving `options` unreachable.
 export const requestFormFieldSchema = z.discriminatedUnion('type', [
   textFieldSchema,
   longTextFieldSchema,
@@ -111,9 +108,6 @@ export const requestFormSchema = z.object({
   slug: z.string(),
   description: z.string().nullable(),
   status: requestFormStatusSchema,
-  // Defaulted rather than required: a client deployed ahead of the API must
-  // still parse a form serialized before `placement` existed. An additive
-  // field is not a breaking change, and a required schema would make it one.
   placement: requestFormPlacementSchema.default('HOSTED'),
   definition: requestFormDefinitionSchema,
   publishedDefinition: requestFormDefinitionSchema.nullable(),
@@ -121,7 +115,7 @@ export const requestFormSchema = z.object({
   defaultCategoryId: z.string().nullable(),
   defaultSubcategoryId: z.string().nullable(),
   defaultTeamId: z.string().nullable(),
-  defaultPriority: requestPrioritySchema.nullable(),
+  defaultPriorityId: z.string().nullable(),
   confirmationTitle: z.string().nullable(),
   confirmationMessage: z.string().nullable(),
   createdBy: z.string(),
@@ -198,13 +192,12 @@ export interface CreateRequestFormInput {
   defaultCategoryId?: string | null
   defaultSubcategoryId?: string | null
   defaultTeamId?: string | null
-  defaultPriority?: z.infer<typeof requestPrioritySchema> | null
+  defaultPriorityId?: string | null
   confirmationTitle?: string | null
   confirmationMessage?: string | null
   createdBy: string
 }
 
-/** PATCH semantics — send only the fields being changed. */
 export interface UpdateRequestFormInput extends Partial<
   Omit<CreateRequestFormInput, 'createdBy'>
 > {

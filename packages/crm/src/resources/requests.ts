@@ -29,7 +29,7 @@ function toQueryString(params?: ListRequestsQuery): string {
   if (params.ownerId) search.set('ownerId', params.ownerId)
   if (params.requesterUserId)
     search.set('requesterUserId', params.requesterUserId)
-  if (params.priority) search.set('priority', params.priority)
+  if (params.priorityId) search.set('priorityId', params.priorityId)
   const qs = search.toString()
   return qs ? `?${qs}` : ''
 }
