@@ -20,8 +20,7 @@ export async function ensureMany(
   tenantId: string,
   billingCustomerIds: string[]
 ): Promise<Map<string, Awaited<ReturnType<typeof list>>[number]>> {
-  if (!billingCustomerIds.length)
-    return new Map()
+  if (!billingCustomerIds.length) return new Map()
 
   await prisma.customerProfile.createMany({
     data: billingCustomerIds.map((billingCustomerId) => ({

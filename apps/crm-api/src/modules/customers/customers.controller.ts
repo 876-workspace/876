@@ -5,6 +5,7 @@ import {
   createCustomerBodySchema,
   customerParamsSchema,
   deleteCustomerBodySchema,
+  listCustomersQuerySchema,
   organizationParamsSchema,
   updateCustomerBodySchema,
 } from './customers.schemas.js'
@@ -18,7 +19,8 @@ function notFound(res: Response) {
 
 export async function listCustomers(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
-  const result = await service.list(organizationId)
+  const query = listCustomersQuerySchema.parse(req.query)
+  const result = await service.list(organizationId, query)
 
   res.json({
     data: {

@@ -2,6 +2,7 @@ import { create876BillingIntegrationClient } from '@876/billing/integration'
 
 import type {
   CreateCustomerInput,
+  ListCustomersFilter,
   DeleteCustomerInput,
   UpdateCustomerInput,
 } from '../../types/customer.js'
@@ -75,12 +76,25 @@ function compose(
   }
 }
 
-export async function list(organizationId: string) {
+export async function list(
+  organizationId: string,
+  filter: ListCustomersFilter = {}
+) {
   const tenant = await requireTenant(organizationId)
 
   // Pull all customers from the shared billing registry for this org.
   // The registry is the source of truth; CRM profiles are metadata extensions.
-  const result = await finance().customers.list(organizationId, { limit: 100 })
+  //
+  // `customerOrganizationId` / `customerUserId` filter by the *party* a customer
+  // links to, not by the tenant — the registry resolves at most one customer per
+  // linked party, so these answer "is this 876 org/account a customer here?".
+  const result = await finance().customers.list(organizationId, {
+    limit: 100,
+    ...(filter.customerOrganizationId
+      ? { organizationId: filter.customerOrganizationId }
+      : {}),
+    ...(filter.customerUserId ? { userId: filter.customerUserId } : {}),
+  })
   if (result.error)
     throw crmError('crm/registry-unavailable', result.error.message)
 
