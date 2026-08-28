@@ -1,13 +1,12 @@
+import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
-import * as service from './teams.service.js'
+
+import { sendCrmError, sendCrmResult } from '../../http/result.js'
 import * as s from './teams.schemas.js'
-const missing = (res: Response) =>
-  res.status(404).json({
-    data: null,
-    error: { code: 'crm/team-not-found', message: 'Team not found.' },
-  })
-const listResponse = (res: Response, data: unknown[], url: string) =>
-  res.json({
+import * as service from './teams.service.js'
+
+function listResponse(res: Response, data: unknown[], url: string) {
+  return res.json({
     data: {
       object: 'list',
       data,
@@ -17,88 +16,107 @@ const listResponse = (res: Response, data: unknown[], url: string) =>
     },
     error: null,
   })
+}
+
+function errorResult(res: Response, result: unknown) {
+  if (!isError(result)) return null
+  res
+    .status(result.httpStatus)
+    .json({ data: null, error: toAppError(result) })
+  return true
+}
+
 export async function list(req: Request, res: Response) {
-  const p = s.organizationParamsSchema.parse(req.params),
-    q = s.listTeamsQuerySchema.parse(req.query)
-  listResponse(
+  const p = s.organizationParamsSchema.parse(req.params)
+  const q = s.listTeamsQuerySchema.parse(req.query)
+  const result = await service.list(p.organizationId, {
+    ...q,
+    includeMembers: q.includeMembers === 'true',
+  })
+  if (errorResult(res, result)) return
+  return listResponse(
     res,
-    await service.list(p.organizationId, {
-      ...q,
-      includeMembers: q.includeMembers === 'true',
-    }),
+    result as unknown[],
     `/v1/organizations/${p.organizationId}/teams`
   )
 }
+
 export async function get(req: Request, res: Response) {
-  const p = s.teamParamsSchema.parse(req.params),
-    x = await service.retrieve(p.organizationId, p.id)
-  if (!x) return missing(res)
-  res.json({ data: x, error: null })
+  const p = s.teamParamsSchema.parse(req.params)
+  const result = await service.retrieve(p.organizationId, p.id)
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  return sendCrmResult(res, result)
 }
+
 export async function create(req: Request, res: Response) {
   const p = s.organizationParamsSchema.parse(req.params)
-  res.status(201).json({
-    data: await service.create(
-      p.organizationId,
-      s.createTeamBodySchema.parse(req.body)
-    ),
-    error: null,
-  })
+  const result = await service.create(
+    p.organizationId,
+    s.createTeamBodySchema.parse(req.body)
+  )
+  return sendCrmResult(res, result, 201)
 }
+
 export async function update(req: Request, res: Response) {
-  const p = s.teamParamsSchema.parse(req.params),
-    x = await service.update(
-      p.organizationId,
-      p.id,
-      s.updateTeamBodySchema.parse(req.body)
-    )
-  if (!x) return missing(res)
-  res.json({ data: x, error: null })
+  const p = s.teamParamsSchema.parse(req.params)
+  const result = await service.update(
+    p.organizationId,
+    p.id,
+    s.updateTeamBodySchema.parse(req.body)
+  )
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  return sendCrmResult(res, result)
 }
+
 export async function remove(req: Request, res: Response) {
-  const p = s.teamParamsSchema.parse(req.params),
-    x = await service.remove(
-      p.organizationId,
-      p.id,
-      s.deleteTeamBodySchema.parse(req.body)
-    )
-  if (!x) return missing(res)
-  res.json({ data: x, error: null })
+  const p = s.teamParamsSchema.parse(req.params)
+  const result = await service.remove(
+    p.organizationId,
+    p.id,
+    s.deleteTeamBodySchema.parse(req.body)
+  )
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  return sendCrmResult(res, result)
 }
+
 export async function members(req: Request, res: Response) {
-  const p = s.teamParamsSchema.parse(req.params),
-    x = await service.listMembers(p.organizationId, p.id)
-  if (!x) return missing(res)
-  listResponse(
+  const p = s.teamParamsSchema.parse(req.params)
+  const result = await service.listMembers(p.organizationId, p.id)
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  if (errorResult(res, result)) return
+  return listResponse(
     res,
-    x,
+    result as unknown[],
     `/v1/organizations/${p.organizationId}/teams/${p.id}/members`
   )
 }
+
 export async function addMember(req: Request, res: Response) {
-  const p = s.teamParamsSchema.parse(req.params),
-    x = await service.addMember(
-      p.organizationId,
-      p.id,
-      s.memberBodySchema.parse(req.body)
-    )
-  if (!x) return missing(res)
-  res.status(201).json({ data: x, error: null })
+  const p = s.teamParamsSchema.parse(req.params)
+  const result = await service.addMember(
+    p.organizationId,
+    p.id,
+    s.memberBodySchema.parse(req.body)
+  )
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  return sendCrmResult(res, result, 201)
 }
+
 export async function updateMember(req: Request, res: Response) {
-  const p = s.memberParamsSchema.parse(req.params),
-    x = await service.changeMember(
-      p.organizationId,
-      p.id,
-      p.userId,
-      s.updateMemberBodySchema.parse(req.body)
-    )
-  if (!x) return missing(res)
-  res.json({ data: x, error: null })
+  const p = s.memberParamsSchema.parse(req.params)
+  const result = await service.changeMember(
+    p.organizationId,
+    p.id,
+    p.userId,
+    s.updateMemberBodySchema.parse(req.body)
+  )
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  return sendCrmResult(res, result)
 }
+
 export async function removeMember(req: Request, res: Response) {
-  const p = s.memberParamsSchema.parse(req.params),
-    x = await service.removeMember(p.organizationId, p.id, p.userId)
-  if (!x) return missing(res)
-  res.json({ data: x, error: null })
+  const p = s.memberParamsSchema.parse(req.params)
+  const result = await service.removeMember(p.organizationId, p.id, p.userId)
+  if (!result) return sendCrmError(res, 'crm/team-not-found')
+  return sendCrmResult(res, result)
 }
