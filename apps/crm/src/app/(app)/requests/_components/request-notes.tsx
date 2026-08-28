@@ -1,28 +1,26 @@
 'use client'
 
-import {
-  editorContentEqual,
-  isEditorContentEmpty,
-} from '@876/editor'
-import {
-  Editor,
-  EditorContent,
-  type EditorHandle,
-} from '@876/editor/react'
+import { editorContentEqual, isEditorContentEmpty } from '@876/editor'
+import { Editor, EditorContent, type EditorHandle } from '@876/editor/react'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import {
   ArrowPathIcon,
   ChatBubbleLeftIcon,
+  EyeSlashIcon,
+  LockClosedIcon,
   Pencil,
   PlusIcon,
   TrashIcon,
   UserIcon,
 } from '@876/ui/icons'
+import { NoteVisibilitySelect } from '@876/ui/note-visibility-select'
 import { useRouter } from 'next/navigation'
 import { useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
+
+import { cn } from '@876/ui/lib/utils'
 
 import { client } from '@/lib/client'
 import type { CrmRequestNote } from '@/types/crm'
@@ -55,20 +53,22 @@ function formatNoteDate(timestamp: number): string {
  *
  * A request has no description of its own: its opening message is the first
  * note (`kind: 'DESCRIPTION'`), and everything after it is an ordinary note.
- * The thread therefore reads bottom-up like a ticket — the description sits at
- * the bottom where it was written, later notes stack above it newest-first, and
- * the composer sits below everything so adding a note does not push the thread
- * down.
+ * The thread reads the way a helpdesk ticket does: the opening message first,
+ * every reply and note below it in the order it happened, and the composer at
+ * the end — so the record is read top to bottom as a conversation rather than
+ * as a reverse-chronological log.
  */
 export function RequestNotesSection({
   requestId,
   notes,
   currentUserId,
+  canCreatePrivateNote = false,
   authors = {},
 }: {
   requestId: string
   notes: CrmRequestNote[]
   currentUserId?: string
+  canCreatePrivateNote?: boolean
   /**
    * Author id → display name and picture. A note only carries an opaque
    * `authorId`, and rendering two characters of that id ("69") names nobody
@@ -81,7 +81,8 @@ export function RequestNotesSection({
   const composerRef = useRef<EditorHandle>(null)
   const [body, setBody] = useState('')
   const [composerKey, setComposerKey] = useState(0)
-  const [isInternal, setIsInternal] = useState(true)
+  const [visibility, setVisibility] =
+    useState<CrmRequestNote['visibility']>('INTERNAL')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -91,7 +92,7 @@ export function RequestNotesSection({
   // freezes the thread or forces a render-phase state update; every mutation
   // already ends in `router.refresh()`, so there is nothing for a mirror to add.
   const { description, thread } = useMemo(() => {
-    const sorted = [...notes].sort((a, b) => b.createdAt - a.createdAt)
+    const sorted = [...notes].sort((a, b) => a.createdAt - b.createdAt)
     return {
       description: sorted.find((note) => note.kind === 'DESCRIPTION') ?? null,
       thread: sorted.filter((note) => note.kind !== 'DESCRIPTION'),
@@ -101,6 +102,8 @@ export function RequestNotesSection({
   // A mutation is not finished when its request returns — it is finished when
   // the refreshed server list has rendered, so the transition counts too.
   const isSubmitting = busyId === COMPOSER || isPending
+  const isInternal = visibility === 'INTERNAL'
+  const isPrivate = visibility === 'PRIVATE'
 
   async function addNote(event: React.FormEvent) {
     event.preventDefault()
@@ -115,7 +118,7 @@ export function RequestNotesSection({
 
     const result = await client.requestNotes.create(requestId, {
       body: nextBody,
-      internal: isInternal,
+      visibility,
     })
     setBusyId(null)
     if (result.error) {
@@ -178,25 +181,6 @@ export function RequestNotesSection({
       </div>
 
       <ol className="border-border relative ml-4 flex flex-col gap-4 border-l pl-8">
-        {thread.map((note) => (
-          <TimelineEntry
-            key={note.id}
-            node={<AuthorNode author={resolveAuthor(note.authorId, authors)} />}
-          >
-            <NoteCard
-              note={note}
-              authorName={resolveAuthor(note.authorId, authors).name}
-              currentUserId={currentUserId}
-              busy={busyId === note.id || isPending}
-              editing={editingId === note.id}
-              onEdit={() => setEditingId(note.id)}
-              onCancelEdit={() => setEditingId(null)}
-              onSave={(next) => saveEdit(note.id, next)}
-              onDelete={() => deleteNote(note.id)}
-            />
-          </TimelineEntry>
-        ))}
-
         {description ? (
           <TimelineEntry
             node={
@@ -218,6 +202,25 @@ export function RequestNotesSection({
           </TimelineEntry>
         ) : null}
 
+        {thread.map((note) => (
+          <TimelineEntry
+            key={note.id}
+            node={<AuthorNode author={resolveAuthor(note.authorId, authors)} />}
+          >
+            <NoteCard
+              note={note}
+              authorName={resolveAuthor(note.authorId, authors).name}
+              currentUserId={currentUserId}
+              busy={busyId === note.id || isPending}
+              editing={editingId === note.id}
+              onEdit={() => setEditingId(note.id)}
+              onCancelEdit={() => setEditingId(null)}
+              onSave={(next) => saveEdit(note.id, next)}
+              onDelete={() => deleteNote(note.id)}
+            />
+          </TimelineEntry>
+        ))}
+
         {empty ? (
           <TimelineEntry node={<AuthorNode subdued />}>
             <p className="border-border/60 bg-muted/20 text-muted-foreground rounded-lg border border-dashed px-4 py-10 text-center text-sm">
@@ -233,50 +236,94 @@ export function RequestNotesSection({
             />
           }
         >
-          <form onSubmit={addNote} className="876-card flex flex-col gap-3 p-4">
-            <Editor
-              key={composerKey}
-              ref={composerRef}
-              id={NEW_NOTE_FIELD_ID}
-              initialValue={body}
-              onChange={setBody}
-              placeholder="Add a note or progress update…"
-              ariaLabel="New note"
-              disabled={isSubmitting}
-              minHeight={100}
-              className="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border px-3 py-2 shadow-xs focus-within:ring-[3px]"
-              holderClassName="min-h-24"
-            />
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 text-sm select-none">
-                <input
-                  type="checkbox"
-                  checked={isInternal}
-                  onChange={(event) => setIsInternal(event.target.checked)}
-                  className="border-input text-primary focus:ring-ring size-4 rounded focus:ring-offset-0"
+          <form
+            onSubmit={addNote}
+            className={cn(
+              '876-card flex flex-col overflow-hidden',
+              isPrivate
+                ? 'border-destructive/30'
+                : isInternal
+                  ? 'border-warning/30'
+                  : 'border-info/30'
+            )}
+          >
+            <div
+              className={cn(
+                'flex items-center border-b px-3 py-2',
+                isPrivate
+                  ? 'border-destructive/25 bg-destructive/[0.07]'
+                  : isInternal
+                    ? 'border-warning/25 bg-warning/[0.07]'
+                    : 'bg-info/10'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs font-medium">
+                  Note type
+                </span>
+                <NoteVisibilitySelect
+                  value={visibility}
+                  onValueChange={setVisibility}
+                  allowPrivate={canCreatePrivateNote}
                   disabled={isSubmitting}
                 />
-                <span>Internal note (team only)</span>
-              </label>
+              </div>
+            </div>
 
-              <Button
-                type="submit"
-                variant="info"
-                size="sm"
-                disabled={isSubmitting || isEditorContentEmpty(body)}
-                className="gap-1.5"
-              >
-                {isSubmitting ? (
-                  <ArrowPathIcon
-                    className="size-3.5 animate-spin"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <PlusIcon className="size-3.5" aria-hidden="true" />
-                )}
-                {isSubmitting ? 'Adding' : 'Add note'}
-              </Button>
+            <div className="flex flex-col gap-3 p-4">
+              <Editor
+                key={`${composerKey}-${visibility}`}
+                ref={composerRef}
+                id={NEW_NOTE_FIELD_ID}
+                initialValue={body}
+                onChange={setBody}
+                placeholder={
+                  isPrivate
+                    ? 'Add a private note only you can see…'
+                    : isInternal
+                      ? 'Add a note only the team can see…'
+                      : 'Add a note visible to the customer…'
+                }
+                ariaLabel={
+                  isPrivate
+                    ? 'New private note'
+                    : isInternal
+                      ? 'New internal note'
+                      : 'New public note'
+                }
+                disabled={isSubmitting}
+                minHeight={100}
+                className="border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border px-3 py-2 shadow-xs focus-within:ring-[3px]"
+                holderClassName="min-h-24"
+              />
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-muted-foreground text-xs">
+                  {isPrivate
+                    ? 'Visible only to you.'
+                    : isInternal
+                      ? 'Visible to your team only.'
+                      : 'Visible to the customer and your team.'}
+                </span>
+
+                <Button
+                  type="submit"
+                  variant="info"
+                  size="sm"
+                  disabled={isSubmitting || isEditorContentEmpty(body)}
+                  className="gap-1.5"
+                >
+                  {isSubmitting ? (
+                    <ArrowPathIcon
+                      className="size-3.5 animate-spin"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <PlusIcon className="size-3.5" aria-hidden="true" />
+                  )}
+                  Save
+                </Button>
+              </div>
             </div>
           </form>
         </TimelineEntry>
@@ -375,9 +422,42 @@ function NoteCard({
     onSave(nextBody)
   }
 
+  // A private note is tinted the way every helpdesk tints one, because the cost
+  // of mistaking an internal note for a customer-visible reply is high and the
+  // author is usually skimming.
+  const internal = note.visibility === 'INTERNAL' && !isDescription
+  const privateNote = note.visibility === 'PRIVATE' && !isDescription
+  const publicNote = note.visibility === 'PUBLIC' && !isDescription
+
   return (
-    <article className="876-card group overflow-hidden">
-      <div className="bg-muted/25 flex items-center justify-between gap-2 border-b px-4 py-2">
+    <article
+      className={cn(
+        '876-card group relative before:absolute before:top-3 before:-left-3 before:z-0 before:h-5 before:w-4 before:[clip-path:polygon(100%_0,0_50%,100%_100%)]',
+        isDescription
+          ? 'border-violet-300/70 shadow-sm ring-1 ring-violet-200/50 before:bg-violet-100 dark:border-violet-800/70 dark:ring-violet-900/50 dark:before:bg-violet-950'
+          : privateNote
+          ? 'before:bg-destructive/[0.07]'
+          : internal
+            ? 'before:bg-warning/[0.07]'
+            : publicNote
+              ? 'before:bg-info/10'
+              : 'before:bg-muted/25'
+      )}
+    >
+      <div
+        className={cn(
+          'relative z-10 flex items-center gap-2 rounded-t-[inherit] border-b px-4 py-2 pr-20',
+          isDescription
+            ? 'border-violet-200/80 bg-violet-100/70 dark:border-violet-800/70 dark:bg-violet-950/40'
+            : privateNote
+            ? 'bg-destructive/[0.07]'
+            : internal
+              ? 'bg-warning/[0.07]'
+              : publicNote
+                ? 'bg-info/10'
+                : 'bg-muted/25'
+        )}
+      >
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="text-foreground font-medium">
             {isAuthor ? 'You' : author}
@@ -404,33 +484,42 @@ function NoteCard({
               (edited)
             </span>
           ) : null}
-          {isDescription ? (
-            <Badge variant="secondary" className="px-1.5 text-[0.6875rem]">
-              Description
-            </Badge>
+          {internal ? (
+            <LockClosedIcon
+              className="text-warning size-3.5 shrink-0"
+              aria-label="Internal note"
+              title="Internal note"
+            />
+          ) : null}
+          {privateNote ? (
+            <EyeSlashIcon
+              className="text-destructive size-3.5 shrink-0"
+              aria-label="Only me"
+              title="Only me"
+            />
           ) : null}
         </div>
 
         {editing ? null : (
-          <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="text-muted-foreground size-7"
+              className="text-muted-foreground size-8"
               onClick={beginEdit}
               disabled={busy}
               aria-label="Edit note"
               title="Edit note"
             >
-              <Pencil className="size-3.5" aria-hidden="true" />
+              <Pencil className="size-4" aria-hidden="true" />
             </Button>
             {onDelete ? (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-7"
+                className="text-destructive hover:bg-destructive/10 size-8"
                 onClick={onDelete}
                 disabled={busy}
                 aria-label="Delete note"
@@ -438,11 +527,11 @@ function NoteCard({
               >
                 {busy ? (
                   <ArrowPathIcon
-                    className="size-3.5 animate-spin"
+                    className="size-4 animate-spin"
                     aria-hidden="true"
                   />
                 ) : (
-                  <TrashIcon className="size-3.5" aria-hidden="true" />
+                  <TrashIcon className="size-4" aria-hidden="true" />
                 )}
               </Button>
             ) : null}
@@ -450,7 +539,14 @@ function NoteCard({
         )}
       </div>
 
-      <div className="px-4 py-3">
+      <div
+        className={cn(
+          'relative z-10 rounded-b-[inherit] px-4 py-3',
+          isDescription
+            ? 'bg-violet-50/50 dark:bg-violet-950/15'
+            : 'bg-background'
+        )}
+      >
         {editing ? (
           <div className="flex flex-col gap-2">
             <Editor

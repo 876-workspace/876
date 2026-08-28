@@ -48,16 +48,6 @@ export type AppWorkspace = {
   sections: readonly WorkspaceSection[]
 }
 
-/**
- * Every app whose workspace Console can open.
- *
- * Adding an app is one entry here plus its route folder under
- * `orgs/[slug]/workspace/<key>/`. Nothing else in Console names an app.
- *
- * 876 Billing is deliberately absent: its organization-scoped surface predates
- * this pattern and still lives at `/orgs/[slug]/billing`. Migrating it is the
- * next step, and it is a move, not a rewrite.
- */
 export const APP_WORKSPACES = [
   {
     appSlug: '876-crm',
@@ -69,6 +59,42 @@ export const APP_WORKSPACES = [
       { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
       { label: 'Customers', segment: 'customers', iconKey: 'customers' },
       { label: 'Requests', segment: 'requests', iconKey: 'requests' },
+    ],
+  },
+  {
+    appSlug: '876-billing',
+    key: 'billing',
+    label: '876 Billing',
+    summary:
+      'Accounts, subscriptions, payment methods, and financial transactions.',
+    iconKey: 'billing',
+    sections: [
+      { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
+      { label: 'Subscriptions', segment: 'subscriptions', iconKey: 'requests' },
+      { label: 'Accounts', segment: 'accounts', iconKey: 'settings' },
+    ],
+  },
+  {
+    appSlug: '876-invoice',
+    key: 'invoice',
+    label: '876 Invoice',
+    summary: 'Invoices, line items, drafts, and customer billing schedules.',
+    iconKey: 'billing',
+    sections: [
+      { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
+      { label: 'Invoices', segment: 'invoices', iconKey: 'billing' },
+    ],
+  },
+  {
+    appSlug: '876-couriers',
+    key: 'couriers',
+    label: '876 Couriers',
+    summary: 'Dispatch, deliveries, couriers, and live logistics.',
+    iconKey: 'packages',
+    sections: [
+      { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
+      { label: 'Deliveries', segment: 'deliveries', iconKey: 'packages' },
+      { label: 'Couriers', segment: 'couriers', iconKey: 'customers' },
     ],
   },
 ] as const satisfies readonly AppWorkspace[]

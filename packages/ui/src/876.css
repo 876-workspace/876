@@ -302,13 +302,11 @@
 [data-slot='detail-header-condensed'] {
   display: none;
 }
-@media (min-width: 40rem) {
-  [data-condensed='true'] [data-slot='detail-header-top'] {
-    display: none;
-  }
-  [data-condensed='true'] [data-slot='detail-header-condensed'] {
-    display: flex;
-  }
+[data-condensed='true'] [data-slot='detail-header-top'] {
+  display: none;
+}
+[data-condensed='true'] [data-slot='detail-header-condensed'] {
+  display: flex;
 }
 
 /* ── Sidebar frame edge ──────────────────────────────────────────────────

@@ -8,7 +8,9 @@ import { Skeleton } from '@876/ui/skeleton'
 import { $876 } from '@/lib/876'
 import { StatTile } from '@/components/patterns/detail/stat-tile'
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
-import { RequestsTable } from '@/features/crm/components/requests-table'
+import { RequestsList } from '@/features/crm/components/requests-list'
+import { loadRequestRowContext } from '@/features/crm/request-data'
+import { toRequestListRows } from '@/features/crm/request-list-rows'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
 import { resolveOrg } from '../../_data'
 
@@ -104,19 +106,12 @@ async function OverviewData({ slug }: { slug: string }) {
             View all
           </Link>
         </div>
-        <RequestsTable
+        <RequestsList
           requestsHref={`${base}/requests`}
-          requests={recent.map((request) => ({
-            id: request.id,
-            number: request.number,
-            subject: request.subject,
-            customerId: request.customerId,
-            assigneeId: request.assigneeId,
-            status: request.status,
-            priority: request.priority,
-            source: request.source,
-            createdAt: request.createdAt,
-          }))}
+          requests={toRequestListRows({
+            requests: recent,
+            ...(await loadRequestRowContext(org.id)),
+          })}
         />
       </div>
     </>

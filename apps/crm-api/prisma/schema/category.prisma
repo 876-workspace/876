@@ -1,25 +1,26 @@
 model RequestCategoryDef {
-  id String @id
-  tenantId String @map("tenant_id")
-  name String
-  slug String
-  description String?
-  color String?
-  icon String? @map("icon")
-  sortOrder Int @default(0) @map("sort_order")
-  isActive Boolean @default(true) @map("is_active")
-  defaultTeamId String? @map("default_team_id")
-  defaultPriority RequestPriority? @map("default_priority")
-  createdBy String @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  deletedBy String? @map("deleted_by")
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id              String               @id
+  tenantId        String               @map("tenant_id")
+  name            String
+  slug            String
+  description     String?
+  color           String?
+  icon            String?              @map("icon")
+  sortOrder       Int                  @default(0) @map("sort_order")
+  isActive        Boolean              @default(true) @map("is_active")
+  defaultTeamId   String?              @map("default_team_id")
+  defaultPriority RequestPriority?     @map("default_priority")
+  createdBy       String               @map("created_by")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  deletedAt       DateTime?            @map("deleted_at")
+  deletedBy       String?              @map("deleted_by")
+  tenant          Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   // Team-reference cleanup is deliberate service behavior; NoAction protects required tenantId.
-  defaultTeam Team? @relation("CategoryDefaultTeam", fields: [tenantId, defaultTeamId], references: [tenantId, id], onDelete: NoAction)
-  subcategories RequestSubcategory[]
-  requests Request[]
+  defaultTeam     Team?                @relation("CategoryDefaultTeam", fields: [tenantId, defaultTeamId], references: [tenantId, id], onDelete: NoAction)
+  subcategories   RequestSubcategory[]
+  requests        Request[]
+
   @@unique([tenantId, slug])
   @@unique([tenantId, id])
   @@index([tenantId, isActive, sortOrder])
@@ -27,27 +28,28 @@ model RequestCategoryDef {
 }
 
 model RequestSubcategory {
-  id String @id
-  tenantId String @map("tenant_id")
-  categoryId String @map("category_id")
-  name String
-  slug String
-  description String?
-  icon String? @map("icon")
-  sortOrder Int @default(0) @map("sort_order")
-  isActive Boolean @default(true) @map("is_active")
-  defaultTeamId String? @map("default_team_id")
-  defaultPriority RequestPriority? @map("default_priority")
-  createdBy String @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  deletedBy String? @map("deleted_by")
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  category RequestCategoryDef @relation(fields: [tenantId, categoryId], references: [tenantId, id], onDelete: Cascade)
+  id              String             @id
+  tenantId        String             @map("tenant_id")
+  categoryId      String             @map("category_id")
+  name            String
+  slug            String
+  description     String?
+  icon            String?            @map("icon")
+  sortOrder       Int                @default(0) @map("sort_order")
+  isActive        Boolean            @default(true) @map("is_active")
+  defaultTeamId   String?            @map("default_team_id")
+  defaultPriority RequestPriority?   @map("default_priority")
+  createdBy       String             @map("created_by")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  deletedAt       DateTime?          @map("deleted_at")
+  deletedBy       String?            @map("deleted_by")
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category        RequestCategoryDef @relation(fields: [tenantId, categoryId], references: [tenantId, id], onDelete: Cascade)
   // Team-reference cleanup is deliberate service behavior; NoAction protects required tenantId.
-  defaultTeam Team? @relation("SubcategoryDefaultTeam", fields: [tenantId, defaultTeamId], references: [tenantId, id], onDelete: NoAction)
-  requests Request[]
+  defaultTeam     Team?              @relation("SubcategoryDefaultTeam", fields: [tenantId, defaultTeamId], references: [tenantId, id], onDelete: NoAction)
+  requests        Request[]
+
   @@unique([tenantId, categoryId, slug])
   @@unique([tenantId, id])
   @@index([tenantId, categoryId, isActive, sortOrder])

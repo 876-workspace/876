@@ -4,6 +4,7 @@ import type {
   CrmRequest,
   CrmRequestCreateInput,
   CrmRequestNote,
+  CrmRequestNoteCreateInput,
   CrmRequestNoteList,
   CrmRequestUpdateInput,
 } from '@876/client'
@@ -12,6 +13,10 @@ import { request } from './request'
 
 export type RequestCreateInput = Omit<CrmRequestCreateInput, 'createdBy'>
 export type RequestUpdateInput = CrmRequestUpdateInput
+export type RequestNoteCreateInput = Pick<
+  CrmRequestNoteCreateInput,
+  'body' | 'visibility'
+>
 
 export const requests = {
   create(params: RequestCreateInput) {
@@ -46,7 +51,7 @@ export const requestNotes = {
       `/api/requests/${encodeURIComponent(requestId)}/notes`
     )
   },
-  create(requestId: string, params: { body: string; internal?: boolean }) {
+  create(requestId: string, params: RequestNoteCreateInput) {
     return request<CrmRequestNote>(
       `/api/requests/${encodeURIComponent(requestId)}/notes`,
       {

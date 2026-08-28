@@ -1,118 +1,103 @@
+import * as React from 'react'
 import { describe, expect, it } from 'vitest'
+import type { RouteTabItem } from '@876/ui/route-tabs'
 
 import { ALWAYS_PRESENT_TABS, APP_OWNED_TABS, orgTabs } from './app-tabs'
 
 const BASE = '/orgs/test-org'
 
-/** The seven tabs every organization has, in their fixed visual order. */
+/** The five tabs every organization has, in their fixed visual order. */
 const ALWAYS_PRESENT = [
-  'Overview',
+  'Profile',
   'Members',
   'Customers',
-  'Support',
-  'Subscriptions',
-  'Onboarding',
+  'Requests',
   'Activity',
-  'Notes',
 ]
+
+function getTabLabelText(tab: RouteTabItem): string {
+  if (typeof tab.label === 'string') return tab.label
+  if (
+    React.isValidElement(tab.label) &&
+    tab.label.props &&
+    typeof (tab.label.props as { name?: string }).name === 'string'
+  ) {
+    return (tab.label.props as { name: string }).name
+  }
+  return ''
+}
 
 describe('orgTabs', () => {
   it('renders exactly the always-present tabs when nothing is entitled', () => {
-    expect(orgTabs(BASE, []).map((tab) => tab.label)).toEqual(ALWAYS_PRESENT)
+    expect(orgTabs(BASE, []).map(getTabLabelText)).toEqual(ALWAYS_PRESENT)
   })
 
-  it('shows Workspace but not Billing for a CRM-only organization', () => {
-    const labels = orgTabs(BASE, ['876-crm']).map((tab) => tab.label)
+  it('shows dynamic CRM app tab for a CRM-only organization', () => {
+    const labels = orgTabs(BASE, ['876-crm']).map(getTabLabelText)
 
-    expect(labels).toContain('Workspace')
-    expect(labels).not.toContain('Billing')
+    expect(labels).toContain('876 CRM')
+    expect(labels).not.toContain('Workspaces')
   })
 
-  it('links the Workspace tab at the organization workspace index', () => {
-    const workspaceTab = orgTabs(BASE, ['876-crm']).find(
-      (tab) => tab.label === 'Workspace'
+  it('links dynamic app tabs to their corresponding workspace surfaces', () => {
+    const tabs = orgTabs(BASE, ['876-crm', '876-billing'])
+    const crmTab = tabs.find((tab) => getTabLabelText(tab) === '876 CRM')
+    const billingTab = tabs.find(
+      (tab) => getTabLabelText(tab) === '876 Billing'
     )
 
-    expect(workspaceTab?.href).toBe('/orgs/test-org/workspace')
+    expect(crmTab?.href).toBe('/orgs/test-org/workspace/crm')
+    expect(billingTab?.href).toBe('/orgs/test-org/workspace/billing')
   })
 
-  it('does not give any app its own tab, however many are entitled', () => {
-    const labels = orgTabs(BASE, ['876-crm']).map((tab) => tab.label)
-
-    expect(labels).not.toContain('Requests')
-    expect(labels.filter((label) => label === 'Workspace')).toHaveLength(1)
-  })
-
-  it('omits Workspace when no entitled app has a workspace registered', () => {
-    const labels = orgTabs(BASE, ['876-billing']).map((tab) => tab.label)
-
-    expect(labels).toContain('Billing')
-    expect(labels).not.toContain('Workspace')
-  })
-
-  it('places each app tab after its anchor when both are entitled', () => {
-    const labels = orgTabs(BASE, ['876-crm', '876-billing']).map(
-      (tab) => tab.label
-    )
+  it('renders dynamic app tabs in between Customers and Requests', () => {
+    const tabs = orgTabs(BASE, [
+      {
+        slug: '876-crm',
+        name: '876 CRM',
+        logoUrl: 'https://assets.test/crm.png',
+      },
+      { slug: '876-billing', name: '876 Billing', logoUrl: null },
+    ])
+    const labels = tabs.map(getTabLabelText)
 
     expect(labels).toEqual([
-      'Overview',
+      'Profile',
       'Members',
       'Customers',
-      'Support',
-      'Subscriptions',
-      'Onboarding',
-      'Billing',
-      'Workspace',
+      '876 CRM',
+      '876 Billing',
+      'Requests',
       'Activity',
-      'Notes',
     ])
   })
 
-  it('ignores an entitlement no tab is registered for', () => {
-    const labels = orgTabs(BASE, ['876-couriers', 'not-an-app']).map(
-      (tab) => tab.label
+  it('is unaffected by duplicate entitlements', () => {
+    const tabs = orgTabs(BASE, ['876-crm', '876-crm'])
+    const crmTabs = tabs.filter((tab) => getTabLabelText(tab) === '876 CRM')
+
+    expect(crmTabs).toHaveLength(1)
+  })
+
+  it('builds the Profile href from the base alone and marks it exact', () => {
+    const profile = orgTabs(BASE, []).find(
+      (tab) => getTabLabelText(tab) === 'Profile'
     )
 
-    expect(labels).toEqual(ALWAYS_PRESENT)
+    expect(profile?.href).toBe(BASE)
+    expect(profile?.exact).toBe(true)
   })
 
-  it('is unaffected by the order entitlements arrive in', () => {
-    const forward = orgTabs(BASE, ['876-crm', '876-billing'])
-    const reversed = orgTabs(BASE, ['876-billing', '876-crm'])
-
-    expect(reversed.map((tab) => tab.label)).toEqual(
-      forward.map((tab) => tab.label)
-    )
-  })
-
-  it('builds the Overview href from the base alone and marks it exact', () => {
-    const overview = orgTabs(BASE, []).find((tab) => tab.label === 'Overview')
-
-    expect(overview).toEqual({ label: 'Overview', href: BASE, exact: true })
-  })
-
-  it('builds an app tab href from its registered segment', () => {
-    const billing = orgTabs(BASE, ['876-billing']).find(
-      (tab) => tab.label === 'Billing'
-    )
-
-    expect(billing).toEqual({ label: 'Billing', href: `${BASE}/billing` })
-  })
-
-  it('marks no tab but Overview as exact', () => {
+  it('marks no tab but Profile as exact', () => {
     const exact = orgTabs(BASE, ['876-crm', '876-billing'])
       .filter((tab) => tab.exact)
-      .map((tab) => tab.label)
+      .map(getTabLabelText)
 
-    expect(exact).toEqual(['Overview'])
+    expect(exact).toEqual(['Profile'])
   })
 })
 
 describe('APP_OWNED_TABS registry', () => {
-  // Without this, a typo in `after` silently drops the tab from the strip
-  // rather than failing anywhere — the registry is only trustworthy if a bad
-  // anchor cannot ship.
   it('anchors every app tab to a real always-present tab', () => {
     const anchors = new Set<string>(ALWAYS_PRESENT_TABS.map((tab) => tab.label))
 

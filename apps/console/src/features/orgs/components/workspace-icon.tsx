@@ -7,6 +7,7 @@ import {
   Users,
 } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
+import { cn } from '@876/core/utils'
 
 import type { WorkspaceIconKey } from '../app-workspaces'
 
@@ -26,20 +27,36 @@ const ICONS: Record<WorkspaceIconKey, IconComponent> = {
   packages: TruckIcon,
 }
 
+export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
+  dashboard: 'text-blue-500 dark:text-blue-400',
+  customers: 'text-amber-500 dark:text-amber-400',
+  requests: 'text-purple-500 dark:text-purple-400',
+  settings: 'text-slate-500 dark:text-slate-400',
+  billing: 'text-emerald-500 dark:text-emerald-400',
+  packages: 'text-orange-500 dark:text-orange-400',
+}
+
 export function workspaceIcon(key: WorkspaceIconKey): IconComponent {
   return ICONS[key]
 }
 
 export function WorkspaceIcon({
   iconKey,
+  colored = false,
   className,
 }: {
   iconKey: WorkspaceIconKey
+  colored?: boolean
   className?: string
 }) {
   // Indexed straight off the module constant rather than through
   // `workspaceIcon()`: a component read from a function call cannot be shown to
   // be stable across renders, and the React lint rule rejects it.
   const Icon = ICONS[iconKey]
-  return <Icon className={className} aria-hidden="true" />
+  return (
+    <Icon
+      className={cn(className, colored && WORKSPACE_ICON_COLORS[iconKey])}
+      aria-hidden="true"
+    />
+  )
 }

@@ -136,6 +136,11 @@ export const requestSourceSchema = z.enum([
   'OTHER',
 ])
 export const requestNoteKindSchema = z.enum(['DESCRIPTION', 'NOTE', 'EMAIL'])
+export const requestNoteVisibilitySchema = z.enum([
+  'PUBLIC',
+  'INTERNAL',
+  'PRIVATE',
+])
 
 export const crmRequestSchema = z.object({
   object: z.literal('request'),
@@ -175,6 +180,7 @@ export type RequestStatus = z.infer<typeof requestStatusSchema>
 export type RequestPriority = z.infer<typeof requestPrioritySchema>
 export type RequestSource = z.infer<typeof requestSourceSchema>
 export type RequestNoteKind = z.infer<typeof requestNoteKindSchema>
+export type RequestNoteVisibility = z.infer<typeof requestNoteVisibilitySchema>
 export type CrmRequest = z.infer<typeof crmRequestSchema>
 export type RequestList = z.infer<typeof requestListSchema>
 
@@ -235,6 +241,7 @@ export const crmRequestNoteSchema = z.object({
   body: z.string(),
   authorId: z.string(),
   internal: z.boolean(),
+  visibility: requestNoteVisibilitySchema,
   kind: requestNoteKindSchema,
   emailMessageId: z.string().nullable().optional(),
   emailDirection: z.enum(['INBOUND', 'OUTBOUND']).nullable().optional(),
@@ -261,16 +268,25 @@ export type RequestNoteList = z.infer<typeof requestNoteListSchema>
 export interface CreateRequestNoteInput {
   body: string
   authorId: string
+  visibility?: RequestNoteVisibility
+  /** @deprecated Use `visibility`. */
   internal?: boolean
+}
+
+export interface ListRequestNotesInput {
+  viewerId?: string
+  includePrivate?: boolean
 }
 
 export interface UpdateRequestNoteInput {
   body: string
   editedBy: string
+  includePrivate?: boolean
 }
 
 export interface DeleteRequestNoteInput {
   deletedBy: string
+  includePrivate?: boolean
 }
 
 export const teamStatusSchema = z.enum(['ACTIVE', 'ARCHIVED'])

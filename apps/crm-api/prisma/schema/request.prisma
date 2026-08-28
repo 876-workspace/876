@@ -36,33 +36,33 @@ enum EmailDirection {
 }
 
 model Request {
-  id             String          @id
-  tenantId       String          @map("tenant_id")
-  customerId     String          @map("customer_id")
-  number         Int
-  subject        String
-  categoryId     String?         @map("category_id")
-  subcategoryId  String?         @map("subcategory_id")
-  status         RequestStatus   @default(OPEN)
-  priority       RequestPriority @default(NORMAL)
-  source         RequestSource   @default(CRM)
-  teamId         String?         @map("team_id")
-  assigneeId     String?         @map("assignee_id")
-  ownerId        String?         @map("owner_id")
+  id                 String          @id
+  tenantId           String          @map("tenant_id")
+  customerId         String          @map("customer_id")
+  number             Int
+  subject            String
+  categoryId         String?         @map("category_id")
+  subcategoryId      String?         @map("subcategory_id")
+  status             RequestStatus   @default(OPEN)
+  priority           RequestPriority @default(NORMAL)
+  source             RequestSource   @default(CRM)
+  teamId             String?         @map("team_id")
+  assigneeId         String?         @map("assignee_id")
+  ownerId            String?         @map("owner_id")
   // Who actually raised this, inside the customer party. Both are opaque ids
   // from other bounded contexts (876 identity / the org-customer registry), so
   // neither carries a cross-database foreign key. Null on a request raised for
   // the organization as a whole rather than by a named person.
-  requesterUserId    String?     @map("requester_user_id")
-  requesterContactId String?     @map("requester_contact_id")
-  createdBy      String          @map("created_by")
-  resolvedAt     DateTime?       @map("resolved_at")
-  closedAt       DateTime?       @map("closed_at")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-  deletedAt      DateTime?       @map("deleted_at")
-  deletedBy      String?         @map("deleted_by")
-  deletionReason String?         @map("deletion_reason")
+  requesterUserId    String?         @map("requester_user_id")
+  requesterContactId String?         @map("requester_contact_id")
+  createdBy          String          @map("created_by")
+  resolvedAt         DateTime?       @map("resolved_at")
+  closedAt           DateTime?       @map("closed_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  deletedAt          DateTime?       @map("deleted_at")
+  deletedBy          String?         @map("deleted_by")
+  deletionReason     String?         @map("deletion_reason")
 
   tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer    CustomerProfile     @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
@@ -89,30 +89,32 @@ model Request {
 }
 
 model RequestNote {
-  id        String          @id
-  tenantId  String          @map("tenant_id")
-  requestId String          @map("request_id")
-  body      String
-  authorId  String          @map("author_id")
-  internal  Boolean         @default(true)
-  kind      RequestNoteKind @default(NOTE)
-  emailMessageId String? @map("email_message_id")
-  emailDirection EmailDirection? @map("email_direction")
-  emailFrom String? @map("email_from")
-  emailTo String[] @default([]) @map("email_to")
-  emailCc String[] @default([]) @map("email_cc")
-  emailSubject String? @map("email_subject")
-  editedAt  DateTime?       @map("edited_at")
-  createdAt DateTime        @default(now()) @map("created_at")
-  updatedAt DateTime        @updatedAt @map("updated_at")
-  deletedAt DateTime?       @map("deleted_at")
-  deletedBy String?         @map("deleted_by")
+  id              String          @id
+  tenantId        String          @map("tenant_id")
+  requestId       String          @map("request_id")
+  body            String
+  authorId        String          @map("author_id")
+  internal        Boolean         @default(true)
+  privateToUserId String?         @map("private_to_user_id")
+  kind            RequestNoteKind @default(NOTE)
+  emailMessageId  String?         @map("email_message_id")
+  emailDirection  EmailDirection? @map("email_direction")
+  emailFrom       String?         @map("email_from")
+  emailTo         String[]        @default([]) @map("email_to")
+  emailCc         String[]        @default([]) @map("email_cc")
+  emailSubject    String?         @map("email_subject")
+  editedAt        DateTime?       @map("edited_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  deletedAt       DateTime?       @map("deleted_at")
+  deletedBy       String?         @map("deleted_by")
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   request Request @relation(fields: [tenantId, requestId], references: [tenantId, id], onDelete: Cascade)
 
   @@index([tenantId, requestId, createdAt])
   @@index([tenantId, authorId, createdAt])
+  @@index([tenantId, privateToUserId, createdAt])
   @@index([tenantId, kind, createdAt])
   // The partial unique index for active DESCRIPTION notes lives in the migration.
   @@map("crm_request_notes")

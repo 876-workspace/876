@@ -24,16 +24,16 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const org = await resolveOrg(slug)
-  if (!org) return { title: 'Workspace' }
+  if (!org) return { title: 'Workspaces' }
 
-  return { title: `${org.name ?? org.slug} • Workspace - Organizations` }
+  return { title: `${org.name ?? org.slug} • Workspaces - Organizations` }
 }
 
 /**
  * The workspace index — every app this organization is actually working in.
  *
  * This page is the answer to "how does Console scale to N apps without N tabs".
- * The organization detail strip carries one `Workspace` tab; the list of apps
+ * The organization detail strip carries one `Workspaces` tab; the list of apps
  * behind it is derived from entitlements, so a new app costs a registry row and
  * never a layout change.
  */
@@ -43,7 +43,7 @@ export default async function OrganizationWorkspacePage({ params }: Props) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="876-page-title">Workspace</h1>
+        <h1 className="876-page-title">Workspaces</h1>
       </div>
       <Suspense fallback={<WorkspaceCardsSkeleton />}>
         <WorkspaceCards slug={slug} />

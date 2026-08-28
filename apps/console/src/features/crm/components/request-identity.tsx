@@ -1,54 +1,70 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Skeleton } from '@876/ui/skeleton'
-import { Building2, Clock, TagIcon, User, Users } from '@876/ui/icons'
+import { Building2, Clock, User, Users } from '@876/ui/icons'
 import { formatDateTime } from '@876/core/timestamps'
 import { CategoryIcon } from '@876/ui/category-icons'
 
 import { PlatformOrganizationUnavailable } from './platform-organization-unavailable'
 import { RequestHeaderActions } from './request-header-actions'
-import { RequestPriorityBadge } from './request-priority-badge'
 import { formatAge } from '../request-format'
 import { resolveCustomerIdentity } from '../customer-identity'
 import {
-  loadCategoryIndex,
-  loadCustomer,
-  loadDirectory,
-  loadRequest,
+  loadOrgCategoryIndex,
+  loadOrgCustomer,
+  loadOrgDirectory,
+  loadOrgRequest,
+  requestCustomerHref,
+  resolveRequestOrgId,
 } from '../request-data'
 
 /**
  * The record's title row: the subject on the left, the actions on the right.
  */
-export async function RequestToolbar({ requestId }: { requestId: string }) {
-  const { org, session, request } = await loadRequest(requestId)
-  if (!org || !request) return null
-  const { departments, members } = await loadDirectory()
+export async function RequestToolbar({
+  requestId,
+  organizationId,
+  baseHref = `/support/${requestId}`,
+  customerHref,
+}: {
+  requestId: string
+  organizationId?: string
+  baseHref?: string
+  customerHref?: string
+}) {
+  const orgId = await resolveRequestOrgId(organizationId)
+  if (!orgId) return null
+
+  const { session, request } = await loadOrgRequest(orgId, requestId, baseHref)
+  const { departments, members } = await loadOrgDirectory(orgId)
+
+  const resolvedCustomerHref =
+    customerHref ?? requestCustomerHref(baseHref, request.customerId)
 
   return (
     <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 pt-1">
-        <span className="text-muted-foreground font-mono text-base">
+        <span className="text-info font-mono text-base font-semibold">
           #{request.number}
         </span>
         <h1 className="876-page-title min-w-0 text-balance">
           {request.subject}
         </h1>
-        <RequestPriorityBadge priority={request.priority} />
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-3">
         <RequestHeaderActions
-          organizationId={org.id}
+          organizationId={orgId}
           requestId={request.id}
           requestNumber={request.number}
           status={request.status}
           customerId={request.customerId}
-          currentUserId={session.id}
+          currentUserId={session?.id}
           departments={departments}
           members={members}
+          baseHref={baseHref}
+          customerHref={resolvedCustomerHref}
         />
       </div>
     </div>
@@ -66,19 +82,29 @@ export function RequestToolbarSkeleton() {
 }
 
 /**
- * The record's fact line: who the request is for, who owns it, what kind it is,
- * and how stale it is — the questions asked before any tab is chosen.
+ * The record's fact line: who the request is for, who owns it, and when it was active.
  */
-export async function RequestIdentity({ requestId }: { requestId: string }) {
-  const { org, request } = await loadRequest(requestId)
-  if (!org) return <PlatformOrganizationUnavailable />
-  if (!request) notFound()
+export async function RequestIdentity({
+  requestId,
+  organizationId,
+  baseHref = `/support/${requestId}`,
+  customerHref,
+}: {
+  requestId: string
+  organizationId?: string
+  baseHref?: string
+  customerHref?: string
+}) {
+  const orgId = await resolveRequestOrgId(organizationId)
+  if (!orgId) return <PlatformOrganizationUnavailable />
+
+  const { request } = await loadOrgRequest(orgId, requestId, baseHref)
 
   const [{ departments, members }, { customer }, categoriesById] =
     await Promise.all([
-      loadDirectory(),
-      loadCustomer(request.customerId),
-      loadCategoryIndex(),
+      loadOrgDirectory(orgId),
+      loadOrgCustomer(orgId, request.customerId),
+      loadOrgCategoryIndex(orgId),
     ])
 
   const category = request.categoryId
@@ -98,95 +124,111 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
     ? (departments.find((d) => d.id === request.teamId)?.name ?? request.teamId)
     : null
 
+  const targetCustomerHref =
+    customerHref ?? requestCustomerHref(baseHref, request.customerId)
+
   return (
-    <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+    <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8125rem]">
       <Link
-        href={`/customers/${request.customerId}`}
-        className="text-foreground hover:text-primary inline-flex min-w-0 items-center gap-1.5 transition-colors hover:underline"
+        href={targetCustomerHref}
+        className="text-foreground/85 hover:text-info inline-flex min-w-0 items-center gap-1.5 font-medium transition-colors"
       >
         {identity.isBusiness ? (
-          <Building2 className="size-4 shrink-0" aria-hidden="true" />
+          <Building2
+            className="text-muted-foreground size-3.5 shrink-0"
+            aria-hidden="true"
+          />
         ) : (
-          <User className="size-4 shrink-0" aria-hidden="true" />
+          <User
+            className="text-muted-foreground size-3.5 shrink-0"
+            aria-hidden="true"
+          />
         )}
         <span className="truncate">{identity.name}</span>
       </Link>
 
-      {identity.isBusiness && identity.contact ? (
-        <Fact label="Contact">
-          <User className="size-3.5 shrink-0" aria-hidden="true" />
-          <span className="text-foreground truncate">
-            {identity.contact.name}
-          </span>
-        </Fact>
-      ) : null}
-
-      <Fact label="Owner">
-        {assignee ? (
-          <>
-            <CustomerAvatar
-              name={assignee.name}
-              src={assignee.avatar}
-              className="size-4.5 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.5rem]"
-            />
-            <span className="text-foreground truncate">{assignee.name}</span>
-          </>
-        ) : (
-          <span>Unassigned</span>
-        )}
-        <span aria-hidden="true" className="text-border">
+      <div className="flex items-center gap-1.5">
+        <span className="text-border" aria-hidden="true">
           ·
         </span>
-        <Users className="size-3.5 shrink-0" aria-hidden="true" />
-        {teamName ? (
-          <span className="text-foreground truncate">{teamName}</span>
+        <span className="text-muted-foreground/80">Owner</span>
+        {assignee ? (
+          assignee.userId ? (
+            <Link
+              href={`/users/${assignee.userId}`}
+              className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors"
+            >
+              <CustomerAvatar
+                name={assignee.name}
+                src={assignee.avatar}
+                className="size-4 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.45rem]"
+              />
+              <span>{assignee.name}</span>
+            </Link>
+          ) : (
+            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
+              <CustomerAvatar
+                name={assignee.name}
+                src={assignee.avatar}
+                className="size-4 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.45rem]"
+              />
+              <span>{assignee.name}</span>
+            </span>
+          )
         ) : (
-          <span>No team</span>
+          <span className="text-muted-foreground">Unassigned</span>
         )}
-      </Fact>
-
-      <Fact label="Category">
-        {category ? (
+        {teamName ? (
           <>
+            <span className="text-border/60" aria-hidden="true">
+              /
+            </span>
+            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
+              <Users
+                className="text-muted-foreground size-3 shrink-0"
+                aria-hidden="true"
+              />
+              <span>{teamName}</span>
+            </span>
+          </>
+        ) : null}
+      </div>
+
+      <div
+        className="flex items-center gap-1.5"
+        title={formatDateTime(request.updatedAt)}
+      >
+        <span className="text-border" aria-hidden="true">
+          ·
+        </span>
+        <Clock
+          className="text-muted-foreground size-3.5 shrink-0"
+          aria-hidden="true"
+        />
+        <span className="text-muted-foreground truncate">
+          Updated {formatAge(request.updatedAt)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <span className="text-border" aria-hidden="true">
+          ·
+        </span>
+        <span className="text-muted-foreground/80">Category</span>
+        {category ? (
+          <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate font-medium transition-colors">
             <CategoryIcon
               name={category.icon}
               className="size-3.5 shrink-0"
               aria-hidden="true"
             />
-            <span className="text-foreground truncate">{category.name}</span>
-          </>
+            <span>{category.name}</span>
+          </span>
         ) : (
-          <>
-            <TagIcon className="size-3.5 shrink-0" aria-hidden="true" />
-            <span>No category</span>
-          </>
+          <span className="text-muted-foreground">None</span>
         )}
-      </Fact>
-
-      <Fact label="Last activity" title={formatDateTime(request.updatedAt)}>
-        <Clock className="size-3.5 shrink-0" aria-hidden="true" />
-        <span className="text-foreground truncate">
-          {formatAge(request.updatedAt)}
-        </span>
-      </Fact>
+      </div>
     </div>
-  )
-}
-
-function Fact({
-  label,
-  title,
-  children,
-}: {
-  label: string
-  title?: string
-  children: React.ReactNode
-}) {
-  return (
-    <span title={title} className="flex min-w-0 items-center gap-1.5">
-      <span className="shrink-0">{label}</span>
-      {children}
-    </span>
   )
 }
 

@@ -7,6 +7,7 @@ import { $876 } from '@/lib/876'
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
+import { toRequestCustomerOption } from './request-customer-option'
 import type { DirectoryMember, RequestDepartment } from './types'
 
 /**
@@ -21,30 +22,11 @@ export const loadSupportContext = cache(async (requestId?: string) => {
   return { org, session }
 })
 
-/** The request itself. Calls `notFound()` for an id this org cannot see. */
-export const loadRequest = cache(async (requestId: string) => {
-  const { org, session } = await loadSupportContext(requestId)
-  if (!org) return { org: null, session, request: null }
-
-  const result = await $876.requests.retrieve(org.id, requestId)
-  if (result.error?.code === 'crm/request-not-found') notFound()
-  if (result.error) throw new Error(result.error.message)
-
-  return { org, session, request: result.data }
-})
-
-/** The org's teams and members — what assignment and authorship resolve against. */
-export const loadDirectory = cache(async () => {
-  const { org } = await loadSupportContext()
-  if (!org) return { departments: [], members: [] }
-
-  // Console reaches members at the operator tier. `organizationMembers.list` is
-  // the session-tier method: called from here, with an internal key and no
-  // session, it resolves nothing, and every note then falls back to rendering
-  // two characters of a raw user id instead of a name and a picture.
+/** The org's teams and members for any organization. */
+export const loadOrgDirectory = cache(async (orgId: string) => {
   const [departmentsResult, membersResult] = await Promise.all([
-    $876.departments.list(org.id),
-    $876.organizationMembers.admin.list(org.id, { limit: 100 }),
+    $876.departments.list(orgId),
+    $876.organizationMembers.admin.list(orgId, { limit: 100 }),
   ])
 
   const departments: RequestDepartment[] =
@@ -66,58 +48,173 @@ export const loadDirectory = cache(async () => {
   return { departments, members }
 })
 
-/**
- * The org's request-category catalog, as a lookup.
- */
-export const loadCategoryIndex = cache(async () => {
-  const { org } = await loadSupportContext()
-  if (!org) return new Map()
-
-  const result = await $876.requestCategories.list(org.id)
-
+/** The org's request-category catalog for any organization. */
+export const loadOrgCategoryIndex = cache(async (orgId: string) => {
+  const result = await $876.requestCategories.list(orgId)
   return new Map(
     (result.data?.data ?? []).map((category) => [category.id, category])
   )
 })
 
-/** The customer this request belongs to. */
-export const loadCustomer = cache(async (customerId: string) => {
-  const { org } = await loadSupportContext()
-  if (!org) return { profile: null, customer: null }
+/** Search-ready customer identities for request creation. */
+export const loadOrgRequestCustomers = cache(async (orgId: string) => {
+  const result = await $876.customerProfiles.list(orgId)
+  if (result.error) throw new Error(result.error.message)
 
-  const result = await $876.customers.retrieve(org.id, customerId)
+  return result.data.data
+    .map(toRequestCustomerOption)
+    .sort((left, right) => left.name.localeCompare(right.name))
+})
+
+/** The customer this request belongs to for any organization. */
+export const loadOrgCustomer = cache(
+  async (orgId: string, customerId: string) => {
+    const result = await $876.customerProfiles.retrieve(orgId, customerId)
+    if (result.data) {
+      return {
+        profile: result.data.profile,
+        customer: result.data.customer,
+      }
+    }
+
+    const fallbackResult = await $876.customers.retrieve(orgId, customerId)
+    return {
+      profile: null,
+      customer: fallbackResult.data ?? null,
+    }
+  }
+)
+
+/** The request itself for any organization. */
+export const loadOrgRequest = cache(
+  async (orgId: string, requestId: string, returnPath = '/support') => {
+    const session = await requireSession(returnPath)
+    const result = await $876.requests.retrieve(orgId, requestId)
+    if (result.error?.code === 'crm/request-not-found') notFound()
+    if (result.error) throw new Error(result.error.message)
+
+    return { org: { id: orgId }, session, request: result.data }
+  }
+)
+
+/** The request's notes for any organization. */
+export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
+  const result = await $876.requestNotes.list(orgId, requestId, {
+    includePrivate: true,
+  })
+  if (result.error) throw new Error(result.error.message)
+  return result.data.data
+})
+
+/** The request's tasks for any organization. */
+export const loadOrgTasks = cache(async (orgId: string, requestId: string) => {
+  const result = await $876.requestTasks.list(orgId, requestId)
+  if (result.error) throw new Error(result.error.message)
+  return result.data.data
+})
+
+/** The request's reminders for any organization. */
+export const loadOrgReminders = cache(
+  async (orgId: string, requestId: string) => {
+    const result = await $876.requestReminders.list(orgId, requestId)
+    if (result.error) throw new Error(result.error.message)
+    return result.data.data
+  }
+)
+
+/**
+ * The organization a request surface is scoped to.
+ *
+ * An organization workspace route already knows the organization; the platform
+ * support desk resolves 876's own organization. That is the *only* difference
+ * between the two surfaces — everything below this line loads a request the
+ * same way for both, which is what lets them share one component set.
+ */
+export const resolveRequestOrgId = cache(
+  async (organizationId?: string): Promise<string | null> => {
+    if (organizationId) return organizationId
+    const org = await getPlatformOrganization()
+    return org?.id ?? null
+  }
+)
+
+/** The customer link for a request, relative to the surface it is opened from. */
+export function requestCustomerHref(
+  baseHref: string,
+  customerId: string
+): string {
+  const workspaceBase = baseHref.split('/requests')[0]
+  return baseHref.startsWith('/orgs/')
+    ? `${workspaceBase}/customers/${customerId}`
+    : `/customers/${customerId}`
+}
+
+/**
+ * The name indexes a request queue is rendered with.
+ *
+ * A row shows the customer, the assignee, and the team by name, and those come
+ * from two different lists. Both are fetched once per organization per request
+ * and joined in memory, so a page of 50 requests still costs two calls.
+ */
+export const loadRequestRowContext = cache(async (orgId: string) => {
+  const [profiles, directory] = await Promise.all([
+    $876.customerProfiles.list(orgId),
+    loadOrgDirectory(orgId),
+  ])
+
   return {
-    profile: null,
-    customer: result.data ?? null,
+    customerProfiles: profiles.data?.data ?? [],
+    members: directory.members,
+    departments: directory.departments,
   }
 })
 
-/** The request's notes. */
+/** The request itself in the platform support desk context. */
+export const loadRequest = cache(async (requestId: string) => {
+  const { org, session } = await loadSupportContext(requestId)
+  if (!org) return { org: null, session, request: null }
+
+  return loadOrgRequest(org.id, requestId, `/support/${requestId}`)
+})
+
+/** The org's teams and members for the platform support desk. */
+export const loadDirectory = cache(async () => {
+  const { org } = await loadSupportContext()
+  if (!org) return { departments: [], members: [] }
+  return loadOrgDirectory(org.id)
+})
+
+/** The org's request-category catalog for the platform support desk. */
+export const loadCategoryIndex = cache(async () => {
+  const { org } = await loadSupportContext()
+  if (!org) return new Map()
+  return loadOrgCategoryIndex(org.id)
+})
+
+/** The customer this request belongs to for the platform support desk. */
+export const loadCustomer = cache(async (customerId: string) => {
+  const { org } = await loadSupportContext()
+  if (!org) return { profile: null, customer: null }
+  return loadOrgCustomer(org.id, customerId)
+})
+
+/** The request's notes for the platform support desk. */
 export const loadNotes = cache(async (requestId: string) => {
   const { org } = await loadSupportContext(requestId)
   if (!org) return []
-
-  const result = await $876.requestNotes.list(org.id, requestId)
-  if (result.error) throw new Error(result.error.message)
-  return result.data.data
+  return loadOrgNotes(org.id, requestId)
 })
 
-/** The request's tasks. */
+/** The request's tasks for the platform support desk. */
 export const loadTasks = cache(async (requestId: string) => {
   const { org } = await loadSupportContext(requestId)
   if (!org) return []
-
-  const result = await $876.requestTasks.list(org.id, requestId)
-  if (result.error) throw new Error(result.error.message)
-  return result.data.data
+  return loadOrgTasks(org.id, requestId)
 })
 
-/** The request's reminders. */
+/** The request's reminders for the platform support desk. */
 export const loadReminders = cache(async (requestId: string) => {
   const { org } = await loadSupportContext(requestId)
   if (!org) return []
-
-  const result = await $876.requestReminders.list(org.id, requestId)
-  if (result.error) throw new Error(result.error.message)
-  return result.data.data
+  return loadOrgReminders(org.id, requestId)
 })

@@ -265,6 +265,17 @@ describe('requests.routes - validation and envelopes', () => {
     expect(res.body.data.object).toBe('list')
     expect(res.body.data.url).toContain('/notes')
   })
+  it('passes the note viewer through the list route', async () => {
+    await req(
+      'GET',
+      '/v1/organizations/org_1/requests/crm_req_1/notes?viewer_id=usr_1'
+    )
+    expect(repository.listNotes).toHaveBeenCalledWith(
+      'crm_tenant_1',
+      'crm_req_1',
+      { viewerId: 'usr_1', includePrivate: undefined }
+    )
+  })
   it('returns 201 on create note', async () => {
     repository.retrieve.mockResolvedValue(requestRow)
     const res = await req(

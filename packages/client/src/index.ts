@@ -91,6 +91,8 @@ export type {
   CreateRequestNoteInput as CrmRequestNoteCreateInput,
   DeleteRequestNoteInput as CrmRequestNoteDeleteInput,
   RequestNoteList as CrmRequestNoteList,
+  ListRequestNotesInput as CrmListRequestNotesInput,
+  RequestNoteVisibility as CrmRequestNoteVisibility,
   UpdateRequestNoteInput as CrmRequestNoteUpdateInput,
   RequestReminder as CrmRequestReminder,
   CreateRequestReminderInput as CrmRequestReminderCreateInput,

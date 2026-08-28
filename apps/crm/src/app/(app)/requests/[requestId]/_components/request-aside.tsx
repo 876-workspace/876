@@ -7,6 +7,7 @@ import { Skeleton } from '@876/ui/skeleton'
 import {
   ArrowRight,
   EnvelopeIcon,
+  ExternalLink,
   InformationCircleIcon,
   Phone,
 } from '@876/ui/icons'
@@ -21,8 +22,7 @@ import { loadCategoryIndex, loadCustomer, loadRequest } from '../_data'
 
 /**
  * The record's right column: who the request is for, and the request's own
- * reference data. It sits outside the tab strip because reaching the customer
- * is the first thing anyone does on a request, whichever section they are in.
+ * reference data.
  */
 export async function RequestAside({ requestId }: { requestId: string }) {
   const { request } = await loadRequest(requestId)
@@ -38,149 +38,138 @@ export async function RequestAside({ requestId }: { requestId: string }) {
     customer,
     profile?.billingCustomerId ?? request.customerId
   )
-  // The legal name is the only subtitle worth a line: for most orgs it equals
-  // the trading name, and printing both reads as a rendering bug, so
-  // `resolveCustomerIdentity` returns it only when it actually differs.
   const customerSubtitle = identity.legalName ?? identity.typeLabel
 
   return (
     <>
-      {/*
-        Two parties, one card.
-
-        876 has organizations *and* customers, and for a business the customer
-        is the organization while the person you actually reply to is its
-        primary contact. The card used to merge them: the company's name over
-        the contact's email address, which read as the company's own. So the
-        organization leads the card, a labelled divider breaks the two apart,
-        and the contact gets their own row — with their own avatar, because a
-        face is how a person is recognized in a list of facts.
-
-        An individual is their own contact and gets one block, not two.
-      */}
       <section className="876-card overflow-hidden">
-        <div className="flex items-start gap-3 p-4">
-          <CustomerAvatar
-            name={identity.name}
-            size="lg"
-            className="size-11 rounded-lg text-sm ring-0 after:rounded-lg sm:size-11 sm:text-sm [&_[data-slot=avatar-fallback]]:rounded-lg"
-          />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <Link
-                href={`/customers/${request.customerId}`}
-                className="min-w-0 truncate font-medium hover:underline"
-              >
-                {identity.name}
-              </Link>
-              {customer?.customerKind ? (
-                <Badge
-                  variant="secondary"
-                  className="shrink-0 text-[0.65rem] capitalize"
-                >
-                  {customer.customerKind.toLowerCase()}
-                </Badge>
-              ) : null}
-            </div>
-            <p className="text-muted-foreground mt-0.5 truncate text-xs">
-              {customerSubtitle}
-            </p>
-            <div className="mt-2.5 flex flex-col gap-1.5">
-              <ContactRow
-                icon={
-                  <EnvelopeIcon
-                    className="size-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                }
-                href={identity.email ? `mailto:${identity.email}` : undefined}
-                value={identity.email}
-                empty={
-                  identity.isBusiness
-                    ? 'No organization email'
-                    : 'No email on file'
-                }
-              />
-              <ContactRow
-                icon={
-                  <Phone className="size-3.5 shrink-0" aria-hidden="true" />
-                }
-                href={identity.phone ? `tel:${identity.phone}` : undefined}
-                value={identity.phone}
-                empty={
-                  identity.isBusiness
-                    ? 'No organization phone'
-                    : 'No phone on file'
-                }
-              />
-            </div>
-          </div>
+        <div className="bg-muted/20 flex items-center justify-between gap-2 border-b px-4 py-3">
+          <span className="876-eyebrow text-[0.6875rem]">Customer</span>
+          <Badge
+            variant="secondary"
+            className="text-muted-foreground text-[0.625rem] font-medium tracking-wider uppercase"
+          >
+            {identity.isBusiness ? 'Business' : 'Individual'}
+          </Badge>
         </div>
 
-        {identity.isBusiness ? (
-          <div className="bg-muted/40 border-t px-4 py-3">
-            <p className="text-muted-foreground mb-2 text-[0.65rem] font-medium tracking-wider uppercase">
-              Primary contact
-            </p>
-            {identity.contact ? (
-              <div className="flex items-start gap-2.5">
-                <CustomerAvatar
-                  name={identity.contact.name}
-                  src={identity.contact.avatar}
-                  className="size-8 shrink-0 text-xs"
+        <div className="space-y-3.5 p-4">
+          <div className="flex items-start gap-3">
+            <CustomerAvatar
+              name={identity.name}
+              size="lg"
+              className="size-10 rounded-lg text-sm ring-0 after:rounded-lg sm:size-10 sm:text-sm [&_[data-slot=avatar-fallback]]:rounded-lg"
+            />
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/customers/${request.customerId}`}
+                className="text-foreground/90 hover:text-info inline-flex items-center gap-1 truncate text-sm font-medium transition-colors"
+              >
+                <span className="truncate">{identity.name}</span>
+                <ExternalLink
+                  className="text-muted-foreground/60 size-3 shrink-0"
+                  aria-hidden="true"
                 />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {identity.contact.name}
-                  </p>
-                  <div className="mt-1.5 flex flex-col gap-1.5">
-                    <ContactRow
-                      icon={
+              </Link>
+              <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                {customerSubtitle}
+              </p>
+            </div>
+          </div>
+
+          {identity.email || identity.phone ? (
+            <div className="bg-muted/30 flex flex-col gap-2 rounded-md p-2.5 text-xs">
+              {identity.email ? (
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <a
+                    href={`mailto:${identity.email}`}
+                    className="text-foreground/80 hover:text-info flex items-center gap-1.5 truncate transition-colors"
+                  >
+                    <EnvelopeIcon
+                      className="text-muted-foreground size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{identity.email}</span>
+                  </a>
+                  <CopyButton value={identity.email} label="email" />
+                </div>
+              ) : null}
+              {identity.phone ? (
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <a
+                    href={`tel:${identity.phone}`}
+                    className="text-foreground/80 hover:text-info flex items-center gap-1.5 truncate transition-colors"
+                  >
+                    <Phone
+                      className="text-muted-foreground size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{identity.phone}</span>
+                  </a>
+                  <CopyButton value={identity.phone} label="phone number" />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {identity.isBusiness ? (
+            <div className="border-border/60 space-y-2 border-t pt-2">
+              <span className="text-muted-foreground text-[0.6875rem] font-medium tracking-wider uppercase">
+                Primary Contact
+              </span>
+              {identity.contact ? (
+                <div className="bg-muted/20 flex items-start gap-2.5 rounded-md p-2.5 text-xs">
+                  <CustomerAvatar
+                    name={identity.contact.name}
+                    src={identity.contact.avatar}
+                    className="size-7 shrink-0 text-[0.625rem]"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground/90 truncate font-medium">
+                      {identity.contact.name}
+                    </p>
+                    {identity.contact.email ? (
+                      <a
+                        href={`mailto:${identity.contact.email}`}
+                        className="text-muted-foreground hover:text-info mt-1 flex items-center gap-1.5 truncate text-[0.75rem] transition-colors"
+                      >
                         <EnvelopeIcon
-                          className="size-3.5 shrink-0"
+                          className="size-3 shrink-0"
                           aria-hidden="true"
                         />
-                      }
-                      href={
-                        identity.contact.email
-                          ? `mailto:${identity.contact.email}`
-                          : undefined
-                      }
-                      value={identity.contact.email}
-                      empty="No contact email"
-                    />
-                    <ContactRow
-                      icon={
-                        <Phone
-                          className="size-3.5 shrink-0"
-                          aria-hidden="true"
-                        />
-                      }
-                      href={
-                        identity.contact.phone
-                          ? `tel:${identity.contact.phone}`
-                          : undefined
-                      }
-                      value={identity.contact.phone}
-                      empty="No contact phone"
-                    />
+                        <span className="truncate">
+                          {identity.contact.email}
+                        </span>
+                      </a>
+                    ) : null}
+                    {identity.contact.phone ? (
+                      <a
+                        href={`tel:${identity.contact.phone}`}
+                        className="text-muted-foreground hover:text-info mt-1 flex items-center gap-1.5 truncate text-[0.75rem] transition-colors"
+                      >
+                        <Phone className="size-3 shrink-0" aria-hidden="true" />
+                        <span className="truncate">
+                          {identity.contact.phone}
+                        </span>
+                      </a>
+                    ) : null}
                   </div>
                 </div>
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                No contact on file
-              </p>
-            )}
-          </div>
-        ) : null}
+              ) : (
+                <p className="text-muted-foreground text-xs">
+                  No contact on file
+                </p>
+              )}
+            </div>
+          ) : null}
+        </div>
 
-        <div className="border-t px-4 py-2.5">
+        <div className="bg-muted/10 border-t px-4 py-2.5">
           <Link
             href={`/customers/${request.customerId}`}
-            className="text-primary inline-flex items-center gap-1 text-sm font-medium no-underline! hover:underline!"
+            className="text-muted-foreground hover:text-info flex items-center justify-between text-xs font-medium transition-colors"
           >
-            <span>View customer profile</span>
+            <span>View full profile</span>
             <ArrowRight className="size-3.5" aria-hidden="true" />
           </Link>
         </div>
@@ -243,27 +232,22 @@ export function RequestAsideSkeleton() {
   return (
     <>
       <section className="876-card overflow-hidden">
-        <div className="flex items-start gap-3 p-4">
-          <Skeleton className="size-11 rounded-lg" />
-          <div className="min-w-0 flex-1">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="mt-1.5 h-3 w-24" />
-            <Skeleton className="mt-3 h-3.5 w-40" />
-            <Skeleton className="mt-1.5 h-3.5 w-28" />
-          </div>
+        <div className="bg-muted/20 flex items-center justify-between border-b px-4 py-3">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-4 w-14 rounded-full" />
         </div>
-        <div className="bg-muted/40 border-t px-4 py-3">
-          <Skeleton className="h-2.5 w-24" />
-          <div className="mt-2 flex items-start gap-2.5">
-            <Skeleton className="size-8 rounded-full" />
-            <div className="min-w-0 flex-1">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="mt-1.5 h-3.5 w-36" />
+        <div className="space-y-3.5 p-4">
+          <div className="flex items-start gap-3">
+            <Skeleton className="size-10 rounded-lg" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-20" />
             </div>
           </div>
+          <Skeleton className="h-14 w-full rounded-md" />
         </div>
-        <div className="border-t px-4 py-2.5">
-          <Skeleton className="h-4 w-36" />
+        <div className="bg-muted/10 border-t px-4 py-2.5">
+          <Skeleton className="h-3.5 w-28" />
         </div>
       </section>
       <section className="876-card p-4">
@@ -273,37 +257,6 @@ export function RequestAsideSkeleton() {
         <Skeleton className="mt-3 h-4 w-2/3" />
       </section>
     </>
-  )
-}
-
-function ContactRow({
-  icon,
-  href,
-  value,
-  empty,
-}: {
-  icon: React.ReactNode
-  href?: string
-  value?: string | null
-  empty: string
-}) {
-  if (!value || !href) {
-    return (
-      <p className="text-muted-foreground flex items-center gap-2 text-sm">
-        {icon}
-        {empty}
-      </p>
-    )
-  }
-
-  return (
-    <a
-      href={href}
-      className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm no-underline! transition-colors"
-    >
-      {icon}
-      <span className="truncate">{value}</span>
-    </a>
   )
 }
 

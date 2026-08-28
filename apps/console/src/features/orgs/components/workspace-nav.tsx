@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@876/core/utils'
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 import type { WorkspaceIconKey } from '../app-workspaces'
 import { WorkspaceIcon } from './workspace-icon'
 
@@ -15,30 +16,63 @@ export type WorkspaceNavLink = {
 }
 
 /**
- * The workspace rail — the app's own navigation, rendered inside Console.
+ * The workspace sidebar navigation — the app's sections rendered inside Console.
  *
- * It is a rail rather than another tab strip on purpose. The organization page
- * already has a tab strip about the organization; a second horizontal strip
- * directly beneath it would read as more of the same, when the point is that
- * you have crossed into a different product. A rail down the side is the shape
- * the app itself uses, so an operator recognises where they are without a label
- * telling them.
- *
- * It collapses to a horizontal scroller below `lg`, where a rail would eat half
- * the viewport.
+ * Renders as a vertical list in the left column on desktop, and a horizontal bar on mobile.
+ * In collapsed mode, renders compact icon-only square tiles.
  */
-export function WorkspaceNav({ links }: { links: WorkspaceNavLink[] }) {
+export function WorkspaceNav({
+  links,
+  collapsed = false,
+}: {
+  links: WorkspaceNavLink[]
+  collapsed?: boolean
+}) {
   const pathname = usePathname()
 
   return (
     <nav
       aria-label="Workspace sections"
-      className="flex gap-1 overflow-x-auto p-2 lg:w-52 lg:shrink-0 lg:flex-col lg:overflow-visible"
+      className={cn(
+        'flex gap-1 overflow-x-auto lg:overflow-visible',
+        collapsed ? 'lg:flex-col lg:items-center lg:gap-1.5' : 'lg:flex-col'
+      )}
     >
       {links.map((link) => {
         const isActive = link.exact
           ? pathname === link.href
           : pathname === link.href || pathname.startsWith(`${link.href}/`)
+
+        if (collapsed) {
+          return (
+            <Tooltip key={link.href}>
+              <TooltipTrigger
+                render={
+                  <Link
+                    href={link.href}
+                    aria-label={link.label}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      'group relative flex size-8.5 items-center justify-center rounded-xl transition-all duration-150',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground ring-border/40 font-medium shadow-xs ring-1'
+                        : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
+                    )}
+                  >
+                    <WorkspaceIcon
+                      iconKey={link.iconKey}
+                      colored
+                      className="size-4 shrink-0 transition-transform duration-150 group-hover:scale-110"
+                    />
+                  </Link>
+                }
+              />
+              <TooltipContent side="right" sideOffset={8}>
+                {link.label}
+              </TooltipContent>
+            </Tooltip>
+          )
+        }
 
         return (
           <Link
@@ -46,13 +80,17 @@ export function WorkspaceNav({ links }: { links: WorkspaceNavLink[] }) {
             href={link.href}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
+              'group flex items-center gap-2.5 rounded-md px-3 py-2 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
               isActive
-                ? 'bg-876-accent-fg/10 text-876-accent-fg'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-2xs'
+                : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
             )}
           >
-            <WorkspaceIcon iconKey={link.iconKey} className="size-4 shrink-0" />
+            <WorkspaceIcon
+              iconKey={link.iconKey}
+              colored
+              className="size-4 shrink-0 transition-transform duration-150 group-hover:scale-105"
+            />
             {link.label}
           </Link>
         )

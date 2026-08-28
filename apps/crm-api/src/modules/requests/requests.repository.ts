@@ -213,9 +213,27 @@ export async function remove(params: {
   return { object: 'request' as const, id: params.id, deleted: true as const }
 }
 
-export function listNotes(tenantId: string, requestId: string) {
+export function listNotes(
+  tenantId: string,
+  requestId: string,
+  access: { viewerId?: string; includePrivate?: boolean } = {}
+) {
   return prisma.requestNote.findMany({
-    where: { tenantId, requestId, deletedAt: null },
+    where: {
+      tenantId,
+      requestId,
+      deletedAt: null,
+      ...(access.includePrivate
+        ? {}
+        : {
+            OR: [
+              { privateToUserId: null },
+              ...(access.viewerId
+                ? [{ privateToUserId: access.viewerId }]
+                : []),
+            ],
+          }),
+    },
     orderBy: { createdAt: 'desc' },
   })
 }
@@ -231,8 +249,12 @@ export function createNote(params: {
   requestId: string
   body: string
   authorId: string
+  visibility?: 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
   internal?: boolean
 }) {
+  const visibility =
+    params.visibility ?? (params.internal === false ? 'PUBLIC' : 'INTERNAL')
+
   return prisma.requestNote.create({
     data: {
       id: `crm_note_${randomUUID().replaceAll('-', '')}`,
@@ -240,7 +262,8 @@ export function createNote(params: {
       requestId: params.requestId,
       body: params.body,
       authorId: params.authorId,
-      internal: params.internal ?? true,
+      internal: visibility !== 'PUBLIC',
+      privateToUserId: visibility === 'PRIVATE' ? params.authorId : null,
       kind: 'NOTE',
     },
   })

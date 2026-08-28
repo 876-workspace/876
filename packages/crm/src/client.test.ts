@@ -225,6 +225,7 @@ describe('@876/crm client', () => {
       body: 'Customer contacted via phone with extra details.',
       authorId: 'usr_1',
       internal: true,
+      visibility: 'INTERNAL',
       kind: 'NOTE',
       editedAt: null,
       createdAt: 1,
@@ -246,11 +247,13 @@ describe('@876/crm client', () => {
         json({ object: 'request_note', id: 'crm_note_1', deleted: true })
       )
 
-    const listed = await client.requestNotes.list('org_1', 'crm_req_1')
+    const listed = await client.requestNotes.list('org_1', 'crm_req_1', {
+      viewerId: 'usr_1',
+    })
     const created = await client.requestNotes.create('org_1', 'crm_req_1', {
       body: 'Customer contacted via phone with extra details.',
       authorId: 'usr_1',
-      internal: true,
+      visibility: 'PRIVATE',
     })
     const deleted = await client.requestNotes.delete(
       'org_1',
@@ -267,7 +270,7 @@ describe('@876/crm client', () => {
     expect(deleted.data?.deleted).toBe(true)
 
     expect(fetch.mock.calls.map(([url]) => String(url))).toEqual([
-      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes',
+      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes?viewer_id=usr_1',
       'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes',
       'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes/crm_note_1',
     ])
@@ -282,6 +285,7 @@ describe('@876/crm client', () => {
       body: 'Updated details.',
       authorId: 'usr_1',
       internal: true,
+      visibility: 'INTERNAL',
       kind: 'NOTE',
       editedAt: 2,
       createdAt: 1,

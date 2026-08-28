@@ -6,6 +6,7 @@ import {
   createRequestNoteBodySchema,
   deleteRequestBodySchema,
   deleteRequestNoteBodySchema,
+  listRequestNotesQuerySchema,
   listRequestsQuerySchema,
   organizationParamsSchema,
   requestNoteParamsSchema,
@@ -85,7 +86,11 @@ export async function listRequestNotes(req: Request, res: Response) {
   const { organizationId, id: requestId } = requestParamsSchema.parse(
     req.params
   )
-  const data = await service.listNotes(organizationId, requestId)
+  const query = listRequestNotesQuerySchema.parse(req.query)
+  const data = await service.listNotes(organizationId, requestId, {
+    viewerId: query.viewer_id,
+    includePrivate: query.include_private,
+  })
 
   res.json({
     data: {

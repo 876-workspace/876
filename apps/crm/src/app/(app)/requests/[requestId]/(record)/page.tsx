@@ -3,6 +3,7 @@ import {
   type NoteAuthor,
 } from '../../_components/request-notes'
 import { loadDirectory, loadNotes, loadRequest } from '../_data'
+import { canCreatePrivateRequestNote } from '@/lib/auth/roles'
 
 type Props = { params: Promise<{ requestId: string }> }
 
@@ -25,6 +26,7 @@ export default async function RequestConversationPage({ params }: Props) {
       requestId={request.id}
       notes={notes}
       currentUserId={context.userId}
+      canCreatePrivateNote={canCreatePrivateRequestNote(context.role)}
       authors={authors}
     />
   )

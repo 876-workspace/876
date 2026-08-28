@@ -15,7 +15,9 @@ type UpdateRequestNoteInput = Parameters<RequestNotesResource['update']>[3]
 type DeleteRequestNoteInput = Parameters<RequestNotesResource['delete']>[3]
 
 export async function PATCH(request: NextRequest, context: Context) {
-  const { response } = await requireConsolePermission('console:organizations')
+  const { response, sessionUser } = await requireConsolePermission(
+    'console:organizations'
+  )
   if (response) return response
 
   const { id: organizationId, requestId, noteId } = await context.params
@@ -29,7 +31,11 @@ export async function PATCH(request: NextRequest, context: Context) {
     organizationId,
     requestId,
     noteId,
-    body as UpdateRequestNoteInput
+    {
+      ...(body as UpdateRequestNoteInput),
+      editedBy: sessionUser.id,
+      includePrivate: true,
+    }
   )
   if (error || !data)
     return apiJson(
@@ -41,7 +47,9 @@ export async function PATCH(request: NextRequest, context: Context) {
 }
 
 export async function DELETE(request: NextRequest, context: Context) {
-  const { response } = await requireConsolePermission('console:organizations')
+  const { response, sessionUser } = await requireConsolePermission(
+    'console:organizations'
+  )
   if (response) return response
 
   const { id: organizationId, requestId, noteId } = await context.params
@@ -55,7 +63,11 @@ export async function DELETE(request: NextRequest, context: Context) {
     organizationId,
     requestId,
     noteId,
-    body as DeleteRequestNoteInput
+    {
+      ...(body as DeleteRequestNoteInput),
+      deletedBy: sessionUser.id,
+      includePrivate: true,
+    }
   )
   if (error || !data)
     return apiJson(

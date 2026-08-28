@@ -3,6 +3,7 @@ import type {
   CreateRequestNoteInput,
   DeleteRequestInput,
   DeleteRequestNoteInput,
+  ListRequestNotesInput,
   ListRequestsFilter,
   UpdateRequestInput,
   UpdateRequestNoteInput,
@@ -63,6 +64,11 @@ function serializeNote(
     body: note.body,
     authorId: note.authorId,
     internal: note.internal,
+    visibility: note.privateToUserId
+      ? ('PRIVATE' as const)
+      : note.internal
+        ? ('INTERNAL' as const)
+        : ('PUBLIC' as const),
     kind: note.kind,
     editedAt: note.editedAt ? Math.floor(note.editedAt.getTime() / 1000) : null,
     createdAt: Math.floor(note.createdAt.getTime() / 1000),
@@ -201,9 +207,13 @@ export async function remove(
   return repository.remove({ id, ...input })
 }
 
-export async function listNotes(organizationId: string, requestId: string) {
+export async function listNotes(
+  organizationId: string,
+  requestId: string,
+  access: ListRequestNotesInput = {}
+) {
   const tenant = await requireTenant(organizationId)
-  const notes = await repository.listNotes(tenant.id, requestId)
+  const notes = await repository.listNotes(tenant.id, requestId, access)
 
   return notes.map(serializeNote)
 }
@@ -235,6 +245,12 @@ export async function removeNote(
   const tenant = await requireTenant(organizationId)
   const current = await repository.retrieveNote(tenant.id, requestId, id)
   if (!current) return null
+  if (
+    current.privateToUserId &&
+    !input.includePrivate &&
+    current.privateToUserId !== input.deletedBy
+  )
+    return null
   if (current.kind === 'DESCRIPTION')
     throw crmError('crm/description-note-immutable')
 
@@ -253,6 +269,12 @@ export async function updateNote(
   const tenant = await requireTenant(organizationId)
   const current = await repository.retrieveNote(tenant.id, requestId, id)
   if (!current) return null
+  if (
+    current.privateToUserId &&
+    !input.includePrivate &&
+    current.privateToUserId !== input.editedBy
+  )
+    return null
 
   return serializeNote(await repository.updateNote(id, input))
 }

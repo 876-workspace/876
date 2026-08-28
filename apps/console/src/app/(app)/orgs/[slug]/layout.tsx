@@ -297,9 +297,9 @@ async function EntitledTabs({ base, slug }: { base: string; slug: string }) {
   }
 
   const subscriptions = await resolveOrgSubscriptions(org.id)
-  const entitledAppSlugs = (subscriptions ?? [])
-    .filter((s) => s.status === 'active' || s.status === 'trialing')
-    .flatMap((s) => (s.app_slug ? [s.app_slug] : []))
+  const activeSubscriptions = (subscriptions ?? []).filter(
+    (s) => s.status === 'active' || s.status === 'trialing'
+  )
 
-  return <RouteTabs tabs={orgTabs(base, entitledAppSlugs)} />
+  return <RouteTabs tabs={orgTabs(base, activeSubscriptions)} />
 }

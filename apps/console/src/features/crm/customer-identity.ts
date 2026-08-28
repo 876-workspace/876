@@ -65,8 +65,19 @@ export function resolveCustomerIdentity(
     customer?.customerKind === 'BUSINESS' ||
     (Boolean(customer?.companyName) &&
       customer?.companyName?.trim() !== customer?.name?.trim())
+
+  const primaryContactName = customer?.primaryContact
+    ? (joinName(
+        customer.primaryContact.firstName,
+        customer.primaryContact.lastName
+      ) ?? customer.primaryContact.email)
+    : null
+
   const name =
-    customer?.name?.trim() || customer?.companyName?.trim() || fallbackName
+    customer?.name?.trim() ||
+    customer?.companyName?.trim() ||
+    primaryContactName ||
+    fallbackName
 
   const contactSource = isBusiness ? (customer?.primaryContact ?? null) : null
   const contact: CustomerContact | null = contactSource
@@ -88,8 +99,13 @@ export function resolveCustomerIdentity(
     name,
     legalName: legalName && legalName !== name ? legalName : null,
     isBusiness,
-    email: customer?.email ?? null,
-    phone: customer?.phone ?? customer?.workPhone ?? null,
+    email: customer?.email ?? customer?.primaryContact?.email ?? null,
+    phone:
+      customer?.phone ??
+      customer?.workPhone ??
+      customer?.primaryContact?.mobilePhone ??
+      customer?.primaryContact?.workPhone ??
+      null,
     contact,
     typeLabel: formatCustomerType(customer?.customerType),
   }
