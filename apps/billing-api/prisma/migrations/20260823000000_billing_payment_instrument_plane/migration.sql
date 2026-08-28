@@ -1,4 +1,4 @@
-+-- CreateEnum
+-- CreateEnum
 CREATE TYPE "BillingPaymentMethodType" AS ENUM ('CARD', 'BANK_ACCOUNT', 'WALLET', 'MANUAL');
 
 -- CreateEnum
@@ -430,5 +430,4 @@ ALTER TABLE "billing_setup_intents" ADD CONSTRAINT "billing_setup_intents_paymen
 
 -- AddForeignKey
 ALTER TABLE "billing_setup_intents" ADD CONSTRAINT "billing_setup_intents_mandate_fkey" FOREIGN KEY ("tenant_id", "mandate_id") REFERENCES "billing_mandates"("tenant_id", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
 
