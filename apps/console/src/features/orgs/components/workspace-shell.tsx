@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useSyncExternalStore, type ReactNode } from 'react'
 import { ChevronLeft, ChevronRight } from '@876/ui/icons'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
@@ -28,6 +28,35 @@ type Props = {
 
 const STORAGE_KEY = '876_workspace_sidebar_collapsed'
 
+const collapseListeners = new Set<() => void>()
+
+function subscribeToCollapsed(onChange: () => void) {
+  collapseListeners.add(onChange)
+  window.addEventListener('storage', onChange)
+  return () => {
+    collapseListeners.delete(onChange)
+    window.removeEventListener('storage', onChange)
+  }
+}
+
+function readCollapsed() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) !== 'false'
+  } catch {
+    // Private browsing, blocked site data — fall back to the default.
+    return true
+  }
+}
+
+function writeCollapsed(next: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(next))
+  } catch {
+    // Ignore local storage errors; the rail still toggles for this render.
+  }
+  for (const listener of collapseListeners) listener()
+}
+
 /**
  * The frame an operator works inside when they open an organization's app.
  *
@@ -42,27 +71,16 @@ export function WorkspaceShell({
   notice,
   children,
 }: Props) {
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  // The stored preference is read through an external store rather than an
+  // effect, so the rail renders in its remembered state on the first client
+  // paint instead of flashing collapsed and then widening.
+  const isCollapsed = useSyncExternalStore(
+    subscribeToCollapsed,
+    readCollapsed,
+    () => true
+  )
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored !== null) {
-        setIsCollapsed(stored === 'true')
-      }
-    } catch {
-      // Ignore local storage errors
-    }
-  }, [])
-
-  const handleToggle = (next: boolean) => {
-    setIsCollapsed(next)
-    try {
-      localStorage.setItem(STORAGE_KEY, String(next))
-    } catch {
-      // Ignore local storage errors
-    }
-  }
+  const handleToggle = writeCollapsed
 
   const links = workspaceSectionLinks(orgSlug, workspace)
 
