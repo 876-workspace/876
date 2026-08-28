@@ -4,6 +4,7 @@ import { getSettings } from '@/config'
 import { disconnectDb } from '@/db/client'
 import { configureLogging, getLogger } from '@/platform/logger'
 import { assertFinanceProvisioningConfiguration } from '@/services/finance-provisioning-configuration'
+import { startBillingSyncWorker } from '@/workers/billing-customer-dispatch'
 import { startFinanceProvisioningWorker } from '@/workers/finance-provisioning-dispatch'
 
 const log = getLogger('server')
@@ -12,6 +13,7 @@ export type ServerLifecycleDeps = {
   createApp: typeof createApp
   getSettings: typeof getSettings
   disconnectDb: typeof disconnectDb
+  startBillingWorker: typeof startBillingSyncWorker
   startFinanceWorker: typeof startFinanceProvisioningWorker
   assertFinanceConfiguration: typeof assertFinanceProvisioningConfiguration
 }
@@ -28,6 +30,7 @@ export function createServerLifecycle(
     createApp,
     getSettings,
     disconnectDb,
+    startBillingWorker: startBillingSyncWorker,
     startFinanceWorker: startFinanceProvisioningWorker,
     assertFinanceConfiguration: assertFinanceProvisioningConfiguration,
     ...overrides,
@@ -42,6 +45,7 @@ export function createServerLifecycle(
   })
 
   const app = deps.createApp()
+  let billingWorkerStop: (() => Promise<void>) | null = null
   let financeWorkerStop: (() => Promise<void>) | null = null
 
   const server = app.listen(settings.port, '0.0.0.0', () => {
@@ -49,6 +53,11 @@ export function createServerLifecycle(
       { port: settings.port, environment: settings.environment },
       'server_started'
     )
+    if (settings.billing.url.trim() && settings.billing.internalKey.trim()) {
+      const worker = deps.startBillingWorker()
+      billingWorkerStop = worker.stop
+      log.info('billing_customer_sync.worker_started')
+    }
     if (!settings.billing.financeProvisioningDisabled) {
       const worker = deps.startFinanceWorker()
       financeWorkerStop = worker.stop
@@ -62,6 +71,14 @@ export function createServerLifecycle(
     if (shuttingDown) return
     shuttingDown = true
     log.info({ signal }, 'server_shutdown_started')
+
+    if (billingWorkerStop) {
+      try {
+        await billingWorkerStop()
+      } catch (e) {
+        log.error({ err: e }, 'billing_customer_sync.worker_stop_failed')
+      }
+    }
 
     if (financeWorkerStop) {
       try {

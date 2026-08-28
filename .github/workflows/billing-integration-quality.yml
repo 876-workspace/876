@@ -8,6 +8,8 @@ on:
       - 'apps/api/src/server.ts'
       - 'apps/api/src/services/finance-provisioning*'
       - 'apps/api/src/services/__tests__/finance-provisioning*'
+      - 'apps/api/src/workers/billing-customer*'
+      - 'apps/api/src/workers/__tests__/billing-customer*'
       - 'apps/api/src/workers/finance-provisioning*'
       - 'apps/api/src/workers/__tests__/finance-provisioning*'
       - 'apps/billing-api/src/modules/finance-connections/**'
@@ -55,6 +57,7 @@ jobs:
       - name: Test API to Billing reliability boundary
         run: >-
           pnpm --filter @876/api exec vitest run
+          src/workers/__tests__/billing-customer-dispatch.test.ts
           src/workers/__tests__/finance-provisioning-wire.integration.test.ts
           src/workers/__tests__/finance-provisioning-dispatch.test.ts
           src/services/__tests__/finance-provisioning-configuration.test.ts
