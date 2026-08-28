@@ -1,10 +1,16 @@
 import { notFound } from 'next/navigation'
 import { Suspense, type ReactNode } from 'react'
 import { Skeleton } from '@876/ui/skeleton'
+import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 
-import { findAppWorkspace } from '@/features/orgs/app-workspaces'
+import {
+  findAppWorkspace,
+  type WorkspaceIconKey,
+} from '@/features/orgs/app-workspaces'
 import { WorkspaceEntitlementNotice } from '@/features/orgs/components/workspace-entitlement-notice'
+import { WorkspaceIcon } from '@/features/orgs/components/workspace-icon'
 import { WorkspaceShell } from '@/features/orgs/components/workspace-shell'
+import { resolveApp } from '@/app/(app)/apps/[slug]/_data'
 import { resolveOrg, resolveOrgEntitledAppSlugs } from '../../_data'
 
 type Props = {
@@ -34,6 +40,20 @@ export default async function CrmWorkspaceLayout({ children, params }: Props) {
     <WorkspaceShell
       workspace={workspace}
       orgSlug={slug}
+      appLogo={
+        <Suspense
+          fallback={
+            <span className="bg-muted text-muted-foreground border-border/50 flex size-5.5 shrink-0 items-center justify-center rounded-md border">
+              <WorkspaceIcon iconKey={workspace.iconKey} className="size-3.5" />
+            </span>
+          }
+        >
+          <AppLogoNode
+            appSlug={workspace.appSlug}
+            fallbackIconKey={workspace.iconKey}
+          />
+        </Suspense>
+      }
       orgName={
         <Suspense
           fallback={
@@ -51,6 +71,32 @@ export default async function CrmWorkspaceLayout({ children, params }: Props) {
     >
       {children}
     </WorkspaceShell>
+  )
+}
+
+async function AppLogoNode({
+  appSlug,
+  fallbackIconKey,
+}: {
+  appSlug: string
+  fallbackIconKey: WorkspaceIconKey
+}) {
+  const app = await resolveApp(appSlug)
+  if (app?.logo_url) {
+    return (
+      <AppLogo
+        name={app.name}
+        src={app.logo_url}
+        size="sm"
+        className="size-5.5 shrink-0 rounded-md object-cover"
+      />
+    )
+  }
+
+  return (
+    <span className="bg-muted text-muted-foreground border-border/50 flex size-5.5 shrink-0 items-center justify-center rounded-md border">
+      <WorkspaceIcon iconKey={fallbackIconKey} className="size-3.5" />
+    </span>
   )
 }
 
