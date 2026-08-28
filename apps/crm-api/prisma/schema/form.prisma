@@ -1,3 +1,13 @@
+/**
+ * Where a form is meant to be filled in. A HOSTED form is opened on its own
+ * page; an EMBEDDED one is rendered inside a product surface, such as the
+ * in-app support widget.
+ */
+enum RequestFormPlacement {
+  HOSTED
+  EMBEDDED
+}
+
 enum RequestFormStatus {
   DRAFT
   PUBLISHED
@@ -11,6 +21,7 @@ model RequestForm {
   slug                     String
   description              String?
   status                   RequestFormStatus @default(DRAFT)
+  placement                RequestFormPlacement @default(HOSTED)
   definition               Json
   publishedDefinition      Json?             @map("published_definition")
   version                  Int               @default(0)

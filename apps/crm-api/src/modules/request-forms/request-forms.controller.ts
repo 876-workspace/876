@@ -103,10 +103,7 @@ export async function listFormCustomerRequests(req: Request, res: Response) {
   })
 }
 
-export async function listRequestFormSubmissions(
-  req: Request,
-  res: Response
-) {
+export async function listRequestFormSubmissions(req: Request, res: Response) {
   const { organizationId, id } = requestFormParamsSchema.parse(req.params)
   const data = await service.listSubmissions(organizationId, id)
 
