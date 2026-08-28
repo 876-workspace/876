@@ -7,7 +7,12 @@
  */
 
 export type ServiceOwner =
-  'core' | 'billing' | 'couriers' | 'crm' | 'storage' | 'widgets'
+  | 'core'
+  | 'billing'
+  | 'couriers'
+  | 'crm'
+  | 'storage'
+  | 'widgets'
 
 export interface ResourceOwnership {
   owner: ServiceOwner
@@ -137,6 +142,20 @@ export const RESOURCE_MANIFEST = {
   requestCategories: {
     owner: 'crm',
     meaning: 'org-managed CRM request category and subcategory catalog',
+  },
+  requestForms: {
+    owner: 'crm',
+    meaning: 'versioned CRM request intake definitions and routing defaults',
+  },
+  requestFormSubmissions: {
+    owner: 'crm',
+    meaning:
+      'immutable intake submissions that atomically create ordinary CRM requests',
+  },
+  requestFormRequests: {
+    owner: 'crm',
+    meaning:
+      'customer-scoped request projection used by reusable intake/support surfaces',
   },
   requestReminders: {
     owner: 'crm',

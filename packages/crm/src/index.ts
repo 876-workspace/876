@@ -1,6 +1,33 @@
 export { create876CrmClient } from './client'
 export type { CrmClient } from './client'
 export {
+  requestFormDefinitionSchema,
+  requestFormFieldMappingSchema,
+  requestFormFieldSchema,
+  requestFormListSchema,
+  requestFormSchema,
+  requestFormStatusSchema,
+  requestFormSubmissionListSchema,
+  requestFormSubmissionRecordSchema,
+  requestFormSubmissionSchema,
+} from './request-form-types'
+export type {
+  CreateRequestFormInput,
+  ListFormCustomerRequestsQuery,
+  ListRequestFormsQuery,
+  RequestForm,
+  RequestFormDefinition,
+  RequestFormField,
+  RequestFormFieldMapping,
+  RequestFormList,
+  RequestFormStatus,
+  RequestFormSubmission,
+  RequestFormSubmissionList,
+  RequestFormSubmissionRecord,
+  SubmitRequestFormInput,
+  UpdateRequestFormInput,
+} from './request-form-types'
+export {
   reminderStatusSchema,
   requestCategoryListSchema,
   requestCategorySchema,
