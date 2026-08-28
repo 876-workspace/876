@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 
+import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
@@ -41,19 +42,44 @@ async function CategoriesData({ createOpen }: { createOpen: boolean }) {
     $876.teams.list(context.orgId),
     $876.requestPriorities.list(context.orgId),
   ])
-  if (categoriesResult.error) throw new Error(categoriesResult.error.message)
-  if (prioritiesResult.error) throw new Error(prioritiesResult.error.message)
+
+  if (categoriesResult.error)
+    return (
+      <AppError
+        title="Categories couldn't be loaded"
+        error={categoriesResult.error}
+        variant="page"
+      />
+    )
+
+  if (prioritiesResult.error)
+    return (
+      <AppError
+        title="Priority settings couldn't be loaded"
+        error={prioritiesResult.error}
+        variant="page"
+      />
+    )
 
   const teamNames = Object.fromEntries(
     (teamsResult.data?.data ?? []).map((team) => [team.id, team.name])
   )
 
   return (
-    <CategoriesList
-      categories={categoriesResult.data.data}
-      priorities={prioritiesResult.data.data}
-      teamNames={teamNames}
-      createOpen={createOpen}
-    />
+    <div className="space-y-3">
+      {teamsResult.error ? (
+        <AppError
+          title="Team information is temporarily unavailable"
+          error={teamsResult.error}
+          variant="inline"
+        />
+      ) : null}
+      <CategoriesList
+        categories={categoriesResult.data.data}
+        priorities={prioritiesResult.data.data}
+        teamNames={teamNames}
+        createOpen={createOpen}
+      />
+    </div>
   )
 }
