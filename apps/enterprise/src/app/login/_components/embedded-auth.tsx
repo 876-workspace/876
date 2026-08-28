@@ -34,7 +34,13 @@ const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
  * mount so the round-trip lands on the right page. On password/OTP success we
  * hard-navigate to `/auth/complete`, which reads the cookie and redirects in.
  */
-export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
+export function EmbeddedAuth({
+  returnTo,
+  authError,
+}: {
+  returnTo: string
+  authError?: string | null
+}) {
   useEffect(() => {
     writeReturnToCookie(returnTo)
   }, [returnTo])
@@ -47,6 +53,9 @@ export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
           client: $876.auth,
           appName: '876 Enterprise',
           socialProviders: SOCIAL_PROVIDERS,
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             window.location.assign(getAuthCompleteHref(returnTo))
           },
