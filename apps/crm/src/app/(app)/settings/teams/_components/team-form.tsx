@@ -1,8 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
@@ -17,9 +15,13 @@ import {
 } from '@876/ui/select'
 import { Switch } from '@876/ui/switch'
 import { Textarea } from '@876/ui/textarea'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 import { client } from '@/lib/client'
 import type { CrmTeamAutoAssign } from '@/types/crm'
+
+type ErrorValue = { code: string; message: string }
 
 export type TeamFormValues = {
   name: string
@@ -56,7 +58,8 @@ export function TeamForm({
 }) {
   const router = useRouter()
   const [values, setValues] = useState(initial)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ErrorValue | null>(null)
+  const [nameError, setNameError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   const set = <K extends keyof TeamFormValues>(
@@ -70,12 +73,13 @@ export function TeamForm({
 
     const name = values.name.trim()
     if (!name) {
-      setError('Name is required.')
+      setNameError('Name is required.')
       return
     }
 
     setSaving(true)
     setError(null)
+    setNameError(null)
 
     const payload = {
       name,
@@ -89,7 +93,7 @@ export function TeamForm({
       : await client.teams.create(payload)
 
     if (result.error) {
-      setError(result.error.message)
+      setError(result.error)
       setSaving(false)
       return
     }
@@ -107,14 +111,22 @@ export function TeamForm({
           required
           className={rowClassName}
         >
-          <Input
-            id="team-name"
-            value={values.name}
-            onChange={(event) => set('name', event.target.value)}
-            disabled={saving}
-            aria-invalid={error === 'Name is required.'}
-            required
-          />
+          <div className="space-y-1.5">
+            <Input
+              id="team-name"
+              value={values.name}
+              onChange={(event) => {
+                set('name', event.target.value)
+                if (nameError) setNameError(null)
+              }}
+              disabled={saving}
+              aria-invalid={Boolean(nameError)}
+              required
+            />
+            {nameError ? (
+              <p className="text-destructive text-xs">{nameError}</p>
+            ) : null}
+          </div>
         </FormRow>
 
         <FormRow
@@ -194,9 +206,11 @@ export function TeamForm({
       </div>
 
       {error ? (
-        <p className="text-destructive text-sm" role="alert">
-          {error}
-        </p>
+        <AppError
+          title={teamId ? 'Team could not be saved' : 'Team could not be added'}
+          error={error}
+          variant="form"
+        />
       ) : null}
 
       <div className="flex gap-3">
