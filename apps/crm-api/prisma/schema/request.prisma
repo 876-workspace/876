@@ -49,6 +49,12 @@ model Request {
   teamId         String?         @map("team_id")
   assigneeId     String?         @map("assignee_id")
   ownerId        String?         @map("owner_id")
+  // Who actually raised this, inside the customer party. Both are opaque ids
+  // from other bounded contexts (876 identity / the org-customer registry), so
+  // neither carries a cross-database foreign key. Null on a request raised for
+  // the organization as a whole rather than by a named person.
+  requesterUserId    String?     @map("requester_user_id")
+  requesterContactId String?     @map("requester_contact_id")
   createdBy      String          @map("created_by")
   resolvedAt     DateTime?       @map("resolved_at")
   closedAt       DateTime?       @map("closed_at")
@@ -78,6 +84,7 @@ model Request {
   @@index([tenantId, assigneeId, status])
   @@index([tenantId, categoryId, status])
   @@index([tenantId, ownerId, status])
+  @@index([tenantId, requesterUserId, createdAt])
   @@map("crm_requests")
 }
 
