@@ -98,7 +98,6 @@ export default async function RequestsPage({ searchParams }: Props) {
   )
 }
 
-/** Renders a client error as text, so it survives the console unchanged. */
 function describeError(error: unknown): string {
   if (error && typeof error === 'object') {
     const { code, message } = error as { code?: unknown; message?: unknown }
@@ -136,26 +135,6 @@ async function RequestsListData({
       $876.organizationMembers.list(context.orgId),
     ])
 
-  if (requestsResult.error)
-    return (
-      <AppError
-        title="Requests couldn't be loaded"
-        error={requestsResult.error}
-        variant="page"
-      />
-    )
-
-  if (customersResult.error)
-    return (
-      <AppError
-        title="Customer information couldn't be loaded"
-        error={customersResult.error}
-        variant="page"
-      />
-    )
-
-  // Directory data only enriches the queue. Keep the requests usable and show
-  // the registered failure instead of hiding it behind a console-only log.
   if (departmentsResult.error)
     console.error(
       `[crm/requests] team directory unavailable: ${describeError(departmentsResult.error)}`
@@ -192,49 +171,65 @@ async function RequestsListData({
   const membersByUserId = new Map(members.map((m) => [m.userId, m]))
 
   const customersById = new Map(
-    customersResult.data.data.map(({ profile, customer }) => [
+    (customersResult.data?.data ?? []).map(({ profile, customer }) => [
       profile.id,
       resolveCustomerIdentity(customer, profile.billingCustomerId),
     ])
   )
 
-  const rows: RequestListRow[] = requestsResult.data.data.map((request) => {
-    const customer = customersById.get(request.customerId)
-    const assignee = request.assigneeId
-      ? membersByUserId.get(request.assigneeId)
-      : undefined
+  const rows: RequestListRow[] = (requestsResult.data?.data ?? []).map(
+    (request) => {
+      const customer = customersById.get(request.customerId)
+      const assignee = request.assigneeId
+        ? membersByUserId.get(request.assigneeId)
+        : undefined
 
-    return {
-      id: request.id,
-      number: request.number,
-      subject: request.subject,
-      status: request.status,
-      priority: request.priority,
-      source: request.source,
-      createdAt: request.createdAt,
-      customerName: customer?.name ?? 'Unknown customer',
-      customerIsBusiness: customer?.isBusiness ?? false,
-      isAssigned: Boolean(request.assigneeId),
-      assigneeName: assignee?.name ?? null,
-      assigneeAvatar: assignee?.avatar ?? null,
-      teamName: request.teamId
-        ? (departmentNames.get(request.teamId) ?? null)
-        : null,
+      return {
+        id: request.id,
+        number: request.number,
+        subject: request.subject,
+        status: request.status,
+        priority: request.priority,
+        source: request.source,
+        createdAt: request.createdAt,
+        customerName: customer?.name ?? 'Unknown customer',
+        customerIsBusiness: customer?.isBusiness ?? false,
+        isAssigned: Boolean(request.assigneeId),
+        assigneeName: assignee?.name ?? null,
+        assigneeAvatar: assignee?.avatar ?? null,
+        teamName: request.teamId
+          ? (departmentNames.get(request.teamId) ?? null)
+          : null,
+      }
     }
-  })
+  )
 
   return (
     <div className="space-y-3">
+      {requestsResult.error ? (
+        <AppError
+          title="Some request data could not be loaded"
+          error={requestsResult.error}
+          variant="banner"
+        />
+      ) : null}
+      {customersResult.error ? (
+        <AppError
+          title="Customer details are temporarily incomplete"
+          error={customersResult.error}
+          variant="inline"
+        />
+      ) : null}
       {departmentsResult.error ? (
         <AppError
-          title="Team information is temporarily unavailable"
+          title="Team information is temporarily incomplete"
           error={departmentsResult.error}
           variant="inline"
         />
       ) : null}
       {membersResult.error ? (
         <AppError
-          title="Member information is temporarily unavailable"
+          title="Member information is temporarily incomplete"
           error={membersResult.error}
           variant="inline"
         />
