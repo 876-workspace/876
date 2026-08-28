@@ -15,6 +15,7 @@ import { CustomerAvatar } from '@876/ui/customer-avatar'
 import {
   ArrowPathIcon,
   ChatBubbleLeftIcon,
+  LockClosedIcon,
   Pencil,
   PlusIcon,
   TrashIcon,
@@ -23,6 +24,8 @@ import {
 import { useRouter } from 'next/navigation'
 import { useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
+
+import { cn } from '@876/ui/lib/utils'
 
 import { client } from '@/lib/client'
 import type { CrmRequestNote } from '@/types/crm'
@@ -55,10 +58,10 @@ function formatNoteDate(timestamp: number): string {
  *
  * A request has no description of its own: its opening message is the first
  * note (`kind: 'DESCRIPTION'`), and everything after it is an ordinary note.
- * The thread therefore reads bottom-up like a ticket — the description sits at
- * the bottom where it was written, later notes stack above it newest-first, and
- * the composer sits below everything so adding a note does not push the thread
- * down.
+ * The thread reads the way a helpdesk ticket does: the opening message first,
+ * every reply and note below it in the order it happened, and the composer at
+ * the end — so the record is read top to bottom as a conversation rather than
+ * as a reverse-chronological log.
  */
 export function RequestNotesSection({
   requestId,
@@ -91,7 +94,7 @@ export function RequestNotesSection({
   // freezes the thread or forces a render-phase state update; every mutation
   // already ends in `router.refresh()`, so there is nothing for a mirror to add.
   const { description, thread } = useMemo(() => {
-    const sorted = [...notes].sort((a, b) => b.createdAt - a.createdAt)
+    const sorted = [...notes].sort((a, b) => a.createdAt - b.createdAt)
     return {
       description: sorted.find((note) => note.kind === 'DESCRIPTION') ?? null,
       thread: sorted.filter((note) => note.kind !== 'DESCRIPTION'),
@@ -178,25 +181,6 @@ export function RequestNotesSection({
       </div>
 
       <ol className="border-border relative ml-4 flex flex-col gap-4 border-l pl-8">
-        {thread.map((note) => (
-          <TimelineEntry
-            key={note.id}
-            node={<AuthorNode author={resolveAuthor(note.authorId, authors)} />}
-          >
-            <NoteCard
-              note={note}
-              authorName={resolveAuthor(note.authorId, authors).name}
-              currentUserId={currentUserId}
-              busy={busyId === note.id || isPending}
-              editing={editingId === note.id}
-              onEdit={() => setEditingId(note.id)}
-              onCancelEdit={() => setEditingId(null)}
-              onSave={(next) => saveEdit(note.id, next)}
-              onDelete={() => deleteNote(note.id)}
-            />
-          </TimelineEntry>
-        ))}
-
         {description ? (
           <TimelineEntry
             node={
@@ -217,6 +201,25 @@ export function RequestNotesSection({
             />
           </TimelineEntry>
         ) : null}
+
+        {thread.map((note) => (
+          <TimelineEntry
+            key={note.id}
+            node={<AuthorNode author={resolveAuthor(note.authorId, authors)} />}
+          >
+            <NoteCard
+              note={note}
+              authorName={resolveAuthor(note.authorId, authors).name}
+              currentUserId={currentUserId}
+              busy={busyId === note.id || isPending}
+              editing={editingId === note.id}
+              onEdit={() => setEditingId(note.id)}
+              onCancelEdit={() => setEditingId(null)}
+              onSave={(next) => saveEdit(note.id, next)}
+              onDelete={() => deleteNote(note.id)}
+            />
+          </TimelineEntry>
+        ))}
 
         {empty ? (
           <TimelineEntry node={<AuthorNode subdued />}>
@@ -375,9 +378,24 @@ function NoteCard({
     onSave(nextBody)
   }
 
+  // A private note is tinted the way every helpdesk tints one, because the cost
+  // of mistaking an internal note for a customer-visible reply is high and the
+  // author is usually skimming.
+  const internal = note.internal && !isDescription
+
   return (
-    <article className="876-card group overflow-hidden">
-      <div className="bg-muted/25 flex items-center justify-between gap-2 border-b px-4 py-2">
+    <article
+      className={cn(
+        '876-card group overflow-hidden',
+        internal && 'border-warning/30 bg-warning/[0.04]'
+      )}
+    >
+      <div
+        className={cn(
+          'flex items-center justify-between gap-2 border-b px-4 py-2',
+          internal ? 'border-warning/25 bg-warning/[0.07]' : 'bg-muted/25'
+        )}
+      >
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="text-foreground font-medium">
             {isAuthor ? 'You' : author}
@@ -407,6 +425,12 @@ function NoteCard({
           {isDescription ? (
             <Badge variant="secondary" className="px-1.5 text-[0.6875rem]">
               Description
+            </Badge>
+          ) : null}
+          {internal ? (
+            <Badge variant="warning" className="px-1.5 text-[0.6875rem]">
+              <LockClosedIcon className="size-3 shrink-0" aria-hidden="true" />
+              Internal note
             </Badge>
           ) : null}
         </div>
