@@ -1,36 +1,40 @@
-import { PageBreadcrumb } from '@876/ui/page'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
-import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { notFound } from 'next/navigation'
 
+import { PlatformOrganizationUnavailable } from '@/features/support/components/platform-organization-unavailable'
+import { RequestManager } from '@/features/support/components/request-manager'
 import { $876 } from '@/lib/876'
 import { requireSession } from '@/lib/auth/guards'
-import { RequestManager } from '@/features/support/components/request-manager'
-import { resolveOrg } from '../../_data'
+import { getPlatformOrganization } from '@/lib/platform-org'
 
 type Props = {
-  params: Promise<{ slug: string; requestId: string }>
+  params: Promise<{ requestId: string }>
 }
 
-export default function RequestDetailPage({ params }: Props) {
+export default function SupportRequestDetailPage({ params }: Props) {
   return (
-    <div className="space-y-5">
-      <Suspense fallback={<DetailFallback />}>
-        <RequestData params={params} />
-      </Suspense>
-    </div>
+    <Page>
+      <div className="space-y-5">
+        <Suspense fallback={<DetailFallback />}>
+          <RequestData params={params} />
+        </Suspense>
+      </div>
+    </Page>
   )
 }
 
 async function RequestData({ params }: Props) {
-  const { slug, requestId } = await params
-  const sessionPromise = requireSession(`/orgs/${slug}/requests/${requestId}`)
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const { requestId } = await params
+  const [org, session] = await Promise.all([
+    getPlatformOrganization(),
+    requireSession(`/support/${requestId}`),
+  ])
+  if (!org) return <PlatformOrganizationUnavailable />
 
-  const [session, requestResult, tasksResult, remindersResult, notesResult] =
+  const [requestResult, tasksResult, remindersResult, notesResult] =
     await Promise.all([
-      sessionPromise,
       $876.requests.retrieve(org.id, requestId),
       $876.requestTasks.list(org.id, requestId),
       $876.requestReminders.list(org.id, requestId),
@@ -45,11 +49,7 @@ async function RequestData({ params }: Props) {
 
   return (
     <>
-      <PageBreadcrumb
-        href={`/orgs/${slug}/requests`}
-        label="Requests"
-        className="mb-4"
-      />
+      <PageBreadcrumb href="/support" label="Requests" className="mb-4" />
       <RequestManager
         organizationId={org.id}
         currentUserId={session.id}

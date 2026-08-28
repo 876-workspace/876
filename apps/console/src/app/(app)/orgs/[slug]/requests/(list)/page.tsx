@@ -1,50 +1,19 @@
 import type { Metadata } from 'next'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { $876 } from '@/lib/876'
+import {
+  isRequestStatus,
+  REQUEST_STATUS_OPTIONS,
+} from '@/features/support/request-status'
+import { REQUESTS_SKELETON_COLUMNS } from '@/features/support/components/requests-skeleton-columns'
+import { RequestsTable } from '@/features/support/components/requests-table'
+import type { CrmRequestStatus } from '@/types/crm'
 import { resolveOrg } from '../../_data'
-import { REQUESTS_SKELETON_COLUMNS } from '../_components/requests-skeleton-columns'
-import { RequestsTable } from '../_components/requests-table'
-
-const REQUEST_STATUSES = [
-  'OPEN',
-  'IN_PROGRESS',
-  'WAITING',
-  'RESOLVED',
-  'CLOSED',
-  'CANCELLED',
-] as const
-
-type RequestStatus = (typeof REQUEST_STATUSES)[number]
-
-const REQUEST_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Requests' },
-  { value: 'OPEN', label: 'Open', headingLabel: 'Open Requests' },
-  {
-    value: 'IN_PROGRESS',
-    label: 'In progress',
-    headingLabel: 'In-progress Requests',
-  },
-  { value: 'WAITING', label: 'Waiting', headingLabel: 'Waiting Requests' },
-  { value: 'RESOLVED', label: 'Resolved', headingLabel: 'Resolved Requests' },
-  { value: 'CLOSED', label: 'Closed', headingLabel: 'Closed Requests' },
-  {
-    value: 'CANCELLED',
-    label: 'Cancelled',
-    headingLabel: 'Cancelled Requests',
-  },
-]
-
-function isRequestStatus(value: string | undefined): value is RequestStatus {
-  return REQUEST_STATUSES.some((status) => status === value)
-}
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -106,7 +75,7 @@ async function RequestsData({
   status,
 }: {
   slug: string
-  status: RequestStatus | 'all'
+  status: CrmRequestStatus | 'all'
 }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
@@ -118,7 +87,7 @@ async function RequestsData({
 
   return (
     <RequestsTable
-      slug={slug}
+      requestsHref={`/orgs/${slug}/requests`}
       requests={result.data.data.map((request) => ({
         id: request.id,
         number: request.number,

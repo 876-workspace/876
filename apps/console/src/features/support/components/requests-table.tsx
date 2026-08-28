@@ -10,7 +10,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-export type RequestRow = {
+type RequestRow = {
   id: string
   number: number
   subject: string
@@ -24,10 +24,10 @@ export type RequestRow = {
 
 type Props = {
   requests: RequestRow[]
-  slug: string
+  requestsHref: string
 }
 
-export function RequestsTable({ requests, slug }: Props) {
+export function RequestsTable({ requests, requestsHref }: Props) {
   const router = useRouter()
 
   const columns: ColumnDef<RequestRow, unknown>[] = [
@@ -39,7 +39,7 @@ export function RequestsTable({ requests, slug }: Props) {
       cell: ({ row }) => (
         <div className="min-w-0">
           <Link
-            href={`/orgs/${slug}/requests/${row.original.id}`}
+            href={`${requestsHref}/${row.original.id}`}
             className="block truncate font-medium hover:underline"
             onClick={(event) => event.stopPropagation()}
           >
@@ -121,9 +121,7 @@ export function RequestsTable({ requests, slug }: Props) {
             </EmptyHeader>
           </Empty>
         }
-        onRowClick={(request) =>
-          router.push(`/orgs/${slug}/requests/${request.id}`)
-        }
+        onRowClick={(request) => router.push(`${requestsHref}/${request.id}`)}
       />
     </div>
   )

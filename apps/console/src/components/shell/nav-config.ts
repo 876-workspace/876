@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Building2,
+  ChatBubbleLeftIcon,
   ChartPieIcon,
   Database,
   KeyRound,
@@ -51,6 +52,12 @@ export const navConfig: NavGroup[] = [
         href: '/orgs',
         icon: Building2,
         color: 'var(--876-gold)',
+      },
+      {
+        title: 'Support',
+        href: '/support',
+        icon: ChatBubbleLeftIcon,
+        color: 'var(--876-blue)',
       },
       {
         title: 'Security',
