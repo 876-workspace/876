@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const org = await resolveOrg(slug)
 
-  return { title: `${org?.name ?? slug} • Support - Organizations` }
+  return { title: `${org?.name ?? slug} • Requests - Organizations` }
 }
 
 /**
@@ -49,10 +49,10 @@ export default async function OrganizationSupportPage({
   return (
     <>
       <ResourceToolbar
-        title="Support"
+        title="Requests"
         titleFilter={
           <StatusFilterHeading
-            label="Support"
+            label="Requests"
             value={selectedStatus}
             options={REQUEST_STATUS_OPTIONS}
           />

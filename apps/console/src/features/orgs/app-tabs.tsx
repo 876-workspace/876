@@ -1,6 +1,11 @@
+import * as React from 'react'
+import Image from 'next/image'
 import type { RouteTabItem } from '@876/ui/route-tabs'
+import type { AdminSubscription } from '@876/admin'
+import { cn } from '@876/core/utils'
+import { appColor } from '@/lib/app-color'
 
-import { entitledWorkspaces, WORKSPACE_SEGMENT } from './app-workspaces'
+import { APP_WORKSPACES, findAppWorkspace } from './app-workspaces'
 
 /**
  * A tab on the organization detail page that belongs to a product app rather
@@ -31,81 +36,182 @@ export type AlwaysPresentTab = {
 }
 
 export const ALWAYS_PRESENT_TABS = [
-  { label: 'Overview', segment: '', exact: true },
+  { label: 'Profile', segment: '', exact: true },
   { label: 'Members', segment: 'members' },
   { label: 'Customers', segment: 'customers' },
-  // Always present, and deliberately not entitlement-gated: every organization
-  // is a customer of 876 from the moment it exists, so it can always have
-  // raised something with us — including one entitled to no product at all.
-  { label: 'Support', segment: 'support' },
-  { label: 'Subscriptions', segment: 'subscriptions' },
-  { label: 'Onboarding', segment: 'onboarding' },
+  // Deliberately not entitlement-gated: every organization is a customer of
+  // 876 from the moment it exists, so it can always have raised requests with
+  // us — including one entitled to no product at all.
+  { label: 'Requests', segment: 'support' },
   { label: 'Activity', segment: 'activity' },
-  { label: 'Notes', segment: 'notes' },
 ] as const satisfies readonly AlwaysPresentTab[]
 
 export type AlwaysPresentTabLabel =
   (typeof ALWAYS_PRESENT_TABS)[number]['label']
 
 export const APP_OWNED_TABS: AppOwnedTab[] = [
-  {
-    appSlug: '876-billing',
-    label: 'Billing',
-    segment: 'billing',
-    after: 'Onboarding',
-  },
   // Add a future app here — one row, no change to orgTabs.
 ]
 
-/**
- * The single tab behind which every app workspace lives.
- *
- * One tab, not one per app. An app-owned tab per product looked reasonable at
- * two apps and stops working at five, and it also blurred a distinction that
- * matters: the other tabs answer what the organization has *with 876*, while a
- * workspace answers what it is doing *inside a product*. Keeping the second
- * question behind one door leaves the strip stable as apps are added.
- *
- * It is still entitlement-gated — an organization working in no app Console can
- * open has nothing behind the door, so the door is not drawn.
- */
-const WORKSPACE_TAB_AFTER: AlwaysPresentTabLabel = 'Onboarding'
+export const APP_TABS_AFTER: AlwaysPresentTabLabel = 'Customers'
+
+export type EntitledApp = {
+  slug: string
+  name?: string | null
+  logoUrl?: string | null
+  id?: string | null
+}
+
+export type EntitledAppInput = string | EntitledApp | AdminSubscription
+
+export function normalizeEntitledApp(
+  item: EntitledAppInput
+): EntitledApp | null {
+  if (!item) return null
+  if (typeof item === 'string') {
+    const slug = item.trim()
+    if (!slug) return null
+    return {
+      slug,
+      name: formatDefaultAppName(slug),
+      logoUrl: null,
+    }
+  }
+  if ('app_slug' in item || 'app_id' in item) {
+    const sub = item as AdminSubscription
+    const slug = sub.app_slug ?? sub.app_id ?? ''
+    if (!slug) return null
+    return {
+      slug,
+      name: sub.app_name ?? formatDefaultAppName(slug),
+      logoUrl: sub.app_logo_url ?? null,
+      id: sub.app_id ?? null,
+    }
+  }
+  const app = item as EntitledApp
+  if (!app.slug) return null
+  return {
+    slug: app.slug,
+    name: app.name ?? formatDefaultAppName(app.slug),
+    logoUrl: app.logoUrl ?? null,
+    id: app.id ?? null,
+  }
+}
+
+function formatDefaultAppName(slug: string): string {
+  if (slug === '876-crm') return '876 CRM'
+  if (slug === '876-billing') return '876 Billing'
+  if (slug === '876-invoice') return '876 Invoice'
+  if (slug === '876-couriers') return '876 Couriers'
+  return slug
+    .replace(/^876-/, '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export function entitledAppHref(base: string, appSlug: string): string {
+  const workspaceKey = appSlug.replace(/^876-/, '')
+  const workspace =
+    findAppWorkspace(workspaceKey) ??
+    APP_WORKSPACES.find((w) => w.appSlug === appSlug)
+  if (workspace) {
+    return `${base}/workspace/${workspace.key}`
+  }
+  return `${base}/workspace/${workspaceKey}`
+}
+
+export function AppTabLabel({
+  name,
+  slug,
+  logoUrl,
+}: {
+  name: string
+  slug: string
+  logoUrl?: string | null
+}) {
+  return (
+    <span className="flex items-center gap-1.5">
+      {logoUrl ? (
+        <Image
+          src={logoUrl}
+          alt=""
+          width={16}
+          height={16}
+          unoptimized
+          className="size-4 shrink-0 rounded-sm object-cover"
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-[0.5625rem] font-semibold text-white uppercase',
+            appColor(slug)
+          )}
+        >
+          {name.charAt(0)}
+        </span>
+      )}
+      <span>{name}</span>
+    </span>
+  )
+}
 
 /**
  * The organization detail tab set.
  *
- * The always-present tabs are the same for every organization; an app-owned tab
- * appears only when the organization holds an active or trialing entitlement
- * for the app that owns it. Pass an empty array to get the baseline strip,
- * which is what the layout renders as its Suspense fallback so the tabs are
- * real and clickable before entitlements have resolved.
- *
- * This function names no app. Both the gating slug and the insertion point come
- * from the registry, so adding an app is a row in `app-tabs.ts` and nothing
- * here.
+ * The always-present tabs are the same for every organization; entitled apps
+ * dynamically render a tab with their app logo alongside the app name in
+ * between Customers and Requests.
  */
 export function orgTabs(
   base: string,
-  entitledAppSlugs: readonly string[]
+  entitledAppsInput: readonly EntitledAppInput[] = []
 ): RouteTabItem[] {
-  const entitled = new Set(entitledAppSlugs)
-  const active = APP_OWNED_TABS.filter((tab) => entitled.has(tab.appSlug))
-  const hasWorkspace = entitledWorkspaces(entitledAppSlugs).length > 0
+  const normalized: EntitledApp[] = []
+  const seen = new Set<string>()
+  for (const item of entitledAppsInput) {
+    const app = normalizeEntitledApp(item)
+    if (app && !seen.has(app.slug)) {
+      seen.add(app.slug)
+      normalized.push(app)
+    }
+  }
 
-  return ALWAYS_PRESENT_TABS.flatMap((tab) => [
-    {
-      label: tab.label,
-      href: tab.segment ? `${base}/${tab.segment}` : base,
-      ...('exact' in tab && tab.exact ? { exact: true } : {}),
-    },
-    ...active
-      .filter((appTab) => appTab.after === tab.label)
-      .map((appTab) => ({
-        label: appTab.label,
-        href: `${base}/${appTab.segment}`,
-      })),
-    ...(hasWorkspace && tab.label === WORKSPACE_TAB_AFTER
-      ? [{ label: 'Workspace', href: `${base}/${WORKSPACE_SEGMENT}` }]
-      : []),
-  ])
+  const entitledAppSlugs = normalized.map((app) => app.slug)
+  const active = APP_OWNED_TABS.filter((tab) =>
+    entitledAppSlugs.includes(tab.appSlug)
+  )
+
+  const dynamicAppTabs: RouteTabItem[] = normalized.map((app) => ({
+    label: (
+      <AppTabLabel
+        name={app.name ?? app.slug}
+        slug={app.slug}
+        logoUrl={app.logoUrl}
+      />
+    ),
+    href: entitledAppHref(base, app.slug),
+  }))
+
+  return ALWAYS_PRESENT_TABS.flatMap((tab) => {
+    const items: RouteTabItem[] = [
+      {
+        label: tab.label,
+        href: tab.segment ? `${base}/${tab.segment}` : base,
+        ...('exact' in tab && tab.exact ? { exact: true } : {}),
+      },
+      ...active
+        .filter((appTab) => appTab.after === tab.label)
+        .map((appTab) => ({
+          label: appTab.label,
+          href: `${base}/${appTab.segment}`,
+        })),
+    ]
+
+    if (tab.label === APP_TABS_AFTER) {
+      items.push(...dynamicAppTabs)
+    }
+
+    return items
+  })
 }
