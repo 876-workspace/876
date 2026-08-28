@@ -94,7 +94,47 @@ export async function retrieve(organizationId: string, id: string) {
   return request ? serialize(request) : null
 }
 
-async function validateCreate(organizationId: string, input: CreateRequestInput) {
+/**
+ * Validates that a category/subcategory/team triple names live records in this
+ * tenant and that the subcategory belongs to the category. Exported so intake
+ * forms can reject bad routing defaults when the form is saved, rather than at
+ * submission time in front of a customer.
+ */
+export async function assertRouting(
+  organizationId: string,
+  routing: {
+    categoryId?: string | null
+    subcategoryId?: string | null
+    teamId?: string | null
+  }
+) {
+  const tenant = await requireTenant(organizationId)
+
+  if (
+    routing.categoryId &&
+    !(await repository.categoryExists(tenant.id, routing.categoryId))
+  )
+    throw crmError('crm/category-not-found')
+
+  const subcategory = routing.subcategoryId
+    ? await repository.subcategoryExists(tenant.id, routing.subcategoryId)
+    : null
+  if (routing.subcategoryId && !subcategory)
+    throw crmError('crm/subcategory-not-found')
+  if (subcategory && subcategory.categoryId !== (routing.categoryId ?? null))
+    throw crmError('crm/subcategory-category-mismatch')
+
+  if (
+    routing.teamId &&
+    !(await repository.teamExists(tenant.id, routing.teamId))
+  )
+    throw crmError('crm/team-not-found')
+}
+
+async function validateCreate(
+  organizationId: string,
+  input: CreateRequestInput
+) {
   const tenant = await requireTenant(organizationId)
   const customer = await repository.customerExists(tenant.id, input.customerId)
   if (!customer) throw crmError('crm/customer-not-found')
@@ -115,6 +155,7 @@ async function validateCreate(organizationId: string, input: CreateRequestInput)
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
     throw crmError('crm/team-not-found')
 
+  // Category routing is useful only as a default; an explicit caller selection wins.
   const defaults = subcategory ?? category
   const effective = {
     ...input,

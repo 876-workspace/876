@@ -1,1 +1,6 @@
-export { createFromIntake, list, retrieve } from './requests.service.js'
+export {
+  assertRouting,
+  createFromIntake,
+  list,
+  retrieve,
+} from './requests.service.js'
