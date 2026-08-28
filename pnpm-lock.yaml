@@ -644,6 +644,9 @@ importers:
       '@876/couriers':
         specifier: workspace:*
         version: link:../../packages/couriers
+      '@876/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
       '@876/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
