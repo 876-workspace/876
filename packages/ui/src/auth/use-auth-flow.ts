@@ -6,7 +6,7 @@
  * @module @876/ui/auth/use-auth-flow
  */
 
-import { useCallback, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { createAuthError, type SdkAuthErrorCode } from '@876/sdk'
 
 import { useAuthUI } from './context'
@@ -145,6 +145,19 @@ export function useAuthFlow() {
     status: 'idle',
     notice: null,
   })
+
+  useEffect(() => {
+    // Mobile browsers can restore this page from the back-forward cache after
+    // handing social auth to a provider app. The in-flight React state is
+    // restored too, so the provider buttons otherwise remain disabled even
+    // though no request is running anymore.
+    const resetRestoredSubmission = (event: PageTransitionEvent) => {
+      if (event.persisted) dispatch({ type: 'submit_done' })
+    }
+
+    window.addEventListener('pageshow', resetRestoredSubmission)
+    return () => window.removeEventListener('pageshow', resetRestoredSubmission)
+  }, [])
 
   /**
    * Captures the async function that triggered the most recent
