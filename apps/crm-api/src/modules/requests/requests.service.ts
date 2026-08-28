@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   CreateRequestInput,
   DeleteRequestInput,
@@ -12,9 +12,8 @@ import * as repository from './requests.repository.js'
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
-
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
   return tenant
 }
 
@@ -56,15 +55,15 @@ export async function list(
   filters?: ListRequestsFilter
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const requests = await repository.list(tenant.id, filters)
-
   return requests.map(serialize)
 }
 
 export async function retrieve(organizationId: string, id: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const request = await repository.retrieve(tenant.id, id)
-
   return request ? serialize(request) : null
 }
 
@@ -78,29 +77,37 @@ export async function assertRouting(
   }
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
 
   if (
     routing.categoryId &&
     !(await repository.categoryExists(tenant.id, routing.categoryId))
   )
-    throw crmError('crm/category-not-found')
+    return getError('crm/category-not-found')
 
   const subcategory = routing.subcategoryId
     ? await repository.subcategoryExists(tenant.id, routing.subcategoryId)
     : null
   if (routing.subcategoryId && !subcategory)
-    throw crmError('crm/subcategory-not-found')
+    return getError('crm/subcategory-not-found')
   if (subcategory && subcategory.categoryId !== (routing.categoryId ?? null))
-    throw crmError('crm/subcategory-category-mismatch')
+    return getError('crm/subcategory-category-mismatch')
 
   if (
     routing.teamId &&
     !(await repository.teamExists(tenant.id, routing.teamId))
   )
-    throw crmError('crm/team-not-found')
+    return getError('crm/team-not-found')
 
-  if (routing.priorityId)
-    await priorities.requireActiveForTenant(tenant.id, routing.priorityId)
+  if (routing.priorityId) {
+    const priority = await priorities.requireActiveForTenant(
+      tenant.id,
+      routing.priorityId
+    )
+    if (isError(priority)) return priority
+  }
+
+  return null
 }
 
 async function resolvePriority(
@@ -118,8 +125,7 @@ async function resolvePriority(
     return priorities.requireActiveForTenant(tenantId, priorityId)
 
   const defaultPriority = await priorities.retrieveDefaultForTenant(tenantId)
-  if (!defaultPriority) throw crmError('crm/priority-not-found')
-
+  if (!defaultPriority) return getError('crm/priority-not-found')
   return defaultPriority
 }
 
@@ -128,24 +134,26 @@ async function validateCreate(
   input: CreateRequestInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
+
   const customer = await repository.customerExists(tenant.id, input.customerId)
-  if (!customer) throw crmError('crm/customer-not-found')
+  if (!customer) return getError('crm/customer-not-found')
 
   const category = input.categoryId
     ? await repository.categoryExists(tenant.id, input.categoryId)
     : null
-  if (input.categoryId && !category) throw crmError('crm/category-not-found')
+  if (input.categoryId && !category) return getError('crm/category-not-found')
 
   const subcategory = input.subcategoryId
     ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
     : null
   if (input.subcategoryId && !subcategory)
-    throw crmError('crm/subcategory-not-found')
+    return getError('crm/subcategory-not-found')
   if (subcategory && subcategory.categoryId !== input.categoryId)
-    throw crmError('crm/subcategory-category-mismatch')
+    return getError('crm/subcategory-category-mismatch')
 
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
-    throw crmError('crm/team-not-found')
+    return getError('crm/team-not-found')
 
   const priority = await resolvePriority(
     tenant.id,
@@ -153,6 +161,8 @@ async function validateCreate(
     category?.defaultPriorityId,
     subcategory?.defaultPriorityId
   )
+  if (isError(priority)) return priority
+
   const defaults = subcategory ?? category
   const effective = {
     ...input,
@@ -169,9 +179,14 @@ export async function create(
   organizationId: string,
   input: CreateRequestInput
 ) {
-  const { tenant, effective } = await validateCreate(organizationId, input)
-
-  return serialize(await repository.create({ tenantId: tenant.id, ...effective }))
+  const validated = await validateCreate(organizationId, input)
+  if (isError(validated)) return validated
+  return serialize(
+    await repository.create({
+      tenantId: validated.tenant.id,
+      ...validated.effective,
+    })
+  )
 }
 
 export async function createFromIntake(
@@ -179,9 +194,11 @@ export async function createFromIntake(
   input: CreateRequestInput,
   intake: RequestIntakeContext
 ) {
-  const { tenant, effective } = await validateCreate(organizationId, input)
+  const validated = await validateCreate(organizationId, input)
+  if (isError(validated)) return validated
+
   const result = await repository.createFromIntake(
-    { tenantId: tenant.id, ...effective },
+    { tenantId: validated.tenant.id, ...validated.effective },
     intake
   )
 
@@ -197,6 +214,7 @@ export async function update(
   input: UpdateRequestInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, id)
   if (!current) return null
 
@@ -206,20 +224,25 @@ export async function update(
     input.categoryId &&
     !(await repository.categoryExists(tenant.id, input.categoryId))
   )
-    throw crmError('crm/category-not-found')
+    return getError('crm/category-not-found')
 
   const subcategory = input.subcategoryId
     ? await repository.subcategoryExists(tenant.id, input.subcategoryId)
     : null
   if (input.subcategoryId && !subcategory)
-    throw crmError('crm/subcategory-not-found')
+    return getError('crm/subcategory-not-found')
   if (input.subcategoryId && subcategory?.categoryId !== resultingCategoryId)
-    throw crmError('crm/subcategory-category-mismatch')
+    return getError('crm/subcategory-category-mismatch')
 
   if (input.teamId && !(await repository.teamExists(tenant.id, input.teamId)))
-    throw crmError('crm/team-not-found')
-  if (input.priorityId)
-    await priorities.requireActiveForTenant(tenant.id, input.priorityId)
+    return getError('crm/team-not-found')
+  if (input.priorityId) {
+    const priority = await priorities.requireActiveForTenant(
+      tenant.id,
+      input.priorityId
+    )
+    if (isError(priority)) return priority
+  }
 
   const teamChanged =
     input.teamId !== undefined && input.teamId !== current.teamId
@@ -262,8 +285,8 @@ export async function remove(
   input: DeleteRequestInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, id)
   if (!current) return null
-
   return repository.remove({ id, ...input })
 }
