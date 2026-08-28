@@ -42,6 +42,7 @@ describe('admin core resource projections', () => {
 
     const $876 = createConsoleClient(options)
     const crmResources = [
+      'customerProfiles',
       'requests',
       'requestTasks',
       'requestReminders',
@@ -54,6 +55,7 @@ describe('admin core resource projections', () => {
         crmResources.map((resource) => [resource, Object.keys($876[resource])])
       )
     ).toEqual({
+      customerProfiles: ['list', 'retrieve', 'create', 'update', 'delete'],
       requests: ['list', 'retrieve', 'create', 'update', 'delete'],
       requestTasks: ['list', 'create', 'update', 'delete'],
       requestReminders: ['list', 'create', 'update', 'delete'],
@@ -68,7 +70,6 @@ describe('admin core resource projections', () => {
       ],
     })
     expect('teams' in $876).toBe(false)
-    expect('customerProfiles' in $876).toBe(false)
   })
 
   it('keeps resource reads on core and workspace administration on workspace', () => {
