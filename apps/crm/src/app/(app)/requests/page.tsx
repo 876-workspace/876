@@ -97,6 +97,15 @@ export default async function RequestsPage({ searchParams }: Props) {
   )
 }
 
+/** Renders a client error as text, so it survives the console unchanged. */
+function describeError(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const { code, message } = error as { code?: unknown; message?: unknown }
+    if (code || message) return `${code ?? 'unknown'} — ${message ?? ''}`.trim()
+  }
+  return JSON.stringify(error) ?? String(error)
+}
+
 async function RequestsListData({
   status,
   team,
@@ -132,15 +141,16 @@ async function RequestsListData({
   // down — but it must not pass silently either. Swallowing it with `?? []` is
   // what made a broken members call look like a page full of raw `user_…` ids
   // instead of an error anyone could find.
+  // Flattened to a string: an error object logged as a second argument renders
+  // as `{}` in the Next.js overlay, which is how the first pass at this told us
+  // the call failed without telling us why.
   if (departmentsResult.error)
     console.error(
-      '[crm/requests] team directory unavailable:',
-      departmentsResult.error
+      `[crm/requests] team directory unavailable: ${describeError(departmentsResult.error)}`
     )
   if (membersResult.error)
     console.error(
-      '[crm/requests] member directory unavailable:',
-      membersResult.error
+      `[crm/requests] member directory unavailable: ${describeError(membersResult.error)}`
     )
 
   const departments: FilterDepartment[] =
