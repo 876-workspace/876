@@ -7,6 +7,7 @@ import { $876 } from '@/lib/876'
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
+import { toRequestCustomerOption } from './request-customer-option'
 import type { DirectoryMember, RequestDepartment } from './types'
 
 /**
@@ -53,6 +54,16 @@ export const loadOrgCategoryIndex = cache(async (orgId: string) => {
   return new Map(
     (result.data?.data ?? []).map((category) => [category.id, category])
   )
+})
+
+/** Search-ready customer identities for request creation. */
+export const loadOrgRequestCustomers = cache(async (orgId: string) => {
+  const result = await $876.customerProfiles.list(orgId)
+  if (result.error) throw new Error(result.error.message)
+
+  return result.data.data
+    .map(toRequestCustomerOption)
+    .sort((left, right) => left.name.localeCompare(right.name))
 })
 
 /** The customer this request belongs to for any organization. */
