@@ -43,40 +43,36 @@ async function CategoriesData({ createOpen }: { createOpen: boolean }) {
     $876.requestPriorities.list(context.orgId),
   ])
 
-  if (categoriesResult.error)
-    return (
-      <AppError
-        title="Categories couldn't be loaded"
-        error={categoriesResult.error}
-        variant="page"
-      />
-    )
-
-  if (prioritiesResult.error)
-    return (
-      <AppError
-        title="Priority settings couldn't be loaded"
-        error={prioritiesResult.error}
-        variant="page"
-      />
-    )
-
   const teamNames = Object.fromEntries(
     (teamsResult.data?.data ?? []).map((team) => [team.id, team.name])
   )
 
   return (
     <div className="space-y-3">
+      {categoriesResult.error ? (
+        <AppError
+          title="Some category data could not be loaded"
+          error={categoriesResult.error}
+          variant="banner"
+        />
+      ) : null}
+      {prioritiesResult.error ? (
+        <AppError
+          title="Priority options are temporarily incomplete"
+          error={prioritiesResult.error}
+          variant="inline"
+        />
+      ) : null}
       {teamsResult.error ? (
         <AppError
-          title="Team information is temporarily unavailable"
+          title="Team information is temporarily incomplete"
           error={teamsResult.error}
           variant="inline"
         />
       ) : null}
       <CategoriesList
-        categories={categoriesResult.data.data}
-        priorities={prioritiesResult.data.data}
+        categories={categoriesResult.data?.data ?? []}
+        priorities={prioritiesResult.data?.data ?? []}
         teamNames={teamNames}
         createOpen={createOpen}
       />
