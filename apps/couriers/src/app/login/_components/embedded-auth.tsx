@@ -17,7 +17,13 @@ import {
 import { APP_NAME } from '@/lib/app-name'
 import { manageAuthClient } from '@/lib/auth/client'
 
-export function AppEmbeddedAuth({ returnTo }: { returnTo: string }) {
+export function AppEmbeddedAuth({
+  returnTo,
+  authError,
+}: {
+  returnTo: string
+  authError?: string | null
+}) {
   useEffect(() => {
     writeReturnToCookie(returnTo)
   }, [returnTo])
@@ -30,6 +36,9 @@ export function AppEmbeddedAuth({ returnTo }: { returnTo: string }) {
           client: manageAuthClient.auth,
           appName: APP_NAME,
           socialProviders: ['google', 'apple', 'microsoft'],
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             window.location.assign(getAuthCompleteHref(returnTo))
           },

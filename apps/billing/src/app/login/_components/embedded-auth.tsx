@@ -18,7 +18,13 @@ import { create876Client } from '@876/client'
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 const authClient = create876Client({ baseUrl: '/api' })
 
-export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
+export function EmbeddedAuth({
+  returnTo,
+  authError,
+}: {
+  returnTo: string
+  authError?: string | null
+}) {
   useEffect(() => {
     const value = encodeURIComponent(resolveRelativeReturnTo(returnTo, '/'))
     const secure = window.location.protocol === 'https:' ? '; Secure' : ''
@@ -34,6 +40,9 @@ export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
           appName: '876 Billing',
           appLogo: <AppLogo name="876 Billing" />,
           socialProviders: SOCIAL_PROVIDERS,
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             window.location.assign(
               `/auth/complete?returnTo=${encodeURIComponent(returnTo)}`

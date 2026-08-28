@@ -47,9 +47,11 @@ const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 export function EmbeddedAuth({
   returnTo,
   intent,
+  authError,
 }: {
   returnTo: string
   intent: 'sign-in' | 'sign-up'
+  authError?: string | null
 }) {
   // Seed the return-to cookie once on mount so a later social login can recover
   // the intended destination after the OAuth round-trip.
@@ -65,6 +67,9 @@ export function EmbeddedAuth({
           client: authClient.auth,
           appName: '876',
           socialProviders: SOCIAL_PROVIDERS,
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             // Hard navigation: /auth/complete reads the session cookie and
             // issues a server redirect, then the destination re-hydrates the

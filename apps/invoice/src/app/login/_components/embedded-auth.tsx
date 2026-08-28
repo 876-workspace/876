@@ -22,7 +22,13 @@ const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'microsoft', 'apple']
 
 const authClient = create876Client({ baseUrl: '/api' })
 
-export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
+export function EmbeddedAuth({
+  returnTo,
+  authError,
+}: {
+  returnTo: string
+  authError?: string | null
+}) {
   useEffect(() => {
     const value = encodeURIComponent(resolveRelativeReturnTo(returnTo, '/'))
     const secure = window.location.protocol === 'https:' ? '; Secure' : ''
@@ -38,6 +44,9 @@ export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
           appName: '876 Invoice',
           appLogo: <AppLogo name="876 Invoice" />,
           socialProviders: SOCIAL_PROVIDERS,
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
           onSuccess: () => {
             // A full document load, not router.push: the API has just set the
             // session cookie on this origin, and only a fresh request carries
