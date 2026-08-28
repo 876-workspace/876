@@ -1,13 +1,12 @@
+import { AppError } from '@876/ui/app-error'
+import { buttonVariants } from '@876/ui/button'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { buttonVariants } from '@876/ui/button'
-import { Page, PageBreadcrumb } from '@876/ui/page'
-
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-
-import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 
 import { DeleteCustomerButton } from '../_components/delete-customer-button'
 
@@ -19,7 +18,18 @@ export default async function CustomerPage({ params }: Props) {
   const { customerId } = await params
   const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
   if (result.error?.code === 'crm/customer-not-found') notFound()
-  if (result.error) throw new Error(result.error.message)
+
+  if (result.error)
+    return (
+      <Page>
+        <PageBreadcrumb href="/customers" label="Customers" className="mb-4" />
+        <AppError
+          title="Customer couldn't be loaded"
+          error={result.error}
+          variant="page"
+        />
+      </Page>
+    )
 
   const { profile, customer } = result.data
   const identity = resolveCustomerIdentity(customer, profile.billingCustomerId)
@@ -30,11 +40,6 @@ export default async function CustomerPage({ params }: Props) {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="876-page-title">{identity.name}</h1>
-          {/*
-            The subtitle is about the *party*, not the person. It used to print
-            `customer.email`, which on a business customer is the owner's
-            personal address — the organization reading as if it were a human.
-          */}
           <p className="text-muted-foreground mt-1 text-sm">
             {identity.legalName ?? identity.typeLabel}
           </p>
@@ -47,12 +52,6 @@ export default async function CustomerPage({ params }: Props) {
         </Link>
       </div>
 
-      {/*
-        876 has organizations and it has customers. For a business customer the
-        two are the same party, and the person you actually contact is separate
-        — so the organization's own details and its primary contact's get their
-        own cards rather than one merged block that blurs whose email is whose.
-      */}
       <div className="grid max-w-3xl gap-4 sm:grid-cols-2">
         <PartyCard
           title={identity.isBusiness ? 'Organization' : 'Customer'}
@@ -107,7 +106,6 @@ export default async function CustomerPage({ params }: Props) {
   )
 }
 
-/** One party — its name, then its own facts. Never another party's. */
 function PartyCard({
   title,
   name,
