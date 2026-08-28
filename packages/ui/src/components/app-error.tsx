@@ -34,9 +34,10 @@ export function AppError({
     return (
       <div
         role="alert"
-        className={cn('text-destructive space-y-0.5 text-sm', className)}
+        className={cn('space-y-0.5 text-sm', className)}
       >
-        <p>{error.message}</p>
+        {title ? <p className="font-medium">{title}</p> : null}
+        <p className="text-muted-foreground">{error.message}</p>
         <AppErrorCode code={error.code} />
       </div>
     )
