@@ -60,12 +60,7 @@ export function update(
     publishedAt?: Date | null
   }
 ) {
-  const {
-    definition,
-    publishedDefinition,
-    updatedBy: _updatedBy,
-    ...data
-  } = input
+  const { definition, publishedDefinition, ...data } = input
 
   return prisma.requestForm.update({
     where: { id: formId },
@@ -93,17 +88,23 @@ export function submissionCount(tenantId: string, formId: string) {
 
 export async function remove(params: {
   id: string
+  slug: string
   deletedBy: string
   reason?: string | null
 }) {
   if (process.env.DELETION_MODE === 'hard') {
     await prisma.requestForm.delete({ where: { id: params.id } })
   } else {
+    // `(tenant_id, slug)` is unique across every row, deleted or not, so a soft
+    // delete must release the slug — otherwise recreating a form under the name
+    // it used to have fails on a constraint the service cannot see.
+    const deletedAt = new Date()
     await prisma.requestForm.update({
       where: { id: params.id },
       data: {
         status: 'ARCHIVED',
-        deletedAt: new Date(),
+        slug: `${params.slug}__deleted_${deletedAt.getTime()}`.slice(0, 100),
+        deletedAt,
         deletedBy: params.deletedBy,
         deletionReason: params.reason?.trim() || null,
       },

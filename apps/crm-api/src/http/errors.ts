@@ -23,6 +23,10 @@ const ERRORS = {
     message: 'Request form has submissions and cannot be hard deleted.',
     httpStatus: 409,
   },
+  'crm/form-invalid-definition': {
+    message: 'This request form definition is no longer valid.',
+    httpStatus: 409,
+  },
   'crm/form-invalid-submission': {
     message: 'The request form submission is invalid.',
     httpStatus: 422,
