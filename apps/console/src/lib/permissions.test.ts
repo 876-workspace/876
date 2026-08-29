@@ -12,25 +12,11 @@ import {
 } from './permissions'
 
 const EXPECTED_ROLE_COUNTS = {
-  staff: 14,
-  admin: 29,
-  owner: 35,
-  super_admin: 35,
+  staff: 15,
+  admin: 39,
+  owner: 46,
+  super_admin: 46,
 } as const
-
-const SUPER_ADMIN_EXCLUSIONS = [
-  'apps:create',
-  'apps:update',
-  'console:reports',
-  'console:security',
-  'console:storage',
-  'team:invite',
-  'team:list',
-  'team:read',
-  'team:revoke',
-  'team:suspend',
-  'team:update',
-] as const
 
 describe('Console permission catalog', () => {
   it('publishes the built-in roles in privilege order', () => {
@@ -109,7 +95,7 @@ describe('Console permission catalog', () => {
     expect(unknown).toEqual([])
   })
 
-  it('pins deliberate super-admin exclusions from the expanded catalog', () => {
+  it('grants super admin every permission the catalog declares', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
       (role) => role.name === 'super_admin'
     )
@@ -117,7 +103,24 @@ describe('Console permission catalog', () => {
       .map((permission) => permission.key)
       .filter((permission) => !superAdmin?.permissions.includes(permission))
 
-    expect(missing).toEqual(SUPER_ADMIN_EXCLUSIONS)
+    expect(missing).toEqual([])
+  })
+
+  it('withholds team management and security from staff', () => {
+    const staff = SYSTEM_ROLE_DEFINITIONS.find((role) => role.name === 'staff')
+
+    expect(staff?.permissions).not.toContain('team:list')
+    expect(staff?.permissions).not.toContain('team:revoke')
+    expect(staff?.permissions).not.toContain('console:security')
+    expect(staff?.permissions).not.toContain('console:danger_zone')
+  })
+
+  it('withholds security and the danger zone from admin', () => {
+    const admin = SYSTEM_ROLE_DEFINITIONS.find((role) => role.name === 'admin')
+
+    expect(admin?.permissions).toContain('team:revoke')
+    expect(admin?.permissions).not.toContain('console:security')
+    expect(admin?.permissions).not.toContain('console:danger_zone')
   })
 
   it('checks a supplied permission list through the core access primitive', () => {

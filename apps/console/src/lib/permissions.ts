@@ -39,6 +39,23 @@ const RESOURCE_WRITE = [
   'memberships:update',
   'roles:create',
   'roles:update',
+  'apps:create',
+  'apps:update',
+] as const
+
+/**
+ * Team-grant management. Granting Console access is itself privilege
+ * escalation, so it sits with admin and above — never with staff.
+ * `assertRoleChangeAllowed` still keeps owner/super_admin grants to a
+ * super admin.
+ */
+const TEAM_MANAGE = [
+  'team:read',
+  'team:list',
+  'team:invite',
+  'team:update',
+  'team:suspend',
+  'team:revoke',
 ] as const
 
 /** Permission that gates entry to Console itself. */
@@ -47,9 +64,7 @@ export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 /** Permission that gates destructive (danger-zone) operations. */
 export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
 
-function accessContext(
-  access: Pick<Access, 'permissions'>
-): AccessContext {
+function accessContext(access: Pick<Access, 'permissions'>): AccessContext {
   return {
     subject: { userId: '' },
     permissions: access.permissions,
@@ -75,7 +90,12 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     name: 'staff',
     displayName: 'Staff',
     description: 'Read-only access to Console data.',
-    permissions: ['console:access', 'console:support', ...RESOURCE_READ],
+    permissions: [
+      'console:access',
+      'console:support',
+      'console:reports',
+      ...RESOURCE_READ,
+    ],
   },
   {
     name: 'admin',
@@ -92,8 +112,11 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:apps',
       'console:features',
       'console:widgets',
+      'console:storage',
+      'console:reports',
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
+      ...TEAM_MANAGE,
     ],
   },
   {
@@ -110,9 +133,13 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:apps',
       'console:features',
       'console:widgets',
+      'console:storage',
+      'console:reports',
+      'console:security',
       'console:danger_zone',
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
+      ...TEAM_MANAGE,
       'roles:delete',
       'users:delete',
       'organizations:delete',
@@ -134,9 +161,13 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:apps',
       'console:features',
       'console:widgets',
+      'console:storage',
+      'console:reports',
+      'console:security',
       'console:danger_zone',
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
+      ...TEAM_MANAGE,
       'roles:delete',
       'users:delete',
       'organizations:delete',
@@ -151,7 +182,9 @@ const CATALOG_KEYS = new Set(
 )
 
 for (const role of SYSTEM_ROLE_DEFINITIONS) {
-  const unknown = role.permissions.filter((permission) => !CATALOG_KEYS.has(permission))
+  const unknown = role.permissions.filter(
+    (permission) => !CATALOG_KEYS.has(permission)
+  )
   if (unknown.length > 0)
     throw new TypeError(
       `Console system role ${role.name} contains unknown permissions: ${unknown.join(', ')}.`
@@ -159,7 +192,9 @@ for (const role of SYSTEM_ROLE_DEFINITIONS) {
 }
 
 /** The four built-in system role names, in privilege order. */
-export const SYSTEM_ROLE_NAMES = SYSTEM_ROLE_DEFINITIONS.map((role) => role.name)
+export const SYSTEM_ROLE_NAMES = SYSTEM_ROLE_DEFINITIONS.map(
+  (role) => role.name
+)
 
 /** Fallback role→permissions map (used before the DB is populated, and in tests). */
 const FALLBACK: Record<string, string[]> = Object.fromEntries(
