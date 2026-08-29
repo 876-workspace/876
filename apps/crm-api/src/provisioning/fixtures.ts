@@ -1,6 +1,6 @@
 import * as categories from '../modules/categories/index.js'
 import * as priorities from '../modules/priorities/index.js'
-import * as requestForms from '../modules/request-forms/request-forms.service.js'
+import * as requestForms from '../modules/request-forms/request-forms.provisioning.js'
 import type { CrmWorkspaceFixture } from '../types/provisioning.js'
 
 const SUPPORT_FIXTURE_PRIORITY_KEY = 'normal'
@@ -8,6 +8,12 @@ const SUPPORT_FIXTURE_CATEGORY_KEY = 'support'
 const SUPPORT_FORM_PROVISIONING_KEY = '876-support'
 
 async function ensure876SupportFixture(tenantId: string) {
+  const existing = await requestForms.retrieveProvisioned(
+    tenantId,
+    SUPPORT_FORM_PROVISIONING_KEY
+  )
+  if (existing && !existing.deletedAt) return
+
   const priority = await priorities.ensureProvisioned(tenantId, {
     provisioningKey: SUPPORT_FIXTURE_PRIORITY_KEY,
     name: 'Normal',
