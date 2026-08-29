@@ -16,7 +16,7 @@ export type {
   CrmRequestPriorityUpdateInput,
   CrmRequestPriorityDeleteInput,
   CrmListRequestPrioritiesQuery,
-  RequestSource,
+  RequestChannel,
   CrmRequestCreateInput,
   CrmRequestUpdateInput,
   CrmRequestNote,
