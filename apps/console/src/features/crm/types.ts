@@ -4,7 +4,7 @@ export type {
   CrmListRequestsQuery,
   RequestStatus,
   RequestPriority,
-  RequestSource,
+  RequestChannel,
   CrmRequestCreateInput,
   CrmRequestUpdateInput,
   CrmRequestNote,
