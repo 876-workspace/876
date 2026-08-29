@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
-import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
-import { TeamSectionActions } from './_components/team-section-actions'
 import { PageBreadcrumb } from '@876/ui/page'
+import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
+
+import { requireConsolePermission, requireSession } from '@/lib/auth/guards'
+import { ROUTE_PERMISSIONS } from '@/lib/auth/route-permissions'
+import { TeamSectionActions } from './_components/team-section-actions'
 
 type Props = { children: ReactNode }
 
@@ -14,7 +17,13 @@ const tabs: DetailTab[] = [
   { label: 'Roles', href: '/settings/users/roles' },
 ]
 
-export default function MembersLayout({ children }: Props) {
+export default async function MembersLayout({ children }: Props) {
+  const sessionUser = await requireSession('/settings/users')
+  await requireConsolePermission(
+    sessionUser.id,
+    ROUTE_PERMISSIONS['/settings/users']
+  )
+
   return (
     <div>
       <div className="border-876-surface-border border-b">
