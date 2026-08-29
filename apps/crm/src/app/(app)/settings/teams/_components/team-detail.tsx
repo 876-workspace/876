@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import { formatDate, formatDateTime } from '@876/core/timestamps'
+import { formatDate } from '@876/core/timestamps'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
@@ -40,6 +40,7 @@ import type { DirectoryMember } from '@/features/directory/types'
 import { client } from '@/lib/client'
 import type { CrmTeamMemberRole } from '@/types/crm'
 
+import { TeamActivity } from './team-activity'
 import {
   AUTO_ASSIGN_LABELS,
   getTeamColorVariant,
@@ -467,39 +468,7 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
           </div>
         )}
 
-        {tab === 'activity' && (
-          <div className="space-y-4">
-            <ol className="relative space-y-4 ps-1">
-              <li className="flex gap-3">
-                <div className="flex flex-col items-center">
-                  <span className="mt-1.5 size-2 shrink-0 rounded-full bg-emerald-500" />
-                  <span className="bg-876-surface-border w-px grow" />
-                </div>
-                <div className="-mt-0.5 min-w-0 pb-2">
-                  <p className="text-foreground text-xs font-medium">
-                    Team created
-                  </p>
-                  <p className="text-muted-foreground text-[0.6875rem]">
-                    {formatDateTime(team.createdAt)}
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <div className="flex flex-col items-center">
-                  <span className="mt-1.5 size-2 shrink-0 rounded-full bg-sky-500" />
-                </div>
-                <div className="-mt-0.5 min-w-0">
-                  <p className="text-foreground text-xs font-medium">
-                    Current active status: {team.status}
-                  </p>
-                  <p className="text-muted-foreground text-[0.6875rem]">
-                    {team.members.length} team members currently assigned
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        )}
+        {tab === 'activity' && <TeamActivity team={team} />}
       </div>
 
       {/* Footer */}
