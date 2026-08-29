@@ -8,13 +8,24 @@
 /// of Console access (no `is_staff` echo); absence here = no access.
 model Member {
   /// The opaque core 876 user ID (e.g. `user_…`). Cross-service reference — no FK.
-  userId    String   @id @map("user_id")
-  roleName  String   @map("role_name")
+  userId        String   @id @map("user_id")
+  roleName      String   @map("role_name")
   /// "active" | "suspended". Suspended members are denied at the guard.
-  status    String   @default("active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  role      Role     @relation(fields: [roleName], references: [name], onUpdate: Cascade)
+  status        String   @default("active")
+  /// "staff" | "contractor" | "external". Attribute of the grant, never the gate.
+  /// Staff additionally requires a live Efesto membership, verified at guard time.
+  affiliation   String   @default("staff")
+  /// Free-text position for non-staff operators. Staff position comes from the employee profile.
+  title         String?
+  /// Unix seconds. Required for contractor/external. Expired grants are denied.
+  expiresAt     BigInt?  @map("expires_at")
+  /// Why this grant exists. Required for contractor/external. Audit trail.
+  justification String?
+  /// Opaque 876 user id of the operator who issued this grant.
+  invitedBy     String?  @map("invited_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  role          Role     @relation(fields: [roleName], references: [name], onUpdate: Cascade)
 
   @@index([roleName])
   @@map("console_members")
