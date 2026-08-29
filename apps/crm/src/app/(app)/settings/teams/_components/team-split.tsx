@@ -24,6 +24,7 @@ import {
 import type { DirectoryMember } from '@/features/directory/types'
 import { CondensedTeamRow, TeamTableRow, type TeamRow } from './team-row'
 import { TeamDetail } from './team-detail'
+import { TeamCreateCard } from './team-create-card'
 
 /** Exit animation length; keep in step with the panel's `animate-out`. */
 const EXIT_MS = 200
@@ -43,6 +44,7 @@ export function TeamSplit({
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const isNew = selectedId === 'new'
   const selected = teams.find((t) => t.id === selectedId)
 
   const [closing, setClosing] = useState(false)
@@ -115,7 +117,7 @@ export function TeamSplit({
     )
   }
 
-  if (!selected) {
+  if (!selected && !isNew) {
     return (
       <div className="876-card overflow-hidden">
         <Table>
@@ -134,6 +136,15 @@ export function TeamSplit({
     )
   }
 
+  const panelClassName = cn(
+    'motion-safe:duration-300 motion-safe:ease-out',
+    closing
+      ? 'motion-safe:animate-out motion-safe:fade-out motion-safe:slide-out-to-right-4 motion-safe:fill-mode-forwards motion-safe:duration-200 motion-safe:ease-in'
+      : isSwitch
+        ? 'motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200'
+        : 'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4'
+  )
+
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-start">
       <div className="876-card shrink-0 overflow-hidden md:w-72 lg:w-80">
@@ -150,27 +161,31 @@ export function TeamSplit({
               <CondensedTeamRow
                 key={team.id}
                 team={team}
-                selected={team.id === selected.id}
+                selected={selected ? team.id === selected.id : false}
                 onSelect={() => select(team.id)}
               />
             ))}
           </TableBody>
         </Table>
       </div>
-      <TeamDetail
-        key={selected.id}
-        team={selected}
-        directory={directory}
-        onClose={requestClose}
-        className={cn(
-          'motion-safe:duration-300 motion-safe:ease-out',
-          closing
-            ? 'motion-safe:animate-out motion-safe:fade-out motion-safe:slide-out-to-right-4 motion-safe:fill-mode-forwards motion-safe:duration-200 motion-safe:ease-in'
-            : isSwitch
-              ? 'motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200'
-              : 'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4'
-        )}
-      />
+      {isNew ? (
+        <TeamCreateCard
+          onClose={requestClose}
+          onSuccess={(id) => {
+            select(id)
+            router.refresh()
+          }}
+          className={panelClassName}
+        />
+      ) : selected ? (
+        <TeamDetail
+          key={selected.id}
+          team={selected}
+          directory={directory}
+          onClose={requestClose}
+          className={panelClassName}
+        />
+      ) : null}
     </div>
   )
 }

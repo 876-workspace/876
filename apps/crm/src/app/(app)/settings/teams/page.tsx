@@ -49,7 +49,11 @@ export default async function TeamsPage({ searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref="/settings/teams/new"
+        primaryHref={
+          selectedStatus !== 'all'
+            ? `/settings/teams?status=${selectedStatus}&team=new`
+            : '/settings/teams?team=new'
+        }
         primaryVariant="info"
         refresh
       />

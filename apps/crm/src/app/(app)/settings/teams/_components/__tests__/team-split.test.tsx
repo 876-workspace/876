@@ -152,6 +152,18 @@ describe('TeamSplit', () => {
     expect(screen.getByText('Team created')).toBeInTheDocument()
   })
 
+  it('renders team creation card to the right when selectedId="new"', () => {
+    render(<TeamSplit teams={teams} directory={directory} selectedId="new" />)
+
+    expect(screen.getByLabelText('Close team creation')).toBeInTheDocument()
+    expect(screen.getByText('Create new team')).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toBeInTheDocument()
+    expect(screen.getByLabelText('Description')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Create team' })
+    ).toBeInTheDocument()
+  })
+
   it('renders empty state when teams list is empty', () => {
     render(
       <TeamSplit teams={[]} directory={directory} selectedId={undefined} />
