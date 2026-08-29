@@ -5,12 +5,7 @@ import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
-import { PERMISSION_GROUPS } from '@/lib/permissions'
 import { AccessPanel } from './access-panel'
-
-const ALL_KEYS = PERMISSION_GROUPS.flatMap((group) =>
-  group.permissions.map((permission) => permission.value)
-)
 
 function renderPanel(
   overrides: Partial<Parameters<typeof AccessPanel>[0]> = {}
@@ -18,8 +13,6 @@ function renderPanel(
   const onRevoke = vi.fn()
   render(
     <AccessPanel
-      role="admin"
-      roleLabel="Admin"
       permissions={['users:read', 'users:list']}
       onRevoke={onRevoke}
       {...overrides}
@@ -28,75 +21,21 @@ function renderPanel(
   return { onRevoke }
 }
 
+/** A permission pill, addressed by the key carried in its `title`. */
+function pill(key: string) {
+  return screen.getByTitle(key)
+}
+
 describe('AccessPanel', () => {
-  describe('filtering', () => {
-    it('hides modules with no permission matching the query', () => {
-      renderPanel()
-
-      fireEvent.change(
-        screen.getByRole('searchbox', { name: 'Filter permissions' }),
-        { target: { value: 'organizations:read' } }
-      )
-
-      expect(screen.getByText('organizations:read')).toBeInTheDocument()
-      expect(screen.queryByText('users:read')).not.toBeInTheDocument()
-    })
-
-    it('shows an empty state and a reset when nothing matches', () => {
-      renderPanel()
-
-      fireEvent.change(
-        screen.getByRole('searchbox', { name: 'Filter permissions' }),
-        { target: { value: 'zzzz-no-such-permission' } }
-      )
-
-      expect(screen.getByText('No matching permissions')).toBeInTheDocument()
-
-      fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
-
-      expect(
-        screen.queryByText('No matching permissions')
-      ).not.toBeInTheDocument()
-    })
-
-    it('narrows to held permissions under the Granted scope', () => {
-      renderPanel()
-
-      fireEvent.click(screen.getByRole('button', { name: 'Granted' }))
-
-      expect(screen.getByText('users:read')).toBeInTheDocument()
-      expect(screen.queryByText('users:create')).not.toBeInTheDocument()
-    })
-
-    it('narrows to withheld permissions under the Denied scope', () => {
-      renderPanel()
-
-      fireEvent.click(screen.getByRole('button', { name: 'Denied' }))
-
-      expect(screen.getByText('users:create')).toBeInTheDocument()
-      expect(screen.queryByText('users:read')).not.toBeInTheDocument()
-    })
-
-    it('disables Expand all while a scope filter is active', () => {
-      renderPanel()
-
-      fireEvent.click(screen.getByRole('button', { name: 'Granted' }))
-
-      expect(
-        screen.getByRole('button', { name: /Collapse all|Expand all/ })
-      ).toBeDisabled()
-    })
-  })
-
   describe('module rows', () => {
     it('keeps every permission collapsed until a module is expanded', () => {
       renderPanel()
 
-      expect(screen.queryByText('users:read')).not.toBeInTheDocument()
+      expect(screen.queryByTitle('users:read')).not.toBeInTheDocument()
 
       fireEvent.click(screen.getByRole('button', { name: /Users/ }))
 
-      expect(screen.getByText('users:read')).toBeInTheDocument()
+      expect(pill('users:read')).toBeInTheDocument()
     })
 
     it('expands every module from the Expand all control', () => {
@@ -104,8 +43,16 @@ describe('AccessPanel', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Expand all' }))
 
-      expect(screen.getByText('users:read')).toBeInTheDocument()
-      expect(screen.getByText('organizations:read')).toBeInTheDocument()
+      expect(pill('users:read')).toBeInTheDocument()
+      expect(pill('organizations:read')).toBeInTheDocument()
+    })
+
+    it('reports the granted count against the module size on the trigger', () => {
+      renderPanel()
+
+      expect(
+        within(screen.getByRole('button', { name: /Users/ })).getByText('2/6')
+      ).toBeInTheDocument()
     })
 
     it('labels a held permission as granted and a withheld one as not granted', () => {
@@ -113,11 +60,12 @@ describe('AccessPanel', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Expand all' }))
 
-      const granted = screen.getByText('users:read').closest('li')
-      const denied = screen.getByText('users:create').closest('li')
-
-      expect(within(granted!).getByText('Granted')).toBeInTheDocument()
-      expect(within(denied!).getByText('Not granted')).toBeInTheDocument()
+      expect(
+        within(pill('users:read')).getByText('Granted')
+      ).toBeInTheDocument()
+      expect(
+        within(pill('users:create')).getByText('Not granted')
+      ).toBeInTheDocument()
     })
   })
 

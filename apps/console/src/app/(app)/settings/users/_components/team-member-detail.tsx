@@ -388,12 +388,9 @@ export function TeamMemberDetail({ member, onClose, className }: Props) {
 
         {tab === 'access' && (
           <AccessPanel
-            role={member.role}
-            roleLabel={ROLE_LABELS[member.role] ?? member.role}
             permissions={member.permissions ?? []}
             revoking={revoking}
             onRevoke={handleRevoke}
-            roleBadgeClass={ROLE_BADGE_CLASS[member.role] ?? ''}
           />
         )}
 

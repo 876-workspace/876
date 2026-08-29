@@ -93,7 +93,7 @@ describe('TeamSplit', () => {
     const accessTab = screen.getByRole('tab', { name: 'App Access' })
     fireEvent.click(accessTab)
     expect(
-      screen.getByRole('searchbox', { name: 'Filter permissions' })
+      screen.getByRole('button', { name: 'Expand all' })
     ).toBeInTheDocument()
     expect(screen.getByText('Revoke Console Access')).toBeInTheDocument()
 

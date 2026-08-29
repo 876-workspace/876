@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import {
   Accordion,
@@ -13,360 +12,217 @@ import {
   AlertCircle,
   Building2,
   ChartPieIcon,
-  CheckIcon,
   CircleStackIcon,
   CreditCardIcon,
+  Fingerprint,
   KeyIcon,
+  Link2,
   Lock,
-  MinusIcon,
-  SearchIcon,
-  Shield,
+  ShieldCheck,
   SquaresPlusIcon,
+  Terminal,
   Users,
 } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
 import { PERMISSION_GROUPS } from '@/lib/permissions'
 
-/** Coverage state of one module, which drives its colour and its label. */
-type Coverage = 'full' | 'partial' | 'none'
-
-/** Which permissions the list is narrowed to. */
-type Scope = 'all' | 'granted' | 'denied'
-
-const SCOPES: { value: Scope; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'granted', label: 'Granted' },
-  { value: 'denied', label: 'Denied' },
-]
-
-const COVERAGE_LABEL: Record<Coverage, string> = {
-  full: 'Full access',
-  partial: 'Partial',
-  none: 'No access',
+/**
+ * Per-module identity: its icon and its tile colour.
+ *
+ * Colour here is *identity*, not state — a module keeps the same hue whatever
+ * the operator holds, so the list stays scannable by shape and colour rather
+ * than turning into a grey wall for a low-privilege role. How much of a module
+ * is held is carried by the granted/total count beside it.
+ *
+ * Emerald is deliberately absent: it means "granted" on the permission pills,
+ * and reusing it for a module would make the two readings compete.
+ */
+const MODULE_STYLE: Record<string, { icon: typeof KeyIcon; tile: string }> = {
+  console: {
+    icon: Terminal,
+    tile: 'bg-indigo-500/10 text-indigo-600 ring-indigo-500/20 dark:text-indigo-400',
+  },
+  users: {
+    icon: Users,
+    tile: 'bg-sky-500/10 text-sky-600 ring-sky-500/20 dark:text-sky-400',
+  },
+  organizations: {
+    icon: Building2,
+    tile: 'bg-violet-500/10 text-violet-600 ring-violet-500/20 dark:text-violet-400',
+  },
+  memberships: {
+    icon: Link2,
+    tile: 'bg-fuchsia-500/10 text-fuchsia-600 ring-fuchsia-500/20 dark:text-fuchsia-400',
+  },
+  apps: {
+    icon: SquaresPlusIcon,
+    tile: 'bg-cyan-500/10 text-cyan-600 ring-cyan-500/20 dark:text-cyan-400',
+  },
+  roles: {
+    icon: ShieldCheck,
+    tile: 'bg-amber-500/10 text-amber-600 ring-amber-500/20 dark:text-amber-400',
+  },
+  team: {
+    icon: Fingerprint,
+    tile: 'bg-rose-500/10 text-rose-600 ring-rose-500/20 dark:text-rose-400',
+  },
+  storage: {
+    icon: CircleStackIcon,
+    tile: 'bg-blue-500/10 text-blue-600 ring-blue-500/20 dark:text-blue-400',
+  },
+  reports: {
+    icon: ChartPieIcon,
+    tile: 'bg-orange-500/10 text-orange-600 ring-orange-500/20 dark:text-orange-400',
+  },
+  billing: {
+    icon: CreditCardIcon,
+    tile: 'bg-purple-500/10 text-purple-600 ring-purple-500/20 dark:text-purple-400',
+  },
 }
 
-/** Meter fill per coverage state. Colour is status, never an action. */
-const COVERAGE_BAR: Record<Coverage, string> = {
-  full: 'bg-emerald-500',
-  partial: 'bg-sky-500',
-  none: 'bg-muted-foreground/25',
+const FALLBACK_STYLE = {
+  icon: KeyIcon,
+  tile: 'bg-muted text-muted-foreground ring-border/60',
 }
 
-const COVERAGE_CHIP: Record<Coverage, string> = {
-  full: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-  partial: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
-  none: 'border-border/60 bg-muted/40 text-muted-foreground',
-}
-
-const COVERAGE_TILE: Record<Coverage, string> = {
-  full: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  partial: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-  none: 'bg-muted text-muted-foreground/70',
-}
-
-function moduleIcon(label: string) {
-  switch (label.toLowerCase()) {
-    case 'users':
-      return Users
-    case 'organizations':
-    case 'memberships':
-      return Building2
-    case 'applications':
-    case 'apps':
-      return SquaresPlusIcon
-    case 'roles':
-    case 'team':
-      return Shield
-    case 'storage':
-      return CircleStackIcon
-    case 'reports':
-      return ChartPieIcon
-    case 'billing':
-      return CreditCardIcon
-    default:
-      return KeyIcon
-  }
-}
-
-function coverageOf(granted: number, total: number): Coverage {
-  if (total > 0 && granted === total) return 'full'
-  return granted === 0 ? 'none' : 'partial'
+/** Resolves a catalog module label to its icon and tile colour. */
+function moduleStyle(label: string) {
+  return MODULE_STYLE[label.toLowerCase()] ?? FALLBACK_STYLE
 }
 
 type Row = { value: string; label: string; granted: boolean }
 type Module = {
   label: string
   rows: Row[]
-  visible: Row[]
   granted: number
   total: number
-  coverage: Coverage
 }
 
 type Props = {
-  role: string
-  roleLabel: string
   permissions: readonly string[]
   canRevoke?: boolean
   revoking?: boolean
   onRevoke: () => void
-  roleBadgeClass?: string
 }
 
 export function AccessPanel({
-  roleLabel,
   permissions,
   canRevoke = true,
   revoking = false,
   onRevoke,
-  roleBadgeClass,
 }: Props) {
-  const [query, setQuery] = useState('')
-  const [scope, setScope] = useState<Scope>('all')
   const [open, setOpen] = useState<string[]>([])
 
   const held = useMemo(() => new Set(permissions), [permissions])
 
-  const modules = useMemo<Module[]>(() => {
-    const needle = query.trim().toLowerCase()
+  const modules = useMemo<Module[]>(
+    () =>
+      PERMISSION_GROUPS.map((group) => {
+        const rows: Row[] = group.permissions.map((permission) => ({
+          value: permission.value,
+          label: permission.label,
+          granted: held.has(permission.value),
+        }))
 
-    return PERMISSION_GROUPS.map((group) => {
-      const rows: Row[] = group.permissions.map((permission) => ({
-        value: permission.value,
-        label: permission.label,
-        granted: held.has(permission.value),
-      }))
+        return {
+          label: group.label,
+          rows,
+          granted: rows.filter((row) => row.granted).length,
+          total: rows.length,
+        }
+      }),
+    [held]
+  )
 
-      const visible = rows.filter((row) => {
-        if (scope === 'granted' && !row.granted) return false
-        if (scope === 'denied' && row.granted) return false
-        if (!needle) return true
-        return (
-          row.label.toLowerCase().includes(needle) ||
-          row.value.toLowerCase().includes(needle) ||
-          group.label.toLowerCase().includes(needle)
-        )
-      })
-
-      const granted = rows.filter((row) => row.granted).length
-
-      return {
-        label: group.label,
-        rows,
-        visible,
-        granted,
-        total: rows.length,
-        coverage: coverageOf(granted, rows.length),
-      }
-    })
-  }, [held, query, scope])
-
-  const filtering = query.trim().length > 0 || scope !== 'all'
-  const shown = filtering
-    ? modules.filter((module) => module.visible.length > 0)
-    : modules
-
-  // While a filter is active the matches are what the operator asked to see, so
-  // they are shown expanded rather than behind another click.
-  const expanded = filtering ? shown.map((module) => module.label) : open
-  const allOpen = expanded.length === shown.length && shown.length > 0
+  const allOpen = open.length === modules.length && modules.length > 0
 
   return (
     <div className="-m-6 flex flex-col">
-      {/* Filter bar */}
-      <div className="border-876-surface-border bg-muted/20 flex flex-wrap items-center gap-2 border-b px-6 py-3">
-        <div className="relative min-w-40 flex-1">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter permissions…"
-            aria-label="Filter permissions"
-            className="border-876-surface-border bg-background text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/40 h-8 w-full rounded-md border ps-8 pe-2.5 text-xs transition-colors outline-none focus-visible:ring-2 [&::-webkit-search-cancel-button]:hidden"
-          />
-        </div>
-
-        <div
-          role="group"
-          aria-label="Permission scope"
-          className="bg-muted/60 inline-flex items-center gap-1 rounded-lg p-1"
-        >
-          {SCOPES.map((entry) => (
-            <button
-              key={entry.value}
-              type="button"
-              aria-pressed={scope === entry.value}
-              onClick={() => setScope(entry.value)}
-              className={cn(
-                'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                scope === entry.value
-                  ? 'bg-background text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {entry.label}
-            </button>
-          ))}
-        </div>
-
+      {/* Toolbar */}
+      <div className="border-876-surface-border bg-muted/20 flex items-center justify-end border-b px-6 py-2">
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          disabled={filtering}
           onClick={() =>
-            setOpen(allOpen ? [] : shown.map((module) => module.label))
+            setOpen(allOpen ? [] : modules.map((module) => module.label))
           }
-          className="text-muted-foreground hover:text-foreground h-8 text-xs"
+          className="text-muted-foreground hover:text-foreground h-7 text-xs"
         >
           {allOpen ? 'Collapse all' : 'Expand all'}
         </Button>
       </div>
 
-      {/* Modules */}
-      {shown.length === 0 ? (
-        <div className="border-876-surface-border flex flex-col items-center gap-2 border-b px-6 py-14 text-center">
-          <span className="bg-muted text-muted-foreground flex size-9 items-center justify-center rounded-lg">
-            <SearchIcon className="size-4" />
-          </span>
-          <p className="text-foreground text-sm font-medium">
-            No matching permissions
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setQuery('')
-              setScope('all')
-            }}
-            className="mt-1 h-7 text-xs"
-          >
-            Clear filters
-          </Button>
-        </div>
-      ) : (
-        <Accordion
-          multiple
-          value={expanded}
-          onValueChange={(next) => setOpen(next as string[])}
-          className="border-876-surface-border w-full border-b"
-        >
-          {shown.map((module) => {
-            const Icon = moduleIcon(module.label)
-            const percent =
-              module.total === 0
-                ? 0
-                : Math.round((module.granted / module.total) * 100)
+      <Accordion
+        multiple
+        value={open}
+        onValueChange={(next) => setOpen(next as string[])}
+        className="border-876-surface-border w-full border-b"
+      >
+        {modules.map((module) => {
+          const { icon: Icon, tile } = moduleStyle(module.label)
 
-            return (
-              <AccordionItem
-                key={module.label}
-                value={module.label}
-                className="border-876-surface-border not-last:border-b"
-              >
-                <AccordionTrigger className="hover:bg-muted/40 items-center gap-4 px-6 py-3 hover:no-underline">
-                  <span className="flex min-w-0 flex-1 items-center gap-3">
+          return (
+            <AccordionItem
+              key={module.label}
+              value={module.label}
+              className="border-876-surface-border not-last:border-b"
+            >
+              <AccordionTrigger className="hover:bg-muted/40 items-center gap-3 px-6 py-3 hover:no-underline">
+                <span className="flex min-w-0 flex-1 items-center gap-3">
+                  <span
+                    className={cn(
+                      'flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
+                      tile
+                    )}
+                  >
+                    <Icon className="size-4" />
+                  </span>
+
+                  <span className="text-foreground truncate text-sm font-medium">
+                    {module.label}
+                  </span>
+
+                  <span className="text-muted-foreground ms-auto shrink-0 pe-1 font-mono text-[0.6875rem] tabular-nums">
+                    {`${module.granted}/${module.total}`}
+                  </span>
+                </span>
+              </AccordionTrigger>
+
+              <AccordionContent className="bg-muted/10 px-6 pt-3 pb-5">
+                <div className="flex flex-wrap gap-2">
+                  {module.rows.map((row) => (
                     <span
+                      key={row.value}
+                      title={row.value}
                       className={cn(
-                        'flex size-8 shrink-0 items-center justify-center rounded-lg',
-                        COVERAGE_TILE[module.coverage]
+                        'inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                        row.granted
+                          ? 'border-border bg-background text-foreground shadow-2xs'
+                          : 'border-border/40 bg-muted/20 text-muted-foreground/40 line-through'
                       )}
                     >
-                      <Icon className="size-4" />
-                    </span>
-
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="text-foreground truncate text-sm font-medium">
-                          {module.label}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'h-4.5 shrink-0 px-1.5 text-[0.625rem] font-medium',
-                            COVERAGE_CHIP[module.coverage]
-                          )}
-                        >
-                          {COVERAGE_LABEL[module.coverage]}
-                        </Badge>
-                      </span>
-                      <span className="mt-1.5 flex items-center gap-2">
-                        <span className="bg-muted h-1 w-full max-w-28 overflow-hidden rounded-full">
-                          <span
-                            className={cn(
-                              'block h-full rounded-full transition-[width] duration-500 ease-out',
-                              COVERAGE_BAR[module.coverage]
-                            )}
-                            style={{ width: `${percent}%` }}
-                          />
-                        </span>
-                        <span className="text-muted-foreground text-[0.6875rem] tabular-nums">
-                          {module.granted}/{module.total}
-                        </span>
-                      </span>
-                    </span>
-                  </span>
-                </AccordionTrigger>
-
-                <AccordionContent className="bg-muted/10 px-6 pt-1 pb-4">
-                  <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                    {module.visible.map((row) => (
-                      <li
-                        key={row.value}
+                      <span
+                        aria-hidden="true"
                         className={cn(
-                          'flex items-center gap-2.5 rounded-md px-2 py-1.5',
-                          row.granted ? 'bg-background/60' : ''
+                          'size-1.5 shrink-0 rounded-full',
+                          row.granted
+                            ? 'bg-emerald-500 shadow-xs'
+                            : 'bg-muted-foreground/30'
                         )}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            'flex size-4 shrink-0 items-center justify-center rounded-full',
-                            row.granted
-                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                              : 'bg-muted-foreground/10 text-muted-foreground/50'
-                          )}
-                        >
-                          {row.granted ? (
-                            <CheckIcon className="size-2.5" strokeWidth={3} />
-                          ) : (
-                            <MinusIcon className="size-2.5" strokeWidth={3} />
-                          )}
-                        </span>
-                        <span
-                          className={cn(
-                            'truncate text-xs font-medium',
-                            row.granted
-                              ? 'text-foreground'
-                              : 'text-muted-foreground/60'
-                          )}
-                        >
-                          {row.label}
-                        </span>
-                        <code
-                          className={cn(
-                            'ms-auto truncate font-mono text-[0.6875rem]',
-                            row.granted
-                              ? 'text-muted-foreground'
-                              : 'text-muted-foreground/40'
-                          )}
-                        >
-                          {row.value}
-                        </code>
-                        <span className="sr-only">
-                          {row.granted ? 'Granted' : 'Not granted'}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })}
-        </Accordion>
-      )}
+                      />
+                      {row.label}
+                      <span className="sr-only">
+                        {row.granted ? 'Granted' : 'Not granted'}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )
+        })}
+      </Accordion>
 
       {/* Danger zone */}
       <div className="p-6">
