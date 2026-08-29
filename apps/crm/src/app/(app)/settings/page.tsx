@@ -12,7 +12,7 @@ export default function SettingsPage() {
         <h1 className="text-foreground text-lg font-semibold tracking-tight">
           Settings
         </h1>
-        <p className="text-muted-foreground mt-0.5 text-xs">
+        <p className="text-muted-foreground mt-0.5 text-[0.8125rem]">
           Configure teams, routing categories, request priorities, and workspace
           workflows.
         </p>

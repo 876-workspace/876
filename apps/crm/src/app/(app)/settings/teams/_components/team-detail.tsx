@@ -399,12 +399,12 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
                               src={member.avatar}
                               className="size-7 rounded-full after:rounded-full [&_*]:rounded-full"
                             />
-                            <span className="text-foreground text-xs font-medium">
+                            <span className="text-foreground text-[0.8125rem] font-medium">
                               {member.name}
                             </span>
                           </span>
                         </TableCell>
-                        <TableCell className="text-muted-foreground px-4 py-3 text-xs">
+                        <TableCell className="text-muted-foreground px-4 py-3 text-[0.8125rem]">
                           {member.email ?? '—'}
                         </TableCell>
                         <TableCell className="px-4 py-3">

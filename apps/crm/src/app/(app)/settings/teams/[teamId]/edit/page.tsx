@@ -1,5 +1,5 @@
 import { AppError } from '@876/ui/app-error'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { get876Client } from '@/lib/876'
@@ -21,7 +21,6 @@ export default async function EditTeamPage({ params }: Props) {
   if (result.error)
     return (
       <Page>
-        <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
         <h1 className="876-page-title mb-4">Edit team</h1>
         <AppError
           title="Team data is temporarily unavailable"
@@ -41,7 +40,6 @@ export default async function EditTeamPage({ params }: Props) {
 
   return (
     <Page>
-      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-6">Edit team</h1>
       <TeamForm teamId={teamId} initial={initial} />
     </Page>

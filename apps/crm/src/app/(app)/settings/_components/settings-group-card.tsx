@@ -35,7 +35,7 @@ export function SettingsGroupCard({ group }: { group: SettingsNavGroup }) {
               >
                 <Icon className="size-4" aria-hidden="true" />
               </div>
-              <span className="text-foreground text-xs font-medium transition-colors group-hover:text-sky-600 dark:group-hover:text-sky-400">
+              <span className="text-foreground text-[0.8125rem] font-medium transition-colors group-hover:text-sky-600 dark:group-hover:text-sky-400">
                 {item.label}
               </span>
               {item.availability === 'planned' ? (
