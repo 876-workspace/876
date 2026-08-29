@@ -1,25 +1,22 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+import { cn } from '@876/core/utils'
 import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@876/ui/select'
 import { Switch } from '@876/ui/switch'
 import { Textarea } from '@876/ui/textarea'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 import { client } from '@/lib/client'
 import type { CrmTeamAutoAssign } from '@/types/crm'
+
+import { TEAM_COLOR_VARIANTS } from './team-row'
 
 type ErrorValue = { code: string; message: string }
 
@@ -39,8 +36,9 @@ const EMPTY: TeamFormValues = {
   isDefault: false,
 }
 
-const TEAM_COLORS = [
+export const TEAM_COLORS = [
   'blue',
+  'emerald',
   'violet',
   'amber',
   'rose',
@@ -146,22 +144,38 @@ export function TeamForm({
         </FormRow>
 
         <FormRow label="Colour" className={rowClassName}>
-          <Select
+          <RadioGroup
             value={values.color}
             onValueChange={(value) => value && set('color', value)}
             disabled={saving}
+            className="flex flex-row flex-wrap items-center gap-3 pt-1"
+            aria-label="Colour"
           >
-            <SelectTrigger aria-label="Colour">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TEAM_COLORS.map((color) => (
-                <SelectItem key={color} value={color}>
-                  <span className="capitalize">{color}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {TEAM_COLORS.map((color) => {
+              const isSelected = values.color === color
+              const config =
+                TEAM_COLOR_VARIANTS[color] ?? TEAM_COLOR_VARIANTS.blue
+              return (
+                <label
+                  key={color}
+                  title={color}
+                  aria-label={color}
+                  className="relative flex aspect-square size-6 shrink-0 cursor-pointer items-center justify-center select-none"
+                >
+                  <RadioGroupItem value={color} className="sr-only" />
+                  <span
+                    className={cn(
+                      'aspect-square size-6 shrink-0 rounded-full border border-black/10 shadow-xs transition-all dark:border-white/10',
+                      config.dot,
+                      isSelected
+                        ? 'ring-foreground ring-offset-background ring-2 ring-offset-2'
+                        : 'opacity-80 hover:scale-110 hover:opacity-100'
+                    )}
+                  />
+                </label>
+              )
+            })}
+          </RadioGroup>
         </FormRow>
 
         <FormRow
