@@ -82,7 +82,7 @@ describe('ROUTE_PERMISSIONS', () => {
       '/apps': 'console:apps',
       '/widgets': 'console:widgets',
       '/features': 'console:features',
-      '/requests': 'console:requests',
+      '/requests': 'console:support',
       '/security': 'console:security',
       '/storage': 'console:storage',
       '/reports': 'console:reports',
@@ -92,6 +92,7 @@ describe('ROUTE_PERMISSIONS', () => {
       '/settings/security': 'console:security',
     })
   })
+
   it('backs every declared route subtree with a permission-checking layout', () => {
     for (const route of Object.keys(ROUTE_PERMISSIONS)) {
       const file = layoutFile(route)
@@ -101,6 +102,7 @@ describe('ROUTE_PERMISSIONS', () => {
       )
     }
   })
+
   it('binds each permission-gated navigation entry to the same route permission', () => {
     for (const entry of allNavigationEntries()) {
       if (!entry.requires?.permission) continue
@@ -109,6 +111,7 @@ describe('ROUTE_PERMISSIONS', () => {
       )
     }
   })
+
   it('uses only permissions present in the canonical Console catalog', () => {
     const catalog = new Set(
       consolePermissionCatalog.permissions.map((permission) => permission.key)
@@ -119,6 +122,7 @@ describe('ROUTE_PERMISSIONS', () => {
       )
     ).toEqual([])
   })
+
   it('uses only permissions granted by at least one system role', () => {
     const granted = new Set(
       SYSTEM_ROLE_DEFINITIONS.flatMap((role) => role.permissions)
@@ -129,6 +133,7 @@ describe('ROUTE_PERMISSIONS', () => {
       )
     ).toEqual([])
   })
+
   it('binds every navigation href to a real App Router page', () => {
     const patterns = walkPages(APP_ROOT).map(routePattern)
     for (const entry of allNavigationEntries())
@@ -137,9 +142,11 @@ describe('ROUTE_PERMISSIONS', () => {
         entry.href
       ).toBe(true)
   })
+
   it('gives staff the exact guarded route set their cumulative permissions allow', () => {
     expect(reachablePaths('staff')).toEqual(['/requests', '/reports'])
   })
+
   it('gives admin the exact guarded route set their cumulative permissions allow', () => {
     expect(reachablePaths('admin')).toEqual([
       '/users',
@@ -155,49 +162,59 @@ describe('ROUTE_PERMISSIONS', () => {
       '/settings/users/roles',
     ])
   })
+
   it('gives owner the exact guarded route set their cumulative permissions allow', () => {
     expect(reachablePaths('owner')).toEqual(Object.keys(ROUTE_PERMISSIONS))
   })
-  it('gives super_admin the exact guarded route set their cumulative permissions allow', () => {
+
+  it('gives super_admin the same complete route set as owner', () => {
     expect(reachablePaths('super_admin')).toEqual(
       Object.keys(ROUTE_PERMISSIONS)
     )
   })
-  it('keeps a permission guard in the support layout', () => {
+
+  it('keeps a permission guard in the requests layout', () => {
     expect(readFileSync(layoutFile('/requests'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/requests']"
     )
   })
+
   it('keeps a permission guard in the security layout', () => {
     expect(readFileSync(layoutFile('/security'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/security']"
     )
   })
+
   it('keeps a permission guard in the storage layout', () => {
     expect(readFileSync(layoutFile('/storage'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/storage']"
     )
   })
+
   it('keeps a permission guard in the reports layout', () => {
     expect(readFileSync(layoutFile('/reports'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/reports']"
     )
   })
+
   it('keeps a permission guard in the Team layout', () => {
     expect(readFileSync(layoutFile('/settings/users'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/settings/users']"
     )
   })
+
   it('keeps a permission guard in the Roles layout', () => {
     expect(readFileSync(layoutFile('/settings/users/roles'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/settings/users/roles']"
     )
   })
+
   it('keeps a permission guard in the Settings Security layout', () => {
     expect(readFileSync(layoutFile('/settings/security'), 'utf8')).toContain(
       "ROUTE_PERMISSIONS['/settings/security']"
     )
   })
+
   it('tracks exactly the seven subtrees added in this phase', () => {
     expect([...NEWLY_GUARDED]).toEqual([
       '/requests',

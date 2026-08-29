@@ -38,7 +38,7 @@ export const navConfig = defineNavigation([
         icon: 'support',
         colorClassName: 'text-cyan-500 dark:text-cyan-400',
         activeClassName: 'bg-cyan-500/12 ring-cyan-500/30',
-        requires: { permission: 'console:requests' },
+        requires: { permission: 'console:support' },
       },
       {
         key: 'security',

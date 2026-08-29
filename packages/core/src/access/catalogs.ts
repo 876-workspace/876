@@ -82,7 +82,7 @@ function defineConsolePermissionCatalog(): AppPermissionCatalog {
         label: 'Console',
         actions: [
           'access',
-          'requests',
+          'support',
           'settings',
           'billing',
           'users',
