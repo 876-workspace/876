@@ -14,7 +14,9 @@ import type { CrmTeamStatus } from '@/types/crm'
 import type { DirectoryMember } from '@/features/directory/types'
 
 import { TEAMS_SKELETON_COLUMNS } from './_components/teams-skeleton-columns'
-import { TeamsTable, type TeamRow } from './_components/teams-table'
+import type { TeamRow } from './_components/team-row'
+import { TeamSplit } from './_components/team-split'
+import { TeamSplitSkeleton } from './_components/team-split-skeleton'
 
 export const metadata = { title: 'Teams - Settings' }
 
@@ -28,11 +30,12 @@ function isTeamStatus(value: string | undefined): value is CrmTeamStatus {
   return value === 'ACTIVE' || value === 'ARCHIVED'
 }
 
-type Props = { searchParams: Promise<{ status?: string }> }
+type Props = { searchParams: Promise<{ status?: string; team?: string }> }
 
 export default async function TeamsPage({ searchParams }: Props) {
-  const { status } = await searchParams
+  const { status, team } = await searchParams
   const selectedStatus = isTeamStatus(status) ? status : 'all'
+  const selectedTeamId = team
 
   return (
     <Page>
@@ -52,17 +55,30 @@ export default async function TeamsPage({ searchParams }: Props) {
         refresh
       />
       <Suspense
-        fallback={<DataTableSkeleton columns={TEAMS_SKELETON_COLUMNS} />}
+        fallback={
+          selectedTeamId ? (
+            <TeamSplitSkeleton />
+          ) : (
+            <DataTableSkeleton columns={TEAMS_SKELETON_COLUMNS} />
+          )
+        }
       >
         <TeamsTableData
           status={selectedStatus === 'all' ? undefined : selectedStatus}
+          selectedTeamId={selectedTeamId}
         />
       </Suspense>
     </Page>
   )
 }
 
-async function TeamsTableData({ status }: { status?: CrmTeamStatus }) {
+async function TeamsTableData({
+  status,
+  selectedTeamId,
+}: {
+  status?: CrmTeamStatus
+  selectedTeamId?: string
+}) {
   const context = await requireCrmContext()
   const $876 = await get876Client()
   const [teamsResult, membersResult] = await Promise.all([
@@ -71,41 +87,49 @@ async function TeamsTableData({ status }: { status?: CrmTeamStatus }) {
   ])
   if (teamsResult.error) throw new Error(teamsResult.error.message)
 
-  const directory = new Map<string, DirectoryMember>(
-    (membersResult.data?.data ?? []).map((member) => {
-      const name =
+  const directoryList: DirectoryMember[] = (membersResult.data?.data ?? []).map(
+    (member) => ({
+      userId: member.user_id,
+      name:
         [member.first_name, member.last_name].filter(Boolean).join(' ') ||
         member.email ||
-        member.user_id
-      return [
         member.user_id,
-        {
-          userId: member.user_id,
-          name,
-          email: member.email,
-          avatar: member.avatar,
-        },
-      ]
+      email: member.email,
+      avatar: member.avatar,
     })
+  )
+
+  const directory = new Map<string, DirectoryMember>(
+    directoryList.map((member) => [member.userId, member])
   )
 
   const teams: TeamRow[] = teamsResult.data.data.map((team) => ({
     id: team.id,
     name: team.name,
-    members: (team.members ?? []).map(
-      (member) =>
-        directory.get(member.userId) ?? {
-          userId: member.userId,
-          name: member.userId,
-          email: null,
-          avatar: null,
-        }
-    ),
+    slug: team.slug,
+    description: team.description,
+    color: team.color,
+    members: (team.members ?? []).map((member) => ({
+      ...(directory.get(member.userId) ?? {
+        userId: member.userId,
+        name: member.userId,
+        email: null,
+        avatar: null,
+      }),
+      role: member.role,
+    })),
     isDefault: team.isDefault,
     autoAssign: team.autoAssign,
     status: team.status,
     createdAt: team.createdAt,
+    updatedAt: team.updatedAt,
   }))
 
-  return <TeamsTable teams={teams} />
+  return (
+    <TeamSplit
+      teams={teams}
+      directory={directoryList}
+      selectedId={selectedTeamId}
+    />
+  )
 }

@@ -29,7 +29,7 @@ function createTeamResult() {
   return {
     data: {
       object: 'team' as const,
-      id: 'crm_team_support_123',
+      id: 'team_support_123',
       tenantId: 'org_island_123',
       name: 'Customer Support',
       slug: 'customer-support',
@@ -81,7 +81,7 @@ describe('TeamForm', () => {
     })
     expect(mocks.replace).toHaveBeenCalledTimes(1)
     expect(mocks.replace).toHaveBeenCalledWith(
-      '/settings/teams/crm_team_support_123'
+      '/settings/teams/team_support_123'
     )
     expect(mocks.refresh).toHaveBeenCalledTimes(1)
   })
