@@ -110,7 +110,7 @@ export function WorkspaceShell({
       {/* Desktop Workspace Sidebar */}
       {isCollapsed ? (
         <aside className="hidden w-16 shrink-0 flex-col items-center py-4 pr-1 pl-3 transition-[width,padding] duration-200 ease-in-out lg:flex">
-          <div className="border-border/80 bg-background/90 sticky top-20 flex w-full flex-col items-center gap-2 rounded-2xl border p-2.5 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 dark:shadow-black/25 dark:ring-white/[0.06]">
+          <div className="border-border/80 bg-background/90 dark:bg-sidebar/90 sticky top-20 flex w-full flex-col items-center gap-2 rounded-2xl border p-2.5 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 dark:shadow-black/25 dark:ring-white/[0.06]">
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -129,7 +129,7 @@ export function WorkspaceShell({
                         />
                       </span>
                     )}
-                    <span className="bg-background/95 border-border/60 absolute inset-0 flex items-center justify-center rounded-xl border opacity-0 shadow-2xs transition-opacity duration-150 group-hover/btn:opacity-100">
+                    <span className="bg-background/95 dark:bg-sidebar/95 border-border/60 absolute inset-0 flex items-center justify-center rounded-xl border opacity-0 shadow-2xs transition-opacity duration-150 group-hover/btn:opacity-100">
                       <ChevronRight className="text-foreground size-3.5" />
                     </span>
                   </button>
@@ -147,7 +147,7 @@ export function WorkspaceShell({
         </aside>
       ) : (
         <aside className="hidden w-56 shrink-0 flex-col py-4 pr-2 pl-3 transition-[width,padding] duration-200 ease-in-out lg:flex lg:w-60">
-          <div className="border-border/80 bg-background/90 sticky top-20 flex w-full flex-col gap-2 rounded-2xl border p-3 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 dark:shadow-black/25 dark:ring-white/[0.06]">
+          <div className="border-border/80 bg-background/90 dark:bg-sidebar/90 sticky top-20 flex w-full flex-col gap-2 rounded-2xl border p-3 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 dark:shadow-black/25 dark:ring-white/[0.06]">
             <div className="flex items-center justify-between px-1 py-1">
               <div className="flex min-w-0 items-center gap-2">
                 {appLogo ?? (

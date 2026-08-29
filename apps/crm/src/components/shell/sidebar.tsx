@@ -1,59 +1,62 @@
 'use client'
 
-import Link from 'next/link'
-
-import { Logo } from '@876/ui/logo'
-import {
-  Sidebar as SidebarRoot,
-  SidebarContent,
-  SidebarGroup,
-  SidebarHeader,
-} from '@876/ui/sidebar'
-
 import { navConfig } from './nav-config'
 import { NavLink } from './nav-link'
 
-export function Sidebar({ orgName }: { orgName: string }) {
+export function Sidebar() {
   return (
-    <SidebarRoot collapsible="icon" className="bg-sidebar">
-      <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
-        <Link
-          href="/"
-          className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
+    <>
+      {/* Mobile Top Navigation (Horizontal, under Navbar) */}
+      <div className="border-border/70 bg-background/90 dark:bg-sidebar/90 flex w-full shrink-0 items-center justify-around border-b px-3 py-2 backdrop-blur-md sm:hidden">
+        <nav
+          aria-label="CRM mobile sections"
+          className="flex items-center gap-2"
         >
-          <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
-            <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
-          </span>
-          <span className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="text-sidebar-foreground block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em]">
-              {orgName}
-            </span>
-            <span className="text-muted-foreground block truncate text-xs">
-              CRM
-            </span>
-          </span>
-        </Link>
-      </SidebarHeader>
-
-      <SidebarContent className="flex flex-col px-3 pt-4 pb-4">
-        <nav aria-label="CRM sections" className="flex flex-1 flex-col gap-4">
-          {navConfig.map((group) => (
-            <SidebarGroup key={group.items[0]?.title} className="gap-1.5 p-0">
-              <div className="flex flex-col gap-1">
-                {group.items.map((item) => (
-                  <NavLink
-                    key={item.title}
-                    href={item.href}
-                    title={item.title}
-                    icon={item.icon}
-                    color={item.color}
-                  />
-                ))}
-              </div>
-            </SidebarGroup>
-          ))}
+          {navConfig
+            .flatMap((group) => group.items)
+            .map((item) => (
+              <NavLink
+                key={item.title}
+                href={item.href}
+                title={item.title}
+                icon={item.icon}
+                color={item.color}
+                colorClassName={item.colorClassName}
+                side="bottom"
+              />
+            ))}
         </nav>
-      </SidebarContent>
-    </SidebarRoot>
+      </div>
+
+      {/* Desktop Floating Sidebar (under Navbar) */}
+      <aside
+        aria-label="CRM sections"
+        className="hidden shrink-0 flex-col items-center py-4 pr-1 pl-3 sm:flex"
+      >
+        <div className="border-border/80 bg-background/90 dark:bg-sidebar/90 flex flex-col items-center gap-1.5 rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl dark:shadow-black/25 dark:ring-white/[0.06]">
+          {navConfig.map((group, groupIndex) => (
+            <div
+              key={group.items[0]?.title ?? groupIndex}
+              className="flex flex-col items-center gap-1.5"
+            >
+              {groupIndex > 0 && (
+                <div className="bg-border/60 my-0.5 h-px w-5" />
+              )}
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.title}
+                  href={item.href}
+                  title={item.title}
+                  icon={item.icon}
+                  color={item.color}
+                  colorClassName={item.colorClassName}
+                  side="right"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </aside>
+    </>
   )
 }

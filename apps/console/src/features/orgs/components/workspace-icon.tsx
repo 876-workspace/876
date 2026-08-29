@@ -1,7 +1,10 @@
 import {
   BarChart3,
+  CircleStackIcon,
   ClipboardList,
   CreditCard,
+  DocumentTextIcon,
+  RectangleGroup,
   Settings,
   TruckIcon,
   Users,
@@ -25,6 +28,10 @@ const ICONS: Record<WorkspaceIconKey, IconComponent> = {
   settings: Settings,
   billing: CreditCard,
   packages: TruckIcon,
+  items: CircleStackIcon,
+  teams: Users,
+  categories: RectangleGroup,
+  forms: DocumentTextIcon,
 }
 
 export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
@@ -34,6 +41,10 @@ export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
   settings: 'text-slate-500 dark:text-slate-400',
   billing: 'text-emerald-500 dark:text-emerald-400',
   packages: 'text-orange-500 dark:text-orange-400',
+  items: 'text-emerald-500 dark:text-emerald-400',
+  teams: 'text-indigo-500 dark:text-indigo-400',
+  categories: 'text-rose-500 dark:text-rose-400',
+  forms: 'text-teal-500 dark:text-teal-400',
 }
 
 export function workspaceIcon(key: WorkspaceIconKey): IconComponent {

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import { cookies } from 'next/headers'
+import Link from 'next/link'
 
 import { AppSwitcher, type AppSwitcherApp } from '@876/ui/app-switcher'
+import { Logo } from '@876/ui/logo'
 import { NavProgress } from '@876/ui/nav-progress'
 import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
-import { SidebarTrigger } from '@876/ui/sidebar'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 import {
   AppShell,
@@ -12,7 +12,6 @@ import {
   AppShellContent,
   AppShellHeader,
   AppShellMain,
-  AppShellSidebarArea,
 } from '@876/ui/app-shell'
 
 import type { CrmUiFeatures } from '@/types/features'
@@ -25,7 +24,7 @@ import type { SupportCategory } from './support-categories'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
 
-export async function Shell({
+export function Shell({
   children,
   orgName,
   user,
@@ -44,21 +43,23 @@ export async function Shell({
   uiFeatures: CrmUiFeatures
   supportCategories: SupportCategory[]
 }) {
-  const cookieStore = await cookies()
-  const sidebarCookie = cookieStore.get('sidebar_state')
-  const defaultSidebarOpen = sidebarCookie
-    ? sidebarCookie.value === 'true'
-    : true
-
   return (
-    <AppShell defaultOpen={defaultSidebarOpen}>
+    <AppShell defaultOpen={false}>
       <NavProgress />
-      <AppShellSidebarArea>
-        <Sidebar orgName={orgName} />
-      </AppShellSidebarArea>
       <AppShellContent>
         <AppShellHeader>
-          <SidebarTrigger />
+          <Link
+            href="/"
+            aria-label="CRM home"
+            className="focus-visible:ring-sidebar-ring flex items-center gap-2.5 rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+          >
+            <span className="border-border/60 bg-muted/20 flex size-8 shrink-0 items-center justify-center rounded-lg border shadow-2xs">
+              <Logo className="text-foreground text-[0.8125rem] leading-none" />
+            </span>
+            <span className="text-foreground hidden text-sm font-semibold tracking-tight sm:inline-block">
+              CRM
+            </span>
+          </Link>
 
           <div className="flex min-w-0 flex-1 items-center">
             {uiFeatures.searchBar && <TopbarSearch />}
@@ -107,7 +108,8 @@ export async function Shell({
             />
           </div>
         </AppShellHeader>
-        <AppShellBody>
+        <AppShellBody className="flex-col sm:flex-row">
+          <Sidebar />
           <AppShellMain>{children}</AppShellMain>
         </AppShellBody>
       </AppShellContent>

@@ -22,7 +22,16 @@
 
 /** Icon key a client component resolves to a component. */
 export type WorkspaceIconKey =
-  'dashboard' | 'customers' | 'requests' | 'settings' | 'billing' | 'packages'
+  | 'dashboard'
+  | 'customers'
+  | 'requests'
+  | 'settings'
+  | 'billing'
+  | 'packages'
+  | 'items'
+  | 'teams'
+  | 'categories'
+  | 'forms'
 
 /** One navigable area inside an app's workspace. */
 export type WorkspaceSection = {
@@ -59,6 +68,7 @@ export const APP_WORKSPACES = [
       { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
       { label: 'Customers', segment: 'customers', iconKey: 'customers' },
       { label: 'Requests', segment: 'requests', iconKey: 'requests' },
+      { label: 'Forms', segment: 'forms', iconKey: 'forms' },
     ],
   },
   {
@@ -71,6 +81,7 @@ export const APP_WORKSPACES = [
     sections: [
       { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
       { label: 'Subscriptions', segment: 'subscriptions', iconKey: 'requests' },
+      { label: 'Items', segment: 'items', iconKey: 'items' },
       { label: 'Accounts', segment: 'accounts', iconKey: 'settings' },
     ],
   },
@@ -83,6 +94,7 @@ export const APP_WORKSPACES = [
     sections: [
       { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
       { label: 'Invoices', segment: 'invoices', iconKey: 'billing' },
+      { label: 'Items', segment: 'items', iconKey: 'items' },
     ],
   },
   {

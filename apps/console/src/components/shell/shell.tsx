@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { cookies } from 'next/headers'
 
 import { MobileNav } from '@/components/shell/mobile-nav'
 import { Sidebar } from '@/components/shell/sidebar'
@@ -9,10 +8,8 @@ import { TopbarActions } from '@/components/shell/topbar-actions'
 import { TopbarSearch } from '@/components/shell/topbar-search'
 import { Logo } from '@876/ui/logo'
 import { NavProgress } from '@876/ui/nav-progress'
-import { SidebarTrigger } from '@876/ui/sidebar'
 import {
   AppShell,
-  AppShellSidebarArea,
   AppShellContent,
   AppShellHeader,
   AppShellBody,
@@ -55,18 +52,9 @@ export async function Shell({
     chat: boolean
   }
 }) {
-  const cookieStore = await cookies()
-  const sidebarCookie = cookieStore.get('sidebar_state')
-  const defaultSidebarOpen = sidebarCookie
-    ? sidebarCookie.value === 'true'
-    : true
-
   return (
-    <AppShell defaultOpen={defaultSidebarOpen}>
+    <AppShell defaultOpen={false}>
       <NavProgress />
-      <AppShellSidebarArea className="hidden md:contents">
-        <Sidebar />
-      </AppShellSidebarArea>
 
       <AppShellContent>
         <AppShellHeader>
@@ -80,7 +68,19 @@ export async function Shell({
               <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
             </Link>
           </div>
-          <SidebarTrigger className="hidden md:flex" />
+
+          <Link
+            href="/"
+            aria-label="Console home"
+            className="focus-visible:ring-sidebar-ring hidden items-center gap-2.5 rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden md:flex"
+          >
+            <span className="border-border/60 bg-muted/20 flex size-8 shrink-0 items-center justify-center rounded-lg border shadow-2xs">
+              <Logo className="text-foreground text-[0.8125rem] leading-none" />
+            </span>
+            <span className="text-foreground text-sm font-semibold tracking-tight">
+              Console
+            </span>
+          </Link>
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
             {uiFeatures.searchBar && <TopbarSearch />}
@@ -100,8 +100,9 @@ export async function Shell({
           </div>
         </AppShellHeader>
 
-        {/* Navbar spans full content width; dock sits under it beside main. */}
-        <AppShellBody>
+        {/* Navbar spans full content width; floating sidebar sits under it beside main. */}
+        <AppShellBody className="flex-col md:flex-row">
+          <Sidebar />
           <AppShellMain>{children}</AppShellMain>
           {widgetRail}
         </AppShellBody>
