@@ -1,9 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
+import { Button } from '@876/ui/button'
 import { TableCell, TableRow } from '@876/ui/table'
+
+import { client } from '@/lib/client'
 
 const ROLE_LABELS: Record<string, string> = {
   staff: 'Staff',
@@ -12,23 +16,29 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
 }
 
-const ROLE_BADGE_CLASS: Record<string, string> = {
-  super_admin:
-    'border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-400',
-  owner:
-    'border-violet-400/40 bg-violet-400/10 text-violet-700 dark:text-violet-400',
-  admin: 'border-sky-400/40 bg-sky-400/10 text-sky-700 dark:text-sky-400',
-  staff:
-    'border-emerald-400/40 bg-emerald-400/10 text-emerald-700 dark:text-emerald-400',
+const AFFILIATION_LABELS: Record<string, string> = {
+  staff: 'Staff',
+  contractor: 'Contractor',
+  external: 'External',
 }
 
-function initialsOf(user: {
-  first_name: string
-  last_name: string
+export type TeamRow = {
+  id: string
+  firstName: string
+  lastName: string
   email: string
-}): string {
+  username: string | null
+  avatar: string | null
+  position: string | null
+  affiliation: string
+  role: string
+  expiresAt: number | null
+  resolved: boolean
+}
+
+function initialsOf(user: TeamRow): string {
   return (
-    [user.first_name?.[0], user.last_name?.[0]]
+    [user.firstName?.[0], user.lastName?.[0]]
       .filter(Boolean)
       .join('')
       .toUpperCase() ||
@@ -37,31 +47,37 @@ function initialsOf(user: {
   )
 }
 
-export function TeamTableRow({
-  user,
-}: {
-  user: {
-    id: string
-    first_name: string
-    last_name: string
-    email: string
-    username: string | null
-    avatar: string | null
-    role: string
-  }
-}) {
+function formatExpiry(value: number | null, affiliation: string): string {
+  if (affiliation === 'staff' || value === null) return '—'
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(value * 1000))
+}
+
+export function TeamTableRow({ user }: { user: TeamRow }) {
   const router = useRouter()
-  const displayName =
-    [user.first_name, user.last_name].filter(Boolean).join(' ') || '—'
+  const [revoking, setRevoking] = useState(false)
+  const displayName = user.resolved
+    ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+    : 'Unresolved account'
   const href = `/settings/users/${user.id}`
+
+  async function revokeGrant() {
+    setRevoking(true)
+    const result = await client.team.revoke(user.id)
+    setRevoking(false)
+    if (!result.error) router.refresh()
+  }
 
   return (
     <TableRow
       className="hover:bg-muted/40 cursor-pointer transition-colors"
       onClick={() => router.push(href)}
       tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') router.push(href)
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') router.push(href)
       }}
       role="link"
       aria-label={`View team member ${displayName}`}
@@ -69,24 +85,50 @@ export function TeamTableRow({
       <TableCell className="py-4 pr-0 pl-5">
         <Avatar className="size-8">
           {user.avatar && <AvatarImage src={user.avatar} alt="" />}
-          <AvatarFallback className="text-xs">
-            {initialsOf(user)}
-          </AvatarFallback>
+          <AvatarFallback className="text-xs">{initialsOf(user)}</AvatarFallback>
         </Avatar>
       </TableCell>
       <TableCell className="px-5 py-4">
         <span className="font-medium">{displayName}</span>
-        {user.username && (
+        {user.resolved && user.username ? (
           <p className="text-muted-foreground text-xs">@{user.username}</p>
-        )}
+        ) : null}
+        {!user.resolved ? (
+          <p className="text-muted-foreground font-mono text-xs">{user.id}</p>
+        ) : null}
       </TableCell>
       <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
-        {user.email}
+        {user.email || '—'}
+      </TableCell>
+      <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
+        {user.position || '—'}
       </TableCell>
       <TableCell className="px-5 py-4">
-        <Badge variant="outline" className={ROLE_BADGE_CLASS[user.role] ?? ''}>
-          {ROLE_LABELS[user.role] ?? user.role}
+        <Badge variant="outline">
+          {AFFILIATION_LABELS[user.affiliation] ?? user.affiliation}
         </Badge>
+      </TableCell>
+      <TableCell className="px-5 py-4">
+        <Badge variant="outline">{ROLE_LABELS[user.role] ?? user.role}</Badge>
+      </TableCell>
+      <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
+        <div className="flex items-center justify-between gap-3">
+          <span>{formatExpiry(user.expiresAt, user.affiliation)}</span>
+          {!user.resolved ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              disabled={revoking}
+              onClick={(event) => {
+                event.stopPropagation()
+                void revokeGrant()
+              }}
+            >
+              Revoke
+            </Button>
+          ) : null}
+        </div>
       </TableCell>
     </TableRow>
   )
