@@ -118,12 +118,21 @@ function vercelKeys(project) {
       { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
     )
 
+    // The Vercel CLI styles its table with ANSI escapes, so a raw split leaves
+    // the key wrapped in control codes and every name fails the test below —
+    // which reads as "every variable is missing" rather than as a parse failure.
+    const plain = output.replace(/\u001B\[[0-9;]*m/g, '')
+
     const keys = new Set()
-    for (const line of output.split('\n')) {
+    for (const line of plain.split('\n')) {
       const key = line.trim().split(/\s+/)[0]
       if (/^[A-Z][A-Z0-9_]*$/.test(key ?? '')) keys.add(key)
     }
-    return keys
+
+    // A successful listing that yields no keys means the format changed, not
+    // that the project is empty. Report it as unreadable so a parser drift can
+    // never be presented as a configuration gap.
+    return keys.size > 0 ? keys : null
   } catch {
     return null
   }
