@@ -37,15 +37,56 @@ function createLargeDirectory(count: number): DirectoryMember[] {
   }))
 }
 
+/** The field itself is the search input — there is no separate trigger. */
+function field() {
+  return screen.getByRole('combobox', { name: 'Choose member' })
+}
+
 async function openPicker() {
   const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: 'Choose member' }))
+  await user.click(field())
   return user
 }
 
 describe('MemberPicker', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('types into the field itself rather than opening a second search box', async () => {
+    render(
+      <MemberPicker
+        members={createMembers()}
+        value={null}
+        onSelect={vi.fn()}
+        placeholder="Choose member"
+        emptyLabel="No members found"
+      />
+    )
+    const user = await openPicker()
+
+    // One text input for the whole control, before and after opening.
+    expect(screen.getAllByRole('combobox')).toHaveLength(1)
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0)
+
+    await user.type(field(), 'nia')
+
+    expect(field()).toHaveValue('nia')
+    expect(screen.getAllByRole('combobox')).toHaveLength(1)
+  })
+
+  it('shows the selected member name in the field', async () => {
+    render(
+      <MemberPicker
+        members={createMembers()}
+        value="user_nia_789"
+        onSelect={vi.fn()}
+        placeholder="Choose member"
+        emptyLabel="No members found"
+      />
+    )
+
+    expect(field()).toHaveValue('Nia Campbell')
   })
 
   it('renders every member in the open picker', async () => {
@@ -81,7 +122,7 @@ describe('MemberPicker', () => {
     )
     const user = await openPicker()
 
-    await user.type(screen.getByPlaceholderText('Choose member'), 'dario')
+    await user.type(field(), 'dario')
 
     expect(screen.getByText('Dario Bennett')).toBeInTheDocument()
     expect(screen.queryByText('Althea Morgan')).not.toBeInTheDocument()
@@ -138,7 +179,7 @@ describe('MemberPicker', () => {
     )
     const user = await openPicker()
     expect(screen.queryByText('Unassigned')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Choose member' }))
+    await user.click(field())
 
     rerender(
       <MemberPicker
@@ -150,7 +191,7 @@ describe('MemberPicker', () => {
         allowUnassigned
       />
     )
-    await user.click(screen.getByRole('button', { name: 'Choose member' }))
+    await user.click(field())
 
     expect(
       screen.getByRole('option', { name: 'Unassigned' })
@@ -170,9 +211,8 @@ describe('MemberPicker', () => {
 
     await openPicker()
 
-    expect(
-      screen.getByText('Search 40 people by name or email')
-    ).toBeInTheDocument()
+    // Base UI appends a word joiner inside Empty, so match loosely.
+    expect(screen.getByText(/Type to search 40 people/)).toBeInTheDocument()
     expect(screen.queryByText('Member 0')).not.toBeInTheDocument()
     expect(screen.queryByText('Member 39')).not.toBeInTheDocument()
   })
@@ -189,15 +229,12 @@ describe('MemberPicker', () => {
     )
     const user = await openPicker()
 
-    await user.type(
-      screen.getByPlaceholderText('Search by name or email'),
-      'member 17'
-    )
+    await user.type(field(), 'Member 17')
 
     expect(screen.getByText('Member 17')).toBeInTheDocument()
     expect(screen.queryByText('Member 18')).not.toBeInTheDocument()
     expect(
-      screen.queryByText('Search 40 people by name or email')
+      screen.queryByText(/Type to search 40 people/)
     ).not.toBeInTheDocument()
   })
 
@@ -213,15 +250,9 @@ describe('MemberPicker', () => {
     )
     const user = await openPicker()
 
-    await user.type(
-      screen.getByPlaceholderText('Search by name or email'),
-      'member'
-    )
+    await user.type(field(), 'Member')
 
     expect(screen.getAllByRole('option')).toHaveLength(50)
-    expect(
-      screen.getByText('10 more — keep typing to narrow the list.')
-    ).toBeInTheDocument()
   })
 
   it('counts only selectable people when deciding to require a query', async () => {
@@ -255,7 +286,7 @@ describe('MemberPicker', () => {
     )
     const user = await openPicker()
 
-    await user.type(screen.getByPlaceholderText('Choose member'), 'zzzz')
+    await user.type(field(), 'zzzz')
 
     expect(screen.getByText('No members found')).toBeInTheDocument()
     expect(screen.queryByText('Althea Morgan')).not.toBeInTheDocument()
