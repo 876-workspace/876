@@ -6,6 +6,7 @@ function serverSettings(options?: {
   financeProvisioningDisabled?: boolean
   url?: string
   internalKey?: string
+  featureFlagSyncEnabled?: boolean
 }) {
   return {
     port: 4000,
@@ -16,6 +17,11 @@ function serverSettings(options?: {
       internalKey: options?.internalKey ?? 'shared-secret',
       financeProvisioningDisabled:
         options?.financeProvisioningDisabled ?? false,
+    },
+    posthog: { projectApiKey: '', host: '', personalApiKey: '' },
+    featureFlags: {
+      syncEnabled: options?.featureFlagSyncEnabled ?? false,
+      syncIntervalSeconds: 300,
     },
   }
 }
@@ -138,6 +144,28 @@ describe('Server Lifecycle', () => {
     })
 
     expect(startBillingWorkerMock).toHaveBeenCalledOnce()
+
+    await lifecycle.stop('SIGTERM')
+  })
+
+  it('starts feature-flag sync when enabled', async () => {
+    const { createAppMock } = appHarness()
+    const startBillingWorkerMock = workerStarter()
+    const startFinanceWorkerMock = workerStarter()
+    const startFeatureFlagSyncWorkerMock = workerStarter()
+
+    const lifecycle = createServerLifecycle({
+      createApp: createAppMock,
+      getSettings: vi.fn(() =>
+        serverSettings({ featureFlagSyncEnabled: true })
+      ) as unknown as typeof import('../config').getSettings,
+      startBillingWorker: startBillingWorkerMock,
+      startFinanceWorker: startFinanceWorkerMock,
+      startFeatureFlagSyncWorker: startFeatureFlagSyncWorkerMock,
+      disconnectDb: vi.fn().mockResolvedValue(undefined),
+    })
+
+    expect(startFeatureFlagSyncWorkerMock).toHaveBeenCalledOnce()
 
     await lifecycle.stop('SIGTERM')
   })
