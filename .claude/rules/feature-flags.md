@@ -19,6 +19,18 @@ alone - in PostHog, in the local `features` catalog, and in code.
   and every code reference. Never let them drift; a rename touches all three
   plus the seeds.
 
+## Evaluation and sync
+
+- **PostHog evaluates the rollout dimension** for identified server-side calls,
+  so it records feature-flag exposures. If PostHog is unavailable, evaluation
+  falls back to the local feature state without failing the request.
+- **Local governance is always applied on top:** the local kill switch, org and
+  user grants, parent/child checks, and module entitlements still win over a
+  rollout decision.
+- The API's background feature-flag sync worker copies PostHog rollout state
+  into the local catalog. It never creates or deletes local flags, keeping that
+  catalog usable for a future provider migration.
+
 ## Key format
 
 ```
