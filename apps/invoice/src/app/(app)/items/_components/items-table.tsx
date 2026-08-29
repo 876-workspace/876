@@ -96,7 +96,7 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
     {
       id: 'actions',
       header: () => <span className="sr-only">Actions</span>,
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <div className="flex justify-end">
           <ResourceRowLink
             href={`/items/${row.original.id}`}
