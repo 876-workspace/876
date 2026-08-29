@@ -5,7 +5,11 @@ export {
   isCrmIntegrationScope,
 } from './integration-scopes'
 export type { CrmIntegrationScope } from './integration-scopes'
-export { CRM_MODULE_KEYS, crmModuleCatalog } from './modules'
+export {
+  CRM_EXCLUDED_MODULE_KEYS,
+  CRM_MODULE_KEYS,
+  crmModuleCatalog,
+} from './modules'
 export type { CrmModuleKey } from './modules'
 export {
   crmRequestSchema,
