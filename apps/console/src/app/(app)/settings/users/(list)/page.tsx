@@ -19,10 +19,9 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { service } from '@/lib/service'
+import { loadTeamListData } from '@/lib/access/team-list-data'
 import type { TeamGrantStatus } from '@/lib/service/team/list'
 import { TeamTableRow, type TeamRow } from '../_components/member-row'
 import { TEAM_SKELETON_COLUMNS } from '../_components/team-skeleton-columns'
@@ -40,9 +39,7 @@ function isTeamGrantStatus(value: string | undefined): value is TeamGrantStatus 
   return value === 'active' || value === 'suspended' || value === 'expired'
 }
 
-type Props = {
-  searchParams: Promise<{ status?: string }>
-}
+type Props = { searchParams: Promise<{ status?: string }> }
 
 export default async function TeamSettingsPage({ searchParams }: Props) {
   const { status } = await searchParams
@@ -66,46 +63,21 @@ export default async function TeamSettingsPage({ searchParams }: Props) {
         refresh
       />
       <Suspense fallback={<DataTableSkeleton columns={TEAM_SKELETON_COLUMNS} />}>
-        <TeamTableData
-          status={selectedStatus === 'all' ? undefined : selectedStatus}
-        />
+        <TeamTableData status={selectedStatus === 'all' ? undefined : selectedStatus} />
       </Suspense>
     </Page>
   )
 }
 
 async function TeamTableData({ status }: { status?: TeamGrantStatus }) {
-  const grants = await service.team.list({ status })
-  const ids = grants.map((grant) => grant.userId)
-  const identityResult =
-    ids.length > 0 ? await $876.users.admin.list({ ids, limit: ids.length }) : null
-  const identities = identityResult?.data?.data ?? []
-  const identityById = new Map(identities.map((identity) => [identity.id, identity]))
-
-  const teamMembers: TeamRow[] = grants.map((grant) => {
-    const identity = identityById.get(grant.userId)
-    return {
-      id: grant.userId,
-      firstName: identity?.first_name ?? '',
-      lastName: identity?.last_name ?? '',
-      email: identity?.email ?? '',
-      username: identity?.username ?? null,
-      avatar: identity?.avatar ?? null,
-      position: grant.title,
-      affiliation: grant.affiliation,
-      role: grant.roleName,
-      expiresAt: grant.expiresAt === null ? null : Number(grant.expiresAt),
-      resolved: Boolean(identity),
-    }
-  })
+  const { rows, staffPositionsUnavailable } = await loadTeamListData(status)
+  const teamMembers: TeamRow[] = rows
 
   if (teamMembers.length === 0) {
     return (
       <Empty>
         <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <Settings />
-          </EmptyMedia>
+          <EmptyMedia variant="icon"><Settings /></EmptyMedia>
           <EmptyTitle>No team members</EmptyTitle>
           <EmptyDescription>No Console access grants match this view.</EmptyDescription>
         </EmptyHeader>
@@ -114,15 +86,23 @@ async function TeamTableData({ status }: { status?: TeamGrantStatus }) {
   }
 
   return (
-    <div className="876-card overflow-hidden">
-      <Table>
-        <TeamTableHeader />
-        <TableBody>
-          {teamMembers.map((user) => (
-            <TeamTableRow key={user.id} user={user} />
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-3">
+      {staffPositionsUnavailable ? (
+        <div
+          role="status"
+          className="border-border bg-muted/40 text-muted-foreground rounded-md border px-3 py-2 text-[0.8125rem]"
+        >
+          Staff positions are temporarily unavailable. Access grants and other Team details are still current.
+        </div>
+      ) : null}
+      <div className="876-card overflow-hidden">
+        <Table>
+          <TeamTableHeader />
+          <TableBody>
+            {teamMembers.map((user) => <TeamTableRow key={user.id} user={user} />)}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
@@ -131,9 +111,7 @@ function TeamTableHeader() {
   return (
     <TableHeader className="876-header-row">
       <TableRow>
-        <TableHead className="w-12 px-5 py-3.5">
-          <span className="sr-only">Avatar</span>
-        </TableHead>
+        <TableHead className="w-12 px-5 py-3.5"><span className="sr-only">Avatar</span></TableHead>
         <TableHead className="px-5 py-3.5">Name</TableHead>
         <TableHead className="px-5 py-3.5">Email</TableHead>
         <TableHead className="px-5 py-3.5">Position</TableHead>
