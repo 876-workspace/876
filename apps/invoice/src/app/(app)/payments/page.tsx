@@ -110,12 +110,15 @@ async function PaymentsTableData() {
     },
     amount: (p.amount as string) ?? '0',
     currency: String(p.currency ?? 'JMD'),
+    // A payment with no recorded date renders an em dash. Falling back to
+    // Date.now() showed a fabricated date, and read the clock during render,
+    // so the value differed between the server and client passes.
     paymentDate:
       typeof p.paymentDate === 'number'
-        ? (p.paymentDate as number)
+        ? p.paymentDate
         : typeof p.createdAt === 'number'
-          ? (p.createdAt as number)
-          : Date.now() / 1000,
+          ? p.createdAt
+          : null,
     status: String(p.status ?? 'RECEIVED'),
     depositAccount: String(
       (p.depositAccount as Record<string, unknown>)?.name ??
