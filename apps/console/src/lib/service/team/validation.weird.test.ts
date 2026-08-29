@@ -6,41 +6,56 @@ describe('validateTeamGrant — weird edge cases', () => {
   const now = BigInt(1_000_000)
 
   it('accepts staff with no extras (happy path)', () => {
-    const res = validateTeamGrant({}, now)
+    const res = validateTeamGrant({}, 'admin', now)
     expect(res.error).toBeNull()
     expect(res.data?.affiliation).toBe('staff')
   })
 
   it('staff with title fails (even single char)', () => {
-    const res = validateTeamGrant({ affiliation: 'staff', title: 'a' }, now)
+    const res = validateTeamGrant(
+      { affiliation: 'staff', title: 'a' },
+      'admin',
+      now
+    )
     expect(res.error?.code).toBe('team/staff-title-not-allowed')
   })
   it('staff with spaces-only title is treated as null and passes', () => {
-    const res = validateTeamGrant({ affiliation: 'staff', title: '   ' }, now)
+    const res = validateTeamGrant(
+      { affiliation: 'staff', title: '   ' },
+      'admin',
+      now
+    )
     expect(res.error).toBeNull()
     expect(res.data?.title).toBeNull()
   })
   it('staff with unicode title fails', () => {
     expect(
-      validateTeamGrant({ affiliation: 'staff', title: 'CEO 👑' }, now).error
-        ?.code
+      validateTeamGrant({ affiliation: 'staff', title: 'CEO 👑' }, 'admin', now)
+        .error?.code
     ).toBe('team/staff-title-not-allowed')
   })
   it('staff with 10k title fails (still staff-title-not-allowed)', () => {
     expect(
-      validateTeamGrant({ affiliation: 'staff', title: 'a'.repeat(10000) }, now)
-        .error?.code
+      validateTeamGrant(
+        { affiliation: 'staff', title: 'a'.repeat(10000) },
+        'admin',
+        now
+      ).error?.code
     ).toBe('team/staff-title-not-allowed')
   })
   it('rejects invalid affiliation numeric', () => {
     expect(
-      validateTeamGrant({ affiliation: 42 as unknown as TeamAffiliation }, now)
-        .error?.code
+      validateTeamGrant(
+        { affiliation: 42 as unknown as TeamAffiliation },
+        'admin',
+        now
+      ).error?.code
     ).toBe('team/invalid-affiliation')
   })
   it('treats null affiliation as staff (nullish coalescing defaults)', () => {
     const res = validateTeamGrant(
       { affiliation: null as unknown as TeamAffiliation },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -48,14 +63,18 @@ describe('validateTeamGrant — weird edge cases', () => {
   })
   it('rejects invalid affiliation empty string', () => {
     expect(
-      validateTeamGrant({ affiliation: '' as unknown as TeamAffiliation }, now)
-        .error?.code
+      validateTeamGrant(
+        { affiliation: '' as unknown as TeamAffiliation },
+        'admin',
+        now
+      ).error?.code
     ).toBe('team/invalid-affiliation')
   })
   it('rejects affiliation with spaces', () => {
     expect(
       validateTeamGrant(
         { affiliation: ' staff' as unknown as TeamAffiliation },
+        'admin',
         now
       ).error?.code
     ).toBe('team/invalid-affiliation')
@@ -64,6 +83,7 @@ describe('validateTeamGrant — weird edge cases', () => {
     expect(
       validateTeamGrant(
         { affiliation: 'Staff' as unknown as TeamAffiliation },
+        'admin',
         now
       ).error?.code
     ).toBe('team/invalid-affiliation')
@@ -72,18 +92,19 @@ describe('validateTeamGrant — weird edge cases', () => {
     expect(
       validateTeamGrant(
         { affiliation: '__proto__' as unknown as TeamAffiliation },
+        'admin',
         now
       ).error?.code
     ).toBe('team/invalid-affiliation')
   })
   it('contractor without expiry fails', () => {
     expect(
-      validateTeamGrant({ affiliation: 'contractor' }, now).error?.code
+      validateTeamGrant({ affiliation: 'contractor' }, 'admin', now).error?.code
     ).toBe('team/expiry-required')
   })
   it('external without expiry fails', () => {
     expect(
-      validateTeamGrant({ affiliation: 'external' }, now).error?.code
+      validateTeamGrant({ affiliation: 'external' }, 'admin', now).error?.code
     ).toBe('team/expiry-required')
   })
   it('contractor with expiry in past fails', () => {
@@ -94,6 +115,7 @@ describe('validateTeamGrant — weird edge cases', () => {
           expiresAt: now - BigInt(1),
           justification: 'need',
         },
+        'admin',
         now
       ).error?.code
     ).toBe('team/expiry-invalid')
@@ -102,6 +124,7 @@ describe('validateTeamGrant — weird edge cases', () => {
     expect(
       validateTeamGrant(
         { affiliation: 'contractor', expiresAt: now, justification: 'need' },
+        'admin',
         now
       ).error?.code
     ).toBe('team/expiry-invalid')
@@ -113,6 +136,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(1),
         justification: 'need',
       },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -125,6 +149,7 @@ describe('validateTeamGrant — weird edge cases', () => {
           expiresAt: now + BigInt(100),
           justification: null,
         },
+        'admin',
         now
       ).error?.code
     ).toBe('team/justification-required')
@@ -137,6 +162,7 @@ describe('validateTeamGrant — weird edge cases', () => {
           expiresAt: now + BigInt(100),
           justification: '   ',
         },
+        'admin',
         now
       ).error?.code
     ).toBe('team/justification-required')
@@ -148,6 +174,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(100),
         justification: '  urgent need  ',
       },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -158,6 +185,7 @@ describe('validateTeamGrant — weird edge cases', () => {
     expect(
       validateTeamGrant(
         { affiliation: 'external', expiresAt: far, justification: 'long' },
+        'admin',
         now
       ).error
     ).toBeNull()
@@ -166,6 +194,7 @@ describe('validateTeamGrant — weird edge cases', () => {
     expect(
       validateTeamGrant(
         { affiliation: 'contractor', expiresAt: BigInt(0), justification: 'x' },
+        'admin',
         now
       ).error?.code
     ).toBe('team/expiry-invalid')
@@ -178,6 +207,7 @@ describe('validateTeamGrant — weird edge cases', () => {
           expiresAt: BigInt(-100),
           justification: 'x',
         },
+        'admin',
         now
       ).error?.code
     ).toBe('team/expiry-invalid')
@@ -185,6 +215,7 @@ describe('validateTeamGrant — weird edge cases', () => {
   it('staff ignores expiry and justification (even if provided)', () => {
     const res = validateTeamGrant(
       { affiliation: 'staff', expiresAt: now - BigInt(100), justification: '' },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -199,6 +230,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(10),
         justification: 'j',
       },
+      'admin',
       now
     )
     expect(res.data?.title).toBe('Contractor Title')
@@ -211,6 +243,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(10),
         justification: 'j',
       },
+      'admin',
       now
     )
     expect(res.data?.title).toBeNull()
@@ -218,11 +251,13 @@ describe('validateTeamGrant — weird edge cases', () => {
   it('invitedBy trimmed and null fallback', () => {
     const res = validateTeamGrant(
       { affiliation: 'staff', invitedBy: '  user_123  ' },
+      'admin',
       now
     )
     expect(res.data?.invitedBy).toBe('user_123')
     const res2 = validateTeamGrant(
       { affiliation: 'staff', invitedBy: '   ' },
+      'admin',
       now
     )
     expect(res2.data?.invitedBy).toBeNull()
@@ -231,6 +266,7 @@ describe('validateTeamGrant — weird edge cases', () => {
     expect(
       validateTeamGrant(
         { affiliation: Symbol('staff') as unknown as TeamAffiliation },
+        'admin',
         now
       ).error?.code
     ).toBe('team/invalid-affiliation')
@@ -242,6 +278,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(10),
         justification: 'a'.repeat(10000),
       },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -253,6 +290,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(10),
         justification: 'need\u0000',
       },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -264,13 +302,15 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(10),
         justification: 'need 😀',
       },
+      'admin',
       now
     )
     expect(res.error).toBeNull()
   })
   it('handles affiliation undefined defaults to staff', () => {
     expect(
-      validateTeamGrant({ affiliation: undefined }, now).data?.affiliation
+      validateTeamGrant({ affiliation: undefined }, 'admin', now).data
+        ?.affiliation
     ).toBe('staff')
   })
   it('handles input with extra unknown keys (ignored)', () => {
@@ -279,6 +319,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         affiliation: 'staff',
         extra: 'evil',
       } as unknown as Partial<TeamGrantFields>,
+      'admin',
       now
     )
     expect(res.error).toBeNull()
@@ -288,7 +329,7 @@ describe('validateTeamGrant — weird edge cases', () => {
     input.affiliation = 'contractor'
     input.expiresAt = now + BigInt(10)
     input.justification = 'need'
-    expect(validateTeamGrant(input, now).error).toBeNull()
+    expect(validateTeamGrant(input, 'admin', now).error).toBeNull()
   })
   it('handles frozen input', () => {
     const input = Object.freeze({
@@ -296,15 +337,20 @@ describe('validateTeamGrant — weird edge cases', () => {
       expiresAt: now + BigInt(10),
       justification: 'need',
     })
-    expect(validateTeamGrant(input, now).error).toBeNull()
+    expect(validateTeamGrant(input, 'admin', now).error).toBeNull()
   })
   it('handles nowSeconds default (Date.now) not crashing for staff', () => {
-    expect(validateTeamGrant({ affiliation: 'staff' }).error).toBeNull()
+    expect(
+      validateTeamGrant({ affiliation: 'staff' }, 'admin').error
+    ).toBeNull()
   })
   it('staff with __proto__ title weird (still title present fails)', () => {
     expect(
-      validateTeamGrant({ affiliation: 'staff', title: '__proto__' }, now).error
-        ?.code
+      validateTeamGrant(
+        { affiliation: 'staff', title: '__proto__' },
+        'admin',
+        now
+      ).error?.code
     ).toBe('team/staff-title-not-allowed')
   })
   it('contractor with expiresAt as number (not bigint) coerces in comparison (JS allows mixed BigInt/Number)', () => {
@@ -315,6 +361,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: 123 as unknown as bigint,
         justification: 'j',
       },
+      'admin',
       now
     )
     expect(res.error?.code).toBe('team/expiry-invalid')
@@ -326,6 +373,7 @@ describe('validateTeamGrant — weird edge cases', () => {
         expiresAt: now + BigInt(10),
         justification: '\u202e',
       },
+      'admin',
       now
     )
     expect(res.error).toBeNull()

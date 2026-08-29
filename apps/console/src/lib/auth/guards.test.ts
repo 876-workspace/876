@@ -413,7 +413,9 @@ describe('Console auth guards', () => {
   it('fails staff employment verification open on a thrown outage and captures one exception', async () => {
     process.env.CONSOLE_STAFF_ORGANIZATION_ID = 'org_efesto'
     mocks.retrieveTeamMember.mockResolvedValue(activeMember())
-    mocks.listMemberships.mockRejectedValue(new Error('Membership API unavailable'))
+    mocks.listMemberships.mockRejectedValue(
+      new Error('Membership API unavailable')
+    )
 
     const result = await requireConsoleAccount(activeAccess.id)
 
@@ -433,7 +435,10 @@ describe('Console auth guards', () => {
 
   it('allows a contractor with a future expiry without checking employment', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ affiliation: 'contractor', expiresAt: NOW_SECONDS + 60n })
+      activeMember({
+        affiliation: 'contractor',
+        expiresAt: NOW_SECONDS + BigInt(60),
+      })
     )
 
     const result = await requireConsoleAccount(activeAccess.id)
@@ -444,7 +449,10 @@ describe('Console auth guards', () => {
 
   it('denies a contractor with an expiry in the past', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ affiliation: 'contractor', expiresAt: NOW_SECONDS - 1n })
+      activeMember({
+        affiliation: 'contractor',
+        expiresAt: NOW_SECONDS - BigInt(1),
+      })
     )
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
@@ -474,7 +482,10 @@ describe('Console auth guards', () => {
 
   it('allows an external operator with a future expiry without checking employment', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ affiliation: 'external', expiresAt: NOW_SECONDS + 60n })
+      activeMember({
+        affiliation: 'external',
+        expiresAt: NOW_SECONDS + BigInt(60),
+      })
     )
 
     const result = await requireConsoleAccount(activeAccess.id)
@@ -485,7 +496,10 @@ describe('Console auth guards', () => {
 
   it('denies an external operator with an expiry in the past', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ affiliation: 'external', expiresAt: NOW_SECONDS - 1n })
+      activeMember({
+        affiliation: 'external',
+        expiresAt: NOW_SECONDS - BigInt(1),
+      })
     )
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
@@ -515,7 +529,10 @@ describe('Console auth guards', () => {
 
   it('denies a non-staff grant on the request after its expiry passes', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ affiliation: 'contractor', expiresAt: NOW_SECONDS + 60n })
+      activeMember({
+        affiliation: 'contractor',
+        expiresAt: NOW_SECONDS + BigInt(60),
+      })
     )
 
     const first = await requireConsoleAccount(activeAccess.id)
@@ -531,7 +548,7 @@ describe('Console auth guards', () => {
   it('denies staff with an explicit expired grant before employment verification', async () => {
     process.env.CONSOLE_STAFF_ORGANIZATION_ID = 'org_efesto'
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ affiliation: 'staff', expiresAt: NOW_SECONDS - 1n })
+      activeMember({ affiliation: 'staff', expiresAt: NOW_SECONDS - BigInt(1) })
     )
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({

@@ -19,7 +19,7 @@ vi.mock('@/lib/db', () => ({
 import { create } from './create'
 import { update } from './update'
 
-const future = 4_000_000_000n
+const future = BigInt(4_000_000_000)
 const nonStaff = {
   title: 'Consultant',
   expiresAt: future,
@@ -49,7 +49,9 @@ beforeEach(() => {
 
 describe('Console affiliation role cap', () => {
   it('allows creating an owner grant for staff', async () => {
-    const result = await create('user_operator', 'owner', { affiliation: 'staff' })
+    const result = await create('user_operator', 'owner', {
+      affiliation: 'staff',
+    })
     expect(result.error).toBeNull()
     expect(mocks.createMember).toHaveBeenCalledTimes(1)
   })
@@ -95,7 +97,8 @@ describe('Console affiliation role cap', () => {
       data: null,
       error: {
         code: 'team/role-not-allowed-for-affiliation',
-        message: 'Role "super_admin" is not allowed for affiliation "external".',
+        message:
+          'Role "super_admin" is not allowed for affiliation "external".',
       },
     })
     expect(mocks.createMember).not.toHaveBeenCalled()
