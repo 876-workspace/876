@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { team } from '@/lib/service/team'
+import type { TeamServiceResult } from '@/lib/service/team/validation'
 import type { Access, RoleCheckResult, RoleChangeResult } from '@/types/auth'
 import { ASSIGNABLE_ROLES, type AssignableRole } from '@/types/role'
 
@@ -46,19 +47,27 @@ export async function assertRoleChangeAllowed(
 export async function applyRoleChange(
   targetUserId: string,
   requestedRole: AssignableRole
-): Promise<RoleChangeResult> {
+): Promise<TeamServiceResult<RoleChangeResult>> {
   if (requestedRole === 'user') {
     await team.delete(targetUserId)
-    return { userId: targetUserId, role: 'user', revoked: true }
+    return {
+      data: { userId: targetUserId, role: 'user', revoked: true },
+      error: null,
+    }
   }
 
   const existing = await team.retrieve(targetUserId)
-  const row = existing
+  const result = existing
     ? await team.update(targetUserId, { roleName: requestedRole })
     : await team.create(targetUserId, requestedRole)
+  if (result.error) return result
+
   return {
-    userId: row.userId,
-    role: row.roleName,
-    revoked: false,
+    data: {
+      userId: result.data.userId,
+      role: result.data.roleName,
+      revoked: false,
+    },
+    error: null,
   }
 }

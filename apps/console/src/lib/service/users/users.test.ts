@@ -72,9 +72,8 @@ describe('Console users service', () => {
     })
     mocks.assertRoleChangeAllowed.mockResolvedValue({ ok: true })
     mocks.applyRoleChange.mockResolvedValue({
-      userId: 'user_target',
-      role: 'staff',
-      revoked: false,
+      data: { userId: 'user_target', role: 'staff', revoked: false },
+      error: null,
     })
     vi.clearAllMocks()
   })

@@ -122,8 +122,14 @@ describe('assertRoleChangeAllowed', () => {
 describe('applyRoleChange', () => {
   beforeEach(() => {
     mocks.retrieve.mockResolvedValue(null)
-    mocks.create.mockResolvedValue({ userId: 'user_target', roleName: 'staff' })
-    mocks.update.mockResolvedValue({ userId: 'user_target', roleName: 'admin' })
+    mocks.create.mockResolvedValue({
+      data: { userId: 'user_target', roleName: 'staff' },
+      error: null,
+    })
+    mocks.update.mockResolvedValue({
+      data: { userId: 'user_target', roleName: 'admin' },
+      error: null,
+    })
     mocks.delete.mockResolvedValue({ count: 1 })
     vi.clearAllMocks()
   })
@@ -132,9 +138,8 @@ describe('applyRoleChange', () => {
     const result = await applyRoleChange('user_target', 'user')
 
     expect(result).toEqual({
-      userId: 'user_target',
-      role: 'user',
-      revoked: true,
+      data: { userId: 'user_target', role: 'user', revoked: true },
+      error: null,
     })
     expect(mocks.delete).toHaveBeenCalledTimes(1)
     expect(mocks.delete).toHaveBeenCalledWith('user_target')
@@ -152,9 +157,8 @@ describe('applyRoleChange', () => {
     const result = await applyRoleChange('user_target', 'admin')
 
     expect(result).toEqual({
-      userId: 'user_target',
-      role: 'admin',
-      revoked: false,
+      data: { userId: 'user_target', role: 'admin', revoked: false },
+      error: null,
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(1)
     expect(mocks.retrieve).toHaveBeenCalledWith('user_target')
@@ -169,14 +173,52 @@ describe('applyRoleChange', () => {
     const result = await applyRoleChange('user_target', 'staff')
 
     expect(result).toEqual({
-      userId: 'user_target',
-      role: 'staff',
-      revoked: false,
+      data: { userId: 'user_target', role: 'staff', revoked: false },
+      error: null,
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(1)
     expect(mocks.retrieve).toHaveBeenCalledWith('user_target')
     expect(mocks.create).toHaveBeenCalledTimes(1)
     expect(mocks.create).toHaveBeenCalledWith('user_target', 'staff')
     expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it('propagates a create validation error instead of reading a null grant', async () => {
+    mocks.create.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'team/justification-required',
+        message: 'A justification is required for a non-staff grant.',
+      },
+    })
+
+    const result = await applyRoleChange('user_target', 'staff')
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        code: 'team/justification-required',
+        message: 'A justification is required for a non-staff grant.',
+      },
+    })
+  })
+
+  it('propagates an update validation error', async () => {
+    mocks.retrieve.mockResolvedValue({
+      userId: 'user_target',
+      roleName: 'staff',
+    })
+    mocks.update.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'team/member-not-found',
+        message: 'Console access grant was not found.',
+      },
+    })
+
+    const result = await applyRoleChange('user_target', 'admin')
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('team/member-not-found')
   })
 })
