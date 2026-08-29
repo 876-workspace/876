@@ -111,7 +111,11 @@ function MobileNavLink({
       <span
         className={cn(
           mobileNavIconBase,
-          isActive && 'bg-white/70 dark:bg-white/10'
+          isActive &&
+            cn(
+              'ring-1 ring-inset',
+              item.activeClassName ?? 'bg-white/70 dark:bg-white/10'
+            )
         )}
       >
         <NavIcon

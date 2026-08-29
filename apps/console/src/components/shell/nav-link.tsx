@@ -4,15 +4,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { IconComponent } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
-import { useSidebar } from '@876/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 
 export const navLinkBase =
   'group focus-visible:ring-sidebar-ring relative flex size-8.5 items-center justify-center rounded-xl transition-all duration-150 focus-visible:ring-2 focus-visible:outline-hidden'
 export const navLinkRest =
   'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
-export const navLinkActive =
-  'bg-[var(--876-nav-active-bg)] text-[var(--876-nav-active-fg)] shadow-xs ring-1 ring-[var(--876-nav-active-fg)]/20'
+/** Shape of the active tile; its tint comes from the entry's `activeClassName`. */
+export const navLinkActive = 'shadow-xs ring-1 ring-inset'
+/** Tint for an entry that declares none, so the active state is never colourless. */
+export const navLinkActiveFallback =
+  'bg-[var(--876-nav-active-bg)] text-[var(--876-nav-active-fg)] ring-[var(--876-nav-active-fg)]/20'
 
 export function NavLink({
   href,
@@ -20,6 +22,7 @@ export function NavLink({
   icon: Icon,
   color,
   colorClassName,
+  activeClassName,
   side = 'right',
 }: {
   href: string
@@ -27,6 +30,7 @@ export function NavLink({
   icon: IconComponent
   color?: string
   colorClassName?: string
+  activeClassName?: string
   side?: 'right' | 'top' | 'bottom' | 'left'
 }) {
   const pathname = usePathname()
@@ -40,7 +44,12 @@ export function NavLink({
             href={href}
             aria-label={title}
             aria-current={isActive ? 'page' : undefined}
-            className={cn(navLinkBase, isActive ? navLinkActive : navLinkRest)}
+            className={cn(
+              navLinkBase,
+              isActive
+                ? cn(navLinkActive, activeClassName ?? navLinkActiveFallback)
+                : navLinkRest
+            )}
           >
             <Icon
               aria-hidden="true"
