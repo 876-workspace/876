@@ -1,10 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-
+import { AppError } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
 import { CategoryIcon, isCategoryIconKey } from '@876/ui/category-icons'
@@ -24,9 +20,12 @@ import {
   Plus,
   Trash,
 } from '@876/ui/icons'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
-import { client } from '@/lib/client'
 import { categoryColorClass } from '@/features/categories/category-color'
+import { client } from '@/lib/client'
 import type {
   CrmRequestCategory,
   CrmRequestSubcategory,
@@ -38,6 +37,8 @@ import {
   SubcategoryFormDialog,
   type SubcategoryDraft,
 } from './subcategory-form-dialog'
+
+type ErrorValue = { code: string; message: string }
 
 export function CategoriesList({
   categories,
@@ -55,7 +56,12 @@ export function CategoriesList({
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft>()
   const [subcategoryDialogOpen, setSubcategoryDialogOpen] = useState(false)
   const [subcategoryDraft, setSubcategoryDraft] = useState<SubcategoryDraft>()
-  const priorityNames = new Map(priorities.map((priority) => [priority.id, priority.name]))
+  const [error, setError] = useState<ErrorValue | null>(null)
+  const [archiveCandidate, setArchiveCandidate] =
+    useState<CrmRequestCategory | null>(null)
+  const priorityNames = new Map(
+    priorities.map((priority) => [priority.id, priority.name])
+  )
 
   function editCategory(category: CrmRequestCategory) {
     setCategoryDraft({
@@ -98,28 +104,28 @@ export function CategoriesList({
     category: CrmRequestCategory,
     input: { isActive?: boolean; sortOrder?: number }
   ) {
+    setError(null)
+    setArchiveCandidate(null)
     const result = await client.requestCategories.update(category.id, input)
-    if (result.error) toast.error(result.error.message)
-    else router.refresh()
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    router.refresh()
   }
 
   async function deleteCategory(category: CrmRequestCategory) {
     if (!window.confirm('Delete this category?')) return
+    setError(null)
+    setArchiveCandidate(null)
     const result = await client.requestCategories.delete(category.id)
     if (result.error?.code === 'crm/category-in-use') {
-      toast.error(
-        'This category is used by existing requests. Archive it instead.',
-        {
-          action: {
-            label: 'Archive',
-            onClick: () => updateCategory(category, { isActive: false }),
-          },
-        }
-      )
+      setError(result.error)
+      setArchiveCandidate(category)
       return
     }
     if (result.error) {
-      toast.error(result.error.message)
+      setError(result.error)
       return
     }
     router.refresh()
@@ -127,12 +133,17 @@ export function CategoriesList({
 
   async function deleteSubcategory(categoryId: string, subcategoryId: string) {
     if (!window.confirm('Delete this subcategory?')) return
+    setError(null)
+    setArchiveCandidate(null)
     const result = await client.requestCategories.subcategories.delete(
       categoryId,
       subcategoryId
     )
-    if (result.error) toast.error(result.error.message)
-    else router.refresh()
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    router.refresh()
   }
 
   if (categories.length === 0)
@@ -160,6 +171,27 @@ export function CategoriesList({
   return (
     <>
       <div className="space-y-4">
+        {error ? (
+          <AppError
+            title="Category settings could not be updated"
+            error={error}
+            variant="section"
+            action={
+              archiveCandidate ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    void updateCategory(archiveCandidate, { isActive: false })
+                  }
+                >
+                  Archive instead
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : null}
         {categories.map((category) => (
           <article key={category.id} className="876-card overflow-hidden">
             <div className="flex items-start gap-3 p-5">
@@ -183,7 +215,8 @@ export function CategoriesList({
                   <span>
                     Team:{' '}
                     {category.defaultTeamId
-                      ? (teamNames[category.defaultTeamId] ?? category.defaultTeamId)
+                      ? (teamNames[category.defaultTeamId] ??
+                        category.defaultTeamId)
                       : '—'}
                   </span>
                   <span>

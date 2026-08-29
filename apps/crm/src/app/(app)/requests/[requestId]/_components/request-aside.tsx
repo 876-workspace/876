@@ -1,9 +1,8 @@
-import Link from 'next/link'
-
+import { formatDateTime } from '@876/core/timestamps'
+import { AppError } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { CategoryIcon } from '@876/ui/category-icons'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Skeleton } from '@876/ui/skeleton'
 import {
   ArrowRight,
   EnvelopeIcon,
@@ -11,37 +10,52 @@ import {
   InformationCircleIcon,
   Phone,
 } from '@876/ui/icons'
-import { formatDateTime } from '@876/core/timestamps'
+import { Skeleton } from '@876/ui/skeleton'
+import Link from 'next/link'
+
 import { categoryColorClass } from '@/features/categories/category-color'
+import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 
 import { CopyButton } from '../../_components/copy-button'
 import { RequestSourceIcon } from '../../_components/request-source-icon'
 import { formatSource } from '../../_lib/request-format'
-import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { loadCategoryIndex, loadCustomer, loadRequest } from '../_data'
 
-/**
- * The record's right column: who the request is for, and the request's own
- * reference data.
- */
 export async function RequestAside({ requestId }: { requestId: string }) {
-  const { request } = await loadRequest(requestId)
-  const [{ profile, customer }, categories] = await Promise.all([
+  const requestResult = await loadRequest(requestId)
+  if (!requestResult.request)
+    return requestResult.error ? (
+      <AppError
+        title="Request details are temporarily unavailable"
+        error={requestResult.error}
+        variant="section"
+      />
+    ) : null
+
+  const request = requestResult.request
+  const [customerResult, categoryResult] = await Promise.all([
     loadCustomer(request.customerId),
     loadCategoryIndex(),
   ])
   const category = request.categoryId
-    ? categories.get(request.categoryId)
+    ? categoryResult.categories.get(request.categoryId)
     : undefined
 
   const identity = resolveCustomerIdentity(
-    customer,
-    profile?.billingCustomerId ?? request.customerId
+    customerResult.customer,
+    customerResult.profile?.billingCustomerId ?? request.customerId
   )
   const customerSubtitle = identity.legalName ?? identity.typeLabel
 
   return (
     <>
+      {customerResult.error ? (
+        <AppError
+          title="Customer details are temporarily incomplete"
+          error={customerResult.error}
+          variant="section"
+        />
+      ) : null}
       <section className="876-card overflow-hidden">
         <div className="bg-muted/20 flex items-center justify-between gap-2 border-b px-4 py-3">
           <span className="876-eyebrow text-[0.6875rem]">Customer</span>
@@ -175,6 +189,13 @@ export async function RequestAside({ requestId }: { requestId: string }) {
         </div>
       </section>
 
+      {categoryResult.error ? (
+        <AppError
+          title="Category details are temporarily incomplete"
+          error={categoryResult.error}
+          variant="inline"
+        />
+      ) : null}
       <section className="876-card p-4">
         <h2 className="876-section-title flex items-center gap-2 text-sm">
           <InformationCircleIcon

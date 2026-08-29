@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { AppError } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { buttonVariants } from '@876/ui/button'
 import { Pencil } from '@876/ui/icons'
@@ -24,9 +25,17 @@ export default async function TeamPage({ params }: Props) {
     $876.teams.members.list(context.orgId, teamId),
     $876.organizationMembers.list(context.orgId),
   ])
+
   if (teamResult.error?.code === 'crm/team-not-found') notFound()
-  if (teamResult.error) throw new Error(teamResult.error.message)
-  if (teamMembersResult.error) throw new Error(teamMembersResult.error.message)
+
+  if (teamResult.error)
+    return (
+      <Page>
+        <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
+        <h1 className="876-page-title mb-4">Team</h1>
+        <AppError title="Team details are temporarily unavailable" error={teamResult.error} variant="banner" />
+      </Page>
+    )
 
   const directory: DirectoryMember[] = (directoryResult.data?.data ?? []).map(
     (member) => ({
@@ -42,7 +51,7 @@ export default async function TeamPage({ params }: Props) {
   const directoryById = new Map(
     directory.map((member) => [member.userId, member])
   )
-  const members: TeamMemberRow[] = teamMembersResult.data.data.map(
+  const members: TeamMemberRow[] = (teamMembersResult.data?.data ?? []).map(
     (member) => ({
       ...(directoryById.get(member.userId) ?? {
         userId: member.userId,
@@ -80,7 +89,25 @@ export default async function TeamPage({ params }: Props) {
         </div>
       </header>
 
-      <TeamMembers teamId={teamId} members={members} directory={directory} />
+      <div className="space-y-3">
+        {teamMembersResult.error ? (
+          <AppError
+            title="Team members are temporarily unavailable"
+            error={teamMembersResult.error}
+            variant="banner"
+          />
+        ) : null}
+        {directoryResult.error ? (
+          <AppError
+            title="Member profiles are temporarily unavailable"
+            error={directoryResult.error}
+            variant="inline"
+          />
+        ) : null}
+        {teamMembersResult.error ? null : (
+          <TeamMembers teamId={teamId} members={members} directory={directory} />
+        )}
+      </div>
     </Page>
   )
 }

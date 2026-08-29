@@ -1,8 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { AppError } from '@876/ui/app-error'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +11,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@876/ui/alert-dialog'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+
 import { client } from '@/lib/client'
+
+type ErrorValue = { code: string; message: string }
 
 export function DeleteRequestDialog({
   organizationId,
@@ -32,16 +36,18 @@ export function DeleteRequestDialog({
 }) {
   const router = useRouter()
   const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<ErrorValue | null>(null)
 
   async function handleDelete() {
     if (deleting) return
     setDeleting(true)
+    setError(null)
 
     const result = await client.requests.delete(organizationId, requestId, {
       deletedBy: currentUserId ?? '',
     })
     if (result.error) {
-      toast.error(result.error.message)
+      setError(result.error)
       setDeleting(false)
       return
     }
@@ -52,8 +58,13 @@ export function DeleteRequestDialog({
     router.refresh()
   }
 
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) setError(null)
+    onOpenChange(nextOpen)
+  }
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete request</AlertDialogTitle>
@@ -63,6 +74,14 @@ export function DeleteRequestDialog({
             action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {error ? (
+          <AppError
+            title="Request could not be deleted"
+            error={error}
+            variant="form"
+            showCode
+          />
+        ) : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction

@@ -1,6 +1,7 @@
 'use client'
 
 import { formatDate } from '@876/core/timestamps'
+import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
@@ -8,7 +9,6 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type FormEvent } from 'react'
-import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 
@@ -20,7 +20,12 @@ type RequestRecord = {
   categoryId: string | null
   subcategoryId: string | null
   status:
-    'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED' | 'CANCELLED'
+    | 'OPEN'
+    | 'IN_PROGRESS'
+    | 'WAITING'
+    | 'RESOLVED'
+    | 'CLOSED'
+    | 'CANCELLED'
   priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
   source: string
   teamId: string | null
@@ -106,6 +111,10 @@ export function RequestManager(props: Props) {
   const [noteBody, setNoteBody] = useState('')
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editingNoteBody, setEditingNoteBody] = useState('')
+  const [requestError, setRequestError] = useState<AppErrorValue | null>(null)
+  const [taskError, setTaskError] = useState<AppErrorValue | null>(null)
+  const [reminderError, setReminderError] = useState<AppErrorValue | null>(null)
+  const [noteError, setNoteError] = useState<AppErrorValue | null>(null)
 
   function refresh() {
     startTransition(() => router.refresh())
@@ -114,12 +123,16 @@ export function RequestManager(props: Props) {
   async function updateRequest(
     params: Parameters<typeof client.requests.update>[2]
   ) {
+    setRequestError(null)
     const result = await client.requests.update(
       props.organizationId,
       props.request.id,
       params
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setRequestError(result.error)
+      return
+    }
     refresh()
   }
 
@@ -135,17 +148,22 @@ export function RequestManager(props: Props) {
     const title = taskTitle.trim()
     if (!title) return
 
+    setTaskError(null)
     const result = await client.requestTasks.create(
       props.organizationId,
       props.request.id,
       { title, createdBy: props.currentUserId }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setTaskError(result.error)
+      return
+    }
     setTaskTitle('')
     refresh()
   }
 
   async function updateTask(taskId: string, status: TaskRecord['status']) {
+    setTaskError(null)
     const result = await client.requestTasks.update(
       props.organizationId,
       props.request.id,
@@ -155,18 +173,25 @@ export function RequestManager(props: Props) {
         completedBy: status === 'DONE' ? props.currentUserId : null,
       }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setTaskError(result.error)
+      return
+    }
     refresh()
   }
 
   async function deleteTask(taskId: string) {
+    setTaskError(null)
     const result = await client.requestTasks.delete(
       props.organizationId,
       props.request.id,
       taskId,
       { deletedBy: props.currentUserId }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setTaskError(result.error)
+      return
+    }
     refresh()
   }
 
@@ -176,6 +201,7 @@ export function RequestManager(props: Props) {
     const timestamp = Math.floor(new Date(remindAt).getTime() / 1000)
     if (!title || !Number.isFinite(timestamp)) return
 
+    setReminderError(null)
     const result = await client.requestReminders.create(
       props.organizationId,
       props.request.id,
@@ -186,7 +212,10 @@ export function RequestManager(props: Props) {
         createdBy: props.currentUserId,
       }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setReminderError(result.error)
+      return
+    }
     setReminderTitle('')
     setRemindAt('')
     refresh()
@@ -196,24 +225,32 @@ export function RequestManager(props: Props) {
     reminderId: string,
     status: ReminderRecord['status']
   ) {
+    setReminderError(null)
     const result = await client.requestReminders.update(
       props.organizationId,
       props.request.id,
       reminderId,
       { status }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setReminderError(result.error)
+      return
+    }
     refresh()
   }
 
   async function deleteReminder(reminderId: string) {
+    setReminderError(null)
     const result = await client.requestReminders.delete(
       props.organizationId,
       props.request.id,
       reminderId,
       { deletedBy: props.currentUserId }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setReminderError(result.error)
+      return
+    }
     refresh()
   }
 
@@ -222,12 +259,16 @@ export function RequestManager(props: Props) {
     const body = noteBody.trim()
     if (!body) return
 
+    setNoteError(null)
     const result = await client.requestNotes.create(
       props.organizationId,
       props.request.id,
       { body, authorId: props.currentUserId, internal: true }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setNoteError(result.error)
+      return
+    }
     setNoteBody('')
     refresh()
   }
@@ -236,25 +277,33 @@ export function RequestManager(props: Props) {
     const body = editingNoteBody.trim()
     if (!body) return
 
+    setNoteError(null)
     const result = await client.requestNotes.update(
       props.organizationId,
       props.request.id,
       noteId,
       { body, editedBy: props.currentUserId }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setNoteError(result.error)
+      return
+    }
     setEditingNoteId(null)
     refresh()
   }
 
   async function deleteNote(noteId: string) {
+    setNoteError(null)
     const result = await client.requestNotes.delete(
       props.organizationId,
       props.request.id,
       noteId,
       { deletedBy: props.currentUserId }
     )
-    if (result.error) return toast.error(result.error.message)
+    if (result.error) {
+      setNoteError(result.error)
+      return
+    }
     refresh()
   }
 
@@ -301,6 +350,15 @@ export function RequestManager(props: Props) {
             Save
           </Button>
         </form>
+        {requestError ? (
+          <AppError
+            title="Request could not be updated"
+            error={requestError}
+            variant="form"
+            showCode
+            className="mt-3"
+          />
+        ) : null}
 
         <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Customer" value={props.request.customerId} mono />
@@ -320,6 +378,15 @@ export function RequestManager(props: Props) {
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <section className="876-card p-5">
           <h2 className="876-section-title mb-4">Tasks</h2>
+          {taskError ? (
+            <AppError
+              title="Task change could not be saved"
+              error={taskError}
+              variant="form"
+              showCode
+              className="mb-4"
+            />
+          ) : null}
           <form className="mb-4 flex gap-2" onSubmit={addTask}>
             <Input
               value={taskTitle}
@@ -377,6 +444,15 @@ export function RequestManager(props: Props) {
 
         <section className="876-card p-5">
           <h2 className="876-section-title mb-4">Reminders</h2>
+          {reminderError ? (
+            <AppError
+              title="Reminder change could not be saved"
+              error={reminderError}
+              variant="form"
+              showCode
+              className="mb-4"
+            />
+          ) : null}
           <form
             className="mb-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
             onSubmit={addReminder}
@@ -445,6 +521,15 @@ export function RequestManager(props: Props) {
 
       <section className="876-card p-5">
         <h2 className="876-section-title mb-4">Notes</h2>
+        {noteError ? (
+          <AppError
+            title="Note change could not be saved"
+            error={noteError}
+            variant="form"
+            showCode
+            className="mb-4"
+          />
+        ) : null}
         <form className="mb-4 flex items-start gap-2" onSubmit={addNote}>
           <Textarea
             value={noteBody}

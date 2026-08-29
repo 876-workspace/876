@@ -2,6 +2,7 @@
 
 import { editorContentEqual, isEditorContentEmpty } from '@876/editor'
 import { Editor, EditorContent, type EditorHandle } from '@876/editor/react'
+import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
@@ -18,7 +19,6 @@ import {
 import { NoteVisibilitySelect } from '@876/ui/note-visibility-select'
 import { useRouter } from 'next/navigation'
 import { useMemo, useRef, useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 import { cn } from '@876/ui/lib/utils'
 
@@ -27,10 +27,7 @@ import type { CrmRequestNote, NoteAuthor } from '../types'
 
 export type { NoteAuthor }
 
-/** `busyId` sentinel for the composer, which has no note id of its own. */
 const COMPOSER = 'composer'
-
-/** Lets the header's "Add → Note" action jump straight to the composer. */
 export const NEW_NOTE_FIELD_ID = 'new-request-note'
 
 function formatNoteDate(timestamp: number): string {
@@ -44,16 +41,6 @@ function formatNoteDate(timestamp: number): string {
   }).format(date)
 }
 
-/**
- * The request conversation.
- *
- * A request has no description of its own: its opening message is the first
- * note (`kind: 'DESCRIPTION'`), and everything after it is an ordinary note.
- * The thread reads the way a helpdesk ticket does: the opening message first,
- * every reply and note below it in the order it happened, and the composer at
- * the end — so the record is read top to bottom as a conversation rather than
- * as a reverse-chronological log.
- */
 export function RequestNotesSection({
   organizationId,
   requestId,
@@ -77,6 +64,7 @@ export function RequestNotesSection({
     useState<CrmRequestNote['visibility']>('INTERNAL')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [error, setError] = useState<AppErrorValue | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const { description, thread } = useMemo(() => {
@@ -95,6 +83,7 @@ export function RequestNotesSection({
     event.preventDefault()
     if (isSubmitting) return
 
+    setError(null)
     setBusyId(COMPOSER)
     const nextBody = (await composerRef.current?.flush()) ?? body
     if (isEditorContentEmpty(nextBody)) {
@@ -109,7 +98,7 @@ export function RequestNotesSection({
     })
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to add note.')
+      setError(result.error)
       return
     }
 
@@ -119,11 +108,9 @@ export function RequestNotesSection({
   }
 
   async function saveEdit(noteId: string, nextBody: string) {
-    if (isEditorContentEmpty(nextBody)) {
-      toast.error('A note cannot be empty.')
-      return
-    }
+    if (isEditorContentEmpty(nextBody)) return
 
+    setError(null)
     setBusyId(noteId)
     const result = await client.requestNotes.update(
       organizationId,
@@ -136,7 +123,7 @@ export function RequestNotesSection({
     )
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to save note.')
+      setError(result.error)
       return
     }
 
@@ -145,18 +132,17 @@ export function RequestNotesSection({
   }
 
   async function deleteNote(noteId: string) {
+    setError(null)
     setBusyId(noteId)
     const result = await client.requestNotes.delete(
       organizationId,
       requestId,
       noteId,
-      {
-        deletedBy: currentUserId ?? '',
-      }
+      { deletedBy: currentUserId ?? '' }
     )
     setBusyId(null)
     if (result.error) {
-      toast.error(result.error.message ?? 'Failed to delete note.')
+      setError(result.error)
       return
     }
 
@@ -179,6 +165,15 @@ export function RequestNotesSection({
           </Badge>
         </div>
       </div>
+
+      {error ? (
+        <AppError
+          title="Conversation change could not be saved"
+          error={error}
+          variant="form"
+          showCode
+        />
+      ) : null}
 
       <ol className="border-border relative ml-4 flex flex-col gap-4 border-l pl-8">
         {description ? (
@@ -247,10 +242,6 @@ export function RequestNotesSection({
                   : 'border-info/30'
             )}
           >
-            {/*
-              Which audience a message goes to is chosen before it is written,
-              not after — a checkbox under the editor is read last, if at all.
-            */}
             <div
               className={cn(
                 'flex items-center border-b px-3 py-2',
@@ -424,9 +415,6 @@ function NoteCard({
     onSave(nextBody)
   }
 
-  // A private note is tinted the way every helpdesk tints one, because the cost
-  // of mistaking an internal note for a customer-visible reply is high and the
-  // author is usually skimming.
   const internal = note.visibility === 'INTERNAL' && !isDescription
   const privateNote = note.visibility === 'PRIVATE' && !isDescription
   const publicNote = note.visibility === 'PUBLIC' && !isDescription
@@ -438,12 +426,12 @@ function NoteCard({
         isDescription
           ? 'border-violet-300/70 shadow-sm ring-1 ring-violet-200/50 before:bg-violet-100 dark:border-violet-800/70 dark:ring-violet-900/50 dark:before:bg-violet-950'
           : privateNote
-          ? 'before:bg-destructive/[0.07]'
-          : internal
-            ? 'before:bg-warning/[0.07]'
-            : publicNote
-              ? 'before:bg-info/10'
-              : 'before:bg-muted/25'
+            ? 'before:bg-destructive/[0.07]'
+            : internal
+              ? 'before:bg-warning/[0.07]'
+              : publicNote
+                ? 'before:bg-info/10'
+                : 'before:bg-muted/25'
       )}
     >
       <div
@@ -452,12 +440,12 @@ function NoteCard({
           isDescription
             ? 'border-violet-200/80 bg-violet-100/70 dark:border-violet-800/70 dark:bg-violet-950/40'
             : privateNote
-            ? 'bg-destructive/[0.07]'
-            : internal
-              ? 'bg-warning/[0.07]'
-              : publicNote
-                ? 'bg-info/10'
-                : 'bg-muted/25'
+              ? 'bg-destructive/[0.07]'
+              : internal
+                ? 'bg-warning/[0.07]'
+                : publicNote
+                  ? 'bg-info/10'
+                  : 'bg-muted/25'
         )}
       >
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">

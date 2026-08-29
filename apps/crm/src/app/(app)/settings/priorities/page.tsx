@@ -1,3 +1,4 @@
+import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
@@ -12,7 +13,7 @@ export default async function PrioritiesPage() {
   const context = await requireCrmContext()
   const $876 = await get876Client()
   const result = await $876.requestPriorities.list(context.orgId)
-  if (result.error) throw new Error(result.error.message)
+  const priorities = result.data?.data ?? []
 
   return (
     <Page>
@@ -24,7 +25,16 @@ export default async function PrioritiesPage() {
         primaryVariant="info"
         refresh
       />
-      <PrioritiesList priorities={result.data.data} />
+      <div className="space-y-3">
+        {result.error ? (
+          <AppError
+            title="Some priority data could not be loaded"
+            error={result.error}
+            variant="banner"
+          />
+        ) : null}
+        <PrioritiesList priorities={priorities} />
+      </div>
     </Page>
   )
 }

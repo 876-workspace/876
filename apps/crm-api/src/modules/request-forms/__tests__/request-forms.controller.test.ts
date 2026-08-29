@@ -144,7 +144,7 @@ describe('request-forms.controller - retrieveRequestForm', () => {
     await controller.retrieveRequestForm(req, res)
     expect(service.retrieve).toHaveBeenCalledWith('org_1', 'crm_form_1')
     expect(res.json).toHaveBeenCalledWith({ data: form, error: null })
-    expect(res.status).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(200)
   })
 
   it('returns 404 when form not found', async () => {

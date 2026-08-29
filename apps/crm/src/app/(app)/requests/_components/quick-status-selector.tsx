@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { cn } from '@876/core/utils'
+import { AppError } from '@876/ui/app-error'
+import { Button } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,11 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { Button } from '@876/ui/button'
-import { ChevronDown, CheckIcon } from '@876/ui/icons'
-import { cn } from '@876/core/utils'
+import { CheckIcon, ChevronDown } from '@876/ui/icons'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+
 import { client } from '@/lib/client'
 import type { RequestStatus } from '@/types/crm'
+
 import { RequestStatusBadge, requestStatusConfig } from './request-status-badge'
 
 const STATUSES: { value: RequestStatus; label: string }[] = [
@@ -27,6 +30,8 @@ const STATUSES: { value: RequestStatus; label: string }[] = [
   { value: 'CANCELLED', label: 'Cancelled' },
 ]
 
+type ErrorValue = { code: string; message: string }
+
 export function QuickStatusSelector({
   requestId,
   currentStatus,
@@ -36,14 +41,16 @@ export function QuickStatusSelector({
 }) {
   const router = useRouter()
   const [updating, setUpdating] = useState(false)
+  const [error, setError] = useState<ErrorValue | null>(null)
 
   async function handleStatusChange(status: RequestStatus) {
     if (status === currentStatus || updating) return
     setUpdating(true)
+    setError(null)
 
     const result = await client.requests.update(requestId, { status })
     if (result.error) {
-      toast.error(result.error.message)
+      setError(result.error)
       setUpdating(false)
       return
     }
@@ -59,48 +66,50 @@ export function QuickStatusSelector({
   const Icon = config.icon
 
   return (
-    <DropdownMenu>
-      {/*
-        The whole control is the status. It used to be a neutral button
-        captioned "Status:" wrapping a coloured pill — three elements to say one
-        thing, and the caption was the loudest of them. Colouring the trigger
-        itself says it in one, and the accessible name carries the word the
-        caption used to.
-      */}
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={updating}
-            aria-label={`Status: ${config.label}. Change status`}
-            className={cn(
-              'h-8 gap-1.5 px-2.5 text-xs font-medium',
-              config.trigger
-            )}
-          />
-        }
-      >
-        <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-        <span>{config.label}</span>
-        <ChevronDown className="size-3.5 opacity-70" aria-hidden="true" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>Update status</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {STATUSES.map((item) => (
-          <DropdownMenuItem
-            key={item.value}
-            onClick={() => handleStatusChange(item.value)}
-            className="flex items-center justify-between"
-          >
-            <RequestStatusBadge status={item.value} />
-            {item.value === currentStatus ? (
-              <CheckIcon className="text-primary size-4" />
-            ) : null}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="space-y-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={updating}
+              aria-label={`Status: ${config.label}. Change status`}
+              className={cn(
+                'h-8 gap-1.5 px-2.5 text-xs font-medium',
+                config.trigger
+              )}
+            />
+          }
+        >
+          <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+          <span>{config.label}</span>
+          <ChevronDown className="size-3.5 opacity-70" aria-hidden="true" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuLabel>Update status</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {STATUSES.map((item) => (
+            <DropdownMenuItem
+              key={item.value}
+              onClick={() => handleStatusChange(item.value)}
+              className="flex items-center justify-between"
+            >
+              <RequestStatusBadge status={item.value} />
+              {item.value === currentStatus ? (
+                <CheckIcon className="text-primary size-4" />
+              ) : null}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {error ? (
+        <AppError
+          title="Status could not be updated"
+          error={error}
+          variant="inline"
+        />
+      ) : null}
+    </div>
   )
 }

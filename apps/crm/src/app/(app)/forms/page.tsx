@@ -1,3 +1,4 @@
+import { AppError } from '@876/ui/app-error'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Suspense } from 'react'
@@ -13,10 +14,6 @@ import {
 
 export const metadata = { title: 'Forms' }
 
-/**
- * The intake forms an organization publishes for customers to raise requests
- * through. The toolbar is static chrome and renders before the list resolves.
- */
 export default function FormsPage() {
   return (
     <Page>
@@ -39,17 +36,28 @@ async function FormsListData() {
   const $876 = await get876Client()
 
   const result = await $876.requestForms.list(context.orgId)
-  if (result.error) throw new Error(result.error.message)
 
-  const forms: RequestFormRow[] = result.data.data.map((form) => ({
-    id: form.id,
-    name: form.name,
-    slug: form.slug,
-    status: form.status,
-    version: form.version,
-    fieldCount: form.definition.fields.length,
-    updatedAt: form.updatedAt,
-  }))
+  const forms: RequestFormRow[] =
+    result.data?.data.map((form) => ({
+      id: form.id,
+      name: form.name,
+      slug: form.slug,
+      status: form.status,
+      version: form.version,
+      fieldCount: form.definition.fields.length,
+      updatedAt: form.updatedAt,
+    })) ?? []
 
-  return <FormsList forms={forms} />
+  return (
+    <div className="space-y-3">
+      {result.error ? (
+        <AppError
+          title="Some form data could not be loaded"
+          error={result.error}
+          variant="banner"
+        />
+      ) : null}
+      <FormsList forms={forms} />
+    </div>
+  )
 }

@@ -119,7 +119,7 @@ describe('requests.service - create edge cases', () => {
         subject: 'hi',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/tenant-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/tenant-not-found' })
   })
   it('throws tenant-inactive when tenant is not ACTIVE', async () => {
     tenants.retrieveByOrganization.mockResolvedValue({
@@ -132,7 +132,7 @@ describe('requests.service - create edge cases', () => {
         subject: 'hi',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/tenant-inactive' })
+    ).resolves.toMatchObject({ code: 'crm/tenant-inactive' })
   })
   it('throws customer-not-found when customer missing', async () => {
     repository.customerExists.mockResolvedValue(null)
@@ -142,7 +142,7 @@ describe('requests.service - create edge cases', () => {
         subject: 'hi',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/customer-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/customer-not-found' })
   })
   it('throws category-not-found for unknown category', async () => {
     repository.categoryExists.mockResolvedValue(null)
@@ -153,7 +153,7 @@ describe('requests.service - create edge cases', () => {
         createdBy: 'usr_1',
         categoryId: 'bad',
       })
-    ).rejects.toMatchObject({ code: 'crm/category-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/category-not-found' })
     expect(repository.create).not.toHaveBeenCalled()
   })
   it('throws subcategory-not-found for unknown subcategory', async () => {
@@ -174,7 +174,7 @@ describe('requests.service - create edge cases', () => {
         categoryId: 'crm_cat_1',
         subcategoryId: 'bad',
       })
-    ).rejects.toMatchObject({ code: 'crm/subcategory-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/subcategory-not-found' })
   })
   it('applies subcategory default team and priority when no explicit values', async () => {
     repository.categoryExists.mockResolvedValue({
@@ -213,7 +213,7 @@ describe('requests.service - create edge cases', () => {
         categoryId: 'crm_cat_1',
         teamId: 'bad',
       })
-    ).rejects.toMatchObject({ code: 'crm/team-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/team-not-found' })
   })
 })
 
@@ -229,7 +229,7 @@ describe('requests.service - update edge cases', () => {
     repository.categoryExists.mockResolvedValue(null)
     await expect(
       service.update('org_1', 'crm_req_1', { categoryId: 'bad' })
-    ).rejects.toMatchObject({ code: 'crm/category-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/category-not-found' })
   })
   it('throws subcategory-category-mismatch when subcategory does not belong', async () => {
     repository.retrieve.mockResolvedValue({
@@ -242,7 +242,7 @@ describe('requests.service - update edge cases', () => {
     })
     await expect(
       service.update('org_1', 'crm_req_1', { subcategoryId: 'crm_sub_1' })
-    ).rejects.toMatchObject({ code: 'crm/subcategory-category-mismatch' })
+    ).resolves.toMatchObject({ code: 'crm/subcategory-category-mismatch' })
   })
   it('clears resolvedAt when moving away from RESOLVED', async () => {
     repository.retrieve.mockResolvedValue({

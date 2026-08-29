@@ -243,10 +243,9 @@ describe('RequestTasksSection', () => {
       await user.type(screen.getByLabelText('New task'), 'Chase courier')
       await user.click(screen.getByRole('button', { name: 'Add task' }))
 
-      await waitFor(() =>
-        expect(mocks.error).toHaveBeenCalledWith('A task needs a title.')
-      )
+      await screen.findByText('A task needs a title.')
       expect(mocks.refresh).not.toHaveBeenCalled()
+      expect(mocks.error).not.toHaveBeenCalled()
     })
   })
 
@@ -360,10 +359,9 @@ describe('RequestTasksSection', () => {
         screen.getByRole('button', { name: 'Delete Call the customer back' })
       )
 
-      await waitFor(() =>
-        expect(mocks.error).toHaveBeenCalledWith('Request task not found.')
-      )
+      await screen.findByText('Request task not found.')
       expect(mocks.refresh).not.toHaveBeenCalled()
+      expect(mocks.error).not.toHaveBeenCalled()
     })
   })
 })

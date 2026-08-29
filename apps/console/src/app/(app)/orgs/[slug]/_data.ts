@@ -5,72 +5,87 @@ import { $876, workspace } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
 /**
- * Resolve an organization by slug, including soft-deleted records so Mission
- * Control can display deleted org detail pages with a tombstone banner.
- * Wrapped in React `cache()` so the segment layout, the overview page, and
- * each tab page dedupe to a single fetch per request.
+ * Canonical organization lookup, including soft-deleted records so Console can
+ * show a tombstone banner on a deleted org's detail page.
+ *
+ * Wrapped in React `cache()` so the segment layout, the overview page, and each
+ * tab page dedupe to a single fetch per request. Callers that must tell a real
+ * "no such organization" apart from a service failure read this result; the
+ * error is preserved rather than collapsed into `null`.
  */
-export const resolveOrg = cache(async (slug: string) => {
-  const result = await $876.organizations.admin.retrieve({
+export const resolveOrgResult = cache(async (slug: string) =>
+  $876.organizations.admin.retrieve({
     slug,
     includeDeleted: true,
   })
-  if (result.error) return null
-  return result.data
+)
+
+/**
+ * Compatibility data-only lookup for metadata and callers that only need the
+ * organization value. UI that must distinguish not-found from service failure
+ * should use `resolveOrgResult()` instead.
+ */
+export const resolveOrg = cache(async (slug: string) => {
+  const result = await resolveOrgResult(slug)
+  return result.data ?? null
 })
 
 /**
- * Cached organization member directory (membership + user identity).
+ * Cached organization member directory (membership + user identity), plus its
+ * registered application error.
  *
- * Use the canonical organization-members resource instead of composing the
- * roster from `/memberships` followed by a separate `/users?ids=...` batch.
- * The organization detail layout and Members tab share this cached request,
- * so the member count and table cannot trigger duplicate roster reads during
- * the same render.
+ * Uses the canonical organization-members resource instead of composing the
+ * roster from `/memberships` followed by a separate `/users?ids=...` batch. The
+ * organization detail layout and Members tab share this cached request, so the
+ * member count and the table cannot trigger duplicate roster reads during the
+ * same render.
  */
 export const resolveOrgMembers = cache(async (orgId: string) => {
   const result = await $876.organizationMembers.admin.list(orgId, {
     limit: 100,
   })
-  if (result.error) throw new Error(result.error.message)
   if (result.data?.has_more) {
     console.warn(
       '[resolveOrgMembers] org has >100 members; list is truncated',
       { orgId }
     )
   }
-  return result.data
+  return {
+    data: result.data?.data ?? [],
+    error: result.error,
+    hasMore: result.data?.has_more ?? false,
+  }
 })
 
-/** Cached role catalog used by member-management controls. */
+/** Cached role catalog used by member-management controls, plus its error. */
 export const resolveOrgRoles = cache(async (orgId: string) => {
   const result = await $876.roles.admin.list(orgId)
-  if (result.error) throw new Error(result.error.message)
-  return result.data?.data ?? []
+  return { data: result.data?.data ?? [], error: result.error }
 })
 
+/** Cached org entitlements, plus the registered lookup error. */
 export const resolveOrgSubscriptions = cache(
   async (orgId: string, status?: AdminSubscriptionStatus) => {
     const result = await workspace.apps.entitlements.list({
       organizationId: orgId,
       status,
     })
-    if (result.error) throw new Error(result.error.message)
-    return result.data
+    return { data: result.data ?? [], error: result.error }
   }
 )
 
+/** Cached billing accounts for the org, plus the registered lookup error. */
 export const resolveOrgBillingAccounts = cache(async (orgId: string) => {
   const result = await $876.billingAccounts.list({
     organizationId: orgId,
     limit: 25,
   })
-  if (result.error) throw new Error(result.error.message)
-  return result.data
+  return { data: result.data?.data ?? [], error: result.error }
 })
 
 /**
- * The app slugs an organization currently holds an active entitlement for.
+ * The app slugs an organization currently holds an active entitlement for, plus
+ * the entitlement lookup error if there was one.
  *
  * Shared by the detail tab strip, the workspace index, and each workspace
  * shell, all of which ask the same question on the same render. Cached through
@@ -78,30 +93,33 @@ export const resolveOrgBillingAccounts = cache(async (orgId: string) => {
  */
 export const resolveOrgEntitledAppSlugs = cache(async (orgId: string) => {
   const subscriptions = await resolveOrgSubscriptions(orgId)
-  return (subscriptions ?? [])
-    .filter((s) => s.status === 'active' || s.status === 'trialing')
-    .flatMap((s) => (s.app_slug ? [s.app_slug] : []))
+  return {
+    data: subscriptions.data
+      .filter(
+        (subscription) =>
+          subscription.status === 'active' || subscription.status === 'trialing'
+      )
+      .flatMap((subscription) =>
+        subscription.app_slug ? [subscription.app_slug] : []
+      ),
+    error: subscriptions.error,
+  }
 })
 
 /**
- * The CRM customer record representing this organization in **876's own**
- * workspace.
- *
- * This is the org-as-customer side of the split: not a customer *of* this
- * organization, but the customer *record for* it in our tenant, which is what
- * its support requests with us hang off. Every 876 organization has one,
- * delivered by Core's `customer.ensure` outbox.
+ * The CRM customer record representing this organization in 876's own workspace.
+ * A missing CRM workspace is a normal state; every other registered failure is
+ * preserved for the caller to render without escalating into a framework error.
  */
 export const resolveOrgCustomerWithUs = cache(async (orgId: string) => {
   const platformOrg = await getPlatformOrganization()
-  if (!platformOrg) return null
+  if (!platformOrg) return { data: null, error: null }
 
   const result = await $876.customerProfiles.list(platformOrg.id, {
     customerOrganizationId: orgId,
   })
-  // A workspace we have not provisioned yet is a state, not a failure.
-  if (result.error?.code === 'crm/tenant-not-found') return null
-  if (result.error) throw new Error(result.error.message)
+  if (result.error?.code === 'crm/tenant-not-found')
+    return { data: null, error: null }
 
-  return result.data?.data[0] ?? null
+  return { data: result.data?.data[0] ?? null, error: result.error }
 })

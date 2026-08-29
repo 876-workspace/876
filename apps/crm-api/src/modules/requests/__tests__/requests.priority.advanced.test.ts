@@ -1,3 +1,5 @@
+import { expectValue } from '../../../test/expect-value.js'
+import { getError } from '@876/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { tenants, priorities, repo } = vi.hoisted(() => ({
@@ -202,13 +204,13 @@ describe('requests.priority.advanced - create uses hierarchy: explicit > subcate
         subject: 'hi',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/priority-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
   })
 
   it('throws when explicit priority is not active', async () => {
-    priorities.requireActiveForTenant.mockRejectedValue({
-      code: 'crm/priority-not-found',
-    })
+    priorities.requireActiveForTenant.mockResolvedValue(
+      getError('crm/priority-not-found')
+    )
     await expect(
       service.create('org_1', {
         customerId: 'crm_cus_1',
@@ -216,7 +218,7 @@ describe('requests.priority.advanced - create uses hierarchy: explicit > subcate
         createdBy: 'usr_1',
         priorityId: 'bad',
       })
-    ).rejects.toMatchObject({ code: 'crm/priority-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
   })
 })
 
@@ -224,7 +226,7 @@ describe('requests.priority.advanced - assertRouting validates priorityId', () =
   it('passes when priority exists', async () => {
     await expect(
       service.assertRouting('org_1', { priorityId: normal.id })
-    ).resolves.toBeUndefined()
+    ).resolves.toBeNull()
     expect(priorities.requireActiveForTenant).toHaveBeenCalledWith(
       tenant.id,
       normal.id
@@ -232,12 +234,12 @@ describe('requests.priority.advanced - assertRouting validates priorityId', () =
   })
 
   it('throws when priority missing', async () => {
-    priorities.requireActiveForTenant.mockRejectedValue({
-      code: 'crm/priority-not-found',
-    })
+    priorities.requireActiveForTenant.mockResolvedValue(
+      getError('crm/priority-not-found')
+    )
     await expect(
       service.assertRouting('org_1', { priorityId: 'bad' })
-    ).rejects.toMatchObject({ code: 'crm/priority-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
   })
 
   it('does not validate when priorityId is null or undefined', async () => {
@@ -264,12 +266,12 @@ describe('requests.priority.advanced - update validates priorityId', () => {
 
   it('throws when new priority not found', async () => {
     repo.retrieve.mockResolvedValue(requestRow())
-    priorities.requireActiveForTenant.mockRejectedValue({
-      code: 'crm/priority-not-found',
-    })
+    priorities.requireActiveForTenant.mockResolvedValue(
+      getError('crm/priority-not-found')
+    )
     await expect(
       service.update('org_1', 'crm_req_1', { priorityId: 'bad' })
-    ).rejects.toMatchObject({ code: 'crm/priority-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
     expect(repo.update).not.toHaveBeenCalled()
   })
 
@@ -290,9 +292,11 @@ describe('requests.priority.advanced - update validates priorityId', () => {
     repo.update.mockResolvedValue(
       requestRow({ priority: urgent, priorityId: urgent.id })
     )
-    const result = await service.update('org_1', 'crm_req_1', {
-      subject: 'new',
-    })
+    const result = expectValue(
+      await service.update('org_1', 'crm_req_1', {
+        subject: 'new',
+      })
+    )
     expect(result?.priority).toMatchObject({ id: urgent.id })
   })
 })
@@ -307,14 +311,16 @@ describe('requests.priority.advanced - list filters and serialization', () => {
     priorities.serialize.mockReturnValue(
       urgent as unknown as ReturnType<typeof priorities.serialize>
     )
-    const rows = await service.list('org_1', {
-      priorityId: urgent.id,
-    } as unknown as Parameters<typeof service.list>[1])
+    const rows = expectValue(
+      await service.list('org_1', {
+        priorityId: urgent.id,
+      } as unknown as Parameters<typeof service.list>[1])
+    )
     expect(rows[0].priorityId).toBe(urgent.id)
   })
 
   it('serializes timestamps', async () => {
-    const rows = await service.list('org_1')
+    const rows = expectValue(await service.list('org_1'))
     expect(rows[0].createdAt).toBe(Math.floor(at.getTime() / 1000))
     expect(rows[0].updatedAt).toBe(Math.floor(at.getTime() / 1000))
   })

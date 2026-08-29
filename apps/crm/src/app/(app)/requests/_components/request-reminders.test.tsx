@@ -207,10 +207,9 @@ describe('RequestRemindersSection', () => {
       await user.type(screen.getByLabelText('Remind at'), '2026-09-01T09:30')
       await user.click(screen.getByRole('button', { name: 'Add reminder' }))
 
-      await waitFor(() =>
-        expect(mocks.error).toHaveBeenCalledWith('Request not found.')
-      )
+      await screen.findByText('Request not found.')
       expect(mocks.refresh).not.toHaveBeenCalled()
+      expect(mocks.error).not.toHaveBeenCalled()
     })
   })
 
@@ -291,10 +290,9 @@ describe('RequestRemindersSection', () => {
         screen.getByRole('button', { name: 'Delete Chase the courier' })
       )
 
-      await waitFor(() =>
-        expect(mocks.error).toHaveBeenCalledWith('Request reminder not found.')
-      )
+      await screen.findByText('Request reminder not found.')
       expect(mocks.refresh).not.toHaveBeenCalled()
+      expect(mocks.error).not.toHaveBeenCalled()
     })
   })
 })

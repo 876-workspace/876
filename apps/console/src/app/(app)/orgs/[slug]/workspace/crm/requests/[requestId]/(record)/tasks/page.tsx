@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { AppError } from '@876/ui/app-error'
 
 import { RequestTasksSection } from '@/features/crm/components/request-tasks'
 import {
@@ -7,7 +8,7 @@ import {
   loadOrgRequest,
   loadOrgTasks,
 } from '@/features/crm/request-data'
-import { resolveOrg } from '../../../../../../_data'
+import { resolveOrgResult } from '../../../../../../_data'
 
 export const metadata = { title: 'Tasks' }
 
@@ -15,31 +16,72 @@ type Props = { params: Promise<{ slug: string; requestId: string }> }
 
 export default async function OrgRequestTasksPage({ params }: Props) {
   const { slug, requestId } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const orgResult = await resolveOrgResult(slug)
+  if (orgResult.error?.code === 'organization/not-found') notFound()
+  if (orgResult.error)
+    return (
+      <AppError
+        title="Organization details are temporarily unavailable"
+        error={orgResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+  if (!orgResult.data) notFound()
 
-  const [{ session, request }, tasks, priorities, { members }] =
+  const [requestResult, tasksResult, prioritiesResult, directory] =
     await Promise.all([
       loadOrgRequest(
-        org.id,
+        orgResult.data.id,
         requestId,
         `/orgs/${slug}/workspace/crm/requests/${requestId}/tasks`
       ),
-      loadOrgTasks(org.id, requestId),
-      loadOrgPriorities(org.id),
-      loadOrgDirectory(org.id),
+      loadOrgTasks(orgResult.data.id, requestId),
+      loadOrgPriorities(orgResult.data.id),
+      loadOrgDirectory(orgResult.data.id),
     ])
 
-  if (!request) notFound()
+  if (!requestResult.request) {
+    return requestResult.error ? (
+      <AppError
+        title="Request data is temporarily unavailable"
+        error={requestResult.error}
+        variant="banner"
+        showCode
+      />
+    ) : null
+  }
+
+  const blockingError = tasksResult.error ?? prioritiesResult.error
 
   return (
-    <RequestTasksSection
-      organizationId={org.id}
-      requestId={request.id}
-      tasks={tasks}
-      priorities={priorities}
-      members={members}
-      currentUserId={session.id}
-    />
+    <div className="space-y-3">
+      {blockingError ? (
+        <AppError
+          title="Task data is temporarily unavailable"
+          error={blockingError}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      {directory.membersError ? (
+        <AppError
+          title="Assignee details are temporarily incomplete"
+          error={directory.membersError}
+          variant="inline"
+          showCode
+        />
+      ) : null}
+      {blockingError ? null : (
+        <RequestTasksSection
+          organizationId={orgResult.data.id}
+          requestId={requestResult.request.id}
+          tasks={tasksResult.tasks}
+          priorities={prioritiesResult.priorities}
+          members={directory.members}
+          currentUserId={requestResult.session.id}
+        />
+      )}
+    </div>
   )
 }

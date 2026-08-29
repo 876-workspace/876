@@ -1,3 +1,4 @@
+import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { Suspense } from 'react'
@@ -33,19 +34,33 @@ async function RequestCreateFormData() {
     requireSession('/support/new'),
   ])
   if (!org) return <PlatformOrganizationUnavailable />
-  const [customers, priorities] = await Promise.all([
+
+  const [customersResult, prioritiesResult] = await Promise.all([
     loadOrgRequestCustomers(org.id),
     loadOrgPriorities(org.id),
   ])
+  const blockingError = customersResult.error ?? prioritiesResult.error
 
   return (
-    <RequestCreateForm
-      organizationId={org.id}
-      requestsHref="/support"
-      currentUserId={session.id}
-      customers={customers}
-      priorities={priorities}
-    />
+    <div className="space-y-3">
+      {blockingError ? (
+        <AppError
+          title="Some request form data is temporarily unavailable"
+          error={blockingError}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      {blockingError ? null : (
+        <RequestCreateForm
+          organizationId={org.id}
+          requestsHref="/support"
+          currentUserId={session.id}
+          customers={customersResult.customers}
+          priorities={prioritiesResult.priorities}
+        />
+      )}
+    </div>
   )
 }
 

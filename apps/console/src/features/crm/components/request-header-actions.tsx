@@ -1,7 +1,8 @@
 'use client'
 
-import { buttonVariants } from '@876/ui/button'
 import { cn } from '@876/core/utils'
+import { AppError } from '@876/ui/app-error'
+import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,8 +37,8 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
-import type { RequestStatus } from '../types'
 
+import type { RequestStatus } from '../types'
 import { DeleteRequestDialog } from './delete-request-dialog'
 import { NEW_NOTE_FIELD_ID } from './request-notes'
 import { NEW_REMINDER_FIELD_ID } from './request-reminders'
@@ -53,6 +54,8 @@ export type HeaderMember = {
   userId: string
   name: string
 }
+
+type ErrorValue = { code: string; message: string }
 
 function notYet(label: string) {
   toast(`${label} isn’t available yet.`)
@@ -83,6 +86,7 @@ export function RequestHeaderActions({
 }) {
   const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [error, setError] = useState<ErrorValue | null>(null)
 
   function copyId() {
     navigator.clipboard.writeText(requestId)
@@ -90,11 +94,12 @@ export function RequestHeaderActions({
   }
 
   async function assignToUser(userId: string | null, userName?: string) {
+    setError(null)
     const result = await client.requests.update(organizationId, requestId, {
       assigneeId: userId,
     })
     if (result.error) {
-      toast.error(result.error.message)
+      setError(result.error)
       return
     }
     toast.success(
@@ -108,11 +113,12 @@ export function RequestHeaderActions({
   }
 
   async function assignToTeam(teamId: string | null, teamName?: string) {
+    setError(null)
     const result = await client.requests.update(organizationId, requestId, {
       teamId,
     })
     if (result.error) {
-      toast.error(result.error.message)
+      setError(result.error)
       return
     }
     toast.success(
@@ -133,196 +139,206 @@ export function RequestHeaderActions({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <QuickStatusSelector
-        organizationId={organizationId}
-        requestId={requestId}
-        currentStatus={status}
-      />
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <QuickStatusSelector
+          organizationId={organizationId}
+          requestId={requestId}
+          currentStatus={status}
+        />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          className={cn(
-            buttonVariants({ variant: 'outline', size: 'sm' }),
-            'h-8 gap-1.5'
-          )}
-        >
-          <UserPlus className="size-3.5" />
-          Assign
-          <ChevronDownIcon className="size-3.5 opacity-60" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-auto min-w-44">
-          {currentUserId && (
-            <DropdownMenuItem onClick={() => assignToUser(currentUserId)}>
-              <User className="size-4" />
-              Assign to me
-            </DropdownMenuItem>
-          )}
-
-          {departments.length > 0 && (
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Users className="size-4" />
-                Assign to team
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-auto min-w-44">
-                <DropdownMenuItem onClick={() => assignToTeam(null)}>
-                  No team
-                </DropdownMenuItem>
-                {departments.map((dept) => (
-                  <DropdownMenuItem
-                    key={dept.id}
-                    onClick={() => assignToTeam(dept.id, dept.name)}
-                  >
-                    {dept.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          )}
-
-          {members.length > 0 && (
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'h-8 gap-1.5'
+            )}
+          >
+            <UserPlus className="size-3.5" />
+            Assign
+            <ChevronDownIcon className="size-3.5 opacity-60" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto min-w-44">
+            {currentUserId && (
+              <DropdownMenuItem onClick={() => assignToUser(currentUserId)}>
                 <User className="size-4" />
-                Assign to member
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-auto min-w-44">
-                <DropdownMenuItem onClick={() => assignToUser(null)}>
-                  Unassigned
-                </DropdownMenuItem>
-                {members.map((member) => (
-                  <DropdownMenuItem
-                    key={member.userId}
-                    onClick={() => assignToUser(member.userId, member.name)}
-                  >
-                    {member.name}
+                Assign to me
+              </DropdownMenuItem>
+            )}
+
+            {departments.length > 0 && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Users className="size-4" />
+                  Assign to team
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-auto min-w-44">
+                  <DropdownMenuItem onClick={() => assignToTeam(null)}>
+                    No team
                   </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          )}
+                  {departments.map((dept) => (
+                    <DropdownMenuItem
+                      key={dept.id}
+                      onClick={() => assignToTeam(dept.id, dept.name)}
+                    >
+                      {dept.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
 
-          <DropdownMenuSeparator />
+            {members.length > 0 && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <User className="size-4" />
+                  Assign to member
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-auto min-w-44">
+                  <DropdownMenuItem onClick={() => assignToUser(null)}>
+                    Unassigned
+                  </DropdownMenuItem>
+                  {members.map((member) => (
+                    <DropdownMenuItem
+                      key={member.userId}
+                      onClick={() => assignToUser(member.userId, member.name)}
+                    >
+                      {member.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
 
-          <DropdownMenuItem onClick={() => assignToUser(null)}>
-            Unassign
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuSeparator />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger
+            <DropdownMenuItem onClick={() => assignToUser(null)}>
+              Unassign
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'h-8 gap-1.5'
+            )}
+          >
+            Add
+            <ChevronDownIcon className="size-3.5 text-sky-600 dark:text-sky-400" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto min-w-44">
+            <DropdownMenuItem
+              onClick={() => compose(NEW_NOTE_FIELD_ID, baseHref)}
+            >
+              <StickyNote className="size-4" />
+              Note
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => compose(NEW_TASK_FIELD_ID, `${baseHref}/tasks`)}
+            >
+              <ClipboardList className="size-4" />
+              Task
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                compose(NEW_REMINDER_FIELD_ID, `${baseHref}/reminders`)
+              }
+            >
+              <Bell className="size-4" />
+              Reminder
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <button
+          type="button"
+          onClick={() => notYet('Editing a request')}
           className={cn(
             buttonVariants({ variant: 'outline', size: 'sm' }),
             'h-8 gap-1.5'
           )}
         >
-          Add
-          <ChevronDownIcon className="size-3.5 text-sky-600 dark:text-sky-400" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-auto min-w-44">
-          <DropdownMenuItem
-            onClick={() => compose(NEW_NOTE_FIELD_ID, baseHref)}
+          <Pencil className="size-3.5" />
+          Edit
+        </button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'icon-sm' }),
+              'size-8'
+            )}
+            aria-label="More actions"
           >
-            <StickyNote className="size-4" />
-            Note
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => compose(NEW_TASK_FIELD_ID, `${baseHref}/tasks`)}
-          >
-            <ClipboardList className="size-4" />
-            Task
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() =>
-              compose(NEW_REMINDER_FIELD_ID, `${baseHref}/reminders`)
-            }
-          >
-            <Bell className="size-4" />
-            Reminder
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <MoreHorizontalIcon className="size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto min-w-44">
+            <DropdownMenuItem onClick={() => notYet('Sharing a request')}>
+              <Share2 className="size-4" />
+              Share
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => notYet('Duplicating a request')}>
+              <Duplicate className="size-4" />
+              Duplicate
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => notYet('Merging requests')}>
+              <Merge className="size-4" />
+              Merge
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => notYet('Printing a request')}>
+              <Printer className="size-4" />
+              Print
+            </DropdownMenuItem>
 
-      <button
-        type="button"
-        onClick={() => notYet('Editing a request')}
-        className={cn(
-          buttonVariants({ variant: 'outline', size: 'sm' }),
-          'h-8 gap-1.5'
-        )}
-      >
-        <Pencil className="size-3.5" />
-        Edit
-      </button>
+            <DropdownMenuSeparator />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          className={cn(
-            buttonVariants({ variant: 'outline', size: 'icon-sm' }),
-            'size-8'
-          )}
-          aria-label="More actions"
-        >
-          <MoreHorizontalIcon className="size-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-auto min-w-44">
-          <DropdownMenuItem onClick={() => notYet('Sharing a request')}>
-            <Share2 className="size-4" />
-            Share
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => notYet('Duplicating a request')}>
-            <Duplicate className="size-4" />
-            Duplicate
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => notYet('Merging requests')}>
-            <Merge className="size-4" />
-            Merge
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => notYet('Printing a request')}>
-            <Printer className="size-4" />
-            Print
-          </DropdownMenuItem>
+            <DropdownMenuItem onClick={copyId}>
+              <Copy className="size-4" />
+              Copy ID
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={customerHref} />}>
+              <User className="size-4" />
+              View customer
+            </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={copyId}>
-            <Copy className="size-4" />
-            Copy ID
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={customerHref} />}>
-            <User className="size-4" />
-            View customer
-          </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => notYet('Exporting a request')}>
+              <ArrowDownFromLine className="size-4" />
+              Export
+            </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={() => notYet('Exporting a request')}>
-            <ArrowDownFromLine className="size-4" />
-            Export
-          </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash className="size-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <Trash className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DeleteRequestDialog
-        organizationId={organizationId}
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        requestId={requestId}
-        requestNumber={requestNumber}
-        currentUserId={currentUserId}
-      />
+        <DeleteRequestDialog
+          organizationId={organizationId}
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          requestId={requestId}
+          requestNumber={requestNumber}
+          currentUserId={currentUserId}
+        />
+      </div>
+      {error ? (
+        <AppError
+          title="Request assignment could not be updated"
+          error={error}
+          variant="inline"
+          showCode
+        />
+      ) : null}
     </div>
   )
 }

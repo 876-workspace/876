@@ -21,7 +21,7 @@ describe('organization members loading strategy', () => {
   })
 
   it('does not rebuild the roster with a second users request', () => {
-    expect(pageSource).toContain('resolveOrgMembers(org.id)')
+    expect(pageSource).toMatch(/resolveOrgMembers\([\w.]+\.id\)/)
     expect(pageSource).not.toContain('$876.memberships.admin.list')
     expect(pageSource).not.toContain('$876.users.admin.list')
   })

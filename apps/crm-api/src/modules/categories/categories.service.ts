@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   CreateCategoryInput,
   DeleteCategoryInput,
@@ -11,9 +11,7 @@ import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './categories.repository.js'
 
 type CategoryRow = Awaited<ReturnType<typeof repository.list>>[number]
-type SubcategoryRow = NonNullable<
-  Awaited<ReturnType<typeof repository.retrieveSub>>
->
+type SubcategoryRow = NonNullable<Awaited<ReturnType<typeof repository.retrieveSub>>>
 
 export function slugify(name: string) {
   return (
@@ -28,9 +26,8 @@ export function slugify(name: string) {
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
-
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
   return tenant
 }
 
@@ -57,19 +54,21 @@ async function validateDefaultPriority(
   tenantId: string,
   defaultPriorityId: string | null | undefined
 ) {
-  if (defaultPriorityId)
-    await priorities.requireActiveForTenant(tenantId, defaultPriorityId)
+  if (!defaultPriorityId) return null
+  const priority = await priorities.requireActiveForTenant(tenantId, defaultPriorityId)
+  return isError(priority) ? priority : null
 }
 
 export async function list(organizationId: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   return (await repository.list(tenant.id)).map(serializeCategory)
 }
 
 export async function retrieve(organizationId: string, categoryId: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const category = await repository.retrieve(tenant.id, categoryId)
-
   return category ? serializeCategory(category) : null
 }
 
@@ -78,13 +77,15 @@ export async function create(
   input: CreateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
-  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  if (isError(tenant)) return tenant
+  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  if (priorityError) return priorityError
+
   const category = await repository.create({
     tenantId: tenant.id,
     ...input,
     slug: slugify(input.name),
   })
-
   return serializeCategory(category)
 }
 
@@ -94,15 +95,16 @@ export async function update(
   input: UpdateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) return null
 
-  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  if (priorityError) return priorityError
   const updatedCategory = await repository.update(categoryId, {
     ...input,
     ...(input.name === undefined ? {} : { slug: slugify(input.name) }),
   })
-
   return serializeCategory(updatedCategory)
 }
 
@@ -112,11 +114,11 @@ export async function remove(
   input: DeleteCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) return null
   if (await repository.used(tenant.id, categoryId))
-    throw crmError('crm/category-in-use')
-
+    return getError('crm/category-in-use')
   return repository.remove({ id: categoryId, ...input })
 }
 
@@ -126,10 +128,12 @@ export async function createSub(
   input: CreateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const category = await repository.retrieve(tenant.id, categoryId)
-  if (!category) throw crmError('crm/category-not-found')
+  if (!category) return getError('crm/category-not-found')
 
-  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  if (priorityError) return priorityError
   return serializeSubcategory(
     await repository.createSub({
       tenantId: tenant.id,
@@ -147,6 +151,7 @@ export async function updateSub(
   input: UpdateCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const subcategory = await repository.retrieveSub(
     tenant.id,
     categoryId,
@@ -154,7 +159,8 @@ export async function updateSub(
   )
   if (!subcategory) return null
 
-  await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  if (priorityError) return priorityError
   return serializeSubcategory(
     await repository.updateSub(subcategoryId, {
       ...input,
@@ -170,6 +176,7 @@ export async function removeSub(
   input: DeleteCategoryInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const subcategory = await repository.retrieveSub(
     tenant.id,
     categoryId,
@@ -177,8 +184,7 @@ export async function removeSub(
   )
   if (!subcategory) return null
   if (await repository.usedSub(tenant.id, subcategoryId))
-    throw crmError('crm/subcategory-in-use')
-
+    return getError('crm/subcategory-in-use')
   return repository.removeSub({ id: subcategoryId, ...input })
 }
 

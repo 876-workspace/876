@@ -194,7 +194,7 @@ describe('reconcileCrmProvisioning - reference errors', () => {
         'crm_tnt_1',
         m as unknown as Parameters<typeof reconcileCrmProvisioning>[1]
       )
-    ).rejects.toMatchObject({ code: 'crm/provisioning-invalid' })
+    ).resolves.toMatchObject({ code: 'crm/provisioning-invalid' })
     expect(categories.ensureProvisionedCategory).not.toHaveBeenCalled()
   })
 
@@ -218,7 +218,7 @@ describe('reconcileCrmProvisioning - reference errors', () => {
         'crm_tnt_1',
         m as unknown as Parameters<typeof reconcileCrmProvisioning>[1]
       )
-    ).rejects.toMatchObject({ code: 'crm/provisioning-invalid' })
+    ).resolves.toMatchObject({ code: 'crm/provisioning-invalid' })
     expect(categories.ensureProvisionedSubcategory).not.toHaveBeenCalled()
   })
 
@@ -242,7 +242,7 @@ describe('reconcileCrmProvisioning - reference errors', () => {
         'crm_tnt_1',
         m as unknown as Parameters<typeof reconcileCrmProvisioning>[1]
       )
-    ).rejects.toMatchObject({ code: 'crm/provisioning-invalid' })
+    ).resolves.toMatchObject({ code: 'crm/provisioning-invalid' })
   })
 })
 

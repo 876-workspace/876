@@ -1,8 +1,9 @@
 # Data Fetching Boundaries
 
 Read `.claude/rules/data-loading.md` before adding or changing any page that
-renders live data. Data ownership and data loading are separate concerns: this
-file defines **where data comes from**; `data-loading.md` defines **how pages
+renders live data. Read `.claude/rules/error-handling.md` before handling a
+failed service/SDK result. Data ownership and data loading are separate concerns:
+this file defines **where data comes from**; `data-loading.md` defines **how pages
 wait for it without blocking the UI**.
 
 All database access, provider calls, and business logic belong in the owning
@@ -22,6 +23,7 @@ not** contain raw service fetches or direct DB/provider access.
 
 ```tsx
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { $876 } from '@/lib/876'
 
 export default function UsersPage() {
@@ -37,10 +39,32 @@ export default function UsersPage() {
 
 async function UsersTableData() {
   const result = await $876.users.admin.list({ limit: 25 })
-  if (result.error) throw new Error(result.error.message)
-  return <UsersTable data={result.data.data} />
+  const rows = result.data?.data ?? []
+
+  return (
+    <div className="space-y-3">
+      {result.error ? (
+        <AppError
+          title="Some user data could not be loaded"
+          error={result.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      <UsersTable data={rows} />
+    </div>
+  )
 }
 ```
+
+Expected SDK/application errors stay values all the way to the UI. Never replace
+`result.error` with `throw new Error(result.error.message)`; that discards its
+stable code and turns ordinary application state into a framework crash.
+
+A failed dataset is not allowed to own the page. Keep the toolbar, filters,
+table/list shell, and pagination region mounted. An empty structural dataset is
+acceptable during a failure only when a visible notice makes clear that the
+empty region represents unavailable data rather than a real "no records" state.
 
 The important boundary is deliberate: the page shell renders before the live
 request finishes. Do not copy the request into the top-level page merely because
@@ -81,6 +105,9 @@ export default async function Page() {
   const result = await $876.users.admin.list({ limit: 25 })
   return <UsersPage data={result.data?.data ?? []} />
 }
+
+// ❌ Throwing a known application error returned by the typed client.
+if (result.error) throw new Error(result.error.message)
 ```
 
 ## Adding new API operations
@@ -94,3 +121,5 @@ export default async function Page() {
    directly.
 5. For page-sized enrichment, add a **batch/purpose-built operation** rather than
    issuing one HTTP request per row.
+6. Preserve expected errors as values and render them at the smallest useful UI
+   scope per `.claude/rules/error-handling.md`.

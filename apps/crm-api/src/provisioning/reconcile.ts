@@ -1,7 +1,8 @@
-import { crmError } from '../http/errors.js'
-import type { CrmProvisioningManifest } from '../types/provisioning.js'
+import { getError } from '@876/core'
+
 import * as categories from '../modules/categories/index.js'
 import * as priorities from '../modules/priorities/index.js'
+import type { CrmProvisioningManifest } from '../types/provisioning.js'
 
 export async function reconcileCrmProvisioning(
   tenantId: string,
@@ -28,7 +29,7 @@ export async function reconcileCrmProvisioning(
       ? priorityIds.get(category.defaultPriorityKey)
       : null
     if (category.defaultPriorityKey && !defaultPriorityId)
-      throw crmError('crm/provisioning-invalid')
+      return getError('crm/provisioning-invalid')
 
     const row = await categories.ensureProvisionedCategory(tenantId, {
       provisioningKey: category.key,
@@ -49,7 +50,7 @@ export async function reconcileCrmProvisioning(
       ? priorityIds.get(subcategory.defaultPriorityKey)
       : null
     if (!categoryId || (subcategory.defaultPriorityKey && !defaultPriorityId))
-      throw crmError('crm/provisioning-invalid')
+      return getError('crm/provisioning-invalid')
 
     await categories.ensureProvisionedSubcategory(tenantId, {
       provisioningKey: subcategory.key,
@@ -63,4 +64,6 @@ export async function reconcileCrmProvisioning(
       defaultPriorityId: defaultPriorityId ?? null,
     })
   }
+
+  return null
 }

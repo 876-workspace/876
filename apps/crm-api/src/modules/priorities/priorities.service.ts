@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   CreateRequestPriorityInput,
   DeleteRequestPriorityInput,
@@ -9,9 +9,7 @@ import type {
 import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './priorities.repository.js'
 
-type PriorityRow = NonNullable<
-  Awaited<ReturnType<typeof repository.retrieve>>
->
+type PriorityRow = NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>
 
 function slugify(name: string) {
   return (
@@ -26,9 +24,8 @@ function slugify(name: string) {
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
-
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
   return tenant
 }
 
@@ -55,15 +52,15 @@ export function serialize(priority: PriorityRow): RequestPriority {
 
 export async function list(organizationId: string, active?: boolean) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const priorities = await repository.list(tenant.id, active)
-
   return priorities.map(serialize)
 }
 
 export async function retrieve(organizationId: string, priorityId: string) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const priority = await repository.retrieve(tenant.id, priorityId)
-
   return priority ? serialize(priority) : null
 }
 
@@ -72,6 +69,7 @@ export async function create(
   input: CreateRequestPriorityInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const currentDefault = await repository.retrieveDefault(tenant.id)
   const priority = await repository.create({
     tenantId: tenant.id,
@@ -99,11 +97,12 @@ export async function update(
   input: UpdateRequestPriorityInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, priorityId)
   if (!current) return null
 
   if (current.isDefault && (input.isDefault === false || input.isActive === false))
-    throw crmError('crm/priority-default-required')
+    return getError('crm/priority-default-required')
 
   const next = await repository.update(priorityId, {
     ...input,
@@ -123,11 +122,12 @@ export async function remove(
   input: DeleteRequestPriorityInput
 ) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
   const priority = await repository.retrieve(tenant.id, priorityId)
   if (!priority) return null
-  if (priority.isDefault) throw crmError('crm/priority-default-required')
+  if (priority.isDefault) return getError('crm/priority-default-required')
   if (await repository.isReferenced(tenant.id, priorityId))
-    throw crmError('crm/priority-in-use')
+    return getError('crm/priority-in-use')
 
   return repository.remove(priorityId, input.deletedBy)
 }
@@ -140,13 +140,9 @@ export async function retrieveDefaultForTenant(tenantId: string) {
   return repository.retrieveDefault(tenantId)
 }
 
-export async function requireActiveForTenant(
-  tenantId: string,
-  priorityId: string
-) {
+export async function requireActiveForTenant(tenantId: string, priorityId: string) {
   const priority = await repository.retrieveActive(tenantId, priorityId)
-  if (!priority) throw crmError('crm/priority-not-found')
-
+  if (!priority) return getError('crm/priority-not-found')
   return priority
 }
 

@@ -30,7 +30,7 @@ describe('org CRM surfaces read the tenant their name implies', () => {
 
   it('support scopes to the customer record representing the organization', () => {
     expect(SUPPORT).toContain('resolveOrgCustomerWithUs')
-    expect(SUPPORT).toContain('customerId: customer.profile.id')
+    expect(SUPPORT).toMatch(/customerId: [A-Za-z.]*\bprofile\.id/)
   })
 
   it('the workspace reads the organizations own tenant', () => {

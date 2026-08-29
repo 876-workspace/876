@@ -1,5 +1,7 @@
-import type { CrmProvisioningManifest } from '../../types/provisioning.js'
+import { isError } from '@876/core'
+
 import { reconcileCrmProvisioning } from '../../provisioning/reconcile.js'
+import type { CrmProvisioningManifest } from '../../types/provisioning.js'
 import * as repository from './tenants.repository.js'
 
 export function retrieveByOrganization(organizationId: string) {
@@ -13,6 +15,8 @@ export async function ensure(
   const tenant = await repository.ensure(organizationId)
   if (!provisioning) return tenant
 
-  await reconcileCrmProvisioning(tenant.id, provisioning)
+  const provisioningError = await reconcileCrmProvisioning(tenant.id, provisioning)
+  if (isError(provisioningError)) return provisioningError
+
   return repository.markProvisioned(tenant.id, provisioning.revision)
 }

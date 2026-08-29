@@ -1,4 +1,4 @@
-import { crmError } from '../../http/errors.js'
+import { getError, isError } from '@876/core'
 import type {
   AddTeamMemberInput,
   CreateTeamInput,
@@ -11,9 +11,7 @@ import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './teams.repository.js'
 
 type TeamRow = Awaited<ReturnType<typeof repository.list>>[number]
-type TeamWithMembersRow = NonNullable<
-  Awaited<ReturnType<typeof repository.retrieve>>
->
+type TeamWithMembersRow = NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>
 type MemberRow = Awaited<ReturnType<typeof repository.listMembers>>[number]
 
 function slugify(name: string) {
@@ -29,9 +27,8 @@ function slugify(name: string) {
 
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
-
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
   return tenant
 }
 
@@ -64,15 +61,13 @@ function serialize(team: TeamRow | TeamWithMembersRow) {
     createdBy: team.createdBy,
     createdAt: Math.floor(team.createdAt.getTime() / 1000),
     updatedAt: Math.floor(team.updatedAt.getTime() / 1000),
-    ...('members' in team
-      ? { members: team.members.map(serializeMember) }
-      : {}),
+    ...('members' in team ? { members: team.members.map(serializeMember) } : {}),
   }
 }
 
-/** Lists tenant teams, with members only when callers explicitly request them. */
 export async function list(organizationId: string, input: ListTeamsInput) {
   const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
 
   const teams = input.includeMembers
     ? await repository.listWithMembers(tenant.id, input.status)
@@ -81,92 +76,75 @@ export async function list(organizationId: string, input: ListTeamsInput) {
   return teams.map(serialize)
 }
 
-/** Retrieves one visible team so soft-deleted records cannot reappear. */
 export async function retrieve(organizationId: string, id: string) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
-  if (!team) return null
-
-  return serialize(team)
+  return team ? serialize(team) : null
 }
 
-/** Creates a team with a stable slug derived from its display name. */
 export async function create(organizationId: string, input: CreateTeamInput) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.create({
     tenantId: tenant.id,
     ...input,
     slug: slugify(input.name),
   })
-
   return serialize(team)
 }
 
-/** Updates an existing visible team while preserving tenant ownership. */
 export async function update(
   organizationId: string,
   id: string,
   input: UpdateTeamInput
 ) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
   if (!team) return null
-
   const row = await repository.update(id, { tenantId: tenant.id, ...input })
-
   return serialize(row)
 }
 
-/** Deletes a team and clears references that would otherwise point to an invisible team. */
 export async function remove(
   organizationId: string,
   id: string,
   input: DeleteTeamInput
 ) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
   if (!team) return null
-
   return repository.remove({ tenantId: tenant.id, id, ...input })
 }
 
-/** Lists a visible team's members. */
 export async function listMembers(organizationId: string, id: string) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
   if (!team) return null
-
   const members = await repository.listMembers(tenant.id, id)
-
   return members.map(serializeMember)
 }
 
-/** Adds a member or updates their role because membership is unique per team and user. */
 export async function addMember(
   organizationId: string,
   id: string,
   input: AddTeamMemberInput
 ) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
   if (!team) return null
-
   const memberRow = await repository.upsertMember({
     tenantId: tenant.id,
     teamId: id,
     ...input,
   })
-
   return serializeMember(memberRow)
 }
 
-/** Changes a member role, returning null only when the membership is truly absent. */
 export async function changeMember(
   organizationId: string,
   id: string,
@@ -174,33 +152,26 @@ export async function changeMember(
   input: UpdateTeamMemberInput
 ) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
   if (!team) return null
-
   const memberRow = await repository.retrieveMember(tenant.id, id, userId)
   if (!memberRow) return null
-
   const row = await repository.updateMember(tenant.id, id, userId, input.role)
-
   return serializeMember(row)
 }
 
-/** Removes a member after an existence check so storage failures remain diagnosable. */
 export async function removeMember(
   organizationId: string,
   id: string,
   userId: string
 ) {
   const tenant = await requireTenant(organizationId)
-
+  if (isError(tenant)) return tenant
   const team = await repository.retrieve(tenant.id, id)
   if (!team) return null
-
   const memberRow = await repository.retrieveMember(tenant.id, id, userId)
   if (!memberRow) return null
-
   await repository.removeMember(tenant.id, id, userId)
-
   return { object: 'team_member' as const, id: userId, deleted: true as const }
 }

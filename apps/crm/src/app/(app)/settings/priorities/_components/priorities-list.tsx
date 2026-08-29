@@ -1,16 +1,18 @@
 'use client'
 
+import { AppError } from '@876/ui/app-error'
+import { Badge } from '@876/ui/badge'
+import { Button, buttonVariants } from '@876/ui/button'
+import { Empty, EmptyContent, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { Badge } from '@876/ui/badge'
-import { Button, buttonVariants } from '@876/ui/button'
-import { Empty, EmptyContent, EmptyHeader, EmptyTitle } from '@876/ui/empty'
-
 import { client } from '@/lib/client'
 import type { RequestPriority } from '@/types/crm'
+
+type ErrorValue = { code: string; message: string }
 
 export function PrioritiesList({
   priorities,
@@ -19,21 +21,18 @@ export function PrioritiesList({
 }) {
   const router = useRouter()
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [error, setError] = useState<ErrorValue | null>(null)
 
   async function toggleActive(priority: RequestPriority) {
-    if (priority.isDefault && priority.isActive) {
-      toast.error('Choose another default priority before archiving this one.')
-      return
-    }
-
     setBusyId(priority.id)
+    setError(null)
     const result = await client.requestPriorities.update(priority.id, {
       isActive: !priority.isActive,
     })
     setBusyId(null)
 
     if (result.error) {
-      toast.error(result.error.message)
+      setError(result.error)
       return
     }
 
@@ -59,68 +58,82 @@ export function PrioritiesList({
     )
 
   return (
-    <div className="876-card overflow-hidden">
-      <ul className="divide-y">
-        {priorities.map((priority) => (
-          <li
-            key={priority.id}
-            className="flex flex-wrap items-center gap-4 px-5 py-4"
-          >
-            <span
-              className="bg-muted size-3 shrink-0 rounded-full border"
-              style={
-                priority.color
-                  ? { backgroundColor: priority.color, borderColor: priority.color }
-                  : undefined
-              }
-              aria-hidden="true"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium">{priority.name}</span>
-                {priority.isDefault ? <Badge variant="outline">Default</Badge> : null}
-                <Badge variant={priority.isActive ? 'success' : 'secondary'}>
-                  {priority.isActive ? 'Active' : 'Archived'}
-                </Badge>
-                {priority.provisioningKey ? (
-                  <Badge variant="secondary">Provisioned</Badge>
+    <div className="space-y-3">
+      {error ? (
+        <AppError
+          title="Priority could not be updated"
+          error={error}
+          variant="inline"
+        />
+      ) : null}
+      <div className="876-card overflow-hidden">
+        <ul className="divide-y">
+          {priorities.map((priority) => (
+            <li
+              key={priority.id}
+              className="flex flex-wrap items-center gap-4 px-5 py-4"
+            >
+              <span
+                className="bg-muted size-3 shrink-0 rounded-full border"
+                style={
+                  priority.color
+                    ? {
+                        backgroundColor: priority.color,
+                        borderColor: priority.color,
+                      }
+                    : undefined
+                }
+                aria-hidden="true"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{priority.name}</span>
+                  {priority.isDefault ? (
+                    <Badge variant="outline">Default</Badge>
+                  ) : null}
+                  <Badge variant={priority.isActive ? 'success' : 'secondary'}>
+                    {priority.isActive ? 'Active' : 'Archived'}
+                  </Badge>
+                  {priority.provisioningKey ? (
+                    <Badge variant="secondary">Provisioned</Badge>
+                  ) : null}
+                </div>
+                <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                  <span>Severity {priority.weight}</span>
+                  <span>Order {priority.sortOrder}</span>
+                  <span className="font-mono">{priority.slug}</span>
+                </div>
+                {priority.description ? (
+                  <p className="text-muted-foreground mt-1.5 max-w-2xl text-sm">
+                    {priority.description}
+                  </p>
                 ) : null}
               </div>
-              <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                <span>Severity {priority.weight}</span>
-                <span>Order {priority.sortOrder}</span>
-                <span className="font-mono">{priority.slug}</span>
+              <div className="flex shrink-0 items-center gap-2">
+                <Link
+                  href={`/settings/priorities/${priority.id}/edit`}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  Edit
+                </Link>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={busyId === priority.id || priority.isDefault}
+                  onClick={() => void toggleActive(priority)}
+                >
+                  {busyId === priority.id
+                    ? 'Saving…'
+                    : priority.isActive
+                      ? 'Archive'
+                      : 'Restore'}
+                </Button>
               </div>
-              {priority.description ? (
-                <p className="text-muted-foreground mt-1.5 max-w-2xl text-sm">
-                  {priority.description}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Link
-                href={`/settings/priorities/${priority.id}/edit`}
-                className={buttonVariants({ variant: 'outline', size: 'sm' })}
-              >
-                Edit
-              </Link>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={busyId === priority.id || priority.isDefault}
-                onClick={() => void toggleActive(priority)}
-              >
-                {busyId === priority.id
-                  ? 'Saving…'
-                  : priority.isActive
-                    ? 'Archive'
-                    : 'Restore'}
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { AppError } from '@876/ui/app-error'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
@@ -22,14 +23,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • CRM customers - Organizations` }
 }
 
-/**
- * The customers an organization holds in its own CRM workspace.
- *
- * These are the organization's customers, not 876's. The Customers tab on the
- * organization page answers the other question — the organization's own
- * relationship with 876 — and the two must not be confused, which is exactly
- * why this one lives behind the workspace frame.
- */
 export default async function CrmWorkspaceCustomersPage({ params }: Props) {
   const { slug } = await params
 
@@ -55,10 +48,16 @@ async function CustomersData({ slug }: { slug: string }) {
   if (!org) notFound()
 
   const result = await $876.customerProfiles.list(org.id)
-  // A missing workspace is a state, not a failure. Anything else still reaches
-  // the error boundary, so a CRM outage cannot render as "no customers".
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
-  if (result.error) throw new Error(result.error.message)
+  if (result.error)
+    return (
+      <AppError
+        title="Customer data is temporarily unavailable"
+        error={result.error}
+        variant="banner"
+        showCode
+      />
+    )
 
   return (
     <CustomersTable

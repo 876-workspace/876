@@ -1,3 +1,4 @@
+import { isError } from '@876/core'
 import type {
   CreateReminderInput,
   RequestReminder,
@@ -37,8 +38,8 @@ function serialize(reminder: ReminderRow): RequestReminder {
 
 export async function list(organizationId: string, requestId: string) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const reminders = await repository.list(context.tenantId, requestId)
-
   return reminders.map(serialize)
 }
 
@@ -48,13 +49,13 @@ export async function create(
   input: CreateReminderInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const reminder = await repository.create({
     tenantId: context.tenantId,
     requestId,
     ...input,
     remindAt: fromUnixSeconds(input.remindAt),
   })
-
   return serialize(reminder)
 }
 
@@ -65,6 +66,7 @@ export async function update(
   input: UpdateReminderInput
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const current = await repository.retrieve(
     context.tenantId,
     requestId,
@@ -79,7 +81,6 @@ export async function update(
         ? undefined
         : fromUnixSeconds(input.remindAt),
   })
-
   return serialize(reminder)
 }
 
@@ -90,12 +91,12 @@ export async function remove(
   deletedBy: string
 ) {
   const context = await requireRequestContext(organizationId, requestId)
+  if (isError(context)) return context
   const reminder = await repository.retrieve(
     context.tenantId,
     requestId,
     reminderId
   )
   if (!reminder) return null
-
   return repository.remove(reminderId, deletedBy)
 }

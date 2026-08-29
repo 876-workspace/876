@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation'
-
+import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
+import { notFound } from 'next/navigation'
 
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
@@ -19,11 +19,25 @@ export default async function EditPriorityPage({ params }: Props) {
     context.orgId,
     priorityId
   )
-  if (result.error) {
-    if (result.error.code === 'crm/priority-not-found') notFound()
-    throw new Error(result.error.message)
-  }
-  if (!result.data) notFound()
+  if (result.error?.code === 'crm/priority-not-found') notFound()
+  if (!result.data && !result.error) notFound()
+
+  if (result.error)
+    return (
+      <Page>
+        <PageBreadcrumb
+          href="/settings/priorities"
+          label="Priorities"
+          className="mb-4"
+        />
+        <h1 className="876-page-title mb-4">Edit priority</h1>
+        <AppError
+          title="Priority data is temporarily unavailable"
+          error={result.error}
+          variant="banner"
+        />
+      </Page>
+    )
 
   return (
     <Page>

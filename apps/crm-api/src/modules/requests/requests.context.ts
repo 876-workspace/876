@@ -1,4 +1,5 @@
-import { crmError } from '../../http/errors.js'
+import { getError } from '@876/core'
+
 import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './requests.repository.js'
 
@@ -8,11 +9,11 @@ export async function requireRequestContext(
   requestId: string
 ) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
-  if (!tenant) throw crmError('crm/tenant-not-found')
-  if (tenant.status !== 'ACTIVE') throw crmError('crm/tenant-inactive')
+  if (!tenant) return getError('crm/tenant-not-found')
+  if (tenant.status !== 'ACTIVE') return getError('crm/tenant-inactive')
 
   const request = await repository.retrieve(tenant.id, requestId)
-  if (!request) throw crmError('crm/request-not-found')
+  if (!request) return getError('crm/request-not-found')
 
   return { tenantId: tenant.id, requestId: request.id }
 }

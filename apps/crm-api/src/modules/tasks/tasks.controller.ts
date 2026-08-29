@@ -1,5 +1,10 @@
 import type { Request, Response } from 'express'
 
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as service from './tasks.service.js'
 import {
   createTaskBodySchema,
@@ -9,53 +14,39 @@ import {
   updateTaskBodySchema,
 } from './tasks.schemas.js'
 
-function notFound(res: Response) {
-  return res.status(404).json({
-    data: null,
-    error: { code: 'crm/task-not-found', message: 'Request task not found.' },
-  })
-}
-
 export async function listTasks(req: Request, res: Response) {
   const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
-  const data = await service.list(organizationId, requestId)
+  const result = await service.list(organizationId, requestId)
 
-  res.json({
-    data: {
-      object: 'list',
-      data,
-      has_more: false,
-      total_count: data.length,
-      url: `/v1/organizations/${organizationId}/requests/${requestId}/tasks`,
-    },
-    error: null,
-  })
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/requests/${requestId}/tasks`
+  )
 }
 
 export async function createTask(req: Request, res: Response) {
   const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
   const input = createTaskBodySchema.parse(req.body)
+  const result = await service.create(organizationId, requestId, input)
 
-  res.status(201).json({
-    data: await service.create(organizationId, requestId, input),
-    error: null,
-  })
+  return sendCrmResult(res, result, 201)
 }
 
 export async function updateTask(req: Request, res: Response) {
   const { organizationId, id: requestId, taskId } = taskParamsSchema.parse(req.params)
   const input = updateTaskBodySchema.parse(req.body)
-  const data = await service.update(organizationId, requestId, taskId, input)
-  if (!data) return notFound(res)
+  const result = await service.update(organizationId, requestId, taskId, input)
+  if (!result) return sendCrmError(res, 'crm/task-not-found')
 
-  res.json({ data, error: null })
+  return sendCrmResult(res, result)
 }
 
 export async function deleteTask(req: Request, res: Response) {
   const { organizationId, id: requestId, taskId } = taskParamsSchema.parse(req.params)
   const { deletedBy } = deleteTaskBodySchema.parse(req.body)
-  const data = await service.remove(organizationId, requestId, taskId, deletedBy)
-  if (!data) return notFound(res)
+  const result = await service.remove(organizationId, requestId, taskId, deletedBy)
+  if (!result) return sendCrmError(res, 'crm/task-not-found')
 
-  res.json({ data, error: null })
+  return sendCrmResult(res, result)
 }
