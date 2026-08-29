@@ -13,6 +13,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  toChartDate,
   type ChartConfig,
 } from '../chart'
 
@@ -74,13 +75,13 @@ export function ChartTooltipLabelFormatter() {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
+                  labelFormatter={(value) =>
+                    toChartDate(value)?.toLocaleDateString('en-US', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric',
-                    })
-                  }}
+                    }) ?? value
+                  }
                 />
               }
               cursor={false}
