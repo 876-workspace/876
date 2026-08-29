@@ -121,7 +121,11 @@ export function TeamMembers({
                 <TableRow key={member.userId}>
                   <TableCell>
                     <span className="flex items-center gap-2">
-                      <CustomerAvatar name={member.name} src={member.avatar} />
+                      <CustomerAvatar
+                        name={member.name}
+                        src={member.avatar}
+                        className="rounded-full after:rounded-full [&_*]:rounded-full"
+                      />
                       <span className="font-medium">{member.name}</span>
                     </span>
                   </TableCell>

@@ -396,7 +396,7 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
                             <CustomerAvatar
                               name={member.name}
                               src={member.avatar}
-                              className="size-7"
+                              className="size-7 rounded-full after:rounded-full [&_*]:rounded-full"
                             />
                             <span className="text-foreground text-xs font-medium">
                               {member.name}
