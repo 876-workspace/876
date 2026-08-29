@@ -1,11 +1,16 @@
 import 'server-only'
 
+import { can, hasFeature, type AccessContext } from '@876/core/access'
 import { createAuthLoginPath } from '@876/core/auth/return-to'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+
 import { $876 } from '@/lib/876'
-import { CONSOLE_ACCESS_PERMISSION, hasPermission } from '@/lib/permissions'
-import { service } from '@/lib/service'
+import { CONSOLE_ACCESS_PERMISSION } from '@/lib/permissions'
+import {
+  resolveAccessContext,
+  resolveConsoleGrant,
+} from '@/lib/auth/access-context'
 import { getAuthSession, isSignedSession } from './session'
 import type { Access, RoutingUser, SessionUser } from '@/types/auth'
 
@@ -31,13 +36,16 @@ type PlatformUserData = Awaited<
 export const findConsoleAccess = cache(async function findConsoleAccess(
   userId: string
 ): Promise<Access | null> {
-  const member = await service.team.retrieve(userId)
+  const context = await resolveAccessContext(userId)
+  if (!context) return null
+
+  const member = await resolveConsoleGrant(userId)
   if (!member) return null
 
   return {
     id: member.userId,
     role: member.roleName,
-    permissions: member.role.permissions,
+    permissions: [...context.permissions],
     status: member.status,
   }
 })
@@ -67,11 +75,14 @@ function hydrateDisplay(
   }
 }
 
-async function requireAccess(
-  userId: string
-): Promise<{ access: Access; platformUser: PlatformUserData }> {
+async function requireAccess(userId: string): Promise<{
+  access: Access
+  context: AccessContext
+  platformUser: PlatformUserData
+}> {
+  const context = await resolveAccessContext(userId)
   const access = await findConsoleAccess(userId)
-  if (!access) redirect('/access-denied?reason=no-account')
+  if (!context || !access) redirect('/access-denied?reason=no-account')
 
   // Console owns authorization through its team row, while the platform owns
   // identity lifecycle. An explicit deleted/disabled platform account signs out;
@@ -95,10 +106,10 @@ async function requireAccess(
 
   if (accountUnavailable) redirect('/login')
   if (access.status !== 'active') redirect('/access-denied?reason=suspended')
-  if (!hasPermission(access, CONSOLE_ACCESS_PERMISSION))
+  if (!can(context, CONSOLE_ACCESS_PERMISSION))
     redirect('/access-denied?reason=permission')
 
-  return { access, platformUser }
+  return { access, context, platformUser }
 }
 
 export async function requireConsoleAccount(
@@ -106,6 +117,7 @@ export async function requireConsoleAccount(
   sessionUser?: Pick<SessionUser, 'email' | 'firstName' | 'lastName'>
 ): Promise<RoutingUser> {
   const { access, platformUser } = await requireAccess(userId)
+
   return hydrateDisplay(access, platformUser, sessionUser)
 }
 
@@ -113,8 +125,30 @@ export async function requireConsolePermission(
   userId: string,
   permission: string
 ): Promise<Access> {
-  const { access } = await requireAccess(userId)
-  if (!hasPermission(access, permission)) redirect('/')
+  const { access, context } = await requireAccess(userId)
+  if (!can(context, permission)) redirect('/')
+
+  return access
+}
+
+export async function requireConsoleFeature(
+  userId: string,
+  feature: string
+): Promise<Access> {
+  const { access, context } = await requireAccess(userId)
+  if (!hasFeature(context, feature)) redirect('/')
+
+  return access
+}
+
+export async function requireConsoleCapability(
+  userId: string,
+  requirement: { permission?: string; feature?: string }
+): Promise<Access> {
+  const { access, context } = await requireAccess(userId)
+
+  if (requirement.permission && !can(context, requirement.permission)) redirect('/')
+  if (requirement.feature && !hasFeature(context, requirement.feature)) redirect('/')
 
   return access
 }
