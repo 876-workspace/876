@@ -156,12 +156,10 @@ describe('TeamSplit', () => {
     render(<TeamSplit teams={teams} directory={directory} selectedId="new" />)
 
     expect(screen.getByLabelText('Close team creation')).toBeInTheDocument()
-    expect(screen.getByText('Create new team')).toBeInTheDocument()
+    expect(screen.getByText('New team')).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
     expect(screen.getByLabelText('Description')).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Create team' })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument()
   })
 
   it('renders empty state when teams list is empty', () => {

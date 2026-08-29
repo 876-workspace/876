@@ -17,16 +17,9 @@ import { Textarea } from '@876/ui/textarea'
 import { client } from '@/lib/client'
 import type { CrmTeamAutoAssign } from '@/types/crm'
 
-import { TEAM_COLORS, type TeamFormValues } from './team-form'
-import { getTeamColorVariant, TEAM_COLOR_VARIANTS } from './team-row'
-
-const EMPTY: TeamFormValues = {
-  name: '',
-  description: '',
-  color: 'blue',
-  autoAssign: 'NONE',
-  isDefault: false,
-}
+import { TeamColorPicker } from './team-color-picker'
+import { EMPTY_TEAM_FORM, type TeamFormValues } from './team-form'
+import { getTeamColorVariant } from './team-row'
 
 type ErrorValue = { code: string; message: string }
 
@@ -39,7 +32,7 @@ type Props = {
 const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
 export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
-  const [values, setValues] = useState<TeamFormValues>(EMPTY)
+  const [values, setValues] = useState<TeamFormValues>(EMPTY_TEAM_FORM)
   const [error, setError] = useState<ErrorValue | null>(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -65,15 +58,13 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
     setError(null)
     setNameError(null)
 
-    const payload = {
+    const result = await client.teams.create({
       name,
       description: values.description.trim() || null,
       color: values.color,
       autoAssign: values.autoAssign,
       isDefault: values.isDefault,
-    }
-
-    const result = await client.teams.create(payload)
+    })
 
     if (result.error) {
       setError(result.error)
@@ -92,27 +83,21 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
         className
       )}
     >
-      {/* Header */}
-      <header className="border-876-surface-border flex shrink-0 items-start gap-3.5 border-b px-6 py-5">
+      <header className="border-876-surface-border flex shrink-0 items-center gap-3 border-b px-6 py-4">
         <div
           className={cn(
-            'flex size-12 shrink-0 items-center justify-center rounded-xl border transition-colors',
+            'flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors',
             colorVariant.bg,
             colorVariant.text,
             colorVariant.border
           )}
         >
-          <Users className="size-6" />
+          <Users className="size-4" />
         </div>
 
-        <div className="min-w-0 flex-1 space-y-1">
-          <h2 className="text-foreground truncate text-lg font-semibold tracking-tight">
-            Create new team
-          </h2>
-          <p className="text-muted-foreground truncate text-xs">
-            Configure team details, routing rules, and color.
-          </p>
-        </div>
+        <h2 className="text-foreground min-w-0 flex-1 truncate text-lg font-semibold tracking-tight">
+          {values.name.trim() || 'New team'}
+        </h2>
 
         <Button
           variant="ghost"
@@ -125,13 +110,12 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
         </Button>
       </header>
 
-      {/* Form Content */}
       <form
         onSubmit={submit}
-        className="flex flex-1 flex-col justify-between p-6"
+        className="flex min-h-0 flex-1 flex-col"
         noValidate
       >
-        <div className="space-y-5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
           <FormRow
             htmlFor="create-team-name"
             label="Name"
@@ -146,7 +130,7 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
                   set('name', event.target.value)
                   if (nameError) setNameError(null)
                 }}
-                placeholder="e.g. Support Tier 1"
+                placeholder="Support tier 1"
                 disabled={saving}
                 aria-invalid={Boolean(nameError)}
                 required
@@ -170,45 +154,19 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
               id="create-team-description"
               value={values.description}
               onChange={(event) => set('description', event.target.value)}
-              placeholder="e.g. Handles all inbound consumer ticket triage."
               disabled={saving}
               rows={3}
             />
           </FormRow>
 
           <FormRow label="Colour" className={rowClassName}>
-            <RadioGroup
-              value={values.color}
-              onValueChange={(value) => value && set('color', value)}
-              disabled={saving}
-              className="flex flex-row flex-wrap items-center gap-3 pt-1"
-              aria-label="Colour"
-            >
-              {TEAM_COLORS.map((color) => {
-                const isSelected = values.color === color
-                const config =
-                  TEAM_COLOR_VARIANTS[color] ?? TEAM_COLOR_VARIANTS.blue
-                return (
-                  <label
-                    key={color}
-                    title={color}
-                    aria-label={color}
-                    className="relative flex aspect-square size-6 shrink-0 cursor-pointer items-center justify-center select-none"
-                  >
-                    <RadioGroupItem value={color} className="sr-only" />
-                    <span
-                      className={cn(
-                        'aspect-square size-6 shrink-0 rounded-full border border-black/10 shadow-xs transition-all dark:border-white/10',
-                        config.dot,
-                        isSelected
-                          ? 'ring-foreground ring-offset-background ring-2 ring-offset-2'
-                          : 'opacity-80 hover:scale-110 hover:opacity-100'
-                      )}
-                    />
-                  </label>
-                )
-              })}
-            </RadioGroup>
+            <div className="pt-1.5">
+              <TeamColorPicker
+                value={values.color}
+                onChange={(color) => set('color', color)}
+                disabled={saving}
+              />
+            </div>
           </FormRow>
 
           <FormRow
@@ -224,15 +182,15 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
               disabled={saving}
               className="space-y-2 pt-1"
             >
-              <label className="flex items-center gap-2 text-xs">
+              <label className="flex items-center gap-2 text-sm">
                 <RadioGroupItem value="NONE" />
                 None
               </label>
-              <label className="flex items-center gap-2 text-xs">
+              <label className="flex items-center gap-2 text-sm">
                 <RadioGroupItem value="ROUND_ROBIN" />
                 Round robin
               </label>
-              <label className="flex items-center gap-2 text-xs">
+              <label className="flex items-center gap-2 text-sm">
                 <RadioGroupItem value="LEAST_BUSY" />
                 Least busy
               </label>
@@ -247,24 +205,22 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
                 onCheckedChange={(checked) => set('isDefault', checked)}
                 disabled={saving}
               />
-              <Label htmlFor="create-team-default" className="mb-0 text-xs">
+              <Label htmlFor="create-team-default" className="mb-0">
                 Set as default team
               </Label>
             </div>
           </FormRow>
-        </div>
 
-        {error ? (
-          <div className="mt-4">
+          {error ? (
             <AppError
               title="Team could not be created"
               error={error}
               variant="form"
             />
-          </div>
-        ) : null}
+          ) : null}
+        </div>
 
-        <div className="mt-8 flex items-center justify-end gap-3 border-t pt-5">
+        <div className="border-876-surface-border flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4">
           <Button
             type="button"
             variant="outline"
@@ -274,7 +230,7 @@ export function TeamCreateCard({ onClose, onSuccess, className }: Props) {
             Cancel
           </Button>
           <Button type="submit" variant="info" disabled={saving}>
-            {saving ? 'Creating…' : 'Create team'}
+            {saving ? 'Creating…' : 'Create'}
           </Button>
         </div>
       </form>
