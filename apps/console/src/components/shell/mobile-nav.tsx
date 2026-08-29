@@ -1,8 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import { PanelLeftIcon } from '@876/ui/icons'
 import { Logo } from '@876/ui/logo'
@@ -14,8 +12,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@876/ui/sheet'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 
-import { navConfig, type NavItem } from '@/components/shell/nav-config'
+import { resolveNavIcon } from '@/components/shell/nav-icons'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 
 const mobileNavItemBase =
@@ -27,7 +28,11 @@ const mobileNavItemActive =
 const mobileNavIconBase =
   'flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f4] transition-colors dark:bg-white/8'
 
-export function MobileNav() {
+export function MobileNav({
+  navigation,
+}: {
+  navigation: readonly NavGroupDefinition[]
+}) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -63,14 +68,11 @@ export function MobileNav() {
           className="min-h-0 flex-1 overflow-y-auto px-3 py-4"
         >
           <div className="flex flex-col gap-5">
-            {navConfig.map((group, groupIndex) => (
-              <div
-                key={group.items[0]?.title ?? groupIndex}
-                className="flex flex-col gap-1"
-              >
-                {group.items.map((item) => (
+            {navigation.map((group) => (
+              <div key={group.key} className="flex flex-col gap-1">
+                {group.entries.map((item) => (
                   <MobileNavLink
-                    key={item.title}
+                    key={item.key}
                     item={item}
                     pathname={pathname}
                     onNavigate={() => setOpen(false)}
@@ -90,11 +92,11 @@ function MobileNavLink({
   pathname,
   onNavigate,
 }: {
-  item: NavItem
+  item: NavEntry
   pathname: string
   onNavigate: () => void
 }) {
-  const Icon = item.icon
+  const Icon = resolveNavIcon(item.icon)
   const isActive = isActiveConsolePath(pathname, item.href)
 
   return (
@@ -116,7 +118,6 @@ function MobileNavLink({
         <Icon
           aria-hidden="true"
           className={cn('size-[1.125rem]', item.colorClassName)}
-          style={!isActive && item.color ? { color: item.color } : undefined}
         />
       </span>
       <span className="min-w-0 flex-1 truncate">{item.title}</span>

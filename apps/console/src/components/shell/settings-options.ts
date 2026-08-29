@@ -1,47 +1,47 @@
-import type { IconComponent } from '@876/ui/icons'
-import { Building2, KeyRound, Settings, Users, Waves } from '@876/ui/icons'
+import {
+  defineNavigation,
+  resolveNavigation,
+  type AccessContext,
+  type NavRequirement,
+} from '@876/core/access'
 
-/**
- * A top-level settings option displayed on the /settings hub page and indexed
- * by global console search.
- */
 export type SettingsOption = {
   key: string
   title: string
   description: string
   href: string
-  icon: IconComponent
+  icon: string
   iconColor: string
-  permission?: string
+  requires?: NavRequirement
 }
 
-/**
- * The single source of truth for all top-level settings options.
- *
- * It sits beside the nav config because the topbar's global search indexes it,
- * and a shell component may not reach into a route's `_lib`. The /settings hub
- * page reads it from here — a route importing the shell is the legal direction.
- *
- * Hand-maintained so every destination, label, icon, and permission is
- * visible at the line it is defined.
- */
-export const SETTINGS_OPTIONS: SettingsOption[] = [
+/** Metadata for the /settings hub. Authorization lives in SETTINGS_NAVIGATION. */
+export const SETTINGS_OPTIONS: readonly SettingsOption[] = [
   {
     key: 'general',
     title: 'General',
     description: 'Platform name, timezone, and global defaults.',
     href: '/settings/general',
-    icon: Settings,
+    icon: 'settings',
     iconColor: 'text-muted-foreground',
   },
   {
-    key: 'users',
-    title: 'Users',
+    key: 'team',
+    title: 'Team',
     description: 'Manage who has access to Console.',
     href: '/settings/users',
-    icon: Users,
+    icon: 'users',
     iconColor: 'text-blue-600 dark:text-blue-400',
-    permission: 'console:users',
+    requires: { permission: 'team:list' },
+  },
+  {
+    key: 'roles',
+    title: 'Roles',
+    description: 'Manage Console roles and their permission grants.',
+    href: '/settings/users/roles',
+    icon: 'roles',
+    iconColor: 'text-violet-600 dark:text-violet-400',
+    requires: { permission: 'roles:list' },
   },
   {
     key: 'security',
@@ -49,9 +49,9 @@ export const SETTINGS_OPTIONS: SettingsOption[] = [
     description:
       'Auth policies, session limits, reserved usernames, and OAuth configuration.',
     href: '/settings/security',
-    icon: KeyRound,
+    icon: 'security',
     iconColor: 'text-amber-600 dark:text-amber-400',
-    permission: 'console:security',
+    requires: { permission: 'console:security' },
   },
   {
     key: 'orgs',
@@ -59,7 +59,7 @@ export const SETTINGS_OPTIONS: SettingsOption[] = [
     description:
       'Shared defaults and reconciliation runs for organization setup.',
     href: '/settings/orgs/provisioning',
-    icon: Building2,
+    icon: 'organizations',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   {
@@ -67,7 +67,34 @@ export const SETTINGS_OPTIONS: SettingsOption[] = [
     title: 'Notifications',
     description: 'Alert channels and event subscriptions.',
     href: '/settings/notifications',
-    icon: Waves,
+    icon: 'notifications',
     iconColor: 'text-violet-600 dark:text-violet-400',
   },
 ]
+
+export const SETTINGS_NAVIGATION = defineNavigation([
+  {
+    key: 'settings',
+    entries: SETTINGS_OPTIONS.map((option) => ({
+      key: option.key,
+      title: option.title,
+      href: option.href,
+      icon: option.icon,
+      requires: option.requires,
+    })),
+  },
+])
+
+export function resolveSettingsOptions(
+  context: AccessContext
+): SettingsOption[] {
+  const visibleKeys = new Set(
+    resolveNavigation(SETTINGS_NAVIGATION, context).flatMap((group) =>
+      group.entries.map((entry) => entry.key)
+    )
+  )
+
+  return SETTINGS_OPTIONS.filter((option) => visibleKeys.has(option.key)).map(
+    (option) => ({ ...option })
+  )
+}

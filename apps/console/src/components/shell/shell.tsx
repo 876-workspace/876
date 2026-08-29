@@ -1,20 +1,24 @@
-import type { ReactNode } from 'react'
-import Link from 'next/link'
-
-import { MobileNav } from '@/components/shell/mobile-nav'
-import { Sidebar } from '@/components/shell/sidebar'
-import { UserMenu } from '@/components/shell/user-menu'
-import { TopbarActions } from '@/components/shell/topbar-actions'
-import { TopbarSearch } from '@/components/shell/topbar-search'
-import { Logo } from '@876/ui/logo'
-import { NavProgress } from '@876/ui/nav-progress'
+import { resolveNavigation } from '@876/core/access'
 import {
   AppShell,
+  AppShellBody,
   AppShellContent,
   AppShellHeader,
-  AppShellBody,
   AppShellMain,
 } from '@876/ui/app-shell'
+import { Logo } from '@876/ui/logo'
+import { NavProgress } from '@876/ui/nav-progress'
+import Link from 'next/link'
+import type { ReactNode } from 'react'
+
+import { MobileNav } from '@/components/shell/mobile-nav'
+import { navConfig } from '@/components/shell/nav-config'
+import { Sidebar } from '@/components/shell/sidebar'
+import { resolveSettingsOptions } from '@/components/shell/settings-options'
+import { TopbarActions } from '@/components/shell/topbar-actions'
+import { TopbarSearch } from '@/components/shell/topbar-search'
+import { UserMenu } from '@/components/shell/user-menu'
+import { resolveAccessContext } from '@/lib/auth/access-context'
 
 export type ShellUser = {
   name: string
@@ -27,6 +31,7 @@ export type ShellUser = {
 export async function Shell({
   children,
   widgetRail,
+  userId,
   user,
   uiFeatures = {
     themeSwitcher: false,
@@ -43,6 +48,7 @@ export async function Shell({
    * any product domain (see `.claude/rules/app-structure.md`).
    */
   widgetRail?: ReactNode
+  userId: string
   user: ShellUser
   uiFeatures: {
     themeSwitcher: boolean
@@ -52,6 +58,24 @@ export async function Shell({
     chat: boolean
   }
 }) {
+  const context = await resolveAccessContext(userId)
+  const navigation = context ? resolveNavigation(navConfig, context) : []
+  const settings = context ? resolveSettingsOptions(context) : []
+  const searchItems = [
+    ...navigation.flatMap((group) =>
+      group.entries.map((item) => ({
+        group: 'Navigation',
+        title: item.title,
+        href: item.href,
+      }))
+    ),
+    ...settings.map((item) => ({
+      group: 'Settings',
+      title: item.title,
+      href: item.href,
+    })),
+  ]
+
   return (
     <AppShell defaultOpen={false}>
       <NavProgress />
@@ -59,7 +83,7 @@ export async function Shell({
       <AppShellContent>
         <AppShellHeader>
           <div className="flex items-center gap-2 md:hidden">
-            <MobileNav />
+            <MobileNav navigation={navigation} />
             <Link
               href="/"
               aria-label="Console home"
@@ -83,7 +107,7 @@ export async function Shell({
           </Link>
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
-            {uiFeatures.searchBar && <TopbarSearch />}
+            {uiFeatures.searchBar && <TopbarSearch items={searchItems} />}
           </div>
 
           <div className="ml-auto flex items-center gap-2">
@@ -100,9 +124,8 @@ export async function Shell({
           </div>
         </AppShellHeader>
 
-        {/* Navbar spans full content width; floating sidebar sits under it beside main. */}
         <AppShellBody className="flex-col md:flex-row">
-          <Sidebar />
+          <Sidebar navigation={navigation} />
           <AppShellMain>{children}</AppShellMain>
           {widgetRail}
         </AppShellBody>
