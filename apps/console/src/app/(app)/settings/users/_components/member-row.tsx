@@ -22,6 +22,8 @@ const AFFILIATION_LABELS: Record<string, string> = {
   external: 'External',
 }
 
+import { cn } from '@876/core/utils'
+
 export type TeamRow = {
   id: string
   firstName: string
@@ -32,6 +34,9 @@ export type TeamRow = {
   position: string | null
   affiliation: string
   role: string
+  permissions?: string[]
+  status?: string
+  createdAt?: number | null
   expiresAt: number | null
   resolved: boolean
 }
@@ -42,7 +47,7 @@ function initialsOf(user: TeamRow): string {
       .filter(Boolean)
       .join('')
       .toUpperCase() ||
-    user.email[0]?.toUpperCase() ||
+    user.email?.[0]?.toUpperCase() ||
     '?'
   )
 }
@@ -56,13 +61,29 @@ function formatExpiry(value: number | null, affiliation: string): string {
   }).format(new Date(value * 1000))
 }
 
-export function TeamTableRow({ user }: { user: TeamRow }) {
+export function TeamTableRow({
+  user,
+  selected,
+  onSelect,
+}: {
+  user: TeamRow
+  selected?: boolean
+  onSelect?: (id: string) => void
+}) {
   const router = useRouter()
   const [revoking, setRevoking] = useState(false)
   const displayName = user.resolved
     ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
     : 'Unresolved account'
   const href = `/settings/users/${user.id}`
+
+  function handleClick() {
+    if (onSelect) {
+      onSelect(user.id)
+    } else {
+      router.push(href)
+    }
+  }
 
   async function revokeGrant() {
     setRevoking(true)
@@ -73,23 +94,38 @@ export function TeamTableRow({ user }: { user: TeamRow }) {
 
   return (
     <TableRow
-      className="hover:bg-muted/40 cursor-pointer transition-colors"
-      onClick={() => router.push(href)}
+      className={cn(
+        'hover:bg-muted/40 cursor-pointer transition-colors',
+        selected && 'bg-muted/50'
+      )}
+      onClick={handleClick}
       tabIndex={0}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') router.push(href)
+        if (event.key === 'Enter' || event.key === ' ') handleClick()
       }}
       role="link"
       aria-label={`View team member ${displayName}`}
+      aria-selected={selected}
     >
       <TableCell className="py-4 pr-0 pl-5">
         <Avatar className="size-8">
           {user.avatar && <AvatarImage src={user.avatar} alt="" />}
-          <AvatarFallback className="text-xs">{initialsOf(user)}</AvatarFallback>
+          <AvatarFallback className="text-xs">
+            {initialsOf(user)}
+          </AvatarFallback>
         </Avatar>
       </TableCell>
       <TableCell className="px-5 py-4">
-        <span className="font-medium">{displayName}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+            {displayName}
+          </span>
+          {user.affiliation === 'external' ? (
+            <Badge variant="outline" className="text-xs">
+              External
+            </Badge>
+          ) : null}
+        </div>
         {user.resolved && user.username ? (
           <p className="text-muted-foreground text-xs">@{user.username}</p>
         ) : null}
@@ -104,30 +140,73 @@ export function TeamTableRow({ user }: { user: TeamRow }) {
         {user.position || '—'}
       </TableCell>
       <TableCell className="px-5 py-4">
-        <Badge variant="outline">
-          {AFFILIATION_LABELS[user.affiliation] ?? user.affiliation}
-        </Badge>
-      </TableCell>
-      <TableCell className="px-5 py-4">
         <Badge variant="outline">{ROLE_LABELS[user.role] ?? user.role}</Badge>
       </TableCell>
-      <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
-        <div className="flex items-center justify-between gap-3">
-          <span>{formatExpiry(user.expiresAt, user.affiliation)}</span>
-          {!user.resolved ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="destructive"
-              disabled={revoking}
-              onClick={(event) => {
-                event.stopPropagation()
-                void revokeGrant()
-              }}
-            >
-              Revoke
-            </Button>
-          ) : null}
+    </TableRow>
+  )
+}
+
+export function CondensedTeamRow({
+  user,
+  selected,
+  onSelect,
+}: {
+  user: TeamRow
+  selected?: boolean
+  onSelect: () => void
+}) {
+  const displayName = user.resolved
+    ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+    : 'Unresolved account'
+
+  return (
+    <TableRow
+      className={cn(
+        'hover:bg-muted/40 cursor-pointer transition-colors',
+        selected && 'bg-muted/60'
+      )}
+      onClick={onSelect}
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onSelect()
+      }}
+      role="link"
+      aria-label={`View team member ${displayName}`}
+      aria-selected={selected}
+    >
+      <TableCell className="py-3 pr-3 pl-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar className="size-7 shrink-0 rounded-full after:rounded-full">
+            {user.avatar && (
+              <AvatarImage src={user.avatar} alt="" className="rounded-full" />
+            )}
+            <AvatarFallback className="rounded-full text-[0.5625rem]">
+              {initialsOf(user)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="flex items-center gap-1.5 truncate">
+              <span
+                className={cn(
+                  'truncate text-xs font-medium text-sky-600 dark:text-sky-400',
+                  selected && 'font-semibold'
+                )}
+              >
+                {displayName}
+              </span>
+              {user.affiliation === 'external' ? (
+                <Badge
+                  variant="outline"
+                  className="h-4 px-1 py-0 text-[0.625rem]"
+                >
+                  External
+                </Badge>
+              ) : null}
+            </div>
+            <span className="text-muted-foreground truncate text-[0.6875rem]">
+              {user.position || ROLE_LABELS[user.role] || user.role}
+            </span>
+          </div>
         </div>
       </TableCell>
     </TableRow>

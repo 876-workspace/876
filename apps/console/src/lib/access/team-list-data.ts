@@ -16,6 +16,9 @@ export type TeamListRow = {
   position: string | null
   affiliation: string
   role: string
+  permissions?: string[]
+  status?: string
+  createdAt?: number
   expiresAt: number | null
   resolved: boolean
 }
@@ -30,7 +33,9 @@ type StaffProfiles = {
   unavailable: boolean
 }
 
-async function loadStaffProfiles(organizationId: string): Promise<StaffProfiles> {
+async function loadStaffProfiles(
+  organizationId: string
+): Promise<StaffProfiles> {
   try {
     const result = await $876.employees.admin.list(organizationId)
     return {
@@ -107,6 +112,9 @@ export async function loadTeamListData(
         ),
         affiliation: grant.affiliation,
         role: grant.roleName,
+        permissions: grant.role?.permissions ?? [],
+        status: grant.status,
+        createdAt: Math.floor(grant.createdAt.getTime() / 1000),
         expiresAt: grant.expiresAt === null ? null : Number(grant.expiresAt),
         resolved: Boolean(identity),
       }

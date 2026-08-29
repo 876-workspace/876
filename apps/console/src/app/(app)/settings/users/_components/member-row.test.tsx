@@ -63,7 +63,7 @@ describe('TeamTableRow', () => {
     expect(screen.getByText('Platform Engineer')).toBeInTheDocument()
   })
 
-  it('renders affiliation and role as badges', () => {
+  it('renders role badge and shows external badge only for external affiliation', () => {
     renderRow(row({ affiliation: 'external', role: 'super_admin' }))
 
     expect(
@@ -74,16 +74,10 @@ describe('TeamTableRow', () => {
     ).not.toBeNull()
   })
 
-  it('renders an em dash expiry for staff', () => {
-    renderRow(row({ affiliation: 'staff', expiresAt: 1893628800 }))
+  it('does not render external badge for staff', () => {
+    renderRow(row({ affiliation: 'staff', role: 'admin' }))
 
-    expect(screen.getByText('—')).toBeInTheDocument()
-  })
-
-  it('renders the exact expiry date for an external grant', () => {
-    renderRow(row({ affiliation: 'external', expiresAt: 1893628800 }))
-
-    expect(screen.getByText('Jan 3, 2030')).toBeInTheDocument()
+    expect(screen.queryByText('External')).toBeNull()
   })
 
   it('keeps an unresolved grant visible and identifiable', () => {
@@ -102,41 +96,30 @@ describe('TeamTableRow', () => {
     expect(
       screen.getByText('user_695d45c54a374ff0a570003e15668891')
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Revoke' })).toBeInTheDocument()
   })
 
-  it('does not show the revoke affordance for a resolved account', () => {
+  it('triggers onSelect when supplied', () => {
+    const onSelect = vi.fn()
+    render(
+      <table>
+        <tbody>
+          <TeamTableRow user={row()} onSelect={onSelect} />
+        </tbody>
+      </table>
+    )
+
+    fireEvent.click(screen.getByText('Alejandra Reyes'))
+    expect(onSelect).toHaveBeenCalledWith(
+      'user_695d45c54a374ff0a570003e15668891'
+    )
+  })
+
+  it('navigates via router.push when onSelect is omitted', () => {
     renderRow(row())
 
-    expect(screen.queryByRole('button', { name: 'Revoke' })).toBeNull()
-    expect(mocks.revoke).not.toHaveBeenCalled()
-  })
-
-  it('revokes an unresolved grant and refreshes the list', async () => {
-    renderRow(row({ resolved: false, firstName: '', lastName: '', email: '' }))
-
-    fireEvent.click(screen.getByRole('button', { name: 'Revoke' }))
-
-    await waitFor(() => {
-      expect(mocks.revoke).toHaveBeenCalledTimes(1)
-      expect(mocks.revoke).toHaveBeenCalledWith(
-        'user_695d45c54a374ff0a570003e15668891'
-      )
-      expect(mocks.refresh).toHaveBeenCalledTimes(1)
-    })
-    expect(mocks.push).not.toHaveBeenCalled()
-  })
-
-  it('does not refresh after a failed revoke', async () => {
-    mocks.revoke.mockResolvedValue({
-      data: null,
-      error: { code: 'auth/forbidden', message: 'Forbidden', httpStatus: 403 },
-    })
-    renderRow(row({ resolved: false, firstName: '', lastName: '', email: '' }))
-
-    fireEvent.click(screen.getByRole('button', { name: 'Revoke' }))
-
-    await waitFor(() => expect(mocks.revoke).toHaveBeenCalledTimes(1))
-    expect(mocks.refresh).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByText('Alejandra Reyes'))
+    expect(mocks.push).toHaveBeenCalledWith(
+      '/settings/users/user_695d45c54a374ff0a570003e15668891'
+    )
   })
 })

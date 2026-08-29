@@ -5,7 +5,5 @@ export const TEAM_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Name' },
   { label: 'Email' },
   { label: 'Position' },
-  { label: 'Affiliation', cell: 'badge' },
   { label: 'Role', cell: 'badge' },
-  { label: 'Expires' },
 ]
