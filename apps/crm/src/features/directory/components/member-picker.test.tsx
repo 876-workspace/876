@@ -28,6 +28,15 @@ function createMembers(): DirectoryMember[] {
   ]
 }
 
+function createLargeDirectory(count: number): DirectoryMember[] {
+  return Array.from({ length: count }, (_, index) => ({
+    userId: `user_${index}`,
+    name: `Member ${index}`,
+    email: `member${index}@island.test`,
+    avatar: null,
+  }))
+}
+
 async function openPicker() {
   const user = userEvent.setup()
   await user.click(screen.getByRole('button', { name: 'Choose member' }))
@@ -146,6 +155,92 @@ describe('MemberPicker', () => {
     expect(
       screen.getByRole('option', { name: 'Unassigned' })
     ).toBeInTheDocument()
+  })
+
+  it('lists nobody until a query is typed when the directory is large', async () => {
+    render(
+      <MemberPicker
+        members={createLargeDirectory(40)}
+        value={null}
+        onSelect={vi.fn()}
+        placeholder="Choose member"
+        emptyLabel="No members found"
+      />
+    )
+
+    await openPicker()
+
+    expect(
+      screen.getByText('Search 40 people by name or email')
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Member 0')).not.toBeInTheDocument()
+    expect(screen.queryByText('Member 39')).not.toBeInTheDocument()
+  })
+
+  it('lists matches once a query is typed against a large directory', async () => {
+    render(
+      <MemberPicker
+        members={createLargeDirectory(40)}
+        value={null}
+        onSelect={vi.fn()}
+        placeholder="Choose member"
+        emptyLabel="No members found"
+      />
+    )
+    const user = await openPicker()
+
+    await user.type(
+      screen.getByPlaceholderText('Search by name or email'),
+      'member 17'
+    )
+
+    expect(screen.getByText('Member 17')).toBeInTheDocument()
+    expect(screen.queryByText('Member 18')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Search 40 people by name or email')
+    ).not.toBeInTheDocument()
+  })
+
+  it('caps rendered rows and reports how many more matched', async () => {
+    render(
+      <MemberPicker
+        members={createLargeDirectory(60)}
+        value={null}
+        onSelect={vi.fn()}
+        placeholder="Choose member"
+        emptyLabel="No members found"
+      />
+    )
+    const user = await openPicker()
+
+    await user.type(
+      screen.getByPlaceholderText('Search by name or email'),
+      'member'
+    )
+
+    expect(screen.getAllByRole('option')).toHaveLength(50)
+    expect(
+      screen.getByText('10 more — keep typing to narrow the list.')
+    ).toBeInTheDocument()
+  })
+
+  it('counts only selectable people when deciding to require a query', async () => {
+    const members = createLargeDirectory(10)
+    render(
+      <MemberPicker
+        members={members}
+        value={null}
+        onSelect={vi.fn()}
+        exclude={members.slice(0, 3).map((member) => member.userId)}
+        placeholder="Choose member"
+        emptyLabel="No members found"
+      />
+    )
+
+    await openPicker()
+
+    expect(screen.getByText('Member 3')).toBeInTheDocument()
+    expect(screen.queryByText('Member 0')).not.toBeInTheDocument()
   })
 
   it('shows the empty label when nothing matches', async () => {
