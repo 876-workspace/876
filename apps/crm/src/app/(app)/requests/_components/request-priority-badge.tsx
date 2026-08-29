@@ -1,4 +1,4 @@
-import { Badge } from '@876/ui/badge'
+import { PriorityTag } from '@/features/priorities/priority-tag'
 import type { RequestPriority } from '@/types/crm'
 
 export function RequestPriorityBadge({
@@ -9,16 +9,11 @@ export function RequestPriorityBadge({
   className?: string
 }) {
   return (
-    <Badge
-      variant={priority.isDefault ? 'outline' : 'secondary'}
+    <PriorityTag
+      name={priority.name}
+      color={priority.color}
+      size="sm"
       className={className}
-      style={
-        priority.color
-          ? { borderColor: priority.color, color: priority.color }
-          : undefined
-      }
-    >
-      {priority.name}
-    </Badge>
+    />
   )
 }
