@@ -104,24 +104,24 @@ export const loadOrgCustomer = cache(
   }
 )
 
-export const loadOrgRequest = cache(
-  async (
-    orgId: string,
-    requestId: string,
-    returnPath = PLATFORM_REQUESTS_HREF
-  ) => {
-    const session = await requireSession(returnPath)
-    const result = await $876.requests.retrieve(orgId, requestId)
-    if (result.error?.code === 'crm/request-not-found') notFound()
+async function loadOrgRequestUncached(
+  orgId: string,
+  requestId: string,
+  returnPath: string = PLATFORM_REQUESTS_HREF
+) {
+  const session = await requireSession(returnPath)
+  const result = await $876.requests.retrieve(orgId, requestId)
+  if (result.error?.code === 'crm/request-not-found') notFound()
 
-    return {
-      org: { id: orgId },
-      session,
-      request: result.data,
-      error: result.error,
-    }
+  return {
+    org: { id: orgId },
+    session,
+    request: result.data,
+    error: result.error,
   }
-)
+}
+
+export const loadOrgRequest = cache(loadOrgRequestUncached)
 
 export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
   const result = await $876.requestNotes.list(orgId, requestId, {

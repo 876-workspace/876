@@ -64,6 +64,35 @@ function withConsoleKey(permission: AppPermission): AppPermission {
 }
 
 /**
+ * One-way read aliases for permission keys persisted before a Console rename.
+ * This exists only so pre-rename role rows keep working. New code must never
+ * write a key from this map; catalogs and effective permissions emit only the
+ * canonical value.
+ */
+export const LEGACY_PERMISSION_ALIASES: Readonly<Record<string, string>> = {
+  'console:support': 'console:requests',
+}
+
+/** Adapts persisted Console role keys to their canonical catalog keys. */
+export function adaptStoredConsolePermissions(permissions: unknown): string[] {
+  if (!Array.isArray(permissions)) return []
+
+  return permissions
+    .filter((permission) => typeof permission === 'string')
+    .map((permission) => {
+      if (
+        !Object.prototype.hasOwnProperty.call(
+          LEGACY_PERMISSION_ALIASES,
+          permission
+        )
+      )
+        return permission
+
+      return LEGACY_PERMISSION_ALIASES[permission] ?? permission
+    })
+}
+
+/**
  * Console predates product-app catalogs and already persists colon-delimited
  * permission identifiers (`users:read`, `console:access`). The generic catalog
  * builder deliberately remains dot-delimited for product apps, so Console is

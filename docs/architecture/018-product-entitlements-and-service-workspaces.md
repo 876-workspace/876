@@ -20,20 +20,20 @@ opens the same workspace and historical records.
 
 ## Fixed vocabulary
 
-| Term | Meaning |
-| --- | --- |
-| **876 Workspace** | The organization's overall 876 environment. |
-| **Product** | A launchable standalone application such as 876 CRM, Billing, Invoice, or Couriers. |
-| **Product entitlement** | Core subscription/access that authorizes an organization to launch and use a product. |
-| **Service** | A bounded backend context that owns capabilities and data, such as CRM or Finance. |
-| **Service workspace** | The organization's tenant/data inside one service. It may exist without the standalone product entitlement. |
-| **Capability** | A resource or operation provided by a service, such as `requests.create` or `invoices.create`. |
-| **Service connection** | An organization-scoped, scope-limited grant allowing one product to use another service at the integration tier. |
-| **Surface** | UI inside a host application that exposes one or more capabilities. |
-| **Module** | Org-controlled functional area inside a product, using the existing `module-settings.md` definition. |
-| **Add-on** | Commercial packaging only. It is not an authorization tier, service, workspace, or UI architecture primitive. |
-| **Plan** | Commercial pricing/configuration for a product. |
-| **Bundle / suite** | Commercial package granting multiple product entitlements. |
+| Term                    | Meaning                                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **876 Workspace**       | The organization's overall 876 environment.                                                                      |
+| **Product**             | A launchable standalone application such as 876 CRM, Billing, Invoice, or Couriers.                              |
+| **Product entitlement** | Core subscription/access that authorizes an organization to launch and use a product.                            |
+| **Service**             | A bounded backend context that owns capabilities and data, such as CRM or Finance.                               |
+| **Service workspace**   | The organization's tenant/data inside one service. It may exist without the standalone product entitlement.      |
+| **Capability**          | A resource or operation provided by a service, such as `requests.create` or `invoices.create`.                   |
+| **Service connection**  | An organization-scoped, scope-limited grant allowing one product to use another service at the integration tier. |
+| **Surface**             | UI inside a host application that exposes one or more capabilities.                                              |
+| **Module**              | Org-controlled functional area inside a product, using the existing `module-settings.md` definition.             |
+| **Add-on**              | Commercial packaging only. It is not an authorization tier, service, workspace, or UI architecture primitive.    |
+| **Plan**                | Commercial pricing/configuration for a product.                                                                  |
+| **Bundle / suite**      | Commercial package granting multiple product entitlements.                                                       |
 
 Do not use `app`, `workspace`, `module`, and `entitlement` interchangeably.
 
@@ -75,8 +75,8 @@ import {
   create876CrmWorkspaceClient,
 } from '@876/crm'
 
-CRM_SERVICE_KEY        // 'crm'
-CRM_PRODUCT_APP_SLUG   // '876-crm'
+CRM_SERVICE_KEY // 'crm'
+CRM_PRODUCT_APP_SLUG // '876-crm'
 
 const crmWorkspace = create876CrmWorkspaceClient({
   baseUrl: process.env.CRM_API_URL,
@@ -139,6 +139,12 @@ the comprehensive interface over the service.
 ## Console's `/requests` surface
 
 Console's former top-level `/support` route is now `/requests`.
+
+The vocabulary moved together: the surface is Requests, its route is
+`/requests`, and its Console permission is `console:requests`. The persisted
+`console:support` key survives only as a one-way read alias so role rows written
+before the rename continue to authorize the canonical permission. Catalogs,
+role editors, navigation, and all new writes use only `console:requests`.
 
 It is an **operator surface over 876's own CRM service workspace**. It is not a
 second request system and it is not evidence that Console is subscribed to the

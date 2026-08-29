@@ -19,14 +19,14 @@ Phase F is partial. The stabilized rule mirrors are present, but the requested r
 
 ## 2. Per-phase status
 
-| Phase | Status | Files touched | New `it()` cases written in this pass |
-| --- | --- | ---: | ---: |
-| A — route binding | complete | 18 | 32 |
-| B — guard sweep | complete | 3 | 13 |
-| C — staff position | complete | 3 | 15 |
-| D — affiliation | complete | 6 | 26 |
-| E — experiments | skipped | 0 | 0 |
-| F — docs | partial | 2 rule mirrors | 0 |
+| Phase              | Status   |  Files touched | New `it()` cases written in this pass |
+| ------------------ | -------- | -------------: | ------------------------------------: |
+| A — route binding  | complete |             18 |                                    32 |
+| B — guard sweep    | complete |              3 |                                    13 |
+| C — staff position | complete |              3 |                                    15 |
+| D — affiliation    | complete |              6 |                                    26 |
+| E — experiments    | skipped  |              0 |                                     0 |
+| F — docs           | partial  | 2 rule mirrors |                                     0 |
 
 The counts above are the cases added by this Phase 2 pass, not the size of pre-existing suites. No test, typecheck, lint, build, or other verification command was executed here.
 
@@ -44,7 +44,7 @@ The counts above are the cases added by this Phase 2 pass, not the size of pre-e
 - `apps/console/src/app/(app)/settings/users/layout.tsx` — adds Team/Settings Users route authorization without removing its existing UI structure.
 - `apps/console/src/app/(app)/settings/users/roles/layout.tsx` — adds the nested Roles guard.
 - `apps/console/src/app/(app)/storage/layout.tsx` — adds a blocking Storage permission layout.
-- `apps/console/src/app/(app)/support/layout.tsx` — adds a blocking Support permission layout.
+- `apps/console/src/app/(app)/requests/layout.tsx` — adds a blocking Requests permission layout; the permission was subsequently renamed with the surface to `console:requests`.
 - `apps/console/src/app/(app)/users/layout.tsx` — binds Users to its canonical route permission.
 - `apps/console/src/app/(app)/widgets/layout.tsx` — binds Widgets to its canonical route permission.
 - `apps/console/src/components/shell/nav-config.ts` — aligns sidebar visibility with the same stronger permission keys enforced by routes.
