@@ -53,16 +53,16 @@ An error should **not take over the page, remove the toolbar, destroy the table 
 
 `AppError` is a notice, not an error screen. It must remain compact and non-blocking.
 
-| Failure scope | Required behaviour |
-| --- | --- |
-| List/table request fails | keep toolbar, filters, table/list shell and pagination region mounted; show a compact banner above the data region |
-| Some enrichment fails | render truthful primary data and show a small inline notice for the missing enrichment |
-| One card/section fails | keep sibling sections; show a notice only inside that section |
-| Create/edit submission fails | keep the form and entered values; show a persistent form notice near the affected controls |
-| Small mutation fails | keep the control in place and show a local inline/form notice; do **not** default to an error toast |
-| Resource does not exist | use resource-aware not-found UI when that is truly the state |
-| Unauthorized/forbidden | keep app chrome and show a scoped access state |
-| Unexpected exception | capture/report it and preserve as much shell/content as safely possible; framework error page is last resort |
+| Failure scope                | Required behaviour                                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| List/table request fails     | keep toolbar, filters, table/list shell and pagination region mounted; show a compact banner above the data region |
+| Some enrichment fails        | render truthful primary data and show a small inline notice for the missing enrichment                             |
+| One card/section fails       | keep sibling sections; show a notice only inside that section                                                      |
+| Create/edit submission fails | keep the form and entered values; show a persistent form notice near the affected controls                         |
+| Small mutation fails         | keep the control in place and show a local inline/form notice; do **not** default to an error toast                |
+| Resource does not exist      | use resource-aware not-found UI when that is truly the state                                                       |
+| Unauthorized/forbidden       | keep app chrome and show a scoped access state                                                                     |
+| Unexpected exception         | capture/report it and preserve as much shell/content as safely possible; framework error page is last resort       |
 
 Do not confuse "no data" with "failed to load data". When a primary dataset fails, an empty table may remain mounted for structural continuity, but it must be paired with a visible failure notice so the user is not told there are simply no records.
 
@@ -110,14 +110,36 @@ Before a new app or resource family is complete:
 - [ ] Tests verify expected failures do not trigger framework error boundaries.
 - [ ] Tests assert stable code/message behaviour and verify `httpStatus` does not leak into client JSON.
 
+## Migration state
+
+`apps/crm-api` is the reference implementation of the value contract, and Console
+and CRM are migrated on the UI side.
+
+`apps/api`, `apps/billing-api`, and `apps/couriers-api` still throw registered
+errors to their central error middleware. Those call sites are a **pending
+migration, not defects to fix opportunistically** — converting one service's
+throwing boundary halfway leaves callers that neither check a return value nor
+catch, which is strictly worse than either form. Migrate a service as a whole, or
+leave it alone.
+
+What is **not** allowed anywhere, including in an unmigrated service, is adding a
+new throwing call site for an expected failure, or turning a returned application
+error back into an exception.
+
 ## Review grep
 
-Treat these as migration/review failures unless they are explicitly handling an unexpected exception:
+Treat these as review failures unless they are explicitly handling an unexpected
+exception, or they sit in a service listed above as unmigrated:
 
 ```txt
 throw appError(...)
 throw crmError(...)
 throw getError(...)
+```
+
+Treat these as review failures anywhere:
+
+```txt
 if (result.error) throw new Error(result.error.message)
 toast.error(result.error.message)
 ```

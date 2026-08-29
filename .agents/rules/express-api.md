@@ -177,14 +177,39 @@ Lists use the platform list object, always:
 Cursor pagination is `starting_after` / `ending_before` on item IDs. Never
 offset/limit on a public list endpoint.
 
-Errors are thrown, not returned. Registered application errors are created by
-code through the registry-backed factory:
+**Expected failures are returned as values; only genuinely unexpected faults
+throw.** A service returns the registered error object and its controller
+translates it to a response, so a not-found or a conflict never travels through
+Express control flow as an exception. See `.claude/rules/error-handling.md` for
+the full contract; `apps/crm-api` is the reference implementation.
+
+```ts
+import { getError, isError } from '@876/core'
+
+const tenant = await tenants.retrieveByOrganization(organizationId)
+if (!tenant) return getError('crm/tenant-not-found')
+```
+
+```ts
+// controller
+const result = await service.list(organizationId)
+return sendCrmList(res, result, url)
+```
+
+`apps/api`, `apps/billing-api`, and `apps/couriers-api` still throw registered
+errors to the central error middleware:
 
 ```ts
 import { appError } from '@/http/errors'
 
 throw appError('auth/no-session')
 ```
+
+That form remains correct in those services until they are migrated — it is a
+pending migration, not a second sanctioned pattern. **Do not add new throwing
+call sites for expected failures**, and do not mix the two forms inside one
+module: a caller cannot check a return value and catch an exception for the same
+outcome without one of the two paths going unhandled.
 
 - **Do not repeat a registered error's code, message, and HTTP status at the
   call site.** The registry is the source of truth; `appError(code)` resolves

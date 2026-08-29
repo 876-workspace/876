@@ -81,14 +81,27 @@ Use an error toast only for a genuinely transient action with no durable place i
 - [ ] Console can expose safe diagnostic codes/details; product apps keep public copy friendly.
 - [ ] Tests verify expected failures do not trigger framework error boundaries.
 
+## Migration state
+
+`apps/crm-api` is the reference implementation of the value contract; Console and CRM are migrated on the UI side.
+
+`apps/api`, `apps/billing-api`, and `apps/couriers-api` still throw registered errors to their central error middleware. Those call sites are a **pending migration, not defects to fix opportunistically** — a half-converted throwing boundary leaves callers that neither check a return value nor catch. Migrate a service as a whole, or leave it alone.
+
+Adding a **new** throwing call site for an expected failure, or turning a returned application error back into an exception, is not allowed anywhere.
+
 ## Review grep
 
-Treat these as migration/review failures unless explicitly handling an unexpected exception:
+Treat these as review failures unless explicitly handling an unexpected exception, or they sit in a service listed above as unmigrated:
 
 ```txt
 throw appError(...)
 throw crmError(...)
 throw getError(...)
+```
+
+Treat these as review failures anywhere:
+
+```txt
 if (result.error) throw new Error(result.error.message)
 toast.error(result.error.message)
 ```
