@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { requestChannelSchema } from './request.js'
+
 export const requestFormStatusSchema = z.enum([
   'DRAFT',
   'PUBLISHED',
@@ -213,6 +215,8 @@ export const submitRequestFormInputSchema = z
     customerUserId: z.string().trim().min(1).max(160).optional(),
     requesterUserId: z.string().trim().max(160).nullable().optional(),
     requesterContactId: z.string().trim().max(160).nullable().optional(),
+    /** Explicitly overrides the placement-derived FORM/WIDGET intake channel. */
+    channel: requestChannelSchema.optional(),
     createdBy: z.string().trim().min(1).max(160),
   })
   .refine(
