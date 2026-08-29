@@ -1,7 +1,10 @@
-import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as service from './notes.service.js'
 import {
   createNoteBodySchema,
@@ -19,21 +22,11 @@ export async function listNotes(req: Request, res: Response) {
     viewerId: query.viewer_id,
     includePrivate: query.include_private,
   })
-  if (isError(result))
-    return res
-      .status(result.httpStatus)
-      .json({ data: null, error: toAppError(result) })
-
-  return res.json({
-    data: {
-      object: 'list',
-      data: result,
-      has_more: false,
-      total_count: result.length,
-      url: `/v1/organizations/${organizationId}/requests/${requestId}/notes`,
-    },
-    error: null,
-  })
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/requests/${requestId}/notes`
+  )
 }
 
 export async function createNote(req: Request, res: Response) {

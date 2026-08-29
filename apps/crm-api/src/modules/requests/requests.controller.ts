@@ -1,7 +1,10 @@
-import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as service from './requests.service.js'
 import {
   createRequestBodySchema,
@@ -16,21 +19,7 @@ export async function listRequests(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const filters = listRequestsQuerySchema.parse(req.query)
   const result = await service.list(organizationId, filters)
-  if (isError(result))
-    return res
-      .status(result.httpStatus)
-      .json({ data: null, error: toAppError(result) })
-
-  return res.json({
-    data: {
-      object: 'list',
-      data: result,
-      has_more: false,
-      total_count: result.length,
-      url: `/v1/organizations/${organizationId}/requests`,
-    },
-    error: null,
-  })
+  return sendCrmList(res, result, `/v1/organizations/${organizationId}/requests`)
 }
 
 export async function retrieveRequest(req: Request, res: Response) {

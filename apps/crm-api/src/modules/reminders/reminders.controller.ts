@@ -1,7 +1,10 @@
-import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as service from './reminders.service.js'
 import {
   createReminderBodySchema,
@@ -14,21 +17,11 @@ import {
 export async function listReminders(req: Request, res: Response) {
   const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
   const result = await service.list(organizationId, requestId)
-  if (isError(result))
-    return res
-      .status(result.httpStatus)
-      .json({ data: null, error: toAppError(result) })
-
-  return res.json({
-    data: {
-      object: 'list',
-      data: result,
-      has_more: false,
-      total_count: result.length,
-      url: `/v1/organizations/${organizationId}/requests/${requestId}/reminders`,
-    },
-    error: null,
-  })
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/requests/${requestId}/reminders`
+  )
 }
 
 export async function createReminder(req: Request, res: Response) {

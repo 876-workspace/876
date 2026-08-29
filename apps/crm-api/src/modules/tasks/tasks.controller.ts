@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as service from './tasks.service.js'
 import {
   createTaskBodySchema,
@@ -12,18 +16,13 @@ import {
 
 export async function listTasks(req: Request, res: Response) {
   const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
-  const data = await service.list(organizationId, requestId)
+  const result = await service.list(organizationId, requestId)
 
-  return res.json({
-    data: {
-      object: 'list',
-      data,
-      has_more: false,
-      total_count: data.length,
-      url: `/v1/organizations/${organizationId}/requests/${requestId}/tasks`,
-    },
-    error: null,
-  })
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/requests/${requestId}/tasks`
+  )
 }
 
 export async function createTask(req: Request, res: Response) {

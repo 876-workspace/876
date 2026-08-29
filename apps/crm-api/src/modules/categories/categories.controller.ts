@@ -1,32 +1,17 @@
-import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as s from './categories.schemas.js'
 import * as service from './categories.service.js'
-
-function sendList(res: Response, data: unknown[], url: string) {
-  return res.json({
-    data: {
-      object: 'list',
-      data,
-      has_more: false,
-      total_count: data.length,
-      url,
-    },
-    error: null,
-  })
-}
 
 export async function all(req: Request, res: Response) {
   const params = s.org.parse(req.params)
   const result = await service.list(params.organizationId)
-  if (isError(result))
-    return res
-      .status(result.httpStatus)
-      .json({ data: null, error: toAppError(result) })
-
-  return sendList(
+  return sendCrmList(
     res,
     result,
     `/v1/organizations/${params.organizationId}/request-categories`

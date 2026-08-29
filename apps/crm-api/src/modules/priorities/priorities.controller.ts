@@ -1,7 +1,10 @@
-import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as service from './priorities.service.js'
 import {
   createPriorityBodySchema,
@@ -16,21 +19,11 @@ export async function listPriorities(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const query = listPrioritiesQuerySchema.parse(req.query)
   const result = await service.list(organizationId, query.active)
-  if (isError(result))
-    return res
-      .status(result.httpStatus)
-      .json({ data: null, error: toAppError(result) })
-
-  return res.json({
-    data: {
-      object: 'list',
-      data: result,
-      has_more: false,
-      total_count: result.length,
-      url: `/v1/organizations/${organizationId}/request-priorities`,
-    },
-    error: null,
-  })
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/request-priorities`
+  )
 }
 
 export async function retrievePriority(req: Request, res: Response) {

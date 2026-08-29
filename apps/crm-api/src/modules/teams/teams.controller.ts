@@ -1,30 +1,12 @@
-import { isError, toAppError } from '@876/core'
 import type { Request, Response } from 'express'
 
-import { sendCrmError, sendCrmResult } from '../../http/result.js'
+import {
+  sendCrmError,
+  sendCrmList,
+  sendCrmResult,
+} from '../../http/result.js'
 import * as s from './teams.schemas.js'
 import * as service from './teams.service.js'
-
-function listResponse(res: Response, data: unknown[], url: string) {
-  return res.json({
-    data: {
-      object: 'list',
-      data,
-      has_more: false,
-      total_count: data.length,
-      url,
-    },
-    error: null,
-  })
-}
-
-function errorResult(res: Response, result: unknown) {
-  if (!isError(result)) return null
-  res
-    .status(result.httpStatus)
-    .json({ data: null, error: toAppError(result) })
-  return true
-}
 
 export async function list(req: Request, res: Response) {
   const p = s.organizationParamsSchema.parse(req.params)
@@ -33,10 +15,9 @@ export async function list(req: Request, res: Response) {
     ...q,
     includeMembers: q.includeMembers === 'true',
   })
-  if (errorResult(res, result)) return
-  return listResponse(
+  return sendCrmList(
     res,
-    result as unknown[],
+    result,
     `/v1/organizations/${p.organizationId}/teams`
   )
 }
@@ -83,10 +64,9 @@ export async function members(req: Request, res: Response) {
   const p = s.teamParamsSchema.parse(req.params)
   const result = await service.listMembers(p.organizationId, p.id)
   if (!result) return sendCrmError(res, 'crm/team-not-found')
-  if (errorResult(res, result)) return
-  return listResponse(
+  return sendCrmList(
     res,
-    result as unknown[],
+    result,
     `/v1/organizations/${p.organizationId}/teams/${p.id}/members`
   )
 }
