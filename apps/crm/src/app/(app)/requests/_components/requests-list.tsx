@@ -14,11 +14,11 @@ import { ClipboardDocumentListIcon, User } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 import { cn } from '@876/ui/lib/utils'
 
-import type { RequestPriority, RequestSource, RequestStatus } from '@/types/crm'
+import type { RequestChannel, RequestPriority, RequestStatus } from '@/types/crm'
 
 import { formatAge } from '../_lib/request-format'
 import { RequestPriorityBadge } from './request-priority-badge'
-import { RequestSourceIcon } from './request-source-icon'
+import { RequestChannelIcon } from './request-source-icon'
 import { RequestStatusBadge } from './request-status-badge'
 
 export type RequestListRow = {
@@ -27,7 +27,7 @@ export type RequestListRow = {
   subject: string
   status: RequestStatus
   priority: RequestPriority
-  source: RequestSource
+  channel: RequestChannel
   createdAt: number
   customerName: string
   customerIsBusiness: boolean
@@ -142,7 +142,7 @@ function RequestRow({ request, href }: { request: RequestListRow; href: string }
             </span>
             <span aria-hidden="true">·</span>
             <span className="inline-flex items-center gap-1">
-              <RequestSourceIcon source={request.source} />
+              <RequestChannelIcon channel={request.channel} />
               {formatAge(request.createdAt)}
             </span>
             {request.teamName ? (

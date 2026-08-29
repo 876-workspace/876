@@ -5,7 +5,10 @@ import { create876AdminClient as createBillingAdminClient } from '@876/billing/a
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 import { create876CouriersClient } from '@876/couriers'
 import { create876CouriersAdminClient } from '@876/couriers/admin'
-import { create876CrmClient } from '@876/crm'
+import {
+  create876CrmClient,
+  create876CrmWorkspaceClient,
+} from '@876/crm'
 import { create876StorageClient } from '@876/storage'
 import { createWidgetsClient } from '@876/widgets/server'
 import { createWidgetsAdminClient } from '@876/widgets/server/admin'
@@ -86,6 +89,9 @@ export function createServiceClients(
   const crm = crmOptions
     ? create876CrmClient(crmOptions as never)
     : undefined
+  const crmWorkspace = crmOptions
+    ? create876CrmWorkspaceClient(crmOptions as never)
+    : undefined
 
   const storageOpts = (services as unknown as { storage?: unknown })?.storage
   const storage = storageOpts
@@ -134,6 +140,7 @@ export function createServiceClients(
         ? { client: couriersClient, admin: couriersAdmin }
         : undefined,
     crm,
+    crmWorkspace,
     storage,
     widgets,
   }

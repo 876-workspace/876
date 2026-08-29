@@ -19,6 +19,13 @@ const crmWorkspaceSchema = z.object({
 
 export type CrmWorkspace = z.infer<typeof crmWorkspaceSchema>
 
+/** Platform-owned service data that may be ensured independently of CRM product access. */
+export type CrmWorkspaceFixture = '876_SUPPORT'
+
+export interface CrmWorkspaceEnsureOptions extends RequestOptions {
+  fixtures?: readonly CrmWorkspaceFixture[]
+}
+
 export type CrmWorkspaceProvisioning = {
   object: 'crm_provisioning_manifest'
   revision: number
@@ -81,16 +88,20 @@ export function create876CrmWorkspaceClient(options: ClientOptions = {}) {
     ensure(
       organizationId: string,
       provisioning?: CrmWorkspaceProvisioning,
-      options: RequestOptions = {}
+      options: CrmWorkspaceEnsureOptions = {}
     ) {
       return request(
         runtime,
         {
           method: 'POST',
           path: '/v1/tenants',
-          body: provisioning
-            ? { organizationId, provisioning }
-            : { organizationId },
+          body: {
+            organizationId,
+            ...(provisioning ? { provisioning } : {}),
+            ...(options.fixtures?.length
+              ? { fixtures: [...options.fixtures] }
+              : {}),
+          },
           signal: options.signal,
         },
         crmWorkspaceSchema

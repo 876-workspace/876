@@ -6,8 +6,8 @@ import {
   requestCategorySchema,
   requestSubcategorySchema,
   requestTaskSchema,
-  crmRequestSchema,
 } from './types.js'
+import { crmRequestSchema } from './request-types.js'
 
 describe('types.priority.advanced - requestPrioritySchema', () => {
   const valid = {
@@ -303,7 +303,7 @@ describe('types.priority.advanced - crmRequest uses priorityId + priority object
       status: 'OPEN' as const,
       priorityId: 'crm_pri_1',
       priority: pri,
-      source: 'CRM' as const,
+      channel: 'AGENT' as const,
       teamId: null,
       assigneeId: null,
       ownerId: null,
@@ -331,7 +331,7 @@ describe('types.priority.advanced - crmRequest uses priorityId + priority object
       status: 'OPEN' as const,
       priorityId: 'crm_pri_1',
       priority: 'HIGH' as unknown as Record<string, unknown>,
-      source: 'CRM' as const,
+      channel: 'AGENT' as const,
       teamId: null,
       assigneeId: null,
       ownerId: null,

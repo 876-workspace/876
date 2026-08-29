@@ -62,7 +62,7 @@ function requestRow(overrides: Record<string, unknown> = {}) {
     status: 'OPEN' as const,
     priorityId: normal.id,
     priority: normal,
-    source: 'CRM' as const,
+    channel: 'AGENT' as const,
     requesterUserId: null,
     requesterContactId: null,
     createdBy: 'usr_1',

@@ -1,6 +1,32 @@
 export { create876CrmClient } from './client'
 export type { CrmClient } from './client'
 export {
+  CRM_INTEGRATION_SCOPES,
+  isCrmIntegrationScope,
+} from './integration-scopes'
+export type { CrmIntegrationScope } from './integration-scopes'
+export {
+  CRM_EXCLUDED_MODULE_KEYS,
+  CRM_MODULE_KEYS,
+  crmModuleCatalog,
+} from './modules'
+export type { CrmModuleKey } from './modules'
+export {
+  crmRequestSchema,
+  requestChannelSchema,
+  requestListSchema,
+  requestStatusSchema,
+} from './request-types'
+export type {
+  CreateRequestInput,
+  CrmRequest,
+  ListRequestsQuery,
+  RequestChannel,
+  RequestList,
+  RequestStatus,
+  UpdateRequestInput,
+} from './request-types'
+export {
   CRM_PRODUCT_APP_SLUG,
   CRM_SERVICE_KEY,
   crmServiceWorkspace,
@@ -10,6 +36,8 @@ export { create876CrmWorkspaceClient } from './workspace'
 export type {
   CrmWorkspace,
   CrmWorkspaceClient,
+  CrmWorkspaceEnsureOptions,
+  CrmWorkspaceFixture,
   CrmWorkspaceProvisioning,
 } from './workspace'
 export {
@@ -76,7 +104,6 @@ export type {
   CustomerProfile,
   CustomerProfileStatus,
   CreateCustomerInput,
-  CrmRequest,
   CrmRequestNote,
   DeleteInput,
   Deleted,
@@ -85,17 +112,14 @@ export type {
   DeleteRequestNoteInput,
   DeleteRequestPriorityInput,
   DeleteTeamInput,
-  CreateRequestInput,
   CreateRequestNoteInput,
   ListRequestPrioritiesQuery,
-  ListRequestsQuery,
   ListRequestNotesInput,
   ListTeamsQuery,
   RegistryCustomer,
   ReminderStatus,
   RequestCategory,
   RequestCategoryList,
-  RequestList,
   RequestNoteKind,
   RequestNoteList,
   RequestNoteVisibility,
@@ -104,8 +128,6 @@ export type {
   RequestPriorityList,
   RequestReminder,
   RequestReminderList,
-  RequestSource,
-  RequestStatus,
   RequestSubcategory,
   RequestTask,
   RequestTaskList,
@@ -120,7 +142,6 @@ export type {
   TeamStatus,
   UpdateCustomerInput,
   UpdateRequestCategoryInput,
-  UpdateRequestInput,
   UpdateRequestNoteInput,
   UpdateRequestPriorityInput,
   UpdateRequestReminderInput,

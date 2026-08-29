@@ -35,6 +35,10 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     'couriers.admin'
   )
   const crm = requireCapability(services.crm, 'crm')
+  const crmWorkspace = requireCapability(
+    services.crmWorkspace,
+    'crm.workspace'
+  )
   const storage = requireCapability(services.storage, 'storage')
   const widgetsMember = requireCapability(
     services.widgets?.member,
@@ -78,7 +82,9 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
 
   return {
     $876,
-    workspace: createWorkspaceControlPlane(platformAdmin),
+    workspace: createWorkspaceControlPlane(platformAdmin, {
+      crm: crmWorkspace,
+    }),
     platform: createPlatformControlPlane(platformAdmin),
   }
 }

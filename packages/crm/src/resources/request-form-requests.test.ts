@@ -54,7 +54,7 @@ const requestRow = {
     createdAt: 1,
     updatedAt: 1,
   },
-  source: 'WEB' as const,
+  channel: 'FORM' as const,
   teamId: null,
   assigneeId: null,
   ownerId: null,

@@ -52,9 +52,6 @@ export default async function EditRequestPage({ params }: Props) {
   const request = requestResult.data
   const customers = customersResult.data?.data
   const priorities = prioritiesResult.data?.data
-  // A response that carried neither an error nor a payload is still a failure;
-  // rendering the form without customers or priorities would offer an empty
-  // required field rather than telling the user the options are unavailable.
   const blockingError =
     customersResult.error ??
     prioritiesResult.error ??
@@ -77,7 +74,7 @@ export default async function EditRequestPage({ params }: Props) {
     categoryId: request.categoryId ?? '',
     status: request.status,
     priorityId: request.priorityId,
-    source: request.source,
+    channel: request.channel,
     teamId: request.teamId ?? '',
     assigneeId: request.assigneeId ?? '',
   }

@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../db/index.js'
 import type {
   ListRequestsFilter,
+  RequestChannel,
   RequestIntakeContext,
-  RequestSource,
   RequestStatus,
 } from '../../types/request.js'
 
@@ -17,7 +17,7 @@ type CreateParams = {
   subcategoryId?: string | null
   ownerId?: string | null
   priorityId: string
-  source?: RequestSource
+  channel?: RequestChannel
   teamId?: string | null
   assigneeId?: string | null
   requesterUserId?: string | null
@@ -101,7 +101,7 @@ async function insertRequest(
       categoryId: params.categoryId ?? null,
       subcategoryId: params.subcategoryId ?? null,
       priorityId: params.priorityId,
-      source: params.source ?? 'CRM',
+      channel: params.channel ?? 'AGENT',
       teamId: params.teamId ?? null,
       assigneeId: params.assigneeId ?? null,
       ownerId: params.ownerId ?? null,
@@ -171,7 +171,7 @@ export function update(
     ownerId?: string | null
     status?: RequestStatus
     priorityId?: string
-    source?: RequestSource
+    channel?: RequestChannel
     teamId?: string | null
     assigneeId?: string | null
     requesterUserId?: string | null

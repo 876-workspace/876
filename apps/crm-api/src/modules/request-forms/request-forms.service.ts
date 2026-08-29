@@ -10,6 +10,7 @@ import type {
   UpdateRequestFormInput,
 } from '../../types/request-form.js'
 import { requestFormDefinitionSchema } from '../../types/request-form.js'
+import type { RequestChannel } from '../../types/request.js'
 import * as customers from '../customers/index.js'
 import * as requests from '../requests/index.js'
 import * as tenants from '../tenants/tenants.service.js'
@@ -208,6 +209,13 @@ async function ensureSlugAvailable(
     : null
 }
 
+export function resolveIntakeChannel(
+  placement: 'HOSTED' | 'EMBEDDED',
+  explicit?: RequestChannel
+): RequestChannel {
+  return explicit ?? (placement === 'EMBEDDED' ? 'WIDGET' : 'FORM')
+}
+
 export async function list(organizationId: string, status?: RequestFormStatus) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
@@ -374,7 +382,7 @@ export async function submit(
       categoryId: form.defaultCategoryId ?? undefined,
       subcategoryId: form.defaultSubcategoryId ?? undefined,
       priorityId: form.defaultPriorityId ?? undefined,
-      source: 'WEB',
+      channel: resolveIntakeChannel(form.placement, input.channel),
       teamId: form.defaultTeamId ?? undefined,
       requesterUserId: input.requesterUserId ?? null,
       requesterContactId: input.requesterContactId ?? null,
@@ -444,4 +452,11 @@ export async function listSubmissions(organizationId: string, formId: string) {
     createdBy: submission.createdBy,
     createdAt: Math.floor(submission.createdAt.getTime() / 1000),
   }))
+}
+
+export function ensureProvisioned(
+  tenantId: string,
+  input: repository.ProvisionedRequestFormInput
+) {
+  return repository.ensureProvisioned(tenantId, input)
 }

@@ -190,7 +190,7 @@ async function RequestsListData({
         subject: request.subject,
         status: request.status,
         priority: request.priority,
-        source: request.source,
+        channel: request.channel,
         createdAt: request.createdAt,
         customerName: customer?.name ?? 'Unknown customer',
         customerIsBusiness: customer?.isBusiness ?? false,

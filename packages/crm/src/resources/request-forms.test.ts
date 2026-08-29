@@ -116,7 +116,7 @@ const requestResource = {
   status: 'OPEN' as const,
   priorityId: priority.id,
   priority,
-  source: 'WEB' as const,
+  channel: 'FORM' as const,
   teamId: null,
   assigneeId: null,
   ownerId: null,
