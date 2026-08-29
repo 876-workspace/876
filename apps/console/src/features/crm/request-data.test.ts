@@ -100,7 +100,12 @@ describe('loadDirectory', () => {
 
     const result = await loadDirectory()
 
-    expect(result).toEqual({ departments: [], members: [] })
+    expect(result).toEqual({
+      departments: [],
+      departmentsError: null,
+      members: [],
+      membersError: null,
+    })
     expect(client.organizationMembers.admin.list).not.toHaveBeenCalled()
   })
 })
