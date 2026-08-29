@@ -4,7 +4,7 @@ const { platformOrg, guards, client } = vi.hoisted(() => ({
   platformOrg: { getPlatformOrganization: vi.fn() },
   guards: { requireSession: vi.fn() },
   client: {
-    departments: { list: vi.fn() },
+    departments: { list: vi.fn(), admin: { list: vi.fn() } },
     organizationMembers: { list: vi.fn(), admin: { list: vi.fn() } },
   },
 }))
@@ -34,7 +34,7 @@ describe('loadDirectory', () => {
     vi.clearAllMocks()
     platformOrg.getPlatformOrganization.mockResolvedValue(ORG)
     guards.requireSession.mockResolvedValue({ id: 'user_695d45c5' })
-    client.departments.list.mockResolvedValue({
+    client.departments.admin.list.mockResolvedValue({
       data: { data: [{ id: 'team_1', name: 'Support' }] },
       error: null,
     })
@@ -56,6 +56,17 @@ describe('loadDirectory', () => {
       limit: 100,
     })
     expect(client.organizationMembers.list).not.toHaveBeenCalled()
+  })
+
+  it('reads departments at the operator tier, not the session tier', async () => {
+    // Regression: the session route needs a signed-in org member. Console has
+    // an app key and no session, so the session projection answered
+    // auth/invalid-response and the request page showed two enrichment errors.
+    await loadDirectory()
+
+    expect(client.departments.admin.list).toHaveBeenCalledTimes(1)
+    expect(client.departments.admin.list).toHaveBeenCalledWith(ORG.id)
+    expect(client.departments.list).not.toHaveBeenCalled()
   })
 
   it('carries the avatar through so a note can picture its author', async () => {
