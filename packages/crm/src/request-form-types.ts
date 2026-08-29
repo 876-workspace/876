@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { crmRequestSchema } from './types'
+import { crmRequestSchema, type RequestChannel } from './request-types'
 
 export const requestFormPlacementSchema = z.enum(['HOSTED', 'EMBEDDED'])
 
@@ -211,6 +211,8 @@ export interface SubmitRequestFormInput {
   customerUserId?: string
   requesterUserId?: string | null
   requesterContactId?: string | null
+  /** Override the placement-derived FORM/WIDGET channel for chat, email, or API intake. */
+  channel?: RequestChannel
   createdBy: string
 }
 
