@@ -148,8 +148,7 @@ export const customersController = {
     res.json(
       await retrieveCustomer(
         tenant(req),
-        validParams<{ customerId: string }>(req).customerId,
-        sourceApp(req)
+        validParams<{ customerId: string }>(req).customerId
       )
     )
   },

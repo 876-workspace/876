@@ -1,11 +1,32 @@
 import { prisma } from '@/lib/db'
 
-/**
- * Grant a user Console access with the given role. Fails (P2002) if the user
- * already has a grant — use `update` to change an existing member's role.
- */
-export function create(userId: string, roleName: string) {
-  return prisma.member.create({
-    data: { userId, roleName, status: 'active' },
+import {
+  validateTeamGrant,
+  type TeamGrantFields,
+  type TeamServiceResult,
+} from './validation'
+
+type CreateTeamGrant = Partial<TeamGrantFields> & { status?: string }
+
+type CreatedMember = Awaited<ReturnType<typeof prisma.member.create>>
+
+/** Grant a user Console access after validating affiliation policy. */
+export async function create(
+  userId: string,
+  roleName: string,
+  grant: CreateTeamGrant = {}
+): Promise<TeamServiceResult<CreatedMember>> {
+  const validated = validateTeamGrant(grant, roleName)
+  if (validated.error) return validated
+
+  const data = await prisma.member.create({
+    data: {
+      userId,
+      roleName,
+      status: grant.status ?? 'active',
+      ...validated.data,
+    },
   })
+
+  return { data, error: null }
 }

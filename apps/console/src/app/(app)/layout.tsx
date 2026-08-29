@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react'
 
-import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { BrowserApiBoundary } from '@/components/providers/browser-api-boundary'
+import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { Shell } from '@/components/shell/shell'
 import { WidgetBar } from '@/features/widgets/components/widget-bar'
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
+import { $876 } from '@/lib/876'
+import { AnalyticsIdentity } from '@/lib/analytics/provider'
 import { requireConsoleAccount, requireSession } from '@/lib/auth/guards'
 import { getConsoleFeatures } from '@/lib/features'
-import { AnalyticsIdentity } from '@/lib/analytics/provider'
-import { $876 } from '@/lib/876'
 
 export default async function ConsoleRootLayout({
   children,
@@ -52,6 +52,7 @@ export default async function ConsoleRootLayout({
         }}
       >
         <Shell
+          userId={user.id}
           user={{ name: displayName, email: user.email, avatar: user.avatar }}
           uiFeatures={uiFeatures}
           widgetRail={

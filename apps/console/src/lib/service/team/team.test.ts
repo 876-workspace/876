@@ -40,10 +40,19 @@ describe('Console team service', () => {
 
     const result = await create('user_123', 'support')
 
-    expect(result).toEqual({ userId: 'user_123' })
+    expect(result).toEqual({ data: { userId: 'user_123' }, error: null })
     expect(member.create).toHaveBeenCalledTimes(1)
     expect(member.create).toHaveBeenCalledWith({
-      data: { userId: 'user_123', roleName: 'support', status: 'active' },
+      data: {
+        userId: 'user_123',
+        roleName: 'support',
+        status: 'active',
+        affiliation: 'staff',
+        title: null,
+        expiresAt: null,
+        justification: null,
+        invitedBy: null,
+      },
     })
   })
 
@@ -104,13 +113,36 @@ describe('Console team service', () => {
       }
     ).member
 
+    const findUnique = (
+      prismaRef.current as never as {
+        member: { findUnique: ReturnType<typeof vi.fn> }
+      }
+    ).member.findUnique
+    findUnique.mockResolvedValue({
+      userId: 'user_123',
+      roleName: 'staff',
+      status: 'active',
+      affiliation: 'staff',
+      title: null,
+      expiresAt: null,
+      justification: null,
+      invitedBy: null,
+    })
+
     const result = await update('user_123', { roleName: 'admin' })
 
-    expect(result).toEqual({ userId: 'user_123' })
+    expect(result).toEqual({ data: { userId: 'user_123' }, error: null })
     expect(member.update).toHaveBeenCalledTimes(1)
     expect(member.update).toHaveBeenCalledWith({
       where: { userId: 'user_123' },
-      data: { roleName: 'admin' },
+      data: {
+        roleName: 'admin',
+        affiliation: 'staff',
+        title: null,
+        expiresAt: null,
+        justification: null,
+        invitedBy: null,
+      },
     })
   })
 

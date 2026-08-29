@@ -1,11 +1,17 @@
 import 'server-only'
 
+import { can, hasFeature, type AccessContext } from '@876/core/access'
 import { createAuthLoginPath } from '@876/core/auth/return-to'
+import * as Sentry from '@sentry/nextjs'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+
 import { $876 } from '@/lib/876'
-import { CONSOLE_ACCESS_PERMISSION, hasPermission } from '@/lib/permissions'
-import { service } from '@/lib/service'
+import {
+  resolveAccessContext,
+  resolveConsoleGrant,
+} from '@/lib/auth/access-context'
+import { CONSOLE_ACCESS_PERMISSION } from '@/lib/permissions'
 import { getAuthSession, isSignedSession } from './session'
 import type { Access, RoutingUser, SessionUser } from '@/types/auth'
 
@@ -31,13 +37,16 @@ type PlatformUserData = Awaited<
 export const findConsoleAccess = cache(async function findConsoleAccess(
   userId: string
 ): Promise<Access | null> {
-  const member = await service.team.retrieve(userId)
+  const context = await resolveAccessContext(userId)
+  if (!context) return null
+
+  const member = await resolveConsoleGrant(userId)
   if (!member) return null
 
   return {
     id: member.userId,
     role: member.roleName,
-    permissions: member.role.permissions,
+    permissions: [...context.permissions],
     status: member.status,
   }
 })
@@ -67,11 +76,72 @@ function hydrateDisplay(
   }
 }
 
-async function requireAccess(
-  userId: string
-): Promise<{ access: Access; platformUser: PlatformUserData }> {
-  const access = await findConsoleAccess(userId)
-  if (!access) redirect('/access-denied?reason=no-account')
+function isExpired(expiresAt: bigint | null): boolean {
+  if (expiresAt === null) return false
+  return expiresAt <= BigInt(Math.floor(Date.now() / 1000))
+}
+
+const verifyStaffEmployment = cache(
+  async function verifyStaffEmployment(userId: string): Promise<boolean | null> {
+    const organizationId = process.env.CONSOLE_STAFF_ORGANIZATION_ID
+    if (!organizationId) return true
+
+    try {
+      const result = await $876.memberships.admin.list({
+        organizationId,
+        userId,
+        limit: 1,
+      })
+      if (result.error) {
+        Sentry.captureMessage('Console staff employment verification unavailable', {
+          level: 'warning',
+          tags: { category: 'console_access' },
+          extra: {
+            userId,
+            organizationId,
+            errorCode: result.error.code,
+          },
+        })
+        return null
+      }
+
+      const membership = result.data?.data[0]
+      return membership?.status === 'active'
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { category: 'console_access' },
+        extra: { userId, organizationId },
+      })
+      return null
+    }
+  }
+)
+
+async function requireAccess(userId: string): Promise<{
+  access: Access
+  context: AccessContext
+  platformUser: PlatformUserData
+}> {
+  const [context, access, member] = await Promise.all([
+    resolveAccessContext(userId),
+    findConsoleAccess(userId),
+    resolveConsoleGrant(userId),
+  ])
+  if (!context || !access || !member)
+    redirect('/access-denied?reason=no-account')
+
+  if (
+    isExpired(member.expiresAt) ||
+    (member.affiliation !== 'staff' && member.expiresAt === null)
+  )
+    redirect('/access-denied?reason=expired')
+
+  if (member.affiliation === 'staff') {
+    const employed = await verifyStaffEmployment(userId)
+    if (employed === false) redirect('/access-denied?reason=employment')
+    // null is deliberately fail-open: employment verification can only remove
+    // access, never grant it. The outage is captured above for visibility.
+  }
 
   // Console owns authorization through its team row, while the platform owns
   // identity lifecycle. An explicit deleted/disabled platform account signs out;
@@ -86,8 +156,8 @@ async function requireAccess(
       result.error?.code === 'user/not-found' ||
       Boolean(
         platformUser &&
-        (platformUser.banned ||
-          (platformUser.status && platformUser.status !== 'active'))
+          (platformUser.banned ||
+            (platformUser.status && platformUser.status !== 'active'))
       )
   } catch {
     // Platform outage — preserve the valid Console session.
@@ -95,10 +165,10 @@ async function requireAccess(
 
   if (accountUnavailable) redirect('/login')
   if (access.status !== 'active') redirect('/access-denied?reason=suspended')
-  if (!hasPermission(access, CONSOLE_ACCESS_PERMISSION))
+  if (!can(context, CONSOLE_ACCESS_PERMISSION))
     redirect('/access-denied?reason=permission')
 
-  return { access, platformUser }
+  return { access, context, platformUser }
 }
 
 export async function requireConsoleAccount(
@@ -106,6 +176,7 @@ export async function requireConsoleAccount(
   sessionUser?: Pick<SessionUser, 'email' | 'firstName' | 'lastName'>
 ): Promise<RoutingUser> {
   const { access, platformUser } = await requireAccess(userId)
+
   return hydrateDisplay(access, platformUser, sessionUser)
 }
 
@@ -113,8 +184,30 @@ export async function requireConsolePermission(
   userId: string,
   permission: string
 ): Promise<Access> {
-  const { access } = await requireAccess(userId)
-  if (!hasPermission(access, permission)) redirect('/')
+  const { access, context } = await requireAccess(userId)
+  if (!can(context, permission)) redirect('/')
+
+  return access
+}
+
+export async function requireConsoleFeature(
+  userId: string,
+  feature: string
+): Promise<Access> {
+  const { access, context } = await requireAccess(userId)
+  if (!hasFeature(context, feature)) redirect('/')
+
+  return access
+}
+
+export async function requireConsoleCapability(
+  userId: string,
+  requirement: { permission?: string; feature?: string }
+): Promise<Access> {
+  const { access, context } = await requireAccess(userId)
+
+  if (requirement.permission && !can(context, requirement.permission)) redirect('/')
+  if (requirement.feature && !hasFeature(context, requirement.feature)) redirect('/')
 
   return access
 }

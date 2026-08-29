@@ -17,7 +17,8 @@ export async function setRole(
   const check = await assertRoleChangeAllowed(caller, targetId, role)
   if (!check.ok) return err(check.error, check.status)
 
-  const data = await applyRoleChange(targetId, role as AssignableRole)
+  const result = await applyRoleChange(targetId, role as AssignableRole)
+  if (result.error) return err(result.error.message, 400)
 
-  return ok(data)
+  return ok(result.data)
 }

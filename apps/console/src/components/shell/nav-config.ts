@@ -1,112 +1,109 @@
-import {
-  BarChart3,
-  Building2,
-  ChatBubbleLeftIcon,
-  ChartPieIcon,
-  Database,
-  KeyRound,
-  RectangleGroup,
-  Settings,
-  SquaresPlusIcon,
-  Users,
-} from '@876/ui/icons'
-import type { IconComponent } from '@876/ui/icons'
-
-/** A top-level sidebar item. */
-export type NavItem = {
-  title: string
-  href: string
-  icon: IconComponent
-  color?: string
-  colorClassName?: string
-}
-
-export type NavGroup = {
-  items: NavItem[]
-}
+import { defineNavigation } from '@876/core/access'
 
 /** Unlabelled Console navigation groups rendered in sidebar order. */
-export const navConfig: NavGroup[] = [
+export const navConfig = defineNavigation([
   {
-    items: [
+    key: 'primary',
+    entries: [
       {
+        key: 'dashboards',
         title: 'Dashboards',
         href: '/',
-        icon: BarChart3,
-        color: 'var(--876-blue)',
+        icon: 'dashboard',
         colorClassName: 'text-blue-500 dark:text-blue-400',
+        activeClassName: 'bg-blue-500/12 ring-blue-500/30',
       },
       {
+        key: 'users',
         title: 'Users',
         href: '/users',
-        icon: Users,
-        color: 'var(--876-blue)',
+        icon: 'users',
         colorClassName: 'text-amber-500 dark:text-amber-400',
+        activeClassName: 'bg-amber-500/12 ring-amber-500/30',
+        requires: { permission: 'console:users' },
       },
       {
+        key: 'organizations',
         title: 'Organizations',
         href: '/orgs',
-        icon: Building2,
-        color: 'var(--876-gold)',
+        icon: 'organizations',
         colorClassName: 'text-amber-500 dark:text-amber-400',
+        activeClassName: 'bg-amber-500/12 ring-amber-500/30',
+        requires: { permission: 'console:organizations' },
       },
       {
+        key: 'requests',
         title: 'Requests',
         href: '/requests',
-        icon: ChatBubbleLeftIcon,
-        color: 'var(--876-blue)',
+        icon: 'support',
         colorClassName: 'text-cyan-500 dark:text-cyan-400',
+        activeClassName: 'bg-cyan-500/12 ring-cyan-500/30',
+        requires: { permission: 'console:requests' },
       },
       {
+        key: 'security',
         title: 'Security',
         href: '/security',
-        icon: KeyRound,
-        color: 'var(--876-blue)',
+        icon: 'security',
         colorClassName: 'text-rose-500 dark:text-rose-400',
+        activeClassName: 'bg-rose-500/12 ring-rose-500/30',
+        requires: { permission: 'console:security' },
       },
     ],
   },
   {
-    items: [
+    key: 'platform',
+    entries: [
       {
+        key: 'apps',
         title: 'Apps',
         href: '/apps',
-        icon: SquaresPlusIcon,
-        color: 'var(--876-purple)',
+        icon: 'apps',
         colorClassName: 'text-purple-500 dark:text-purple-400',
+        activeClassName: 'bg-purple-500/12 ring-purple-500/30',
+        requires: { permission: 'console:apps' },
       },
       {
+        key: 'widgets',
         title: 'Widgets',
         href: '/widgets',
-        icon: RectangleGroup,
-        color: 'var(--876-gold)',
+        icon: 'widgets',
         colorClassName: 'text-emerald-500 dark:text-emerald-400',
+        activeClassName: 'bg-emerald-500/12 ring-emerald-500/30',
+        requires: { permission: 'console:widgets' },
       },
       {
+        key: 'storage',
         title: 'Storage',
         href: '/storage',
-        icon: Database,
-        color: 'var(--876-blue)',
+        icon: 'storage',
         colorClassName: 'text-blue-500 dark:text-blue-400',
+        activeClassName: 'bg-blue-500/12 ring-blue-500/30',
+        requires: { permission: 'console:storage' },
       },
     ],
   },
   {
-    items: [
+    key: 'manage',
+    entries: [
       {
+        key: 'reports',
         title: 'Reports',
         href: '/reports',
-        icon: ChartPieIcon,
-        color: 'var(--876-gold)',
+        icon: 'reports',
         colorClassName: 'text-amber-500 dark:text-amber-400',
+        activeClassName: 'bg-amber-500/12 ring-amber-500/30',
+        requires: { permission: 'console:reports' },
       },
       {
+        key: 'settings',
         title: 'Settings',
         href: '/settings',
-        icon: Settings,
-        color: 'var(--876-blue)',
+        icon: 'settings',
         colorClassName: 'text-slate-500 dark:text-slate-400',
+        activeClassName: 'bg-slate-500/12 ring-slate-500/30',
+        requires: { permission: 'console:settings' },
       },
     ],
   },
-]
+])

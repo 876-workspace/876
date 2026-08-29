@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
-import { Lock } from '@876/ui/icons'
 import { AuthPageShell } from '@876/ui/auth'
+import { Lock } from '@876/ui/icons'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -12,13 +12,24 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-type AccessDeniedReason = 'permission' | 'suspended' | 'no-account'
+type AccessDeniedReason =
+  | 'permission'
+  | 'suspended'
+  | 'no-account'
+  | 'expired'
+  | 'employment'
 
 function resolveReason(
   value: string | string[] | undefined
 ): AccessDeniedReason {
   const raw = Array.isArray(value) ? value[0] : value
-  if (raw === 'suspended' || raw === 'no-account') return raw
+  if (
+    raw === 'suspended' ||
+    raw === 'no-account' ||
+    raw === 'expired' ||
+    raw === 'employment'
+  )
+    return raw
   return 'permission'
 }
 
@@ -37,6 +48,16 @@ function getCopy(
       return {
         heading: 'No Console profile',
         body: `We couldn't find a Console profile for ${account}. Ask a platform administrator to grant you access, or sign in with a different account.`,
+      }
+    case 'expired':
+      return {
+        heading: 'Console grant expired',
+        body: `The Console access grant for ${account} has expired. Ask a platform administrator to review and renew the grant if access is still required.`,
+      }
+    case 'employment':
+      return {
+        heading: 'Employment could not be verified',
+        body: `The Console staff grant for ${account} no longer has an active Efesto membership. Ask a platform administrator or People Operations to review the employment record.`,
       }
     case 'permission':
     default:

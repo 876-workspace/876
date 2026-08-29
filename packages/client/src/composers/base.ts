@@ -99,6 +99,10 @@ export type CoreSurfaceAdmin = Omit<
   | 'organizationMembers'
   | 'invites'
   | 'sessions'
+  | 'locations'
+  | 'contacts'
+  | 'departments'
+  | 'employees'
 > & {
   users: WithAdmin<{ me: SDK876Client['users'] }, Admin876Client['users']>
   /**
@@ -122,6 +126,21 @@ export type CoreSurfaceAdmin = Omit<
     Admin876Client['organizationMembers']
   >
   invites: WithAdmin<SDK876Client['invites'], Admin876Client['invites']>
+  /**
+   * Organization structure is session-tier on the platform API: an org member
+   * reads their own org's locations, contacts, departments, and employees.
+   * Console holds no session and acts across every organization, so it needs
+   * the operator projection of the same capability — see
+   * `.claude/rules/access-tiers.md`. Without it a Console server component
+   * calls a session route with only an app key and gets `auth/invalid-response`.
+   */
+  locations: WithAdmin<SDK876Client['locations'], Admin876Client['locations']>
+  contacts: WithAdmin<SDK876Client['contacts'], Admin876Client['contacts']>
+  departments: WithAdmin<
+    SDK876Client['departments'],
+    Admin876Client['departments']
+  >
+  employees: WithAdmin<SDK876Client['employees'], Admin876Client['employees']>
   sessions: AdminSessionSurface
 } & AdminResourceNamespaces
 
@@ -203,6 +222,10 @@ function createCoreSurfaceAdmin(
       admin.organizationMembers
     ),
     invites: withAdmin(platform.invites, admin.invites),
+    locations: withAdmin(platform.locations, admin.locations),
+    contacts: withAdmin(platform.contacts, admin.contacts),
+    departments: withAdmin(platform.departments, admin.departments),
+    employees: withAdmin(platform.employees, admin.employees),
     sessions: createAdminSessionSurface(platform, admin.sessions),
     auditEvents: admin.auditEvents,
     addresses: admin.addresses,

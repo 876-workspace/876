@@ -176,4 +176,112 @@ describe('admin core resource projections', () => {
     expect(core.invites.list).toBe(platformInviteList)
     expect(core.invites.admin.list).toBe(adminInviteList)
   })
+  it('projects org-structure resources at the operator tier for Console', () => {
+    // Regression: `GET /organizations/:id/departments` is session-tier on the
+    // platform API. Console holds an app key and no session, so calling the
+    // session projection returned `auth/invalid-response` and the CRM request
+    // page rendered two enrichment errors. The operator projection must exist
+    // for every org-structure resource Console reads across organizations.
+    const platformDepartmentList = vi.fn()
+    const platformLocationList = vi.fn()
+    const platformContactList = vi.fn()
+    const platformEmployeeList = vi.fn()
+    const adminDepartmentList = vi.fn()
+    const adminLocationList = vi.fn()
+    const adminContactList = vi.fn()
+    const adminEmployeeList = vi.fn()
+
+    const platform = {
+      auth: { me: {} },
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      locations: { list: platformLocationList },
+      contacts: { list: platformContactList },
+      departments: { list: platformDepartmentList },
+      employees: { list: platformEmployeeList },
+      roles: {},
+      permissions: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      mobileNumbers: {},
+      mobileNumberVerifications: {},
+      products: {},
+      oauth: {},
+      oauthGrants: {},
+      auditEvents: {},
+    } as unknown as Parameters<typeof createCoreSurface>[0]['platform']
+
+    const admin = {
+      sessions: {},
+      auditEvents: {},
+      addresses: {},
+      billingAccounts: {},
+      appSubscriptions: {},
+      identifications: {},
+      messages: {},
+      calls: {},
+      phoneLookups: {},
+      users: {},
+      organizations: { subscriptions: {} },
+      apps: {},
+      memberships: {},
+      features: {},
+      roles: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      locations: { list: adminLocationList },
+      contacts: { list: adminContactList },
+      departments: { list: adminDepartmentList },
+      employees: { list: adminEmployeeList },
+    } as unknown as Parameters<typeof createWorkspaceControlPlane>[0]
+
+    const core = createCoreSurface({ platform, admin })
+
+    expect(core.departments.admin.list).toBe(adminDepartmentList)
+    expect(core.locations.admin.list).toBe(adminLocationList)
+    expect(core.contacts.admin.list).toBe(adminContactList)
+    expect(core.employees.admin.list).toBe(adminEmployeeList)
+  })
+
+  it('keeps the session projection of org-structure resources intact', () => {
+    const platformDepartmentList = vi.fn()
+    const platformEmployeeList = vi.fn()
+
+    const platform = {
+      auth: { me: {} },
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      locations: {},
+      contacts: {},
+      departments: { list: platformDepartmentList },
+      employees: { list: platformEmployeeList },
+      roles: {},
+      permissions: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      mobileNumbers: {},
+      mobileNumberVerifications: {},
+      products: {},
+      oauth: {},
+      oauthGrants: {},
+      auditEvents: {},
+    } as unknown as Parameters<typeof createCoreSurface>[0]['platform']
+
+    const base = createCoreSurface({ platform })
+
+    expect(base.departments.list).toBe(platformDepartmentList)
+    expect(base.employees.list).toBe(platformEmployeeList)
+    expect('admin' in base.departments).toBe(false)
+  })
 })

@@ -67,7 +67,7 @@ import { TopbarSearch } from '@/components/shell/topbar-search'
 function createExpectedSearchItems(): TopbarSearchItem[] {
   return [
     ...navConfig.flatMap((group) =>
-      group.items.map((item) => ({
+      group.entries.map((item) => ({
         group: 'Navigation',
         title: item.title,
         href: item.href,
@@ -88,7 +88,7 @@ describe('Console TopbarSearch', () => {
 
   it('builds the complete search item list from the real console navigation config', () => {
     const expectedItems = createExpectedSearchItems()
-    render(<TopbarSearch />)
+    render(<TopbarSearch items={createExpectedSearchItems()} />)
     const props = mocks.sharedTopbarSearch.mock.calls[0]?.[0] as {
       items: TopbarSearchItem[]
       onNavigate: (href: string) => void
@@ -123,7 +123,7 @@ describe('Console TopbarSearch', () => {
 
   it('pushes the exact selected href once and closes the search dialog', async () => {
     const user = userEvent.setup()
-    render(<TopbarSearch />)
+    render(<TopbarSearch items={createExpectedSearchItems()} />)
     await user.click(screen.getByRole('button', { name: 'Search...⌘K' }))
 
     await user.click(await screen.findByRole('option', { name: 'Dashboards' }))

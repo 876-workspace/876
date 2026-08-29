@@ -28,6 +28,7 @@ import { reservedUsernames } from './reserved-usernames'
 import { roles } from './roles'
 import { pin } from './pin'
 import { sessions } from './sessions'
+import { team } from './team'
 import { users } from './users'
 import { widgets } from './widgets'
 
@@ -58,6 +59,7 @@ export const client = {
   roles,
   pin,
   sessions,
+  team,
   users,
   widgets,
 }
@@ -90,6 +92,7 @@ export {
 export { reservedUsernames } from './reserved-usernames'
 export { pin } from './pin'
 export { roles } from './roles'
+export { team } from './team'
 export { users } from './users'
 export { widgets } from './widgets'
 export type { ClientResult } from '@/types/api'
