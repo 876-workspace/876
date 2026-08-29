@@ -3,8 +3,10 @@ import { createApp } from '@/application'
 import { getSettings } from '@/config'
 import { disconnectDb } from '@/db/client'
 import { configureLogging, getLogger } from '@/platform/logger'
+import { getPostHogFlagEvaluator } from '@/providers/posthog/flags'
 import { assertFinanceProvisioningConfiguration } from '@/services/finance-provisioning-configuration'
 import { startBillingSyncWorker } from '@/workers/billing-customer-dispatch'
+import { startFeatureFlagSyncWorker } from '@/workers/feature-flag-sync'
 import { startFinanceProvisioningWorker } from '@/workers/finance-provisioning-dispatch'
 
 const log = getLogger('server')
@@ -15,6 +17,8 @@ export type ServerLifecycleDeps = {
   disconnectDb: typeof disconnectDb
   startBillingWorker: typeof startBillingSyncWorker
   startFinanceWorker: typeof startFinanceProvisioningWorker
+  startFeatureFlagSyncWorker: typeof startFeatureFlagSyncWorker
+  getPostHogFlagEvaluator: typeof getPostHogFlagEvaluator
   assertFinanceConfiguration: typeof assertFinanceProvisioningConfiguration
 }
 
@@ -32,6 +36,8 @@ export function createServerLifecycle(
     disconnectDb,
     startBillingWorker: startBillingSyncWorker,
     startFinanceWorker: startFinanceProvisioningWorker,
+    startFeatureFlagSyncWorker,
+    getPostHogFlagEvaluator,
     assertFinanceConfiguration: assertFinanceProvisioningConfiguration,
     ...overrides,
   }
@@ -45,8 +51,13 @@ export function createServerLifecycle(
   })
 
   const app = deps.createApp()
+  const flagEvaluator =
+    settings.featureFlags.evaluationSource === 'posthog'
+      ? deps.getPostHogFlagEvaluator(settings)
+      : null
   let billingWorkerStop: (() => Promise<void>) | null = null
   let financeWorkerStop: (() => Promise<void>) | null = null
+  let featureFlagSyncWorkerStop: (() => Promise<void>) | null = null
 
   const server = app.listen(settings.port, '0.0.0.0', () => {
     log.info(
@@ -62,6 +73,11 @@ export function createServerLifecycle(
       const worker = deps.startFinanceWorker()
       financeWorkerStop = worker.stop
       log.info('finance_worker.started')
+    }
+    if (settings.featureFlags.syncEnabled) {
+      const worker = deps.startFeatureFlagSyncWorker()
+      featureFlagSyncWorkerStop = worker.stop
+      log.info('feature_flag_sync.worker_started')
     }
   })
 
@@ -85,6 +101,22 @@ export function createServerLifecycle(
         await financeWorkerStop()
       } catch (e) {
         log.error({ err: e }, 'finance_worker.stop_failed')
+      }
+    }
+
+    if (featureFlagSyncWorkerStop) {
+      try {
+        await featureFlagSyncWorkerStop()
+      } catch (e) {
+        log.error({ err: e }, 'feature_flag_sync.worker_stop_failed')
+      }
+    }
+
+    if (flagEvaluator) {
+      try {
+        await flagEvaluator.shutdown()
+      } catch (e) {
+        log.error({ err: e }, 'posthog.flag_evaluator_shutdown_failed')
       }
     }
 
