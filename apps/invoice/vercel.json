@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "pnpm --filter @876/invoice-app build:next"
+  "buildCommand": "pnpm --filter @876/invoice-app build:next",
+  "ignoreCommand": "node ../../scripts/vercel-ignore-build.mjs @876/invoice-app"
 }

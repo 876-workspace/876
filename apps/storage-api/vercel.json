@@ -1,4 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install && uv pip install --python .vercel/python/.venv/bin/python -r requirements.txt"
+  "installCommand": "pnpm install && uv pip install --python .vercel/python/.venv/bin/python -r requirements.txt",
+  "ignoreCommand": "node ../../scripts/vercel-ignore-build.mjs @876/storage-api"
 }
