@@ -17,8 +17,8 @@ import { categoryColorClass } from '@/features/categories/category-color'
 import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 
 import { CopyButton } from '../../_components/copy-button'
-import { RequestSourceIcon } from '../../_components/request-source-icon'
-import { formatSource } from '../../_lib/request-format'
+import { RequestChannelIcon } from '../../_components/request-source-icon'
+import { formatChannel } from '../../_lib/request-format'
 import { loadCategoryIndex, loadCustomer, loadRequest } from '../_data'
 
 export async function RequestAside({ requestId }: { requestId: string }) {
@@ -220,10 +220,10 @@ export async function RequestAside({ requestId }: { requestId: string }) {
             )}
           </DetailRow>
 
-          <DetailRow label="Source">
+          <DetailRow label="Channel">
             <span className="text-foreground flex items-center gap-1.5">
-              <RequestSourceIcon source={request.source} />
-              {formatSource(request.source)}
+              <RequestChannelIcon channel={request.channel} />
+              {formatChannel(request.channel)}
             </span>
           </DetailRow>
 
