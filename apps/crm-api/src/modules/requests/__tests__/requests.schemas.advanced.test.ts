@@ -116,12 +116,20 @@ describe('requests.schemas - createRequestBodySchema', () => {
       createRequestBodySchema.parse({ ...base, priority: 'HIGH' })
     ).toThrow()
   })
-  it('validates the source enum', () => {
+  it('validates the channel enum', () => {
     expect(
-      createRequestBodySchema.parse({ ...base, source: 'EMAIL' }).source
+      createRequestBodySchema.parse({ ...base, channel: 'EMAIL' }).channel
     ).toBe('EMAIL')
     expect(() =>
-      createRequestBodySchema.parse({ ...base, source: 'SLACK' })
+      createRequestBodySchema.parse({ ...base, channel: 'SLACK' })
+    ).toThrow()
+  })
+  it('rejects the retired request source axis', () => {
+    expect(() =>
+      createRequestBodySchema.parse({ ...base, channel: 'WEB' })
+    ).toThrow()
+    expect(() =>
+      createRequestBodySchema.parse({ ...base, source: 'EMAIL' })
     ).toThrow()
   })
   it('keeps the 20_000 authored-character description limit', () => {

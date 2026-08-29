@@ -59,7 +59,7 @@ const baseRow = {
   status: 'OPEN' as const,
   priorityId: 'crm_pri_normal',
   priority: { id: 'crm_pri_normal', name: 'Normal' },
-  source: 'CRM' as const,
+  channel: 'AGENT' as const,
   createdBy: 'usr_1',
   resolvedAt: null,
   closedAt: null,

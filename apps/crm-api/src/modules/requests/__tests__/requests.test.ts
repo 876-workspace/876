@@ -110,7 +110,7 @@ const requestRow = {
   status: 'OPEN',
   priorityId: normalPriorityRow.id,
   priority: normalPriorityRow,
-  source: 'CRM',
+  channel: 'AGENT',
   teamId: null,
   assigneeId: null,
   ownerId: null,

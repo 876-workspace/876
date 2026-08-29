@@ -96,7 +96,7 @@ const requestRow = {
   ownerId: null,
   status: 'OPEN',
   priority: 'NORMAL',
-  source: 'CRM',
+  channel: 'AGENT',
   createdBy: 'usr_1',
   resolvedAt: null,
   closedAt: null,
