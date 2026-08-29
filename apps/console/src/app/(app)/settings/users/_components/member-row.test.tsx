@@ -1,3 +1,7 @@
+/** @vitest-environment jsdom */
+
+import '@testing-library/jest-dom/vitest'
+
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -62,8 +66,12 @@ describe('TeamTableRow', () => {
   it('renders affiliation and role as badges', () => {
     renderRow(row({ affiliation: 'external', role: 'super_admin' }))
 
-    expect(screen.getByText('External').closest('[data-slot="badge"]')).not.toBeNull()
-    expect(screen.getByText('Super Admin').closest('[data-slot="badge"]')).not.toBeNull()
+    expect(
+      screen.getByText('External').closest('[data-slot="badge"]')
+    ).not.toBeNull()
+    expect(
+      screen.getByText('Super Admin').closest('[data-slot="badge"]')
+    ).not.toBeNull()
   })
 
   it('renders an em dash expiry for staff', () => {
