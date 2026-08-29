@@ -27,14 +27,29 @@ export type MemberModel = runtime.Types.Result.DefaultSelection<Prisma.$MemberPa
 
 export type AggregateMember = {
   _count: MemberCountAggregateOutputType | null
+  _avg: MemberAvgAggregateOutputType | null
+  _sum: MemberSumAggregateOutputType | null
   _min: MemberMinAggregateOutputType | null
   _max: MemberMaxAggregateOutputType | null
+}
+
+export type MemberAvgAggregateOutputType = {
+  expiresAt: number | null
+}
+
+export type MemberSumAggregateOutputType = {
+  expiresAt: bigint | null
 }
 
 export type MemberMinAggregateOutputType = {
   userId: string | null
   roleName: string | null
   status: string | null
+  affiliation: string | null
+  title: string | null
+  expiresAt: bigint | null
+  justification: string | null
+  invitedBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -43,6 +58,11 @@ export type MemberMaxAggregateOutputType = {
   userId: string | null
   roleName: string | null
   status: string | null
+  affiliation: string | null
+  title: string | null
+  expiresAt: bigint | null
+  justification: string | null
+  invitedBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -51,16 +71,34 @@ export type MemberCountAggregateOutputType = {
   userId: number
   roleName: number
   status: number
+  affiliation: number
+  title: number
+  expiresAt: number
+  justification: number
+  invitedBy: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type MemberAvgAggregateInputType = {
+  expiresAt?: true
+}
+
+export type MemberSumAggregateInputType = {
+  expiresAt?: true
+}
+
 export type MemberMinAggregateInputType = {
   userId?: true
   roleName?: true
   status?: true
+  affiliation?: true
+  title?: true
+  expiresAt?: true
+  justification?: true
+  invitedBy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -69,6 +107,11 @@ export type MemberMaxAggregateInputType = {
   userId?: true
   roleName?: true
   status?: true
+  affiliation?: true
+  title?: true
+  expiresAt?: true
+  justification?: true
+  invitedBy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +120,11 @@ export type MemberCountAggregateInputType = {
   userId?: true
   roleName?: true
   status?: true
+  affiliation?: true
+  title?: true
+  expiresAt?: true
+  justification?: true
+  invitedBy?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -120,6 +168,18 @@ export type MemberAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: MemberAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: MemberSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: MemberMinAggregateInputType
@@ -150,6 +210,8 @@ export type MemberGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: MemberCountAggregateInputType | true
+  _avg?: MemberAvgAggregateInputType
+  _sum?: MemberSumAggregateInputType
   _min?: MemberMinAggregateInputType
   _max?: MemberMaxAggregateInputType
 }
@@ -158,9 +220,16 @@ export type MemberGroupByOutputType = {
   userId: string
   roleName: string
   status: string
+  affiliation: string
+  title: string | null
+  expiresAt: bigint | null
+  justification: string | null
+  invitedBy: string | null
   createdAt: Date
   updatedAt: Date
   _count: MemberCountAggregateOutputType | null
+  _avg: MemberAvgAggregateOutputType | null
+  _sum: MemberSumAggregateOutputType | null
   _min: MemberMinAggregateOutputType | null
   _max: MemberMaxAggregateOutputType | null
 }
@@ -187,6 +256,11 @@ export type MemberWhereInput = {
   userId?: Prisma.StringFilter<"Member"> | string
   roleName?: Prisma.StringFilter<"Member"> | string
   status?: Prisma.StringFilter<"Member"> | string
+  affiliation?: Prisma.StringFilter<"Member"> | string
+  title?: Prisma.StringNullableFilter<"Member"> | string | null
+  expiresAt?: Prisma.BigIntNullableFilter<"Member"> | bigint | number | null
+  justification?: Prisma.StringNullableFilter<"Member"> | string | null
+  invitedBy?: Prisma.StringNullableFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
@@ -196,6 +270,11 @@ export type MemberOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   roleName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  affiliation?: Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  justification?: Prisma.SortOrderInput | Prisma.SortOrder
+  invitedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.RoleOrderByWithRelationInput
@@ -208,6 +287,11 @@ export type MemberWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.MemberWhereInput | Prisma.MemberWhereInput[]
   roleName?: Prisma.StringFilter<"Member"> | string
   status?: Prisma.StringFilter<"Member"> | string
+  affiliation?: Prisma.StringFilter<"Member"> | string
+  title?: Prisma.StringNullableFilter<"Member"> | string | null
+  expiresAt?: Prisma.BigIntNullableFilter<"Member"> | bigint | number | null
+  justification?: Prisma.StringNullableFilter<"Member"> | string | null
+  invitedBy?: Prisma.StringNullableFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
@@ -217,11 +301,18 @@ export type MemberOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   roleName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  affiliation?: Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  justification?: Prisma.SortOrderInput | Prisma.SortOrder
+  invitedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MemberCountOrderByAggregateInput
+  _avg?: Prisma.MemberAvgOrderByAggregateInput
   _max?: Prisma.MemberMaxOrderByAggregateInput
   _min?: Prisma.MemberMinOrderByAggregateInput
+  _sum?: Prisma.MemberSumOrderByAggregateInput
 }
 
 export type MemberScalarWhereWithAggregatesInput = {
@@ -231,6 +322,11 @@ export type MemberScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"Member"> | string
   roleName?: Prisma.StringWithAggregatesFilter<"Member"> | string
   status?: Prisma.StringWithAggregatesFilter<"Member"> | string
+  affiliation?: Prisma.StringWithAggregatesFilter<"Member"> | string
+  title?: Prisma.StringNullableWithAggregatesFilter<"Member"> | string | null
+  expiresAt?: Prisma.BigIntNullableWithAggregatesFilter<"Member"> | bigint | number | null
+  justification?: Prisma.StringNullableWithAggregatesFilter<"Member"> | string | null
+  invitedBy?: Prisma.StringNullableWithAggregatesFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Member"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Member"> | Date | string
 }
@@ -238,6 +334,11 @@ export type MemberScalarWhereWithAggregatesInput = {
 export type MemberCreateInput = {
   userId: string
   status?: string
+  affiliation?: string
+  title?: string | null
+  expiresAt?: bigint | number | null
+  justification?: string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   role: Prisma.RoleCreateNestedOneWithoutMembersInput
@@ -247,6 +348,11 @@ export type MemberUncheckedCreateInput = {
   userId: string
   roleName: string
   status?: string
+  affiliation?: string
+  title?: string | null
+  expiresAt?: bigint | number | null
+  justification?: string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -254,6 +360,11 @@ export type MemberUncheckedCreateInput = {
 export type MemberUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.RoleUpdateOneRequiredWithoutMembersNestedInput
@@ -263,6 +374,11 @@ export type MemberUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   roleName?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -271,6 +387,11 @@ export type MemberCreateManyInput = {
   userId: string
   roleName: string
   status?: string
+  affiliation?: string
+  title?: string | null
+  expiresAt?: bigint | number | null
+  justification?: string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -278,6 +399,11 @@ export type MemberCreateManyInput = {
 export type MemberUpdateManyMutationInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -286,6 +412,11 @@ export type MemberUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   roleName?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -304,14 +435,28 @@ export type MemberCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   roleName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  affiliation?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
+  justification?: Prisma.SortOrder
+  invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type MemberAvgOrderByAggregateInput = {
+  expiresAt?: Prisma.SortOrder
 }
 
 export type MemberMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   roleName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  affiliation?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
+  justification?: Prisma.SortOrder
+  invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -320,8 +465,17 @@ export type MemberMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   roleName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  affiliation?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
+  justification?: Prisma.SortOrder
+  invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type MemberSumOrderByAggregateInput = {
+  expiresAt?: Prisma.SortOrder
 }
 
 export type MemberCreateNestedManyWithoutRoleInput = {
@@ -366,9 +520,22 @@ export type MemberUncheckedUpdateManyWithoutRoleNestedInput = {
   deleteMany?: Prisma.MemberScalarWhereInput | Prisma.MemberScalarWhereInput[]
 }
 
+export type NullableBigIntFieldUpdateOperationsInput = {
+  set?: bigint | number | null
+  increment?: bigint | number
+  decrement?: bigint | number
+  multiply?: bigint | number
+  divide?: bigint | number
+}
+
 export type MemberCreateWithoutRoleInput = {
   userId: string
   status?: string
+  affiliation?: string
+  title?: string | null
+  expiresAt?: bigint | number | null
+  justification?: string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -376,6 +543,11 @@ export type MemberCreateWithoutRoleInput = {
 export type MemberUncheckedCreateWithoutRoleInput = {
   userId: string
   status?: string
+  affiliation?: string
+  title?: string | null
+  expiresAt?: bigint | number | null
+  justification?: string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -413,6 +585,11 @@ export type MemberScalarWhereInput = {
   userId?: Prisma.StringFilter<"Member"> | string
   roleName?: Prisma.StringFilter<"Member"> | string
   status?: Prisma.StringFilter<"Member"> | string
+  affiliation?: Prisma.StringFilter<"Member"> | string
+  title?: Prisma.StringNullableFilter<"Member"> | string | null
+  expiresAt?: Prisma.BigIntNullableFilter<"Member"> | bigint | number | null
+  justification?: Prisma.StringNullableFilter<"Member"> | string | null
+  invitedBy?: Prisma.StringNullableFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Member"> | Date | string
 }
@@ -420,6 +597,11 @@ export type MemberScalarWhereInput = {
 export type MemberCreateManyRoleInput = {
   userId: string
   status?: string
+  affiliation?: string
+  title?: string | null
+  expiresAt?: bigint | number | null
+  justification?: string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -427,6 +609,11 @@ export type MemberCreateManyRoleInput = {
 export type MemberUpdateWithoutRoleInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -434,6 +621,11 @@ export type MemberUpdateWithoutRoleInput = {
 export type MemberUncheckedUpdateWithoutRoleInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -441,6 +633,11 @@ export type MemberUncheckedUpdateWithoutRoleInput = {
 export type MemberUncheckedUpdateManyWithoutRoleInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  affiliation?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  justification?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -451,6 +648,11 @@ export type MemberSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   userId?: boolean
   roleName?: boolean
   status?: boolean
+  affiliation?: boolean
+  title?: boolean
+  expiresAt?: boolean
+  justification?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
@@ -460,6 +662,11 @@ export type MemberSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   userId?: boolean
   roleName?: boolean
   status?: boolean
+  affiliation?: boolean
+  title?: boolean
+  expiresAt?: boolean
+  justification?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
@@ -469,6 +676,11 @@ export type MemberSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   userId?: boolean
   roleName?: boolean
   status?: boolean
+  affiliation?: boolean
+  title?: boolean
+  expiresAt?: boolean
+  justification?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
@@ -478,11 +690,16 @@ export type MemberSelectScalar = {
   userId?: boolean
   roleName?: boolean
   status?: boolean
+  affiliation?: boolean
+  title?: boolean
+  expiresAt?: boolean
+  justification?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "roleName" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["member"]>
+export type MemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "roleName" | "status" | "affiliation" | "title" | "expiresAt" | "justification" | "invitedBy" | "createdAt" | "updatedAt", ExtArgs["result"]["member"]>
 export type MemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
 }
@@ -508,6 +725,27 @@ export type $MemberPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
      * "active" | "suspended". Suspended members are denied at the guard.
      */
     status: string
+    /**
+     * "staff" | "contractor" | "external". Attribute of the grant, never the gate.
+     * Staff additionally requires a live Efesto membership, verified at guard time.
+     */
+    affiliation: string
+    /**
+     * Free-text position for non-staff operators. Staff position comes from the employee profile.
+     */
+    title: string | null
+    /**
+     * Unix seconds. Required for contractor/external. Expired grants are denied.
+     */
+    expiresAt: bigint | null
+    /**
+     * Why this grant exists. Required for contractor/external. Audit trail.
+     */
+    justification: string | null
+    /**
+     * Opaque 876 user id of the operator who issued this grant.
+     */
+    invitedBy: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["member"]>
@@ -937,6 +1175,11 @@ export interface MemberFieldRefs {
   readonly userId: Prisma.FieldRef<"Member", 'String'>
   readonly roleName: Prisma.FieldRef<"Member", 'String'>
   readonly status: Prisma.FieldRef<"Member", 'String'>
+  readonly affiliation: Prisma.FieldRef<"Member", 'String'>
+  readonly title: Prisma.FieldRef<"Member", 'String'>
+  readonly expiresAt: Prisma.FieldRef<"Member", 'BigInt'>
+  readonly justification: Prisma.FieldRef<"Member", 'String'>
+  readonly invitedBy: Prisma.FieldRef<"Member", 'String'>
   readonly createdAt: Prisma.FieldRef<"Member", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Member", 'DateTime'>
 }
