@@ -192,7 +192,7 @@ beforeEach(() => {
       subcategoryId: null,
       status: 'OPEN' as const,
       priority: 'NORMAL' as const,
-      source: 'WEB' as const,
+      channel: 'FORM' as const,
       teamId: null,
       assigneeId: null,
       ownerId: null,
@@ -361,7 +361,10 @@ describe('request-forms.service - update', () => {
       name: 'Renamed',
       updatedBy: 'usr_1',
     })
-    const arg = repository.update.mock.calls[0]?.[1] as unknown as Record<string, unknown>
+    const arg = repository.update.mock.calls[0]?.[1] as unknown as Record<
+      string,
+      unknown
+    >
     expect(arg.version).toBeUndefined()
     expect(arg.publishedDefinition).toBeUndefined()
   })

@@ -1,7 +1,8 @@
 import { request } from '../request'
 import type { Runtime } from '../runtime'
 import type { ListFormCustomerRequestsQuery } from '../request-form-types'
-import { requestListSchema, type RequestOptions } from '../types'
+import { requestListSchema } from '../request-types'
+import type { RequestOptions } from '../types'
 
 function root(organizationId: string, formId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/request-forms/${encodeURIComponent(formId)}/requests`

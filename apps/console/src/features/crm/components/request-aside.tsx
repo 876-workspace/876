@@ -15,10 +15,10 @@ import {
 import { Skeleton } from '@876/ui/skeleton'
 
 import { CopyButton } from './copy-button'
-import { RequestSourceIcon } from './request-source-icon'
+import { RequestChannelIcon } from './request-source-icon'
 import { categoryColorClass } from '../category-color'
 import { resolveCustomerIdentity } from '../customer-identity'
-import { formatSource } from '../request-format'
+import { formatChannel } from '../request-format'
 import {
   loadOrgCategoryIndex,
   loadOrgCustomer,
@@ -219,10 +219,10 @@ export async function RequestAside({
               <span className="text-muted-foreground">—</span>
             )}
           </DetailRow>
-          <DetailRow label="Source">
+          <DetailRow label="Channel">
             <span className="text-foreground flex items-center gap-1.5">
-              <RequestSourceIcon source={request.source} />
-              {formatSource(request.source)}
+              <RequestChannelIcon channel={request.channel} />
+              {formatChannel(request.channel)}
             </span>
           </DetailRow>
           <DetailRow label="Created">

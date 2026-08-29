@@ -19,7 +19,11 @@ import type {
   AdminClientOptions as CouriersAdminClientOptions,
   CouriersAdminClient,
 } from '@876/couriers/admin'
-import type { ClientOptions as CrmClientOptions, CrmClient } from '@876/crm'
+import type {
+  ClientOptions as CrmClientOptions,
+  CrmClient,
+  CrmWorkspaceClient,
+} from '@876/crm'
 import type { SDK876Client } from '@876/sdk'
 import type { ClientOptions as PlatformClientOptions } from '@876/sdk'
 import type { StorageClientOptions, StorageClient } from '@876/storage'
@@ -137,6 +141,7 @@ export interface ServiceClients {
     admin?: CouriersAdminClient
   }
   crm?: CrmClient
+  crmWorkspace?: CrmWorkspaceClient
   storage?: StorageClient
   widgets?: {
     member?: WidgetsClient

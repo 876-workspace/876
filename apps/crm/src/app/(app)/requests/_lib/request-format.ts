@@ -1,21 +1,19 @@
-import type { RequestSource } from '@/types/crm'
+import type { RequestChannel } from '@/types/crm'
 
-export function formatSource(source: RequestSource): string {
-  switch (source) {
-    case 'CRM':
-      return 'CRM'
-    case 'EMAIL':
-      return 'Email'
-    case 'PHONE':
-      return 'Phone'
+export function formatChannel(channel: RequestChannel): string {
+  switch (channel) {
+    case 'FORM':
+      return 'Form'
+    case 'WIDGET':
+      return 'Widget'
     case 'CHAT':
       return 'Chat'
-    case 'WEB':
-      return 'Web form'
+    case 'EMAIL':
+      return 'Email'
     case 'API':
       return 'API'
-    default:
-      return source.replaceAll('_', ' ')
+    case 'AGENT':
+      return 'Agent'
   }
 }
 

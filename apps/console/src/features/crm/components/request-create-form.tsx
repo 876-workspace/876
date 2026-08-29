@@ -13,7 +13,7 @@ import { useState, type FormEvent } from 'react'
 import { client } from '@/lib/client'
 
 import type { RequestCustomerOption } from '../request-customer-option'
-import type { RequestPriority } from '../types'
+import type { RequestChannel, RequestPriority } from '../types'
 import { CustomerSelectionCard } from './request-customer-picker'
 
 type ErrorValue = { code: string; message: string }
@@ -48,8 +48,7 @@ export function RequestCreateForm({
     const subject = String(form.get('subject') ?? '').trim()
     const description = String(form.get('description') ?? '').trim()
     const priorityId = String(form.get('priorityId') ?? '').trim()
-    const source = String(form.get('source') ?? 'CRM') as
-      'CRM' | 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API' | 'OTHER'
+    const channel = String(form.get('channel') ?? 'AGENT') as RequestChannel
     if (!customerId || !subject) return
 
     setSubmitting(true)
@@ -59,7 +58,7 @@ export function RequestCreateForm({
       subject,
       description: description || null,
       ...(priorityId ? { priorityId } : {}),
-      source,
+      channel,
       createdBy: currentUserId,
     })
     setSubmitting(false)
@@ -124,15 +123,14 @@ export function RequestCreateForm({
                 </NativeSelect>
               </FormRow>
 
-              <FormRow label="Source" htmlFor="source">
-                <NativeSelect id="source" name="source" defaultValue="CRM">
-                  <NativeSelectOption value="CRM">CRM</NativeSelectOption>
+              <FormRow label="Channel" htmlFor="channel">
+                <NativeSelect id="channel" name="channel" defaultValue="AGENT">
+                  <NativeSelectOption value="AGENT">Agent</NativeSelectOption>
                   <NativeSelectOption value="EMAIL">Email</NativeSelectOption>
-                  <NativeSelectOption value="PHONE">Phone</NativeSelectOption>
                   <NativeSelectOption value="CHAT">Chat</NativeSelectOption>
-                  <NativeSelectOption value="WEB">Web</NativeSelectOption>
+                  <NativeSelectOption value="FORM">Form</NativeSelectOption>
+                  <NativeSelectOption value="WIDGET">Widget</NativeSelectOption>
                   <NativeSelectOption value="API">API</NativeSelectOption>
-                  <NativeSelectOption value="OTHER">Other</NativeSelectOption>
                 </NativeSelect>
               </FormRow>
             </div>

@@ -1,4 +1,4 @@
-import { createElement } from 'react'
+import { createElement, Suspense } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ROUTE_PERMISSIONS } from '@/lib/auth/route-permissions'
@@ -8,11 +8,15 @@ import Layout from './layout'
 const mocks = vi.hoisted(() => ({
   requireSession: vi.fn(),
   requireConsolePermission: vi.fn(),
+  ensurePlatformRequestWorkspace: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/guards', () => ({
   requireSession: mocks.requireSession,
   requireConsolePermission: mocks.requireConsolePermission,
+}))
+vi.mock('@/lib/platform-org', () => ({
+  ensurePlatformRequestWorkspace: mocks.ensurePlatformRequestWorkspace,
 }))
 
 const child = createElement('span', null, 'content')
@@ -22,13 +26,14 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.requireSession.mockResolvedValue({ id: 'user_operator' })
   mocks.requireConsolePermission.mockResolvedValue({ id: 'user_operator' })
+  mocks.ensurePlatformRequestWorkspace.mockResolvedValue(null)
 })
 
 describe('Requests route guard', () => {
   it('renders the section when the permission guard allows it', async () => {
     const result = await Layout({ children: child })
 
-    expect(result.props.children).toBe(child)
+    expect(result.props.children[0]).toBe(child)
     expect(mocks.requireConsolePermission).toHaveBeenCalledTimes(1)
     expect(mocks.requireConsolePermission).toHaveBeenCalledWith(
       'user_operator',
@@ -54,5 +59,35 @@ describe('Requests route guard', () => {
 
     const [, permission] = mocks.requireConsolePermission.mock.calls[0]!
     expect(permission).toBe(ROUTE_PERMISSIONS['/requests'])
+  })
+
+  it('renders the section content before the workspace fixture resolves', async () => {
+    let release = () => {}
+    mocks.ensurePlatformRequestWorkspace.mockReturnValue(
+      new Promise<null>((resolve) => {
+        release = () => resolve(null)
+      })
+    )
+
+    const result = await Layout({ children: child })
+
+    // The layout returned with the real content while the fixture is still in
+    // flight, so a `/requests` click is never held behind provisioning.
+    expect(result.props.children[0]).toBe(child)
+    release()
+  })
+
+  it('keeps the workspace fixture behind its own Suspense boundary', async () => {
+    const result = await Layout({ children: child })
+
+    expect(result.props.children[1].type).toBe(Suspense)
+    expect(result.props.children[1].props.fallback).toBeNull()
+  })
+
+  it('does not ensure the workspace fixture while rendering the layout itself', async () => {
+    await Layout({ children: child })
+
+    // It is rendered as a child, not awaited by the layout function.
+    expect(mocks.ensurePlatformRequestWorkspace).not.toHaveBeenCalled()
   })
 })

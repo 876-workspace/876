@@ -22,8 +22,8 @@ import { client } from '@/lib/client'
 import type {
   CrmCustomer,
   CrmRequestCategory,
+  RequestChannel,
   RequestPriority,
-  RequestSource,
   RequestStatus,
 } from '@/types/crm'
 
@@ -44,7 +44,7 @@ type Values = {
   categoryId: string
   status: RequestStatus
   priorityId: string
-  source: RequestSource
+  channel: RequestChannel
   teamId: string
   assigneeId: string
 }
@@ -56,7 +56,7 @@ const EMPTY: Values = {
   categoryId: '',
   status: 'OPEN',
   priorityId: '',
-  source: 'CRM',
+  channel: 'AGENT',
   teamId: '',
   assigneeId: '',
 }
@@ -129,7 +129,7 @@ export function RequestForm({
       subject: values.subject.trim(),
       categoryId: values.categoryId || null,
       ...(values.priorityId ? { priorityId: values.priorityId } : {}),
-      source: values.source,
+      channel: values.channel,
       teamId: values.teamId.trim() || null,
       assigneeId: values.assigneeId.trim() || null,
     }
@@ -270,11 +270,11 @@ export function RequestForm({
               </Select>
             </FormRow>
 
-            <FormRow label="Source" className={rowClassName}>
+            <FormRow label="Channel" className={rowClassName}>
               <RequestSelect
-                value={values.source}
-                options={['CRM', 'EMAIL', 'PHONE', 'CHAT', 'WEB', 'API', 'OTHER']}
-                onValueChange={(value) => set('source', value as RequestSource)}
+                value={values.channel}
+                options={['AGENT', 'EMAIL', 'CHAT', 'FORM', 'WIDGET', 'API']}
+                onValueChange={(value) => set('channel', value as RequestChannel)}
                 disabled={saving}
               />
             </FormRow>

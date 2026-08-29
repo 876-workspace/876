@@ -2,6 +2,10 @@ import { z } from 'zod'
 
 const nullableShortString = z.string().trim().max(1000).nullable()
 
+/** Platform-owned CRM workspace fixtures. These prepare service data only; they never grant a product entitlement. */
+export const crmWorkspaceFixtureSchema = z.enum(['876_SUPPORT'])
+export type CrmWorkspaceFixture = z.infer<typeof crmWorkspaceFixtureSchema>
+
 export const crmProvisionedPrioritySchema = z.strictObject({
   key: z.string().trim().min(1).max(100),
   name: z.string().trim().min(1).max(120),

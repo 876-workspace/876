@@ -117,15 +117,6 @@ export interface UpdateCustomerInput {
   status?: CustomerProfileStatus
 }
 
-export const requestStatusSchema = z.enum([
-  'OPEN',
-  'IN_PROGRESS',
-  'WAITING',
-  'RESOLVED',
-  'CLOSED',
-  'CANCELLED',
-])
-
 export const requestPrioritySchema = z.object({
   object: z.literal('request_priority'),
   id: z.string(),
@@ -153,15 +144,6 @@ export const requestPriorityListSchema = z.object({
   url: z.string(),
 })
 
-export const requestSourceSchema = z.enum([
-  'CRM',
-  'EMAIL',
-  'PHONE',
-  'CHAT',
-  'WEB',
-  'API',
-  'OTHER',
-])
 export const requestNoteKindSchema = z.enum(['DESCRIPTION', 'NOTE', 'EMAIL'])
 export const requestNoteVisibilitySchema = z.enum([
   'PUBLIC',
@@ -169,50 +151,10 @@ export const requestNoteVisibilitySchema = z.enum([
   'PRIVATE',
 ])
 
-export const crmRequestSchema = z.object({
-  object: z.literal('request'),
-  id: z.string(),
-  tenantId: z.string(),
-  customerId: z.string(),
-  number: z.number().int().positive(),
-  subject: z.string(),
-  categoryId: z.string().nullable(),
-  subcategoryId: z.string().nullable(),
-  status: requestStatusSchema,
-  priorityId: z.string(),
-  priority: requestPrioritySchema,
-  source: requestSourceSchema,
-  teamId: z.string().nullable(),
-  assigneeId: z.string().nullable(),
-  ownerId: z.string().nullable(),
-  /** The 876 account that raised this, when a named person did. */
-  requesterUserId: z.string().nullable(),
-  /** The registry contact that raised this, when one is known. */
-  requesterContactId: z.string().nullable(),
-  createdBy: z.string(),
-  resolvedAt: z.number().int().nullable(),
-  closedAt: z.number().int().nullable(),
-  createdAt: z.number().int(),
-  updatedAt: z.number().int(),
-})
-
-export const requestListSchema = z.object({
-  object: z.literal('list'),
-  data: z.array(crmRequestSchema),
-  has_more: z.boolean(),
-  total_count: z.number().int().nullable(),
-  url: z.string(),
-})
-
-export type RequestStatus = z.infer<typeof requestStatusSchema>
 export type RequestPriority = z.infer<typeof requestPrioritySchema>
 export type RequestPriorityList = z.infer<typeof requestPriorityListSchema>
-export type RequestSource = z.infer<typeof requestSourceSchema>
 export type RequestNoteKind = z.infer<typeof requestNoteKindSchema>
 export type RequestNoteVisibility = z.infer<typeof requestNoteVisibilitySchema>
-export type CrmRequest = z.infer<typeof crmRequestSchema>
-export type RequestList = z.infer<typeof requestListSchema>
-
 export interface ListRequestPrioritiesQuery {
   active?: boolean
 }
@@ -235,50 +177,6 @@ export type UpdateRequestPriorityInput = Partial<
 
 export interface DeleteRequestPriorityInput {
   deletedBy: string
-}
-
-export interface ListRequestsQuery {
-  status?: RequestStatus
-  teamId?: string
-  assigneeId?: string
-  customerId?: string
-  categoryId?: string
-  subcategoryId?: string
-  ownerId?: string
-  /** `'unassigned'` selects requests raised for the organization as a whole. */
-  requesterUserId?: string
-  priorityId?: string
-}
-
-export interface CreateRequestInput {
-  customerId: string
-  subject: string
-  /** The opening message. The service stores it as the request's DESCRIPTION note. */
-  description?: string | null
-  categoryId?: string | null
-  subcategoryId?: string | null
-  ownerId?: string | null
-  priorityId?: string
-  source?: RequestSource
-  teamId?: string | null
-  assigneeId?: string | null
-  requesterUserId?: string | null
-  requesterContactId?: string | null
-  createdBy: string
-}
-
-export interface UpdateRequestInput {
-  subject?: string
-  categoryId?: string | null
-  subcategoryId?: string | null
-  ownerId?: string | null
-  status?: RequestStatus
-  priorityId?: string
-  source?: RequestSource
-  teamId?: string | null
-  assigneeId?: string | null
-  requesterUserId?: string | null
-  requesterContactId?: string | null
 }
 
 export interface DeleteInput {

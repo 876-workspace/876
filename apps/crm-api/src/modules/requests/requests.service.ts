@@ -32,7 +32,7 @@ function serialize(
     status: request.status,
     priorityId: request.priorityId,
     priority: priorities.serialize(request.priority),
-    source: request.source,
+    channel: request.channel,
     teamId: request.teamId,
     assigneeId: request.assigneeId,
     ownerId: request.ownerId,

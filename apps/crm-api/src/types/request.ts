@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import type { RequestPriority } from './priority.js'
 
 export type RequestStatus =
@@ -8,14 +10,16 @@ export type RequestStatus =
   | 'CLOSED'
   | 'CANCELLED'
 
-export type RequestSource =
-  | 'CRM'
-  | 'EMAIL'
-  | 'PHONE'
-  | 'CHAT'
-  | 'WEB'
-  | 'API'
-  | 'OTHER'
+/** How a request entered CRM. Placement describes where a form renders; channel describes the actual intake path. */
+export const requestChannelSchema = z.enum([
+  'FORM',
+  'WIDGET',
+  'CHAT',
+  'EMAIL',
+  'API',
+  'AGENT',
+])
+export type RequestChannel = z.infer<typeof requestChannelSchema>
 
 export type RequestNoteKind = 'DESCRIPTION' | 'NOTE' | 'EMAIL'
 export type RequestNoteVisibility = 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
@@ -32,7 +36,7 @@ export interface CrmRequest {
   status: RequestStatus
   priorityId: string
   priority: RequestPriority
-  source: RequestSource
+  channel: RequestChannel
   teamId: string | null
   assigneeId: string | null
   ownerId: string | null
@@ -64,7 +68,8 @@ export interface CreateRequestInput {
   categoryId?: string | null
   subcategoryId?: string | null
   priorityId?: string
-  source?: RequestSource
+  /** Defaults to AGENT for direct CRM/Console creation. Intake forms set their own channel. */
+  channel?: RequestChannel
   teamId?: string | null
   assigneeId?: string | null
   ownerId?: string | null
@@ -88,7 +93,7 @@ export interface UpdateRequestInput {
   subcategoryId?: string | null
   status?: RequestStatus
   priorityId?: string
-  source?: RequestSource
+  channel?: RequestChannel
   teamId?: string | null
   assigneeId?: string | null
   ownerId?: string | null

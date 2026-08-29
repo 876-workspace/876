@@ -17,6 +17,7 @@ enum RequestFormStatus {
 model RequestForm {
   id                   String               @id
   tenantId             String               @map("tenant_id")
+  provisioningKey      String?              @map("provisioning_key")
   name                 String
   slug                 String
   description          String?
@@ -46,6 +47,7 @@ model RequestForm {
 
   @@unique([tenantId, slug])
   @@unique([tenantId, id])
+  @@unique([tenantId, provisioningKey])
   @@index([tenantId, status, updatedAt])
   @@index([tenantId, defaultPriorityId])
   @@map("crm_request_forms")

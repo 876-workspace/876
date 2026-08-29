@@ -67,7 +67,7 @@ const crmRequest = {
   status: 'OPEN',
   priorityId: normalPriority.id,
   priority: normalPriority,
-  source: 'CRM',
+  channel: 'AGENT',
   teamId: null,
   assigneeId: null,
   ownerId: null,
@@ -273,7 +273,11 @@ describe('@876/crm client', () => {
       .mockResolvedValueOnce(json(customPriority, 201))
       .mockResolvedValueOnce(json({ ...customPriority, weight: 60 }))
       .mockResolvedValueOnce(
-        json({ object: 'request_priority', id: customPriority.id, deleted: true })
+        json({
+          object: 'request_priority',
+          id: customPriority.id,
+          deleted: true,
+        })
       )
 
     await client.requestPriorities.list('org_1', { active: true })

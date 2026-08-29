@@ -35,7 +35,7 @@ const requestList = {
       subcategoryId: null,
       status: 'OPEN',
       priority: 'HIGH',
-      source: 'PHONE',
+      channel: 'AGENT',
       teamId: 'crm_team_1',
       assigneeId: 'user_assignee',
       ownerId: 'user_owner',

@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 
 /** Resolves the 876 organization whose CRM service workspace Console operates. */
 export const getPlatformOrganization = cache(async () => {
@@ -15,4 +15,18 @@ export const getPlatformOrganization = cache(async () => {
   if (result.error) return null
 
   return result.data
+})
+
+/**
+ * Prepares 876's own CRM workspace and its seeded support intake definition.
+ * This is service infrastructure only; it does not grant the 876 CRM product.
+ */
+export const ensurePlatformRequestWorkspace = cache(async () => {
+  const organization = await getPlatformOrganization()
+  if (!organization || !workspace.crm) return null
+
+  const result = await workspace.crm.ensure(organization.id, undefined, {
+    fixtures: ['876_SUPPORT'],
+  })
+  return result.error ? null : result.data
 })

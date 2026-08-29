@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  crmRequestSchema,
   crmRequestNoteSchema,
   teamSchema,
   teamMemberSchema,
@@ -10,13 +9,13 @@ import {
   requestPriorityListSchema,
   requestTaskSchema,
   requestReminderSchema,
-  requestListSchema,
   teamListSchema,
   requestCategoryListSchema,
   requestTaskListSchema,
   requestReminderListSchema,
   customerProfileSchema,
 } from './types.js'
+import { crmRequestSchema, requestListSchema } from './request-types.js'
 
 const priority = {
   object: 'request_priority',
@@ -49,7 +48,7 @@ const request = {
   status: 'OPEN',
   priorityId: priority.id,
   priority,
-  source: 'CRM',
+  channel: 'AGENT',
   teamId: null,
   assigneeId: null,
   ownerId: null,
@@ -119,9 +118,9 @@ describe('types - crmRequestSchema', () => {
       'CLOSED',
       'CANCELLED',
     ]) {
-      expect(
-        crmRequestSchema.safeParse({ ...request, status }).success
-      ).toBe(true)
+      expect(crmRequestSchema.safeParse({ ...request, status }).success).toBe(
+        true
+      )
     }
   })
 })
