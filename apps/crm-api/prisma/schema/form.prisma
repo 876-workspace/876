@@ -17,6 +17,7 @@ enum RequestFormStatus {
 model RequestForm {
   id                   String               @id
   tenantId             String               @map("tenant_id")
+  provisioningKey      String?              @map("provisioning_key")
   name                 String
   slug                 String
   description          String?
@@ -33,7 +34,7 @@ model RequestForm {
   confirmationMessage  String?              @map("confirmation_message")
   createdBy            String               @map("created_by")
   updatedBy            String?              @map("updated_by")
-  publishedAt          DateTime?            @map("published_at")
+  publishedAt          DateTime?             @map("published_at")
   createdAt            DateTime             @default(now()) @map("created_at")
   updatedAt            DateTime             @updatedAt @map("updated_at")
   deletedAt            DateTime?            @map("deleted_at")
@@ -46,6 +47,7 @@ model RequestForm {
 
   @@unique([tenantId, slug])
   @@unique([tenantId, id])
+  @@unique([tenantId, provisioningKey])
   @@index([tenantId, status, updatedAt])
   @@index([tenantId, defaultPriorityId])
   @@map("crm_request_forms")
