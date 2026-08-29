@@ -1,5 +1,4 @@
 import {
-  ChatBubbleLeftRightIcon,
   CommandLineIcon,
   EnvelopeIcon,
   GlobeAltIcon,
@@ -22,10 +21,9 @@ export function RequestChannelIcon({
     case 'FORM':
     case 'WIDGET':
       return <GlobeAltIcon className={className} aria-hidden="true" />
-    case 'CHAT':
-      return <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />
     case 'API':
       return <CommandLineIcon className={className} aria-hidden="true" />
+    case 'CHAT':
     case 'AGENT':
       return <SparklesIcon className={className} aria-hidden="true" />
   }
