@@ -50,10 +50,7 @@ describe('team.list', () => {
     expect(mocks.findMany).toHaveBeenCalledWith({
       where: {
         status: 'active',
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: 1893553445n } },
-        ],
+        OR: [{ expiresAt: null }, { expiresAt: { gt: BigInt(1893553445) } }],
       },
       include: { role: true },
       orderBy: { createdAt: 'asc' },
@@ -76,7 +73,7 @@ describe('team.list', () => {
 
     expect(mocks.findMany).toHaveBeenCalledTimes(1)
     expect(mocks.findMany).toHaveBeenCalledWith({
-      where: { expiresAt: { lte: 1893553445n } },
+      where: { expiresAt: { lte: BigInt(1893553445) } },
       include: { role: true },
       orderBy: { createdAt: 'asc' },
     })
@@ -86,7 +83,9 @@ describe('team.list', () => {
     await list({ status: 'expired' })
 
     expect(mocks.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { expiresAt: { lte: 1893553445n } } })
+      expect.objectContaining({
+        where: { expiresAt: { lte: BigInt(1893553445) } },
+      })
     )
   })
 

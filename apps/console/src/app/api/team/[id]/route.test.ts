@@ -27,7 +27,10 @@ describe('DELETE /api/team/[id]', () => {
   })
 
   it('requires the team revoke permission', async () => {
-    const response = await DELETE(new Request('https://console.test') as never, context())
+    const response = await DELETE(
+      new Request('https://console.test') as never,
+      context()
+    )
 
     expect(response.status).toBe(200)
     expect(mocks.guard).toHaveBeenCalledTimes(1)
@@ -35,12 +38,18 @@ describe('DELETE /api/team/[id]', () => {
   })
 
   it('does not revoke when authorization returns a response', async () => {
-    const denied = new Response(JSON.stringify({ error: { code: 'auth/forbidden' } }), {
-      status: 403,
-    })
+    const denied = new Response(
+      JSON.stringify({ error: { code: 'auth/forbidden' } }),
+      {
+        status: 403,
+      }
+    )
     mocks.guard.mockResolvedValue({ response: denied })
 
-    const response = await DELETE(new Request('https://console.test') as never, context())
+    const response = await DELETE(
+      new Request('https://console.test') as never,
+      context()
+    )
 
     expect(response).toBe(denied)
     expect(response.status).toBe(403)
@@ -59,19 +68,25 @@ describe('DELETE /api/team/[id]', () => {
   it('returns the exact deleted grant count', async () => {
     mocks.deleteMember.mockResolvedValue({ count: 1 })
 
-    const response = await DELETE(new Request('https://console.test') as never, context())
+    const response = await DELETE(
+      new Request('https://console.test') as never,
+      context()
+    )
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ data: { count: 1 } })
+    expect(await response.json()).toEqual({ data: { count: 1 }, error: null })
   })
 
   it('returns zero when the grant was already absent', async () => {
     mocks.deleteMember.mockResolvedValue({ count: 0 })
 
-    const response = await DELETE(new Request('https://console.test') as never, context())
+    const response = await DELETE(
+      new Request('https://console.test') as never,
+      context()
+    )
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ data: { count: 0 } })
+    expect(await response.json()).toEqual({ data: { count: 0 }, error: null })
   })
 
   it('calls the service exactly once for an authorized request', async () => {

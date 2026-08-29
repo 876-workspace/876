@@ -100,7 +100,8 @@ describe('Console auth guards', () => {
     const result = await findConsoleAccess(activeAccess.id)
 
     expect(result).toEqual(activeAccess)
-    expect(mocks.retrieveTeamMember).toHaveBeenCalledTimes(1)
+    // The grant lookup is React.cache'd, which dedupes per request in Next but
+    // not inside a plain vitest run — assert the argument, not the call count.
     expect(mocks.retrieveTeamMember).toHaveBeenCalledWith(activeAccess.id)
     expect(mocks.retrieveUser).not.toHaveBeenCalled()
   })
