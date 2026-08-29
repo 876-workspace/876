@@ -3,6 +3,7 @@ import { listObject, type ListObject } from '@/http/envelope'
 import { AppHttpError } from '@/platform/errors'
 import { getLogger } from '@/platform/logger'
 import { getPostHogClient } from '@/providers/posthog/client'
+import { getPostHogFlagEvaluator } from '@/providers/posthog/flags'
 import * as svc from '@/services/features'
 import * as svcRepo from '@/services/features.repository'
 
@@ -153,7 +154,15 @@ function getDeps(): svc.FeaturesDeps {
     },
   }
 
-  return { repository, provider }
+  return {
+    repository,
+    provider,
+    flagEvaluator:
+      settings.featureFlags.evaluationSource === 'posthog'
+        ? getPostHogFlagEvaluator(settings)
+        : null,
+    evaluationSource: settings.featureFlags.evaluationSource,
+  }
 }
 
 export async function listFeatures(
@@ -345,6 +354,7 @@ export async function evaluateFeatureDetails(
     data: decisions.map((decision) => ({
       object: 'feature_evaluation' as const,
       feature: serializeFeature(decision.feature),
+      rollout_source: decision.rolloutSource,
       global_enabled: decision.globalEnabled,
       parent_enabled: decision.parentEnabled,
       module_gated: decision.moduleGated,

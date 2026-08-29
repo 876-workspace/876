@@ -128,6 +128,7 @@ export const featureEvaluationDecisionSchema = z
   .object({
     object: z.literal('feature_evaluation'),
     feature: featureSchema,
+    rollout_source: z.enum(['posthog', 'local']),
     global_enabled: z.boolean(),
     parent_enabled: z.boolean(),
     module_gated: z.boolean(),

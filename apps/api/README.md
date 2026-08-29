@@ -86,11 +86,25 @@ A large surface is split further per resource group — see `directory`,
 | `directory`, `geo`, `addresses`, `products`, `modules`, `onboarding`, `communications`, `mobile-numbers`, `devices`, `sessions`, `auth-attempts`, `audit-events`, `twilio-webhooks` | various          | Reference data and supporting resources.             |
 
 Background loops live in `src/workers/`. The long-running container entrypoint
-starts finance provisioning when enabled and starts Billing customer sync when
-the Billing URL and internal key are configured. On Vercel, organization
+starts finance provisioning when enabled, starts Billing customer sync when the
+Billing URL and internal key are configured, and starts PostHog feature-flag
+sync when `FEATURE_FLAG_SYNC_ENABLED` is true. On Vercel, organization
 provisioning triggers one bounded dispatch pass in the request, while a secured
 daily cron retries anything left behind; Hobby deployments cannot schedule more
 frequently. The seed CLI lives in `src/seeds/`.
+
+## Feature flags
+
+PostHog evaluates identified server-side rollout decisions and emits exposure
+events. The local feature catalog still enforces kill switches, grants,
+parent/child checks, and module entitlements; it is refreshed by the background
+sync worker for future migration readiness.
+
+| Variable                             | Default   | Purpose                                                |
+| ------------------------------------ | --------- | ------------------------------------------------------ |
+| `FEATURE_FLAG_EVALUATION_SOURCE`     | `posthog` | Set to `local` to use the local rollout fallback only. |
+| `FEATURE_FLAG_SYNC_INTERVAL_SECONDS` | `300`     | PostHog-to-local sync cadence (30–3600 seconds).       |
+| `FEATURE_FLAG_SYNC_ENABLED`          | `true`    | Enables the background feature-flag sync worker.       |
 
 ## Frontend Access
 

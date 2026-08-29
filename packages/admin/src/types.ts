@@ -693,6 +693,7 @@ export type AdminFeature = {
 export type AdminFeatureEvaluationDecision = {
   object: 'feature_evaluation'
   feature: AdminFeature
+  rollout_source?: 'posthog' | 'local'
   global_enabled: boolean
   parent_enabled: boolean
   module_gated: boolean

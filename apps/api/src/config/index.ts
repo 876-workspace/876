@@ -135,6 +135,12 @@ const envSchema = z.object({
   POSTHOG_PROJECT_ID: int(0),
   POSTHOG_HOST: str('https://us.i.posthog.com'),
   POSTHOG_PROJECT_API_KEY: str(),
+  FEATURE_FLAG_EVALUATION_SOURCE: z
+    .enum(['posthog', 'local'])
+    .optional()
+    .transform((value) => value ?? 'posthog'),
+  FEATURE_FLAG_SYNC_INTERVAL_SECONDS: int(300, 30, 3600),
+  FEATURE_FLAG_SYNC_ENABLED: booleanish(true),
 
   AUTH_RISK_BLOCK_THRESHOLD: int(0),
   PLATFORM_OWNER_EMAIL: str(),
@@ -266,6 +272,12 @@ function build(env: NodeJS.ProcessEnv) {
       // Event capture uses the project (publishable) key, not the personal API
       // key — different credentials against different endpoints.
       projectApiKey: e.POSTHOG_PROJECT_API_KEY,
+    },
+
+    featureFlags: {
+      evaluationSource: e.FEATURE_FLAG_EVALUATION_SOURCE,
+      syncIntervalSeconds: e.FEATURE_FLAG_SYNC_INTERVAL_SECONDS,
+      syncEnabled: e.FEATURE_FLAG_SYNC_ENABLED,
     },
 
     authRiskBlockThreshold: e.AUTH_RISK_BLOCK_THRESHOLD,
