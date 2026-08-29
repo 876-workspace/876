@@ -13,7 +13,7 @@ export const metadata = { title: 'Tasks' }
 
 type Props = { params: Promise<{ requestId: string }> }
 
-export default async function SupportRequestTasksPage({ params }: Props) {
+export default async function RequestTasksPage({ params }: Props) {
   const { requestId } = await params
   const [requestResult, tasksResult, prioritiesResult, directory] =
     await Promise.all([

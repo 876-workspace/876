@@ -14,6 +14,7 @@ import {
   loadRequestRowContext,
   resolveRequestOrgId,
 } from '@/features/crm/request-data'
+import { PLATFORM_REQUESTS_HREF } from '@/features/crm/request-paths'
 import { toRequestListRows } from '@/features/crm/request-list-rows'
 import {
   isRequestStatus,
@@ -22,13 +23,13 @@ import {
 import { $876 } from '@/lib/876'
 import type { CrmRequestStatus } from '@/types/crm'
 
-export const metadata = { title: 'Support' }
+export const metadata = { title: 'Requests' }
 
 type Props = {
   searchParams: Promise<{ status?: string }>
 }
 
-export default async function SupportRequestsPage({ searchParams }: Props) {
+export default async function RequestsPage({ searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus = isRequestStatus(status) ? status : 'all'
 
@@ -44,7 +45,7 @@ export default async function SupportRequestsPage({ searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref="/support/new"
+        primaryHref={`${PLATFORM_REQUESTS_HREF}/new`}
         primaryVariant="info"
         refresh
       />
@@ -80,7 +81,7 @@ async function RequestsData({ status }: { status: CrmRequestStatus | 'all' }) {
           showCode
         />
       ) : null}
-      <RequestsList requestsHref="/support" requests={rows} />
+      <RequestsList requestsHref={PLATFORM_REQUESTS_HREF} requests={rows} />
     </div>
   )
 }

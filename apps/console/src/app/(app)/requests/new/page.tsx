@@ -9,15 +9,20 @@ import {
   loadOrgPriorities,
   loadOrgRequestCustomers,
 } from '@/features/crm/request-data'
+import { PLATFORM_REQUESTS_HREF } from '@/features/crm/request-paths'
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-export default function NewSupportRequestPage() {
+export default function NewRequestPage() {
   return (
     <Page className="mx-auto w-full max-w-[1400px]">
       <div className="space-y-5">
         <div>
-          <PageBreadcrumb href="/support" label="Requests" className="mb-2" />
+          <PageBreadcrumb
+            href={PLATFORM_REQUESTS_HREF}
+            label="Requests"
+            className="mb-2"
+          />
           <h1 className="876-page-title mt-2">New request</h1>
         </div>
         <Suspense fallback={<RequestCreateFormFallback />}>
@@ -31,7 +36,7 @@ export default function NewSupportRequestPage() {
 async function RequestCreateFormData() {
   const [org, session] = await Promise.all([
     getPlatformOrganization(),
-    requireSession('/support/new'),
+    requireSession(`${PLATFORM_REQUESTS_HREF}/new`),
   ])
   if (!org) return <PlatformOrganizationUnavailable />
 
@@ -54,7 +59,7 @@ async function RequestCreateFormData() {
       {blockingError ? null : (
         <RequestCreateForm
           organizationId={org.id}
-          requestsHref="/support"
+          requestsHref={PLATFORM_REQUESTS_HREF}
           currentUserId={session.id}
           customers={customersResult.customers}
           priorities={prioritiesResult.priorities}

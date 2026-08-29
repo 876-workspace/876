@@ -17,6 +17,8 @@ import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 
+import { PLATFORM_REQUESTS_HREF } from '../request-paths'
+
 type ErrorValue = { code: string; message: string }
 
 export function DeleteRequestDialog({
@@ -26,6 +28,7 @@ export function DeleteRequestDialog({
   requestId,
   requestNumber,
   currentUserId,
+  returnHref = PLATFORM_REQUESTS_HREF,
 }: {
   organizationId: string
   open: boolean
@@ -33,6 +36,7 @@ export function DeleteRequestDialog({
   requestId: string
   requestNumber?: number
   currentUserId?: string
+  returnHref?: string
 }) {
   const router = useRouter()
   const [deleting, setDeleting] = useState(false)
@@ -54,7 +58,7 @@ export function DeleteRequestDialog({
 
     toast.success(`Request ${requestNumber ? `#${requestNumber}` : ''} deleted`)
     onOpenChange(false)
-    router.replace('/support')
+    router.replace(returnHref)
     router.refresh()
   }
 

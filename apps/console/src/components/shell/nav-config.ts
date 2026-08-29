@@ -51,8 +51,8 @@ export const navConfig: NavGroup[] = [
         colorClassName: 'text-amber-500 dark:text-amber-400',
       },
       {
-        title: 'Support',
-        href: '/support',
+        title: 'Requests',
+        href: '/requests',
         icon: ChatBubbleLeftIcon,
         color: 'var(--876-blue)',
         colorClassName: 'text-cyan-500 dark:text-cyan-400',
