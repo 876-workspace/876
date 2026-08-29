@@ -7,7 +7,7 @@ import {
   SYSTEM_ROLE_DEFINITIONS,
 } from './permissions'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
-import { adaptStoredConsolePermissions } from '@876/core/access/catalogs'
+import { toStoredPermissionKeys } from '@876/core/access/catalogs'
 
 describe('permissions — console access gate', () => {
   it('CONSOLE_ACCESS_PERMISSION is console:access', () => {
@@ -43,12 +43,13 @@ describe('permissions — console access gate', () => {
     ).toBe(false)
   })
 
-  it('adapted legacy grants requests permission', () => {
-    const adapted = adaptStoredConsolePermissions(['console:support'])
-    expect(hasPermission({ permissions: adapted }, 'console:requests')).toBe(
+  it('grants the requests permission from a stored canonical key', () => {
+    const stored = toStoredPermissionKeys(['console:requests'])
+
+    expect(hasPermission({ permissions: stored }, 'console:requests')).toBe(
       true
     )
-    expect(hasPermission({ permissions: adapted }, 'console:support')).toBe(
+    expect(hasPermission({ permissions: stored }, 'console:support')).toBe(
       false
     )
   })
@@ -88,7 +89,7 @@ describe('permissions — console access gate', () => {
     }
   })
 
-  it('no system role contains legacy support key', () => {
+  it('no system role still carries the retired support key', () => {
     for (const role of SYSTEM_ROLE_DEFINITIONS) {
       expect(role.permissions).not.toContain('console:support')
     }
@@ -101,7 +102,7 @@ describe('permissions — console access gate', () => {
   })
 
   it('legacy alias does not affect danger_zone check', () => {
-    const adapted = adaptStoredConsolePermissions(['console:support'])
+    const adapted = toStoredPermissionKeys(['console:requests'])
     expect(hasPermission({ permissions: adapted }, 'console:danger_zone')).toBe(
       false
     )

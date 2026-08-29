@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  adaptStoredConsolePermissions,
-  consolePermissionCatalog,
-} from './catalogs'
+import { toStoredPermissionKeys, consolePermissionCatalog } from './catalogs'
 import { can, hasFeature, variantOf, type AccessContext } from './context'
 import {
   groupByModule,
@@ -385,14 +382,16 @@ describe('catalog vs access-control boundary', () => {
     ])
   })
 
-  it('adapt + resolve roundtrip for legacy role preserves intent', () => {
-    const legacyRole = { permissions: ['console:support', 'users:read'] }
-    const adapted = adaptStoredConsolePermissions(legacyRole.permissions)
+  it('grants nothing for a retired permission key held by a stored role', () => {
+    const storedRole = { permissions: ['console:support', 'users:read'] }
     const effective = resolveEffectivePermissions({
-      role: { permissions: adapted },
+      role: { permissions: toStoredPermissionKeys(storedRole.permissions) },
       catalog: consolePermissionCatalog,
     })
-    expect(effective).toEqual(['console:requests', 'users:read'])
+
+    // console:support was retired with the /requests rename and is not in the
+    // catalog, so it is dropped by the intersection rather than aliased.
+    expect(effective).toEqual(['users:read'])
   })
 
   it('canonical role does not need adaptation', () => {

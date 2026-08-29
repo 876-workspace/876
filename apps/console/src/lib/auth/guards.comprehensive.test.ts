@@ -30,13 +30,13 @@ vi.mock('@/lib/permissions', async (importOriginal) => ({
 import { can, hasFeature } from '@876/core/access'
 import {
   consolePermissionCatalog,
-  adaptStoredConsolePermissions,
+  toStoredPermissionKeys,
 } from '@876/core/access/catalogs'
 import { resolveEffectivePermissions } from '@876/core/access'
 import { SYSTEM_ROLE_DEFINITIONS } from '@/lib/permissions'
 import { ROUTE_PERMISSIONS } from './route-permissions'
 
-describe('guards — permission integration (legacy aware)', () => {
+describe('guards — permission integration (stored keys)', () => {
   function ctx(perms: string[]) {
     return {
       subject: { userId: 'u' },
@@ -47,7 +47,7 @@ describe('guards — permission integration (legacy aware)', () => {
   }
 
   it('adapted legacy grants /requests route', () => {
-    const adapted = adaptStoredConsolePermissions(['console:support'])
+    const adapted = toStoredPermissionKeys(['console:requests'])
     const eff = resolveEffectivePermissions({
       role: { permissions: adapted },
       catalog: consolePermissionCatalog,
@@ -55,11 +55,12 @@ describe('guards — permission integration (legacy aware)', () => {
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/requests'])).toBe(true)
   })
 
-  it('unadapted legacy does NOT grant /requests', () => {
+  it('a retired support key does NOT grant /requests', () => {
     const eff = resolveEffectivePermissions({
       role: { permissions: ['console:support'] },
       catalog: consolePermissionCatalog,
     })
+
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/requests'])).toBe(false)
   })
 
@@ -101,7 +102,7 @@ describe('guards — permission integration (legacy aware)', () => {
     expect(hasFeature(cWith, 'console_reports')).toBe(true)
   })
 
-  it('every system role maps to effective permissions without legacy pollution', () => {
+  it('every system role maps to effective permissions without retired keys', () => {
     for (const role of SYSTEM_ROLE_DEFINITIONS) {
       const eff = resolveEffectivePermissions({
         role: { permissions: role.permissions },

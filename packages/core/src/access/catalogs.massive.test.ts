@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  adaptStoredConsolePermissions,
-  consolePermissionCatalog,
-  LEGACY_PERMISSION_ALIASES,
-} from './catalogs'
+import { consolePermissionCatalog, toStoredPermissionKeys } from './catalogs'
 import {
   resolveEffectivePermissions,
   groupByModule,
@@ -20,29 +16,29 @@ describe('catalogs — massive edge coverage', () => {
   })
 
   it.each([
-    ['console:support', 'console:requests'],
+    ['console:support', 'console:support'],
     ['users:read', 'users:read'],
     ['console:access', 'console:access'],
     ['', ''],
     ['__proto__', '__proto__'],
     ['constructor', 'constructor'],
     ['console:unknown', 'console:unknown'],
-  ])('adapt %j -> %j', (input, expected) => {
-    expect(adaptStoredConsolePermissions([input])).toEqual([expected])
+  ])('keeps stored key %j as %j', (input, expected) => {
+    expect(toStoredPermissionKeys([input])).toEqual([expected])
   })
 
-  it('adapt preserves insertion order for 20 mixed entries', () => {
+  it('preserves insertion order for mixed entries', () => {
     const input = ['a:1', 'console:support', 'b:2', 'console:support', 'c:3']
-    expect(adaptStoredConsolePermissions(input)).toEqual([
+    expect(toStoredPermissionKeys(input)).toEqual([
       'a:1',
-      'console:requests',
+      'console:support',
       'b:2',
-      'console:requests',
+      'console:support',
       'c:3',
     ])
   })
 
-  it('adapt filters booleans, numbers, objects', () => {
+  it('filters booleans, numbers, objects', () => {
     const input = [
       true as unknown as string,
       false as unknown as string,
@@ -51,22 +47,20 @@ describe('catalogs — massive edge coverage', () => {
       { toString: () => 'console:support' } as unknown as string,
       null as unknown as string,
     ]
-    expect(adaptStoredConsolePermissions(input)).toEqual(['console:requests'])
+    expect(toStoredPermissionKeys(input)).toEqual(['console:support'])
   })
 
   it.each([[null], [undefined], [{}], [123], ['string'], [new Set()]])(
     'non-array %j returns []',
     (input) => {
-      expect(
-        adaptStoredConsolePermissions(input as unknown as string[])
-      ).toEqual([])
+      expect(toStoredPermissionKeys(input as unknown as string[])).toEqual([])
     }
   )
 
-  it('resolveEffectivePermissions sorts and dedupes after adaptation', () => {
-    const adapted = adaptStoredConsolePermissions([
+  it('sorts and dedupes effective permissions, dropping retired keys', () => {
+    const adapted = toStoredPermissionKeys([
       'users:update',
-      'console:support',
+      'console:requests',
       'users:update',
       'console:access',
     ])
@@ -77,7 +71,7 @@ describe('catalogs — massive edge coverage', () => {
     expect(eff).toEqual(['console:access', 'console:requests', 'users:update'])
   })
 
-  it('resolveEffectivePermissions with grants using legacy fails without adaptation', () => {
+  it('drops a retired permission key supplied as a grant', () => {
     const eff = resolveEffectivePermissions({
       role: { permissions: [] },
       grants: ['console:support'],
@@ -86,8 +80,8 @@ describe('catalogs — massive edge coverage', () => {
     expect(eff).toEqual([])
   })
 
-  it('resolveEffectivePermissions with adapted grant succeeds', () => {
-    const adaptedGrant = adaptStoredConsolePermissions(['console:support'])
+  it('resolves a canonical grant through the stored-key filter', () => {
+    const adaptedGrant = toStoredPermissionKeys(['console:requests'])
     const eff = resolveEffectivePermissions({
       role: { permissions: [] },
       grants: adaptedGrant,
@@ -96,11 +90,8 @@ describe('catalogs — massive edge coverage', () => {
     expect(eff).toEqual(['console:requests'])
   })
 
-  it('groupByModule correctly marks adapted permissions', () => {
-    const adapted = adaptStoredConsolePermissions([
-      'console:support',
-      'users:read',
-    ])
+  it('groupByModule marks stored permissions as granted', () => {
+    const adapted = toStoredPermissionKeys(['console:requests', 'users:read'])
     const eff = resolveEffectivePermissions({
       role: { permissions: adapted },
       catalog: consolePermissionCatalog,
@@ -115,9 +106,9 @@ describe('catalogs — massive edge coverage', () => {
     ).toBe(false)
   })
 
-  it('hasPermission aligns with can after adaptation', () => {
+  it('hasPermission aligns with can for a stored key', () => {
     const eff = resolveEffectivePermissions({
-      role: { permissions: adaptStoredConsolePermissions(['console:support']) },
+      role: { permissions: toStoredPermissionKeys(['console:requests']) },
       catalog: consolePermissionCatalog,
     })
     expect(hasPermission(eff, 'console:requests')).toBe(true)
@@ -171,41 +162,25 @@ describe('catalogs — massive edge coverage', () => {
     expect(catalogKeys).toContain(key)
   })
 
-  it('LEGACY_PERMISSION_ALIASES size is 1 and immutable shape', () => {
-    expect(Object.keys(LEGACY_PERMISSION_ALIASES)).toHaveLength(1)
-    expect(LEGACY_PERMISSION_ALIASES['console:support']).toBe(
-      'console:requests'
-    )
-    expect(
-      Object.isFrozen(LEGACY_PERMISSION_ALIASES) ||
-        !Object.isFrozen(LEGACY_PERMISSION_ALIASES)
-    ).toBe(true)
-  })
-
   it('idempotence: triple adapt equals single', () => {
     let v: string[] = ['console:support']
-    const once = adaptStoredConsolePermissions(v)
-    const twice = adaptStoredConsolePermissions(once)
-    const thrice = adaptStoredConsolePermissions(twice)
+    const once = toStoredPermissionKeys(v)
+    const twice = toStoredPermissionKeys(once)
+    const thrice = toStoredPermissionKeys(twice)
     expect(once).toEqual(thrice)
   })
 
   it('sparse array with undefined holes', () => {
     const arr: string[] = []
-    arr[3] = 'console:support'
-    expect(adaptStoredConsolePermissions(arr)).toEqual(['console:requests'])
+    arr[3] = 'console:requests'
+    expect(toStoredPermissionKeys(arr)).toEqual(['console:requests'])
   })
 
-  it('adapt does not modify prototype', () => {
-    adaptStoredConsolePermissions([
-      '__proto__',
-      'constructor',
-      'hasOwnProperty',
-    ])
+  it('filtering does not modify prototype', () => {
+    toStoredPermissionKeys(['__proto__', 'constructor', 'hasOwnProperty'])
     expect(
       (Object.prototype as unknown as Record<string, unknown>).polluted
     ).toBeUndefined()
-    expect(LEGACY_PERMISSION_ALIASES).not.toHaveProperty('polluted')
   })
 
   it('defineAppPermissionCatalog rejects invalid keys fuzz', () => {
@@ -220,10 +195,10 @@ describe('catalogs — massive edge coverage', () => {
     }
   })
 
-  it('stress: 5000 adapt calls consistent', () => {
+  it('stress: 5000 filter calls consistent', () => {
     for (let i = 0; i < 100; i++) {
       expect(
-        adaptStoredConsolePermissions(['console:support', 'users:read'])
+        toStoredPermissionKeys(['console:requests', 'users:read'])
       ).toEqual(['console:requests', 'users:read'])
     }
   })

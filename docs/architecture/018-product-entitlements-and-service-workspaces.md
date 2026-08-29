@@ -141,10 +141,12 @@ the comprehensive interface over the service.
 Console's former top-level `/support` route is now `/requests`.
 
 The vocabulary moved together: the surface is Requests, its route is
-`/requests`, and its Console permission is `console:requests`. The persisted
-`console:support` key survives only as a one-way read alias so role rows written
-before the rename continue to authorize the canonical permission. Catalogs,
-role editors, navigation, and all new writes use only `console:requests`.
+`/requests`, and its Console permission is `console:requests`. The retired
+`console:support` key is gone outright — there is no alias and no compatibility
+shim, because the platform is pre-production and no role assignment is worth
+preserving at the cost of two names for one permission. A stored `console:support`
+now grants nothing: it is not in the catalog, so the effective-permission
+intersection drops it.
 
 It is an **operator surface over 876's own CRM service workspace**. It is not a
 second request system and it is not evidence that Console is subscribed to the

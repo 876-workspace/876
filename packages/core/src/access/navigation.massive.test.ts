@@ -5,10 +5,7 @@ import {
   type NavGroupDefinition,
 } from './navigation'
 import type { AccessContext } from './context'
-import {
-  consolePermissionCatalog,
-  adaptStoredConsolePermissions,
-} from './catalogs'
+import { consolePermissionCatalog, toStoredPermissionKeys } from './catalogs'
 import { resolveEffectivePermissions } from './index'
 
 function ctx(perms: string[], feats: string[] = []): AccessContext {
@@ -38,7 +35,7 @@ describe('navigation massive — access control', () => {
     )
   })
 
-  it('legacy support does NOT open requests nav without adaptation', () => {
+  it('a retired permission key does not open the requests nav entry', () => {
     const groups = reg([
       {
         key: 'req',
@@ -49,7 +46,7 @@ describe('navigation massive — access control', () => {
       },
     ])
     expect(resolveNavigation(groups, ctx(['console:support']))).toEqual([])
-    const adapted = adaptStoredConsolePermissions(['console:support'])
+    const adapted = toStoredPermissionKeys(['console:requests'])
     const eff = resolveEffectivePermissions({
       role: { permissions: adapted },
       catalog: consolePermissionCatalog,

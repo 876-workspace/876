@@ -5,7 +5,7 @@ import {
   type AccessContext,
 } from '@876/core/access'
 import {
-  adaptStoredConsolePermissions,
+  toStoredPermissionKeys,
   consolePermissionCatalog,
 } from '@876/core/access/catalogs'
 import { cache } from 'react'
@@ -46,9 +46,7 @@ export const resolveAccessContext = cache(async function resolveAccessContext(
       ? resolveEffectivePermissions({
           role: member.role
             ? {
-                permissions: adaptStoredConsolePermissions(
-                  member.role.permissions
-                ),
+                permissions: toStoredPermissionKeys(member.role.permissions),
               }
             : null,
           catalog: consolePermissionCatalog,

@@ -6,10 +6,7 @@ import {
   hasPermission,
   groupByModule,
 } from './index'
-import {
-  consolePermissionCatalog,
-  adaptStoredConsolePermissions,
-} from './catalogs'
+import { consolePermissionCatalog, toStoredPermissionKeys } from './catalogs'
 
 function ctx(
   perms: string[] = [],
@@ -109,9 +106,9 @@ describe('context massive — can/hasFeature/variantOf triad', () => {
     expect(variantOf(c, 'console:requests')).toBe('on')
   })
 
-  it('adapted legacy permission grants can true', () => {
+  it('stored canonical permission grants can true', () => {
     const eff = resolveEffectivePermissions({
-      role: { permissions: adaptStoredConsolePermissions(['console:support']) },
+      role: { permissions: toStoredPermissionKeys(['console:requests']) },
       catalog: consolePermissionCatalog,
     })
     expect(can(ctx(eff), 'console:requests')).toBe(true)

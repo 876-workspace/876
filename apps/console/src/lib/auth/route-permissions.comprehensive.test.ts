@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ROUTE_PERMISSIONS } from './route-permissions'
 import {
   consolePermissionCatalog,
-  adaptStoredConsolePermissions,
+  toStoredPermissionKeys,
 } from '@876/core/access/catalogs'
 import { can, resolveEffectivePermissions } from '@876/core/access'
 
@@ -36,7 +36,7 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
   })
 
   it('legacy adaptation grants route access', () => {
-    const adapted = adaptStoredConsolePermissions(['console:support'])
+    const adapted = toStoredPermissionKeys(['console:requests'])
     const perm = ROUTE_PERMISSIONS['/requests']
     expect(
       can(
@@ -69,7 +69,7 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
   })
 
   it('non-request route not affected by legacy alias', () => {
-    const adapted = adaptStoredConsolePermissions(['console:support'])
+    const adapted = toStoredPermissionKeys(['console:requests'])
     const eff = resolveEffectivePermissions({
       role: { permissions: adapted },
       catalog: consolePermissionCatalog,

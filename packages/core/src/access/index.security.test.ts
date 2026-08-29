@@ -197,10 +197,10 @@ describe('resolveEffectivePermissions — boundary invariants', () => {
   })
 })
 
-describe('cross-cutting: adaptation + effective + grouping', () => {
-  it('full pipeline: legacy adapt -> effective -> group -> hasPermission', async () => {
-    const { adaptStoredConsolePermissions } = await import('./catalogs')
-    const adapted = adaptStoredConsolePermissions([
+describe('cross-cutting: stored keys + effective + grouping', () => {
+  it('full pipeline: stored keys -> effective -> group -> hasPermission', async () => {
+    const { toStoredPermissionKeys } = await import('./catalogs')
+    const adapted = toStoredPermissionKeys([
       'console:support',
       'users:read',
       'legacy:root',
@@ -209,15 +209,17 @@ describe('cross-cutting: adaptation + effective + grouping', () => {
       role: { permissions: adapted },
       catalog: consolePermissionCatalog,
     })
-    expect(effective).toEqual(['console:requests', 'users:read'])
-    expect(hasPermission(effective, 'console:requests')).toBe(true)
+    // Neither the retired console:support key nor the unknown legacy:root key
+    // survives the catalog intersection.
+    expect(effective).toEqual(['users:read'])
+    expect(hasPermission(effective, 'console:requests')).toBe(false)
     expect(hasPermission(effective, 'console:support')).toBe(false)
     const grouped = groupByModule(consolePermissionCatalog, effective)
     expect(
       grouped
         .find((m) => m.key === 'console')
         ?.permissions.find((p) => p.key === 'console:requests')?.granted
-    ).toBe(true)
+    ).toBe(false)
   })
 
   it('canonical pipeline without adaptation', () => {

@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  adaptStoredConsolePermissions,
+  toStoredPermissionKeys,
   appPermissionCatalogs,
   consolePermissionCatalog,
   couriersPermissionCatalog,
   crmPermissionCatalog,
-  LEGACY_PERMISSION_ALIASES,
 } from './catalogs'
 
 const SYSTEM_ROLE_KEYS = [
@@ -97,43 +96,45 @@ const SORTED_CONSOLE_KEYS = [
 ] as const
 
 describe('consolePermissionCatalog', () => {
-  it('pins the one-way stored permission alias', () => {
-    expect(LEGACY_PERMISSION_ALIASES).toEqual({
-      'console:support': 'console:requests',
-    })
-  })
-
-  it('adapts the stored support key to the requests key', () => {
-    const result = adaptStoredConsolePermissions(['console:support'])
-
-    expect(result).toEqual(['console:requests'])
-  })
-
-  it('preserves a canonical requests key', () => {
-    const result = adaptStoredConsolePermissions(['console:requests'])
-
-    expect(result).toEqual(['console:requests'])
-  })
-
-  it('preserves unrelated stored permission keys exactly', () => {
-    const result = adaptStoredConsolePermissions([
+  it('keeps every stored string permission key exactly as written', () => {
+    const result = toStoredPermissionKeys([
       'console:access',
       'users:read',
-      'legacy:root',
+      'console:requests',
     ])
 
-    expect(result).toEqual(['console:access', 'users:read', 'legacy:root'])
+    expect(result).toEqual(['console:access', 'users:read', 'console:requests'])
   })
 
-  it('does not mutate the persisted permission array while adapting it', () => {
-    const stored = ['console:support', 'users:read']
+  it('drops non-string entries from a malformed stored role row', () => {
+    const result = toStoredPermissionKeys([
+      'console:access',
+      42,
+      null,
+      undefined,
+      { key: 'users:read' },
+      'users:read',
+    ])
 
-    adaptStoredConsolePermissions(stored)
-
-    expect(stored).toEqual(['console:support', 'users:read'])
+    expect(result).toEqual(['console:access', 'users:read'])
   })
 
-  it('never emits the legacy support key from the canonical catalog', () => {
+  it('returns no keys when the stored value is not an array', () => {
+    expect(toStoredPermissionKeys(null)).toEqual([])
+    expect(toStoredPermissionKeys(undefined)).toEqual([])
+    expect(toStoredPermissionKeys('console:access')).toEqual([])
+    expect(toStoredPermissionKeys({ 0: 'console:access' })).toEqual([])
+  })
+
+  it('does not mutate the persisted permission array', () => {
+    const stored = ['console:access', 'users:read']
+
+    toStoredPermissionKeys(stored)
+
+    expect(stored).toEqual(['console:access', 'users:read'])
+  })
+
+  it('never emits the retired support key from the canonical catalog', () => {
     expect(
       consolePermissionCatalog.permissions
         .map((permission) => permission.key)

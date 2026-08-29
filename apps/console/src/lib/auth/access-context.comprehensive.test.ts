@@ -97,7 +97,7 @@ describe('resolveConsoleGrant — comprehensive', () => {
   })
 })
 
-describe('resolveAccessContext — legacy alias and security', () => {
+describe('resolveAccessContext — stored permission keys and security', () => {
   beforeEach(() => {
     mocks.retrieveTeamMember.mockResolvedValue(activeMember())
     mocks.getConsoleFeatureKeys.mockResolvedValue([])
@@ -113,11 +113,15 @@ describe('resolveAccessContext — legacy alias and security', () => {
     expect(mocks.getConsoleFeatureKeys).not.toHaveBeenCalled()
   })
 
-  it('adapts legacy console:support to console:requests and drops support', async () => {
+  it('drops a retired support key and keeps the canonical requests key', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ role: { permissions: ['console:support'] } })
+      activeMember({
+        role: { permissions: ['console:support', 'console:requests'] },
+      })
     )
-    const result = await resolveAccessContext('user_legacy_1')
+
+    const result = await resolveAccessContext('user_stored_1')
+
     expect(result?.permissions).toEqual(['console:requests'])
     expect(result?.permissions).not.toContain('console:support')
   })
@@ -126,7 +130,7 @@ describe('resolveAccessContext — legacy alias and security', () => {
     mocks.retrieveTeamMember.mockResolvedValue(
       activeMember({
         role: {
-          permissions: ['console:support', 'console:requests', 'users:read'],
+          permissions: ['console:requests', 'console:requests', 'users:read'],
         },
       })
     )
@@ -289,7 +293,7 @@ describe('resolveAccessContext — legacy alias and security', () => {
   })
 
   it('handles 50 legacy permissions stress', async () => {
-    const perms = Array.from({ length: 50 }, () => 'console:support')
+    const perms = Array.from({ length: 50 }, () => 'console:requests')
     mocks.retrieveTeamMember.mockResolvedValue(
       activeMember({ role: { permissions: perms } })
     )

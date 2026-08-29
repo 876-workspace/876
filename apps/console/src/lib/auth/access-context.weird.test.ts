@@ -128,7 +128,7 @@ describe('resolveAccessContext — weird and hostile', () => {
   })
 
   it('handles 500 legacy entries without hanging', async () => {
-    const perms = Array.from({ length: 500 }, () => 'console:support')
+    const perms = Array.from({ length: 500 }, () => 'console:requests')
     mocks.retrieveTeamMember.mockResolvedValue({
       userId: 'u',
       roleName: 'admin',
@@ -141,7 +141,7 @@ describe('resolveAccessContext — weird and hostile', () => {
 
   it('handles permission array with holes (sparse)', async () => {
     const sparse: unknown[] = []
-    sparse[2] = 'console:support'
+    sparse[2] = 'console:requests'
     sparse[5] = 'console:access'
     mocks.retrieveTeamMember.mockResolvedValue({
       userId: 'u',

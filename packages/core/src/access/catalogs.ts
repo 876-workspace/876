@@ -64,32 +64,19 @@ function withConsoleKey(permission: AppPermission): AppPermission {
 }
 
 /**
- * One-way read aliases for permission keys persisted before a Console rename.
- * This exists only so pre-rename role rows keep working. New code must never
- * write a key from this map; catalogs and effective permissions emit only the
- * canonical value.
+ * Narrows persisted Console role permissions to usable string keys.
+ *
+ * Stored role rows are JSON, so a malformed or partially-written value can
+ * reach this path at runtime even though the type says `string[]`. Filtering
+ * here keeps a bad row from throwing during authorization; the catalog
+ * intersection downstream still decides what the keys actually grant.
  */
-export const LEGACY_PERMISSION_ALIASES: Readonly<Record<string, string>> = {
-  'console:support': 'console:requests',
-}
-
-/** Adapts persisted Console role keys to their canonical catalog keys. */
-export function adaptStoredConsolePermissions(permissions: unknown): string[] {
+export function toStoredPermissionKeys(permissions: unknown): string[] {
   if (!Array.isArray(permissions)) return []
 
-  return permissions
-    .filter((permission) => typeof permission === 'string')
-    .map((permission) => {
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          LEGACY_PERMISSION_ALIASES,
-          permission
-        )
-      )
-        return permission
-
-      return LEGACY_PERMISSION_ALIASES[permission] ?? permission
-    })
+  return permissions.filter(
+    (permission): permission is string => typeof permission === 'string'
+  )
 }
 
 /**

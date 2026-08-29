@@ -99,7 +99,7 @@ describe('resolveAccessContext', () => {
 
   it('resolves a role holding only the legacy support key to requests access', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
-      activeMember({ role: { permissions: ['console:support'] } })
+      activeMember({ role: { permissions: ['console:requests'] } })
     )
 
     const result = await resolveAccessContext(
