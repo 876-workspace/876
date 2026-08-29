@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { SETTINGS_OPTIONS } from './settings-options'
 
 describe('SETTINGS_OPTIONS', () => {
-  it('contains exactly the 5 top-level console settings options', () => {
-    expect(SETTINGS_OPTIONS).toHaveLength(5)
+  it('contains exactly the 6 top-level console settings options', () => {
+    expect(SETTINGS_OPTIONS).toHaveLength(6)
     expect(SETTINGS_OPTIONS.map((opt) => opt.key)).toEqual([
       'general',
-      'users',
+      'team',
+      'roles',
       'security',
       'orgs',
       'notifications',
@@ -26,6 +27,7 @@ describe('SETTINGS_OPTIONS', () => {
     expect(SETTINGS_OPTIONS.map((opt) => opt.href)).toEqual([
       '/settings/general',
       '/settings/users',
+      '/settings/users/roles',
       '/settings/security',
       '/settings/orgs/provisioning',
       '/settings/notifications',

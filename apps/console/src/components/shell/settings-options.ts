@@ -27,7 +27,7 @@ export const SETTINGS_OPTIONS: readonly SettingsOption[] = [
   },
   {
     key: 'team',
-    title: 'Team',
+    title: 'Users',
     description: 'Manage who has access to Console.',
     href: '/settings/users',
     icon: 'users',

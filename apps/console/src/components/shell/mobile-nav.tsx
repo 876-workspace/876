@@ -16,7 +16,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
-import { resolveNavIcon } from '@/components/shell/nav-icons'
+import { NavIcon } from '@/components/shell/nav-icons'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 
 const mobileNavItemBase =
@@ -96,7 +96,6 @@ function MobileNavLink({
   pathname: string
   onNavigate: () => void
 }) {
-  const Icon = resolveNavIcon(item.icon)
   const isActive = isActiveConsolePath(pathname, item.href)
 
   return (
@@ -115,8 +114,8 @@ function MobileNavLink({
           isActive && 'bg-white/70 dark:bg-white/10'
         )}
       >
-        <Icon
-          aria-hidden="true"
+        <NavIcon
+          icon={item.icon}
           className={cn('size-[1.125rem]', item.colorClassName)}
         />
       </span>

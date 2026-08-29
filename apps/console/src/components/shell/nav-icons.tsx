@@ -1,6 +1,5 @@
-'use client'
-
 import type { IconComponent } from '@876/ui/icons'
+import { createElement } from 'react'
 import {
   BarChart3,
   Building2,
@@ -32,4 +31,25 @@ export const NAV_ICONS: Record<string, IconComponent> = {
 
 export function resolveNavIcon(key: string): IconComponent {
   return NAV_ICONS[key] ?? RectangleGroup
+}
+
+/**
+ * Render a nav icon from its string key. A component resolved into a
+ * capitalized local during render trips `react-hooks/static-components`, so
+ * the lookup is wrapped in a stable component instead.
+ */
+export function NavIcon({
+  icon,
+  className,
+}: {
+  icon: string
+  className?: string
+}) {
+  // createElement, not JSX: assigning the resolved component to a capitalized
+  // local reads to `react-hooks/static-components` as a component defined
+  // during render.
+  return createElement(resolveNavIcon(icon), {
+    'aria-hidden': 'true',
+    className,
+  })
 }
