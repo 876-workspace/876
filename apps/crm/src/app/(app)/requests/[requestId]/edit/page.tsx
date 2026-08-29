@@ -1,3 +1,4 @@
+import { getError } from '@876/core'
 import { notFound } from 'next/navigation'
 
 import { AppError } from '@876/ui/app-error'
@@ -49,7 +50,15 @@ export default async function EditRequestPage({ params }: Props) {
     )
 
   const request = requestResult.data
-  const blockingError = customersResult.error ?? prioritiesResult.error
+  const customers = customersResult.data?.data
+  const priorities = prioritiesResult.data?.data
+  // A response that carried neither an error nor a payload is still a failure;
+  // rendering the form without customers or priorities would offer an empty
+  // required field rather than telling the user the options are unavailable.
+  const blockingError =
+    customersResult.error ??
+    prioritiesResult.error ??
+    (customers && priorities ? null : getError('crm/invalid-response'))
   const departments =
     departmentsResult.data?.data.map((d) => ({ id: d.id, name: d.name })) ?? []
 
@@ -110,11 +119,11 @@ export default async function EditRequestPage({ params }: Props) {
             variant="inline"
           />
         ) : null}
-        {blockingError ? null : (
+        {blockingError || !customers || !priorities ? null : (
           <RequestForm
-            customers={customersResult.data.data}
+            customers={customers}
             categories={categoriesResult.data?.data ?? []}
-            priorities={prioritiesResult.data.data}
+            priorities={priorities}
             departments={departments}
             members={members}
             requestId={request.id}
