@@ -387,8 +387,6 @@ export async function submit(
       answers,
       customerOrganizationId: input.customerOrganizationId ?? null,
       customerUserId: input.customerUserId ?? null,
-      requesterUserId: input.requesterUserId ?? null,
-      requesterContactId: input.requesterContactId ?? null,
     }
   )
   if (isError(result)) return result
