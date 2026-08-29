@@ -1,6 +1,18 @@
 export { create876CrmClient } from './client'
 export type { CrmClient } from './client'
 export {
+  CRM_PRODUCT_APP_SLUG,
+  CRM_SERVICE_KEY,
+  crmServiceWorkspace,
+} from './service'
+export type { CrmServiceWorkspaceRef } from './service'
+export { create876CrmWorkspaceClient } from './workspace'
+export type {
+  CrmWorkspace,
+  CrmWorkspaceClient,
+  CrmWorkspaceProvisioning,
+} from './workspace'
+export {
   requestFormDefinitionSchema,
   requestFormFieldMappingSchema,
   requestFormFieldSchema,
