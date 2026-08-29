@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { requestChannelSchema } from '../../types/request.js'
 import { optionalRichContentSchema } from '../../types/rich-content.js'
 
 export const requestStatusSchema = z.enum([
@@ -9,16 +10,6 @@ export const requestStatusSchema = z.enum([
   'RESOLVED',
   'CLOSED',
   'CANCELLED',
-])
-
-export const requestSourceSchema = z.enum([
-  'CRM',
-  'EMAIL',
-  'PHONE',
-  'CHAT',
-  'WEB',
-  'API',
-  'OTHER',
 ])
 
 export const organizationParamsSchema = z.strictObject({
@@ -49,7 +40,7 @@ export const createRequestBodySchema = z.strictObject({
   subcategoryId: z.string().trim().max(160).nullable().optional(),
   ownerId: z.string().trim().max(160).nullable().optional(),
   priorityId: z.string().trim().max(160).optional(),
-  source: requestSourceSchema.optional(),
+  channel: requestChannelSchema.optional(),
   teamId: z.string().trim().max(160).nullable().optional(),
   assigneeId: z.string().trim().max(160).nullable().optional(),
   requesterUserId: z.string().trim().max(160).nullable().optional(),
@@ -65,7 +56,7 @@ export const updateRequestBodySchema = z
     ownerId: z.string().trim().max(160).nullable().optional(),
     status: requestStatusSchema.optional(),
     priorityId: z.string().trim().max(160).optional(),
-    source: requestSourceSchema.optional(),
+    channel: requestChannelSchema.optional(),
     teamId: z.string().trim().max(160).nullable().optional(),
     assigneeId: z.string().trim().max(160).nullable().optional(),
     requesterUserId: z.string().trim().max(160).nullable().optional(),
