@@ -14,7 +14,11 @@ import { ClipboardDocumentListIcon, User } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 import { cn } from '@876/ui/lib/utils'
 
-import type { RequestChannel, RequestPriority, RequestStatus } from '@/types/crm'
+import type {
+  RequestChannel,
+  RequestPriority,
+  RequestStatus,
+} from '@/types/crm'
 
 import { formatAge } from '../_lib/request-format'
 import { RequestPriorityBadge } from './request-priority-badge'
@@ -60,7 +64,7 @@ export function RequestsList({
       </div>
 
       {requests.length === 0 ? (
-        customEmptyState ?? (
+        (customEmptyState ?? (
           <Empty className="border-0 py-14">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -77,7 +81,7 @@ export function RequestsList({
               </Link>
             </EmptyContent>
           </Empty>
-        )
+        ))
       ) : (
         <ul className="divide-border/60 divide-y">
           {requests.map((request) => (
@@ -93,7 +97,13 @@ export function RequestsList({
   )
 }
 
-function RequestRow({ request, href }: { request: RequestListRow; href: string }) {
+function RequestRow({
+  request,
+  href,
+}: {
+  request: RequestListRow
+  href: string
+}) {
   const unresolved = OPEN_STATUSES.has(request.status)
 
   return (

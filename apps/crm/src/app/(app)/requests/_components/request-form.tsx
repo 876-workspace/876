@@ -91,7 +91,8 @@ export function RequestForm({
     [customers]
   )
   const [customer, setCustomer] = useState<PickerCustomer | null>(
-    () => pickerCustomers.find((entry) => entry.id === initial.customerId) ?? null
+    () =>
+      pickerCustomers.find((entry) => entry.id === initial.customerId) ?? null
   )
   const availablePriorities = useMemo(
     () =>
@@ -274,7 +275,9 @@ export function RequestForm({
               <RequestSelect
                 value={values.channel}
                 options={['AGENT', 'EMAIL', 'CHAT', 'FORM', 'WIDGET', 'API']}
-                onValueChange={(value) => set('channel', value as RequestChannel)}
+                onValueChange={(value) =>
+                  set('channel', value as RequestChannel)
+                }
                 disabled={saving}
               />
             </FormRow>
@@ -291,7 +294,9 @@ export function RequestForm({
                     'CLOSED',
                     'CANCELLED',
                   ]}
-                  onValueChange={(value) => set('status', value as RequestStatus)}
+                  onValueChange={(value) =>
+                    set('status', value as RequestStatus)
+                  }
                   disabled={saving}
                 />
               </FormRow>
@@ -373,7 +378,10 @@ export function RequestForm({
           </div>
 
           {error ? (
-            <p className="text-destructive border-t px-5 py-3 text-sm" role="alert">
+            <p
+              className="text-destructive border-t px-5 py-3 text-sm"
+              role="alert"
+            >
               {error}
             </p>
           ) : null}

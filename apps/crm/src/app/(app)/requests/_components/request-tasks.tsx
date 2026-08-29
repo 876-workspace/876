@@ -1,11 +1,7 @@
 'use client'
 
 import { isEditorContentEmpty } from '@876/editor'
-import {
-  Editor,
-  EditorContent,
-  type EditorHandle,
-} from '@876/editor/react'
+import { Editor, EditorContent, type EditorHandle } from '@876/editor/react'
 import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
@@ -22,13 +18,7 @@ import {
 import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { useRouter } from 'next/navigation'
-import {
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-  type RefObject,
-} from 'react'
+import { useMemo, useRef, useState, useTransition, type RefObject } from 'react'
 
 import { MemberPicker } from '@/features/directory/components/member-picker'
 import type { DirectoryMember } from '@/features/directory/types'
