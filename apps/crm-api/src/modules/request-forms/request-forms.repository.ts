@@ -118,29 +118,43 @@ export async function ensureProvisioned(
     })
   }
 
-  return prisma.requestForm.create({
-    data: {
-      id: id(),
+  try {
+    return await prisma.requestForm.create({
+      data: {
+        id: id(),
+        tenantId,
+        provisioningKey: input.provisioningKey,
+        name: input.name,
+        slug: input.slug,
+        description: input.description,
+        status: 'PUBLISHED',
+        placement: input.placement,
+        definition,
+        publishedDefinition: definition,
+        version: 1,
+        defaultCategoryId: input.defaultCategoryId,
+        defaultSubcategoryId: input.defaultSubcategoryId,
+        defaultTeamId: input.defaultTeamId,
+        defaultPriorityId: input.defaultPriorityId,
+        confirmationTitle: input.confirmationTitle,
+        confirmationMessage: input.confirmationMessage,
+        createdBy: 'system',
+        publishedAt,
+      },
+    })
+  } catch (error) {
+    // Console ensures this fixture on every requests render, so two concurrent
+    // cold loads can both read nothing and both insert. The tenant-scoped
+    // unique index decides the winner; the loser re-reads it rather than
+    // failing the page.
+    if ((error as { code?: string }).code !== 'P2002') throw error
+    const winner = await retrieveByProvisioningKey(
       tenantId,
-      provisioningKey: input.provisioningKey,
-      name: input.name,
-      slug: input.slug,
-      description: input.description,
-      status: 'PUBLISHED',
-      placement: input.placement,
-      definition,
-      publishedDefinition: definition,
-      version: 1,
-      defaultCategoryId: input.defaultCategoryId,
-      defaultSubcategoryId: input.defaultSubcategoryId,
-      defaultTeamId: input.defaultTeamId,
-      defaultPriorityId: input.defaultPriorityId,
-      confirmationTitle: input.confirmationTitle,
-      confirmationMessage: input.confirmationMessage,
-      createdBy: 'system',
-      publishedAt,
-    },
-  })
+      input.provisioningKey
+    )
+    if (!winner) throw error
+    return winner
+  }
 }
 
 export function update(
