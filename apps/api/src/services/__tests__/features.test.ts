@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AppHttpError } from '@/platform/errors'
+import type { FeatureFlagEvaluator } from '@/providers/posthog/flags'
 
 import type {
   FeatureFlagProvider,
@@ -991,6 +992,218 @@ describe('revokeOrgFeature', () => {
 // ---------------------------------------------------------------------------
 
 describe('evaluate', () => {
+  function usePostHogEvaluator(decisions: Map<string, boolean>) {
+    const evaluate = vi.fn().mockResolvedValue(decisions)
+    const flagEvaluator: FeatureFlagEvaluator = {
+      evaluate,
+      shutdown: vi.fn().mockResolvedValue(undefined),
+    }
+    deps = { ...deps, flagEvaluator, evaluationSource: 'posthog' }
+    return evaluate
+  }
+
+  function expectSingleDecision(
+    feature: Record<string, unknown>,
+    overrides: Partial<Record<string, unknown>> = {}
+  ) {
+    return {
+      feature,
+      rolloutSource: 'posthog',
+      globalEnabled: feature.enabled,
+      parentEnabled: true,
+      moduleGated: false,
+      moduleEntitled: true,
+      organizationOverride: null,
+      userOverride: null,
+      enabled: feature.enabled,
+      ...overrides,
+    }
+  }
+
+  it('uses a PostHog on decision for an enabled local feature', async () => {
+    const feature = makeFeature({ id: 'ftr_1', slug: 'platform_test_flag' })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const evaluate = usePostHogEvaluator(
+      new Map([[feature.slug as string, true]])
+    )
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([expectSingleDecision(feature)])
+    expect(evaluate).toHaveBeenCalledWith({
+      distinctId: 'user_1',
+      slugs: ['platform_test_flag'],
+      groups: undefined,
+    })
+  })
+
+  it('keeps a locally disabled feature off when PostHog says on', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: false })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    usePostHogEvaluator(new Map([[feature.slug as string, true]]))
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        globalEnabled: false,
+        enabled: false,
+      }),
+    ])
+  })
+
+  it('lets an organization grant enable a PostHog-off feature', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: true })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    repository.listOrgFeatures = vi
+      .fn()
+      .mockResolvedValue([{ featureId: 'ftr_1', status: 'enabled' }] as never)
+    usePostHogEvaluator(new Map([[feature.slug as string, false]]))
+
+    const result = await evaluateDetailed(deps, {
+      userId: 'user_1',
+      organizationId: 'org_1',
+    })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        organizationOverride: true,
+        enabled: true,
+      }),
+    ])
+  })
+
+  it('lets a user deny override an enabled organization grant and PostHog off', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: true })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    repository.listOrgFeatures = vi
+      .fn()
+      .mockResolvedValue([{ featureId: 'ftr_1', status: 'enabled' }] as never)
+    repository.listUserFeatures = vi
+      .fn()
+      .mockResolvedValue([{ featureId: 'ftr_1', status: 'disabled' }] as never)
+    usePostHogEvaluator(new Map([[feature.slug as string, false]]))
+
+    const result = await evaluateDetailed(deps, {
+      userId: 'user_1',
+      organizationId: 'org_1',
+    })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        organizationOverride: true,
+        userOverride: false,
+        enabled: false,
+      }),
+    ])
+  })
+
+  it('falls back to local rollout when PostHog has no decision for a slug', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: true })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    usePostHogEvaluator(new Map())
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, { rolloutSource: 'local' }),
+    ])
+  })
+
+  it('falls back to pure local results when the evaluator rejects', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: true })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const flagEvaluator: FeatureFlagEvaluator = {
+      evaluate: vi.fn().mockRejectedValue(new Error('PostHog unavailable')),
+      shutdown: vi.fn().mockResolvedValue(undefined),
+    }
+    deps = { ...deps, flagEvaluator, evaluationSource: 'posthog' }
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, { rolloutSource: 'local' }),
+    ])
+    expect(flagEvaluator.evaluate).toHaveBeenCalledOnce()
+  })
+
+  it('does not evaluate PostHog without an attributable user', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: true })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const evaluate = usePostHogEvaluator(
+      new Map([[feature.slug as string, false]])
+    )
+
+    const result = await evaluateDetailed(deps, { userId: null })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, { rolloutSource: 'local' }),
+    ])
+    expect(evaluate).not.toHaveBeenCalled()
+  })
+
+  it('does not evaluate PostHog when local rollout is selected', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: true })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const evaluate = usePostHogEvaluator(
+      new Map([[feature.slug as string, false]])
+    )
+    deps = { ...deps, evaluationSource: 'local' }
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, { rolloutSource: 'local' }),
+    ])
+    expect(evaluate).not.toHaveBeenCalled()
+  })
+
+  it('keeps a child disabled when its parent is off in PostHog', async () => {
+    const parent = makeFeature({
+      id: 'ftr_parent',
+      slug: 'platform_parent',
+      enabled: true,
+    })
+    const child = makeFeature({
+      id: 'ftr_child',
+      slug: 'platform_parent_child',
+      enabled: true,
+      parentFeatureId: 'ftr_parent',
+    })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([parent, child] as never)
+    usePostHogEvaluator(
+      new Map([
+        ['platform_parent', false],
+        ['platform_parent_child', true],
+      ])
+    )
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(parent, { enabled: false }),
+      expectSingleDecision(child, { parentEnabled: false, enabled: false }),
+    ])
+  })
+
   it('returns enabled non-widget features', async () => {
     const f1 = makeFeature({ id: 'ftr_1', enabled: true, tags: [] })
     const f2 = makeFeature({ id: 'ftr_2', enabled: false, tags: [] })

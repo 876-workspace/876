@@ -264,6 +264,20 @@ export type PlatformFeature = {
   enabled: boolean
 }
 
+/** A detailed feature evaluation row (`/features/evaluate/details`). */
+export type PlatformFeatureEvaluationDecision = {
+  object: 'feature_evaluation'
+  feature: PlatformFeature
+  rollout_source?: 'posthog' | 'local'
+  global_enabled: boolean
+  parent_enabled: boolean
+  module_gated: boolean
+  module_entitled: boolean
+  organization_override: boolean | null
+  user_override: boolean | null
+  enabled: boolean
+}
+
 export type PlatformProvisioningProperty = ProvisioningProperty
 export type PlatformProvisioningRevision = ProvisioningManifestRevision
 export type PlatformProvisioningRun = ProvisioningRun

@@ -2,6 +2,7 @@ import { AppHttpError } from '@/platform/errors'
 import { normalizeSlug } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
+import type { FeatureFlagEvaluator } from '@/providers/posthog/flags'
 
 /**
  * Feature-flag service — provider sync, scoped grants, and evaluation.
@@ -164,6 +165,8 @@ export type FeaturesRepository = {
 export type FeaturesDeps = {
   repository: FeaturesRepository
   provider: FeatureFlagProvider
+  flagEvaluator?: FeatureFlagEvaluator | null
+  evaluationSource?: 'posthog' | 'local'
 }
 
 // ---------------------------------------------------------------------------
@@ -245,6 +248,7 @@ export type FeatureEvaluationContext = {
 
 export type FeatureEvaluationDecision = {
   feature: FeatureRow
+  rolloutSource: 'posthog' | 'local'
   globalEnabled: boolean
   parentEnabled: boolean
   moduleGated: boolean
@@ -962,6 +966,31 @@ export async function evaluateDetailed(
   const app = await resolveApp(deps, context)
   const features = await deps.repository.listEvaluationFeatures(app?.id ?? null)
 
+  let posthogDecisions = new Map<string, boolean>()
+  if (
+    deps.evaluationSource !== 'local' &&
+    deps.flagEvaluator &&
+    context.userId
+  ) {
+    try {
+      posthogDecisions = await deps.flagEvaluator.evaluate({
+        distinctId: context.userId,
+        slugs: features.map((feature) => feature.slug),
+        groups: context.organizationId
+          ? { organization: context.organizationId }
+          : undefined,
+      })
+    } catch (error) {
+      log.warn(
+        {
+          slug_count: features.length,
+          error_type: error instanceof Error ? error.name : typeof error,
+        },
+        'posthog.flag_evaluation_failed'
+      )
+    }
+  }
+
   const usesPlan = Boolean(
     app && app.appKind === 'product' && context.organizationId
   )
@@ -992,12 +1021,18 @@ export async function evaluateDetailed(
   }
 
   const rolloutDecisions = new Map<string, boolean>()
+  const rolloutSources = new Map<string, 'posthog' | 'local'>()
   const moduleEligibility = new Map<
     string,
     { gated: boolean; entitled: boolean }
   >()
   for (const feature of features) {
-    rolloutDecisions.set(feature.id, feature.enabled)
+    const posthogDecision = posthogDecisions.get(feature.slug)
+    rolloutDecisions.set(feature.id, posthogDecision ?? feature.enabled)
+    rolloutSources.set(
+      feature.id,
+      posthogDecision === undefined ? 'local' : 'posthog'
+    )
 
     if (usesPlan && feature.appId !== null) {
       const rootId = rootFeatureId(feature)
@@ -1070,6 +1105,7 @@ export async function evaluateDetailed(
 
     return {
       feature,
+      rolloutSource: rolloutSources.get(feature.id) ?? 'local',
       globalEnabled: feature.enabled,
       parentEnabled: feature.parentFeatureId
         ? Boolean(parent && resolve(parent))
