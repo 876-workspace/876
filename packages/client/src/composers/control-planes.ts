@@ -1,4 +1,5 @@
 import type { Admin876Client } from '@876/admin'
+import type { CrmWorkspaceClient } from '@876/crm'
 
 function createProvisioningSurface(
   provisioning: Admin876Client['provisioning']
@@ -41,7 +42,10 @@ function createProvisioningSurface(
  * deliberately does not expose ordinary business resources such as invoices,
  * customers, packages, or files; those remain on the flat `$876` facade.
  */
-export function createWorkspaceControlPlane(admin: Admin876Client) {
+export function createWorkspaceControlPlane(
+  admin: Admin876Client,
+  serviceWorkspaces: { crm?: CrmWorkspaceClient } = {}
+) {
   return {
     onboarding: admin.onboarding,
     apps: {
@@ -74,6 +78,12 @@ export function createWorkspaceControlPlane(admin: Admin876Client) {
     modules: admin.modules,
     features: admin.organizationFeatures,
     provisioning: createProvisioningSurface(admin.provisioning),
+    crm: serviceWorkspaces.crm
+      ? {
+          retrieve: serviceWorkspaces.crm.retrieve,
+          ensure: serviceWorkspaces.crm.ensure,
+        }
+      : undefined,
   }
 }
 
