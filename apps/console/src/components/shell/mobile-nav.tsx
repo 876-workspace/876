@@ -4,13 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@876/core/utils'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@876/ui/accordion'
-import { ChevronRight, PanelLeftIcon } from '@876/ui/icons'
+import { PanelLeftIcon } from '@876/ui/icons'
 import { Logo } from '@876/ui/logo'
 import {
   Sheet,
@@ -21,11 +15,7 @@ import {
   SheetTrigger,
 } from '@876/ui/sheet'
 
-import {
-  navConfig,
-  type NavChild,
-  type NavItem,
-} from '@/components/shell/nav-config'
+import { navConfig, type NavItem } from '@/components/shell/nav-config'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 
 const mobileNavItemBase =
@@ -37,34 +27,9 @@ const mobileNavItemActive =
 const mobileNavIconBase =
   'flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f4] transition-colors dark:bg-white/8'
 
-function accordionValue(item: NavItem): string {
-  return `${item.title}:${item.href}`
-}
-
-function hasRealHref(href: string): boolean {
-  return href !== '#'
-}
-
-function hasActiveChild(pathname: string, children: NavChild[] = []): boolean {
-  return children.some((child) => isActiveConsolePath(pathname, child.href))
-}
-
 export function MobileNav() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-
-  const activeAccordionValues = navConfig.flatMap((group) =>
-    group.items
-      .filter((item) => {
-        if (!item.children?.length) return false
-
-        const itemActive =
-          hasRealHref(item.href) && isActiveConsolePath(pathname, item.href)
-
-        return itemActive || hasActiveChild(pathname, item.children)
-      })
-      .map(accordionValue)
-  )
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -97,38 +62,23 @@ export function MobileNav() {
           aria-label="Console sections"
           className="min-h-0 flex-1 overflow-y-auto px-3 py-4"
         >
-          <Accordion
-            key={pathname}
-            defaultValue={activeAccordionValues}
-            className="gap-5"
-          >
-            {navConfig.map((group) => (
+          <div className="flex flex-col gap-5">
+            {navConfig.map((group, groupIndex) => (
               <div
-                key={group.items[0]?.title}
-                className="flex flex-col gap-1.5"
+                key={group.items[0]?.title ?? groupIndex}
+                className="flex flex-col gap-1"
               >
-                <div className="flex flex-col gap-1">
-                  {group.items.map((item) =>
-                    item.children?.length ? (
-                      <MobileNavSection
-                        key={item.title}
-                        item={item}
-                        pathname={pathname}
-                        onNavigate={() => setOpen(false)}
-                      />
-                    ) : (
-                      <MobileNavLink
-                        key={item.title}
-                        item={item}
-                        pathname={pathname}
-                        onNavigate={() => setOpen(false)}
-                      />
-                    )
-                  )}
-                </div>
+                {group.items.map((item) => (
+                  <MobileNavLink
+                    key={item.title}
+                    item={item}
+                    pathname={pathname}
+                    onNavigate={() => setOpen(false)}
+                  />
+                ))}
               </div>
             ))}
-          </Accordion>
+          </div>
         </nav>
       </SheetContent>
     </Sheet>
@@ -165,112 +115,11 @@ function MobileNavLink({
       >
         <Icon
           aria-hidden="true"
-          className="size-[1.125rem]"
+          className={cn('size-[1.125rem]', item.colorClassName)}
           style={!isActive && item.color ? { color: item.color } : undefined}
         />
       </span>
       <span className="min-w-0 flex-1 truncate">{item.title}</span>
-    </Link>
-  )
-}
-
-function MobileNavSection({
-  item,
-  pathname,
-  onNavigate,
-}: {
-  item: NavItem
-  pathname: string
-  onNavigate: () => void
-}) {
-  const Icon = item.icon
-  const itemActive =
-    hasRealHref(item.href) && isActiveConsolePath(pathname, item.href)
-  const childActive = hasActiveChild(pathname, item.children)
-  const isHighlighted = itemActive || childActive
-
-  return (
-    <AccordionItem value={accordionValue(item)} className="border-none">
-      <AccordionTrigger
-        className={cn(
-          mobileNavItemBase,
-          'group/mission-mobile-trigger items-center border border-transparent font-medium hover:no-underline [&_[data-slot=accordion-trigger-icon]]:hidden',
-          isHighlighted ? mobileNavItemActive : mobileNavItemRest
-        )}
-      >
-        <span
-          className={cn(
-            mobileNavIconBase,
-            isHighlighted && 'bg-white/70 dark:bg-white/10'
-          )}
-        >
-          <Icon
-            aria-hidden="true"
-            className="size-[1.125rem]"
-            style={
-              !isHighlighted && item.color ? { color: item.color } : undefined
-            }
-          />
-        </span>
-        <span className="min-w-0 flex-1 truncate">{item.title}</span>
-        <ChevronRight
-          aria-hidden="true"
-          className="size-4 shrink-0 text-current/55 transition-transform group-aria-expanded/mission-mobile-trigger:rotate-90"
-        />
-      </AccordionTrigger>
-
-      <AccordionContent className="px-0 pt-1 pb-1 [&_a]:no-underline">
-        <div className="border-876-surface-border ml-7 flex flex-col gap-1 border-l pl-3">
-          {hasRealHref(item.href) ? (
-            <MobileNavSubLink
-              href={item.href}
-              title="Overview"
-              pathname={pathname}
-              onNavigate={onNavigate}
-            />
-          ) : null}
-
-          {item.children?.map((child) => (
-            <MobileNavSubLink
-              key={child.title}
-              href={child.href}
-              title={child.title}
-              pathname={pathname}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-      </AccordionContent>
-    </AccordionItem>
-  )
-}
-
-function MobileNavSubLink({
-  href,
-  title,
-  pathname,
-  onNavigate,
-}: {
-  href: string
-  title: string
-  pathname: string
-  onNavigate: () => void
-}) {
-  const isActive = isActiveConsolePath(pathname, href)
-
-  return (
-    <Link
-      href={href}
-      onClick={onNavigate}
-      aria-current={isActive ? 'page' : undefined}
-      className={cn(
-        'focus-visible:ring-sidebar-ring flex min-h-11 items-center rounded-lg px-3 text-[0.875rem] leading-5 transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
-        isActive
-          ? 'bg-[var(--876-nav-active-bg)] font-medium text-[var(--876-nav-active-fg)]'
-          : 'text-[#3c4043] hover:bg-[#f1f3f4] dark:text-white/70 dark:hover:bg-white/8'
-      )}
-    >
-      <span className="truncate">{title}</span>
     </Link>
   )
 }

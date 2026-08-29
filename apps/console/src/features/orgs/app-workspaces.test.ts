@@ -111,6 +111,12 @@ describe('workspace paths', () => {
         iconKey: 'requests',
         exact: false,
       },
+      {
+        label: 'Forms',
+        href: '/orgs/test-org/workspace/crm/forms',
+        iconKey: 'forms',
+        exact: false,
+      },
     ])
   })
 })
