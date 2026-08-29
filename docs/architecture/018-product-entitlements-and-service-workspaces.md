@@ -167,6 +167,35 @@ These three Console surfaces intentionally answer different questions:
 Do not merge or redirect the latter two into `/requests`; they have different
 subjects and tenant direction.
 
+### Separate catalogs, one permission mechanism
+
+Console and CRM keep separate permission catalogs because they govern separate
+boundaries:
+
+- Console's operator-tier `console:*` plane governs the Console surface. An 876
+  operator needs `console:requests` to open `/requests` at all.
+- CRM's dot-delimited plane governs capabilities inside a CRM workspace:
+  requests, customers, tasks, reminders, notes, teams, categories, priorities,
+  request forms, reports, and settings. The same CRM plane applies in the
+  standalone product, in Console over 876's own workspace, and in a host
+  product at the integration tier.
+
+The catalogs are neither duplicated nor merged. A Console operator performing
+a CRM operation needs both gates: `console:requests` for the operator surface
+and the exact CRM permission such as `requests.edit` for the workspace
+operation. Console permissions never imply CRM permissions, and CRM permissions
+never imply Console access. Both planes use the shared
+`resolveEffectivePermissions` mechanism and fail closed against their live
+catalogs.
+
+Console administers a customer organization's CRM roles and assignments
+through Core's generic app-access control plane. CRM registers its catalog and
+the `owner`, `admin`, `agent`, and `viewer` system templates there; Console does
+not own a CRM-specific role table. This operator administration does not grant
+Console itself a `876-crm` product entitlement. Console reaches 876's CRM
+workspace with its operator credential, while the operator's CRM app-membership
+profile supplies the operation-level permission gate.
+
 ## Historical continuity
 
 When a product later receives its standalone entitlement, it must reuse the
