@@ -1,16 +1,18 @@
 import { z } from 'zod'
 
 import { request } from '../request'
-import type { Runtime } from '../runtime'
 import {
   crmRequestSchema,
-  deletedSchema,
   requestListSchema,
   type CreateRequestInput,
-  type DeleteInput,
   type ListRequestsQuery,
-  type RequestOptions,
   type UpdateRequestInput,
+} from '../request-types'
+import type { Runtime } from '../runtime'
+import {
+  deletedSchema,
+  type DeleteInput,
+  type RequestOptions,
 } from '../types'
 
 function root(organizationId: string) {
