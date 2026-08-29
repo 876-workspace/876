@@ -3,10 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../db/index.js'
 import type { Prisma } from '../../db/generated/prisma/client.js'
 
-type CreateParams = Omit<
-  Prisma.RequestPriorityDefUncheckedCreateInput,
-  'id'
->
+type CreateParams = Omit<Prisma.RequestPriorityDefUncheckedCreateInput, 'id'>
 type UpdateParams = Prisma.RequestPriorityDefUncheckedUpdateInput
 
 export function list(tenantId: string, active?: boolean) {
@@ -50,7 +47,7 @@ export function retrieveByProvisioningKey(
 export function create(params: CreateParams) {
   return prisma.requestPriorityDef.create({
     data: {
-      id: `crm_pri_${randomUUID().replaceAll('-', '')}`,
+      id: `pri_${randomUUID().replaceAll('-', '')}`,
       ...params,
     },
   })

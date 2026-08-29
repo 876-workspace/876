@@ -7,7 +7,7 @@ import type {
   UpdateRequestFormInput,
 } from '../../types/request-form.js'
 
-const id = () => `crm_form_${randomUUID().replaceAll('-', '')}`
+const id = () => `form_${randomUUID().replaceAll('-', '')}`
 
 export function list(tenantId: string, status?: RequestFormStatus) {
   return prisma.requestForm.findMany({

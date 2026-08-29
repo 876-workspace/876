@@ -93,7 +93,7 @@ async function insertRequest(
 
   const request = await tx.request.create({
     data: {
-      id: `crm_req_${randomUUID().replaceAll('-', '')}`,
+      id: `req_${randomUUID().replaceAll('-', '')}`,
       tenantId: params.tenantId,
       customerId: params.customerId,
       number: tenant.nextRequestNumber - 1,
@@ -116,7 +116,7 @@ async function insertRequest(
   if (description)
     await tx.requestNote.create({
       data: {
-        id: `crm_note_${randomUUID().replaceAll('-', '')}`,
+        id: `note_${randomUUID().replaceAll('-', '')}`,
         tenantId: params.tenantId,
         requestId: request.id,
         body: description,
@@ -141,7 +141,7 @@ export function createFromIntake(
     const request = await insertRequest(tx, params)
     const submission = await tx.requestFormSubmission.create({
       data: {
-        id: `crm_sub_${randomUUID().replaceAll('-', '')}`,
+        id: `sub_${randomUUID().replaceAll('-', '')}`,
         tenantId: params.tenantId,
         formId: intake.formId,
         requestId: request.id,

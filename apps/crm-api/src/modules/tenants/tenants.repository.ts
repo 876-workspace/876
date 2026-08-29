@@ -13,7 +13,7 @@ export async function ensure(organizationId: string) {
   try {
     return await prisma.tenant.create({
       data: {
-        id: `crm_tnt_${randomUUID().replaceAll('-', '')}`,
+        id: `tnt_${randomUUID().replaceAll('-', '')}`,
         organizationId,
       },
     })
