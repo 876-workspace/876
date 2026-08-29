@@ -53,7 +53,7 @@ async function loadSubscriptionSetup(
 
   return {
     orgId: org.id,
-    accounts: accounts?.data ?? [],
+    accounts: accounts.data,
     products: productsResult.data?.data ?? [],
   }
 }

@@ -130,7 +130,7 @@ async function SubscriptionsData({
 }) {
   const subscriptions = await resolveOrgSubscriptions(org.id, status)
 
-  const selected = (subscriptions ?? []).find((item) => item.id === selectedId)
+  const selected = subscriptions.data.find((item) => item.id === selectedId)
   const billing = selected ? (
     <Suspense fallback={<SubscriptionBillingSummaryFallback />}>
       <SubscriptionBillingData
@@ -147,11 +147,13 @@ async function SubscriptionsData({
       />
     </Suspense>
   ) : null
-  const activity = selected ? <SubscriptionActivity subscription={selected} /> : null
+  const activity = selected ? (
+    <SubscriptionActivity subscription={selected} />
+  ) : null
 
   return (
     <SubscriptionsSplit
-      subscriptions={subscriptions ?? []}
+      subscriptions={subscriptions.data}
       billing={billing}
       transactions={transactions}
       activity={activity}
@@ -173,7 +175,7 @@ async function SubscriptionBillingData({
     $876.customers.list(organizationId, { limit: 25 }),
   ])
   const account = subscription.billing_account_id
-    ? ((accounts?.data ?? []).find(
+    ? (accounts.data.find(
         (item) => item.id === subscription.billing_account_id
       ) ?? null)
     : null

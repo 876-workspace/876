@@ -4,6 +4,7 @@ import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { AppError } from '@876/ui/app-error'
 import { ACCOUNTS_SKELETON_COLUMNS } from '../_components/accounts-skeleton-columns'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../../_data'
@@ -93,10 +94,16 @@ async function BillingAccountsData({
   const view = resolveAccountsView(resolvedSearchParams?.view)
 
   return (
-    <AccountsManager
-      orgSlug={slug}
-      accounts={accounts?.data ?? []}
-      view={view}
-    />
+    <div className="space-y-3">
+      {accounts.error ? (
+        <AppError
+          title="Billing accounts could not be loaded"
+          error={accounts.error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      <AccountsManager orgSlug={slug} accounts={accounts.data} view={view} />
+    </div>
   )
 }

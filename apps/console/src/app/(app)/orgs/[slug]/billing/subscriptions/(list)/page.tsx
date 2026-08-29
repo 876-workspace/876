@@ -4,6 +4,7 @@ import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { AppError } from '@876/ui/app-error'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
 
 import { $876 } from '@/lib/876'
@@ -72,12 +73,24 @@ async function BillingSubscriptionsData({
     $876.entitlementPlans.admin.list({ status: 'active' }),
   ])
 
+  const error = subscriptions.error ?? accounts.error ?? productsResult.error
+
   return (
-    <SubscriptionsManager
-      orgSlug={slug}
-      accounts={accounts?.data ?? []}
-      subscriptions={subscriptions ?? []}
-      products={productsResult.data?.data ?? []}
-    />
+    <div className="space-y-3">
+      {error ? (
+        <AppError
+          title="Some billing data could not be loaded"
+          error={error}
+          variant="banner"
+          showCode
+        />
+      ) : null}
+      <SubscriptionsManager
+        orgSlug={slug}
+        accounts={accounts.data}
+        subscriptions={subscriptions.data}
+        products={productsResult.data?.data ?? []}
+      />
+    </div>
   )
 }

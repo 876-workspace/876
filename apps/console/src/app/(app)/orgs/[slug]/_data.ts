@@ -4,7 +4,15 @@ import type { AdminSubscriptionStatus } from '@876/admin'
 import { $876, workspace } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-/** Canonical organization lookup result. Consumers that render error UI use this. */
+/**
+ * Canonical organization lookup, including soft-deleted records so Console can
+ * show a tombstone banner on a deleted org's detail page.
+ *
+ * Wrapped in React `cache()` so the segment layout, the overview page, and each
+ * tab page dedupe to a single fetch per request. Callers that must tell a real
+ * "no such organization" apart from a service failure read this result; the
+ * error is preserved rather than collapsed into `null`.
+ */
 export const resolveOrgResult = cache(async (slug: string) =>
   $876.organizations.admin.retrieve({
     slug,
@@ -22,7 +30,16 @@ export const resolveOrg = cache(async (slug: string) => {
   return result.data ?? null
 })
 
-/** Cached organization member directory plus its registered application error. */
+/**
+ * Cached organization member directory (membership + user identity), plus its
+ * registered application error.
+ *
+ * Uses the canonical organization-members resource instead of composing the
+ * roster from `/memberships` followed by a separate `/users?ids=...` batch. The
+ * organization detail layout and Members tab share this cached request, so the
+ * member count and the table cannot trigger duplicate roster reads during the
+ * same render.
+ */
 export const resolveOrgMembers = cache(async (orgId: string) => {
   const result = await $876.organizationMembers.admin.list(orgId, {
     limit: 100,
@@ -40,12 +57,13 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
   }
 })
 
-/** Cached role catalog plus its registered application error. */
+/** Cached role catalog used by member-management controls, plus its error. */
 export const resolveOrgRoles = cache(async (orgId: string) => {
   const result = await $876.roles.admin.list(orgId)
   return { data: result.data?.data ?? [], error: result.error }
 })
 
+/** Cached org entitlements, plus the registered lookup error. */
 export const resolveOrgSubscriptions = cache(
   async (orgId: string, status?: AdminSubscriptionStatus) => {
     const result = await workspace.apps.entitlements.list({
@@ -56,21 +74,30 @@ export const resolveOrgSubscriptions = cache(
   }
 )
 
+/** Cached billing accounts for the org, plus the registered lookup error. */
 export const resolveOrgBillingAccounts = cache(async (orgId: string) => {
   const result = await $876.billingAccounts.list({
     organizationId: orgId,
     limit: 25,
   })
-  return { data: result.data ?? null, error: result.error }
+  return { data: result.data?.data ?? [], error: result.error }
 })
 
-/** Active app slugs plus the entitlement lookup error, if any. */
+/**
+ * The app slugs an organization currently holds an active entitlement for, plus
+ * the entitlement lookup error if there was one.
+ *
+ * Shared by the detail tab strip, the workspace index, and each workspace
+ * shell, all of which ask the same question on the same render. Cached through
+ * `resolveOrgSubscriptions`, so asking three times costs one request.
+ */
 export const resolveOrgEntitledAppSlugs = cache(async (orgId: string) => {
   const subscriptions = await resolveOrgSubscriptions(orgId)
   return {
     data: subscriptions.data
-      .filter((subscription) =>
-        subscription.status === 'active' || subscription.status === 'trialing'
+      .filter(
+        (subscription) =>
+          subscription.status === 'active' || subscription.status === 'trialing'
       )
       .flatMap((subscription) =>
         subscription.app_slug ? [subscription.app_slug] : []
