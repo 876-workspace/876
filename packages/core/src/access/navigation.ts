@@ -17,6 +17,12 @@ export interface NavEntry {
   /** A STRING icon key. Never a component — this crosses the RSC boundary. */
   icon: string
   colorClassName?: string
+  /**
+   * Presentation classes for the entry's ACTIVE state — the tinted, rounded
+   * tile behind its icon. A plain string, like `colorClassName`, because this
+   * registry crosses the RSC boundary.
+   */
+  activeClassName?: string
   requires?: NavRequirement
   children?: readonly NavEntry[]
 }
@@ -45,12 +51,17 @@ function requirementPasses(
   )
     return false
 
-  if (requirement.feature !== undefined && !hasFeature(context, requirement.feature))
+  if (
+    requirement.feature !== undefined &&
+    !hasFeature(context, requirement.feature)
+  )
     return false
 
   if (requirement.anyPermission !== undefined) {
     if (requirement.anyPermission.length === 0) return false
-    if (!requirement.anyPermission.some((permission) => can(context, permission)))
+    if (
+      !requirement.anyPermission.some((permission) => can(context, permission))
+    )
       return false
   }
 
@@ -77,8 +88,9 @@ function resolveEntries(
       title: entry.title,
       href: entry.href,
       icon: entry.icon,
-      ...(entry.colorClassName
-        ? { colorClassName: entry.colorClassName }
+      ...(entry.colorClassName ? { colorClassName: entry.colorClassName } : {}),
+      ...(entry.activeClassName
+        ? { activeClassName: entry.activeClassName }
         : {}),
       ...(entry.requires
         ? {

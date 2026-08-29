@@ -358,9 +358,9 @@ describe('resolveNavigation', () => {
       context({ permissions: ['team:list'] })
     )
 
-    expect(result[0]?.entries[0]?.children?.map((entry) => entry.href)).toEqual([
-      '/settings/users',
-    ])
+    expect(result[0]?.entries[0]?.children?.map((entry) => entry.href)).toEqual(
+      ['/settings/users']
+    )
   })
 
   it('removes a parent whose declared children all filter out', () => {
@@ -553,6 +553,36 @@ describe('resolveNavigation', () => {
     const result = resolveNavigation(groups, null as unknown as AccessContext)
 
     expect(result[0]?.entries.map((entry) => entry.href)).toEqual(['/'])
+  })
+
+  it('preserves an entry active class and omits it when absent', () => {
+    const groups = defineNavigation([
+      {
+        key: 'primary',
+        entries: [
+          {
+            key: 'tinted',
+            title: 'Tinted',
+            href: '/tinted',
+            icon: 'tinted',
+            activeClassName: 'bg-blue-500/12 ring-blue-500/30',
+          },
+          { key: 'plain', title: 'Plain', href: '/plain', icon: 'plain' },
+        ],
+      },
+    ])
+
+    const resolved = resolveNavigation(groups, {
+      subject: { userId: 'user_1' },
+      permissions: [],
+      features: [],
+      experiments: {},
+    })
+
+    expect(resolved[0]?.entries[0]?.activeClassName).toBe(
+      'bg-blue-500/12 ring-blue-500/30'
+    )
+    expect(resolved[0]?.entries[1]).not.toHaveProperty('activeClassName')
   })
 
   it('preserves group labels and entry color classes', () => {
