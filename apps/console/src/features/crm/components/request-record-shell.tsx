@@ -14,8 +14,8 @@ import {
 type Props = {
   requestId: string
   /**
-   * The organization whose CRM this request belongs to. Omitted on the platform
-   * support desk, which resolves 876's own organization.
+   * The organization whose CRM service workspace owns this request. Omitted on
+   * Console's platform request surface, which resolves 876's own organization.
    */
   organizationId?: string
   /** The record's own base path — every tab and action is built from it. */
@@ -38,10 +38,10 @@ function requestRecordTabs(baseHref: string): RouteTabItem[] {
 /**
  * The CRM request record, as Console renders it everywhere.
  *
- * Both surfaces that open a request — the platform support desk at `/support`
- * and an organization's CRM workspace — mount this one shell, so the record
- * looks and behaves identically in both and a change to it lands on both. The
- * only thing a surface supplies is *which* organization and *where* it lives.
+ * Both surfaces that open a request — Console's platform `/requests` surface
+ * over 876's CRM service workspace and an organization's CRM workspace — mount
+ * this one shell. The only thing a surface supplies is *which* workspace and
+ * *where* the record lives. Product entitlement is not inferred here.
  *
  * Every region streams behind its own boundary; the shell itself awaits nothing,
  * so a click from the requests table lands on the record immediately.

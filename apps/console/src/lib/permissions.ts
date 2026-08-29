@@ -92,7 +92,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     description: 'Read-only access to Console data.',
     permissions: [
       'console:access',
-      'console:support',
+      'console:requests',
       'console:reports',
       ...RESOURCE_READ,
     ],
@@ -104,7 +104,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'Full management access — create, update, and manage all resources.',
     permissions: [
       'console:access',
-      'console:support',
+      'console:requests',
       'console:settings',
       'console:billing',
       'console:users',
@@ -125,7 +125,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     description: 'Platform owner with unrestricted Console access.',
     permissions: [
       'console:access',
-      'console:support',
+      'console:requests',
       'console:settings',
       'console:billing',
       'console:users',
@@ -153,7 +153,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     description: 'All permissions including danger zone operations.',
     permissions: [
       'console:access',
-      'console:support',
+      'console:requests',
       'console:settings',
       'console:billing',
       'console:users',

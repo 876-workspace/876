@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  toStoredPermissionKeys,
   appPermissionCatalogs,
   consolePermissionCatalog,
   couriersPermissionCatalog,
@@ -18,7 +19,7 @@ const SYSTEM_ROLE_KEYS = [
   'console:features',
   'console:organizations',
   'console:settings',
-  'console:support',
+  'console:requests',
   'console:users',
   'console:widgets',
   'memberships:create',
@@ -58,10 +59,10 @@ const SORTED_CONSOLE_KEYS = [
   'console:features',
   'console:organizations',
   'console:reports',
+  'console:requests',
   'console:security',
   'console:settings',
   'console:storage',
-  'console:support',
   'console:users',
   'console:widgets',
   'memberships:create',
@@ -95,6 +96,60 @@ const SORTED_CONSOLE_KEYS = [
 ] as const
 
 describe('consolePermissionCatalog', () => {
+  it('keeps every stored string permission key exactly as written', () => {
+    const result = toStoredPermissionKeys([
+      'console:access',
+      'users:read',
+      'console:requests',
+    ])
+
+    expect(result).toEqual(['console:access', 'users:read', 'console:requests'])
+  })
+
+  it('drops non-string entries from a malformed stored role row', () => {
+    const result = toStoredPermissionKeys([
+      'console:access',
+      42,
+      null,
+      undefined,
+      { key: 'users:read' },
+      'users:read',
+    ])
+
+    expect(result).toEqual(['console:access', 'users:read'])
+  })
+
+  it('returns no keys when the stored value is not an array', () => {
+    expect(toStoredPermissionKeys(null)).toEqual([])
+    expect(toStoredPermissionKeys(undefined)).toEqual([])
+    expect(toStoredPermissionKeys('console:access')).toEqual([])
+    expect(toStoredPermissionKeys({ 0: 'console:access' })).toEqual([])
+  })
+
+  it('does not mutate the persisted permission array', () => {
+    const stored = ['console:access', 'users:read']
+
+    toStoredPermissionKeys(stored)
+
+    expect(stored).toEqual(['console:access', 'users:read'])
+  })
+
+  it('never emits the retired support key from the canonical catalog', () => {
+    expect(
+      consolePermissionCatalog.permissions
+        .map((permission) => permission.key)
+        .filter((permission) => permission === 'console:support')
+    ).toEqual([])
+  })
+
+  it('emits the canonical requests key from the Console catalog', () => {
+    expect(
+      consolePermissionCatalog.permissions
+        .map((permission) => permission.key)
+        .filter((permission) => permission === 'console:requests')
+    ).toEqual(['console:requests'])
+  })
+
   it('uses the verified Console app slug', () => {
     expect(consolePermissionCatalog.app).toBe('console')
   })
@@ -104,7 +159,9 @@ describe('consolePermissionCatalog', () => {
   })
 
   it('keeps the exact declared module order', () => {
-    expect(consolePermissionCatalog.modules.map((module) => module.key)).toEqual([
+    expect(
+      consolePermissionCatalog.modules.map((module) => module.key)
+    ).toEqual([
       'console',
       'users',
       'organizations',
@@ -191,7 +248,10 @@ describe('consolePermissionCatalog', () => {
     expect(
       consolePermissionCatalog.modules
         .find((module) => module.key === 'users')
-        ?.permissions.map((permission) => [permission.action, permission.position])
+        ?.permissions.map((permission) => [
+          permission.action,
+          permission.position,
+        ])
     ).toEqual([
       ['read', 0],
       ['list', 1],
@@ -204,7 +264,9 @@ describe('consolePermissionCatalog', () => {
 
   it('uses colon-delimited persisted keys for every Console permission', () => {
     expect(
-      consolePermissionCatalog.permissions.filter((row) => row.key.includes('.'))
+      consolePermissionCatalog.permissions.filter((row) =>
+        row.key.includes('.')
+      )
     ).toEqual([])
   })
 

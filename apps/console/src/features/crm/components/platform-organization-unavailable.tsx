@@ -14,11 +14,11 @@ export function PlatformOrganizationUnavailable() {
         <EmptyMedia variant="icon">
           <Building2 aria-hidden="true" />
         </EmptyMedia>
-        <EmptyTitle>Support organization unavailable</EmptyTitle>
+        <EmptyTitle>Platform organization unavailable</EmptyTitle>
         <EmptyDescription>
           Console could not resolve the organization configured by
-          CONSOLE_PLATFORM_ORG_SLUG. Set it to the platform tenant slug and try
-          again.
+          CONSOLE_PLATFORM_ORG_SLUG. Set it to the platform organization slug
+          and try again.
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

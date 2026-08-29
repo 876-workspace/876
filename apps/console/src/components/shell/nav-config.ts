@@ -32,13 +32,13 @@ export const navConfig = defineNavigation([
         requires: { permission: 'console:organizations' },
       },
       {
-        key: 'support',
-        title: 'Support',
-        href: '/support',
+        key: 'requests',
+        title: 'Requests',
+        href: '/requests',
         icon: 'support',
         colorClassName: 'text-cyan-500 dark:text-cyan-400',
         activeClassName: 'bg-cyan-500/12 ring-cyan-500/30',
-        requires: { permission: 'console:support' },
+        requires: { permission: 'console:requests' },
       },
       {
         key: 'security',

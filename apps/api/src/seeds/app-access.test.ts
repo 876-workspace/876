@@ -115,11 +115,141 @@ describe('app access seed catalog', () => {
 
   it('defines the CRM role vocabulary from most to least privileged', () => {
     expect(app('876-crm').roles.map((role) => role.key)).toEqual([
+      'owner',
       'admin',
-      'manager',
       'agent',
       'viewer',
     ])
+  })
+
+  it('grants the CRM owner the complete catalog', () => {
+    const crm = app('876-crm')
+    expect(crm.roles.find((role) => role.key === 'owner')?.permissions).toEqual(
+      crm.permissions.map((permission) => permission.key)
+    )
+  })
+
+  it('grants the CRM admin the complete catalog', () => {
+    const crm = app('876-crm')
+    expect(crm.roles.find((role) => role.key === 'admin')?.permissions).toEqual(
+      crm.permissions.map((permission) => permission.key)
+    )
+  })
+
+  it('grants the CRM agent the exact operational capability set', () => {
+    expect(
+      app('876-crm').roles.find((role) => role.key === 'agent')?.permissions
+    ).toEqual([
+      'requests.view',
+      'requests.create',
+      'requests.edit',
+      'customers.view',
+      'customers.create',
+      'customers.edit',
+      'tasks.view',
+      'tasks.create',
+      'tasks.edit',
+      'reminders.view',
+      'reminders.create',
+      'reminders.edit',
+      'notes.view',
+      'notes.create',
+      'notes.edit',
+    ])
+  })
+
+  it('keeps CRM agents out of settings and teams', () => {
+    const permissions =
+      app('876-crm').roles.find((role) => role.key === 'agent')?.permissions ??
+      []
+    expect(
+      permissions.filter(
+        (permission) =>
+          permission.startsWith('settings.') || permission.startsWith('teams.')
+      )
+    ).toEqual([])
+  })
+
+  it('keeps CRM agents from deleting operational records', () => {
+    const permissions =
+      app('876-crm').roles.find((role) => role.key === 'agent')?.permissions ??
+      []
+    expect(
+      permissions.filter((permission) => permission.endsWith('.delete'))
+    ).toEqual([])
+  })
+
+  it('grants the CRM viewer the exact read-only capability set', () => {
+    expect(
+      app('876-crm').roles.find((role) => role.key === 'viewer')?.permissions
+    ).toEqual([
+      'requests.view',
+      'customers.view',
+      'tasks.view',
+      'reminders.view',
+      'notes.view',
+      'teams.view',
+      'categories.view',
+      'priorities.view',
+      'request_forms.view',
+      'reports.view',
+      'settings.view',
+    ])
+  })
+
+  it('uses viewer as the single CRM default role', () => {
+    expect(
+      app('876-crm')
+        .roles.filter((role) => role.isDefault)
+        .map((role) => role.key)
+    ).toEqual(['viewer'])
+  })
+
+  it('marks every CRM role template as system managed', () => {
+    expect(
+      app('876-crm').roles.map((role) => [role.key, role.isSystem])
+    ).toEqual([
+      ['owner', true],
+      ['admin', true],
+      ['agent', true],
+      ['viewer', true],
+    ])
+  })
+
+  it('orders CRM roles from owner to viewer', () => {
+    expect(
+      app('876-crm').roles.map((role) => [role.key, role.position])
+    ).toEqual([
+      ['owner', 0],
+      ['admin', 10],
+      ['agent', 20],
+      ['viewer', 30],
+    ])
+  })
+
+  it('grants every Console CRM mutation requirement to a named system role', () => {
+    const surfaceRequirements = [
+      'requests.create',
+      'requests.edit',
+      'requests.delete',
+      'notes.create',
+      'notes.edit',
+      'notes.delete',
+      'tasks.create',
+      'tasks.edit',
+      'tasks.delete',
+      'reminders.create',
+      'reminders.edit',
+      'reminders.delete',
+    ]
+    const roles = app('876-crm').roles
+
+    expect(
+      surfaceRequirements.filter(
+        (permission) =>
+          !roles.some((role) => role.permissions.includes(permission))
+      )
+    ).toEqual([])
   })
 
   it.each(['876-billing', '876-invoice'])(

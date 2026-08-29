@@ -60,6 +60,12 @@ through.
 In addition, the app the signup came through (the _source app_) is subscribed if
 it is not already in the default set.
 
+`876-billing` is never inferred from organization creation, registry
+synchronization, or finance-workspace provisioning. It appears here only when
+Billing is the authenticated source app or an authorized control-plane caller
+grants the entitlement explicitly. The organization/customer registry row and
+finance workspace are still prepared under the organization's existing ID.
+
 At the workspace layer this is:
 
 ```ts
@@ -83,8 +89,9 @@ open the organization's shared finance capability through
 876 Billing application.
 
 When Billing is activated later, it opens the **same organization finance
-workspace** without copying or migrating financial data. This is the important
-mental model:
+workspace** keyed by the same organization ID. Tenant ensure and customer
+registry synchronization remain idempotent, so activation creates neither a
+second tenant nor copied financial records. This is the important mental model:
 
 ```text
 876 Workspace

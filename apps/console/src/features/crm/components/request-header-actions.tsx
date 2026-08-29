@@ -38,6 +38,7 @@ import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 
+import { requestCollectionHref } from '../request-paths'
 import type { RequestStatus } from '../types'
 import { DeleteRequestDialog } from './delete-request-dialog'
 import { NEW_NOTE_FIELD_ID } from './request-notes'
@@ -70,7 +71,7 @@ export function RequestHeaderActions({
   currentUserId,
   departments = [],
   members = [],
-  baseHref = `/support/${requestId}`,
+  baseHref = `/requests/${requestId}`,
   customerHref = `/customers/${customerId}`,
 }: {
   organizationId: string
@@ -329,6 +330,7 @@ export function RequestHeaderActions({
           requestId={requestId}
           requestNumber={requestNumber}
           currentUserId={currentUserId}
+          returnHref={requestCollectionHref(baseHref, requestId)}
         />
       </div>
       {error ? (

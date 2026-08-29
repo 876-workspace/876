@@ -5,7 +5,7 @@ import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 import { resolveUser } from '@/app/(app)/users/[username]/_data'
 import {
   resolveOrg,
@@ -15,7 +15,11 @@ import {
 } from '../_data'
 import { PendingInvitesTable } from './_components/members-table'
 import { MembersSplit } from './_components/members-split'
-import { MemberApps, MemberAppsFallback } from './_components/member-apps'
+import {
+  MemberApps,
+  MemberAppsFallback,
+  type MemberAppAccessEntry,
+} from './_components/member-apps'
 import { MemberActivity } from './_components/member-activity'
 import { AddMemberDialog } from './_components/add-member-dialog'
 import { MEMBERS_SKELETON_COLUMNS } from './_components/members-skeleton-columns'
@@ -116,12 +120,15 @@ async function MembersToolbarData({
 
 async function MemberAppsData({
   organizationId,
-  userId,
+  membershipId,
 }: {
   organizationId: string
-  userId: string
+  membershipId: string
 }) {
-  const result = await $876.appAssignments.list(organizationId, { userId })
+  const result = await workspace.apps.memberships.listForMember(
+    organizationId,
+    membershipId
+  )
   if (result.error)
     return (
       <AppError
@@ -132,7 +139,45 @@ async function MemberAppsData({
       />
     )
 
-  return <MemberApps assignments={result.data?.data ?? []} />
+  const entries = await Promise.all(
+    (result.data?.data ?? []).map(async (membership) => {
+      const [rolesResult, permissionsResult] = await Promise.all([
+        workspace.apps.orgRoles.list(organizationId, membership.app_id),
+        workspace.apps.permissions.list(membership.app_id),
+      ])
+      if (rolesResult.error || permissionsResult.error) return null
+
+      return {
+        assignmentId: membership.id,
+        assigned: membership.assigned,
+        appId: membership.app_id,
+        appSlug: membership.app_slug,
+        appName: membership.app_name,
+        membershipId: membership.membership_id,
+        roleId: membership.app_role?.id ?? null,
+        roleName: membership.app_role?.name ?? null,
+        effectivePermissions: membership.effective_permissions,
+        catalog: (permissionsResult.data?.data ?? []).map(
+          (permission) => permission.key
+        ),
+        roles: (rolesResult.data?.data ?? []).map((role) => ({
+          id: role.id,
+          key: role.key,
+          name: role.name,
+          permissions: role.permissions,
+        })),
+      } satisfies MemberAppAccessEntry
+    })
+  )
+
+  return (
+    <MemberApps
+      organizationId={organizationId}
+      entries={entries.filter(
+        (entry): entry is MemberAppAccessEntry => entry !== null
+      )}
+    />
+  )
 }
 
 async function MembersTableData({
@@ -181,7 +226,7 @@ async function MembersTableData({
     <Suspense fallback={<MemberAppsFallback />}>
       <MemberAppsData
         organizationId={orgResult.data.id}
-        userId={selected.user_id}
+        membershipId={selected.id}
       />
     </Suspense>
   ) : null

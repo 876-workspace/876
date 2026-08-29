@@ -8,12 +8,22 @@ import { $876 } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
 import { toRequestCustomerOption } from './request-customer-option'
+import { PLATFORM_REQUESTS_HREF } from './request-paths'
 import type { DirectoryMember, RequestDepartment } from './types'
 
-export const loadSupportContext = cache(async (requestId?: string) => {
+/**
+ * Resolve Console's operator request surface to 876's CRM service workspace.
+ * The target organization identifies the CRM workspace; it is not a check for
+ * or grant of the standalone `876-crm` product entitlement.
+ */
+export const loadPlatformRequestContext = cache(async (requestId?: string) => {
   const [org, session] = await Promise.all([
     getPlatformOrganization(),
-    requireSession(requestId ? `/support/${requestId}` : '/support'),
+    requireSession(
+      requestId
+        ? `${PLATFORM_REQUESTS_HREF}/${requestId}`
+        : PLATFORM_REQUESTS_HREF
+    ),
   ])
   return { org, session }
 })
@@ -94,20 +104,24 @@ export const loadOrgCustomer = cache(
   }
 )
 
-export const loadOrgRequest = cache(
-  async (orgId: string, requestId: string, returnPath = '/support') => {
-    const session = await requireSession(returnPath)
-    const result = await $876.requests.retrieve(orgId, requestId)
-    if (result.error?.code === 'crm/request-not-found') notFound()
+async function loadOrgRequestUncached(
+  orgId: string,
+  requestId: string,
+  returnPath: string = PLATFORM_REQUESTS_HREF
+) {
+  const session = await requireSession(returnPath)
+  const result = await $876.requests.retrieve(orgId, requestId)
+  if (result.error?.code === 'crm/request-not-found') notFound()
 
-    return {
-      org: { id: orgId },
-      session,
-      request: result.data,
-      error: result.error,
-    }
+  return {
+    org: { id: orgId },
+    session,
+    request: result.data,
+    error: result.error,
   }
-)
+}
+
+export const loadOrgRequest = cache(loadOrgRequestUncached)
 
 export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
   const result = await $876.requestNotes.list(orgId, requestId, {
@@ -162,13 +176,17 @@ export const loadRequestRowContext = cache(async (orgId: string) => {
 })
 
 export const loadRequest = cache(async (requestId: string) => {
-  const { org, session } = await loadSupportContext(requestId)
+  const { org, session } = await loadPlatformRequestContext(requestId)
   if (!org) return { org: null, session, request: null, error: null }
-  return loadOrgRequest(org.id, requestId, `/support/${requestId}`)
+  return loadOrgRequest(
+    org.id,
+    requestId,
+    `${PLATFORM_REQUESTS_HREF}/${requestId}`
+  )
 })
 
 export const loadDirectory = cache(async () => {
-  const { org } = await loadSupportContext()
+  const { org } = await loadPlatformRequestContext()
   if (!org)
     return {
       departments: [],
@@ -180,37 +198,37 @@ export const loadDirectory = cache(async () => {
 })
 
 export const loadCategoryIndex = cache(async () => {
-  const { org } = await loadSupportContext()
+  const { org } = await loadPlatformRequestContext()
   if (!org) return { categories: new Map(), error: null }
   return loadOrgCategoryIndex(org.id)
 })
 
 export const loadPriorities = cache(async () => {
-  const { org } = await loadSupportContext()
+  const { org } = await loadPlatformRequestContext()
   if (!org) return { priorities: [], error: null }
   return loadOrgPriorities(org.id)
 })
 
 export const loadCustomer = cache(async (customerId: string) => {
-  const { org } = await loadSupportContext()
+  const { org } = await loadPlatformRequestContext()
   if (!org) return { profile: null, customer: null, error: null }
   return loadOrgCustomer(org.id, customerId)
 })
 
 export const loadNotes = cache(async (requestId: string) => {
-  const { org } = await loadSupportContext(requestId)
+  const { org } = await loadPlatformRequestContext(requestId)
   if (!org) return { notes: [], error: null }
   return loadOrgNotes(org.id, requestId)
 })
 
 export const loadTasks = cache(async (requestId: string) => {
-  const { org } = await loadSupportContext(requestId)
+  const { org } = await loadPlatformRequestContext(requestId)
   if (!org) return { tasks: [], error: null }
   return loadOrgTasks(org.id, requestId)
 })
 
 export const loadReminders = cache(async (requestId: string) => {
-  const { org } = await loadSupportContext(requestId)
+  const { org } = await loadPlatformRequestContext(requestId)
   if (!org) return { reminders: [], error: null }
   return loadOrgReminders(org.id, requestId)
 })

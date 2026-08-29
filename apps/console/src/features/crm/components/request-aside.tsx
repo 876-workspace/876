@@ -30,7 +30,7 @@ import {
 export async function RequestAside({
   requestId,
   organizationId,
-  baseHref = `/support/${requestId}`,
+  baseHref = `/requests/${requestId}`,
   customerHref,
 }: {
   requestId: string

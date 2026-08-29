@@ -13,7 +13,7 @@ import {
 
 type Props = { params: Promise<{ requestId: string }> }
 
-export default async function SupportRequestConversationPage({ params }: Props) {
+export default async function RequestConversationPage({ params }: Props) {
   const { requestId } = await params
   const [requestResult, notesResult, directory] = await Promise.all([
     loadRequest(requestId),

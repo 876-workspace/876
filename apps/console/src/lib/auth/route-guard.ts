@@ -2,9 +2,8 @@ import 'server-only'
 
 import { can, hasFeature } from '@876/core/access'
 
-import {
-  resolveAccessContext,
-} from '@/lib/auth/access-context'
+import { workspace } from '@/lib/876'
+import { resolveAccessContext } from '@/lib/auth/access-context'
 import { findConsoleAccess } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { errorResponse } from '@/lib/errors'
@@ -76,4 +75,38 @@ export function requireConsoleCapability(
   requirement: RouteRequirement
 ): Promise<Authorized | Rejected> {
   return requireCapability(requirement)
+}
+
+/**
+ * Applies the two independent gates for Console's CRM-backed request routes.
+ * Console RBAC admits the operator surface; the target workspace's app-access
+ * profile authorizes the CRM operation. Neither permission plane implies the
+ * other, and lookup failures deliberately fail closed.
+ */
+export async function requireConsoleCrmPermission(
+  organizationId: string,
+  crmPermission: string
+): Promise<Authorized | Rejected> {
+  const consoleAccess = await requireConsolePermission('console:requests')
+  if (consoleAccess.response) return consoleAccess
+
+  const result = await workspace.apps.memberships.list(organizationId, {
+    userId: consoleAccess.sessionUser.id,
+    appSlug: '876-crm',
+    status: 'active',
+  })
+  const membership = result.data?.data.find(
+    (candidate) =>
+      candidate.user_id === consoleAccess.sessionUser.id &&
+      candidate.app_slug === '876-crm' &&
+      candidate.status === 'active'
+  )
+
+  if (
+    result.error ||
+    !membership?.effective_permissions.includes(crmPermission)
+  )
+    return forbidden()
+
+  return consoleAccess
 }

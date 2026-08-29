@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
+  requireCrmPermission: vi.fn(),
   createClient: vi.fn(),
   list: vi.fn(),
   create: vi.fn(),
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
+  requireConsoleCrmPermission: mocks.requireCrmPermission,
 }))
 
 vi.mock('@/lib/876', () => ({
@@ -74,6 +76,10 @@ describe('Console organization requests route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.requirePermission.mockResolvedValue({ response: null })
+    mocks.requireCrmPermission.mockResolvedValue({
+      response: null,
+      sessionUser: { id: 'user_operator' },
+    })
     mocks.createClient.mockReturnValue({
       requests: { list: mocks.list, create: mocks.create },
     })
@@ -166,10 +172,16 @@ describe('Console organization requests route', () => {
         message: 'Invalid request body.',
       },
     })
-    expect(mocks.requirePermission).toHaveBeenCalledTimes(1)
-    expect(mocks.requirePermission).toHaveBeenCalledWith(
-      'console:organizations'
+    // Creating a request is a CRM capability, so the handler authorizes
+    // through the two-gate CRM guard (console:requests, then the caller's
+    // CRM effective permission) rather than the console:organizations
+    // permission that gated this route before the CRM plane existed.
+    expect(mocks.requireCrmPermission).toHaveBeenCalledTimes(1)
+    expect(mocks.requireCrmPermission).toHaveBeenCalledWith(
+      'org_target',
+      'requests.create'
     )
+    expect(mocks.requirePermission).not.toHaveBeenCalled()
     expect(mocks.createClient).not.toHaveBeenCalled()
     expect(mocks.create).not.toHaveBeenCalled()
   })

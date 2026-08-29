@@ -1,151 +1,123 @@
 # 017 — Managing an organization's app data from Console
 
-**Status:** accepted, 2026-08-28.
-**Supersedes:** nothing. **Builds on:** [016](016-console-access-tiers-and-app-api-routing.md),
-`.claude/rules/access-tiers.md`, `.claude/rules/platform-services.md`.
+**Status:** accepted, updated 2026-08-29.
+**Builds on:** ADR-016, ADR-018, `.claude/rules/access-tiers.md`, and
+`.claude/rules/platform-services.md`.
 
 ## The problem
 
-876 now runs several product apps — CRM, Couriers, Billing, Invoice, Widgets,
-Storage — each owning its own bounded context and database. Console has to let
-876 staff open any organization and work with that organization's data in **any**
-app it is entitled to, and the set of apps keeps growing.
-
-The failure mode this document exists to prevent is the obvious one: each new app
-arrives with its own bespoke Console integration, its own credential story, and a
-second implementation of capabilities the owning service already has. Six apps
-in, Console becomes the place where every product's logic is quietly reimplemented
-and slowly drifts from the product itself.
+876 runs multiple product apps and shared services. Console must let authorized
+876 staff inspect and operate customer data without reimplementing each product
+or giving Console customer-owned integration credentials.
 
 ## The rule
 
 > **One capability, implemented once by the owning service, routed at as many
-> tiers as it has legitimate callers. Console is always the operator tier.
-> Adding an app to Console is a registration, never a rewrite.**
+> tiers as it has legitimate callers. Console is always the operator tier.**
+
+Adding an owning service to Console is a registration/composition exercise, not
+a second implementation.
 
 ## The pathway
 
-Every app plugs into Console through the same five joints. Nothing else is
-negotiable, and nothing else is required.
+Every product/service capability reaches Console through the same joints:
 
-```
-1. capability      the owning service's service function        (write once)
-2. operator route  /v1/organizations/:organizationId/<resource>  (route again)
-3. tier client     packages/<app> operator/admin client method
-4. facade          composed onto Console's $876 in src/lib/876
-5. surface         /orgs/[slug]/<resource>, gated by entitlement
-```
-
-### 1. The capability lives in the owning service
-
-`listRequests(organizationId, filters)` is written once, in `crm-api`, in one
-service function over one repository. If exposing it to Console needs new
-business logic, the logic was in the wrong layer — move it into the service
-first. Console never gets a private shortcut.
-
-### 2. The operator route sits beside the others
-
-```
-/v1/organizations/:organizationId/requests             operator   ← Console
-/integrations/organizations/:organizationId/requests   integration ← other apps, third parties
-/organizations/:organizationId/requests                session     ← the org's own members
+```text
+1. capability      owning service function                     write once
+2. operator route  /v1/organizations/:organizationId/resource  route again
+3. tier client     owning package's operator/admin client
+4. facade          compose onto Console's server $876
+5. surface         Console route over that capability
 ```
 
-Three routes, three guards, **one controller and one service function**. Adding a
-tier is a routing change. A second implementation for a second caller is the
-defect this rule exists to prevent: the two drift, and the drift surfaces as a
-support ticket where Console and the customer's own screen disagree about the
-same record.
+A second route may use another guard, but it points at the same controller and
+service function.
 
-### 3. Console authenticates as the operator, never as an integration
+## Access tier
 
-Console holds the secret internal key and calls the operator tier. This is
-settled; do not revisit it per app. The integration tier exists _because_ an
-organization granted a connection with named scopes — and a customer can revoke
-that connection. 876's ability to support and oversee a customer must not depend
-on a grant the customer can withdraw, and Console's cross-org work has no single
-organization to scope to.
+Console authenticates as the **operator**, never as an integration.
 
-Operator access skips _organizational consent_. It does not skip accountability:
-every Console call still passes `requireConsolePermission` in the route handler
-before the facade is touched, and still writes an audit event for any read of
-customer-identifying data and any mutation. "876 staff may do it" and "876 staff
-may do it unobserved" are different claims, and only the first is true.
+Integration means an application is acting for one organization under a grant
+that organization can revoke. Console acts as 876 across organizations and must
+not depend on customer consent for platform administration/support.
 
-### 4. The surface is entitlement-driven
+Operator access still requires Console permission checks and auditability.
 
-An organization's tab strip is derived from the apps it is actually entitled to.
-An org with no CRM entitlement gets no Requests tab; adding a future app is one
-row in the app-owned tab registry, not a layout change.
+## Product entitlement versus service access
 
-The tab strip must still render **immediately** — the always-present tabs are the
-Suspense fallback, so the header never flashes a skeleton and no tab appears and
-then vanishes (`.claude/rules/navigation-performance.md` Rule 2).
+ADR-018 separates standalone product entitlement from service workspace access.
+That changes an important distinction in Console:
 
-## We are the first customer of this pathway
+- A **standalone product workspace surface** for an organization may be shown
+  only when that organization is entitled to the product.
+- A **service capability embedded in another legitimate Console workflow** does
+  not imply or grant that standalone product entitlement.
 
-Console's own support desk at `/support` is the same operator routes with 876's
-own organization id bound instead of a URL segment. There is no "internal" CRM
-and no second data layer — 876 uses the product it sells, through the surface it
-sells it through.
+For example, the existence of an organization's CRM tenant is not proof that the
+organization can launch 876 CRM. Product launch remains controlled by the Core
+`876-crm` entitlement.
 
-This is deliberate, and it is the cheapest possible test of the pathway: a
-capability that is awkward to reach from Console is a capability that will be
-awkward for a customer to reach too, and we find that out ourselves first.
+Do not hide a legitimate operator capability merely because the customer lacks
+the standalone product if that capability exists for another authorized service
+relationship. Do not use service-workspace existence to manufacture a product
+tab either.
 
-The same holds one level out. When a support widget later appears inside the
-other 876 apps, it will create requests in 876's CRM tenant through the
-**integration** tier — the published product surface — using an app key, exactly
-as a third party would. A first-party app that reaches a capability by a private
-path is a capability nobody has proven is usable from outside.
+## Console's own requests
 
-## Who a request belongs to
+Console's top-level `/requests` surface is the operator view over **876's own CRM
+service workspace**.
 
-A request belongs to a **Customer**, which is already the party abstraction that
-spans both of 876's identity entities:
+There is no Console-local request database and no special internal CRM. The
+route calls the same CRM request capability that other tiers use, with 876's
+organization id bound as the target.
 
-|                                    | `customerKind = INDIVIDUAL` | `customerKind = BUSINESS` |
-| ---------------------------------- | --------------------------- | ------------------------- |
-| `customerType = EXTERNAL`          | hand-entered person         | hand-entered company      |
-| `customerType = CORE_USER`         | **an 876 account**          | —                         |
-| `customerType = CORE_ORGANIZATION` | —                           | **an 876 organization**   |
+This is intentionally different from:
 
-Users and organizations stay separate Core entities. The registry customer
-_references_ one by opaque id; a customer is the **relationship**, not the
-identity. That is precisely why an organization's forty members do not all become
-contacts — only the people who actually transact do, which is Zoho's Account +
-Contact model arrived at from the other direction.
+```text
+/orgs/[slug]/support
+```
 
-Two consequences worth stating plainly:
+which asks what that customer organization has raised **with 876**, and from:
 
-- **A free 876 account is not a customer.** It becomes one when an app enrols it,
-  and raising a support request _is_ that enrolment. So the answer to "is every
-  user our customer?" is no — not until they need us.
-- **A request records who raised it** (`requesterUserId` / `requesterContactId`).
-  Without that, an organization's request cannot distinguish "the company has a
-  problem" from "this member has a problem", and a future invoice emailed to one
-  named person has nowhere to record that person.
+```text
+/orgs/[slug]/workspace/crm/...
+```
 
-## Registering a new app in Console
+which opens records in that organization's **own CRM workspace**.
 
-1. Confirm the capability exists as a service function in the owning service.
-2. Add the operator route beside the existing tiers, pointing at the same
-   controller.
-3. Add the method to that app's operator/admin client package.
-4. Compose the client onto Console's `$876` in `apps/console/src/lib/876`.
-5. Add one row to the app-owned tab registry.
-6. Add the Console route under `/orgs/[slug]/<resource>`, reading through `$876`
-   behind a Suspense boundary, mutating through a permission-checked route
-   handler.
+The tenant direction must remain explicit because all three can call a request
+resource and still return plausible-looking data if wired to the wrong org.
 
-If a step needs more than this, the capability is in the wrong place. Fix that
-rather than widening Console.
+## Future first-party product integrations
+
+When another product later embeds CRM or another shared service, that product
+uses the **integration tier**, not Console's operator credential. The first-party
+product must prove the same published integration boundary a third party would
+use.
+
+See `docs/service-workspace-integration-guide.md`.
+
+## Registering a new service capability in Console
+
+1. Confirm the capability exists in its owning service.
+2. Add/verify an operator route pointing at that same service function.
+3. Add the typed operator method to the owning package.
+4. Compose it into Console's canonical `$876` server facade.
+5. Add the Console route/surface using Console resource vocabulary.
+6. Authorize client mutations in a thin same-origin route handler before calling
+   the facade.
+7. Add audit and tenant-direction regression coverage.
+
+If this requires duplicating business logic in Console, the capability is in the
+wrong layer.
 
 ## Do not
 
-- Do not implement a capability twice because a second tier needed it.
-- Do not give Console an integration credential or an app connection.
-- Do not add an operator-only capability to an integration route.
-- Do not put business logic in a Console route handler to bridge a tier gap.
-- Do not hardcode an app's tab for organizations that are not entitled to it.
-- Do not treat operator tier as exempt from Console permission checks or audit.
+- Do not give Console an integration credential or customer app connection.
+- Do not implement a capability twice because Console needs it.
+- Do not add operator-only powers to an integration route.
+- Do not put product/service business logic in a Console route handler.
+- Do not infer standalone product entitlement from a service workspace row.
+- Do not infer service-workspace existence from a product tab.
+- Do not collapse `/requests`, `/orgs/[slug]/support`, and an org CRM workspace
+  into one tenant direction.

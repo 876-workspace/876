@@ -1,4 +1,5 @@
 import { apiKeys } from './api-keys'
+import { appMemberships } from './app-memberships'
 import { apps } from './apps'
 import { billing } from './billing'
 import { billingIntegrations } from './billing-integrations'
@@ -34,6 +35,7 @@ import { widgets } from './widgets'
 
 export const client = {
   apiKeys,
+  appMemberships,
   apps,
   billing,
   billingIntegrations,
@@ -65,6 +67,7 @@ export const client = {
 }
 
 export { apiKeys } from './api-keys'
+export { appMemberships } from './app-memberships'
 export { apps } from './apps'
 export { billing } from './billing'
 export { billingIntegrations } from './billing-integrations'

@@ -1,5 +1,6 @@
-import Image from 'next/image'
-import type { AdminAppAssignment } from '@876/admin'
+'use client'
+
+import { AppWindow } from '@876/ui/icons'
 import {
   Empty,
   EmptyDescription,
@@ -7,67 +8,124 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { AppWindow } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
-import { cn } from '@876/core/utils'
-import { appColor } from '@/lib/app-color'
-import { formatDate, statusBadgeClass } from '@/lib/format'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
-type Props = {
-  assignments: AdminAppAssignment[]
+import { appMemberships } from '@/lib/client/app-memberships'
+
+export type MemberAppAccessEntry = {
+  assignmentId: string
+  assigned: boolean
+  appId: string
+  appSlug: string
+  appName: string
+  membershipId: string
+  roleId: string | null
+  roleName: string | null
+  effectivePermissions: string[]
+  catalog: string[]
+  roles: Array<{
+    id: string
+    key: string
+    name: string
+    permissions: string[]
+  }>
 }
 
-function AppRowItem({ assignment }: { assignment: AdminAppAssignment }) {
-  const name =
-    assignment.app_name ||
-    assignment.app_slug ||
-    assignment.app_id ||
-    'Unknown app'
+type Props = {
+  organizationId: string
+  entries: MemberAppAccessEntry[]
+}
+
+function AppAccessRow({
+  organizationId,
+  entry,
+}: {
+  organizationId: string
+  entry: MemberAppAccessEntry
+}) {
+  const router = useRouter()
+  const [saving, setSaving] = useState(false)
+
+  async function changeRole(appRoleId: string) {
+    if (saving) return
+    setSaving(true)
+    const result = entry.assigned
+      ? await appMemberships.update(
+          organizationId,
+          entry.assignmentId,
+          appRoleId
+        )
+      : await appMemberships.create(organizationId, {
+          membershipId: entry.membershipId,
+          appId: entry.appId,
+          appRoleId,
+        })
+    setSaving(false)
+    if (result.error) {
+      toast.error(result.error.message)
+      return
+    }
+    toast.success(`${entry.appName} role updated`)
+    router.refresh()
+  }
 
   return (
-    <li className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-      <div className="flex min-w-0 items-center gap-3">
-        <span
-          aria-hidden="true"
-          className={cn(
-            'inline-flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white',
-            appColor(assignment.app_slug || assignment.app_id)
-          )}
-        >
-          {name.charAt(0).toUpperCase()}
-        </span>
-        <div className="min-w-0">
-          <p className="truncate text-[0.8125rem] font-medium">{name}</p>
+    <li className="space-y-3 py-4 first:pt-0 last:pb-0">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.8125rem] font-medium">{entry.appName}</p>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            {`Assigned ${formatDate(assignment.created_at)}`}
+            {entry.assigned
+              ? `${entry.effectivePermissions.length} effective permissions`
+              : 'Not assigned'}
           </p>
         </div>
+        <label className="text-muted-foreground flex items-center gap-2 text-xs">
+          Role
+          <select
+            aria-label={`${entry.appName} role`}
+            className="border-input bg-background text-foreground h-8 rounded-md border px-2 text-xs"
+            disabled={saving}
+            value={entry.roleId ?? ''}
+            onChange={(event) => void changeRole(event.target.value)}
+          >
+            <option value="" disabled>
+              Select role
+            </option>
+            {entry.roles.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <span
-          className={cn(
-            'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
-            statusBadgeClass(assignment.status)
-          )}
-        >
-          {assignment.status}
-        </span>
-      </div>
+      <details className="text-xs">
+        <summary className="text-muted-foreground cursor-pointer">
+          Permission catalog ({entry.catalog.length})
+        </summary>
+        <p className="text-muted-foreground mt-2 font-mono leading-5 break-words">
+          {entry.catalog.join(', ')}
+        </p>
+      </details>
     </li>
   )
 }
 
-export function MemberApps({ assignments }: Props) {
-  if (assignments.length === 0) {
+export function MemberApps({ organizationId, entries }: Props) {
+  if (entries.length === 0) {
     return (
       <Empty className="border-0">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <AppWindow aria-hidden="true" />
           </EmptyMedia>
-          <EmptyTitle>No assigned apps</EmptyTitle>
+          <EmptyTitle>No entitled apps</EmptyTitle>
           <EmptyDescription>
-            App access grants for this member will appear here.
+            Entitled product apps and their role catalogs will appear here.
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -76,8 +134,12 @@ export function MemberApps({ assignments }: Props) {
 
   return (
     <ul className="divide-876-surface-border divide-y">
-      {assignments.map((assignment) => (
-        <AppRowItem key={assignment.id} assignment={assignment} />
+      {entries.map((entry) => (
+        <AppAccessRow
+          key={entry.appId}
+          organizationId={organizationId}
+          entry={entry}
+        />
       ))}
     </ul>
   )
@@ -85,10 +147,10 @@ export function MemberApps({ assignments }: Props) {
 
 export function MemberAppsFallback() {
   return (
-    <div className="space-y-3 py-1" aria-label="Loading assigned apps">
-      <Skeleton className="h-10 w-4/5" />
-      <Skeleton className="h-10 w-3/5" />
-      <Skeleton className="h-10 w-2/3" />
+    <div className="space-y-3 py-1" aria-label="Loading app access">
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
     </div>
   )
 }

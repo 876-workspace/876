@@ -97,6 +97,18 @@ describe('resolveAccessContext', () => {
     ])
   })
 
+  it('resolves a role holding only the legacy support key to requests access', async () => {
+    mocks.retrieveTeamMember.mockResolvedValue(
+      activeMember({ role: { permissions: ['console:requests'] } })
+    )
+
+    const result = await resolveAccessContext(
+      'user_695d45c54a374ff0a570003e15668920'
+    )
+
+    expect(result?.permissions).toEqual(['console:requests'])
+  })
+
   it('removes a stale role permission that no longer exists in the catalog', async () => {
     mocks.retrieveTeamMember.mockResolvedValue(
       activeMember({
@@ -216,10 +228,7 @@ describe('resolveAccessContext', () => {
       'user_695d45c54a374ff0a570003e15668902'
     )
 
-    expect(result?.features).toEqual([
-      'console_search_bar',
-      'console_widgets',
-    ])
+    expect(result?.features).toEqual(['console_search_bar', 'console_widgets'])
     expect(mocks.getConsoleFeatureKeys).toHaveBeenCalledTimes(1)
     expect(mocks.getConsoleFeatureKeys).toHaveBeenCalledWith(
       'user_695d45c54a374ff0a570003e15668902'
@@ -227,7 +236,9 @@ describe('resolveAccessContext', () => {
   })
 
   it('degrades a feature-pipeline outage to no features', async () => {
-    mocks.getConsoleFeatureKeys.mockRejectedValue(new Error('PostHog unavailable'))
+    mocks.getConsoleFeatureKeys.mockRejectedValue(
+      new Error('PostHog unavailable')
+    )
 
     const result = await resolveAccessContext(
       'user_695d45c54a374ff0a570003e15668903'
@@ -237,7 +248,9 @@ describe('resolveAccessContext', () => {
   })
 
   it('keeps permissions when the feature pipeline is unavailable', async () => {
-    mocks.getConsoleFeatureKeys.mockRejectedValue(new Error('PostHog unavailable'))
+    mocks.getConsoleFeatureKeys.mockRejectedValue(
+      new Error('PostHog unavailable')
+    )
 
     const result = await resolveAccessContext(
       'user_695d45c54a374ff0a570003e15668904'
@@ -329,11 +342,11 @@ describe('resolveAccessContext', () => {
   })
 
   it('propagates a Console datastore failure instead of granting access', async () => {
-    mocks.retrieveTeamMember.mockRejectedValue(new Error('database unavailable'))
-
-    const act = resolveAccessContext(
-      'user_695d45c54a374ff0a570003e15668912'
+    mocks.retrieveTeamMember.mockRejectedValue(
+      new Error('database unavailable')
     )
+
+    const act = resolveAccessContext('user_695d45c54a374ff0a570003e15668912')
 
     await expect(act).rejects.toThrow('database unavailable')
     expect(mocks.getConsoleFeatureKeys).not.toHaveBeenCalled()

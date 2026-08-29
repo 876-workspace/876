@@ -2,6 +2,6 @@ import { SectionPlaceholder } from '@/features/crm/components/section-placeholde
 
 export const metadata = { title: 'Customer' }
 
-export default function SupportRequestCustomerPage() {
+export default function RequestCustomerPage() {
   return <SectionPlaceholder title="The customer overview" />
 }

@@ -12,7 +12,7 @@ export const ROUTE_PERMISSIONS = {
   '/apps': 'console:apps',
   '/widgets': 'console:widgets',
   '/features': 'console:features',
-  '/support': 'console:support',
+  '/requests': 'console:requests',
   '/security': 'console:security',
   '/storage': 'console:storage',
   '/reports': 'console:reports',

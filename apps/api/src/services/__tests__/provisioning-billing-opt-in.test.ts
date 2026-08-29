@@ -322,3 +322,126 @@ describe('billing registry independence narrative', () => {
     expect(repo.provisionSubscription).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('new organization finance continuity regression', () => {
+  it('resolves only the Enterprise default when no source app is supplied', async () => {
+    await provisioning.ensureOrgAppSubscriptions(ORG)
+
+    expect(repo.findAppBySlug.mock.calls.map(([slug]) => slug)).toEqual([
+      '876-enterprise',
+    ])
+  })
+
+  it('creates exactly one Enterprise subscription for a new organization', async () => {
+    await provisioning.ensureOrgAppSubscriptions(ORG)
+
+    expect(repo.provisionSubscription).toHaveBeenCalledTimes(1)
+    expect(repo.provisionSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: ORG,
+        appId: 'app_876-enterprise',
+        priceId: 'prc_default',
+        status: 'active',
+        now: BigInt(NOW),
+      })
+    )
+  })
+
+  it('does not inspect or create a Billing entitlement during default provisioning', async () => {
+    await provisioning.ensureOrgAppSubscriptions(ORG)
+
+    expect(repo.findAppBySlug).not.toHaveBeenCalledWith('876-billing')
+    expect(
+      repo.provisionSubscription.mock.calls.map(([params]) => params.appId)
+    ).toEqual(['app_876-enterprise'])
+  })
+
+  it('ensures the customer registry for the same organization without Billing access', async () => {
+    const enqueue = vi.fn().mockResolvedValue(undefined)
+
+    await provisioning.provisionOrganization(ORG, NOW, {
+      enqueueCustomerEnsure: enqueue,
+    })
+
+    expect(enqueue).toHaveBeenCalledTimes(1)
+    expect(enqueue).toHaveBeenCalledWith(ORG, NOW)
+    expect(
+      repo.provisionSubscription.mock.calls.map(([params]) => params.appId)
+    ).toEqual(['app_876-enterprise'])
+  })
+
+  it('keeps registry provisioning when finance readiness is deliberately deferred', async () => {
+    const enqueue = vi.fn().mockResolvedValue(undefined)
+
+    await provisioning.provisionOrganization(ORG, NOW, {
+      enqueueCustomerEnsure: enqueue,
+      deferFinanceReadiness: true,
+    })
+
+    expect(enqueue).toHaveBeenCalledTimes(1)
+    expect(enqueue).toHaveBeenCalledWith(ORG, NOW)
+    expect(ensureAppReady).not.toHaveBeenCalled()
+  })
+
+  it('adds Billing only when it is the explicitly authenticated source app', async () => {
+    const result = await provisioning.ensureOrgAppSubscriptions(ORG, {
+      sourceAppId: 'app_876-billing',
+    })
+
+    expect(result).toEqual({
+      appIds: ['app_876-enterprise', 'app_876-billing'],
+      provisioned: ['app_876-enterprise', 'app_876-billing'],
+    })
+  })
+
+  it('reuses both entitlement rows on a later idempotent Billing activation', async () => {
+    repo.findSubscription.mockResolvedValue({
+      id: 'sub_existing',
+      status: 'active',
+      hasItems: true,
+    })
+
+    const result = await provisioning.ensureOrgAppSubscriptions(ORG, {
+      sourceAppId: 'app_876-billing',
+    })
+
+    expect(result).toEqual({
+      appIds: ['app_876-enterprise', 'app_876-billing'],
+      provisioned: [],
+    })
+    expect(repo.provisionSubscription).not.toHaveBeenCalled()
+  })
+
+  it('runs later Billing readiness against the original organization identity', async () => {
+    await provisioning.provisionOrgApps(ORG, {
+      sourceAppId: 'app_876-billing',
+    })
+
+    expect(
+      vi.mocked(ensureAppReady).mock.calls.map(([, params]) => params)
+    ).toEqual([
+      { organizationId: ORG, appId: 'app_876-enterprise' },
+      { organizationId: ORG, appId: 'app_876-billing' },
+    ])
+  })
+
+  it('does not synthesize a second organization during explicit Billing activation', async () => {
+    await provisioning.provisionOrgApps(ORG, {
+      sourceAppId: 'app_876-billing',
+    })
+
+    expect(
+      repo.provisionSubscription.mock.calls.map(
+        ([params]) => params.organizationId
+      )
+    ).toEqual([ORG, ORG])
+  })
+
+  it('keeps the source Billing entitlement out of the immutable default set', async () => {
+    await provisioning.ensureOrgAppSubscriptions(ORG, {
+      sourceAppId: 'app_876-billing',
+    })
+
+    expect([...provisioning.DEFAULT_ORG_APP_SLUGS]).toEqual(['876-enterprise'])
+  })
+})

@@ -64,6 +64,22 @@ function withConsoleKey(permission: AppPermission): AppPermission {
 }
 
 /**
+ * Narrows persisted Console role permissions to usable string keys.
+ *
+ * Stored role rows are JSON, so a malformed or partially-written value can
+ * reach this path at runtime even though the type says `string[]`. Filtering
+ * here keeps a bad row from throwing during authorization; the catalog
+ * intersection downstream still decides what the keys actually grant.
+ */
+export function toStoredPermissionKeys(permissions: unknown): string[] {
+  if (!Array.isArray(permissions)) return []
+
+  return permissions.filter(
+    (permission): permission is string => typeof permission === 'string'
+  )
+}
+
+/**
  * Console predates product-app catalogs and already persists colon-delimited
  * permission identifiers (`users:read`, `console:access`). The generic catalog
  * builder deliberately remains dot-delimited for product apps, so Console is
@@ -82,7 +98,7 @@ function defineConsolePermissionCatalog(): AppPermissionCatalog {
         label: 'Console',
         actions: [
           'access',
-          'support',
+          'requests',
           'settings',
           'billing',
           'users',
@@ -168,8 +184,12 @@ export const crmPermissionCatalog: AppPermissionCatalog =
       crud('requests', 'Requests'),
       crud('customers', 'Customers'),
       crud('tasks', 'Tasks'),
+      crud('reminders', 'Reminders'),
+      crud('notes', 'Notes'),
       crud('teams', 'Teams'),
       crud('categories', 'Categories'),
+      crud('priorities', 'Priorities'),
+      crud('request_forms', 'Request forms'),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),

@@ -12,7 +12,7 @@ export const metadata = { title: 'Reminders' }
 
 type Props = { params: Promise<{ requestId: string }> }
 
-export default async function SupportRequestRemindersPage({ params }: Props) {
+export default async function RequestRemindersPage({ params }: Props) {
   const { requestId } = await params
   const [requestResult, remindersResult, directory] = await Promise.all([
     loadRequest(requestId),

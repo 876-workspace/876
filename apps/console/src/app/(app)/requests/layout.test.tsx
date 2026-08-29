@@ -24,7 +24,7 @@ beforeEach(() => {
   mocks.requireConsolePermission.mockResolvedValue({ id: 'user_operator' })
 })
 
-describe('Support route guard', () => {
+describe('Requests route guard', () => {
   it('renders the section when the permission guard allows it', async () => {
     const result = await Layout({ children: child })
 
@@ -32,7 +32,7 @@ describe('Support route guard', () => {
     expect(mocks.requireConsolePermission).toHaveBeenCalledTimes(1)
     expect(mocks.requireConsolePermission).toHaveBeenCalledWith(
       'user_operator',
-      ROUTE_PERMISSIONS['/support']
+      ROUTE_PERMISSIONS['/requests']
     )
   })
 
@@ -53,6 +53,6 @@ describe('Support route guard', () => {
     await Layout({ children: child })
 
     const [, permission] = mocks.requireConsolePermission.mock.calls[0]!
-    expect(permission).toBe(ROUTE_PERMISSIONS['/support'])
+    expect(permission).toBe(ROUTE_PERMISSIONS['/requests'])
   })
 })

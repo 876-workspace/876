@@ -4,7 +4,7 @@ import { cache } from 'react'
 
 import { $876 } from '@/lib/876'
 
-/** Resolves the CRM tenant Console uses for 876's own support desk. */
+/** Resolves the 876 organization whose CRM service workspace Console operates. */
 export const getPlatformOrganization = cache(async () => {
   const result = await $876.organizations.admin.retrieve({
     slug: process.env.CONSOLE_PLATFORM_ORG_SLUG ?? 'efesto',

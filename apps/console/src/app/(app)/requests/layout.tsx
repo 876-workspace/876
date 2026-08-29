@@ -3,15 +3,15 @@ import type { ReactNode } from 'react'
 import { requireConsolePermission, requireSession } from '@/lib/auth/guards'
 import { ROUTE_PERMISSIONS } from '@/lib/auth/route-permissions'
 
-export default async function SupportLayout({
+export default async function RequestsLayout({
   children,
 }: {
   children: ReactNode
 }) {
-  const sessionUser = await requireSession('/support')
+  const sessionUser = await requireSession('/requests')
   await requireConsolePermission(
     sessionUser.id,
-    ROUTE_PERMISSIONS['/support']
+    ROUTE_PERMISSIONS['/requests']
   )
   return <>{children}</>
 }

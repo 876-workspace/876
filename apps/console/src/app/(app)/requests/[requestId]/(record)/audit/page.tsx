@@ -2,6 +2,6 @@ import { SectionPlaceholder } from '@/features/crm/components/section-placeholde
 
 export const metadata = { title: 'Audit' }
 
-export default function SupportRequestAuditPage() {
+export default function RequestAuditPage() {
   return <SectionPlaceholder title="The audit trail" />
 }
