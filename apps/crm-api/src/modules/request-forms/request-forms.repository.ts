@@ -3,11 +3,28 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../db/index.js'
 import type {
   CreateRequestFormInput,
+  RequestFormDefinition,
+  RequestFormPlacement,
   RequestFormStatus,
   UpdateRequestFormInput,
 } from '../../types/request-form.js'
 
 const id = () => `crm_form_${randomUUID().replaceAll('-', '')}`
+
+export type ProvisionedRequestFormInput = {
+  provisioningKey: string
+  name: string
+  slug: string
+  description: string | null
+  placement: RequestFormPlacement
+  definition: RequestFormDefinition
+  defaultCategoryId: string | null
+  defaultSubcategoryId: string | null
+  defaultTeamId: string | null
+  defaultPriorityId: string | null
+  confirmationTitle: string | null
+  confirmationMessage: string | null
+}
 
 export function list(tenantId: string, status?: RequestFormStatus) {
   return prisma.requestForm.findMany({
@@ -32,6 +49,15 @@ export function retrieveBySlug(tenantId: string, slug: string) {
   })
 }
 
+export function retrieveByProvisioningKey(
+  tenantId: string,
+  provisioningKey: string
+) {
+  return prisma.requestForm.findFirst({
+    where: { tenantId, provisioningKey },
+  })
+}
+
 export function create(tenantId: string, input: CreateRequestFormInput) {
   return prisma.requestForm.create({
     data: {
@@ -49,6 +75,70 @@ export function create(tenantId: string, input: CreateRequestFormInput) {
       confirmationTitle: input.confirmationTitle ?? null,
       confirmationMessage: input.confirmationMessage ?? null,
       createdBy: input.createdBy,
+    },
+  })
+}
+
+export async function ensureProvisioned(
+  tenantId: string,
+  input: ProvisionedRequestFormInput
+) {
+  const existing = await retrieveByProvisioningKey(
+    tenantId,
+    input.provisioningKey
+  )
+  if (existing && !existing.deletedAt) return existing
+
+  const publishedAt = new Date()
+  const definition = JSON.parse(JSON.stringify(input.definition))
+
+  if (existing) {
+    return prisma.requestForm.update({
+      where: { id: existing.id },
+      data: {
+        name: input.name,
+        slug: input.slug,
+        description: input.description,
+        status: 'PUBLISHED',
+        placement: input.placement,
+        definition,
+        publishedDefinition: definition,
+        version: Math.max(existing.version, 1),
+        defaultCategoryId: input.defaultCategoryId,
+        defaultSubcategoryId: input.defaultSubcategoryId,
+        defaultTeamId: input.defaultTeamId,
+        defaultPriorityId: input.defaultPriorityId,
+        confirmationTitle: input.confirmationTitle,
+        confirmationMessage: input.confirmationMessage,
+        publishedAt: existing.publishedAt ?? publishedAt,
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+      },
+    })
+  }
+
+  return prisma.requestForm.create({
+    data: {
+      id: id(),
+      tenantId,
+      provisioningKey: input.provisioningKey,
+      name: input.name,
+      slug: input.slug,
+      description: input.description,
+      status: 'PUBLISHED',
+      placement: input.placement,
+      definition,
+      publishedDefinition: definition,
+      version: 1,
+      defaultCategoryId: input.defaultCategoryId,
+      defaultSubcategoryId: input.defaultSubcategoryId,
+      defaultTeamId: input.defaultTeamId,
+      defaultPriorityId: input.defaultPriorityId,
+      confirmationTitle: input.confirmationTitle,
+      confirmationMessage: input.confirmationMessage,
+      createdBy: 'system',
+      publishedAt,
     },
   })
 }
