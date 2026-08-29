@@ -124,7 +124,9 @@ export function TeamForm({
               required
             />
             {nameError ? (
-              <p className="text-destructive text-xs">{nameError}</p>
+              <p className="text-destructive text-xs" role="alert">
+                {nameError}
+              </p>
             ) : null}
           </div>
         </FormRow>
