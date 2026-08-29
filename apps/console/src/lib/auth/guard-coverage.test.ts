@@ -1,0 +1,89 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { join, relative, resolve, sep } from 'node:path'
+import { describe, expect, it } from 'vitest'
+
+const API_ROOT = resolve(process.cwd(), 'src/app/api')
+const APP_ROOT = resolve(process.cwd(), 'src/app')
+
+const PUBLIC_ROUTE_HANDLERS = {
+  'health/route.ts': 'Health probes must be reachable before authentication.',
+  'auth/[...path]/route.ts': 'The auth bridge establishes the Console session.',
+  'uploadthing/route.ts': 'Uploadthing is a protocol adapter with its own authentication.',
+} as const
+
+const PUBLIC_PAGES = {
+  'login/page.tsx': 'Login must be reachable before authentication.',
+  'access-denied/page.tsx': 'Denied users need a public terminal page.',
+} as const
+
+const ROUTE_GUARDS = [
+  'requireConsolePermission',
+  'requireConsoleCapability',
+  'requireConsoleFeature',
+  'requireNotepadMember',
+  // audit-events authenticates every operator but deliberately requires no
+  // capability permission because telemetry is emitted by every signed role.
+  'isSignedSession',
+] as const
+
+function walk(directory: string, name: string): string[] {
+  const files: string[] = []
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const full = join(directory, entry.name)
+    if (entry.isDirectory()) files.push(...walk(full, name))
+    else if (entry.name === name) files.push(full)
+  }
+  return files
+}
+
+function relativePath(root: string, file: string): string {
+  return relative(root, file).split(sep).join('/')
+}
+
+describe('Console guard coverage', () => {
+  it('requires an approved guard on every non-public route handler', () => {
+    const unguarded = walk(API_ROOT, 'route.ts').flatMap((file) => {
+      const path = relativePath(API_ROOT, file)
+      if (path in PUBLIC_ROUTE_HANDLERS) return []
+      const source = readFileSync(file, 'utf8')
+      return ROUTE_GUARDS.some((guard) => source.includes(guard)) ? [] : [path]
+    })
+
+    expect(unguarded).toEqual([])
+  })
+
+  it('keeps the public route allow-list exact and non-stale', () => {
+    expect(Object.keys(PUBLIC_ROUTE_HANDLERS)).toEqual([
+      'health/route.ts',
+      'auth/[...path]/route.ts',
+      'uploadthing/route.ts',
+    ])
+    for (const path of Object.keys(PUBLIC_ROUTE_HANDLERS))
+      expect(existsSync(join(API_ROOT, path)), path).toBe(true)
+  })
+
+  it('does not exempt audit event writes from authentication', () => {
+    expect(Object.keys(PUBLIC_ROUTE_HANDLERS)).not.toContain('audit-events/route.ts')
+    expect(readFileSync(join(API_ROOT, 'audit-events/route.ts'), 'utf8')).toContain(
+      'isSignedSession'
+    )
+  })
+
+  it('allows only the login and access-denied pages outside the protected app tree', () => {
+    const publicPages = walk(APP_ROOT, 'page.tsx')
+      .filter((file) => !file.includes(`${sep}(app)${sep}`))
+      .map((file) => relativePath(APP_ROOT, file))
+      .sort()
+
+    expect(publicPages).toEqual(['access-denied/page.tsx', 'login/page.tsx'])
+  })
+
+  it('keeps the public page allow-list exact and non-stale', () => {
+    expect(Object.keys(PUBLIC_PAGES).sort()).toEqual([
+      'access-denied/page.tsx',
+      'login/page.tsx',
+    ])
+    for (const path of Object.keys(PUBLIC_PAGES))
+      expect(existsSync(join(APP_ROOT, path)), path).toBe(true)
+  })
+})

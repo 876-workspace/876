@@ -112,6 +112,11 @@ export const MemberScalarFieldEnum = {
   userId: 'userId',
   roleName: 'roleName',
   status: 'status',
+  affiliation: 'affiliation',
+  title: 'title',
+  expiresAt: 'expiresAt',
+  justification: 'justification',
+  invitedBy: 'invitedBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

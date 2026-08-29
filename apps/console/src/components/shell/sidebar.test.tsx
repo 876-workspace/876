@@ -11,6 +11,7 @@ vi.mock('./nav-link', () => ({
   ),
 }))
 
+import { navConfig } from '@/components/shell/nav-config'
 import { Sidebar } from '@/components/shell/sidebar'
 
 describe('Sidebar', () => {
@@ -19,7 +20,7 @@ describe('Sidebar', () => {
   })
 
   it('renders console navigation without the former account-menu footer', () => {
-    render(<Sidebar />)
+    render(<Sidebar navigation={navConfig} />)
 
     expect(
       screen.getByRole('navigation', { name: 'Console sections' })

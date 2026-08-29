@@ -1,110 +1,109 @@
-import { Settings } from '@876/ui/icons'
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@876/ui/table'
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-} from '@876/ui/empty'
-
-import { service } from '@/lib/service'
-import { $876 } from '@/lib/876'
-import { AnalyticsEvent } from '@/lib/analytics/events'
-import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { TeamTableRow } from '../_components/member-row'
-import { Page } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import Link from 'next/link'
+import { Plus } from '@876/ui/icons'
+import { buttonVariants } from '@876/ui/button'
+import { Page, PageBreadcrumb } from '@876/ui/page'
+
+import {
+  StatusFilterHeading,
+  type StatusFilterOption,
+} from '@876/ui/status-filter-heading'
+
+import { AnalyticsEvent } from '@/lib/analytics/events'
+import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
+import { loadTeamListData } from '@/lib/access/team-list-data'
+import type { TeamGrantStatus } from '@/lib/service/team/list'
+import type { TeamRow } from '../_components/member-row'
 import { TEAM_SKELETON_COLUMNS } from '../_components/team-skeleton-columns'
+import { TeamSplit } from '../_components/team-split'
+import { TeamSplitSkeleton } from '../_components/team-split-skeleton'
 
-export const metadata = { title: 'Team - Settings' }
+export const metadata = { title: 'Users - Settings' }
 
-type TeamMember = {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  username: string | null
-  avatar: string | null
-  role: string
+const STATUS_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: 'All', headingLabel: 'All Users' },
+  { value: 'active', label: 'Active', headingLabel: 'Active Users' },
+  { value: 'suspended', label: 'Suspended', headingLabel: 'Suspended Users' },
+  { value: 'expired', label: 'Expired', headingLabel: 'Expired Users' },
+]
+
+function isTeamGrantStatus(
+  value: string | undefined
+): value is TeamGrantStatus {
+  return value === 'active' || value === 'suspended' || value === 'expired'
 }
 
-/**
- * The Console team is the set of access grants in MC's OWN database —
- * the identity API has no concept of "MC team". Each grant's display fields
- * (name, email, avatar) are hydrated from `$876` by opaque user ID; a failed
- * identity lookup degrades to placeholders rather than dropping the member.
- */
-export default function TeamSettingsPage() {
+type Props = {
+  searchParams?: Promise<{ status?: string; member?: string }>
+}
+
+export default async function TeamSettingsPage({ searchParams }: Props = {}) {
+  const params = searchParams ? await searchParams : undefined
+  const selectedStatus = isTeamGrantStatus(params?.status)
+    ? params.status
+    : undefined
+  const statusParam = selectedStatus ?? 'all'
+  const selectedMemberId = params?.member
+
   return (
     <Page>
+      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <StatusFilterHeading
+          label="Users"
+          value={statusParam}
+          options={STATUS_OPTIONS}
+        />
+        <Link
+          href="/settings/users/new"
+          className={buttonVariants({ variant: 'info', size: 'sm' })}
+        >
+          <Plus className="size-4" strokeWidth={2.25} />
+          Add
+        </Link>
+      </div>
       <TrackMCEventOnMount event={AnalyticsEvent.TeamListViewed} />
       <Suspense
-        fallback={<DataTableSkeleton columns={TEAM_SKELETON_COLUMNS} />}
+        fallback={
+          selectedMemberId ? (
+            <TeamSplitSkeleton />
+          ) : (
+            <DataTableSkeleton columns={TEAM_SKELETON_COLUMNS} />
+          )
+        }
       >
-        <TeamTableData />
+        <TeamTableData
+          status={selectedStatus}
+          selectedMemberId={selectedMemberId}
+        />
       </Suspense>
     </Page>
   )
 }
 
-async function TeamTableData() {
-  const grants = await service.team.list()
+async function TeamTableData({
+  status,
+  selectedMemberId,
+}: {
+  status?: TeamGrantStatus
+  selectedMemberId?: string
+}) {
+  const { rows, staffPositionsUnavailable } = await loadTeamListData(status)
+  const teamMembers: TeamRow[] = rows
 
-  const teamMembers: TeamMember[] = await Promise.all(
-    grants.map(async (grant) => {
-      const identity = await $876.users.admin
-        .retrieve({ id: grant.userId })
-        .then((res) => res.data)
-        .catch(() => null)
-      return {
-        id: grant.userId,
-        first_name: identity?.first_name ?? '',
-        last_name: identity?.last_name ?? '',
-        email: identity?.email ?? '',
-        username: identity?.username ?? null,
-        avatar: identity?.avatar ?? null,
-        role: grant.roleName,
-      }
-    })
-  )
-
-  return teamMembers.length === 0 ? (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Settings />
-        </EmptyMedia>
-        <EmptyTitle>No team members</EmptyTitle>
-        <EmptyDescription>No users have Console access yet.</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  ) : (
-    <div className="876-card overflow-hidden">
-      <Table>
-        <TableHeader className="876-header-row">
-          <TableRow>
-            <TableHead className="w-12 px-5 py-3.5">
-              <span className="sr-only">Avatar</span>
-            </TableHead>
-            <TableHead className="px-5 py-3.5">Name</TableHead>
-            <TableHead className="px-5 py-3.5">Email</TableHead>
-            <TableHead className="px-5 py-3.5">Role</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {teamMembers.map((user) => (
-            <TeamTableRow key={user.id} user={user} />
-          ))}
-        </TableBody>
-      </Table>
+  return (
+    <div className="space-y-3">
+      {staffPositionsUnavailable ? (
+        <div
+          role="status"
+          className="border-border bg-muted/40 text-muted-foreground rounded-md border px-3 py-2 text-[0.8125rem]"
+        >
+          Staff positions are temporarily unavailable. Access grants and other
+          Team details are still current.
+        </div>
+      ) : null}
+      <TeamSplit members={teamMembers} selectedId={selectedMemberId} />
     </div>
   )
 }

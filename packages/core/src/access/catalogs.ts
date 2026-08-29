@@ -1,5 +1,5 @@
 import { defineAppPermissionCatalog } from './index'
-import type { AppPermissionCatalog } from './types'
+import type { AppPermission, AppPermissionCatalog } from './types'
 
 /**
  * Canonical app permission catalogs.
@@ -33,6 +33,7 @@ function modules(drafts: readonly ModuleDraft[]) {
     permissions: draft.actions.map((action, actionIndex) => ({
       action,
       label: `${titleCase(action)} ${draft.label}`,
+      isDangerous: action === 'delete' || action === 'danger_zone',
       position: actionIndex,
     })),
   }))
@@ -54,6 +55,93 @@ function titleCase(value: string): string {
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }
+
+function withConsoleKey(permission: AppPermission): AppPermission {
+  return {
+    ...permission,
+    key: `${permission.moduleKey}:${permission.action}`,
+  }
+}
+
+/**
+ * Console predates product-app catalogs and already persists colon-delimited
+ * permission identifiers (`users:read`, `console:access`). The generic catalog
+ * builder deliberately remains dot-delimited for product apps, so Console is
+ * adapted after validation instead of changing either persisted vocabulary.
+ *
+ * Console's real app slug is also `console`, while the generic builder validates
+ * product slugs as `876-*`. The compatibility adapter keeps that exception here,
+ * next to the only catalog that needs it.
+ */
+function defineConsolePermissionCatalog(): AppPermissionCatalog {
+  const catalog = defineAppPermissionCatalog({
+    app: '876-console',
+    modules: modules([
+      {
+        key: 'console',
+        label: 'Console',
+        actions: [
+          'access',
+          'support',
+          'settings',
+          'billing',
+          'users',
+          'organizations',
+          'apps',
+          'features',
+          'widgets',
+          'storage',
+          'security',
+          'reports',
+          'danger_zone',
+        ],
+      },
+      {
+        key: 'users',
+        label: 'Users',
+        actions: ['read', 'list', 'search', 'create', 'update', 'delete'],
+      },
+      {
+        key: 'organizations',
+        label: 'Organizations',
+        actions: ['read', 'list', 'search', 'create', 'update', 'delete'],
+      },
+      {
+        key: 'memberships',
+        label: 'Memberships',
+        actions: ['read', 'list', 'create', 'update', 'delete'],
+      },
+      {
+        key: 'apps',
+        label: 'Apps',
+        actions: ['read', 'list', 'create', 'update', 'delete'],
+      },
+      {
+        key: 'roles',
+        label: 'Roles',
+        actions: ['read', 'list', 'create', 'update', 'delete'],
+      },
+      {
+        key: 'team',
+        label: 'Team',
+        actions: ['read', 'list', 'invite', 'update', 'suspend', 'revoke'],
+      },
+    ]),
+  })
+
+  return {
+    app: 'console',
+    modules: catalog.modules.map((module) => ({
+      ...module,
+      permissions: module.permissions.map(withConsoleKey),
+    })),
+    permissions: catalog.permissions
+      .map(withConsoleKey)
+      .sort((left, right) => left.key.localeCompare(right.key)),
+  }
+}
+
+export const consolePermissionCatalog = defineConsolePermissionCatalog()
 
 export const couriersPermissionCatalog: AppPermissionCatalog =
   defineAppPermissionCatalog({
@@ -89,6 +177,7 @@ export const crmPermissionCatalog: AppPermissionCatalog =
 
 /** Every canonical catalog, keyed by the app slug that owns it. */
 export const appPermissionCatalogs: Record<string, AppPermissionCatalog> = {
+  console: consolePermissionCatalog,
   '876-couriers': couriersPermissionCatalog,
   '876-crm': crmPermissionCatalog,
 }

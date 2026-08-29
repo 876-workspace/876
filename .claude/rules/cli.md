@@ -38,15 +38,16 @@ Two traps worth remembering:
 
 ## Routing table
 
-| Task class                                                                                                                            | Model / tool                                                                                                       | Execution mode                                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| Code exploration / research (find files, trace a symbol, map a subsystem before implementing)                                         | **Sonnet, high reasoning**                                                                                         | Sub-agent (`Agent` tool, `model: sonnet`), detailed brief (below)                                    |
-| Advanced/critical implementation (cross-cutting, architecturally sensitive, hard bugs)                                                | **Opus, high reasoning**                                                                                           | Sub-agent (`Agent` tool, `model: opus`)                                                              |
-| General updates (routine feature work, moderate scope, not exploration or high-stakes design)                                         | **Opus, medium reasoning**                                                                                         | Sub-agent (`Agent` tool, `model: opus`)                                                              |
-| Well-specified module port (a bounded chunk with a reference module to copy and a mechanical way to check the result)                 | **Muse Code**, high reasoning                                                                                      | Foreground or background CLI — **you run every verification**, it cannot                             |
-| Design decisions / highest-stakes or security-sensitive code (auth, key handling, provisioning, anything that must simply be _right_) | **Fable, high reasoning**                                                                                          | **Direct execution by the primary agent — never a sub-agent.** See "Fable is never delegated" below. |
-| Docs-only work (`.md`/`.mdx`, OpenAPI `docs.py` prose, README, rule files)                                                            | **`agy`, Sonnet 4.6 Thinking** (existing) **or** `opencode`/Command Code with **DeepSeek V4**                      | Foreground CLI                                                                                       |
-| Trivial / mechanical / mass-simple edits (rename a function and fix every call site, bulk find-replace, boilerplate scaffolding)      | **`opencode`** (or Command Code) with **DeepSeek V4** — orchestrate multiple in parallel for independent file sets | Foreground CLI                                                                                       |
+| Task class                                                                                                                               | Model / tool                                                                                                       | Execution mode                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Code exploration / research (find files, trace a symbol, map a subsystem before implementing)                                            | **Sonnet, high reasoning**                                                                                         | Sub-agent (`Agent` tool, `model: sonnet`), detailed brief (below)                                    |
+| Advanced/critical implementation (cross-cutting, architecturally sensitive, hard bugs)                                                   | **Opus, high reasoning**                                                                                           | Sub-agent (`Agent` tool, `model: opus`)                                                              |
+| General updates (routine feature work, moderate scope, not exploration or high-stakes design)                                            | **Opus, medium reasoning**                                                                                         | Sub-agent (`Agent` tool, `model: opus`)                                                              |
+| Well-specified module port (a bounded chunk with a reference module to copy and a mechanical way to check the result)                    | **Muse Code**, high reasoning                                                                                      | Foreground or background CLI — **you run every verification**, it cannot                             |
+| Large multi-phase feature the user is willing to relay by hand (a whole standard, a cross-cutting refactor, anything wanting many tests) | **GPT web** (ChatGPT, GPT-5.6 high)                                                                                | **Human-relayed**: you write a brief file, the user pastes it, it pushes to the branch. See below.   |
+| Design decisions / highest-stakes or security-sensitive code (auth, key handling, provisioning, anything that must simply be _right_)    | **Fable, high reasoning**                                                                                          | **Direct execution by the primary agent — never a sub-agent.** See "Fable is never delegated" below. |
+| Docs-only work (`.md`/`.mdx`, OpenAPI `docs.py` prose, README, rule files)                                                               | **`agy`, Sonnet 4.6 Thinking** (existing) **or** `opencode`/Command Code with **DeepSeek V4**                      | Foreground CLI                                                                                       |
+| Trivial / mechanical / mass-simple edits (rename a function and fix every call site, bulk find-replace, boilerplate scaffolding)         | **`opencode`** (or Command Code) with **DeepSeek V4** — orchestrate multiple in parallel for independent file sets | Foreground CLI                                                                                       |
 
 **Reasoning-effort note:** the `Agent` tool's `model` parameter only selects
 the model (`sonnet` / `opus` / `haiku` / `fable`) — it has no separate
@@ -287,6 +288,131 @@ cd apps/api && muse exec \
 **Monitor it at 60–90s, not the 5 minutes used for Codex.** Muse finishes a
 whole module in about five minutes, so a five-minute check produces one event
 that arrives after the run is already over.
+
+## GPT web — human-relayed, unlimited output, zero execution
+
+A pattern the user drives directly: **you write a brief, the user pastes it into
+ChatGPT web (GPT-5.6, high reasoning), and GPT web edits files and pushes to the
+branch through its GitHub connector.** It then writes a report; you pull,
+verify, fix, and commit.
+
+Reach for it when the work is **large, well-specifiable, and test-hungry** — a
+whole platform standard, a cross-cutting refactor, a feature spanning many
+phases. The user's GPT quota is effectively unlimited, so the brief can demand
+far more tests than you would ask of a metered tool. It is the wrong choice for
+anything needing a database, a migration, a live service, or a fast loop.
+
+### The loop
+
+```
+you: write .claude/briefs/gpt-web/<date>-<slug>.md, commit it, push the branch
+user: pastes the brief into ChatGPT web
+gpt web: edits files → commits to the SAME branch → writes its report
+you: pull → verify → fix what it could not → commit → write the next brief
+```
+
+### What it cannot do — this is the whole risk
+
+**GPT web executes nothing.** No shell, no tests, no typecheck, no lint, no
+build, no migration, no database, no running service. Every green check on its
+work is yours, and it has never seen one of its own files run.
+
+Measured across two passes on `feat/console-access-control`:
+
+| What it shipped                               | What only execution found                                                                      |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| A correct Prisma migration                    | The client was never regenerated — 18 typecheck errors across guards and services              |
+| A new `{ data, error }` envelope on a service | A caller still read `.userId` off it, so a rejected grant dereferenced null                    |
+| 8 new component tests                         | Console's vitest environment is `node`, so not one of them had ever executed                   |
+| A route-guard suite                           | It lived in `src/lib/` and imported route code — a boundary violation lint had been failing on |
+| A permission catalog                          | Six permissions its own navigation required were granted by **no role at all**                 |
+| Test fixtures                                 | Missing required fields, papered over with `as any`; `BigInt` literals the ES target rejects   |
+
+None of that is sloppiness — it is the direct, predictable consequence of
+writing code you cannot run. Budget review time accordingly, and **never
+merge its work on the strength of its report.**
+
+### Verify premises before you assert them
+
+A brief is not evidence, and GPT web will (correctly) refuse to build on a false
+one. Both times a premise in a brief was wrong, it stopped and said so:
+
+- A brief claimed no batch employee-profile verb existed. One did. It had
+  looked, not found it, and declined to invent one — the right call, but the
+  brief had sent it looking in the wrong place.
+- The next brief asserted the platform returned multivariate flag variants.
+  It does not: `apps/api/src/providers/posthog/flags.ts` returns
+  `Map<string, boolean>` and collapses every value with `value !== false`.
+  GPT web read the provider, found the contradiction, and skipped the phase
+  rather than inventing variants or calling PostHog directly from Console.
+
+So: **grep the facade, read the provider, and check the route before writing a
+premise into a brief.** A verified premise is worth more than another page of
+instructions, and an unverified one costs a whole phase.
+
+### What the brief must contain
+
+Beyond the normal briefing format, a GPT web brief needs:
+
+1. **A hard "you must not" list.** No branch creation, rename, delete, merge, or
+   rebase — one branch only. No pull requests. Never touch `main`. No shell
+   commands, and never write "tests pass" — write "not executed; verification is
+   the orchestrator's". No `prisma migrate`; hand-write the migration SQL to a
+   named path instead. No `eslint-disable`, no `as any` (use `as unknown as T`),
+   no AI attribution in commit messages.
+2. **Per-phase test floors, as numbers.** It will meet them, and it treats a
+   phase below its floor as incomplete. There is no budget reason to be shy.
+3. **An explicit prohibition on weakening production code for testability.**
+   Without it, `searchParams` becomes optional and a `ResourceToolbar`
+   disappears so a test can render the page more easily. This happened, and had
+   to be reverted.
+4. **The rule that a declared permission must be granted.** Anything it adds to
+   a catalog or a navigation requirement must name the role that holds it.
+   A permission nothing grants is indistinguishable from one that does not exist.
+5. **A named escape hatch for anything it cannot do safely.** Its GitHub writer
+   replaces whole files, so a one-line insertion into a large file is genuinely
+   dangerous for it. Tell it to skip and report instead — it will, honestly,
+   rather than reconstructing the file and truncating it.
+6. **A concurrency note** when another agent is in the same tree: pull before
+   starting and before its final commit, never delete another agent's test
+   files, integrate rather than replace inside shared directories.
+7. **The exact verification commands you will run**, so it knows what its output
+   must survive.
+
+### Its report is the deliverable you actually read
+
+Require a report at `.claude/reports/gpt-web/<date>-<slug>.md`, committed with
+the work, containing: a per-phase status table with the **counted** number of
+`it()` cases added in that pass; every file changed with a reason; any migration
+in full; decisions the brief did not settle; **things it could not verify**;
+gaps deliberately left; risk notes; and the verification commands.
+
+Its reports have been consistently honest — the sections where it refused to
+claim unverified work were the most useful part. Reinforce that: tell it a
+truthful "not executed" beats a confident claim, and that a fabricated test
+count is worse than a missing phase.
+
+### Reviewing what comes back
+
+Pull, then in this order:
+
+```bash
+git log --oneline <base>..HEAD          # what it actually committed
+git diff --stat <base>...HEAD
+grep -rn "eslint-disable\|as any" <paths it touched>
+pnpm --filter <pkg> typecheck           # expect failures; regenerate clients first
+pnpm --filter <pkg> lint
+pnpm --filter <pkg> test                # check the COUNT moved, not just green
+node scripts/check-app-structure.mjs
+```
+
+Then look specifically for the failure modes above: a stale generated client, a
+suite it left behind after changing a shape it did not own, a permission nothing
+grants, a test that never ran because of its environment, and any production
+signature it loosened to make a test easier.
+
+**It pushes while you work.** Fetch before you commit, `git rebase` onto its
+commits, and never force-push over them.
 
 ## `opencode` — trivial/mechanical work and docs, DeepSeek V4
 

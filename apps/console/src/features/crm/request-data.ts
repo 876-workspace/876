@@ -20,7 +20,7 @@ export const loadSupportContext = cache(async (requestId?: string) => {
 
 export const loadOrgDirectory = cache(async (orgId: string) => {
   const [departmentsResult, membersResult] = await Promise.all([
-    $876.departments.list(orgId),
+    $876.departments.admin.list(orgId),
     $876.organizationMembers.admin.list(orgId, { limit: 100 }),
   ])
 

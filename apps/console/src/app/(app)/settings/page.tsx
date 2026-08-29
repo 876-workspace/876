@@ -1,11 +1,19 @@
-import Link from 'next/link'
 import { Page } from '@876/ui/page'
+import Link from 'next/link'
 
-import { SETTINGS_OPTIONS } from '@/components/shell/settings-options'
+import { resolveNavIcon } from '@/components/shell/nav-icons'
+import { resolveSettingsOptions } from '@/components/shell/settings-options'
+import { resolveAccessContext } from '@/lib/auth/access-context'
+import { requireConsolePermission, requireSession } from '@/lib/auth/guards'
 
 export const metadata = { title: 'Settings' }
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const user = await requireSession('/settings')
+  await requireConsolePermission(user.id, 'console:settings')
+  const context = await resolveAccessContext(user.id)
+  const options = context ? resolveSettingsOptions(context) : []
+
   return (
     <Page hub>
       <div className="mb-8">
@@ -16,8 +24,8 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {SETTINGS_OPTIONS.map((section) => {
-          const Icon = section.icon
+        {options.map((section) => {
+          const Icon = resolveNavIcon(section.icon)
           return (
             <Link
               key={section.href}
