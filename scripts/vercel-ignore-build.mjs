@@ -84,24 +84,48 @@ if (!workspace)
   finish(DEPLOY, 'no workspace name passed — cannot scope the check')
 
 // Vercel exposes the SHA of this project's last successful deployment. It is the
-// right base: it spans every commit that has not reached this app yet, not just
-// the newest one. It is absent on a first deploy and can fall outside a shallow
-// clone, so the previous commit stands in.
-const previousSha = process.env.VERCEL_GIT_PREVIOUS_SHA
-let base
-if (resolvable(previousSha)) {
-  base = previousSha
-  log(`base: VERCEL_GIT_PREVIOUS_SHA (${previousSha.slice(0, 8)})`)
-} else if (resolvable('HEAD^')) {
+// only base that is correct in general: it spans every commit that has not
+// reached this app yet, including ones an earlier run of this gate skipped.
+//
+// `HEAD^` is deliberately NOT a fallback. A push carrying more than one commit
+// would then be judged on its newest commit alone — a branch whose tip happens
+// to be a docs commit would skip, silently withholding the code commits under
+// it. That is exactly what happened on the first run of this gate.
+//
+// The merge base with the default branch is the safe stand-in: on a first
+// preview build it spans everything the branch adds. When neither ref is
+// available, deploy.
+function resolveBase() {
+  const previousSha = process.env.VERCEL_GIT_PREVIOUS_SHA
+  if (resolvable(previousSha)) {
+    log(`base: VERCEL_GIT_PREVIOUS_SHA (${previousSha.slice(0, 8)})`)
+    return previousSha
+  }
   if (previousSha)
     log(
       `VERCEL_GIT_PREVIOUS_SHA ${previousSha.slice(0, 8)} is not in this clone`
     )
-  base = 'HEAD^'
-  log('base: HEAD^')
-} else {
-  finish(DEPLOY, 'no comparable base ref — cannot tell what changed')
+
+  for (const ref of ['origin/main', 'main']) {
+    if (!resolvable(ref)) continue
+    try {
+      const mergeBase = git(['merge-base', ref, 'HEAD'])
+      if (mergeBase && mergeBase !== git(['rev-parse', 'HEAD'])) {
+        log(`base: merge-base with ${ref} (${mergeBase.slice(0, 8)})`)
+        return mergeBase
+      }
+    } catch {
+      // Shallow clones often lack a common ancestor; fall through and deploy.
+    }
+  }
+
+  finish(
+    DEPLOY,
+    'no deployed base to compare against — cannot tell what changed'
+  )
 }
+
+const base = resolveBase()
 
 let changed
 try {

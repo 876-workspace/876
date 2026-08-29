@@ -19,8 +19,14 @@ install. Exit `0` skips the deployment; exit `1` proceeds.
 `scripts/vercel-ignore-build.mjs` deploys an app when a changed file belongs to
 that app or to a workspace it depends on. It compares against
 `VERCEL_GIT_PREVIOUS_SHA` — the last commit this project actually deployed, so
-nothing is missed when an earlier build was skipped — falling back to `HEAD^`
-when that SHA is absent or outside a shallow clone.
+nothing is missed when an earlier build was skipped. When that SHA is absent or
+outside a shallow clone it uses the merge base with the default branch, which on
+a first preview build spans everything the branch adds, and deploys when neither
+ref is available.
+
+`HEAD^` is deliberately not a fallback. A push carrying more than one commit
+would then be judged on its newest commit alone, so a branch whose tip happens
+to be a docs commit would skip and silently withhold the code commits under it.
 
 | Change                               | Result                            |
 | ------------------------------------ | --------------------------------- |
