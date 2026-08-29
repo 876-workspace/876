@@ -39,18 +39,18 @@ describe('couriers permission catalog', () => {
       ])
     )
 
-    for (const module of PERMISSION_CATALOG)
-      expect(module.label).toBe(platformLabels.get(module.key))
+    for (const entry of PERMISSION_CATALOG)
+      expect(entry.label).toBe(platformLabels.get(entry.key))
   })
 
   it('orders each module’s permissions the same way the platform catalog does', () => {
-    for (const module of couriersPermissionCatalog.modules) {
-      const local = PERMISSION_CATALOG.find((row) => row.key === module.key)
+    for (const entry of couriersPermissionCatalog.modules) {
+      const local = PERMISSION_CATALOG.find((row) => row.key === entry.key)
       expect(local).toBeDefined()
       expect([
         ...local!.actions,
         ...local!.extras.map((extra) => extra.key),
-      ]).toEqual(module.permissions.map((permission) => permission.action))
+      ]).toEqual(entry.permissions.map((permission) => permission.action))
     }
   })
 })

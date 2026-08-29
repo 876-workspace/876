@@ -363,6 +363,22 @@ function getPayloadConfigFromPayload(
   return configLabelKey in config ? config[configLabelKey] : config[key]
 }
 
+/**
+ * Coerces a tooltip or legend label to a `Date`.
+ *
+ * Recharts types a label as `ReactNode`, so a chart whose axis carries date
+ * strings cannot call `new Date(label)` on it directly. Returns `null` for
+ * anything that is not date-like, letting the caller fall back to the original
+ * label rather than rendering "Invalid Date".
+ */
+function toChartDate(label: React.ReactNode): Date | null {
+  if (label instanceof Date) return label
+  if (typeof label !== 'string' && typeof label !== 'number') return null
+
+  const date = new Date(label)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
 export {
   ChartContainer,
   ChartTooltip,
@@ -370,4 +386,5 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  toChartDate,
 }

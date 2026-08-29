@@ -14,7 +14,7 @@ interface PaymentRow {
   customer: { name: string }
   amount: bigint | string
   currency: string
-  paymentDate: number
+  paymentDate: number | null
   status: string
   depositAccount: string
 }

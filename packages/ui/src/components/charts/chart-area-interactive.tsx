@@ -16,6 +16,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
+  toChartDate,
   type ChartConfig,
 } from '../chart'
 import {
@@ -238,12 +239,12 @@ export function ChartAreaInteractive() {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
+                  labelFormatter={(value) =>
+                    toChartDate(value)?.toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
-                    })
-                  }}
+                    }) ?? value
+                  }
                   indicator="dot"
                 />
               }

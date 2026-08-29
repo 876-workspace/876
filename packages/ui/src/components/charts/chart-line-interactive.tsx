@@ -14,6 +14,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  toChartDate,
   type ChartConfig,
 } from '../chart'
 
@@ -199,13 +200,13 @@ export function ChartLineInteractive() {
                 <ChartTooltipContent
                   className="w-[150px]"
                   nameKey="views"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
+                  labelFormatter={(value) =>
+                    toChartDate(value)?.toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
-                    })
-                  }}
+                    }) ?? value
+                  }
                 />
               }
             />
