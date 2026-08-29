@@ -127,8 +127,9 @@ export async function POST(request: NextRequest) {
     subject,
     description: description || null,
     categoryId,
-    // Raised from inside an 876 product rather than written up by an agent.
-    source: 'WEB',
+    // Raised through the embedded in-product support surface rather than
+    // written up by an agent.
+    channel: 'WIDGET',
     requesterUserId: context.userId,
     createdBy: context.userId,
   })
