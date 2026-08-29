@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  PLATFORM_REQUESTS_HREF,
-  requestCollectionHref,
-} from '@/features/crm/request-paths'
+import { PLATFORM_REQUESTS_HREF, requestCollectionHref } from './request-paths'
 
 describe('request paths', () => {
   it('uses /requests for the platform operator surface', () => {

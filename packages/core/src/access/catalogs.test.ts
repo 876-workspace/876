@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  adaptStoredConsolePermissions,
   appPermissionCatalogs,
   consolePermissionCatalog,
   couriersPermissionCatalog,
   crmPermissionCatalog,
+  LEGACY_PERMISSION_ALIASES,
 } from './catalogs'
 
 const SYSTEM_ROLE_KEYS = [
@@ -58,10 +60,10 @@ const SORTED_CONSOLE_KEYS = [
   'console:features',
   'console:organizations',
   'console:reports',
+  'console:requests',
   'console:security',
   'console:settings',
   'console:storage',
-  'console:requests',
   'console:users',
   'console:widgets',
   'memberships:create',
@@ -95,6 +97,58 @@ const SORTED_CONSOLE_KEYS = [
 ] as const
 
 describe('consolePermissionCatalog', () => {
+  it('pins the one-way stored permission alias', () => {
+    expect(LEGACY_PERMISSION_ALIASES).toEqual({
+      'console:support': 'console:requests',
+    })
+  })
+
+  it('adapts the stored support key to the requests key', () => {
+    const result = adaptStoredConsolePermissions(['console:support'])
+
+    expect(result).toEqual(['console:requests'])
+  })
+
+  it('preserves a canonical requests key', () => {
+    const result = adaptStoredConsolePermissions(['console:requests'])
+
+    expect(result).toEqual(['console:requests'])
+  })
+
+  it('preserves unrelated stored permission keys exactly', () => {
+    const result = adaptStoredConsolePermissions([
+      'console:access',
+      'users:read',
+      'legacy:root',
+    ])
+
+    expect(result).toEqual(['console:access', 'users:read', 'legacy:root'])
+  })
+
+  it('does not mutate the persisted permission array while adapting it', () => {
+    const stored = ['console:support', 'users:read']
+
+    adaptStoredConsolePermissions(stored)
+
+    expect(stored).toEqual(['console:support', 'users:read'])
+  })
+
+  it('never emits the legacy support key from the canonical catalog', () => {
+    expect(
+      consolePermissionCatalog.permissions
+        .map((permission) => permission.key)
+        .filter((permission) => permission === 'console:support')
+    ).toEqual([])
+  })
+
+  it('emits the canonical requests key from the Console catalog', () => {
+    expect(
+      consolePermissionCatalog.permissions
+        .map((permission) => permission.key)
+        .filter((permission) => permission === 'console:requests')
+    ).toEqual(['console:requests'])
+  })
+
   it('uses the verified Console app slug', () => {
     expect(consolePermissionCatalog.app).toBe('console')
   })
@@ -104,7 +158,9 @@ describe('consolePermissionCatalog', () => {
   })
 
   it('keeps the exact declared module order', () => {
-    expect(consolePermissionCatalog.modules.map((module) => module.key)).toEqual([
+    expect(
+      consolePermissionCatalog.modules.map((module) => module.key)
+    ).toEqual([
       'console',
       'users',
       'organizations',
@@ -191,7 +247,10 @@ describe('consolePermissionCatalog', () => {
     expect(
       consolePermissionCatalog.modules
         .find((module) => module.key === 'users')
-        ?.permissions.map((permission) => [permission.action, permission.position])
+        ?.permissions.map((permission) => [
+          permission.action,
+          permission.position,
+        ])
     ).toEqual([
       ['read', 0],
       ['list', 1],
@@ -204,7 +263,9 @@ describe('consolePermissionCatalog', () => {
 
   it('uses colon-delimited persisted keys for every Console permission', () => {
     expect(
-      consolePermissionCatalog.permissions.filter((row) => row.key.includes('.'))
+      consolePermissionCatalog.permissions.filter((row) =>
+        row.key.includes('.')
+      )
     ).toEqual([])
   })
 
