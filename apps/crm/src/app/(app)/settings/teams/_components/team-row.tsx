@@ -48,6 +48,14 @@ export const TEAM_COLOR_VARIANTS: Record<
     badge: 'border-blue-400/40 bg-blue-400/10 text-blue-700 dark:text-blue-400',
     dot: 'bg-blue-500',
   },
+  emerald: {
+    bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    border: 'border-emerald-500/30',
+    badge:
+      'border-emerald-400/40 bg-emerald-400/10 text-emerald-700 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
+  },
   violet: {
     bg: 'bg-violet-500/10 dark:bg-violet-500/20',
     text: 'text-violet-600 dark:text-violet-400',
@@ -96,7 +104,7 @@ export function getTeamColorVariant(color?: string | null) {
 }
 
 function MemberStack({ members }: { members: DirectoryMember[] }) {
-  const visible = members.slice(0, 3)
+  const visible = members.slice(0, 5)
   const overflow = members.length - visible.length
 
   if (members.length === 0)
@@ -104,18 +112,18 @@ function MemberStack({ members }: { members: DirectoryMember[] }) {
 
   return (
     <div className="flex items-center">
-      <div className="flex -space-x-1.5">
+      <div className="flex -space-x-2">
         {visible.map((member) => (
           <CustomerAvatar
             key={member.userId}
             name={member.name}
             src={member.avatar}
-            className="ring-background ring-2"
+            className="ring-background size-6 rounded-full ring-2 after:rounded-full [&_*]:rounded-full"
           />
         ))}
       </div>
       {overflow > 0 ? (
-        <span className="text-muted-foreground ml-2 text-xs tabular-nums">
+        <span className="text-muted-foreground ml-2 text-xs font-medium tabular-nums">
           +{overflow}
         </span>
       ) : null}
