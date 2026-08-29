@@ -16,8 +16,8 @@ export interface ClientOptions extends PlatformClientOptions {
  *
  * `app` is accepted for parity with the server client (routing/telemetry
  * metadata), but it is **not** forwarded to the underlying SDK: the SDK parses
- * its options with a `z.strictObject`, which throws on any unknown key — so
- * passing `app` through would make `create876Client({ app })` fail at runtime.
+ * its options with a z.strictObject, which throws on any unknown key — so
+ * passing `app` through would make create876Client({ app }) fail at runtime.
  * Strip it here until it has a documented consumer.
  */
 export function create876Client({
@@ -145,6 +145,6 @@ export type {
   UpdateTeamInput as CrmTeamUpdateInput,
   RequestNoteKind,
   RequestPriority,
-  RequestSource,
+  RequestChannel,
   RequestStatus,
 } from '@876/crm'
