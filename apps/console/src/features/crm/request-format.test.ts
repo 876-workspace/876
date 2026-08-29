@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatAge,
+  formatChannel,
   formatCustomerType,
   formatDueDate,
-  formatSource,
   fromDateTimeLocal,
   isOverdue,
   toDateTimeLocal,
 } from './request-format'
 
 describe('request-format', () => {
-  describe('formatSource', () => {
-    it('formats known sources', () => {
-      expect(formatSource('CRM')).toBe('CRM')
-      expect(formatSource('EMAIL')).toBe('Email')
-      expect(formatSource('PHONE')).toBe('Phone')
-      expect(formatSource('CHAT')).toBe('Chat')
-      expect(formatSource('WEB')).toBe('Web form')
-      expect(formatSource('API')).toBe('API')
+  describe('formatChannel', () => {
+    it('formats every canonical intake channel', () => {
+      expect(formatChannel('FORM')).toBe('Form')
+      expect(formatChannel('WIDGET')).toBe('Widget')
+      expect(formatChannel('CHAT')).toBe('Chat')
+      expect(formatChannel('EMAIL')).toBe('Email')
+      expect(formatChannel('API')).toBe('API')
+      expect(formatChannel('AGENT')).toBe('Agent')
     })
   })
 
