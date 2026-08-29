@@ -12,7 +12,6 @@ import {
   ensureCoreCustomerRows,
   findCoreCustomer,
   findCustomerDetailRow,
-  findCustomerRow,
   findIdempotentCustomerRow,
   findTenantDefaults,
   listCustomerLedgerRows,
@@ -82,12 +81,18 @@ async function validateCustomer(
     )
 }
 
+/**
+ * `sourceAppId` no longer narrows the result set — the org-customer registry is
+ * shared across the organization's apps, and the integration route is already
+ * gated on the granted `billing.customers.read` scope. It is still accepted so
+ * the response can name the surface the caller reached.
+ */
 export async function listCustomers(
   tenantId: string,
   query: CustomerListQuery,
   sourceAppId?: string
 ) {
-  const rows = await listCustomerRows(tenantId, query, sourceAppId)
+  const rows = await listCustomerRows(tenantId, query)
   const hasMore = rows.length > query.limit
   return {
     object: 'list' as const,
@@ -98,12 +103,8 @@ export async function listCustomers(
   }
 }
 
-export async function retrieveCustomer(
-  tenantId: string,
-  id: string,
-  sourceAppId?: string
-) {
-  const row = await findCustomerDetailRow(tenantId, id, sourceAppId)
+export async function retrieveCustomer(tenantId: string, id: string) {
+  const row = await findCustomerDetailRow(tenantId, id)
   if (!row) throw notFound()
   return serializeCustomerDetail(row)
 }

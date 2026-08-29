@@ -22,21 +22,32 @@ const customerDetailInclude = {
   _count: { select: { subscriptions: true, invoices: true, quotes: true } },
 } as const
 
-export function listCustomerRows(
-  tenantId: string,
-  query: CustomerListQuery,
-  sourceAppId?: string
-) {
+/**
+ * The org-customer registry is shared across every app serving the
+ * organization, so a read is authorized by the tenant plus the granted
+ * `billing.customers.read` scope — never by which app happened to create the
+ * row. `sourceAppId` is the idempotency/attribution plane, and filtering reads
+ * on it made a registry customer unreadable by the very app whose profile
+ * points at it. Per-app isolation belongs to each app's own profile table
+ * (see `.claude/rules/customer-architecture.md`, Layer 3).
+ *
+ * `id` predicates are combined under AND because a bare spread would let
+ * pagination silently overwrite the `ids` filter, and vice versa.
+ */
+export function listCustomerRows(tenantId: string, query: CustomerListQuery) {
+  const idPredicates = [
+    ...(query.ids ? [{ id: { in: query.ids } }] : []),
+    ...(query.starting_after ? [{ id: { gt: query.starting_after } }] : []),
+    ...(query.ending_before ? [{ id: { lt: query.ending_before } }] : []),
+  ]
+
   return prisma.customer.findMany({
     where: {
       tenantId,
       ...(query.status ? { status: query.status } : {}),
       ...(query.userId ? { userId: query.userId } : {}),
       ...(query.organizationId ? { organizationId: query.organizationId } : {}),
-      ...(query.ids ? { id: { in: query.ids } } : {}),
-      ...(sourceAppId ? { sourceAppId } : {}),
-      ...(query.starting_after ? { id: { gt: query.starting_after } } : {}),
-      ...(query.ending_before ? { id: { lt: query.ending_before } } : {}),
+      ...(idPredicates.length > 0 ? { AND: idPredicates } : {}),
     },
     include: customerInclude,
     orderBy: { id: query.ending_before ? 'desc' : 'asc' },
@@ -44,25 +55,17 @@ export function listCustomerRows(
   })
 }
 
-export function findCustomerRow(
-  tenantId: string,
-  id: string,
-  sourceAppId?: string
-) {
+export function findCustomerRow(tenantId: string, id: string) {
   return prisma.customer.findFirst({
-    where: { tenantId, id, ...(sourceAppId ? { sourceAppId } : {}) },
+    where: { tenantId, id },
     include: customerInclude,
   })
 }
 
 /** As {@link findCustomerRow}, plus the activity counts a detail view shows. */
-export function findCustomerDetailRow(
-  tenantId: string,
-  id: string,
-  sourceAppId?: string
-) {
+export function findCustomerDetailRow(tenantId: string, id: string) {
   return prisma.customer.findFirst({
-    where: { tenantId, id, ...(sourceAppId ? { sourceAppId } : {}) },
+    where: { tenantId, id },
     include: customerDetailInclude,
   })
 }
@@ -110,7 +113,7 @@ export async function updateCustomerRow(
       ...(currency === undefined ? {} : { defaultCurrency: currency }),
     },
   })
-  return result.count ? findCustomerRow(tenantId, id, sourceAppId) : null
+  return result.count ? findCustomerRow(tenantId, id) : null
 }
 
 export async function deleteCustomerRow(
