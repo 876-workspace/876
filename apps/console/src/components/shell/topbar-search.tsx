@@ -29,15 +29,6 @@ const CONSOLE_SEARCH_ITEMS: TopbarSearchItem[] = [
       href: item.href,
     }))
   ),
-  ...navConfig.flatMap((group) =>
-    group.items.flatMap((item) =>
-      (item.children ?? []).map((child) => ({
-        group: item.title,
-        title: child.title,
-        href: child.href,
-      }))
-    )
-  ),
   ...SETTINGS_OPTIONS.map((section) => ({
     group: 'Settings',
     title: section.title,
