@@ -359,6 +359,9 @@ importers:
       pino:
         specifier: 10.3.1
         version: 10.3.1
+      posthog-node:
+        specifier: 5.49.1
+        version: 5.49.1
       stripe:
         specifier: 22.5.0
         version: 22.5.0(@types/node@26.2.0)
