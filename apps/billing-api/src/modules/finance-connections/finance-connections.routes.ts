@@ -6,6 +6,7 @@ import { errorEnvelopeSchema, successEnvelopeSchema } from '@/http/envelope'
 import { financeConnectionsController } from './finance-connections.controller'
 import {
   billingAppStatsSchema,
+  billingAppStatsDetailSchema,
   financeProvisioningResultSchema,
   organizationParamsSchema,
   sourceAppParamsSchema,
@@ -44,7 +45,12 @@ export function createFinanceConnectionsRouter(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Successful Response',
-        schema: successEnvelopeSchema(billingAppStatsSchema),
+        schema: successEnvelopeSchema(
+          z.strictObject({
+            object: z.literal('list'),
+            data: z.array(billingAppStatsSchema),
+          })
+        ),
       },
     },
     handler: financeConnectionsController.stats,
@@ -60,7 +66,7 @@ export function createFinanceConnectionsRouter(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Successful Response',
-        schema: successEnvelopeSchema(billingAppStatsSchema),
+        schema: successEnvelopeSchema(billingAppStatsDetailSchema),
       },
     },
     handler: financeConnectionsController.statsForApp,

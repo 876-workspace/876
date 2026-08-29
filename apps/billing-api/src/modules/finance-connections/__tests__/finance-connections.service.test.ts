@@ -7,14 +7,18 @@ import type { FinanceProvisioningEvent } from '@876/server/finance-provisioning'
 const mocks = vi.hoisted(() => ({
   applyFinanceProvisioningEvent: vi.fn(),
   findActiveConnectionAuthorization: vi.fn(),
-  appStatsRows: vi.fn(),
+  findStatsProduct: vi.fn(),
+  findStatsSubscriptions: vi.fn(),
+  findStatsTenant: vi.fn(),
   LifecycleConflict: class FinanceConnectionLifecycleConflict extends Error {},
 }))
 
 vi.mock('../finance-connections.repository', () => ({
   applyFinanceProvisioningEvent: mocks.applyFinanceProvisioningEvent,
   findActiveConnectionAuthorization: mocks.findActiveConnectionAuthorization,
-  appStatsRows: mocks.appStatsRows,
+  findStatsProduct: mocks.findStatsProduct,
+  findStatsSubscriptions: mocks.findStatsSubscriptions,
+  findStatsTenant: mocks.findStatsTenant,
   FinanceConnectionLifecycleConflict: mocks.LifecycleConflict,
 }))
 
@@ -242,36 +246,90 @@ describe('appStats', () => {
     vi.clearAllMocks()
   })
 
-  it('wraps repository counts with the object discriminator and sourceAppId', async () => {
-    mocks.appStatsRows.mockResolvedValue({
-      connections: 5,
-      customers: 10,
-      invoices: 20,
-      subscriptions: 3,
-    })
+  it('returns the admin client app stats contract for an attributed app', async () => {
+    mocks.findStatsTenant.mockResolvedValue({ defaultCurrency: 'USD' })
+    mocks.findStatsProduct.mockResolvedValue({ id: 'prod_1' })
+    mocks.findStatsSubscriptions.mockResolvedValue([
+      {
+        id: 'sub_1',
+        sourceAppId: 'app_1',
+        externalReference: 'core_sub_1',
+        customerId: 'cus_1',
+        status: 'ACTIVE',
+        startAt: 100,
+        currentPeriodEnd: 200,
+        createdAt: 100,
+        customer: { name: 'Ada Lovelace' },
+        items: [
+          {
+            quantity: 2,
+            unitAmount: null,
+            price: {
+              unitAmount: 1_200n,
+              priceType: 'RECURRING',
+              plan: {
+                id: 'plan_1',
+                code: 'pro',
+                name: 'Pro',
+                entitlementReferenceId: 'ent_1',
+                intervalUnit: 'MONTH',
+                intervalCount: 1,
+              },
+            },
+          },
+        ],
+        invoices: [{ totalAmount: 2_400n, amountDue: 400n }],
+      },
+    ])
 
-    const result = await appStats('app_1')
-
-    expect(result).toEqual({
-      object: 'billing_app_stats',
+    await expect(appStats('ten_1', 'app_1')).resolves.toEqual({
+      object: 'app_billing_stats',
       sourceAppId: 'app_1',
-      connections: 5,
-      customers: 10,
-      invoices: 20,
-      subscriptions: 3,
+      activeSubscriptions: 1,
+      trialingSubscriptions: 0,
+      canceledSubscriptions: 0,
+      customerCount: 1,
+      monthlyRecurringRevenue: '2400',
+      currency: 'USD',
+      invoicedTotal: '2400',
+      paidTotal: '2000',
+      outstandingTotal: '400',
+      plans: [
+        {
+          object: 'plan_billing_stats',
+          planId: 'plan_1',
+          code: 'pro',
+          name: 'Pro',
+          entitlementReferenceId: 'ent_1',
+          activeSubscriptions: 1,
+          trialingSubscriptions: 0,
+          monthlyRecurringRevenue: '2400',
+          subscribers: [
+            {
+              object: 'plan_subscriber',
+              subscriptionId: 'sub_1',
+              externalReference: 'core_sub_1',
+              customerId: 'cus_1',
+              customerName: 'Ada Lovelace',
+              status: 'ACTIVE',
+              startAt: 100,
+              currentPeriodEnd: 200,
+              monthlyRecurringRevenue: '2400',
+            },
+          ],
+        },
+      ],
     })
   })
 
-  it('passes null sourceAppId through for aggregate stats', async () => {
-    mocks.appStatsRows.mockResolvedValue({
-      connections: 0,
-      customers: 0,
-      invoices: 0,
-      subscriptions: 0,
-    })
+  it('returns a sorted list of stats for every attributed app', async () => {
+    mocks.findStatsTenant.mockResolvedValue({ defaultCurrency: 'USD' })
+    mocks.findStatsSubscriptions.mockResolvedValue([])
 
-    await appStats(null)
-
-    expect(mocks.appStatsRows).toHaveBeenCalledWith(null)
+    await expect(appStats('ten_1')).resolves.toEqual([])
+    expect(mocks.findStatsSubscriptions).toHaveBeenCalledWith(
+      'ten_1',
+      undefined
+    )
   })
 })

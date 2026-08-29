@@ -127,13 +127,66 @@ function transitionTimestamps(status: string, now: number) {
   return { revokedAt: now }
 }
 
-export async function appStatsRows(sourceAppId: string | null) {
-  const filter = sourceAppId === null ? {} : { sourceAppId }
-  const [connections, customers, invoices, subscriptions] = await Promise.all([
-    prisma.appFinanceConnection.count({ where: filter }),
-    prisma.customer.count({ where: filter }),
-    prisma.invoice.count({ where: filter }),
-    prisma.subscription.count({ where: filter }),
-  ])
-  return { connections, customers, invoices, subscriptions }
+const statsSubscriptionSelect = {
+  id: true,
+  sourceAppId: true,
+  externalReference: true,
+  customerId: true,
+  status: true,
+  startAt: true,
+  currentPeriodEnd: true,
+  createdAt: true,
+  customer: { select: { name: true } },
+  items: {
+    orderBy: { position: 'asc' as const },
+    select: {
+      quantity: true,
+      unitAmount: true,
+      price: {
+        select: {
+          unitAmount: true,
+          priceType: true,
+          plan: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              entitlementReferenceId: true,
+              intervalUnit: true,
+              intervalCount: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  invoices: {
+    where: { status: { notIn: ['DRAFT' as const, 'VOID' as const] } },
+    select: { totalAmount: true, amountDue: true },
+  },
+}
+
+export function findStatsTenant(tenantId: string) {
+  return prisma.tenant.findUniqueOrThrow({
+    where: { id: tenantId },
+    select: { defaultCurrency: true },
+  })
+}
+
+export function findStatsProduct(tenantId: string, sourceAppId: string) {
+  return prisma.product.findFirst({
+    where: { tenantId, sourceAppId },
+    select: { id: true },
+  })
+}
+
+export function findStatsSubscriptions(tenantId: string, sourceAppId?: string) {
+  return prisma.subscription.findMany({
+    where: {
+      tenantId,
+      sourceAppId: sourceAppId === undefined ? { not: null } : sourceAppId,
+    },
+    select: statsSubscriptionSelect,
+    orderBy: { createdAt: 'desc' },
+  })
 }
