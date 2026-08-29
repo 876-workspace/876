@@ -29,18 +29,24 @@ export async function update(
     }
   }
 
-  const validated = validateTeamGrant({
-    affiliation:
-      input.affiliation ?? (current.affiliation as TeamGrantFields['affiliation']),
-    title: input.title !== undefined ? input.title : current.title,
-    expiresAt:
-      input.expiresAt !== undefined ? input.expiresAt : current.expiresAt,
-    justification:
-      input.justification !== undefined
-        ? input.justification
-        : current.justification,
-    invitedBy: input.invitedBy !== undefined ? input.invitedBy : current.invitedBy,
-  })
+  const resultingRoleName = input.roleName ?? current.roleName
+  const validated = validateTeamGrant(
+    {
+      affiliation:
+        input.affiliation ??
+        (current.affiliation as TeamGrantFields['affiliation']),
+      title: input.title !== undefined ? input.title : current.title,
+      expiresAt:
+        input.expiresAt !== undefined ? input.expiresAt : current.expiresAt,
+      justification:
+        input.justification !== undefined
+          ? input.justification
+          : current.justification,
+      invitedBy:
+        input.invitedBy !== undefined ? input.invitedBy : current.invitedBy,
+    },
+    resultingRoleName
+  )
   if (validated.error) return validated
 
   const data = await prisma.member.update({

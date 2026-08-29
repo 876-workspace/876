@@ -16,7 +16,7 @@ export async function create(
   roleName: string,
   grant: CreateTeamGrant = {}
 ): Promise<TeamServiceResult<CreatedMember>> {
-  const validated = validateTeamGrant(grant)
+  const validated = validateTeamGrant(grant, roleName)
   if (validated.error) return validated
 
   const data = await prisma.member.create({

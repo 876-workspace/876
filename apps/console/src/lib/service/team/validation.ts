@@ -16,6 +16,7 @@ export type TeamServiceError = {
     | 'team/expiry-invalid'
     | 'team/justification-required'
     | 'team/staff-title-not-allowed'
+    | 'team/role-not-allowed-for-affiliation'
   message: string
 }
 
@@ -29,8 +30,11 @@ const AFFILIATIONS: readonly TeamAffiliation[] = [
   'external',
 ]
 
+const STAFF_ONLY_ROLES = new Set(['owner', 'super_admin'])
+
 export function validateTeamGrant(
   input: Partial<TeamGrantFields>,
+  roleName: string,
   nowSeconds = BigInt(Math.floor(Date.now() / 1000))
 ): TeamServiceResult<TeamGrantFields> {
   const affiliation = input.affiliation ?? 'staff'
@@ -40,6 +44,15 @@ export function validateTeamGrant(
       error: {
         code: 'team/invalid-affiliation',
         message: 'Console affiliation must be staff, contractor, or external.',
+      },
+    }
+
+  if (affiliation !== 'staff' && STAFF_ONLY_ROLES.has(roleName))
+    return {
+      data: null,
+      error: {
+        code: 'team/role-not-allowed-for-affiliation',
+        message: `Role "${roleName}" is not allowed for affiliation "${affiliation}".`,
       },
     }
 
@@ -88,13 +101,7 @@ export function validateTeamGrant(
   }
 
   return {
-    data: {
-      affiliation,
-      title,
-      expiresAt,
-      justification,
-      invitedBy,
-    },
+    data: { affiliation, title, expiresAt, justification, invitedBy },
     error: null,
   }
 }

@@ -71,6 +71,20 @@ Resolution rules:
 
 Navigation crosses the RSC-to-client boundary, so registry output must be structurally cloneable. Store icon **keys**, not React components or functions, and resolve those keys in the client shell. Resolve/filter navigation on the server before sending it to the browser.
 
+## Console affiliation policy
+
+A Console access grant is the only gate. Neither an 876 account, an Efesto Technologies organization membership, nor an employee profile grants Console access; absence of a Console grant means absence of Console access.
+
+- **`staff`** — an Efesto Technologies member. Guard-time verification requires a live, active membership in `CONSOLE_STAFF_ORGANIZATION_ID`. Position comes from the employee profile. Expiry is optional because employment itself supplies the subtractive lifecycle check.
+- **`contractor`** — engaged by Efesto but not employed by it. Expiry and justification are required. Position is free text on the Console grant.
+- **`external`** — an auditor, regulator, law-enforcement liaison, or partner with a legitimate bounded need for Console. Expiry and justification are required. External operators are deliberately not verified against Efesto membership. Position is free text on the Console grant.
+
+Platform account type is irrelevant to affiliation. An external auditor may use a personal or enterprise 876 account; Console authorizes the operator from its own grant, not from the platform account shape.
+
+Employment verification is subtractive and one-directional. An explicit inactive or missing Efesto membership denies a `staff` grant. A provider/infrastructure outage does not: the already-valid Console grant remains usable, the outage is captured, and verification is retried on the next request. This check can only remove access; it can never create or widen access.
+
+Only `staff` may hold `owner` or `super_admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
+
 ## Subtractive verification and outage direction
 
 Some checks can only **subtract** from an already-valid grant, such as Console verifying that a grant marked `staff` still corresponds to active employment. A verification that can only subtract may fail open on an infrastructure failure when the product decision explicitly requires continuity: preserve the already-established grant, capture the outage, and retry on the next request.
