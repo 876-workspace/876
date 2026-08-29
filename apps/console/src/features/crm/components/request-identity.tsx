@@ -23,7 +23,7 @@ import {
 export async function RequestToolbar({
   requestId,
   organizationId,
-  baseHref = `/support/${requestId}`,
+  baseHref = `/requests/${requestId}`,
   customerHref,
 }: {
   requestId: string
@@ -101,7 +101,7 @@ export function RequestToolbarSkeleton() {
 export async function RequestIdentity({
   requestId,
   organizationId,
-  baseHref = `/support/${requestId}`,
+  baseHref = `/requests/${requestId}`,
   customerHref,
 }: {
   requestId: string
