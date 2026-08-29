@@ -197,24 +197,19 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
     permissions: crmPermissions,
     roles: [
       {
-        key: 'admin',
-        name: 'Admin',
-        description: 'Full access to CRM.',
+        key: 'owner',
+        name: 'Owner',
+        description: 'Owns CRM access and has every CRM capability.',
         permissions: keysFor(crmPermissions),
         isSystem: true,
         isDefault: false,
         position: 0,
       },
       {
-        key: 'manager',
-        name: 'Manager',
-        description:
-          'Manages CRM operations, customers, requests, tasks, and teams.',
-        permissions: keysFor(
-          crmPermissions,
-          (permission) =>
-            permission.moduleKey !== 'settings' || permission.action === 'view'
-        ),
+        key: 'admin',
+        name: 'Admin',
+        description: 'Full access to CRM.',
+        permissions: keysFor(crmPermissions),
         isSystem: true,
         isDefault: false,
         position: 10,
@@ -227,7 +222,7 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
         permissions: keysFor(
           crmPermissions,
           (permission) =>
-            ['requests', 'customers', 'tasks', 'categories'].includes(
+            ['requests', 'customers', 'tasks', 'reminders', 'notes'].includes(
               permission.moduleKey
             ) && permission.action !== 'delete'
         ),
