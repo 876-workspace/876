@@ -60,14 +60,14 @@ The migration:
 Backfill mapping:
 
 | Old source | New channel |
-| --- | --- |
-| `WEB` | `FORM` |
-| `EMAIL` | `EMAIL` |
-| `CHAT` | `CHAT` |
-| `API` | `API` |
-| `CRM` | `AGENT` |
-| `PHONE` | `AGENT` |
-| `OTHER` | `AGENT` |
+| ---------- | ----------- |
+| `WEB`      | `FORM`      |
+| `EMAIL`    | `EMAIL`     |
+| `CHAT`     | `CHAT`      |
+| `API`      | `API`       |
+| `CRM`      | `AGENT`     |
+| `PHONE`    | `AGENT`     |
+| `OTHER`    | `AGENT`     |
 
 `PHONE` and `OTHER` are intentionally folded into `AGENT` rather than preserved as permanent canonical channels. A future telephony integration can introduce a dedicated channel as an explicit contract change if the product genuinely needs it.
 
@@ -147,40 +147,57 @@ Console `/requests` uses this workspace-control-plane path for the platform orga
 
 A canonical CRM module catalog was added with the following keys:
 
-- `requests`
-- `customers`
+- `requests` (structural, not optional)
 - `tasks`
 - `reminders`
 - `notes`
 - `teams`
 - `categories`
-- `priorities`
 - `request_forms`
 - `reports`
-- `settings`
 
-The keys intentionally match the CRM permission-catalog module keys. Anti-drift tests verify the settings/module catalog and permission catalog do not silently diverge.
+The keys intentionally match the CRM permission-catalog module keys, so
+`<module>.view` / `<module>.edit` already gate each module's settings page.
 
-All modules in this phase are structural/default-enabled. No new customer-facing module toggling UI is introduced here.
+The catalog is a **strict subset** of the permission catalog. Three permission
+modules are deliberately not org-toggleable, and `CRM_EXCLUDED_MODULE_KEYS`
+records that decision:
+
+- `customers` is the shared org-customer registry, not a CRM-owned area an
+  organization can switch off (`.claude/rules/customer-architecture.md`);
+- `priorities` is structural — every request carries a non-null priority;
+- `settings` is where modules are toggled, so it cannot toggle itself.
+
+Anti-drift tests verify the module catalog and the permission catalog do not
+silently diverge in either direction: every module key must exist in the
+permission catalog, and every permission module must appear in either the
+toggleable list or the excluded list.
+
+Every module is enabled by default, so an organization that never opens Settings
+has a working CRM. No customer-facing module-toggling UI is introduced here.
 
 ### 9. CRM integration scopes
 
 The stable integration scope vocabulary added in this phase is:
 
-- `crm.requests.read`
-- `crm.requests.write`
-- `crm.customers.read`
-- `crm.customers.write`
-- `crm.request_forms.read`
-- `crm.request_forms.write`
-- `crm.notes.read`
-- `crm.notes.write`
-- `crm.tasks.read`
-- `crm.tasks.write`
-- `crm.reminders.read`
-- `crm.reminders.write`
+- `crm.requests.read` / `crm.requests.write`
+- `crm.customers.read` / `crm.customers.write`
+- `crm.tasks.read` / `crm.tasks.write`
+- `crm.reminders.read` / `crm.reminders.write`
+- `crm.notes.read` / `crm.notes.write`
+- `crm.teams.read` / `crm.teams.write`
+- `crm.categories.read` / `crm.categories.write`
+- `crm.priorities.read` / `crm.priorities.write`
+- `crm.request_forms.read` / `crm.request_forms.write`
+- `crm.reports.read`
 
-The scope catalog is intentionally narrower than the full CRM module catalog. Teams, categories, priorities, reports, and settings are not automatically exposed as third-party integration scopes simply because they exist as product modules.
+The scope vocabulary is derived from the **permission** catalog, not the module
+catalog — an integration may read a customer or a priority even though neither
+is an org-toggleable module. `settings` is deliberately absent: an integration
+never reconfigures the workspace it is integrating with, and `reports` is
+read-only for the same reason. Tests assert every scope names a module the CRM
+permission catalog defines, that every scope is `crm.`-prefixed, and that
+`crm.reports.write` does not exist.
 
 This phase establishes the vocabulary/contract. It does not add separate CHAT, EMAIL, or API connector products or OAuth grant storage.
 
@@ -299,49 +316,124 @@ Major file groups:
 - confirmed the two new test files contain 17 focused tests;
 - opened PR #434 against `main`.
 
-## Verification deliberately not performed
+## Local completion pass — 2026-08-29
 
-This ChatGPT GitHub connector session does not provide an authenticated repository checkout or the CRM database. Therefore the following were not represented as passing when they were not actually run:
+The connector session could not run anything. A local checkout then applied the
+migration, closed the gaps that only execution reveals, and ran every gate.
 
-- Prisma migration execution;
-- Prisma schema generation/validation in the checkout;
-- TypeScript typechecks;
-- Vitest execution;
-- ESLint;
-- Next.js builds;
-- runtime request submission against a real CRM tenant.
+### Migration applied
 
-The migration was intentionally left unapplied for the local checkout.
+`20260829193000_request_channel_support_intake` is applied to the CRM database.
+Verified directly against Postgres afterwards:
 
-### Lockfile note
+- `crm_requests.channel` is `NOT NULL DEFAULT 'AGENT'`;
+- `crm_requests.source` and the `RequestSource` type are gone;
+- the `RequestChannel` enum holds exactly the six canonical values;
+- the eight existing rows backfilled to 1 × `FORM` (from `WEB`) and 7 × `AGENT`;
+- reading `channel` back through the regenerated Prisma client returns the
+  mapped values.
 
-`packages/crm/package.json` adds `@876/settings` as a workspace dependency because the CRM module catalog uses the shared module-catalog implementation. The GitHub-connector implementation did not regenerate `pnpm-lock.yaml`. If the checkout enforces `pnpm install --frozen-lockfile`, refresh the lockfile with the repository's normal pnpm workflow before merge and include that generated lockfile change. This report calls this out explicitly rather than claiming dependency-install verification that did not occur.
+`prisma migrate diff` against the live database reports only three **pre-existing**
+differences unrelated to this branch (two truncated index names and a
+`crm_request_priorities.updated_at` default, all from the previous PR's
+migration). They are called out here rather than folded silently into this change.
 
-## Suggested local verification
+### Gaps closed in this pass
 
-After pulling the branch, use the repository-standard pnpm workflow and then run the CRM-focused checks. At minimum:
+1. **`prisma.config.ts` pointed migrations at the pooled Neon endpoint.** Every
+   other service in the repo uses the direct endpoint for `migrate`/`db`/`studio`,
+   because Neon's pooler is transaction-mode PgBouncer and cannot hold Prisma's
+   advisory locks (`.claude/rules/navigation-performance.md` §4). CRM now follows
+   the same pattern, and `CRM_DIRECT_DATABASE_URL` is declared in `.env.example`.
+2. **`pnpm-lock.yaml` did not carry `@876/settings`.** Regenerated; the diff is
+   three lines.
+3. **The legacy request contract still existed in `packages/crm/src/types.ts`** —
+   a second `crmRequestSchema`, `requestListSchema`, `CrmRequest`, `RequestList`,
+   `RequestStatus`, `ListRequestsQuery`, `CreateRequestInput`, and
+   `UpdateRequestInput`, all still shaped around `source`. This was not
+   "unrelated legacy": it was a competing definition of the same contract. It is
+   deleted, and `request-types.ts` is now the single source.
+4. **`resources/request-form-requests.ts` still validated against that legacy
+   schema.** It imported `requestListSchema` from `../types`, so listing a
+   customer's requests through the request-form path failed response validation
+   the moment the API started returning `channel`. This was the live
+   `[crm/invalid-response] … path: ['channel']` error seen in dev. Now imports the
+   canonical schema.
+5. **`apps/crm/src/app/api/support/route.ts` still sent `source: 'WEB'`.** The
+   in-product support widget now sends `channel: 'WIDGET'`, matching the
+   embedded-placement rule the rest of the branch establishes.
+6. **`apps/console/.../crm/components/request-manager.tsx` (626 lines) was dead
+   code with its own hand-rolled copy of the request record**, including
+   `source: string` and a `priority` string union that the contract had already
+   replaced with a priority object. Nothing imported it — which is exactly why
+   the migration did not catch it. Deleted.
+7. **`ensureProvisioned` for request forms had a read-then-create race.** Console
+   ensures the fixture on every `/requests` render, so two concurrent cold loads
+   could both read nothing and both insert, and the loser would 500 on the
+   tenant-scoped unique index. It now catches `P2002` and re-reads the winner —
+   the same pattern `tenants.repository.ensure` already uses.
+8. **The Console `/requests` layout awaited the fixture ensure.** A layout that
+   awaits data suspends into the _parent_ segment's boundary, so every
+   `/requests` click was held on the previous screen behind a provisioning write
+   (`.claude/rules/navigation-performance.md` §2). The guard still blocks, as it
+   must; the fixture now renders behind its own `<Suspense>` boundary and returns
+   nothing.
+9. **The module-catalog omissions were undocumented drift.** `customers`,
+   `priorities`, and `settings` are now recorded in `CRM_EXCLUDED_MODULE_KEYS`
+   with the reasoning, and a test fails if a permission module ever appears in
+   neither list.
+10. **Every remaining `source` fixture across four packages** was migrated to
+    `channel`, including a schema test that asserted the old enum.
 
-```bash
-pnpm install
-pnpm --filter @876/crm-api db:generate
-pnpm --filter @876/crm-api typecheck
-pnpm --filter @876/crm-api test
-pnpm --filter @876/crm typecheck
-pnpm --filter @876/crm test
-```
+### Tests
 
-Then run the migration using the local-development migration path you normally use for CRM. The CRM API package currently exposes `db:migrate` for Prisma migrate dev and `db:deploy` for deployment migrations; use the local-development command for the local database rather than treating this report as authorization to change production.
+35 tests were added or rewritten in this pass, on top of the 17 authored
+remotely — the remote 17 had never been executed, and two of them did not
+compile (a wrong `@876/core/access` import path, and the retired-axis assertion
+which the strict schema rejects outright rather than stripping).
 
-After the migration, verify at least:
+New coverage:
 
-1. existing requests retain the expected mapped channel;
-2. direct new CRM requests are `AGENT` unless explicitly overridden by a supported integration path;
-3. hosted form submissions become `FORM`;
-4. embedded form submissions become `WIDGET`;
-5. explicit integration intake can create `CHAT`, `EMAIL`, and `API` requests;
-6. Console `/requests` ensures the platform CRM workspace/support fixture without creating an `876-crm` entitlement;
-7. exactly one `876 Support` form exists for the platform tenant;
-8. ordinary customer CRM tenant provisioning does not receive the platform-only `876 Support` fixture.
+- `apps/crm-api/src/provisioning/fixtures.advanced.test.ts` — 7 tests. The 876
+  Support fixture had **zero** coverage; this covers the no-fixture path, the
+  tenant it provisions against, the canonical field mappings, the
+  already-provisioned short-circuit, soft-deleted repair, de-duplication of a
+  repeated fixture request, and that an unexpected failure is not swallowed.
+- `apps/crm-api/.../request-forms.provisioning.test.ts` — 7 tests covering
+  `ensureProvisioned` including both sides of the concurrency race.
+- `tenants.service.advanced.test.ts` — 4 tests: fixtures are not ensured when
+  none are requested, are ensured against the resolved tenant, work without a
+  manifest, and are **not** ensured when provisioning failed.
+- `requests/layout.test.tsx` — 3 tests proving the fixture stays off the
+  navigation critical path.
+- `packages/crm/src/modules.test.ts` — 8 tests for two-way catalog drift, the
+  recorded exclusions, and scope/permission-catalog coherence.
+
+### Gates run locally
+
+| Gate                                   | Result                         |
+| -------------------------------------- | ------------------------------ |
+| `@876/crm` typecheck / test            | clean / 227 passed             |
+| `@876/crm-api` typecheck / test / lint | clean / 701 passed / 0 errors  |
+| `@876/crm-app` typecheck / test / lint | clean / 142 passed / 0 errors  |
+| `@876/console` typecheck / test / lint | clean / 1315 passed / 0 errors |
+| `@876/client` test                     | 48 passed                      |
+| `@876/core` test                       | 935 passed                     |
+| `@876/settings` test                   | 62 passed                      |
+| `node scripts/check-app-structure.mjs` | OK                             |
+| `prettier --check` on changed files    | clean                          |
+
+`pnpm --filter @876/client typecheck` fails on
+`packages/core/src/fetch/bridge.ts` (`Property 'entries' does not exist on type
+'Headers'`). That failure reproduces on `origin/main` unchanged and is **not**
+from this branch.
+
+### Still requiring a dev-server restart
+
+The running CRM API holds the pre-migration Prisma client in memory, so it
+serializes `channel` as `undefined` until restarted. Reading through a freshly
+generated client returns the correct values, so this is a process-lifetime
+issue rather than a code one.
 
 ## Deliberately deferred
 
@@ -353,7 +445,14 @@ The following are not part of this PR:
 - building concrete chat/email connector routes beyond the intake channel contract;
 - adding OAuth/grant persistence for the CRM integration scopes;
 - making every CRM module optional or building module-management UI;
-- deleting unrelated legacy declarations from the broad historical `packages/crm/src/types.ts` file.
+- rolling the `ensureProvisioned` race guard back through the pre-existing
+  priority/category provisioning paths, which share the same read-then-create
+  shape from the previous PR;
+- the three pre-existing `prisma migrate diff` differences noted above.
+
+The legacy request declarations in `packages/crm/src/types.ts` were **not**
+deferred — see the local completion pass above. They were the same contract, not
+an unrelated one.
 
 Those are follow-on changes and should not be smuggled into the provenance/migration change.
 
