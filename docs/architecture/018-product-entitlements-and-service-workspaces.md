@@ -185,7 +185,12 @@ later: org activates 876 CRM
 
 There is no migration, copy, shadow table, or second tenant.
 
-The same rule applies to Finance/Billing.
+The same rule applies to Finance/Billing. A new organization receives the
+`876-enterprise` entitlement and no implicit `876-billing` entitlement, while
+its customer-registry row and finance workspace are still ensured. A later
+explicit Billing grant reuses that workspace under the same organization ID;
+it does not create a second tenant or copy invoices, payments, customers, or
+ledger history.
 
 ## Commercial packaging is above the service model
 
