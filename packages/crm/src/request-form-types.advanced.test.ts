@@ -93,7 +93,7 @@ function validRequest() {
     status: 'OPEN' as const,
     priorityId: priority.id,
     priority,
-    source: 'WEB' as const,
+    channel: 'FORM' as const,
     teamId: null,
     assigneeId: null,
     ownerId: null,
@@ -271,9 +271,9 @@ describe('requestFormSchema', () => {
   })
 
   it('rejects negative versions and wrong object discriminators', () => {
-    expect(requestFormSchema.safeParse(validForm({ version: -1 })).success).toBe(
-      false
-    )
+    expect(
+      requestFormSchema.safeParse(validForm({ version: -1 })).success
+    ).toBe(false)
     expect(
       requestFormSchema.safeParse(validForm({ object: 'request' })).success
     ).toBe(false)

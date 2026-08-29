@@ -23,11 +23,9 @@ describe('request channel vocabulary', () => {
   })
 
   it('accepts conversational and transport channels', () => {
-    expect(['CHAT', 'EMAIL', 'API'].map((value) => requestChannelSchema.parse(value))).toEqual([
-      'CHAT',
-      'EMAIL',
-      'API',
-    ])
+    expect(
+      ['CHAT', 'EMAIL', 'API'].map((value) => requestChannelSchema.parse(value))
+    ).toEqual(['CHAT', 'EMAIL', 'API'])
   })
 
   it('accepts direct agent creation', () => {
