@@ -1,3 +1,5 @@
+import { expectValue } from '../../../test/expect-value.js'
+import { getError } from '@876/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { tenants, priorities, repo } = vi.hoisted(() => ({
@@ -99,10 +101,12 @@ describe('categories.service.advanced - slugify', () => {
     )
     const longName =
       'A Very Long Category Name With Many Words And Special / Characters & Symbols That Exceeds Sixty Chars'
-    const res = await service.create('org_1', {
-      name: longName,
-      createdBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.create('org_1', {
+        name: longName,
+        createdBy: 'usr_1',
+      })
+    )
     expect(res.slug.length).toBeLessThanOrEqual(60)
     expect(res.slug).not.toContain('/')
     expect(res.slug).not.toContain(' ')
@@ -110,10 +114,12 @@ describe('categories.service.advanced - slugify', () => {
 
   it('falls back to category when slugify produces empty', async () => {
     repo.create.mockResolvedValue(categoryRow({ slug: 'category' }))
-    const res = await service.create('org_1', {
-      name: '!!!',
-      createdBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.create('org_1', {
+        name: '!!!',
+        createdBy: 'usr_1',
+      })
+    )
     expect(res.slug).toBe('category')
   })
 })
@@ -121,7 +127,7 @@ describe('categories.service.advanced - slugify', () => {
 describe('categories.service.advanced - tenant checks', () => {
   it('throws tenant-not-found when no tenant', async () => {
     tenants.retrieveByOrganization.mockResolvedValue(null)
-    await expect(service.list('missing')).rejects.toMatchObject({
+    await expect(service.list('missing')).resolves.toMatchObject({
       code: 'crm/tenant-not-found',
     })
   })
@@ -131,7 +137,7 @@ describe('categories.service.advanced - tenant checks', () => {
       ...tenant,
       status: 'INACTIVE',
     })
-    await expect(service.list('org_1')).rejects.toMatchObject({
+    await expect(service.list('org_1')).resolves.toMatchObject({
       code: 'crm/tenant-inactive',
     })
   })
@@ -162,16 +168,16 @@ describe('categories.service.advanced - priority validation', () => {
   })
 
   it('propagates priority-not-found on invalid priority', async () => {
-    priorities.requireActiveForTenant.mockRejectedValue({
-      code: 'crm/priority-not-found',
-    })
+    priorities.requireActiveForTenant.mockResolvedValue(
+      getError('crm/priority-not-found')
+    )
     await expect(
       service.create('org_1', {
         name: 'Ops',
         createdBy: 'usr_1',
         defaultPriorityId: 'bad',
       })
-    ).rejects.toMatchObject({ code: 'crm/priority-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
     expect(repo.create).not.toHaveBeenCalled()
   })
 
@@ -209,7 +215,7 @@ describe('categories.service.advanced - priority validation', () => {
     repo.retrieve.mockResolvedValue(null)
     await expect(
       service.createSub('org_1', 'bad', { name: 'Sub', createdBy: 'usr_1' })
-    ).rejects.toMatchObject({ code: 'crm/category-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/category-not-found' })
   })
 })
 
@@ -223,7 +229,7 @@ describe('categories.service.advanced - serialization and remove guards', () => 
         subcategories: [subcategoryRow({ createdAt: at, updatedAt: at })],
       }),
     ])
-    const [cat] = await service.list('org_1')
+    const [cat] = expectValue(await service.list('org_1'))
     expect(cat.createdAt).toBe(Math.floor(at.getTime() / 1000))
     expect(cat.subcategories[0].createdAt).toBe(Math.floor(at.getTime() / 1000))
     expect(cat.object).toBe('request_category')
@@ -235,16 +241,18 @@ describe('categories.service.advanced - serialization and remove guards', () => 
     repo.used.mockResolvedValue(true)
     await expect(
       service.remove('org_1', 'crm_cat_1', { deletedBy: 'usr_1' })
-    ).rejects.toMatchObject({ code: 'crm/category-in-use' })
+    ).resolves.toMatchObject({ code: 'crm/category-in-use' })
     expect(repo.remove).not.toHaveBeenCalled()
   })
 
   it('allows removal when not in use', async () => {
     repo.retrieve.mockResolvedValue(categoryRow())
     repo.used.mockResolvedValue(false)
-    const res = await service.remove('org_1', 'crm_cat_1', {
-      deletedBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.remove('org_1', 'crm_cat_1', {
+        deletedBy: 'usr_1',
+      })
+    )
     expect(res).toMatchObject({ deleted: true })
     expect(repo.remove).toHaveBeenCalled()
   })

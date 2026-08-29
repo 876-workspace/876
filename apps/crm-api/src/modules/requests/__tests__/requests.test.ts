@@ -372,7 +372,7 @@ describe('CRM request routes', () => {
         categoryId: 'crm_cat_1',
         subcategoryId: 'crm_subcat_1',
       })
-    ).rejects.toMatchObject({
+    ).resolves.toMatchObject({
       code: 'crm/subcategory-category-mismatch',
       httpStatus: 422,
     })

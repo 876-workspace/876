@@ -1,3 +1,4 @@
+import { expectValue } from '../../../test/expect-value.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { tenants, repository, customers, requests } = vi.hoisted(() => ({
@@ -159,12 +160,12 @@ beforeEach(() => {
   repository.retrieve.mockResolvedValue(formRow())
   repository.retrieveBySlug.mockResolvedValue(null)
   repository.create.mockImplementation(async (_tid: string, input: unknown) =>
-    formRow(input as Record<string, unknown>)
+    formRow(input as unknown as Record<string, unknown>)
   )
   repository.update.mockImplementation(async (id: string, input: unknown) =>
     formRow({
       id,
-      ...(input as Record<string, unknown>),
+      ...(input as unknown as Record<string, unknown>),
       version: 2,
       publishedAt: new Date(),
     })
@@ -216,12 +217,12 @@ beforeEach(() => {
 describe('request-forms.service - tenant guards', () => {
   it('throws tenant-not-found when no tenant for org', async () => {
     tenants.retrieveByOrganization.mockResolvedValue(null)
-    await expect(service.list('org_missing')).rejects.toMatchObject({
+    await expect(service.list('org_missing')).resolves.toMatchObject({
       code: 'crm/tenant-not-found',
     })
     await expect(
       service.retrieve('org_missing', 'form_1')
-    ).rejects.toMatchObject({ code: 'crm/tenant-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/tenant-not-found' })
     await expect(
       service.create('org_missing', {
         name: 'x',
@@ -229,19 +230,19 @@ describe('request-forms.service - tenant guards', () => {
         definition,
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/tenant-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/tenant-not-found' })
   })
   it('throws tenant-inactive when tenant not ACTIVE', async () => {
     tenants.retrieveByOrganization.mockResolvedValue({
       ...tenant,
       status: 'SUSPENDED',
     })
-    await expect(service.list('org_1')).rejects.toMatchObject({
+    await expect(service.list('org_1')).resolves.toMatchObject({
       code: 'crm/tenant-inactive',
     })
   })
   it('serializes timestamps as unix seconds', async () => {
-    const res = await service.list('org_1')
+    const res = expectValue(await service.list('org_1'))
     expect(res[0].createdAt).toBe(
       Math.floor(new Date('2026-08-26T18:00:00.000Z').getTime() / 1000)
     )
@@ -261,16 +262,18 @@ describe('request-forms.service - create', () => {
         definition,
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-slug-taken' })
+    ).resolves.toMatchObject({ code: 'crm/form-slug-taken' })
     expect(repository.create).not.toHaveBeenCalled()
   })
   it('creates DRAFT by default', async () => {
-    const created = await service.create('org_1', {
-      name: 'New',
-      slug: 'new-form',
-      definition,
-      createdBy: 'usr_1',
-    })
+    const created = expectValue(
+      await service.create('org_1', {
+        name: 'New',
+        slug: 'new-form',
+        definition,
+        createdBy: 'usr_1',
+      })
+    )
     expect(created.slug).toBe('new-form')
     expect(repository.create.mock.calls[0][1]).not.toHaveProperty('status')
     expect(repository.create).toHaveBeenCalledWith(
@@ -290,17 +293,19 @@ describe('request-forms.service - retrieve', () => {
       ...formRow(),
       definition: { fields: [{ bad: true }] },
     })
-    const res = await service.retrieve('org_1', 'crm_form_1')
+    const res = expectValue(await service.retrieve('org_1', 'crm_form_1'))
     expect(res?.definition.fields).toEqual([])
   })
   it('parses publishedDefinition when present else null', async () => {
-    const withPub = await service.retrieve('org_1', 'crm_form_1')
+    const withPub = expectValue(await service.retrieve('org_1', 'crm_form_1'))
     expect(withPub?.publishedDefinition).not.toBeNull()
     repository.retrieve.mockResolvedValue({
       ...formRow(),
       publishedDefinition: null,
     })
-    const withoutPub = await service.retrieve('org_1', 'crm_form_1')
+    const withoutPub = expectValue(
+      await service.retrieve('org_1', 'crm_form_1')
+    )
     expect(withoutPub?.publishedDefinition).toBeNull()
   })
 })
@@ -322,21 +327,25 @@ describe('request-forms.service - update', () => {
         slug: 'support-intake',
         updatedBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-slug-taken' })
+    ).resolves.toMatchObject({ code: 'crm/form-slug-taken' })
   })
   it('allows keeping same slug', async () => {
     repository.retrieveBySlug.mockResolvedValue(formRow())
-    const res = await service.update('org_1', 'crm_form_1', {
-      slug: 'support-intake',
-      updatedBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.update('org_1', 'crm_form_1', {
+        slug: 'support-intake',
+        updatedBy: 'usr_1',
+      })
+    )
     expect(res).not.toBeNull()
   })
   it('publishing bumps version and sets publishedDefinition/publishedAt', async () => {
-    const res = await service.update('org_1', 'crm_form_1', {
-      status: 'PUBLISHED',
-      updatedBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.update('org_1', 'crm_form_1', {
+        status: 'PUBLISHED',
+        updatedBy: 'usr_1',
+      })
+    )
     expect(repository.update).toHaveBeenCalledWith(
       'crm_form_1',
       expect.objectContaining({
@@ -352,7 +361,7 @@ describe('request-forms.service - update', () => {
       name: 'Renamed',
       updatedBy: 'usr_1',
     })
-    const arg = repository.update.mock.calls[0]?.[1] as Record<string, unknown>
+    const arg = repository.update.mock.calls[0]?.[1] as unknown as Record<string, unknown>
     expect(arg.version).toBeUndefined()
     expect(arg.publishedDefinition).toBeUndefined()
   })
@@ -377,10 +386,12 @@ describe('request-forms.service - remove', () => {
     ).toBeNull()
   })
   it('soft-deletes via repository.remove and archives', async () => {
-    const res = await service.remove('org_1', 'crm_form_1', {
-      deletedBy: 'usr_1',
-      reason: 'outdated',
-    })
+    const res = expectValue(
+      await service.remove('org_1', 'crm_form_1', {
+        deletedBy: 'usr_1',
+        reason: 'outdated',
+      })
+    )
     expect(repository.remove).toHaveBeenCalledWith({
       id: 'crm_form_1',
       slug: 'support-intake',
@@ -395,16 +406,18 @@ describe('request-forms.service - remove', () => {
     repository.submissionCount.mockResolvedValue(1)
     await expect(
       service.remove('org_1', 'crm_form_1', { deletedBy: 'usr_1' })
-    ).rejects.toMatchObject({ code: 'crm/form-in-use' })
+    ).resolves.toMatchObject({ code: 'crm/form-in-use' })
     process.env.DELETION_MODE = prev
   })
   it('hard delete allows when no submissions', async () => {
     const prev = process.env.DELETION_MODE
     process.env.DELETION_MODE = 'hard'
     repository.submissionCount.mockResolvedValue(0)
-    const res = await service.remove('org_1', 'crm_form_1', {
-      deletedBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.remove('org_1', 'crm_form_1', {
+        deletedBy: 'usr_1',
+      })
+    )
     expect(res?.deleted).toBe(true)
     process.env.DELETION_MODE = prev
   })
@@ -419,7 +432,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/form-not-found' })
   })
   it('throws form-not-published when status is DRAFT', async () => {
     repository.retrieve.mockResolvedValue({
@@ -433,7 +446,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-not-published' })
+    ).resolves.toMatchObject({ code: 'crm/form-not-published' })
   })
   it('throws form-not-published when publishedDefinition null', async () => {
     repository.retrieve.mockResolvedValue({
@@ -447,7 +460,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-not-published' })
+    ).resolves.toMatchObject({ code: 'crm/form-not-published' })
   })
   it('throws customer-not-found when no customer matches party', async () => {
     customers.list.mockResolvedValue({ customers: [] })
@@ -457,7 +470,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/customer-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/customer-not-found' })
   })
   it('throws form-invalid-submission when subject empty or missing', async () => {
     await expect(
@@ -466,14 +479,14 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: '' },
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
   })
   it('throws form-invalid-submission when subject too long (>240)', async () => {
     const long = 'a'.repeat(241)
@@ -483,7 +496,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
   })
   it('throws form-invalid-submission for unknown answer key', async () => {
     await expect(
@@ -492,7 +505,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
   })
   it('throws for missing required field', async () => {
     await expect(
@@ -501,7 +514,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
   })
   it('validates EMAIL format', async () => {
     await expect(
@@ -510,7 +523,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     // valid email should pass (when required false it still validates format)
     await expect(
       service.submit('org_1', 'crm_form_1', {
@@ -528,14 +541,14 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', count: NaN },
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', count: 42 },
@@ -552,7 +565,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', agree: true },
@@ -569,7 +582,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', priority_pick: 'high' },
@@ -586,23 +599,25 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', tags: ['a', 'unknown'] },
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
-    const res = await service.submit('org_1', 'crm_form_1', {
-      answers: { subject: 'Hi', tags: ['a', 'a', 'b'] },
-      customerOrganizationId: 'org_2',
-      createdBy: 'usr_1',
-    })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
+    const res = expectValue(
+      await service.submit('org_1', 'crm_form_1', {
+        answers: { subject: 'Hi', tags: ['a', 'a', 'b'] },
+        customerOrganizationId: 'org_2',
+        createdBy: 'usr_1',
+      })
+    )
     expect(res.object).toBe('request_form_submission')
     // deduped in normalized answers sent to createFromIntake
     const intakeAnswers = requests.createFromIntake.mock.calls[0]?.[2]
-      ?.answers as Record<string, unknown>
+      ?.answers as unknown as Record<string, unknown>
     expect(intakeAnswers?.tags).toEqual(['a', 'b'])
   })
   it('validates PHONE trims and length', async () => {
@@ -613,7 +628,7 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', phone: '  +12065550100  ' },
@@ -630,14 +645,14 @@ describe('request-forms.service - submit validation', () => {
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', due: '2026-02-30' },
         customerOrganizationId: 'org_2',
         createdBy: 'usr_1',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-invalid-submission' })
+    ).resolves.toMatchObject({ code: 'crm/form-invalid-submission' })
     await expect(
       service.submit('org_1', 'crm_form_1', {
         answers: { subject: 'Hi', due: '2026-08-26' },
@@ -725,7 +740,7 @@ describe('request-forms.service - submit validation', () => {
     })
     const intakeCtx = requests.createFromIntake.mock.calls.at(
       -1
-    )?.[2] as Record<string, unknown>
+    )?.[2] as unknown as Record<string, unknown>
     expect(intakeCtx.customerUserId).toBe('usr_99')
     expect(intakeCtx.customerOrganizationId).toBeNull()
     const intake = requests.createFromIntake.mock.calls.at(-1)?.[1] as Record<
@@ -736,11 +751,13 @@ describe('request-forms.service - submit validation', () => {
     expect(intake.requesterContactId).toBe('contact_1')
   })
   it('returns submission envelope with request and unix timestamp', async () => {
-    const res = await service.submit('org_1', 'crm_form_1', {
-      answers: { subject: 'Title', details: 'Desc' },
-      customerOrganizationId: 'org_2',
-      createdBy: 'usr_1',
-    })
+    const res = expectValue(
+      await service.submit('org_1', 'crm_form_1', {
+        answers: { subject: 'Title', details: 'Desc' },
+        customerOrganizationId: 'org_2',
+        createdBy: 'usr_1',
+      })
+    )
     expect(res.object).toBe('request_form_submission')
     expect(res.formId).toBe('crm_form_1')
     expect(res.request.object).toBe('request')
@@ -755,7 +772,7 @@ describe('request-forms.service - listCustomerRequests', () => {
       service.listCustomerRequests('org_1', 'missing', {
         customerOrganizationId: 'org_2',
       })
-    ).rejects.toMatchObject({ code: 'crm/form-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/form-not-found' })
   })
   it('returns [] when customer not found', async () => {
     customers.list.mockResolvedValue({ customers: [] })
@@ -767,9 +784,11 @@ describe('request-forms.service - listCustomerRequests', () => {
     expect(requests.list).not.toHaveBeenCalled()
   })
   it('lists requests for resolved customer', async () => {
-    const res = await service.listCustomerRequests('org_1', 'crm_form_1', {
-      customerOrganizationId: 'org_2',
-    })
+    const res = expectValue(
+      await service.listCustomerRequests('org_1', 'crm_form_1', {
+        customerOrganizationId: 'org_2',
+      })
+    )
     expect(requests.list).toHaveBeenCalledWith('org_1', {
       customerId: 'crm_cus_1',
     })
@@ -782,7 +801,7 @@ describe('request-forms.service - listSubmissions', () => {
     repository.retrieve.mockResolvedValue(null)
     await expect(
       service.listSubmissions('org_1', 'missing')
-    ).rejects.toMatchObject({ code: 'crm/form-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/form-not-found' })
   })
   it('returns mapped submission records', async () => {
     repository.listSubmissions.mockResolvedValue([
@@ -801,7 +820,9 @@ describe('request-forms.service - listSubmissions', () => {
         createdAt: new Date('2026-08-26T18:00:00.000Z'),
       },
     ])
-    const res = await service.listSubmissions('org_1', 'crm_form_1')
+    const res = expectValue(
+      await service.listSubmissions('org_1', 'crm_form_1')
+    )
     expect(res[0].object).toBe('request_form_submission_record')
     expect(res[0].createdAt).toBe(
       Math.floor(new Date('2026-08-26T18:00:00.000Z').getTime() / 1000)

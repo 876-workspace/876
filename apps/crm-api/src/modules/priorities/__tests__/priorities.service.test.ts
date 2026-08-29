@@ -1,3 +1,4 @@
+import { expectValue } from '../../../test/expect-value.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
@@ -85,7 +86,7 @@ describe('request priority service', () => {
   it('fails closed when the organization has no CRM tenant', async () => {
     mocks.retrieveTenant.mockResolvedValue(null)
 
-    await expect(service.list('missing-org')).rejects.toMatchObject({
+    await expect(service.list('missing-org')).resolves.toMatchObject({
       code: 'crm/tenant-not-found',
     })
     expect(mocks.list).not.toHaveBeenCalled()
@@ -102,12 +103,14 @@ describe('request priority service', () => {
     })
     mocks.create.mockResolvedValue(created)
 
-    const result = await service.create('org_1', {
-      name: 'Critical / Immediate',
-      weight: 50,
-      sortOrder: 50,
-      createdBy: 'usr_1',
-    })
+    const result = expectValue(
+      await service.create('org_1', {
+        name: 'Critical / Immediate',
+        weight: 50,
+        sortOrder: 50,
+        createdBy: 'usr_1',
+      })
+    )
 
     expect(mocks.create).toHaveBeenCalledWith({
       tenantId: tenant.id,
@@ -132,10 +135,12 @@ describe('request priority service', () => {
     mocks.create.mockResolvedValue(created)
     mocks.setDefault.mockResolvedValue(promoted)
 
-    const result = await service.create('org_1', {
-      name: 'First',
-      createdBy: 'usr_1',
-    })
+    const result = expectValue(
+      await service.create('org_1', {
+        name: 'First',
+        createdBy: 'usr_1',
+      })
+    )
 
     expect(mocks.setDefault).toHaveBeenCalledWith(tenant.id, 'crm_pri_first')
     expect(result.isDefault).toBe(true)
@@ -146,10 +151,10 @@ describe('request priority service', () => {
 
     await expect(
       service.update('org_1', 'crm_pri_1', { isActive: false })
-    ).rejects.toMatchObject({ code: 'crm/priority-default-required' })
+    ).resolves.toMatchObject({ code: 'crm/priority-default-required' })
     await expect(
       service.update('org_1', 'crm_pri_1', { isDefault: false })
-    ).rejects.toMatchObject({ code: 'crm/priority-default-required' })
+    ).resolves.toMatchObject({ code: 'crm/priority-default-required' })
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
@@ -166,10 +171,12 @@ describe('request priority service', () => {
     mocks.update.mockResolvedValue(updated)
     mocks.setDefault.mockResolvedValue(promoted)
 
-    const result = await service.update('org_1', current.id, {
-      name: 'Critical',
-      isDefault: true,
-    })
+    const result = expectValue(
+      await service.update('org_1', current.id, {
+        name: 'Critical',
+        isDefault: true,
+      })
+    )
 
     expect(mocks.update).toHaveBeenCalledWith(current.id, {
       name: 'Critical',
@@ -184,13 +191,13 @@ describe('request priority service', () => {
     mocks.retrieve.mockResolvedValue(priority())
     await expect(
       service.remove('org_1', 'crm_pri_1', { deletedBy: 'usr_1' })
-    ).rejects.toMatchObject({ code: 'crm/priority-default-required' })
+    ).resolves.toMatchObject({ code: 'crm/priority-default-required' })
 
     mocks.retrieve.mockResolvedValue(priority({ isDefault: false }))
     mocks.isReferenced.mockResolvedValue(true)
     await expect(
       service.remove('org_1', 'crm_pri_1', { deletedBy: 'usr_1' })
-    ).rejects.toMatchObject({ code: 'crm/priority-in-use' })
+    ).resolves.toMatchObject({ code: 'crm/priority-in-use' })
     expect(mocks.remove).not.toHaveBeenCalled()
   })
 
@@ -199,7 +206,7 @@ describe('request priority service', () => {
 
     await expect(
       service.requireActiveForTenant(tenant.id, 'crm_pri_archived')
-    ).rejects.toMatchObject({ code: 'crm/priority-not-found' })
+    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
   })
 
   it('preserves tenant overrides when a provisioned key already exists', async () => {
@@ -212,16 +219,18 @@ describe('request priority service', () => {
     })
     mocks.retrieveByProvisioningKey.mockResolvedValue(customized)
 
-    const result = await service.ensureProvisioned(tenant.id, {
-      provisioningKey: 'urgent',
-      name: 'Urgent',
-      description: null,
-      color: null,
-      icon: null,
-      weight: 40,
-      sortOrder: 40,
-      isDefault: false,
-    })
+    const result = expectValue(
+      await service.ensureProvisioned(tenant.id, {
+        provisioningKey: 'urgent',
+        name: 'Urgent',
+        description: null,
+        color: null,
+        icon: null,
+        weight: 40,
+        sortOrder: 40,
+        isDefault: false,
+      })
+    )
 
     expect(result).toBe(customized)
     expect(mocks.create).not.toHaveBeenCalled()
@@ -241,16 +250,18 @@ describe('request priority service', () => {
     mocks.create.mockResolvedValue(created)
     mocks.setDefault.mockResolvedValue(promoted)
 
-    const result = await service.ensureProvisioned(tenant.id, {
-      provisioningKey: 'normal',
-      name: 'Normal',
-      description: null,
-      color: null,
-      icon: null,
-      weight: 20,
-      sortOrder: 20,
-      isDefault: true,
-    })
+    const result = expectValue(
+      await service.ensureProvisioned(tenant.id, {
+        provisioningKey: 'normal',
+        name: 'Normal',
+        description: null,
+        color: null,
+        icon: null,
+        weight: 20,
+        sortOrder: 20,
+        isDefault: true,
+      })
+    )
 
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({
