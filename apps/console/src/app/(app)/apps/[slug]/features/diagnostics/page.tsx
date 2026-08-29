@@ -136,6 +136,10 @@ async function FeatureDiagnosticsResult({
                 <p className="text-muted-foreground font-mono text-xs">
                   {decision.feature.slug}
                 </p>
+                <p className="text-muted-foreground text-xs">
+                  Rollout source:{' '}
+                  {decision.rollout_source === 'posthog' ? 'PostHog' : 'Local'}
+                </p>
               </TableCell>
               <DecisionCell value={decision.global_enabled} />
               <DecisionCell value={decision.parent_enabled} />
