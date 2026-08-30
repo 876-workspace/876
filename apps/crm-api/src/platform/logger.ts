@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { createRequire } from 'node:module'
 
 import { pino, type Logger } from 'pino'
 
@@ -71,6 +72,35 @@ function redact(value: unknown, depth = 0): unknown {
   return output
 }
 
+/**
+ * Resolves the pretty-print transport, or nothing.
+ *
+ * `pino-pretty` is a devDependency: it is present locally and absent from the
+ * production bundle. Asking pino for a transport it cannot resolve throws
+ * during `configureLogging`, which runs at module load — so the service does
+ * not fail a request, it fails to start at all. Probing first means a missing
+ * pretty printer costs readable local output and nothing else.
+ */
+function prettyTransport():
+  { transport: { target: string; options: object } } | undefined {
+  try {
+    createRequire(import.meta.url).resolve('pino-pretty')
+  } catch {
+    return undefined
+  }
+
+  return {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        messageKey: 'event',
+        translateTime: 'HH:MM:ss',
+      },
+    },
+  }
+}
+
 let root: Logger | undefined
 
 export function configureLogging(options: {
@@ -103,18 +133,7 @@ export function configureLogging(options: {
         ...storage.getStore()?.actor,
       }
     },
-    ...(isDevelopment
-      ? {
-          transport: {
-            target: 'pino-pretty',
-            options: {
-              colorize: true,
-              messageKey: 'event',
-              translateTime: 'HH:MM:ss',
-            },
-          },
-        }
-      : {}),
+    ...(isDevelopment ? (prettyTransport() ?? {}) : {}),
   })
 }
 
