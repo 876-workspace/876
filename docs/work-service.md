@@ -1,168 +1,310 @@
-# 876 Work service — foundation, migration, and runbook
+# 876 Work service — Phase 2 runbook
 
-The architectural decision, the ownership model, and the calendar standards live in
-`docs/architecture/019-work-service-and-productivity-plane.md`. This file is the
-operational half: what exists today, how to bring it up, how to migrate CRM's data
-into it, and what is deliberately not done yet.
+The ownership decision lives in `docs/architecture/019-work-service-and-productivity-plane.md`.
+This file describes the implementation now present on `feature/work-phase-2-productivity-plane`,
+what must be run locally, and what remains intentionally deferred.
 
-## What exists
+## Current boundary
 
-| Piece              | Path                                 | Role                                                        |
-| ------------------ | ------------------------------------ | ----------------------------------------------------------- |
-| Contract package   | `packages/work`                      | Zod contracts + typed resources. Root entry is browser-safe |
-| Operator client    | `packages/work/src/operator.ts`      | Internal-key client; server-side callers only               |
-| Integration client | `packages/work/src/integration.ts`   | App-key client for organization-scoped Work access          |
-| Service            | `apps/work-api`                      | Express 5 + Prisma 7, port 4020, its own Neon project       |
-| CRM adapter        | `apps/crm-api/src/providers/work.ts` | Builds the Work client and the CRM request context          |
+876 Work is the canonical owner of organization-scoped productivity primitives:
 
-The Work API exposes an operator provisioning route and scope-gated integration
-data routes:
+- task lists and tasks;
+- task links and assignments/delegation;
+- standalone reminders;
+- recurrence rules;
+- attached alerts;
+- calendars and per-user calendar subscriptions;
+- events and participants;
+- My Work read-model aggregation;
+- notification scheduling/outbox state;
+- external-sync connections and local/remote mappings;
+- iCalendar / JSCalendar export.
 
-```
-POST   /v1/tenants                                      operator (`x-internal-key`)
-GET    /v1/organizations/:organizationId/tasks
-POST   /v1/organizations/:organizationId/tasks
-PATCH  /v1/organizations/:organizationId/tasks/:taskId
-DELETE /v1/organizations/:organizationId/tasks/:taskId
-        …and the identical reminder set                  integration (`x-876-api-key` + connection scope)
-```
+CRM owns requests, request notes, customers, CRM priorities, categories, teams, forms,
+routing, and CRM workflows. A CRM request is context for a Work Task or Event, never
+its database owner.
 
-CRM's own URLs are unchanged. `/v1/organizations/:organizationId/requests/:requestId/tasks`
-still validates the CRM request, still returns `object: "request_task"`, and still
-enriches the CRM priority — it just stores in Work now.
+## Phase 2 resources
 
-`apps/api` is the operator caller. `workspace.work.ensure({ organizationId, appIds })`
-runs beside `workspace.finance.ensure` at organization bootstrap and at subscription
-activation, and posts `workspace.ensure(organizationId, appId)` so a workspace and its
-app connection are provisioned together. Re-running it never changes an existing
-connection’s scopes; a mismatch is logged so a deliberate revocation remains intact.
-
-Provisioning is best-effort: an unconfigured or unreachable Work service is logged and
-skipped rather than stranding an otherwise-provisioned organization, and the next
-activation repairs it. No product app holds `WORK_INTERNAL_KEY`.
-
-## Environment
-
-```
-WORK_DATABASE_URL          Neon pooled URL for the work database
-WORK_DIRECT_DATABASE_URL   Neon direct URL — migrations only
-WORK_INTERNAL_KEY          the operator credential
-WORK_API_URL               http://localhost:4020 locally
+```text
+WorkTenant
+├── WorkTaskList
+│   └── WorkTask
+│       ├── WorkTaskLink[]
+│       ├── WorkTaskAssignment[]
+│       └── WorkAlert[]
+├── WorkReminder
+├── WorkRecurrenceRule
+├── WorkCalendar
+│   ├── WorkCalendarSubscription[]
+│   └── WorkEvent[]
+│       ├── WorkEventParticipant[]
+│       └── WorkAlert[]
+├── WorkNotificationOutbox
+└── WorkSyncConnection
+    └── WorkSyncMapping[]
 ```
 
-`WORK_API_URL` and `CRM_API_876_KEY` are read by `apps/crm-api`; CRM uses its own
-app credential at Work's integration tier. `WORK_INTERNAL_KEY` remains exclusive to
-the Work service and platform operator callers. `pnpm check:env` checks the declared
-variables, and `pnpm check:database-env work-api` verifies the two database URLs.
+The old Work task `context_*` and `assignee_id` columns remain temporarily as
+compatibility projections. Phase 2 adds canonical `WorkTaskLink` and
+`WorkTaskAssignment` rows and backfills the legacy values into them. CRM may continue
+to use the old single-context task contract while new Work-native callers use links
+and assignments directly.
 
-Work runs its **own Neon project**, like every other 876 datastore. Do not add a
-`work` database to the CRM project — the isolation is the point of the boundary.
+## Task semantics
 
-## Schema notes
+Tasks now support:
 
-Two things about `apps/work-api/prisma/` are deliberate and easy to undo by accident:
+- stable interoperable `uid`;
+- task list membership;
+- parent/subtask relationships;
+- `OPEN`, `IN_PROGRESS`, `WAITING`, `DEFERRED`, `DONE`, `CANCELLED`, `FAILED`;
+- Work-native importance separate from CRM's opaque priority reference;
+- scheduled start and deadline as separate values;
+- timezone identifiers paired with scheduled timestamps;
+- estimated duration;
+- percentage complete;
+- recurrence;
+- multiple context links;
+- multiple assignment/delegation rows.
 
-- **The context columns carry a CHECK constraint** enforcing that
-  `context_service`, `context_resource`, and `context_id` are either all null or all
-  set. Prisma cannot express this, so it lives only in the migration SQL and Prisma
-  will not recreate it if the migration is ever regenerated from the schema. Keep it —
-  it makes a half-built context unrepresentable rather than merely handled.
-- **Index names are truncated to Postgres's 63-byte identifier limit** to match the
-  names Prisma itself derives. The two context indexes would otherwise be 86 and 82
-  characters; Postgres truncates silently and to a _different_ string than Prisma
-  expects, which produces permanent, unfixable-looking migration drift.
+`OVERDUE` is derived and must not become a stored status.
 
-## Bring-up
+## Calendar semantics
+
+A Calendar is separate from a user's subscription to it. Calendar rows own event
+collections and shared metadata. `WorkCalendarSubscription` owns the user's role,
+visibility, colour, and default reminder preferences.
+
+A primary calendar belongs to one user, is created on first touch, and must not be
+deleted. The owner receives an OWNER subscription.
+
+Events have exactly one of two legal time shapes:
+
+```text
+Timed:
+  startAt + endAt + timeZone
+
+All-day:
+  startDate + endDate
+```
+
+The database migration enforces that those shapes cannot be mixed.
+
+Events may carry an opaque `{service, resource, id}` context such as
+`crm/request`, `couriers/package`, or `careers/candidate`. Work never resolves that
+context and never creates a cross-database foreign key.
+
+## Reminder vs Alert
+
+A `WorkReminder` is standalone user work: “remind me to call this customer tomorrow.”
+
+A `WorkAlert` belongs to exactly one Task or Event and represents a notification
+schedule such as “15 minutes before.” Absolute and relative trigger shapes are
+mutually exclusive.
+
+The scheduler materializes due reminder/alert occurrences into
+`WorkNotificationOutbox`. The outbox idempotency key includes the recurrence occurrence,
+so recurring notifications can fire repeatedly without turning retries into duplicate
+delivery.
+
+The default notification gateway is provider-neutral HTTP. Notification transport is
+not stored on Task/Event rows.
+
+## Recurrence
+
+Recurrence is represented structurally and serialized to RFC 5545-compatible RRULE
+semantics. Work uses IANA timezone identifiers rather than raw offsets. The rule model
+supports frequency, interval, BYDAY, BYMONTHDAY, BYMONTH, count/until, week start, and
+the canonical RRULE string.
+
+Do not implement recurring schedules as repeated fixed-second arithmetic.
+
+## Access tiers
+
+Work supports three normal authority classes plus a scheduler-only authority:
+
+| Tier | Principal | Credential |
+| --- | --- | --- |
+| operator | 876 platform / Console / orchestration | `WORK_INTERNAL_KEY` |
+| integration | one app acting for one organization | app API key + Work connection scopes |
+| session | signed-in user through an entitled app | app API key + Bearer user access token |
+| scheduler | notification worker only | `WORK_CRON_SECRET` bearer token |
+
+Signed-in Work access is verified against Core app membership, entitlement state, and
+effective app permissions. Integration access remains tenant-scoped by Work connection
+scopes.
+
+CRM does not automatically receive every Work scope. Its grant is explicit. Phase 2
+adds the Calendar/Event/Alert/My Work scopes needed for CRM request scheduling while
+leaving provider sync scopes out of the CRM grant.
+
+## CRM integration
+
+CRM keeps its existing request Task and Reminder URLs. Those are host-product adapters
+over Work.
+
+Phase 2 also adds request Event adapters:
+
+```text
+/v1/organizations/:organizationId/requests/:requestId/events
+/v1/organizations/:organizationId/requests/:requestId/events/:eventId
+/v1/organizations/:organizationId/requests/:requestId/events/:eventId/participants
+```
+
+The CRM Next app now has matching signed browser proxy routes and a local
+`client.requestEvents` resource. Browser code never receives Work or CRM service
+credentials.
+
+`RequestEventsSection` is provided as an isolated scheduling surface. It is deliberately
+not mounted into the request page on this branch because `main` advanced through PR
+#440 and changed the CRM request/detail composition after this Phase 2 branch diverged.
+After rebasing, mount that component in the new request split/detail structure rather
+than reimplementing it.
+
+## Shared Work UI
+
+`@876/ui` now contains controlled Work surfaces:
+
+- `@876/ui/work-task-list`
+- `@876/ui/work-agenda`
+- `@876/ui/work-calendar-list`
+
+These components receive Work resources as props. They do not own persistence and do
+not write Work state to the Widgets database. A future Widgets registry entry for them
+must use `dataOwner: 'external'`.
+
+## My Work
+
+`My Work` is a read model, not another source of truth. It aggregates the signed-in
+user's assigned tasks, reminders, and visible subscribed-calendar events. No separate
+“My Day”/“today” persistence table should be introduced unless a later product decision
+requires explicit daily-selection state.
+
+## External provider synchronization
+
+Phase 2 implements the architecture only, by design.
+
+Persisted resources:
+
+- `WorkSyncConnection` — provider, user, opaque credential reference, account metadata,
+  sync cursor, lifecycle/error state;
+- `WorkSyncMapping` — local resource ID ↔ remote resource ID, ETag, iCalendar UID,
+  content hash, last sync timestamp.
+
+Provider-neutral interfaces live under `apps/work-api/src/providers/sync/`:
+
+- `WorkSyncCredentialResolver` resolves the opaque credential reference;
+- `WorkSyncProviderAdapter` defines pull/push/remove;
+- `WorkSyncProviderFactory` constructs a provider adapter.
+
+**Google, Microsoft, and CalDAV HTTP/OAuth implementations are intentionally not part
+of this phase.** Work must not store raw access/refresh tokens in ordinary business
+rows. The future implementation should plug an approved secret broker into the
+credential resolver and implement each provider behind the adapter interface.
+
+## iCalendar / JSCalendar export
+
+Work owns calendar/task serialization. Host apps should not implement their own ICS
+writers. The export surface supports iCalendar and JSCalendar-oriented output so later
+provider sync builds on stable UIDs and standards-compatible semantics.
+
+## Migrations
+
+The Phase 2 migration series is additive:
+
+```text
+20260830134500_work_productivity_plane
+20260830143000_work_event_context
+20260830144500_work_notification_occurrences
+```
+
+The first migration backfills:
+
+- one default Inbox task list per existing Work tenant;
+- every existing task into that list;
+- existing context triples into primary task links;
+- existing `assignee_id` values into USER/OWNER assignment rows;
+- stable task UIDs and timezone compatibility values.
+
+Legacy CRM Task/Reminder tables are still not dropped.
+
+## Local sequence
+
+This branch was originally based on `1a206343…`. During implementation, `main` advanced
+again and is now at least `44fccacc…` through PR #440. The available GitHub writer in
+ChatGPT Web does not expose a safe native merge/rebase operation. Do not create a fake
+two-parent merge with an unmerged tree.
+
+The local agent must first incorporate current main:
 
 ```bash
-pnpm --filter @876/work-api db:deploy      # apply the committed schema
-pnpm dev:work                              # or pnpm dev:crm, which starts Work too
+git switch feature/work-phase-2-productivity-plane
+git fetch origin
+git rebase origin/main
+# or merge origin/main if that is the repository's preferred integration flow
 ```
 
-`dev:crm`, `dev:crm:api`, `dev:console`, and the combined dev scripts all start Work,
-because CRM's task and reminder endpoints now depend on it.
+Resolve CRM UI conflicts in favour of current main and then mount
+`RequestEventsSection` into the new Request composition.
 
-## Migrating CRM's existing tasks and reminders
-
-The strategy is **copy → verify → cut over → observe → drop later**. It is not
-"drop the CRM tables and hope".
+Regenerate the workspace lockfile:
 
 ```bash
-pnpm --filter @876/work-api migrate:crm    # copy CRM rows into Work
-pnpm --filter @876/work-api verify:crm     # strict parity; must pass before cutover
+pnpm install --lockfile-only
 ```
 
-The migration preserves the **existing CRM ids** (`crm_task_…` stays `crm_task_…`),
-so URLs, logs, Sentry breadcrumbs, and API consumers keep resolving. Only
-Work-created rows get Work-native prefixes.
-
-`verify:crm` is not a row count. It compares every migrated row field by field and
-fails on a missing id, an unexpected CRM-context row in Work, or a mismatch in tenant,
-context, status, timestamps, payload, completion metadata, or tombstone state. **Do
-not cut over on a failing verifier.**
-
-Two properties of the verifier follow from it being a _pre-cutover_ gate, and both
-are deliberate:
-
-- It treats a CRM-context Work row with no CRM counterpart as a failure
-  (`unexpectedInWork`). After cutover that is the normal state — new tasks are created
-  in Work and never reach the legacy tables — so **the verifier is meaningful only
-  before the runtime cuts over.** Do not run it afterwards and read the failure as
-  data loss.
-- It asserts the Work tenant's status equals the CRM tenant's, and the migration
-  writes CRM's status onto the Work tenant on every run. During the foundation the
-  Work tenant's lifecycle is derived from CRM's; it becomes independent in Phase 2,
-  at which point both halves of this pairing have to change together.
-
-### The rollback limitation — read this before deploying
-
-The foundation deliberately does **not** dual-write. After cutover, a CRM task write
-lands in Work and nowhere else. The retained `RequestTask` / `RequestReminder` tables
-are migration checkpoints, **not hot replicas**.
-
-So rolling the CRM binary back to the pre-Work implementation after production has
-accepted Work-backed writes will silently expose stale data. A real rollback needs the
-Work delta copied back into the CRM tables first, or another explicitly designed path.
-Plan for forward-fix, not rollback.
-
-### Legacy tables stay, for now
-
-`RequestTask` and `RequestReminder` are not dropped in this change. Drop them only
-after: Work is deployed, the migration verified, the application exercised, telemetry
-clean, and no runtime importer of the CRM task/reminder repositories remains. That is
-the end of the migration, not the beginning.
-
-## Verification
+Then run:
 
 ```bash
-pnpm --filter @876/core     typecheck && pnpm --filter @876/core     test
-pnpm --filter @876/work     typecheck && pnpm --filter @876/work     lint && pnpm --filter @876/work     test
-pnpm --filter @876/work-api typecheck && pnpm --filter @876/work-api lint && pnpm --filter @876/work-api test
-pnpm --filter @876/crm-api  typecheck && pnpm --filter @876/crm-api  lint && pnpm --filter @876/crm-api  test
+pnpm --filter @876/core typecheck
+pnpm --filter @876/core test
+pnpm --filter @876/work typecheck
+pnpm --filter @876/work lint
+pnpm --filter @876/work test
+pnpm --filter @876/work-api typecheck
+pnpm --filter @876/work-api lint
+pnpm --filter @876/work-api test
+pnpm --filter @876/crm typecheck
+pnpm --filter @876/crm test
+pnpm --filter @876/crm-api typecheck
+pnpm --filter @876/crm-api lint
+pnpm --filter @876/crm-api test
+pnpm --filter @876/client typecheck
+pnpm --filter @876/ui typecheck
 pnpm check:service-bundle
 pnpm check:database-env crm-api work-api
 pnpm format:check
 ```
 
-`check:service-bundle` matters more than it looks: the Express services are bundled
-with `tsup`, and `@876/*` workspace packages ship TypeScript source. A runtime
-workspace dependency missing from `noExternal` produces a deployed bundle that still
-`import`s `@876/work` and dies with `ERR_MODULE_NOT_FOUND` at boot — a green build and
-a broken service. `apps/work-api` and `apps/crm-api` both inline `@876/core` and
-`@876/work`.
+Database-capable verification:
 
-### Manual smoke test after migration
+```bash
+pnpm --filter @876/work-api db:deploy
 
-In CRM, against a real request: view / create / edit / complete / reopen / delete a
-task, then the same for reminders, then repeat through Console. Confirm the rows land
-in the Work database and that **no new writes** reach the legacy CRM tables.
+# Foundation migration parity, if this environment has not already cut over:
+pnpm --filter @876/work-api migrate:crm
+pnpm --filter @876/work-api verify:crm
 
-## Known gaps in the foundation
+# Phase 2 structural/invariant verification after the new migrations:
+pnpm --filter @876/work-api verify:phase2
+```
 
-These are tracked in the architecture record and are Phase 2 work, in order:
+`verify:phase2` fails on missing default lists, invalid list references, missing
+context/assignment backfills, task time-pair violations, invalid event time shapes,
+missing primary-calendar owner subscriptions, invalid participants/alerts/recurrence,
+missing outbox occurrence keys, and obvious inline bearer-token values accidentally
+stored in `credential_ref`.
 
-1. Context is a single triple rather than a collection of links.
-2. `assigneeId` is a column rather than a first-class assignment resource.
-3. No `startAt`, no task lists, no calendars, no events, no recurrence, no alerts.
-4. No standalone Work product surface — by design; Work is a service first, and the
-   reusable widgets come before any standalone app.
+## Deliberately deferred
+
+- actual Google Calendar / Google Tasks synchronization;
+- actual Microsoft Graph Calendar / To Do synchronization;
+- actual CalDAV client implementation;
+- OAuth/account-linking UX for those providers;
+- final secret-broker choice for provider credentials;
+- a standalone `876 Work` product/application;
+- destructive removal of legacy CRM RequestTask/RequestReminder tables;
+- broad rollout of Work widgets into every 876 product.
+
+The architecture for those items is present; provider/network implementation is not.
