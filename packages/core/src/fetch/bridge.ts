@@ -166,9 +166,9 @@ const strippedBridgeHeaders = new Set([
 export function copyBridgeResponse(apiResponse: Response): Response {
   const headers = new Headers()
 
-  for (const [key, value] of apiResponse.headers.entries()) {
+  apiResponse.headers.forEach((value, key) => {
     if (!strippedBridgeHeaders.has(key.toLowerCase())) headers.set(key, value)
-  }
+  })
 
   const response = new Response(apiResponse.body, {
     status: apiResponse.status,

@@ -25,6 +25,7 @@ function consoleOptions() {
         },
       },
       crm: { internalKey: 'crm-internal' },
+      work: { operator: { internalKey: 'work-internal' } },
       storage: { internalKey: 'storage-internal' },
       widgets: {
         member: { baseUrl: 'http://localhost:4003', serviceKey: 'widgets-key' },

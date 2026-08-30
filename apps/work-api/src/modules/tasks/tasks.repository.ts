@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../db/index.js'
 import type { Prisma } from '../../db/generated/prisma/client.js'
 
-type CreateTaskParams = Omit<Prisma.WorkTaskUncheckedCreateInput, 'id'>
+type CreateTaskParams = Omit<Prisma.WorkTaskUncheckedCreateInput, 'id' | 'uid'>
 type UpdateTaskParams = Prisma.WorkTaskUncheckedUpdateInput
 
 type TaskFilter = {
@@ -111,9 +111,9 @@ function tasksBefore(anchor: {
 export async function create(params: CreateTaskParams) {
   return prisma.workTask.create({
     data: {
+      ...params,
       id: `task_${randomUUID().replaceAll('-', '')}`,
       uid: `task_${randomUUID().replaceAll('-', '')}@work.876`,
-      ...params,
     },
     include,
   })

@@ -46,16 +46,26 @@ describe('Tasks Service - Edge Cases', () => {
   ): NonNullable<TaskRow> {
     return {
       id: TASK_ID,
+      uid: 'task_4f0c6bc866ae4fba8b1e8d3dca6c4d12@work.876',
       tenantId: TENANT_ID,
+      listId: 'tasklist_4f0c6bc866ae4fba8b1e8d3dca6c4d12',
+      parentTaskId: null,
       contextService: null,
       contextResource: null,
       contextId: null,
       title: 'Confirm the delivery window with Alejandra',
       description: null,
       status: 'OPEN' as WorkTaskStatus,
+      importance: 'NORMAL',
       priorityId: null,
       assigneeId: null,
+      startAt: null,
+      startTimeZone: null,
       dueAt: null,
+      dueTimeZone: null,
+      estimatedDuration: null,
+      percentComplete: 0,
+      recurrenceRuleId: null,
       completedAt: null,
       completedBy: null,
       sortOrder: 0,
@@ -64,6 +74,8 @@ describe('Tasks Service - Edge Cases', () => {
       updatedAt: new Date('2025-01-01T00:00:00.000Z'),
       deletedAt: null,
       deletedBy: null,
+      links: [],
+      assignments: [],
       ...overrides,
     }
   }
@@ -111,6 +123,7 @@ describe('Tasks Service - Edge Cases', () => {
         status: 'DONE',
         completedBy: 'user_2',
         completedAt: FAKE_TIME,
+        percentComplete: 100,
       })
     })
 
@@ -124,6 +137,7 @@ describe('Tasks Service - Edge Cases', () => {
         status: 'DONE',
         completedAt: FAKE_TIME,
         completedBy: null, // explicit check for completedBy: null
+        percentComplete: 100,
       })
     })
 
@@ -140,6 +154,7 @@ describe('Tasks Service - Edge Cases', () => {
       expect(repository.update).toHaveBeenCalledTimes(1)
       expect(repository.update).toHaveBeenCalledWith(TASK_ID, {
         status: 'DONE',
+        percentComplete: 100,
       })
       // Notice `completedAt` and `completedBy` are NOT in the payload
     })
@@ -206,6 +221,7 @@ describe('Tasks Service - Edge Cases', () => {
         status: 'DONE',
         completedAt: FAKE_TIME,
         completedBy: null,
+        percentComplete: 100,
       })
     })
   })

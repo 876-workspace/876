@@ -1,13 +1,24 @@
 import { getError, isError } from '@876/core'
-import type { WorkTask } from '@876/work'
+import type { WorkTask, WorkTaskStatus } from '@876/work'
 import type {
   CreateTaskInput,
   RequestTask,
+  TaskStatus,
   UpdateTaskInput,
 } from '../../types/task.js'
 import { crmRequestWorkContext, workClient } from '../../providers/work.js'
 import * as priorities from '../priorities/index.js'
 import { requireRequestContext } from '../requests/index.js'
+
+const workStatusToTaskStatus = {
+  OPEN: 'OPEN',
+  IN_PROGRESS: 'IN_PROGRESS',
+  WAITING: 'IN_PROGRESS',
+  DEFERRED: 'OPEN',
+  DONE: 'DONE',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'CANCELLED',
+} satisfies Record<WorkTaskStatus, TaskStatus>
 
 function serialize(
   task: WorkTask,
@@ -22,7 +33,7 @@ function serialize(
     requestId,
     title: task.title,
     description: task.description,
-    status: task.status,
+    status: workStatusToTaskStatus[task.status],
     priorityId: priority.id,
     priority,
     assigneeId: task.assigneeId,

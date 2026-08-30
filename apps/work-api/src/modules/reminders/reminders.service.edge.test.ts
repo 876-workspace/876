@@ -45,6 +45,8 @@ describe('Reminders Service - Edge Cases', () => {
       title: 'Test reminder',
       note: null,
       remindAt: new Date('2026-01-02T00:00:00.000Z'),
+      timeZone: 'UTC',
+      recurrenceRuleId: null,
       userId: 'user_1',
       status: 'SCHEDULED' as WorkReminderStatus,
       sentAt: null,

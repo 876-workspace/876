@@ -7,8 +7,8 @@ import { HttpStatus } from '../../types/errors.js'
 describe('CRM catalog - exhaustive contract', () => {
   const allCodes = Object.keys(CRM_ERRORS) as CrmErrorCode[]
 
-  it('contains exactly 35 registered CRM error codes', () => {
-    expect(allCodes.length).toBe(35)
+  it('contains exactly 37 registered CRM error codes', () => {
+    expect(allCodes.length).toBe(37)
   })
 
   it('every code is prefixed with crm/ and kebab-case', () => {

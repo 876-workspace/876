@@ -1,6 +1,10 @@
 import request from 'supertest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.hoisted(() => {
+  process.env.WORK_DATABASE_URL = 'postgres://localhost/test'
+})
+
 const mocks = vi.hoisted(() => ({
   tasks: {
     list: vi.fn(),
@@ -23,10 +27,12 @@ const mocks = vi.hoisted(() => ({
   },
   connections: {
     activeConnectionAuthorization: vi.fn(),
+    ensureConnection: vi.fn(),
     ensureCrmConnection: vi.fn(),
   },
   identity: {
     appForApiKey: vi.fn(),
+    sessionAccess: vi.fn(),
   },
 }))
 
@@ -37,6 +43,7 @@ vi.mock('../modules/connections/index.js', () => mocks.connections)
 vi.mock('../http/auth/identity.js', () => ({
   HttpIdentityGateway: class {
     appForApiKey = mocks.identity.appForApiKey
+    sessionAccess = mocks.identity.sessionAccess
   },
   IdentityUnavailableError: class IdentityUnavailableError extends Error {},
 }))
@@ -67,16 +74,26 @@ function tenant(overrides: Record<string, unknown> = {}) {
 function task(overrides: Record<string, unknown> = {}) {
   return {
     id: 'task_1',
+    uid: 'task_4f0c6bc866ae4fba8b1e8d3dca6c4d12@work.876',
     tenantId: 'work_tnt_1',
+    listId: 'tasklist_4f0c6bc866ae4fba8b1e8d3dca6c4d12',
+    parentTaskId: null,
     contextService: 'crm',
     contextResource: 'request',
     contextId: 'crm_req_1',
     title: 'Call Alejandra',
     description: 'Confirm the delivery window.',
     status: 'OPEN' as const,
+    importance: 'NORMAL' as const,
     priorityId: 'crm_pri_normal',
     assigneeId: 'usr_1',
+    startAt: null,
+    startTimeZone: null,
     dueAt: new Date('2026-09-01T09:00:00.000Z'),
+    dueTimeZone: 'UTC',
+    estimatedDuration: null,
+    percentComplete: 0,
+    recurrenceRuleId: null,
     completedAt: null,
     completedBy: null,
     sortOrder: 4,
@@ -85,6 +102,8 @@ function task(overrides: Record<string, unknown> = {}) {
     updatedAt: new Date('2026-08-30T12:30:00.000Z'),
     deletedAt: null,
     deletedBy: null,
+    links: [],
+    assignments: [],
     ...overrides,
   }
 }
@@ -99,6 +118,8 @@ function reminder(overrides: Record<string, unknown> = {}) {
     title: 'Send status update',
     note: 'Include the tracking number.',
     remindAt: new Date('2026-09-01T10:00:00.000Z'),
+    timeZone: 'UTC',
+    recurrenceRuleId: null,
     userId: 'usr_1',
     status: 'SCHEDULED' as const,
     sentAt: null,
@@ -140,9 +161,7 @@ beforeEach(() => {
   mocks.connections.activeConnectionAuthorization.mockResolvedValue({
     scopes: new Set(['work.tasks.read', 'work.tasks.write']),
   })
-  mocks.connections.ensureCrmConnection.mockResolvedValue({
-    id: 'work_conn_1',
-  })
+  mocks.connections.ensureConnection.mockResolvedValue({ id: 'work_conn_1' })
   mocks.identity.appForApiKey.mockResolvedValue({ id: 'app_crm' })
   mocks.tasks.list.mockResolvedValue([task()])
   mocks.tasks.retrieve.mockResolvedValue(task())
@@ -228,9 +247,22 @@ describe('Work API routes', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(mocks.connections.ensureCrmConnection).toHaveBeenCalledWith(
+    expect(mocks.connections.ensureConnection).toHaveBeenCalledWith(
       'work_tnt_1',
-      'app_crm'
+      'app_crm',
+      [
+        'work.tasks.read',
+        'work.tasks.write',
+        'work.reminders.read',
+        'work.reminders.write',
+        'work.calendars.read',
+        'work.calendars.write',
+        'work.events.read',
+        'work.events.write',
+        'work.alerts.read',
+        'work.alerts.write',
+        'work.my-work.read',
+      ]
     )
   })
 
@@ -242,16 +274,29 @@ describe('Work API routes', () => {
       data: {
         object: 'task',
         id: 'task_1',
+        uid: 'task_4f0c6bc866ae4fba8b1e8d3dca6c4d12@work.876',
         organizationId: 'org_1',
+        listId: 'tasklist_4f0c6bc866ae4fba8b1e8d3dca6c4d12',
+        parentTaskId: null,
         context: { service: 'crm', resource: 'request', id: 'crm_req_1' },
+        links: [],
         title: 'Call Alejandra',
         description: 'Confirm the delivery window.',
         status: 'OPEN',
+        importance: 'NORMAL',
         priorityId: 'crm_pri_normal',
         assigneeId: 'usr_1',
+        assignments: [],
+        startAt: null,
+        startTimeZone: null,
         dueAt: 1_788_253_200,
+        dueTimeZone: 'UTC',
+        estimatedDuration: null,
+        percentComplete: 0,
+        recurrenceRuleId: null,
         completedAt: null,
         completedBy: null,
+        isOverdue: false,
         sortOrder: 4,
         createdBy: 'usr_2',
         createdAt: 1_788_091_200,
@@ -277,6 +322,8 @@ describe('Work API routes', () => {
         title: 'Send status update',
         note: 'Include the tracking number.',
         remindAt: 1_788_256_800,
+        timeZone: 'UTC',
+        recurrenceRuleId: null,
         userId: 'usr_1',
         status: 'SCHEDULED',
         sentAt: null,
@@ -475,20 +522,33 @@ describe('Work API routes', () => {
           {
             object: 'task',
             id: 'task_1',
+            uid: 'task_4f0c6bc866ae4fba8b1e8d3dca6c4d12@work.876',
             organizationId: 'org_1',
+            listId: 'tasklist_4f0c6bc866ae4fba8b1e8d3dca6c4d12',
+            parentTaskId: null,
             context: {
               service: 'crm',
               resource: 'request',
               id: 'crm_req_1',
             },
+            links: [],
             title: 'Call Alejandra',
             description: 'Confirm the delivery window.',
             status: 'OPEN',
+            importance: 'NORMAL',
             priorityId: 'crm_pri_normal',
             assigneeId: 'usr_1',
+            assignments: [],
+            startAt: null,
+            startTimeZone: null,
             dueAt: 1_788_253_200,
+            dueTimeZone: 'UTC',
+            estimatedDuration: null,
+            percentComplete: 0,
+            recurrenceRuleId: null,
             completedAt: null,
             completedBy: null,
+            isOverdue: false,
             sortOrder: 4,
             createdBy: 'usr_2',
             createdAt: 1_788_091_200,
@@ -527,6 +587,8 @@ describe('Work API routes', () => {
           title: 'Send status update',
           note: 'Include the tracking number.',
           remindAt: 1_788_256_800,
+          timeZone: 'UTC',
+          recurrenceRuleId: null,
           userId: 'usr_1',
           status: 'SCHEDULED',
           sentAt: null,

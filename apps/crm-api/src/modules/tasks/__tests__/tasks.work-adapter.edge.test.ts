@@ -33,16 +33,29 @@ describe('CRM Tasks - Work Adapter Edge Cases', () => {
     return {
       object: 'task',
       id: TASK_ID,
+      uid: 'task_4f0c6bc866ae4fba8b1e8d3dca6c4d12@work.876',
       organizationId: ORG_ID,
+      listId: 'tasklist_4f0c6bc866ae4fba8b1e8d3dca6c4d12',
+      parentTaskId: null,
       context: { service: 'crm', resource: 'request', id: REQ_ID },
+      links: [],
       title: 'Confirm the delivery window with Alejandra',
       description: null,
       status: 'OPEN' as const,
+      importance: 'NORMAL',
       priorityId: 'crm_pri_high',
       assigneeId: null,
+      assignments: [],
+      startAt: null,
+      startTimeZone: null,
       dueAt: null,
+      dueTimeZone: null,
+      estimatedDuration: null,
+      percentComplete: 0,
+      recurrenceRuleId: null,
       completedAt: null,
       completedBy: null,
+      isOverdue: false,
       sortOrder: 0,
       createdBy: 'user_2kL9mN4q',
       createdAt: 1000,
@@ -277,6 +290,28 @@ describe('CRM Tasks - Work Adapter Edge Cases', () => {
   })
 
   describe('CRM response contract', () => {
+    it.each([
+      ['OPEN', 'OPEN'],
+      ['IN_PROGRESS', 'IN_PROGRESS'],
+      ['WAITING', 'IN_PROGRESS'],
+      ['DEFERRED', 'OPEN'],
+      ['DONE', 'DONE'],
+      ['CANCELLED', 'CANCELLED'],
+      ['FAILED', 'CANCELLED'],
+    ] as const)('maps Work %s status to CRM %s', async (workStatus, status) => {
+      mockWorkTasks.list.mockResolvedValue({
+        data: {
+          data: [createMockWorkTask({ status: workStatus })],
+          has_more: false,
+        },
+        error: null,
+      })
+
+      const result = await tasksAdapter.list(ORG_ID, REQ_ID)
+
+      expect(result).toEqual([expect.objectContaining({ status })])
+    })
+
     it('returns the full request_task shape field by field', async () => {
       mockWorkTasks.create.mockResolvedValue({
         data: createMockWorkTask(),

@@ -342,7 +342,7 @@ export async function create(
 ): Promise<WorkCalendarExport | AppErrorValue> {
   const includeTasks = input.includeTasks ?? Boolean(input.taskListId)
   const includeEvents =
-    (input.includeEvents ?? !includeTasks) || Boolean(input.calendarId)
+    input.includeEvents ?? (!includeTasks || Boolean(input.calendarId))
   const taskRows = includeTasks
     ? await collectTasks(organizationId, input.taskListId)
     : []
