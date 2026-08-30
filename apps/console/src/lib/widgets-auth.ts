@@ -5,6 +5,7 @@ import {
   notepadWidgetMetadata,
 } from '@876/widgets'
 
+import { errorResponse } from '@/lib/errors'
 import { getConsoleFeatures } from '@/lib/features'
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
@@ -14,7 +15,7 @@ export async function requireNotepadMember() {
   if (!isSignedSession(session))
     return {
       userId: null as string | null,
-      response: Response.json({ error: 'Unauthorized.' }, { status: 401 }),
+      response: errorResponse('error/unauthorized'),
     }
 
   const features = await getConsoleFeatures({
@@ -32,10 +33,7 @@ export async function requireNotepadMember() {
     // surface a clean forbidden for missing notepad access.
     return {
       userId: null as string | null,
-      response: Response.json(
-        { error: 'Access to the notepad widget is disabled.' },
-        { status: 403 }
-      ),
+      response: errorResponse('error/forbidden'),
     }
   }
 

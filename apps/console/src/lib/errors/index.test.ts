@@ -60,6 +60,7 @@ describe('Console error registry', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/bad-request',
         message: 'The request was invalid or malformed.',
@@ -169,7 +170,7 @@ describe('handleApiError', () => {
     const response = handleApiError(error)
 
     expect(response.status).toBe(409)
-    await expect(response.json()).resolves.toEqual({ error })
+    await expect(response.json()).resolves.toEqual({ data: null, error })
     expect(console.error).toHaveBeenCalledTimes(1)
     expect(console.error).toHaveBeenCalledWith(error)
   })
@@ -181,6 +182,7 @@ describe('handleApiError', () => {
 
     expect(response.status).toBe(422)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/validation-failed',
         message: 'The provided data failed validation.',
@@ -200,6 +202,7 @@ describe('handleApiError', () => {
     // ASSERT
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/unknown',
         message: 'An unexpected error occurred. Please try again.',
@@ -216,6 +219,7 @@ describe('handleApiError', () => {
 
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/unknown',
         message: 'An unexpected error occurred. Please try again.',
@@ -232,6 +236,7 @@ describe('handleApiError', () => {
 
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/unknown',
         message: 'An unexpected error occurred. Please try again.',
