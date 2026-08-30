@@ -117,3 +117,11 @@ export const loadReminders = cache(async (requestId: string) => {
 
   return { reminders: result.data?.data ?? [], error: result.error }
 })
+
+export const loadEvents = cache(async (requestId: string) => {
+  const context = await loadCrmContext()
+  const $876 = await get876Client()
+  const result = await $876.requestEvents.list(context.orgId, requestId)
+
+  return { events: result.data?.data ?? [], error: result.error }
+})

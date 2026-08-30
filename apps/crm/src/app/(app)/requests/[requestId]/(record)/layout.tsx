@@ -69,6 +69,7 @@ export default async function RequestRecordLayout({ children, params }: Props) {
     { label: 'Customer', href: `${base}/customer` },
     { label: 'Tasks', href: `${base}/tasks` },
     { label: 'Reminders', href: `${base}/reminders` },
+    { label: 'Schedule', href: `${base}/schedule` },
     { label: 'Audit', href: `${base}/audit` },
   ]
 
