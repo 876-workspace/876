@@ -39,21 +39,16 @@ describe('CustomersTable', () => {
     vi.clearAllMocks()
   })
 
-  it('renders customers with links and contact info', () => {
+  it('renders customers with names, contact info, and status', () => {
     render(<CustomersTable customers={sampleCustomers} />)
 
-    expect(
-      screen.getByRole('link', { name: 'Island Traders Ltd' })
-    ).toHaveAttribute('href', '/customers/crm_prof_1')
+    expect(screen.getByText('Island Traders Ltd')).toBeTruthy()
     expect(screen.getByText('Althea Morgan')).toBeTruthy()
     expect(screen.getByText('althea@islandtraders.com')).toBeTruthy()
     expect(screen.getByText('+18765550100')).toBeTruthy()
     expect(screen.getByText('Active')).toBeTruthy()
 
-    expect(screen.getByRole('link', { name: 'Jane Doe' })).toHaveAttribute(
-      'href',
-      '/customers/crm_prof_2'
-    )
+    expect(screen.getByText('Jane Doe')).toBeTruthy()
     expect(screen.getByText('jane@example.com')).toBeTruthy()
     expect(screen.getByText('Inactive')).toBeTruthy()
   })
@@ -69,31 +64,21 @@ describe('CustomersTable', () => {
 
     // Empty state should be rendered
     expect(screen.getByText('No customers yet')).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Add/ })).toHaveAttribute(
       'href',
-      '/customers/new'
+      '/customers?customer=new'
     )
   })
 
-  it('renders custom emptyState when provided', () => {
-    render(
-      <CustomersTable
-        customers={[]}
-        emptyState={<div>Custom empty customers state</div>}
-      />
-    )
-
-    expect(screen.getByText('Custom empty customers state')).toBeTruthy()
-  })
-
-  it('navigates on row click', async () => {
+  it('calls onSelect on row click', async () => {
     const user = userEvent.setup()
-    render(<CustomersTable customers={sampleCustomers} />)
+    const onSelect = vi.fn()
+    render(<CustomersTable customers={sampleCustomers} onSelect={onSelect} />)
 
     const row = screen.getByText('Island Traders Ltd').closest('tr')
     expect(row).toBeTruthy()
     if (row) await user.click(row)
 
-    expect(pushMock).toHaveBeenCalledWith('/customers/crm_prof_1')
+    expect(onSelect).toHaveBeenCalledWith('crm_prof_1')
   })
 })
