@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express'
 
-import { sendWorkError, sendWorkList, sendWorkResult } from '../../http/result.js'
+import {
+  sendWorkError,
+  sendWorkList,
+  sendWorkResult,
+} from '../../http/result.js'
 import * as service from './task-links.service.js'
 import {
   createTaskLinkBodySchema,
@@ -12,7 +16,11 @@ export async function listTaskLinks(req: Request, res: Response) {
   const { organizationId, taskId } = taskParamsSchema.parse(req.params)
   const result = await service.list(organizationId, taskId)
   if (!result) return sendWorkError(res, 'work/task-not-found')
-  return sendWorkList(res, result, `/v1/organizations/${organizationId}/tasks/${taskId}/links`)
+  return sendWorkList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/tasks/${taskId}/links`
+  )
 }
 
 export async function createTaskLink(req: Request, res: Response) {
@@ -24,7 +32,9 @@ export async function createTaskLink(req: Request, res: Response) {
 }
 
 export async function deleteTaskLink(req: Request, res: Response) {
-  const { organizationId, taskId, linkId } = taskLinkParamsSchema.parse(req.params)
+  const { organizationId, taskId, linkId } = taskLinkParamsSchema.parse(
+    req.params
+  )
   const result = await service.remove(organizationId, taskId, linkId)
   if (!result) return sendWorkError(res, 'work/task-link-not-found')
   return sendWorkResult(res, result)

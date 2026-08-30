@@ -39,7 +39,10 @@ async function requireTask(organizationId: string, taskId: string) {
 export async function list(organizationId: string, taskId: string) {
   const task = await requireTask(organizationId, taskId)
   if (!task || isError(task)) return task
-  return { data: (await repository.list(taskId)).map(serialize), hasMore: false }
+  return {
+    data: (await repository.list(taskId)).map(serialize),
+    hasMore: false,
+  }
 }
 
 export async function create(
@@ -50,7 +53,10 @@ export async function create(
   const task = await requireTask(organizationId, taskId)
   if (!task || isError(task)) return task
   if (input.delegatedFromAssignmentId) {
-    const source = await repository.retrieve(taskId, input.delegatedFromAssignmentId)
+    const source = await repository.retrieve(
+      taskId,
+      input.delegatedFromAssignmentId
+    )
     if (!source) return null
   }
   const row = await repository.create({
@@ -61,8 +67,7 @@ export async function create(
     status: input.status ?? 'PENDING',
     assignedBy: input.assignedBy,
     delegatedFromAssignmentId: input.delegatedFromAssignmentId ?? null,
-    respondedAt:
-      input.status && input.status !== 'PENDING' ? new Date() : null,
+    respondedAt: input.status && input.status !== 'PENDING' ? new Date() : null,
     completedAt: input.status === 'COMPLETED' ? new Date() : null,
   })
   if (row.targetType === 'USER' && row.role === 'OWNER' && !task.assigneeId)
@@ -90,7 +95,8 @@ export async function update(
     ...(input.status === undefined
       ? {}
       : { respondedAt: input.status === 'PENDING' ? null : new Date() }),
-    completedAt: nextStatus === 'COMPLETED' ? current.completedAt ?? new Date() : null,
+    completedAt:
+      nextStatus === 'COMPLETED' ? (current.completedAt ?? new Date()) : null,
   })
   return serialize(row)
 }

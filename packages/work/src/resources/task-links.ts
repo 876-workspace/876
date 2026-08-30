@@ -15,13 +15,36 @@ function root(organizationId: string, taskId: string) {
 export function createTaskLinksResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, taskId: string) {
-      return workRequest(runtime, { method: 'GET', path: root(organizationId, taskId) }, workTaskLinkListSchema)
+      return workRequest(
+        runtime,
+        { method: 'GET', path: root(organizationId, taskId) },
+        workTaskLinkListSchema
+      )
     },
-    create(organizationId: string, taskId: string, input: CreateWorkTaskLinkInput) {
-      return workRequest(runtime, { method: 'POST', path: root(organizationId, taskId), body: input }, workTaskLinkSchema)
+    create(
+      organizationId: string,
+      taskId: string,
+      input: CreateWorkTaskLinkInput
+    ) {
+      return workRequest(
+        runtime,
+        { method: 'POST', path: root(organizationId, taskId), body: input },
+        workTaskLinkSchema
+      )
     },
     delete(organizationId: string, taskId: string, linkId: string) {
-      return workRequest(runtime, { method: 'DELETE', path: `${root(organizationId, taskId)}/${encodeURIComponent(linkId)}` }, z.object({ object: z.literal('task_link'), id: z.string(), deleted: z.literal(true) }))
+      return workRequest(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${root(organizationId, taskId)}/${encodeURIComponent(linkId)}`,
+        },
+        z.object({
+          object: z.literal('task_link'),
+          id: z.string(),
+          deleted: z.literal(true),
+        })
+      )
     },
   }
 }

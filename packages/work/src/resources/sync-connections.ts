@@ -14,7 +14,10 @@ function root(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/sync-connections`
 }
 
-function listPath(organizationId: string, filter: WorkSyncConnectionListFilter) {
+function listPath(
+  organizationId: string,
+  filter: WorkSyncConnectionListFilter
+) {
   const params = new URLSearchParams()
   if (filter.userId) params.set('user_id', filter.userId)
   if (filter.provider) params.set('provider', filter.provider)
@@ -29,19 +32,57 @@ function listPath(organizationId: string, filter: WorkSyncConnectionListFilter) 
 export function createSyncConnectionsResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkSyncConnectionListFilter = {}) {
-      return workRequest(runtime, { method: 'GET', path: listPath(organizationId, filter) }, workSyncConnectionListSchema)
+      return workRequest(
+        runtime,
+        { method: 'GET', path: listPath(organizationId, filter) },
+        workSyncConnectionListSchema
+      )
     },
     retrieve(organizationId: string, connectionId: string) {
-      return workRequest(runtime, { method: 'GET', path: `${root(organizationId)}/${encodeURIComponent(connectionId)}` }, workSyncConnectionSchema)
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`,
+        },
+        workSyncConnectionSchema
+      )
     },
     create(organizationId: string, input: CreateWorkSyncConnectionInput) {
-      return workRequest(runtime, { method: 'POST', path: root(organizationId), body: input }, workSyncConnectionSchema)
+      return workRequest(
+        runtime,
+        { method: 'POST', path: root(organizationId), body: input },
+        workSyncConnectionSchema
+      )
     },
-    update(organizationId: string, connectionId: string, input: UpdateWorkSyncConnectionInput) {
-      return workRequest(runtime, { method: 'PATCH', path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`, body: input }, workSyncConnectionSchema)
+    update(
+      organizationId: string,
+      connectionId: string,
+      input: UpdateWorkSyncConnectionInput
+    ) {
+      return workRequest(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`,
+          body: input,
+        },
+        workSyncConnectionSchema
+      )
     },
     delete(organizationId: string, connectionId: string) {
-      return workRequest(runtime, { method: 'DELETE', path: `${root(organizationId)}/${encodeURIComponent(connectionId)}` }, z.object({ object: z.literal('sync_connection'), id: z.string(), deleted: z.literal(true) }))
+      return workRequest(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`,
+        },
+        z.object({
+          object: z.literal('sync_connection'),
+          id: z.string(),
+          deleted: z.literal(true),
+        })
+      )
     },
   }
 }

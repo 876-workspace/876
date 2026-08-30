@@ -27,19 +27,58 @@ function listPath(organizationId: string, filter: WorkTaskListResourceFilter) {
 export function createTaskListsResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkTaskListResourceFilter = {}) {
-      return workRequest(runtime, { method: 'GET', path: listPath(organizationId, filter) }, workTaskListResourceListSchema)
+      return workRequest(
+        runtime,
+        { method: 'GET', path: listPath(organizationId, filter) },
+        workTaskListResourceListSchema
+      )
     },
     retrieve(organizationId: string, listId: string) {
-      return workRequest(runtime, { method: 'GET', path: `${root(organizationId)}/${encodeURIComponent(listId)}` }, workTaskListResourceSchema)
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/${encodeURIComponent(listId)}`,
+        },
+        workTaskListResourceSchema
+      )
     },
     create(organizationId: string, input: CreateWorkTaskListInput) {
-      return workRequest(runtime, { method: 'POST', path: root(organizationId), body: input }, workTaskListResourceSchema)
+      return workRequest(
+        runtime,
+        { method: 'POST', path: root(organizationId), body: input },
+        workTaskListResourceSchema
+      )
     },
-    update(organizationId: string, listId: string, input: UpdateWorkTaskListInput) {
-      return workRequest(runtime, { method: 'PATCH', path: `${root(organizationId)}/${encodeURIComponent(listId)}`, body: input }, workTaskListResourceSchema)
+    update(
+      organizationId: string,
+      listId: string,
+      input: UpdateWorkTaskListInput
+    ) {
+      return workRequest(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `${root(organizationId)}/${encodeURIComponent(listId)}`,
+          body: input,
+        },
+        workTaskListResourceSchema
+      )
     },
     delete(organizationId: string, listId: string, deletedBy: string) {
-      return workRequest(runtime, { method: 'DELETE', path: `${root(organizationId)}/${encodeURIComponent(listId)}`, body: { deletedBy } }, z.object({ object: z.literal('task_list'), id: z.string(), deleted: z.literal(true) }))
+      return workRequest(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${root(organizationId)}/${encodeURIComponent(listId)}`,
+          body: { deletedBy },
+        },
+        z.object({
+          object: z.literal('task_list'),
+          id: z.string(),
+          deleted: z.literal(true),
+        })
+      )
     },
   }
 }

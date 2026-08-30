@@ -47,7 +47,9 @@ function serializeLink(link: TaskRow['links'][number]): WorkTaskLink {
     createdAt: serializeTimestamp(link.createdAt)!,
   }
 }
-function serializeAssignment(row: TaskRow['assignments'][number]): WorkTaskAssignment {
+function serializeAssignment(
+  row: TaskRow['assignments'][number]
+): WorkTaskAssignment {
   return {
     object: 'task_assignment',
     id: row.id,
@@ -77,7 +79,11 @@ function serialize(task: TaskRow, organizationId: string): WorkTask {
     listId: task.listId,
     parentTaskId: task.parentTaskId,
     context: hasContext
-      ? { service: task.contextService!, resource: task.contextResource!, id: task.contextId! }
+      ? {
+          service: task.contextService!,
+          resource: task.contextResource!,
+          id: task.contextId!,
+        }
       : null,
     links: task.links.map(serializeLink),
     title: task.title,
@@ -116,20 +122,34 @@ async function requireTenant(organizationId: string) {
 }
 
 function contextColumns(context?: WorkContext | null) {
-  if (!context) return { contextService: null, contextResource: null, contextId: null }
-  return { contextService: context.service, contextResource: context.resource, contextId: context.id }
+  if (!context)
+    return { contextService: null, contextResource: null, contextId: null }
+  return {
+    contextService: context.service,
+    contextResource: context.resource,
+    contextId: context.id,
+  }
 }
 
-export async function list(organizationId: string, filter: ListTaskFilter = {}) {
+export async function list(
+  organizationId: string,
+  filter: ListTaskFilter = {}
+) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const limit = filter.limit ?? 25
   const rows = await repository.list(tenant.id, {
     ...(filter.context
-      ? { contextService: filter.context.service, contextResource: filter.context.resource, contextId: filter.context.id }
+      ? {
+          contextService: filter.context.service,
+          contextResource: filter.context.resource,
+          contextId: filter.context.id,
+        }
       : {}),
     ...(filter.listId ? { listId: filter.listId } : {}),
-    ...(filter.parentTaskId !== undefined ? { parentTaskId: filter.parentTaskId } : {}),
+    ...(filter.parentTaskId !== undefined
+      ? { parentTaskId: filter.parentTaskId }
+      : {}),
     ...(filter.priorityId ? { priorityId: filter.priorityId } : {}),
     ...(filter.assigneeId ? { assigneeId: filter.assigneeId } : {}),
     ...(filter.status ? { status: filter.status } : {}),
@@ -139,7 +159,9 @@ export async function list(organizationId: string, filter: ListTaskFilter = {}) 
   })
   const page = rows.slice(0, limit)
   return {
-    data: (filter.endingBefore ? page.reverse() : page).map((row) => serialize(row, organizationId)),
+    data: (filter.endingBefore ? page.reverse() : page).map((row) =>
+      serialize(row, organizationId)
+    ),
     hasMore: rows.length > limit,
   }
 }
@@ -151,7 +173,10 @@ export async function retrieve(organizationId: string, taskId: string) {
   return row ? serialize(row, organizationId) : null
 }
 
-export async function create(organizationId: string, input: CreateWorkTaskInput) {
+export async function create(
+  organizationId: string,
+  input: CreateWorkTaskInput
+) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
 
@@ -182,7 +207,8 @@ export async function create(organizationId: string, input: CreateWorkTaskInput)
     dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt),
     dueTimeZone: input.dueTimeZone ?? null,
     estimatedDuration: input.estimatedDuration ?? null,
-    percentComplete: input.percentComplete ?? (input.status === 'DONE' ? 100 : 0),
+    percentComplete:
+      input.percentComplete ?? (input.status === 'DONE' ? 100 : 0),
     recurrenceRuleId: input.recurrenceRuleId ?? null,
     completedAt: input.status === 'DONE' ? new Date() : null,
     completedBy: null,
@@ -192,9 +218,16 @@ export async function create(organizationId: string, input: CreateWorkTaskInput)
   if (input.context !== undefined)
     await repository.syncPrimaryLink(row.id, input.context ?? null)
   if (input.assigneeId !== undefined)
-    await repository.syncPrimaryAssignee(row.id, input.assigneeId ?? null, input.createdBy)
+    await repository.syncPrimaryAssignee(
+      row.id,
+      input.assigneeId ?? null,
+      input.createdBy
+    )
 
-  return serialize((await repository.retrieve(tenant.id, row.id))!, organizationId)
+  return serialize(
+    (await repository.retrieve(tenant.id, row.id))!,
+    organizationId
+  )
 }
 
 export async function update(
@@ -209,7 +242,8 @@ export async function update(
 
   if (input.listId) {
     const list = await taskLists.retrieve(organizationId, input.listId)
-    if (!list || isError(list)) return list ?? getError('work/task-list-not-found')
+    if (!list || isError(list))
+      return list ?? getError('work/task-list-not-found')
   }
   if (input.parentTaskId) {
     if (input.parentTaskId === taskId) return getError('work/invalid-request')
@@ -230,24 +264,43 @@ export async function update(
   await repository.update(taskId, {
     ...(input.context === undefined ? {} : contextColumns(input.context)),
     ...(input.listId === undefined ? {} : { listId: input.listId }),
-    ...(input.parentTaskId === undefined ? {} : { parentTaskId: input.parentTaskId }),
+    ...(input.parentTaskId === undefined
+      ? {}
+      : { parentTaskId: input.parentTaskId }),
     ...(input.title === undefined ? {} : { title: input.title }),
-    ...(input.description === undefined ? {} : { description: input.description }),
+    ...(input.description === undefined
+      ? {}
+      : { description: input.description }),
     ...(input.status === undefined ? {} : { status: input.status }),
     ...(input.importance === undefined ? {} : { importance: input.importance }),
     ...(input.priorityId === undefined ? {} : { priorityId: input.priorityId }),
     ...(input.assigneeId === undefined ? {} : { assigneeId: input.assigneeId }),
-    ...(input.startAt === undefined ? {} : { startAt: input.startAt == null ? null : fromUnixSeconds(input.startAt) }),
-    ...(input.startTimeZone === undefined ? {} : { startTimeZone: input.startTimeZone }),
-    ...(input.dueAt === undefined ? {} : { dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt) }),
-    ...(input.dueTimeZone === undefined ? {} : { dueTimeZone: input.dueTimeZone }),
-    ...(input.estimatedDuration === undefined ? {} : { estimatedDuration: input.estimatedDuration }),
+    ...(input.startAt === undefined
+      ? {}
+      : {
+          startAt:
+            input.startAt == null ? null : fromUnixSeconds(input.startAt),
+        }),
+    ...(input.startTimeZone === undefined
+      ? {}
+      : { startTimeZone: input.startTimeZone }),
+    ...(input.dueAt === undefined
+      ? {}
+      : { dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt) }),
+    ...(input.dueTimeZone === undefined
+      ? {}
+      : { dueTimeZone: input.dueTimeZone }),
+    ...(input.estimatedDuration === undefined
+      ? {}
+      : { estimatedDuration: input.estimatedDuration }),
     ...(input.percentComplete === undefined
       ? input.status === 'DONE'
         ? { percentComplete: 100 }
         : {}
       : { percentComplete: input.percentComplete }),
-    ...(input.recurrenceRuleId === undefined ? {} : { recurrenceRuleId: input.recurrenceRuleId }),
+    ...(input.recurrenceRuleId === undefined
+      ? {}
+      : { recurrenceRuleId: input.recurrenceRuleId }),
     ...(input.sortOrder === undefined ? {} : { sortOrder: input.sortOrder }),
     ...completionStamp,
   })
@@ -255,12 +308,23 @@ export async function update(
   if (input.context !== undefined)
     await repository.syncPrimaryLink(taskId, input.context ?? null)
   if (input.assigneeId !== undefined)
-    await repository.syncPrimaryAssignee(taskId, input.assigneeId ?? null, input.completedBy ?? current.createdBy)
+    await repository.syncPrimaryAssignee(
+      taskId,
+      input.assigneeId ?? null,
+      input.completedBy ?? current.createdBy
+    )
 
-  return serialize((await repository.retrieve(tenant.id, taskId))!, organizationId)
+  return serialize(
+    (await repository.retrieve(tenant.id, taskId))!,
+    organizationId
+  )
 }
 
-export async function remove(organizationId: string, taskId: string, deletedBy: string) {
+export async function remove(
+  organizationId: string,
+  taskId: string,
+  deletedBy: string
+) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, taskId)

@@ -11,7 +11,9 @@ export const requestEventStatusSchema = z.enum([
 export type RequestEventStatus = z.infer<typeof requestEventStatusSchema>
 
 export const requestEventBusyStatusSchema = z.enum(['BUSY', 'FREE'])
-export type RequestEventBusyStatus = z.infer<typeof requestEventBusyStatusSchema>
+export type RequestEventBusyStatus = z.infer<
+  typeof requestEventBusyStatusSchema
+>
 
 export const requestEventParticipantKindSchema = z.enum(['USER', 'EMAIL'])
 export const requestEventParticipantRoleSchema = z.enum([
@@ -167,11 +169,14 @@ export const createRequestEventParticipantInputSchema = z
     delegatedFrom: idSchema.optional().nullable(),
   })
   .superRefine((value, context) => {
-    const user = value.kind === 'USER' && Boolean(value.participantId) && !value.email
-    const email = value.kind === 'EMAIL' && !value.participantId && Boolean(value.email)
+    const user =
+      value.kind === 'USER' && Boolean(value.participantId) && !value.email
+    const email =
+      value.kind === 'EMAIL' && !value.participantId && Boolean(value.email)
     if (!user && !email)
       context.addIssue({
         code: 'custom',
-        message: 'USER participants require participantId; EMAIL participants require email.',
+        message:
+          'USER participants require participantId; EMAIL participants require email.',
       })
   })

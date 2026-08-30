@@ -33,19 +33,58 @@ function listPath(organizationId: string, filter: WorkReminderListFilter) {
 export function createRemindersResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkReminderListFilter = {}) {
-      return workRequest(runtime, { method: 'GET', path: listPath(organizationId, filter) }, workReminderListSchema)
+      return workRequest(
+        runtime,
+        { method: 'GET', path: listPath(organizationId, filter) },
+        workReminderListSchema
+      )
     },
     retrieve(organizationId: string, reminderId: string) {
-      return workRequest(runtime, { method: 'GET', path: `${root(organizationId)}/${encodeURIComponent(reminderId)}` }, workReminderSchema)
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/${encodeURIComponent(reminderId)}`,
+        },
+        workReminderSchema
+      )
     },
     create(organizationId: string, input: CreateWorkReminderInput) {
-      return workRequest(runtime, { method: 'POST', path: root(organizationId), body: input }, workReminderSchema)
+      return workRequest(
+        runtime,
+        { method: 'POST', path: root(organizationId), body: input },
+        workReminderSchema
+      )
     },
-    update(organizationId: string, reminderId: string, input: UpdateWorkReminderInput) {
-      return workRequest(runtime, { method: 'PATCH', path: `${root(organizationId)}/${encodeURIComponent(reminderId)}`, body: input }, workReminderSchema)
+    update(
+      organizationId: string,
+      reminderId: string,
+      input: UpdateWorkReminderInput
+    ) {
+      return workRequest(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `${root(organizationId)}/${encodeURIComponent(reminderId)}`,
+          body: input,
+        },
+        workReminderSchema
+      )
     },
     delete(organizationId: string, reminderId: string, deletedBy: string) {
-      return workRequest(runtime, { method: 'DELETE', path: `${root(organizationId)}/${encodeURIComponent(reminderId)}`, body: { deletedBy } }, z.object({ object: z.literal('reminder'), id: z.string(), deleted: z.literal(true) }))
+      return workRequest(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${root(organizationId)}/${encodeURIComponent(reminderId)}`,
+          body: { deletedBy },
+        },
+        z.object({
+          object: z.literal('reminder'),
+          id: z.string(),
+          deleted: z.literal(true),
+        })
+      )
     },
   }
 }

@@ -21,17 +21,17 @@ export const create = (params: CreateParams) =>
   })
 
 export const update = (assignmentId: string, params: UpdateParams) =>
-  prisma.workTaskAssignment.update({ where: { id: assignmentId }, data: params })
+  prisma.workTaskAssignment.update({
+    where: { id: assignmentId },
+    data: params,
+  })
 
 export async function remove(taskId: string, assignmentId: string) {
   const current = await retrieve(taskId, assignmentId)
   if (!current) return null
   await prisma.$transaction(async (tx) => {
     await tx.workTaskAssignment.delete({ where: { id: assignmentId } })
-    if (
-      current.targetType === 'USER' &&
-      current.role === 'OWNER'
-    ) {
+    if (current.targetType === 'USER' && current.role === 'OWNER') {
       const next = await tx.workTaskAssignment.findFirst({
         where: { taskId, targetType: 'USER', role: 'OWNER' },
         orderBy: [{ assignedAt: 'asc' }, { id: 'asc' }],

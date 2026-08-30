@@ -37,10 +37,7 @@ async function requireTenant(organizationId: string) {
   return tenant
 }
 
-export async function ensureDefault(
-  organizationId: string,
-  createdBy: string
-) {
+export async function ensureDefault(organizationId: string, createdBy: string) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const row = await repository.ensureDefault(tenant.id, createdBy)

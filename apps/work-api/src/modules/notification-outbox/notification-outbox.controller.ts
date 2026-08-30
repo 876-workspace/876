@@ -1,1 +1,6 @@
-import type{Request,Response}from'express';import{sendWorkResult}from'../../http/result.js';import{run}from'./notification-outbox.service.js';export async function runNotifications(_req:Request,res:Response){return sendWorkResult(res,await run())}
+import type { Request, Response } from 'express'
+import { sendWorkResult } from '../../http/result.js'
+import { run } from './notification-outbox.service.js'
+export async function runNotifications(_req: Request, res: Response) {
+  return sendWorkResult(res, await run())
+}

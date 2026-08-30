@@ -77,8 +77,10 @@ async function collectEvents(
     }
   }
   return output.sort((left, right) => {
-    const leftTime = left.startAt ?? Date.parse(`${left.startDate}T00:00:00Z`) / 1000
-    const rightTime = right.startAt ?? Date.parse(`${right.startDate}T00:00:00Z`) / 1000
+    const leftTime =
+      left.startAt ?? Date.parse(`${left.startDate}T00:00:00Z`) / 1000
+    const rightTime =
+      right.startAt ?? Date.parse(`${right.startDate}T00:00:00Z`) / 1000
     return leftTime - rightTime || left.id.localeCompare(right.id)
   })
 }

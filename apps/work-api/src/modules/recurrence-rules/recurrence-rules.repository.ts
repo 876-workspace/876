@@ -21,5 +21,9 @@ export const update = (ruleId: string, params: UpdateParams) =>
   prisma.workRecurrenceRule.update({ where: { id: ruleId }, data: params })
 export async function remove(ruleId: string) {
   await prisma.workRecurrenceRule.delete({ where: { id: ruleId } })
-  return { object: 'recurrence_rule' as const, id: ruleId, deleted: true as const }
+  return {
+    object: 'recurrence_rule' as const,
+    id: ruleId,
+    deleted: true as const,
+  }
 }

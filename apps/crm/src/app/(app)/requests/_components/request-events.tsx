@@ -93,7 +93,8 @@ export function RequestEventsSection({
             startDate: draft.startDate,
             endDate: draft.endDate,
             calendarTimeZone:
-              Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Jamaica',
+              Intl.DateTimeFormat().resolvedOptions().timeZone ||
+              'America/Jamaica',
           })
         : null
       : unix(draft.start) != null && unix(draft.end) != null
@@ -103,13 +104,17 @@ export function RequestEventsSection({
             startAt: unix(draft.start)!,
             endAt: unix(draft.end)!,
             timeZone:
-              Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Jamaica',
+              Intl.DateTimeFormat().resolvedOptions().timeZone ||
+              'America/Jamaica',
           })
         : null
 
     setBusyId(null)
     if (!result) {
-      setError({ code: 'crm/invalid-body', message: 'Choose a valid start and end.' })
+      setError({
+        code: 'crm/invalid-body',
+        message: 'Choose a valid start and end.',
+      })
       return
     }
     if (result.error) {
@@ -197,7 +202,12 @@ export function RequestEventsSection({
             maxLength={240}
           />
           {!expanded ? (
-            <Button type="button" variant="ghost" size="icon-sm" onClick={() => setExpanded(true)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setExpanded(true)}
+            >
               <PlusIcon className="size-4" aria-hidden="true" />
               <span className="sr-only">Expand event composer</span>
             </Button>
@@ -210,7 +220,10 @@ export function RequestEventsSection({
               <Checkbox
                 checked={draft.allDay}
                 onCheckedChange={(checked) =>
-                  setDraft((current) => ({ ...current, allDay: checked === true }))
+                  setDraft((current) => ({
+                    ...current,
+                    allDay: checked === true,
+                  }))
                 }
               />
               All day
@@ -223,7 +236,10 @@ export function RequestEventsSection({
                   aria-label="Start date"
                   value={draft.startDate}
                   onChange={(event) =>
-                    setDraft((current) => ({ ...current, startDate: event.target.value }))
+                    setDraft((current) => ({
+                      ...current,
+                      startDate: event.target.value,
+                    }))
                   }
                 />
                 <Input
@@ -231,7 +247,10 @@ export function RequestEventsSection({
                   aria-label="End date"
                   value={draft.endDate}
                   onChange={(event) =>
-                    setDraft((current) => ({ ...current, endDate: event.target.value }))
+                    setDraft((current) => ({
+                      ...current,
+                      endDate: event.target.value,
+                    }))
                   }
                 />
               </div>
@@ -242,7 +261,10 @@ export function RequestEventsSection({
                   aria-label="Start time"
                   value={draft.start}
                   onChange={(event) =>
-                    setDraft((current) => ({ ...current, start: event.target.value }))
+                    setDraft((current) => ({
+                      ...current,
+                      start: event.target.value,
+                    }))
                   }
                 />
                 <Input
@@ -250,7 +272,10 @@ export function RequestEventsSection({
                   aria-label="End time"
                   value={draft.end}
                   onChange={(event) =>
-                    setDraft((current) => ({ ...current, end: event.target.value }))
+                    setDraft((current) => ({
+                      ...current,
+                      end: event.target.value,
+                    }))
                   }
                 />
               </div>

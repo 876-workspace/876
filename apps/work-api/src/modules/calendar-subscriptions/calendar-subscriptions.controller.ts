@@ -1,8 +1,56 @@
 import type { Request, Response } from 'express'
-import { sendWorkError, sendWorkList, sendWorkResult } from '../../http/result.js'
+import {
+  sendWorkError,
+  sendWorkList,
+  sendWorkResult,
+} from '../../http/result.js'
 import * as service from './calendar-subscriptions.service.js'
-import { calendarParamsSchema, createSubscriptionBodySchema, subscriptionParamsSchema, updateSubscriptionBodySchema } from './calendar-subscriptions.schemas.js'
-export async function listSubscriptions(req: Request, res: Response) { const { organizationId, calendarId } = calendarParamsSchema.parse(req.params); const result = await service.list(organizationId, calendarId); if (!result) return sendWorkError(res, 'work/calendar-not-found'); return sendWorkList(res, result, `/v1/organizations/${organizationId}/calendars/${calendarId}/subscriptions`) }
-export async function createSubscription(req: Request, res: Response) { const { organizationId, calendarId } = calendarParamsSchema.parse(req.params); const result = await service.create(organizationId, calendarId, createSubscriptionBodySchema.parse(req.body)); if (!result) return sendWorkError(res, 'work/calendar-not-found'); return sendWorkResult(res, result, 201) }
-export async function updateSubscription(req: Request, res: Response) { const { organizationId, calendarId, subscriptionId } = subscriptionParamsSchema.parse(req.params); const result = await service.update(organizationId, calendarId, subscriptionId, updateSubscriptionBodySchema.parse(req.body)); if (!result) return sendWorkError(res, 'work/calendar-subscription-not-found'); return sendWorkResult(res, result) }
-export async function deleteSubscription(req: Request, res: Response) { const { organizationId, calendarId, subscriptionId } = subscriptionParamsSchema.parse(req.params); const result = await service.remove(organizationId, calendarId, subscriptionId); if (!result) return sendWorkError(res, 'work/calendar-subscription-not-found'); return sendWorkResult(res, result) }
+import {
+  calendarParamsSchema,
+  createSubscriptionBodySchema,
+  subscriptionParamsSchema,
+  updateSubscriptionBodySchema,
+} from './calendar-subscriptions.schemas.js'
+export async function listSubscriptions(req: Request, res: Response) {
+  const { organizationId, calendarId } = calendarParamsSchema.parse(req.params)
+  const result = await service.list(organizationId, calendarId)
+  if (!result) return sendWorkError(res, 'work/calendar-not-found')
+  return sendWorkList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/calendars/${calendarId}/subscriptions`
+  )
+}
+export async function createSubscription(req: Request, res: Response) {
+  const { organizationId, calendarId } = calendarParamsSchema.parse(req.params)
+  const result = await service.create(
+    organizationId,
+    calendarId,
+    createSubscriptionBodySchema.parse(req.body)
+  )
+  if (!result) return sendWorkError(res, 'work/calendar-not-found')
+  return sendWorkResult(res, result, 201)
+}
+export async function updateSubscription(req: Request, res: Response) {
+  const { organizationId, calendarId, subscriptionId } =
+    subscriptionParamsSchema.parse(req.params)
+  const result = await service.update(
+    organizationId,
+    calendarId,
+    subscriptionId,
+    updateSubscriptionBodySchema.parse(req.body)
+  )
+  if (!result) return sendWorkError(res, 'work/calendar-subscription-not-found')
+  return sendWorkResult(res, result)
+}
+export async function deleteSubscription(req: Request, res: Response) {
+  const { organizationId, calendarId, subscriptionId } =
+    subscriptionParamsSchema.parse(req.params)
+  const result = await service.remove(
+    organizationId,
+    calendarId,
+    subscriptionId
+  )
+  if (!result) return sendWorkError(res, 'work/calendar-subscription-not-found')
+  return sendWorkResult(res, result)
+}

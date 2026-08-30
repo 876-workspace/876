@@ -1,1 +1,14 @@
-import{createWorkSyncMappingInputSchema,updateWorkSyncMappingInputSchema}from'@876/work';import{z}from'zod';export const connectionParamsSchema=z.strictObject({organizationId:z.string().trim().min(1),connectionId:z.string().trim().min(1)});export const mappingParamsSchema=connectionParamsSchema.extend({mappingId:z.string().trim().min(1)});export const createMappingBodySchema=createWorkSyncMappingInputSchema;export const updateMappingBodySchema=updateWorkSyncMappingInputSchema
+import {
+  createWorkSyncMappingInputSchema,
+  updateWorkSyncMappingInputSchema,
+} from '@876/work'
+import { z } from 'zod'
+export const connectionParamsSchema = z.strictObject({
+  organizationId: z.string().trim().min(1),
+  connectionId: z.string().trim().min(1),
+})
+export const mappingParamsSchema = connectionParamsSchema.extend({
+  mappingId: z.string().trim().min(1),
+})
+export const createMappingBodySchema = createWorkSyncMappingInputSchema
+export const updateMappingBodySchema = updateWorkSyncMappingInputSchema

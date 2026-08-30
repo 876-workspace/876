@@ -14,7 +14,9 @@ import {
 } from './events.schemas.js'
 
 export async function listEvents(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const result = await service.list(organizationId, requestId)
   return sendCrmList(
     res,
@@ -24,16 +26,20 @@ export async function listEvents(req: Request, res: Response) {
 }
 
 export async function retrieveEvent(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId } = eventParamsSchema.parse(
-    req.params
-  )
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+  } = eventParamsSchema.parse(req.params)
   const result = await service.retrieve(organizationId, requestId, eventId)
   if (!result) return sendCrmError(res, 'crm/event-not-found')
   return sendCrmResult(res, result)
 }
 
 export async function createEvent(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const input = createEventBodySchema.parse(req.body)
   return sendCrmResult(
     res,
@@ -43,9 +49,11 @@ export async function createEvent(req: Request, res: Response) {
 }
 
 export async function updateEvent(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId } = eventParamsSchema.parse(
-    req.params
-  )
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+  } = eventParamsSchema.parse(req.params)
   const input = updateEventBodySchema.parse(req.body)
   const result = await service.update(organizationId, requestId, eventId, input)
   if (!result) return sendCrmError(res, 'crm/event-not-found')
@@ -53,9 +61,11 @@ export async function updateEvent(req: Request, res: Response) {
 }
 
 export async function deleteEvent(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId } = eventParamsSchema.parse(
-    req.params
-  )
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+  } = eventParamsSchema.parse(req.params)
   const { deletedBy } = deleteEventBodySchema.parse(req.body)
   const result = await service.remove(
     organizationId,
@@ -68,9 +78,11 @@ export async function deleteEvent(req: Request, res: Response) {
 }
 
 export async function listParticipants(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId } = eventParamsSchema.parse(
-    req.params
-  )
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+  } = eventParamsSchema.parse(req.params)
   const result = await service.listParticipants(
     organizationId,
     requestId,
@@ -85,9 +97,11 @@ export async function listParticipants(req: Request, res: Response) {
 }
 
 export async function createParticipant(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId } = eventParamsSchema.parse(
-    req.params
-  )
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+  } = eventParamsSchema.parse(req.params)
   const input = createParticipantBodySchema.parse(req.body)
   const result = await service.createParticipant(
     organizationId,
@@ -100,8 +114,12 @@ export async function createParticipant(req: Request, res: Response) {
 }
 
 export async function updateParticipant(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId, participantId } =
-    participantParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+    participantId,
+  } = participantParamsSchema.parse(req.params)
   const input = updateParticipantBodySchema.parse(req.body)
   const result = await service.updateParticipant(
     organizationId,
@@ -115,8 +133,12 @@ export async function updateParticipant(req: Request, res: Response) {
 }
 
 export async function deleteParticipant(req: Request, res: Response) {
-  const { organizationId, id: requestId, eventId, participantId } =
-    participantParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    eventId,
+    participantId,
+  } = participantParamsSchema.parse(req.params)
   const result = await service.removeParticipant(
     organizationId,
     requestId,

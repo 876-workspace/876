@@ -12,7 +12,10 @@ import type {
 
 import { request } from './request'
 
-export type RequestEventCreateInput = Omit<CrmRequestEventCreateInput, 'createdBy'>
+export type RequestEventCreateInput = Omit<
+  CrmRequestEventCreateInput,
+  'createdBy'
+>
 
 function root(requestId: string) {
   return `/api/requests/${encodeURIComponent(requestId)}/events`
@@ -38,7 +41,11 @@ export const requestEvents = {
       body: JSON.stringify(params),
     })
   },
-  update(requestId: string, eventId: string, params: CrmRequestEventUpdateInput) {
+  update(
+    requestId: string,
+    eventId: string,
+    params: CrmRequestEventUpdateInput
+  ) {
     return request<CrmRequestEvent>(
       `${root(requestId)}/${encodeURIComponent(eventId)}`,
       {
@@ -56,20 +63,27 @@ export const requestEvents = {
   },
   participants: {
     list(requestId: string, eventId: string) {
-      return request<{ object: 'list'; data: CrmRequestEventParticipant[]; has_more: boolean; total_count: number | null; url: string }>(
-        participantRoot(requestId, eventId)
-      )
+      return request<{
+        object: 'list'
+        data: CrmRequestEventParticipant[]
+        has_more: boolean
+        total_count: number | null
+        url: string
+      }>(participantRoot(requestId, eventId))
     },
     create(
       requestId: string,
       eventId: string,
       params: CrmRequestEventParticipantCreateInput
     ) {
-      return request<CrmRequestEventParticipant>(participantRoot(requestId, eventId), {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(params),
-      })
+      return request<CrmRequestEventParticipant>(
+        participantRoot(requestId, eventId),
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(params),
+        }
+      )
     },
     update(
       requestId: string,

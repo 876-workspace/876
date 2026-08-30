@@ -21,8 +21,12 @@ type TaskFilter = {
 }
 
 const include = {
-  links: { orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }] },
-  assignments: { orderBy: [{ assignedAt: 'asc' as const }, { id: 'asc' as const }] },
+  links: {
+    orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
+  },
+  assignments: {
+    orderBy: [{ assignedAt: 'asc' as const }, { id: 'asc' as const }],
+  },
 } satisfies Prisma.WorkTaskInclude
 
 export async function list(tenantId: string, filter: TaskFilter) {
@@ -34,11 +38,17 @@ export async function list(tenantId: string, filter: TaskFilter) {
     where: {
       tenantId,
       deletedAt: null,
-      ...(filter.contextService ? { contextService: filter.contextService } : {}),
-      ...(filter.contextResource ? { contextResource: filter.contextResource } : {}),
+      ...(filter.contextService
+        ? { contextService: filter.contextService }
+        : {}),
+      ...(filter.contextResource
+        ? { contextResource: filter.contextResource }
+        : {}),
       ...(filter.contextId ? { contextId: filter.contextId } : {}),
       ...(filter.listId ? { listId: filter.listId } : {}),
-      ...(filter.parentTaskId !== undefined ? { parentTaskId: filter.parentTaskId } : {}),
+      ...(filter.parentTaskId !== undefined
+        ? { parentTaskId: filter.parentTaskId }
+        : {}),
       ...(filter.priorityId ? { priorityId: filter.priorityId } : {}),
       ...(filter.assigneeId ? { assigneeId: filter.assigneeId } : {}),
       ...(filter.status ? { status: filter.status as never } : {}),
@@ -62,22 +72,38 @@ export const retrieve = (tenantId: string, taskId: string) =>
     include,
   })
 
-function tasksAfter(anchor: { sortOrder: number; createdAt: Date; id: string }) {
+function tasksAfter(anchor: {
+  sortOrder: number
+  createdAt: Date
+  id: string
+}) {
   return {
     OR: [
       { sortOrder: { gt: anchor.sortOrder } },
       { sortOrder: anchor.sortOrder, createdAt: { gt: anchor.createdAt } },
-      { sortOrder: anchor.sortOrder, createdAt: anchor.createdAt, id: { gt: anchor.id } },
+      {
+        sortOrder: anchor.sortOrder,
+        createdAt: anchor.createdAt,
+        id: { gt: anchor.id },
+      },
     ],
   }
 }
 
-function tasksBefore(anchor: { sortOrder: number; createdAt: Date; id: string }) {
+function tasksBefore(anchor: {
+  sortOrder: number
+  createdAt: Date
+  id: string
+}) {
   return {
     OR: [
       { sortOrder: { lt: anchor.sortOrder } },
       { sortOrder: anchor.sortOrder, createdAt: { lt: anchor.createdAt } },
-      { sortOrder: anchor.sortOrder, createdAt: anchor.createdAt, id: { lt: anchor.id } },
+      {
+        sortOrder: anchor.sortOrder,
+        createdAt: anchor.createdAt,
+        id: { lt: anchor.id },
+      },
     ],
   }
 }

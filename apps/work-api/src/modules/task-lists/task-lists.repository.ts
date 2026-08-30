@@ -25,8 +25,18 @@ export async function list(tenantId: string, filter: ListFilter) {
       ...(filter.ownerUserId ? { ownerUserId: filter.ownerUserId } : {}),
       ...(anchor
         ? filter.startingAfter
-          ? { OR: [{ sortOrder: { gt: anchor.sortOrder } }, { sortOrder: anchor.sortOrder, id: { gt: anchor.id } }] }
-          : { OR: [{ sortOrder: { lt: anchor.sortOrder } }, { sortOrder: anchor.sortOrder, id: { lt: anchor.id } }] }
+          ? {
+              OR: [
+                { sortOrder: { gt: anchor.sortOrder } },
+                { sortOrder: anchor.sortOrder, id: { gt: anchor.id } },
+              ],
+            }
+          : {
+              OR: [
+                { sortOrder: { lt: anchor.sortOrder } },
+                { sortOrder: anchor.sortOrder, id: { lt: anchor.id } },
+              ],
+            }
         : {}),
     },
     orderBy: filter.endingBefore
@@ -37,7 +47,9 @@ export async function list(tenantId: string, filter: ListFilter) {
 }
 
 export const retrieve = (tenantId: string, listId: string) =>
-  prisma.workTaskList.findFirst({ where: { tenantId, id: listId, deletedAt: null } })
+  prisma.workTaskList.findFirst({
+    where: { tenantId, id: listId, deletedAt: null },
+  })
 
 export const retrieveDefault = (tenantId: string) =>
   prisma.workTaskList.findFirst({

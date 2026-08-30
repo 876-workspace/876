@@ -111,7 +111,8 @@ async function taskIcs(organizationId: string, task: WorkTask) {
     `PRIORITY:${priority(task)}`,
     `PERCENT-COMPLETE:${task.percentComplete}`,
   ]
-  if (task.description) lines.push(`DESCRIPTION:${escapeText(task.description)}`)
+  if (task.description)
+    lines.push(`DESCRIPTION:${escapeText(task.description)}`)
   if (task.startAt !== null && task.startTimeZone)
     lines.push(
       `DTSTART;TZID=${escapeText(task.startTimeZone)}:${local(
@@ -126,7 +127,8 @@ async function taskIcs(organizationId: string, task: WorkTask) {
         task.dueTimeZone
       )}`
     )
-  if (task.completedAt !== null) lines.push(`COMPLETED:${utc(task.completedAt)}`)
+  if (task.completedAt !== null)
+    lines.push(`COMPLETED:${utc(task.completedAt)}`)
   if (['WAITING', 'DEFERRED', 'FAILED'].includes(task.status))
     lines.push(`X-876-STATUS:${task.status}`)
   for (const assignment of task.assignments) {
@@ -151,7 +153,10 @@ async function taskIcs(organizationId: string, task: WorkTask) {
   }
   const rule = await ruleLine(organizationId, task.recurrenceRuleId)
   if (rule) lines.push(rule)
-  lines.push(...(await alertLines(organizationId, { taskId: task.id })), 'END:VTODO')
+  lines.push(
+    ...(await alertLines(organizationId, { taskId: task.id })),
+    'END:VTODO'
+  )
   return lines
 }
 async function eventIcs(organizationId: string, event: WorkEventResource) {
@@ -163,18 +168,15 @@ async function eventIcs(organizationId: string, event: WorkEventResource) {
     `STATUS:${event.status}`,
     `TRANSP:${event.busyStatus === 'FREE' ? 'TRANSPARENT' : 'OPAQUE'}`,
   ]
-  if (event.description) lines.push(`DESCRIPTION:${escapeText(event.description)}`)
+  if (event.description)
+    lines.push(`DESCRIPTION:${escapeText(event.description)}`)
   if (event.location) lines.push(`LOCATION:${escapeText(event.location)}`)
   if (event.allDay && event.startDate && event.endDate) {
     lines.push(
       `DTSTART;VALUE=DATE:${dateOnly(event.startDate)}`,
       `DTEND;VALUE=DATE:${dateOnly(event.endDate)}`
     )
-  } else if (
-    event.startAt !== null &&
-    event.endAt !== null &&
-    event.timeZone
-  ) {
+  } else if (event.startAt !== null && event.endAt !== null && event.timeZone) {
     lines.push(
       `DTSTART;TZID=${escapeText(event.timeZone)}:${local(
         event.startAt,
@@ -273,8 +275,7 @@ function jsTask(task: WorkTask) {
   }
   if (task.startAt !== null)
     value.start = new Date(task.startAt * 1000).toISOString()
-  if (task.dueAt !== null)
-    value.due = new Date(task.dueAt * 1000).toISOString()
+  if (task.dueAt !== null) value.due = new Date(task.dueAt * 1000).toISOString()
   if (task.startTimeZone || task.dueTimeZone)
     value.timeZone = task.startTimeZone ?? task.dueTimeZone
   if (task.assignments.length)
@@ -284,7 +285,9 @@ function jsTask(task: WorkTask) {
         {
           '@type': 'Participant',
           roles: { [assignment.role.toLowerCase()]: true },
-          participationStatus: assignment.status.toLowerCase().replace('_', '-'),
+          participationStatus: assignment.status
+            .toLowerCase()
+            .replace('_', '-'),
           sendTo: {
             work: `urn:876:${assignment.targetType.toLowerCase()}:${assignment.assigneeId}`,
           },
@@ -338,8 +341,11 @@ export async function create(
   input: CreateWorkCalendarExportInput
 ): Promise<WorkCalendarExport | AppErrorValue> {
   const includeTasks = input.includeTasks ?? Boolean(input.taskListId)
-  const includeEvents = input.includeEvents ?? !includeTasks || Boolean(input.calendarId)
-  const taskRows = includeTasks ? await collectTasks(organizationId, input.taskListId) : []
+  const includeEvents =
+    (input.includeEvents ?? !includeTasks) || Boolean(input.calendarId)
+  const taskRows = includeTasks
+    ? await collectTasks(organizationId, input.taskListId)
+    : []
   if (isError(taskRows)) return taskRows
   const eventRows = includeEvents
     ? await collectEvents(organizationId, input.calendarId)
@@ -373,7 +379,8 @@ export async function create(
     'PRODID:-//876 Workspace//Work//EN',
     'CALSCALE:GREGORIAN',
   ]
-  for (const task of taskRows) lines.push(...(await taskIcs(organizationId, task)))
+  for (const task of taskRows)
+    lines.push(...(await taskIcs(organizationId, task)))
   for (const event of eventRows)
     lines.push(...(await eventIcs(organizationId, event)))
   lines.push('END:VCALENDAR')

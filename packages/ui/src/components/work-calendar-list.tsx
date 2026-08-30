@@ -20,7 +20,11 @@ export function WorkCalendarList({
   onSelect,
 }: WorkCalendarListProps) {
   if (calendars.length === 0)
-    return <div className={cn('text-sm text-muted-foreground', className)}>{empty}</div>
+    return (
+      <div className={cn('text-muted-foreground text-sm', className)}>
+        {empty}
+      </div>
+    )
 
   return (
     <div className={cn('space-y-1', className)}>
@@ -30,14 +34,14 @@ export function WorkCalendarList({
           type="button"
           aria-pressed={calendar.id === activeCalendarId}
           className={cn(
-            'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted',
+            'hover:bg-muted flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm',
             calendar.id === activeCalendarId && 'bg-muted font-medium'
           )}
           onClick={() => onSelect?.(calendar)}
         >
           <span className="truncate">{calendar.name}</span>
           {calendar.isPrimary ? (
-            <span className="ml-3 text-xs text-muted-foreground">Primary</span>
+            <span className="text-muted-foreground ml-3 text-xs">Primary</span>
           ) : null}
         </button>
       ))}

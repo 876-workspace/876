@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express'
 
-import { sendWorkError, sendWorkList, sendWorkResult } from '../../http/result.js'
+import {
+  sendWorkError,
+  sendWorkList,
+  sendWorkResult,
+} from '../../http/result.js'
 import * as service from './calendars.service.js'
 import {
   calendarParamsSchema,
@@ -39,7 +43,10 @@ export async function createCalendar(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   return sendWorkResult(
     res,
-    await service.create(organizationId, createCalendarBodySchema.parse(req.body)),
+    await service.create(
+      organizationId,
+      createCalendarBodySchema.parse(req.body)
+    ),
     201
   )
 }

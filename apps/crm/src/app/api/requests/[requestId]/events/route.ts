@@ -7,13 +7,17 @@ import type { CrmRequestEventCreateInput } from '@/types/crm'
 type Context = { params: Promise<{ requestId: string }> }
 
 function statusFor(code: string | undefined) {
-  if (code === 'crm/request-not-found' || code === 'crm/calendar-not-found') return 404
+  if (code === 'crm/request-not-found' || code === 'crm/calendar-not-found')
+    return 404
   return 400
 }
 
 function unauthorized() {
   return Response.json(
-    { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+    {
+      data: null,
+      error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
+    },
     { status: 401 }
   )
 }
@@ -24,7 +28,9 @@ export async function GET(_request: NextRequest, route: Context) {
   const $876 = await get876Client()
   const { requestId } = await route.params
   const result = await $876.requestEvents.list(context.orgId, requestId)
-  return Response.json(result, { status: result.error ? statusFor(result.error.code) : 200 })
+  return Response.json(result, {
+    status: result.error ? statusFor(result.error.code) : 200,
+  })
 }
 
 export async function POST(request: NextRequest, route: Context) {
@@ -38,7 +44,10 @@ export async function POST(request: NextRequest, route: Context) {
   const title = input?.title?.trim()
   if (!title) {
     return Response.json(
-      { data: null, error: { code: 'crm/invalid-body', message: 'An event needs a title.' } },
+      {
+        data: null,
+        error: { code: 'crm/invalid-body', message: 'An event needs a title.' },
+      },
       { status: 400 }
     )
   }
@@ -47,5 +56,7 @@ export async function POST(request: NextRequest, route: Context) {
     title,
     createdBy: context.userId,
   } as CrmRequestEventCreateInput)
-  return Response.json(result, { status: result.error ? statusFor(result.error.code) : 201 })
+  return Response.json(result, {
+    status: result.error ? statusFor(result.error.code) : 201,
+  })
 }

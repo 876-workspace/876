@@ -4,10 +4,7 @@ import { create876AdminClient as createBillingAdminClient } from '@876/billing/a
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 import { create876CouriersClient } from '@876/couriers'
 import { create876CouriersAdminClient } from '@876/couriers/admin'
-import {
-  create876CrmClient,
-  create876CrmWorkspaceClient,
-} from '@876/crm'
+import { create876CrmClient, create876CrmWorkspaceClient } from '@876/crm'
 import { create876Client as createPlatformClient } from '@876/sdk'
 import { create876StorageClient } from '@876/storage'
 import { createWidgetsClient } from '@876/widgets/server'
@@ -20,7 +17,8 @@ import type { ServiceClients, ServerClientOptions } from './types'
 export function createServiceClients(
   options: ServerClientOptions
 ): ServiceClients {
-  const opts = options as unknown as Record<string, unknown> & ServerClientOptions
+  const opts = options as unknown as Record<string, unknown> &
+    ServerClientOptions
   const {
     app: _app,
     requestId,
@@ -48,8 +46,7 @@ export function createServiceClients(
   })
 
   const servicesRecord = services as unknown as
-    | { platformAdmin?: unknown }
-    | undefined
+    { platformAdmin?: unknown } | undefined
   const adminFromServices = servicesRecord?.platformAdmin
   const adminFallback =
     !adminFromServices && internalKey

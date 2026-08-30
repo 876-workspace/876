@@ -1,1 +1,69 @@
-import type{Request,Response}from'express';import{sendWorkError,sendWorkList,sendWorkResult}from'../../http/result.js';import*as service from'./sync-connections.service.js';import{connectionParamsSchema,createConnectionBodySchema,listConnectionsQuerySchema,organizationParamsSchema,updateConnectionBodySchema}from'./sync-connections.schemas.js';export async function listConnections(req:Request,res:Response){const{organizationId}=organizationParamsSchema.parse(req.params);const q=listConnectionsQuerySchema.parse(req.query);return sendWorkList(res,await service.list(organizationId,{...(q.user_id?{userId:q.user_id}:{}),...(q.provider?{provider:q.provider}:{}),...(q.status?{status:q.status}:{}),limit:q.limit,...(q.starting_after?{startingAfter:q.starting_after}:{}),...(q.ending_before?{endingBefore:q.ending_before}:{})}),`/v1/organizations/${organizationId}/sync-connections`)}export async function retrieveConnection(req:Request,res:Response){const{organizationId,connectionId}=connectionParamsSchema.parse(req.params);const r=await service.retrieve(organizationId,connectionId);if(!r)return sendWorkError(res,'work/sync-connection-not-found');return sendWorkResult(res,r)}export async function createConnection(req:Request,res:Response){const{organizationId}=organizationParamsSchema.parse(req.params);return sendWorkResult(res,await service.create(organizationId,createConnectionBodySchema.parse(req.body)),201)}export async function updateConnection(req:Request,res:Response){const{organizationId,connectionId}=connectionParamsSchema.parse(req.params);const r=await service.update(organizationId,connectionId,updateConnectionBodySchema.parse(req.body));if(!r)return sendWorkError(res,'work/sync-connection-not-found');return sendWorkResult(res,r)}export async function deleteConnection(req:Request,res:Response){const{organizationId,connectionId}=connectionParamsSchema.parse(req.params);const r=await service.remove(organizationId,connectionId);if(!r)return sendWorkError(res,'work/sync-connection-not-found');return sendWorkResult(res,r)}
+import type { Request, Response } from 'express'
+import {
+  sendWorkError,
+  sendWorkList,
+  sendWorkResult,
+} from '../../http/result.js'
+import * as service from './sync-connections.service.js'
+import {
+  connectionParamsSchema,
+  createConnectionBodySchema,
+  listConnectionsQuerySchema,
+  organizationParamsSchema,
+  updateConnectionBodySchema,
+} from './sync-connections.schemas.js'
+export async function listConnections(req: Request, res: Response) {
+  const { organizationId } = organizationParamsSchema.parse(req.params)
+  const q = listConnectionsQuerySchema.parse(req.query)
+  return sendWorkList(
+    res,
+    await service.list(organizationId, {
+      ...(q.user_id ? { userId: q.user_id } : {}),
+      ...(q.provider ? { provider: q.provider } : {}),
+      ...(q.status ? { status: q.status } : {}),
+      limit: q.limit,
+      ...(q.starting_after ? { startingAfter: q.starting_after } : {}),
+      ...(q.ending_before ? { endingBefore: q.ending_before } : {}),
+    }),
+    `/v1/organizations/${organizationId}/sync-connections`
+  )
+}
+export async function retrieveConnection(req: Request, res: Response) {
+  const { organizationId, connectionId } = connectionParamsSchema.parse(
+    req.params
+  )
+  const r = await service.retrieve(organizationId, connectionId)
+  if (!r) return sendWorkError(res, 'work/sync-connection-not-found')
+  return sendWorkResult(res, r)
+}
+export async function createConnection(req: Request, res: Response) {
+  const { organizationId } = organizationParamsSchema.parse(req.params)
+  return sendWorkResult(
+    res,
+    await service.create(
+      organizationId,
+      createConnectionBodySchema.parse(req.body)
+    ),
+    201
+  )
+}
+export async function updateConnection(req: Request, res: Response) {
+  const { organizationId, connectionId } = connectionParamsSchema.parse(
+    req.params
+  )
+  const r = await service.update(
+    organizationId,
+    connectionId,
+    updateConnectionBodySchema.parse(req.body)
+  )
+  if (!r) return sendWorkError(res, 'work/sync-connection-not-found')
+  return sendWorkResult(res, r)
+}
+export async function deleteConnection(req: Request, res: Response) {
+  const { organizationId, connectionId } = connectionParamsSchema.parse(
+    req.params
+  )
+  const r = await service.remove(organizationId, connectionId)
+  if (!r) return sendWorkError(res, 'work/sync-connection-not-found')
+  return sendWorkResult(res, r)
+}

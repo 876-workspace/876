@@ -196,7 +196,11 @@ export async function update(
   const current = await findWorkEvent(organizationId, requestId, eventId)
   if (!current || isError(current)) return current
 
-  const result = await workClient().events.update(organizationId, eventId, input)
+  const result = await workClient().events.update(
+    organizationId,
+    eventId,
+    input
+  )
   if (result.error?.code === 'work/event-not-found') return null
   if (result.error) return getError('crm/work-unavailable')
   return serialize(result.data, context.tenantId, requestId)
@@ -220,7 +224,11 @@ export async function remove(
   )
   if (result.error?.code === 'work/event-not-found') return null
   if (result.error) return getError('crm/work-unavailable')
-  return { object: 'request_event' as const, id: eventId, deleted: true as const }
+  return {
+    object: 'request_event' as const,
+    id: eventId,
+    deleted: true as const,
+  }
 }
 
 export async function listParticipants(
@@ -232,7 +240,10 @@ export async function listParticipants(
   if (isError(context)) return context
   const event = await findWorkEvent(organizationId, requestId, eventId)
   if (!event || isError(event)) return event
-  const result = await workClient().eventParticipants.list(organizationId, eventId)
+  const result = await workClient().eventParticipants.list(
+    organizationId,
+    eventId
+  )
   if (result.error) return getError('crm/work-unavailable')
   return result.data.data.map(serializeParticipant)
 }
@@ -262,9 +273,14 @@ async function hasParticipant(
   eventId: string,
   participantId: string
 ) {
-  const result = await workClient().eventParticipants.list(organizationId, eventId)
+  const result = await workClient().eventParticipants.list(
+    organizationId,
+    eventId
+  )
   if (result.error) return getError('crm/work-unavailable')
-  return result.data.data.some((participant) => participant.id === participantId)
+  return result.data.data.some(
+    (participant) => participant.id === participantId
+  )
 }
 
 export async function updateParticipant(

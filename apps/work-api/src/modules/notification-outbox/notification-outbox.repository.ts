@@ -1,1 +1,69 @@
-import{randomUUID}from'node:crypto';import{prisma}from'../../db/index.js';export async function enqueue(input:{tenantId:string;sourceType:'ALERT'|'REMINDER';sourceId:string;occurrenceKey:string;userId:string;channel:'NOTIFICATION'|'EMAIL';deliverAt:Date;payload:object}){return prisma.workNotificationOutbox.upsert({where:{sourceType_sourceId_occurrenceKey_channel:{sourceType:input.sourceType,sourceId:input.sourceId,occurrenceKey:input.occurrenceKey,channel:input.channel}},create:{id:`outbox_${randomUUID().replaceAll('-','')}`,...input},update:{deliverAt:input.deliverAt,payload:input.payload}})}export const pending=(now:Date,limit=100)=>prisma.workNotificationOutbox.findMany({where:{status:{in:['PENDING','FAILED']},deliverAt:{lte:now},attempts:{lt:10}},orderBy:[{deliverAt:'asc'},{id:'asc'}],take:limit});export const markDispatched=(id:string)=>prisma.workNotificationOutbox.update({where:{id},data:{status:'DISPATCHED',dispatchedAt:new Date(),lastError:null,attempts:{increment:1}}});export const markFailed=(id:string,error:string)=>prisma.workNotificationOutbox.update({where:{id},data:{status:'FAILED',lastError:error.slice(0,2000),attempts:{increment:1}}});export async function markSourceDelivered(sourceType:'ALERT'|'REMINDER',sourceId:string){if(sourceType==='ALERT')await prisma.workAlert.updateMany({where:{id:sourceId,status:'SCHEDULED'},data:{status:'SENT',sentAt:new Date()}});else await prisma.workReminder.updateMany({where:{id:sourceId,status:'SCHEDULED',recurrenceRuleId:null},data:{status:'SENT',sentAt:new Date()}})}
+import { randomUUID } from 'node:crypto'
+import { prisma } from '../../db/index.js'
+export async function enqueue(input: {
+  tenantId: string
+  sourceType: 'ALERT' | 'REMINDER'
+  sourceId: string
+  occurrenceKey: string
+  userId: string
+  channel: 'NOTIFICATION' | 'EMAIL'
+  deliverAt: Date
+  payload: object
+}) {
+  return prisma.workNotificationOutbox.upsert({
+    where: {
+      sourceType_sourceId_occurrenceKey_channel: {
+        sourceType: input.sourceType,
+        sourceId: input.sourceId,
+        occurrenceKey: input.occurrenceKey,
+        channel: input.channel,
+      },
+    },
+    create: { id: `outbox_${randomUUID().replaceAll('-', '')}`, ...input },
+    update: { deliverAt: input.deliverAt, payload: input.payload },
+  })
+}
+export const pending = (now: Date, limit = 100) =>
+  prisma.workNotificationOutbox.findMany({
+    where: {
+      status: { in: ['PENDING', 'FAILED'] },
+      deliverAt: { lte: now },
+      attempts: { lt: 10 },
+    },
+    orderBy: [{ deliverAt: 'asc' }, { id: 'asc' }],
+    take: limit,
+  })
+export const markDispatched = (id: string) =>
+  prisma.workNotificationOutbox.update({
+    where: { id },
+    data: {
+      status: 'DISPATCHED',
+      dispatchedAt: new Date(),
+      lastError: null,
+      attempts: { increment: 1 },
+    },
+  })
+export const markFailed = (id: string, error: string) =>
+  prisma.workNotificationOutbox.update({
+    where: { id },
+    data: {
+      status: 'FAILED',
+      lastError: error.slice(0, 2000),
+      attempts: { increment: 1 },
+    },
+  })
+export async function markSourceDelivered(
+  sourceType: 'ALERT' | 'REMINDER',
+  sourceId: string
+) {
+  if (sourceType === 'ALERT')
+    await prisma.workAlert.updateMany({
+      where: { id: sourceId, status: 'SCHEDULED' },
+      data: { status: 'SENT', sentAt: new Date() },
+    })
+  else
+    await prisma.workReminder.updateMany({
+      where: { id: sourceId, status: 'SCHEDULED', recurrenceRuleId: null },
+      data: { status: 'SENT', sentAt: new Date() },
+    })
+}

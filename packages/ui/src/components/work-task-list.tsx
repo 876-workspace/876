@@ -21,7 +21,11 @@ export function WorkTaskList({
   renderTask,
 }: WorkTaskListProps) {
   if (tasks.length === 0)
-    return <div className={cn('text-sm text-muted-foreground', className)}>{empty}</div>
+    return (
+      <div className={cn('text-muted-foreground text-sm', className)}>
+        {empty}
+      </div>
+    )
 
   return (
     <ul className={cn('divide-y', className)}>
@@ -34,12 +38,12 @@ export function WorkTaskList({
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{task.title}</div>
                 {task.description ? (
-                  <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">
                     {task.description}
                   </div>
                 ) : null}
               </div>
-              <span className="shrink-0 text-xs text-muted-foreground">
+              <span className="text-muted-foreground shrink-0 text-xs">
                 {task.status.replaceAll('_', ' ').toLowerCase()}
               </span>
             </div>

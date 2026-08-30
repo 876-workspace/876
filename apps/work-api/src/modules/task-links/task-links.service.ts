@@ -34,7 +34,10 @@ async function requireTask(organizationId: string, taskId: string) {
 export async function list(organizationId: string, taskId: string) {
   const task = await requireTask(organizationId, taskId)
   if (!task || isError(task)) return task
-  return { data: (await repository.list(taskId)).map(serialize), hasMore: false }
+  return {
+    data: (await repository.list(taskId)).map(serialize),
+    hasMore: false,
+  }
 }
 
 export async function create(

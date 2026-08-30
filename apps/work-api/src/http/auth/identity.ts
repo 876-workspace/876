@@ -42,7 +42,11 @@ async function requestIdentity(path: string, headers: Record<string, string>) {
     throw new IdentityUnavailableError()
   }
 
-  if (response.status === 401 || response.status === 403 || response.status === 404)
+  if (
+    response.status === 401 ||
+    response.status === 403 ||
+    response.status === 404
+  )
     return null
   if (!response.ok) throw new IdentityUnavailableError()
 
@@ -101,9 +105,15 @@ function unwrapEnvelope(raw: unknown): unknown {
 }
 
 function isApp(value: unknown): value is { id: string; slug: string } {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    return false
   const record = value as Record<string, unknown>
-  return typeof record.id === 'string' && Boolean(record.id) && typeof record.slug === 'string' && Boolean(record.slug)
+  return (
+    typeof record.id === 'string' &&
+    Boolean(record.id) &&
+    typeof record.slug === 'string' &&
+    Boolean(record.slug)
+  )
 }
 
 function isAppMembership(value: unknown): value is {
@@ -115,7 +125,8 @@ function isAppMembership(value: unknown): value is {
   status: string
   effective_permissions: string[]
 } {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    return false
   const record = value as Record<string, unknown>
   return (
     typeof record.user_id === 'string' &&
@@ -125,6 +136,8 @@ function isAppMembership(value: unknown): value is {
     typeof record.entitled === 'boolean' &&
     typeof record.status === 'string' &&
     Array.isArray(record.effective_permissions) &&
-    record.effective_permissions.every((permission) => typeof permission === 'string')
+    record.effective_permissions.every(
+      (permission) => typeof permission === 'string'
+    )
   )
 }

@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express'
 
-import { sendWorkError, sendWorkList, sendWorkResult } from '../../http/result.js'
+import {
+  sendWorkError,
+  sendWorkList,
+  sendWorkResult,
+} from '../../http/result.js'
 import * as service from './task-lists.service.js'
 import {
   createTaskListBodySchema,
@@ -20,7 +24,11 @@ export async function listTaskLists(req: Request, res: Response) {
     ...(query.starting_after ? { startingAfter: query.starting_after } : {}),
     ...(query.ending_before ? { endingBefore: query.ending_before } : {}),
   })
-  return sendWorkList(res, result, `/v1/organizations/${organizationId}/task-lists`)
+  return sendWorkList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/task-lists`
+  )
 }
 
 export async function retrieveTaskList(req: Request, res: Response) {

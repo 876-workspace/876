@@ -30,19 +30,57 @@ function listPath(organizationId: string, filter: WorkAlertListFilter) {
 export function createAlertsResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkAlertListFilter = {}) {
-      return workRequest(runtime, { method: 'GET', path: listPath(organizationId, filter) }, workAlertListSchema)
+      return workRequest(
+        runtime,
+        { method: 'GET', path: listPath(organizationId, filter) },
+        workAlertListSchema
+      )
     },
     retrieve(organizationId: string, alertId: string) {
-      return workRequest(runtime, { method: 'GET', path: `${root(organizationId)}/${encodeURIComponent(alertId)}` }, workAlertSchema)
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/${encodeURIComponent(alertId)}`,
+        },
+        workAlertSchema
+      )
     },
     create(organizationId: string, input: CreateWorkAlertInput) {
-      return workRequest(runtime, { method: 'POST', path: root(organizationId), body: input }, workAlertSchema)
+      return workRequest(
+        runtime,
+        { method: 'POST', path: root(organizationId), body: input },
+        workAlertSchema
+      )
     },
-    update(organizationId: string, alertId: string, input: UpdateWorkAlertInput) {
-      return workRequest(runtime, { method: 'PATCH', path: `${root(organizationId)}/${encodeURIComponent(alertId)}`, body: input }, workAlertSchema)
+    update(
+      organizationId: string,
+      alertId: string,
+      input: UpdateWorkAlertInput
+    ) {
+      return workRequest(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `${root(organizationId)}/${encodeURIComponent(alertId)}`,
+          body: input,
+        },
+        workAlertSchema
+      )
     },
     delete(organizationId: string, alertId: string) {
-      return workRequest(runtime, { method: 'DELETE', path: `${root(organizationId)}/${encodeURIComponent(alertId)}` }, z.object({ object: z.literal('alert'), id: z.string(), deleted: z.literal(true) }))
+      return workRequest(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${root(organizationId)}/${encodeURIComponent(alertId)}`,
+        },
+        z.object({
+          object: z.literal('alert'),
+          id: z.string(),
+          deleted: z.literal(true),
+        })
+      )
     },
   }
 }

@@ -14,7 +14,10 @@ function stamp(value: Date | null) {
 }
 function untilToken(value: number) {
   const date = new Date(value * 1000)
-  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
+  return date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z')
 }
 function buildRRule(input: {
   frequency: string
@@ -29,7 +32,8 @@ function buildRRule(input: {
   const parts = [`FREQ=${input.frequency}`]
   if ((input.interval ?? 1) !== 1) parts.push(`INTERVAL=${input.interval}`)
   if (input.byDay?.length) parts.push(`BYDAY=${input.byDay.join(',')}`)
-  if (input.byMonthDay?.length) parts.push(`BYMONTHDAY=${input.byMonthDay.join(',')}`)
+  if (input.byMonthDay?.length)
+    parts.push(`BYMONTHDAY=${input.byMonthDay.join(',')}`)
   if (input.byMonth?.length) parts.push(`BYMONTH=${input.byMonth.join(',')}`)
   if (input.count != null) parts.push(`COUNT=${input.count}`)
   if (input.untilAt != null) parts.push(`UNTIL=${untilToken(input.untilAt)}`)
@@ -65,7 +69,12 @@ async function requireTenant(organizationId: string) {
 export async function list(organizationId: string) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
-  return { data: (await repository.list(tenant.id)).map((row) => serialize(row, organizationId)), hasMore: false }
+  return {
+    data: (await repository.list(tenant.id)).map((row) =>
+      serialize(row, organizationId)
+    ),
+    hasMore: false,
+  }
 }
 export async function retrieve(organizationId: string, ruleId: string) {
   const tenant = await requireTenant(organizationId)
@@ -73,7 +82,10 @@ export async function retrieve(organizationId: string, ruleId: string) {
   const row = await repository.retrieve(tenant.id, ruleId)
   return row ? serialize(row, organizationId) : null
 }
-export async function create(organizationId: string, input: CreateWorkRecurrenceRuleInput) {
+export async function create(
+  organizationId: string,
+  input: CreateWorkRecurrenceRuleInput
+) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const normalized = {
@@ -89,14 +101,19 @@ export async function create(organizationId: string, input: CreateWorkRecurrence
   const row = await repository.create({
     tenantId: tenant.id,
     ...normalized,
-    untilAt: normalized.untilAt == null ? null : new Date(normalized.untilAt * 1000),
+    untilAt:
+      normalized.untilAt == null ? null : new Date(normalized.untilAt * 1000),
     timeZone: input.timeZone,
     rrule: buildRRule(normalized),
     createdBy: input.createdBy,
   })
   return serialize(row, organizationId)
 }
-export async function update(organizationId: string, ruleId: string, input: UpdateWorkRecurrenceRuleInput) {
+export async function update(
+  organizationId: string,
+  ruleId: string,
+  input: UpdateWorkRecurrenceRuleInput
+) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, ruleId)
@@ -108,8 +125,10 @@ export async function update(organizationId: string, ruleId: string, input: Upda
     byMonthDay: input.byMonthDay ?? current.byMonthDay,
     byMonth: input.byMonth ?? current.byMonth,
     count: input.count === undefined ? current.count : input.count,
-    untilAt: input.untilAt === undefined ? stamp(current.untilAt) : input.untilAt,
-    weekStart: input.weekStart === undefined ? current.weekStart : input.weekStart,
+    untilAt:
+      input.untilAt === undefined ? stamp(current.untilAt) : input.untilAt,
+    weekStart:
+      input.weekStart === undefined ? current.weekStart : input.weekStart,
   }
   const row = await repository.update(ruleId, {
     ...(input.frequency === undefined ? {} : { frequency: input.frequency }),
@@ -118,7 +137,12 @@ export async function update(organizationId: string, ruleId: string, input: Upda
     ...(input.byMonthDay === undefined ? {} : { byMonthDay: input.byMonthDay }),
     ...(input.byMonth === undefined ? {} : { byMonth: input.byMonth }),
     ...(input.count === undefined ? {} : { count: input.count }),
-    ...(input.untilAt === undefined ? {} : { untilAt: input.untilAt == null ? null : new Date(input.untilAt * 1000) }),
+    ...(input.untilAt === undefined
+      ? {}
+      : {
+          untilAt:
+            input.untilAt == null ? null : new Date(input.untilAt * 1000),
+        }),
     ...(input.timeZone === undefined ? {} : { timeZone: input.timeZone }),
     ...(input.weekStart === undefined ? {} : { weekStart: input.weekStart }),
     rrule: buildRRule(next),

@@ -25,7 +25,9 @@ export type WorkSessionClientOptions = WorkIntegrationClientOptions & {
   accessToken?: string
 }
 
-export function createWorkRuntime(options: WorkOperatorClientOptions): WorkRuntime {
+export function createWorkRuntime(
+  options: WorkOperatorClientOptions
+): WorkRuntime {
   return {
     baseUrl: (options.baseUrl ?? '').replace(/\/$/, ''),
     credential: { header: 'x-internal-key', value: options.internalKey ?? '' },
@@ -34,7 +36,9 @@ export function createWorkRuntime(options: WorkOperatorClientOptions): WorkRunti
   }
 }
 
-export function createWorkIntegrationRuntime(options: WorkIntegrationClientOptions): WorkRuntime {
+export function createWorkIntegrationRuntime(
+  options: WorkIntegrationClientOptions
+): WorkRuntime {
   return {
     baseUrl: (options.baseUrl ?? '').replace(/\/$/, ''),
     credential: { header: 'x-876-api-key', value: options.apiKey ?? '' },
@@ -43,7 +47,9 @@ export function createWorkIntegrationRuntime(options: WorkIntegrationClientOptio
   }
 }
 
-export function createWorkSessionRuntime(options: WorkSessionClientOptions): WorkRuntime {
+export function createWorkSessionRuntime(
+  options: WorkSessionClientOptions
+): WorkRuntime {
   return {
     ...createWorkIntegrationRuntime(options),
     accessToken: options.accessToken,

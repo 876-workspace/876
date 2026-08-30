@@ -14,10 +14,7 @@ function root(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/events`
 }
 
-function listPath(
-  organizationId: string,
-  filter: WorkEventResourceListFilter
-) {
+function listPath(organizationId: string, filter: WorkEventResourceListFilter) {
   const params = new URLSearchParams()
   if (filter.calendarId) params.set('calendar_id', filter.calendarId)
   if (filter.context) {
@@ -37,10 +34,7 @@ function listPath(
 
 export function createEventsResource(runtime: WorkRuntime) {
   return {
-    list(
-      organizationId: string,
-      filter: WorkEventResourceListFilter = {}
-    ) {
+    list(organizationId: string, filter: WorkEventResourceListFilter = {}) {
       return workRequest(
         runtime,
         { method: 'GET', path: listPath(organizationId, filter) },

@@ -3,6 +3,11 @@ import { sendWorkResult } from '../../http/result.js'
 import * as service from './tenants.service.js'
 import { ensureTenantBodySchema } from './tenants.schemas.js'
 export async function ensureTenant(req: Request, res: Response) {
-  const { organizationId, appId, scopes } = ensureTenantBodySchema.parse(req.body)
-  return sendWorkResult(res, await service.ensure(organizationId, appId ? { appId, scopes } : undefined))
+  const { organizationId, appId, scopes } = ensureTenantBodySchema.parse(
+    req.body
+  )
+  return sendWorkResult(
+    res,
+    await service.ensure(organizationId, appId ? { appId, scopes } : undefined)
+  )
 }

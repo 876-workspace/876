@@ -5,8 +5,12 @@ import {
 } from '@876/work'
 import { z } from 'zod'
 
-export const organizationParamsSchema = z.strictObject({ organizationId: z.string().trim().min(1) })
-export const reminderParamsSchema = organizationParamsSchema.extend({ reminderId: z.string().trim().min(1) })
+export const organizationParamsSchema = z.strictObject({
+  organizationId: z.string().trim().min(1),
+})
+export const reminderParamsSchema = organizationParamsSchema.extend({
+  reminderId: z.string().trim().min(1),
+})
 export const listRemindersQuerySchema = z
   .strictObject({
     context_service: z.string().trim().min(1).optional(),
@@ -19,10 +23,24 @@ export const listRemindersQuerySchema = z
     ending_before: z.string().trim().min(1).optional(),
   })
   .superRefine((value, context) => {
-    const count = [value.context_service, value.context_resource, value.context_id].filter(Boolean).length
-    if (count !== 0 && count !== 3) context.addIssue({ code: 'custom', message: 'Context service, resource, and id must be supplied together.' })
-    if (value.starting_after && value.ending_before) context.addIssue({ code: 'custom', message: 'Only one cursor may be provided.' })
+    const count = [
+      value.context_service,
+      value.context_resource,
+      value.context_id,
+    ].filter(Boolean).length
+    if (count !== 0 && count !== 3)
+      context.addIssue({
+        code: 'custom',
+        message: 'Context service, resource, and id must be supplied together.',
+      })
+    if (value.starting_after && value.ending_before)
+      context.addIssue({
+        code: 'custom',
+        message: 'Only one cursor may be provided.',
+      })
   })
 export const createReminderBodySchema = createWorkReminderInputSchema
 export const updateReminderBodySchema = updateWorkReminderInputSchema
-export const deleteReminderBodySchema = z.strictObject({ deletedBy: z.string().trim().min(1) })
+export const deleteReminderBodySchema = z.strictObject({
+  deletedBy: z.string().trim().min(1),
+})

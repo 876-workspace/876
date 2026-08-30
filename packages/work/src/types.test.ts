@@ -48,13 +48,20 @@ const task = {
 describe('Work Phase 2 contracts', () => {
   it('models cross-service context without a foreign key to the source service', () => {
     expect(
-      workContextSchema.parse({ service: 'crm', resource: 'request', id: 'req_1' })
+      workContextSchema.parse({
+        service: 'crm',
+        resource: 'request',
+        id: 'req_1',
+      })
     ).toEqual({ service: 'crm', resource: 'request', id: 'req_1' })
   })
 
   it('keeps general organization tasks first-class', () => {
     expect(
-      createWorkTaskInputSchema.parse({ title: 'Prepare rota', createdBy: 'user_1' })
+      createWorkTaskInputSchema.parse({
+        title: 'Prepare rota',
+        createdBy: 'user_1',
+      })
     ).toMatchObject({ title: 'Prepare rota', createdBy: 'user_1' })
   })
 
@@ -105,7 +112,10 @@ describe('Work Phase 2 contracts', () => {
         assignedBy: 'user_1',
         delegatedFromAssignmentId: 'assign_1',
       })
-    ).toMatchObject({ assigneeId: 'user_2', delegatedFromAssignmentId: 'assign_1' })
+    ).toMatchObject({
+      assigneeId: 'user_2',
+      delegatedFromAssignmentId: 'assign_1',
+    })
   })
 
   it('enforces timed and all-day event shapes as mutually exclusive variants', () => {

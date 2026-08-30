@@ -12,7 +12,11 @@ import {
   type UpdateRequestEventInput,
   type UpdateRequestEventParticipantInput,
 } from '../request-event-types'
-import { deletedSchema, type DeleteNestedRequestInput, type RequestOptions } from '../types'
+import {
+  deletedSchema,
+  type DeleteNestedRequestInput,
+  type RequestOptions,
+} from '../types'
 
 function root(organizationId: string, requestId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/requests/${encodeURIComponent(requestId)}/events`

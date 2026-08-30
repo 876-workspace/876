@@ -30,12 +30,24 @@ export const listTasksQuerySchema = z
     ending_before: z.string().trim().min(1).optional(),
   })
   .superRefine((query, ctx) => {
-    const contextCount = [query.context_service, query.context_resource, query.context_id].filter(Boolean).length
+    const contextCount = [
+      query.context_service,
+      query.context_resource,
+      query.context_id,
+    ].filter(Boolean).length
     if (contextCount !== 0 && contextCount !== 3)
-      ctx.addIssue({ code: 'custom', message: 'Context filters must be supplied together.' })
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Context filters must be supplied together.',
+      })
     if (query.starting_after && query.ending_before)
-      ctx.addIssue({ code: 'custom', message: 'Only one cursor may be provided.' })
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Only one cursor may be provided.',
+      })
   })
 export const createTaskBodySchema = createWorkTaskInputSchema
 export const updateTaskBodySchema = updateWorkTaskInputSchema
-export const deleteTaskBodySchema = z.strictObject({ deletedBy: z.string().trim().min(1) })
+export const deleteTaskBodySchema = z.strictObject({
+  deletedBy: z.string().trim().min(1),
+})
