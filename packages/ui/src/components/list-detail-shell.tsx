@@ -134,7 +134,7 @@ export function ListDetailShell({
       <div
         className={cn(
           '@3xl/list-detail:grid @3xl/list-detail:h-full @3xl/list-detail:min-h-0',
-          '@3xl/list-detail:grid-rows-[auto_auto_minmax(0,1fr)]',
+          '@3xl/list-detail:grid-rows-[minmax(0,1fr)]',
           // Animating the track itself is what produces "the table closes in
           // and the card comes out": one grid, two column widths, 300ms
           // between them.
@@ -146,36 +146,34 @@ export function ListDetailShell({
         )}
       >
         {/*
-         * The toolbar stays mounted whether or not a record is open — it names
-         * the section and carries its actions, so it must not disappear with
-         * the table. It rides the list column, narrowing with it.
+         * The complete list side is one grid item. Keeping its toolbar,
+         * optional sub-navigation, and list in a flex stack prevents a tall
+         * detail card from contributing height to separate list-side rows.
          */}
-        <div className="@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1">
-          {toolbar}
-        </div>
+        <div
+          data-slot="list-detail-list-column"
+          className="@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1 @3xl/list-detail:flex @3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0 @3xl/list-detail:flex-col"
+        >
+          <div className="@3xl/list-detail:shrink-0">{toolbar}</div>
 
-        {subnav ? (
-          <div className="@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-2">
-            {subnav}
+          {subnav ? (
+            <div className="@3xl/list-detail:shrink-0">{subnav}</div>
+          ) : null}
+
+          <div className="@3xl/list-detail:min-h-0 @3xl/list-detail:flex-1">
+            {list}
           </div>
-        ) : null}
-
-        <div className="@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-3 @3xl/list-detail:min-h-0">
-          {list}
         </div>
 
         {/*
-         * Column 2, spanning all three rows: the card fills the full height of
-         * the content area rather than starting below the toolbar.
+         * Column 2 in the same single row: the card fills the full height of
+         * the content area while remaining aligned with the list-side stack.
          * `overflow-hidden` keeps it clipped to the zero-width track while
          * closed, so there is nothing to see until the track opens.
          */}
         <div
           className={cn(
-            // `row-[1/-1]` rather than `row-span-3 row-start-1`: one
-            // declaration, so the card's placement can never depend on the
-            // order Tailwind happens to emit `grid-row` and `grid-row-start` in.
-            '@3xl/list-detail:col-start-2 @3xl/list-detail:row-[1/-1]',
+            '@3xl/list-detail:col-start-2 @3xl/list-detail:row-start-1',
             '@3xl/list-detail:min-h-0 @3xl/list-detail:overflow-hidden',
             open
               ? 'mt-4 @3xl/list-detail:mt-0'

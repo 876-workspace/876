@@ -37,13 +37,13 @@ describe('RolesShell', () => {
     )
   })
 
-  it('opens the role card over the full height of the second column', () => {
+  it('opens the role card beside the list stack in the same row', () => {
     mocks.segments = ['admin']
     renderShell()
     const detailCell = screen.getByText('Role card').parentElement!
 
     expect(detailCell.className).toContain('@3xl/list-detail:col-start-2')
-    expect(detailCell.className).toContain('@3xl/list-detail:row-[1/-1]')
+    expect(detailCell.className).toContain('@3xl/list-detail:row-start-1')
   })
 
   it('narrows the list column once a role is open', () => {

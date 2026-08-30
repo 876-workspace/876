@@ -138,22 +138,36 @@ describe('ListDetailShell', () => {
     expect(renderShell(false)).toHaveAttribute('data-state', 'closed')
   })
 
-  it('keeps the toolbar in the list column, above the list', () => {
+  it('keeps the toolbar and list in one left-column stack', () => {
     renderShell(true)
-    const toolbarCell = screen.getByText('Toolbar').parentElement!
+    const listColumn = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-list-column"]'
+    )!
 
-    expect(toolbarCell.className).toContain('@3xl/list-detail:col-start-1')
-    expect(toolbarCell.className).toContain('@3xl/list-detail:row-start-1')
+    expect(listColumn).toContainElement(screen.getByText('Toolbar'))
+    expect(listColumn).toContainElement(screen.getByText('List'))
+    expect(listColumn.className).toContain('@3xl/list-detail:col-start-1')
+    expect(listColumn.className).toContain('@3xl/list-detail:row-start-1')
+    expect(listColumn.className).toContain('@3xl/list-detail:flex-col')
   })
 
-  it('gives the detail the full height of the second column', () => {
+  it('places the detail beside the list stack in the same row', () => {
     renderShell(true)
     const detailCell = screen.getByText('Detail').parentElement!
 
     expect(detailCell.className).toContain('@3xl/list-detail:col-start-2')
-    // One declaration for the whole span, so nothing can reorder it away.
-    expect(detailCell.className).toContain('@3xl/list-detail:row-[1/-1]')
-    expect(detailCell.className).not.toContain('row-span-3')
+    expect(detailCell.className).toContain('@3xl/list-detail:row-start-1')
+    expect(detailCell.className).not.toContain('row-[1/-1]')
+  })
+
+  it('uses one bounded grid row instead of coupling list sections to the detail height', () => {
+    const shell = renderShell(true)
+    const grid = shell.firstElementChild!
+
+    expect(grid.className).toContain(
+      '@3xl/list-detail:grid-rows-[minmax(0,1fr)]'
+    )
+    expect(grid.className).not.toContain('auto_auto')
   })
 
   it('hides the detail column below the shell breakpoint when closed', () => {
@@ -164,17 +178,24 @@ describe('ListDetailShell', () => {
     expect(detailCell.className).toContain('@3xl/list-detail:block')
   })
 
-  it('omits the subnav row when no subnav is given', () => {
+  it('omits the subnav from the list stack when none is given', () => {
     renderShell(true)
+    const listColumn = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-list-column"]'
+    )!
 
-    expect(document.querySelectorAll('[class*="row-start-2"]').length).toBe(0)
+    expect(listColumn.children).toHaveLength(2)
   })
 
   it('places a subnav between the toolbar and the list when one is given', () => {
     renderShell(true, <div>Subnav</div>)
-    const subnavCell = screen.getByText('Subnav').parentElement!
+    const listColumn = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-list-column"]'
+    )!
 
-    expect(subnavCell.className).toContain('@3xl/list-detail:col-start-1')
-    expect(subnavCell.className).toContain('@3xl/list-detail:row-start-2')
+    expect(listColumn.children).toHaveLength(3)
+    expect(listColumn.children[0]).toContainElement(screen.getByText('Toolbar'))
+    expect(listColumn.children[1]).toContainElement(screen.getByText('Subnav'))
+    expect(listColumn.children[2]).toContainElement(screen.getByText('List'))
   })
 })
