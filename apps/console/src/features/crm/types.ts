@@ -25,7 +25,7 @@ export type {
   CrmReminderStatus,
   CrmRequestCategory,
   CrmRequestCategoryList,
-} from '@876/client'
+} from '@876/crm'
 
 export type DirectoryMember = {
   userId: string

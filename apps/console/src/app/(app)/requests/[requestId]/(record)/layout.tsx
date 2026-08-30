@@ -4,8 +4,8 @@ import { Page } from '@876/ui/page'
 
 import { RequestRecordShell } from '@/features/crm/components/request-record-shell'
 import { PLATFORM_REQUESTS_HREF } from '@/features/crm/request-paths'
-import { $876 } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
+import { crm } from '@/lib/services/crm'
 
 type Props = {
   children: React.ReactNode
@@ -20,7 +20,7 @@ export async function generateMetadata({
   const org = await getPlatformOrganization()
   if (!org) return { title: 'Requests' }
   const { requestId } = await params
-  const result = await $876.requests.retrieve(org.id, requestId)
+  const result = await crm.requests.retrieve(org.id, requestId)
   if (!result.data) return { title: 'Request' }
 
   return {

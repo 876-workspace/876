@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { RequestRecordShell } from '@/features/crm/components/request-record-shell'
-import { $876 } from '@/lib/876'
+import { crm } from '@/lib/services/crm'
+
 import { resolveOrg } from '../../../../../_data'
 
 type Props = {
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, requestId } = await params
   const org = await resolveOrg(slug)
   if (!org) return { title: 'Request' }
-  const result = await $876.requests.retrieve(org.id, requestId)
+  const result = await crm.requests.retrieve(org.id, requestId)
   if (!result.data) return { title: 'Request' }
 
   return {
