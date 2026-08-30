@@ -147,21 +147,24 @@ describe('CustomerCard', () => {
 
     // Transactions tab
     fireEvent.click(screen.getByRole('tab', { name: 'Transactions' }))
-    expect(screen.getByText('Total Invoiced')).toBeInTheDocument()
-    expect(screen.getByText('INV-2026-003')).toBeInTheDocument()
+    expect(screen.getByText(/No transactions recorded/i)).toBeInTheDocument()
 
     // Requests tab
     fireEvent.click(screen.getByRole('tab', { name: 'Requests' }))
     expect(screen.getByText(/Support & Service Requests/i)).toBeInTheDocument()
-    expect(screen.getByText('REQ-8921')).toBeInTheDocument()
+    expect(screen.getByText(/No requests recorded/i)).toBeInTheDocument()
 
     // Mails tab
     fireEvent.click(screen.getByRole('tab', { name: 'Mails' }))
     expect(screen.getByText(/Communication History/i)).toBeInTheDocument()
+    expect(screen.getByText(/No emails exchanged/i)).toBeInTheDocument()
 
     // Statement tab
     fireEvent.click(screen.getByRole('tab', { name: 'Statement' }))
     expect(screen.getByText('Statement of Account')).toBeInTheDocument()
+    expect(
+      screen.getByText(/No ledger line items recorded/i)
+    ).toBeInTheDocument()
 
     // Activity tab
     fireEvent.click(screen.getByRole('tab', { name: 'Activity' }))

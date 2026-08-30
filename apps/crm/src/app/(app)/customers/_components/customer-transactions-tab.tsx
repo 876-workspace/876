@@ -1,7 +1,6 @@
 'use client'
 
-import { Badge } from '@876/ui/badge'
-import { CreditCard, ReceiptText } from '@876/ui/icons'
+import { CreditCard } from '@876/ui/icons'
 import {
   Table,
   TableBody,
@@ -14,62 +13,22 @@ import {
 import type { CrmCustomerRow } from './customers-table'
 
 export function CustomerTransactionsTab({
-  customer,
+  customer: _customer,
 }: {
   customer: CrmCustomerRow
 }) {
-  const transactions = [
-    {
-      id: 'INV-2026-003',
-      date: 'Aug 24, 2026',
-      description: 'Platform Subscription & API Add-on',
-      amount: '$5,800.00',
-      status: 'PAID',
-      method: 'Bank Transfer',
-    },
-    {
-      id: 'INV-2026-002',
-      date: 'Jul 12, 2026',
-      description: 'Monthly Platform Subscription (Enterprise Tier)',
-      amount: '$4,500.00',
-      status: 'PAID',
-      method: 'Card •••• 4242',
-    },
-    {
-      id: 'INV-2026-001',
-      date: 'Jun 10, 2026',
-      description: 'Initial CRM Setup & Integration Fee',
-      amount: '$4,500.00',
-      status: 'PAID',
-      method: 'Card •••• 4242',
-    },
-  ]
-
-  const totalSpent = '$14,800.00'
+  const transactions: {
+    id: string
+    date: string
+    description: string
+    amount: string
+    status: string
+    method: string
+  }[] = []
 
   return (
     <div className="space-y-4">
-      {/* Summary Stat */}
-      <div className="border-876-surface-border bg-muted/20 flex items-center justify-between rounded-xl border p-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-            <CreditCard className="size-4.5" />
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs font-medium">
-              Total Invoiced
-            </p>
-            <p className="text-foreground text-base font-semibold">
-              {totalSpent}
-            </p>
-          </div>
-        </div>
-        <Badge variant="success" className="text-xs font-medium">
-          Account in Good Standing
-        </Badge>
-      </div>
-
-      {/* Transactions Table */}
+      {/* Transactions Table with Empty State */}
       <div className="border-876-surface-border overflow-hidden rounded-xl border">
         <Table>
           <TableHeader className="876-header-row">
@@ -92,30 +51,46 @@ export function CustomerTransactionsTab({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((tx) => (
-              <TableRow key={tx.id} className="hover:bg-muted/40">
-                <TableCell className="px-4 py-3 font-mono text-xs font-medium text-sky-600 dark:text-sky-400">
-                  {tx.id}
-                </TableCell>
-                <TableCell className="text-muted-foreground px-4 py-3 text-xs whitespace-nowrap">
-                  {tx.date}
-                </TableCell>
-                <TableCell className="text-foreground px-4 py-3 text-xs">
-                  <span className="font-medium">{tx.description}</span>
-                  <span className="text-muted-foreground block text-[0.6875rem]">
-                    {tx.method}
-                  </span>
-                </TableCell>
-                <TableCell className="text-foreground px-4 py-3 text-right font-mono text-xs font-semibold">
-                  {tx.amount}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-right">
-                  <Badge variant="success" className="text-[0.625rem]">
-                    Paid
-                  </Badge>
+            {transactions.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-muted-foreground px-4 py-12 text-center text-xs"
+                >
+                  <CreditCard className="text-muted-foreground/50 mx-auto mb-2 size-7" />
+                  <p className="text-foreground font-medium">
+                    No transactions recorded
+                  </p>
+                  <p className="mt-0.5 text-xs">
+                    Invoices and payment records for this customer will appear
+                    here.
+                  </p>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              transactions.map((tx) => (
+                <TableRow key={tx.id} className="hover:bg-muted/40">
+                  <TableCell className="px-4 py-3 font-mono text-xs font-medium text-sky-600 dark:text-sky-400">
+                    {tx.id}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground px-4 py-3 text-xs whitespace-nowrap">
+                    {tx.date}
+                  </TableCell>
+                  <TableCell className="text-foreground px-4 py-3 text-xs">
+                    <span className="font-medium">{tx.description}</span>
+                    <span className="text-muted-foreground block text-[0.6875rem]">
+                      {tx.method}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-foreground px-4 py-3 text-right font-mono text-xs font-semibold">
+                    {tx.amount}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-right text-xs">
+                    {tx.status}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

@@ -18,7 +18,7 @@ export function CustomerContactsTab({
           {
             id: 'primary',
             name: customer.contactName,
-            role: customer.isBusiness ? 'Primary Contact' : 'Individual',
+            role: customer.isBusiness ? 'Primary Contact' : 'Customer',
             email: customer.contactEmail ?? customer.email,
             phone: customer.contactPhone ?? customer.phone,
             avatar: customer.contactAvatar,
@@ -31,7 +31,7 @@ export function CustomerContactsTab({
             {
               id: 'primary',
               name: customer.name,
-              role: 'Customer',
+              role: customer.isBusiness ? 'Company' : 'Customer',
               email: customer.email,
               phone: customer.phone,
               avatar: customer.contactAvatar,
@@ -40,34 +40,6 @@ export function CustomerContactsTab({
             },
           ]
         : []),
-    ...(customer.isBusiness
-      ? [
-          {
-            id: 'finance',
-            name: 'Accounts & Billing Dept',
-            role: 'Billing & Finance',
-            email: customer.email
-              ? `billing@${customer.email.split('@')[1] ?? 'example.com'}`
-              : null,
-            phone: customer.phone,
-            avatar: null,
-            userId: null,
-            isPrimary: false,
-          },
-          {
-            id: 'operations',
-            name: 'Operations & Logistics Team',
-            role: 'Operations',
-            email: customer.email
-              ? `ops@${customer.email.split('@')[1] ?? 'example.com'}`
-              : null,
-            phone: null,
-            avatar: null,
-            userId: null,
-            isPrimary: false,
-          },
-        ]
-      : []),
   ]
 
   return (
