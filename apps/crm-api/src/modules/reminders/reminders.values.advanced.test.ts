@@ -1,51 +1,61 @@
+import { getError, isError } from '@876/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { isError } from '@876/core'
 
-const { requireRequestContext, repository } = vi.hoisted(() => ({
+const mocks = vi.hoisted(() => ({
   requireRequestContext: vi.fn(),
-  repository: { list: vi.fn(), create: vi.fn(), retrieve: vi.fn(), update: vi.fn(), remove: vi.fn() },
+  reminders: { list: vi.fn() },
 }))
-vi.mock('../requests/index.js', () => ({ requireRequestContext }))
-vi.mock('./reminders.repository.js', () => repository)
+
+vi.mock('../requests/index.js', () => ({
+  requireRequestContext: mocks.requireRequestContext,
+}))
+vi.mock('../../providers/work.js', () => ({
+  crmRequestWorkContext: (id: string) => ({
+    service: 'crm',
+    resource: 'request',
+    id,
+  }),
+  workClient: () => ({ reminders: mocks.reminders }),
+}))
 
 const service = await import('./reminders.service.js')
 
-const ctx = { tenantId: 't1', requestId: 'req_1' }
-const reminderRow = { id: 'rem_1', tenantId: 't1', requestId: 'req_1', remindAt: new Date('2026-09-01'), createdBy: 'u1', createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-02') }
-
 beforeEach(() => {
   vi.clearAllMocks()
-  requireRequestContext.mockResolvedValue(ctx as unknown as ReturnType<typeof requireRequestContext>)
-  repository.list.mockResolvedValue([reminderRow] as unknown as ReturnType<typeof repository.list>)
-  repository.create.mockResolvedValue(reminderRow as unknown as ReturnType<typeof repository.create>)
-  repository.retrieve.mockResolvedValue(reminderRow as unknown as ReturnType<typeof repository.retrieve>)
+  mocks.requireRequestContext.mockResolvedValue({
+    tenantId: 'crm_tnt_1',
+    requestId: 'req_1',
+  })
+  mocks.reminders.list.mockResolvedValue({
+    data: {
+      object: 'list',
+      data: [],
+      has_more: false,
+      total_count: 0,
+      url: '/reminders',
+    },
+    error: null,
+  })
 })
 
-describe('reminders.service - value propagation advanced', () => {
-  it('list propagates context error', async () => {
-    const err = { code: 'crm/tenant-not-found', message: 'x', httpStatus: 404 }
-    requireRequestContext.mockResolvedValue(err as unknown as ReturnType<typeof requireRequestContext>)
-    const res = await service.list('org_1', 'req_1')
-    expect(isError(res)).toBe(true)
-    expect(res).toMatchObject({ code: 'crm/tenant-not-found' })
+describe('reminders service value propagation after Work extraction', () => {
+  it('keeps request errors as values', async () => {
+    mocks.requireRequestContext.mockResolvedValue(
+      getError('crm/request-not-found')
+    )
+    const result = await service.list('org_1', 'req_1')
+    expect(isError(result)).toBe(true)
+    expect(result).toMatchObject({ code: 'crm/request-not-found' })
   })
 
-  it('create propagates request-not-found', async () => {
-    const err = { code: 'crm/request-not-found', message: 'x', httpStatus: 404 }
-    requireRequestContext.mockResolvedValue(err as unknown as ReturnType<typeof requireRequestContext>)
-    const res = await service.create('org_1', 'req_1', { remindAt: Math.floor(Date.now()/1000), createdBy: 'u1' } as Parameters<typeof service.create>[2])
-    expect(res).toMatchObject({ code: 'crm/request-not-found' })
-  })
-
-  it('list success', async () => {
-    const res = await service.list('org_1', 'req_1')
-    expect(Array.isArray(res)).toBe(true)
-  })
-
-  it('error values are plain', async () => {
-    const err = { code: 'crm/request-not-found', message: 'x', httpStatus: 404 }
-    requireRequestContext.mockResolvedValue(err as unknown as ReturnType<typeof requireRequestContext>)
-    const res = await service.list('org_1', 'req_1')
-    expect(res).not.toBeInstanceOf(Error)
+  it('keeps Work outages as a registered CRM value', async () => {
+    mocks.reminders.list.mockResolvedValue({
+      data: null,
+      error: { code: 'work/internal', message: 'Internal server error.' },
+    })
+    const result = await service.list('org_1', 'req_1')
+    expect(isError(result)).toBe(true)
+    expect(result).toMatchObject({ code: 'crm/work-unavailable' })
+    expect(result).not.toBeInstanceOf(Error)
   })
 })

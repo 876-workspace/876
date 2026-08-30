@@ -11,6 +11,7 @@ import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { ensureAppReady } from '@/services/finance-provisioning-readiness'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
+import { workspace } from '@/services/workspace'
 import {
   assignMemberApps,
   linkMembershipRole,
@@ -1228,6 +1229,7 @@ async function provisionOrgSubscription(
       expectedFinanceDependency: body.require_finance ?? undefined,
     }
   )
+  await workspace.work.ensure({ organizationId: orgId, appIds: [app.id] })
 
   return serializeSubscription(row)
 }

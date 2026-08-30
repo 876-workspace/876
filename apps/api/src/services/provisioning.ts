@@ -46,6 +46,15 @@ export const BILLING_APP_SLUG = '876-billing'
 export const DEFAULT_ORG_APP_SLUGS = [ENTERPRISE_APP_SLUG] as const
 
 /**
+ * Apps whose modules are backed by the shared Work service (ADR-019).
+ *
+ * A code constant rather than a provisioning-profile column because exactly one
+ * app depends on Work today. Promote this to a `workDependency` profile column
+ * when a second app needs it — the resolution point stays the same either way.
+ */
+export const WORK_DEPENDENT_APP_SLUGS = ['876-crm'] as const
+
+/**
  * Called once an organization has been provisioned so the shared customer
  * registry learns about it, independently of Billing application entitlements.
  *

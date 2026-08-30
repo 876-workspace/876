@@ -158,6 +158,9 @@ const envSchema = z.object({
   FINANCE_PROVISIONING_BATCH_SIZE: int(25, 1, 100),
   FINANCE_PROVISIONING_DISABLE: booleanish(false),
 
+  WORK_API_URL: str(),
+  WORK_INTERNAL_KEY: str(),
+
   TWILIO_MODE: z
     .enum(['disabled', 'fake', 'live'])
     .optional()
@@ -296,6 +299,11 @@ function build(env: NodeJS.ProcessEnv) {
       financeProvisioningPollSeconds: e.FINANCE_PROVISIONING_POLL_SECONDS,
       financeProvisioningBatchSize: e.FINANCE_PROVISIONING_BATCH_SIZE,
       financeProvisioningDisabled: e.FINANCE_PROVISIONING_DISABLE,
+    },
+
+    work: {
+      url: e.WORK_API_URL,
+      internalKey: e.WORK_INTERNAL_KEY,
     },
 
     twilio: {

@@ -27,7 +27,7 @@ import { MembersHeading } from './_components/members-heading'
 
 type Props = {
   params: Promise<{ slug: string }>
-  searchParams?: Promise<{ member?: string }>
+  searchParams: Promise<{ member?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
