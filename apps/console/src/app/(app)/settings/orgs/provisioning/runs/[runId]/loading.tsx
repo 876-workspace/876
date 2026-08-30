@@ -1,8 +1,6 @@
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { ProvisioningNav } from '../../_components/provisioning-nav'
-
 /**
  * Detail-shaped, and scoped to this route rather than the `runs` segment — a
  * fallback one level up would be the boundary above the runs table too, and
@@ -26,9 +24,6 @@ export default function Loading() {
           <Skeleton className="h-5 w-20 rounded-md" />
         </div>
         <Skeleton className="mt-2 h-5 w-56" />
-      </div>
-      <div className="border-border border-b pb-px">
-        <ProvisioningNav />
       </div>
 
       <section className="876-card grid gap-5 p-5 sm:grid-cols-2 lg:grid-cols-4">

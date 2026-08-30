@@ -10,8 +10,6 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { ProvisioningNav } from './provisioning-nav'
-
 export const SETUP_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Provisioning' },
   { value: 'active', label: 'Active', headingLabel: 'Active Provisioning' },
@@ -60,11 +58,6 @@ export function ProvisioningShell({ list, children }: Props) {
             primaryVariant="info"
             refresh
           />
-        }
-        subnav={
-          <div className="border-border border-b pb-px">
-            <ProvisioningNav />
-          </div>
         }
         list={list}
         detail={children}

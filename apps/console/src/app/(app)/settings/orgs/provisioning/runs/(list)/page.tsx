@@ -16,7 +16,6 @@ import {
 import { $876, workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
-import { ProvisioningNav } from '../../_components/provisioning-nav'
 import { ReconcileRunsButton } from '../_components/run-actions'
 import { RunStatus } from '../_components/run-status'
 
@@ -74,9 +73,6 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <h1 className="876-page-title">Provisioning</h1>
         <ReconcileRunsButton appId={appId} organizationId={organizationId} />
-      </div>
-      <div className="border-border border-b pb-px">
-        <ProvisioningNav />
       </div>
 
       <form className="876-card grid gap-3 p-4 md:grid-cols-[180px_1fr_1fr_auto_auto]">

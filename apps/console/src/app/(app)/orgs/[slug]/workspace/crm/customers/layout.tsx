@@ -19,25 +19,7 @@ type Props = {
   params: Promise<{ slug: string }>
 }
 
-/**
- * `ListDetailShell` needs a **definite** height. Its grid is
- * `rows-[auto_auto_minmax(0,1fr)]` with the detail card spanning every row, so
- * when the container's height is indefinite the `1fr` list row degenerates to
- * `auto` and the tall card stretches the rows — which pushes the list column
- * down the page instead of sitting beside the card. That is the exact symptom
- * to look for.
- *
- * `h-full` does not supply that height here. The standalone CRM shell sits in
- * `AppShellMain` (`min-h-0 flex-1 overflow-y-auto`) inside a fixed-height
- * frame, so a percentage resolves. The Console workspace `<main>` is a
- * scrolling page whose row carries only a `min-height`, so it does not.
- *
- * Until `WorkspaceShell` grows a real height chain, the measure is taken from
- * the viewport instead, which depends on nothing above it: `svh` so mobile
- * browser chrome does not clip it, and a floor so a short window still gets a
- * usable card. Slack in either direction costs a little whitespace or a little
- * page scroll — never the collapsed-grid failure above.
- */
+/** Gives the embedded list and card a stable internal scrolling viewport. */
 const WORKSPACE_CONTENT_HEIGHT =
   'min-h-[32rem] h-[calc(100svh-11rem)] sm:h-[calc(100svh-12rem)] lg:h-[calc(100svh-13rem)]'
 
