@@ -15,6 +15,7 @@
     "db:deploy": "prisma migrate deploy",
     "migrate:crm": "node scripts/migrate-crm-work.mjs",
     "verify:crm": "node scripts/verify-crm-work.mjs",
+    "verify:phase2": "node scripts/verify-phase2.mjs",
     "notifications:run": "tsx src/workers/notifications.ts",
     "test": "vitest run",
     "lint": "eslint src",
