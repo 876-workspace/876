@@ -23,7 +23,7 @@ export default defineConfig({
   // Workspace packages publish raw TypeScript through their `exports` maps, so
   // nothing resolves them at runtime; inlining them keeps the bundled service
   // self-contained.
-  noExternal: ['@876/core', '@876/server'],
+  noExternal: ['@876/core', '@876/server', '@876/work'],
   // A bundled ESM file has no `require`; pg and its peers still reach for it.
   banner: {
     js: [
