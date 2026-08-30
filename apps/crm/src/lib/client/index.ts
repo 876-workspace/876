@@ -1,6 +1,7 @@
 import { customers } from './customers'
 import { onboarding } from './onboarding'
 import { requestCategories } from './request-categories'
+import { requestEvents } from './request-events'
 import { requestPriorities } from './request-priorities'
 import { requestReminders } from './request-reminders'
 import { requestTasks } from './request-tasks'
@@ -15,6 +16,7 @@ export const client = {
   requestNotes,
   requestTasks,
   requestReminders,
+  requestEvents,
   teams,
   requestCategories,
   requestPriorities,
@@ -23,6 +25,7 @@ export const client = {
 export { customers } from './customers'
 export { onboarding } from './onboarding'
 export { requestCategories } from './request-categories'
+export { requestEvents } from './request-events'
 export { requestPriorities } from './request-priorities'
 export { requestReminders } from './request-reminders'
 export { requestTasks } from './request-tasks'
