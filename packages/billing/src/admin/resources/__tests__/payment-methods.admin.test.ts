@@ -2,37 +2,46 @@ import { describe, expect, it, vi } from 'vitest'
 import { createAdminPaymentMethodsResource } from '../payment-methods'
 
 function adminRuntime(fetchMock?: any) {
-  const fetchFn = fetchMock ?? vi.fn().mockResolvedValue(Response.json({
-    data: {
-      object: 'payment_method',
-      id: 'pm_1',
-      tenantId: 'ten_1',
-      customerId: 'cus_1',
-      type: 'CARD',
-      status: 'ACTIVE',
-      allowRedisplay: 'ALWAYS',
-      reusable: true,
-      isDefault: false,
-      billingDetails: null,
-      card: null,
-      bankAccount: null,
-      wallet: null,
-      manual: null,
-      fingerprint: null,
-      displayLabel: null,
-      expMonth: null,
-      expYear: null,
-      provider: null,
-      providerPaymentMethodId: null,
-      providerConnectionId: null,
-      detachedAt: null,
-      metadata: null,
-      createdAt: 1,
-      updatedAt: 1,
-    },
-    error: null,
-  }))
-  return { baseUrl: 'https://billing.example.test', fetch: fetchFn, internalKey: 'key', _fetchMock: fetchFn } as any
+  const fetchFn =
+    fetchMock ??
+    vi.fn().mockResolvedValue(
+      Response.json({
+        data: {
+          object: 'payment_method',
+          id: 'pm_1',
+          tenantId: 'ten_1',
+          customerId: 'cus_1',
+          type: 'CARD',
+          status: 'ACTIVE',
+          allowRedisplay: 'ALWAYS',
+          reusable: true,
+          isDefault: false,
+          billingDetails: null,
+          card: null,
+          bankAccount: null,
+          wallet: null,
+          manual: null,
+          fingerprint: null,
+          displayLabel: null,
+          expMonth: null,
+          expYear: null,
+          provider: null,
+          providerPaymentMethodId: null,
+          providerConnectionId: null,
+          detachedAt: null,
+          metadata: null,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        error: null,
+      })
+    )
+  return {
+    baseUrl: 'https://billing.example.test',
+    fetch: fetchFn,
+    internalKey: 'key',
+    _fetchMock: fetchFn,
+  } as any
 }
 
 describe('AdminResources / PaymentMethods / admin tenant scoping', () => {
@@ -49,7 +58,22 @@ describe('AdminResources / PaymentMethods / admin tenant scoping', () => {
   })
 
   it('list — maps startingAfter -> starting_after', async () => {
-    const rt = adminRuntime(vi.fn().mockResolvedValue(Response.json({ data: { object: 'list', data: [], has_more: false, url: '', total_count: 0 }, error: null })))
+    const rt = adminRuntime(
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({
+            data: {
+              object: 'list',
+              data: [],
+              has_more: false,
+              url: '',
+              total_count: 0,
+            },
+            error: null,
+          })
+        )
+    )
     const res = createAdminPaymentMethodsResource(rt as any)
     await res.list('org_1', { startingAfter: 'pm_99' } as any)
     expect(rt._fetchMock).toHaveBeenCalled()
@@ -59,7 +83,9 @@ describe('AdminResources / PaymentMethods / admin tenant scoping', () => {
     const rt = adminRuntime()
     const res = createAdminPaymentMethodsResource(rt as any)
     await res.create('org_1', { customerId: 'cus_1', type: 'CARD' } as any)
-    expect(rt._fetchMock.mock.calls[0][0]).toContain('/organizations/org_1/payment-methods')
+    expect(rt._fetchMock.mock.calls[0][0]).toContain(
+      '/organizations/org_1/payment-methods'
+    )
     expect(rt._fetchMock.mock.calls[0][1].method).toBe('POST')
   })
 
@@ -67,7 +93,9 @@ describe('AdminResources / PaymentMethods / admin tenant scoping', () => {
     const rt = adminRuntime()
     const res = createAdminPaymentMethodsResource(rt as any)
     await res.retrieve('org_1', 'pm/with space')
-    expect(rt._fetchMock.mock.calls[0][0]).toContain(encodeURIComponent('pm/with space'))
+    expect(rt._fetchMock.mock.calls[0][0]).toContain(
+      encodeURIComponent('pm/with space')
+    )
   })
 
   it('update — PATCHes encoded id', async () => {
@@ -78,7 +106,14 @@ describe('AdminResources / PaymentMethods / admin tenant scoping', () => {
   })
 
   it('delete — DELETEs encoded id and parses tombstone', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(Response.json({ data: { object: 'payment_method', id: 'pm_1', deleted: true }, error: null }))
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        Response.json({
+          data: { object: 'payment_method', id: 'pm_1', deleted: true },
+          error: null,
+        })
+      )
     const rt = adminRuntime(fetchMock)
     const res = createAdminPaymentMethodsResource(rt as any)
     const out = await res.delete('org_1', 'pm_1')
@@ -95,14 +130,38 @@ describe('AdminResources / PaymentMethods / admin tenant scoping', () => {
   })
 
   it('encodes organizationId with slashes', async () => {
-    const rt = adminRuntime(vi.fn().mockResolvedValue(Response.json({ data: { object: 'list', data: [], has_more: false, url: '', total_count: 0 }, error: null })))
+    const rt = adminRuntime(
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({
+            data: {
+              object: 'list',
+              data: [],
+              has_more: false,
+              url: '',
+              total_count: 0,
+            },
+            error: null,
+          })
+        )
+    )
     const res = createAdminPaymentMethodsResource(rt as any)
     await res.list('org/with slash', {})
-    expect(rt._fetchMock.mock.calls[0][0]).toContain(encodeURIComponent('org/with slash'))
+    expect(rt._fetchMock.mock.calls[0][0]).toContain(
+      encodeURIComponent('org/with slash')
+    )
   })
 
   it('returns invalid-response error when schema violates strictObject', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(Response.json({ data: { object: 'payment_method', id: 'pm_1', credential: 'leak' }, error: null }))
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        Response.json({
+          data: { object: 'payment_method', id: 'pm_1', credential: 'leak' },
+          error: null,
+        })
+      )
     const rt = adminRuntime(fetchMock)
     const res = createAdminPaymentMethodsResource(rt as any)
     const out = await res.retrieve('org_1', 'pm_1')

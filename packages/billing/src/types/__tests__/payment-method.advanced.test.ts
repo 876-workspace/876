@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { PaymentMethodSchema, DeletedPaymentMethodSchema, PaymentMethodListSchema } from '../payment-method.schema'
+import {
+  PaymentMethodSchema,
+  DeletedPaymentMethodSchema,
+  PaymentMethodListSchema,
+} from '../payment-method.schema'
 
 // Data builder — realistic, centralized factory per guide 1.8-1.9
 function aPaymentMethod(overrides: Record<string, unknown> = {}) {
@@ -36,7 +40,9 @@ function aPaymentMethod(overrides: Record<string, unknown> = {}) {
 function aList(count = 2) {
   return {
     object: 'list' as const,
-    data: Array.from({ length: count }, (_, i) => aPaymentMethod({ id: `pm_${i+1}` })),
+    data: Array.from({ length: count }, (_, i) =>
+      aPaymentMethod({ id: `pm_${i + 1}` })
+    ),
     has_more: false,
     url: '/api/v1/organizations/org_1/payment-methods',
     total_count: count,
@@ -94,7 +100,9 @@ describe('PaymentMethodSchema / unit / schema validation', () => {
 
   it('rejects when credential leaks into client response (security contract)', () => {
     // Arrange
-    const withCredential = aPaymentMethod({ credential: { sealedValue: 'la1:secret' } } as any)
+    const withCredential = aPaymentMethod({
+      credential: { sealedValue: 'la1:secret' },
+    } as any)
     // Act
     const result = PaymentMethodSchema.safeParse(withCredential as any)
     // Assert
@@ -111,16 +119,16 @@ describe('PaymentMethodSchema / unit / schema validation', () => {
     expect(result.success).toBe(false)
   })
 
-  it.each([
-    ['CARD'],
-    ['BANK_ACCOUNT'],
-    ['WALLET'],
-    ['MANUAL'],
-  ])('accepts type=%s', (type) => {
-    // Arrange, Act, Assert — no branching logic in test body
-    const result = PaymentMethodSchema.safeParse(aPaymentMethod({ type } as any))
-    expect(result.success).toBe(true)
-  })
+  it.each([['CARD'], ['BANK_ACCOUNT'], ['WALLET'], ['MANUAL']])(
+    'accepts type=%s',
+    (type) => {
+      // Arrange, Act, Assert — no branching logic in test body
+      const result = PaymentMethodSchema.safeParse(
+        aPaymentMethod({ type } as any)
+      )
+      expect(result.success).toBe(true)
+    }
+  )
 
   it.each([
     ['PENDING'],
@@ -130,27 +138,29 @@ describe('PaymentMethodSchema / unit / schema validation', () => {
     ['DETACHED'],
     ['FAILED'],
   ])('accepts status=%s', (status) => {
-    const result = PaymentMethodSchema.safeParse(aPaymentMethod({ status } as any))
+    const result = PaymentMethodSchema.safeParse(
+      aPaymentMethod({ status } as any)
+    )
     expect(result.success).toBe(true)
   })
 
-  it.each([
-    ['CRYPTO'],
-    ['BANK'],
-    ['CARD_TYPE_FAKE'],
-    [''],
-  ])('rejects invalid type %s (black-box — only public schema)', (type) => {
-    expect(PaymentMethodSchema.safeParse(aPaymentMethod({ type } as any)).success).toBe(false)
-  })
+  it.each([['CRYPTO'], ['BANK'], ['CARD_TYPE_FAKE'], ['']])(
+    'rejects invalid type %s (black-box — only public schema)',
+    (type) => {
+      expect(
+        PaymentMethodSchema.safeParse(aPaymentMethod({ type } as any)).success
+      ).toBe(false)
+    }
+  )
 
-  it.each([
-    ['UNKNOWN'],
-    ['FAKE'],
-    ['active'],
-    [''],
-  ])('rejects invalid status %s', (status) => {
-    expect(PaymentMethodSchema.safeParse(aPaymentMethod({ status } as any)).success).toBe(false)
-  })
+  it.each([['UNKNOWN'], ['FAKE'], ['active'], ['']])(
+    'rejects invalid status %s',
+    (status) => {
+      expect(
+        PaymentMethodSchema.safeParse(aPaymentMethod({ status } as any)).success
+      ).toBe(false)
+    }
+  )
 
   it('requires non-empty id, tenantId, customerId', () => {
     // Arrange
@@ -165,7 +175,13 @@ describe('PaymentMethodSchema / unit / schema validation', () => {
 
   it('allows nullable display fields to be null', () => {
     // Arrange
-    const input = aPaymentMethod({ displayLabel: null, card: null, bankAccount: null, fingerprint: null, provider: null })
+    const input = aPaymentMethod({
+      displayLabel: null,
+      card: null,
+      bankAccount: null,
+      fingerprint: null,
+      provider: null,
+    })
     // Act
     const result = PaymentMethodSchema.safeParse(input)
     // Assert
@@ -176,7 +192,11 @@ describe('PaymentMethodSchema / unit / schema validation', () => {
 describe('PaymentMethod deleted tombstone / unit / strict', () => {
   it('accepts deleted payment method tombstone', () => {
     // Arrange
-    const tombstone = { object: 'payment_method' as const, id: 'pm_1', deleted: true as const }
+    const tombstone = {
+      object: 'payment_method' as const,
+      id: 'pm_1',
+      deleted: true as const,
+    }
     // Act
     const result = DeletedPaymentMethodSchema.safeParse(tombstone)
     // Assert
@@ -184,11 +204,23 @@ describe('PaymentMethod deleted tombstone / unit / strict', () => {
   })
 
   it('rejects deleted without id', () => {
-    expect(DeletedPaymentMethodSchema.safeParse({ object: 'payment_method', deleted: true } as any).success).toBe(false)
+    expect(
+      DeletedPaymentMethodSchema.safeParse({
+        object: 'payment_method',
+        deleted: true,
+      } as any).success
+    ).toBe(false)
   })
 
   it('rejects deleted with extra fields', () => {
-    expect(DeletedPaymentMethodSchema.safeParse({ object: 'payment_method', id: 'pm_1', deleted: true, extra: 1 } as any).success).toBe(false)
+    expect(
+      DeletedPaymentMethodSchema.safeParse({
+        object: 'payment_method',
+        id: 'pm_1',
+        deleted: true,
+        extra: 1,
+      } as any).success
+    ).toBe(false)
   })
 })
 
@@ -204,12 +236,21 @@ describe('PaymentMethodListSchema / contract / list envelope', () => {
   })
 
   it('rejects list with credential inside data', () => {
-    const input = { ...aList(1), data: [{ ...aPaymentMethod(), credential: 'leak' } as any] }
+    const input = {
+      ...aList(1),
+      data: [{ ...aPaymentMethod(), credential: 'leak' } as any],
+    }
     expect(PaymentMethodListSchema.safeParse(input as any).success).toBe(false)
   })
 
   it('produces stable inline snapshot for empty list (golden master)', () => {
-    const input = { object: 'list' as const, data: [] as any[], has_more: false, url: '/api/v1/organizations/org_1/payment-methods', total_count: 0 }
+    const input = {
+      object: 'list' as const,
+      data: [] as any[],
+      has_more: false,
+      url: '/api/v1/organizations/org_1/payment-methods',
+      total_count: 0,
+    }
     const result = PaymentMethodListSchema.safeParse(input)
     expect(result.success).toBe(true)
     expect(result.data).toMatchInlineSnapshot(`
