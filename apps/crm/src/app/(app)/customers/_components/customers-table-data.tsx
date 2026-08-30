@@ -4,6 +4,7 @@ import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
+import { MOCK_CUSTOMERS } from '../_lib/mock-customers'
 import { CustomerSplit } from './customer-split'
 import type { CrmCustomerRow } from './customers-table'
 
@@ -22,7 +23,7 @@ export async function CustomersTableData({ status, selectedId }: Props) {
   const $876 = await get876Client()
   const result = await $876.customerProfiles.list(context.orgId)
 
-  let rows: CrmCustomerRow[] = (result.data?.data ?? []).map(
+  const apiRows: CrmCustomerRow[] = (result.data?.data ?? []).map(
     ({ profile, customer }) => {
       const identity = resolveCustomerIdentity(
         customer,
@@ -49,6 +50,12 @@ export async function CustomersTableData({ status, selectedId }: Props) {
       }
     }
   )
+
+  const existingIds = new Set(apiRows.map((r) => r.profileId))
+  const remainingMocks = MOCK_CUSTOMERS.filter(
+    (m) => !existingIds.has(m.profileId)
+  )
+  let rows = [...apiRows, ...remainingMocks]
 
   if (status === 'active') {
     rows = rows.filter((r) => r.status === 'ACTIVE')

@@ -98,37 +98,45 @@ export function CustomerSplit({
   )
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-start">
-      <div className="876-card shrink-0 overflow-hidden md:w-72 lg:w-80">
-        <Table>
-          <TableHeader className="876-header-row">
-            <TableRow>
-              <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
-                Customers
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {customers.length === 0 ? (
+    /*
+     * `md:min-h-0 md:flex-1` makes the row exactly as tall as the page column
+     * allows; each child then scrolls internally rather than pushing the page.
+     */
+    <div className="flex flex-col gap-4 md:min-h-0 md:flex-1 md:flex-row md:items-stretch">
+      <div className="876-card flex shrink-0 flex-col overflow-hidden md:w-72 lg:w-80">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <Table>
+            <TableHeader className="876-header-row sticky top-0 z-10">
               <TableRow>
-                <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
-                  No customers yet
-                </TableCell>
+                <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
+                  Customers
+                </TableHead>
               </TableRow>
-            ) : (
-              customers.map((customer) => (
-                <CondensedCustomerRow
-                  key={customer.profileId}
-                  customer={customer}
-                  selected={
-                    selected ? customer.profileId === selected.profileId : false
-                  }
-                  onSelect={() => select(customer.profileId)}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {customers.length === 0 ? (
+                <TableRow>
+                  <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
+                    No customers yet
+                  </TableCell>
+                </TableRow>
+              ) : (
+                customers.map((customer) => (
+                  <CondensedCustomerRow
+                    key={customer.profileId}
+                    customer={customer}
+                    selected={
+                      selected
+                        ? customer.profileId === selected.profileId
+                        : false
+                    }
+                    onSelect={() => select(customer.profileId)}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       {isNew ? (
         <CustomerCreateCard

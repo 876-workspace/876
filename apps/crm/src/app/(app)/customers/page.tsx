@@ -28,26 +28,34 @@ type Props = {
 
 export default async function CustomersPage({ searchParams }: Props) {
   const { status = 'all', customer } = await searchParams
+  const split = Boolean(customer)
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Customers"
-        titleFilter={
-          <StatusFilterHeading
-            label="Customers"
-            value={status}
-            options={STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="Add"
-        primaryHref={
-          status !== 'all'
-            ? `/customers?status=${status}&customer=new`
-            : '/customers?customer=new'
-        }
-        primaryVariant="info"
-      />
+    /*
+     * With a panel open the page becomes a fixed-height flex column filling
+     * the shell's scroll area, so the list and the panel each own their own
+     * scrollbar instead of the whole main column scrolling as one.
+     */
+    <Page className={split ? 'md:flex md:h-full md:min-h-0 md:flex-col' : ''}>
+      <div className="shrink-0">
+        <ResourceToolbar
+          title="Customers"
+          titleFilter={
+            <StatusFilterHeading
+              label="Customers"
+              value={status}
+              options={STATUS_OPTIONS}
+            />
+          }
+          primaryLabel="Add"
+          primaryHref={
+            status !== 'all'
+              ? `/customers?status=${status}&customer=new`
+              : '/customers?customer=new'
+          }
+          primaryVariant="info"
+        />
+      </div>
       <Suspense
         key={`${status}-${customer}`}
         fallback={
