@@ -1,0 +1,139 @@
+enum WorkCalendarVisibility {
+  PRIVATE
+  ORGANIZATION
+}
+
+enum WorkCalendarRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum WorkEventStatus {
+  CONFIRMED
+  TENTATIVE
+  CANCELLED
+}
+
+enum WorkEventBusyStatus {
+  BUSY
+  FREE
+}
+
+enum WorkParticipantKind {
+  USER
+  EMAIL
+}
+
+enum WorkParticipantRole {
+  CHAIR
+  REQUIRED
+  OPTIONAL
+}
+
+enum WorkParticipantStatus {
+  NEEDS_ACTION
+  ACCEPTED
+  DECLINED
+  TENTATIVE
+  DELEGATED
+}
+
+model WorkCalendar {
+  id          String                 @id
+  uid         String                 @unique
+  tenantId    String                 @map("tenant_id")
+  ownerUserId String?                @map("owner_user_id")
+  name        String
+  description String?
+  timeZone    String                 @map("time_zone")
+  visibility  WorkCalendarVisibility @default(PRIVATE)
+  isPrimary   Boolean                @default(false) @map("is_primary")
+  createdBy   String                 @map("created_by")
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
+  deletedAt   DateTime?              @map("deleted_at")
+  deletedBy   String?                @map("deleted_by")
+  tenant      WorkTenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscriptions WorkCalendarSubscription[]
+  events      WorkEvent[]
+
+  @@index([tenantId, ownerUserId, isPrimary])
+  @@index([tenantId, visibility, name])
+  @@map("work_calendars")
+}
+
+model WorkCalendarSubscription {
+  id                     String           @id
+  tenantId               String           @map("tenant_id")
+  calendarId             String           @map("calendar_id")
+  userId                 String           @map("user_id")
+  role                   WorkCalendarRole @default(VIEWER)
+  color                  String?
+  isVisible              Boolean          @default(true) @map("is_visible")
+  defaultReminderMinutes Int[]            @default([]) @map("default_reminder_minutes")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+  tenant                 WorkTenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  calendar               WorkCalendar     @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  @@unique([calendarId, userId])
+  @@index([tenantId, userId, isVisible])
+  @@map("work_calendar_subscriptions")
+}
+
+model WorkEvent {
+  id               String              @id
+  uid              String              @unique
+  tenantId         String              @map("tenant_id")
+  calendarId       String              @map("calendar_id")
+  title            String
+  description      String?
+  location         String?
+  status           WorkEventStatus     @default(CONFIRMED)
+  busyStatus       WorkEventBusyStatus @default(BUSY) @map("busy_status")
+  startAt          DateTime?           @map("start_at")
+  endAt            DateTime?           @map("end_at")
+  timeZone         String?             @map("time_zone")
+  startDate        DateTime?           @db.Date @map("start_date")
+  endDate          DateTime?           @db.Date @map("end_date")
+  recurrenceRuleId String?             @map("recurrence_rule_id")
+  recurrenceId     String?             @map("recurrence_id")
+  createdBy        String              @map("created_by")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+  deletedAt        DateTime?           @map("deleted_at")
+  deletedBy        String?             @map("deleted_by")
+  tenant           WorkTenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  calendar         WorkCalendar        @relation(fields: [calendarId], references: [id], onDelete: Restrict)
+  recurrenceRule   WorkRecurrenceRule? @relation(fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
+  participants     WorkEventParticipant[]
+  alerts           WorkAlert[]
+
+  @@index([tenantId, calendarId, startAt])
+  @@index([tenantId, calendarId, startDate])
+  @@index([recurrenceId])
+  @@map("work_events")
+}
+
+model WorkEventParticipant {
+  id               String                @id
+  eventId          String                @map("event_id")
+  kind             WorkParticipantKind
+  participantId    String?               @map("participant_id")
+  email            String?
+  name             String?
+  role             WorkParticipantRole   @default(REQUIRED)
+  status           WorkParticipantStatus @default(NEEDS_ACTION)
+  delegatedTo      String?               @map("delegated_to")
+  delegatedFrom    String?               @map("delegated_from")
+  respondedAt      DateTime?             @map("responded_at")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  event            WorkEvent             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, status])
+  @@index([participantId])
+  @@index([email])
+  @@map("work_event_participants")
+}
