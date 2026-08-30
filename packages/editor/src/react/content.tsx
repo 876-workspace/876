@@ -104,7 +104,9 @@ function sanitizeInlineMarkup(value: string) {
 }
 
 function InlineContent({ value }: { value: string }) {
-  return <span dangerouslySetInnerHTML={{ __html: sanitizeInlineMarkup(value) }} />
+  return (
+    <span dangerouslySetInnerHTML={{ __html: sanitizeInlineMarkup(value) }} />
+  )
 }
 
 function asListItem(value: unknown): ListItem {
