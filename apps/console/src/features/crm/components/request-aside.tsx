@@ -124,7 +124,10 @@ export async function RequestAside({
                     href={`mailto:${identity.email}`}
                     className="text-foreground/80 hover:text-info flex items-center gap-1.5 truncate transition-colors"
                   >
-                    <EnvelopeIcon className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+                    <EnvelopeIcon
+                      className="text-muted-foreground size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="truncate">{identity.email}</span>
                   </a>
                   <CopyButton value={identity.email} label="email" />
@@ -136,7 +139,10 @@ export async function RequestAside({
                     href={`tel:${identity.phone}`}
                     className="text-foreground/80 hover:text-info flex items-center gap-1.5 truncate transition-colors"
                   >
-                    <Phone className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+                    <Phone
+                      className="text-muted-foreground size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="truncate">{identity.phone}</span>
                   </a>
                   <CopyButton value={identity.phone} label="phone number" />
@@ -166,8 +172,13 @@ export async function RequestAside({
                         href={`mailto:${identity.contact.email}`}
                         className="text-muted-foreground hover:text-info mt-1 flex items-center gap-1.5 truncate text-[0.75rem] transition-colors"
                       >
-                        <EnvelopeIcon className="size-3 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{identity.contact.email}</span>
+                        <EnvelopeIcon
+                          className="size-3 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">
+                          {identity.contact.email}
+                        </span>
                       </a>
                     ) : null}
                     {identity.contact.phone ? (
@@ -176,13 +187,17 @@ export async function RequestAside({
                         className="text-muted-foreground hover:text-info mt-1 flex items-center gap-1.5 truncate text-[0.75rem] transition-colors"
                       >
                         <Phone className="size-3 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{identity.contact.phone}</span>
+                        <span className="truncate">
+                          {identity.contact.phone}
+                        </span>
                       </a>
                     ) : null}
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-xs">No contact on file</p>
+                <p className="text-muted-foreground text-xs">
+                  No contact on file
+                </p>
               )}
             </div>
           ) : null}
@@ -201,7 +216,10 @@ export async function RequestAside({
 
       <section className="876-card p-4">
         <h2 className="876-section-title flex items-center gap-2 text-sm">
-          <InformationCircleIcon className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+          <InformationCircleIcon
+            className="text-muted-foreground size-4 shrink-0"
+            aria-hidden="true"
+          />
           Details
         </h2>
 
@@ -226,7 +244,9 @@ export async function RequestAside({
             </span>
           </DetailRow>
           <DetailRow label="Created">
-            <span className="text-foreground">{formatDateTime(request.createdAt)}</span>
+            <span className="text-foreground">
+              {formatDateTime(request.createdAt)}
+            </span>
           </DetailRow>
           <div className="border-t pt-3">
             <DetailRow label="Request ID">
@@ -276,7 +296,13 @@ export function RequestAsideSkeleton() {
   )
 }
 
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
   return (
     <div className="flex items-center justify-between gap-3">
       <dt className="text-muted-foreground">{label}</dt>

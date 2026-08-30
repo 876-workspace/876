@@ -11,9 +11,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     return apiJson({ error: 'Authentication required.' }, { status: 401 })
   }
 
-  const body = (await request.json().catch(() => null)) as
-    | AdminAuditEventCreateParams
-    | null
+  const body = (await request
+    .json()
+    .catch(() => null)) as AdminAuditEventCreateParams | null
   if (!body) return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const result = await $876.auditEvents.create({

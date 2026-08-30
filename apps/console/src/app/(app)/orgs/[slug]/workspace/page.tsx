@@ -100,7 +100,10 @@ async function WorkspaceCards({ slug }: { slug: string }) {
                 className="876-card hover:border-876-accent-fg/40 group flex h-full items-start gap-3 p-4 transition-colors"
               >
                 <span className="bg-876-accent-surface text-876-accent-fg flex size-9 shrink-0 items-center justify-center rounded-lg">
-                  <WorkspaceIcon iconKey={workspace.iconKey} className="size-5" />
+                  <WorkspaceIcon
+                    iconKey={workspace.iconKey}
+                    className="size-5"
+                  />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1 font-medium">

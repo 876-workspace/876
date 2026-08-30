@@ -11,7 +11,10 @@ export async function GET(_request: NextRequest, context: Context) {
   const { response } = await requireConsolePermission('console:apps')
   if (response) return response
   const { appId } = await context.params
-  const result = await workspace.provisioning.draft.retrieve('application', appId)
+  const result = await workspace.provisioning.draft.retrieve(
+    'application',
+    appId
+  )
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'Provisioning profile not found.' },

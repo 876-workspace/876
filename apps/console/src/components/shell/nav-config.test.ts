@@ -6,7 +6,9 @@ import { SETTINGS_NAVIGATION } from '@/components/shell/settings-options'
 import { SYSTEM_ROLE_DEFINITIONS } from '@/lib/permissions'
 
 function contextFor(role: string): AccessContext {
-  const definition = SYSTEM_ROLE_DEFINITIONS.find((entry) => entry.name === role)
+  const definition = SYSTEM_ROLE_DEFINITIONS.find(
+    (entry) => entry.name === role
+  )
   if (!definition) throw new Error(`Unknown system role: ${role}`)
   return {
     subject: { userId: 'user_test' },
@@ -35,7 +37,8 @@ describe('navConfig', () => {
 
   it('declares only string icon keys so the registry crosses the RSC boundary', () => {
     for (const group of navConfig)
-      for (const entry of group.entries) expect(typeof entry.icon).toBe('string')
+      for (const entry of group.entries)
+        expect(typeof entry.icon).toBe('string')
   })
 
   it('shows staff only the entries whose routes their role may reach', () => {
@@ -98,6 +101,8 @@ describe('navConfig', () => {
     const granted = new Set(
       SYSTEM_ROLE_DEFINITIONS.flatMap((role) => role.permissions)
     )
-    expect(required.filter((permission) => !granted.has(permission))).toEqual([])
+    expect(required.filter((permission) => !granted.has(permission))).toEqual(
+      []
+    )
   })
 })
