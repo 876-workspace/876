@@ -14,7 +14,7 @@ export function SettingsGroupCard({ group }: { group: SettingsNavGroup }) {
   return (
     <section className="876-card flex flex-col overflow-hidden">
       <div className="border-876-surface-border border-b px-5 py-3.5">
-        <h2 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        <h2 className="text-muted-foreground text-[0.8125rem] font-semibold">
           {group.label}
         </h2>
       </div>

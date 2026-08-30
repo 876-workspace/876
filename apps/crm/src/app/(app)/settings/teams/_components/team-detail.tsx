@@ -176,7 +176,6 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
             {team.members.length === 1
               ? '1 member'
               : `${team.members.length} members`}
-            {team.color ? ` · ${team.color}` : ''}
           </p>
         </div>
 
@@ -248,7 +247,7 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
               aria-selected={tab === entry.value}
               onClick={() => setTab(entry.value)}
               className={cn(
-                'rounded-md px-4 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
+                'rounded-md px-4 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
                 tab === entry.value
                   ? 'text-foreground bg-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -290,7 +289,7 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
                     <Merge className="size-3.5" />
                   </span>
                   <div>
-                    <span className="text-foreground block text-xs font-medium">
+                    <span className="text-foreground block text-[0.8125rem] font-medium">
                       Auto-Assign
                     </span>
                     <span className="text-muted-foreground block text-[0.6875rem]">
@@ -302,7 +301,7 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
                     </span>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline">
                   {AUTO_ASSIGN_LABELS[team.autoAssign]}
                 </Badge>
               </div>
@@ -312,19 +311,17 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
             <div className="border-876-surface-border bg-muted/20 rounded-xl border p-4">
               <dl className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <dt className="text-muted-foreground text-[0.6875rem]">
-                    Created
-                  </dt>
-                  <dd className="text-foreground mt-0.5 font-medium tabular-nums">
+                  <dt className="text-muted-foreground text-xs">Created</dt>
+                  <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium tabular-nums">
                     {formatDate(team.createdAt)}
                   </dd>
                 </div>
                 {team.updatedAt ? (
                   <div>
-                    <dt className="text-muted-foreground text-[0.6875rem]">
+                    <dt className="text-muted-foreground text-xs">
                       Last Updated
                     </dt>
-                    <dd className="text-foreground mt-0.5 font-medium tabular-nums">
+                    <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium tabular-nums">
                       {formatDate(team.updatedAt)}
                     </dd>
                   </div>
@@ -365,13 +362,13 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
               <Table>
                 <TableHeader className="876-header-row">
                   <TableRow>
-                    <TableHead className="px-4 py-3 text-xs font-semibold">
+                    <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
                       Member
                     </TableHead>
-                    <TableHead className="px-4 py-3 text-xs font-semibold">
+                    <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
                       Email
                     </TableHead>
-                    <TableHead className="px-4 py-3 text-xs font-semibold">
+                    <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
                       Role
                     </TableHead>
                     <TableHead className="w-12 px-4 py-3">
@@ -386,14 +383,14 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
                         colSpan={4}
                         className="text-muted-foreground py-8 text-center text-xs"
                       >
-                        No members assigned to this team yet.
+                        No members assigned yet
                       </TableCell>
                     </TableRow>
                   ) : (
                     team.members.map((member) => (
                       <TableRow key={member.userId}>
                         <TableCell className="px-4 py-3">
-                          <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-2.5">
                             <CustomerAvatar
                               name={member.name}
                               src={member.avatar}
@@ -412,7 +409,6 @@ export function TeamDetail({ team, directory, onClose, className }: Props) {
                             variant={
                               member.role === 'LEAD' ? 'info' : 'outline'
                             }
-                            className="text-[0.6875rem]"
                           >
                             {member.role === 'LEAD' ? 'Lead' : 'Member'}
                           </Badge>

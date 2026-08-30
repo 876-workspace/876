@@ -96,14 +96,14 @@ export function TeamActivity({ team }: { team: TeamRow }) {
               </span>
 
               <div className="min-w-0 flex-1 pt-0.5">
-                <p className="text-foreground text-xs font-medium">
+                <p className="text-foreground text-[0.8125rem] font-medium">
                   {event.title}
                 </p>
-                <p className="text-muted-foreground text-[0.6875rem] tabular-nums">
+                <p className="text-muted-foreground text-xs tabular-nums">
                   {formatDateTime(event.at)}
                 </p>
                 {event.detail ? (
-                  <p className="text-muted-foreground mt-1 text-[0.6875rem] leading-relaxed">
+                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                     {event.detail}
                   </p>
                 ) : null}
@@ -113,7 +113,7 @@ export function TeamActivity({ team }: { team: TeamRow }) {
         })}
       </ol>
 
-      <p className="border-876-surface-border text-muted-foreground border-t pt-3 text-[0.6875rem]">
+      <p className="border-876-surface-border text-muted-foreground border-t pt-3 text-xs">
         Detailed change history is not recorded for teams yet.
       </p>
     </div>

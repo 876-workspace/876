@@ -146,18 +146,12 @@ export function PriorityDetail({ priority, onClose, className }: Props) {
       <header className="border-876-surface-border flex shrink-0 items-center gap-3 border-b px-6 py-4">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <PriorityTag name={name.trim() || priority.name} color={color} />
-          {priority.isDefault ? (
-            <Badge variant="info" className="text-xs">
-              Default
-            </Badge>
-          ) : null}
+          {priority.isDefault ? <Badge variant="info">Default</Badge> : null}
           <Badge variant={priority.isActive ? 'success' : 'secondary'}>
             {priority.isActive ? 'Active' : 'Archived'}
           </Badge>
           {priority.provisioningKey ? (
-            <Badge variant="secondary" className="text-xs">
-              Provisioned
-            </Badge>
+            <Badge variant="secondary">Provisioned</Badge>
           ) : null}
         </div>
 

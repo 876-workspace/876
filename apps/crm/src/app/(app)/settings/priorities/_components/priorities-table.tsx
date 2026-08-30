@@ -52,9 +52,7 @@ export function PrioritiesTable({
                 <span className="flex items-center gap-2">
                   <PriorityTag name={priority.name} color={priority.color} />
                   {priority.isDefault ? (
-                    <Badge variant="info" className="text-xs">
-                      Default
-                    </Badge>
+                    <Badge variant="info">Default</Badge>
                   ) : null}
                 </span>
               </TableCell>

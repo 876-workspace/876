@@ -135,7 +135,7 @@ export function PrioritySplit({
         <Table>
           <TableHeader className="876-header-row">
             <TableRow>
-              <TableHead className="px-4 py-3 text-xs font-semibold">
+              <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
                 Priorities
               </TableHead>
             </TableRow>
