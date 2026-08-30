@@ -25,22 +25,43 @@ vi.mock('@/lib/876/platform-client', () => ({
 }))
 
 vi.mock('next/link', () => ({
-  default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string
+    children: React.ReactNode
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }))
 
 // Keep UI primitives real but mock OrgSwitcher to observe props
 vi.mock('./org-switcher', () => ({
-  OrgSwitcher: ({ orgs, current }: { orgs: { slug: string }[]; current: { slug: string } }) => (
-    <div data-testid="org-switcher" data-current={current.slug} data-orgs={orgs.map((o) => o.slug).join(',')}>
+  OrgSwitcher: ({
+    orgs,
+    current,
+  }: {
+    orgs: { slug: string }[]
+    current: { slug: string }
+  }) => (
+    <div
+      data-testid="org-switcher"
+      data-current={current.slug}
+      data-orgs={orgs.map((o) => o.slug).join(',')}
+    >
       OrgSwitcher:{orgs.length}
     </div>
   ),
 }))
 
 vi.mock('./apps-group', () => ({
-  AppsGroup: ({ children }: { children: React.ReactNode }) => <div data-testid="apps-group">{children}</div>,
+  AppsGroup: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="apps-group">{children}</div>
+  ),
   AppNavLink: () => null,
 }))
 
@@ -57,17 +78,31 @@ vi.mock('@876/ui/nav-progress', () => ({
 }))
 
 vi.mock('@876/ui/app-shell', () => ({
-  AppShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AppShellBody: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AppShellContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AppShellHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AppShellMain: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AppShellSidebarArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AppShell: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AppShellBody: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AppShellContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AppShellHeader: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AppShellMain: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AppShellSidebarArea: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 vi.mock('@876/ui/sidebar', () => ({
   SidebarTrigger: () => <button data-testid="sidebar-trigger" />,
-  SidebarProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SidebarProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 import { Shell } from './shell'
@@ -78,7 +113,17 @@ function mockCookies(value: string | undefined = undefined) {
   } as unknown)
 }
 
-function mockSwitcherOrgs(orgs: { organization: { id: string; name: string | null; slug: string; status: string }; role: string }[]) {
+function mockSwitcherOrgs(
+  orgs: {
+    organization: {
+      id: string
+      name: string | null
+      slug: string
+      status: string
+    }
+    role: string
+  }[]
+) {
   mocks.listRouting.mockResolvedValue({
     data: orgs.map((o) => ({ data: o, error: null })),
     error: null,
@@ -90,7 +135,10 @@ function mockSwitcherOrgs(orgs: { organization: { id: string; name: string | nul
   })
   // The helper wraps via unwrapResult — our mock must return { data: orgs, error: null } where unwrapping yields .data
   // We'll make listRouting return { data: orgs, error: null } directly and unwrapResult will extract .data
-  mocks.listRouting.mockResolvedValue({ data: orgs, error: null } as unknown as { data: unknown; error: null })
+  mocks.listRouting.mockResolvedValue({
+    data: orgs,
+    error: null,
+  } as unknown as { data: unknown; error: null })
 }
 
 describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)', () => {
@@ -98,15 +146,26 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
     vi.clearAllMocks()
     mockCookies(undefined)
     mocks.get876ServerClient.mockResolvedValue({
-      entitlements: { list: mocks.entitlementsList.mockResolvedValue({ data: { data: [] }, error: null }) },
+      entitlements: {
+        list: mocks.entitlementsList.mockResolvedValue({
+          data: { data: [] },
+          error: null,
+        }),
+      },
     } as unknown)
     // By default, no switcher orgs -> fallback to [currentOrg]
-    mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    } as unknown as never)
   })
 
   it('always renders OrgSwitcher even when user has single org (diff: fallback topbarOrgs)', async () => {
     // Arrange: switcherOrgs empty -> topbarOrgs = [currentOrg]
-    mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    } as unknown as never)
     mockCookies('true')
     // Act
     const ui = await Shell({
@@ -118,11 +177,16 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
     })
     const { container } = render(ui as React.ReactElement)
     // Assert: OrgSwitcher is rendered (not hidden when length <=1)
-    expect(container.querySelector('[data-testid="org-switcher"]')).toBeInTheDocument()
+    expect(
+      container.querySelector('[data-testid="org-switcher"]')
+    ).toBeInTheDocument()
   })
 
   it('passes fallback [currentOrg] when switcherOrgs is empty', async () => {
-    mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    } as unknown as never)
     const ui = await Shell({
       children: null,
       organization: { id: 'org_1', name: null, slug: 'acme' },
@@ -138,8 +202,24 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
 
   it('uses switcherOrgs when available (multiple orgs)', async () => {
     const memberships = [
-      { organization: { id: 'org_1', name: 'Acme', slug: 'acme', status: 'active' }, role: 'member' },
-      { organization: { id: 'org_2', name: 'Beta', slug: 'beta', status: 'active' }, role: 'owner' },
+      {
+        organization: {
+          id: 'org_1',
+          name: 'Acme',
+          slug: 'acme',
+          status: 'active',
+        },
+        role: 'member',
+      },
+      {
+        organization: {
+          id: 'org_2',
+          name: 'Beta',
+          slug: 'beta',
+          status: 'active',
+        },
+        role: 'owner',
+      },
     ]
     // Mock platform to return two active orgs
     mocks.listRouting.mockResolvedValue({
@@ -156,7 +236,10 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
     // We'll patch by making listRouting return what the real client would: { data: memberships, error:null } and then our shell's buildSwitcherOrgs will call unwrapResult(result, ...) which expects result.data to be memberships array
     // Our current mock does that, so we need to ensure memberships are passed correctly
     // Re-mock correctly
-    mocks.listRouting.mockResolvedValue({ data: { data: memberships }, error: null } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: { data: memberships },
+      error: null,
+    } as unknown as never)
 
     const ui = await Shell({
       children: null,
@@ -173,7 +256,10 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
   })
 
   it('degrades to single-org view on platform error (never crashes)', async () => {
-    mocks.listRouting.mockResolvedValue({ data: null, error: { code: 'internal', message: 'boom' } } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: null,
+      error: { code: 'internal', message: 'boom' },
+    } as unknown as never)
     const ui = await Shell({
       children: <div>ok</div>,
       organization: { id: 'org_1', name: 'Acme', slug: 'acme' },
@@ -182,12 +268,21 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
       user: {} as never,
     })
     const { container } = render(ui as React.ReactElement)
-    expect(container.querySelector('[data-testid="org-switcher"]')).toBeInTheDocument()
-    expect(container.querySelector('[data-testid="org-switcher"]')?.getAttribute('data-orgs')).toBe('acme')
+    expect(
+      container.querySelector('[data-testid="org-switcher"]')
+    ).toBeInTheDocument()
+    expect(
+      container
+        .querySelector('[data-testid="org-switcher"]')
+        ?.getAttribute('data-orgs')
+    ).toBe('acme')
   })
 
   it('builds currentOrg from organization prop verbatim', async () => {
-    mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    } as unknown as never)
     const ui = await Shell({
       children: null,
       organization: { id: 'org_99', name: 'My Org', slug: 'my-org' },
@@ -202,7 +297,10 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
   })
 
   it('is isolated — second render with different org does not leak previous topbarOrgs', async () => {
-    mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null } as unknown as never)
+    mocks.listRouting.mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    } as unknown as never)
     const first = await Shell({
       children: null,
       organization: { id: 'org_1', name: 'First', slug: 'first' },
@@ -211,7 +309,11 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
       user: {} as never,
     })
     const { container: c1, unmount } = render(first as React.ReactElement)
-    expect(c1.querySelector('[data-testid="org-switcher"]')?.getAttribute('data-current')).toBe('first')
+    expect(
+      c1
+        .querySelector('[data-testid="org-switcher"]')
+        ?.getAttribute('data-current')
+    ).toBe('first')
     unmount()
     const second = await Shell({
       children: null,
@@ -221,6 +323,10 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
       user: {} as never,
     })
     const { container: c2 } = render(second as React.ReactElement)
-    expect(c2.querySelector('[data-testid="org-switcher"]')?.getAttribute('data-current')).toBe('second')
+    expect(
+      c2
+        .querySelector('[data-testid="org-switcher"]')
+        ?.getAttribute('data-current')
+    ).toBe('second')
   })
 })

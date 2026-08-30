@@ -13,11 +13,7 @@ export const metadata: Metadata = {
 }
 
 type AccessDeniedReason =
-  | 'permission'
-  | 'suspended'
-  | 'no-account'
-  | 'expired'
-  | 'employment'
+  'permission' | 'suspended' | 'no-account' | 'expired' | 'employment'
 
 function resolveReason(
   value: string | string[] | undefined

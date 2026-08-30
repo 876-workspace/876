@@ -67,7 +67,9 @@ const PROVIDER_DISPLAY_ORDER: readonly SocialProvider[] = [
 function orderSocialProviders(
   providers: readonly SocialProvider[]
 ): SocialProvider[] {
-  const rank = new Map(PROVIDER_DISPLAY_ORDER.map((provider, index) => [provider, index]))
+  const rank = new Map(
+    PROVIDER_DISPLAY_ORDER.map((provider, index) => [provider, index])
+  )
 
   return [...new Set(providers)].sort(
     (left, right) =>

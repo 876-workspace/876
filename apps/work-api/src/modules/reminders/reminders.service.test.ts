@@ -82,7 +82,11 @@ describe('Work reminders service', () => {
 
   it('allows a general reminder with no source context', async () => {
     vi.mocked(repository.create).mockResolvedValue(
-      row({ contextService: null, contextResource: null, contextId: null }) as never
+      row({
+        contextService: null,
+        contextResource: null,
+        contextId: null,
+      }) as never
     )
     const result = await service.create('org_1', {
       title: 'Submit timesheet',

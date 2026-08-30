@@ -102,14 +102,16 @@ export function PermissionEditor({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* Details */}
-      <section>
-        <h2 className="876-section-title mb-4">Details</h2>
-        <div className="876-card max-w-lg space-y-4 p-5">
+      <div className="border-876-surface-border bg-muted/20 space-y-4 rounded-xl border p-4">
+        <h3 className="text-muted-foreground text-[0.8125rem] font-semibold">
+          Details
+        </h3>
+        <div className="space-y-4">
           <div>
             <label
-              className="mb-1.5 block text-[0.8125rem] font-medium"
+              className="mb-1.5 block text-xs font-medium"
               htmlFor="display_name"
             >
               Display Name
@@ -123,7 +125,7 @@ export function PermissionEditor({
           </div>
           <div>
             <label
-              className="mb-1.5 block text-[0.8125rem] font-medium"
+              className="mb-1.5 block text-xs font-medium"
               htmlFor="description"
             >
               Description
@@ -144,21 +146,28 @@ export function PermissionEditor({
             </p>
           )}
         </div>
-      </section>
+      </div>
 
       {/* Permissions */}
-      <section>
-        <h2 className="876-section-title mb-4">Permissions</h2>
-        <div className="876-card overflow-hidden">
+      <div className="border-876-surface-border bg-muted/20 space-y-3 rounded-xl border p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-muted-foreground text-[0.8125rem] font-semibold">
+            Permissions
+          </h3>
+          <span className="text-muted-foreground text-xs">
+            {selected.size} selected
+          </span>
+        </div>
+        <div className="border-border bg-card/60 overflow-hidden rounded-lg border">
           {PERMISSION_GROUPS.map((group, gi) => (
             <div
               key={group.label}
               className={gi < PERMISSION_GROUPS.length - 1 ? 'border-b' : ''}
             >
-              <div className="bg-muted/40 dark:bg-muted/20 px-5 py-2.5">
+              <div className="bg-muted/40 dark:bg-muted/20 px-4 py-2">
                 <span className="876-eyebrow font-semibold">{group.label}</span>
               </div>
-              <div className="flex flex-wrap gap-2 px-5 py-3">
+              <div className="flex flex-wrap gap-1.5 px-4 py-2.5">
                 {group.permissions.map((perm) => {
                   const checked = selected.has(perm.value)
                   return (
@@ -184,13 +193,10 @@ export function PermissionEditor({
             </div>
           ))}
         </div>
-        <p className="text-muted-foreground mt-2 text-xs">
-          {selected.size} permission{selected.size !== 1 ? 's' : ''} selected
-        </p>
-      </section>
+      </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pt-1">
         <Button
           variant="info"
           onClick={handleSave}

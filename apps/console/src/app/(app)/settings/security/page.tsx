@@ -9,13 +9,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 
-import {
-  Page,
-  PageBreadcrumb,
-  PageHeader,
-  PageTitle,
-  PageDescription,
-} from '@876/ui/page'
+import { Page, PageHeader, PageTitle, PageDescription } from '@876/ui/page'
 
 export const metadata = { title: 'Security - Settings' }
 
@@ -72,8 +66,6 @@ const SECURITY_SECTIONS = [
 export default function SecuritySettingsPage() {
   return (
     <Page>
-      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
-
       <PageHeader className="mb-8">
         <PageTitle>Security</PageTitle>
         <PageDescription>

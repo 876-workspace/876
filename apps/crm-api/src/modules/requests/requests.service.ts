@@ -121,8 +121,7 @@ async function resolvePriority(
     subcategoryDefaultPriorityId ??
     categoryDefaultPriorityId
 
-  if (priorityId)
-    return priorities.requireActiveForTenant(tenantId, priorityId)
+  if (priorityId) return priorities.requireActiveForTenant(tenantId, priorityId)
 
   const defaultPriority = await priorities.retrieveDefaultForTenant(tenantId)
   if (!defaultPriority) return getError('crm/priority-not-found')

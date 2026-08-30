@@ -527,7 +527,8 @@ export function validateDraft(
       issues.push({
         path: 'resources',
         code: 'crm_default_priority',
-        message: 'CRM provisioning requires exactly one default request priority.',
+        message:
+          'CRM provisioning requires exactly one default request priority.',
       })
   }
 

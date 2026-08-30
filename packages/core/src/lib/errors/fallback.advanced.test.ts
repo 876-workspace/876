@@ -21,8 +21,12 @@ describe('fallback routing - advanced edge cases', () => {
   })
 
   it('fallback errors have correct httpStatus', () => {
-    expect(getError('crm/unknown').httpStatus).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
-    expect(getError('organization/unknown').httpStatus).toBeGreaterThanOrEqual(400)
+    expect(getError('crm/unknown').httpStatus).toBe(
+      HttpStatus.INTERNAL_SERVER_ERROR
+    )
+    expect(getError('organization/unknown').httpStatus).toBeGreaterThanOrEqual(
+      400
+    )
   })
 
   it('unknown crm code does not leak original code', () => {

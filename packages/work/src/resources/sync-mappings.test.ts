@@ -51,7 +51,10 @@ describe('createSyncMappingsResource', () => {
       )
     )
 
-    const result = await syncMappings.list('org_kingston_central', 'syncconn_kin_01')
+    const result = await syncMappings.list(
+      'org_kingston_central',
+      'syncconn_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/sync-connections/syncconn_kin_01/mappings',
@@ -84,7 +87,11 @@ describe('createSyncMappingsResource', () => {
       remoteEtag: '"etag_01"',
       iCalUid: 'event_kin_01@work.876',
     }
-    const result = await syncMappings.create('org_kingston_central', 'syncconn_kin_01', input)
+    const result = await syncMappings.create(
+      'org_kingston_central',
+      'syncconn_kin_01',
+      input
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/sync-connections/syncconn_kin_01/mappings',
@@ -155,7 +162,13 @@ describe('createSyncMappingsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: { object: 'list', data: [], has_more: false, total_count: null, url: '' },
+          data: {
+            object: 'list',
+            data: [],
+            has_more: false,
+            total_count: null,
+            url: '',
+          },
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -175,7 +188,10 @@ describe('createSyncMappingsResource', () => {
       new Response(
         JSON.stringify({
           data: null,
-          error: { code: 'work/sync-mapping-not-found', message: 'Mapping not found.' },
+          error: {
+            code: 'work/sync-mapping-not-found',
+            message: 'Mapping not found.',
+          },
         }),
         { status: 404, headers: { 'content-type': 'application/json' } }
       )
@@ -189,7 +205,10 @@ describe('createSyncMappingsResource', () => {
 
     expect(result).toEqual({
       data: null,
-      error: { code: 'work/sync-mapping-not-found', message: 'Mapping not found.' },
+      error: {
+        code: 'work/sync-mapping-not-found',
+        message: 'Mapping not found.',
+      },
     })
   })
 

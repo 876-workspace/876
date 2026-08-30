@@ -1,10 +1,6 @@
 import type { Request, Response } from 'express'
 
-import {
-  sendCrmError,
-  sendCrmList,
-  sendCrmResult,
-} from '../../http/result.js'
+import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as service from './tasks.service.js'
 import {
   createTaskBodySchema,
@@ -15,7 +11,9 @@ import {
 } from './tasks.schemas.js'
 
 export async function listTasks(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const result = await service.list(organizationId, requestId)
 
   return sendCrmList(
@@ -26,7 +24,9 @@ export async function listTasks(req: Request, res: Response) {
 }
 
 export async function createTask(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const input = createTaskBodySchema.parse(req.body)
   const result = await service.create(organizationId, requestId, input)
 
@@ -34,7 +34,11 @@ export async function createTask(req: Request, res: Response) {
 }
 
 export async function updateTask(req: Request, res: Response) {
-  const { organizationId, id: requestId, taskId } = taskParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    taskId,
+  } = taskParamsSchema.parse(req.params)
   const input = updateTaskBodySchema.parse(req.body)
   const result = await service.update(organizationId, requestId, taskId, input)
   if (!result) return sendCrmError(res, 'crm/task-not-found')
@@ -43,9 +47,18 @@ export async function updateTask(req: Request, res: Response) {
 }
 
 export async function deleteTask(req: Request, res: Response) {
-  const { organizationId, id: requestId, taskId } = taskParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    taskId,
+  } = taskParamsSchema.parse(req.params)
   const { deletedBy } = deleteTaskBodySchema.parse(req.body)
-  const result = await service.remove(organizationId, requestId, taskId, deletedBy)
+  const result = await service.remove(
+    organizationId,
+    requestId,
+    taskId,
+    deletedBy
+  )
   if (!result) return sendCrmError(res, 'crm/task-not-found')
 
   return sendCrmResult(res, result)

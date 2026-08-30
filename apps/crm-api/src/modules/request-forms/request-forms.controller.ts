@@ -1,10 +1,6 @@
 import type { Request, Response } from 'express'
 
-import {
-  sendCrmError,
-  sendCrmList,
-  sendCrmResult,
-} from '../../http/result.js'
+import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as service from './request-forms.service.js'
 import {
   createRequestFormBodySchema,
@@ -18,7 +14,9 @@ import {
 } from './request-forms.schemas.js'
 
 export async function listRequestForms(req: Request, res: Response) {
-  const { organizationId } = requestFormOrganizationParamsSchema.parse(req.params)
+  const { organizationId } = requestFormOrganizationParamsSchema.parse(
+    req.params
+  )
   const { status } = listRequestFormsQuerySchema.parse(req.query)
   const result = await service.list(organizationId, status)
   return sendCrmList(
@@ -36,7 +34,9 @@ export async function retrieveRequestForm(req: Request, res: Response) {
 }
 
 export async function createRequestForm(req: Request, res: Response) {
-  const { organizationId } = requestFormOrganizationParamsSchema.parse(req.params)
+  const { organizationId } = requestFormOrganizationParamsSchema.parse(
+    req.params
+  )
   const input = createRequestFormBodySchema.parse(req.body)
   const result = await service.create(organizationId, input)
   return sendCrmResult(res, result, 201)

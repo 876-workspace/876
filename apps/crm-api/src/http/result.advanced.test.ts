@@ -4,14 +4,23 @@ import { sendCrmError, sendCrmResult } from './result.js'
 
 function mockRes() {
   const chainJson = vi.fn()
-  const chainStatus = vi.fn((code: number) => ({ json: chainJson } as unknown as never))
-  return { res: { status: chainStatus } as unknown as import('express').Response, chainStatus, chainJson }
+  const chainStatus = vi.fn(
+    (code: number) => ({ json: chainJson }) as unknown as never
+  )
+  return {
+    res: { status: chainStatus } as unknown as import('express').Response,
+    chainStatus,
+    chainJson,
+  }
 }
 
 describe('sendCrmError - plain value contract', () => {
   it('sends correct httpStatus and client-safe error without httpStatus in body', () => {
     const { res, chainStatus, chainJson } = mockRes()
-    sendCrmError(res as unknown as import('express').Response, 'crm/team-not-found')
+    sendCrmError(
+      res as unknown as import('express').Response,
+      'crm/team-not-found'
+    )
     expect(chainStatus).toHaveBeenCalledWith(404)
     expect(chainJson).toHaveBeenCalledWith({
       data: null,
@@ -35,7 +44,10 @@ describe('sendCrmError - plain value contract', () => {
   it('never exposes description or httpStatus in body', () => {
     const { res, chainJson } = mockRes()
     sendCrmError(res as unknown as import('express').Response, 'crm/internal')
-    const body = chainJson.mock.calls[0][0] as unknown as Record<string, unknown>
+    const body = chainJson.mock.calls[0][0] as unknown as Record<
+      string,
+      unknown
+    >
     const error = (body as { error: Record<string, unknown> }).error
     expect(error.httpStatus).toBeUndefined()
     expect(error.description).toBeUndefined()
@@ -43,15 +55,24 @@ describe('sendCrmError - plain value contract', () => {
 
   it('is idempotent across multiple calls', () => {
     const { res, chainStatus } = mockRes()
-    sendCrmError(res as unknown as import('express').Response, 'crm/request-not-found')
-    sendCrmError(res as unknown as import('express').Response, 'crm/request-not-found')
+    sendCrmError(
+      res as unknown as import('express').Response,
+      'crm/request-not-found'
+    )
+    sendCrmError(
+      res as unknown as import('express').Response,
+      'crm/request-not-found'
+    )
     expect(chainStatus).toHaveBeenCalledTimes(2)
   })
 
   it('handles all CRM codes without leaking httpStatus', () => {
     const { res, chainJson } = mockRes()
     sendCrmError(res, 'crm/priority-not-found')
-    expect((chainJson.mock.calls[0][0] as { error: Record<string, unknown> }).error.httpStatus).toBeUndefined()
+    expect(
+      (chainJson.mock.calls[0][0] as { error: Record<string, unknown> }).error
+        .httpStatus
+    ).toBeUndefined()
   })
 
   it('each call creates fresh envelope', () => {
@@ -66,8 +87,14 @@ describe('sendCrmError - plain value contract', () => {
 describe('sendCrmResult - discriminates value errors vs success', () => {
   function mockRes2() {
     const chainJson = vi.fn()
-    const chainStatus = vi.fn((code: number) => ({ json: chainJson } as unknown as never))
-    return { res: { status: chainStatus } as unknown as import('express').Response, chainStatus, chainJson }
+    const chainStatus = vi.fn(
+      (code: number) => ({ json: chainJson }) as unknown as never
+    )
+    return {
+      res: { status: chainStatus } as unknown as import('express').Response,
+      chainStatus,
+      chainJson,
+    }
   }
 
   it('sends error envelope when result is error value', () => {
@@ -75,7 +102,10 @@ describe('sendCrmResult - discriminates value errors vs success', () => {
     const err = getError('crm/category-not-found')
     sendCrmResult(res, err)
     expect(chainStatus).toHaveBeenCalledWith(404)
-    expect(chainJson).toHaveBeenCalledWith({ data: null, error: { code: 'crm/category-not-found', message: err.message } })
+    expect(chainJson).toHaveBeenCalledWith({
+      data: null,
+      error: { code: 'crm/category-not-found', message: err.message },
+    })
   })
 
   it('sends success envelope with default 200 when result is data', () => {
@@ -102,7 +132,10 @@ describe('sendCrmResult - discriminates value errors vs success', () => {
 
   it('never confuses data that looks like error but lacks httpStatus', () => {
     const { res, chainStatus, chainJson } = mockRes2()
-    const fake = { code: 'crm/team-not-found', message: 'Team not found.' } as unknown as ReturnType<typeof getError>
+    const fake = {
+      code: 'crm/team-not-found',
+      message: 'Team not found.',
+    } as unknown as ReturnType<typeof getError>
     sendCrmResult(res, fake)
     expect(chainStatus).toHaveBeenCalledWith(200)
     expect(chainJson).toHaveBeenCalledWith({ data: fake, error: null })
@@ -133,13 +166,19 @@ describe('sendCrmResult - discriminates value errors vs success', () => {
     const { res, chainJson } = mockRes2()
     const err = getError('crm/internal')
     sendCrmResult(res, err)
-    const body = chainJson.mock.calls[0][0] as { error: Record<string, unknown> }
+    const body = chainJson.mock.calls[0][0] as {
+      error: Record<string, unknown>
+    }
     expect(body.error.httpStatus).toBeUndefined()
   })
 
   it('concurrent calls do not interfere', async () => {
     const calls = await Promise.all(
-      ['crm/team-not-found', 'crm/category-not-found', 'crm/request-not-found'].map(async (code) => {
+      [
+        'crm/team-not-found',
+        'crm/category-not-found',
+        'crm/request-not-found',
+      ].map(async (code) => {
         const { res, chainStatus } = mockRes2()
         sendCrmResult(res, getError(code as Parameters<typeof getError>[0]))
         return chainStatus.mock.calls[0][0]
@@ -157,9 +196,14 @@ describe('sendCrmResult - discriminates value errors vs success', () => {
   it('error path json shape matches contract {data:null, error:{code,message}}', () => {
     const { res, chainJson } = mockRes2()
     sendCrmResult(res, getError('crm/task-not-found'))
-    const body = chainJson.mock.calls[0][0] as unknown as Record<string, unknown>
+    const body = chainJson.mock.calls[0][0] as unknown as Record<
+      string,
+      unknown
+    >
     expect(body).toHaveProperty('data', null)
     expect(body).toHaveProperty('error')
-    expect((body.error as unknown as Record<string, unknown>).code).toBe('crm/task-not-found')
+    expect((body.error as unknown as Record<string, unknown>).code).toBe(
+      'crm/task-not-found'
+    )
   })
 })

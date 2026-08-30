@@ -30,11 +30,7 @@ export function createRequestFormSubmissionsResource(runtime: Runtime) {
         requestFormSubmissionSchema
       )
     },
-    list(
-      organizationId: string,
-      formId: string,
-      options: RequestOptions = {}
-    ) {
+    list(organizationId: string, formId: string, options: RequestOptions = {}) {
       return request(
         runtime,
         {

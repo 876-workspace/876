@@ -18,9 +18,8 @@ const retrieveTenantQuerySchema = z.strictObject({
 })
 
 export async function ensureTenant(req: Request, res: Response) {
-  const { organizationId, provisioning, fixtures } = ensureTenantBodySchema.parse(
-    req.body
-  )
+  const { organizationId, provisioning, fixtures } =
+    ensureTenantBodySchema.parse(req.body)
   const result = await service.ensure(
     organizationId,
     provisioning,

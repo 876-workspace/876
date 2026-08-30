@@ -1,10 +1,6 @@
 import type { Request, Response } from 'express'
 
-import {
-  sendCrmError,
-  sendCrmList,
-  sendCrmResult,
-} from '../../http/result.js'
+import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as service from './reminders.service.js'
 import {
   createReminderBodySchema,
@@ -15,7 +11,9 @@ import {
 } from './reminders.schemas.js'
 
 export async function listReminders(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const result = await service.list(organizationId, requestId)
   return sendCrmList(
     res,
@@ -25,15 +23,20 @@ export async function listReminders(req: Request, res: Response) {
 }
 
 export async function createReminder(req: Request, res: Response) {
-  const { organizationId, id: requestId } = requestParamsSchema.parse(req.params)
+  const { organizationId, id: requestId } = requestParamsSchema.parse(
+    req.params
+  )
   const input = createReminderBodySchema.parse(req.body)
   const result = await service.create(organizationId, requestId, input)
   return sendCrmResult(res, result, 201)
 }
 
 export async function updateReminder(req: Request, res: Response) {
-  const { organizationId, id: requestId, reminderId } =
-    reminderParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    reminderId,
+  } = reminderParamsSchema.parse(req.params)
   const input = updateReminderBodySchema.parse(req.body)
   const result = await service.update(
     organizationId,
@@ -46,8 +49,11 @@ export async function updateReminder(req: Request, res: Response) {
 }
 
 export async function deleteReminder(req: Request, res: Response) {
-  const { organizationId, id: requestId, reminderId } =
-    reminderParamsSchema.parse(req.params)
+  const {
+    organizationId,
+    id: requestId,
+    reminderId,
+  } = reminderParamsSchema.parse(req.params)
   const { deletedBy } = deleteReminderBodySchema.parse(req.body)
   const result = await service.remove(
     organizationId,

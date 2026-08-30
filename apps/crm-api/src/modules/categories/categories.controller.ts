@@ -1,10 +1,6 @@
 import type { Request, Response } from 'express'
 
-import {
-  sendCrmError,
-  sendCrmList,
-  sendCrmResult,
-} from '../../http/result.js'
+import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as s from './categories.schemas.js'
 import * as service from './categories.service.js'
 

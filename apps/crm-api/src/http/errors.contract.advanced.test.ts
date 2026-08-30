@@ -13,7 +13,9 @@ describe('CRM errors contract - no httpStatus leakage', () => {
   })
 
   it('client error via toAppError never contains httpStatus', () => {
-    for (const code of Object.keys(CRM_ERRORS) as Array<keyof typeof CRM_ERRORS>) {
+    for (const code of Object.keys(CRM_ERRORS) as Array<
+      keyof typeof CRM_ERRORS
+    >) {
       const app: Record<string, unknown> = { ...toAppError(crmError(code)) }
       expect(app.httpStatus).toBeUndefined()
       expect(Object.keys(app).sort()).toEqual(['code', 'message'])
@@ -22,16 +24,28 @@ describe('CRM errors contract - no httpStatus leakage', () => {
   })
 
   it('httpStatus semantics are stable and documented', () => {
-    expect(crmError('crm/category-not-found').httpStatus).toBe(HttpStatus.NOT_FOUND)
+    expect(crmError('crm/category-not-found').httpStatus).toBe(
+      HttpStatus.NOT_FOUND
+    )
     expect(crmError('crm/category-in-use').httpStatus).toBe(HttpStatus.CONFLICT)
-    expect(crmError('crm/subcategory-category-mismatch').httpStatus).toBe(HttpStatus.UNPROCESSABLE_ENTITY)
-    expect(crmError('crm/form-invalid-submission').httpStatus).toBe(HttpStatus.UNPROCESSABLE_ENTITY)
-    expect(crmError('crm/registry-unavailable').httpStatus).toBe(HttpStatus.BAD_GATEWAY)
-    expect(crmError('crm/internal').httpStatus).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+    expect(crmError('crm/subcategory-category-mismatch').httpStatus).toBe(
+      HttpStatus.UNPROCESSABLE_ENTITY
+    )
+    expect(crmError('crm/form-invalid-submission').httpStatus).toBe(
+      HttpStatus.UNPROCESSABLE_ENTITY
+    )
+    expect(crmError('crm/registry-unavailable').httpStatus).toBe(
+      HttpStatus.BAD_GATEWAY
+    )
+    expect(crmError('crm/internal').httpStatus).toBe(
+      HttpStatus.INTERNAL_SERVER_ERROR
+    )
   })
 
   it('all errors are plain values suitable for JSON envelope', () => {
-    for (const code of Object.keys(CRM_ERRORS) as Array<keyof typeof CRM_ERRORS>) {
+    for (const code of Object.keys(CRM_ERRORS) as Array<
+      keyof typeof CRM_ERRORS
+    >) {
       const err = crmError(code)
       expect(isError(err)).toBe(true)
       expect(err).not.toBeInstanceOf(Error)
@@ -75,14 +89,22 @@ describe('CRM errors - message and status invariants (advanced)', () => {
   })
 
   it('409 codes are conflicts, 404 are not-found, 422 are validation', () => {
-    const byStatus = Object.entries(CRM_ERRORS).reduce((acc, [code, def]) => {
-      const s = def.httpStatus
-      acc[s] = acc[s] || []
-      acc[s].push(code)
-      return acc
-    }, {} as Record<number, string[]>)
-    expect(byStatus[404].some(c => c.includes('not-found'))).toBe(true)
-    expect(byStatus[409].some(c => c.includes('in-use') || c.includes('taken') || c.includes('inactive'))).toBe(true)
+    const byStatus = Object.entries(CRM_ERRORS).reduce(
+      (acc, [code, def]) => {
+        const s = def.httpStatus
+        acc[s] = acc[s] || []
+        acc[s].push(code)
+        return acc
+      },
+      {} as Record<number, string[]>
+    )
+    expect(byStatus[404].some((c) => c.includes('not-found'))).toBe(true)
+    expect(
+      byStatus[409].some(
+        (c) =>
+          c.includes('in-use') || c.includes('taken') || c.includes('inactive')
+      )
+    ).toBe(true)
     expect(byStatus[422].length).toBeGreaterThan(0)
   })
 

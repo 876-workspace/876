@@ -21,10 +21,7 @@ export async function POST(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await workspace.features.grant(
-    organizationId,
-    body
-  )
+  const { data, error } = await workspace.features.grant(organizationId, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update organization feature.' },

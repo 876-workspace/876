@@ -3,7 +3,10 @@ import { getError, isError, toAppError } from '@876/core'
 
 describe('packages/crm request client - error values', () => {
   it('network offline shape is stable', () => {
-    const err = { code: 'network/offline', message: 'CRM API could not be reached.' } as const
+    const err = {
+      code: 'network/offline',
+      message: 'CRM API could not be reached.',
+    } as const
     expect(err.code).toBe('network/offline')
     expect(err.message).toContain('could not be reached')
   })
@@ -13,7 +16,9 @@ describe('packages/crm request client - error values', () => {
     expect(err.httpStatus).toBe(503)
     expect(err.code).toBe('crm/not-configured')
     expect(isError(err)).toBe(true)
-    expect((toAppError(err) as unknown as Record<string, unknown>).httpStatus).toBeUndefined()
+    expect(
+      (toAppError(err) as unknown as Record<string, unknown>).httpStatus
+    ).toBeUndefined()
   })
 
   it('crm/invalid-response via getError has 502', () => {
@@ -32,7 +37,10 @@ describe('packages/crm request client - error values', () => {
 
   it('envelope discriminates success vs error without try/catch', () => {
     const success = { data: { id: 'cus_1' }, error: null } as const
-    const failure = { data: null, error: toAppError(getError('crm/customer-not-found')) } as const
+    const failure = {
+      data: null,
+      error: toAppError(getError('crm/customer-not-found')),
+    } as const
     expect(success.error).toBeNull()
     expect(failure.data).toBeNull()
     expect(failure.error.code).toBe('crm/customer-not-found')

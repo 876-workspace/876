@@ -3,12 +3,7 @@ import { z } from 'zod'
 import type { RequestPriority } from './priority.js'
 
 export type RequestStatus =
-  | 'OPEN'
-  | 'IN_PROGRESS'
-  | 'WAITING'
-  | 'RESOLVED'
-  | 'CLOSED'
-  | 'CANCELLED'
+  'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED' | 'CANCELLED'
 
 /** How a request entered CRM. Placement describes where a form renders; channel describes the actual intake path. */
 export const requestChannelSchema = z.enum([

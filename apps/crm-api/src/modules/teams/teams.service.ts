@@ -11,7 +11,9 @@ import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './teams.repository.js'
 
 type TeamRow = Awaited<ReturnType<typeof repository.list>>[number]
-type TeamWithMembersRow = NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>
+type TeamWithMembersRow = NonNullable<
+  Awaited<ReturnType<typeof repository.retrieve>>
+>
 type MemberRow = Awaited<ReturnType<typeof repository.listMembers>>[number]
 
 function slugify(name: string) {
@@ -61,7 +63,9 @@ function serialize(team: TeamRow | TeamWithMembersRow) {
     createdBy: team.createdBy,
     createdAt: Math.floor(team.createdAt.getTime() / 1000),
     updatedAt: Math.floor(team.updatedAt.getTime() / 1000),
-    ...('members' in team ? { members: team.members.map(serializeMember) } : {}),
+    ...('members' in team
+      ? { members: team.members.map(serializeMember) }
+      : {}),
   }
 }
 

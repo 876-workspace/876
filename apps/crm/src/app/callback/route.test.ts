@@ -8,10 +8,9 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@876/core/fetch/bridge', async () => {
-  const actual =
-    await vi.importActual<typeof import('@876/core/fetch/bridge')>(
-      '@876/core/fetch/bridge'
-    )
+  const actual = await vi.importActual<typeof import('@876/core/fetch/bridge')>(
+    '@876/core/fetch/bridge'
+  )
   return { ...actual, fetchApiBridge: mocks.fetchApiBridge }
 })
 

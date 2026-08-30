@@ -9,11 +9,7 @@ import {
   type UpdateRequestInput,
 } from '../request-types'
 import type { Runtime } from '../runtime'
-import {
-  deletedSchema,
-  type DeleteInput,
-  type RequestOptions,
-} from '../types'
+import { deletedSchema, type DeleteInput, type RequestOptions } from '../types'
 
 function root(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/requests`

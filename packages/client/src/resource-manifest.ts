@@ -7,13 +7,7 @@
  */
 
 export type ServiceOwner =
-  | 'core'
-  | 'billing'
-  | 'couriers'
-  | 'crm'
-  | 'work'
-  | 'storage'
-  | 'widgets'
+  'core' | 'billing' | 'couriers' | 'crm' | 'work' | 'storage' | 'widgets'
 
 export interface ResourceOwnership {
   owner: ServiceOwner
@@ -211,7 +205,8 @@ export const RESOURCE_MANIFEST = {
   },
   alerts: {
     owner: 'work',
-    meaning: 'notification schedules attached to canonical Work tasks or events',
+    meaning:
+      'notification schedules attached to canonical Work tasks or events',
   },
   calendars: {
     owner: 'work',

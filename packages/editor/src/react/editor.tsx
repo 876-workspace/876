@@ -201,15 +201,14 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
 
   function handleHolderFocus(event: FocusEvent<HTMLDivElement>) {
     if (event.target !== event.currentTarget) return
-    void editorRef.current?.isReady.then(() => editorRef.current?.caret.focus(true))
+    void editorRef.current?.isReady.then(() =>
+      editorRef.current?.caret.focus(true)
+    )
   }
 
   return (
     <div
-      className={[
-        'editorjs min-h-0 min-w-0 overflow-x-visible',
-        className,
-      ]
+      className={['editorjs min-h-0 min-w-0 overflow-x-visible', className]
         .filter(Boolean)
         .join(' ')}
     >

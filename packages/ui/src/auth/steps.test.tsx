@@ -13,7 +13,9 @@ describe('SocialButtons', () => {
     )
 
     expect(
-      screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))
+      screen
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label'))
     ).toEqual([
       'Continue with Google',
       'Continue with Apple',

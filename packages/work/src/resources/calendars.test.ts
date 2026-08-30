@@ -83,7 +83,10 @@ describe('createCalendarsResource', () => {
       )
     )
 
-    const result = await calendars.retrieve('org_kingston_central', 'calendar_kin_01')
+    const result = await calendars.retrieve(
+      'org_kingston_central',
+      'calendar_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/calendars/calendar_kin_01',
@@ -155,9 +158,13 @@ describe('createCalendarsResource', () => {
       )
     )
 
-    const result = await calendars.update('org_kingston_central', 'calendar_kin_01', {
-      name: 'Renamed Dispatch',
-    })
+    const result = await calendars.update(
+      'org_kingston_central',
+      'calendar_kin_01',
+      {
+        name: 'Renamed Dispatch',
+      }
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/calendars/calendar_kin_01',
@@ -180,7 +187,11 @@ describe('createCalendarsResource', () => {
       )
     )
 
-    const result = await calendars.delete('org_kingston_central', 'calendar_kin_01', 'usr_tariq_01')
+    const result = await calendars.delete(
+      'org_kingston_central',
+      'calendar_kin_01',
+      'usr_tariq_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/calendars/calendar_kin_01',
@@ -200,7 +211,10 @@ describe('createCalendarsResource', () => {
       new Response(
         JSON.stringify({
           data: null,
-          error: { code: 'work/tenant-not-found', message: 'Tenant not found.' },
+          error: {
+            code: 'work/tenant-not-found',
+            message: 'Tenant not found.',
+          },
         }),
         { status: 404, headers: { 'content-type': 'application/json' } }
       )

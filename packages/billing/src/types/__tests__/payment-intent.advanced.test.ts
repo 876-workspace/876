@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { PaymentIntentSchema, PaymentIntentListSchema } from '../payment-intent.schema'
+import {
+  PaymentIntentSchema,
+  PaymentIntentListSchema,
+} from '../payment-intent.schema'
 
 function aPaymentIntent(overrides: Record<string, unknown> = {}) {
   return {
@@ -96,7 +99,9 @@ describe('PaymentIntentSchema / unit / core validation', () => {
   })
 
   it('rejects invalid status (strict enum)', () => {
-    const result = PaymentIntentSchema.safeParse(aPaymentIntent({ status: 'UNKNOWN' } as any))
+    const result = PaymentIntentSchema.safeParse(
+      aPaymentIntent({ status: 'UNKNOWN' } as any)
+    )
     expect(result.success).toBe(false)
   })
 
@@ -109,16 +114,31 @@ describe('PaymentIntentSchema / unit / core validation', () => {
     'SUCCEEDED',
     'CANCELED',
   ])('accepts status %s', (status) => {
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ status } as any)).success).toBe(true)
+    expect(
+      PaymentIntentSchema.safeParse(aPaymentIntent({ status } as any)).success
+    ).toBe(true)
   })
 
   it('rejects currency not exactly 3 chars', () => {
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ currency: 'US' } as any)).success).toBe(false)
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ currency: 'USDT' } as any)).success).toBe(false)
+    expect(
+      PaymentIntentSchema.safeParse(aPaymentIntent({ currency: 'US' } as any))
+        .success
+    ).toBe(false)
+    expect(
+      PaymentIntentSchema.safeParse(aPaymentIntent({ currency: 'USDT' } as any))
+        .success
+    ).toBe(false)
   })
 
   it('allows nullable provider fields', () => {
-    const input = aPaymentIntent({ provider: null, providerIntentId: null, providerConnectionId: null, invoiceId: null, subscriptionId: null, paymentMethodId: null })
+    const input = aPaymentIntent({
+      provider: null,
+      providerIntentId: null,
+      providerConnectionId: null,
+      invoiceId: null,
+      subscriptionId: null,
+      paymentMethodId: null,
+    })
     expect(PaymentIntentSchema.safeParse(input).success).toBe(true)
   })
 
@@ -128,13 +148,27 @@ describe('PaymentIntentSchema / unit / core validation', () => {
   })
 
   it('requires amount as string (minor amount serialized)', () => {
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ amount: 2500 } as any)).success).toBe(false)
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ amount: '2500' } as any)).success).toBe(true)
+    expect(
+      PaymentIntentSchema.safeParse(aPaymentIntent({ amount: 2500 } as any))
+        .success
+    ).toBe(false)
+    expect(
+      PaymentIntentSchema.safeParse(aPaymentIntent({ amount: '2500' } as any))
+        .success
+    ).toBe(true)
   })
 
   it('validates captureMethod enum', () => {
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ captureMethod: 'MANUAL' } as any)).success).toBe(true)
-    expect(PaymentIntentSchema.safeParse(aPaymentIntent({ captureMethod: 'INVALID' } as any)).success).toBe(false)
+    expect(
+      PaymentIntentSchema.safeParse(
+        aPaymentIntent({ captureMethod: 'MANUAL' } as any)
+      ).success
+    ).toBe(true)
+    expect(
+      PaymentIntentSchema.safeParse(
+        aPaymentIntent({ captureMethod: 'INVALID' } as any)
+      ).success
+    ).toBe(false)
   })
 })
 
@@ -162,7 +196,13 @@ describe('PaymentIntentListSchema / contract / envelope', () => {
   })
 
   it('produces stable snapshot for empty list', () => {
-    const input = { object: 'list' as const, data: [] as any[], has_more: false, url: '/api/v1/organizations/org_1/payment-intents', total_count: 0 }
+    const input = {
+      object: 'list' as const,
+      data: [] as any[],
+      has_more: false,
+      url: '/api/v1/organizations/org_1/payment-intents',
+      total_count: 0,
+    }
     const result = PaymentIntentListSchema.safeParse(input)
     expect(result.data).toMatchInlineSnapshot(`
       {

@@ -86,7 +86,10 @@ describe('createRemindersResource', () => {
       )
     )
 
-    const result = await reminders.retrieve('org_kingston_central', 'reminder_kin_01')
+    const result = await reminders.retrieve(
+      'org_kingston_central',
+      'reminder_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/reminders/reminder_kin_01',
@@ -129,23 +132,33 @@ describe('createRemindersResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: createReminderFixture({ status: 'DISMISSED', note: 'Truck already dispatched' }),
+          data: createReminderFixture({
+            status: 'DISMISSED',
+            note: 'Truck already dispatched',
+          }),
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
       )
     )
 
-    const result = await reminders.update('org_kingston_central', 'reminder_kin_01', {
-      status: 'DISMISSED',
-      note: 'Truck already dispatched',
-    })
+    const result = await reminders.update(
+      'org_kingston_central',
+      'reminder_kin_01',
+      {
+        status: 'DISMISSED',
+        note: 'Truck already dispatched',
+      }
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/reminders/reminder_kin_01',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ status: 'DISMISSED', note: 'Truck already dispatched' }),
+        body: JSON.stringify({
+          status: 'DISMISSED',
+          note: 'Truck already dispatched',
+        }),
       })
     )
     expect(result.data?.status).toBe('DISMISSED')
@@ -162,7 +175,11 @@ describe('createRemindersResource', () => {
       )
     )
 
-    const result = await reminders.delete('org_kingston_central', 'reminder_kin_01', 'usr_tariq_01')
+    const result = await reminders.delete(
+      'org_kingston_central',
+      'reminder_kin_01',
+      'usr_tariq_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/reminders/reminder_kin_01',
@@ -182,17 +199,26 @@ describe('createRemindersResource', () => {
       new Response(
         JSON.stringify({
           data: null,
-          error: { code: 'work/reminder-not-found', message: 'Reminder not found.' },
+          error: {
+            code: 'work/reminder-not-found',
+            message: 'Reminder not found.',
+          },
         }),
         { status: 404, headers: { 'content-type': 'application/json' } }
       )
     )
 
-    const result = await reminders.retrieve('org_kingston_central', 'rem_missing')
+    const result = await reminders.retrieve(
+      'org_kingston_central',
+      'rem_missing'
+    )
 
     expect(result).toEqual({
       data: null,
-      error: { code: 'work/reminder-not-found', message: 'Reminder not found.' },
+      error: {
+        code: 'work/reminder-not-found',
+        message: 'Reminder not found.',
+      },
     })
   })
 

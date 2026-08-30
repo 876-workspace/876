@@ -21,11 +21,7 @@ export type {
 export { can, hasFeature, variantOf } from './context'
 export type { AccessContext } from './context'
 export { defineNavigation, resolveNavigation } from './navigation'
-export type {
-  NavEntry,
-  NavGroupDefinition,
-  NavRequirement,
-} from './navigation'
+export type { NavEntry, NavGroupDefinition, NavRequirement } from './navigation'
 
 // Bounded on purpose: a permission key is a stable, persisted identifier, so an
 // unbounded one is both a storage hazard and an unusable UI label.

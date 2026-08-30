@@ -22,7 +22,9 @@ describe('errors - intake form codes', () => {
         httpStatus: 409,
       })
     )
-    expect(error.message).toBe('This request form definition is no longer valid.')
+    expect(error.message).toBe(
+      'This request form definition is no longer valid.'
+    )
   })
 
   it('exposes form-invalid-submission with 422', () => {
