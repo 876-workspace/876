@@ -13,9 +13,13 @@ export const runtime = 'nodejs'
 type Context = { params: Promise<{ id: string; requestId: string }> }
 type RequestEventsResource = Console876Client['requestEvents']
 type CreateRequestEventInput = Parameters<RequestEventsResource['create']>[2]
-type BrowserCreateRequestEventInput = CreateRequestEventInput extends unknown
-  ? Omit<CreateRequestEventInput, 'createdBy'>
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
   : never
+type BrowserCreateRequestEventInput = DistributiveOmit<
+  CreateRequestEventInput,
+  'createdBy'
+>
 
 export async function GET(request: NextRequest, context: Context) {
   const { response } = await requireConsolePermission('console:organizations')
