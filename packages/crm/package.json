@@ -1,16 +1,15 @@
 {
   "name": "@876/crm",
   "version": "0.1.0",
-  "description": "876 CRM product client.",
+  "description": "876 CRM product client and contracts.",
   "license": "UNLICENSED",
   "type": "module",
   "private": false,
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    }
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./service": { "types": "./src/service-client.ts", "default": "./src/service-client.ts" },
+    "./operator": { "types": "./src/operator.ts", "default": "./src/operator.ts" }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -5,40 +5,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
-    "./admin": {
-      "types": "./src/admin/index.ts",
-      "default": "./src/admin/index.ts"
-    },
-    "./integration": {
-      "types": "./src/integration/index.ts",
-      "default": "./src/integration/index.ts"
-    },
-    "./proxy": {
-      "types": "./src/proxy.ts",
-      "default": "./src/proxy.ts"
-    },
-    "./server": {
-      "types": "./src/server/index.ts",
-      "default": "./src/server/index.ts"
-    }
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./operator": { "types": "./src/operator.ts", "default": "./src/operator.ts" },
+    "./service": { "types": "./src/service.ts", "default": "./src/service.ts" },
+    "./integration": { "types": "./src/integration/index.ts", "default": "./src/integration/index.ts" },
+    "./proxy": { "types": "./src/proxy.ts", "default": "./src/proxy.ts" },
+    "./server": { "types": "./src/server/index.ts", "default": "./src/server/index.ts" }
   },
-  "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .turbo"
-  },
-  "dependencies": {
-    "@876/core": "workspace:*",
-    "server-only": "0.0.1",
-    "zod": "4.4.3"
-  },
-  "devDependencies": {
-    "@types/node": "26.2.0",
-    "typescript": "5.9.3",
-    "vitest": "4.1.11"
-  }
+  "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit", "clean": "rm -rf .turbo" },
+  "dependencies": { "@876/core": "workspace:*", "server-only": "0.0.1", "zod": "4.4.3" },
+  "devDependencies": { "@types/node": "26.2.0", "typescript": "5.9.3", "vitest": "4.1.11" }
 }
