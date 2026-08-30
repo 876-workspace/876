@@ -64,8 +64,11 @@ foreign key to a CRM priority. That would reproduce CRM coupling inside a new se
 Tasks and reminders only, with their CRM HTTP contracts preserved:
 
 - `packages/work` — the contract package. The privileged constructor is isolated
-  behind the `server-only` `@876/work/operator` subpath so the root entry cannot
-  leak a service credential into a browser bundle.
+  behind the explicit `@876/work/operator` subpath so the root entry cannot leak a
+  service credential into a browser bundle. The subpath carries no `server-only`
+  marker: that marker resolves only under the react-server condition, so it made the
+  operator client unimportable from an Express service. `@876/billing/admin`, the
+  same internal-key tier, has never carried one either.
 - `apps/work-api` — an Express 5 + Prisma 7 service in its own bounded context,
   mirroring `apps/crm-api` layer for layer.
 - A `WorkTenant` keyed by an opaque `organizationId`. Work duplicates no identity.
@@ -178,12 +181,10 @@ Work follows `.claude/rules/access-tiers.md` unchanged:
 | integration | one app acting for one organization          | app API key + scoped connection  |
 | session     | a signed-in user                             | session cookie                   |
 
-**The foundation ships only the operator tier, and that is a known deviation.** CRM
-currently reaches Work with the internal key, which means a product app holds an
-operator credential — the exact thing `access-tiers.md` forbids. It is acceptable only
-because the credential stays inside the CRM API container and the branch is not a
-production cutover. Closing it is Phase 2B and is the first work after this merges;
-it must not be deferred behind feature work.
+**The foundation now exposes the operator and integration tiers.** CRM reaches Work
+with its own app API key and a tenant-scoped Work connection that grants only the four
+task/reminder scopes. The operator key remains available for Console and platform
+orchestration, including the operator-only workspace provisioning route.
 
 ## Known divergences from the reference implementations, and what to do about them
 

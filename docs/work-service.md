@@ -7,27 +7,39 @@ into it, and what is deliberately not done yet.
 
 ## What exists
 
-| Piece            | Path                                 | Role                                                        |
-| ---------------- | ------------------------------------ | ----------------------------------------------------------- |
-| Contract package | `packages/work`                      | Zod contracts + typed resources. Root entry is browser-safe |
-| Operator client  | `packages/work/src/operator.ts`      | `server-only`; constructs the privileged client             |
-| Service          | `apps/work-api`                      | Express 5 + Prisma 7, port 4020, its own Neon project       |
-| CRM adapter      | `apps/crm-api/src/providers/work.ts` | Builds the Work client and the CRM request context          |
+| Piece              | Path                                 | Role                                                        |
+| ------------------ | ------------------------------------ | ----------------------------------------------------------- |
+| Contract package   | `packages/work`                      | Zod contracts + typed resources. Root entry is browser-safe |
+| Operator client    | `packages/work/src/operator.ts`      | Internal-key client; server-side callers only               |
+| Integration client | `packages/work/src/integration.ts`   | App-key client for organization-scoped Work access          |
+| Service            | `apps/work-api`                      | Express 5 + Prisma 7, port 4020, its own Neon project       |
+| CRM adapter        | `apps/crm-api/src/providers/work.ts` | Builds the Work client and the CRM request context          |
 
-The Work API exposes, all behind `x-internal-key`:
+The Work API exposes an operator provisioning route and scope-gated integration
+data routes:
 
 ```
-POST   /v1/tenants
+POST   /v1/tenants                                      operator (`x-internal-key`)
 GET    /v1/organizations/:organizationId/tasks
 POST   /v1/organizations/:organizationId/tasks
 PATCH  /v1/organizations/:organizationId/tasks/:taskId
 DELETE /v1/organizations/:organizationId/tasks/:taskId
-        …and the identical reminder set
+        …and the identical reminder set                  integration (`x-876-api-key` + connection scope)
 ```
 
 CRM's own URLs are unchanged. `/v1/organizations/:organizationId/requests/:requestId/tasks`
 still validates the CRM request, still returns `object: "request_task"`, and still
 enriches the CRM priority — it just stores in Work now.
+
+`apps/api` is the operator caller. `workspace.work.ensure({ organizationId, appIds })`
+runs beside `workspace.finance.ensure` at organization bootstrap and at subscription
+activation, and posts `workspace.ensure(organizationId, appId)` so a workspace and its
+app connection are provisioned together. Re-running it never changes an existing
+connection’s scopes; a mismatch is logged so a deliberate revocation remains intact.
+
+Provisioning is best-effort: an unconfigured or unreachable Work service is logged and
+skipped rather than stranding an otherwise-provisioned organization, and the next
+activation repairs it. No product app holds `WORK_INTERNAL_KEY`.
 
 ## Environment
 
@@ -38,9 +50,10 @@ WORK_INTERNAL_KEY          the operator credential
 WORK_API_URL               http://localhost:4020 locally
 ```
 
-`WORK_API_URL` and `WORK_INTERNAL_KEY` are also read by `apps/crm-api`. Both are
-declared in the `.env.example` of each app that reads them, so `pnpm check:env` can
-see them; `pnpm check:database-env work-api` verifies the two database URLs.
+`WORK_API_URL` and `CRM_API_876_KEY` are read by `apps/crm-api`; CRM uses its own
+app credential at Work's integration tier. `WORK_INTERNAL_KEY` remains exclusive to
+the Work service and platform operator callers. `pnpm check:env` checks the declared
+variables, and `pnpm check:database-env work-api` verifies the two database URLs.
 
 Work runs its **own Neon project**, like every other 876 datastore. Do not add a
 `work` database to the CRM project — the isolation is the point of the boundary.
@@ -148,11 +161,8 @@ in the Work database and that **no new writes** reach the legacy CRM tables.
 
 These are tracked in the architecture record and are Phase 2 work, in order:
 
-1. **CRM authenticates to Work with the operator key.** A product app holding an
-   operator credential is the deviation to close first (Phase 2B: the Work integration
-   tier, org-scoped, with named scopes).
-2. Context is a single triple rather than a collection of links.
-3. `assigneeId` is a column rather than a first-class assignment resource.
-4. No `startAt`, no task lists, no calendars, no events, no recurrence, no alerts.
-5. No standalone Work product surface — by design; Work is a service first, and the
+1. Context is a single triple rather than a collection of links.
+2. `assigneeId` is a column rather than a first-class assignment resource.
+3. No `startAt`, no task lists, no calendars, no events, no recurrence, no alerts.
+4. No standalone Work product surface — by design; Work is a service first, and the
    reusable widgets come before any standalone app.

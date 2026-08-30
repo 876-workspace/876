@@ -21,6 +21,7 @@
 | `@876/billing-api`  | `apps/billing-api`  | 4004 | Express Billing financial data plane; owns its PostgreSQL schema and Prisma migrations.                  |
 | `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                 |
 | `@876/crm-api`      | `apps/crm-api`      | 4010 | Express CRM data service; owns CRM tenant/profile data and links it to Billing customer records.         |
+| `@876/work-api`     | `apps/work-api`     | 4020 | Express 876 Work service — the shared productivity plane; owns tasks, reminders, and its own datastore.  |
 
 ## Packages
 
@@ -30,15 +31,18 @@
 | `@876/admin`     | `packages/admin`     | Privileged platform-admin client (`$876`); internal-key tier, **server-only**. All `AdminDep` CRUD/list/search across users, orgs, memberships, roles, features, apps.  |
 | `@876/billing`   | `packages/billing`   | Versioned client for standalone 876 Billing; tenant-scoped root export plus server-only `/admin` projection tier.                                                       |
 | `@876/storage`   | `packages/storage`   | Typed client (`$storage`) for the 876 Storage service; service-key tier, **server-only**. Upload sessions and file metadata — never imported into client components.    |
+| `@876/work`      | `packages/work`      | Typed client for the 876 Work service. Root export is contracts + integration scopes; `/integration` is the app-key tier and `/operator` is the internal-key tier.      |
 | `@876/core`      | `packages/core`      | Shared errors, ID generation, timestamps, contracts, and the shared client runtime (`@876/core/client`) both tier packages build on.                                    |
 | `@876/ui`        | `packages/ui`        | shadcn/ui primitives (Base UI + Tailwind v4), chart components, embeddable auth UI (`@876/ui/auth`), and shared design tokens.                                          |
 | `@876/analytics` | `packages/analytics` | PostHog analytics provider and shared tracking utilities.                                                                                                               |
 
-Console, the Couriers API, and the CRM API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`, `apps/crm-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
+Console, the Couriers API, the CRM API, and the Work API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`, `apps/crm-api/prisma/`, `apps/work-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
 
 CRM stores only CRM-owned tenant and profile fields. Financial customer records remain in Billing and are reached server-to-server through `@876/billing/integration`; the CRM Next.js app never accesses either database directly.
 
 876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it.
+
+876 Work is a **shared platform service**, the same shape as Billing's financial data plane but for productivity records: CRM's Tasks and Reminders modules are stored in Work, not in CRM. An organization's Work workspace is prepared at the **operator** tier by `apps/api` (`workspace.work.ensure`), which also mints that app's scoped connection; the product app then reaches Work at the **integration** tier with its own app API key and the four `work.{tasks,reminders}.{read,write}` scopes. No product app holds `WORK_INTERNAL_KEY`. See `docs/architecture/019-work-service-and-productivity-plane.md`.
 
 ---
 
@@ -73,6 +77,7 @@ pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 | Billing API (docs) | http://localhost:4004/docs         |
 | Storage API (docs) | http://localhost:4005/docs         |
 | CRM API (health)   | http://localhost:4010/health       |
+| Work API (health)  | http://localhost:4020/health       |
 
 ---
 
@@ -95,8 +100,9 @@ pnpm dev:billing:min                 # Billing app + API + Billing API (no Widge
 pnpm dev:billing:core                # Billing app + Billing API only (no core API/Widgets)
 pnpm dev:invoice                     # Invoice app + Billing app + Billing API + core API
 pnpm dev:invoice:min                 # Invoice app + Billing API + core API (no Billing app)
-pnpm dev:crm                         # CRM app + CRM API + Billing API + core API
-pnpm dev:crm:api                     # CRM API + Billing API only
+pnpm dev:crm                         # CRM app + CRM API + Work API + Billing API + core API
+pnpm dev:crm:api                     # CRM API + Billing API + Work API only
+pnpm dev:work                        # Work API only
 pnpm dev:widgets                     # Widgets API only
 
 # Quality
@@ -113,6 +119,7 @@ pnpm --filter @876/couriers-app typecheck
 pnpm --filter @876/billing-app typecheck
 pnpm --filter @876/crm-app typecheck
 pnpm --filter @876/crm-api typecheck
+pnpm --filter @876/work-api typecheck
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/api typecheck
 pnpm --filter @876/sdk typecheck
@@ -133,11 +140,13 @@ pnpm --filter @876/api seed          # feature/geo/plan/provisioning/bootstrap s
 pnpm --filter @876/storage-api db:migrate
 pnpm dev:storage                     # 876 Storage service alone on :4005
 
-# App-local Prisma datastores (Console, Couriers API, CRM API)
+# App-local Prisma datastores (Console, Couriers API, CRM API, Work API)
 pnpm --filter @876/console db:generate   # Regenerate Console's Prisma client
 pnpm --filter @876/couriers-api db:generate  # Regenerate the Couriers API's Prisma client
 pnpm --filter @876/crm-api db:generate  # Regenerate the CRM API's Prisma client
 pnpm --filter @876/crm-api db:deploy    # Apply committed CRM migrations
+pnpm --filter @876/work-api db:generate # Regenerate the Work API's Prisma client
+pnpm --filter @876/work-api db:deploy   # Apply committed Work migrations
 
 # Cloudflare deploy (each app deploys independently)
 pnpm --filter @876/app deploy
