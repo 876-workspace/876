@@ -1,5 +1,16 @@
-import { RRule } from 'rrule'
+import rrule from 'rrule'
+
 import type { WorkRecurrenceRule } from '@876/work'
+
+/**
+ * `rrule` ships a CommonJS UMD bundle with no `exports` map, so Node's ESM
+ * loader resolves it through `main` and cjs-module-lexer cannot see its named
+ * exports. `import { RRule } from 'rrule'` therefore typechecks and passes
+ * under Vitest's transform, then throws `does not provide an export named
+ * 'RRule'` the moment the real service boots. Take the interop default and
+ * destructure instead.
+ */
+const { RRule } = rrule
 const weekday = {
   MO: RRule.MO,
   TU: RRule.TU,
