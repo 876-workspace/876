@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
@@ -28,7 +29,7 @@ export async function GET(
 
   const data = await Promise.all(
     memberships.data.data.map(async (membership) => {
-      const org = await $876.organizations.admin.retrieve({
+      const org = await platform.organizations.retrieve({
         id: membership.organization_id,
       })
       return { membership, org: org.error ? null : org.data }

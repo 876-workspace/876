@@ -18,8 +18,11 @@ vi.mock('@/lib/876', () => ({
   $876: {
     uploads: { create: mocks.create, complete: mocks.complete },
     files: { delete: mocks.deleteFile },
-    apps: { admin: { retrieve: mocks.retrieve, update: mocks.update } },
   },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: { apps: { retrieve: mocks.retrieve, update: mocks.update } },
 }))
 
 import { POST as start } from './route'

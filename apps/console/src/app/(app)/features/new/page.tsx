@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
@@ -51,7 +52,7 @@ async function loadFeatureSetup(
       ? $876.features.admin.retrieve(parent)
       : Promise.resolve({ data: null, error: null }),
     ...APP_KINDS.map((appKind) =>
-      $876.apps.admin.list({
+      platform.apps.list({
         limit: 100,
         appKind,
         clientType: 'public',

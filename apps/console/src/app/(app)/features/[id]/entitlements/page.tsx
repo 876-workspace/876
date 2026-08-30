@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -36,7 +37,7 @@ async function FeatureEntitlementsData({ params }: Props) {
       limit: 100,
       appId: feature.app_id ?? undefined,
     }),
-    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
+    platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
   const children = (siblingsResult.data?.data ?? []).filter(
     (entry) => entry.parent_feature_id === feature.id

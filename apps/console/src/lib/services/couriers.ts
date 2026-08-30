@@ -5,7 +5,8 @@ import { create876CouriersOperatorClient } from '@876/couriers/operator'
 function options(requestId?: string) {
   return {
     baseUrl: process.env.COURIERS_API_URL,
-    internalKey: process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY!,
+    internalKey:
+      process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY!,
     requestId,
   }
 }

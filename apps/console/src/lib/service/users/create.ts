@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import type { AdminUser, AdminUserCreateParams } from '@876/admin'
 
 import { $876 } from '@/lib/876'
@@ -15,16 +16,15 @@ export async function create(
   const { organization_name, ...userParams } = params
 
   const { data: user, error: userError } =
-    await $876.users.admin.create(userParams)
+    await platform.users.create(userParams)
   if (userError || !user) {
     return err(userError?.message ?? 'Failed to create user.')
   }
 
   if (organization_name?.trim()) {
-    const { data: org, error: orgError } =
-      await $876.organizations.admin.create({
-        name: organization_name.trim(),
-      })
+    const { data: org, error: orgError } = await platform.organizations.create({
+      name: organization_name.trim(),
+    })
     if (orgError || !org) {
       return ok(user, 'User created but organization could not be created.')
     }

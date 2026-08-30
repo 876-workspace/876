@@ -1,7 +1,7 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -19,7 +19,7 @@ export async function GET(
   const query = request.nextUrl.searchParams.get('q')?.trim() ?? ''
   if (query.length < 2) return apiJson({ data: [] })
 
-  const { data, error } = await $876.users.admin.search({ query, limit: 10 })
+  const { data, error } = await platform.users.search({ query, limit: 10 })
   if (error) {
     return apiJson(
       { error: error.message ?? 'Search failed.' },

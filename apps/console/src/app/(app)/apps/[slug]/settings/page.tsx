@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import type { AdminApp } from '@876/admin'
 import { notFound } from 'next/navigation'
@@ -6,7 +7,6 @@ import { Calendar, Fingerprint, KeyRound } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { InfoSection, Field } from '@/components/patterns/detail/info-section'
-import { $876 } from '@/lib/876'
 import { formatDate } from '@/lib/format'
 import { resolveApp } from '../_data'
 import {
@@ -65,7 +65,7 @@ async function AppSettingsData({ slug }: { slug: string }) {
 }
 
 async function AppSettingsContent({ app }: { app: AdminApp }) {
-  const { data: orgList } = await $876.organizations.admin.list({ limit: 100 })
+  const { data: orgList } = await platform.organizations.list({ limit: 100 })
   const orgs: OrgOption[] = (orgList?.data ?? []).map((org) => ({
     id: org.id,
     name: org.name ?? org.slug,
@@ -78,7 +78,7 @@ async function AppSettingsContent({ app }: { app: AdminApp }) {
     app.organization_id &&
     !orgs.some((org) => org.id === app.organization_id)
   ) {
-    const { data: owningOrg } = await $876.organizations.admin.retrieve({
+    const { data: owningOrg } = await platform.organizations.retrieve({
       id: app.organization_id,
     })
     orgs.unshift({

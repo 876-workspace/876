@@ -1,12 +1,12 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-/** Creates an organization. Pure transport over `$876.organizations.admin.create`. */
+/** Creates an organization. Pure transport over `platform.organizations.create`. */
 export async function POST(request: NextRequest): Promise<Response> {
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.organizations.admin.create({
+  const { data, error } = await platform.organizations.create({
     name: body.name,
     short_name: body.short_name,
     slug: body.slug,

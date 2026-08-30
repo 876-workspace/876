@@ -1,12 +1,13 @@
+import { platform } from '@/lib/services/platform'
 import 'server-only'
 
 import { cache } from 'react'
 
-import { $876, workspace } from '@/lib/876'
+import { workspace } from '@/lib/876'
 
 /** Resolves the 876 organization whose CRM service workspace Console operates. */
 export const getPlatformOrganization = cache(async () => {
-  const result = await $876.organizations.admin.retrieve({
+  const result = await platform.organizations.retrieve({
     slug: process.env.CONSOLE_PLATFORM_ORG_SLUG ?? 'efesto',
   })
   // Never throw. A misconfigured slug is an operator mistake, and it should

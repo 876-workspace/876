@@ -18,9 +18,12 @@ vi.mock('@/lib/876', () => ({
   $876: {
     uploads: { create: mocks.create, complete: mocks.complete },
     files: { delete: mocks.deleteFile },
-    organizations: {
-      admin: { retrieve: mocks.retrieve, update: mocks.update },
-    },
+  },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: {
+    organizations: { retrieve: mocks.retrieve, update: mocks.update },
   },
 }))
 

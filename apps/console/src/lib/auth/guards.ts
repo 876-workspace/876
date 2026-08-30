@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import 'server-only'
 
 import { can, hasFeature, type AccessContext } from '@876/core/access'
@@ -25,7 +26,7 @@ export async function requireSession(returnTo: string) {
 /** One platform identity lookup per render, shared by every guard that needs it. */
 const retrievePlatformUserResult = cache(
   async function retrievePlatformUserResult(userId: string) {
-    return $876.users.admin.retrieve({ id: userId })
+    return platform.users.retrieve({ id: userId })
   }
 )
 

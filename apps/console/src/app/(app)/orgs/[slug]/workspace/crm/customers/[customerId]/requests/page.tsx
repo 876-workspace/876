@@ -14,7 +14,9 @@ type Props = { params: Promise<{ slug: string; customerId: string }> }
 
 export const metadata: Metadata = { title: 'Customer Requests - Organizations' }
 
-export default async function CrmWorkspaceCustomerRequestsPage({ params }: Props) {
+export default async function CrmWorkspaceCustomerRequestsPage({
+  params,
+}: Props) {
   const { slug, customerId } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()

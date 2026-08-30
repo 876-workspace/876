@@ -1,8 +1,8 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -16,7 +16,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await context.params
-  const { data } = await $876.users.admin.retrieveProfile(id)
+  const { data } = await platform.users.retrieveProfile(id)
   // Profile is optional; a missing profile is not an error for the overview.
   return apiJson({ data: data ?? null })
 }
@@ -33,7 +33,7 @@ export async function POST(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.users.admin.createProfile(id, body)
+  const { data, error } = await platform.users.createProfile(id, body)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to create profile.' },
@@ -55,7 +55,7 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.users.admin.updateProfile(id, body)
+  const { data, error } = await platform.users.updateProfile(id, body)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to update profile.' },
@@ -73,7 +73,7 @@ export async function DELETE(
   if (response) return response
 
   const { id } = await context.params
-  const { data, error } = await $876.users.admin.deleteProfile(id)
+  const { data, error } = await platform.users.deleteProfile(id)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete profile.' },

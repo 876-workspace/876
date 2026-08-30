@@ -1,12 +1,12 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-/** Searches organizations. Pure transport over `$876.organizations.admin.search`. */
+/** Searches organizations. Pure transport over `platform.organizations.search`. */
 export async function GET(request: NextRequest): Promise<Response> {
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     return apiJson({ data: [] })
   }
 
-  const { data, error } = await $876.organizations.admin.search({
+  const { data, error } = await platform.organizations.search({
     query,
     limit: 10,
   })

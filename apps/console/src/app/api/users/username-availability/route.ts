@@ -1,7 +1,7 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const excludeUserId =
     request.nextUrl.searchParams.get('exclude_user_id') ?? undefined
 
-  const { data, error } = await $876.users.admin.checkUsernameAvailability(
+  const { data, error } = await platform.users.checkUsernameAvailability(
     username,
     {
       excludeUserId,

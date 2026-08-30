@@ -14,7 +14,7 @@ import {
 } from '@876/ui/card'
 import { Button } from '@876/ui/button'
 import { Skeleton } from '@876/ui/skeleton'
-import { $876, billingAdmin } from '@/lib/876'
+import { billingAdmin } from '@/lib/876'
 import {
   Table,
   TableBody,

@@ -12,9 +12,12 @@ vi.mock('@/lib/service', () => ({
 
 vi.mock('@/lib/876', () => ({
   $876: {
-    users: { admin: { list: mocks.listUsers } },
     employees: { admin: { list: mocks.listEmployees } },
   },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: { users: { list: mocks.listUsers } },
 }))
 
 import type { AdminEmployeeProfile } from '@876/admin'

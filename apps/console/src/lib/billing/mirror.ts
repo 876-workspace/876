@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import 'server-only'
 
 import type {
@@ -50,7 +51,7 @@ async function resolveOrgPrimaryContact(
     contactUserId = owner.user_id
   }
 
-  const user = await $876.users.admin.retrieve({ id: contactUserId })
+  const user = await platform.users.retrieve({ id: contactUserId })
   if (!user.data) return { userId: contactUserId }
 
   return {
@@ -230,7 +231,7 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const orgPromise = $876.organizations.admin.retrieve({
+  const orgPromise = platform.organizations.retrieve({
     id: subscription.organization_id,
   })
   const productPromises = productIds.map((productId) =>
@@ -372,7 +373,7 @@ export async function reconcileBillingMirror() {
   let hasMore = true
   while (hasMore) {
     try {
-      const orgResult = await $876.organizations.admin.list({
+      const orgResult = await platform.organizations.list({
         limit: 100,
         startingAfter,
       })

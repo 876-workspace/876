@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest, context: Context) {
       { status: 400, code: 'storage/upload-verification-failed' }
     )
 
-  const updateResult = await $876.organizations.admin.update(organizationId, {
+  const updateResult = await platform.organizations.update(organizationId, {
     logo_file_id: file.id,
     logo_url: file.url,
   })

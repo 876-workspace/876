@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { AdminOrganization } from '@876/admin'
 import type { Metadata } from 'next'
@@ -12,7 +13,7 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { $876, billingAdmin } from '@/lib/876'
+import { billingAdmin } from '@/lib/876'
 import {
   listCompleteAppSubscriptions,
   resolveApp,
@@ -164,7 +165,7 @@ async function PlanSubscribersData({
     const orgMap = new Map<string, AdminOrganization>()
     await Promise.all(
       orgIds.map(async (organizationId) => {
-        const result = await $876.organizations.admin.retrieve({
+        const result = await platform.organizations.retrieve({
           id: organizationId,
         })
         if (result.data) orgMap.set(organizationId, result.data)

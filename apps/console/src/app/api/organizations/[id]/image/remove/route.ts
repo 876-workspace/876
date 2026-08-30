@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
@@ -14,7 +15,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { id: organizationId } = await context.params
-  const retrieveResult = await $876.organizations.admin.retrieve({
+  const retrieveResult = await platform.organizations.retrieve({
     id: organizationId,
   })
   if (retrieveResult.error || !retrieveResult.data)
@@ -32,7 +33,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { status: 409 }
     )
 
-  const updateResult = await $876.organizations.admin.update(organizationId, {
+  const updateResult = await platform.organizations.update(organizationId, {
     logo_file_id: null,
     logo_url: null,
   })

@@ -1,10 +1,9 @@
+import { platform } from '@/lib/services/platform'
 import 'server-only'
 
 import { cache } from 'react'
 import type { AdminApp } from '@876/admin'
 import type { AppError } from '@876/core/types/errors'
-
-import { $876 } from '@/lib/876'
 
 /**
  * The first-party app catalog, fetched once per request.
@@ -24,7 +23,7 @@ import { $876 } from '@/lib/876'
  */
 export const listConsoleApps = cache(
   async (): Promise<{ apps: AdminApp[] | null; error: AppError | null }> => {
-    const { data, error } = await $876.apps.admin.list({
+    const { data, error } = await platform.apps.list({
       limit: 100,
       clientType: 'public',
     })

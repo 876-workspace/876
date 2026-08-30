@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
@@ -14,7 +15,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { appId } = await context.params
-  const retrieveResult = await $876.apps.admin.retrieve(appId)
+  const retrieveResult = await platform.apps.retrieve(appId)
   if (retrieveResult.error || !retrieveResult.data)
     return apiJson(
       { error: retrieveResult.error ?? 'Failed to retrieve the app.' },
@@ -28,7 +29,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { status: 409 }
     )
 
-  const updateResult = await $876.apps.admin.update(appId, {
+  const updateResult = await platform.apps.update(appId, {
     logo_file_id: null,
     logo_url: null,
   })

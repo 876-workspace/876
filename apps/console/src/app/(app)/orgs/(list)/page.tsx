@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { AdminOrganization, AdminSubscription } from '@876/admin'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
@@ -11,7 +12,7 @@ import {
 import { Building2 } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { $876, workspace } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isOrgStatus } from '@/lib/org-status'
@@ -70,7 +71,7 @@ async function OrganizationsTableData({
   let hasMore = false
 
   if (isSearching) {
-    const result = await $876.organizations.admin.search({
+    const result = await platform.organizations.search({
       query: q!,
       limit: 50,
       status: orgStatus,
@@ -78,7 +79,7 @@ async function OrganizationsTableData({
     if (result.error) throw new Error(result.error.message)
     orgs = result.data.data
   } else {
-    const result = await $876.organizations.admin.list({
+    const result = await platform.organizations.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,

@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import { Page } from '@876/ui/page'
 import {
@@ -87,7 +88,7 @@ async function WidgetsTableData({
 }) {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
+    platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
   const features = new Map(
     (featuresResult.data?.data ?? []).map((feature) => [feature.slug, feature])

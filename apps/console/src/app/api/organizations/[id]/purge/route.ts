@@ -1,7 +1,7 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -25,7 +25,7 @@ export async function DELETE(
 
   const { id } = await context.params
 
-  const { data, error } = await $876.organizations.admin.purge(id, {
+  const { data, error } = await platform.organizations.purge(id, {
     deletedBy: caller.id,
   })
   if (error || !data) {

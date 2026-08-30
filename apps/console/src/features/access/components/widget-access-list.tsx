@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import type { AdminFeature } from '@876/admin'
 import {
   getWidgetPlatformFeatureKeys,
@@ -31,7 +32,7 @@ const HOST_LABELS: Record<WidgetHost, string> = {
 export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
+    platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
 
   const bySlug = new Map(
@@ -41,7 +42,7 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
     (appsResult.data?.data ?? []).map((app) => [app.slug, app])
   )
 
-  const platform = getWidgetPlatformFeatureKeys(widget)
+  const platformKeys = getWidgetPlatformFeatureKeys(widget)
   const scopeSpecs: {
     key: string
     label: string
@@ -50,13 +51,13 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
     widgetKey: string
   }[] = []
 
-  if (platform) {
+  if (platformKeys) {
     scopeSpecs.push({
       key: 'platform',
       label: 'All apps',
       logoUrl: null,
-      parent: platform.parent,
-      widgetKey: platform.widget,
+      parent: platformKeys.parent,
+      widgetKey: platformKeys.widget,
     })
   }
   for (const [host, keys] of Object.entries(widget.features.apps)) {

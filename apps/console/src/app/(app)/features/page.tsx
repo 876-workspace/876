@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { AdminApp } from '@876/admin'
 import { Flag } from '@876/ui/icons'
@@ -75,7 +76,7 @@ async function FeaturesTableData({ searchParams }: Props) {
       excludeTag: 'widget',
     }),
     ...APP_KINDS.map((appKind) =>
-      $876.apps.admin.list({
+      platform.apps.list({
         limit: 100,
         appKind,
         clientType: 'public',

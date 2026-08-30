@@ -1,7 +1,7 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import { isAppStatus } from '@/lib/app-status'
 
@@ -28,7 +28,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid app status.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.apps.admin.update(appId, body)
+  const { data, error } = await platform.apps.update(appId, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update app.' },
@@ -48,7 +48,7 @@ export async function DELETE(
   if (response) return response
 
   const { appId } = await context.params
-  const { data, error } = await $876.apps.admin.delete(appId)
+  const { data, error } = await platform.apps.delete(appId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to delete app.' },

@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { AdminApp, AdminAppStatus } from '@876/admin'
 import { LayoutDashboard } from '@876/ui/icons'
@@ -9,7 +10,6 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 
-import { $876 } from '@/lib/876'
 import { AppsTable } from '../_components/apps-table'
 import { Page } from '@876/ui/page'
 import { AppsSearchBar } from '../_components/apps-search-bar'
@@ -77,7 +77,7 @@ async function AppsTableData({ searchParams }: Pick<Props, 'searchParams'>) {
   }
   const results = await Promise.all(
     FIRST_PARTY_KINDS.map((kind) =>
-      $876.apps.admin.list({
+      platform.apps.list({
         limit: 100,
         appKind: kind,
         clientType: 'public',

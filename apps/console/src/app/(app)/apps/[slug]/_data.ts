@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import type { AdminSubscription } from '@876/admin'
 import { cache } from 'react'
 
@@ -17,7 +18,7 @@ export const resolveApp = cache(async (slug: string) => {
 })
 
 export const resolveProduct = cache(async (appId: string, slugOrId: string) => {
-  const { data } = await $876.entitlementPlans.admin.list({ appId })
+  const { data } = await platform.products.list({ appId })
   return (
     data?.data.find(
       (product) => product.id === slugOrId || product.slug === slugOrId

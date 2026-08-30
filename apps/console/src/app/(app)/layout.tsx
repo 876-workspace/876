@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import type { ReactNode } from 'react'
 
 import { BrowserApiBoundary } from '@/components/providers/browser-api-boundary'
@@ -5,7 +6,6 @@ import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { Shell } from '@/components/shell/shell'
 import { WidgetBar } from '@/features/widgets/components/widget-bar'
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
-import { $876 } from '@/lib/876'
 import { AnalyticsIdentity } from '@/lib/analytics/provider'
 import { requireConsoleAccount, requireSession } from '@/lib/auth/guards'
 import { getConsoleFeatures } from '@/lib/features'
@@ -27,7 +27,7 @@ export default async function ConsoleRootLayout({
   const displayName =
     [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
   const auditEvents = enabledWidgetIds.includes('live_logs')
-    ? ((await $876.auditEvents.list({ limit: 12 })).data?.data ?? [])
+    ? ((await platform.auditEvents.list({ limit: 12 })).data?.data ?? [])
     : []
 
   return (

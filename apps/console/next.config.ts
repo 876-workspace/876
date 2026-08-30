@@ -53,19 +53,16 @@ const nextConfig: NextConfig = {
     ]
   },
   transpilePackages: sharedTranspilePackages([
-    '@876/account',
+    '@876/admin',
     '@876/analytics',
     '@876/billing',
     '@876/core',
-    '@876/couriers',
     '@876/crm',
     '@876/platform',
+    '@876/sdk',
     '@876/storage',
-    '@876/widgets',
     '@876/work',
     '@876/workspace',
-    '@876/sdk',
-    '@876/admin',
   ]),
   experimental: {
     optimizePackageImports: ['radix-ui', 'zod'],

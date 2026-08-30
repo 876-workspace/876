@@ -14,11 +14,17 @@ import { resolveCustomerIdentity } from './customer-identity'
  */
 export const loadOrgCustomerRecord = cache(
   async (organizationId: string, customerId: string) => {
-    const result = await crm.customerProfiles.retrieve(organizationId, customerId)
+    const result = await $876.customerProfiles.retrieve(
+      organizationId,
+      customerId
+    )
     if (!result.data) return { row: null, result }
 
     const { profile, customer } = result.data
-    const identity = resolveCustomerIdentity(customer, profile.billingCustomerId)
+    const identity = resolveCustomerIdentity(
+      customer,
+      profile.billingCustomerId
+    )
     const row: CrmCustomerRow = {
       profileId: profile.id,
       billingCustomerId: profile.billingCustomerId,

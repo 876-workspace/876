@@ -66,6 +66,13 @@ vi.mock('@/lib/876', () => ({
   },
 }))
 
+vi.mock('@/lib/services/platform', () => ({
+  platform: {
+    organizations: { retrieve: mocks.orgRetrieve, list: mocks.orgList },
+    users: { retrieve: mocks.usersRetrieve },
+  },
+}))
+
 function success<T>(data: T) {
   return Promise.resolve({ data, error: null })
 }

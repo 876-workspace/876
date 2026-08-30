@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import 'server-only'
 
 import type { AdminEmployeeProfile } from '@876/admin'
@@ -80,7 +81,7 @@ export async function loadTeamListData(
   const ids = grants.map((grant) => grant.userId)
   const identityPromise =
     ids.length > 0
-      ? $876.users.admin.list({ ids, limit: ids.length })
+      ? platform.users.list({ ids, limit: ids.length })
       : Promise.resolve(null)
 
   const [identityResult, staffProfiles] = await Promise.all([

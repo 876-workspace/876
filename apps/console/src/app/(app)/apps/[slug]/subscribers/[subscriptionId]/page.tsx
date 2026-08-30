@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -62,7 +63,7 @@ async function SubscriptionDetailData({ params }: Props) {
 
   if (!subscription) notFound()
 
-  const { data: org } = await $876.organizations.admin.retrieve({
+  const { data: org } = await platform.organizations.retrieve({
     id: subscription.organization_id,
   })
 

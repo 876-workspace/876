@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Activity } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
 import {
@@ -20,7 +21,6 @@ import { CursorPagination } from '@/components/patterns/cursor-pagination'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { $876 } from '@/lib/876'
 import { formatDateTime } from '@/lib/format'
 import { Page } from '@876/ui/page'
 import { Suspense } from 'react'
@@ -70,7 +70,7 @@ async function AuditLogTableData({
 }: Pick<Props, 'searchParams'>) {
   const params = await searchParams
   const filters = cleanFilters(params)
-  const { data } = await $876.auditEvents.list({
+  const { data } = await platform.auditEvents.list({
     limit: 50,
     startingAfter: params.after,
     endingBefore: params.before,

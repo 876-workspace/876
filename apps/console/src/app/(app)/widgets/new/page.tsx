@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import Link from 'next/link'
 import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
@@ -55,7 +56,7 @@ export default function NewWidgetFlagsPage() {
 async function loadPendingWidgets(): Promise<PendingWidget[]> {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
+    platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
   if (featuresResult.error) throw new Error(featuresResult.error.message)
   if (appsResult.error) throw new Error(appsResult.error.message)

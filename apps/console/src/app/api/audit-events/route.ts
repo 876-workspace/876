@@ -1,8 +1,8 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { AdminAuditEventCreateParams } from '@876/admin'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     .catch(() => null)) as AdminAuditEventCreateParams | null
   if (!body) return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const result = await $876.auditEvents.create({
+  const result = await platform.auditEvents.create({
     ...body,
     userId: session.user.id,
   })

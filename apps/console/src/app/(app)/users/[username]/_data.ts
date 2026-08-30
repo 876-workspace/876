@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { cache } from 'react'
 import { service } from '@/lib/service'
 
@@ -11,8 +12,8 @@ import { $876 } from '@/lib/876'
  */
 export const resolveUser = cache(async (username: string) => {
   const result = username.startsWith('user_')
-    ? await $876.users.admin.retrieve({ id: username, includeDeleted: true })
-    : await $876.users.admin.retrieve({
+    ? await platform.users.retrieve({ id: username, includeDeleted: true })
+    : await platform.users.retrieve({
         username,
         includeDeleted: true,
       })
@@ -25,13 +26,13 @@ export const resolveUser = cache(async (username: string) => {
  * overview (count + preview), and the addresses tab share a single fetch.
  */
 export const resolveUserAddresses = cache(async (userId: string) => {
-  const result = await $876.users.admin.listAddresses(userId)
+  const result = await platform.users.listAddresses(userId)
   return result.error ? [] : result.data.data
 })
 
 /** The user's saved contacts. Cached and shared the same way as addresses. */
 export const resolveUserContacts = cache(async (userId: string) => {
-  const result = await $876.users.admin.listContacts(userId)
+  const result = await platform.users.listContacts(userId)
   return result.error ? [] : result.data.data
 })
 
@@ -41,7 +42,7 @@ export const resolveUserContacts = cache(async (userId: string) => {
  * so it is no longer fetched as part of the eager page/layout load.
  */
 export const resolveUserProfile = cache(async (userId: string) => {
-  const result = await $876.users.admin.retrieveProfile(userId)
+  const result = await platform.users.retrieveProfile(userId)
   return result.error ? null : result.data
 })
 
@@ -70,6 +71,6 @@ export const resolveUserMembershipCount = cache(async (userId: string) => {
  * Used to show which 876-powered products the user has accessed.
  */
 export const resolveUserApps = cache(async (userId: string) => {
-  const result = await $876.users.admin.listApps(userId)
+  const result = await platform.users.listApps(userId)
   return result.error ? [] : result.data.data
 })

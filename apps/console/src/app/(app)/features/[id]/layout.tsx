@@ -1,8 +1,8 @@
+import { platform } from '@/lib/services/platform'
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import type { AdminApp } from '@876/admin'
 
-import { $876 } from '@/lib/876'
 import type { RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import { resolveFeature } from './_data'
 import { FeatureHeader } from '@/features/access/components/feature-header'
@@ -26,7 +26,7 @@ export default async function FeatureDetailLayout({ children, params }: Props) {
   // the actions toolbar alone, and awaiting it here would suppress loading.tsx
   // for every route beneath this layout, so it is passed down unresolved and
   // unwrapped behind the toolbar's own Suspense boundary.
-  const apps: Promise<AdminApp[]> = $876.apps.admin
+  const apps: Promise<AdminApp[]> = platform.apps
     .list({ appKind: 'internal', limit: 100 })
     .then((result) => result.data?.data ?? [])
 

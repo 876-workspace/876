@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import { CreditCard } from '@876/ui/icons'
 import {
@@ -87,7 +88,7 @@ async function BillingAccountsCard() {
 }
 
 async function SubscriptionsCard() {
-  const result = await $876.subscriptions.admin.list({ limit: 25 })
+  const result = await platform.subscriptions.list({ limit: 25 })
   const subscriptions = result.data?.data ?? []
 
   return (
