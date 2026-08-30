@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Badge } from '@876/ui/badge'
+import { buttonVariants } from '@876/ui/button'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import {
   Empty,
@@ -10,7 +11,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { buttonVariants } from '@876/ui/button'
 import { Mail, Phone, Plus, UsersIcon } from '@876/ui/icons'
 import {
   Table,
@@ -44,7 +44,7 @@ export type CrmCustomerRow = {
 export type CustomersTableProps = {
   customers: readonly CrmCustomerRow[]
   customersHref: string
-  newCustomerHref?: string
+  newCustomerHref?: string | null
   query?: string
 }
 
@@ -95,7 +95,11 @@ export function CondensedCustomerRow({
   return (
     <TableRow
       data-state={selected ? 'selected' : undefined}
-      className={selected ? 'bg-muted/70 font-medium transition-colors' : 'transition-colors'}
+      className={
+        selected
+          ? 'bg-muted/70 font-medium transition-colors'
+          : 'transition-colors'
+      }
     >
       <TableCell className="relative py-3 pr-3 pl-4">
         <RowLink
@@ -217,7 +221,7 @@ export function CustomerTableRow({
 export function CustomersTable({
   customers,
   customersHref,
-  newCustomerHref = `${customersHref}/new`,
+  newCustomerHref,
   query,
 }: CustomersTableProps) {
   return (
@@ -250,18 +254,20 @@ export function CustomersTable({
                     </EmptyMedia>
                     <EmptyTitle>No customers yet</EmptyTitle>
                   </EmptyHeader>
-                  <EmptyContent>
-                    <Link
-                      href={hrefWithQuery(newCustomerHref, query)}
-                      className={buttonVariants({
-                        variant: 'info',
-                        size: 'sm',
-                      })}
-                    >
-                      <Plus className="size-4" strokeWidth={2.25} />
-                      Add
-                    </Link>
-                  </EmptyContent>
+                  {newCustomerHref ? (
+                    <EmptyContent>
+                      <Link
+                        href={hrefWithQuery(newCustomerHref, query)}
+                        className={buttonVariants({
+                          variant: 'info',
+                          size: 'sm',
+                        })}
+                      >
+                        <Plus className="size-4" strokeWidth={2.25} />
+                        Add
+                      </Link>
+                    </EmptyContent>
+                  ) : null}
                 </Empty>
               </TableCell>
             </TableRow>
