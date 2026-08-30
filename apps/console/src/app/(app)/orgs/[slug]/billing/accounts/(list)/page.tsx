@@ -15,7 +15,7 @@ import {
 
 type Props = {
   params: Promise<{ slug: string }>
-  searchParams?: Promise<{ view?: string | string[] }>
+  searchParams: Promise<{ view?: string | string[] }>
 }
 
 const accountViews = new Set<AccountsView>(['grid', 'table', 'list'])
