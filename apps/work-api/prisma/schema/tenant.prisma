@@ -1,0 +1,16 @@
+enum WorkTenantStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model WorkTenant {
+  id             String           @id
+  organizationId String           @unique @map("organization_id")
+  status         WorkTenantStatus @default(ACTIVE)
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  tasks          WorkTask[]
+  reminders      WorkReminder[]
+
+  @@map("work_tenants")
+}

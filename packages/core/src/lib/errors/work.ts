@@ -18,6 +18,10 @@ export const WORK_ERRORS = {
     message: 'Work client is not configured.',
     httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
   },
+  'work/not-found': {
+    message: 'Not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
   'work/reminder-not-found': {
     message: 'Reminder not found.',
     httpStatus: HttpStatus.NOT_FOUND,
