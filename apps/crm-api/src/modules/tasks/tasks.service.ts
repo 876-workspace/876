@@ -5,10 +5,7 @@ import type {
   RequestTask,
   UpdateTaskInput,
 } from '../../types/task.js'
-import {
-  crmRequestWorkContext,
-  workClient,
-} from '../../providers/work.js'
+import { crmRequestWorkContext, workClient } from '../../providers/work.js'
 import * as priorities from '../priorities/index.js'
 import { requireRequestContext } from '../requests/index.js'
 
@@ -51,9 +48,24 @@ async function resolveSerializedTask(
 }
 
 async function listWork(organizationId: string, requestId: string) {
-  return workClient().tasks.list(organizationId, {
-    context: crmRequestWorkContext(requestId),
-  })
+  const tasks: WorkTask[] = []
+  let startingAfter: string | undefined
+
+  for (let page = 0; page < 20; page += 1) {
+    const result = await workClient().tasks.list(organizationId, {
+      context: crmRequestWorkContext(requestId),
+      ...(startingAfter ? { startingAfter } : {}),
+    })
+    if (result.error) return getError('crm/work-unavailable')
+
+    tasks.push(...result.data.data)
+    if (!result.data.has_more) return tasks
+    const lastTask = result.data.data.at(-1)
+    if (!lastTask) return getError('crm/work-unavailable')
+    startingAfter = lastTask.id
+  }
+
+  return getError('crm/work-unavailable')
 }
 
 async function findWorkTask(
@@ -61,19 +73,25 @@ async function findWorkTask(
   requestId: string,
   taskId: string
 ) {
-  const result = await listWork(organizationId, requestId)
+  const result = await workClient().tasks.retrieve(organizationId, taskId)
+  if (result.error?.code === 'work/task-not-found') return null
   if (result.error) return getError('crm/work-unavailable')
-  return result.data.data.find((task) => task.id === taskId) ?? null
+  const context = crmRequestWorkContext(requestId)
+  return result.data.context?.service === context.service &&
+    result.data.context?.resource === context.resource &&
+    result.data.context?.id === context.id
+    ? result.data
+    : null
 }
 
 export async function list(organizationId: string, requestId: string) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
   const result = await listWork(organizationId, requestId)
-  if (result.error) return getError('crm/work-unavailable')
+  if (isError(result)) return result
 
   const tasks: RequestTask[] = []
-  for (const task of result.data.data) {
+  for (const task of result) {
     const serialized = await resolveSerializedTask(
       task,
       context.tenantId,
@@ -93,7 +111,10 @@ export async function create(
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
   const priority = input.priorityId
-    ? await priorities.requireActiveForTenant(context.tenantId, input.priorityId)
+    ? await priorities.requireActiveForTenant(
+        context.tenantId,
+        input.priorityId
+      )
     : await priorities.retrieveDefaultForTenant(context.tenantId)
   if (!priority) return getError('crm/priority-not-found')
   if (isError(priority)) return priority
@@ -110,7 +131,12 @@ export async function create(
     createdBy: input.createdBy,
   })
   if (result.error) return getError('crm/work-unavailable')
-  return serialize(result.data, context.tenantId, requestId, priorities.serialize(priority))
+  return serialize(
+    result.data,
+    context.tenantId,
+    requestId,
+    priorities.serialize(priority)
+  )
 }
 
 export async function update(
@@ -140,13 +166,17 @@ export async function update(
 
   const result = await workClient().tasks.update(organizationId, taskId, {
     ...(input.title === undefined ? {} : { title: input.title }),
-    ...(input.description === undefined ? {} : { description: input.description }),
+    ...(input.description === undefined
+      ? {}
+      : { description: input.description }),
     ...(input.status === undefined ? {} : { status: input.status }),
     ...(input.priorityId === undefined ? {} : { priorityId: input.priorityId }),
     ...(input.assigneeId === undefined ? {} : { assigneeId: input.assigneeId }),
     ...(input.dueAt === undefined ? {} : { dueAt: input.dueAt }),
     ...(input.sortOrder === undefined ? {} : { sortOrder: input.sortOrder }),
-    ...(input.completedBy === undefined ? {} : { completedBy: input.completedBy }),
+    ...(input.completedBy === undefined
+      ? {}
+      : { completedBy: input.completedBy }),
   })
   if (result.error?.code === 'work/task-not-found') return null
   if (result.error) return getError('crm/work-unavailable')

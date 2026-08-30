@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   context: { requireRequestContext: vi.fn() },
   reminders: {
     list: vi.fn(),
+    retrieve: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -46,13 +47,13 @@ function workReminder(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function listResult(data = [workReminder()]) {
+function listResult(data = [workReminder()], hasMore = false) {
   return {
     data: {
       object: 'list' as const,
       data,
-      has_more: false,
-      total_count: data.length,
+      has_more: hasMore,
+      total_count: null,
       url: '/v1/organizations/org_1/reminders',
     },
     error: null,
@@ -63,6 +64,10 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.context.requireRequestContext.mockResolvedValue({ tenantId, requestId })
   mocks.reminders.list.mockResolvedValue(listResult())
+  mocks.reminders.retrieve.mockResolvedValue({
+    data: workReminder(),
+    error: null,
+  })
   mocks.reminders.create.mockResolvedValue({
     data: workReminder(),
     error: null,
@@ -93,6 +98,35 @@ describe('CRM reminder adapter over Work', () => {
     ])
   })
 
+  it('walks Work reminder pages so a CRM request retains its complete reminder set', async () => {
+    mocks.reminders.list
+      .mockResolvedValueOnce(listResult([workReminder()], true))
+      .mockResolvedValueOnce(
+        listResult([workReminder({ id: 'crm_rem_2', title: 'Send recap' })])
+      )
+    const result = await service.list('org_1', requestId)
+
+    expect(result).toEqual([
+      expect.objectContaining({ id: 'crm_rem_1' }),
+      expect.objectContaining({ id: 'crm_rem_2', title: 'Send recap' }),
+    ])
+    expect(mocks.reminders.list).toHaveBeenNthCalledWith(1, 'org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+    })
+    expect(mocks.reminders.list).toHaveBeenNthCalledWith(2, 'org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+      startingAfter: 'crm_rem_1',
+    })
+  })
+
+  it('stops after 20 Work reminder pages when Work never finishes pagination', async () => {
+    mocks.reminders.list.mockResolvedValue(listResult([workReminder()], true))
+    const result = await service.list('org_1', requestId)
+
+    expect(result).toMatchObject({ code: 'crm/work-unavailable' })
+    expect(mocks.reminders.list).toHaveBeenCalledTimes(20)
+  })
+
   it('creates a Work reminder with opaque CRM context and unix seconds unchanged', async () => {
     await service.create('org_1', requestId, {
       title: 'Follow up',
@@ -110,10 +144,19 @@ describe('CRM reminder adapter over Work', () => {
   })
 
   it('will not mutate a reminder outside this request context', async () => {
-    mocks.reminders.list.mockResolvedValue(listResult([]))
+    mocks.reminders.retrieve.mockResolvedValue({
+      data: workReminder({
+        context: { service: 'crm', resource: 'request', id: 'crm_req_other' },
+      }),
+      error: null,
+    })
     await expect(
       service.update('org_1', requestId, 'other_reminder', { title: 'No' })
     ).resolves.toBeNull()
+    expect(mocks.reminders.retrieve).toHaveBeenCalledWith(
+      'org_1',
+      'other_reminder'
+    )
     expect(mocks.reminders.update).not.toHaveBeenCalled()
   })
 

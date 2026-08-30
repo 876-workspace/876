@@ -5,10 +5,7 @@ import type {
   RequestReminder,
   UpdateReminderInput,
 } from '../../types/task.js'
-import {
-  crmRequestWorkContext,
-  workClient,
-} from '../../providers/work.js'
+import { crmRequestWorkContext, workClient } from '../../providers/work.js'
 import { requireRequestContext } from '../requests/index.js'
 
 function serialize(
@@ -35,9 +32,24 @@ function serialize(
 }
 
 async function listWork(organizationId: string, requestId: string) {
-  return workClient().reminders.list(organizationId, {
-    context: crmRequestWorkContext(requestId),
-  })
+  const reminders: WorkReminder[] = []
+  let startingAfter: string | undefined
+
+  for (let page = 0; page < 20; page += 1) {
+    const result = await workClient().reminders.list(organizationId, {
+      context: crmRequestWorkContext(requestId),
+      ...(startingAfter ? { startingAfter } : {}),
+    })
+    if (result.error) return getError('crm/work-unavailable')
+
+    reminders.push(...result.data.data)
+    if (!result.data.has_more) return reminders
+    const lastReminder = result.data.data.at(-1)
+    if (!lastReminder) return getError('crm/work-unavailable')
+    startingAfter = lastReminder.id
+  }
+
+  return getError('crm/work-unavailable')
 }
 
 async function findWorkReminder(
@@ -45,17 +57,26 @@ async function findWorkReminder(
   requestId: string,
   reminderId: string
 ) {
-  const result = await listWork(organizationId, requestId)
+  const result = await workClient().reminders.retrieve(
+    organizationId,
+    reminderId
+  )
+  if (result.error?.code === 'work/reminder-not-found') return null
   if (result.error) return getError('crm/work-unavailable')
-  return result.data.data.find((reminder) => reminder.id === reminderId) ?? null
+  const context = crmRequestWorkContext(requestId)
+  return result.data.context?.service === context.service &&
+    result.data.context?.resource === context.resource &&
+    result.data.context?.id === context.id
+    ? result.data
+    : null
 }
 
 export async function list(organizationId: string, requestId: string) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
   const result = await listWork(organizationId, requestId)
-  if (result.error) return getError('crm/work-unavailable')
-  return result.data.data.map((reminder) =>
+  if (isError(result)) return result
+  return result.map((reminder) =>
     serialize(reminder, context.tenantId, requestId)
   )
 }
@@ -92,13 +113,17 @@ export async function update(
   if (isError(current)) return current
   if (!current) return null
 
-  const result = await workClient().reminders.update(organizationId, reminderId, {
-    ...(input.title === undefined ? {} : { title: input.title }),
-    ...(input.note === undefined ? {} : { note: input.note }),
-    ...(input.remindAt === undefined ? {} : { remindAt: input.remindAt }),
-    ...(input.userId === undefined ? {} : { userId: input.userId }),
-    ...(input.status === undefined ? {} : { status: input.status }),
-  })
+  const result = await workClient().reminders.update(
+    organizationId,
+    reminderId,
+    {
+      ...(input.title === undefined ? {} : { title: input.title }),
+      ...(input.note === undefined ? {} : { note: input.note }),
+      ...(input.remindAt === undefined ? {} : { remindAt: input.remindAt }),
+      ...(input.userId === undefined ? {} : { userId: input.userId }),
+      ...(input.status === undefined ? {} : { status: input.status }),
+    }
+  )
   if (result.error?.code === 'work/reminder-not-found') return null
   if (result.error) return getError('crm/work-unavailable')
   return serialize(result.data, context.tenantId, requestId)
@@ -112,11 +137,7 @@ export async function remove(
 ) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
-  const current = await findWorkReminder(
-    organizationId,
-    requestId,
-    reminderId
-  )
+  const current = await findWorkReminder(organizationId, requestId, reminderId)
   if (isError(current)) return current
   if (!current) return null
 

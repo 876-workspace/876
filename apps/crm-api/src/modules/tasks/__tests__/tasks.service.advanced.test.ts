@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   },
   tasks: {
     list: vi.fn(),
+    retrieve: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -73,13 +74,13 @@ function workTask(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function listResult(data = [workTask()]) {
+function listResult(data = [workTask()], hasMore = false) {
   return {
     data: {
       object: 'list' as const,
       data,
-      has_more: false,
-      total_count: data.length,
+      has_more: hasMore,
+      total_count: null,
       url: '/v1/organizations/org_1/tasks',
     },
     error: null,
@@ -94,6 +95,7 @@ beforeEach(() => {
   mocks.priorities.retrieveForTenant.mockResolvedValue(priority)
   mocks.priorities.serialize.mockImplementation((value) => value)
   mocks.tasks.list.mockResolvedValue(listResult())
+  mocks.tasks.retrieve.mockResolvedValue({ data: workTask(), error: null })
   mocks.tasks.create.mockResolvedValue({ data: workTask(), error: null })
   mocks.tasks.update.mockResolvedValue({ data: workTask(), error: null })
   mocks.tasks.delete.mockResolvedValue({
@@ -118,6 +120,35 @@ describe('CRM task adapter over Work', () => {
         createdAt: 1_800_000_000,
       }),
     ])
+  })
+
+  it('walks Work task pages so a CRM request retains its complete task set', async () => {
+    mocks.tasks.list
+      .mockResolvedValueOnce(listResult([workTask()], true))
+      .mockResolvedValueOnce(
+        listResult([workTask({ id: 'crm_task_2', title: 'Send recap' })])
+      )
+    const result = await service.list('org_1', requestId)
+
+    expect(result).toEqual([
+      expect.objectContaining({ id: 'crm_task_1' }),
+      expect.objectContaining({ id: 'crm_task_2', title: 'Send recap' }),
+    ])
+    expect(mocks.tasks.list).toHaveBeenNthCalledWith(1, 'org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+    })
+    expect(mocks.tasks.list).toHaveBeenNthCalledWith(2, 'org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+      startingAfter: 'crm_task_1',
+    })
+  })
+
+  it('stops after 20 Work task pages when Work never finishes pagination', async () => {
+    mocks.tasks.list.mockResolvedValue(listResult([workTask()], true))
+    const result = await service.list('org_1', requestId)
+
+    expect(result).toMatchObject({ code: 'crm/work-unavailable' })
+    expect(mocks.tasks.list).toHaveBeenCalledTimes(20)
   })
 
   it('creates a canonical Work task with opaque CRM request context', async () => {
@@ -146,10 +177,16 @@ describe('CRM task adapter over Work', () => {
   })
 
   it('will not update a task outside the request context', async () => {
-    mocks.tasks.list.mockResolvedValue(listResult([]))
+    mocks.tasks.retrieve.mockResolvedValue({
+      data: workTask({
+        context: { service: 'crm', resource: 'request', id: 'crm_req_other' },
+      }),
+      error: null,
+    })
     await expect(
       service.update('org_1', requestId, 'other_task', { title: 'No' })
     ).resolves.toBeNull()
+    expect(mocks.tasks.retrieve).toHaveBeenCalledWith('org_1', 'other_task')
     expect(mocks.tasks.update).not.toHaveBeenCalled()
   })
 
