@@ -31,7 +31,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../requests/index.js', () => ({
   requireRequestContext: mocks.requireRequestContext,
 }))
-vi.mock('../../../providers/work.js', () => ({
+vi.mock('../../../providers/work.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../providers/work.js')>()),
   crmRequestWorkContext: mocks.crmRequestWorkContext,
   workClient: () => mocks.workClient,
 }))

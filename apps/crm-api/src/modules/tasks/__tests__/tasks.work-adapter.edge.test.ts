@@ -11,7 +11,16 @@ vi.hoisted(() => {
   process.env.CRM_DATABASE_URL = 'postgres://localhost/test'
 })
 
-vi.mock('../../../providers/work.js')
+vi.mock('../../../providers/work.js', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../../../providers/work.js')>()
+
+  return {
+    ...actual,
+    crmRequestWorkContext: vi.fn(actual.crmRequestWorkContext),
+    workClient: vi.fn(),
+  }
+})
 vi.mock('../../priorities/index.js')
 vi.mock('../../requests/index.js')
 
