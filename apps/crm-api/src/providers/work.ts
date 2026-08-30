@@ -1,9 +1,9 @@
-import { create876WorkOperatorClient } from '@876/work/operator'
+import { create876WorkIntegrationClient } from '@876/work/integration'
 
 export function workClient() {
-  return create876WorkOperatorClient({
+  return create876WorkIntegrationClient({
     baseUrl: process.env.WORK_API_URL,
-    internalKey: process.env.WORK_INTERNAL_KEY,
+    apiKey: process.env.CRM_API_876_KEY,
   })
 }
 
