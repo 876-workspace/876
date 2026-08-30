@@ -4,8 +4,9 @@ import {
   CondensedCustomersTable,
   CustomersTable,
 } from '@876/crm-ui/customer-list'
+import { useDetailSegments } from '@876/ui/list-detail-shell'
 import { useMemo } from 'react'
-import { useSearchParams, useSelectedLayoutSegments } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 import type { CrmCustomerRow } from '@/features/customers/types'
 
@@ -15,7 +16,7 @@ type Props = {
 
 /** Route-aware adapter around the canonical shared CRM customer list. */
 export function CustomerList({ customers }: Props) {
-  const segments = useSelectedLayoutSegments()
+  const segments = useDetailSegments()
   const searchParams = useSearchParams()
   const selectedId = segments[0] ?? null
   const status = searchParams.get('status') ?? 'all'
