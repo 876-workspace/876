@@ -7,8 +7,8 @@ import { getError, isErrorCode, toAppError } from './helpers.js'
 describe('Work catalog - exhaustive contract', () => {
   const allCodes = Object.keys(WORK_ERRORS) as WorkErrorCode[]
 
-  it('contains exactly 10 registered Work error codes', () => {
-    expect(allCodes.length).toBe(10)
+  it('contains exactly 13 registered Work error codes', () => {
+    expect(allCodes.length).toBe(13)
   })
 
   it('uses unique, alphabetically ordered work/ kebab-case codes', () => {

@@ -1,0 +1,6 @@
+export { createGuardResolver } from './guards.js'
+export type { AuthRepository } from './guards.js'
+export { HttpIdentityGateway } from './identity.js'
+export type { IdentityGateway } from './identity.js'
+export { getPrincipal } from './principal.js'
+export type { WorkPrincipal } from './principal.js'

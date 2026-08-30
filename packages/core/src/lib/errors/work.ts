@@ -2,9 +2,21 @@ import { HttpStatus, type ErrorDef } from '../../types/errors'
 
 /** Canonical errors for the shared Work service. */
 export const WORK_ERRORS = {
+  'work/connection-forbidden': {
+    message: 'The app Work connection lacks the required scope.',
+    httpStatus: HttpStatus.FORBIDDEN,
+  },
+  'work/identity-unavailable': {
+    message: 'The identity service could not verify access. Please retry.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
   'work/internal': {
     message: 'Internal server error.',
     httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+  },
+  'work/invalid-api-key': {
+    message: 'The 876 app API key is invalid.',
+    httpStatus: HttpStatus.UNAUTHORIZED,
   },
   'work/invalid-request': {
     message: 'Invalid Work request.',

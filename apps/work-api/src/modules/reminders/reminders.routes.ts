@@ -1,14 +1,33 @@
-import { Router } from 'express'
-
-import { requireInternal } from '../../http/internal-auth.js'
+import type { GuardResolver } from '../../http/api-router.js'
+import { createApiRouter } from '../../http/api-router.js'
 import * as controller from './reminders.controller.js'
 
-export function createRemindersRouter() {
-  const router = Router({ mergeParams: true })
-  router.get('/', requireInternal, controller.listReminders)
-  router.post('/', requireInternal, controller.createReminder)
-  router.get('/:reminderId', requireInternal, controller.retrieveReminder)
-  router.patch('/:reminderId', requireInternal, controller.updateReminder)
-  router.delete('/:reminderId', requireInternal, controller.deleteReminder)
-  return router
+export function createRemindersRouter(resolveGuards: GuardResolver) {
+  const api = createApiRouter(resolveGuards)
+  api.get({
+    path: '/',
+    security: { kind: 'integration', scope: 'work.reminders.read' },
+    handler: controller.listReminders,
+  })
+  api.post({
+    path: '/',
+    security: { kind: 'integration', scope: 'work.reminders.write' },
+    handler: controller.createReminder,
+  })
+  api.get({
+    path: '/:reminderId',
+    security: { kind: 'integration', scope: 'work.reminders.read' },
+    handler: controller.retrieveReminder,
+  })
+  api.patch({
+    path: '/:reminderId',
+    security: { kind: 'integration', scope: 'work.reminders.write' },
+    handler: controller.updateReminder,
+  })
+  api.delete({
+    path: '/:reminderId',
+    security: { kind: 'integration', scope: 'work.reminders.write' },
+    handler: controller.deleteReminder,
+  })
+  return api.router
 }

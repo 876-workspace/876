@@ -2,12 +2,20 @@ import { getError, toAppError } from '@876/core'
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 
+import { WorkHttpError } from './work-http-error.js'
+
 export function errorHandler(
   error: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction
 ) {
+  if (error instanceof WorkHttpError)
+    return res.status(error.workError.httpStatus).json({
+      data: null,
+      error: toAppError(error.workError),
+    })
+
   if (error instanceof ZodError) {
     const invalid = getError('work/invalid-request')
     return res
