@@ -123,7 +123,7 @@ export function CustomerCreateCard({
       </header>
 
       <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-6">
+        <div className="876-scroll min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-6">
           <FormRow label="Customer type" required className={rowClassName}>
             <RadioGroup
               value={customerKind}

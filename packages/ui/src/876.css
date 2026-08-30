@@ -70,6 +70,19 @@
   --sidebar-accent-foreground: oklch(0.305 0.016 259);
   --muted-foreground: oklch(0.545 0.019 258);
 
+  /* ── Scrollbar ──
+     Derived from --foreground with color-mix rather than hard-coded, so every
+     theme in 876-themes.css (and any future one) inherits a correct thumb in
+     both light and dark without redeclaring these two tokens. Deliberately
+     low-contrast at rest: an internally-scrolling pane should read as content
+     with an edge, not as a widget with a chrome rail down its side. */
+  --876-scroll-thumb: color-mix(in oklab, var(--foreground) 20%, transparent);
+  --876-scroll-thumb-hover: color-mix(
+    in oklab,
+    var(--foreground) 38%,
+    transparent
+  );
+
   /* ── Chip / hover neutrals ──
      Tinted to the same family, and pitched to stay visible on BOTH the
      near-white chrome and a pure-white card. */
@@ -368,6 +381,56 @@
 }
 [class~='876-header-row'] tr:first-child th:last-child {
   border-top-right-radius: var(--radius-xl);
+}
+
+/* ── 876-scroll — the platform scrollbar ─────────────────────────────────
+   A thin, muted, self-effacing bar for any pane that owns its own scroll
+   (split-view lists, detail panels, long forms). The default OS bar is a
+   heavy chrome-coloured slab that fights a card's hairline border, so every
+   internally-scrolling region uses this instead of re-styling one locally.
+
+   The track stays transparent so the card surface shows through, and the
+   thumb only reaches full contrast on hover — visible enough to grab,
+   quiet enough to ignore. `scrollbar-gutter: stable` reserves the space up
+   front so content does not shift the moment a list becomes scrollable.
+
+   Firefox gets `scrollbar-width`/`scrollbar-color`; WebKit and Chromium get
+   the pseudo-elements. Both are needed — neither covers every browser. */
+[class~='876-scroll'] {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--876-scroll-thumb) transparent;
+}
+
+[class~='876-scroll']::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[class~='876-scroll']::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[class~='876-scroll']::-webkit-scrollbar-thumb {
+  background-color: var(--876-scroll-thumb);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+
+[class~='876-scroll']:hover::-webkit-scrollbar-thumb,
+[class~='876-scroll']::-webkit-scrollbar-thumb:hover {
+  background-color: var(--876-scroll-thumb-hover);
+}
+
+[class~='876-scroll']:hover {
+  scrollbar-color: var(--876-scroll-thumb-hover) transparent;
+}
+
+/* Corner where a vertical and horizontal bar meet — the default is an
+   opaque grey square that breaks the card's rounded bottom edge. */
+[class~='876-scroll']::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* ── Form controls ───────────────────────────────────────────────────────

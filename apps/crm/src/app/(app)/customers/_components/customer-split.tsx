@@ -104,7 +104,7 @@ export function CustomerSplit({
      */
     <div className="flex flex-col gap-4 md:min-h-0 md:flex-1 md:flex-row md:items-stretch">
       <div className="876-card flex shrink-0 flex-col overflow-hidden md:w-72 lg:w-80">
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <Table>
             <TableHeader className="876-header-row sticky top-0 z-10">
               <TableRow>

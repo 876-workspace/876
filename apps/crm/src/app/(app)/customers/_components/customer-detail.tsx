@@ -198,7 +198,7 @@ export function CustomerDetail({
       <div
         key={tab}
         role="tabpanel"
-        className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 motion-safe:duration-150 motion-safe:ease-out"
+        className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 motion-safe:duration-150 motion-safe:ease-out"
       >
         {tab === 'overview' && (
           <div className="space-y-4">
