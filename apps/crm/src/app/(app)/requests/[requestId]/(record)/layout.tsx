@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 
+import { RequestRecordShell } from '@876/crm-ui/request-record-shell'
 import { Page } from '@876/ui/page'
-import { RecordSplitView } from '@876/ui/record-split-view'
-import type { RouteTabItem } from '@876/ui/route-tabs'
 
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
@@ -35,8 +33,6 @@ export async function generateMetadata({
   const result = await $876.requests.retrieve(context.orgId, requestId)
   if (!result.data) return { title: 'Request' }
 
-  // A template, so a section tab reads "Tasks · Request #12" instead of
-  // dropping the record the tab belongs to out of the browser tab.
   return {
     title: {
       default: `Request #${result.data.number} · ${result.data.subject}`,
@@ -46,55 +42,27 @@ export async function generateMetadata({
 }
 
 /**
- * The request record shell.
- *
- * The split itself is `RecordSplitView` from `@876/ui`, shared with Console's
- * support desk and its organization CRM workspaces, so all three surfaces stay
- * the same record — only the middle column is a route: the identity band above
- * and the customer column beside it belong to the record, not to any one
- * section, so switching tabs swaps the thread for tasks or audit and leaves
- * everything else in place.
- *
- * The layout itself awaits `params` and nothing else — a layout that awaits
- * data suspends into the *list's* boundary, so the click would land back on
- * the requests table. Both data regions stream behind their own fallbacks and
- * the tabs, built from the id alone, are real and clickable immediately.
+ * Standalone CRM hosts the canonical request record surface. Authentication,
+ * data loading and browser transport remain app-owned; the domain-level shell
+ * and tab contract come from `@876/crm-ui` so Console cannot drift from it.
  */
 export default async function RequestRecordLayout({ children, params }: Props) {
   const { requestId } = await params
   const base = `/requests/${requestId}`
 
-  const tabs: RouteTabItem[] = [
-    { label: 'Conversation', href: base, exact: true },
-    { label: 'Customer', href: `${base}/customer` },
-    { label: 'Tasks', href: `${base}/tasks` },
-    { label: 'Reminders', href: `${base}/reminders` },
-    { label: 'Schedule', href: `${base}/schedule` },
-    { label: 'Audit', href: `${base}/audit` },
-  ]
-
   return (
     <Page className="mx-auto w-full max-w-[1400px]">
-      <RecordSplitView
-        tabs={tabs}
-        toolbar={
-          <Suspense fallback={<RequestToolbarSkeleton />}>
-            <RequestToolbar requestId={requestId} />
-          </Suspense>
-        }
-        header={
-          <Suspense fallback={<RequestIdentitySkeleton />}>
-            <RequestIdentity requestId={requestId} />
-          </Suspense>
-        }
-        aside={
-          <Suspense fallback={<RequestAsideSkeleton />}>
-            <RequestAside requestId={requestId} />
-          </Suspense>
-        }
+      <RequestRecordShell
+        baseHref={base}
+        toolbar={<RequestToolbar requestId={requestId} />}
+        toolbarFallback={<RequestToolbarSkeleton />}
+        header={<RequestIdentity requestId={requestId} />}
+        headerFallback={<RequestIdentitySkeleton />}
+        aside={<RequestAside requestId={requestId} />}
+        asideFallback={<RequestAsideSkeleton />}
       >
         {children}
-      </RecordSplitView>
+      </RequestRecordShell>
     </Page>
   )
 }
