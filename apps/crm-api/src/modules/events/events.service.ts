@@ -1,7 +1,11 @@
 import { getError, isError } from '@876/core'
 import type { WorkEventParticipant, WorkEventResource } from '@876/work'
 
-import { crmRequestWorkContext, workClient } from '../../providers/work.js'
+import {
+  crmRequestWorkContext,
+  workClient,
+  workErrorToCrm,
+} from '../../providers/work.js'
 import type {
   CreateEventInput,
   CreateEventParticipantInput,
@@ -84,16 +88,16 @@ async function listWorkEvents(organizationId: string, requestId: string) {
       limit: 100,
       ...(startingAfter ? { startingAfter } : {}),
     })
-    if (result.error) return getError('crm/work-unavailable')
+    if (result.error) return workErrorToCrm(result.error)
 
     events.push(...result.data.data)
     if (!result.data.has_more) return events
     const last = result.data.data.at(-1)
-    if (!last) return getError('crm/work-unavailable')
+    if (!last) return getError('crm/work-invalid-response')
     startingAfter = last.id
   }
 
-  return getError('crm/work-unavailable')
+  return getError('crm/work-invalid-response')
 }
 
 async function findWorkEvent(
@@ -103,7 +107,7 @@ async function findWorkEvent(
 ) {
   const result = await workClient().events.retrieve(organizationId, eventId)
   if (result.error?.code === 'work/event-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return belongsToRequest(result.data, requestId) ? result.data : null
 }
 
@@ -120,7 +124,7 @@ async function resolveCalendarId(
     userId: input.createdBy,
     timeZone,
   })
-  return result.error ? getError('crm/work-unavailable') : result.data.id
+  return result.error ? workErrorToCrm(result.error) : result.data.id
 }
 
 export async function list(organizationId: string, requestId: string) {
@@ -181,7 +185,7 @@ export async function create(
       }
 
   const result = await workClient().events.create(organizationId, eventInput)
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return serialize(result.data, context.tenantId, requestId)
 }
 
@@ -202,7 +206,7 @@ export async function update(
     input
   )
   if (result.error?.code === 'work/event-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return serialize(result.data, context.tenantId, requestId)
 }
 
@@ -223,7 +227,7 @@ export async function remove(
     deletedBy
   )
   if (result.error?.code === 'work/event-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return {
     object: 'request_event' as const,
     id: eventId,
@@ -244,7 +248,7 @@ export async function listParticipants(
     organizationId,
     eventId
   )
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return result.data.data.map(serializeParticipant)
 }
 
@@ -264,7 +268,7 @@ export async function createParticipant(
     input
   )
   return result.error
-    ? getError('crm/work-unavailable')
+    ? workErrorToCrm(result.error)
     : serializeParticipant(result.data)
 }
 
@@ -277,7 +281,7 @@ async function hasParticipant(
     organizationId,
     eventId
   )
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return result.data.data.some(
     (participant) => participant.id === participantId
   )
@@ -306,7 +310,7 @@ export async function updateParticipant(
   )
   if (result.error?.code === 'work/event-participant-not-found') return null
   return result.error
-    ? getError('crm/work-unavailable')
+    ? workErrorToCrm(result.error)
     : serializeParticipant(result.data)
 }
 
@@ -330,7 +334,7 @@ export async function removeParticipant(
     participantId
   )
   if (result.error?.code === 'work/event-participant-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return {
     object: 'request_event_participant' as const,
     id: participantId,

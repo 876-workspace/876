@@ -6,7 +6,7 @@ import type {
   RequestPriority,
   UpdateRequestPriorityInput,
 } from '../../types/priority.js'
-import { workClient } from '../../providers/work.js'
+import { workClient, workErrorToCrm } from '../../providers/work.js'
 import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './priorities.repository.js'
 
@@ -102,7 +102,10 @@ export async function update(
   const current = await repository.retrieve(tenant.id, priorityId)
   if (!current) return null
 
-  if (current.isDefault && (input.isDefault === false || input.isActive === false))
+  if (
+    current.isDefault &&
+    (input.isDefault === false || input.isActive === false)
+  )
     return getError('crm/priority-default-required')
 
   const next = await repository.update(priorityId, {
@@ -133,8 +136,10 @@ export async function remove(
   // New CRM tasks are canonical Work records. Fail closed if Work cannot prove
   // the priority is unused; deleting a referenced reporting dimension is worse
   // than temporarily refusing the archive/delete operation.
-  const workTasks = await workClient().tasks.list(organizationId, { priorityId })
-  if (workTasks.error) return getError('crm/work-unavailable')
+  const workTasks = await workClient().tasks.list(organizationId, {
+    priorityId,
+  })
+  if (workTasks.error) return workErrorToCrm(workTasks.error)
   if (workTasks.data.data.length > 0) return getError('crm/priority-in-use')
 
   return repository.remove(priorityId, input.deletedBy)
@@ -145,7 +150,10 @@ export async function retrieveForTenant(tenantId: string, priorityId: string) {
   return priority ? serialize(priority) : null
 }
 
-export async function retrieveActiveForTenant(tenantId: string, priorityId: string) {
+export async function retrieveActiveForTenant(
+  tenantId: string,
+  priorityId: string
+) {
   return repository.retrieveActive(tenantId, priorityId)
 }
 
@@ -153,7 +161,10 @@ export async function retrieveDefaultForTenant(tenantId: string) {
   return repository.retrieveDefault(tenantId)
 }
 
-export async function requireActiveForTenant(tenantId: string, priorityId: string) {
+export async function requireActiveForTenant(
+  tenantId: string,
+  priorityId: string
+) {
   const priority = await repository.retrieveActive(tenantId, priorityId)
   if (!priority) return getError('crm/priority-not-found')
   return priority

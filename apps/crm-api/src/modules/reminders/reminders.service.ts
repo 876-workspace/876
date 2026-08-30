@@ -5,7 +5,11 @@ import type {
   RequestReminder,
   UpdateReminderInput,
 } from '../../types/task.js'
-import { crmRequestWorkContext, workClient } from '../../providers/work.js'
+import {
+  crmRequestWorkContext,
+  workClient,
+  workErrorToCrm,
+} from '../../providers/work.js'
 import { requireRequestContext } from '../requests/index.js'
 
 function serialize(
@@ -40,16 +44,16 @@ async function listWork(organizationId: string, requestId: string) {
       context: crmRequestWorkContext(requestId),
       ...(startingAfter ? { startingAfter } : {}),
     })
-    if (result.error) return getError('crm/work-unavailable')
+    if (result.error) return workErrorToCrm(result.error)
 
     reminders.push(...result.data.data)
     if (!result.data.has_more) return reminders
     const lastReminder = result.data.data.at(-1)
-    if (!lastReminder) return getError('crm/work-unavailable')
+    if (!lastReminder) return getError('crm/work-invalid-response')
     startingAfter = lastReminder.id
   }
 
-  return getError('crm/work-unavailable')
+  return getError('crm/work-invalid-response')
 }
 
 async function findWorkReminder(
@@ -62,7 +66,7 @@ async function findWorkReminder(
     reminderId
   )
   if (result.error?.code === 'work/reminder-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   const context = crmRequestWorkContext(requestId)
   return result.data.context?.service === context.service &&
     result.data.context?.resource === context.resource &&
@@ -97,7 +101,7 @@ export async function create(
     status: input.status,
     createdBy: input.createdBy,
   })
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return serialize(result.data, context.tenantId, requestId)
 }
 
@@ -125,7 +129,7 @@ export async function update(
     }
   )
   if (result.error?.code === 'work/reminder-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return serialize(result.data, context.tenantId, requestId)
 }
 
@@ -147,7 +151,7 @@ export async function remove(
     deletedBy
   )
   if (result.error?.code === 'work/reminder-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return {
     object: 'request_reminder' as const,
     id: reminderId,
