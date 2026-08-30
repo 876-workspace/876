@@ -35,16 +35,16 @@ function isTeamGrantStatus(
 }
 
 type Props = {
-  searchParams?: Promise<{ status?: string; member?: string }>
+  searchParams: Promise<{ status?: string; member?: string }>
 }
 
-export default async function TeamSettingsPage({ searchParams }: Props = {}) {
-  const params = searchParams ? await searchParams : undefined
-  const selectedStatus = isTeamGrantStatus(params?.status)
+export default async function TeamSettingsPage({ searchParams }: Props) {
+  const params = await searchParams
+  const selectedStatus = isTeamGrantStatus(params.status)
     ? params.status
     : undefined
   const statusParam = selectedStatus ?? 'all'
-  const selectedMemberId = params?.member
+  const selectedMemberId = params.member
 
   return (
     <Page>
