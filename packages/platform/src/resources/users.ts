@@ -1,0 +1,657 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
+import { adminRequest } from '../request'
+import type { AdminRuntime } from '../runtime'
+import type {
+  AdminAccount,
+  AdminAuthAttempt,
+  AdminDeletedUserPin,
+  AdminUserPin,
+  AdminUserPinVerification,
+  AdminAddress,
+  AdminAddressCreateParams,
+  AdminAddressUpdateParams,
+  AdminConsumerContact,
+  AdminConsumerContactCreateParams,
+  AdminConsumerContactUpdateParams,
+  AdminConsumerProfile,
+  AdminConsumerProfileUpdateParams,
+  AdminDeletedAddress,
+  AdminDeletedConsumerContact,
+  AdminDeletedConsumerProfile,
+  AdminDeletedUser,
+  AdminDeletedUserFeature,
+  AdminDeletedUserIdentification,
+  AdminDevice,
+  AdminListResponse,
+  AdminOAuthGrant,
+  AdminSession,
+  AdminUserApp,
+  AdminUserAppsGroup,
+  AdminSearchResponse,
+  SessionRevoke,
+  UnlinkedAccount,
+  AdminUser,
+  AdminUserCreateParams,
+  AdminUsernameAvailability,
+  AdminUserFeature,
+  AdminUserFeatureGrantParams,
+  AdminUserFeatureUpdateParams,
+  AdminUserIdentification,
+  AdminUserIdentificationCreateParams,
+  AdminUserIdentificationDisclosure,
+  AdminUserIdentificationDiscloseParams,
+  AdminUserIdentificationUpdateParams,
+  AdminUserIdentificationVerifyParams,
+  AdminUserUpdateParams,
+} from '../types'
+
+/** `$876.users.*` — platform-wide user administration (internal-key tier). */
+export function createAdminUsersResource(runtime: AdminRuntime) {
+  return {
+    listDevices(userId: string, params?: CursorPageParams) {
+      return adminRequest<AdminListResponse<AdminDevice>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/devices`,
+        query: toCursorQuery(params),
+      })
+    },
+
+    listAuthAttempts(userId: string, params?: CursorPageParams) {
+      return adminRequest<AdminListResponse<AdminAuthAttempt>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/auth-attempts`,
+        query: toCursorQuery(params),
+      })
+    },
+
+    listSessions(
+      userId: string,
+      params?: CursorPageParams & {
+        active?: boolean
+        status?: 'active' | 'revoked' | 'expired'
+      }
+    ) {
+      return adminRequest<AdminListResponse<AdminSession>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/sessions`,
+        query: {
+          ...toCursorQuery(params),
+          active: params?.active,
+          status: params?.status,
+        },
+      })
+    },
+
+    /**
+     * Creates a user object.
+     *
+     * @param params - The parameters to create the user with.
+     * @returns A result containing the created user, or an error.
+     */
+    create(params: AdminUserCreateParams) {
+      return adminRequest<AdminUser>(runtime, {
+        method: 'POST',
+        path: '/users',
+        body: params,
+      })
+    },
+
+    /**
+     * Returns a list of users.
+     *
+     * @param params - Optional pagination and filtering parameters.
+     * @returns A result containing a list object of users, or an error.
+     */
+    list(
+      params?: CursorPageParams & {
+        search?: string
+        includeDeleted?: boolean
+        /**
+         * When true, return only users whose dedicated Console role grants
+         * access — the "who has Console access" view.
+         */
+        consoleAccess?: boolean
+        /** Filter to users with this exact status (e.g. `active`, `inactive`, `suspended`). */
+        status?: string
+        /** Filter to users whose IDs are in this set (batch). */
+        ids?: string[]
+      }
+    ) {
+      return adminRequest<AdminListResponse<AdminUser>>(runtime, {
+        method: 'GET',
+        path: '/users',
+        query: {
+          ...toCursorQuery(params),
+          search: params?.search,
+          include_deleted: params?.includeDeleted,
+          consoleAccess: params?.consoleAccess,
+          status: params?.status,
+          ids: params?.ids?.join(','),
+        },
+      })
+    },
+
+    /**
+     * Retrieves a user by ID or alternate identifier (typed lookup object).
+     *
+     * retrieve({ id }) | retrieve({ workosId }) | retrieve({ username })
+     */
+    retrieve(
+      params:
+        | {
+            id: string
+            workosId?: never
+            username?: never
+            includeDeleted?: boolean
+          }
+        | { workosId: string; id?: never; username?: never }
+        | {
+            username: string
+            id?: never
+            workosId?: never
+            includeDeleted?: boolean
+          }
+    ) {
+      if ('workosId' in params) {
+        return adminRequest<AdminUser>(runtime, {
+          method: 'GET',
+          path: `/users/by-workos-id/${params.workosId}`,
+        })
+      }
+      if ('username' in params) {
+        return adminRequest<AdminUser>(runtime, {
+          method: 'GET',
+          path: `/users/by-username/${params.username}`,
+          query: {
+            include_deleted: params.includeDeleted,
+          },
+        })
+      }
+      return adminRequest<AdminUser>(runtime, {
+        method: 'GET',
+        path: `/users/${params.id}`,
+        query: {
+          include_deleted: params.includeDeleted,
+        },
+      })
+    },
+
+    /**
+     * Searches users by email, username, or name.
+     *
+     * @param params - The search query and optional limit.
+     * @returns A result containing matching users, or an error.
+     */
+    search(params: { query: string; limit?: number; status?: string }) {
+      return adminRequest<AdminSearchResponse<AdminUser>>(runtime, {
+        method: 'GET',
+        path: '/users/search',
+        query: params,
+      })
+    },
+
+    /**
+     * Updates a user.
+     *
+     * @param userId - The ID of the user to update.
+     * @param body - The fields to update.
+     * @returns A result containing the updated user, or an error.
+     */
+    update(userId: string, body: AdminUserUpdateParams) {
+      return adminRequest<AdminUser>(runtime, {
+        method: 'PATCH',
+        path: `/users/${userId}`,
+        body,
+      })
+    },
+
+    /**
+     * Soft-deletes a user. The record is retained in the database and remains
+     * visible to admins via `include_deleted`. Use `purge` to hard-delete.
+     *
+     * @param userId - The ID of the user to delete.
+     * @param options - Optional: deletedBy (admin user ID), reason.
+     * @returns A result containing a deletion tombstone, or an error.
+     */
+    delete(userId: string, options?: { deletedBy?: string; reason?: string }) {
+      return adminRequest<AdminDeletedUser>(runtime, {
+        method: 'DELETE',
+        path: `/users/${userId}`,
+        query: options
+          ? {
+              deleted_by: options.deletedBy,
+              reason: options.reason,
+            }
+          : undefined,
+      })
+    },
+
+    /**
+     * Permanently removes a user record from the database. Cannot be undone.
+     * Use `delete` instead to soft-delete and retain the record.
+     *
+     * @param userId - The ID of the user to purge.
+     * @param options - Optional: deletedBy (admin user ID, logged only).
+     * @returns A result containing a deletion tombstone, or an error.
+     */
+    purge(userId: string, options?: { deletedBy?: string }) {
+      return adminRequest<AdminDeletedUser>(runtime, {
+        method: 'DELETE',
+        path: `/users/${userId}/purge`,
+        query: options?.deletedBy
+          ? { deleted_by: options.deletedBy }
+          : undefined,
+      })
+    },
+
+    /**
+     * Restores a soft-deleted user (clears the tombstone, re-activates the Billing
+     * customer). The user must sign in again. Returns the live user.
+     */
+    restore(userId: string) {
+      return adminRequest<AdminUser>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/restore`,
+      })
+    },
+
+    /**
+     * Checks whether a username can be claimed (format + reserved list + already
+     * taken, including soft-deleted holders).
+     *
+     * @param username - The username to check.
+     * @param options - Optional: excludeUserId to ignore the user who currently
+     *   holds the name (e.g. when editing their own profile).
+     * @returns A result containing the availability verdict, or an error.
+     */
+    checkUsernameAvailability(
+      username: string,
+      options?: { excludeUserId?: string }
+    ) {
+      return adminRequest<AdminUsernameAvailability>(runtime, {
+        method: 'GET',
+        path: '/users/username-availability',
+        query: {
+          username,
+          exclude_user_id: options?.excludeUserId,
+        },
+      })
+    },
+
+    /**
+     * Bans a user: blocks every authentication path and immediately revokes
+     * their active sessions. Reversible via `unban`.
+     *
+     * @param userId - The ID of the user to ban.
+     * @param options - Optional: reason (stored for admin reference only).
+     * @returns A result containing the updated user, or an error.
+     */
+    ban(userId: string, options?: { reason?: string | null }) {
+      return adminRequest<AdminUser>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/ban`,
+        body: { reason: options?.reason ?? null },
+      })
+    },
+
+    /**
+     * Lifts a user's ban, restoring their ability to sign in and clearing the
+     * stored ban reason.
+     *
+     * @param userId - The ID of the user to unban.
+     * @returns A result containing the updated user, or an error.
+     */
+    unban(userId: string) {
+      return adminRequest<AdminUser>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/unban`,
+      })
+    },
+
+    createProfile(userId: string, params: AdminConsumerProfileUpdateParams) {
+      return adminRequest<AdminConsumerProfile>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/profile`,
+        body: params,
+      })
+    },
+
+    retrieveProfile(userId: string) {
+      return adminRequest<AdminConsumerProfile>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/profile`,
+      })
+    },
+
+    updateProfile(userId: string, params: AdminConsumerProfileUpdateParams) {
+      return adminRequest<AdminConsumerProfile>(runtime, {
+        method: 'PATCH',
+        path: `/users/${userId}/profile`,
+        body: params,
+      })
+    },
+
+    deleteProfile(userId: string) {
+      return adminRequest<AdminDeletedConsumerProfile>(runtime, {
+        method: 'DELETE',
+        path: `/users/${userId}/profile`,
+      })
+    },
+
+    listAddresses(userId: string) {
+      return adminRequest<AdminListResponse<AdminAddress>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/addresses`,
+      })
+    },
+
+    createAddress(userId: string, params: AdminAddressCreateParams) {
+      return adminRequest<AdminAddress>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/addresses`,
+        body: params,
+      })
+    },
+
+    retrieveAddress(userId: string, addressId: string) {
+      return adminRequest<AdminAddress>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/addresses/${addressId}`,
+      })
+    },
+
+    updateAddress(
+      userId: string,
+      addressId: string,
+      params: AdminAddressUpdateParams
+    ) {
+      return adminRequest<AdminAddress>(runtime, {
+        method: 'PATCH',
+        path: `/users/${userId}/addresses/${addressId}`,
+        body: params,
+      })
+    },
+
+    deleteAddress(userId: string, addressId: string) {
+      return adminRequest<AdminDeletedAddress>(runtime, {
+        method: 'DELETE',
+        path: `/users/${userId}/addresses/${addressId}`,
+      })
+    },
+
+    listAccounts(userId: string) {
+      return adminRequest<AdminListResponse<AdminAccount>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/accounts`,
+      })
+    },
+
+    listContacts(userId: string) {
+      return adminRequest<AdminListResponse<AdminConsumerContact>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/contacts`,
+      })
+    },
+
+    createContact(userId: string, params: AdminConsumerContactCreateParams) {
+      return adminRequest<AdminConsumerContact>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/contacts`,
+        body: params,
+      })
+    },
+
+    retrieveContact(userId: string, contactId: string) {
+      return adminRequest<AdminConsumerContact>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/contacts/${contactId}`,
+      })
+    },
+
+    updateContact(
+      userId: string,
+      contactId: string,
+      params: AdminConsumerContactUpdateParams
+    ) {
+      return adminRequest<AdminConsumerContact>(runtime, {
+        method: 'PATCH',
+        path: `/users/${userId}/contacts/${contactId}`,
+        body: params,
+      })
+    },
+
+    deleteContact(userId: string, contactId: string) {
+      return adminRequest<AdminDeletedConsumerContact>(runtime, {
+        method: 'DELETE',
+        path: `/users/${userId}/contacts/${contactId}`,
+      })
+    },
+
+    backfillUsernames() {
+      return adminRequest<{ updated: number; ids: string[] }>(runtime, {
+        method: 'POST',
+        path: '/users/backfill-usernames',
+      })
+    },
+
+    listFeatures(userId: string) {
+      return adminRequest<AdminListResponse<AdminUserFeature>>(runtime, {
+        method: 'GET',
+        path: `/features/users/${userId}/features`,
+      })
+    },
+
+    grantFeature(userId: string, params: AdminUserFeatureGrantParams) {
+      return adminRequest<AdminUserFeature>(runtime, {
+        method: 'POST',
+        path: `/features/users/${userId}/features`,
+        body: params,
+      })
+    },
+
+    updateFeature(
+      userId: string,
+      featureId: string,
+      params: AdminUserFeatureUpdateParams
+    ) {
+      return adminRequest<AdminUserFeature>(runtime, {
+        method: 'PATCH',
+        path: `/features/users/${userId}/features/${featureId}`,
+        body: params,
+      })
+    },
+
+    revokeFeature(userId: string, featureId: string) {
+      return adminRequest<AdminDeletedUserFeature>(runtime, {
+        method: 'DELETE',
+        path: `/features/users/${userId}/features/${featureId}`,
+      })
+    },
+
+    listOAuthGrants(userId: string) {
+      return adminRequest<AdminOAuthGrant[]>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/oauth-grants`,
+      })
+    },
+
+    listApps(userId: string) {
+      return adminRequest<AdminListResponse<AdminUserApp>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/apps`,
+      })
+    },
+
+    listAppsByUsers(userIds: string[]) {
+      return adminRequest<AdminListResponse<AdminUserAppsGroup>>(runtime, {
+        method: 'GET',
+        path: '/users/apps',
+        query: { user_ids: userIds.join(',') },
+      })
+    },
+
+    revokeOAuthGrant(userId: string, grantId: string) {
+      return adminRequest<{ revoked: boolean }>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/oauth-grants/${grantId}/revoke`,
+      })
+    },
+
+    /**
+     * Removes a linked sign-in provider account from a user.
+     *
+     * @param userId - The ID of the user.
+     * @param accountId - The ID of the account to unlink.
+     */
+    unlinkAccount(userId: string, accountId: string) {
+      return adminRequest<UnlinkedAccount>(runtime, {
+        method: 'DELETE',
+        path: `/users/${userId}/accounts/${accountId}`,
+      })
+    },
+
+    /**
+     * Immediately invalidates all active sessions for a user, forcing
+     * sign-in on all devices. Does not ban the user.
+     *
+     * @param userId - The ID of the user whose sessions to revoke.
+     */
+    revokeSessions(userId: string) {
+      return adminRequest<SessionRevoke>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/sessions/revoke`,
+      })
+    },
+
+    /**
+     * `$876.users.identifications.*` — sensitive verified identifiers on a
+     * user account (Jamaican TRN, passport, driver's license). Per
+     * `.claude/rules/customer-architecture.md`, these are identity data owned
+     * by the core API. `list`/`create`/`update`/`delete` only ever return the
+     * masked value; the full value is returned solely by `disclose()`, which
+     * requires the requesting app to be entitlement-allowlisted for the type
+     * AND the requesting organization to hold an active subscription to that
+     * app, and always writes an audit event.
+     */
+    identifications: {
+      /** Returns a user's identification records (masked values only). */
+      list(userId: string) {
+        return adminRequest<AdminListResponse<AdminUserIdentification>>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/users/${userId}/identifications`,
+          }
+        )
+      },
+
+      /**
+       * Adds a verified identifier to a user's account. The value is
+       * normalized and validated server-side; only the masked value is
+       * returned.
+       */
+      create(userId: string, params: AdminUserIdentificationCreateParams) {
+        return adminRequest<AdminUserIdentification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/identifications`,
+          body: params,
+        })
+      },
+
+      /**
+       * Replaces the value of an existing identification and resets its
+       * verification state.
+       */
+      update(
+        userId: string,
+        type: string,
+        params: AdminUserIdentificationUpdateParams
+      ) {
+        return adminRequest<AdminUserIdentification>(runtime, {
+          method: 'PATCH',
+          path: `/users/${userId}/identifications/${type}`,
+          body: params,
+        })
+      },
+
+      /** Deletes an identification record. Follows the platform deletion policy. */
+      delete(userId: string, type: string) {
+        return adminRequest<AdminDeletedUserIdentification>(runtime, {
+          method: 'DELETE',
+          path: `/users/${userId}/identifications/${type}`,
+        })
+      },
+
+      /**
+       * Returns the full, unmasked identification value. Entitlement-gated:
+       * the requesting app must be allowlisted for this identification type
+       * AND the requesting organization must hold an active subscription to
+       * that app. Always writes an audit event — never the value itself.
+       */
+      disclose(
+        userId: string,
+        type: string,
+        params: AdminUserIdentificationDiscloseParams
+      ) {
+        return adminRequest<AdminUserIdentificationDisclosure>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/identifications/${type}/disclose`,
+          body: {
+            organization_id: params.organizationId,
+            app_slug: params.appSlug,
+            reason: params.reason,
+          },
+        })
+      },
+
+      /** Marks an identification as verified, recording the verifying actor. */
+      verify(
+        userId: string,
+        type: string,
+        params: AdminUserIdentificationVerifyParams
+      ) {
+        return adminRequest<AdminUserIdentification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/identifications/${type}/verify`,
+          body: { verified_by: params.verifiedBy },
+        })
+      },
+    },
+
+    /**
+     * `$876.users.pin.*` — the account PIN. Status reads never carry the hash;
+     * the API returns only whether one is set and its lockout state.
+     */
+    pin: {
+      retrieve(userId: string, scope = 'account') {
+        return adminRequest<AdminUserPin>(runtime, {
+          method: 'GET',
+          path: `/users/${userId}/pin`,
+          query: { scope },
+        })
+      },
+      set(userId: string, params: { pin: string; scope?: string }) {
+        return adminRequest<AdminUserPin>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/pin`,
+          body: { pin: params.pin, scope: params.scope ?? 'account' },
+        })
+      },
+      verify(userId: string, params: { pin: string; scope?: string }) {
+        return adminRequest<AdminUserPinVerification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/pin/verify`,
+          body: { pin: params.pin, scope: params.scope ?? 'account' },
+        })
+      },
+      delete(userId: string, scope = 'account') {
+        return adminRequest<AdminDeletedUserPin>(runtime, {
+          method: 'DELETE',
+          path: `/users/${userId}/pin`,
+          query: { scope },
+        })
+      },
+    },
+  }
+}
