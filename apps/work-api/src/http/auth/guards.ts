@@ -3,6 +3,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import type { WorkSecurity, GuardResolver } from '../api-router.js'
 import { WorkHttpError } from '../work-http-error.js'
 import {
+  readBearerToken,
   readCredentials,
   secretsMatch,
   type Credential,
@@ -55,7 +56,9 @@ function internalPrincipal(req: Request): WorkPrincipal {
     tenantId: null,
     organizationId: null,
     appId: null,
+    userId: null,
     scopes: new Set(),
+    permissions: new Set(),
     platformAdmin: true,
   }
 }
@@ -69,6 +72,13 @@ async function activeTenant(
   return tenant
 }
 
+function organizationIdFrom(req: Request) {
+  const raw = req.params.organizationId
+  const organizationId = Array.isArray(raw) ? raw[0] : raw
+  if (!organizationId) throw new WorkHttpError('work/invalid-request')
+  return organizationId
+}
+
 export function createGuardResolver(options: {
   repository: AuthRepository
   identity: IdentityGateway
@@ -78,12 +88,7 @@ export function createGuardResolver(options: {
 
     return [
       middleware(async (req) => {
-        const rawOrganizationId = req.params.organizationId
-        const organizationId = Array.isArray(rawOrganizationId)
-          ? rawOrganizationId[0]
-          : rawOrganizationId
-        if (!organizationId) throw new WorkHttpError('work/invalid-request')
-
+        const organizationId = organizationIdFrom(req)
         const credential = singleCredential(req)
         if (credential.kind === 'internal') {
           const internal = internalPrincipal(req)
@@ -102,6 +107,48 @@ export function createGuardResolver(options: {
         if (!app) throw new WorkHttpError('work/invalid-api-key')
 
         const tenant = await activeTenant(options.repository, organizationId)
+        const accessToken = readBearerToken(req)
+        if (accessToken) {
+          if (!security.sessionPermissions?.length)
+            throw new WorkHttpError('work/session-forbidden')
+
+          let access
+          try {
+            access = await options.identity.sessionAccess({
+              apiKey: credential.value,
+              accessToken,
+              organizationId,
+              appId: app.id,
+            })
+          } catch (error) {
+            if (error instanceof IdentityUnavailableError)
+              throw new WorkHttpError('work/identity-unavailable')
+            throw error
+          }
+
+          if (
+            !access ||
+            !access.assigned ||
+            !access.entitled ||
+            access.status !== 'ACTIVE' ||
+            !security.sessionPermissions.some((permission) =>
+              access.effectivePermissions.has(permission)
+            )
+          )
+            throw new WorkHttpError('work/session-forbidden')
+
+          return {
+            kind: 'session',
+            tenantId: tenant.id,
+            organizationId,
+            appId: app.id,
+            userId: access.userId,
+            scopes: new Set<string>(),
+            permissions: access.effectivePermissions,
+            platformAdmin: false,
+          }
+        }
+
         const connection = await options.repository.activeConnection(
           tenant.id,
           app.id
@@ -114,7 +161,9 @@ export function createGuardResolver(options: {
           tenantId: tenant.id,
           organizationId,
           appId: app.id,
+          userId: null,
           scopes: connection.scopes,
+          permissions: new Set<string>(),
           platformAdmin: false,
         }
       }),

@@ -3,7 +3,6 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import type { Request } from 'express'
 
 export type CredentialKind = 'internal' | 'app_api_key'
-
 export type Credential = { kind: CredentialKind; value: string }
 
 export function readCredentials(req: Request): Credential[] {
@@ -17,6 +16,13 @@ export function readCredentials(req: Request): Credential[] {
     if (value) credentials.push({ kind, value })
   }
   return credentials
+}
+
+export function readBearerToken(req: Request): string | null {
+  const value = req.header('authorization')?.trim()
+  if (!value) return null
+  const match = /^Bearer\s+(.+)$/i.exec(value)
+  return match?.[1]?.trim() || null
 }
 
 export function secretsMatch(presented: string, configured: string): boolean {

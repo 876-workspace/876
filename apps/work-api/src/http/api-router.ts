@@ -6,7 +6,13 @@ import {
 } from 'express'
 
 export type WorkSecurity =
-  { kind: 'operator' } | { kind: 'integration'; scope: string }
+  | { kind: 'operator' }
+  | {
+      kind: 'integration'
+      scope: string
+      /** Host-app permissions accepted when the caller also presents a user session. */
+      sessionPermissions?: readonly string[]
+    }
 
 export type GuardResolver = (security: WorkSecurity) => RequestHandler[]
 

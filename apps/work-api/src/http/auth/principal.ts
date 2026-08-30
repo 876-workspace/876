@@ -3,11 +3,13 @@ import type { Request } from 'express'
 import type { CredentialKind } from './credentials.js'
 
 export type WorkPrincipal = {
-  kind: CredentialKind
+  kind: CredentialKind | 'session'
   tenantId: string | null
   organizationId: string | null
   appId: string | null
+  userId: string | null
   scopes: ReadonlySet<string>
+  permissions: ReadonlySet<string>
   platformAdmin: boolean
 }
 
