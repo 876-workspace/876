@@ -154,11 +154,17 @@ export const workReminderListSchema = z.object({
 export type WorkTaskListFilter = {
   context?: WorkContext
   priorityId?: string
+  limit?: number
+  startingAfter?: string
+  endingBefore?: string
 }
 
 export type WorkReminderListFilter = {
   context?: WorkContext
   userId?: string
+  limit?: number
+  startingAfter?: string
+  endingBefore?: string
 }
 
 export type WorkResult<T> =

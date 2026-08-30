@@ -28,12 +28,18 @@ export async function listTasks(req: Request, res: Response) {
   const result = await service.list(organizationId, {
     ...(context ? { context } : {}),
     ...(query.priority_id ? { priorityId: query.priority_id } : {}),
+    limit: query.limit,
+    ...(query.starting_after ? { startingAfter: query.starting_after } : {}),
+    ...(query.ending_before ? { endingBefore: query.ending_before } : {}),
   })
-  return sendWorkList(
-    res,
-    result,
-    `/v1/organizations/${organizationId}/tasks`
-  )
+  return sendWorkList(res, result, `/v1/organizations/${organizationId}/tasks`)
+}
+
+export async function retrieveTask(req: Request, res: Response) {
+  const { organizationId, taskId } = taskParamsSchema.parse(req.params)
+  const result = await service.retrieve(organizationId, taskId)
+  if (!result) return sendWorkError(res, 'work/task-not-found')
+  return sendWorkResult(res, result)
 }
 
 export async function createTask(req: Request, res: Response) {

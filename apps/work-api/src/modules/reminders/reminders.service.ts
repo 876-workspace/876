@@ -14,6 +14,9 @@ type ReminderRow = Awaited<ReturnType<typeof repository.list>>[number]
 type ListReminderFilter = {
   context?: WorkContext
   userId?: string
+  limit?: number
+  startingAfter?: string
+  endingBefore?: string
 }
 
 function fromUnixSeconds(seconds: number) {
@@ -24,7 +27,10 @@ function serializeTimestamp(date: Date | null) {
   return date ? Math.floor(date.getTime() / 1000) : null
 }
 
-function serialize(reminder: ReminderRow, organizationId: string): WorkReminder {
+function serialize(
+  reminder: ReminderRow,
+  organizationId: string
+): WorkReminder {
   const hasContext =
     reminder.contextService !== null &&
     reminder.contextResource !== null &&
@@ -76,6 +82,7 @@ export async function list(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
+  const limit = filter.limit ?? 25
   const rows = await repository.list(tenant.id, {
     ...(filter.context
       ? {
@@ -85,8 +92,24 @@ export async function list(
         }
       : {}),
     ...(filter.userId ? { userId: filter.userId } : {}),
+    limit,
+    ...(filter.startingAfter ? { startingAfter: filter.startingAfter } : {}),
+    ...(filter.endingBefore ? { endingBefore: filter.endingBefore } : {}),
   })
-  return rows.map((row) => serialize(row, organizationId))
+  const page = rows.slice(0, limit)
+  return {
+    data: (filter.endingBefore ? page.reverse() : page).map((row) =>
+      serialize(row, organizationId)
+    ),
+    hasMore: rows.length > limit,
+  }
+}
+
+export async function retrieve(organizationId: string, reminderId: string) {
+  const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
+  const row = await repository.retrieve(tenant.id, reminderId)
+  return row ? serialize(row, organizationId) : null
 }
 
 export async function create(

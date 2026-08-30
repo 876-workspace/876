@@ -22,6 +22,9 @@ function listPath(organizationId: string, filter: WorkReminderListFilter) {
     params.set('context_id', filter.context.id)
   }
   if (filter.userId) params.set('user_id', filter.userId)
+  if (filter.limit) params.set('limit', String(filter.limit))
+  if (filter.startingAfter) params.set('starting_after', filter.startingAfter)
+  if (filter.endingBefore) params.set('ending_before', filter.endingBefore)
   const query = params.toString()
   return `${root(organizationId)}${query ? `?${query}` : ''}`
 }
@@ -33,6 +36,16 @@ export function createRemindersResource(runtime: WorkRuntime) {
         runtime,
         { method: 'GET', path: listPath(organizationId, filter) },
         workReminderListSchema
+      )
+    },
+    retrieve(organizationId: string, reminderId: string) {
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/${encodeURIComponent(reminderId)}`,
+        },
+        workReminderSchema
       )
     },
     create(organizationId: string, input: CreateWorkReminderInput) {

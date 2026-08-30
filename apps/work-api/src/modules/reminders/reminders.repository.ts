@@ -3,10 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../db/index.js'
 import type { Prisma } from '../../db/generated/prisma/client.js'
 
-type CreateReminderParams = Omit<
-  Prisma.WorkReminderUncheckedCreateInput,
-  'id'
->
+type CreateReminderParams = Omit<Prisma.WorkReminderUncheckedCreateInput, 'id'>
 type UpdateReminderParams = Prisma.WorkReminderUncheckedUpdateInput
 
 type ReminderFilter = {
@@ -14,25 +11,81 @@ type ReminderFilter = {
   contextResource?: string
   contextId?: string
   userId?: string
+  limit: number
+  startingAfter?: string
+  endingBefore?: string
 }
 
-export const list = (tenantId: string, filter: ReminderFilter = {}) =>
-  prisma.workReminder.findMany({
+export async function list(tenantId: string, filter: ReminderFilter) {
+  const cursorId = filter.startingAfter ?? filter.endingBefore
+  const anchor = cursorId ? await retrieve(tenantId, cursorId) : null
+  if (cursorId && !anchor) return []
+
+  return prisma.workReminder.findMany({
     where: {
       tenantId,
       deletedAt: null,
-      ...(filter.contextService ? { contextService: filter.contextService } : {}),
-      ...(filter.contextResource ? { contextResource: filter.contextResource } : {}),
+      ...(filter.contextService
+        ? { contextService: filter.contextService }
+        : {}),
+      ...(filter.contextResource
+        ? { contextResource: filter.contextResource }
+        : {}),
       ...(filter.contextId ? { contextId: filter.contextId } : {}),
       ...(filter.userId ? { userId: filter.userId } : {}),
+      ...(anchor
+        ? filter.startingAfter
+          ? remindersAfter(anchor)
+          : remindersBefore(anchor)
+        : {}),
     },
-    orderBy: [{ remindAt: 'asc' }, { createdAt: 'asc' }],
+    orderBy: filter.endingBefore
+      ? [{ remindAt: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
+      : [{ remindAt: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+    take: filter.limit + 1,
   })
+}
 
 export const retrieve = (tenantId: string, reminderId: string) =>
   prisma.workReminder.findFirst({
     where: { tenantId, id: reminderId, deletedAt: null },
   })
+
+function remindersAfter(anchor: {
+  remindAt: Date
+  createdAt: Date
+  id: string
+}) {
+  return {
+    OR: [
+      { remindAt: { gt: anchor.remindAt } },
+      { remindAt: anchor.remindAt, createdAt: { gt: anchor.createdAt } },
+      {
+        remindAt: anchor.remindAt,
+        createdAt: anchor.createdAt,
+        id: { gt: anchor.id },
+      },
+    ],
+  }
+}
+
+function remindersBefore(anchor: {
+  remindAt: Date
+  createdAt: Date
+  id: string
+}) {
+  return {
+    OR: [
+      { remindAt: { lt: anchor.remindAt } },
+      { remindAt: anchor.remindAt, createdAt: { lt: anchor.createdAt } },
+      {
+        remindAt: anchor.remindAt,
+        createdAt: anchor.createdAt,
+        id: { lt: anchor.id },
+      },
+    ],
+  }
+}
 
 export const create = (params: CreateReminderParams) =>
   prisma.workReminder.create({

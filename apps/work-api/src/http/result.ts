@@ -28,7 +28,7 @@ export function sendWorkResult<T>(
 
 export function sendWorkList<T>(
   res: Response,
-  result: T[] | AppErrorValue,
+  result: { data: T[]; hasMore: boolean } | AppErrorValue,
   url: string
 ) {
   if (isError(result))
@@ -39,9 +39,9 @@ export function sendWorkList<T>(
   return res.json({
     data: {
       object: 'list',
-      data: result,
-      has_more: false,
-      total_count: result.length,
+      data: result.data,
+      has_more: result.hasMore,
+      total_count: null,
       url,
     },
     error: null,

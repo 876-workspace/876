@@ -14,6 +14,9 @@ type TaskRow = Awaited<ReturnType<typeof repository.list>>[number]
 type ListTaskFilter = {
   context?: WorkContext
   priorityId?: string
+  limit?: number
+  startingAfter?: string
+  endingBefore?: string
 }
 
 function fromUnixSeconds(seconds: number) {
@@ -78,6 +81,7 @@ export async function list(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
+  const limit = filter.limit ?? 25
   const rows = await repository.list(tenant.id, {
     ...(filter.context
       ? {
@@ -87,8 +91,24 @@ export async function list(
         }
       : {}),
     ...(filter.priorityId ? { priorityId: filter.priorityId } : {}),
+    limit,
+    ...(filter.startingAfter ? { startingAfter: filter.startingAfter } : {}),
+    ...(filter.endingBefore ? { endingBefore: filter.endingBefore } : {}),
   })
-  return rows.map((row) => serialize(row, organizationId))
+  const page = rows.slice(0, limit)
+  return {
+    data: (filter.endingBefore ? page.reverse() : page).map((row) =>
+      serialize(row, organizationId)
+    ),
+    hasMore: rows.length > limit,
+  }
+}
+
+export async function retrieve(organizationId: string, taskId: string) {
+  const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
+  const row = await repository.retrieve(tenant.id, taskId)
+  return row ? serialize(row, organizationId) : null
 }
 
 export async function create(
@@ -134,7 +154,9 @@ export async function update(
   const row = await repository.update(taskId, {
     ...(input.context === undefined ? {} : contextColumns(input.context)),
     ...(input.title === undefined ? {} : { title: input.title }),
-    ...(input.description === undefined ? {} : { description: input.description }),
+    ...(input.description === undefined
+      ? {}
+      : { description: input.description }),
     ...(input.status === undefined ? {} : { status: input.status }),
     ...(input.priorityId === undefined ? {} : { priorityId: input.priorityId }),
     ...(input.assigneeId === undefined ? {} : { assigneeId: input.assigneeId }),

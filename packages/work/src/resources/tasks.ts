@@ -22,6 +22,9 @@ function listPath(organizationId: string, filter: WorkTaskListFilter) {
     params.set('context_id', filter.context.id)
   }
   if (filter.priorityId) params.set('priority_id', filter.priorityId)
+  if (filter.limit) params.set('limit', String(filter.limit))
+  if (filter.startingAfter) params.set('starting_after', filter.startingAfter)
+  if (filter.endingBefore) params.set('ending_before', filter.endingBefore)
   const query = params.toString()
   return `${root(organizationId)}${query ? `?${query}` : ''}`
 }
@@ -35,6 +38,16 @@ export function createTasksResource(runtime: WorkRuntime) {
         workTaskListSchema
       )
     },
+    retrieve(organizationId: string, taskId: string) {
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/${encodeURIComponent(taskId)}`,
+        },
+        workTaskSchema
+      )
+    },
     create(organizationId: string, input: CreateWorkTaskInput) {
       return workRequest(
         runtime,
@@ -42,11 +55,7 @@ export function createTasksResource(runtime: WorkRuntime) {
         workTaskSchema
       )
     },
-    update(
-      organizationId: string,
-      taskId: string,
-      input: UpdateWorkTaskInput
-    ) {
+    update(organizationId: string, taskId: string, input: UpdateWorkTaskInput) {
       return workRequest(
         runtime,
         {
@@ -65,7 +74,11 @@ export function createTasksResource(runtime: WorkRuntime) {
           path: `${root(organizationId)}/${encodeURIComponent(taskId)}`,
           body: { deletedBy },
         },
-        z.object({ object: z.literal('task'), id: z.string(), deleted: z.literal(true) })
+        z.object({
+          object: z.literal('task'),
+          id: z.string(),
+          deleted: z.literal(true),
+        })
       )
     },
   }

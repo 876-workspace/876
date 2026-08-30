@@ -28,12 +28,22 @@ export async function listReminders(req: Request, res: Response) {
   const result = await service.list(organizationId, {
     ...(context ? { context } : {}),
     ...(query.user_id ? { userId: query.user_id } : {}),
+    limit: query.limit,
+    ...(query.starting_after ? { startingAfter: query.starting_after } : {}),
+    ...(query.ending_before ? { endingBefore: query.ending_before } : {}),
   })
   return sendWorkList(
     res,
     result,
     `/v1/organizations/${organizationId}/reminders`
   )
+}
+
+export async function retrieveReminder(req: Request, res: Response) {
+  const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
+  const result = await service.retrieve(organizationId, reminderId)
+  if (!result) return sendWorkError(res, 'work/reminder-not-found')
+  return sendWorkResult(res, result)
 }
 
 export async function createReminder(req: Request, res: Response) {
