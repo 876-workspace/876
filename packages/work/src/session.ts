@@ -12,12 +12,11 @@ import { createTaskAssignmentsResource } from './resources/task-assignments'
 import { createTaskLinksResource } from './resources/task-links'
 import { createTaskListsResource } from './resources/task-lists'
 import { createTasksResource } from './resources/tasks'
-import { createWorkRuntime, type WorkOperatorClientOptions } from './runtime'
-import { createWorkWorkspaceClient } from './workspace'
+import { createWorkSessionRuntime, type WorkSessionClientOptions } from './runtime'
 
-/** Server-only operator client used by 876-owned orchestration surfaces. */
-export function create876WorkOperatorClient(options: WorkOperatorClientOptions) {
-  const runtime = createWorkRuntime(options)
+/** Creates the signed-in-user Work client: app credential + bearer access token. */
+export function create876WorkSessionClient(options: WorkSessionClientOptions = {}) {
+  const runtime = createWorkSessionRuntime(options)
   return {
     tasks: createTasksResource(runtime),
     taskLists: createTaskListsResource(runtime),
@@ -33,9 +32,8 @@ export function create876WorkOperatorClient(options: WorkOperatorClientOptions) 
     syncConnections: createSyncConnectionsResource(runtime),
     syncMappings: createSyncMappingsResource(runtime),
     exports: createExportsResource(runtime),
-    workspace: createWorkWorkspaceClient(runtime),
   }
 }
 
-export type WorkOperatorClient = ReturnType<typeof create876WorkOperatorClient>
-export type { WorkOperatorClientOptions } from './runtime'
+export type WorkSessionClient = ReturnType<typeof create876WorkSessionClient>
+export type { WorkSessionClientOptions } from './runtime'

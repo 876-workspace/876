@@ -21,7 +21,12 @@ function listPath(organizationId: string, filter: WorkTaskListFilter) {
     params.set('context_resource', filter.context.resource)
     params.set('context_id', filter.context.id)
   }
+  if (filter.listId) params.set('list_id', filter.listId)
+  if (filter.parentTaskId !== undefined)
+    params.set('parent_task_id', filter.parentTaskId ?? '')
   if (filter.priorityId) params.set('priority_id', filter.priorityId)
+  if (filter.assigneeId) params.set('assignee_id', filter.assigneeId)
+  if (filter.status) params.set('status', filter.status)
   if (filter.limit) params.set('limit', String(filter.limit))
   if (filter.startingAfter) params.set('starting_after', filter.startingAfter)
   if (filter.endingBefore) params.set('ending_before', filter.endingBefore)
