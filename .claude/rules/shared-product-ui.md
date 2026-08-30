@@ -1,130 +1,115 @@
 # Shared Product UI Surfaces
 
-Read this before building a product screen that more than one 876 surface will
-render — a CRM customer record shown in both 876 CRM and Console, a Work task
-list shown in CRM and a future careers app, an invoice document shown in Invoice
-and Billing — and before creating a new product app that reuses any existing
-domain UI.
+Read this before building a product screen that more than one 876 surface will render — a CRM customer record shown in both 876 CRM and Console, a Work task list shown in CRM and another app, or an invoice document shown in Invoice and Billing.
 
-Companion to `.claude/rules/app-structure.md` (where a component lives inside
-one app), `.claude/rules/access-tiers.md` (on whose authority the host calls),
-and `.claude/rules/app-layout.md` (what a page looks like).
-
-## The problem
-
-The same domain screen ends up implemented twice — once in the product app,
-once in Console — and the two drift. A tab is added in one and not the other; a
-status badge means different things; a field renders in CRM and is missing in
-the operator view of the same record. Nobody notices, because both compile.
+Companion to `app-structure.md`, `access-tiers.md`, `sdk-conventions.md`, and `app-layout.md`.
 
 ## The rule
 
-> **A product screen that more than one host renders is defined once, in a
-> `@876/<product>-ui` package. Hosts adapt it; they never re-implement it.**
+> **A product screen that more than one host renders is defined once in a `@876/<product>-ui` package. Hosts adapt it; they never re-implement it.**
 
-```
+```text
 packages/ui         design-system primitives — no domain knowledge
 packages/<p>-ui     one product's screens — no host knowledge
-apps/<host>         routing, data, authorization, mutations
+apps/<host>         routing, data, authorization, mutations, host chrome
 ```
 
-Existing packages: `@876/crm-ui`, `@876/work-ui`. A new product domain with two
-hosts gets its own; a domain with exactly one host stays in that app under
-`features/<domain>/` until a second host appears (`app-structure.md`).
+Existing packages include `@876/crm-ui` and `@876/work-ui`. A domain with one host stays app-local until a second host needs the same product surface.
 
-## What the package owns, and what it must not
+## Product UI owns presentation, hosts own authority and transport
 
-A `<product>-ui` package owns **presentation and product composition**: the
-record chrome, the tab set, the list/detail arrangement, the field layout, the
-empty and loading treatments. That is the part that must not differ between
-hosts.
+A `<product>-ui` package owns presentation and product composition: record chrome, tab sets, list/detail composition, domain forms, empty/loading states, and display of typed product objects.
 
-It must not own, and must not import:
+It must not own or import:
 
-- **routing** — no hard-coded paths. A host passes `baseHref` /
-  `customersHref`; the package concatenates. A path literal in a shared package
-  is a host assumption that will be wrong for the second host.
-- **data loading** — no `$876`, no service client, no `fetch`. Hosts load and
-  pass plain props.
-- **authorization** — no permission checks, no session reads. A host that may
-  not show an action does not pass it (`actions`, `newCustomerHref`), and the
-  package renders nothing rather than deciding.
-- **mutations** — no route-handler calls. Callbacks in, host decides.
-- **another host's app code** — never import from `apps/`.
+- routing assumptions — hosts pass href/base-href builders;
+- data loading — no `$876`, no session/service/operator client, no raw `fetch`;
+- authorization/session resolution;
+- host API route calls;
+- another host's app code.
 
-It may depend on `@876/ui`, `@876/core`, and its own product's contract package
-(`@876/crm`, `@876/work`) for types.
+It may depend on `@876/ui`, `@876/core`, and its own product contract package for types (`@876/crm`, `@876/work`, etc.).
 
-**Host-only affordances are explicit props, not conditionals on a host name.** A
-shared component must never branch on "is this Console". If it needs to know,
-the caller was supposed to tell it.
+Host-only affordances are explicit props, never branches on a host name.
 
-## Every app transpiles the shared list, automatically
+## Host data loading
 
-These packages ship raw `.tsx`, so every Next app must list them in
-`transpilePackages`. Doing that per app is exactly the drift this rule exists to
-prevent, so no app writes the list itself:
+The host loads product data through its **app-local bounded client** at the correct caller principal and passes plain data/actions into shared UI.
+
+Examples:
+
+```ts
+// Console host
+import { crm } from '@/lib/services/crm'
+const result = await crm.requests.retrieve(organizationId, requestId)
+
+// standalone product session host
+const crm = await getCrm()
+const result = await crm.requests.retrieve(organizationId, requestId)
+```
+
+Do not route shared UI through a global `$876` facade. `$876` is the Account root; CRM/Work/etc. remain explicit bounded roots.
+
+The shared package must not care whether the host used `session`, `service`, or `operator`; the host resolves that authority before rendering.
+
+## Browser mutations
+
+Interactive shared UI receives callbacks. The host callback uses its own typed browser client to call the host's same-origin `/api/...` route. The shared package never knows the internal service URL or server credential.
+
+The host route authorizes and invokes the owning bounded service client. Business logic remains in the owning API/service.
+
+## Shared transpilation list
+
+Shared product UI packages ship raw TS/TSX, so all Next.js apps consume the central shared list:
 
 ```ts
 import { sharedTranspilePackages } from '../../scripts/shared-ui-packages.mjs'
 
 const nextConfig: NextConfig = {
-  transpilePackages: sharedTranspilePackages(['@876/sdk', '@876/core']),
+  transpilePackages: sharedTranspilePackages([
+    '@876/account',
+    '@876/crm',
+    '@876/core',
+  ]),
 }
 ```
 
-Adding a package to `SHARED_UI_PACKAGES` in `scripts/shared-ui-packages.mjs`
-wires it into every existing app and every future one — careers, events, and
-whatever comes after — with no per-app edit. `pnpm check:transpile` enforces
-this in CI.
+Only app-specific **non-UI** workspace packages belong in that local argument. The product-UI package list itself lives in `scripts/shared-ui-packages.mjs`. `pnpm check:transpile` enforces the shared list.
 
-**A missing entry does not fail the build.** It fails in the browser, as
-`Element type is invalid. Received a promise that resolves to: undefined`, at
-the first client component the package exports. That is how `@876/crm-ui` and
-`@876/work-ui` broke Console's CRM workspace on 2026-08-30, and it is why the
-list is shared rather than copied.
+## Compatibility delegates for UI moves
 
-## Compatibility delegates
+When a React surface moves out of generic `@876/ui` into `@876/<product>-ui`, an existing `@876/ui/<name>` entrypoint may remain as a one-line compatibility re-export where the shared-product-UI migration explicitly requires it. That compatibility policy is specific to UI package moves and does **not** authorize compatibility aliases for the retired global service-client facade.
 
-When a surface moves out of `@876/ui` into a product package, the old
-`@876/ui/<name>` entry point stays as a one-line re-export rather than being
-deleted:
+There must still be exactly one React implementation.
 
-```ts
-export { WorkTaskList, type WorkTaskListProps } from '@876/work-ui/task-list'
-```
+## Adding a host to an existing product surface
 
-There is then still exactly one implementation, and no caller has to be updated
-in the same change as the move.
+1. Add `@876/<product>-ui` to the host.
+2. Write a thin host adapter in the approved `features/<domain>/components` location.
+3. Load data through the host's app-local bounded client (`crm`, `work`, etc.) at the correct principal.
+4. Pass plain props, hrefs, and callbacks into shared UI.
+5. Authorize in host guards/route handlers, never in the product UI package.
+6. If a legitimate variation is missing, add a typed prop rather than forking the product component.
 
-## Adding a new host to an existing surface
+## Console host invariant
 
-1. Add the `@876/<product>-ui` dependency to the host's `package.json`.
-2. Write a **thin adapter** in `apps/<host>/src/features/<domain>/components/`
-   that supplies the host's `baseHref`, its tab subset, and its permitted
-   actions.
-3. Load the data in the host, through its own `$876` facade at its own access
-   tier, and pass plain props.
-4. Authorize in the host's route guard and route handlers — never in the
-   package.
-5. If the host needs a variation the package cannot express, **add a prop to
-   the package**. Forking the component is the failure mode this rule forbids.
+Console owns Console shell/navigation/workspace chrome. A shared CRM/Work surface fills the product-content region; it never replaces Console's organization workspace rail or adopts Console-specific permission logic.
+
+Likewise, standalone product apps retain their own shell/routing. Shared product UI is not route sharing, an iframe, or application-shell sharing.
 
 ## Creating a new product app
 
-Beyond `.claude/rules/new-app-guide.md`: the new app inherits every shared
-surface through `sharedTranspilePackages()` and needs no UI of its own for a
-domain that already has a `<product>-ui` package. Build genuinely new screens in
-`features/<domain>/` first, and promote them to a package only when a second
-host renders them.
+A new product app reuses existing shared product surfaces rather than copying them. Build new one-host screens app-locally first and promote them into a `<product>-ui` package only when another host needs them.
+
+The app declares only the bounded service packages it actually uses; shared UI does not imply access to every backend service.
 
 ## Do not
 
-- Do not copy a product screen into a second host.
-- Do not put a route path, a data call, a session read, or a permission check in
-  a `<product>-ui` package.
-- Do not branch on the host inside a shared component.
-- Do not import `apps/` from `packages/`.
-- Do not hand-write `transpilePackages` in an app's `next.config.ts`.
-- Do not delete a moved `@876/ui` entry point; leave a delegate.
-- Do not promote a surface to a package before a second host needs it.
+- do not copy a product screen into a second host;
+- do not put routes, data calls, sessions, credentials, or permission checks in `<product>-ui`;
+- do not import a bounded server client from `<product>-ui`;
+- do not branch on the host name inside shared components;
+- do not import `apps/` from `packages/`;
+- do not hand-copy the shared UI transpile list into each app;
+- do not use the old `$876` mega-facade as the host data source;
+- do not confuse UI compatibility delegates with permission to retain service-client compatibility facades.
