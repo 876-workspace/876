@@ -18,7 +18,6 @@ import {
 import { $876, workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
-import { ProvisioningNav } from '../../_components/provisioning-nav'
 import { RetryRunButton } from '../_components/run-actions'
 import { RunStatus } from '../_components/run-status'
 
@@ -35,9 +34,6 @@ export default function ProvisioningRunPage({ params }: Props) {
         label="Runs"
         className="mb-4"
       />
-      <div className="border-border border-b pb-px">
-        <ProvisioningNav />
-      </div>
 
       <Suspense fallback={<ProvisioningRunFallback />}>
         <ProvisioningRunData params={params} />

@@ -9,17 +9,12 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { ProvisioningNav } from '../../_components/provisioning-nav'
-
 export default function Loading() {
   return (
     <Page className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <h1 className="876-page-title">Provisioning</h1>
         <Skeleton className="h-9 w-32" />
-      </div>
-      <div className="border-border border-b pb-px">
-        <ProvisioningNav />
       </div>
 
       <Skeleton className="h-[86px] w-full rounded-lg" />
