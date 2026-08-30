@@ -28,7 +28,7 @@ const DETAIL_TABS: { value: TabKey; label: string }[] = [
   { value: 'activity', label: 'Activity' },
 ]
 
-export function CustomerDetail({
+export function CustomerCard({
   customer,
   onClose,
   className,

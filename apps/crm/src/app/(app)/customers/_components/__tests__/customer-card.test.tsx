@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-import { CustomerDetail } from '../customer-detail'
+import { CustomerCard } from '../customer-card'
 import type { CrmCustomerRow } from '../customers-table'
 
 const mocks = vi.hoisted(() => ({
@@ -53,7 +53,7 @@ const sampleCustomer: CrmCustomerRow = {
   updatedAt: 1720000500,
 }
 
-describe('CustomerDetail', () => {
+describe('CustomerCard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(window, 'confirm').mockReturnValue(true)
@@ -61,7 +61,7 @@ describe('CustomerDetail', () => {
 
   it('renders customer header, metadata, and party cards', () => {
     const onClose = vi.fn()
-    render(<CustomerDetail customer={sampleCustomer} onClose={onClose} />)
+    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
 
     expect(screen.getByText('Island Traders Ltd')).toBeInTheDocument()
     expect(
@@ -87,7 +87,7 @@ describe('CustomerDetail', () => {
 
   it('calls onClose when clicking close button', () => {
     const onClose = vi.fn()
-    render(<CustomerDetail customer={sampleCustomer} onClose={onClose} />)
+    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
 
     const closeBtn = screen.getByLabelText('Close customer details')
     fireEvent.click(closeBtn)
@@ -100,7 +100,7 @@ describe('CustomerDetail', () => {
       data: { profile: { status: 'INACTIVE' } },
     })
     const onClose = vi.fn()
-    render(<CustomerDetail customer={sampleCustomer} onClose={onClose} />)
+    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
 
     const moreBtn = screen.getByLabelText('More customer actions')
     fireEvent.click(moreBtn)
@@ -120,7 +120,7 @@ describe('CustomerDetail', () => {
   it('handles customer deletion', async () => {
     mocks.delete.mockResolvedValueOnce({ data: { object: 'customer' } })
     const onClose = vi.fn()
-    render(<CustomerDetail customer={sampleCustomer} onClose={onClose} />)
+    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
 
     const moreBtn = screen.getByLabelText('More customer actions')
     fireEvent.click(moreBtn)

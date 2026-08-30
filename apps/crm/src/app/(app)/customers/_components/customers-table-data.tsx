@@ -64,17 +64,21 @@ export async function CustomersTableData({ status, selectedId }: Props) {
   }
 
   return (
-    // Participates in the page's flex column so the split below can bound its
-    // own height; inert on the plain-table route, where Page is not a flexbox.
-    <div className="space-y-3 md:flex md:min-h-0 md:flex-1 md:flex-col">
+    /*
+     * A fragment, not a wrapper div: while a panel is open the split's two
+     * columns must be direct items of the page grid, and any box here would
+     * absorb that slot and collapse the layout back to one column.
+     */
+    <>
       {result.error ? (
         <AppError
           title="Some customer data could not be loaded"
           error={result.error}
           variant="banner"
+          className="md:col-start-1 md:row-start-2 md:mb-3"
         />
       ) : null}
       <CustomerSplit customers={rows} selectedId={selectedId} />
-    </div>
+    </>
   )
 }

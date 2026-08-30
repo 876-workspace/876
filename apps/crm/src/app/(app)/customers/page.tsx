@@ -19,6 +19,19 @@ const STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'inactive', label: 'Inactive' },
 ]
 
+/**
+ * Two-column grid used while a panel is open. Column 1 stacks the toolbar,
+ * an optional error banner, and the list — so the list still sits under the
+ * heading exactly as it does on the plain list view. The panel takes column 2
+ * across ALL THREE rows, which is what lets it start at the very top rather
+ * than being pushed down by the toolbar.
+ *
+ * The middle row is `auto` and collapses to zero height when no banner is
+ * rendered, so the common case costs nothing.
+ */
+const SPLIT_GRID =
+  'md:grid md:h-full md:min-h-0 md:grid-cols-[18rem_minmax(0,1fr)] md:grid-rows-[auto_auto_minmax(0,1fr)] md:gap-x-4 md:gap-y-0 lg:grid-cols-[20rem_minmax(0,1fr)]'
+
 type Props = {
   searchParams: Promise<{
     status?: string
@@ -31,13 +44,8 @@ export default async function CustomersPage({ searchParams }: Props) {
   const split = Boolean(customer)
 
   return (
-    /*
-     * With a panel open the page becomes a fixed-height flex column filling
-     * the shell's scroll area, so the list and the panel each own their own
-     * scrollbar instead of the whole main column scrolling as one.
-     */
-    <Page className={split ? 'md:flex md:h-full md:min-h-0 md:flex-col' : ''}>
-      <div className="shrink-0">
+    <Page className={split ? SPLIT_GRID : ''}>
+      <div className="md:col-start-1 md:row-start-1">
         <ResourceToolbar
           title="Customers"
           titleFilter={
@@ -47,7 +55,13 @@ export default async function CustomersPage({ searchParams }: Props) {
               options={STATUS_OPTIONS}
             />
           }
-          primaryLabel="Add"
+          /*
+           * The Add action belongs to the list view. While a panel is open the
+           * panel is the subject, and a second create affordance beside it
+           * competes with the record on screen — so the heading stays and the
+           * button stands down. Reaching create from here is the row itself.
+           */
+          primaryLabel={split ? undefined : 'Add'}
           primaryHref={
             status !== 'all'
               ? `/customers?status=${status}&customer=new`
@@ -56,8 +70,15 @@ export default async function CustomersPage({ searchParams }: Props) {
           primaryVariant="info"
         />
       </div>
+      {/*
+       * Keyed on status alone, NOT on the selected customer. Including the
+       * customer id remounted this boundary on every row click, so each open
+       * threw away the rendered split and flashed the skeleton — the blink.
+       * The selection changes no data this component fetches, so the boundary
+       * should survive it and let the panel animate in over live content.
+       */}
       <Suspense
-        key={`${status}-${customer}`}
+        key={status}
         fallback={
           customer ? (
             <CustomerSplitSkeleton />
