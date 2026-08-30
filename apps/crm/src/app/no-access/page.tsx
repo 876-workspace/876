@@ -10,10 +10,14 @@ export default function NoAccessPage() {
       <div className="w-full space-y-4 rounded-xl border p-6 text-center">
         <h1 className="876-page-title">CRM access unavailable</h1>
         <p className="text-muted-foreground text-sm">
-          This organization does not currently allow this account to use 876 CRM.
+          This organization does not currently allow this account to use 876
+          CRM.
         </p>
         <div className="flex justify-center gap-2">
-          <Link href="/login" className={buttonVariants({ variant: 'outline' })}>
+          <Link
+            href="/login"
+            className={buttonVariants({ variant: 'outline' })}
+          >
             Change account
           </Link>
           <a href={APP_URL} className={buttonVariants({ variant: 'info' })}>

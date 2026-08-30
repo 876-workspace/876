@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo } from 'react'
-import { useSearchParams, useSelectedLayoutSegments } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useDetailSegments } from '@876/ui/list-detail-shell'
 import type { CrmCustomerRow } from '@/features/customers/types'
 import { Table, TableBody, TableCell, TableRow } from '@876/ui/table'
 
@@ -21,7 +22,7 @@ type Props = {
  * place rather than twice.
  */
 export function CustomerList({ customers }: Props) {
-  const segments = useSelectedLayoutSegments()
+  const segments = useDetailSegments()
   const searchParams = useSearchParams()
   const selectedId = segments[0] ?? null
   const open = selectedId !== null

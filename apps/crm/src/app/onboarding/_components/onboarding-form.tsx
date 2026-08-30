@@ -42,7 +42,10 @@ export function OnboardingForm({
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-lg items-center px-4 py-10">
-      <form onSubmit={handleSubmit} className="w-full space-y-5 rounded-xl border p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full space-y-5 rounded-xl border p-6"
+      >
         <div>
           <h1 className="876-page-title">
             {existingOrgName ? 'Add 876 CRM' : 'Set up your organization'}
@@ -83,7 +86,11 @@ export function OnboardingForm({
           className="w-full"
           disabled={submitting || (!existingOrgName && !name.trim())}
         >
-          {submitting ? 'Setting up…' : existingOrgName ? 'Add 876 CRM' : 'Continue'}
+          {submitting
+            ? 'Setting up…'
+            : existingOrgName
+              ? 'Add 876 CRM'
+              : 'Continue'}
         </Button>
       </form>
     </main>
