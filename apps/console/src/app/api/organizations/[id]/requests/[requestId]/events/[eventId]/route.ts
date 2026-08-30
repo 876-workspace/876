@@ -1,16 +1,16 @@
+import type { CrmOperatorClient } from '@876/crm/operator'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { createConsole876Client } from '@/lib/876'
 import { requireConsoleCrmPermission } from '@/lib/auth/route-guard'
-import type { Console876Client } from '@/lib/876'
+import { createCrm } from '@/lib/services/crm'
 
 export const runtime = 'nodejs'
 
 type Context = {
   params: Promise<{ id: string; requestId: string; eventId: string }>
 }
-type RequestEventsResource = Console876Client['requestEvents']
+type RequestEventsResource = CrmOperatorClient['requestEvents']
 type UpdateRequestEventInput = Parameters<RequestEventsResource['update']>[3]
 type DeleteRequestEventInput = Parameters<RequestEventsResource['delete']>[3]
 
@@ -27,8 +27,8 @@ export async function PATCH(request: NextRequest, context: Context) {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requestEvents.update(
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requestEvents.update(
     organizationId,
     requestId,
     eventId,
@@ -52,8 +52,8 @@ export async function DELETE(request: NextRequest, context: Context) {
   if (response) return response
 
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requestEvents.delete(
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requestEvents.delete(
     organizationId,
     requestId,
     eventId,

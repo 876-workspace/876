@@ -1,17 +1,17 @@
+import type { CrmOperatorClient } from '@876/crm/operator'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { createConsole876Client } from '@/lib/876'
 import {
   requireConsoleCrmPermission,
   requireConsolePermission,
 } from '@/lib/auth/route-guard'
-import type { Console876Client } from '@/lib/876'
+import { createCrm } from '@/lib/services/crm'
 
 export const runtime = 'nodejs'
 
 type Context = { params: Promise<{ id: string; requestId: string }> }
-type RequestEventsResource = Console876Client['requestEvents']
+type RequestEventsResource = CrmOperatorClient['requestEvents']
 type CreateRequestEventInput = Parameters<RequestEventsResource['create']>[2]
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
   ? Omit<T, K>
@@ -27,11 +27,8 @@ export async function GET(request: NextRequest, context: Context) {
 
   const { id: organizationId, requestId } = await context.params
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requestEvents.list(
-    organizationId,
-    requestId
-  )
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requestEvents.list(organizationId, requestId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to list request events.' },
@@ -55,8 +52,8 @@ export async function POST(request: NextRequest, context: Context) {
 
   const input = body as BrowserCreateRequestEventInput
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requestEvents.create(
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requestEvents.create(
     organizationId,
     requestId,
     { ...input, createdBy: sessionUser.id } as CreateRequestEventInput

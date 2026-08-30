@@ -1,17 +1,17 @@
+import type { CrmOperatorClient } from '@876/crm/operator'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { createConsole876Client } from '@/lib/876'
 import {
   requireConsoleCrmPermission,
   requireConsolePermission,
 } from '@/lib/auth/route-guard'
-import type { Console876Client } from '@/lib/876'
+import { createCrm } from '@/lib/services/crm'
 
 export const runtime = 'nodejs'
 
 type Context = { params: Promise<{ id: string; requestId: string }> }
-type RequestsResource = Console876Client['requests']
+type RequestsResource = CrmOperatorClient['requests']
 type UpdateRequestInput = Parameters<RequestsResource['update']>[2]
 type DeleteInput = Parameters<RequestsResource['delete']>[2]
 
@@ -21,11 +21,8 @@ export async function GET(request: NextRequest, context: Context) {
 
   const { id: organizationId, requestId } = await context.params
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requests.retrieve(
-    organizationId,
-    requestId
-  )
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requests.retrieve(organizationId, requestId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to retrieve request.' },
@@ -47,8 +44,8 @@ export async function PATCH(request: NextRequest, context: Context) {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requests.update(
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requests.update(
     organizationId,
     requestId,
     body as UpdateRequestInput
@@ -74,8 +71,8 @@ export async function DELETE(request: NextRequest, context: Context) {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const traceId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(traceId)
-  const { data, error } = await $876.requests.delete(
+  const crm = createCrm(traceId)
+  const { data, error } = await crm.requests.delete(
     organizationId,
     requestId,
     body as DeleteInput
