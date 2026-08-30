@@ -157,12 +157,28 @@ export const FINANCE_BOOTSTRAP_RESOURCES: ResourceDef[] = [
 ]
 
 export const FINANCE_BOOTSTRAP_STEPS: StepDef[] = [
-  { key: 'workspace', description: 'Create the finance workspace.', position: 0 },
-  { key: 'currencies', description: 'Create configured currencies.', position: 10 },
+  {
+    key: 'workspace',
+    description: 'Create the finance workspace.',
+    position: 0,
+  },
+  {
+    key: 'currencies',
+    description: 'Create configured currencies.',
+    position: 10,
+  },
   { key: 'payment-modes', description: 'Create payment modes.', position: 20 },
   { key: 'payment-terms', description: 'Create payment terms.', position: 30 },
-  { key: 'invoice-preferences', description: 'Create invoice preferences.', position: 40 },
-  { key: 'tax-authorities', description: 'Create tax authorities.', position: 50 },
+  {
+    key: 'invoice-preferences',
+    description: 'Create invoice preferences.',
+    position: 40,
+  },
+  {
+    key: 'tax-authorities',
+    description: 'Create tax authorities.',
+    position: 50,
+  },
   { key: 'tax-rates', description: 'Create tax rates.', position: 60 },
 ]
 
@@ -215,9 +231,21 @@ const CRM_BOOTSTRAP_RESOURCES: ResourceDef[] = [
 ]
 
 const CRM_BOOTSTRAP_STEPS: StepDef[] = [
-  { key: 'request-priorities', description: 'Create CRM request priorities.', position: 10 },
-  { key: 'request-categories', description: 'Create CRM request categories.', position: 20 },
-  { key: 'request-subcategories', description: 'Create configured CRM request subcategories.', position: 30 },
+  {
+    key: 'request-priorities',
+    description: 'Create CRM request priorities.',
+    position: 10,
+  },
+  {
+    key: 'request-categories',
+    description: 'Create CRM request categories.',
+    position: 20,
+  },
+  {
+    key: 'request-subcategories',
+    description: 'Create configured CRM request subcategories.',
+    position: 30,
+  },
 ]
 
 type PlatformAppProvisioningDef = {
@@ -303,7 +331,9 @@ function revisionContent(revision: {
           valueType: property.valueType,
           stringValue: property.stringValue,
           integerValue: property.integerValue?.toString() ?? null,
-          decimalValue: property.decimalValue ? String(property.decimalValue) : null,
+          decimalValue: property.decimalValue
+            ? String(property.decimalValue)
+            : null,
           booleanValue: property.booleanValue,
           referenceNamespace: property.referenceNamespace,
           referenceKey: property.referenceKey,
@@ -357,7 +387,9 @@ async function seedStaticTarget(params: {
 }): Promise<boolean> {
   const published = await findPublished(params.targetType, params.targetKey)
   if (published) return false
-  if (await hasUnpublishedChanges(params.targetType, params.targetKey, published))
+  if (
+    await hasUnpublishedChanges(params.targetType, params.targetKey, published)
+  )
     return false
 
   const now = BigInt(nowUnixSeconds())
@@ -377,7 +409,8 @@ async function seedStaticTarget(params: {
         valueType: property.value_type,
         stringValue: property.string_value ?? null,
         integerValue:
-          property.integer_value !== null && property.integer_value !== undefined
+          property.integer_value !== null &&
+          property.integer_value !== undefined
             ? BigInt(property.integer_value)
             : null,
         decimalValue: property.decimal_value ?? null,
@@ -458,8 +491,12 @@ async function seedApplication(
           key: property.key,
           value_type: property.valueType,
           string_value: property.stringValue,
-          integer_value: property.integerValue ? Number(property.integerValue) : null,
-          decimal_value: property.decimalValue ? String(property.decimalValue) : null,
+          integer_value: property.integerValue
+            ? Number(property.integerValue)
+            : null,
+          decimal_value: property.decimalValue
+            ? String(property.decimalValue)
+            : null,
           boolean_value: property.booleanValue,
           reference_namespace: property.referenceNamespace,
           reference_key: property.referenceKey,
@@ -486,7 +523,12 @@ async function seedApplication(
     published.financeDependency === definition.financeDependency &&
     [...published.financeScopes].sort().join(',') === desiredScopes.join(',')
 
-  if (published && financeMatches && missingResources.length === 0 && missingSteps.length === 0)
+  if (
+    published &&
+    financeMatches &&
+    missingResources.length === 0 &&
+    missingSteps.length === 0
+  )
     return false
 
   resources = [...resources, ...missingResources]
@@ -509,7 +551,8 @@ async function seedApplication(
         valueType: property.value_type,
         stringValue: property.string_value ?? null,
         integerValue:
-          property.integer_value !== null && property.integer_value !== undefined
+          property.integer_value !== null &&
+          property.integer_value !== undefined
             ? BigInt(property.integer_value)
             : null,
         decimalValue: property.decimal_value ?? null,

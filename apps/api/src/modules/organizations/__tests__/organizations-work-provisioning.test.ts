@@ -22,7 +22,8 @@ vi.mock('@/services/finance-provisioning-readiness', () => ({
   ensureAppReady: mocks.ensureAppReady,
 }))
 vi.mock('@/services/finance-provisioning.repository', () => ({
-  createFinanceProvisioningRepository: mocks.createFinanceProvisioningRepository,
+  createFinanceProvisioningRepository:
+    mocks.createFinanceProvisioningRepository,
 }))
 vi.mock('@/services/workspace', () => ({
   workspace: { work: { ensure: mocks.ensureWork } },
@@ -88,8 +89,8 @@ describe('organization subscription Work provisioning', () => {
       organizationId: 'org_1',
       appIds: ['app_crm'],
     })
-    expect(
-      mocks.ensureAppReady.mock.invocationCallOrder[0]
-    ).toBeLessThan(mocks.ensureWork.mock.invocationCallOrder[0]!)
+    expect(mocks.ensureAppReady.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.ensureWork.mock.invocationCallOrder[0]!
+    )
   })
 })
