@@ -1,0 +1,62 @@
+{
+  "name": "@876/crm-ui",
+  "version": "0.1.0",
+  "description": "Reusable React surfaces for the 876 CRM product domain.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    "./customer-list-shell": {
+      "types": "./src/customer-list-shell.tsx",
+      "default": "./src/customer-list-shell.tsx"
+    },
+    "./customer-list": {
+      "types": "./src/customer-list.tsx",
+      "default": "./src/customer-list.tsx"
+    },
+    "./customer-card-frame": {
+      "types": "./src/customer-card-frame.tsx",
+      "default": "./src/customer-card-frame.tsx"
+    },
+    "./customer-overview": {
+      "types": "./src/customer-overview.tsx",
+      "default": "./src/customer-overview.tsx"
+    },
+    "./request-record-shell": {
+      "types": "./src/request-record-shell.tsx",
+      "default": "./src/request-record-shell.tsx"
+    },
+    "./request-events": {
+      "types": "./src/request-events.tsx",
+      "default": "./src/request-events.tsx"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@876/crm": "workspace:*",
+    "@876/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^16.3.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.0.5",
+    "jsdom": "30.0.1",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

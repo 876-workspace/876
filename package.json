@@ -41,6 +41,7 @@
     "build": "turbo run build",
     "lint": "turbo lint",
     "check:structure": "node scripts/check-app-structure.mjs console billing couriers 876 enterprise",
+    "check:transpile": "node scripts/check-shared-ui-transpile.mjs",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "boundaries": "turbo boundaries",

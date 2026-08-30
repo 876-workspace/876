@@ -1,5 +1,5 @@
 import { resolveCustomerIdentity } from './customer-identity'
-import type { CrmCustomerRow } from './components/customers-table'
+import type { CrmCustomerRow } from '@876/crm-ui/customer-list'
 
 /** The shape `$876.customerProfiles.list()` returns one of. */
 type CustomerProfileEntry = {

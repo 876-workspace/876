@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@876/sdk": "workspace:*",
-    "@876/work": "workspace:*",
+    "@876/work-ui": "workspace:*",
     "@base-ui/react": "1.7.0",
     "@heroicons/react": "2.2.0",
     "@tanstack/react-table": "^9.1.2",

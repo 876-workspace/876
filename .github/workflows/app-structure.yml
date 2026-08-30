@@ -49,6 +49,12 @@ jobs:
       - name: Structural invariants
         run: pnpm check:structure
 
+      # Every Next app must build transpilePackages from the shared list, or a
+      # shared UI package renders as `undefined` in the browser with no build
+      # error. See scripts/shared-ui-packages.mjs.
+      - name: Shared UI transpile sync
+        run: pnpm check:transpile
+
       # Every bundled Express service must inline its @876/* workspace deps into
       # the container bundle. These packages ship raw TypeScript, so an
       # un-inlined import builds green but crashes the container at boot with

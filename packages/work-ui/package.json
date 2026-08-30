@@ -1,0 +1,39 @@
+{
+  "name": "@876/work-ui",
+  "version": "0.1.0",
+  "description": "Reusable React surfaces for the 876 Work productivity plane.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    "./task-list": {
+      "types": "./src/task-list.tsx",
+      "default": "./src/task-list.tsx"
+    },
+    "./agenda": {
+      "types": "./src/agenda.tsx",
+      "default": "./src/agenda.tsx"
+    },
+    "./calendar-list": {
+      "types": "./src/calendar-list.tsx",
+      "default": "./src/calendar-list.tsx"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@876/core": "workspace:*",
+    "@876/work": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "react": "19.2.8",
+    "typescript": "5.9.3"
+  }
+}

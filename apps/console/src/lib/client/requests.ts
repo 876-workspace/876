@@ -5,6 +5,7 @@ import { request } from './request'
 type RequestsResource = Console876Client['requests']
 type RequestTasksResource = Console876Client['requestTasks']
 type RequestRemindersResource = Console876Client['requestReminders']
+type RequestEventsResource = Console876Client['requestEvents']
 type RequestNotesResource = Console876Client['requestNotes']
 type CreateRequestInput = Parameters<RequestsResource['create']>[1]
 type UpdateRequestInput = Parameters<RequestsResource['update']>[2]
@@ -30,6 +31,20 @@ type UpdateRequestReminderInput = Parameters<
 type RequestReminder = NonNullable<
   Awaited<ReturnType<RequestRemindersResource['create']>>['data']
 >
+
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never
+
+type CreateRequestEventInput = DistributiveOmit<
+  Parameters<RequestEventsResource['create']>[2],
+  'createdBy'
+>
+type UpdateRequestEventInput = Parameters<RequestEventsResource['update']>[3]
+type RequestEvent = NonNullable<
+  Awaited<ReturnType<RequestEventsResource['create']>>['data']
+>
+
 type CreateRequestNoteInput = Parameters<RequestNotesResource['create']>[2]
 type UpdateRequestNoteInput = Parameters<RequestNotesResource['update']>[3]
 type DeleteRequestNoteInput = Parameters<RequestNotesResource['delete']>[3]
@@ -132,6 +147,36 @@ export const requestReminders = {
     return request<Deleted>(
       `${root(organizationId)}/${encodeURIComponent(requestId)}/reminders/${encodeURIComponent(reminderId)}`,
       { method: 'DELETE', body: JSON.stringify(params) }
+    )
+  },
+}
+
+export const requestEvents = {
+  create(
+    organizationId: string,
+    requestId: string,
+    params: CreateRequestEventInput
+  ) {
+    return request<RequestEvent>(
+      `${root(organizationId)}/${encodeURIComponent(requestId)}/events`,
+      { method: 'POST', body: JSON.stringify(params) }
+    )
+  },
+  update(
+    organizationId: string,
+    requestId: string,
+    eventId: string,
+    params: UpdateRequestEventInput
+  ) {
+    return request<RequestEvent>(
+      `${root(organizationId)}/${encodeURIComponent(requestId)}/events/${encodeURIComponent(eventId)}`,
+      { method: 'PATCH', body: JSON.stringify(params) }
+    )
+  },
+  delete(organizationId: string, requestId: string, eventId: string) {
+    return request<Deleted>(
+      `${root(organizationId)}/${encodeURIComponent(requestId)}/events/${encodeURIComponent(eventId)}`,
+      { method: 'DELETE' }
     )
   },
 }

@@ -37,6 +37,13 @@ const CRM_REQUEST_MUTATION_GUARDS = {
     'PATCH:requests.edit',
     'DELETE:requests.delete',
   ],
+  'organizations/[id]/requests/[requestId]/events/route.ts': [
+    'POST:events.create',
+  ],
+  'organizations/[id]/requests/[requestId]/events/[eventId]/route.ts': [
+    'PATCH:events.edit',
+    'DELETE:events.delete',
+  ],
   'organizations/[id]/requests/[requestId]/notes/route.ts': [
     'POST:notes.create',
   ],

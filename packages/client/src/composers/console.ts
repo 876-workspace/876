@@ -63,6 +63,7 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     requests: crm.requests,
     requestTasks: crm.requestTasks,
     requestReminders: crm.requestReminders,
+    requestEvents: crm.requestEvents,
     requestNotes: crm.requestNotes,
     requestCategories: crm.requestCategories,
     requestPriorities: crm.requestPriorities,

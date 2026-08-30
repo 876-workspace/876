@@ -20,6 +20,7 @@ import { provisioning } from './provisioning'
 import { provisioningSetups } from './provisioning-setups'
 import { provisioningRuns } from './provisioning-runs'
 import {
+  requestEvents,
   requestNotes,
   requestReminders,
   requests,
@@ -56,6 +57,7 @@ export const client = {
   requests,
   requestTasks,
   requestReminders,
+  requestEvents,
   requestNotes,
   reservedUsernames,
   roles,
@@ -87,6 +89,7 @@ export { provisioning } from './provisioning'
 export { provisioningSetups } from './provisioning-setups'
 export { provisioningRuns } from './provisioning-runs'
 export {
+  requestEvents,
   requestNotes,
   requestReminders,
   requests,

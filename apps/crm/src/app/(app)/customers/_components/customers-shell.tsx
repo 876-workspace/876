@@ -2,7 +2,8 @@
 
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ListDetailShell, useListDetailRoute } from '@876/ui/list-detail-shell'
+import { CustomerListShell } from '@876/crm-ui/customer-list-shell'
+import { useListDetailRoute } from '@876/ui/list-detail-shell'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
@@ -39,6 +40,9 @@ export function CustomersShell({ list, children }: Props) {
   const searchParams = useSearchParams()
   const linkTo = useCustomerLinks()
 
+  // A takeover route owns the whole content area, so it must not be wrapped in
+  // this section's `Page` measure either. The shared shell stands its own
+  // chrome down; the host stands down the frame around it.
   if (takeover) return children
 
   // A layout receives no `searchParams`, so the filter is read here on the
@@ -47,8 +51,8 @@ export function CustomersShell({ list, children }: Props) {
 
   return (
     <Page className="h-full min-h-0">
-      <ListDetailShell
-        open={open}
+      <CustomerListShell
+        takeoverSegments={TAKEOVER_SEGMENTS}
         toolbar={
           <ResourceToolbar
             title="Customers"
@@ -70,8 +74,9 @@ export function CustomersShell({ list, children }: Props) {
           />
         }
         list={list}
-        detail={children}
-      />
+      >
+        {children}
+      </CustomerListShell>
     </Page>
   )
 }
