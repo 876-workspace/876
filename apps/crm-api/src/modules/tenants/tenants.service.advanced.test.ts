@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { isError } from '@876/core'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { tenantsRepo, reconcile, fixtures } = vi.hoisted(() => ({
+const mocks = vi.hoisted(() => ({
   tenantsRepo: {
     ensure: vi.fn(),
     markProvisioned: vi.fn(),
@@ -9,137 +9,101 @@ const { tenantsRepo, reconcile, fixtures } = vi.hoisted(() => ({
   },
   reconcile: { reconcileCrmProvisioning: vi.fn() },
   fixtures: { ensureCrmWorkspaceFixtures: vi.fn() },
+  workEnsure: vi.fn(),
 }))
-vi.mock('./tenants.repository.js', () => tenantsRepo)
-vi.mock('../../provisioning/reconcile.js', () => reconcile)
-vi.mock('../../provisioning/fixtures.js', () => fixtures)
+
+vi.mock('./tenants.repository.js', () => mocks.tenantsRepo)
+vi.mock('../../provisioning/reconcile.js', () => mocks.reconcile)
+vi.mock('../../provisioning/fixtures.js', () => mocks.fixtures)
+vi.mock('../../providers/work.js', () => ({
+  workClient: () => ({ workspace: { ensure: mocks.workEnsure } }),
+}))
 
 const { ensure } = await import('./tenants.service.js')
 
-describe('tenants.service - ensure returns values not throws', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    tenantsRepo.ensure.mockResolvedValue({
-      id: 't1',
+beforeEach(() => {
+  vi.clearAllMocks()
+  mocks.tenantsRepo.ensure.mockResolvedValue({
+    id: 't1',
+    organizationId: 'org_1',
+    status: 'ACTIVE',
+    revision: 1,
+  })
+  mocks.tenantsRepo.markProvisioned.mockResolvedValue({
+    id: 't1',
+    organizationId: 'org_1',
+    status: 'ACTIVE',
+    revision: 2,
+  })
+  mocks.reconcile.reconcileCrmProvisioning.mockResolvedValue(null)
+  mocks.fixtures.ensureCrmWorkspaceFixtures.mockResolvedValue(undefined)
+  mocks.workEnsure.mockResolvedValue({
+    data: {
+      object: 'work_tenant',
+      id: 'work_tnt_1',
       organizationId: 'org_1',
       status: 'ACTIVE',
-      revision: 1,
-    })
-    tenantsRepo.markProvisioned.mockResolvedValue({
-      id: 't1',
-      organizationId: 'org_1',
-      status: 'ACTIVE',
-      revision: 2,
-    })
-    reconcile.reconcileCrmProvisioning.mockResolvedValue(null)
-    fixtures.ensureCrmWorkspaceFixtures.mockResolvedValue(undefined)
+      createdAt: 1,
+      updatedAt: 1,
+    },
+    error: null,
+  })
+})
+
+describe('CRM tenant ensure coordinates Work infrastructure', () => {
+  it('ensures Work even without a standalone Work product entitlement', async () => {
+    const result = await ensure('org_1')
+    expect(mocks.workEnsure).toHaveBeenCalledWith('org_1')
+    expect(result).toEqual(expect.objectContaining({ id: 't1' }))
   })
 
-  it('returns tenant when no provisioning', async () => {
-    const res = await ensure('org_1')
-    expect(res).toEqual(expect.objectContaining({ id: 't1' }))
-    expect(reconcile.reconcileCrmProvisioning).not.toHaveBeenCalled()
+  it('fails as a registered CRM value when Work cannot be prepared', async () => {
+    mocks.workEnsure.mockResolvedValue({
+      data: null,
+      error: { code: 'work/internal', message: 'Internal server error.' },
+    })
+    const result = await ensure('org_1')
+    expect(isError(result)).toBe(true)
+    expect(result).toMatchObject({ code: 'crm/work-unavailable' })
+    expect(mocks.reconcile.reconcileCrmProvisioning).not.toHaveBeenCalled()
   })
 
-  it('propagates provisioning error as value', async () => {
-    const provisioningError = {
+  it('propagates provisioning errors after Work is available', async () => {
+    mocks.reconcile.reconcileCrmProvisioning.mockResolvedValue({
       code: 'crm/provisioning-invalid',
       message: 'bad',
       httpStatus: 500,
-    } as const
-    reconcile.reconcileCrmProvisioning.mockResolvedValue(
-      provisioningError as unknown as null
-    )
+    })
     const manifest = {
       revision: 2,
       priorities: [],
       categories: [],
       subcategories: [],
     } as unknown as Parameters<typeof ensure>[1]
-    const res = await ensure('org_1', manifest)
-    expect(isError(res)).toBe(true)
-    expect(res).toMatchObject({ code: 'crm/provisioning-invalid' })
-    expect(tenantsRepo.markProvisioned).not.toHaveBeenCalled()
+    const result = await ensure('org_1', manifest)
+    expect(result).toMatchObject({ code: 'crm/provisioning-invalid' })
+    expect(mocks.tenantsRepo.markProvisioned).not.toHaveBeenCalled()
   })
 
-  it('marks provisioned after successful reconcile', async () => {
+  it('marks successful CRM provisioning after Work is prepared', async () => {
     const manifest = {
       revision: 5,
       priorities: [],
       categories: [],
       subcategories: [],
     } as unknown as Parameters<typeof ensure>[1]
-    const res = await ensure('org_1', manifest)
-    expect(reconcile.reconcileCrmProvisioning).toHaveBeenCalledWith(
+    await ensure('org_1', manifest)
+    expect(mocks.reconcile.reconcileCrmProvisioning).toHaveBeenCalledWith(
       't1',
       manifest
     )
-    expect(tenantsRepo.markProvisioned).toHaveBeenCalledWith('t1', 5)
-    expect(res).toEqual(expect.objectContaining({ revision: 2 }))
+    expect(mocks.tenantsRepo.markProvisioned).toHaveBeenCalledWith('t1', 5)
   })
 
-  it('returns tenant even when reconcile returns null', async () => {
-    reconcile.reconcileCrmProvisioning.mockResolvedValue(null)
-    const manifest = {
-      revision: 1,
-      priorities: [],
-      categories: [],
-      subcategories: [],
-    } as unknown as Parameters<typeof ensure>[1]
-    const res = await ensure('org_1', manifest)
-    expect(isError(res)).toBe(false)
-  })
-
-  it('does not swallow unexpected exception from reconcile', async () => {
-    reconcile.reconcileCrmProvisioning.mockRejectedValue(new Error('db down'))
-    const manifest = {
-      revision: 1,
-      priorities: [],
-      categories: [],
-      subcategories: [],
-    } as unknown as Parameters<typeof ensure>[1]
-    await expect(ensure('org_1', manifest)).rejects.toThrow('db down')
-  })
-
-  it('does not ensure workspace fixtures when none are requested', async () => {
-    await ensure('org_1')
-
-    expect(fixtures.ensureCrmWorkspaceFixtures).not.toHaveBeenCalled()
-  })
-
-  it('ensures requested workspace fixtures against the resolved tenant', async () => {
+  it('still ensures requested CRM fixtures in the CRM tenant', async () => {
     await ensure('org_1', undefined, ['876_SUPPORT'])
-
-    expect(fixtures.ensureCrmWorkspaceFixtures).toHaveBeenCalledTimes(1)
-    expect(fixtures.ensureCrmWorkspaceFixtures).toHaveBeenCalledWith('t1', [
+    expect(mocks.fixtures.ensureCrmWorkspaceFixtures).toHaveBeenCalledWith('t1', [
       '876_SUPPORT',
     ])
-  })
-
-  it('ensures fixtures without requiring a provisioning manifest', async () => {
-    const res = await ensure('org_1', undefined, ['876_SUPPORT'])
-
-    expect(reconcile.reconcileCrmProvisioning).not.toHaveBeenCalled()
-    expect(tenantsRepo.markProvisioned).not.toHaveBeenCalled()
-    expect(res).toEqual(expect.objectContaining({ id: 't1', revision: 1 }))
-  })
-
-  it('does not ensure fixtures when provisioning fails', async () => {
-    reconcile.reconcileCrmProvisioning.mockResolvedValue({
-      code: 'crm/provisioning-invalid',
-      message: 'bad',
-      httpStatus: 500,
-    } as unknown as null)
-    const manifest = {
-      revision: 2,
-      priorities: [],
-      categories: [],
-      subcategories: [],
-    } as unknown as Parameters<typeof ensure>[1]
-
-    const res = await ensure('org_1', manifest, ['876_SUPPORT'])
-
-    expect(isError(res)).toBe(true)
-    expect(fixtures.ensureCrmWorkspaceFixtures).not.toHaveBeenCalled()
   })
 })

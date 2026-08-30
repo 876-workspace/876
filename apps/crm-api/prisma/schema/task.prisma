@@ -12,6 +12,8 @@ enum ReminderStatus {
   CANCELLED
 }
 
+/// Legacy migration source. Runtime task ownership moved to the Work service.
+/// Keep until the CRM -> Work copy has been verified in every environment.
 model RequestTask {
   id          String        @id
   tenantId    String        @map("tenant_id")
@@ -40,6 +42,8 @@ model RequestTask {
   @@map("crm_request_tasks")
 }
 
+/// Legacy migration source. Runtime reminder ownership moved to the Work service.
+/// Keep until the CRM -> Work copy has been verified in every environment.
 model RequestReminder {
   id          String         @id
   tenantId    String         @map("tenant_id")

@@ -144,6 +144,10 @@ export const CRM_ERRORS = {
     message: 'This organization has no CRM workspace yet.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'crm/work-unavailable': {
+    message: 'The shared Work service could not be reached.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
 } as const satisfies Record<string, ErrorDef>
 
 export type CrmErrorCode = keyof typeof CRM_ERRORS

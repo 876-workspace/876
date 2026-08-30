@@ -50,7 +50,12 @@ function row(overrides: Record<string, unknown> = {}) {
 }
 
 describe('Work tasks service', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(tenant)
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+    vi.mocked(repository.update).mockResolvedValue(row() as never)
+  })
 
   it('returns workspace missing as a value', async () => {
     vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(null)
@@ -59,7 +64,6 @@ describe('Work tasks service', () => {
   })
 
   it('stores CRM request context as opaque values', async () => {
-    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(tenant)
     vi.mocked(repository.create).mockResolvedValue(row() as never)
     await service.create('org_1', {
       title: 'Follow up',
@@ -78,7 +82,6 @@ describe('Work tasks service', () => {
   })
 
   it('allows general tasks with no source context', async () => {
-    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(tenant)
     vi.mocked(repository.create).mockResolvedValue(
       row({ contextService: null, contextResource: null, contextId: null }) as never
     )
@@ -88,5 +91,41 @@ describe('Work tasks service', () => {
     })
     expect('code' in result).toBe(false)
     if (!('code' in result)) expect(result.context).toBeNull()
+  })
+
+  it('owns completion stamping after the extraction from CRM', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ completedAt: null, completedBy: null }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'DONE', completedAt: new Date(), completedBy: 'user_2' }) as never
+    )
+    await service.update('org_1', 'task_1', {
+      status: 'DONE',
+      completedBy: 'user_2',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'task_1',
+      expect.objectContaining({
+        completedAt: expect.any(Date),
+        completedBy: 'user_2',
+        status: 'DONE',
+      })
+    )
+  })
+
+  it('clears the completion stamp when reopened', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'DONE', completedAt: new Date(), completedBy: 'user_1' }) as never
+    )
+    await service.update('org_1', 'task_1', { status: 'OPEN' })
+    expect(repository.update).toHaveBeenCalledWith(
+      'task_1',
+      expect.objectContaining({
+        completedAt: null,
+        completedBy: null,
+        status: 'OPEN',
+      })
+    )
   })
 })

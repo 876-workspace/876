@@ -142,6 +142,9 @@ export async function update(
     ...(input.dueAt === undefined
       ? {}
       : { dueAt: input.dueAt ? fromUnixSeconds(input.dueAt) : null }),
+    ...(input.completedBy === undefined
+      ? {}
+      : { completedBy: input.completedBy }),
     ...completionStamp,
   })
   return serialize(row, organizationId)

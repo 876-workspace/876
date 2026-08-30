@@ -150,7 +150,6 @@ export type WorkReminderListFilter = {
   userId?: string
 }
 
-export type WorkResult<T> = {
-  data: T | null
-  error: { code: string; message: string } | null
-}
+export type WorkResult<T> =
+  | { data: T; error: null }
+  | { data: null; error: { code: string; message: string } }
