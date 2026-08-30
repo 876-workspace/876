@@ -1,7 +1,34 @@
-import { create876CoreSessionClient, type CoreSessionClientOptions } from '@876/account/internal'
+import {
+  create876CoreSessionClient,
+  type CoreSessionClientOptions,
+} from '@876/account/internal'
+
+type CoreSession = ReturnType<typeof create876CoreSessionClient>
 
 /** Organization/B2B projection of the Core API at signed-in session/app-key authority. */
-export function create876WorkspaceSessionClient(options: CoreSessionClientOptions = {}) {
+export type WorkspaceSessionClient = {
+  organizations: CoreSession['organizations']
+  memberships: CoreSession['memberships']
+  locations: CoreSession['locations']
+  contacts: CoreSession['contacts']
+  departments: CoreSession['departments']
+  employees: CoreSession['employees']
+  permissions: CoreSession['permissions']
+  roles: CoreSession['roles']
+  members: CoreSession['organizationMembers']
+  appAssignments: CoreSession['appAssignments']
+  appMemberships: CoreSession['appMemberships']
+  apps: CoreSession['apps']
+  invites: CoreSession['invites']
+  entitlements: CoreSession['subscriptions']
+  entitlementPlans: CoreSession['products']
+  features: CoreSession['features']
+}
+
+/** Organization/B2B projection of the Core API at signed-in session/app-key authority. */
+export function create876WorkspaceSessionClient(
+  options: CoreSessionClientOptions = {}
+): WorkspaceSessionClient {
   const core = create876CoreSessionClient(options)
 
   return {
@@ -24,5 +51,4 @@ export function create876WorkspaceSessionClient(options: CoreSessionClientOption
   }
 }
 
-export type WorkspaceSessionClient = ReturnType<typeof create876WorkspaceSessionClient>
 export type { CoreSessionClientOptions as WorkspaceSessionClientOptions }

@@ -1,10 +1,11 @@
 /**
- * Admin API client factory — Core/platform admin only.
+ * Platform API client factory for Core's operator plane.
  *
  * Composes the internal-key-tier resource modules over one shared runtime.
  * Product administration (billing, storage, widgets, couriers) is composed
- * by `@876/client/server` under the unified `$876` root; this package
- * exposes only Core/platform resources.
+ * by their own bounded clients; this package exposes only Core/platform
+ * resources. The historical `create876AdminClient` export remains for
+ * compatibility while callers migrate to the bounded platform client.
  */
 
 import { buildAdminRuntime } from './runtime'

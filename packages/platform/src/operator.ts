@@ -4,7 +4,9 @@ import { create876AdminClient } from './client'
 import type { Admin876ClientOptions } from './client'
 
 /** Creates the genuinely platform-wide 876 operator surface. */
-export function create876PlatformOperatorClient(options: Admin876ClientOptions = {}) {
+export function create876PlatformOperatorClient(
+  options: Admin876ClientOptions = {}
+) {
   const core = create876AdminClient(options)
   return {
     auditEvents: core.auditEvents,
@@ -28,5 +30,7 @@ export function create876PlatformOperatorClient(options: Admin876ClientOptions =
   }
 }
 
-export type PlatformOperatorClient = ReturnType<typeof create876PlatformOperatorClient>
+export type PlatformOperatorClient = ReturnType<
+  typeof create876PlatformOperatorClient
+>
 export type PlatformOperatorClientOptions = Admin876ClientOptions

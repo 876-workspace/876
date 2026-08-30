@@ -6,4 +6,7 @@ import 'server-only'
  * public `platform` or `workspace` clients instead.
  */
 export { create876AdminClient as create876CoreOperatorClient } from './client'
-export type { Admin876Client as CoreOperatorClient, Admin876ClientOptions as CoreOperatorClientOptions } from './client'
+export type {
+  Admin876Client as CoreOperatorClient,
+  Admin876ClientOptions as CoreOperatorClientOptions,
+} from './client'

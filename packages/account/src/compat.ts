@@ -1,7 +1,12 @@
-/** `@876/account` — the 876 Account identity client. */
-export { create876AccountClient } from './account.ts'
-export type { AccountClient, AccountClientOptions } from './account.ts'
+/**
+ * The 876 Auth SDK entry point.
+ *
+ * @module 876
+ */
+
+export { create876Client } from './client.ts'
 export { isDefault, isExpired } from './helpers/index.ts'
+export type { SDK876AuthClient, SDK876Client } from './client.ts'
 export { createSignInWith876, generatePkce } from './oauth.ts'
 export type { OAuthClient, SignInWith876Options } from './oauth.ts'
 export {
@@ -80,6 +85,29 @@ export type {
   VerifyMagicOtpResult,
 } from './types/auth.ts'
 export type {
+  App,
+  AppCreateParams,
+  AppCreatedResult,
+  AppCreated,
+  AppList,
+  AppListParams,
+  AppListResult,
+  AppResult,
+} from './types/apps.ts'
+export type {
+  AuditEvent,
+  AuditEventCreateParams,
+  AuditEventList,
+  AuditEventListResult,
+  AuditEventResult,
+} from './types/audit-events.ts'
+export type {
+  OAuthGrant,
+  OAuthGrantListResult,
+  RevokeOAuthGrantResponse,
+  RevokeOAuthGrantResult,
+} from './types/oauth-grants.ts'
+export type {
   ConsumerAddress,
   ConsumerAddressCreateParams,
   ConsumerAddressList,
@@ -103,21 +131,11 @@ export type {
   DeletedConsumerContact,
   DeletedConsumerContactResult,
   Gender,
+  RoutingMembership,
+  RoutingMembershipList,
+  RoutingMembershipListResult,
+  RoutingOrganization,
 } from './types/users.ts'
-export type {
-  DeletedMobileNumber,
-  DeletedMobileNumberResult,
-  MobileNumber,
-  MobileNumberCreateParams,
-  MobileNumberList,
-  MobileNumberListResult,
-  MobileNumberResult,
-  MobileNumberUpdateParams,
-  MobileNumberVerification,
-  MobileNumberVerificationApproveParams,
-  MobileNumberVerificationCreateParams,
-  MobileNumberVerificationResult,
-} from './types/mobile-numbers.ts'
 export type {
   AuthorizationUrlParams,
   DiscoveryDocument,
@@ -136,25 +154,67 @@ export type {
   UserInfoParams,
 } from './types/oauth.ts'
 export type {
-  OAuthGrant,
-  OAuthGrantListResult,
-  RevokeOAuthGrantResponse,
-  RevokeOAuthGrantResult,
-} from './types/oauth-grants.ts'
+  DeletedEmployeeProfile,
+  DeletedOrgMember,
+  DeletedOrgDepartment,
+  DeletedOrgLocation,
+  EmployeeProfile,
+  EmployeeProfileCreateParams,
+  EmployeeProfileList,
+  EmployeeProfileUpdateParams,
+  Organization,
+  OrganizationSelfUpdateParams,
+  InviteToken,
+  InviteTokenCreateParams,
+  InviteTokenList,
+  OrgDepartment,
+  OrgDepartmentCreateParams,
+  OrgDepartmentList,
+  OrgDepartmentUpdateParams,
+  OrgLocation,
+  OrgLocationCreateParams,
+  OrgLocationList,
+  OrgLocationUpdateParams,
+  OrgContact,
+  OrgContactCreateParams,
+  OrgContactList,
+  OrgContactUpdateParams,
+  OrgMember,
+  OrgMemberList,
+  OrgMemberMe,
+  OrgMemberRoleUpdateParams,
+  OrgRole,
+  OrgRoleCreateParams,
+  OrgRoleList,
+  OrgRoleUpdateParams,
+  PermissionCatalog,
+  Subscription,
+  SubscriptionItem,
+  SubscriptionList,
+} from './types/orgs.ts'
 export type {
-  App,
-  AppCreateParams,
-  AppCreated,
-  AppCreatedResult,
-  AppList,
-  AppListParams,
-  AppListResult,
-  AppResult,
-} from './types/apps.ts'
+  Feature,
+  FeatureList,
+  FeatureListResult,
+} from './types/features.ts'
 export type {
-  AuditEvent,
-  AuditEventCreateParams,
-  AuditEventList,
-  AuditEventListResult,
-  AuditEventResult,
-} from './types/audit-events.ts'
+  DeletedMobileNumber,
+  DeletedMobileNumberResult,
+  MobileNumber,
+  MobileNumberCreateParams,
+  MobileNumberList,
+  MobileNumberListResult,
+  MobileNumberResult,
+  MobileNumberUpdateParams,
+  MobileNumberVerification,
+  MobileNumberVerificationApproveParams,
+  MobileNumberVerificationCreateParams,
+  MobileNumberVerificationResult,
+} from './types/mobile-numbers.ts'
+export type {
+  Price,
+  Product,
+  ProductList,
+  ProductResult,
+  ProductListResult,
+} from './types/products.ts'

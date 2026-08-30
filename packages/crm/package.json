@@ -7,9 +7,18 @@
   "private": false,
   "sideEffects": false,
   "exports": {
-    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
-    "./service": { "types": "./src/service-client.ts", "default": "./src/service-client.ts" },
-    "./operator": { "types": "./src/operator.ts", "default": "./src/operator.ts" }
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./service": {
+      "types": "./src/service-client.ts",
+      "default": "./src/service-client.ts"
+    },
+    "./operator": {
+      "types": "./src/operator.ts",
+      "default": "./src/operator.ts"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

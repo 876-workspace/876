@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { create876Client } from './index.ts'
+import { create876Client } from './client.ts'
 
 const appPayload = {
   object: 'app',
