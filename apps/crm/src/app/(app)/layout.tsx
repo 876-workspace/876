@@ -3,10 +3,10 @@ import { redirect } from 'next/navigation'
 
 import { Shell } from '@/components/shell/shell'
 import { getAppsDirectory } from '@/lib/apps-directory'
-import { get876Client } from '@/lib/876'
 import { getCrmContextResult } from '@/lib/auth/context'
 import { getFeatures } from '@/lib/features'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { crm } from '@/lib/services/crm'
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const result = await getCrmContextResult()
@@ -27,9 +27,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = isSignedSession(session) ? session.user : null
   const email = user?.email ?? ''
   const displayName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-    email ||
-    'User'
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || email || 'User'
 
   const orgs = organizations.map((org) => ({
     id: org.id,
@@ -38,16 +36,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     role: org.role,
   }))
   const currentOrg = orgs.find((org) => org.id === orgId) ??
-    orgs[0] ?? {
-      id: orgId,
-      name: orgName,
-      slug: orgSlug ?? orgId,
-    }
+    orgs[0] ?? { id: orgId, name: orgName, slug: orgSlug ?? orgId }
 
-  const $876 = await get876Client()
-  const categoriesResult = await $876.requestCategories.list(orgId)
-  // The widget's categories are the org's own catalog. A failed read leaves
-  // the widget usable without a category rather than taking the shell down.
+  const categoriesResult = await crm.requestCategories.list(orgId)
   if (categoriesResult.error)
     console.error(
       `[crm/shell] request categories unavailable: ${categoriesResult.error.code} — ${categoriesResult.error.message}`
@@ -56,19 +47,12 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     .filter((category) => category.isActive)
     .map((category) => ({ id: category.id, name: category.name }))
 
-  const { uiFeatures } = await getFeatures({
-    userId,
-    organizationId: orgId,
-  })
+  const { uiFeatures } = await getFeatures({ userId, organizationId: orgId })
 
   return (
     <Shell
       orgName={orgName}
-      user={{
-        name: displayName,
-        email,
-        avatar: user?.avatar ?? null,
-      }}
+      user={{ name: displayName, email, avatar: user?.avatar ?? null }}
       currentOrg={currentOrg}
       orgs={orgs}
       apps={getAppsDirectory()}
