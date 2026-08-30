@@ -16,6 +16,7 @@
     "clean": "rm -rf .next .turbo .open-next .wrangler"
   },
   "dependencies": {
+    "@876/account": "workspace:*",
     "@876/analytics": "workspace:*",
     "@876/billing": "workspace:*",
     "@876/client": "workspace:*",

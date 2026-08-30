@@ -23,10 +23,6 @@ const previewDevOrigins = devResourceHosts()
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
-  // Auto-memoizes components/hooks to cut client re-render churn during
-  // navigation and interaction. Build-time transform only, so it is safe on
-  // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
-  // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
   allowedDevOrigins: ['127.0.0.1', ...previewDevOrigins],
   async headers() {
@@ -52,9 +48,6 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-  // The management workspace moved from /org/<slug>/… to /<slug>/…. Both rules
-  // are needed: the `:path*` form does not reliably match the bare
-  // /org/<slug> dashboard URL, which is the one most likely to be bookmarked.
   async redirects() {
     return [
       {
@@ -70,10 +63,13 @@ const nextConfig: NextConfig = {
     ]
   },
   transpilePackages: sharedTranspilePackages([
+    '@876/account',
     '@876/billing',
-    '@876/sdk',
     '@876/core',
+    '@876/couriers',
+    '@876/storage',
     '@876/widgets',
+    '@876/sdk',
   ]),
   experimental: {
     optimizePackageImports: ['@base-ui/react', 'radix-ui'],
@@ -93,7 +89,5 @@ export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
-  sourcemaps: {
-    disable: true,
-  },
+  sourcemaps: { disable: true },
 })

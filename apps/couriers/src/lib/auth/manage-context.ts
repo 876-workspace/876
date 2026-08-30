@@ -1,14 +1,14 @@
 import 'server-only'
 
-import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { cache } from 'react'
 
-import { couriersAdmin } from '@/lib/876'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { toCouriersTenant } from '@/lib/couriers'
-import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import type { ManageContext, OrgRole, AppAccessStatus } from '@/types/auth'
+import { getPlatformClient } from '@/lib/876/platform-client'
+import { couriersOperator } from '@/lib/services/couriers'
+import type { AppAccessStatus, ManageContext, OrgRole } from '@/types/auth'
 
 export const getManageContext = cache(async function getManageContext(
   orgSlug?: string
@@ -17,17 +17,12 @@ export const getManageContext = cache(async function getManageContext(
   if (!isSignedSession(sessionResult)) return null
 
   const user = sessionResult.user
-
   const platform = await getPlatformClient()
-
-  // Resolve org and role via getRoutingMemberships for both SSO and email paths.
   const membershipsResult = await platform.memberships.listRouting({
     userId: user.id,
     status: 'active',
   })
   if (membershipsResult.error) {
-    // Returning null is indistinguishable from "this user belongs to no org",
-    // which routes a fully provisioned member to onboarding. Report the cause.
     Sentry.captureMessage(
       'Platform outage: auth.getRoutingMemberships failed',
       {
@@ -82,14 +77,15 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    const tenant = await couriersAdmin.tenants.retrieve({
+    const tenant = await couriersOperator.tenants.retrieve({
       organizationId: match.organization.id,
     })
     resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
   } else if (orgId) {
-    // SSO fast path: orgId sealed in cookie; find matching membership for role.
     const match = memberships.find(
-      (m) => m.organization.id === orgId && m.organization.status === 'active'
+      (membership) =>
+        membership.organization.id === orgId &&
+        membership.organization.status === 'active'
     )
     if (!match) return null
     resolvedOrgId = orgId
@@ -97,29 +93,30 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    const tenant = await couriersAdmin.tenants.retrieve({
+    const tenant = await couriersOperator.tenants.retrieve({
       organizationId: orgId,
     })
     resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
   } else {
-    // Email login: pick first active org with a courier tenant; fall back to first active org.
-    for (const m of memberships) {
-      if (m.organization.status !== 'active') continue
-      const tenant = await couriersAdmin.tenants.retrieve({
-        organizationId: m.organization.id,
+    for (const membership of memberships) {
+      if (membership.organization.status !== 'active') continue
+      const tenant = await couriersOperator.tenants.retrieve({
+        organizationId: membership.organization.id,
       })
       if (tenant.data) {
-        resolvedOrgId = m.organization.id
-        resolvedOrgName = m.organization.name
-        resolvedOrgSlug = m.organization.slug
-        resolvedOrgLogoUrl = m.organization.logo_url
-        resolvedRole = m.role as OrgRole
+        resolvedOrgId = membership.organization.id
+        resolvedOrgName = membership.organization.name
+        resolvedOrgSlug = membership.organization.slug
+        resolvedOrgLogoUrl = membership.organization.logo_url
+        resolvedRole = membership.role as OrgRole
         resolvedTenant = toCouriersTenant(tenant.data)
         break
       }
     }
     if (!resolvedOrgId) {
-      const first = memberships.find((m) => m.organization.status === 'active')
+      const first = memberships.find(
+        (membership) => membership.organization.status === 'active'
+      )
       if (!first) return null
       resolvedOrgId = first.organization.id
       resolvedOrgName = first.organization.name
@@ -136,8 +133,6 @@ export const getManageContext = cache(async function getManageContext(
     appSlug: COURIERS_APP_SLUG,
   })
   if (accessResult.error) {
-    // 'none' is also the legitimate answer for an org that was never
-    // provisioned, so an outage silently revokes access for a subscribed org.
     Sentry.captureMessage('Platform outage: subscriptions.retrieve failed', {
       level: 'error',
       tags: { category: 'platform_client' },
