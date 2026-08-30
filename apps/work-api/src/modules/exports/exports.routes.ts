@@ -1,0 +1,15 @@
+import { createApiRouter, type GuardResolver } from '../../http/api-router.js'
+import * as controller from './exports.controller.js'
+export function createExportsRouter(resolveGuards: GuardResolver) {
+  const api = createApiRouter(resolveGuards)
+  api.post({
+    path: '/',
+    security: {
+      kind: 'integration',
+      scope: 'work.calendars.read',
+      sessionPermissions: ['calendars.view', 'tasks.view'],
+    },
+    handler: controller.createExport,
+  })
+  return api.router
+}

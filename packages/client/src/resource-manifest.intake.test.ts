@@ -63,6 +63,7 @@ describe('RESOURCE_MANIFEST - intake forms ownership', () => {
       'billing',
       'couriers',
       'crm',
+      'work',
       'storage',
       'widgets',
     ])

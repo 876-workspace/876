@@ -9,7 +9,7 @@ import { Users } from '@876/ui/icons'
 import { TableCell, TableRow } from '@876/ui/table'
 import type { CrmTeamAutoAssign, CrmTeamStatus } from '@/types/crm'
 import type { DirectoryMember } from '@/features/directory/types'
-import type { TeamMemberRow } from '../[teamId]/_components/team-members'
+import type { TeamMemberRow } from '@/features/teams/types'
 
 export type TeamRow = {
   id: string

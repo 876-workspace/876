@@ -22,6 +22,7 @@ function listPath(organizationId: string, filter: WorkReminderListFilter) {
     params.set('context_id', filter.context.id)
   }
   if (filter.userId) params.set('user_id', filter.userId)
+  if (filter.status) params.set('status', filter.status)
   if (filter.limit) params.set('limit', String(filter.limit))
   if (filter.startingAfter) params.set('starting_after', filter.startingAfter)
   if (filter.endingBefore) params.set('ending_before', filter.endingBefore)

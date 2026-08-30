@@ -13,8 +13,11 @@ describe('CRM permission catalog', () => {
     // that is the order the modules render in, so asserting membership here
     // keeps this test about vocabulary completeness rather than about layout.
     expect([...moduleKeys()].sort()).toEqual([
+      'calendars',
       'categories',
       'customers',
+      'events',
+      'my_work',
       'notes',
       'priorities',
       'reminders',
@@ -27,8 +30,8 @@ describe('CRM permission catalog', () => {
     ])
   })
 
-  it('declares exactly 39 CRM capabilities', () => {
-    expect(permissionKeys()).toHaveLength(39)
+  it('declares exactly 48 CRM capabilities', () => {
+    expect(permissionKeys()).toHaveLength(48)
   })
 
   it('gives requests the exact CRUD capability set', () => {
@@ -100,7 +103,7 @@ describe('CRM permission catalog', () => {
 
   it('emits only unique dot-delimited product-app keys', () => {
     const keys = permissionKeys()
-    expect(new Set(keys).size).toBe(39)
+    expect(new Set(keys).size).toBe(48)
     expect(keys.every((key) => /^[a-z_]+\.[a-z_]+$/.test(key))).toBe(true)
     expect(keys.some((key) => key.startsWith('console:'))).toBe(false)
   })

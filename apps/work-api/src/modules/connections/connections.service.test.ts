@@ -9,6 +9,20 @@ vi.mock('./connections.repository.js', () => repository)
 
 const { ensureCrmConnection } = await import('./connections.service.js')
 
+const CRM_WORK_SCOPES = [
+  'work.tasks.read',
+  'work.tasks.write',
+  'work.reminders.read',
+  'work.reminders.write',
+  'work.calendars.read',
+  'work.calendars.write',
+  'work.events.read',
+  'work.events.write',
+  'work.alerts.read',
+  'work.alerts.write',
+  'work.my-work.read',
+]
+
 describe('ensureCrmConnection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -16,31 +30,22 @@ describe('ensureCrmConnection', () => {
       id: 'work_conn_1',
       tenantId: 'work_tnt_1',
       appId: 'app_crm',
-      scopes: [
-        'work.tasks.read',
-        'work.tasks.write',
-        'work.reminders.read',
-        'work.reminders.write',
-      ],
+      scopes: CRM_WORK_SCOPES,
     })
   })
 
-  it('ensures CRM’s four Work scopes for a new workspace connection', async () => {
+  it('ensures CRM’s current Work scopes for a new workspace connection', async () => {
     await ensureCrmConnection('work_tnt_1', 'app_crm')
 
     expect(repository.ensure).toHaveBeenCalledTimes(1)
-    expect(repository.ensure).toHaveBeenCalledWith('work_tnt_1', 'app_crm', [
-      'work.tasks.read',
-      'work.tasks.write',
-      'work.reminders.read',
-      'work.reminders.write',
-    ])
+    expect(repository.ensure).toHaveBeenCalledWith(
+      'work_tnt_1',
+      'app_crm',
+      CRM_WORK_SCOPES
+    )
   })
 
-  it('leaves a deliberately changed connection grant intact on a rerun', async () => {
-    const warning = vi
-      .spyOn(console, 'warn')
-      .mockImplementation(() => undefined)
+  it('restores CRM’s current Work scopes when ensuring an existing connection', async () => {
     repository.ensure.mockResolvedValue({
       id: 'work_conn_1',
       tenantId: 'work_tnt_1',
@@ -51,17 +56,10 @@ describe('ensureCrmConnection', () => {
     await ensureCrmConnection('work_tnt_1', 'app_crm')
 
     expect(repository.ensure).toHaveBeenCalledTimes(1)
-    expect(warning).toHaveBeenCalledWith('work.connection.scopes_mismatch', {
-      tenant_id: 'work_tnt_1',
-      app_id: 'app_crm',
-      expected_scopes: [
-        'work.tasks.read',
-        'work.tasks.write',
-        'work.reminders.read',
-        'work.reminders.write',
-      ],
-      stored_scopes: ['work.tasks.read'],
-    })
-    warning.mockRestore()
+    expect(repository.ensure).toHaveBeenCalledWith(
+      'work_tnt_1',
+      'app_crm',
+      CRM_WORK_SCOPES
+    )
   })
 })

@@ -4,21 +4,22 @@ import {
   type RequestHandler,
   type Response,
 } from 'express'
-
 export type WorkSecurity =
-  { kind: 'operator' } | { kind: 'integration'; scope: string }
-
+  | { kind: 'operator' }
+  | { kind: 'scheduler' }
+  | {
+      kind: 'integration'
+      scope: string
+      sessionPermissions?: readonly string[]
+    }
 export type GuardResolver = (security: WorkSecurity) => RequestHandler[]
-
 type RouteSpec = {
   path: string
   security: WorkSecurity
   handler: (req: Request, res: Response) => unknown | Promise<unknown>
 }
-
 export function createApiRouter(resolveGuards: GuardResolver) {
   const router = Router({ mergeParams: true })
-
   function define(
     method: 'get' | 'post' | 'patch' | 'delete',
     spec: RouteSpec
@@ -30,7 +31,6 @@ export function createApiRouter(resolveGuards: GuardResolver) {
         Promise.resolve(spec.handler(req, res)).then(() => undefined, next)
     )
   }
-
   return {
     router,
     get: (spec: RouteSpec) => define('get', spec),

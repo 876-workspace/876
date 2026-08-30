@@ -23,7 +23,11 @@ export async function workRequest<T>(
   init: ClientRequestInit,
   schema: z.ZodType<T>
 ): Promise<WorkResult<T>> {
-  if (!runtime.baseUrl || !runtime.credential.value)
+  if (
+    !runtime.baseUrl ||
+    !runtime.credential.value ||
+    (runtime.requiresAccessToken && !runtime.accessToken)
+  )
     return { data: null, error: clientError('work/not-configured') }
 
   const response = await sendClientRequest(
@@ -33,6 +37,9 @@ export async function workRequest<T>(
       headers: {
         ...init.headers,
         [runtime.credential.header]: runtime.credential.value,
+        ...(runtime.accessToken
+          ? { authorization: `Bearer ${runtime.accessToken}` }
+          : {}),
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
       },
     }

@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const taskListRepository = vi.hoisted(() => ({
+  ensureDefault: vi.fn(),
+  retrieve: vi.fn(),
+}))
+
 vi.mock('../tenants/index.js', () => ({
   retrieveByOrganization: vi.fn(),
 }))
@@ -8,12 +13,18 @@ vi.mock('./tasks.repository.js', () => ({
   retrieve: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  syncPrimaryLink: vi.fn(),
+  syncPrimaryAssignee: vi.fn(),
   remove: vi.fn(),
 }))
+vi.mock('../task-lists/index.js', () => taskListRepository)
 
 import * as tenants from '../tenants/index.js'
 import * as repository from './tasks.repository.js'
+import * as taskLists from '../task-lists/index.js'
 import * as service from './tasks.service.js'
+
+type TaskRow = Awaited<ReturnType<typeof repository.retrieve>>
 
 const tenant = {
   object: 'work_tenant' as const,
@@ -24,19 +35,45 @@ const tenant = {
   updatedAt: 1,
 }
 
-function row(overrides: Record<string, unknown> = {}) {
+const taskList = {
+  object: 'task_list' as const,
+  id: 'tasklist_1',
+  organizationId: tenant.organizationId,
+  name: 'Inbox',
+  description: null,
+  ownerUserId: null,
+  isDefault: true,
+  sortOrder: 0,
+  createdBy: 'user_1',
+  createdAt: 1,
+  updatedAt: 1,
+}
+
+function row(
+  overrides: Partial<NonNullable<TaskRow>> = {}
+): NonNullable<TaskRow> {
   return {
     id: 'task_1',
+    uid: 'task_4f0c6bc866ae4fba8b1e8d3dca6c4d12@work.876',
     tenantId: tenant.id,
+    listId: 'tasklist_1',
+    parentTaskId: null,
     contextService: 'crm',
     contextResource: 'request',
     contextId: 'req_1',
     title: 'Follow up',
     description: null,
     status: 'OPEN' as const,
+    importance: 'NORMAL' as const,
     priorityId: 'crm_pri_1',
     assigneeId: null,
+    startAt: null,
+    startTimeZone: null,
     dueAt: null,
+    dueTimeZone: null,
+    estimatedDuration: null,
+    percentComplete: 0,
+    recurrenceRuleId: null,
     completedAt: null,
     completedBy: null,
     sortOrder: 0,
@@ -45,6 +82,8 @@ function row(overrides: Record<string, unknown> = {}) {
     updatedAt: new Date(1000),
     deletedAt: null,
     deletedBy: null,
+    links: [],
+    assignments: [],
     ...overrides,
   }
 }
@@ -53,8 +92,10 @@ describe('Work tasks service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(tenant)
-    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
-    vi.mocked(repository.update).mockResolvedValue(row() as never)
+    vi.mocked(taskLists.ensureDefault).mockResolvedValue(taskList)
+    vi.mocked(taskLists.retrieve).mockResolvedValue(taskList)
+    vi.mocked(repository.retrieve).mockResolvedValue(row())
+    vi.mocked(repository.update).mockResolvedValue(row())
   })
 
   it('returns workspace missing as a value', async () => {
@@ -64,7 +105,7 @@ describe('Work tasks service', () => {
   })
 
   it('stores CRM request context as opaque values', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row() as never)
+    vi.mocked(repository.create).mockResolvedValue(row())
     await service.create('org_1', {
       title: 'Follow up',
       priorityId: 'crm_pri_1',
@@ -82,9 +123,13 @@ describe('Work tasks service', () => {
   })
 
   it('allows general tasks with no source context', async () => {
-    vi.mocked(repository.create).mockResolvedValue(
-      row({ contextService: null, contextResource: null, contextId: null }) as never
-    )
+    const generalTask = row({
+      contextService: null,
+      contextResource: null,
+      contextId: null,
+    })
+    vi.mocked(repository.create).mockResolvedValue(generalTask)
+    vi.mocked(repository.retrieve).mockResolvedValue(generalTask)
     const result = await service.create('org_1', {
       title: 'Prepare rota',
       createdBy: 'user_1',
@@ -95,10 +140,10 @@ describe('Work tasks service', () => {
 
   it('owns completion stamping after the extraction from CRM', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(
-      row({ completedAt: null, completedBy: null }) as never
+      row({ completedAt: null, completedBy: null })
     )
     vi.mocked(repository.update).mockResolvedValue(
-      row({ status: 'DONE', completedAt: new Date(), completedBy: 'user_2' }) as never
+      row({ status: 'DONE', completedAt: new Date(), completedBy: 'user_2' })
     )
     await service.update('org_1', 'task_1', {
       status: 'DONE',
@@ -116,7 +161,7 @@ describe('Work tasks service', () => {
 
   it('clears the completion stamp when reopened', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(
-      row({ status: 'DONE', completedAt: new Date(), completedBy: 'user_1' }) as never
+      row({ status: 'DONE', completedAt: new Date(), completedBy: 'user_1' })
     )
     await service.update('org_1', 'task_1', { status: 'OPEN' })
     expect(repository.update).toHaveBeenCalledWith(

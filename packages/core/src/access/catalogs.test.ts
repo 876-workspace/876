@@ -282,7 +282,7 @@ describe('consolePermissionCatalog', () => {
     expect([
       crmPermissionCatalog.permissions[0]?.key,
       couriersPermissionCatalog.permissions[0]?.key,
-    ]).toEqual(['categories.create', 'customers.create'])
+    ]).toEqual(['calendars.create', 'customers.create'])
   })
 
   it('keeps catalog labels non-empty after normalization', () => {

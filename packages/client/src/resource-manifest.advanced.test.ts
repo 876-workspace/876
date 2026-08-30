@@ -25,6 +25,7 @@ describe('ResourceManifest / contract / billing nouns exist', () => {
         'billing',
         'couriers',
         'crm',
+        'work',
         'storage',
         'widgets',
       ]).toContain(entry.owner)

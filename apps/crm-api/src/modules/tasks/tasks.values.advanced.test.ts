@@ -13,12 +13,8 @@ vi.mock('../requests/index.js', () => ({
 vi.mock('../priorities/index.js', () => ({
   retrieveForTenant: mocks.retrieveForTenant,
 }))
-vi.mock('../../providers/work.js', () => ({
-  crmRequestWorkContext: (id: string) => ({
-    service: 'crm',
-    resource: 'request',
-    id,
-  }),
+vi.mock('../../providers/work.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../providers/work.js')>()),
   workClient: () => ({ tasks: mocks.tasks }),
 }))
 

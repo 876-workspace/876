@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createCustomersResource } from './resources/customers'
 import { createRequestCategoriesResource } from './resources/request-categories'
+import { createRequestEventsResource } from './resources/request-events'
 import { createRequestFormRequestsResource } from './resources/request-form-requests'
 import { createRequestFormSubmissionsResource } from './resources/request-form-submissions'
 import { createRequestFormsResource } from './resources/request-forms'
@@ -26,6 +27,7 @@ export function create876CrmClient(options: ClientOptions = {}) {
     requestPriorities: createRequestPrioritiesResource(runtime),
     requestTasks: createRequestTasksResource(runtime),
     requestReminders: createRequestRemindersResource(runtime),
+    requestEvents: createRequestEventsResource(runtime),
     requestForms: createRequestFormsResource(runtime),
     requestFormSubmissions: createRequestFormSubmissionsResource(runtime),
     requestFormRequests: createRequestFormRequestsResource(runtime),

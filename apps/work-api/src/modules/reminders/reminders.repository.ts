@@ -11,6 +11,7 @@ type ReminderFilter = {
   contextResource?: string
   contextId?: string
   userId?: string
+  status?: string
   limit: number
   startingAfter?: string
   endingBefore?: string
@@ -33,6 +34,7 @@ export async function list(tenantId: string, filter: ReminderFilter) {
         : {}),
       ...(filter.contextId ? { contextId: filter.contextId } : {}),
       ...(filter.userId ? { userId: filter.userId } : {}),
+      ...(filter.status ? { status: filter.status as never } : {}),
       ...(anchor
         ? filter.startingAfter
           ? remindersAfter(anchor)
@@ -49,6 +51,13 @@ export async function list(tenantId: string, filter: ReminderFilter) {
 export const retrieve = (tenantId: string, reminderId: string) =>
   prisma.workReminder.findFirst({
     where: { tenantId, id: reminderId, deletedAt: null },
+  })
+
+export const due = (now: Date, limit = 500) =>
+  prisma.workReminder.findMany({
+    where: { deletedAt: null, status: 'SCHEDULED', remindAt: { lte: now } },
+    orderBy: [{ remindAt: 'asc' }, { id: 'asc' }],
+    take: limit,
   })
 
 function remindersAfter(anchor: {
@@ -68,7 +77,6 @@ function remindersAfter(anchor: {
     ],
   }
 }
-
 function remindersBefore(anchor: {
   remindAt: Date
   createdAt: Date
@@ -91,10 +99,8 @@ export const create = (params: CreateReminderParams) =>
   prisma.workReminder.create({
     data: { id: `reminder_${randomUUID().replaceAll('-', '')}`, ...params },
   })
-
 export const update = (reminderId: string, params: UpdateReminderParams) =>
   prisma.workReminder.update({ where: { id: reminderId }, data: params })
-
 export async function remove(reminderId: string, deletedBy: string) {
   if (process.env.DELETION_MODE === 'hard')
     await prisma.workReminder.delete({ where: { id: reminderId } })
@@ -103,6 +109,5 @@ export async function remove(reminderId: string, deletedBy: string) {
       where: { id: reminderId },
       data: { deletedAt: new Date(), deletedBy },
     })
-
   return { object: 'reminder' as const, id: reminderId, deleted: true as const }
 }

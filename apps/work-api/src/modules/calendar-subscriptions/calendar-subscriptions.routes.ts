@@ -1,0 +1,44 @@
+import { createApiRouter, type GuardResolver } from '../../http/api-router.js'
+import * as controller from './calendar-subscriptions.controller.js'
+export function createCalendarSubscriptionsRouter(
+  resolveGuards: GuardResolver
+) {
+  const api = createApiRouter(resolveGuards)
+  api.get({
+    path: '/',
+    security: {
+      kind: 'integration',
+      scope: 'work.calendars.read',
+      sessionPermissions: ['calendars.view'],
+    },
+    handler: controller.listSubscriptions,
+  })
+  api.post({
+    path: '/',
+    security: {
+      kind: 'integration',
+      scope: 'work.calendars.write',
+      sessionPermissions: ['calendars.edit'],
+    },
+    handler: controller.createSubscription,
+  })
+  api.patch({
+    path: '/:subscriptionId',
+    security: {
+      kind: 'integration',
+      scope: 'work.calendars.write',
+      sessionPermissions: ['calendars.edit'],
+    },
+    handler: controller.updateSubscription,
+  })
+  api.delete({
+    path: '/:subscriptionId',
+    security: {
+      kind: 'integration',
+      scope: 'work.calendars.write',
+      sessionPermissions: ['calendars.edit'],
+    },
+    handler: controller.deleteSubscription,
+  })
+  return api.router
+}

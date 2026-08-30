@@ -54,7 +54,14 @@ export function getAppError(code: string): AppError {
 /** Build a Response with JSON body { error: AppError } and the registry HTTP status. */
 export function errorResponse(code: string): Response {
   const { httpStatus } = getError(code)
-  return Response.json({ error: getAppError(code) }, { status: httpStatus })
+  // The canonical `{ data, error }` envelope. The browser client validates the
+  // envelope before it reads the error, so a body carrying only `error`
+  // surfaces to the user as client/invalid-response rather than as the denial
+  // or failure that actually occurred.
+  return Response.json(
+    { data: null, error: getAppError(code) },
+    { status: httpStatus }
+  )
 }
 
 /** Type guard: checks that value is an AppError (object with string code and message). */
@@ -99,12 +106,8 @@ export function handleApiError(err: unknown): Response {
 
   if (isAppError(err)) return errorResponse(err.code)
 
-  if (typeof err === 'object' && err !== null && 'issues' in err) {
-    return Response.json(
-      { error: getAppError('error/validation-failed') },
-      { status: HttpStatus.UNPROCESSABLE_ENTITY }
-    )
-  }
+  if (typeof err === 'object' && err !== null && 'issues' in err)
+    return errorResponse('error/validation-failed')
 
   return errorResponse('error/unknown')
 }

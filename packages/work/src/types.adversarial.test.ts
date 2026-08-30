@@ -299,6 +299,7 @@ describe('Work Service Types - Adversarial & Contract Tests', () => {
       const task = createWorkTaskInputSchema.safeParse({
         ...baseTask,
         dueAt: time,
+        dueTimeZone: 'America/Jamaica',
       })
       expect(task.success).toBe(true)
       if (task.success) expect(task.data.dueAt).toBe(time)

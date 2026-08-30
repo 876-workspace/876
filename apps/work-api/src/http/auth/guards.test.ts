@@ -12,7 +12,10 @@ const repository: AuthRepository = {
   tenantByOrganizationId: vi.fn(),
   activeConnection: vi.fn(),
 }
-const identity: IdentityGateway = { appForApiKey: vi.fn() }
+const identity: IdentityGateway = {
+  appForApiKey: vi.fn(),
+  sessionAccess: vi.fn(),
+}
 
 function addRoute(app: Express, path: string, security: WorkSecurity): void {
   const guards = createGuardResolver({ repository, identity })(security)
@@ -58,7 +61,19 @@ describe('Work authentication guards', () => {
     vi.mocked(repository.activeConnection).mockResolvedValue({
       scopes: new Set(['work.tasks.read', 'work.tasks.write']),
     })
-    vi.mocked(identity.appForApiKey).mockResolvedValue({ id: 'app_crm' })
+    vi.mocked(identity.appForApiKey).mockResolvedValue({
+      id: 'app_crm',
+      slug: '876-crm',
+    })
+    vi.mocked(identity.sessionAccess).mockResolvedValue({
+      userId: 'user_123',
+      appId: 'app_crm',
+      appSlug: '876-crm',
+      assigned: true,
+      entitled: true,
+      status: 'ACTIVE',
+      effectivePermissions: new Set(['work.tasks.read', 'work.tasks.write']),
+    })
   })
 
   it('authorizes CRM’s app key for its connected organization', async () => {

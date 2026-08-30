@@ -1,0 +1,12 @@
+import { disconnectDb } from '../db/index.js'
+import { run } from '../modules/notification-outbox/index.js'
+try {
+  const result = await run()
+  console.info('work.notifications.completed', result)
+  if (result.failed > 0) process.exitCode = 1
+} catch (error) {
+  console.error('work.notifications.failed', error)
+  process.exitCode = 1
+} finally {
+  await disconnectDb()
+}

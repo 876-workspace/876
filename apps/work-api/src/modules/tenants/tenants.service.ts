@@ -1,8 +1,6 @@
-import type { WorkTenant } from '@876/work'
-
-import { ensureCrmConnection } from '../connections/index.js'
+import { WORK_CRM_INTEGRATION_SCOPES, type WorkTenant } from '@876/work'
+import { ensureConnection } from '../connections/index.js'
 import * as repository from './tenants.repository.js'
-
 function serialize(
   tenant: NonNullable<
     Awaited<ReturnType<typeof repository.retrieveByOrganization>>
@@ -17,14 +15,20 @@ function serialize(
     updatedAt: Math.floor(tenant.updatedAt.getTime() / 1000),
   }
 }
-
 export async function retrieveByOrganization(organizationId: string) {
   const tenant = await repository.retrieveByOrganization(organizationId)
   return tenant ? serialize(tenant) : null
 }
-
-export async function ensure(organizationId: string, appId?: string) {
+export async function ensure(
+  organizationId: string,
+  connection?: { appId: string; scopes?: readonly string[] }
+) {
   const tenant = await repository.ensure(organizationId)
-  if (appId) await ensureCrmConnection(tenant.id, appId)
+  if (connection)
+    await ensureConnection(
+      tenant.id,
+      connection.appId,
+      connection.scopes ?? WORK_CRM_INTEGRATION_SCOPES
+    )
   return serialize(tenant)
 }

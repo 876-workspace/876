@@ -1,3 +1,4 @@
+import { WORK_CRM_INTEGRATION_SCOPES } from '@876/work'
 import { create876WorkOperatorClient } from '@876/work/operator'
 
 import { getSettings } from '@/config'
@@ -14,6 +15,11 @@ import {
 import * as provisioningRepository from './provisioning.repository'
 
 const log = getLogger('workspace')
+
+function scopesForWorkConsumer(slug: string) {
+  if (slug === '876-crm') return WORK_CRM_INTEGRATION_SCOPES
+  return [] as const
+}
 
 /**
  * Internal organization-workspace control plane.
@@ -67,9 +73,6 @@ export const workspace = {
       assignedBy?: string | null
       now?: number
     }) {
-      // Pass through rather than defaulting `sourceAppId`/`assignedBy` here;
-      // `assignMemberApps` already owns those defaults, and duplicating them
-      // gives the same value two definition sites.
       return assignMemberApps({
         ...params,
         now: params.now ?? nowUnixSeconds(),
@@ -142,11 +145,20 @@ export const workspace = {
         }
         if (!appIds.includes(app.id)) continue
 
-        try {
-          const result = await work.workspace.ensure(
-            params.organizationId,
-            app.id
+        const scopes = scopesForWorkConsumer(slug)
+        if (!scopes.length) {
+          log.warn(
+            { organization_id: params.organizationId, app_slug: slug },
+            'work_provisioning.no_scope_grant'
           )
+          continue
+        }
+
+        try {
+          const result = await work.workspace.ensure(params.organizationId, {
+            appId: app.id,
+            scopes,
+          })
           if (result.error) {
             log.error(
               {

@@ -20,12 +20,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../../requests/index.js', () => mocks.context)
 vi.mock('../../priorities/index.js', () => mocks.priorities)
-vi.mock('../../../providers/work.js', () => ({
-  crmRequestWorkContext: (requestId: string) => ({
-    service: 'crm',
-    resource: 'request',
-    id: requestId,
-  }),
+vi.mock('../../../providers/work.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../providers/work.js')>()),
   workClient: () => ({ tasks: mocks.tasks }),
 }))
 
@@ -147,7 +143,12 @@ describe('CRM task adapter over Work', () => {
     mocks.tasks.list.mockResolvedValue(listResult([workTask()], true))
     const result = await service.list('org_1', requestId)
 
-    expect(result).toMatchObject({ code: 'crm/work-unavailable' })
+    expect(result).toEqual({
+      code: 'crm/work-invalid-response',
+      message:
+        'The shared Work service returned an invalid response; retry, then contact support if it persists.',
+      httpStatus: 502,
+    })
     expect(mocks.tasks.list).toHaveBeenCalledTimes(20)
   })
 

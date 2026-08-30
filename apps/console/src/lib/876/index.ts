@@ -1,9 +1,9 @@
 import 'server-only'
 
 import { create876AdminClient } from '@876/admin'
-import { createConsoleSurfaces as composeConsoleSurfaces } from '@876/client/server'
 import { create876AdminClient as createBillingAdminClient } from '@876/billing/admin'
 import { create876BillingIntegrationClient } from '@876/billing/integration'
+import { createConsoleSurfaces as composeConsoleSurfaces } from '@876/client/server'
 import { createWidgetsAdminClient } from '@876/widgets/server/admin'
 
 function getBillingAdminOptions(requestId?: string) {
@@ -26,6 +26,14 @@ function getCrmOptions(requestId?: string) {
   return {
     baseUrl: process.env.CRM_API_URL,
     internalKey: process.env.CRM_INTERNAL_KEY!,
+    requestId,
+  }
+}
+
+function getWorkOptions(requestId?: string) {
+  return {
+    baseUrl: process.env.WORK_API_URL,
+    internalKey: process.env.WORK_INTERNAL_KEY!,
     requestId,
   }
 }
@@ -59,6 +67,7 @@ function getConsoleOptions(requestId?: string) {
         },
       },
       crm: getCrmOptions(requestId),
+      work: { operator: getWorkOptions(requestId) },
       storage: {
         internalKey: process.env.STORAGE_INTERNAL_KEY!,
         requestId,

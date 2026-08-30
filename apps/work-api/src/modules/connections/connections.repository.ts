@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto'
-
 import { prisma } from '../../db/index.js'
 
 export function activeConnection(tenantId: string, appId: string) {
@@ -8,7 +7,6 @@ export function activeConnection(tenantId: string, appId: string) {
     select: { scopes: true },
   })
 }
-
 export async function ensure(
   tenantId: string,
   appId: string,
@@ -17,8 +15,18 @@ export async function ensure(
   const existing = await prisma.workAppConnection.findUnique({
     where: { tenantId_appId: { tenantId, appId } },
   })
-  if (existing) return existing
-
+  if (existing) {
+    const same =
+      existing.status === 'ACTIVE' &&
+      existing.scopes.length === scopes.length &&
+      existing.scopes.every((scope) => scopes.includes(scope))
+    return same
+      ? existing
+      : prisma.workAppConnection.update({
+          where: { id: existing.id },
+          data: { status: 'ACTIVE', scopes: [...scopes] },
+        })
+  }
   try {
     return await prisma.workAppConnection.create({
       data: {
@@ -34,6 +42,9 @@ export async function ensure(
       where: { tenantId_appId: { tenantId, appId } },
     })
     if (!winner) throw error
-    return winner
+    return prisma.workAppConnection.update({
+      where: { id: winner.id },
+      data: { status: 'ACTIVE', scopes: [...scopes] },
+    })
   }
 }

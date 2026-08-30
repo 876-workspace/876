@@ -4,14 +4,22 @@ enum WorkTenantStatus {
 }
 
 model WorkTenant {
-  id             String           @id
-  organizationId String           @unique @map("organization_id")
-  status         WorkTenantStatus @default(ACTIVE)
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
-  tasks          WorkTask[]
-  reminders      WorkReminder[]
-  appConnections WorkAppConnection[]
+  id                    String                     @id
+  organizationId        String                     @unique @map("organization_id")
+  status                WorkTenantStatus           @default(ACTIVE)
+  createdAt             DateTime                   @default(now()) @map("created_at")
+  updatedAt             DateTime                   @updatedAt @map("updated_at")
+  tasks                 WorkTask[]
+  taskLists             WorkTaskList[]
+  reminders             WorkReminder[]
+  recurrenceRules       WorkRecurrenceRule[]
+  alerts                WorkAlert[]
+  calendars             WorkCalendar[]
+  calendarSubscriptions WorkCalendarSubscription[]
+  events                WorkEvent[]
+  syncConnections       WorkSyncConnection[]
+  notificationOutbox    WorkNotificationOutbox[]
+  appConnections        WorkAppConnection[]
 
   @@map("work_tenants")
 }

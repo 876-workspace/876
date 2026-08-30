@@ -1,0 +1,101 @@
+import { isError } from '@876/core'
+import type {
+  CreateWorkCalendarSubscriptionInput,
+  UpdateWorkCalendarSubscriptionInput,
+  WorkCalendarSubscription,
+} from '@876/work'
+import * as calendars from '../calendars/index.js'
+import * as tenants from '../tenants/index.js'
+import * as repository from './calendar-subscriptions.repository.js'
+type Row = Awaited<ReturnType<typeof repository.list>>[number]
+const stamp = (d: Date) => Math.floor(d.getTime() / 1000)
+function serialize(row: Row, organizationId: string): WorkCalendarSubscription {
+  return {
+    object: 'calendar_subscription',
+    id: row.id,
+    organizationId,
+    calendarId: row.calendarId,
+    userId: row.userId,
+    role: row.role,
+    color: row.color,
+    isVisible: row.isVisible,
+    defaultReminderMinutes: row.defaultReminderMinutes,
+    createdAt: stamp(row.createdAt),
+    updatedAt: stamp(row.updatedAt),
+  }
+}
+async function context(organizationId: string, calendarId: string) {
+  const tenant = await tenants.retrieveByOrganization(organizationId)
+  if (!tenant) return null
+  const calendar = await calendars.retrieve(organizationId, calendarId)
+  if (!calendar || isError(calendar)) return null
+  return { tenant, calendar }
+}
+export async function list(organizationId: string, calendarId: string) {
+  const ctx = await context(organizationId, calendarId)
+  if (!ctx) return null
+  return {
+    data: (await repository.list(ctx.tenant.id, calendarId)).map((r) =>
+      serialize(r, organizationId)
+    ),
+    hasMore: false,
+  }
+}
+export async function create(
+  organizationId: string,
+  calendarId: string,
+  input: CreateWorkCalendarSubscriptionInput
+) {
+  const ctx = await context(organizationId, calendarId)
+  if (!ctx) return null
+  const row = await repository.create({
+    tenantId: ctx.tenant.id,
+    calendarId,
+    userId: input.userId,
+    role: input.role ?? 'VIEWER',
+    color: input.color ?? null,
+    isVisible: input.isVisible ?? true,
+    defaultReminderMinutes: input.defaultReminderMinutes ?? [],
+  })
+  return serialize(row, organizationId)
+}
+export async function update(
+  organizationId: string,
+  calendarId: string,
+  subscriptionId: string,
+  input: UpdateWorkCalendarSubscriptionInput
+) {
+  const ctx = await context(organizationId, calendarId)
+  if (!ctx) return null
+  const current = await repository.retrieve(
+    ctx.tenant.id,
+    calendarId,
+    subscriptionId
+  )
+  if (!current) return null
+  const row = await repository.update(subscriptionId, {
+    ...(input.role === undefined ? {} : { role: input.role }),
+    ...(input.color === undefined ? {} : { color: input.color }),
+    ...(input.isVisible === undefined ? {} : { isVisible: input.isVisible }),
+    ...(input.defaultReminderMinutes === undefined
+      ? {}
+      : { defaultReminderMinutes: input.defaultReminderMinutes }),
+  })
+  return serialize(row, organizationId)
+}
+export async function remove(
+  organizationId: string,
+  calendarId: string,
+  subscriptionId: string
+) {
+  const ctx = await context(organizationId, calendarId)
+  if (!ctx) return null
+  const current = await repository.retrieve(
+    ctx.tenant.id,
+    calendarId,
+    subscriptionId
+  )
+  if (!current) return null
+  if (current.role === 'OWNER') return null
+  return repository.remove(subscriptionId)
+}

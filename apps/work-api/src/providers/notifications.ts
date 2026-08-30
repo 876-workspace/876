@@ -1,0 +1,31 @@
+export type NotificationDispatch = {
+  userId: string
+  channel: 'NOTIFICATION' | 'EMAIL'
+  source: { type: 'ALERT' | 'REMINDER'; id: string; occurrenceKey: string }
+  payload: unknown
+}
+export interface NotificationGateway {
+  dispatch(value: NotificationDispatch): Promise<void>
+}
+export class HttpNotificationGateway implements NotificationGateway {
+  async dispatch(value: NotificationDispatch) {
+    const url = process.env.WORK_NOTIFICATION_DISPATCH_URL?.trim()
+    if (!url)
+      throw new Error('WORK_NOTIFICATION_DISPATCH_URL is not configured.')
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(process.env.WORK_NOTIFICATION_DISPATCH_KEY
+          ? { 'x-internal-key': process.env.WORK_NOTIFICATION_DISPATCH_KEY }
+          : {}),
+      },
+      body: JSON.stringify(value),
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok)
+      throw new Error(
+        `Notification dispatch failed with HTTP ${response.status}.`
+      )
+  }
+}

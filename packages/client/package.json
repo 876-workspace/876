@@ -1,6 +1,6 @@
 {
   "name": "@876/client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Unified JavaScript client for the 876 ecosystem.",
   "license": "UNLICENSED",
   "type": "module",
@@ -30,6 +30,7 @@
     "@876/sdk": "workspace:*",
     "@876/storage": "workspace:*",
     "@876/widgets": "workspace:*",
+    "@876/work": "workspace:*",
     "server-only": "0.0.1"
   },
   "devDependencies": {

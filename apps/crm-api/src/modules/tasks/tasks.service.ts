@@ -1,13 +1,28 @@
 import { getError, isError } from '@876/core'
-import type { WorkTask } from '@876/work'
+import type { WorkTask, WorkTaskStatus } from '@876/work'
 import type {
   CreateTaskInput,
   RequestTask,
+  TaskStatus,
   UpdateTaskInput,
 } from '../../types/task.js'
-import { crmRequestWorkContext, workClient } from '../../providers/work.js'
+import {
+  crmRequestWorkContext,
+  workClient,
+  workErrorToCrm,
+} from '../../providers/work.js'
 import * as priorities from '../priorities/index.js'
 import { requireRequestContext } from '../requests/index.js'
+
+const workStatusToTaskStatus = {
+  OPEN: 'OPEN',
+  IN_PROGRESS: 'IN_PROGRESS',
+  WAITING: 'IN_PROGRESS',
+  DEFERRED: 'OPEN',
+  DONE: 'DONE',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'CANCELLED',
+} satisfies Record<WorkTaskStatus, TaskStatus>
 
 function serialize(
   task: WorkTask,
@@ -22,7 +37,7 @@ function serialize(
     requestId,
     title: task.title,
     description: task.description,
-    status: task.status,
+    status: workStatusToTaskStatus[task.status],
     priorityId: priority.id,
     priority,
     assigneeId: task.assigneeId,
@@ -56,16 +71,16 @@ async function listWork(organizationId: string, requestId: string) {
       context: crmRequestWorkContext(requestId),
       ...(startingAfter ? { startingAfter } : {}),
     })
-    if (result.error) return getError('crm/work-unavailable')
+    if (result.error) return workErrorToCrm(result.error)
 
     tasks.push(...result.data.data)
     if (!result.data.has_more) return tasks
     const lastTask = result.data.data.at(-1)
-    if (!lastTask) return getError('crm/work-unavailable')
+    if (!lastTask) return getError('crm/work-invalid-response')
     startingAfter = lastTask.id
   }
 
-  return getError('crm/work-unavailable')
+  return getError('crm/work-invalid-response')
 }
 
 async function findWorkTask(
@@ -75,7 +90,7 @@ async function findWorkTask(
 ) {
   const result = await workClient().tasks.retrieve(organizationId, taskId)
   if (result.error?.code === 'work/task-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   const context = crmRequestWorkContext(requestId)
   return result.data.context?.service === context.service &&
     result.data.context?.resource === context.resource &&
@@ -130,7 +145,7 @@ export async function create(
     sortOrder: input.sortOrder,
     createdBy: input.createdBy,
   })
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return serialize(
     result.data,
     context.tenantId,
@@ -179,7 +194,7 @@ export async function update(
       : { completedBy: input.completedBy }),
   })
   if (result.error?.code === 'work/task-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return serialize(result.data, context.tenantId, requestId, priority)
 }
 
@@ -201,6 +216,6 @@ export async function remove(
     deletedBy
   )
   if (result.error?.code === 'work/task-not-found') return null
-  if (result.error) return getError('crm/work-unavailable')
+  if (result.error) return workErrorToCrm(result.error)
   return { object: 'request_task' as const, id: taskId, deleted: true as const }
 }

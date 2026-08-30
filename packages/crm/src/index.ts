@@ -27,6 +27,28 @@ export type {
   UpdateRequestInput,
 } from './request-types'
 export {
+  requestEventBusyStatusSchema,
+  requestEventListSchema,
+  requestEventParticipantKindSchema,
+  requestEventParticipantListSchema,
+  requestEventParticipantRoleSchema,
+  requestEventParticipantSchema,
+  requestEventParticipantStatusSchema,
+  requestEventSchema,
+  requestEventStatusSchema,
+} from './request-event-types'
+export type {
+  CreateRequestEventInput,
+  CreateRequestEventParticipantInput,
+  RequestEvent,
+  RequestEventBusyStatus,
+  RequestEventList,
+  RequestEventParticipant,
+  RequestEventStatus,
+  UpdateRequestEventInput,
+  UpdateRequestEventParticipantInput,
+} from './request-event-types'
+export {
   CRM_PRODUCT_APP_SLUG,
   CRM_SERVICE_KEY,
   crmServiceWorkspace,

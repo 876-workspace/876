@@ -1,7 +1,16 @@
 import express from 'express'
 import request from 'supertest'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ZodError } from 'zod'
+
+const mocks = vi.hoisted(() => ({
+  error: vi.fn(),
+}))
+
+vi.mock('../platform/logger.js', () => ({
+  getLogger: () => ({ error: mocks.error }),
+}))
+
 import { errorHandler, notFoundHandler } from './error-handler.js'
 
 function buildAppWithError(error: unknown) {
@@ -18,31 +27,64 @@ function buildAppNotFound() {
 }
 
 describe('errorHandler - terminal boundary', () => {
-  let consoleSpy: ReturnType<typeof vi.spyOn>
-  beforeEach(() => { consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) })
-  afterEach(() => { consoleSpy.mockRestore() })
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
 
   it('translates ZodError to 422 crm/invalid-request without leaking zod details', async () => {
-    const zod = new ZodError([{ code: 'invalid_type', expected: 'string', input: 123, path: ['name'], message: 'Invalid' }])
+    const zod = new ZodError([
+      {
+        code: 'invalid_type',
+        expected: 'string',
+        input: 123,
+        path: ['name'],
+        message: 'Invalid',
+      },
+    ])
     const res = await request(buildAppWithError(zod)).get('/boom')
     expect(res.status).toBe(422)
-    expect(res.body).toEqual({ data: null, error: { code: 'crm/invalid-request', message: 'Invalid request.' } })
+    expect(res.body).toEqual({
+      data: null,
+      error: { code: 'crm/invalid-request', message: 'Invalid request.' },
+    })
     expect(res.body.error.httpStatus).toBeUndefined()
-    expect(consoleSpy).not.toHaveBeenCalled()
+    expect(mocks.error).not.toHaveBeenCalled()
   })
 
   it('logs and returns 500 crm/internal for generic Error', async () => {
-    const res = await request(buildAppWithError(new Error('unexpected'))).get('/boom')
+    const res = await request(buildAppWithError(new Error('unexpected'))).get(
+      '/boom'
+    )
     expect(res.status).toBe(500)
-    expect(res.body).toEqual({ data: null, error: { code: 'crm/internal', message: 'Internal server error.' } })
-    expect(consoleSpy).toHaveBeenCalledTimes(1)
+    expect(res.body).toEqual({
+      data: null,
+      error: { code: 'crm/internal', message: 'Internal server error.' },
+    })
+    expect(mocks.error).toHaveBeenCalledTimes(1)
+    expect(mocks.error).toHaveBeenCalledWith(
+      {
+        error_name: 'Error',
+        error_message: 'unexpected',
+        stack: expect.any(String),
+      },
+      'unhandled_error'
+    )
   })
 
   it('logs and returns 500 for thrown string', async () => {
-    const res = await request(buildAppWithError('weird string throw')).get('/boom')
+    const res = await request(buildAppWithError('weird string throw')).get(
+      '/boom'
+    )
     expect(res.status).toBe(500)
     expect(res.body.error.code).toBe('crm/internal')
-    expect(consoleSpy).toHaveBeenCalled()
+    expect(mocks.error).toHaveBeenCalledWith(
+      {
+        error_name: 'string',
+        error_message: 'weird string throw',
+        stack: undefined,
+      },
+      'unhandled_error'
+    )
   })
 
   it('logs and returns 500 for Error with empty message', async () => {
@@ -52,7 +94,9 @@ describe('errorHandler - terminal boundary', () => {
   })
 
   it('logs and returns 500 for TypeError', async () => {
-    const res = await request(buildAppWithError(new TypeError('type boom'))).get('/boom')
+    const res = await request(
+      buildAppWithError(new TypeError('type boom'))
+    ).get('/boom')
     expect(res.status).toBe(500)
     expect(res.body.error.code).toBe('crm/internal')
   })
@@ -76,7 +120,9 @@ describe('errorHandler - terminal boundary', () => {
     // This documents that expected failures must be returned, not thrown.
     const { getError } = await import('@876/core')
     const val = getError('crm/team-not-found')
-    const res = await request(buildAppWithError(val as unknown as Error)).get('/boom')
+    const res = await request(buildAppWithError(val as unknown as Error)).get(
+      '/boom'
+    )
     expect(res.status).toBe(500)
     expect(res.body.error.code).toBe('crm/internal')
   })
@@ -86,7 +132,10 @@ describe('notFoundHandler - standalone 404', () => {
   it('returns 404 crm/not-found envelope', async () => {
     const res = await request(buildAppNotFound()).get('/anything')
     expect(res.status).toBe(404)
-    expect(res.body).toEqual({ data: null, error: { code: 'crm/not-found', message: 'Not found.' } })
+    expect(res.body).toEqual({
+      data: null,
+      error: { code: 'crm/not-found', message: 'Not found.' },
+    })
   })
 
   it('body never leaks httpStatus', async () => {
@@ -105,19 +154,24 @@ describe('notFoundHandler - standalone 404', () => {
 
   it('concurrent not-found requests are isolated', async () => {
     const app = buildAppNotFound()
-    const results = await Promise.all([request(app).get('/a'), request(app).get('/b'), request(app).get('/c')])
+    const results = await Promise.all([
+      request(app).get('/a'),
+      request(app).get('/b'),
+      request(app).get('/c'),
+    ])
     for (const res of results) expect(res.status).toBe(404)
   })
 })
 
 describe('errorHandler isolation - vitest best practices', () => {
-  it('each request gets fresh console spy without cross-test pollution', async () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  it('uses a fresh logger mock without cross-test pollution', async () => {
+    vi.clearAllMocks()
     const res = await request(buildAppWithError(new Error('x'))).get('/boom')
     expect(res.status).toBe(500)
-    expect(spy).toHaveBeenCalledTimes(1)
-    spy.mockRestore()
+    expect(mocks.error).toHaveBeenCalledTimes(1)
+    vi.clearAllMocks()
     const res2 = await request(buildAppWithError(new ZodError([]))).get('/boom')
     expect(res2.status).toBe(422)
+    expect(mocks.error).not.toHaveBeenCalled()
   })
 })
