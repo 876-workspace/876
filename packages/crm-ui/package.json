@@ -11,9 +11,17 @@
       "types": "./src/customer-list.tsx",
       "default": "./src/customer-list.tsx"
     },
+    "./customer-card-frame": {
+      "types": "./src/customer-card-frame.tsx",
+      "default": "./src/customer-card-frame.tsx"
+    },
     "./request-record-shell": {
       "types": "./src/request-record-shell.tsx",
       "default": "./src/request-record-shell.tsx"
+    },
+    "./request-events": {
+      "types": "./src/request-events.tsx",
+      "default": "./src/request-events.tsx"
     }
   },
   "scripts": {
@@ -21,6 +29,7 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/crm": "workspace:*",
     "@876/ui": "workspace:*"
   },
   "peerDependencies": {
