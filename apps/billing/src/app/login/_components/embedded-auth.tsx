@@ -12,10 +12,14 @@ import {
   AuthProvider,
   type SocialProvider,
 } from '@876/ui/auth'
-import { useEffect } from 'react'
+import {
+  AUTH_RETURN_TO_COOKIE,
+  resolveRelativeReturnTo,
+} from '@876/core/auth/return-to'
+import { account } from '@/lib/services/account-browser'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
-const authClient = create876AccountClient({ baseUrl: '/api' })
+const authClient = account
 
 export function EmbeddedAuth({
   returnTo,

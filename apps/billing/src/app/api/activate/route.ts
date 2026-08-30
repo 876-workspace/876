@@ -2,7 +2,7 @@ import { apiError, apiSuccess } from '@876/core/api'
 
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
 import { canManageBilling, getContext } from '@/lib/auth/billing-context'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 
 export const runtime = 'nodejs'
 

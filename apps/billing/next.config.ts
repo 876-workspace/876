@@ -64,7 +64,10 @@ const nextConfig: NextConfig = {
   transpilePackages: sharedTranspilePackages([
     '@876/account',
     '@876/billing',
+    '@876/account',
+    '@876/sdk',
     '@876/core',
+    '@876/widgets',
   ]),
   experimental: {
     optimizePackageImports: ['zod'],

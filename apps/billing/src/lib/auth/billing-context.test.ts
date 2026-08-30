@@ -35,7 +35,7 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 vi.mock('next/headers', () => ({
   cookies: async () => ({ get: mocks.getCookie }),
 }))
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/features', () => ({ getFeatures: mocks.getFeatures }))

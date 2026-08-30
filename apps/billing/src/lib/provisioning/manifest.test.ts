@@ -7,7 +7,7 @@ import {
 
 const mocks = vi.hoisted(() => ({ retrievePublished: vi.fn() }))
 
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   createBackgroundPlatformClient: () => ({
     provisioning: { retrievePublished: mocks.retrievePublished },
   }),

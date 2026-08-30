@@ -11,7 +11,7 @@ import {
   requirePagePermission,
 } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import type { InviteView, MemberView } from '@/types/access'
 
 export const metadata = { title: 'Users - Billing settings' }
