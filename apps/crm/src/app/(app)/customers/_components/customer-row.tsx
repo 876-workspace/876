@@ -1,28 +1,39 @@
 'use client'
 
-import type { KeyboardEvent } from 'react'
+import Link from 'next/link'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Mail, Phone } from '@876/ui/icons'
 import { TableCell, TableRow } from '@876/ui/table'
-import type { CrmCustomerRow } from './customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
+import { useCustomerLinks } from '../_lib/use-customer-links'
+import { customerTabPath } from '../_lib/customer-tabs'
+
+/**
+ * Full-row link overlay. A `<tr>` cannot be an anchor, so the anchor is
+ * stretched over the row instead: the whole row is clickable, and because it
+ * is a real link it also supports middle-click, "open in new tab", and "copy
+ * link address" — which is the point of putting the customer in the path.
+ */
+function RowLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className="focus-visible:ring-ring absolute inset-0 z-10 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+    />
+  )
+}
 
 export function CondensedCustomerRow({
   customer,
   selected,
-  onSelect,
 }: {
   customer: CrmCustomerRow
   selected: boolean
-  onSelect: () => void
 }) {
-  function handleKeyDown(event: KeyboardEvent<HTMLTableRowElement>) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      onSelect()
-    }
-  }
+  const linkTo = useCustomerLinks()
 
   const subtitle = customer.isBusiness
     ? (customer.contactName ?? customer.email ?? 'Business')
@@ -30,19 +41,14 @@ export function CondensedCustomerRow({
 
   return (
     <TableRow
-      tabIndex={0}
-      role="button"
-      aria-label={`View customer ${customer.name}`}
-      aria-pressed={selected}
       data-state={selected ? 'selected' : undefined}
-      onClick={onSelect}
-      onKeyDown={handleKeyDown}
-      className={cn(
-        'cursor-pointer transition-colors',
-        selected && 'bg-muted/70 font-medium'
-      )}
+      className={cn('transition-colors', selected && 'bg-muted/70 font-medium')}
     >
-      <TableCell className="py-3 pr-3 pl-4">
+      <TableCell className="relative py-3 pr-3 pl-4">
+        <RowLink
+          href={linkTo(customerTabPath(customer.profileId, null))}
+          label={`View customer ${customer.name}`}
+        />
         <div className="flex items-center gap-3">
           <CustomerAvatar
             name={customer.name}
@@ -72,30 +78,16 @@ export function CondensedCustomerRow({
   )
 }
 
-export function CustomerTableRow({
-  customer,
-  onSelect,
-}: {
-  customer: CrmCustomerRow
-  onSelect: (id: string) => void
-}) {
-  function handleKeyDown(event: KeyboardEvent<HTMLTableRowElement>) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      onSelect(customer.profileId)
-    }
-  }
+export function CustomerTableRow({ customer }: { customer: CrmCustomerRow }) {
+  const linkTo = useCustomerLinks()
 
   return (
-    <TableRow
-      tabIndex={0}
-      role="button"
-      aria-label={`View customer ${customer.name}`}
-      onClick={() => onSelect(customer.profileId)}
-      onKeyDown={handleKeyDown}
-      className="cursor-pointer transition-colors"
-    >
-      <TableCell className="px-5 py-4">
+    <TableRow className="transition-colors">
+      <TableCell className="relative px-5 py-4">
+        <RowLink
+          href={linkTo(customerTabPath(customer.profileId, null))}
+          label={`View customer ${customer.name}`}
+        />
         <div className="flex items-center gap-3">
           <CustomerAvatar
             name={customer.name}

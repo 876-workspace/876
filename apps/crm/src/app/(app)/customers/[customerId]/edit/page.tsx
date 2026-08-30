@@ -47,7 +47,7 @@ export default async function EditCustomerPage({ params }: Props) {
   return (
     <Page>
       <PageBreadcrumb
-        href={`/customers?customer=${encodeURIComponent(profile.id)}`}
+        href={`/customers/${encodeURIComponent(profile.id)}`}
         label={customer?.name ?? 'Customer'}
         className="mb-4"
       />

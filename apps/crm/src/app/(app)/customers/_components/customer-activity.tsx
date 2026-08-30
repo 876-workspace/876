@@ -4,7 +4,7 @@ import type { ComponentType, SVGProps } from 'react'
 import { formatDateTime } from '@876/core/timestamps'
 import { cn } from '@876/core/utils'
 import { Folder, Pencil, Sparkles } from '@876/ui/icons'
-import type { CrmCustomerRow } from './customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
 
 type Tone = 'emerald' | 'sky' | 'amber'
 

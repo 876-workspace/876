@@ -136,7 +136,7 @@ export function CustomerForm({
     }
 
     const id = customerId ?? result.data.profile.id
-    router.replace(`/customers?customer=${encodeURIComponent(id)}`)
+    router.replace(`/customers/${encodeURIComponent(id)}`)
     router.refresh()
   }
 

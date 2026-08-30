@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { listDialCodes, parsePhone } from '@876/core/phone'
 import { cn } from '@876/core/utils'
 import { AppError } from '@876/ui/app-error'
@@ -13,6 +14,8 @@ import { PhoneInput, type PhoneInputValue } from '@876/ui/phone-input'
 import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
 
 import { client } from '@/lib/client'
+import { customerTabPath } from '../_lib/customer-tabs'
+import { useCustomerLinks } from '../_lib/use-customer-links'
 
 const dialCodes = listDialCodes().map((country) => ({
   value: country.countryCode,
@@ -26,15 +29,16 @@ const rowClassName = 'sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3'
 
 type CustomerKind = 'INDIVIDUAL' | 'BUSINESS'
 
-export function CustomerCreateCard({
-  onClose,
-  onSuccess,
-  className,
-}: {
-  onClose: () => void
-  onSuccess: (id: string) => void
-  className?: string
-}) {
+/**
+ * Create, rendered in the card slot by `/customers/new`.
+ *
+ * It owns its own navigation rather than taking callbacks: it is a route now,
+ * so closing means going back to the list and succeeding means going to the
+ * customer that was just created — both carrying the list's query state.
+ */
+export function CustomerCreateCard({ className }: { className?: string }) {
+  const router = useRouter()
+  const linkTo = useCustomerLinks()
   const idempotencyKey = useRef(crypto.randomUUID())
   const [customerKind, setCustomerKind] = useState<CustomerKind>('INDIVIDUAL')
   const [firstName, setFirstName] = useState('')
@@ -84,14 +88,20 @@ export function CustomerCreateCard({
       return
     }
 
-    onSuccess(result.data.profile.id)
+    router.push(linkTo(customerTabPath(result.data.profile.id, null)))
+    router.refresh()
+  }
+
+  function onClose() {
+    router.push(linkTo('/customers'))
   }
 
   return (
     <section
       aria-label="New customer"
       className={cn(
-        '876-card flex min-w-0 flex-1 flex-col overflow-hidden',
+        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out',
         className
       )}
     >

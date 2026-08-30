@@ -3,7 +3,7 @@
 import { Button } from '@876/ui/button'
 import { Mail, Plus } from '@876/ui/icons'
 
-import type { CrmCustomerRow } from './customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
 
 export function CustomerMailsTab({
   customer: _customer,

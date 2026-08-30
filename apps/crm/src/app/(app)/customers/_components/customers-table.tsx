@@ -20,37 +20,14 @@ import {
   TableRow,
 } from '@876/ui/table'
 
+import type { CrmCustomerRow } from '@/features/customers/types'
 import { CustomerTableRow } from './customer-row'
-
-export type CrmCustomerRow = {
-  profileId: string
-  billingCustomerId: string
-  /** The party's name — the company for a business, the person otherwise. */
-  name: string
-  legalName?: string | null
-  isBusiness: boolean
-  typeLabel?: string
-  /** The party's own email/phone. For a business, never the contact's. */
-  email: string | null
-  phone: string | null
-  /** The person attached to a business customer. Null for an individual. */
-  contactName: string | null
-  contactEmail: string | null
-  contactPhone?: string | null
-  contactUserId?: string | null
-  contactAvatar?: string | null
-  ownerId?: string | null
-  status: 'ACTIVE' | 'INACTIVE'
-  createdAt?: number
-  updatedAt?: number
-}
 
 interface Props {
   customers: CrmCustomerRow[]
-  onSelect?: (id: string) => void
 }
 
-export function CustomersTable({ customers, onSelect = () => {} }: Props) {
+export function CustomersTable({ customers }: Props) {
   return (
     <div className="876-card overflow-hidden">
       <Table>
@@ -83,7 +60,7 @@ export function CustomersTable({ customers, onSelect = () => {} }: Props) {
                   </EmptyHeader>
                   <EmptyContent>
                     <Link
-                      href="/customers?customer=new"
+                      href="/customers/new"
                       className={buttonVariants({
                         variant: 'info',
                         size: 'sm',
@@ -98,11 +75,7 @@ export function CustomersTable({ customers, onSelect = () => {} }: Props) {
             </TableRow>
           ) : (
             customers.map((customer) => (
-              <CustomerTableRow
-                key={customer.profileId}
-                customer={customer}
-                onSelect={onSelect}
-              />
+              <CustomerTableRow key={customer.profileId} customer={customer} />
             ))
           )}
         </TableBody>

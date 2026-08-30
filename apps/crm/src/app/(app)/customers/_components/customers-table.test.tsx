@@ -1,12 +1,13 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { CustomersTable, type CrmCustomerRow } from './customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
+import { CustomersTable } from './customers-table'
 
 const pushMock = vi.fn()
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
+  useSearchParams: () => new URLSearchParams('status=active'),
 }))
 
 const sampleCustomers: CrmCustomerRow[] = [
@@ -66,19 +67,27 @@ describe('CustomersTable', () => {
     expect(screen.getByText('No customers yet')).toBeTruthy()
     expect(screen.getByRole('link', { name: /Add/ })).toHaveAttribute(
       'href',
-      '/customers?customer=new'
+      '/customers/new'
     )
   })
 
-  it('calls onSelect on row click', async () => {
-    const user = userEvent.setup()
-    const onSelect = vi.fn()
-    render(<CustomersTable customers={sampleCustomers} onSelect={onSelect} />)
+  it('links each row to that customer, carrying the list query forward', () => {
+    render(<CustomersTable customers={sampleCustomers} />)
 
-    const row = screen.getByText('Island Traders Ltd').closest('tr')
-    expect(row).toBeTruthy()
-    if (row) await user.click(row)
+    expect(
+      screen.getByRole('link', { name: 'View customer Island Traders Ltd' })
+    ).toHaveAttribute('href', '/customers/crm_prof_1?status=active')
+  })
 
-    expect(onSelect).toHaveBeenCalledWith('crm_prof_1')
+  it('encodes a customer id that is not URL-safe', () => {
+    render(
+      <CustomersTable
+        customers={[{ ...sampleCustomers[0], profileId: 'a/b c' }]}
+      />
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'View customer Island Traders Ltd' })
+    ).toHaveAttribute('href', '/customers/a%2Fb%20c?status=active')
   })
 })

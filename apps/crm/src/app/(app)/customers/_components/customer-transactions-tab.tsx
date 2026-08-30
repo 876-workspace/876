@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import type { CrmCustomerRow } from './customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
 
 export function CustomerTransactionsTab({
   customer: _customer,

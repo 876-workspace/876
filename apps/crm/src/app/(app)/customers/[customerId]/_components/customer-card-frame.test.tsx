@@ -2,8 +2,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-import { CustomerCard } from '../customer-card'
-import type { CrmCustomerRow } from '../customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
+import { CUSTOMER_TABS } from '../../_lib/customer-tabs'
+import { CustomerCardFrame } from './customer-card-frame'
+import { CustomerOverviewTab } from './customer-overview-tab'
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
@@ -16,6 +18,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+  useSearchParams: () => new URLSearchParams('status=active'),
+  // `null` is the index route — the Overview tab.
+  useSelectedLayoutSegment: () => null,
 }))
 
 vi.mock('sonner', () => ({
@@ -53,15 +58,18 @@ const sampleCustomer: CrmCustomerRow = {
   updatedAt: 1720000500,
 }
 
-describe('CustomerCard', () => {
+describe('CustomerCardFrame', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(window, 'confirm').mockReturnValue(true)
   })
 
   it('renders customer header, metadata, and party cards', () => {
-    const onClose = vi.fn()
-    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
     expect(screen.getByText('Island Traders Ltd')).toBeInTheDocument()
     expect(
@@ -87,22 +95,29 @@ describe('CustomerCard', () => {
     expect(screen.getByText('crm_prof_1')).toBeInTheDocument()
   })
 
-  it('calls onClose when clicking close button', () => {
-    const onClose = vi.fn()
-    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
+  it('navigates back to the list when clicking close, keeping the query', () => {
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
     const closeBtn = screen.getByLabelText('Close customer details')
     fireEvent.click(closeBtn)
 
-    expect(onClose).toHaveBeenCalled()
+    expect(mocks.push).toHaveBeenCalledTimes(1)
+    expect(mocks.push).toHaveBeenCalledWith('/customers?status=active')
   })
 
   it('toggles customer status', async () => {
     mocks.update.mockResolvedValueOnce({
       data: { profile: { status: 'INACTIVE' } },
     })
-    const onClose = vi.fn()
-    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
     const moreBtn = screen.getByLabelText('More customer actions')
     fireEvent.click(moreBtn)
@@ -121,8 +136,11 @@ describe('CustomerCard', () => {
 
   it('handles customer deletion', async () => {
     mocks.delete.mockResolvedValueOnce({ data: { object: 'customer' } })
-    const onClose = vi.fn()
-    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
     const moreBtn = screen.getByLabelText('More customer actions')
     fireEvent.click(moreBtn)
@@ -133,41 +151,60 @@ describe('CustomerCard', () => {
     await waitFor(() => {
       expect(mocks.delete).toHaveBeenCalledWith('crm_prof_1')
       expect(mocks.toastSuccess).toHaveBeenCalledWith('Customer deleted.')
-      expect(onClose).toHaveBeenCalled()
+      expect(mocks.push).toHaveBeenCalledWith('/customers?status=active')
     })
   })
 
-  it('allows switching between all customer detail tabs', () => {
-    const onClose = vi.fn()
-    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
+  it('renders every tab as a link to its own route, carrying the query', () => {
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
-    // Contacts tab
-    fireEvent.click(screen.getByRole('tab', { name: 'Contacts' }))
-    expect(screen.getByText(/Contact Directory/i)).toBeInTheDocument()
+    const expected: [string, string][] = [
+      ['Overview', '/customers/crm_prof_1?status=active'],
+      ['Contacts', '/customers/crm_prof_1/contacts?status=active'],
+      ['Transactions', '/customers/crm_prof_1/transactions?status=active'],
+      ['Requests', '/customers/crm_prof_1/requests?status=active'],
+      ['Mails', '/customers/crm_prof_1/mails?status=active'],
+      ['Statement', '/customers/crm_prof_1/statement?status=active'],
+      ['Activity', '/customers/crm_prof_1/activity?status=active'],
+    ]
 
-    // Transactions tab
-    fireEvent.click(screen.getByRole('tab', { name: 'Transactions' }))
-    expect(screen.getByText(/No transactions recorded/i)).toBeInTheDocument()
+    for (const [label, href] of expected) {
+      expect(screen.getByRole('link', { name: label })).toHaveAttribute(
+        'href',
+        href
+      )
+    }
+  })
 
-    // Requests tab
-    fireEvent.click(screen.getByRole('tab', { name: 'Requests' }))
-    expect(screen.getByText(/Support & Service Requests/i)).toBeInTheDocument()
-    expect(screen.getByText(/No requests recorded/i)).toBeInTheDocument()
+  it('covers every declared tab, so a new tab cannot ship unlinked', () => {
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
-    // Mails tab
-    fireEvent.click(screen.getByRole('tab', { name: 'Mails' }))
-    expect(screen.getByText(/Communication History/i)).toBeInTheDocument()
-    expect(screen.getByText(/No emails exchanged/i)).toBeInTheDocument()
+    for (const tab of CUSTOMER_TABS) {
+      expect(screen.getByRole('link', { name: tab.label })).toBeInTheDocument()
+    }
+  })
 
-    // Statement tab
-    fireEvent.click(screen.getByRole('tab', { name: 'Statement' }))
-    expect(screen.getByText('Statement of Account')).toBeInTheDocument()
-    expect(
-      screen.getByText(/No ledger line items recorded/i)
-    ).toBeInTheDocument()
+  it('marks the index route as the current tab', () => {
+    render(
+      <CustomerCardFrame customer={sampleCustomer}>
+        <CustomerOverviewTab customer={sampleCustomer} />
+      </CustomerCardFrame>
+    )
 
-    // Activity tab
-    fireEvent.click(screen.getByRole('tab', { name: 'Activity' }))
-    expect(screen.getByText('Customer record created')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+    expect(screen.getByRole('link', { name: 'Mails' })).not.toHaveAttribute(
+      'aria-current'
+    )
   })
 })

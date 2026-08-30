@@ -1,10 +1,16 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
+
+import { getCustomerRow } from '../_lib/customers-data'
+import { CustomerOverviewTab } from './_components/customer-overview-tab'
 
 type Props = { params: Promise<{ customerId: string }> }
 
 export const metadata = { title: 'Customer' }
 
-export default async function CustomerPage({ params }: Props) {
+export default async function CustomerOverviewPage({ params }: Props) {
   const { customerId } = await params
-  redirect(`/customers?customer=${encodeURIComponent(customerId)}`)
+  const customer = await getCustomerRow(customerId)
+  if (!customer) notFound()
+
+  return <CustomerOverviewTab customer={customer} />
 }
