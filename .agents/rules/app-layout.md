@@ -197,7 +197,7 @@ does the API's job in the wrong layer. If a resource's `list()` (or
 `search()`) does not yet accept a `status` param, that is a gap to close in
 `apps/api` (repository filter + router query param) and the admin/SDK client
 method — not a reason to fake the filter in Next.js. See
-`.agents/rules/api-backend.md` and `.agents/rules/sdk-conventions.md`.
+`.claude/rules/api-backend.md` and `.claude/rules/sdk-conventions.md`.
 
 ### Interaction with search (`q`)
 
@@ -331,8 +331,90 @@ before it was extracted.
   status, filter on the axis operators actually use and set `paramKey`
   accordingly — Roles filters `?type=system|custom`.
 
-Reference implementations: `apps/crm/src/app/(app)/customers/` and
-`apps/console/src/app/(app)/settings/users/(team)/`.
+### Height — the part that gets built wrong
+
+**`ListDetailShell` requires a container with a _definite_ height.** This is not
+a polish detail; it is the single most common way this layout is shipped broken,
+and it has now been got wrong twice.
+
+The grid is `grid-rows-[auto_auto_minmax(0,1fr)]` — toolbar, subnav, list — with
+the detail card spanning `row-[1/-1]`. When the container's height is
+indefinite, `1fr` has nothing to be a fraction _of_ and degenerates to `auto`.
+The card, which is taller than the list rows, then stretches the rows it spans,
+and the list column is pushed **down the page** until its row starts level with
+the card's lower half.
+
+So the symptom to recognise is specific:
+
+> The record card renders at the top, and the list appears far below it instead
+> of beside it, with a large empty gap where the list should be.
+
+That is always an indefinite height. It is never a padding, gap, or `space-y`
+problem, and adding margins to compensate makes it worse.
+
+#### Where the height comes from
+
+| Host                                                             | How the shell gets a height                                                                                                                                         |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A standalone app on `AppShell` (CRM, Couriers, Billing, Invoice) | `AppShellMain` is `min-h-0 flex-1 overflow-y-auto` inside a fixed-height frame, so `<Page className="h-full min-h-0">` resolves. **Use `h-full min-h-0`.**          |
+| Console's organization workspace (`WorkspaceShell`)              | `<main>` is a _scrolling page_: its row carries `min-h-[…]` and no definite height, so a percentage does **not** resolve. **Use a viewport measure**, not `h-full`. |
+
+`h-full` is a percentage. A percentage height resolves only against a parent
+with a resolved height — `min-height` alone is not one. Reading `h-full` in a
+neighbouring file and copying it is exactly how this breaks: it is correct in
+the app that has the frame, and silently inert in the app that does not.
+
+#### In a Console workspace
+
+```tsx
+// Depends on nothing above it. `svh` so mobile browser chrome cannot clip it;
+// a floor so a short window still yields a usable card.
+const WORKSPACE_CONTENT_HEIGHT =
+  'min-h-[32rem] h-[calc(100svh-11rem)] sm:h-[calc(100svh-12rem)] lg:h-[calc(100svh-13rem)]'
+
+export default function CustomersLayout({ children }: Props) {
+  return (
+    <div className={WORKSPACE_CONTENT_HEIGHT}>
+      <CustomerListShell toolbar={…} list={…}>{children}</CustomerListShell>
+    </div>
+  )
+}
+```
+
+Being a rem or two out costs a little whitespace or a little page scroll. Being
+_indefinite_ costs the whole layout — so prefer an approximate definite height
+over an exact percentage that cannot resolve.
+
+#### The two columns each need their own `min-h-0`
+
+A definite outer height is necessary but not sufficient; a flex/grid child will
+not shrink below its content unless told to.
+
+- **The list column's data component owns the scroll region:**
+  `<div className="flex h-full min-h-0 flex-col gap-3">` wrapping the table.
+  Without `min-h-0` the table pushes the column past the container instead of
+  scrolling inside it. The Suspense **fallback** needs the same wrapper, or the
+  skeleton and the loaded table sit at different heights.
+- **The detail column's route must return the card as the column's only
+  child.** `CustomerCardFrame`/`DetailCard` are `h-full`, so an intermediate
+  `<div className="space-y-4">` — a breadcrumb wrapper, typically — reintroduces
+  flow height and collapses the card. If the record layout needs a breadcrumb,
+  it does not belong in a split view: the list beside it _is_ the way back.
+
+#### Checklist before shipping a split view
+
+- [ ] The shell is rendered from `layout.tsx`, not a page.
+- [ ] Its container has a definite height — `h-full min-h-0` on `AppShell`, a
+      `svh` measure in a Console workspace.
+- [ ] The list data component is `flex h-full min-h-0 flex-col`.
+- [ ] The Suspense fallback uses the same wrapper as the loaded list.
+- [ ] The detail route returns the card directly, with no wrapper and no
+      breadcrumb.
+- [ ] Opening a record leaves the list beside it, not below it.
+
+Reference implementations: `apps/crm/src/app/(app)/customers/` (AppShell host),
+`apps/console/src/app/(app)/orgs/[slug]/workspace/crm/customers/` (workspace
+host), and `apps/console/src/app/(app)/settings/users/(team)/`.
 
 ## 6. Detail-view toolbar
 
@@ -515,7 +597,7 @@ Additional rules:
 
 ## 13. Applying this to a new app
 
-When scaffolding a new sidebar-style app (see `.agents/rules/new-app-guide.md`
+When scaffolding a new sidebar-style app (see `.claude/rules/new-app-guide.md`
 for the integration side), copy the shell/sidebar/toolbar/breadcrumb/status-
 filter components from Console or Couriers rather than rebuilding them. If a
 page type doesn't have a precedent yet, look for the closest existing page
