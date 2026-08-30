@@ -29,8 +29,7 @@ export async function ensure(
     current = await repository.markProvisioned(tenant.id, provisioning.revision)
   }
 
-  if (fixtures.length > 0)
-    await ensureCrmWorkspaceFixtures(tenant.id, fixtures)
+  if (fixtures.length > 0) await ensureCrmWorkspaceFixtures(tenant.id, fixtures)
 
   return current
 }

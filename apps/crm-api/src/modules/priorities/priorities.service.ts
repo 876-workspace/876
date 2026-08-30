@@ -6,6 +6,7 @@ import type {
   RequestPriority,
   UpdateRequestPriorityInput,
 } from '../../types/priority.js'
+import { workClient } from '../../providers/work.js'
 import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './priorities.repository.js'
 
@@ -129,7 +130,19 @@ export async function remove(
   if (await repository.isReferenced(tenant.id, priorityId))
     return getError('crm/priority-in-use')
 
+  // New CRM tasks are canonical Work records. Fail closed if Work cannot prove
+  // the priority is unused; deleting a referenced reporting dimension is worse
+  // than temporarily refusing the archive/delete operation.
+  const workTasks = await workClient().tasks.list(organizationId, { priorityId })
+  if (workTasks.error) return getError('crm/work-unavailable')
+  if (workTasks.data.data.length > 0) return getError('crm/priority-in-use')
+
   return repository.remove(priorityId, input.deletedBy)
+}
+
+export async function retrieveForTenant(tenantId: string, priorityId: string) {
+  const priority = await repository.retrieve(tenantId, priorityId)
+  return priority ? serialize(priority) : null
 }
 
 export async function retrieveActiveForTenant(tenantId: string, priorityId: string) {

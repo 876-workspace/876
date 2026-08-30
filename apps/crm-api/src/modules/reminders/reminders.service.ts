@@ -1,46 +1,84 @@
-import { isError } from '@876/core'
+import { getError, isError } from '@876/core'
+import type { WorkReminder } from '@876/work'
 import type {
   CreateReminderInput,
   RequestReminder,
   UpdateReminderInput,
 } from '../../types/task.js'
+import { crmRequestWorkContext, workClient } from '../../providers/work.js'
 import { requireRequestContext } from '../requests/index.js'
-import * as repository from './reminders.repository.js'
 
-type ReminderRow = Awaited<ReturnType<typeof repository.list>>[number]
-
-function fromUnixSeconds(seconds: number) {
-  return new Date(seconds * 1000)
-}
-
-function serializeTimestamp(date: Date | null) {
-  return date ? Math.floor(date.getTime() / 1000) : null
-}
-
-function serialize(reminder: ReminderRow): RequestReminder {
+function serialize(
+  reminder: WorkReminder,
+  tenantId: string,
+  requestId: string
+): RequestReminder {
   return {
     object: 'request_reminder',
     id: reminder.id,
-    tenantId: reminder.tenantId,
-    requestId: reminder.requestId,
+    tenantId,
+    requestId,
     title: reminder.title,
     note: reminder.note,
-    remindAt: serializeTimestamp(reminder.remindAt)!,
+    remindAt: reminder.remindAt,
     userId: reminder.userId,
     status: reminder.status,
-    sentAt: serializeTimestamp(reminder.sentAt),
-    dismissedAt: serializeTimestamp(reminder.dismissedAt),
+    sentAt: reminder.sentAt,
+    dismissedAt: reminder.dismissedAt,
     createdBy: reminder.createdBy,
-    createdAt: serializeTimestamp(reminder.createdAt)!,
-    updatedAt: serializeTimestamp(reminder.updatedAt)!,
+    createdAt: reminder.createdAt,
+    updatedAt: reminder.updatedAt,
   }
+}
+
+async function listWork(organizationId: string, requestId: string) {
+  const reminders: WorkReminder[] = []
+  let startingAfter: string | undefined
+
+  for (let page = 0; page < 20; page += 1) {
+    const result = await workClient().reminders.list(organizationId, {
+      context: crmRequestWorkContext(requestId),
+      ...(startingAfter ? { startingAfter } : {}),
+    })
+    if (result.error) return getError('crm/work-unavailable')
+
+    reminders.push(...result.data.data)
+    if (!result.data.has_more) return reminders
+    const lastReminder = result.data.data.at(-1)
+    if (!lastReminder) return getError('crm/work-unavailable')
+    startingAfter = lastReminder.id
+  }
+
+  return getError('crm/work-unavailable')
+}
+
+async function findWorkReminder(
+  organizationId: string,
+  requestId: string,
+  reminderId: string
+) {
+  const result = await workClient().reminders.retrieve(
+    organizationId,
+    reminderId
+  )
+  if (result.error?.code === 'work/reminder-not-found') return null
+  if (result.error) return getError('crm/work-unavailable')
+  const context = crmRequestWorkContext(requestId)
+  return result.data.context?.service === context.service &&
+    result.data.context?.resource === context.resource &&
+    result.data.context?.id === context.id
+    ? result.data
+    : null
 }
 
 export async function list(organizationId: string, requestId: string) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
-  const reminders = await repository.list(context.tenantId, requestId)
-  return reminders.map(serialize)
+  const result = await listWork(organizationId, requestId)
+  if (isError(result)) return result
+  return result.map((reminder) =>
+    serialize(reminder, context.tenantId, requestId)
+  )
 }
 
 export async function create(
@@ -50,13 +88,17 @@ export async function create(
 ) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
-  const reminder = await repository.create({
-    tenantId: context.tenantId,
-    requestId,
-    ...input,
-    remindAt: fromUnixSeconds(input.remindAt),
+  const result = await workClient().reminders.create(organizationId, {
+    context: crmRequestWorkContext(requestId),
+    title: input.title,
+    note: input.note ?? null,
+    remindAt: input.remindAt,
+    userId: input.userId,
+    status: input.status,
+    createdBy: input.createdBy,
   })
-  return serialize(reminder)
+  if (result.error) return getError('crm/work-unavailable')
+  return serialize(result.data, context.tenantId, requestId)
 }
 
 export async function update(
@@ -67,21 +109,24 @@ export async function update(
 ) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
-  const current = await repository.retrieve(
-    context.tenantId,
-    requestId,
-    reminderId
-  )
+  const current = await findWorkReminder(organizationId, requestId, reminderId)
+  if (isError(current)) return current
   if (!current) return null
 
-  const reminder = await repository.update(reminderId, {
-    ...input,
-    remindAt:
-      input.remindAt === undefined
-        ? undefined
-        : fromUnixSeconds(input.remindAt),
-  })
-  return serialize(reminder)
+  const result = await workClient().reminders.update(
+    organizationId,
+    reminderId,
+    {
+      ...(input.title === undefined ? {} : { title: input.title }),
+      ...(input.note === undefined ? {} : { note: input.note }),
+      ...(input.remindAt === undefined ? {} : { remindAt: input.remindAt }),
+      ...(input.userId === undefined ? {} : { userId: input.userId }),
+      ...(input.status === undefined ? {} : { status: input.status }),
+    }
+  )
+  if (result.error?.code === 'work/reminder-not-found') return null
+  if (result.error) return getError('crm/work-unavailable')
+  return serialize(result.data, context.tenantId, requestId)
 }
 
 export async function remove(
@@ -92,11 +137,20 @@ export async function remove(
 ) {
   const context = await requireRequestContext(organizationId, requestId)
   if (isError(context)) return context
-  const reminder = await repository.retrieve(
-    context.tenantId,
-    requestId,
-    reminderId
+  const current = await findWorkReminder(organizationId, requestId, reminderId)
+  if (isError(current)) return current
+  if (!current) return null
+
+  const result = await workClient().reminders.delete(
+    organizationId,
+    reminderId,
+    deletedBy
   )
-  if (!reminder) return null
-  return repository.remove(reminderId, deletedBy)
+  if (result.error?.code === 'work/reminder-not-found') return null
+  if (result.error) return getError('crm/work-unavailable')
+  return {
+    object: 'request_reminder' as const,
+    id: reminderId,
+    deleted: true as const,
+  }
 }

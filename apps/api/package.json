@@ -38,6 +38,7 @@
   "dependencies": {
     "@876/core": "workspace:*",
     "@876/server": "workspace:*",
+    "@876/work": "workspace:*",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@prisma/extension-accelerate": "3.0.1",

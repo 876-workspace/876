@@ -26,6 +26,7 @@ import { SESSION_ERRORS } from './sessions'
 import { SUBSCRIPTION_ERRORS } from './subscriptions'
 import { USER_FEATURE_ERRORS } from './user-features'
 import { USER_ERRORS } from './users'
+import { WORK_ERRORS } from './work'
 
 export const ERRORS = {
   ...ACCOUNT_ERRORS,
@@ -54,6 +55,7 @@ export const ERRORS = {
   ...SUBSCRIPTION_ERRORS,
   ...USER_ERRORS,
   ...USER_FEATURE_ERRORS,
+  ...WORK_ERRORS,
 } as const satisfies Record<string, ErrorDef>
 
 type ErrorCode = keyof typeof ERRORS
@@ -134,6 +136,7 @@ function getFallbackErrorCode(code: string): ErrorCode {
   if (code.startsWith('provider/')) return 'provider/internal-error'
   if (code.startsWith('feature/')) return 'feature/internal-error'
   if (code.startsWith('crm/')) return 'crm/internal'
+  if (code.startsWith('work/')) return 'work/internal'
 
   return 'auth/unknown-error'
 }

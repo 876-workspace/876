@@ -4,5 +4,6 @@ export {
   requireActiveForTenant,
   retrieveActiveForTenant,
   retrieveDefaultForTenant,
+  retrieveForTenant,
   serialize,
 } from './priorities.service.js'

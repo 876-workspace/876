@@ -273,7 +273,9 @@ Not implemented now:
 - Embedded CRM UI in Couriers, Billing, Invoice, Careers, or any other product.
 - A generic service-connection manifest replacing Finance-specific provisioning
   fields.
-- Task/reminder/calendar extraction into a future Work service.
+- Calendars, events, recurrence, and alerts. These belong to the Work service, not
+  CRM — task and reminder extraction already landed there
+  (`docs/work-service.md`, `docs/architecture/019-work-service-and-productivity-plane.md`).
 
 Those are follow-ups and should be implemented only with a real caller so the
 published scope and UI contracts stay minimal.

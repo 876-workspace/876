@@ -59,6 +59,7 @@ function makeDeps(
   repository: ReturnType<typeof makeRepository>
   setupWorkspace: ReturnType<typeof vi.fn>
   ensureFinance: ReturnType<typeof vi.fn>
+  ensureWork: ReturnType<typeof vi.fn>
 } {
   const repository = makeRepository(overrides.repository as never)
   const provider = makeProvider(overrides.provider as never)
@@ -66,12 +67,18 @@ function makeDeps(
     .fn()
     .mockResolvedValue({ owner: { id: 'rol_owner' } })
   const ensureFinance = vi.fn().mockResolvedValue(undefined)
+  const ensureWork = vi.fn().mockResolvedValue(undefined)
   return {
     provider,
     repository,
-    workspace: { setup: setupWorkspace, finance: { ensure: ensureFinance } },
+    workspace: {
+      setup: setupWorkspace,
+      finance: { ensure: ensureFinance },
+      work: { ensure: ensureWork },
+    },
     setupWorkspace,
     ensureFinance,
+    ensureWork,
   } as never
 }
 
@@ -359,10 +366,15 @@ describe('bootstrapExistingUser', () => {
     expect(deps.ensureFinance).toHaveBeenCalledWith({
       organizationId: expect.any(String),
     })
+    expect(deps.ensureWork).toHaveBeenCalledWith({
+      organizationId: expect.any(String),
+    })
     const membershipOrder =
       deps.repository.createMembership.mock.invocationCallOrder[0]!
     const financeOrder = deps.ensureFinance.mock.invocationCallOrder[0]!
+    const workOrder = deps.ensureWork.mock.invocationCallOrder[0]!
     expect(membershipOrder).toBeLessThan(financeOrder)
+    expect(financeOrder).toBeLessThan(workOrder)
   })
 
   it('provisions the org onto the signup app when a source app is given', async () => {

@@ -7,8 +7,8 @@ import { HttpStatus } from '../../types/errors.js'
 describe('CRM catalog - exhaustive contract', () => {
   const allCodes = Object.keys(CRM_ERRORS) as CrmErrorCode[]
 
-  it('contains exactly 33 registered CRM error codes', () => {
-    expect(allCodes.length).toBe(34)
+  it('contains exactly 35 registered CRM error codes', () => {
+    expect(allCodes.length).toBe(35)
   })
 
   it('every code is prefixed with crm/ and kebab-case', () => {
@@ -79,17 +79,33 @@ describe('CRM catalog - exhaustive contract', () => {
   })
 
   it('maps validation family to 422', () => {
-    expect(CRM_ERRORS['crm/form-invalid-submission'].httpStatus).toBe(HttpStatus.UNPROCESSABLE_ENTITY)
-    expect(CRM_ERRORS['crm/subcategory-category-mismatch'].httpStatus).toBe(HttpStatus.UNPROCESSABLE_ENTITY)
-    expect(CRM_ERRORS['crm/invalid-request'].httpStatus).toBe(HttpStatus.UNPROCESSABLE_ENTITY)
+    expect(CRM_ERRORS['crm/form-invalid-submission'].httpStatus).toBe(
+      HttpStatus.UNPROCESSABLE_ENTITY
+    )
+    expect(CRM_ERRORS['crm/subcategory-category-mismatch'].httpStatus).toBe(
+      HttpStatus.UNPROCESSABLE_ENTITY
+    )
+    expect(CRM_ERRORS['crm/invalid-request'].httpStatus).toBe(
+      HttpStatus.UNPROCESSABLE_ENTITY
+    )
   })
 
   it('maps internal to 500 and dependency to 502/503', () => {
-    expect(CRM_ERRORS['crm/internal'].httpStatus).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
-    expect(CRM_ERRORS['crm/provisioning-invalid'].httpStatus).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
-    expect(CRM_ERRORS['crm/registry-unavailable'].httpStatus).toBe(HttpStatus.BAD_GATEWAY)
-    expect(CRM_ERRORS['crm/invalid-response'].httpStatus).toBe(HttpStatus.BAD_GATEWAY)
-    expect(CRM_ERRORS['crm/not-configured'].httpStatus).toBe(HttpStatus.SERVICE_UNAVAILABLE)
+    expect(CRM_ERRORS['crm/internal'].httpStatus).toBe(
+      HttpStatus.INTERNAL_SERVER_ERROR
+    )
+    expect(CRM_ERRORS['crm/provisioning-invalid'].httpStatus).toBe(
+      HttpStatus.INTERNAL_SERVER_ERROR
+    )
+    expect(CRM_ERRORS['crm/registry-unavailable'].httpStatus).toBe(
+      HttpStatus.BAD_GATEWAY
+    )
+    expect(CRM_ERRORS['crm/invalid-response'].httpStatus).toBe(
+      HttpStatus.BAD_GATEWAY
+    )
+    expect(CRM_ERRORS['crm/not-configured'].httpStatus).toBe(
+      HttpStatus.SERVICE_UNAVAILABLE
+    )
   })
 })
 
@@ -120,20 +136,28 @@ describe('getError / toAppError / isError - value semantics', () => {
     const err = getError('crm/internal')
     const app = toAppError(err)
     expect(app).toEqual({ code: err.code, message: err.message })
-    expect(({ ...app } as unknown as Record<string, unknown>).httpStatus).toBeUndefined()
-    expect(({ ...app } as unknown as Record<string, unknown>).description).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).httpStatus
+    ).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).description
+    ).toBeUndefined()
   })
 
   it('toAppError never mutates original', () => {
     const err = getError('crm/team-not-found')
     const app = toAppError(err)
     expect(err.httpStatus).toBe(HttpStatus.NOT_FOUND)
-    expect(({ ...app } as unknown as Record<string, unknown>).httpStatus).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).httpStatus
+    ).toBeUndefined()
   })
 
   it('isError correctly identifies value errors and rejects non-errors', () => {
     expect(isError(getError('crm/task-not-found'))).toBe(true)
-    expect(isError({ code: 'crm/task-not-found', message: 'x', httpStatus: 404 })).toBe(true)
+    expect(
+      isError({ code: 'crm/task-not-found', message: 'x', httpStatus: 404 })
+    ).toBe(true)
     expect(isError(null)).toBe(false)
     expect(isError(undefined)).toBe(false)
     expect(isError('crm/task-not-found')).toBe(false)
@@ -143,7 +167,13 @@ describe('getError / toAppError / isError - value semantics', () => {
   })
 
   it('isError rejects objects missing httpStatus type', () => {
-    expect(isError({ code: 'x', message: 'y', httpStatus: '404' as unknown as number })).toBe(false)
+    expect(
+      isError({
+        code: 'x',
+        message: 'y',
+        httpStatus: '404' as unknown as number,
+      })
+    ).toBe(false)
     expect(isError({ code: 'x', message: 'y', httpStatus: null })).toBe(false)
   })
 
@@ -168,7 +198,8 @@ describe('getError / toAppError / isError - value semantics', () => {
   it('param option is preserved on error but stripped in app error', () => {
     const err = getError('crm/invalid-request', { param: 'subject' })
     expect(err.param).toBe('subject')
-    expect((toAppError(err) as unknown as Record<string, unknown>).param).toBeUndefined
+    expect((toAppError(err) as unknown as Record<string, unknown>).param)
+      .toBeUndefined
     const app = toAppError(err) as unknown as Record<string, unknown>
     expect(app.param).toBeUndefined()
   })
@@ -203,9 +234,15 @@ describe('getError / toAppError / isError - value semantics', () => {
   })
 
   it('concurrent getError calls are isolated across codes', async () => {
-    const codes: CrmErrorCode[] = ['crm/team-not-found', 'crm/category-not-found', 'crm/request-not-found']
-    const results = await Promise.all(codes.map(c => Promise.resolve(getError(c))))
-    expect(results.map(r => r.code)).toEqual(codes)
+    const codes: CrmErrorCode[] = [
+      'crm/team-not-found',
+      'crm/category-not-found',
+      'crm/request-not-found',
+    ]
+    const results = await Promise.all(
+      codes.map((c) => Promise.resolve(getError(c)))
+    )
+    expect(results.map((r) => r.code)).toEqual(codes)
     for (const r of results) expect(isError(r)).toBe(true)
   })
 })
@@ -242,7 +279,9 @@ describe('CRM catalog - security and contract invariants', () => {
   it('client-safe error never exposes httpStatus', () => {
     for (const code of Object.keys(CRM_ERRORS) as CrmErrorCode[]) {
       const app = toAppError(getError(code))
-      expect(Object.prototype.hasOwnProperty.call(app, 'httpStatus')).toBe(false)
+      expect(Object.prototype.hasOwnProperty.call(app, 'httpStatus')).toBe(
+        false
+      )
     }
   })
 })

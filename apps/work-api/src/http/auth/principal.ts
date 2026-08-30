@@ -1,0 +1,24 @@
+import type { Request } from 'express'
+
+import type { CredentialKind } from './credentials.js'
+
+export type WorkPrincipal = {
+  kind: CredentialKind
+  tenantId: string | null
+  organizationId: string | null
+  appId: string | null
+  scopes: ReadonlySet<string>
+  platformAdmin: boolean
+}
+
+const principals = new WeakMap<Request, WorkPrincipal>()
+
+export function getPrincipal(req: Request): WorkPrincipal {
+  const principal = principals.get(req)
+  if (!principal) throw new Error('Work principal has not been resolved.')
+  return principal
+}
+
+export function setPrincipal(req: Request, principal: WorkPrincipal): void {
+  principals.set(req, principal)
+}

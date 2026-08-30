@@ -1,337 +1,227 @@
-import { expectValue } from '../../../test/expect-value.js'
 import { getError } from '@876/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CreateTaskInput, UpdateTaskInput } from '../../../types/task.js'
 
-const { priorities, context, repo } = vi.hoisted(() => ({
+const mocks = vi.hoisted(() => ({
+  context: { requireRequestContext: vi.fn() },
   priorities: {
     requireActiveForTenant: vi.fn(),
     retrieveDefaultForTenant: vi.fn(),
-    serialize: vi.fn((p: unknown) => p),
+    retrieveForTenant: vi.fn(),
+    serialize: vi.fn((value: unknown) => value),
   },
-  context: { requireRequestContext: vi.fn() },
-  repo: {
+  tasks: {
     list: vi.fn(),
     retrieve: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
-    remove: vi.fn(),
+    delete: vi.fn(),
   },
 }))
 
-vi.mock('../../requests/index.js', () => context)
-vi.mock('../tasks.repository.js', () => repo)
-vi.mock('../../priorities/index.js', () => priorities)
+vi.mock('../../requests/index.js', () => mocks.context)
+vi.mock('../../priorities/index.js', () => mocks.priorities)
+vi.mock('../../../providers/work.js', () => ({
+  crmRequestWorkContext: (requestId: string) => ({
+    service: 'crm',
+    resource: 'request',
+    id: requestId,
+  }),
+  workClient: () => ({ tasks: mocks.tasks }),
+}))
 
 const service = await import('../tasks.service.js')
 
 const tenantId = 'crm_tnt_1'
 const requestId = 'crm_req_1'
-const normal = {
-  id: 'crm_pri_normal',
-  object: 'request_priority',
+const priority = {
+  object: 'request_priority' as const,
+  id: 'crm_pri_1',
+  tenantId,
+  provisioningKey: null,
   name: 'Normal',
+  slug: 'normal',
+  description: null,
+  color: null,
+  icon: null,
   weight: 20,
-}
-const urgent = {
-  id: 'crm_pri_urgent',
-  object: 'request_priority',
-  name: 'Urgent',
-  weight: 40,
+  sortOrder: 20,
+  isDefault: true,
+  isActive: true,
+  createdBy: 'usr_1',
+  createdAt: 1,
+  updatedAt: 1,
 }
 
-function taskRow(overrides: Record<string, unknown> = {}) {
-  const at = new Date('2026-08-26T12:00:00.000Z')
+function workTask(overrides: Record<string, unknown> = {}) {
   return {
+    object: 'task' as const,
     id: 'crm_task_1',
-    tenantId,
-    requestId,
-    title: 'Task',
+    organizationId: 'org_1',
+    context: { service: 'crm', resource: 'request', id: requestId },
+    title: 'Follow up',
     description: null,
     status: 'OPEN' as const,
-    priorityId: normal.id,
-    priority: normal,
+    priorityId: priority.id,
     assigneeId: null,
     dueAt: null,
     completedAt: null,
     completedBy: null,
     sortOrder: 0,
     createdBy: 'usr_1',
-    createdAt: at,
-    updatedAt: at,
+    createdAt: 1_800_000_000,
+    updatedAt: 1_800_000_001,
     ...overrides,
+  }
+}
+
+function listResult(data = [workTask()], hasMore = false) {
+  return {
+    data: {
+      object: 'list' as const,
+      data,
+      has_more: hasMore,
+      total_count: null,
+      url: '/v1/organizations/org_1/tasks',
+    },
+    error: null,
   }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  context.requireRequestContext.mockResolvedValue({ tenantId, requestId })
-  priorities.requireActiveForTenant.mockImplementation(
-    async (_tid: string, pid: string) => {
-      if (pid === normal.id)
-        return normal as unknown as Awaited<
-          ReturnType<typeof priorities.requireActiveForTenant>
-        >
-      if (pid === urgent.id)
-        return urgent as unknown as Awaited<
-          ReturnType<typeof priorities.requireActiveForTenant>
-        >
-      throw { code: 'crm/priority-not-found' }
-    }
-  )
-  priorities.retrieveDefaultForTenant.mockResolvedValue(
-    normal as unknown as Awaited<
-      ReturnType<typeof priorities.retrieveDefaultForTenant>
-    >
-  )
-  priorities.serialize.mockImplementation(
-    (p) => p as unknown as ReturnType<typeof priorities.serialize>
-  )
-  repo.list.mockResolvedValue([])
-  repo.retrieve.mockResolvedValue(taskRow())
-  repo.create.mockResolvedValue(taskRow())
-  repo.update.mockResolvedValue(taskRow())
-  repo.remove.mockResolvedValue({
-    object: 'request_task',
-    id: 'crm_task_1',
-    deleted: true,
+  mocks.context.requireRequestContext.mockResolvedValue({ tenantId, requestId })
+  mocks.priorities.requireActiveForTenant.mockResolvedValue(priority)
+  mocks.priorities.retrieveDefaultForTenant.mockResolvedValue(priority)
+  mocks.priorities.retrieveForTenant.mockResolvedValue(priority)
+  mocks.priorities.serialize.mockImplementation((value) => value)
+  mocks.tasks.list.mockResolvedValue(listResult())
+  mocks.tasks.retrieve.mockResolvedValue({ data: workTask(), error: null })
+  mocks.tasks.create.mockResolvedValue({ data: workTask(), error: null })
+  mocks.tasks.update.mockResolvedValue({ data: workTask(), error: null })
+  mocks.tasks.delete.mockResolvedValue({
+    data: { object: 'task', id: 'crm_task_1', deleted: true },
+    error: null,
   })
 })
 
-describe('tasks.service.advanced - list edge cases', () => {
-  it('returns empty list when no tasks', async () => {
-    repo.list.mockResolvedValue([])
-    expect(await service.list('org_1', requestId)).toEqual([])
+describe('CRM task adapter over Work', () => {
+  it('lists only the request context and restores the CRM task shape', async () => {
+    const result = await service.list('org_1', requestId)
+    expect(mocks.tasks.list).toHaveBeenCalledWith('org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+    })
+    expect(result).toEqual([
+      expect.objectContaining({
+        object: 'request_task',
+        id: 'crm_task_1',
+        tenantId,
+        requestId,
+        priority,
+        createdAt: 1_800_000_000,
+      }),
+    ])
   })
 
-  it('propagates request-not-found', async () => {
-    context.requireRequestContext.mockResolvedValue(
+  it('walks Work task pages so a CRM request retains its complete task set', async () => {
+    mocks.tasks.list
+      .mockResolvedValueOnce(listResult([workTask()], true))
+      .mockResolvedValueOnce(
+        listResult([workTask({ id: 'crm_task_2', title: 'Send recap' })])
+      )
+    const result = await service.list('org_1', requestId)
+
+    expect(result).toEqual([
+      expect.objectContaining({ id: 'crm_task_1' }),
+      expect.objectContaining({ id: 'crm_task_2', title: 'Send recap' }),
+    ])
+    expect(mocks.tasks.list).toHaveBeenNthCalledWith(1, 'org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+    })
+    expect(mocks.tasks.list).toHaveBeenNthCalledWith(2, 'org_1', {
+      context: { service: 'crm', resource: 'request', id: requestId },
+      startingAfter: 'crm_task_1',
+    })
+  })
+
+  it('stops after 20 Work task pages when Work never finishes pagination', async () => {
+    mocks.tasks.list.mockResolvedValue(listResult([workTask()], true))
+    const result = await service.list('org_1', requestId)
+
+    expect(result).toMatchObject({ code: 'crm/work-unavailable' })
+    expect(mocks.tasks.list).toHaveBeenCalledTimes(20)
+  })
+
+  it('creates a canonical Work task with opaque CRM request context', async () => {
+    await service.create('org_1', requestId, {
+      title: 'Follow up',
+      createdBy: 'usr_1',
+    })
+    expect(mocks.tasks.create).toHaveBeenCalledWith(
+      'org_1',
+      expect.objectContaining({
+        context: { service: 'crm', resource: 'request', id: requestId },
+        priorityId: priority.id,
+        title: 'Follow up',
+      })
+    )
+  })
+
+  it('validates a changed CRM priority before sending it to Work', async () => {
+    await service.update('org_1', requestId, 'crm_task_1', {
+      priorityId: 'crm_pri_2',
+    })
+    expect(mocks.priorities.requireActiveForTenant).toHaveBeenCalledWith(
+      tenantId,
+      'crm_pri_2'
+    )
+  })
+
+  it('will not update a task outside the request context', async () => {
+    mocks.tasks.retrieve.mockResolvedValue({
+      data: workTask({
+        context: { service: 'crm', resource: 'request', id: 'crm_req_other' },
+      }),
+      error: null,
+    })
+    await expect(
+      service.update('org_1', requestId, 'other_task', { title: 'No' })
+    ).resolves.toBeNull()
+    expect(mocks.tasks.retrieve).toHaveBeenCalledWith('org_1', 'other_task')
+    expect(mocks.tasks.update).not.toHaveBeenCalled()
+  })
+
+  it('maps Work failures to the CRM public error catalog', async () => {
+    mocks.tasks.list.mockResolvedValue({
+      data: null,
+      error: { code: 'work/internal', message: 'Internal server error.' },
+    })
+    await expect(service.list('org_1', requestId)).resolves.toMatchObject({
+      code: 'crm/work-unavailable',
+    })
+  })
+
+  it('preserves the CRM deletion response while deleting in Work', async () => {
+    await expect(
+      service.remove('org_1', requestId, 'crm_task_1', 'usr_1')
+    ).resolves.toEqual({
+      object: 'request_task',
+      id: 'crm_task_1',
+      deleted: true,
+    })
+    expect(mocks.tasks.delete).toHaveBeenCalledWith(
+      'org_1',
+      'crm_task_1',
+      'usr_1'
+    )
+  })
+
+  it('propagates request-context failures without calling Work', async () => {
+    mocks.context.requireRequestContext.mockResolvedValue(
       getError('crm/request-not-found')
     )
     await expect(service.list('org_1', requestId)).resolves.toMatchObject({
       code: 'crm/request-not-found',
     })
-  })
-
-  it('serializes multiple rows preserving sortOrder and status', async () => {
-    repo.list.mockResolvedValue([
-      taskRow({ id: 't1', sortOrder: 1, status: 'OPEN' }),
-      taskRow({ id: 't2', sortOrder: 2, status: 'DONE' }),
-    ])
-    const tasks = expectValue(await service.list('org_1', requestId))
-    expect(tasks).toHaveLength(2)
-    expect(tasks[0].sortOrder).toBe(1)
-    expect(tasks[1].status).toBe('DONE')
-  })
-
-  it('embeds priority object from priorities.serialize', async () => {
-    priorities.serialize.mockReturnValue({
-      object: 'request_priority',
-      id: normal.id,
-      name: 'Normal',
-    } as unknown as ReturnType<typeof priorities.serialize>)
-    repo.list.mockResolvedValue([taskRow()])
-    const [task] = expectValue(await service.list('org_1', requestId))
-    expect(priorities.serialize).toHaveBeenCalledWith(normal)
-    expect(task.priority).toMatchObject({ id: normal.id })
-  })
-})
-
-describe('tasks.service.advanced - create priority resolution', () => {
-  it('uses explicit priorityId without fetching default', async () => {
-    await service.create('org_1', requestId, {
-      title: 'T',
-      createdBy: 'usr_1',
-      priorityId: urgent.id,
-    } as unknown as CreateTaskInput)
-    expect(priorities.requireActiveForTenant).toHaveBeenCalledWith(
-      tenantId,
-      urgent.id
-    )
-    expect(priorities.retrieveDefaultForTenant).not.toHaveBeenCalled()
-  })
-
-  it('falls back to default when no priorityId supplied', async () => {
-    await service.create('org_1', requestId, {
-      title: 'T',
-      createdBy: 'usr_1',
-    } as unknown as CreateTaskInput)
-    expect(priorities.retrieveDefaultForTenant).toHaveBeenCalledWith(tenantId)
-  })
-
-  it('throws when tenant has no default and no explicit priority', async () => {
-    priorities.retrieveDefaultForTenant.mockResolvedValue(null)
-    await expect(
-      service.create('org_1', requestId, {
-        title: 'T',
-        createdBy: 'usr_1',
-      } as unknown as CreateTaskInput)
-    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
-    expect(repo.create).not.toHaveBeenCalled()
-  })
-
-  it('throws when explicit priority is inactive/not-found', async () => {
-    priorities.requireActiveForTenant.mockResolvedValue(
-      getError('crm/priority-not-found')
-    )
-    await expect(
-      service.create('org_1', requestId, {
-        title: 'T',
-        createdBy: 'usr_1',
-        priorityId: 'bad',
-      } as unknown as CreateTaskInput)
-    ).resolves.toMatchObject({ code: 'crm/priority-not-found' })
-  })
-
-  it('converts dueAt correctly', async () => {
-    const secs = Math.floor(Date.parse('2026-09-01T09:00:00.000Z') / 1000)
-    await service.create('org_1', requestId, {
-      title: 'T',
-      createdBy: 'usr_1',
-      dueAt: secs,
-    } as unknown as CreateTaskInput)
-    const call = repo.create.mock.calls[0][0] as unknown as Record<string, unknown>
-    expect(call.dueAt).toBeInstanceOf(Date)
-    expect((call.dueAt as Date).toISOString()).toBe('2026-09-01T09:00:00.000Z')
-  })
-
-  it('stores dueAt null when explicitly null', async () => {
-    await service.create('org_1', requestId, {
-      title: 'T',
-      createdBy: 'usr_1',
-      dueAt: null,
-    } as unknown as CreateTaskInput)
-    expect(
-      (repo.create.mock.calls[0][0] as unknown as Record<string, unknown>).dueAt
-    ).toBeNull()
-  })
-
-  it('propagates tenant errors without writing', async () => {
-    context.requireRequestContext.mockResolvedValue(
-      getError('crm/tenant-not-found')
-    )
-    await expect(
-      service.create('org_1', requestId, {
-        title: 'T',
-        createdBy: 'usr_1',
-      } as unknown as CreateTaskInput)
-    ).resolves.toMatchObject({ code: 'crm/tenant-not-found' })
-    expect(repo.create).not.toHaveBeenCalled()
-  })
-})
-
-describe('tasks.service.advanced - update completion stamping', () => {
-  it('stamps completedAt/by when moving to DONE first time', async () => {
-    repo.retrieve.mockResolvedValue(taskRow({ completedAt: null }))
-    await service.update('org_1', requestId, 'crm_task_1', {
-      status: 'DONE',
-      completedBy: 'usr_2',
-    } as unknown as UpdateTaskInput)
-    const payload = repo.update.mock.calls[0][1] as unknown as Record<string, unknown>
-    expect(payload.completedAt).toBeInstanceOf(Date)
-    expect(payload.completedBy).toBe('usr_2')
-  })
-
-  it('does not re-stamp if already DONE', async () => {
-    const completedAt = new Date('2026-08-27T00:00:00.000Z')
-    repo.retrieve.mockResolvedValue(
-      taskRow({ completedAt, completedBy: 'usr_1', status: 'DONE' as const })
-    )
-    // Update with DONE again should not add new stamp logic? service checks !current.completedAt
-    await service.update('org_1', requestId, 'crm_task_1', {
-      status: 'DONE',
-    } as unknown as UpdateTaskInput)
-    const payload = repo.update.mock.calls[0][1] as unknown as Record<string, unknown>
-    // When already completed, it should not add completedAt again (falls through to {})
-    expect(payload.completedAt).toBeUndefined()
-  })
-
-  it('clears completedAt/by when moving away from DONE', async () => {
-    const completedAt = new Date('2026-08-27T00:00:00.000Z')
-    repo.retrieve.mockResolvedValue(
-      taskRow({ completedAt, status: 'DONE' as const })
-    )
-    await service.update('org_1', requestId, 'crm_task_1', {
-      status: 'OPEN',
-    } as unknown as UpdateTaskInput)
-    const payload = repo.update.mock.calls[0][1] as unknown as Record<string, unknown>
-    expect(payload.completedAt).toBeNull()
-    expect(payload.completedBy).toBeNull()
-  })
-
-  it('converts dueAt on update', async () => {
-    const secs = Math.floor(Date.parse('2026-09-03T10:00:00.000Z') / 1000)
-    repo.retrieve.mockResolvedValue(taskRow())
-    await service.update('org_1', requestId, 'crm_task_1', {
-      dueAt: secs,
-    } as unknown as UpdateTaskInput)
-    expect(
-      (repo.update.mock.calls[0][1] as unknown as Record<string, unknown>).dueAt
-    ).toBeInstanceOf(Date)
-  })
-
-  it('leaves dueAt untouched when undefined', async () => {
-    repo.retrieve.mockResolvedValue(taskRow())
-    await service.update('org_1', requestId, 'crm_task_1', {
-      title: 'new',
-    } as unknown as UpdateTaskInput)
-    expect(
-      (repo.update.mock.calls[0][1] as unknown as Record<string, unknown>).dueAt
-    ).toBeUndefined()
-  })
-
-  it('validates changed priorityId', async () => {
-    repo.retrieve.mockResolvedValue(taskRow())
-    await service.update('org_1', requestId, 'crm_task_1', {
-      priorityId: urgent.id,
-    } as unknown as UpdateTaskInput)
-    expect(priorities.requireActiveForTenant).toHaveBeenCalledWith(
-      tenantId,
-      urgent.id
-    )
-  })
-
-  it('does not validate priority when not changed', async () => {
-    repo.retrieve.mockResolvedValue(taskRow())
-    await service.update('org_1', requestId, 'crm_task_1', {
-      title: 'x',
-    } as unknown as UpdateTaskInput)
-    expect(priorities.requireActiveForTenant).not.toHaveBeenCalled()
-  })
-
-  it('returns null when task missing', async () => {
-    repo.retrieve.mockResolvedValue(null)
-    expect(
-      await service.update('org_1', requestId, 'missing', {
-        title: 'x',
-      } as unknown as UpdateTaskInput)
-    ).toBeNull()
-  })
-})
-
-describe('tasks.service.advanced - remove', () => {
-  it('returns null when missing', async () => {
-    repo.retrieve.mockResolvedValue(null)
-    expect(
-      await service.remove('org_1', requestId, 'missing', 'usr_1')
-    ).toBeNull()
-    expect(repo.remove).not.toHaveBeenCalled()
-  })
-
-  it('removes existing task', async () => {
-    repo.retrieve.mockResolvedValue(taskRow())
-    expect(
-      await service.remove('org_1', requestId, 'crm_task_1', 'usr_1')
-    ).toEqual({ object: 'request_task', id: 'crm_task_1', deleted: true })
-    expect(repo.remove).toHaveBeenCalledWith('crm_task_1', 'usr_1')
-  })
-
-  it('propagates context errors', async () => {
-    context.requireRequestContext.mockResolvedValue(
-      getError('crm/request-not-found')
-    )
-    await expect(
-      service.remove('org_1', requestId, 'crm_task_1', 'usr_1')
-    ).resolves.toMatchObject({ code: 'crm/request-not-found' })
+    expect(mocks.tasks.list).not.toHaveBeenCalled()
   })
 })

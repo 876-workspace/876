@@ -1,0 +1,20 @@
+enum WorkAppConnectionStatus {
+  ACTIVE
+  INACTIVE
+  REVOKED
+}
+
+model WorkAppConnection {
+  id        String                  @id
+  tenantId  String                  @map("tenant_id")
+  /// Opaque 876 app id. Identity remains the source of truth; no cross-service FK.
+  appId     String                  @map("app_id")
+  scopes    String[]
+  status    WorkAppConnectionStatus @default(ACTIVE)
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime                @updatedAt @map("updated_at")
+  tenant    WorkTenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, appId])
+  @@map("work_app_connections")
+}

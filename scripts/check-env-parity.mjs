@@ -3,26 +3,8 @@
  * configured — locally, and (with `--vercel`) in its deployed project.
  *
  * Env gaps are the most expensive class of bug on this platform because they
- * do not look like env gaps. They surface far from their cause:
- *
- *   - An unset `BILLING_API_URL` falls back to `http://localhost:4004`, so a
- *     deployed app quietly calls a host that is not there.
- *   - A missing `API_INTERNAL_KEY` downgrades a privileged call to an
- *     app-key-only one, which the API answers `auth/no-session`. Callers that
- *     treat the result as optional then render an empty UI with no error.
- *   - A *present but wrong* app key resolves to a different app, so the
- *     downstream service reports a missing scope rather than a bad credential.
- *
- * Every one of those was diagnosed by hand before this script existed. It
- * reads only key names and never prints a value.
- *
- * Usage:
- *   pnpm check:env            # local .env* files for every app
- *   pnpm check:env <app…>     # only the named apps
- *   pnpm check:env --vercel   # also compare against Vercel production
- *
- * A key is required unless its line in `.env.example` carries an `# optional`
- * comment, which is how a variable with a working in-code default opts out.
+ * do not look like env gaps. They surface far from their cause.
+ * Values are never printed.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
@@ -48,9 +30,9 @@ const VERCEL_PROJECTS = {
   invoice: '876-invoice',
   'storage-api': '876-storage-api',
   'widgets-api': '876-widgets-api',
+  'work-api': '876-work-api',
 }
 
-/** The env files an app may carry, in the order a dev tool would load them. */
 const LOCAL_ENV_FILES = [
   '.env',
   '.env.development',
@@ -58,12 +40,6 @@ const LOCAL_ENV_FILES = [
   '.env.local',
 ]
 
-/**
- * Reads the keys an app declares, splitting them by whether they are required.
- *
- * @param examplePath - Absolute path to the app's `.env.example`.
- * @returns Declared key names, partitioned into required and optional.
- */
 function declaredKeys(examplePath) {
   const required = []
   const optional = []
@@ -81,13 +57,6 @@ function declaredKeys(examplePath) {
   return { required, optional }
 }
 
-/**
- * Collects every key configured locally for an app, including the repo root
- * `.env`, which several apps inherit shared values from.
- *
- * @param appPath - Absolute path to the app directory.
- * @returns The set of configured key names. Values are never retained.
- */
 function localKeys(appPath) {
   const keys = new Set()
 
@@ -104,12 +73,6 @@ function localKeys(appPath) {
   return keys
 }
 
-/**
- * Reads the key names configured for a Vercel project's production environment.
- *
- * @param project - The Vercel project name.
- * @returns Configured key names, or `null` when the listing could not be read.
- */
 function vercelKeys(project) {
   try {
     const output = execFileSync(
@@ -118,20 +81,13 @@ function vercelKeys(project) {
       { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
     )
 
-    // The Vercel CLI styles its table with ANSI escapes, so a raw split leaves
-    // the key wrapped in control codes and every name fails the test below —
-    // which reads as "every variable is missing" rather than as a parse failure.
     const plain = output.replace(/\u001B\[[0-9;]*m/g, '')
-
     const keys = new Set()
     for (const line of plain.split('\n')) {
       const key = line.trim().split(/\s+/)[0]
       if (/^[A-Z][A-Z0-9_]*$/.test(key ?? '')) keys.add(key)
     }
 
-    // A successful listing that yields no keys means the format changed, not
-    // that the project is empty. Report it as unreadable so a parser drift can
-    // never be presented as a configuration gap.
     return keys.size > 0 ? keys : null
   } catch {
     return null
