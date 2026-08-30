@@ -188,7 +188,7 @@ export function CondensedTeamRow({
             <div className="flex items-center gap-1.5 truncate">
               <span
                 className={cn(
-                  'truncate text-xs font-medium text-sky-600 dark:text-sky-400',
+                  'truncate text-[0.8125rem] font-medium text-sky-600 dark:text-sky-400',
                   selected && 'font-semibold'
                 )}
               >
@@ -203,7 +203,7 @@ export function CondensedTeamRow({
                 </Badge>
               ) : null}
             </div>
-            <span className="text-muted-foreground truncate text-[0.6875rem]">
+            <span className="text-muted-foreground truncate text-xs">
               {user.position || ROLE_LABELS[user.role] || user.role}
             </span>
           </div>

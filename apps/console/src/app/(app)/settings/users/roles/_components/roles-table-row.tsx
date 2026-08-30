@@ -32,7 +32,7 @@ export function RolesTableRow({ role }: { role: RoleView }) {
       <TableCell className="px-5 py-3.5">
         <div className="flex items-center gap-2.5">
           <span
-            className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[role.name] ?? 'border-purple-400/40 bg-purple-400/10 text-purple-700 dark:text-purple-400'}`}
+            className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[0.8125rem] font-medium ${ROLE_BADGE[role.name] ?? 'border-purple-400/40 bg-purple-400/10 text-purple-700 dark:text-purple-400'}`}
           >
             {role.displayName}
           </span>

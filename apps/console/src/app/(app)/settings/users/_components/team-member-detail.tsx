@@ -370,14 +370,14 @@ export function TeamMemberDetail({ member, onClose, className }: Props) {
               <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-xs sm:grid-cols-2">
                 <div>
                   <dt className="text-muted-foreground">Affiliation Type</dt>
-                  <dd className="text-foreground mt-0.5 font-medium">
+                  <dd className="text-foreground mt-0.5 text-sm font-medium">
                     {AFFILIATION_LABELS[member.affiliation] ??
                       member.affiliation}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Grant Expiration</dt>
-                  <dd className="text-foreground mt-0.5 font-medium">
+                  <dd className="text-foreground mt-0.5 text-sm font-medium">
                     {formatExpiry(member.expiresAt, member.affiliation)}
                   </dd>
                 </div>
