@@ -133,6 +133,41 @@ Microsoft models a reminder as an _attribute_ of a task (`isReminderOn` +
 Collapsing them means a standalone reminder has to invent a fake parent, or an event
 alert has to be promoted into a top-level list the user never asked for.
 
+## Reference-model notes that change our design
+
+Pulled from the Microsoft Graph and Google Calendar references while scoping this.
+Each of these is a decision the foundation does not yet encode and Phase 2 must.
+
+**A calendar and a user's subscription to it are different objects.** Google splits
+`Calendar` (the global object — title, default timezone, properties shared by everyone
+with access) from `CalendarList` (one row per user per calendar, holding _that user's_
+colour, notification settings, and whether it is shown). An organization calendar
+appearing in ten sidebars needs per-user state that does not belong on the calendar
+itself. Model both from the start; retrofitting the split means migrating every
+per-user preference out of a shared row.
+
+**Timed and all-day are mutually exclusive, and the invariant is enforced.** Google
+uses `start.dateTime`/`end.dateTime` or `start.date`/`end.date` and rejects a mix, and
+a timezone is meaningless on an all-day event. Encode this as a constraint, not a
+convention — the same way the foundation's context triple already carries a CHECK
+constraint rather than trusting callers.
+
+**An event has exactly one organizer: the calendar holding the main copy.** Attendees
+are projections onto other calendars. "An event belongs to several calendars" is the
+model that makes cancellation, edit propagation, and sync ambiguous; one owning
+calendar plus participant rows is the model that does not.
+
+**Every user gets a primary calendar automatically, and it cannot be deleted.** That
+is what makes "my calendar" always answerable. Work should seed one per user on first
+touch rather than requiring anyone to create one — the same reasoning as
+`module-settings.md`'s "seed a working default instead of demanding setup".
+
+**A reminder attached to a task is not the same object as a standalone reminder.**
+Microsoft folds the alert into the task (`isReminderOn` + `reminderDateTime`);
+iCalendar attaches a `VALARM` to a `VTODO` or `VEVENT`. Both describe the _alert_.
+876 needs the standalone Reminder as well, because a reminder with no parent has
+nothing to hang off in either of those models.
+
 ## Access tiers
 
 Work follows `.claude/rules/access-tiers.md` unchanged:
