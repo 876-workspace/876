@@ -63,7 +63,6 @@ export type {
   CrmTeamMemberAddInput,
   CrmTeamMemberList,
   CrmTeamMemberRole,
-  CrmTeamMemberUpdateInput,
   CrmTeamStatus,
   CrmTeamUpdateInput,
-} from '@876/client'
+} from '@876/crm'
