@@ -17,6 +17,14 @@
       "types": "./src/internal.ts",
       "default": "./src/internal.ts"
     },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
+    },
+    "./compat": {
+      "types": "./src/compat.ts",
+      "default": "./src/compat.ts"
+    },
     "./oauth": {
       "types": "./src/oauth.ts",
       "default": "./src/oauth.ts"
@@ -26,8 +34,15 @@
       "default": "./src/errors.ts"
     }
   },
-  "files": ["dist", "README.md", "CHANGELOG.md", "LICENSE"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "clean": "node --eval \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "prebuild": "pnpm clean",

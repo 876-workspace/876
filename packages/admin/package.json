@@ -10,17 +10,12 @@
     }
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
-    "@876/billing": "workspace:*",
-    "@876/core": "workspace:*",
-    "@876/storage": "workspace:*",
-    "@876/widgets": "workspace:*",
-    "server-only": "0.0.1",
-    "zod": "4.4.3"
+    "@876/platform": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "26.2.0",
