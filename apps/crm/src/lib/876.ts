@@ -7,27 +7,26 @@ import { getAuthSession, isSignedSession } from './auth/session'
 /**
  * Builds the request-scoped 876 client for CRM.
  *
- * Two credentials, for two different jobs:
+ * Three service authorities are composed here, each for a different job:
  *
  * - The **CRM service** is reached with CRM's own internal key — this app owns
- *   that bounded context, so its requests, notes, and customer profiles are
- *   server-to-server calls.
+ *   that bounded context, so requests, notes, and CRM customer profiles are
+ *   trusted server-to-server calls.
  * - The **core platform** is reached with CRM's app API key plus the signed-in
- *   user's access token. Org-scoped reads there (`/organizations/:id/members`,
- *   `/organizations/:id/departments`) are session tier — an app key alone is
- *   answered `auth/no-session`, and no key at all is answered
- *   `api-key/missing`.
+ *   user's access token. Org-scoped identity reads are session tier.
+ * - The **Work service** is reached with the same CRM app key plus that signed
+ *   user token. Work verifies CRM's app assignment/entitlement and the user's
+ *   effective app permissions; the CRM web app never receives WORK_INTERNAL_KEY.
  *
- * That second half is why this is a factory rather than a module singleton: an
- * access token belongs to a request, not to a process. It is also why the
- * client used to come back with an empty member directory — it was built with
- * no platform credential at all, so every member and department list silently
- * resolved to `[]` and note authors rendered as raw `user_…` ids.
+ * The Work session client is what makes canonical `$876.tasks`, `$876.events`,
+ * `$876.calendars`, `$876.myWork`, etc. real resources in the CRM application.
+ * CRM's `requestTasks`, `requestReminders`, and `requestEvents` remain contextual
+ * CRM projections for request-specific UX and backwards compatibility.
  *
- * Not signed in is not an error here. Every caller already runs behind
- * `requireCrmContext()` or `getCrmApiContext()`, which redirect or answer 401
- * before a request is made; throwing a second time would only turn their
- * handled cases into unhandled ones.
+ * This is a factory rather than a module singleton because an access token
+ * belongs to one request, not to the process. Not signed in is not an error
+ * here: callers already run behind `requireCrmContext()` or `getCrmApiContext()`
+ * and will redirect/answer 401 before using a session-only resource.
  */
 export async function get876Client() {
   const session = await getAuthSession()
@@ -42,6 +41,13 @@ export async function get876Client() {
       crm: {
         baseUrl: process.env.CRM_API_URL,
         internalKey: process.env.CRM_INTERNAL_KEY,
+      },
+      work: {
+        session: {
+          baseUrl: process.env.WORK_API_URL,
+          apiKey: process.env.CRM_API_876_KEY,
+          accessToken,
+        },
       },
     },
   })

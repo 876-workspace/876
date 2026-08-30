@@ -11,6 +11,7 @@ export type ServiceOwner =
   | 'billing'
   | 'couriers'
   | 'crm'
+  | 'work'
   | 'storage'
   | 'widgets'
 
@@ -159,7 +160,13 @@ export const RESOURCE_MANIFEST = {
   },
   requestReminders: {
     owner: 'crm',
-    meaning: 'time-based reminders on a CRM request',
+    meaning:
+      'CRM request-scoped reminder projection backed by canonical Work reminders',
+  },
+  requestEvents: {
+    owner: 'crm',
+    meaning:
+      'CRM request-scoped scheduling projection backed by canonical Work events',
   },
   requests: {
     owner: 'crm',
@@ -167,11 +174,81 @@ export const RESOURCE_MANIFEST = {
   },
   requestTasks: {
     owner: 'crm',
-    meaning: 'actionable follow-up items on a CRM request',
+    meaning:
+      'CRM request-scoped task projection backed by canonical Work tasks',
   },
   teams: {
     owner: 'crm',
     meaning: 'CRM routing teams (queues) an organization assigns requests to',
+  },
+
+  tasks: {
+    owner: 'work',
+    meaning:
+      'canonical organization work items independent of their host-product context',
+  },
+  taskLists: {
+    owner: 'work',
+    meaning: 'canonical Work task-list organization and ordering',
+  },
+  taskLinks: {
+    owner: 'work',
+    meaning:
+      'opaque cross-service context links connecting Work tasks to host resources',
+  },
+  taskAssignments: {
+    owner: 'work',
+    meaning:
+      'first-class Work task assignment, collaboration, and delegation records',
+  },
+  reminders: {
+    owner: 'work',
+    meaning: 'standalone user Work reminders and their lifecycle',
+  },
+  recurrenceRules: {
+    owner: 'work',
+    meaning: 'reusable RFC 5545-compatible recurrence definitions for Work',
+  },
+  alerts: {
+    owner: 'work',
+    meaning: 'notification schedules attached to canonical Work tasks or events',
+  },
+  calendars: {
+    owner: 'work',
+    meaning: 'canonical shared and user-owned Work calendars',
+  },
+  calendarSubscriptions: {
+    owner: 'work',
+    meaning:
+      'per-user role, visibility, colour, and reminder preferences for a Work calendar',
+  },
+  events: {
+    owner: 'work',
+    meaning: 'canonical timed and all-day Work calendar events',
+  },
+  eventParticipants: {
+    owner: 'work',
+    meaning:
+      'internal-user and external-email participation state for Work events',
+  },
+  myWork: {
+    owner: 'work',
+    meaning:
+      'read-model aggregation of a user’s assigned tasks, reminders, and calendar work',
+  },
+  workSyncConnections: {
+    owner: 'work',
+    meaning:
+      'provider-neutral external calendar/task sync connection metadata and credential references',
+  },
+  workSyncMappings: {
+    owner: 'work',
+    meaning:
+      'local-to-remote Work resource mappings, cursors, ETags, and interoperable UIDs',
+  },
+  workExports: {
+    owner: 'work',
+    meaning: 'Work-owned iCalendar and JSCalendar export operations',
   },
 
   files: { owner: 'storage', meaning: 'stored files' },
