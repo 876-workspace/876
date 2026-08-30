@@ -11,6 +11,7 @@ model WorkTenant {
   updatedAt      DateTime         @updatedAt @map("updated_at")
   tasks          WorkTask[]
   reminders      WorkReminder[]
+  appConnections WorkAppConnection[]
 
   @@map("work_tenants")
 }

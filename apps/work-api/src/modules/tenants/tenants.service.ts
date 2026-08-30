@@ -1,9 +1,12 @@
 import type { WorkTenant } from '@876/work'
 
+import { ensureCrmConnection } from '../connections/index.js'
 import * as repository from './tenants.repository.js'
 
 function serialize(
-  tenant: NonNullable<Awaited<ReturnType<typeof repository.retrieveByOrganization>>>
+  tenant: NonNullable<
+    Awaited<ReturnType<typeof repository.retrieveByOrganization>>
+  >
 ): WorkTenant {
   return {
     object: 'work_tenant',
@@ -20,6 +23,8 @@ export async function retrieveByOrganization(organizationId: string) {
   return tenant ? serialize(tenant) : null
 }
 
-export async function ensure(organizationId: string) {
-  return serialize(await repository.ensure(organizationId))
+export async function ensure(organizationId: string, appId?: string) {
+  const tenant = await repository.ensure(organizationId)
+  if (appId) await ensureCrmConnection(tenant.id, appId)
+  return serialize(tenant)
 }
