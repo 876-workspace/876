@@ -28,6 +28,14 @@ export const CRM_ERRORS = {
     message: 'A request’s opening note cannot be deleted.',
     httpStatus: HttpStatus.CONFLICT,
   },
+  'crm/event-not-found': {
+    message: 'Request event not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'crm/event-participant-not-found': {
+    message: 'Request event participant not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
   'crm/form-in-use': {
     message: 'Request form has submissions and cannot be hard deleted.',
     httpStatus: HttpStatus.CONFLICT,
@@ -113,7 +121,7 @@ export const CRM_ERRORS = {
     httpStatus: HttpStatus.CONFLICT,
   },
   'crm/subcategory-not-found': {
-    message: 'Request subcategory not found.',
+    message: 'Subcategory not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
   'crm/subcategory-slug-taken': {

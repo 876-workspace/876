@@ -13,6 +13,7 @@ function getBillingAdminOptions(requestId?: string) {
     requestId,
   }
 }
+
 function getWidgetsOptions(requestId?: string) {
   return {
     baseUrl: process.env.WIDGETS_API_URL,
@@ -20,6 +21,7 @@ function getWidgetsOptions(requestId?: string) {
     requestId,
   }
 }
+
 function getCrmOptions(requestId?: string) {
   return {
     baseUrl: process.env.CRM_API_URL,
@@ -27,6 +29,7 @@ function getCrmOptions(requestId?: string) {
     requestId,
   }
 }
+
 function getWorkOptions(requestId?: string) {
   return {
     baseUrl: process.env.WORK_API_URL,
@@ -34,6 +37,7 @@ function getWorkOptions(requestId?: string) {
     requestId,
   }
 }
+
 function getPlatformAdminOptions(requestId?: string) {
   return {
     baseUrl: process.env.API_URL,
@@ -42,6 +46,7 @@ function getPlatformAdminOptions(requestId?: string) {
     requestId,
   }
 }
+
 function getConsoleOptions(requestId?: string) {
   return {
     app: 'console' as const,
@@ -75,20 +80,49 @@ function getConsoleOptions(requestId?: string) {
   }
 }
 
+/** Creates the request-scoped resource and control-plane surfaces for Console. */
 export function createConsoleSurfaces(requestId?: string) {
   return composeConsoleSurfaces(getConsoleOptions(requestId))
 }
+
+/** Backwards-compatible factory for code that only needs the resource plane. */
 export function createConsole876Client(requestId?: string) {
   return createConsoleSurfaces(requestId).$876
 }
+
 const defaultSurfaces = createConsoleSurfaces()
+
+/** Resource/data plane: users, organizations, invoices, customers, files, etc. */
 export const $876 = defaultSurfaces.$876
+
+/** Organization control plane: setup, app grants, modules, and provisioning. */
 export const workspace = defaultSurfaces.workspace
+
+/** 876 operator control plane: API keys, auth attempts, devices, and app flags. */
 export const platform = defaultSurfaces.platform
+
 export const coreAdmin = create876AdminClient(getPlatformAdminOptions())
+
+/**
+ * Internal Billing admin client for Console-specific Billing administration
+ * operations not surfaced on the canonical `$876` (e.g. app billing stats).
+ * Not for use in app UI code outside `src/lib/`.
+ */
 export const billingAdmin = createBillingAdminClient(getBillingAdminOptions())
+
+/**
+ * Internal Billing integration client for organization-scoped Billing
+ * resources that collide with Core resources on the canonical facade.
+ */
 export const billingIntegration = create876BillingIntegrationClient(
   getBillingAdminOptions()
 )
+
+/**
+ * Internal Widgets admin client for Console-specific widget administration
+ * operations not surfaced on the canonical `$876` (e.g. notepad stats).
+ * Not for use in app UI code outside `src/lib/` and `src/features/`.
+ */
 export const widgetsAdmin = createWidgetsAdminClient(getWidgetsOptions())
+
 export type Console876Client = ReturnType<typeof createConsole876Client>

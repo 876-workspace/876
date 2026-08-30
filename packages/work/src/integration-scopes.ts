@@ -31,6 +31,7 @@ export const WORK_CRM_INTEGRATION_SCOPES = [
   'work.events.write',
   'work.alerts.read',
   'work.alerts.write',
+  'work.my-work.read',
 ] as const satisfies readonly WorkIntegrationScope[]
 
 export type WorkIntegrationScope = (typeof WORK_INTEGRATION_SCOPES)[number]

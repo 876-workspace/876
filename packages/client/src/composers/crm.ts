@@ -19,6 +19,7 @@ export function createCrmClient(options: CrmServerClientOptions) {
     requestFormRequests: crm.requestFormRequests,
     requestNotes: crm.requestNotes,
     requestReminders: crm.requestReminders,
+    requestEvents: crm.requestEvents,
     requests: crm.requests,
     requestTasks: crm.requestTasks,
     teams: crm.teams,

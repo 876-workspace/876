@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { requireInternal } from '../../http/internal-auth.js'
+import { createEventsRouter } from '../events/index.js'
 import { createNotesRouter } from '../notes/index.js'
 import { createRemindersRouter } from '../reminders/index.js'
 import { createTasksRouter } from '../tasks/index.js'
@@ -18,6 +19,7 @@ export function createRequestsRouter() {
   router.use('/:id/notes', createNotesRouter())
   router.use('/:id/tasks', createTasksRouter())
   router.use('/:id/reminders', createRemindersRouter())
+  router.use('/:id/events', createEventsRouter())
 
   return router
 }

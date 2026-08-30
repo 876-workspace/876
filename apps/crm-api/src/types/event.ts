@@ -1,9 +1,8 @@
 import type {
   CreateWorkEventParticipantInput,
   UpdateWorkEventParticipantInput,
-  WorkEventBusyStatus,
   WorkEventParticipant,
-  WorkEventStatus,
+  WorkEventResource,
 } from '@876/work'
 
 export interface RequestEventParticipant {
@@ -33,8 +32,8 @@ export interface RequestEvent {
   title: string
   description: string | null
   location: string | null
-  status: WorkEventStatus
-  busyStatus: WorkEventBusyStatus
+  status: WorkEventResource['status']
+  busyStatus: WorkEventResource['busyStatus']
   allDay: boolean
   startAt: number | null
   endAt: number | null
@@ -54,8 +53,8 @@ type CreateEventBase = {
   title: string
   description?: string | null
   location?: string | null
-  status?: WorkEventStatus
-  busyStatus?: WorkEventBusyStatus
+  status?: WorkEventResource['status']
+  busyStatus?: WorkEventResource['busyStatus']
   recurrenceRuleId?: string | null
   recurrenceId?: string | null
   createdBy: string
@@ -83,8 +82,8 @@ export interface UpdateEventInput {
   title?: string
   description?: string | null
   location?: string | null
-  status?: WorkEventStatus
-  busyStatus?: WorkEventBusyStatus
+  status?: WorkEventResource['status']
+  busyStatus?: WorkEventResource['busyStatus']
   allDay?: boolean
   startAt?: number | null
   endAt?: number | null

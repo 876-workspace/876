@@ -218,13 +218,20 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
         key: 'agent',
         name: 'Agent',
         description:
-          'Works customer requests and tasks without role administration.',
+          'Works customer requests and related Work items without role administration.',
         permissions: keysFor(
           crmPermissions,
           (permission) =>
-            ['requests', 'customers', 'tasks', 'reminders', 'notes'].includes(
-              permission.moduleKey
-            ) && permission.action !== 'delete'
+            [
+              'requests',
+              'customers',
+              'tasks',
+              'reminders',
+              'events',
+              'calendars',
+              'my_work',
+              'notes',
+            ].includes(permission.moduleKey) && permission.action !== 'delete'
         ),
         isSystem: true,
         isDefault: false,
