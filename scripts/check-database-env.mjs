@@ -8,7 +8,6 @@
  *   <PREFIX>DIRECT_DATABASE_URL  Direct TCP URL (postgres://…), read by
  *                                `prisma.config.ts` for migrate/generate/seed.
  *
- * CRM uses one direct PostgreSQL URL for both runtime and Prisma CLI access.
  * These failure modes are silent in their own way, which is why this check
  * exists rather than a comment in `.env.example`:
  *
@@ -77,7 +76,12 @@ const APPS = {
   },
   'crm-api': {
     runtime: 'CRM_DATABASE_URL',
-    direct: null,
+    direct: 'CRM_DIRECT_DATABASE_URL',
+    envFiles: ['.env', '.env.development', '.env.development.local'],
+  },
+  'work-api': {
+    runtime: 'WORK_DATABASE_URL',
+    direct: 'WORK_DIRECT_DATABASE_URL',
     envFiles: ['.env', '.env.development', '.env.development.local'],
   },
   'widgets-api': {
@@ -92,12 +96,7 @@ const APPS = {
   },
 }
 
-/**
- * Resolves one app's env values the way its `prisma.config.ts` would.
- *
- * @param app - Workspace directory name under `apps/`.
- * @returns Map of variable name to `{ value, source }`.
- */
+/** Resolves one app's env values the way its `prisma.config.ts` would. */
 function readEnv(app) {
   const resolved = {}
 
@@ -110,32 +109,18 @@ function readEnv(app) {
     }
   }
 
-  // A variable exported in the shell wins over any file, same as the CLI.
   for (const key of [APPS[app].runtime, APPS[app].direct].filter(Boolean)) {
-    if (process.env[key]) {
+    if (process.env[key])
       resolved[key] = { value: process.env[key], source: 'process env' }
-    }
   }
 
   return resolved
 }
 
-/**
- * The scheme of a URL, lowercased and including the colon.
- *
- * @param value - A connection string.
- * @returns e.g. `postgres:`, or `''` when there is no scheme.
- */
 function protocolOf(value) {
   return value.slice(0, value.indexOf(':') + 1).toLowerCase()
 }
 
-/**
- * Checks one app's pair of connection strings.
- *
- * @param app - Workspace directory name under `apps/`.
- * @returns Human-readable problems; empty when the app is configured correctly.
- */
 function checkApp(app) {
   const { runtime, direct } = APPS[app]
   const env = readEnv(app)
