@@ -11,7 +11,7 @@ describe('request validation - value errors advanced', () => {
 
   it('category-not-found propagates as value through assertRouting', () => {
     const err = getError('crm/category-not-found')
-    const handler = (result: unknown) => isError(result) ? result : null
+    const handler = (result: unknown) => (isError(result) ? result : null)
     expect(handler(err)).toEqual(err)
     expect(handler({ id: 'cat_1' })).toBeNull()
   })

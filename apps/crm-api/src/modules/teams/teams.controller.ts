@@ -1,10 +1,6 @@
 import type { Request, Response } from 'express'
 
-import {
-  sendCrmError,
-  sendCrmList,
-  sendCrmResult,
-} from '../../http/result.js'
+import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as s from './teams.schemas.js'
 import * as service from './teams.service.js'
 
@@ -15,11 +11,7 @@ export async function list(req: Request, res: Response) {
     ...q,
     includeMembers: q.includeMembers === 'true',
   })
-  return sendCrmList(
-    res,
-    result,
-    `/v1/organizations/${p.organizationId}/teams`
-  )
+  return sendCrmList(res, result, `/v1/organizations/${p.organizationId}/teams`)
 }
 
 export async function get(req: Request, res: Response) {
