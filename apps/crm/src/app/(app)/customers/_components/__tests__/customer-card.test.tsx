@@ -136,4 +136,35 @@ describe('CustomerCard', () => {
       expect(onClose).toHaveBeenCalled()
     })
   })
+
+  it('allows switching between all customer detail tabs', () => {
+    const onClose = vi.fn()
+    render(<CustomerCard customer={sampleCustomer} onClose={onClose} />)
+
+    // Contacts tab
+    fireEvent.click(screen.getByRole('tab', { name: 'Contacts' }))
+    expect(screen.getByText(/Contact Directory/i)).toBeInTheDocument()
+
+    // Transactions tab
+    fireEvent.click(screen.getByRole('tab', { name: 'Transactions' }))
+    expect(screen.getByText('Total Invoiced')).toBeInTheDocument()
+    expect(screen.getByText('INV-2026-003')).toBeInTheDocument()
+
+    // Requests tab
+    fireEvent.click(screen.getByRole('tab', { name: 'Requests' }))
+    expect(screen.getByText(/Support & Service Requests/i)).toBeInTheDocument()
+    expect(screen.getByText('REQ-8921')).toBeInTheDocument()
+
+    // Mails tab
+    fireEvent.click(screen.getByRole('tab', { name: 'Mails' }))
+    expect(screen.getByText(/Communication History/i)).toBeInTheDocument()
+
+    // Statement tab
+    fireEvent.click(screen.getByRole('tab', { name: 'Statement' }))
+    expect(screen.getByText('Statement of Account')).toBeInTheDocument()
+
+    // Activity tab
+    fireEvent.click(screen.getByRole('tab', { name: 'Activity' }))
+    expect(screen.getByText('Customer record created')).toBeInTheDocument()
+  })
 })

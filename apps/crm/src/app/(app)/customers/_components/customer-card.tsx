@@ -26,12 +26,29 @@ import {
 
 import { client } from '@/lib/client'
 import { CustomerActivity } from './customer-activity'
+import { CustomerContactsTab } from './customer-contacts-tab'
+import { CustomerMailsTab } from './customer-mails-tab'
+import { CustomerRequestsTab } from './customer-requests-tab'
+import { CustomerStatementTab } from './customer-statement-tab'
+import { CustomerTransactionsTab } from './customer-transactions-tab'
 import type { CrmCustomerRow } from './customers-table'
 
-type TabKey = 'overview' | 'activity'
+type TabKey =
+  | 'overview'
+  | 'contacts'
+  | 'transactions'
+  | 'requests'
+  | 'mails'
+  | 'statement'
+  | 'activity'
 
 const DETAIL_TABS: { value: TabKey; label: string }[] = [
   { value: 'overview', label: 'Overview' },
+  { value: 'contacts', label: 'Contacts' },
+  { value: 'transactions', label: 'Transactions' },
+  { value: 'requests', label: 'Requests' },
+  { value: 'mails', label: 'Mails' },
+  { value: 'statement', label: 'Statement' },
   { value: 'activity', label: 'Activity' },
 ]
 
@@ -206,7 +223,10 @@ export function CustomerCard({
 
       {/* Tabs */}
       <div className="border-876-surface-border shrink-0 border-b px-6 pt-3">
-        <div role="tablist" className="flex items-center gap-6">
+        <div
+          role="tablist"
+          className="876-scroll flex items-center gap-6 overflow-x-auto"
+        >
           {DETAIL_TABS.map((entry) => (
             <button
               key={entry.value}
@@ -214,7 +234,7 @@ export function CustomerCard({
               aria-selected={tab === entry.value}
               onClick={() => setTab(entry.value)}
               className={cn(
-                'border-b-2 pb-3 text-xs font-medium transition-colors',
+                'border-b-2 pb-3 text-xs font-medium whitespace-nowrap transition-colors',
                 tab === entry.value
                   ? 'border-primary text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground border-transparent'
@@ -407,6 +427,13 @@ export function CustomerCard({
           </div>
         )}
 
+        {tab === 'contacts' && <CustomerContactsTab customer={customer} />}
+        {tab === 'transactions' && (
+          <CustomerTransactionsTab customer={customer} />
+        )}
+        {tab === 'requests' && <CustomerRequestsTab customer={customer} />}
+        {tab === 'mails' && <CustomerMailsTab customer={customer} />}
+        {tab === 'statement' && <CustomerStatementTab customer={customer} />}
         {tab === 'activity' && <CustomerActivity customer={customer} />}
       </div>
 
