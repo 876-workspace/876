@@ -9,7 +9,7 @@ import {
   AuthProvider,
 } from '@876/ui/auth'
 
-import { $876 } from '@/lib/876'
+import { account } from '@/lib/services/account'
 
 /**
  * Business onboarding — new organization creation plus the owner account.
@@ -26,7 +26,7 @@ export function BusinessOnboarding() {
       <AuthProvider
         config={{
           mode: 'business-onboarding',
-          client: $876.auth,
+          client: account.auth,
           onSuccess: () => {
             window.location.assign('/auth/complete?returnTo=/')
           },

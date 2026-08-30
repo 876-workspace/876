@@ -19,11 +19,15 @@ vi.mock('./session', async (importOriginal) => {
     isSignedSession: actual.isSignedSession as unknown,
   }
 })
-vi.mock('@/lib/876/platform-client', () => ({
-  getPlatformClient: vi.fn(async () => ({
-    memberships: { listRouting: mocks.listRouting },
-    users: { retrieve: mocks.usersRetrieve },
+vi.mock('@/lib/services/workspace', () => ({
+  getWorkspace: vi.fn(async () => ({
+    memberships: { list: mocks.listRouting },
     features: { evaluate: mocks.featuresEvaluate },
+  })),
+}))
+vi.mock('@/lib/services/account-server', () => ({
+  getAccount: vi.fn(async () => ({
+    users: { retrieve: mocks.usersRetrieve },
   })),
 }))
 vi.mock('@sentry/nextjs', () => ({ captureMessage: mocks.captureMessage }))
@@ -92,6 +96,7 @@ function membershipRow(
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.usersRetrieve.mockReset()
   mocks.redirect.mockImplementation((path: string) => {
     throw redirectError(path)
   })
@@ -194,27 +199,11 @@ describe('findAuthRoutingUser', () => {
     expect(mocks.usersRetrieve).toHaveBeenCalledTimes(1)
   })
 
-  it('falls back to workosId lookup when primary returns null', async () => {
-    mocks.usersRetrieve
-      .mockResolvedValueOnce({ data: null, error: null })
-      .mockResolvedValueOnce({
-        data: {
-          id: 'user_1',
-          email: 'a@b.co',
-          status: 'active',
-          banned: false,
-          first_name: 'A',
-          last_name: null,
-          avatar: null,
-        },
-        error: null,
-      })
+  it('returns null when the signed-in account is absent', async () => {
+    mocks.usersRetrieve.mockResolvedValueOnce({ data: null, error: null })
     const user = await findAuthRoutingUser('workos_123')
-    expect(user?.id).toBe('user_1')
-    expect(mocks.usersRetrieve).toHaveBeenCalledTimes(2)
-    expect(mocks.usersRetrieve).toHaveBeenNthCalledWith(2, {
-      workosId: 'workos_123',
-    })
+    expect(user).toBeNull()
+    expect(mocks.usersRetrieve).toHaveBeenCalledTimes(1)
   })
 
   it('returns null when row missing required id or email', async () => {
@@ -391,13 +380,7 @@ describe('requireOrgMembership', () => {
       error: null,
     })
     await requireOrgMembership('user_1', 'acme')
-    expect(mocks.listRouting).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'user_1',
-        orgSlug: 'acme',
-        status: 'active',
-      })
-    )
+    expect(mocks.listRouting).toHaveBeenCalledWith({ status: 'active' })
   })
 
   it('findActiveOrgMembership returns null (not redirect) when missing — route-handler contract', async () => {
@@ -1005,20 +988,14 @@ describe('requireOrgMembership — diff: "/" gate and slug-encoded login', () =>
       expect((b.reason as { path: string }).path).toBe('/')
   })
 
-  it('calls listRouting with orgSlug and status active (contract)', async () => {
+  it('calls the signed-in membership list with active status (contract)', async () => {
     mocks.usersRetrieve.mockResolvedValue(activeUser() as never)
     mocks.listRouting.mockResolvedValue({
       data: { data: [membershipRow({ slug: 'acme' })] },
       error: null,
     })
     await requireOrgMembership('user_1', 'acme')
-    expect(mocks.listRouting).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'user_1',
-        orgSlug: 'acme',
-        status: 'active',
-      })
-    )
+    expect(mocks.listRouting).toHaveBeenCalledWith({ status: 'active' })
   })
 })
 
@@ -1038,7 +1015,7 @@ describe('findAuthRoutingUser — mapping & resilience (advanced)', () => {
     })
     await findAuthRoutingUser('user_1')
     expect(mocks.usersRetrieve).toHaveBeenCalledTimes(1)
-    expect(mocks.usersRetrieve).toHaveBeenCalledWith({ id: 'user_1' })
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith()
   })
 
   it.each([
@@ -1087,14 +1064,9 @@ describe('findAuthRoutingUser — mapping & resilience (advanced)', () => {
     await expect(findAuthRoutingUser('user_1')).rejects.toBeDefined()
   })
 
-  it('throws on fallback error envelope', async () => {
-    mocks.usersRetrieve
-      .mockResolvedValueOnce({ data: null, error: null })
-      .mockResolvedValueOnce({
-        data: null,
-        error: { code: 'internal', message: 'boom' },
-      })
-    await expect(findAuthRoutingUser('workos_123')).rejects.toBeDefined()
+  it('does not make a second lookup when the signed-in account is absent', async () => {
+    mocks.usersRetrieve.mockResolvedValueOnce({ data: null, error: null })
+    await expect(findAuthRoutingUser('workos_123')).resolves.toBeNull()
   })
 
   it('maps snake_case all fields', async () => {
@@ -1120,26 +1092,11 @@ describe('findAuthRoutingUser — mapping & resilience (advanced)', () => {
     )
   })
 
-  it('falls back to workosId when primary null', async () => {
-    mocks.usersRetrieve
-      .mockResolvedValueOnce({ data: null, error: null })
-      .mockResolvedValueOnce({
-        data: {
-          id: 'user_1',
-          email: 'a@b.co',
-          status: 'active',
-          banned: false,
-          first_name: 'A',
-          last_name: null,
-          avatar: null,
-        },
-        error: null,
-      })
+  it('does not look up another identity when the signed-in account is absent', async () => {
+    mocks.usersRetrieve.mockResolvedValueOnce({ data: null, error: null })
     const u = await findAuthRoutingUser('workos_123')
-    expect(u?.id).toBe('user_1')
-    expect(mocks.usersRetrieve).toHaveBeenNthCalledWith(2, {
-      workosId: 'workos_123',
-    })
+    expect(u).toBeNull()
+    expect(mocks.usersRetrieve).toHaveBeenCalledTimes(1)
   })
 })
 

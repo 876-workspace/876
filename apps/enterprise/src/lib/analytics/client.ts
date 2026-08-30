@@ -1,7 +1,7 @@
 'use client'
 
 import { createAuditEventMirror, createBrowserAnalytics } from '@876/analytics'
-import { create876Client } from '@876/client'
+import { create876AccountClient } from '@876/account'
 
 import {
   EnterpriseAnalyticsEvent,
@@ -10,7 +10,7 @@ import {
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
 
 const apiKey = resolvePublicApiKey()
-const auditClient = create876Client({
+const auditClient = create876AccountClient({
   apiKey,
   credentials: 'include',
 })

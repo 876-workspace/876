@@ -1,7 +1,7 @@
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { ContactForm } from '../_components/contact-form'
@@ -20,8 +20,8 @@ export default async function NewContactPage({
   )
 
   const orgId = membership.organization.id
-  const client = await get876ServerClient()
-  const membersResult = await client.organizationMembers.list(orgId)
+  const client = await getWorkspace()
+  const membersResult = await client.members.list(orgId)
   if (membersResult.error) {
     return (
       <Page>

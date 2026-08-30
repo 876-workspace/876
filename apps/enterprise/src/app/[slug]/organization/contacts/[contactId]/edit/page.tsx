@@ -4,7 +4,7 @@ import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { ContactForm } from '../../_components/contact-form'
@@ -25,10 +25,10 @@ export default async function EditContactPage({
   )
 
   const orgId = membership.organization.id
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const [contactResult, membersResult] = await Promise.all([
     client.contacts.retrieve(orgId, contactId),
-    client.organizationMembers.list(orgId),
+    client.members.list(orgId),
   ])
 
   if (isNotFoundError(contactResult.error)) notFound()

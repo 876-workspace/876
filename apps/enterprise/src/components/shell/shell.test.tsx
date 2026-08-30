@@ -4,8 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   cookies: vi.fn(),
-  get876ServerClient: vi.fn(),
-  getPlatformClient: vi.fn(),
+  getWorkspace: vi.fn(),
   listRouting: vi.fn(),
   entitlementsList: vi.fn(),
 }))
@@ -14,14 +13,8 @@ vi.mock('next/headers', () => ({
   cookies: mocks.cookies,
 }))
 
-vi.mock('@/lib/876/server', () => ({
-  get876ServerClient: mocks.get876ServerClient,
-}))
-
-vi.mock('@/lib/876/platform-client', () => ({
-  getPlatformClient: vi.fn(async () => ({
-    memberships: { listRouting: mocks.listRouting },
-  })),
+vi.mock('@/lib/services/workspace', () => ({
+  getWorkspace: mocks.getWorkspace,
 }))
 
 vi.mock('next/link', () => ({
@@ -145,7 +138,8 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
   beforeEach(() => {
     vi.clearAllMocks()
     mockCookies(undefined)
-    mocks.get876ServerClient.mockResolvedValue({
+    mocks.getWorkspace.mockResolvedValue({
+      memberships: { list: mocks.listRouting },
       entitlements: {
         list: mocks.entitlementsList.mockResolvedValue({
           data: { data: [] },

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import type { OrgLocationUpdateParams } from '@876/sdk'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -48,7 +48,7 @@ export async function PATCH(
     if (field in body) updates[field] = body[field] as never
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.locations.update(
     auth.membership.organization.id,
     locationId,
@@ -74,7 +74,7 @@ export async function DELETE(
   const auth = await authorizeOrgRequest(slug, 'structure:manage')
   if (auth.response) return auth.response
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.locations.delete(
     auth.membership.organization.id,
     locationId

@@ -6,7 +6,7 @@ import { UserPlus } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import {
   hasOrgPermission,
   requireOrgPermission,
@@ -33,9 +33,9 @@ export default async function OrganizationMembersPage({
   const canManage = hasOrgPermission(membership, 'members:manage')
 
   const orgId = membership.organization.id
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const [membersResult, rolesResult, invitesResult] = await Promise.all([
-    client.organizationMembers.list(orgId),
+    client.members.list(orgId),
     client.roles.list(orgId),
     canInvite ? client.invites.list(orgId) : Promise.resolve(null),
   ])

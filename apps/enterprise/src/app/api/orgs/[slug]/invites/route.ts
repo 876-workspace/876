@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -37,7 +37,7 @@ export async function POST(
     )
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const orgId = auth.membership.organization.id
 
   if (role) {

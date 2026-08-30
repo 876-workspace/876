@@ -2,14 +2,14 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getAccount } from '@/lib/services/account-server'
 
 /** Whether the account behind a sealed session is still usable. */
 export const isAccountUsable = cache(async function isAccountUsable(
   userId: string
 ): Promise<boolean> {
-  const platform = await getPlatformClient()
-  const { data, error } = await platform.users.retrieve({ id: userId })
+  const account = await getAccount()
+  const { data, error } = await account.users.retrieve()
 
   const accountGone = error?.code === 'user/not-found'
   const accountDisabled =

@@ -5,13 +5,13 @@ import {
   type SidebarUserMenuUser,
 } from '@876/ui/sidebar-user-menu'
 
-import { $876 } from '@/lib/876'
+import { account } from '@/lib/services/account'
 import { useUserStore } from '@/stores/user'
 
 export function UserMenu({ user }: { user: SidebarUserMenuUser }) {
   async function handleSignOut() {
     useUserStore.getState().clearUser()
-    await $876.auth.logout()
+    await account.auth.logout()
     window.location.href = '/login'
   }
 

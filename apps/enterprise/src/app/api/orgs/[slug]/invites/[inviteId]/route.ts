@@ -1,5 +1,5 @@
 import { apiJson } from '@876/core/api'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -14,7 +14,7 @@ export async function DELETE(
   const auth = await authorizeOrgRequest(slug, 'members:invite')
   if (auth.response) return auth.response
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.invites.revoke(
     auth.membership.organization.id,
     inviteId

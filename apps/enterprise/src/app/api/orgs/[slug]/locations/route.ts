@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import type { OrgLocationCreateParams } from '@876/sdk'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -55,7 +55,7 @@ export async function POST(
     return apiJson({ error: 'A name is required.' }, { status: 400 })
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.locations.create(
     auth.membership.organization.id,
     { ...pickLocationFields(body ?? {}), name }

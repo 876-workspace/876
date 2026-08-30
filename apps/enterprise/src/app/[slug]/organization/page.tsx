@@ -7,7 +7,7 @@ import { ChevronRight } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 const DETAIL_PREVIEW_FIELDS: {
@@ -36,7 +36,7 @@ export default async function OrganizationOverviewPage({
   )
 
   const orgId = membership.organization.id
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const [orgResult, locationsResult, contactsResult] = await Promise.all([
     client.organizations.retrieve(orgId),
     client.locations.list(orgId),

@@ -7,9 +7,9 @@ vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Headers()),
 }))
 
-vi.mock('@/lib/876/platform-client', () => ({
-  getPlatformClient: vi.fn(async () => ({
-    memberships: { listRouting: mocks.listRouting },
+vi.mock('@/lib/services/workspace', () => ({
+  getWorkspace: vi.fn(async () => ({
+    memberships: { list: mocks.listRouting },
   })),
 }))
 

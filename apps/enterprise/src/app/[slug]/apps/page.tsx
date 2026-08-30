@@ -7,7 +7,7 @@ import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 export default async function OrganizationAppsPage({
@@ -23,7 +23,7 @@ export default async function OrganizationAppsPage({
     'apps:read'
   )
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const [subscriptionsResult, productsResult] = await Promise.all([
     client.entitlements.list(membership.organization.id),
     client.entitlementPlans.list(),
