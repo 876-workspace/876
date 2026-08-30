@@ -4,19 +4,25 @@ import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
-import { CustomersTable, type CrmCustomerRow } from './customers-table'
+import { CustomerSplit } from './customer-split'
+import type { CrmCustomerRow } from './customers-table'
+
+type Props = {
+  status?: string
+  selectedId?: string
+}
 
 /**
  * Data half of the customers page — kept separate from `page.tsx` so the route
  * file only contains Next.js exports. Rendered inside a Suspense boundary; the
  * toolbar and skeleton appear immediately while this streams in.
  */
-export async function CustomersTableData() {
+export async function CustomersTableData({ status, selectedId }: Props) {
   const context = await requireCrmContext()
   const $876 = await get876Client()
   const result = await $876.customerProfiles.list(context.orgId)
 
-  const rows: CrmCustomerRow[] = (result.data?.data ?? []).map(
+  let rows: CrmCustomerRow[] = (result.data?.data ?? []).map(
     ({ profile, customer }) => {
       const identity = resolveCustomerIdentity(
         customer,
@@ -26,15 +32,29 @@ export async function CustomersTableData() {
         profileId: profile.id,
         billingCustomerId: profile.billingCustomerId,
         name: identity.name,
+        legalName: identity.legalName,
         isBusiness: identity.isBusiness,
+        typeLabel: identity.typeLabel,
         email: identity.email,
         phone: identity.phone,
         contactName: identity.contact?.name ?? null,
         contactEmail: identity.contact?.email ?? null,
+        contactPhone: identity.contact?.phone ?? null,
+        contactUserId: identity.contact?.userId ?? null,
+        contactAvatar: identity.contact?.avatar ?? null,
+        ownerId: profile.ownerId ?? null,
         status: profile.status,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
       }
     }
   )
+
+  if (status === 'active') {
+    rows = rows.filter((r) => r.status === 'ACTIVE')
+  } else if (status === 'inactive') {
+    rows = rows.filter((r) => r.status === 'INACTIVE')
+  }
 
   return (
     <div className="space-y-3">
@@ -45,7 +65,7 @@ export async function CustomersTableData() {
           variant="banner"
         />
       ) : null}
-      <CustomersTable customers={rows} />
+      <CustomerSplit customers={rows} selectedId={selectedId} />
     </div>
   )
 }

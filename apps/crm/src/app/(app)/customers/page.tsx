@@ -1,29 +1,64 @@
 import { Suspense } from 'react'
-
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import {
+  StatusFilterHeading,
+  type StatusFilterOption,
+} from '@876/ui/status-filter-heading'
 
+import { CustomerSplitSkeleton } from './_components/customer-split-skeleton'
 import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
 import { CustomersTableData } from './_components/customers-table-data'
 
 export const metadata = { title: 'Customers' }
 
-export default function CustomersPage() {
+const STATUS_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: 'All customers' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+]
+
+type Props = {
+  searchParams: Promise<{
+    status?: string
+    customer?: string
+  }>
+}
+
+export default async function CustomersPage({ searchParams }: Props) {
+  const { status = 'all', customer } = await searchParams
+
   return (
     <Page>
       <ResourceToolbar
         title="Customers"
+        titleFilter={
+          <StatusFilterHeading
+            label="Customers"
+            value={status}
+            options={STATUS_OPTIONS}
+          />
+        }
         primaryLabel="Add"
-        primaryHref="/customers/new"
+        primaryHref={
+          status !== 'all'
+            ? `/customers?status=${status}&customer=new`
+            : '/customers?customer=new'
+        }
         primaryVariant="info"
       />
       <Suspense
+        key={`${status}-${customer}`}
         fallback={
-          <DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} rows={5} />
+          customer ? (
+            <CustomerSplitSkeleton />
+          ) : (
+            <DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} rows={5} />
+          )
         }
       >
-        <CustomersTableData />
+        <CustomersTableData status={status} selectedId={customer} />
       </Suspense>
     </Page>
   )
