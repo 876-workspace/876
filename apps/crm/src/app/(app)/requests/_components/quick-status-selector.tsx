@@ -6,28 +6,25 @@ import { Button } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { CheckIcon, ChevronDown } from '@876/ui/icons'
+import { ChevronDown } from '@876/ui/icons'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 import type { RequestStatus } from '@/types/crm'
 
-import { RequestStatusBadge, requestStatusConfig } from './request-status-badge'
+import { requestStatusConfig } from './request-status-badge'
 
-const STATUSES: { value: RequestStatus; label: string }[] = [
-  { value: 'OPEN', label: 'Open' },
-  { value: 'IN_PROGRESS', label: 'In progress' },
-  { value: 'WAITING', label: 'Waiting' },
-  { value: 'RESOLVED', label: 'Resolved' },
-  { value: 'CLOSED', label: 'Closed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+const STATUS_GROUPS: RequestStatus[][] = [
+  ['OPEN', 'IN_PROGRESS', 'WAITING'],
+  ['RESOLVED', 'CLOSED', 'CANCELLED'],
 ]
 
 type ErrorValue = { code: string; message: string }
@@ -40,30 +37,31 @@ export function QuickStatusSelector({
   currentStatus: RequestStatus
 }) {
   const router = useRouter()
-  const [updating, setUpdating] = useState(false)
+  const [pending, setPending] = useState<RequestStatus | null>(null)
   const [error, setError] = useState<ErrorValue | null>(null)
 
+  /** Show the chosen status straight away; the refresh confirms it. */
+  const shown = pending ?? currentStatus
+  const config = requestStatusConfig(shown)
+  const Icon = config.icon
+
   async function handleStatusChange(status: RequestStatus) {
-    if (status === currentStatus || updating) return
-    setUpdating(true)
+    if (status === currentStatus || pending) return
+    setPending(status)
     setError(null)
 
     const result = await client.requests.update(requestId, { status })
+
     if (result.error) {
       setError(result.error)
-      setUpdating(false)
+      setPending(null)
       return
     }
 
-    toast.success(
-      `Status updated to ${status.replaceAll('_', ' ').toLowerCase()}`
-    )
-    setUpdating(false)
+    toast.success(`Status updated to ${requestStatusConfig(status).label}`)
+    setPending(null)
     router.refresh()
   }
-
-  const config = requestStatusConfig(currentStatus)
-  const Icon = config.icon
 
   return (
     <div className="space-y-2">
@@ -73,7 +71,7 @@ export function QuickStatusSelector({
             <Button
               variant="outline"
               size="sm"
-              disabled={updating}
+              disabled={pending !== null}
               aria-label={`Status: ${config.label}. Change status`}
               className={cn(
                 'h-8 gap-1.5 px-2.5 text-xs font-medium',
@@ -86,23 +84,40 @@ export function QuickStatusSelector({
           <span>{config.label}</span>
           <ChevronDown className="size-3.5 opacity-70" aria-hidden="true" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+
+        <DropdownMenuContent align="end" className="min-w-52">
           <DropdownMenuLabel>Update status</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {STATUSES.map((item) => (
-            <DropdownMenuItem
-              key={item.value}
-              onClick={() => handleStatusChange(item.value)}
-              className="flex items-center justify-between"
-            >
-              <RequestStatusBadge status={item.value} />
-              {item.value === currentStatus ? (
-                <CheckIcon className="text-primary size-4" />
-              ) : null}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={currentStatus}
+            onValueChange={(value) =>
+              handleStatusChange(value as RequestStatus)
+            }
+          >
+            {STATUS_GROUPS.map((statuses, groupIndex) => (
+              <Fragment key={groupIndex}>
+                {groupIndex > 0 ? <DropdownMenuSeparator /> : null}
+                {statuses.map((status) => {
+                  const item = requestStatusConfig(status)
+                  return (
+                    <DropdownMenuRadioItem
+                      key={status}
+                      value={status}
+                      className="gap-2.5 py-2"
+                    >
+                      <span
+                        className={cn('size-2 shrink-0 rounded-full', item.dot)}
+                        aria-hidden="true"
+                      />
+                      {item.label}
+                    </DropdownMenuRadioItem>
+                  )
+                })}
+              </Fragment>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+
       {error ? (
         <AppError
           title="Status could not be updated"

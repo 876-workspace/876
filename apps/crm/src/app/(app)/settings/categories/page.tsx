@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
-
 import { AppError } from '@876/ui/app-error'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
 import { get876Client } from '@/lib/876'
@@ -19,7 +18,6 @@ export default async function CategoriesPage({ searchParams }: Props) {
 
   return (
     <Page>
-      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <ResourceToolbar
         title="Categories"
         primaryLabel="Add"

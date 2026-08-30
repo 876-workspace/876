@@ -21,7 +21,7 @@ export const retrieve = (tenantId: string, requestId: string, taskId: string) =>
 
 export const create = (params: CreateTaskParams) =>
   prisma.requestTask.create({
-    data: { id: `crm_task_${randomUUID().replaceAll('-', '')}`, ...params },
+    data: { id: `task_${randomUUID().replaceAll('-', '')}`, ...params },
     include: { priority: true },
   })
 

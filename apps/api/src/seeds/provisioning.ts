@@ -169,24 +169,28 @@ export const FINANCE_BOOTSTRAP_STEPS: StepDef[] = [
 const CRM_BOOTSTRAP_RESOURCES: ResourceDef[] = [
   resourceDef('request_priority', 'low', 10, [
     stringProp('name', 'Low'),
+    stringProp('color', 'blue'),
     integerProp('weight', 10),
     integerProp('sortOrder', 10),
     booleanProp('isDefault', false),
   ]),
   resourceDef('request_priority', 'normal', 20, [
     stringProp('name', 'Normal'),
+    stringProp('color', 'slate'),
     integerProp('weight', 20),
     integerProp('sortOrder', 20),
     booleanProp('isDefault', true),
   ]),
   resourceDef('request_priority', 'high', 30, [
     stringProp('name', 'High'),
+    stringProp('color', 'amber'),
     integerProp('weight', 30),
     integerProp('sortOrder', 30),
     booleanProp('isDefault', false),
   ]),
   resourceDef('request_priority', 'urgent', 40, [
     stringProp('name', 'Urgent'),
+    stringProp('color', 'red'),
     integerProp('weight', 40),
     integerProp('sortOrder', 40),
     booleanProp('isDefault', false),

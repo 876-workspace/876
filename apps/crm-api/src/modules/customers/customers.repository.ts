@@ -24,7 +24,7 @@ export async function ensureMany(
 
   await prisma.customerProfile.createMany({
     data: billingCustomerIds.map((billingCustomerId) => ({
-      id: `crm_cus_${randomUUID().replaceAll('-', '')}`,
+      id: `cus_${randomUUID().replaceAll('-', '')}`,
       tenantId,
       billingCustomerId,
       ownerId: null,
@@ -56,7 +56,7 @@ export function create(params: {
 }) {
   return prisma.customerProfile.create({
     data: {
-      id: `crm_cus_${randomUUID().replaceAll('-', '')}`,
+      id: `cus_${randomUUID().replaceAll('-', '')}`,
       tenantId: params.tenantId,
       billingCustomerId: params.billingCustomerId,
       ownerId: params.ownerId ?? null,

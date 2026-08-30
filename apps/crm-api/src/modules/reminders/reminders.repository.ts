@@ -23,7 +23,7 @@ export const retrieve = (
 
 export const create = (params: CreateParams) =>
   prisma.requestReminder.create({
-    data: { id: `crm_rem_${randomUUID().replaceAll('-', '')}`, ...params },
+    data: { id: `rem_${randomUUID().replaceAll('-', '')}`, ...params },
   })
 
 export const update = (reminderId: string, params: UpdateParams) =>

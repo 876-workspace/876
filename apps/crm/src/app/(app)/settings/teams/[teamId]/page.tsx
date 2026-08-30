@@ -5,7 +5,7 @@ import { AppError } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 import { buttonVariants } from '@876/ui/button'
 import { Pencil } from '@876/ui/icons'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 
 import type { DirectoryMember } from '@/features/directory/types'
 import { get876Client } from '@/lib/876'
@@ -31,7 +31,6 @@ export default async function TeamPage({ params }: Props) {
   if (teamResult.error)
     return (
       <Page>
-        <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
         <h1 className="876-page-title mb-4">Team</h1>
         <AppError title="Team details are temporarily unavailable" error={teamResult.error} variant="banner" />
       </Page>
@@ -65,7 +64,6 @@ export default async function TeamPage({ params }: Props) {
 
   return (
     <Page>
-      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <header className="mb-6 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <h1 className="876-page-title truncate">{teamResult.data.name}</h1>

@@ -9,7 +9,12 @@ import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 export const loadCrmContext = cache(requireCrmContext)
 
-export type RequestDepartment = { id: string; name: string }
+/**
+ * A CRM team. `request.teamId` references `crm.Team`, not a platform
+ * organization department — the two are different records with different ids,
+ * so a department id sent as `teamId` fails the API's `teamExists` check.
+ */
+export type RequestTeam = { id: string; name: string; color: string | null }
 
 export const loadRequest = cache(async (requestId: string) => {
   const context = await loadCrmContext()
@@ -23,12 +28,16 @@ export const loadRequest = cache(async (requestId: string) => {
 export const loadDirectory = cache(async () => {
   const context = await loadCrmContext()
   const $876 = await get876Client()
-  const [departmentsResult, membersResult] = await Promise.all([
-    $876.departments.list(context.orgId),
+  const [teamsResult, membersResult] = await Promise.all([
+    $876.teams.list(context.orgId, { status: 'ACTIVE' }),
     $876.organizationMembers.list(context.orgId),
   ])
-  const departments: RequestDepartment[] =
-    departmentsResult.data?.data.map((d) => ({ id: d.id, name: d.name })) ?? []
+  const teams: RequestTeam[] =
+    teamsResult.data?.data.map((team) => ({
+      id: team.id,
+      name: team.name,
+      color: team.color,
+    })) ?? []
   const members: DirectoryMember[] =
     membersResult.data?.data.map((m) => {
       const nameParts = [m.first_name, m.last_name].filter(Boolean)
@@ -43,9 +52,9 @@ export const loadDirectory = cache(async () => {
     }) ?? []
 
   return {
-    departments,
+    teams,
     members,
-    departmentsError: departmentsResult.error,
+    teamsError: teamsResult.error,
     membersError: membersResult.error,
   }
 })

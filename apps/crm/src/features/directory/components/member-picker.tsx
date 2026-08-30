@@ -2,18 +2,16 @@
 
 import { useMemo, useState } from 'react'
 
-import { Button } from '@876/ui/button'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@876/ui/command'
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@876/ui/combobox'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { CheckIcon, ChevronsUpDown, UserIcon } from '@876/ui/icons'
-import { Popover, PopoverContent, PopoverTrigger } from '@876/ui/popover'
+import { UserIcon } from '@876/ui/icons'
 
 import type { DirectoryMember } from '../types'
 
@@ -27,6 +25,29 @@ type Props = {
   allowUnassigned?: boolean
 }
 
+/**
+ * Above this many selectable people the list stays closed until a query is
+ * typed. Below it, listing everyone is faster than making someone type to find
+ * one of a handful of names.
+ */
+const BROWSE_LIMIT = 8
+
+/** Never render more than this many rows at once, however broad the query. */
+const RESULT_LIMIT = 50
+
+const UNASSIGNED_ID = '__unassigned__'
+
+const UNASSIGNED_OPTION: DirectoryMember = {
+  userId: UNASSIGNED_ID,
+  name: 'Unassigned',
+  email: null,
+  avatar: null,
+}
+
+function memberLabel(member: DirectoryMember) {
+  return member.email ? `${member.name} ${member.email}` : member.name
+}
+
 export function MemberPicker({
   members,
   value,
@@ -36,115 +57,106 @@ export function MemberPicker({
   emptyLabel,
   allowUnassigned = false,
 }: Props) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
   const excluded = useMemo(() => new Set(exclude), [exclude])
-  const visibleMembers = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase()
 
-    return members.filter((member) => {
-      if (excluded.has(member.userId)) return false
-      if (!normalizedQuery) return true
+  const selectable = useMemo(
+    () => members.filter((member) => !excluded.has(member.userId)),
+    [excluded, members]
+  )
 
-      return `${member.name} ${member.email ?? ''}`
-        .toLocaleLowerCase()
-        .includes(normalizedQuery)
-    })
-  }, [excluded, members, query])
-  const selectedMember = members.find((member) => member.userId === value)
+  const items = useMemo(
+    () => (allowUnassigned ? [UNASSIGNED_OPTION, ...selectable] : selectable),
+    [allowUnassigned, selectable]
+  )
 
-  function select(userId: string | null) {
-    onSelect(userId)
-    setOpen(false)
-    setQuery('')
-  }
+  const searchFirst = selectable.length > BROWSE_LIMIT
+
+  const selected = useMemo(() => {
+    if (value === null) return allowUnassigned ? UNASSIGNED_OPTION : null
+    return items.find((member) => member.userId === value) ?? null
+  }, [allowUnassigned, items, value])
+
+  const [inputValue, setInputValue] = useState('')
+
+  // Once an item is selected the input holds its label, which would otherwise
+  // filter the list down to that one row when the popup is reopened.
+  const query =
+    selected && inputValue === selected.name ? '' : inputValue.trim()
+
+  const visibleItems = useMemo(() => {
+    const normalized = query.toLocaleLowerCase()
+
+    if (!normalized) {
+      // The list stays closed on a large directory until there is a query, but
+      // "Unassigned" is an action rather than a person, so it stays reachable.
+      if (searchFirst) return allowUnassigned ? [UNASSIGNED_OPTION] : []
+      return items
+    }
+
+    return selectable
+      .filter((member) =>
+        memberLabel(member).toLocaleLowerCase().includes(normalized)
+      )
+      .slice(0, RESULT_LIMIT)
+  }, [allowUnassigned, items, query, searchFirst, selectable])
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={<Button type="button" variant="outline" />}
-        className="w-full justify-between font-normal"
+    <Combobox
+      items={visibleItems}
+      value={selected}
+      onValueChange={(next) => {
+        const member = next as DirectoryMember | null
+        if (!member || member.userId === UNASSIGNED_ID) {
+          onSelect(null)
+          return
+        }
+        onSelect(member.userId)
+      }}
+      itemToStringLabel={(member: DirectoryMember) => member.name}
+      isItemEqualToValue={(a: DirectoryMember, b: DirectoryMember) =>
+        a.userId === b.userId
+      }
+      filter={null}
+      onInputValueChange={(next) => setInputValue(next)}
+    >
+      <ComboboxInput
+        placeholder={
+          searchFirst ? `Search ${selectable.length} people` : placeholder
+        }
         aria-label={placeholder}
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          {selectedMember ? (
-            <CustomerAvatar
-              name={selectedMember.name}
-              src={selectedMember.avatar}
-            />
-          ) : null}
-          <span
-            className={selectedMember ? 'truncate' : 'text-muted-foreground'}
-          >
-            {selectedMember?.name ??
-              (value === null && allowUnassigned ? 'Unassigned' : placeholder)}
-          </span>
-        </span>
-        <ChevronsUpDown className="text-muted-foreground size-4" />
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-(--anchor-width) min-w-72 gap-0 p-0"
-      >
-        <Command shouldFilter={false}>
-          <CommandInput
-            value={query}
-            onValueChange={setQuery}
-            placeholder={placeholder}
-          />
-          <CommandList>
-            {visibleMembers.length === 0 ? (
-              <CommandEmpty>{emptyLabel}</CommandEmpty>
-            ) : null}
-            <CommandGroup>
-              {allowUnassigned ? (
-                <CommandItem
-                  value="unassigned"
-                  data-checked={value === null}
-                  onSelect={() => select(null)}
-                >
-                  <span className="bg-muted flex size-6 shrink-0 items-center justify-center rounded-md">
-                    <UserIcon className="text-muted-foreground size-3.5" />
+      />
+
+      <ComboboxContent>
+        <ComboboxEmpty>
+          {searchFirst
+            ? `Type to search ${selectable.length} people`
+            : emptyLabel}
+        </ComboboxEmpty>
+        <ComboboxList>
+          {(member: DirectoryMember) =>
+            member.userId === UNASSIGNED_ID ? (
+              <ComboboxItem key={member.userId} value={member}>
+                <span className="bg-muted flex size-6 shrink-0 items-center justify-center rounded-md">
+                  <UserIcon className="text-muted-foreground size-3.5" />
+                </span>
+                <span>Unassigned</span>
+              </ComboboxItem>
+            ) : (
+              <ComboboxItem key={member.userId} value={member}>
+                <CustomerAvatar name={member.name} src={member.avatar} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">
+                    {member.name}
                   </span>
-                  <span>Unassigned</span>
-                  <CheckIcon
-                    className={
-                      value === null
-                        ? 'ml-auto size-4'
-                        : 'ml-auto size-4 opacity-0'
-                    }
-                  />
-                </CommandItem>
-              ) : null}
-              {visibleMembers.map((member) => (
-                <CommandItem
-                  key={member.userId}
-                  value={member.userId}
-                  data-checked={value === member.userId}
-                  onSelect={() => select(member.userId)}
-                >
-                  <CustomerAvatar name={member.name} src={member.avatar} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">
-                      {member.name}
-                    </span>
-                    <span className="text-muted-foreground block truncate text-xs">
-                      {member.email ?? '—'}
-                    </span>
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {member.email ?? '—'}
                   </span>
-                  <CheckIcon
-                    className={
-                      value === member.userId
-                        ? 'ml-auto size-4'
-                        : 'ml-auto size-4 opacity-0'
-                    }
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                </span>
+              </ComboboxItem>
+            )
+          }
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   )
 }
