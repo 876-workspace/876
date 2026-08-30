@@ -28,11 +28,18 @@ export const workTaskStatusSchema = z.enum([
 ])
 export type WorkTaskStatus = z.infer<typeof workTaskStatusSchema>
 
-export const workTaskImportanceSchema = z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT'])
+export const workTaskImportanceSchema = z.enum([
+  'LOW',
+  'NORMAL',
+  'HIGH',
+  'URGENT',
+])
 export type WorkTaskImportance = z.infer<typeof workTaskImportanceSchema>
 
 export const workAssignmentTargetTypeSchema = z.enum(['USER', 'TEAM'])
-export type WorkAssignmentTargetType = z.infer<typeof workAssignmentTargetTypeSchema>
+export type WorkAssignmentTargetType = z.infer<
+  typeof workAssignmentTargetTypeSchema
+>
 
 export const workAssignmentRoleSchema = z.enum([
   'OWNER',
@@ -64,9 +71,19 @@ export const workRecurrenceFrequencySchema = z.enum([
   'MONTHLY',
   'YEARLY',
 ])
-export type WorkRecurrenceFrequency = z.infer<typeof workRecurrenceFrequencySchema>
+export type WorkRecurrenceFrequency = z.infer<
+  typeof workRecurrenceFrequencySchema
+>
 
-export const workWeekdaySchema = z.enum(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'])
+export const workWeekdaySchema = z.enum([
+  'MO',
+  'TU',
+  'WE',
+  'TH',
+  'FR',
+  'SA',
+  'SU',
+])
 export type WorkWeekday = z.infer<typeof workWeekdaySchema>
 
 export const workAlertTriggerTypeSchema = z.enum(['ABSOLUTE', 'RELATIVE'])
@@ -80,10 +97,18 @@ export const workAlertStatusSchema = z.enum([
 
 export const workCalendarVisibilitySchema = z.enum(['PRIVATE', 'ORGANIZATION'])
 export const workCalendarRoleSchema = z.enum(['OWNER', 'EDITOR', 'VIEWER'])
-export const workEventStatusSchema = z.enum(['CONFIRMED', 'TENTATIVE', 'CANCELLED'])
+export const workEventStatusSchema = z.enum([
+  'CONFIRMED',
+  'TENTATIVE',
+  'CANCELLED',
+])
 export const workEventBusyStatusSchema = z.enum(['BUSY', 'FREE'])
 export const workParticipantKindSchema = z.enum(['USER', 'EMAIL'])
-export const workParticipantRoleSchema = z.enum(['CHAIR', 'REQUIRED', 'OPTIONAL'])
+export const workParticipantRoleSchema = z.enum([
+  'CHAIR',
+  'REQUIRED',
+  'OPTIONAL',
+])
 export const workParticipantStatusSchema = z.enum([
   'NEEDS_ACTION',
   'ACCEPTED',
@@ -173,7 +198,14 @@ export const workRecurrenceRuleSchema = z.object({
   frequency: workRecurrenceFrequencySchema,
   interval: z.number().int().min(1),
   byDay: z.array(workWeekdaySchema),
-  byMonthDay: z.array(z.number().int().min(-31).max(31).refine((value) => value !== 0)),
+  byMonthDay: z.array(
+    z
+      .number()
+      .int()
+      .min(-31)
+      .max(31)
+      .refine((value) => value !== 0)
+  ),
   byMonth: z.array(z.number().int().min(1).max(12)),
   count: z.number().int().min(1).nullable(),
   untilAt: unixSchema.nullable(),
@@ -220,15 +252,36 @@ export const workTaskSchema = z.object({
 export type WorkTask = z.infer<typeof workTaskSchema>
 
 function validateTimePair(
-  value: { startAt?: number | null; startTimeZone?: string | null; dueAt?: number | null; dueTimeZone?: string | null },
+  value: {
+    startAt?: number | null
+    startTimeZone?: string | null
+    dueAt?: number | null
+    dueTimeZone?: string | null
+  },
   context: z.RefinementCtx
 ) {
   if ((value.startAt == null) !== (value.startTimeZone == null))
-    context.addIssue({ code: 'custom', path: ['startAt'], message: 'startAt and startTimeZone must be supplied together.' })
+    context.addIssue({
+      code: 'custom',
+      path: ['startAt'],
+      message: 'startAt and startTimeZone must be supplied together.',
+    })
   if ((value.dueAt == null) !== (value.dueTimeZone == null))
-    context.addIssue({ code: 'custom', path: ['dueAt'], message: 'dueAt and dueTimeZone must be supplied together.' })
-  if (value.startAt != null && value.dueAt != null && value.dueAt < value.startAt)
-    context.addIssue({ code: 'custom', path: ['dueAt'], message: 'dueAt cannot be before startAt.' })
+    context.addIssue({
+      code: 'custom',
+      path: ['dueAt'],
+      message: 'dueAt and dueTimeZone must be supplied together.',
+    })
+  if (
+    value.startAt != null &&
+    value.dueAt != null &&
+    value.dueAt < value.startAt
+  )
+    context.addIssue({
+      code: 'custom',
+      path: ['dueAt'],
+      message: 'dueAt cannot be before startAt.',
+    })
 }
 
 export const createWorkTaskInputSchema = z
@@ -276,7 +329,9 @@ export const updateWorkTaskInputSchema = z
     sortOrder: z.number().int().optional(),
     completedBy: idSchema.optional().nullable(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
 export type UpdateWorkTaskInput = z.infer<typeof updateWorkTaskInputSchema>
 
 export const createWorkTaskListInputSchema = z.strictObject({
@@ -286,7 +341,9 @@ export const createWorkTaskListInputSchema = z.strictObject({
   sortOrder: z.number().int().optional(),
   createdBy: idSchema,
 })
-export type CreateWorkTaskListInput = z.infer<typeof createWorkTaskListInputSchema>
+export type CreateWorkTaskListInput = z.infer<
+  typeof createWorkTaskListInputSchema
+>
 
 export const updateWorkTaskListInputSchema = z
   .strictObject({
@@ -294,8 +351,12 @@ export const updateWorkTaskListInputSchema = z
     description: longTextSchema.optional().nullable(),
     sortOrder: z.number().int().optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkTaskListInput = z.infer<typeof updateWorkTaskListInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+export type UpdateWorkTaskListInput = z.infer<
+  typeof updateWorkTaskListInputSchema
+>
 
 export const createWorkTaskLinkInputSchema = z.strictObject({
   service: idSchema,
@@ -305,7 +366,9 @@ export const createWorkTaskLinkInputSchema = z.strictObject({
   url: z.url().optional().nullable(),
   isPrimary: z.boolean().optional(),
 })
-export type CreateWorkTaskLinkInput = z.infer<typeof createWorkTaskLinkInputSchema>
+export type CreateWorkTaskLinkInput = z.infer<
+  typeof createWorkTaskLinkInputSchema
+>
 
 export const createWorkTaskAssignmentInputSchema = z.strictObject({
   targetType: workAssignmentTargetTypeSchema,
@@ -315,37 +378,75 @@ export const createWorkTaskAssignmentInputSchema = z.strictObject({
   assignedBy: idSchema,
   delegatedFromAssignmentId: idSchema.optional().nullable(),
 })
-export type CreateWorkTaskAssignmentInput = z.infer<typeof createWorkTaskAssignmentInputSchema>
+export type CreateWorkTaskAssignmentInput = z.infer<
+  typeof createWorkTaskAssignmentInputSchema
+>
 
 export const updateWorkTaskAssignmentInputSchema = z
   .strictObject({
     role: workAssignmentRoleSchema.optional(),
     status: workAssignmentStatusSchema.optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkTaskAssignmentInput = z.infer<typeof updateWorkTaskAssignmentInputSchema>
-
-export const createWorkRecurrenceRuleInputSchema = z
-  .strictObject({
-    frequency: workRecurrenceFrequencySchema,
-    interval: z.number().int().min(1).optional(),
-    byDay: z.array(workWeekdaySchema).optional(),
-    byMonthDay: z.array(z.number().int().min(-31).max(31).refine((value) => value !== 0)).optional(),
-    byMonth: z.array(z.number().int().min(1).max(12)).optional(),
-    count: z.number().int().min(1).optional().nullable(),
-    untilAt: unixSchema.optional().nullable(),
-    timeZone: timeZoneSchema,
-    weekStart: workWeekdaySchema.optional().nullable(),
-    createdBy: idSchema,
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
   })
-  .refine((value) => !(value.count != null && value.untilAt != null), { message: 'count and untilAt are mutually exclusive.' })
-export type CreateWorkRecurrenceRuleInput = z.infer<typeof createWorkRecurrenceRuleInputSchema>
+export type UpdateWorkTaskAssignmentInput = z.infer<
+  typeof updateWorkTaskAssignmentInputSchema
+>
 
-export const updateWorkRecurrenceRuleInputSchema = createWorkRecurrenceRuleInputSchema
+/**
+ * The unrefined recurrence shape. Both the create and update contracts derive
+ * from it, because `.omit()` is unavailable on a schema that already carries a
+ * refinement.
+ */
+const workRecurrenceRuleShapeSchema = z.strictObject({
+  frequency: workRecurrenceFrequencySchema,
+  interval: z.number().int().min(1).optional(),
+  byDay: z.array(workWeekdaySchema).optional(),
+  byMonthDay: z
+    .array(
+      z
+        .number()
+        .int()
+        .min(-31)
+        .max(31)
+        .refine((value) => value !== 0)
+    )
+    .optional(),
+  byMonth: z.array(z.number().int().min(1).max(12)).optional(),
+  count: z.number().int().min(1).optional().nullable(),
+  untilAt: unixSchema.optional().nullable(),
+  timeZone: timeZoneSchema,
+  weekStart: workWeekdaySchema.optional().nullable(),
+  createdBy: idSchema,
+})
+
+const COUNT_AND_UNTIL_ARE_EXCLUSIVE = {
+  message: 'count and untilAt are mutually exclusive.',
+} as const
+
+export const createWorkRecurrenceRuleInputSchema =
+  workRecurrenceRuleShapeSchema.refine(
+    (value) => !(value.count != null && value.untilAt != null),
+    COUNT_AND_UNTIL_ARE_EXCLUSIVE
+  )
+export type CreateWorkRecurrenceRuleInput = z.infer<
+  typeof createWorkRecurrenceRuleInputSchema
+>
+
+export const updateWorkRecurrenceRuleInputSchema = workRecurrenceRuleShapeSchema
   .omit({ createdBy: true })
   .partial()
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkRecurrenceRuleInput = z.infer<typeof updateWorkRecurrenceRuleInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+  .refine(
+    (value) => !(value.count != null && value.untilAt != null),
+    COUNT_AND_UNTIL_ARE_EXCLUSIVE
+  )
+export type UpdateWorkRecurrenceRuleInput = z.infer<
+  typeof updateWorkRecurrenceRuleInputSchema
+>
 
 export const workReminderSchema = z.object({
   object: z.literal('reminder'),
@@ -378,7 +479,9 @@ export const createWorkReminderInputSchema = z.strictObject({
   status: workReminderStatusSchema.optional(),
   createdBy: idSchema,
 })
-export type CreateWorkReminderInput = z.infer<typeof createWorkReminderInputSchema>
+export type CreateWorkReminderInput = z.infer<
+  typeof createWorkReminderInputSchema
+>
 
 export const updateWorkReminderInputSchema = z
   .strictObject({
@@ -391,8 +494,12 @@ export const updateWorkReminderInputSchema = z
     userId: idSchema.optional(),
     status: workReminderStatusSchema.optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkReminderInput = z.infer<typeof updateWorkReminderInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+export type UpdateWorkReminderInput = z.infer<
+  typeof updateWorkReminderInputSchema
+>
 
 export const workAlertSchema = z.object({
   object: z.literal('alert'),
@@ -427,10 +534,20 @@ export const createWorkAlertInputSchema = z
   })
   .superRefine((value, context) => {
     if (Number(Boolean(value.taskId)) + Number(Boolean(value.eventId)) !== 1)
-      context.addIssue({ code: 'custom', message: 'Exactly one of taskId or eventId is required.' })
+      context.addIssue({
+        code: 'custom',
+        message: 'Exactly one of taskId or eventId is required.',
+      })
     const absolute = value.triggerType === 'ABSOLUTE'
-    if (absolute !== (value.triggerAt != null) || absolute === (value.offsetSeconds != null))
-      context.addIssue({ code: 'custom', message: 'Absolute alerts require triggerAt; relative alerts require offsetSeconds.' })
+    if (
+      absolute !== (value.triggerAt != null) ||
+      absolute === (value.offsetSeconds != null)
+    )
+      context.addIssue({
+        code: 'custom',
+        message:
+          'Absolute alerts require triggerAt; relative alerts require offsetSeconds.',
+      })
   })
 export type CreateWorkAlertInput = z.infer<typeof createWorkAlertInputSchema>
 
@@ -442,7 +559,9 @@ export const updateWorkAlertInputSchema = z
     action: workAlertActionSchema.optional(),
     status: workAlertStatusSchema.optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
 export type UpdateWorkAlertInput = z.infer<typeof updateWorkAlertInputSchema>
 
 export const workCalendarSchema = z.object({
@@ -470,7 +589,9 @@ export const createWorkCalendarInputSchema = z.strictObject({
   visibility: workCalendarVisibilitySchema.optional(),
   createdBy: idSchema,
 })
-export type CreateWorkCalendarInput = z.infer<typeof createWorkCalendarInputSchema>
+export type CreateWorkCalendarInput = z.infer<
+  typeof createWorkCalendarInputSchema
+>
 
 export const updateWorkCalendarInputSchema = z
   .strictObject({
@@ -479,8 +600,12 @@ export const updateWorkCalendarInputSchema = z
     timeZone: timeZoneSchema.optional(),
     visibility: workCalendarVisibilitySchema.optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkCalendarInput = z.infer<typeof updateWorkCalendarInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+export type UpdateWorkCalendarInput = z.infer<
+  typeof updateWorkCalendarInputSchema
+>
 
 export const workCalendarSubscriptionSchema = z.object({
   object: z.literal('calendar_subscription'),
@@ -495,7 +620,9 @@ export const workCalendarSubscriptionSchema = z.object({
   createdAt: unixSchema,
   updatedAt: unixSchema,
 })
-export type WorkCalendarSubscription = z.infer<typeof workCalendarSubscriptionSchema>
+export type WorkCalendarSubscription = z.infer<
+  typeof workCalendarSubscriptionSchema
+>
 
 export const createWorkCalendarSubscriptionInputSchema = z.strictObject({
   userId: idSchema,
@@ -504,13 +631,20 @@ export const createWorkCalendarSubscriptionInputSchema = z.strictObject({
   isVisible: z.boolean().optional(),
   defaultReminderMinutes: z.array(z.number().int().min(0)).optional(),
 })
-export type CreateWorkCalendarSubscriptionInput = z.infer<typeof createWorkCalendarSubscriptionInputSchema>
+export type CreateWorkCalendarSubscriptionInput = z.infer<
+  typeof createWorkCalendarSubscriptionInputSchema
+>
 
-export const updateWorkCalendarSubscriptionInputSchema = createWorkCalendarSubscriptionInputSchema
-  .omit({ userId: true })
-  .partial()
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkCalendarSubscriptionInput = z.infer<typeof updateWorkCalendarSubscriptionInputSchema>
+export const updateWorkCalendarSubscriptionInputSchema =
+  createWorkCalendarSubscriptionInputSchema
+    .omit({ userId: true })
+    .partial()
+    .refine((value) => Object.keys(value).length > 0, {
+      message: 'Provide at least one field to update.',
+    })
+export type UpdateWorkCalendarSubscriptionInput = z.infer<
+  typeof updateWorkCalendarSubscriptionInputSchema
+>
 
 export const workEventParticipantSchema = z.object({
   object: z.literal('event_participant'),
@@ -542,12 +676,20 @@ export const createWorkEventParticipantInputSchema = z
     delegatedFrom: idSchema.optional().nullable(),
   })
   .superRefine((value, context) => {
-    const userShape = value.kind === 'USER' && Boolean(value.participantId) && !value.email
-    const emailShape = value.kind === 'EMAIL' && !value.participantId && Boolean(value.email)
+    const userShape =
+      value.kind === 'USER' && Boolean(value.participantId) && !value.email
+    const emailShape =
+      value.kind === 'EMAIL' && !value.participantId && Boolean(value.email)
     if (!userShape && !emailShape)
-      context.addIssue({ code: 'custom', message: 'USER participants require participantId; EMAIL participants require email.' })
+      context.addIssue({
+        code: 'custom',
+        message:
+          'USER participants require participantId; EMAIL participants require email.',
+      })
   })
-export type CreateWorkEventParticipantInput = z.infer<typeof createWorkEventParticipantInputSchema>
+export type CreateWorkEventParticipantInput = z.infer<
+  typeof createWorkEventParticipantInputSchema
+>
 
 export const updateWorkEventParticipantInputSchema = z
   .strictObject({
@@ -557,8 +699,12 @@ export const updateWorkEventParticipantInputSchema = z
     delegatedTo: idSchema.optional().nullable(),
     delegatedFrom: idSchema.optional().nullable(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkEventParticipantInput = z.infer<typeof updateWorkEventParticipantInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+export type UpdateWorkEventParticipantInput = z.infer<
+  typeof updateWorkEventParticipantInputSchema
+>
 
 export const workEventSchema = z.object({
   object: z.literal('event'),
@@ -599,17 +745,27 @@ const eventBaseInputSchema = z.strictObject({
 })
 
 export const createWorkEventInputSchema = z.union([
-  eventBaseInputSchema.extend({
-    allDay: z.literal(false),
-    startAt: unixSchema,
-    endAt: unixSchema,
-    timeZone: timeZoneSchema,
-  }).refine((value) => value.endAt > value.startAt, { path: ['endAt'], message: 'endAt must be after startAt.' }),
-  eventBaseInputSchema.extend({
-    allDay: z.literal(true),
-    startDate: dateOnlySchema,
-    endDate: dateOnlySchema,
-  }).refine((value) => value.endDate > value.startDate, { path: ['endDate'], message: 'endDate must be after startDate.' }),
+  eventBaseInputSchema
+    .extend({
+      allDay: z.literal(false),
+      startAt: unixSchema,
+      endAt: unixSchema,
+      timeZone: timeZoneSchema,
+    })
+    .refine((value) => value.endAt > value.startAt, {
+      path: ['endAt'],
+      message: 'endAt must be after startAt.',
+    }),
+  eventBaseInputSchema
+    .extend({
+      allDay: z.literal(true),
+      startDate: dateOnlySchema,
+      endDate: dateOnlySchema,
+    })
+    .refine((value) => value.endDate > value.startDate, {
+      path: ['endDate'],
+      message: 'endDate must be after startDate.',
+    }),
 ])
 export type CreateWorkEventInput = z.infer<typeof createWorkEventInputSchema>
 
@@ -630,7 +786,9 @@ export const updateWorkEventInputSchema = z
     recurrenceRuleId: idSchema.optional().nullable(),
     recurrenceId: idSchema.optional().nullable(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
 export type UpdateWorkEventInput = z.infer<typeof updateWorkEventInputSchema>
 
 export const workSyncConnectionSchema = z.object({
@@ -660,7 +818,9 @@ export const createWorkSyncConnectionInputSchema = z.strictObject({
   remoteAccountLabel: z.string().trim().max(240).optional().nullable(),
   caldavUrl: z.url().optional().nullable(),
 })
-export type CreateWorkSyncConnectionInput = z.infer<typeof createWorkSyncConnectionInputSchema>
+export type CreateWorkSyncConnectionInput = z.infer<
+  typeof createWorkSyncConnectionInputSchema
+>
 
 export const updateWorkSyncConnectionInputSchema = z
   .strictObject({
@@ -672,8 +832,12 @@ export const updateWorkSyncConnectionInputSchema = z
     syncCursor: z.string().optional().nullable(),
     lastErrorCode: z.string().optional().nullable(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkSyncConnectionInput = z.infer<typeof updateWorkSyncConnectionInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+export type UpdateWorkSyncConnectionInput = z.infer<
+  typeof updateWorkSyncConnectionInputSchema
+>
 
 export const workSyncMappingSchema = z.object({
   object: z.literal('sync_mapping'),
@@ -699,7 +863,9 @@ export const createWorkSyncMappingInputSchema = z.strictObject({
   iCalUid: z.string().optional().nullable(),
   contentHash: z.string().optional().nullable(),
 })
-export type CreateWorkSyncMappingInput = z.infer<typeof createWorkSyncMappingInputSchema>
+export type CreateWorkSyncMappingInput = z.infer<
+  typeof createWorkSyncMappingInputSchema
+>
 
 export const updateWorkSyncMappingInputSchema = z
   .strictObject({
@@ -708,8 +874,12 @@ export const updateWorkSyncMappingInputSchema = z
     iCalUid: z.string().optional().nullable(),
     contentHash: z.string().optional().nullable(),
   })
-  .refine((value) => Object.keys(value).length > 0, { message: 'Provide at least one field to update.' })
-export type UpdateWorkSyncMappingInput = z.infer<typeof updateWorkSyncMappingInputSchema>
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+export type UpdateWorkSyncMappingInput = z.infer<
+  typeof updateWorkSyncMappingInputSchema
+>
 
 export const workCalendarExportSchema = z.object({
   object: z.literal('calendar_export'),
@@ -727,7 +897,9 @@ export const createWorkCalendarExportInputSchema = z.strictObject({
   includeTasks: z.boolean().optional(),
   includeEvents: z.boolean().optional(),
 })
-export type CreateWorkCalendarExportInput = z.infer<typeof createWorkCalendarExportInputSchema>
+export type CreateWorkCalendarExportInput = z.infer<
+  typeof createWorkCalendarExportInputSchema
+>
 
 export function workListSchema<T extends z.ZodTypeAny>(item: T) {
   return z.object({
@@ -741,16 +913,28 @@ export function workListSchema<T extends z.ZodTypeAny>(item: T) {
 
 export const workTaskListSchema = workListSchema(workTaskSchema)
 export const workReminderListSchema = workListSchema(workReminderSchema)
-export const workTaskListResourceListSchema = workListSchema(workTaskListResourceSchema)
+export const workTaskListResourceListSchema = workListSchema(
+  workTaskListResourceSchema
+)
 export const workTaskLinkListSchema = workListSchema(workTaskLinkSchema)
-export const workTaskAssignmentListSchema = workListSchema(workTaskAssignmentSchema)
-export const workRecurrenceRuleListSchema = workListSchema(workRecurrenceRuleSchema)
+export const workTaskAssignmentListSchema = workListSchema(
+  workTaskAssignmentSchema
+)
+export const workRecurrenceRuleListSchema = workListSchema(
+  workRecurrenceRuleSchema
+)
 export const workAlertListSchema = workListSchema(workAlertSchema)
 export const workCalendarListSchema = workListSchema(workCalendarSchema)
-export const workCalendarSubscriptionListSchema = workListSchema(workCalendarSubscriptionSchema)
+export const workCalendarSubscriptionListSchema = workListSchema(
+  workCalendarSubscriptionSchema
+)
 export const workEventListSchema = workListSchema(workEventSchema)
-export const workEventParticipantListSchema = workListSchema(workEventParticipantSchema)
-export const workSyncConnectionListSchema = workListSchema(workSyncConnectionSchema)
+export const workEventParticipantListSchema = workListSchema(
+  workEventParticipantSchema
+)
+export const workSyncConnectionListSchema = workListSchema(
+  workSyncConnectionSchema
+)
 export const workSyncMappingListSchema = workListSchema(workSyncMappingSchema)
 
 export type WorkTaskListFilter = {
