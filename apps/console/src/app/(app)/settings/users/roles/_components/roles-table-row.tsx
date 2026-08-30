@@ -1,9 +1,13 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { cn } from '@876/core/utils'
 import type { RoleView } from '@/types/role'
 import { Badge } from '@876/ui/badge'
 import { TableCell, TableRow } from '@876/ui/table'
+
+const ROLE_BADGE_FALLBACK =
+  'border-purple-400/40 bg-purple-400/10 text-purple-700 dark:text-purple-400'
 
 const ROLE_BADGE: Record<string, string> = {
   super_admin:
@@ -14,28 +18,41 @@ const ROLE_BADGE: Record<string, string> = {
   user: 'border-slate-400/40 bg-slate-200/60 text-slate-700 dark:border-slate-500/40 dark:bg-slate-700/40 dark:text-slate-300',
 }
 
-export function RolesTableRow({ role }: { role: RoleView }) {
-  const router = useRouter()
-  const href = `/settings/users/roles/${role.name}`
-
+/**
+ * The role's name rendered as its colour-coded badge.
+ *
+ * The colour is the role's identity, so it stays with the role in every form
+ * of the list — the full table and the condensed sidebar alike. Dropping it
+ * when the list collapses would leave the two views naming the same role in
+ * two different visual languages.
+ */
+function RoleBadge({
+  role,
+  className,
+}: {
+  role: RoleView
+  className?: string
+}) {
   return (
-    <TableRow
-      className="hover:bg-muted/40 cursor-pointer transition-colors"
-      onClick={() => router.push(href)}
-      tabIndex={0}
-      role="link"
-      aria-label={`Edit ${role.displayName} role`}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') router.push(href)
-      }}
+    <span
+      className={cn(
+        'inline-flex max-w-full items-center truncate rounded-md border px-2 py-0.5 text-[0.8125rem] font-medium',
+        ROLE_BADGE[role.name] ?? ROLE_BADGE_FALLBACK,
+        className
+      )}
     >
-      <TableCell className="px-5 py-3.5">
+      {role.displayName}
+    </span>
+  )
+}
+
+export function RolesTableRow({ role }: { role: RoleView }) {
+  return (
+    <TableRow className="transition-colors">
+      <TableCell className="relative px-5 py-3.5">
+        <RoleLink role={role} />
         <div className="flex items-center gap-2.5">
-          <span
-            className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[0.8125rem] font-medium ${ROLE_BADGE[role.name] ?? 'border-purple-400/40 bg-purple-400/10 text-purple-700 dark:text-purple-400'}`}
-          >
-            {role.displayName}
-          </span>
+          <RoleBadge role={role} />
         </div>
         {role.description && (
           <p className="text-muted-foreground mt-0.5 truncate text-xs">
@@ -66,5 +83,40 @@ export function RolesTableRow({ role }: { role: RoleView }) {
         </span>
       </TableCell>
     </TableRow>
+  )
+}
+
+export function CondensedRolesTableRow({
+  role,
+  selected,
+}: {
+  role: RoleView
+  selected: boolean
+}) {
+  return (
+    <TableRow
+      data-state={selected ? 'selected' : undefined}
+      className={cn('transition-colors', selected && 'bg-muted/70 font-medium')}
+    >
+      <TableCell className="relative px-4 py-3">
+        <RoleLink role={role} />
+        <div className="min-w-0">
+          <RoleBadge role={role} className="text-xs" />
+          <p className="text-muted-foreground mt-1 truncate font-mono text-[0.6875rem]">
+            {role.name}
+          </p>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+}
+
+function RoleLink({ role }: { role: RoleView }) {
+  return (
+    <Link
+      href={`/settings/users/roles/${encodeURIComponent(role.name)}`}
+      aria-label={`Edit ${role.displayName} role`}
+      className="focus-visible:ring-ring absolute inset-0 z-10 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+    />
   )
 }
