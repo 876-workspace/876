@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { createRemindersResource } from './resources/reminders'
 import { createTasksResource } from './resources/tasks'
 import {
@@ -15,3 +17,5 @@ export function create876WorkOperatorClient(options: WorkOperatorClientOptions) 
     workspace: createWorkWorkspaceClient(runtime),
   }
 }
+
+export type { WorkOperatorClientOptions } from './runtime'

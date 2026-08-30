@@ -2,6 +2,9 @@ import { z } from 'zod'
 
 export const WORK_SERVICE_KEY = 'work' as const
 
+const titleSchema = z.string().trim().min(1).max(240)
+const longTextSchema = z.string().max(10_000)
+
 export const workContextSchema = z.strictObject({
   service: z.string().trim().min(1),
   resource: z.string().trim().min(1),
@@ -57,28 +60,32 @@ export type WorkTask = z.infer<typeof workTaskSchema>
 
 export const createWorkTaskInputSchema = z.strictObject({
   context: workContextSchema.optional().nullable(),
-  title: z.string().trim().min(1),
-  description: z.string().optional().nullable(),
+  title: titleSchema,
+  description: longTextSchema.optional().nullable(),
   status: workTaskStatusSchema.optional(),
-  priorityId: z.string().optional().nullable(),
-  assigneeId: z.string().optional().nullable(),
+  priorityId: z.string().trim().min(1).optional().nullable(),
+  assigneeId: z.string().trim().min(1).optional().nullable(),
   dueAt: z.number().int().optional().nullable(),
   sortOrder: z.number().int().optional(),
   createdBy: z.string().trim().min(1),
 })
 export type CreateWorkTaskInput = z.infer<typeof createWorkTaskInputSchema>
 
-export const updateWorkTaskInputSchema = z.strictObject({
-  context: workContextSchema.optional().nullable(),
-  title: z.string().trim().min(1).optional(),
-  description: z.string().optional().nullable(),
-  status: workTaskStatusSchema.optional(),
-  priorityId: z.string().optional().nullable(),
-  assigneeId: z.string().optional().nullable(),
-  dueAt: z.number().int().optional().nullable(),
-  sortOrder: z.number().int().optional(),
-  completedBy: z.string().optional().nullable(),
-})
+export const updateWorkTaskInputSchema = z
+  .strictObject({
+    context: workContextSchema.optional().nullable(),
+    title: titleSchema.optional(),
+    description: longTextSchema.optional().nullable(),
+    status: workTaskStatusSchema.optional(),
+    priorityId: z.string().trim().min(1).optional().nullable(),
+    assigneeId: z.string().trim().min(1).optional().nullable(),
+    dueAt: z.number().int().optional().nullable(),
+    sortOrder: z.number().int().optional(),
+    completedBy: z.string().trim().min(1).optional().nullable(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
 export type UpdateWorkTaskInput = z.infer<typeof updateWorkTaskInputSchema>
 
 export const workReminderSchema = z.object({
@@ -101,8 +108,8 @@ export type WorkReminder = z.infer<typeof workReminderSchema>
 
 export const createWorkReminderInputSchema = z.strictObject({
   context: workContextSchema.optional().nullable(),
-  title: z.string().trim().min(1),
-  note: z.string().optional().nullable(),
+  title: titleSchema,
+  note: longTextSchema.optional().nullable(),
   remindAt: z.number().int(),
   userId: z.string().trim().min(1),
   status: workReminderStatusSchema.optional(),
@@ -112,14 +119,18 @@ export type CreateWorkReminderInput = z.infer<
   typeof createWorkReminderInputSchema
 >
 
-export const updateWorkReminderInputSchema = z.strictObject({
-  context: workContextSchema.optional().nullable(),
-  title: z.string().trim().min(1).optional(),
-  note: z.string().optional().nullable(),
-  remindAt: z.number().int().optional(),
-  userId: z.string().trim().min(1).optional(),
-  status: workReminderStatusSchema.optional(),
-})
+export const updateWorkReminderInputSchema = z
+  .strictObject({
+    context: workContextSchema.optional().nullable(),
+    title: titleSchema.optional(),
+    note: longTextSchema.optional().nullable(),
+    remindAt: z.number().int().optional(),
+    userId: z.string().trim().min(1).optional(),
+    status: workReminderStatusSchema.optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
 export type UpdateWorkReminderInput = z.infer<
   typeof updateWorkReminderInputSchema
 >

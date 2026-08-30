@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   createWorkTaskInputSchema,
+  updateWorkReminderInputSchema,
+  updateWorkTaskInputSchema,
   workContextSchema,
   workTaskSchema,
 } from './types'
@@ -19,8 +21,8 @@ describe('Work foundation contracts', () => {
     ).toMatchObject({ title: 'Prepare rota', createdBy: 'user_1' })
   })
 
-  it('does not expose requestId as canonical Work task ownership', () => {
-    const result = workTaskSchema.safeParse({
+  it('strips no hidden request ownership into a canonical Work task', () => {
+    const result = workTaskSchema.parse({
       object: 'task',
       id: 'task_1',
       organizationId: 'org_1',
@@ -39,8 +41,27 @@ describe('Work foundation contracts', () => {
       createdAt: 1,
       updatedAt: 1,
     })
-    expect(result.success).toBe(true)
-    if (result.success)
-      expect('requestId' in result.data).toBe(false)
+    expect('requestId' in result).toBe(false)
+  })
+
+  it('rejects empty task and reminder patches', () => {
+    expect(updateWorkTaskInputSchema.safeParse({}).success).toBe(false)
+    expect(updateWorkReminderInputSchema.safeParse({}).success).toBe(false)
+  })
+
+  it('enforces the same current text bounds at the service boundary', () => {
+    expect(
+      createWorkTaskInputSchema.safeParse({
+        title: 'x'.repeat(241),
+        createdBy: 'user_1',
+      }).success
+    ).toBe(false)
+    expect(
+      createWorkTaskInputSchema.safeParse({
+        title: 'Task',
+        description: 'x'.repeat(10_001),
+        createdBy: 'user_1',
+      }).success
+    ).toBe(false)
   })
 })
