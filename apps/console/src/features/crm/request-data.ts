@@ -142,6 +142,11 @@ export const loadOrgReminders = cache(
   }
 )
 
+export const loadOrgEvents = cache(async (orgId: string, requestId: string) => {
+  const result = await $876.requestEvents.list(orgId, requestId)
+  return { events: result.data?.data ?? [], error: result.error }
+})
+
 export const resolveRequestOrgId = cache(
   async (organizationId?: string): Promise<string | null> => {
     if (organizationId) return organizationId
@@ -231,4 +236,10 @@ export const loadReminders = cache(async (requestId: string) => {
   const { org } = await loadPlatformRequestContext(requestId)
   if (!org) return { reminders: [], error: null }
   return loadOrgReminders(org.id, requestId)
+})
+
+export const loadEvents = cache(async (requestId: string) => {
+  const { org } = await loadPlatformRequestContext(requestId)
+  if (!org) return { events: [], error: null }
+  return loadOrgEvents(org.id, requestId)
 })
