@@ -15,7 +15,7 @@ import { buttonVariants } from '@876/ui/button'
 import Link from 'next/link'
 import { RolesTableRow } from '../_components/roles-table-row'
 import type { RoleView } from '@/types/role'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ROLES_SKELETON_COLUMNS } from '../_components/roles-skeleton-columns'
@@ -25,7 +25,6 @@ export const metadata = { title: 'Roles - Settings' }
 export default function RolesPermissionsPage() {
   return (
     <Page>
-      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="876-page-title">Roles</h1>
         <Link

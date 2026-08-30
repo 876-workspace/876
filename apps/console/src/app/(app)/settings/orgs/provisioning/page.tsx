@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Badge } from '@876/ui/badge'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   Table,
@@ -22,16 +22,13 @@ export const metadata = { title: 'Provisioning setups' }
 export default function ProvisioningSetupsPage() {
   return (
     <Page className="space-y-6">
-      <div>
-        <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
-        <ResourceToolbar
-          title="Provisioning setups"
-          primaryLabel="Add"
-          primaryHref="/settings/orgs/provisioning/new"
-          primaryVariant="info"
-          refresh
-        />
-      </div>
+      <ResourceToolbar
+        title="Provisioning setups"
+        primaryLabel="Add"
+        primaryHref="/settings/orgs/provisioning/new"
+        primaryVariant="info"
+        refresh
+      />
       <div className="border-border border-b pb-px">
         <ProvisioningNav />
       </div>

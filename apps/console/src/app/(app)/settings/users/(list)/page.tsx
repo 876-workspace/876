@@ -3,7 +3,7 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import Link from 'next/link'
 import { Plus } from '@876/ui/icons'
 import { buttonVariants } from '@876/ui/button'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 
 import {
   StatusFilterHeading,
@@ -48,7 +48,6 @@ export default async function TeamSettingsPage({ searchParams }: Props) {
 
   return (
     <Page>
-      <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <div className="mb-6 flex items-center justify-between gap-4">
         <StatusFilterHeading
           label="Users"

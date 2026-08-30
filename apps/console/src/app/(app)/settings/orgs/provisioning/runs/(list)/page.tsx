@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { AdminProvisioningRunStatus } from '@876/admin'
 import { buttonVariants } from '@876/ui/button'
 import { OrgAvatar } from '@876/ui/org-avatar'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 import {
   Table,
   TableBody,
@@ -72,10 +72,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
   return (
     <Page className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
-          <h1 className="876-page-title">Provisioning</h1>
-        </div>
+        <h1 className="876-page-title">Provisioning</h1>
         <ReconcileRunsButton appId={appId} organizationId={organizationId} />
       </div>
       <div className="border-border border-b pb-px">

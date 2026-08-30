@@ -1,4 +1,4 @@
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import {
   Table,
@@ -15,10 +15,7 @@ export default function Loading() {
   return (
     <Page className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
-          <h1 className="876-page-title">Provisioning</h1>
-        </div>
+        <h1 className="876-page-title">Provisioning</h1>
         <Skeleton className="h-9 w-32" />
       </div>
       <div className="border-border border-b pb-px">
