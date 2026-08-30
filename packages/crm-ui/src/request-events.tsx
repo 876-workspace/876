@@ -7,7 +7,7 @@ import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
 import { Calendar, PlusIcon, TrashIcon } from '@876/ui/icons'
 import { Input } from '@876/ui/input'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
   ? Omit<T, K>
@@ -98,7 +98,7 @@ export function RequestEventsSection({
     [events]
   )
 
-  async function createEvent(event: React.FormEvent) {
+  async function createEvent(event: FormEvent) {
     event.preventDefault()
     const title = draft.title.trim()
     if (!title || busyId) return
