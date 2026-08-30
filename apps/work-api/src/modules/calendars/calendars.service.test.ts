@@ -20,7 +20,11 @@ import * as tenants from '../tenants/index.js'
 import * as repository from './calendars.repository.js'
 import * as service from './calendars.service.js'
 
-const tenant = { id: 'work_tnt_1', organizationId: 'org_kingston_1', status: 'ACTIVE' as const }
+const tenant = {
+  id: 'work_tnt_1',
+  organizationId: 'org_kingston_1',
+  status: 'ACTIVE' as const,
+}
 
 function row(overrides: Record<string, unknown> = {}) {
   return {
@@ -50,32 +54,69 @@ beforeEach(() => {
 describe('Work calendars service', () => {
   it('create stores calendar and serializes with object discriminator', async () => {
     vi.mocked(repository.create).mockResolvedValue(row() as never)
-    const result = await service.create('org_kingston_1', { name: 'Work Calendar', timeZone: 'America/Jamaica', createdBy: 'user_kingston_1' })
-    expect(result).toEqual(expect.objectContaining({ object: 'calendar', name: 'Work Calendar' }))
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ tenantId: tenant.id, timeZone: 'America/Jamaica' }))
+    const result = await service.create('org_kingston_1', {
+      name: 'Work Calendar',
+      timeZone: 'America/Jamaica',
+      createdBy: 'user_kingston_1',
+    })
+    expect(result).toEqual(
+      expect.objectContaining({ object: 'calendar', name: 'Work Calendar' })
+    )
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: tenant.id,
+        timeZone: 'America/Jamaica',
+      })
+    )
   })
 
   it('create with PRIVATE visibility persists it', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ visibility: 'PRIVATE' }) as never)
-    await service.create('org_kingston_1', { name: 'Private Cal', timeZone: 'UTC', visibility: 'PRIVATE', createdBy: 'user_1' })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ visibility: 'PRIVATE' }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ visibility: 'PRIVATE' }) as never
+    )
+    await service.create('org_kingston_1', {
+      name: 'Private Cal',
+      timeZone: 'UTC',
+      visibility: 'PRIVATE',
+      createdBy: 'user_1',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ visibility: 'PRIVATE' })
+    )
   })
 
   it('create with ORGANIZATION visibility persists it', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ visibility: 'ORGANIZATION' }) as never)
-    await service.create('org_kingston_1', { name: 'Org Cal', timeZone: 'UTC', visibility: 'ORGANIZATION', createdBy: 'user_1' })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ visibility: 'ORGANIZATION' }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ visibility: 'ORGANIZATION' }) as never
+    )
+    await service.create('org_kingston_1', {
+      name: 'Org Cal',
+      timeZone: 'UTC',
+      visibility: 'ORGANIZATION',
+      createdBy: 'user_1',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ visibility: 'ORGANIZATION' })
+    )
   })
 
   it('create returns tenant-not-found and never calls repository when tenant missing', async () => {
     vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(null)
-    const result = await service.create('org_missing', { name: 'X', timeZone: 'UTC', createdBy: 'user_1' })
-    expect(result).toEqual(expect.objectContaining({ code: 'work/tenant-not-found' }))
+    const result = await service.create('org_missing', {
+      name: 'X',
+      timeZone: 'UTC',
+      createdBy: 'user_1',
+    })
+    expect(result).toEqual(
+      expect.objectContaining({ code: 'work/tenant-not-found' })
+    )
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('retrieve returns calendar when found', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'cal_found' }) as never)
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'cal_found' }) as never
+    )
     const result = await service.retrieve('org_kingston_1', 'cal_found')
     expect(result).toEqual(expect.objectContaining({ id: 'cal_found' }))
     expect(repository.retrieve).toHaveBeenCalledWith(tenant.id, 'cal_found')
@@ -88,8 +129,14 @@ describe('Work calendars service', () => {
   })
 
   it('list returns calendars for tenant', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'cal_a' }), row({ id: 'cal_b' })] as never)
-    const result = await service.list('org_kingston_1', {}) as { data: unknown[]; hasMore: boolean }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'cal_a' }),
+      row({ id: 'cal_b' }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', {})) as {
+      data: unknown[]
+      hasMore: boolean
+    }
     expect(result.data).toHaveLength(2)
     expect(result.hasMore).toBe(false)
   })
@@ -97,38 +144,68 @@ describe('Work calendars service', () => {
   it('list signals hasMore when over limit', async () => {
     const many = Array.from({ length: 3 }, (_, i) => row({ id: `cal_${i}` }))
     vi.mocked(repository.list).mockResolvedValue(many as never)
-    const result = await service.list('org_kingston_1', { limit: 2 }) as { data: unknown[]; hasMore: boolean }
+    const result = (await service.list('org_kingston_1', { limit: 2 })) as {
+      data: unknown[]
+      hasMore: boolean
+    }
     expect(result.data).toHaveLength(2)
     expect(result.hasMore).toBe(true)
   })
 
   it('update renames calendar', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'cal_1' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ id: 'cal_1', name: 'Updated' }) as never)
-    const result = await service.update('org_kingston_1', 'cal_1', { name: 'Updated' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'cal_1' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ id: 'cal_1', name: 'Updated' }) as never
+    )
+    const result = await service.update('org_kingston_1', 'cal_1', {
+      name: 'Updated',
+    })
     expect(result).toEqual(expect.objectContaining({ name: 'Updated' }))
-    expect(repository.update).toHaveBeenCalledWith('cal_1', expect.objectContaining({ name: 'Updated' }))
+    expect(repository.update).toHaveBeenCalledWith(
+      'cal_1',
+      expect.objectContaining({ name: 'Updated' })
+    )
   })
 
   it('update returns null when calendar not found and never updates', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(null)
-    const result = await service.update('org_kingston_1', 'missing', { name: 'X' })
+    const result = await service.update('org_kingston_1', 'missing', {
+      name: 'X',
+    })
     expect(result).toBeNull()
     expect(repository.update).not.toHaveBeenCalled()
   })
 
   it('remove deletes non-primary calendar', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'cal_1', isPrimary: false }) as never)
-    vi.mocked(repository.remove).mockResolvedValue({ object: 'calendar', id: 'cal_1', deleted: true } as never)
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'cal_1', isPrimary: false }) as never
+    )
+    vi.mocked(repository.remove).mockResolvedValue({
+      object: 'calendar',
+      id: 'cal_1',
+      deleted: true,
+    } as never)
     const result = await service.remove('org_kingston_1', 'cal_1', 'user_1')
     expect(result).toEqual(expect.objectContaining({ deleted: true }))
     expect(repository.remove).toHaveBeenCalledWith('cal_1', 'user_1')
   })
 
   it('remove rejects deleting primary calendar with calendar-primary-delete-forbidden and never removes', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'cal_primary', isPrimary: true }) as never)
-    const result = await service.remove('org_kingston_1', 'cal_primary', 'user_1')
-    expect(result).toEqual({ code: 'work/calendar-primary-delete-forbidden', message: expect.any(String), httpStatus: 409 })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'cal_primary', isPrimary: true }) as never
+    )
+    const result = await service.remove(
+      'org_kingston_1',
+      'cal_primary',
+      'user_1'
+    )
+    expect(result).toEqual({
+      code: 'work/calendar-primary-delete-forbidden',
+      message: expect.any(String),
+      httpStatus: 409,
+    })
     expect(repository.remove).not.toHaveBeenCalled()
   })
 
@@ -140,31 +217,64 @@ describe('Work calendars service', () => {
   })
 
   it('returns tenant-inactive for create when tenant suspended', async () => {
-    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue({ ...tenant, status: 'SUSPENDED' } as never)
-    const result = await service.create('org_kingston_1', { name: 'X', timeZone: 'UTC', createdBy: 'user_1' })
-    expect(result).toEqual(expect.objectContaining({ code: 'work/tenant-inactive' }))
+    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue({
+      ...tenant,
+      status: 'SUSPENDED',
+    } as never)
+    const result = await service.create('org_kingston_1', {
+      name: 'X',
+      timeZone: 'UTC',
+      createdBy: 'user_1',
+    })
+    expect(result).toEqual(
+      expect.objectContaining({ code: 'work/tenant-inactive' })
+    )
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('second calendar for same owner is not primary - repository decides', async () => {
     // repository.create internally determines isPrimary; service just forwards
-    vi.mocked(repository.create).mockResolvedValue(row({ ownerUserId: 'user_kingston_1', isPrimary: false }) as never)
-    const result = await service.create('org_kingston_1', { name: 'Second', timeZone: 'UTC', createdBy: 'user_kingston_1', ownerUserId: 'user_kingston_1' })
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ ownerUserId: 'user_kingston_1', isPrimary: false }) as never
+    )
+    const result = await service.create('org_kingston_1', {
+      name: 'Second',
+      timeZone: 'UTC',
+      createdBy: 'user_kingston_1',
+      ownerUserId: 'user_kingston_1',
+    })
     expect(result).toEqual(expect.objectContaining({ isPrimary: false }))
   })
 
   it('ensurePrimary returns the existing primary calendar without creating a second one', async () => {
-    vi.mocked(repository.primaryForUser).mockResolvedValue(row({ id: 'cal_primary_existing', isPrimary: true }) as never)
-    const result = await service.ensurePrimary('org_kingston_1', 'user_kingston_1', 'America/Jamaica')
-    expect(result).toEqual(expect.objectContaining({ id: 'cal_primary_existing', isPrimary: true }))
-    expect(repository.primaryForUser).toHaveBeenCalledWith(tenant.id, 'user_kingston_1')
+    vi.mocked(repository.primaryForUser).mockResolvedValue(
+      row({ id: 'cal_primary_existing', isPrimary: true }) as never
+    )
+    const result = await service.ensurePrimary(
+      'org_kingston_1',
+      'user_kingston_1',
+      'America/Jamaica'
+    )
+    expect(result).toEqual(
+      expect.objectContaining({ id: 'cal_primary_existing', isPrimary: true })
+    )
+    expect(repository.primaryForUser).toHaveBeenCalledWith(
+      tenant.id,
+      'user_kingston_1'
+    )
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('ensurePrimary creates a primary calendar for the user when none exists', async () => {
     vi.mocked(repository.primaryForUser).mockResolvedValue(null)
-    vi.mocked(repository.create).mockResolvedValue(row({ isPrimary: true }) as never)
-    const result = await service.ensurePrimary('org_kingston_1', 'user_kingston_1', 'America/Jamaica')
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ isPrimary: true }) as never
+    )
+    const result = await service.ensurePrimary(
+      'org_kingston_1',
+      'user_kingston_1',
+      'America/Jamaica'
+    )
     expect(result).toEqual(expect.objectContaining({ isPrimary: true }))
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -182,19 +292,27 @@ describe('Work calendars service', () => {
     vi.mocked(repository.primaryForUser).mockResolvedValue(null)
     vi.mocked(repository.create).mockResolvedValue(row() as never)
     await service.ensurePrimary('org_kingston_1', 'user_kingston_1')
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ timeZone: 'UTC' }))
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ timeZone: 'UTC' })
+    )
   })
 
   it('ensurePrimary returns tenant-not-found and never creates when tenant missing', async () => {
     vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(null)
     const result = await service.ensurePrimary('org_missing', 'user_kingston_1')
-    expect(result).toEqual({ code: 'work/tenant-not-found', message: expect.any(String), httpStatus: 404 })
+    expect(result).toEqual({
+      code: 'work/tenant-not-found',
+      message: expect.any(String),
+      httpStatus: 404,
+    })
     expect(repository.primaryForUser).not.toHaveBeenCalled()
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('serializes the calendar with uid and Unix-second timestamps', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'cal_mandeville_1' }) as never)
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'cal_mandeville_1' }) as never
+    )
     const result = await service.retrieve('org_kingston_1', 'cal_mandeville_1')
     expect(result).toEqual({
       object: 'calendar',
@@ -251,7 +369,10 @@ describe('Work calendars service', () => {
 
   it('list forwards the userId and visibility filters to the repository', async () => {
     vi.mocked(repository.list).mockResolvedValue([] as never)
-    await service.list('org_kingston_1', { userId: 'user_kingston_1', visibility: 'ORGANIZATION' })
+    await service.list('org_kingston_1', {
+      userId: 'user_kingston_1',
+      visibility: 'ORGANIZATION',
+    })
     expect(repository.list).toHaveBeenCalledWith(tenant.id, {
       userId: 'user_kingston_1',
       visibility: 'ORGANIZATION',
@@ -264,30 +385,56 @@ describe('Work calendars service', () => {
       row({ id: 'cal_a' }),
       row({ id: 'cal_b' }),
     ] as never)
-    const result = await service.list('org_kingston_1', { limit: 25, endingBefore: 'cal_b' }) as { data: Array<{ id: string }> }
+    const result = (await service.list('org_kingston_1', {
+      limit: 25,
+      endingBefore: 'cal_b',
+    })) as { data: Array<{ id: string }> }
     expect(result.data.map((r) => r.id)).toEqual(['cal_b', 'cal_a'])
   })
 
   it('update changes visibility and time zone together', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'cal_1' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ id: 'cal_1', visibility: 'ORGANIZATION', timeZone: 'UTC' }) as never)
-    const result = await service.update('org_kingston_1', 'cal_1', { visibility: 'ORGANIZATION', timeZone: 'UTC' })
-    expect(result).toEqual(expect.objectContaining({ visibility: 'ORGANIZATION', timeZone: 'UTC' }))
-    expect(repository.update).toHaveBeenCalledWith('cal_1', expect.objectContaining({ visibility: 'ORGANIZATION', timeZone: 'UTC' }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'cal_1' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ id: 'cal_1', visibility: 'ORGANIZATION', timeZone: 'UTC' }) as never
+    )
+    const result = await service.update('org_kingston_1', 'cal_1', {
+      visibility: 'ORGANIZATION',
+      timeZone: 'UTC',
+    })
+    expect(result).toEqual(
+      expect.objectContaining({ visibility: 'ORGANIZATION', timeZone: 'UTC' })
+    )
+    expect(repository.update).toHaveBeenCalledWith(
+      'cal_1',
+      expect.objectContaining({ visibility: 'ORGANIZATION', timeZone: 'UTC' })
+    )
   })
 
   it('update returns tenant-not-found without querying the repository when tenant missing', async () => {
     vi.mocked(tenants.retrieveByOrganization).mockResolvedValue(null)
     const result = await service.update('org_missing', 'cal_1', { name: 'X' })
-    expect(result).toEqual({ code: 'work/tenant-not-found', message: expect.any(String), httpStatus: 404 })
+    expect(result).toEqual({
+      code: 'work/tenant-not-found',
+      message: expect.any(String),
+      httpStatus: 404,
+    })
     expect(repository.retrieve).not.toHaveBeenCalled()
     expect(repository.update).not.toHaveBeenCalled()
   })
 
   it('remove returns tenant-inactive and never removes when tenant suspended', async () => {
-    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue({ ...tenant, status: 'SUSPENDED' } as never)
+    vi.mocked(tenants.retrieveByOrganization).mockResolvedValue({
+      ...tenant,
+      status: 'SUSPENDED',
+    } as never)
     const result = await service.remove('org_kingston_1', 'cal_1', 'user_1')
-    expect(result).toEqual({ code: 'work/tenant-inactive', message: expect.any(String), httpStatus: 409 })
+    expect(result).toEqual({
+      code: 'work/tenant-inactive',
+      message: expect.any(String),
+      httpStatus: 409,
+    })
     expect(repository.retrieve).not.toHaveBeenCalled()
     expect(repository.remove).not.toHaveBeenCalled()
   })

@@ -584,21 +584,19 @@ describe('Work Phase 2 routes', () => {
   })
 
   it('operator creates a task-list', async () => {
-    mocks.taskLists.create = vi
-      .fn()
-      .mockResolvedValue({
-        id: 'tasklist_new',
-        tenantId: 'work_tnt_1',
-        name: 'Sprint',
-        description: null,
-        ownerUserId: null,
-        isDefault: false,
-        sortOrder: 0,
-        createdBy: 'user_1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-      })
+    mocks.taskLists.create = vi.fn().mockResolvedValue({
+      id: 'tasklist_new',
+      tenantId: 'work_tnt_1',
+      name: 'Sprint',
+      description: null,
+      ownerUserId: null,
+      isDefault: false,
+      sortOrder: 0,
+      createdBy: 'user_1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    })
     // Need to re-mock via repository, but service uses repo; easier to test via route already mocked list
     const response = await api()
       .post('/v1/organizations/org_1/task-lists')
@@ -619,34 +617,32 @@ describe('Work Phase 2 routes', () => {
   })
 
   it('operator creates an event timed', async () => {
-    mocks.events.create = vi
-      .fn()
-      .mockResolvedValue({
-        id: 'event_new',
-        uid: 'event_new@work.876',
-        tenantId: 'work_tnt_1',
-        calendarId: 'cal_1',
-        contextService: null,
-        contextResource: null,
-        contextId: null,
-        title: 'New Meeting',
-        description: null,
-        location: null,
-        status: 'CONFIRMED',
-        busyStatus: 'BUSY',
-        startAt: new Date('2026-09-02T09:00:00.000Z'),
-        endAt: new Date('2026-09-02T10:00:00.000Z'),
-        timeZone: 'UTC',
-        startDate: null,
-        endDate: null,
-        recurrenceRuleId: null,
-        recurrenceId: null,
-        participants: [],
-        createdBy: 'user_1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-      })
+    mocks.events.create = vi.fn().mockResolvedValue({
+      id: 'event_new',
+      uid: 'event_new@work.876',
+      tenantId: 'work_tnt_1',
+      calendarId: 'cal_1',
+      contextService: null,
+      contextResource: null,
+      contextId: null,
+      title: 'New Meeting',
+      description: null,
+      location: null,
+      status: 'CONFIRMED',
+      busyStatus: 'BUSY',
+      startAt: new Date('2026-09-02T09:00:00.000Z'),
+      endAt: new Date('2026-09-02T10:00:00.000Z'),
+      timeZone: 'UTC',
+      startDate: null,
+      endDate: null,
+      recurrenceRuleId: null,
+      recurrenceId: null,
+      participants: [],
+      createdBy: 'user_1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    })
     const response = await api()
       .post('/v1/organizations/org_1/events')
       .send({
@@ -685,24 +681,22 @@ describe('Work Phase 2 routes', () => {
   })
 
   it('operator creates sync-connection', async () => {
-    mocks.syncConnections.create = vi
-      .fn()
-      .mockResolvedValue({
-        id: 'sync_conn_new',
-        tenantId: 'work_tnt_1',
-        userId: 'user_1',
-        provider: 'GOOGLE',
-        status: 'ACTIVE',
-        credentialRef: 'cred_1',
-        remoteAccountId: null,
-        remoteAccountLabel: null,
-        caldavUrl: null,
-        syncCursor: null,
-        lastSyncedAt: null,
-        lastErrorCode: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
+    mocks.syncConnections.create = vi.fn().mockResolvedValue({
+      id: 'sync_conn_new',
+      tenantId: 'work_tnt_1',
+      userId: 'user_1',
+      provider: 'GOOGLE',
+      status: 'ACTIVE',
+      credentialRef: 'cred_1',
+      remoteAccountId: null,
+      remoteAccountLabel: null,
+      caldavUrl: null,
+      syncCursor: null,
+      lastSyncedAt: null,
+      lastErrorCode: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
     const response = await api()
       .post('/v1/organizations/org_1/sync-connections')
       .send({ userId: 'user_1', provider: 'GOOGLE', credentialRef: 'cred_1' })
@@ -906,77 +900,67 @@ describe('Work Phase 2 routes', () => {
   })
 
   it('returns 422 for event create that is both timed and all-day', async () => {
-    const response = await api()
-      .post('/v1/organizations/org_1/events')
-      .send({
-        calendarId: 'cal_1',
-        title: 'Both',
-        allDay: false,
-        startAt: 1_788_271_200,
-        endAt: 1_788_274_800,
-        timeZone: 'UTC',
-        startDate: '2026-09-01',
-        endDate: '2026-09-02',
-        createdBy: 'user_1',
-      })
+    const response = await api().post('/v1/organizations/org_1/events').send({
+      calendarId: 'cal_1',
+      title: 'Both',
+      allDay: false,
+      startAt: 1_788_271_200,
+      endAt: 1_788_274_800,
+      timeZone: 'UTC',
+      startDate: '2026-09-01',
+      endDate: '2026-09-02',
+      createdBy: 'user_1',
+    })
     expect(response.status).toBe(422)
     expect(mocks.events.create).not.toHaveBeenCalled()
   })
 
   it('returns 422 for event create with endAt before startAt', async () => {
-    const response = await api()
-      .post('/v1/organizations/org_1/events')
-      .send({
-        calendarId: 'cal_1',
-        title: 'Inverted',
-        allDay: false,
-        startAt: 1_788_274_800,
-        endAt: 1_788_271_200,
-        timeZone: 'UTC',
-        createdBy: 'user_1',
-      })
+    const response = await api().post('/v1/organizations/org_1/events').send({
+      calendarId: 'cal_1',
+      title: 'Inverted',
+      allDay: false,
+      startAt: 1_788_274_800,
+      endAt: 1_788_271_200,
+      timeZone: 'UTC',
+      createdBy: 'user_1',
+    })
     expect(response.status).toBe(422)
     expect(mocks.events.create).not.toHaveBeenCalled()
   })
 
   it('returns 422 for alert create with two parents', async () => {
-    const response = await api()
-      .post('/v1/organizations/org_1/alerts')
-      .send({
-        taskId: 'task_1',
-        eventId: 'event_1',
-        userId: 'user_1',
-        triggerType: 'ABSOLUTE',
-        triggerAt: 1_788_271_200,
-        createdBy: 'user_1',
-      })
+    const response = await api().post('/v1/organizations/org_1/alerts').send({
+      taskId: 'task_1',
+      eventId: 'event_1',
+      userId: 'user_1',
+      triggerType: 'ABSOLUTE',
+      triggerAt: 1_788_271_200,
+      createdBy: 'user_1',
+    })
     expect(response.status).toBe(422)
     expect(mocks.alerts.create).not.toHaveBeenCalled()
   })
 
   it('returns 422 for alert create with no parents', async () => {
-    const response = await api()
-      .post('/v1/organizations/org_1/alerts')
-      .send({
-        userId: 'user_1',
-        triggerType: 'ABSOLUTE',
-        triggerAt: 1_788_271_200,
-        createdBy: 'user_1',
-      })
+    const response = await api().post('/v1/organizations/org_1/alerts').send({
+      userId: 'user_1',
+      triggerType: 'ABSOLUTE',
+      triggerAt: 1_788_271_200,
+      createdBy: 'user_1',
+    })
     expect(response.status).toBe(422)
     expect(mocks.alerts.create).not.toHaveBeenCalled()
   })
 
   it('returns 422 for ABSOLUTE alert carrying offset instead of instant', async () => {
-    const response = await api()
-      .post('/v1/organizations/org_1/alerts')
-      .send({
-        taskId: 'task_1',
-        userId: 'user_1',
-        triggerType: 'ABSOLUTE',
-        offsetSeconds: -900,
-        createdBy: 'user_1',
-      })
+    const response = await api().post('/v1/organizations/org_1/alerts').send({
+      taskId: 'task_1',
+      userId: 'user_1',
+      triggerType: 'ABSOLUTE',
+      offsetSeconds: -900,
+      createdBy: 'user_1',
+    })
     expect(response.status).toBe(422)
     expect(mocks.alerts.create).not.toHaveBeenCalled()
   })

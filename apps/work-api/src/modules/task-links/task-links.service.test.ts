@@ -40,44 +40,106 @@ beforeEach(() => {
 describe('Work task-links service', () => {
   it('first link isPrimary defaults to true when no existing links', async () => {
     vi.mocked(repository.list).mockResolvedValue([])
-    vi.mocked(repository.create).mockResolvedValue(row({ isPrimary: true }) as never)
-    const result = await service.create('org_kingston_1', task.id, { service: 'crm', resource: 'request', externalId: 'req_1' })
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ isPrimary: true }) as never
+    )
+    const result = await service.create('org_kingston_1', task.id, {
+      service: 'crm',
+      resource: 'request',
+      externalId: 'req_1',
+    })
     expect(result).toEqual(expect.objectContaining({ isPrimary: true }))
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ isPrimary: true }))
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ isPrimary: true })
+    )
   })
 
   it('second link defaults to isPrimary false', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ isPrimary: true })] as never)
-    vi.mocked(repository.create).mockResolvedValue(row({ isPrimary: false }) as never)
-    await service.create('org_kingston_1', task.id, { service: 'crm', resource: 'request', externalId: 'req_2' })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ isPrimary: false }))
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ isPrimary: true }),
+    ] as never)
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ isPrimary: false }) as never
+    )
+    await service.create('org_kingston_1', task.id, {
+      service: 'crm',
+      resource: 'request',
+      externalId: 'req_2',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ isPrimary: false })
+    )
   })
 
   it('explicit isPrimary true is persisted', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ isPrimary: true })] as never)
-    vi.mocked(repository.create).mockResolvedValue(row({ isPrimary: true }) as never)
-    await service.create('org_kingston_1', task.id, { service: 'crm', resource: 'request', externalId: 'req_3', isPrimary: true })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ isPrimary: true }))
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ isPrimary: true }),
+    ] as never)
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ isPrimary: true }) as never
+    )
+    await service.create('org_kingston_1', task.id, {
+      service: 'crm',
+      resource: 'request',
+      externalId: 'req_3',
+      isPrimary: true,
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ isPrimary: true })
+    )
   })
 
   it('creates link with CRM triple stored exactly', async () => {
     vi.mocked(repository.list).mockResolvedValue([])
-    vi.mocked(repository.create).mockResolvedValue(row({ service: 'crm', resource: 'request', externalId: 'req_99' }) as never)
-    await service.create('org_kingston_1', task.id, { service: 'crm', resource: 'request', externalId: 'req_99' })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ service: 'crm', resource: 'request', externalId: 'req_99' }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({
+        service: 'crm',
+        resource: 'request',
+        externalId: 'req_99',
+      }) as never
+    )
+    await service.create('org_kingston_1', task.id, {
+      service: 'crm',
+      resource: 'request',
+      externalId: 'req_99',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service: 'crm',
+        resource: 'request',
+        externalId: 'req_99',
+      })
+    )
   })
 
   it('link to external service not owned by CRM is stored verbatim', async () => {
     vi.mocked(repository.list).mockResolvedValue([])
-    vi.mocked(repository.create).mockResolvedValue(row({ service: 'external', resource: 'ticket', externalId: 'ext_1' }) as never)
-    const result = await service.create('org_kingston_1', task.id, { service: 'external', resource: 'ticket', externalId: 'ext_1' })
+    vi.mocked(repository.create).mockResolvedValue(
+      row({
+        service: 'external',
+        resource: 'ticket',
+        externalId: 'ext_1',
+      }) as never
+    )
+    const result = await service.create('org_kingston_1', task.id, {
+      service: 'external',
+      resource: 'ticket',
+      externalId: 'ext_1',
+    })
     expect(result).toEqual(expect.objectContaining({ service: 'external' }))
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ service: 'external', resource: 'ticket' }))
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ service: 'external', resource: 'ticket' })
+    )
   })
 
   it('list returns links for task', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'link_a' }), row({ id: 'link_b' })] as never)
-    const result = await service.list('org_kingston_1', task.id) as { data: unknown[] }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'link_a' }),
+      row({ id: 'link_b' }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', task.id)) as {
+      data: unknown[]
+    }
     expect(result.data).toHaveLength(2)
     expect(repository.list).toHaveBeenCalledWith(task.id)
   })
@@ -93,27 +155,47 @@ describe('Work task-links service', () => {
   it('create returns task tenant error and never creates when task in another tenant', async () => {
     const err = { code: 'work/tenant-not-found', message: 'x', httpStatus: 404 }
     vi.mocked(tasks.retrieve).mockResolvedValue(err as never)
-    const result = await service.create('org_kingston_1', task.id, { service: 'crm', resource: 'request', externalId: 'req_1' })
+    const result = await service.create('org_kingston_1', task.id, {
+      service: 'crm',
+      resource: 'request',
+      externalId: 'req_1',
+    })
     expect(result).toEqual(err)
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('remove deletes a link', async () => {
-    vi.mocked(repository.remove).mockResolvedValue({ object: 'task_link', id: 'link_1', deleted: true } as never)
+    vi.mocked(repository.remove).mockResolvedValue({
+      object: 'task_link',
+      id: 'link_1',
+      deleted: true,
+    } as never)
     const result = await service.remove('org_kingston_1', task.id, 'link_1')
     expect(result).toEqual(expect.objectContaining({ deleted: true }))
     expect(repository.remove).toHaveBeenCalledWith(task.id, 'link_1')
   })
 
   it('remove primary link succeeds', async () => {
-    vi.mocked(repository.remove).mockResolvedValue({ object: 'task_link', id: 'link_primary', deleted: true } as never)
-    const result = await service.remove('org_kingston_1', task.id, 'link_primary')
+    vi.mocked(repository.remove).mockResolvedValue({
+      object: 'task_link',
+      id: 'link_primary',
+      deleted: true,
+    } as never)
+    const result = await service.remove(
+      'org_kingston_1',
+      task.id,
+      'link_primary'
+    )
     expect(result).toEqual(expect.objectContaining({ id: 'link_primary' }))
   })
 
   it('create returns null when task not found and never creates', async () => {
     vi.mocked(tasks.retrieve).mockResolvedValue(null as never)
-    const result = await service.create('org_kingston_1', 'missing', { service: 'crm', resource: 'request', externalId: 'req_1' })
+    const result = await service.create('org_kingston_1', 'missing', {
+      service: 'crm',
+      resource: 'request',
+      externalId: 'req_1',
+    })
     expect(result).toBeNull()
     expect(repository.create).not.toHaveBeenCalled()
   })
@@ -141,8 +223,12 @@ describe('Work task-links service', () => {
   })
 
   it('serializes the link with object discriminator and Unix-second createdAt', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'link_1', isPrimary: true })] as never)
-    const result = await service.list('org_kingston_1', task.id) as { data: unknown[] }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'link_1', isPrimary: true }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', task.id)) as {
+      data: unknown[]
+    }
     expect(result.data).toEqual([
       {
         object: 'task_link',
@@ -162,7 +248,10 @@ describe('Work task-links service', () => {
   it('create stores label and url when provided', async () => {
     vi.mocked(repository.list).mockResolvedValue([])
     vi.mocked(repository.create).mockResolvedValue(
-      row({ label: 'CRM Request', url: 'https://example.test/requests/1' }) as never
+      row({
+        label: 'CRM Request',
+        url: 'https://example.test/requests/1',
+      }) as never
     )
     await service.create('org_kingston_1', task.id, {
       service: 'crm',
@@ -172,7 +261,10 @@ describe('Work task-links service', () => {
       url: 'https://example.test/requests/1',
     })
     expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ label: 'CRM Request', url: 'https://example.test/requests/1' })
+      expect.objectContaining({
+        label: 'CRM Request',
+        url: 'https://example.test/requests/1',
+      })
     )
   })
 

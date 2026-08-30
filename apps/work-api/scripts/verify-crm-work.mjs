@@ -5,12 +5,15 @@ import pg from 'pg'
 config({ path: ['.env.development.local', '.env.development', '.env'] })
 
 const { Pool } = pg
-const crmUrl = process.env.CRM_DIRECT_DATABASE_URL ?? process.env.CRM_DATABASE_URL
+const crmUrl =
+  process.env.CRM_DIRECT_DATABASE_URL ?? process.env.CRM_DATABASE_URL
 const workUrl =
   process.env.WORK_DIRECT_DATABASE_URL ?? process.env.WORK_DATABASE_URL
 
-if (!crmUrl) throw new Error('CRM_DATABASE_URL is required for CRM verification.')
-if (!workUrl) throw new Error('WORK_DATABASE_URL is required for CRM verification.')
+if (!crmUrl)
+  throw new Error('CRM_DATABASE_URL is required for CRM verification.')
+if (!workUrl)
+  throw new Error('WORK_DATABASE_URL is required for CRM verification.')
 
 const crm = new Pool({ connectionString: crmUrl })
 const work = new Pool({ connectionString: workUrl })
@@ -129,45 +132,51 @@ function compareRows(sourceRows, targetRows, snapshot) {
 }
 
 async function main() {
-  const [crmTenants, workTenants, crmTasks, workTasks, crmReminders, workReminders] =
-    await Promise.all([
-      crm.query(`
+  const [
+    crmTenants,
+    workTenants,
+    crmTasks,
+    workTasks,
+    crmReminders,
+    workReminders,
+  ] = await Promise.all([
+    crm.query(`
         SELECT organization_id, status
         FROM crm_tenants
         ORDER BY organization_id
       `),
-      work.query(`
+    work.query(`
         SELECT organization_id, status
         FROM work_tenants
         ORDER BY organization_id
       `),
-      crm.query(`
+    crm.query(`
         SELECT t.*, tenant.organization_id
         FROM crm_request_tasks t
         JOIN crm_tenants tenant ON tenant.id = t.tenant_id
         ORDER BY t.id
       `),
-      work.query(`
+    work.query(`
         SELECT t.*, tenant.organization_id
         FROM work_tasks t
         JOIN work_tenants tenant ON tenant.id = t.tenant_id
         WHERE t.context_service = 'crm' AND t.context_resource = 'request'
         ORDER BY t.id
       `),
-      crm.query(`
+    crm.query(`
         SELECT r.*, tenant.organization_id
         FROM crm_request_reminders r
         JOIN crm_tenants tenant ON tenant.id = r.tenant_id
         ORDER BY r.id
       `),
-      work.query(`
+    work.query(`
         SELECT r.*, tenant.organization_id
         FROM work_reminders r
         JOIN work_tenants tenant ON tenant.id = r.tenant_id
         WHERE r.context_service = 'crm' AND r.context_resource = 'request'
         ORDER BY r.id
       `),
-    ])
+  ])
 
   const workTenantByOrg = new Map(
     workTenants.rows.map((row) => [row.organization_id, row.status])

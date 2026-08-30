@@ -60,35 +60,65 @@ describe('Work task-assignments service', () => {
       assigneeId: 'user_mandeville_1',
       assignedBy: 'user_kingston_1',
     })
-    expect(result).toEqual(expect.objectContaining({ targetType: 'USER', assigneeId: 'user_mandeville_1' }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        targetType: 'USER',
+        assigneeId: 'user_mandeville_1',
+      })
+    )
     expect(repository.create).toHaveBeenCalledTimes(1)
-    expect(tasks.update).toHaveBeenCalledWith('org_kingston_1', task.id, { assigneeId: 'user_mandeville_1' })
+    expect(tasks.update).toHaveBeenCalledWith('org_kingston_1', task.id, {
+      assigneeId: 'user_mandeville_1',
+    })
   })
 
   it('create does not update task assignee when task already has assignee', async () => {
-    vi.mocked(tasks.retrieve).mockResolvedValue({ ...task, assigneeId: 'user_existing' } as never)
-    vi.mocked(repository.create).mockResolvedValue(row({ role: 'OWNER' }) as never)
-    await service.create('org_kingston_1', task.id, { targetType: 'USER', assigneeId: 'user_new', assignedBy: 'user_1' })
+    vi.mocked(tasks.retrieve).mockResolvedValue({
+      ...task,
+      assigneeId: 'user_existing',
+    } as never)
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ role: 'OWNER' }) as never
+    )
+    await service.create('org_kingston_1', task.id, {
+      targetType: 'USER',
+      assigneeId: 'user_new',
+      assignedBy: 'user_1',
+    })
     expect(tasks.update).not.toHaveBeenCalled()
   })
 
   it('create with TEAM target does not touch task assignee', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ targetType: 'TEAM', assigneeId: 'team_spanish_town_1' }) as never)
-    await service.create('org_kingston_1', task.id, { targetType: 'TEAM', assigneeId: 'team_spanish_town_1', assignedBy: 'user_1' })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ targetType: 'TEAM' }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ targetType: 'TEAM', assigneeId: 'team_spanish_town_1' }) as never
+    )
+    await service.create('org_kingston_1', task.id, {
+      targetType: 'TEAM',
+      assigneeId: 'team_spanish_town_1',
+      assignedBy: 'user_1',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ targetType: 'TEAM' })
+    )
     expect(tasks.update).not.toHaveBeenCalled()
   })
 
   it('create with delegatedFromAssignmentId validates source exists', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'assign_parent' }) as never)
-    vi.mocked(repository.create).mockResolvedValue(row({ delegatedFromAssignmentId: 'assign_parent' }) as never)
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'assign_parent' }) as never
+    )
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ delegatedFromAssignmentId: 'assign_parent' }) as never
+    )
     const result = await service.create('org_kingston_1', task.id, {
       targetType: 'USER',
       assigneeId: 'user_2',
       assignedBy: 'user_1',
       delegatedFromAssignmentId: 'assign_parent',
     })
-    expect(result).toEqual(expect.objectContaining({ delegatedFromAssignmentId: 'assign_parent' }))
+    expect(result).toEqual(
+      expect.objectContaining({ delegatedFromAssignmentId: 'assign_parent' })
+    )
     expect(repository.retrieve).toHaveBeenCalledWith(task.id, 'assign_parent')
   })
 
@@ -105,25 +135,46 @@ describe('Work task-assignments service', () => {
   })
 
   it('create with status COMPLETED stamps completedAt and respondedAt', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ status: 'COMPLETED' }) as never)
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ status: 'COMPLETED' }) as never
+    )
     await service.create('org_kingston_1', task.id, {
       targetType: 'USER',
       assigneeId: 'user_1',
       assignedBy: 'user_1',
       status: 'COMPLETED',
     })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ status: 'COMPLETED', completedAt: expect.any(Date), respondedAt: expect.any(Date) }))
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'COMPLETED',
+        completedAt: expect.any(Date),
+        respondedAt: expect.any(Date),
+      })
+    )
   })
 
   it('create with status PENDING leaves timestamps null', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ status: 'PENDING' }) as never)
-    await service.create('org_kingston_1', task.id, { targetType: 'USER', assigneeId: 'user_1', assignedBy: 'user_1' })
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ respondedAt: null, completedAt: null }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ status: 'PENDING' }) as never
+    )
+    await service.create('org_kingston_1', task.id, {
+      targetType: 'USER',
+      assigneeId: 'user_1',
+      assignedBy: 'user_1',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ respondedAt: null, completedAt: null })
+    )
   })
 
   it('list returns assignments for task', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'assign_a' }), row({ id: 'assign_b' })] as never)
-    const result = await service.list('org_kingston_1', task.id) as { data: unknown[] }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'assign_a' }),
+      row({ id: 'assign_b' }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', task.id)) as {
+      data: unknown[]
+    }
     expect(result.data).toHaveLength(2)
     expect(repository.list).toHaveBeenCalledWith(task.id)
   })
@@ -144,50 +195,101 @@ describe('Work task-assignments service', () => {
   })
 
   it('update accepts assignment and stamps respondedAt', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'assign_1', status: 'PENDING', completedAt: null }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ id: 'assign_1', status: 'ACCEPTED' }) as never)
-    const result = await service.update('org_kingston_1', task.id, 'assign_1', { status: 'ACCEPTED' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'assign_1', status: 'PENDING', completedAt: null }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ id: 'assign_1', status: 'ACCEPTED' }) as never
+    )
+    const result = await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'ACCEPTED',
+    })
     expect(result).toEqual(expect.objectContaining({ status: 'ACCEPTED' }))
-    expect(repository.update).toHaveBeenCalledWith('assign_1', expect.objectContaining({ status: 'ACCEPTED', respondedAt: expect.any(Date) }))
+    expect(repository.update).toHaveBeenCalledWith(
+      'assign_1',
+      expect.objectContaining({
+        status: 'ACCEPTED',
+        respondedAt: expect.any(Date),
+      })
+    )
   })
 
   it('update declines assignment', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'PENDING' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'DECLINED' }) as never)
-    await service.update('org_kingston_1', task.id, 'assign_1', { status: 'DECLINED' })
-    expect(repository.update).toHaveBeenCalledWith('assign_1', expect.objectContaining({ status: 'DECLINED' }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'PENDING' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'DECLINED' }) as never
+    )
+    await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'DECLINED',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'assign_1',
+      expect.objectContaining({ status: 'DECLINED' })
+    )
   })
 
   it('update completes assignment stamps completedAt', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'ACCEPTED', completedAt: null }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'COMPLETED' }) as never)
-    await service.update('org_kingston_1', task.id, 'assign_1', { status: 'COMPLETED' })
-    expect(repository.update).toHaveBeenCalledWith('assign_1', expect.objectContaining({ completedAt: expect.any(Date) }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'ACCEPTED', completedAt: null }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'COMPLETED' }) as never
+    )
+    await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'COMPLETED',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'assign_1',
+      expect.objectContaining({ completedAt: expect.any(Date) })
+    )
   })
 
   it('update resetting to PENDING clears respondedAt', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'ACCEPTED' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'PENDING' }) as never)
-    await service.update('org_kingston_1', task.id, 'assign_1', { status: 'PENDING' })
-    expect(repository.update).toHaveBeenCalledWith('assign_1', expect.objectContaining({ respondedAt: null }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'ACCEPTED' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'PENDING' }) as never
+    )
+    await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'PENDING',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'assign_1',
+      expect.objectContaining({ respondedAt: null })
+    )
   })
 
   it('update returns null when assignment not found and never calls update', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(null)
-    const result = await service.update('org_kingston_1', task.id, 'missing', { status: 'ACCEPTED' })
+    const result = await service.update('org_kingston_1', task.id, 'missing', {
+      status: 'ACCEPTED',
+    })
     expect(result).toBeNull()
     expect(repository.update).not.toHaveBeenCalled()
   })
 
   it('update allows second OWNER assignment - service does not block it', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ role: 'OWNER' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ role: 'OWNER' }) as never)
-    const result = await service.update('org_kingston_1', task.id, 'assign_1', { role: 'OWNER' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ role: 'OWNER' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ role: 'OWNER' }) as never
+    )
+    const result = await service.update('org_kingston_1', task.id, 'assign_1', {
+      role: 'OWNER',
+    })
     expect(result).toEqual(expect.objectContaining({ role: 'OWNER' }))
   })
 
   it('remove deletes assignment', async () => {
-    vi.mocked(repository.remove).mockResolvedValue({ object: 'task_assignment', id: 'assign_1', deleted: true } as never)
+    vi.mocked(repository.remove).mockResolvedValue({
+      object: 'task_assignment',
+      id: 'assign_1',
+      deleted: true,
+    } as never)
     const result = await service.remove('org_kingston_1', task.id, 'assign_1')
     expect(result).toEqual(expect.objectContaining({ deleted: true }))
     expect(repository.remove).toHaveBeenCalledWith(task.id, 'assign_1')
@@ -196,7 +298,11 @@ describe('Work task-assignments service', () => {
   it('create returns task tenant error and never creates when task in another tenant', async () => {
     const err = { code: 'work/tenant-not-found', message: 'x', httpStatus: 404 }
     vi.mocked(tasks.retrieve).mockResolvedValue(err as never)
-    const result = await service.create('org_kingston_1', task.id, { targetType: 'USER', assigneeId: 'user_1', assignedBy: 'user_1' })
+    const result = await service.create('org_kingston_1', task.id, {
+      targetType: 'USER',
+      assigneeId: 'user_1',
+      assignedBy: 'user_1',
+    })
     expect(result).toEqual(err)
     expect(repository.create).not.toHaveBeenCalled()
   })
@@ -214,8 +320,13 @@ describe('Work task-assignments service', () => {
   })
 
   it('create with COLLABORATOR role does not touch the task assignee', async () => {
-    vi.mocked(tasks.retrieve).mockResolvedValue({ ...task, assigneeId: null } as never)
-    vi.mocked(repository.create).mockResolvedValue(row({ role: 'COLLABORATOR' }) as never)
+    vi.mocked(tasks.retrieve).mockResolvedValue({
+      ...task,
+      assigneeId: null,
+    } as never)
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ role: 'COLLABORATOR' }) as never
+    )
     await service.create('org_kingston_1', task.id, {
       targetType: 'USER',
       assigneeId: 'user_mandeville_1',
@@ -226,7 +337,9 @@ describe('Work task-assignments service', () => {
   })
 
   it('create with status DECLINED stamps respondedAt but not completedAt', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ status: 'DECLINED' }) as never)
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ status: 'DECLINED' }) as never
+    )
     await service.create('org_kingston_1', task.id, {
       targetType: 'USER',
       assigneeId: 'user_1',
@@ -271,8 +384,12 @@ describe('Work task-assignments service', () => {
   })
 
   it('serializes the assignment with object discriminator and stamped timestamps', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'assign_1', assignedAt: new Date('2026-08-30T12:00:00.000Z') })] as never)
-    const result = await service.list('org_kingston_1', task.id) as { data: unknown[] }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'assign_1', assignedAt: new Date('2026-08-30T12:00:00.000Z') }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', task.id)) as {
+      data: unknown[]
+    }
     expect(result.data).toEqual([
       {
         object: 'task_assignment',
@@ -293,23 +410,43 @@ describe('Work task-assignments service', () => {
 
   it('update from COMPLETED back to PENDING clears respondedAt and completedAt', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(
-      row({ status: 'COMPLETED', respondedAt: new Date(), completedAt: new Date() }) as never
+      row({
+        status: 'COMPLETED',
+        respondedAt: new Date(),
+        completedAt: new Date(),
+      }) as never
     )
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'PENDING' }) as never)
-    await service.update('org_kingston_1', task.id, 'assign_1', { status: 'PENDING' })
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'PENDING' }) as never
+    )
+    await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'PENDING',
+    })
     expect(repository.update).toHaveBeenCalledWith(
       'assign_1',
-      expect.objectContaining({ status: 'PENDING', respondedAt: null, completedAt: null })
+      expect.objectContaining({
+        status: 'PENDING',
+        respondedAt: null,
+        completedAt: null,
+      })
     )
   })
 
   it('update completing an already-completed assignment keeps the existing completedAt', async () => {
     const completedAt = new Date('2026-08-29T12:00:00.000Z')
     vi.mocked(repository.retrieve).mockResolvedValue(
-      row({ status: 'COMPLETED', respondedAt: completedAt, completedAt }) as never
+      row({
+        status: 'COMPLETED',
+        respondedAt: completedAt,
+        completedAt,
+      }) as never
     )
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'COMPLETED', completedAt }) as never)
-    await service.update('org_kingston_1', task.id, 'assign_1', { status: 'COMPLETED' })
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'COMPLETED', completedAt }) as never
+    )
+    await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'COMPLETED',
+    })
     expect(repository.update).toHaveBeenCalledWith(
       'assign_1',
       expect.objectContaining({ completedAt, respondedAt: expect.any(Date) })
@@ -317,8 +454,12 @@ describe('Work task-assignments service', () => {
   })
 
   it('update changing the role only leaves status untouched', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'ACCEPTED' }) as never)
-    await service.update('org_kingston_1', task.id, 'assign_1', { role: 'REVIEWER' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'ACCEPTED' }) as never
+    )
+    await service.update('org_kingston_1', task.id, 'assign_1', {
+      role: 'REVIEWER',
+    })
     expect(repository.update).toHaveBeenCalledWith('assign_1', {
       role: 'REVIEWER',
       completedAt: null,
@@ -328,7 +469,9 @@ describe('Work task-assignments service', () => {
   it('update returns task tenant error and never touches the repository', async () => {
     const err = { code: 'work/tenant-inactive', message: 'x', httpStatus: 409 }
     vi.mocked(tasks.retrieve).mockResolvedValue(err as never)
-    const result = await service.update('org_kingston_1', task.id, 'assign_1', { status: 'ACCEPTED' })
+    const result = await service.update('org_kingston_1', task.id, 'assign_1', {
+      status: 'ACCEPTED',
+    })
     expect(result).toEqual(err)
     expect(repository.retrieve).not.toHaveBeenCalled()
     expect(repository.update).not.toHaveBeenCalled()
