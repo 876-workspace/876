@@ -2,6 +2,10 @@ import { getError, toAppError } from '@876/core'
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 
+import { getLogger } from '../platform/logger.js'
+
+const log = getLogger('http')
+
 /**
  * Terminal exception translation.
  *
@@ -22,7 +26,14 @@ export function errorHandler(
       .json({ data: null, error: toAppError(invalid) })
   }
 
-  console.error(error)
+  log.error(
+    {
+      error_name: error instanceof Error ? error.name : typeof error,
+      error_message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    },
+    'unhandled_error'
+  )
   const internal = getError('crm/internal')
   return res
     .status(internal.httpStatus)

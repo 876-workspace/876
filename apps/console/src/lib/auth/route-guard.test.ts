@@ -71,7 +71,8 @@ describe('requireConsolePermission route guard', () => {
     expect(result.sessionUser).toBeNull()
     expect(result.response?.status).toBe(401)
     await expect(result.response?.json()).resolves.toEqual({
-      error: 'Unauthorized.',
+      data: null,
+      error: { code: 'error/unauthorized', message: 'Sign in to continue.' },
     })
     expect(mocks.findConsoleAccess).not.toHaveBeenCalled()
     expect(mocks.resolveAccessContext).not.toHaveBeenCalled()
@@ -85,6 +86,7 @@ describe('requireConsolePermission route guard', () => {
     expect(result.caller).toBeNull()
     expect(result.response?.status).toBe(403)
     await expect(result.response?.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/forbidden',
         message: 'You do not have permission to access this resource.',
@@ -103,6 +105,7 @@ describe('requireConsolePermission route guard', () => {
     expect(result.caller).toBeNull()
     expect(result.response?.status).toBe(403)
     await expect(result.response?.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/forbidden',
         message: 'You do not have permission to access this resource.',
@@ -125,6 +128,7 @@ describe('requireConsolePermission route guard', () => {
     expect(result.caller).toBeNull()
     expect(result.response?.status).toBe(403)
     await expect(result.response?.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/forbidden',
         message: 'You do not have permission to access this resource.',
@@ -186,23 +190,9 @@ describe('requireConsoleCrmPermission route guard', () => {
     mocks.resolveAccessContext.mockResolvedValue(
       context(['console:access', 'console:requests'])
     )
-    mocks.listAppMemberships.mockResolvedValue({
-      data: {
-        object: 'list',
-        data: [
-          {
-            user_id: 'user_caller',
-            app_slug: '876-crm',
-            status: 'active',
-            effective_permissions: ['requests.edit'],
-          },
-        ],
-      },
-      error: null,
-    })
   })
 
-  it('authorizes only when both Console and CRM permissions are present', async () => {
+  it('authorizes on the Console permission alone', async () => {
     const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
 
     expect(result).toEqual({
@@ -212,20 +202,26 @@ describe('requireConsoleCrmPermission route guard', () => {
     })
   })
 
-  it('queries the target workspace and CRM app for the acting operator', async () => {
+  it('never consults the target organization app-access plane', async () => {
+    // Console acts at the operator tier. Requiring an in-org app membership
+    // would make 876's ability to support a customer depend on a grant that
+    // customer can revoke, and would deny every cross-org operation outright.
     await requireConsoleCrmPermission('org_876', 'requests.edit')
 
-    expect(mocks.listAppMemberships).toHaveBeenCalledExactlyOnceWith(
-      'org_876',
-      {
-        userId: 'user_caller',
-        appSlug: '876-crm',
-        status: 'active',
-      }
-    )
+    expect(mocks.listAppMemberships).not.toHaveBeenCalled()
   })
 
-  it('does not query CRM access when the Console surface gate fails', async () => {
+  it('authorizes an operator with no membership in the target organization', async () => {
+    const result = await requireConsoleCrmPermission(
+      'org_a_customer',
+      'requests.delete'
+    )
+
+    expect(result.response).toBeNull()
+    expect(result.caller).toEqual(caller)
+  })
+
+  it('denies an operator without the Console requests permission', async () => {
     mocks.resolveAccessContext.mockResolvedValue(context(['console:access']))
 
     const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
@@ -234,50 +230,35 @@ describe('requireConsoleCrmPermission route guard', () => {
     expect(mocks.listAppMemberships).not.toHaveBeenCalled()
   })
 
-  it('denies a CRM member who lacks the requested operation', async () => {
-    const result = await requireConsoleCrmPermission(
-      'org_876',
-      'requests.delete'
-    )
+  it('denies an operator whose Console access is inactive', async () => {
+    mocks.findConsoleAccess.mockResolvedValue({ ...caller, status: 'revoked' })
+
+    const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
 
     expect(result.response?.status).toBe(403)
+  })
+
+  it('returns 401 for an unsigned session', async () => {
+    mocks.isSignedSession.mockReturnValue(false)
+
+    const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
+
+    expect(result.response?.status).toBe(401)
+  })
+
+  it('rejects with the canonical envelope the browser client accepts', async () => {
+    mocks.resolveAccessContext.mockResolvedValue(context(['console:access']))
+
+    const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
+
+    // A body carrying only `error` fails the client's envelope check and
+    // surfaces as client/invalid-response, so a denial reads as a server fault.
     await expect(result.response?.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/forbidden',
         message: 'You do not have permission to access this resource.',
       },
     })
-  })
-
-  it('denies a permission copied from another CRM membership', async () => {
-    mocks.listAppMemberships.mockResolvedValue({
-      data: {
-        object: 'list',
-        data: [
-          {
-            user_id: 'user_other',
-            app_slug: '876-crm',
-            status: 'active',
-            effective_permissions: ['requests.edit'],
-          },
-        ],
-      },
-      error: null,
-    })
-
-    const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
-
-    expect(result.response?.status).toBe(403)
-  })
-
-  it('fails closed when the app-access plane is unavailable', async () => {
-    mocks.listAppMemberships.mockResolvedValue({
-      data: null,
-      error: { code: 'api/unavailable', message: 'Unavailable.' },
-    })
-
-    const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
-
-    expect(result.response?.status).toBe(403)
   })
 })

@@ -10,6 +10,10 @@ export const GENERIC_ERRORS = {
     message: 'The requested resource was not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'error/unauthorized': {
+    message: 'Sign in to continue.',
+    httpStatus: HttpStatus.UNAUTHORIZED,
+  },
   'error/forbidden': {
     message: 'You do not have permission to access this resource.',
     httpStatus: HttpStatus.FORBIDDEN,

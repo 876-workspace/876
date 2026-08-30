@@ -7,8 +7,26 @@ import { HttpStatus } from '../../types/errors.js'
 describe('CRM catalog - exhaustive contract', () => {
   const allCodes = Object.keys(CRM_ERRORS) as CrmErrorCode[]
 
-  it('contains exactly 37 registered CRM error codes', () => {
-    expect(allCodes.length).toBe(37)
+  it('contains exactly 42 registered CRM error codes', () => {
+    // A bare count is a deliberate tripwire: adding or removing a public error
+    // code changes a client contract, so it should never pass unnoticed.
+    expect(allCodes.length).toBe(42)
+  })
+
+  it('distinguishes each way a Work call can fail', () => {
+    // CRM once mapped every Work failure onto crm/work-unavailable, so a
+    // missing app connection presented as an unreachable service and took a
+    // manual reproduction to diagnose. These codes are what keep the causes
+    // apart; losing one silently returns to that behaviour.
+    for (const code of [
+      'crm/work-unavailable',
+      'crm/work-not-connected',
+      'crm/work-workspace-missing',
+      'crm/work-workspace-inactive',
+      'crm/work-forbidden',
+      'crm/work-invalid-response',
+    ] as const)
+      expect(allCodes).toContain(code)
   })
 
   it('every code is prefixed with crm/ and kebab-case', () => {

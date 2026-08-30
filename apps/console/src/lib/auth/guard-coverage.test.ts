@@ -162,14 +162,20 @@ describe('Console guard coverage', () => {
     }
   })
 
-  it('keeps Console and CRM permission keys independent in route source', () => {
+  it('authorizes CRM routes on Console permissions alone, at the operator tier', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'src/lib/auth/route-guard.ts'),
       'utf8'
     )
 
     expect(source).toContain("requireConsolePermission('console:requests')")
-    expect(source).toContain("appSlug: '876-crm'")
+
+    // Console acts on 876's authority across every organization. Reaching into
+    // the target organization's app-access plane would make support depend on a
+    // grant that organization can revoke, and cannot work cross-org at all
+    // (`.claude/rules/access-tiers.md`).
+    expect(source).not.toContain("appSlug: '876-crm'")
+    expect(source).not.toContain('memberships.list')
     expect(source).not.toContain("'console:requests': 'requests")
   })
 })

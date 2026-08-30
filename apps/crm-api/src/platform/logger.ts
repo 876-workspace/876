@@ -3,13 +3,6 @@ import { createRequire } from 'node:module'
 
 import { pino, type Logger } from 'pino'
 
-/**
- * Field names whose values must never reach log output.
- *
- * Defence in depth behind the convention of never handing a secret to the
- * logger: one careless field should not emit a live credential. Matching is
- * case-insensitive on the exact key, at any depth.
- */
 const SENSITIVE_FIELD_NAMES = new Set([
   'authorization',
   'api_key',
@@ -37,7 +30,6 @@ const SENSITIVE_FIELD_NAMES = new Set([
 
 const REDACTED = '[redacted]'
 
-/** Identity of the principal acting on the current request. Non-PII only. */
 export type Actor = {
   kind?: string
   userId?: string
@@ -58,11 +50,6 @@ export function getRequestId(): string {
   return storage.getStore()?.requestId ?? ''
 }
 
-/**
- * Merge identity onto the current request's context so every later log line
- * carries it without the call site repeating it. Undefined values are ignored,
- * so a partial bind never erases what an earlier one established.
- */
 export function bindActor(fields: Actor): void {
   const store = storage.getStore()
   if (!store) return
@@ -125,14 +112,9 @@ export function configureLogging(options: {
   root = pino({
     level: options.logLevel.toLowerCase(),
     base: undefined,
-    // `event` as the message key and an ISO timestamp match the platform's
-    // other Express services, so one log query spans all of them.
     messageKey: 'event',
     timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
     formatters: { level: (label) => ({ level: label }) },
-    // Redaction happens in the hook, which sees the merged object, rather than
-    // pino's own `redact` paths — the sensitive keys can appear at any depth
-    // under names we do not enumerate up front.
     hooks: {
       logMethod(args, method) {
         const [first, ...rest] = args
@@ -155,13 +137,6 @@ export function configureLogging(options: {
   })
 }
 
-/**
- * Return a logger bound to a module name.
- *
- * Callers log an event name plus structured fields — `log.info({ path },
- * 'request_completed')` — never an interpolated sentence. The event name is
- * what dashboards group on.
- */
 export function getLogger(name: string): Logger {
   if (!root)
     configureLogging({
