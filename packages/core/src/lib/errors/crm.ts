@@ -152,9 +152,32 @@ export const CRM_ERRORS = {
     message: 'This organization has no CRM workspace yet.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'crm/work-forbidden': {
+    message:
+      'The acting user is not permitted to perform this Work operation; grant the required permission to continue.',
+    httpStatus: HttpStatus.FORBIDDEN,
+  },
+  'crm/work-invalid-response': {
+    message:
+      'The shared Work service returned an invalid response; retry, then contact support if it persists.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'crm/work-not-connected': {
+    message:
+      'Connect the CRM app to this organization’s Work workspace with the required scopes to continue.',
+    httpStatus: HttpStatus.FORBIDDEN,
+  },
   'crm/work-unavailable': {
     message: 'The shared Work service could not be reached.',
     httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'crm/work-workspace-inactive': {
+    message: 'Activate this organization’s Work workspace to continue.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'crm/work-workspace-missing': {
+    message: 'Provision this organization’s Work workspace to continue.',
+    httpStatus: HttpStatus.NOT_FOUND,
   },
 } as const satisfies Record<string, ErrorDef>
 
