@@ -207,12 +207,15 @@ The stale foundation Work contract test was replaced with Phase 2 coverage for:
 - empty mutation rejection;
 - text limits.
 
-No test command was executed here.
+Additional service, route, adapter, and client contract coverage was later added on the
+same branch by the repository-capable agent before the final facade-tightening pass.
+
+No test command was executed by ChatGPT Web.
 
 ## 10. Main advanced during implementation
 
 The Phase 2 branch originally branched from `1a206343777fe6f3010ed7a32ee2ce6ab44a22a4`.
-The user later noted `main` had advanced. At the final check, `main` was
+The user later noted `main` had advanced. At the recorded check, `main` was
 `44fccaccca0de5842ba9f266e5f63a9e844eb2a3` after PR #440.
 
 The available ChatGPT Web GitHub write tools can create commits/trees and move refs but
@@ -220,7 +223,8 @@ do not provide a safe native merge/rebase operation. A two-parent commit using a
 unmerged tree would falsely mark main as merged while discarding its changes, so I did
 not do that.
 
-**The local agent must rebase/merge current main before executing this branch.**
+**The local agent must rebase/merge current main before executing this branch.** Do not
+assume the recorded `main` SHA is still current; fetch first.
 
 For conflicts under CRM Request/detail UI, preserve current main and mount the new
 isolated `RequestEventsSection` into the new structure.
@@ -251,6 +255,7 @@ pnpm --filter @876/crm-api typecheck
 pnpm --filter @876/crm-api lint
 pnpm --filter @876/crm-api test
 pnpm --filter @876/client typecheck
+pnpm --filter @876/client test
 pnpm --filter @876/ui typecheck
 pnpm check:service-bundle
 pnpm check:database-env crm-api work-api
@@ -267,7 +272,7 @@ pnpm --filter @876/work-api verify:phase2
 ```
 
 Finally mount the Request Events component into the rebased CRM Request surface and add
-layout-level tests appropriate to PR #440's final structure.
+layout-level tests appropriate to the current-main structure.
 
 ## 12. Deliberately not implemented
 
@@ -282,7 +287,46 @@ layout-level tests appropriate to PR #440's final structure.
 
 Those are deferred rather than accidentally missing.
 
-## 13. No claims of execution
+## 13. Facade discrepancy closure
+
+A final review found that the Phase 2 **composer** and actual **application wiring** had
+drifted apart. `packages/client/src/composers/crm.ts` already exposed Work whenever a
+Work client was supplied, but `apps/crm/src/lib/876.ts` supplied only CRM and Core.
+Therefore the real CRM app could not use canonical `$876.tasks`, `$876.events`,
+`$876.calendars`, `$876.myWork`, and related resources even though the composer type
+suggested it could.
+
+This was corrected in commit `08920da7c104e414d54d7cb83c697414d7c6adcc`:
+
+- `apps/crm/src/lib/876.ts` now supplies `services.work.session` using
+  `WORK_API_URL`, CRM's own `CRM_API_876_KEY`, and the current signed user's access
+  token. It does **not** receive or forward `WORK_INTERNAL_KEY`.
+- `apps/crm/.env.example` and `.env.development` now declare `WORK_API_URL` so the
+  actual CRM app can reach Work locally and documents the production requirement.
+- `RESOURCE_MANIFEST` adds `work` to `ServiceOwner` and registers the canonical Work
+  resource nouns: `tasks`, `taskLists`, `taskLinks`, `taskAssignments`, `reminders`,
+  `recurrenceRules`, `alerts`, `calendars`, `calendarSubscriptions`, `events`,
+  `eventParticipants`, `myWork`, `workSyncConnections`, `workSyncMappings`, and
+  `workExports`.
+- The manifest deliberately keeps `requestTasks`, `requestReminders`, and
+  `requestEvents` CRM-owned. They are request-scoped compatibility/context projections
+  whose canonical underlying records live in Work.
+- The manifest's ownership-contract tests now accept `work` as a valid service owner.
+- `packages/client/src/work-surface.test.ts` was added as a facade contract:
+  - CRM must expose the signed-session Work surface as flat `$876` nouns while keeping
+    request projections available;
+  - CRM must not expose the operator sync-management facade;
+  - Console must expose the full Work operator surface, including sync metadata;
+  - neither app introduces a nested `$876.work.*` namespace.
+
+Console required no application-factory patch: `apps/console/src/lib/876/index.ts` was
+already wired to `services.work.operator` with `WORK_API_URL` and `WORK_INTERNAL_KEY`.
+The discrepancy was specifically CRM's missing application-level Work configuration.
+
+These facade tests are code artifacts only until the local agent runs
+`pnpm --filter @876/client test` after rebasing onto current `main`.
+
+## 14. No claims of execution
 
 ChatGPT Web did not run pnpm, Prisma, migrations, Vitest, ESLint, Next builds, or the
 service in this environment. The code and migration/verifier artifacts were written to
