@@ -1,25 +1,21 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
 import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@876/ui/select'
 import { Switch } from '@876/ui/switch'
 import { Textarea } from '@876/ui/textarea'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 import { client } from '@/lib/client'
 import type { CrmTeamAutoAssign } from '@/types/crm'
+
+import { TeamColorPicker } from './team-color-picker'
 
 type ErrorValue = { code: string; message: string }
 
@@ -31,7 +27,7 @@ export type TeamFormValues = {
   isDefault: boolean
 }
 
-const EMPTY: TeamFormValues = {
+export const EMPTY_TEAM_FORM: TeamFormValues = {
   name: '',
   description: '',
   color: 'blue',
@@ -39,19 +35,11 @@ const EMPTY: TeamFormValues = {
   isDefault: false,
 }
 
-const TEAM_COLORS = [
-  'blue',
-  'violet',
-  'amber',
-  'rose',
-  'cyan',
-  'slate',
-] as const
 const rowClassName = 'sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-3'
 
 export function TeamForm({
   teamId,
-  initial = EMPTY,
+  initial = EMPTY_TEAM_FORM,
 }: {
   teamId?: string
   initial?: TeamFormValues
@@ -146,22 +134,13 @@ export function TeamForm({
         </FormRow>
 
         <FormRow label="Colour" className={rowClassName}>
-          <Select
-            value={values.color}
-            onValueChange={(value) => value && set('color', value)}
-            disabled={saving}
-          >
-            <SelectTrigger aria-label="Colour">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TEAM_COLORS.map((color) => (
-                <SelectItem key={color} value={color}>
-                  <span className="capitalize">{color}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="pt-1.5">
+            <TeamColorPicker
+              value={values.color}
+              onChange={(color) => set('color', color)}
+              disabled={saving}
+            />
+          </div>
         </FormRow>
 
         <FormRow

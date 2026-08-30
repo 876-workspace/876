@@ -3,19 +3,19 @@
 import { cn } from '@876/core/utils'
 import { AppError } from '@876/ui/app-error'
 import { buttonVariants } from '@876/ui/button'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
 import {
   ArrowDownFromLine,
   Bell,
+  CheckIcon,
   ChevronDownIcon,
   ClipboardList,
   Copy,
@@ -23,6 +23,7 @@ import {
   Merge,
   MoreHorizontalIcon,
   Pencil,
+  Plus,
   Printer,
   Share2,
   StickyNote,
@@ -30,6 +31,7 @@ import {
   User,
   UserPlus,
   Users,
+  XIcon,
 } from '@876/ui/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -37,15 +39,16 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
-import type { RequestStatus } from '@/types/crm'
+import type { RequestPriority, RequestStatus } from '@/types/crm'
 
 import { DeleteRequestDialog } from './delete-request-dialog'
 import { NEW_NOTE_FIELD_ID } from './request-notes'
 import { NEW_REMINDER_FIELD_ID } from './request-reminders'
 import { NEW_TASK_FIELD_ID } from './request-tasks'
+import { QuickPrioritySelector } from './quick-priority-selector'
 import { QuickStatusSelector } from './quick-status-selector'
 
-export type HeaderDepartment = {
+export type HeaderTeam = {
   id: string
   name: string
 }
@@ -53,6 +56,8 @@ export type HeaderDepartment = {
 export type HeaderMember = {
   userId: string
   name: string
+  email?: string | null
+  avatar?: string | null
 }
 
 type ErrorValue = { code: string; message: string }
@@ -67,7 +72,11 @@ export function RequestHeaderActions({
   status,
   customerId,
   currentUserId,
-  departments = [],
+  assigneeId = null,
+  teamId = null,
+  priorityId,
+  priorities = [],
+  teams = [],
   members = [],
 }: {
   requestId: string
@@ -75,7 +84,11 @@ export function RequestHeaderActions({
   status: RequestStatus
   customerId: string
   currentUserId?: string
-  departments?: HeaderDepartment[]
+  assigneeId?: string | null
+  teamId?: string | null
+  priorityId: string
+  priorities?: RequestPriority[]
+  teams?: HeaderTeam[]
   members?: HeaderMember[]
 }) {
   const router = useRouter()
@@ -119,6 +132,15 @@ export function RequestHeaderActions({
     router.refresh()
   }
 
+  /** The trigger names the current assignment, so the control reads as state. */
+  const assignedMember = members.find((member) => member.userId === assigneeId)
+  const assignedTeam = teams.find((team) => team.id === teamId)
+  const assignmentLabel =
+    (assigneeId === currentUserId && assigneeId ? 'You' : undefined) ??
+    assignedMember?.name ??
+    assignedTeam?.name ??
+    'Assign'
+
   function compose(fieldId: string, href: string) {
     const field = document.getElementById(fieldId)
     if (!field) {
@@ -135,74 +157,100 @@ export function RequestHeaderActions({
       <div className="flex flex-wrap items-center gap-2">
         <QuickStatusSelector requestId={requestId} currentStatus={status} />
 
+        <QuickPrioritySelector
+          requestId={requestId}
+          currentPriorityId={priorityId}
+          priorities={priorities}
+        />
+
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
               buttonVariants({ variant: 'outline', size: 'sm' }),
-              'h-8 gap-1.5'
+              'h-8 max-w-44 gap-1.5'
             )}
           >
-            <UserPlus className="size-3.5" />
-            Assign
-            <ChevronDownIcon className="size-3.5 opacity-60" />
+            <UserPlus className="size-3.5 shrink-0" />
+            <span className="truncate">{assignmentLabel}</span>
+            <ChevronDownIcon className="size-3.5 shrink-0 opacity-60" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-auto min-w-44">
-            {currentUserId && (
-              <DropdownMenuItem onClick={() => assignToUser(currentUserId)}>
-                <User className="size-4" />
-                Assign to me
-              </DropdownMenuItem>
-            )}
-
-            {departments.length > 0 && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Users className="size-4" />
-                  Assign to team
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-auto min-w-44">
-                  <DropdownMenuItem onClick={() => assignToTeam(null)}>
-                    No team
+          <DropdownMenuContent align="end" className="min-w-52">
+            {members.length > 0 ? (
+              <>
+                <DropdownMenuLabel>Members</DropdownMenuLabel>
+                {currentUserId && assigneeId !== currentUserId ? (
+                  <DropdownMenuItem onClick={() => assignToUser(currentUserId)}>
+                    <User className="size-4" />
+                    Assign to me
                   </DropdownMenuItem>
-                  {departments.map((dept) => (
-                    <DropdownMenuItem
-                      key={dept.id}
-                      onClick={() => assignToTeam(dept.id, dept.name)}
-                    >
-                      {dept.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            )}
-
-            {members.length > 0 && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <User className="size-4" />
-                  Assign to member
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-auto min-w-44">
-                  <DropdownMenuItem onClick={() => assignToUser(null)}>
-                    Unassigned
+                ) : null}
+                {members.map((member) => (
+                  <DropdownMenuItem
+                    key={member.userId}
+                    onClick={() => assignToUser(member.userId, member.name)}
+                    className="gap-2.5 py-1.5"
+                  >
+                    <CustomerAvatar
+                      name={member.name}
+                      src={member.avatar}
+                      className="size-6 shrink-0"
+                    />
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate leading-tight">
+                        {member.userId === currentUserId
+                          ? `${member.name} (you)`
+                          : member.name}
+                      </span>
+                      {member.email ? (
+                        <span className="text-muted-foreground truncate text-xs leading-tight">
+                          {member.email}
+                        </span>
+                      ) : null}
+                    </span>
+                    {member.userId === assigneeId ? (
+                      <CheckIcon className="text-info ml-auto size-4 shrink-0" />
+                    ) : null}
                   </DropdownMenuItem>
-                  {members.map((member) => (
-                    <DropdownMenuItem
-                      key={member.userId}
-                      onClick={() => assignToUser(member.userId, member.name)}
-                    >
-                      {member.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            )}
+                ))}
+              </>
+            ) : null}
 
-            <DropdownMenuSeparator />
+            {teams.length > 0 ? (
+              <>
+                {members.length > 0 ? <DropdownMenuSeparator /> : null}
+                <DropdownMenuLabel>Teams</DropdownMenuLabel>
+                {teams.map((team) => (
+                  <DropdownMenuItem
+                    key={team.id}
+                    onClick={() => assignToTeam(team.id, team.name)}
+                    className="gap-2.5 py-1.5"
+                  >
+                    <span className="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-md">
+                      <Users className="size-3.5" />
+                    </span>
+                    <span className="truncate">{team.name}</span>
+                    {team.id === teamId ? (
+                      <CheckIcon className="text-info ml-auto size-4" />
+                    ) : null}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            ) : null}
 
-            <DropdownMenuItem onClick={() => assignToUser(null)}>
-              Unassign
-            </DropdownMenuItem>
+            {assigneeId || teamId ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (assigneeId) assignToUser(null)
+                    if (teamId) assignToTeam(null)
+                  }}
+                >
+                  <XIcon className="size-4" />
+                  Clear assignment
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -213,30 +261,45 @@ export function RequestHeaderActions({
               'h-8 gap-1.5'
             )}
           >
+            <Plus className="size-3.5" />
             Add
-            <ChevronDownIcon className="size-3.5 text-sky-600 dark:text-sky-400" />
+            <ChevronDownIcon className="size-3.5 opacity-60" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-auto min-w-44">
+          <DropdownMenuContent align="end" className="min-w-44">
             <DropdownMenuItem
-              onClick={() => compose(NEW_NOTE_FIELD_ID, `/requests/${requestId}`)}
+              className="gap-2.5 py-1.5"
+              onClick={() =>
+                compose(NEW_NOTE_FIELD_ID, `/requests/${requestId}`)
+              }
             >
-              <StickyNote className="size-4" />
+              <span className="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-md">
+                <StickyNote className="size-3.5" />
+              </span>
               Note
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="gap-2.5 py-1.5"
               onClick={() =>
                 compose(NEW_TASK_FIELD_ID, `/requests/${requestId}/tasks`)
               }
             >
-              <ClipboardList className="size-4" />
+              <span className="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-md">
+                <ClipboardList className="size-3.5" />
+              </span>
               Task
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="gap-2.5 py-1.5"
               onClick={() =>
-                compose(NEW_REMINDER_FIELD_ID, `/requests/${requestId}/reminders`)
+                compose(
+                  NEW_REMINDER_FIELD_ID,
+                  `/requests/${requestId}/reminders`
+                )
               }
             >
-              <Bell className="size-4" />
+              <span className="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-md">
+                <Bell className="size-3.5" />
+              </span>
               Reminder
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -287,7 +350,9 @@ export function RequestHeaderActions({
               <Copy className="size-4" />
               Copy ID
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={`/customers/${customerId}`} />}>
+            <DropdownMenuItem
+              render={<Link href={`/customers/${customerId}`} />}
+            >
               <User className="size-4" />
               View customer
             </DropdownMenuItem>

@@ -14,13 +14,15 @@ import {
   loadCategoryIndex,
   loadCustomer,
   loadDirectory,
+  loadPriorities,
   loadRequest,
 } from '../_data'
 
 export async function RequestToolbar({ requestId }: { requestId: string }) {
-  const [requestResult, directory] = await Promise.all([
+  const [requestResult, directory, priorityIndex] = await Promise.all([
     loadRequest(requestId),
     loadDirectory(),
+    loadPriorities(),
   ])
 
   if (!requestResult.request)
@@ -58,15 +60,26 @@ export async function RequestToolbar({ requestId }: { requestId: string }) {
             status={request.status}
             customerId={request.customerId}
             currentUserId={requestResult.context.userId}
-            departments={directory.departments}
+            assigneeId={request.assigneeId}
+            teamId={request.teamId}
+            priorityId={request.priorityId}
+            priorities={priorityIndex.priorities}
+            teams={directory.teams}
             members={directory.members}
           />
         </div>
       </div>
-      {directory.departmentsError ? (
+      {directory.teamsError ? (
         <AppError
           title="Team options are temporarily incomplete"
-          error={directory.departmentsError}
+          error={directory.teamsError}
+          variant="inline"
+        />
+      ) : null}
+      {priorityIndex.error ? (
+        <AppError
+          title="Priority options are temporarily incomplete"
+          error={priorityIndex.error}
           variant="inline"
         />
       ) : null}
@@ -125,7 +138,7 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
       })
     : null
   const teamName = request.teamId
-    ? (directory.departments.find((d) => d.id === request.teamId)?.name ??
+    ? (directory.teams.find((team) => team.id === request.teamId)?.name ??
       request.teamId)
     : null
 
@@ -138,10 +151,10 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
           variant="inline"
         />
       ) : null}
-      {directory.membersError || directory.departmentsError ? (
+      {directory.membersError || directory.teamsError ? (
         <AppError
           title="Assignment details are temporarily incomplete"
-          error={directory.membersError ?? directory.departmentsError!}
+          error={directory.membersError ?? directory.teamsError!}
           variant="inline"
         />
       ) : null}
@@ -152,94 +165,115 @@ export async function RequestIdentity({ requestId }: { requestId: string }) {
           variant="inline"
         />
       ) : null}
-      <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8125rem]">
-        <Link
-          href={`/customers/${request.customerId}`}
-          className="text-foreground/85 hover:text-info inline-flex min-w-0 items-center gap-1.5 font-medium transition-colors"
-        >
-          {identity.isBusiness ? (
-            <Building2
-              className="text-muted-foreground size-3.5 shrink-0"
-              aria-hidden="true"
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[0.8125rem]">
+        <Fact>
+          <Link
+            href={`/customers/${request.customerId}`}
+            className="text-foreground/85 hover:text-info inline-flex min-w-0 items-center gap-1.5 font-medium transition-colors"
+          >
+            <FactIcon
+              as={identity.isBusiness ? Building2 : User}
+              label={identity.isBusiness ? 'Customer' : 'Contact'}
             />
-          ) : (
-            <User
-              className="text-muted-foreground size-3.5 shrink-0"
-              aria-hidden="true"
-            />
-          )}
-          <span className="truncate">{identity.name}</span>
-        </Link>
+            <span className="truncate">{identity.name}</span>
+          </Link>
+        </Fact>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-border" aria-hidden="true">
-            ·
-          </span>
-          <span className="text-muted-foreground/80">Owner</span>
+        <FactDivider />
+
+        <Fact label="Owner">
           {assignee ? (
-            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
+            <span className="text-foreground/80 inline-flex min-w-0 items-center gap-1.5">
               <CustomerAvatar
                 name={assignee.name}
                 src={assignee.avatar}
-                className="size-4 rounded-[0.25rem] after:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:rounded-[0.25rem] [&_[data-slot=avatar-fallback]]:text-[0.45rem]"
+                className="size-4"
               />
-              <span>{assignee.name}</span>
+              <span className="truncate">{assignee.name}</span>
             </span>
           ) : (
-            <span className="text-muted-foreground">Unassigned</span>
+            <span>Unassigned</span>
           )}
-          {teamName ? (
-            <>
-              <span className="text-border/60" aria-hidden="true">
-                /
-              </span>
-              <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate transition-colors">
-                <Users
-                  className="text-muted-foreground size-3 shrink-0"
-                  aria-hidden="true"
-                />
-                <span>{teamName}</span>
-              </span>
-            </>
-          ) : null}
-        </div>
+        </Fact>
 
-        <div
-          className="flex items-center gap-1.5"
-          title={formatDateTime(request.updatedAt)}
-        >
-          <span className="text-border" aria-hidden="true">
-            ·
-          </span>
-          <Clock
-            className="text-muted-foreground size-3.5 shrink-0"
-            aria-hidden="true"
-          />
-          <span className="text-muted-foreground truncate">
-            Updated {formatAge(request.updatedAt)}
-          </span>
-        </div>
+        {teamName ? (
+          <>
+            <FactDivider />
+            <Fact label="Team">
+              <span className="text-foreground/80 inline-flex min-w-0 items-center gap-1.5">
+                <FactIcon as={Users} label="Team" />
+                <span className="truncate">{teamName}</span>
+              </span>
+            </Fact>
+          </>
+        ) : null}
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-border" aria-hidden="true">
-            ·
-          </span>
-          <span className="text-muted-foreground/80">Category</span>
+        <FactDivider />
+
+        <Fact label="Category">
           {category ? (
-            <span className="text-foreground/80 hover:text-info inline-flex items-center gap-1 truncate font-medium transition-colors">
+            <span className="text-foreground/80 inline-flex min-w-0 items-center gap-1.5 font-medium">
               <CategoryIcon
                 name={category.icon}
                 className="size-3.5 shrink-0"
                 aria-hidden="true"
               />
-              <span>{category.name}</span>
+              <span className="truncate">{category.name}</span>
             </span>
           ) : (
-            <span className="text-muted-foreground">None</span>
+            <span>None</span>
           )}
-        </div>
+        </Fact>
+
+        <FactDivider />
+
+        <Fact>
+          <span
+            className="inline-flex min-w-0 items-center gap-1.5"
+            title={formatDateTime(request.updatedAt)}
+          >
+            <FactIcon as={Clock} label="Last updated" />
+            <span className="truncate">
+              Updated {formatAge(request.updatedAt)}
+            </span>
+          </span>
+        </Fact>
       </div>
     </div>
+  )
+}
+
+/**
+ * One fact in the identity row. Every icon is the same size and every value
+ * sits on the same baseline, so the row reads as a list of attributes rather
+ * than a run-on sentence.
+ */
+function Fact({
+  label,
+  children,
+}: {
+  label?: string
+  children: React.ReactNode
+}) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5">
+      {label ? <span className="text-muted-foreground/70">{label}</span> : null}
+      {children}
+    </span>
+  )
+}
+
+/** A hairline rule, not a `·` glyph — a character sits off the icons' centre. */
+function FactDivider() {
+  return <span className="bg-border h-3 w-px shrink-0" aria-hidden="true" />
+}
+
+function FactIcon({ as: Icon, label }: { as: typeof Clock; label: string }) {
+  return (
+    <Icon
+      className="text-muted-foreground/70 size-3.5 shrink-0"
+      aria-label={label}
+    />
   )
 }
 

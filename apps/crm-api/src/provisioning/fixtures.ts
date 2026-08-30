@@ -18,7 +18,7 @@ async function ensure876SupportFixture(tenantId: string) {
     provisioningKey: SUPPORT_FIXTURE_PRIORITY_KEY,
     name: 'Normal',
     description: null,
-    color: null,
+    color: 'slate',
     icon: null,
     weight: 20,
     sortOrder: 20,

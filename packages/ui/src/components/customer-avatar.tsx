@@ -46,23 +46,33 @@ export function CustomerAvatar({
   name,
   src,
   size = 'sm',
+  shape,
   className,
 }: {
   name: string
   /** Picture URL. Falls back to the monogram when absent or broken. */
   src?: string | null
   size?: 'sm' | 'lg'
+  /** Shape: 'circle' for individuals, 'square' for business entities. Defaults to 'circle' for lg and 'rounded' for sm if omitted. */
+  shape?: 'circle' | 'square' | 'rounded'
   className?: string
 }) {
   const colorClass = avatarColor(name)
   const initials = initialsOf(name)
 
+  const isSquare = shape === 'square' || shape === 'rounded'
+
   if (size === 'lg') {
+    const radiusClass = isSquare
+      ? 'rounded-2xl after:rounded-2xl'
+      : 'rounded-full after:rounded-full'
+
     return (
       <Avatar
         size="lg"
         className={cn(
           'ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl',
+          radiusClass,
           className
         )}
       >
@@ -72,13 +82,15 @@ export function CustomerAvatar({
     )
   }
 
+  const radiusClass =
+    shape === 'circle'
+      ? 'rounded-full after:rounded-full'
+      : 'rounded-md after:rounded-md'
+
   return (
-    <Avatar
-      size="sm"
-      className={cn('size-6 shrink-0 rounded-md after:rounded-md', className)}
-    >
-      {src ? <AvatarImage src={src} alt="" className="rounded-md" /> : null}
-      <AvatarFallback className={cn('rounded-md text-[0.5625rem]', colorClass)}>
+    <Avatar size="sm" className={cn('size-6 shrink-0', radiusClass, className)}>
+      {src ? <AvatarImage src={src} alt="" /> : null}
+      <AvatarFallback className={cn('text-[0.5625rem]', colorClass)}>
         {initials}
       </AvatarFallback>
     </Avatar>

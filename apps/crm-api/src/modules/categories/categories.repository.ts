@@ -53,7 +53,7 @@ export const retrieveByProvisioningKey = (
 
 export const create = (params: CreateCategoryParams) =>
   prisma.requestCategoryDef.create({
-    data: { id: `crm_cat_${randomUUID().replaceAll('-', '')}`, ...params },
+    data: { id: `cat_${randomUUID().replaceAll('-', '')}`, ...params },
     include: {
       subcategories: {
         where: { deletedAt: null },
@@ -100,11 +100,7 @@ export async function remove(params: {
   }
 }
 
-export const retrieveSub = (
-  tenantId: string,
-  categoryId: string,
-  id: string
-) =>
+export const retrieveSub = (tenantId: string, categoryId: string, id: string) =>
   prisma.requestSubcategory.findFirst({
     where: { tenantId, categoryId, id, deletedAt: null },
   })
@@ -119,7 +115,7 @@ export const retrieveSubByProvisioningKey = (
 
 export const createSub = (params: CreateSubcategoryParams) =>
   prisma.requestSubcategory.create({
-    data: { id: `crm_subcat_${randomUUID().replaceAll('-', '')}`, ...params },
+    data: { id: `subcat_${randomUUID().replaceAll('-', '')}`, ...params },
   })
 
 export const updateSub = (id: string, params: UpdateSubcategoryParams) =>

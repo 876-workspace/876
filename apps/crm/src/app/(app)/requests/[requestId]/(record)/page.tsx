@@ -28,10 +28,7 @@ export default async function RequestConversationPage({ params }: Props) {
     ) : null
 
   const authors: Record<string, NoteAuthor> = Object.fromEntries(
-    directory.members.map((m) => [
-      m.userId,
-      { name: m.name, avatar: m.avatar },
-    ])
+    directory.members.map((m) => [m.userId, { name: m.name, avatar: m.avatar }])
   )
 
   return (

@@ -45,12 +45,12 @@ export async function create(params: {
 
     return transaction.team.create({
       data: {
-        id: `crm_team_${randomUUID().replaceAll('-', '')}`,
+        id: `team_${randomUUID().replaceAll('-', '')}`,
         ...params,
         members: params.members?.length
           ? {
               create: params.members.map((member) => ({
-                id: `crm_tmem_${randomUUID().replaceAll('-', '')}`,
+                id: `tmem_${randomUUID().replaceAll('-', '')}`,
                 tenantId: params.tenantId,
                 userId: member.userId,
                 role: member.role ?? 'MEMBER',
@@ -160,7 +160,7 @@ export function upsertMember(params: {
       },
     },
     create: {
-      id: `crm_tmem_${randomUUID().replaceAll('-', '')}`,
+      id: `tmem_${randomUUID().replaceAll('-', '')}`,
       ...params,
       role: params.role ?? 'MEMBER',
     },

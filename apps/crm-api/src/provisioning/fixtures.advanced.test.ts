@@ -38,6 +38,13 @@ describe('ensureCrmWorkspaceFixtures', () => {
   it('creates the 876 support form against the requested tenant', async () => {
     await ensureCrmWorkspaceFixtures('crm_tnt_1', ['876_SUPPORT'])
 
+    expect(priorities.ensureProvisioned).toHaveBeenCalledWith(
+      'crm_tnt_1',
+      expect.objectContaining({
+        provisioningKey: 'normal',
+        color: 'slate',
+      })
+    )
     expect(requestForms.ensureProvisioned).toHaveBeenCalledTimes(1)
     expect(requestForms.ensureProvisioned).toHaveBeenCalledWith(
       'crm_tnt_1',

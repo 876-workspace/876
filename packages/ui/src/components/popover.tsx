@@ -19,11 +19,21 @@ function PopoverContent({
   alignOffset = 0,
   side = 'bottom',
   sideOffset = 4,
+  collisionPadding = 8,
+  // Fixed, not absolute: an absolutely positioned popup in the body portal
+  // counts toward document height, so opening one near the fold grows the page
+  // and adds a scrollbar behind it.
+  positionMethod = 'fixed',
   ...props
 }: PopoverPrimitive.Popup.Props &
   Pick<
     PopoverPrimitive.Positioner.Props,
-    'align' | 'alignOffset' | 'side' | 'sideOffset'
+    | 'align'
+    | 'alignOffset'
+    | 'side'
+    | 'sideOffset'
+    | 'collisionPadding'
+    | 'positionMethod'
   >) {
   return (
     <PopoverPrimitive.Portal>
@@ -32,6 +42,8 @@ function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
+        positionMethod={positionMethod}
         className="isolate z-50"
       >
         <PopoverPrimitive.Popup

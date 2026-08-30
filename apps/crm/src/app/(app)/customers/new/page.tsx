@@ -1,15 +1,11 @@
-import { Page, PageBreadcrumb } from '@876/ui/page'
-
-import { CustomerForm } from '../_components/customer-form'
+import { CustomerCreateCard } from '../_components/customer-create-card'
 
 export const metadata = { title: 'Add customer' }
 
+/**
+ * Create opens in the card slot, in the same place the customer it creates
+ * will appear — so the list stays visible beside it and the URL is shareable.
+ */
 export default function NewCustomerPage() {
-  return (
-    <Page>
-      <PageBreadcrumb href="/customers" label="Customers" className="mb-4" />
-      <h1 className="876-page-title mb-6">Add customer</h1>
-      <CustomerForm />
-    </Page>
-  )
+  return <CustomerCreateCard />
 }

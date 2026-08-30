@@ -1,50 +1,50 @@
 import Link from 'next/link'
-import type { ComponentType, SVGProps } from 'react'
-
+import { cn } from '@876/core/utils'
+import { Badge } from '@876/ui/badge'
+import { ChevronRightIcon } from '@876/ui/icons'
+import type { SettingsNavGroup } from '../_lib/settings-nav'
 import {
-  Activity,
-  AdjustmentsHorizontalIcon,
-  ClipboardDocumentListIcon,
-  Cog6ToothIcon,
-  EnvelopeIcon,
-  TagIcon,
-  TrendingUp,
-  UsersIcon,
-} from '@876/ui/icons'
+  SETTINGS_ICON_RESOLVER,
+  SETTINGS_ITEM_CONFIG,
+} from '../_lib/settings-nav'
 
-import type { SettingsIconKey, SettingsNavGroup } from '../_lib/settings-nav'
-
-type Icon = ComponentType<SVGProps<SVGSVGElement>>
-
-export const SETTINGS_ICON_RESOLVER: Record<SettingsIconKey, Icon> = {
-  automation: Activity,
-  categories: TagIcon,
-  email: EnvelopeIcon,
-  members: UsersIcon,
-  preferences: Cog6ToothIcon,
-  priorities: TrendingUp,
-  statuses: AdjustmentsHorizontalIcon,
-  teams: ClipboardDocumentListIcon,
-}
+export { SETTINGS_ICON_RESOLVER }
 
 export function SettingsGroupCard({ group }: { group: SettingsNavGroup }) {
   return (
-    <section className="876-card mb-6 break-inside-avoid overflow-hidden">
-      <h2 className="876-section-title border-b px-5 py-4">{group.label}</h2>
-      <ul className="divide-y">
+    <section className="876-card flex flex-col overflow-hidden">
+      <div className="border-876-surface-border border-b px-5 py-3.5">
+        <h2 className="text-muted-foreground text-[0.8125rem] font-semibold">
+          {group.label}
+        </h2>
+      </div>
+      <ul className="divide-border/60 divide-y">
         {group.items.map((item) => {
-          const Icon = SETTINGS_ICON_RESOLVER[item.icon]
+          const config = SETTINGS_ITEM_CONFIG[item.icon]
+          const Icon = config.icon
+
           const content = (
             <>
-              <span className="876-icon-tile">
+              <div
+                className={cn(
+                  'flex size-8 shrink-0 items-center justify-center rounded-lg border transition-colors',
+                  config.bg,
+                  config.text,
+                  config.border
+                )}
+              >
                 <Icon className="size-4" aria-hidden="true" />
+              </div>
+              <span className="text-foreground text-[0.8125rem] font-medium transition-colors group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                {item.label}
               </span>
-              <span className="font-medium">{item.label}</span>
               {item.availability === 'planned' ? (
-                <span className="text-muted-foreground ml-auto text-xs">
+                <Badge variant="secondary" className="ml-auto text-[0.625rem]">
                   Planned
-                </span>
-              ) : null}
+                </Badge>
+              ) : (
+                <ChevronRightIcon className="text-muted-foreground/40 group-hover:text-foreground/80 ml-auto size-4 shrink-0 transition-colors" />
+              )}
             </>
           )
 
@@ -53,12 +53,12 @@ export function SettingsGroupCard({ group }: { group: SettingsNavGroup }) {
               {item.availability === 'available' && item.href ? (
                 <Link
                   href={item.href}
-                  className="hover:bg-muted/50 flex items-center gap-3 px-5 py-3.5 transition-colors"
+                  className="group hover:bg-muted/40 flex items-center gap-3.5 px-5 py-3.5 transition-colors"
                 >
                   {content}
                 </Link>
               ) : (
-                <div className="flex items-center gap-3 px-5 py-3.5">
+                <div className="flex items-center gap-3.5 px-5 py-3.5 opacity-70">
                   {content}
                 </div>
               )}

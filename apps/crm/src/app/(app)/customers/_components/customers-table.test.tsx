@@ -1,12 +1,13 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { CustomersTable, type CrmCustomerRow } from './customers-table'
+import type { CrmCustomerRow } from '@/features/customers/types'
+import { CustomersTable } from './customers-table'
 
 const pushMock = vi.fn()
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
+  useSearchParams: () => new URLSearchParams('status=active'),
 }))
 
 const sampleCustomers: CrmCustomerRow[] = [
@@ -39,21 +40,16 @@ describe('CustomersTable', () => {
     vi.clearAllMocks()
   })
 
-  it('renders customers with links and contact info', () => {
+  it('renders customers with names, contact info, and status', () => {
     render(<CustomersTable customers={sampleCustomers} />)
 
-    expect(
-      screen.getByRole('link', { name: 'Island Traders Ltd' })
-    ).toHaveAttribute('href', '/customers/crm_prof_1')
+    expect(screen.getByText('Island Traders Ltd')).toBeTruthy()
     expect(screen.getByText('Althea Morgan')).toBeTruthy()
     expect(screen.getByText('althea@islandtraders.com')).toBeTruthy()
     expect(screen.getByText('+18765550100')).toBeTruthy()
     expect(screen.getByText('Active')).toBeTruthy()
 
-    expect(screen.getByRole('link', { name: 'Jane Doe' })).toHaveAttribute(
-      'href',
-      '/customers/crm_prof_2'
-    )
+    expect(screen.getByText('Jane Doe')).toBeTruthy()
     expect(screen.getByText('jane@example.com')).toBeTruthy()
     expect(screen.getByText('Inactive')).toBeTruthy()
   })
@@ -69,31 +65,29 @@ describe('CustomersTable', () => {
 
     // Empty state should be rendered
     expect(screen.getByText('No customers yet')).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Add/ })).toHaveAttribute(
       'href',
       '/customers/new'
     )
   })
 
-  it('renders custom emptyState when provided', () => {
+  it('links each row to that customer, carrying the list query forward', () => {
+    render(<CustomersTable customers={sampleCustomers} />)
+
+    expect(
+      screen.getByRole('link', { name: 'View customer Island Traders Ltd' })
+    ).toHaveAttribute('href', '/customers/crm_prof_1?status=active')
+  })
+
+  it('encodes a customer id that is not URL-safe', () => {
     render(
       <CustomersTable
-        customers={[]}
-        emptyState={<div>Custom empty customers state</div>}
+        customers={[{ ...sampleCustomers[0], profileId: 'a/b c' }]}
       />
     )
 
-    expect(screen.getByText('Custom empty customers state')).toBeTruthy()
-  })
-
-  it('navigates on row click', async () => {
-    const user = userEvent.setup()
-    render(<CustomersTable customers={sampleCustomers} />)
-
-    const row = screen.getByText('Island Traders Ltd').closest('tr')
-    expect(row).toBeTruthy()
-    if (row) await user.click(row)
-
-    expect(pushMock).toHaveBeenCalledWith('/customers/crm_prof_1')
+    expect(
+      screen.getByRole('link', { name: 'View customer Island Traders Ltd' })
+    ).toHaveAttribute('href', '/customers/a%2Fb%20c?status=active')
   })
 })

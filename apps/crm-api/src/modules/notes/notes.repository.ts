@@ -46,7 +46,7 @@ export function create(params: {
 
   return prisma.requestNote.create({
     data: {
-      id: `crm_note_${randomUUID().replaceAll('-', '')}`,
+      id: `note_${randomUUID().replaceAll('-', '')}`,
       tenantId: params.tenantId,
       requestId: params.requestId,
       body: params.body,

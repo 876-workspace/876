@@ -1,149 +1,85 @@
 'use client'
 
 import * as React from 'react'
-
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { DataTable } from '@876/ui/data-table'
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
-import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-
 import { buttonVariants } from '@876/ui/button'
-import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
-import { UsersIcon } from '@876/ui/icons'
+import {
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { Plus, UsersIcon } from '@876/ui/icons'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@876/ui/table'
 
-export type CrmCustomerRow = {
-  profileId: string
-  billingCustomerId: string
-  /** The party's name — the company for a business, the person otherwise. */
-  name: string
-  isBusiness: boolean
-  /** The party's own email/phone. For a business, never the contact's. */
-  email: string | null
-  phone: string | null
-  /** The person attached to a business customer. Null for an individual. */
-  contactName: string | null
-  contactEmail: string | null
-  status: 'ACTIVE' | 'INACTIVE'
-}
+import type { CrmCustomerRow } from '@/features/customers/types'
+import { CustomerTableRow } from './customer-row'
 
 interface Props {
   customers: CrmCustomerRow[]
-  emptyState?: React.ReactNode
 }
 
-const emptyState = (
-  <Empty className="py-14">
-    <EmptyHeader>
-      <EmptyMedia variant="icon">
-        <UsersIcon aria-hidden="true" />
-      </EmptyMedia>
-      <EmptyTitle>No customers yet</EmptyTitle>
-    </EmptyHeader>
-    <EmptyContent>
-      <Link
-        href="/customers/new"
-        className={buttonVariants({ variant: 'info', size: 'sm' })}
-      >
-        Add
-      </Link>
-    </EmptyContent>
-  </Empty>
-)
-
-export function CustomersTable({
-  customers,
-  emptyState: customEmptyState,
-}: Props) {
-  const router = useRouter()
-
-  const columns: ColumnDef<CrmCustomerRow, unknown>[] = [
-    {
-      accessorKey: 'name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Customer" />
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <CustomerAvatar name={row.original.name} />
-          <Link
-            href={`/customers/${row.original.profileId}`}
-            className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
-            onClick={(event) => event.stopPropagation()}
-          >
-            {row.original.name}
-          </Link>
-        </div>
-      ),
-    },
-    {
-      // An individual is their own contact, so their party email fills this
-      // cell; a business shows the person it belongs to, on its own line.
-      accessorKey: 'contactName',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Contact" />
-      ),
-      cell: ({ row }) =>
-        row.original.isBusiness ? (
-          row.original.contactName ? (
-            <div className="min-w-0">
-              <p className="truncate">{row.original.contactName}</p>
-              {row.original.contactEmail ? (
-                <p className="text-muted-foreground truncate text-xs">
-                  {row.original.contactEmail}
-                </p>
-              ) : null}
-            </div>
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          )
-        ) : (
-          <span className="text-muted-foreground">
-            {row.original.email ?? '—'}
-          </span>
-        ),
-    },
-    {
-      accessorKey: 'phone',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Phone" />
-      ),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.phone ?? '—'}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'status',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
-      cell: ({ row }) => (
-        <span
-          className={
-            row.original.status === 'ACTIVE'
-              ? 'text-emerald-600 dark:text-emerald-400'
-              : 'text-muted-foreground'
-          }
-        >
-          {row.original.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-  ]
-
+export function CustomersTable({ customers }: Props) {
   return (
     <div className="876-card overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={customers}
-        emptyState={customEmptyState ?? emptyState}
-        onRowClick={(customer) =>
-          router.push(`/customers/${customer.profileId}`)
-        }
-      />
+      <Table>
+        <TableHeader className="876-header-row">
+          <TableRow>
+            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+              Customer
+            </TableHead>
+            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+              Contact
+            </TableHead>
+            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+              Phone
+            </TableHead>
+            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+              Status
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {customers.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} className="p-0">
+                <Empty className="py-14">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <UsersIcon className="size-6" />
+                    </EmptyMedia>
+                    <EmptyTitle>No customers yet</EmptyTitle>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Link
+                      href="/customers/new"
+                      className={buttonVariants({
+                        variant: 'info',
+                        size: 'sm',
+                      })}
+                    >
+                      <Plus className="size-4" strokeWidth={2.25} />
+                      Add
+                    </Link>
+                  </EmptyContent>
+                </Empty>
+              </TableCell>
+            </TableRow>
+          ) : (
+            customers.map((customer) => (
+              <CustomerTableRow key={customer.profileId} customer={customer} />
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   )
 }

@@ -33,6 +33,8 @@ type RequestStatusConfig = {
    * composed `bg-${color}/10` would never be generated.
    */
   trigger: string
+  /** A solid dot of the status colour, for a list row on a neutral surface. */
+  dot: string
 }
 
 const SECONDARY_TRIGGER =
@@ -45,6 +47,7 @@ const STATUS_CONFIG: Record<RequestStatus, RequestStatusConfig> = {
     icon: Clock,
     trigger:
       'border-info/20 bg-info/10 text-info hover:bg-info/20 hover:text-info aria-expanded:bg-info/20 aria-expanded:text-info dark:bg-info/15 dark:hover:bg-info/25',
+    dot: 'bg-info',
   },
   IN_PROGRESS: {
     label: 'In progress',
@@ -52,12 +55,14 @@ const STATUS_CONFIG: Record<RequestStatus, RequestStatusConfig> = {
     icon: Activity,
     trigger:
       'border-warning/20 bg-warning/10 text-warning hover:bg-warning/20 hover:text-warning aria-expanded:bg-warning/20 aria-expanded:text-warning dark:bg-warning/15 dark:hover:bg-warning/25',
+    dot: 'bg-warning',
   },
   WAITING: {
     label: 'Waiting',
     variant: 'secondary',
     icon: Clock,
     trigger: SECONDARY_TRIGGER,
+    dot: 'bg-muted-foreground/50',
   },
   RESOLVED: {
     label: 'Resolved',
@@ -65,12 +70,14 @@ const STATUS_CONFIG: Record<RequestStatus, RequestStatusConfig> = {
     icon: CheckCircle,
     trigger:
       'border-success/20 bg-success/10 text-success hover:bg-success/20 hover:text-success aria-expanded:bg-success/20 aria-expanded:text-success dark:bg-success/15 dark:hover:bg-success/25',
+    dot: 'bg-success',
   },
   CLOSED: {
     label: 'Closed',
     variant: 'secondary',
     icon: CheckIcon,
     trigger: SECONDARY_TRIGGER,
+    dot: 'bg-muted-foreground',
   },
   CANCELLED: {
     label: 'Cancelled',
@@ -78,6 +85,7 @@ const STATUS_CONFIG: Record<RequestStatus, RequestStatusConfig> = {
     icon: XCircle,
     trigger:
       'border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive aria-expanded:bg-destructive/20 aria-expanded:text-destructive dark:bg-destructive/20 dark:hover:bg-destructive/30',
+    dot: 'bg-destructive',
   },
 }
 
@@ -85,6 +93,7 @@ const FALLBACK_CONFIG: Omit<RequestStatusConfig, 'label'> = {
   variant: 'secondary',
   icon: AlertCircle,
   trigger: SECONDARY_TRIGGER,
+  dot: 'bg-muted-foreground',
 }
 
 /**
