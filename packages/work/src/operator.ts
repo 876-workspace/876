@@ -4,6 +4,7 @@ import { createCalendarSubscriptionsResource } from './resources/calendar-subscr
 import { createEventParticipantsResource } from './resources/event-participants'
 import { createEventsResource } from './resources/events'
 import { createExportsResource } from './resources/exports'
+import { createMyWorkResource } from './resources/my-work'
 import { createRecurrenceRulesResource } from './resources/recurrence-rules'
 import { createRemindersResource } from './resources/reminders'
 import { createSyncConnectionsResource } from './resources/sync-connections'
@@ -30,6 +31,7 @@ export function create876WorkOperatorClient(options: WorkOperatorClientOptions) 
     calendarSubscriptions: createCalendarSubscriptionsResource(runtime),
     events: createEventsResource(runtime),
     eventParticipants: createEventParticipantsResource(runtime),
+    myWork: createMyWorkResource(runtime),
     syncConnections: createSyncConnectionsResource(runtime),
     syncMappings: createSyncMappingsResource(runtime),
     exports: createExportsResource(runtime),

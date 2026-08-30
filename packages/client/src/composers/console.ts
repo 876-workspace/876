@@ -8,13 +8,7 @@ import {
 } from './control-planes'
 import type { ConsoleServerClientOptions } from '../internal/types'
 
-/**
- * Creates Console's three server-side surfaces from one set of service clients.
- *
- * - `$876` — resource/data plane
- * - `workspace` — organization workspace control plane
- * - `platform` — 876 operator control plane
- */
+/** Creates Console's resource, workspace, and platform control planes. */
 export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
   const services = createServiceClients(options)
   const platformClient = services.platform
@@ -48,6 +42,7 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     services.widgets?.admin,
     'widgets.admin'
   )
+  const work = requireCapability(services.work?.operator, 'work.operator')
 
   const core = createCoreSurface({
     platform: platformClient,
@@ -74,6 +69,21 @@ export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
     requestNotes: crm.requestNotes,
     requestCategories: crm.requestCategories,
     requestPriorities: crm.requestPriorities,
+    tasks: work.tasks,
+    taskLists: work.taskLists,
+    taskLinks: work.taskLinks,
+    taskAssignments: work.taskAssignments,
+    reminders: work.reminders,
+    recurrenceRules: work.recurrenceRules,
+    alerts: work.alerts,
+    calendars: work.calendars,
+    calendarSubscriptions: work.calendarSubscriptions,
+    events: work.events,
+    eventParticipants: work.eventParticipants,
+    myWork: work.myWork,
+    workSyncConnections: work.syncConnections,
+    workSyncMappings: work.syncMappings,
+    workExports: work.exports,
     files: storage.files,
     uploads: storage.uploads,
     notes: withAdmin(widgetsMember.notes, widgetsAdmin.notes),

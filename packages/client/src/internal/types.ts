@@ -32,6 +32,18 @@ import type {
   WidgetsClient,
 } from '@876/widgets/server'
 import type { WidgetsAdminClient } from '@876/widgets/server/admin'
+import type {
+  WorkIntegrationClient,
+  WorkIntegrationClientOptions,
+} from '@876/work/integration'
+import type {
+  WorkOperatorClient,
+  WorkOperatorClientOptions,
+} from '@876/work/operator'
+import type {
+  WorkSessionClient,
+  WorkSessionClientOptions,
+} from '@876/work/session'
 
 export interface BaseServiceClientOptions {
   platformAdmin?: Admin876ClientOptions
@@ -49,6 +61,11 @@ export interface BaseServiceClientOptions {
   widgets?: {
     member?: CreateWidgetsClientOptions
     admin?: CreateWidgetsClientOptions
+  }
+  work?: {
+    operator?: WorkOperatorClientOptions
+    integration?: WorkIntegrationClientOptions
+    session?: WorkSessionClientOptions
   }
 }
 
@@ -71,6 +88,7 @@ export interface ConsoleServerClientOptions extends BaseServerOptions {
       member: CreateWidgetsClientOptions
       admin: CreateWidgetsClientOptions
     }
+    work: { operator: WorkOperatorClientOptions }
   }
 }
 
@@ -87,6 +105,10 @@ export interface CouriersServerClientOptions extends BaseServerOptions {
     }
     storage: StorageClientOptions
     widgets: { member: CreateWidgetsClientOptions }
+    work?: {
+      integration?: WorkIntegrationClientOptions
+      session?: WorkSessionClientOptions
+    }
   }
 }
 
@@ -94,6 +116,10 @@ export interface CrmServerClientOptions extends BaseServerOptions {
   app: 'crm'
   services: BaseServiceClientOptions & {
     crm: CrmClientOptions
+    work?: {
+      integration?: WorkIntegrationClientOptions
+      session?: WorkSessionClientOptions
+    }
   }
 }
 
@@ -105,6 +131,10 @@ export interface BillingServerClientOptions extends BaseServerOptions {
       admin?: BillingAdminClientOptions
     }
     widgets: { member: CreateWidgetsClientOptions }
+    work?: {
+      integration?: WorkIntegrationClientOptions
+      session?: WorkSessionClientOptions
+    }
   }
 }
 
@@ -112,6 +142,10 @@ export interface InvoiceServerClientOptions extends BaseServerOptions {
   app: 'invoice'
   services: BaseServiceClientOptions & {
     billing: { tenant: BillingClientOptions }
+    work?: {
+      integration?: WorkIntegrationClientOptions
+      session?: WorkSessionClientOptions
+    }
   }
 }
 
@@ -146,5 +180,10 @@ export interface ServiceClients {
   widgets?: {
     member?: WidgetsClient
     admin?: WidgetsAdminClient
+  }
+  work?: {
+    operator?: WorkOperatorClient
+    integration?: WorkIntegrationClient
+    session?: WorkSessionClient
   }
 }
