@@ -15,7 +15,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { MoreHorizontalIcon, Pencil, Trash, XIcon } from '@876/ui/icons'
+import {
+  Mail,
+  MoreHorizontalIcon,
+  Pencil,
+  Phone,
+  Trash,
+  XIcon,
+} from '@876/ui/icons'
 
 import { client } from '@/lib/client'
 import { CustomerActivity } from './customer-activity'
@@ -94,32 +101,62 @@ export function CustomerCard({
       )}
     >
       {/* Header */}
-      <header className="border-876-surface-border flex shrink-0 items-start gap-3.5 border-b px-6 py-5">
+      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
         <CustomerAvatar
           name={customer.name}
-          className="size-12 rounded-xl text-base after:rounded-xl [&_*]:rounded-xl"
+          src={customer.contactAvatar}
+          size="lg"
+          shape={customer.isBusiness ? 'square' : 'circle'}
+          className={cn(
+            'ring-border/60 size-14 shrink-0 text-lg font-semibold shadow-xs ring-1 sm:size-16 sm:text-xl',
+            customer.isBusiness
+              ? 'rounded-2xl after:rounded-2xl sm:rounded-2xl'
+              : 'rounded-full after:rounded-full'
+          )}
         />
 
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-foreground truncate text-lg font-semibold tracking-tight">
+            <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
               {customer.name}
             </h2>
             <Badge variant={isActive ? 'success' : 'secondary'}>
               {isActive ? 'Active' : 'Inactive'}
             </Badge>
-            {customer.isBusiness ? (
-              <Badge variant="outline">Business</Badge>
+            <Badge variant="outline">
+              {customer.isBusiness ? 'Business' : 'Individual'}
+            </Badge>
+          </div>
+          <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            {subtitle ? (
+              <span className="text-foreground/80 font-medium">{subtitle}</span>
+            ) : null}
+            {customer.email ? (
+              <span className="inline-flex items-center gap-1">
+                <Mail className="text-muted-foreground/70 size-3.5 shrink-0" />
+                <a
+                  href={`mailto:${customer.email}`}
+                  className="hover:text-foreground hover:underline"
+                >
+                  {customer.email}
+                </a>
+              </span>
+            ) : null}
+            {customer.phone ? (
+              <span className="inline-flex items-center gap-1">
+                <Phone className="text-muted-foreground/70 size-3.5 shrink-0" />
+                <a
+                  href={`tel:${customer.phone}`}
+                  className="hover:text-foreground hover:underline"
+                >
+                  {customer.phone}
+                </a>
+              </span>
             ) : null}
           </div>
-          <p className="text-muted-foreground truncate text-xs">
-            {subtitle}
-            {customer.email ? ` · ${customer.email}` : ''}
-            {customer.phone ? ` · ${customer.phone}` : ''}
-          </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
           <Link
             href={`/customers/${customer.profileId}/edit`}
             className={buttonVariants({ variant: 'outline', size: 'sm' })}
@@ -167,25 +204,20 @@ export function CustomerCard({
         </div>
       </header>
 
-      {/* Tabs Bar */}
-      <div
-        role="tablist"
-        aria-label="Customer details tabs"
-        className="border-876-surface-border shrink-0 border-b px-6 pt-3.5 pb-3"
-      >
-        <div className="bg-muted/60 inline-flex w-fit items-center gap-1 rounded-lg p-1">
+      {/* Tabs */}
+      <div className="border-876-surface-border shrink-0 border-b px-6 pt-3">
+        <div role="tablist" className="flex items-center gap-6">
           {DETAIL_TABS.map((entry) => (
             <button
               key={entry.value}
-              type="button"
               role="tab"
               aria-selected={tab === entry.value}
               onClick={() => setTab(entry.value)}
               className={cn(
-                'rounded-md px-4 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
+                'border-b-2 pb-3 text-xs font-medium transition-colors',
                 tab === entry.value
-                  ? 'text-foreground bg-background shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'border-primary text-foreground font-semibold'
+                  : 'text-muted-foreground hover:text-foreground border-transparent'
               )}
             >
               {entry.label}
@@ -221,17 +253,37 @@ export function CustomerCard({
                   </div>
                 ) : null}
                 <div>
-                  <dt className="text-muted-foreground text-xs">Email</dt>
+                  <dt className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <Mail className="size-3 shrink-0" />
+                    Email
+                  </dt>
                   <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium">
-                    {customer.email || (
+                    {customer.email ? (
+                      <a
+                        href={`mailto:${customer.email}`}
+                        className="hover:underline"
+                      >
+                        {customer.email}
+                      </a>
+                    ) : (
                       <span className="text-muted-foreground/60">—</span>
                     )}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground text-xs">Phone</dt>
+                  <dt className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <Phone className="size-3 shrink-0" />
+                    Phone
+                  </dt>
                   <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium">
-                    {customer.phone || (
+                    {customer.phone ? (
+                      <a
+                        href={`tel:${customer.phone}`}
+                        className="hover:underline"
+                      >
+                        {customer.phone}
+                      </a>
+                    ) : (
                       <span className="text-muted-foreground/60">—</span>
                     )}
                   </dd>
@@ -270,22 +322,36 @@ export function CustomerCard({
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-muted-foreground text-xs">
+                      <dt className="text-muted-foreground flex items-center gap-1 text-xs">
+                        <Mail className="size-3 shrink-0" />
                         Contact Email
                       </dt>
                       <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium">
-                        {customer.contactEmail || (
+                        {customer.contactEmail ? (
+                          <a
+                            href={`mailto:${customer.contactEmail}`}
+                            className="hover:underline"
+                          >
+                            {customer.contactEmail}
+                          </a>
+                        ) : (
                           <span className="text-muted-foreground/60">—</span>
                         )}
                       </dd>
                     </div>
                     {customer.contactPhone ? (
                       <div>
-                        <dt className="text-muted-foreground text-xs">
+                        <dt className="text-muted-foreground flex items-center gap-1 text-xs">
+                          <Phone className="size-3 shrink-0" />
                           Contact Phone
                         </dt>
                         <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium">
-                          {customer.contactPhone}
+                          <a
+                            href={`tel:${customer.contactPhone}`}
+                            className="hover:underline"
+                          >
+                            {customer.contactPhone}
+                          </a>
                         </dd>
                       </div>
                     ) : null}

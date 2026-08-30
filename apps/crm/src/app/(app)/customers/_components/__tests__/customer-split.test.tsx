@@ -100,9 +100,11 @@ describe('CustomerSplit', () => {
       screen.getByLabelText('Customer details: Island Traders Ltd')
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Island Traders Jamaica Limited')
-    ).toBeInTheDocument()
-    expect(screen.getByText('info@islandtraders.com')).toBeInTheDocument()
+      screen.getAllByText('Island Traders Jamaica Limited').length
+    ).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText('info@islandtraders.com').length
+    ).toBeGreaterThan(0)
     expect(screen.getByText('usr_althea')).toBeInTheDocument()
   })
 

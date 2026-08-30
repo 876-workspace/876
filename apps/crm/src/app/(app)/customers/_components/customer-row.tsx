@@ -4,6 +4,7 @@ import type { KeyboardEvent } from 'react'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
+import { Mail, Phone } from '@876/ui/icons'
 import { TableCell, TableRow } from '@876/ui/table'
 import type { CrmCustomerRow } from './customers-table'
 
@@ -43,7 +44,12 @@ export function CondensedCustomerRow({
     >
       <TableCell className="py-3 pr-3 pl-4">
         <div className="flex items-center gap-3">
-          <CustomerAvatar name={customer.name} className="size-7 shrink-0" />
+          <CustomerAvatar
+            name={customer.name}
+            src={customer.contactAvatar}
+            shape={customer.isBusiness ? 'square' : 'circle'}
+            className="size-7 shrink-0"
+          />
           <div className="min-w-0 flex-1">
             <p className="text-foreground truncate text-[0.8125rem] font-medium">
               {customer.name}
@@ -91,7 +97,12 @@ export function CustomerTableRow({
     >
       <TableCell className="px-5 py-4">
         <div className="flex items-center gap-3">
-          <CustomerAvatar name={customer.name} />
+          <CustomerAvatar
+            name={customer.name}
+            src={customer.contactAvatar}
+            shape={customer.isBusiness ? 'square' : 'circle'}
+            className="size-8 shrink-0"
+          />
           <div className="min-w-0">
             <span className="text-[0.8125rem] font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
               {customer.name}
@@ -110,20 +121,38 @@ export function CustomerTableRow({
             <div className="min-w-0">
               <p className="truncate font-medium">{customer.contactName}</p>
               {customer.contactEmail ? (
-                <p className="text-muted-foreground truncate text-xs">
+                <p className="text-muted-foreground flex items-center gap-1.5 truncate text-xs">
+                  <Mail className="text-muted-foreground/70 size-3 shrink-0" />
                   {customer.contactEmail}
                 </p>
               ) : null}
             </div>
+          ) : customer.email ? (
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Mail className="text-muted-foreground/70 size-3.5 shrink-0" />
+              {customer.email}
+            </span>
           ) : (
             <span className="text-muted-foreground/60">—</span>
           )
+        ) : customer.email ? (
+          <span className="text-muted-foreground flex items-center gap-1.5">
+            <Mail className="text-muted-foreground/70 size-3.5 shrink-0" />
+            {customer.email}
+          </span>
         ) : (
-          <span className="text-muted-foreground">{customer.email ?? '—'}</span>
+          <span className="text-muted-foreground/60">—</span>
         )}
       </TableCell>
       <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem] whitespace-nowrap">
-        {customer.phone ?? <span className="text-muted-foreground/60">—</span>}
+        {customer.phone ? (
+          <span className="flex items-center gap-1.5">
+            <Phone className="text-muted-foreground/70 size-3.5 shrink-0" />
+            {customer.phone}
+          </span>
+        ) : (
+          <span className="text-muted-foreground/60">—</span>
+        )}
       </TableCell>
       <TableCell className="px-5 py-4">
         <Badge variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}>

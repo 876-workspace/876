@@ -65,14 +65,16 @@ describe('CustomerCard', () => {
 
     expect(screen.getByText('Island Traders Ltd')).toBeInTheDocument()
     expect(
-      screen.getByText('Island Traders Jamaica Limited')
-    ).toBeInTheDocument()
+      screen.getAllByText('Island Traders Jamaica Limited').length
+    ).toBeGreaterThan(0)
     expect(screen.getAllByText('Active').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Business').length).toBeGreaterThan(0)
 
     expect(screen.getByText('Organization Details')).toBeInTheDocument()
-    expect(screen.getByText('info@islandtraders.com')).toBeInTheDocument()
-    expect(screen.getByText('+18765550100')).toBeInTheDocument()
+    expect(
+      screen.getAllByText('info@islandtraders.com').length
+    ).toBeGreaterThan(0)
+    expect(screen.getAllByText('+18765550100').length).toBeGreaterThan(0)
 
     expect(screen.getByText('Primary Contact')).toBeInTheDocument()
     expect(screen.getByText('Althea Morgan')).toBeInTheDocument()
