@@ -26,18 +26,13 @@ const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
   allowedDevOrigins: previewDevOrigins,
-  // Trace from the monorepo root so shared workspace packages are included.
   outputFileTracingRoot: path.join(__dirname, '../../'),
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
   async redirects() {
     return [
-      {
-        source: '/catalogue',
-        destination: '/products',
-        permanent: true,
-      },
+      { source: '/catalogue', destination: '/products', permanent: true },
       {
         source: '/catalog/items/:path*',
         destination: '/items/:path*',
@@ -67,6 +62,7 @@ const nextConfig: NextConfig = {
     ]
   },
   transpilePackages: sharedTranspilePackages([
+    '@876/account',
     '@876/billing',
     '@876/sdk',
     '@876/core',

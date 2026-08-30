@@ -1,5 +1,4 @@
-import { CreditCardIcon } from '@876/ui/icons'
-import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import {
   Empty,
   EmptyDescription,
@@ -7,17 +6,19 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
+import { CreditCardIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 
-import { get876Client } from '@/lib/876'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { getBilling } from '@/lib/services/billing'
+
 import { PaymentsTable } from './_components/payments-table'
 
 export const metadata = {
@@ -73,8 +74,8 @@ export default async function PaymentsPage({ searchParams }: Props) {
 async function PaymentsTableData() {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const $876 = await get876Client(context.orgId)
-  const result = (await $876.payments
+  const billing = await getBilling(context.orgId)
+  const result = (await billing.payments
     .list()
     .catch(
       () => ({ data: null, error: { code: 'unreachable' } }) as const
@@ -110,9 +111,6 @@ async function PaymentsTableData() {
     },
     amount: (p.amount as string) ?? '0',
     currency: String(p.currency ?? 'JMD'),
-    // A payment with no recorded date renders an em dash. Falling back to
-    // Date.now() showed a fabricated date, and read the clock during render,
-    // so the value differed between the server and client passes.
     paymentDate:
       typeof p.paymentDate === 'number'
         ? p.paymentDate

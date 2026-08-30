@@ -26,13 +26,7 @@ const previewDevOrigins = devResourceHosts()
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
-  // Auto-memoizes components/hooks to cut client re-render churn during
-  // navigation and interaction. Build-time transform only, so it is safe on
-  // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
-  // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  // Trace from the monorepo root, matching Next's own monorepo inference, so
-  // the function bundle can reach the pnpm store.
   outputFileTracingRoot: path.join(__dirname, '../../'),
   allowedDevOrigins: ['127.0.0.1', ...previewDevOrigins],
   async headers() {
@@ -59,11 +53,19 @@ const nextConfig: NextConfig = {
     ]
   },
   transpilePackages: sharedTranspilePackages([
+    '@876/account',
     '@876/analytics',
     '@876/billing',
+    '@876/core',
+    '@876/couriers',
+    '@876/crm',
+    '@876/platform',
+    '@876/storage',
+    '@876/widgets',
+    '@876/work',
+    '@876/workspace',
     '@876/sdk',
     '@876/admin',
-    '@876/core',
   ]),
   experimental: {
     optimizePackageImports: ['radix-ui', 'zod'],
@@ -84,7 +86,5 @@ export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
-  sourcemaps: {
-    disable: true,
-  },
+  sourcemaps: { disable: true },
 })
