@@ -4,13 +4,14 @@ import { workTenantSchema } from './types'
 
 export function createWorkWorkspaceClient(runtime: WorkRuntime) {
   return {
-    ensure(organizationId: string) {
+    ensure(organizationId: string, appId?: string) {
       return workRequest(
         runtime,
         {
           method: 'POST',
           path: '/v1/tenants',
-          body: { organizationId },
+          body:
+            appId === undefined ? { organizationId } : { organizationId, appId },
         },
         workTenantSchema
       )

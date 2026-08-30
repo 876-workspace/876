@@ -23,7 +23,7 @@ export async function workRequest<T>(
   init: ClientRequestInit,
   schema: z.ZodType<T>
 ): Promise<WorkResult<T>> {
-  if (!runtime.baseUrl || !runtime.internalKey)
+  if (!runtime.baseUrl || !runtime.credential.value)
     return { data: null, error: clientError('work/not-configured') }
 
   const response = await sendClientRequest(
@@ -32,20 +32,18 @@ export async function workRequest<T>(
       ...init,
       headers: {
         ...init.headers,
-        'x-internal-key': runtime.internalKey,
+        [runtime.credential.header]: runtime.credential.value,
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
       },
     }
   )
 
-  if (response.networkError)
-    return { data: null, error: NETWORK_OFFLINE_ERROR }
+  if (response.networkError) return { data: null, error: NETWORK_OFFLINE_ERROR }
 
   const envelope = envelopeSchema.safeParse(response.payload)
   if (!envelope.success)
     return { data: null, error: clientError('work/invalid-response') }
-  if (envelope.data.error)
-    return { data: null, error: envelope.data.error }
+  if (envelope.data.error) return { data: null, error: envelope.data.error }
 
   const parsed = schema.safeParse(envelope.data.data)
   if (!response.ok || !parsed.success)

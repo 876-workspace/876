@@ -15,7 +15,7 @@ import {
 
 const runtime = {
   baseUrl: 'https://work.example.test',
-  internalKey: 'work-internal-key',
+  credential: { header: 'x-internal-key' as const, value: 'work-internal-key' },
   fetch: vi.fn() as unknown as typeof globalThis.fetch,
 }
 

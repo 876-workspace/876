@@ -1,5 +1,3 @@
-import 'server-only'
-
 import { createRemindersResource } from './resources/reminders'
 import { createTasksResource } from './resources/tasks'
 import {

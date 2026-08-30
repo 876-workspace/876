@@ -14,6 +14,10 @@
     "./operator": {
       "types": "./src/operator.ts",
       "default": "./src/operator.ts"
+    },
+    "./integration": {
+      "types": "./src/integration.ts",
+      "default": "./src/integration.ts"
     }
   },
   "scripts": {
