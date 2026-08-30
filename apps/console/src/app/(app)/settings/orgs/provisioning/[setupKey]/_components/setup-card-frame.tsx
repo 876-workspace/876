@@ -2,17 +2,12 @@
 
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import type { AdminProvisioningSetup } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
 import { Pencil, XIcon } from '@876/ui/icons'
-
-const TABS = [
-  { label: 'Overview', segment: null },
-  { label: 'Finance', segment: 'finance' },
-]
 
 export function SetupCardFrame({
   setup,
@@ -22,7 +17,6 @@ export function SetupCardFrame({
   children: ReactNode
 }) {
   const router = useRouter()
-  const activeSegment = useSelectedLayoutSegment()
   const base = `/settings/orgs/provisioning/${encodeURIComponent(setup.key)}`
 
   return (
@@ -33,6 +27,7 @@ export function SetupCardFrame({
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
       )}
     >
+      {/* Header */}
       <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
@@ -68,32 +63,13 @@ export function SetupCardFrame({
           <XIcon className="size-4" />
         </Button>
       </header>
-      <div className="border-876-surface-border shrink-0 border-b px-6 pt-3">
-        <div className="876-scroll flex items-center gap-6 overflow-x-auto">
-          {TABS.map((tab) => {
-            const active = activeSegment === tab.segment
-            const href = tab.segment ? `${base}/${tab.segment}` : base
-            return (
-              <Link
-                key={tab.label}
-                href={href}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'border-b-2 pb-3 text-xs font-medium whitespace-nowrap transition-colors',
-                  active
-                    ? 'border-primary text-foreground font-semibold'
-                    : 'text-muted-foreground hover:text-foreground border-transparent'
-                )}
-              >
-                {tab.label}
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+
+      {/* Body: Direct editor content with its resource category sidebar */}
       <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
         {children}
       </div>
+
+      {/* Footer */}
       <footer className="border-876-surface-border bg-muted/30 text-muted-foreground shrink-0 border-t px-6 py-2.5 font-mono text-xs">
         {setup.id}
       </footer>

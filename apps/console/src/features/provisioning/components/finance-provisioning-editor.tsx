@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useState, useSyncExternalStore, useTransition } from 'react'
 import type {
   AdminProvisioningCatalog,
   AdminProvisioningManifest,
@@ -16,7 +16,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { AlertCircle, MoreHorizontalIcon, Plus } from '@876/ui/icons'
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontalIcon,
+  Plus,
+  ReceiptText,
+} from '@876/ui/icons'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 import { cn } from '@876/core/utils'
 
 import { client } from '@/lib/client'
@@ -31,6 +39,55 @@ import {
 import { FinanceCollectionEditor } from './finance-collection-editor'
 import { FinanceResourceDrawer } from './finance-resource-drawer'
 import { FinanceSingletonEditor } from './finance-singleton-editor'
+
+const RESOURCE_TYPE_ICON_COLORS: Record<string, string> = {
+  workspace: 'text-blue-500 dark:text-blue-400',
+  currency: 'text-emerald-500 dark:text-emerald-400',
+  payment_mode: 'text-purple-500 dark:text-purple-400',
+  payment_term: 'text-amber-500 dark:text-amber-400',
+  invoice_preference: 'text-indigo-500 dark:text-indigo-400',
+  tax_authority: 'text-rose-500 dark:text-rose-400',
+  tax_rate: 'text-orange-500 dark:text-orange-400',
+  document_preference: 'text-teal-500 dark:text-teal-400',
+  organization_profile: 'text-sky-500 dark:text-sky-400',
+}
+
+function getResourceTypeIconColor(resourceType: string): string {
+  return (
+    RESOURCE_TYPE_ICON_COLORS[resourceType] ??
+    'text-slate-500 dark:text-slate-400'
+  )
+}
+
+const STORAGE_KEY = '876_provisioning_sidebar_collapsed'
+
+const collapseListeners = new Set<() => void>()
+
+function subscribeToCollapsed(onChange: () => void) {
+  collapseListeners.add(onChange)
+  window.addEventListener('storage', onChange)
+  return () => {
+    collapseListeners.delete(onChange)
+    window.removeEventListener('storage', onChange)
+  }
+}
+
+function readCollapsed() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) !== 'false'
+  } catch {
+    return true
+  }
+}
+
+function writeCollapsed(next: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(next))
+  } catch {
+    // Ignore local storage errors
+  }
+  for (const listener of collapseListeners) listener()
+}
 
 function getDefinitionType(definition: FinanceResourceDefinition): string {
   return (
@@ -56,6 +113,13 @@ export function FinanceProvisioningEditor({
   heading?: string
   description?: string
 }) {
+  const isCollapsed = useSyncExternalStore(
+    subscribeToCollapsed,
+    readCollapsed,
+    () => true
+  )
+
+  const handleToggle = writeCollapsed
   const initialRevision =
     initialManifest?.draft ?? initialManifest?.published ?? null
   const [draftRevision, setDraftRevision] =
@@ -255,48 +319,171 @@ export function FinanceProvisioningEditor({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-[220px_1fr] lg:grid-cols-[240px_1fr]">
-          {/* Left Category Navigation Rail */}
-          <nav
-            aria-label="Provisioning resource categories"
-            className="flex flex-col gap-1 pr-2"
-          >
-            {catalog.resource_types.map((definition) => {
-              const typeKey = getDefinitionType(definition)
-              const count = groupedRows[typeKey]?.length ?? 0
-              const isSelected = selectedType === typeKey
-              const Icon = getResourceTypeIcon(typeKey)
+        <div className="flex items-start gap-4 sm:gap-6">
+          {/* Left Category Navigation Sidebar */}
+          {isCollapsed ? (
+            <aside className="w-12 shrink-0 transition-[width] duration-200 ease-in-out sm:w-14">
+              <div className="border-border/80 bg-background/90 dark:bg-sidebar/90 sticky top-4 flex w-full flex-col items-center gap-1 rounded-2xl border p-1.5 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 dark:shadow-black/25 dark:ring-white/[0.06]">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(false)}
+                        aria-label="Expand categories sidebar"
+                        className="group/btn hover:bg-muted/80 relative flex size-8 items-center justify-center rounded-xl transition-all duration-150"
+                      >
+                        <span className="bg-muted text-muted-foreground border-border/50 flex size-5.5 shrink-0 items-center justify-center rounded-lg border shadow-2xs">
+                          <ReceiptText className="size-3 text-emerald-500 dark:text-emerald-400" />
+                        </span>
+                        <span className="bg-background/95 dark:bg-sidebar/95 border-border/60 absolute inset-0 flex items-center justify-center rounded-xl border opacity-0 shadow-2xs transition-opacity duration-150 group-hover/btn:opacity-100">
+                          <ChevronRight className="text-foreground size-3.5" />
+                        </span>
+                      </button>
+                    }
+                  />
+                  <TooltipContent side="right" sideOffset={8}>
+                    Expand sidebar
+                  </TooltipContent>
+                </Tooltip>
 
-              return (
-                <button
-                  key={typeKey}
-                  type="button"
-                  onClick={() => setSelectedType(typeKey)}
-                  className={cn(
-                    'flex w-full items-center justify-between gap-2.5 rounded-lg px-3 py-2 text-left text-xs transition-colors',
-                    isSelected
-                      ? 'bg-[var(--876-nav-active-bg)] font-medium text-[var(--876-nav-active-fg)]'
-                      : 'text-[#3c4043] hover:bg-[#f1f3f4] dark:text-white/75 dark:hover:bg-white/8'
-                  )}
+                <div className="bg-border/60 my-0.5 h-px w-4" />
+
+                <nav
+                  aria-label="Provisioning resource categories"
+                  className="flex flex-col items-center gap-1"
                 >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <Icon className="size-4 shrink-0" />
-                    <span className="truncate">{definition.label}</span>
+                  {catalog.resource_types.map((definition) => {
+                    const typeKey = getDefinitionType(definition)
+                    const count = groupedRows[typeKey]?.length ?? 0
+                    const isSelected = selectedType === typeKey
+                    const Icon = getResourceTypeIcon(typeKey)
+                    const colorClass = getResourceTypeIconColor(typeKey)
+
+                    return (
+                      <Tooltip key={typeKey}>
+                        <TooltipTrigger
+                          render={
+                            <button
+                              type="button"
+                              onClick={() => setSelectedType(typeKey)}
+                              aria-label={definition.label}
+                              className={cn(
+                                'group relative flex size-8 items-center justify-center rounded-xl transition-all duration-150',
+                                isSelected
+                                  ? 'bg-sidebar-accent text-sidebar-accent-foreground ring-border/40 font-medium shadow-xs ring-1'
+                                  : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
+                              )}
+                            >
+                              <Icon
+                                className={cn(
+                                  'size-4 shrink-0 transition-transform duration-150 group-hover:scale-110',
+                                  colorClass
+                                )}
+                              />
+                            </button>
+                          }
+                        />
+                        <TooltipContent side="right" sideOffset={8}>
+                          <div className="flex items-center gap-1.5">
+                            <span>{definition.label}</span>
+                            <span className="text-muted-foreground font-mono text-[10px]">
+                              {definition.multiple
+                                ? count
+                                : count > 0
+                                  ? '✓'
+                                  : '—'}
+                            </span>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  })}
+                </nav>
+              </div>
+            </aside>
+          ) : (
+            <aside className="w-48 shrink-0 transition-[width] duration-200 ease-in-out sm:w-52">
+              <div className="border-border/80 bg-background/90 dark:bg-sidebar/90 sticky top-4 flex w-full flex-col gap-1.5 rounded-2xl border p-2.5 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 dark:shadow-black/25 dark:ring-white/[0.06]">
+                <div className="flex items-center justify-between px-1 py-0.5">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="bg-muted text-muted-foreground border-border/50 flex size-5.5 shrink-0 items-center justify-center rounded-lg border shadow-2xs">
+                      <ReceiptText className="size-3 text-emerald-500 dark:text-emerald-400" />
+                    </span>
+                    <span className="text-muted-foreground truncate text-[11px] font-semibold tracking-wider uppercase">
+                      Categories
+                    </span>
                   </div>
-                  <span
-                    className={cn(
-                      'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[0.6875rem] font-medium',
-                      isSelected
-                        ? 'bg-[var(--876-nav-active-fg)]/15 text-[var(--876-nav-active-fg)]'
-                        : 'bg-muted text-muted-foreground'
-                    )}
-                  >
-                    {definition.multiple ? count : count > 0 ? '✓' : '—'}
-                  </span>
-                </button>
-              )
-            })}
-          </nav>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <button
+                          type="button"
+                          onClick={() => handleToggle(true)}
+                          aria-label="Collapse to floating rail"
+                          className="text-muted-foreground hover:text-foreground hover:bg-muted/80 flex size-6 shrink-0 items-center justify-center rounded-lg transition-colors"
+                        >
+                          <ChevronLeft className="size-3.5" />
+                        </button>
+                      }
+                    />
+                    <TooltipContent side="bottom" sideOffset={4}>
+                      Collapse to floating rail
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+
+                <div className="bg-border/60 my-0.5 h-px w-full" />
+
+                <nav
+                  aria-label="Provisioning resource categories"
+                  className="flex flex-col gap-0.5"
+                >
+                  {catalog.resource_types.map((definition) => {
+                    const typeKey = getDefinitionType(definition)
+                    const count = groupedRows[typeKey]?.length ?? 0
+                    const isSelected = selectedType === typeKey
+                    const Icon = getResourceTypeIcon(typeKey)
+                    const colorClass = getResourceTypeIconColor(typeKey)
+
+                    return (
+                      <button
+                        key={typeKey}
+                        type="button"
+                        onClick={() => setSelectedType(typeKey)}
+                        className={cn(
+                          'flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors',
+                          isSelected
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-2xs'
+                            : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
+                        )}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <Icon
+                            className={cn(
+                              'size-3.5 shrink-0 transition-transform duration-150 group-hover:scale-105',
+                              colorClass
+                            )}
+                          />
+                          <span className="truncate">{definition.label}</span>
+                        </div>
+                        <span
+                          className={cn(
+                            'inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full px-1 text-[0.625rem] font-medium',
+                            isSelected
+                              ? 'bg-sidebar-accent-foreground/15 text-sidebar-accent-foreground'
+                              : 'bg-muted text-muted-foreground'
+                          )}
+                        >
+                          {definition.multiple ? count : count > 0 ? '✓' : '—'}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </nav>
+              </div>
+            </aside>
+          )}
 
           {/* Right Main Content: Condensed Header toolbar + Standard Data Table / Singleton Form */}
           <main className="min-w-0 space-y-4">
@@ -334,7 +521,7 @@ export function FinanceProvisioningEditor({
                     onClick={openAddItem}
                   >
                     <Plus className="size-4" strokeWidth={2.25} />
-                    Add
+                    <span className="hidden md:inline">Add</span>
                   </Button>
                 )}
 
