@@ -19,12 +19,27 @@ const mocks = vi.hoisted(() => ({
   tenants: {
     retrieveByOrganization: vi.fn(),
     ensure: vi.fn(),
+    tenantAuthorizationByOrganizationId: vi.fn(),
+  },
+  connections: {
+    activeConnectionAuthorization: vi.fn(),
+    ensureCrmConnection: vi.fn(),
+  },
+  identity: {
+    appForApiKey: vi.fn(),
   },
 }))
 
 vi.mock('../modules/tasks/tasks.repository.js', () => mocks.tasks)
 vi.mock('../modules/reminders/reminders.repository.js', () => mocks.reminders)
 vi.mock('../modules/tenants/tenants.repository.js', () => mocks.tenants)
+vi.mock('../modules/connections/index.js', () => mocks.connections)
+vi.mock('../http/auth/identity.js', () => ({
+  HttpIdentityGateway: class {
+    appForApiKey = mocks.identity.appForApiKey
+  },
+  IdentityUnavailableError: class IdentityUnavailableError extends Error {},
+}))
 
 const { createApp } = await import('../application.js')
 const { secretsMatch } = await import('../http/internal-auth.js')
@@ -118,6 +133,17 @@ beforeEach(() => {
   process.env.WORK_INTERNAL_KEY = INTERNAL_KEY
   mocks.tenants.retrieveByOrganization.mockResolvedValue(tenant())
   mocks.tenants.ensure.mockResolvedValue(tenant())
+  mocks.tenants.tenantAuthorizationByOrganizationId.mockResolvedValue({
+    id: 'work_tnt_1',
+    active: true,
+  })
+  mocks.connections.activeConnectionAuthorization.mockResolvedValue({
+    scopes: new Set(['work.tasks.read', 'work.tasks.write']),
+  })
+  mocks.connections.ensureCrmConnection.mockResolvedValue({
+    id: 'work_conn_1',
+  })
+  mocks.identity.appForApiKey.mockResolvedValue({ id: 'app_crm' })
   mocks.tasks.list.mockResolvedValue([task()])
   mocks.tasks.retrieve.mockResolvedValue(task())
   mocks.reminders.list.mockResolvedValue([reminder()])
@@ -164,6 +190,48 @@ describe('Work API routes', () => {
       error: { code: 'work/not-found', message: 'Not found.' },
     })
     expect(Object.hasOwn(response.body.error, 'httpStatus')).toBe(false)
+  })
+
+  it('rejects CRM’s app key for another organization before calling the task repository', async () => {
+    mocks.connections.activeConnectionAuthorization.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .get('/v1/organizations/org_other/tasks')
+      .set('x-876-api-key', 'crm-app-key')
+
+    expect(response.status).toBe(403)
+    expect(response.body).toEqual({
+      data: null,
+      error: {
+        code: 'work/connection-forbidden',
+        message: 'The app Work connection lacks the required scope.',
+      },
+    })
+    expect(mocks.tasks.list).not.toHaveBeenCalled()
+  })
+
+  it('does not authorize an app key to provision a Work workspace', async () => {
+    const response = await request(createApp())
+      .post('/v1/tenants')
+      .set('x-876-api-key', 'crm-app-key')
+      .send({ organizationId: 'org_1' })
+
+    expect(response.status).toBe(401)
+    expect(response.body).toEqual(UNAUTHORIZED_BODY)
+    expect(mocks.tenants.ensure).not.toHaveBeenCalled()
+  })
+
+  it('ensures CRM’s connection when an operator provisions its Work workspace', async () => {
+    const response = await api().post('/v1/tenants').send({
+      organizationId: 'org_1',
+      appId: 'app_crm',
+    })
+
+    expect(response.status).toBe(200)
+    expect(mocks.connections.ensureCrmConnection).toHaveBeenCalledWith(
+      'work_tnt_1',
+      'app_crm'
+    )
   })
 
   it('retrieves a task with the complete resource envelope', async () => {
@@ -314,8 +382,9 @@ describe('Work API routes', () => {
   })
 
   it('returns invalid-request for invalid reminder list pagination', async () => {
-    const response = await api()
-      .get('/v1/organizations/org_1/reminders?starting_after=a&ending_before=b')
+    const response = await api().get(
+      '/v1/organizations/org_1/reminders?starting_after=a&ending_before=b'
+    )
 
     expect(response.status).toBe(422)
     expect(response.body).toEqual(INVALID_BODY)
