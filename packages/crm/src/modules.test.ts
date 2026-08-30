@@ -21,6 +21,7 @@ describe('CRM module catalog', () => {
       'requests',
       'tasks',
       'reminders',
+      'events',
       'notes',
       'teams',
       'categories',
@@ -54,7 +55,9 @@ describe('CRM module catalog', () => {
 
   it('records the exact deliberate module exclusions', () => {
     expect([...CRM_EXCLUDED_MODULE_KEYS]).toEqual([
+      'calendars',
       'customers',
+      'my_work',
       'priorities',
       'settings',
     ])
@@ -110,6 +113,7 @@ describe('CRM module catalog', () => {
     ).toEqual([
       { key: 'tasks', optional: true, enabled: true },
       { key: 'reminders', optional: true, enabled: true },
+      { key: 'events', optional: true, enabled: true },
       { key: 'notes', optional: true, enabled: true },
       { key: 'teams', optional: true, enabled: true },
       { key: 'categories', optional: true, enabled: true },
