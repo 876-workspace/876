@@ -92,9 +92,7 @@ describe('TeamSplit', () => {
     // Switch to App Access
     const accessTab = screen.getByRole('tab', { name: 'App Access' })
     fireEvent.click(accessTab)
-    expect(
-      screen.getByRole('button', { name: 'Expand all' })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Users/ })).toBeInTheDocument()
     expect(screen.getByText('Revoke Console Access')).toBeInTheDocument()
 
     // Switch to Activity

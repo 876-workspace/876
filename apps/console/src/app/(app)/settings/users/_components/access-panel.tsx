@@ -134,25 +134,8 @@ export function AccessPanel({
     [held]
   )
 
-  const allOpen = open.length === modules.length && modules.length > 0
-
   return (
     <div className="-m-6 flex flex-col">
-      {/* Toolbar */}
-      <div className="border-876-surface-border bg-muted/20 flex items-center justify-end border-b px-6 py-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            setOpen(allOpen ? [] : modules.map((module) => module.label))
-          }
-          className="text-muted-foreground hover:text-foreground h-7 text-xs"
-        >
-          {allOpen ? 'Collapse all' : 'Expand all'}
-        </Button>
-      </div>
-
       <Accordion
         multiple
         value={open}

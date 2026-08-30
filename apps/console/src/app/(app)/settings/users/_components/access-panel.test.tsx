@@ -38,15 +38,6 @@ describe('AccessPanel', () => {
       expect(pill('users:read')).toBeInTheDocument()
     })
 
-    it('expands every module from the Expand all control', () => {
-      renderPanel()
-
-      fireEvent.click(screen.getByRole('button', { name: 'Expand all' }))
-
-      expect(pill('users:read')).toBeInTheDocument()
-      expect(pill('organizations:read')).toBeInTheDocument()
-    })
-
     it('reports the granted count against the module size on the trigger', () => {
       renderPanel()
 
@@ -58,7 +49,7 @@ describe('AccessPanel', () => {
     it('labels a held permission as granted and a withheld one as not granted', () => {
       renderPanel()
 
-      fireEvent.click(screen.getByRole('button', { name: 'Expand all' }))
+      fireEvent.click(screen.getByRole('button', { name: /Users/ }))
 
       expect(
         within(pill('users:read')).getByText('Granted')
