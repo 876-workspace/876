@@ -170,7 +170,7 @@ prop, not as a sibling element.
 
 - Status lives in the URL as `?status=<value>`.
 - `status` absent, or `status=all`, means **no status filter** — pass
-  `undefined` to the `$876` (or app service) call, not the literal string
+  `undefined` to the service client (or app service) call, not the literal string
   `"all"`.
 - Any other value is validated against that resource's known status set (a
   small `is<Resource>Status()` type guard); an unknown or missing value
@@ -187,7 +187,7 @@ const selectedStatus =
   status === 'all' || !isUserStatus(status) ? 'all' : status
 const userStatus = selectedStatus === 'all' ? undefined : selectedStatus
 
-const result = await $876.users.list({ limit: 25, status: userStatus })
+const result = await platform.users.list({ limit: 25, status: userStatus })
 ```
 
 Never call a bare `.list()` and filter the returned rows client-side or in the
@@ -219,11 +219,12 @@ import {
   StatusFilterHeading,
   type StatusFilterOption,
 } from '@/components/status-filter-heading'
-import { WIDGET_STATUSES, isWidgetStatus } from '@/lib/widget-status'
+import { couriers } from '@/lib/services/couriers'
+import { PACKAGE_STATUSES, isPackageStatus } from '@/lib/package-status'
 
-const WIDGET_STATUS_OPTIONS: StatusFilterOption[] = [
+const PACKAGE_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All' },
-  ...WIDGET_STATUSES.map((status) => ({
+  ...PACKAGE_STATUSES.map((status) => ({
     value: status,
     label: status.charAt(0).toUpperCase() + status.slice(1),
   })),
@@ -233,32 +234,32 @@ type Props = {
   searchParams: Promise<{ after?: string; before?: string; status?: string }>
 }
 
-export default async function WidgetsPage({ searchParams }: Props) {
+export default async function PackagesPage({ searchParams }: Props) {
   const { after, before, status } = await searchParams
   const selectedStatus =
-    status === 'all' || !isWidgetStatus(status) ? 'all' : status
-  const widgetStatus = selectedStatus === 'all' ? undefined : selectedStatus
+    status === 'all' || !isPackageStatus(status) ? 'all' : status
+  const packageStatus = selectedStatus === 'all' ? undefined : selectedStatus
 
-  const result = await $876.widgets.list({
+  const result = await couriers.packages.list({
     limit: 25,
     starting_after: after,
     ending_before: before,
-    status: widgetStatus,
+    status: packageStatus,
   })
 
   return (
     <Page>
       <ResourceToolbar
-        title="Widgets"
+        title="Packages"
         titleFilter={
           <StatusFilterHeading
-            label="Widgets"
+            label="Packages"
             value={selectedStatus}
-            options={WIDGET_STATUS_OPTIONS}
+            options={PACKAGE_STATUS_OPTIONS}
           />
         }
         primaryLabel="Add"
-        primaryHref="/widgets/new"
+        primaryHref="/packages/new"
         primaryVariant="info"
         refresh
       />

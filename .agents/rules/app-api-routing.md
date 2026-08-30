@@ -3,11 +3,11 @@
 Read this before adding, moving, or renaming any route under `src/app/api/` in
 any 876 Next.js app, and before deciding how a client component talks to a
 backend. It fixes the browser-facing contract and its relationship to the
-server-side `$876` facade.
+server-side bounded clients.
 
-Companion to `.agents/rules/access-tiers.md` (on whose authority the server half
-calls), `.agents/rules/product-api-boundary.md` (product vocabulary), and
-`.agents/rules/api-access.md` (Console specifics).
+Companion to `.claude/rules/access-tiers.md` (on whose authority the server half
+calls), `.claude/rules/product-api-boundary.md` (product vocabulary), and
+`.claude/rules/api-access.md` (Console specifics).
 
 ## The invariant
 
@@ -17,31 +17,32 @@ service owns the data, at which tier, behind which credential — is server-side
 implementation detail the browser never sees.
 
 ```
-browser  ──►  /api/<resource>            same origin, product vocabulary
-              route handler              authorize + adapt transport, no logic
-              $876.<resource>.<verb>()   server-only facade
-              owning service             at the tier from access-tiers.md
+browser  ──►  /api/<resource>              same origin, product vocabulary
+              route handler                authorize + adapt transport, no logic
+              <domain>.<resource>.<verb>() server-only bounded client
+              owning service               at the tier from access-tiers.md
 ```
 
-### This does not duplicate or fight the facade
+### This does not duplicate or fight the bounded client
 
 The two answer different questions and never overlap:
 
 - The **route** is the browser contract. It exists so the client never learns a
   service origin, never holds a credential, and never has to change when the
   backend is re-homed.
-- The **facade** is server-to-server transport. It exists so the server half
-  never hand-rolls a `fetch`, never restates a response shape, and gets one
-  typed surface across every service.
+- The **bounded client** is server-to-server transport. It exists so the server
+  half never hand-rolls a `fetch` or restates a response shape. Each domain has
+  its own typed root.
 
-A route handler that calls `$876` is the same shape as a traditional Next.js
-route handler calling a database client. `$876` _is_ the data client here. The
+A route handler that calls `crm.requests.create()` is the same shape as a
+traditional Next.js route handler calling a database client. The bounded SDK
+_is_ the data client here. The
 "external connection" is not a duplicate of anything — it is the one hop that
 was always going to exist, now typed.
 
 The rule stays intact only because the handler holds **no business logic**. The
 moment a handler decides something the service should have decided, the app has
-grown a second implementation and the facade has become decoration.
+grown a second implementation and the typed client has become decoration.
 
 ## URL shape
 
@@ -71,7 +72,7 @@ Reserved, and the only exceptions: `/api/auth/*` (protocol bridge),
 ### Pattern A — typed resource route (the default)
 
 An explicit route file per resource or operation. It authorizes, calls one
-`$876` verb, and returns the envelope.
+owning-domain verb, and returns the envelope.
 
 ```ts
 export async function POST(request: NextRequest, context: Context) {
@@ -83,8 +84,8 @@ export async function POST(request: NextRequest, context: Context) {
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const $876 = createConsole876Client(resolveRequestId(request))
-  const { data, error } = await $876.requests.create(organizationId, body)
+  const crm = createCrm(resolveRequestId(request))
+  const { data, error } = await crm.requests.create(organizationId, body)
   if (error || !data)
     return apiJson({ error: error?.message ?? 'Failed.' }, { status: 400 })
 
@@ -133,8 +134,9 @@ faithfully-mirrored resource family (Billing's ~30 resources), not the default.
 Browser components call the app's typed client (`client` from `@/lib/client`),
 never `fetch` with a hand-written URL, and never a service origin. The typed
 client covers **mutations and client-driven reads only** — it is not a second
-mirror of `$876`. Initial page data is server-rendered through `$876` behind a
-Suspense boundary (`.agents/rules/data-loading.md`).
+mirror of the server SDKs. Initial page data is server-rendered through the
+appropriate bounded client behind a Suspense boundary
+(`.claude/rules/data-loading.md`).
 
 **No server actions.** Client-initiated mutations go through a route handler.
 
@@ -150,3 +152,4 @@ Suspense boundary (`.agents/rules/data-loading.md`).
 - Do not use a server action for a backend mutation.
 - Do not refetch server-rendered initial data from the browser to work around a
   badly placed Suspense boundary.
+- Do not add a cross-domain server-client aggregator for route handlers.

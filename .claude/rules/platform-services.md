@@ -13,13 +13,13 @@ everything else is a **separate bounded context that references identity by ID**
 There are exactly three buckets. Every table, feature, and service is in one of
 them — decide which before writing code.
 
-| Bucket                       | Owner                               | Examples                                                                                                                                                                                                                                                                     | Reached via                                     |
-| ---------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| **Core identity / platform** | `@876/api` (FastAPI) + its Postgres | users, orgs, memberships, org-roles, features, auth, oauth, geo, addresses, legal organization profiles, `audit_events`, org contacts/locations, `user_identifications` (sensitive PII), directory reference data, entitlement plans, `subscriptions` (org→app entitlements) | `$876` (`@876/sdk` / `@876/admin`)              |
-| **App-local operational**    | the app itself, its own datastore   | Console users (access grants), Console roles, staff notes, Console settings (`import { service } from '@/lib/service'`)                                                                                                                                                      | imported directly, server-only, inside that app |
-| **Shared platform services** | each its own bounded context + DB   | Billing finance workspaces, the org-customer registry, future ticketing/disputes, commerce/orders, messaging                                                                                                                                                                 | product SDK `<resource>.<verb>()`, auth-tiered  |
+| Bucket                       | Owner                               | Examples                                                                                                                                                                                                                                                                     | Reached via                                                     |
+| ---------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **Core identity / platform** | `@876/api` (Express) + its Postgres | users, orgs, memberships, org-roles, features, auth, oauth, geo, addresses, legal organization profiles, `audit_events`, org contacts/locations, `user_identifications` (sensitive PII), directory reference data, entitlement plans, `subscriptions` (org→app entitlements) | `@876/account`, `@876/workspace`, or `@876/platform` projection |
+| **App-local operational**    | the app itself, its own datastore   | Console users (access grants), Console roles, staff notes, Console settings (`import { service } from '@/lib/service'`)                                                                                                                                                      | imported directly, server-only, inside that app                 |
+| **Shared platform services** | each its own bounded context + DB   | Billing finance workspaces, the org-customer registry, future ticketing/disputes, commerce/orders, messaging                                                                                                                                                                 | explicit product root `<resource>.<verb>()`, auth-entrypointed  |
 
-**Concrete instance: org → platform-app provisioning.** `subscriptions` (the `Subscription` model — the table was renamed from `organization_app_access` by migration) is the entitlement table controlling which orgs can access which 876 platform apps. It lives in the core identity API — not any single app's datastore — because it is cross-cutting: the couriers app reads it to gate dashboard access, Console reads and writes it to provision/block orgs, and future apps follow the same pattern. The pattern: API owns the table + `AdminDep` endpoints under `domains/organizations/`; apps gate via `$876.orgs.subscriptions.retrieveBySlug` (Console/admin tier) or `platform.orgs.subscriptions.retrieveBySlug` (product-app platform client) in their `ManageContext`; Console provides provision/block controls via its own route handlers. Product access is independent of any app-local tenant row.
+**Concrete instance: org → platform-app provisioning.** `subscriptions` (the `Subscription` model — the table was renamed from `organization_app_access` by migration) is the entitlement table controlling which orgs can access which 876 platform apps. It lives in the core identity API — not any single app's datastore — because it is cross-cutting: the couriers app reads it to gate dashboard access, Console reads and writes it to provision/block orgs, and future apps follow the same pattern. The API owns the table and its organization routes; session callers use the Workspace session client, while Console uses the Workspace operator client. Console provides provision/block controls through its own route handlers. Product access is independent of any app-local tenant row.
 
 **Concrete instance: app permissions and app roles.** `app_permissions`, `app_roles`, and the role/grant/deny columns on `app_assignments` live in the **core identity API**, not in a separate bounded-context service and not in the product app's own datastore. This is a deliberate, recorded exception to decision step #3 above, for two reasons. First, the effective-permission decision is `entitlement → assignment → role → grants → denies → catalog`, and the first two links (`subscriptions`, `app_assignments`) are already core rows; splitting the last three into another database turns every authorization check into a cross-service call, which `.claude/rules/navigation-performance.md` Rule 3 exists to prevent — a guard must block, so it must be cheap. Second, an app role is scoped by `(app, organization)` and administered from Console alongside the entitlement that gates it; the two are edited in the same breath and cannot usefully diverge. **The permission _vocabulary_ is still owned by the product**, as code in `@876/core/access/catalogs`; the identity API only seeds and stores it. An app that needs permissions no other surface can see still keeps those in its own datastore — this exception covers cross-app _access_, not app-internal authorization detail.
 
@@ -44,25 +44,26 @@ retain fallback customer, catalog, invoice, payment, account, or ledger tables.
    reference identity by opaque ID.
 3. **Does it span multiple surfaces** — created on one app, acted on by another,
    overseen in Console (a ticket, an order, a dispute)? → **A new shared
-   platform service**, its own bounded context and DB, exposed through the `$876`
-   surface. **Not** the identity API (it isn't identity) and **not** any single
+   platform service**, its own bounded context and DB, exposed through its own
+   product SDK root. **Not** the identity API (it isn't identity) and **not** any single
    app's datastore (it isn't local to one app).
 
 > Watch for the trap: "only Console touches it today" does **not** make
 > something Console-local. `org_locations` and `org_contacts` started
 > Console-surfaced but are **org-owned business data** — they live in core (and
-> now also have `SessionDep` routes + `@876/sdk` methods). Admin-console-internal
+> now also have session-authorized routes and `@876/workspace/session` methods). Admin-console-internal
 > means _no other surface could ever own it_, like the Console user roster
 > (access grants). Note: org-owned **customers** are the deliberate exception —
 > they live in the org-customer registry (the Billing app), not core; see
 > `customer-architecture.md` for the layering and the extraction criteria.
 
-## The cross-service contract: reference by ID, resolve through the client
+## The cross-service contract: reference by ID, resolve through a bounded client
 
 Bounded contexts **never share a database or a foreign key.** A service stores
 the opaque 876 identifiers it needs (`user_…`, `org_…`, `app_…`) as plain
 columns — no FK, no join across databases — and resolves the human details
-(name, email, org slug, avatar) at read time through `$876`.
+(name, email, org slug, avatar) at read time through the appropriate Account,
+Workspace, or Platform client.
 
 - Precedent already in the codebase: `billing_customers.user_id` /
   `billing_customers.organization_id` (Billing app) and couriers'
@@ -70,8 +71,13 @@ columns — no FK, no join across databases — and resolves the human details
   **no** FK constraint. Every cross-service reference follows that shape.
 - Console's in-app Prisma datastore is the first instance: the `team` resource (Console members, keyed by the opaque 876 user ID) holds
   a core 876 user ID; Console authorizes off its own access grants and role catalog, then
-  calls `$876` to read or mutate the actual identity record.
-- Every app-local datastore follows the same `<resource>.<verb>()` naming vocabulary as `$876`, in two layers: the `prisma` singleton (`@/lib/db`) and the `service.<resource>.<verb>()` layer (`@/lib/service`, the only caller allowed to query `prisma`) — see "App-local datastore layering" in `.claude/rules/sdk-conventions.md`.
+  calls the appropriate bounded Core client to read or mutate the actual
+  identity record.
+- Every app-local datastore follows the same `<resource>.<verb>()` naming
+  vocabulary as the bounded SDKs, in two layers: the `prisma` singleton
+  (`@/lib/db`) and the `service.<resource>.<verb>()` layer (`@/lib/service`, the
+  only caller allowed to query `prisma`) — see "App-local datastore layering"
+  in `.claude/rules/sdk-conventions.md`.
 - This is what lets a service be extracted, replaced, or scaled independently —
   and what keeps the identity API from accreting every app's concerns.
 
@@ -85,16 +91,17 @@ The most important security rule on the platform:
 This is the Stripe model, and the codebase already implements it — do not erode
 it by trying to collapse to "one key for everything."
 
-| Tier              | Credential                                                          | Where it lives         | Can it do privileged ops?                           |
-| ----------------- | ------------------------------------------------------------------- | ---------------------- | --------------------------------------------------- |
-| App / publishable | app API key (`876_app_secret_*`) + session cookie                   | browser **and** server | **No** — only self-scoped, non-`AdminDep` endpoints |
-| Secret service    | `API_876_SERVICE_KEY` (`x-internal-key`; legacy `API_INTERNAL_KEY`) | **server only**        | **Yes** — every `AdminDep` operation                |
+| Key class         | Credential                                        | Where it lives         | Can it do operator operations?   |
+| ----------------- | ------------------------------------------------- | ---------------------- | -------------------------------- |
+| App / publishable | app API key (`876_app_secret_*`) + session/bearer | browser **and** server | **No**                           |
+| Secret server     | owning service's internal/server credential       | **server only**        | only as its backend guard allows |
 
 Because privileged operations need a server-side secret, a browser cannot call
 them directly. That is exactly why each app's **thin route handlers
 (`app/api/...`) exist**: they are the boundary that holds the secret key
 server-side. In Console the route handler does three things in order —
-(1) verify the 876 session, (2) **authorize against Console-local user/role permissions** (via `service`), (3) call `$876` with the secret service key. The
+(1) verify the 876 session, (2) **authorize against Console-local user/role permissions** (via `service`), (3) call the owning operator client with its
+server credential. The
 handler is the authorization boundary, not incidental boilerplate; keep it.
 
 ### Is HTTPS + a key enough?
@@ -122,20 +129,21 @@ Console-local. The pattern it would follow:
 - **Own bounded context + DB.** A `tickets` service (its own schema/datastore),
   storing `requester_id`, `org_id`, `app_id`, `assignee_id` as **opaque 876 IDs**
   — no FK to the identity DB.
-- **One client surface, auth-tiered.** Exposed as `$876.tickets.*` with the same
-  `<resource>.<verb>()` shape, gated by auth tier:
+- **One bounded client, authority-entrypointed.** Exposed as `tickets.*` from a
+  future `@876/tickets` package with the same `<resource>.<verb>()` shape:
   - consumer (session/app key): `tickets.create()`, `tickets.list()` /
     `tickets.retrieve()` **scoped to their own** tickets;
   - org member (org-scoped): list/respond to tickets **for their org**;
-  - Console (`AdminDep`): list/search/moderate **all** tickets.
+  - Console (`operator`): list/search/moderate **all** tickets.
 - **Field visibility is an API serializer concern**, never client-side filtering —
   the same rule as `.claude/rules/sdk-conventions.md`.
-- **Identity stays resolved through `$876`** — the ticket service never reads the
-  users/orgs tables directly.
+- **Identity stays resolved through Account, Workspace, or Platform** — the
+  ticket service never reads the users/orgs tables directly.
 
 The infrastructure that makes this "not hard later" is what this rule plus
 Console's in-app datastore put in place now: the three-bucket placement decision, the
-ID-reference contract, the tiered `$876` surface, and the secret-key boundary.
+ID-reference contract, the authority-specific bounded clients, and the
+secret-key boundary.
 When ticketing is built, it slots into all four without rework.
 
 ## Checklist for new work
@@ -143,12 +151,15 @@ When ticketing is built, it slots into all four without rework.
 - [ ] Placed in the right bucket (identity / app-local / shared service) per the
       decision steps above — and not misfiled because "only Console sees it today."
 - [ ] Cross-context references are **opaque IDs, no cross-DB FKs**; identity
-      resolved through `$876`.
+      resolved through the appropriate Account, Workspace, or Platform client.
 - [ ] No privileged scope on any publishable/exposable key; secret key stays
       server-side behind a route handler that authorizes first.
-- [ ] If a new shared service: exposed through `$876.<resource>.<verb>()`,
-      auth-tiered, with per-tier serializers — not bespoke wrappers.
-- [ ] If gating an app to specific orgs: use the `subscriptions` provisioning pattern (not `OrgFeature`); gate in the app's `ManageContext` / private layout via `$876.orgs.subscriptions.retrieveBySlug` (admin) / `platform.orgs.subscriptions.retrieveBySlug` (platform client); auto-provision through `provision_org_apps` called from `register_business`, with `source_app_id` drawn from `request.state.app_id`.
+- [ ] If a new shared service: expose it through its own explicit product root,
+      with caller-named entrypoints and per-authority serializers — not bespoke
+      wrappers or a central aggregator.
+- [ ] If gating an app to specific orgs: use the `subscriptions` provisioning
+      pattern (not `OrgFeature`) and the Workspace client at the caller's
+      authority; auto-provision through the owning Core workflow.
 - [ ] If the app needs money operations: declare an embedded finance dependency,
       grant only required scopes, and keep paid Billing access as a separate Core
       entitlement.

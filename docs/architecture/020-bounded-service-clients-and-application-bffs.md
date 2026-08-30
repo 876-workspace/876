@@ -81,12 +81,12 @@ SDK packages it actually needs.
 
 A client entrypoint says whose authority the call uses.
 
-| Principal | Meaning | Typical credential | Example |
-| --- | --- | --- | --- |
-| `session` | a signed-in human | session/access token | CRM user → Work |
-| `service` | a first-party 876 app/service | scoped server credential/app grant | Invoice → Billing |
-| `operator` | 876 itself administering the platform | server-only internal credential | Console → CRM |
-| `integration` | an externally connected system | OAuth/app credential + scopes | Google Calendar ↔ Work |
+| Principal     | Meaning                               | Typical credential                 | Example                |
+| ------------- | ------------------------------------- | ---------------------------------- | ---------------------- |
+| `session`     | a signed-in human                     | session/access token               | CRM user → Work        |
+| `service`     | a first-party 876 app/service         | scoped server credential/app grant | Invoice → Billing      |
+| `operator`    | 876 itself administering the platform | server-only internal credential    | Console → CRM          |
+| `integration` | an externally connected system        | OAuth/app credential + scopes      | Google Calendar ↔ Work |
 
 A capability is still implemented once by its owning backend. Multiple tiers
 change guards and scope checks, never the business implementation.

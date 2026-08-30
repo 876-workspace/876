@@ -118,9 +118,9 @@ Layer 3  App profiles    each app's own datastore, opaque-ID references
 - The calling app owns the second half of enforcement: it may only request
   disclosure for accounts that are its own enrolled customers in the acting
   tenant. Core verifies entitlement; the app verifies relationship.
-- Client surface: `AdminDep` ⇒ `@876/admin` (`$876.users.identifications.*`)
+- Client surface: `AdminDep` ⇒ `@876/platform` (`platform.users.identifications.*`)
   and the platform client (`platform.users.identifications.*`) only — never
-  `@876/sdk` (auth-tier gating rule). Consumer self-service goes through the
+  `@876/account` (auth-tier gating rule). Consumer self-service goes through the
   owning app's session-guarded route handler calling the platform client.
 
 ### Layer 2 — Relationship (the org-customer registry)

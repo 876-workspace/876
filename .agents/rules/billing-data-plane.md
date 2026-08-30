@@ -6,10 +6,10 @@ subscription, a price, a refund, a dispute, a credit, or a tax line — in
 `apps/billing-api`, `apps/api`, `apps/billing`, `apps/invoice`, `apps/console`,
 or any future product app.
 
-Companion to `.agents/rules/platform-services.md` (bounded contexts),
-`.agents/rules/customer-architecture.md` (who a customer is),
-`.agents/rules/stripe-api-pattern.md` (resource shape), and
-`.agents/rules/express-api.md` (module shape). The Stripe field catalogues and
+Companion to `.claude/rules/platform-services.md` (bounded contexts),
+`.claude/rules/customer-architecture.md` (who a customer is),
+`.claude/rules/stripe-api-pattern.md` (resource shape), and
+`.claude/rules/express-api.md` (module shape). The Stripe field catalogues and
 the object-by-object mapping live in
 `docs/billing/stripe-object-mapping.md`.
 
@@ -48,7 +48,7 @@ Mirroring the model is not the same as adopting the vendor. Concretely:
 Core's `subscriptions` table is an **entitlement** record (org → platform app).
 The money behind it — the customer, the price actually charged, the invoice, the
 payment method — lives in Billing and is referenced from core by opaque id only,
-with no cross-database foreign key. Console resolves both sides through `$876`
+with no cross-database foreign key. Console resolves both sides through `workspace` and `billing`
 and presents them as one screen; that composition is a Console concern, not a
 schema one.
 
@@ -148,7 +148,7 @@ Consequences worth stating, because getting them wrong is expensive later:
 model. Where a customer-facing tier name is genuinely a marketing concept, it is
 a `Product` attribute — never a third pricing table. Console's existing
 "plans" UI is a `Product` view and its URLs stay as they are (they are contracts,
-per `.agents/rules/naming.md`).
+per `.claude/rules/naming.md`).
 
 ## The security boundary — three tiers, decided per field
 

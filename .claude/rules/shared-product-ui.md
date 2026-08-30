@@ -66,11 +66,7 @@ Shared product UI packages ship raw TS/TSX, so all Next.js apps consume the cent
 import { sharedTranspilePackages } from '../../scripts/shared-ui-packages.mjs'
 
 const nextConfig: NextConfig = {
-  transpilePackages: sharedTranspilePackages([
-    '@876/account',
-    '@876/crm',
-    '@876/core',
-  ]),
+  transpilePackages: sharedTranspilePackages(['@876/account', '@876/core']),
 }
 ```
 
@@ -93,9 +89,16 @@ There must still be exactly one React implementation.
 
 ## Console host invariant
 
-Console owns Console shell/navigation/workspace chrome. A shared CRM/Work surface fills the product-content region; it never replaces Console's organization workspace rail or adopts Console-specific permission logic.
-
-Likewise, standalone product apps retain their own shell/routing. Shared product UI is not route sharing, an iframe, or application-shell sharing.
+1. Add the `@876/<product>-ui` dependency to the host's `package.json`.
+2. Write a **thin adapter** in `apps/<host>/src/features/<domain>/components/`
+   that supplies the host's `baseHref`, its tab subset, and its permitted
+   actions.
+3. Load the data in the host, through its own bounded service client at its
+   caller authority, and pass plain props.
+4. Authorize in the host's route guard and route handlers — never in the
+   package.
+5. If the host needs a variation the package cannot express, **add a prop to
+   the package**. Forking the component is the failure mode this rule forbids.
 
 ## Creating a new product app
 

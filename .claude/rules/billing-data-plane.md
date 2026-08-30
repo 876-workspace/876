@@ -48,7 +48,7 @@ Mirroring the model is not the same as adopting the vendor. Concretely:
 Core's `subscriptions` table is an **entitlement** record (org → platform app).
 The money behind it — the customer, the price actually charged, the invoice, the
 payment method — lives in Billing and is referenced from core by opaque id only,
-with no cross-database foreign key. Console resolves both sides through `$876`
+with no cross-database foreign key. Console resolves both sides through `workspace` and `billing`
 and presents them as one screen; that composition is a Console concern, not a
 schema one.
 

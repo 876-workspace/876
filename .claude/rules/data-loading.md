@@ -17,8 +17,8 @@ smallest region that actually needs the data.**
 Page chrome includes headings, `ResourceToolbar`, breadcrumbs, tabs, search and
 filter controls whose values come from route params, static links/actions, table
 column headers, section labels, form shells and static form fields, and stable
-layout containers. Live data includes HTTP service calls through `$876`, typed
-SDK/admin clients, provider-backed reads, database-backed app services, or any
+layout containers. Live data includes HTTP service calls through a bounded
+service client, provider-backed reads, database-backed app services, or any
 helper that performs those reads.
 
 Do not make the top-level page wait for live data before it can return otherwise
@@ -39,7 +39,7 @@ export default function CustomersPage({ searchParams }: Props) {
 
 async function CustomersTableData({ searchParams }: Props) {
   const params = await searchParams
-  const result = await $876.customers.admin.list({ limit: 25 })
+  const result = await billing.customers.list({ limit: 25 })
   return <CustomersTable data={result.data?.data ?? []} />
 }
 ```
@@ -47,7 +47,7 @@ async function CustomersTableData({ searchParams }: Props) {
 ```tsx
 // ❌ Blocks the whole page on a live request
 export default async function CustomersPage() {
-  const result = await $876.customers.admin.list({ limit: 25 })
+  const result = await billing.customers.list({ limit: 25 })
   return (
     <Page>
       <CustomersToolbar />

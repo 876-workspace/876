@@ -36,7 +36,7 @@ Consequences, all non-negotiable:
 
 - File metadata lives in the Storage service's own database.
 - Storage references core entities (`user_…`, `org_…`, `app_…`) as **opaque ID
-  columns with no cross-DB foreign key**, resolving details through `$876`.
+  columns with no cross-DB foreign key**, resolving details through `workspace` and `platform`.
 - Applications reference files by **opaque `fileId`**, never by object key,
   bucket name, or provider URL. `organizations.logo_file_id` is the canonical
   link; a rendered URL is a cache, never the source of truth.
@@ -380,7 +380,7 @@ immediately.
   the outbox. A direct write will be clobbered on the next delivery.
 - Do not display `created_by` aggregates as quota consumption — they are
   attribution only.
-- Do not present `bytes_reserved` alone as "used" — effective usage is
+- Do not present `bytes_reserved` alone as \"used\" — effective usage is
   `bytes_used + bytes_reserved`.
 - Do not let a counter go negative; clamp and log `storage.usage.underflow`.
 - Do not skip the `quota_released_at` guard on delete — a double decrement is
@@ -391,5 +391,5 @@ immediately.
 Overrides and plan values live in `apps/api` and are delivered to Storage
 through the `storage_entitlement_outbox` and its asyncio worker. Storage is a
 **pure follower with a single writer** — the outbox. See
-`.agents/rules/platform-services.md` for the key tiers and hardening. See
+`.claude/rules/platform-services.md` for the key tiers and hardening. See
 `docs/storage-quotas.md` for the operational runbook.
