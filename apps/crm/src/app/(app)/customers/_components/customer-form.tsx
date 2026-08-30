@@ -136,7 +136,7 @@ export function CustomerForm({
     }
 
     const id = customerId ?? result.data.profile.id
-    router.replace(`/customers/${id}`)
+    router.replace(`/customers/${encodeURIComponent(id)}`)
     router.refresh()
   }
 
@@ -271,7 +271,11 @@ export function CustomerForm({
 
       {error ? (
         <AppError
-          title={customerId ? 'Customer could not be saved' : 'Customer could not be added'}
+          title={
+            customerId
+              ? 'Customer could not be saved'
+              : 'Customer could not be added'
+          }
           error={error}
           variant="form"
         />

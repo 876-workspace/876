@@ -1,30 +1,10 @@
-import { Suspense } from 'react'
-
-import { Page } from '@876/ui/page'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-
-import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
-import { CustomersTableData } from './_components/customers-table-data'
-
 export const metadata = { title: 'Customers' }
 
+/**
+ * The list-only state. The toolbar and the customer list live in the layout,
+ * so this route renders nothing of its own — it simply leaves the card slot
+ * empty, which is what collapses the second grid column.
+ */
 export default function CustomersPage() {
-  return (
-    <Page>
-      <ResourceToolbar
-        title="Customers"
-        primaryLabel="Add"
-        primaryHref="/customers/new"
-        primaryVariant="info"
-      />
-      <Suspense
-        fallback={
-          <DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} rows={5} />
-        }
-      >
-        <CustomersTableData />
-      </Suspense>
-    </Page>
-  )
+  return null
 }

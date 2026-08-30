@@ -183,14 +183,10 @@ export function TeamTableRow({
       </TableCell>
       <TableCell className="px-5 py-4">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+          <span className="text-[0.8125rem] font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
             {team.name}
           </span>
-          {team.isDefault ? (
-            <Badge variant="info" className="text-xs">
-              Default
-            </Badge>
-          ) : null}
+          {team.isDefault ? <Badge variant="info">Default</Badge> : null}
         </div>
         {team.description ? (
           <p className="text-muted-foreground max-w-xs truncate text-xs">

@@ -1,0 +1,249 @@
+'use client'
+
+import type { ReactNode } from 'react'
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
+import { toast } from 'sonner'
+import { cn } from '@876/core/utils'
+import { Badge } from '@876/ui/badge'
+import { Button, buttonVariants } from '@876/ui/button'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@876/ui/dropdown-menu'
+import {
+  Mail,
+  MoreHorizontalIcon,
+  Pencil,
+  Phone,
+  Trash,
+  XIcon,
+} from '@876/ui/icons'
+
+import type { CrmCustomerRow } from '@/features/customers/types'
+import { client } from '@/lib/client'
+import { CUSTOMER_TABS, customerTabPath } from '../../_lib/customer-tabs'
+import { useCustomerLinks } from '../../_lib/use-customer-links'
+
+/**
+ * The customer card's persistent chrome: header, actions, and the tab strip.
+ *
+ * It lives in `[customerId]/layout.tsx`, so switching tabs re-renders only the
+ * tab body below it — the header does not flash and the record is not refetched
+ * for the chrome. Each tab is a `<Link>` to a real route, which is what makes a
+ * tab shareable: `/customers/<id>/mails` opens on Mails.
+ */
+export function CustomerCardFrame({
+  customer,
+  children,
+}: {
+  customer: CrmCustomerRow
+  children: ReactNode
+}) {
+  const router = useRouter()
+  const linkTo = useCustomerLinks()
+  // `null` on the index route, which is Overview.
+  const activeSegment = useSelectedLayoutSegment()
+  const [status, setStatus] = useState(customer.status)
+  const [togglingStatus, setTogglingStatus] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const isActive = status === 'ACTIVE'
+
+  function close() {
+    router.push(linkTo('/customers'))
+  }
+
+  async function toggleStatus() {
+    if (togglingStatus) return
+    const nextStatus = isActive ? 'INACTIVE' : 'ACTIVE'
+    setTogglingStatus(true)
+    const result = await client.customers.update(customer.profileId, {
+      customerKind: customer.isBusiness ? 'BUSINESS' : 'INDIVIDUAL',
+      status: nextStatus,
+    })
+    setTogglingStatus(false)
+    if (result.error) {
+      toast.error(result.error.message)
+      return
+    }
+    setStatus(nextStatus)
+    toast.success(
+      nextStatus === 'ACTIVE' ? 'Customer activated.' : 'Customer deactivated.'
+    )
+    router.refresh()
+  }
+
+  async function handleDelete() {
+    if (deleting) return
+    if (!window.confirm('Remove this customer from CRM?')) return
+    setDeleting(true)
+    const result = await client.customers.delete(customer.profileId)
+    setDeleting(false)
+    if (result.error) {
+      toast.error(result.error.message)
+      return
+    }
+    toast.success('Customer deleted.')
+    close()
+    router.refresh()
+  }
+
+  const subtitle =
+    customer.legalName ??
+    customer.typeLabel ??
+    (customer.isBusiness ? 'Business' : 'Individual')
+
+  const onClose = close
+
+  return (
+    <section
+      aria-label={`Customer details: ${customer.name}`}
+      className={cn(
+        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
+      )}
+    >
+      {/* Header */}
+      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
+        <CustomerAvatar
+          name={customer.name}
+          src={customer.contactAvatar}
+          size="lg"
+          shape={customer.isBusiness ? 'square' : 'circle'}
+          className={cn(
+            'ring-border/60 size-14 shrink-0 text-lg font-semibold shadow-xs ring-1 sm:size-16 sm:text-xl',
+            customer.isBusiness
+              ? 'rounded-2xl after:rounded-2xl sm:rounded-2xl'
+              : 'rounded-full after:rounded-full'
+          )}
+        />
+
+        <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
+              {customer.name}
+            </h2>
+            <Badge variant={isActive ? 'success' : 'secondary'}>
+              {isActive ? 'Active' : 'Inactive'}
+            </Badge>
+            <Badge variant="outline">
+              {customer.isBusiness ? 'Business' : 'Individual'}
+            </Badge>
+          </div>
+          <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            {subtitle ? (
+              <span className="text-foreground/80 font-medium">{subtitle}</span>
+            ) : null}
+            {customer.email ? (
+              <span className="inline-flex items-center gap-1">
+                <Mail className="text-muted-foreground/70 size-3.5 shrink-0" />
+                <a
+                  href={`mailto:${customer.email}`}
+                  className="hover:text-foreground hover:underline"
+                >
+                  {customer.email}
+                </a>
+              </span>
+            ) : null}
+            {customer.phone ? (
+              <span className="inline-flex items-center gap-1">
+                <Phone className="text-muted-foreground/70 size-3.5 shrink-0" />
+                <a
+                  href={`tel:${customer.phone}`}
+                  className="hover:text-foreground hover:underline"
+                >
+                  {customer.phone}
+                </a>
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
+          <Link
+            href={`/customers/${customer.profileId}/edit`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Pencil className="size-3.5" />
+            Edit
+          </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="outline" size="icon-sm" />}
+              aria-label="More customer actions"
+            >
+              <MoreHorizontalIcon className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto min-w-44">
+              <DropdownMenuItem
+                onClick={toggleStatus}
+                disabled={togglingStatus}
+              >
+                {isActive ? 'Deactivate' : 'Activate'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                <Trash className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onClose}
+            aria-label="Close customer details"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <XIcon className="size-4" />
+          </Button>
+        </div>
+      </header>
+      {/* Tabs — real routes, so a tab is linkable and survives a reload. */}
+      <div className="border-876-surface-border shrink-0 border-b px-6 pt-3">
+        <div className="876-scroll flex items-center gap-6 overflow-x-auto">
+          {CUSTOMER_TABS.map((tab) => {
+            const active = activeSegment === tab.segment
+            return (
+              <Link
+                key={tab.label}
+                href={linkTo(customerTabPath(customer.profileId, tab.segment))}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'border-b-2 pb-3 text-xs font-medium whitespace-nowrap transition-colors',
+                  active
+                    ? 'border-primary text-foreground font-semibold'
+                    : 'text-muted-foreground hover:text-foreground border-transparent'
+                )}
+              >
+                {tab.label}
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+        {children}
+      </div>
+
+      {/* Footer — the record's own id, constant across every tab. */}
+      <footer className="border-876-surface-border bg-muted/30 text-muted-foreground flex shrink-0 items-center justify-between border-t px-6 py-2.5 text-xs">
+        <span className="truncate font-mono">{customer.profileId}</span>
+      </footer>
+    </section>
+  )
+}

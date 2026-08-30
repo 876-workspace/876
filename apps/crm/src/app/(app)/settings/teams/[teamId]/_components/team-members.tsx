@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import {
@@ -99,12 +100,18 @@ export function TeamMembers({
 
       <div className="876-card overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="876-header-row">
             <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="w-12">
+              <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
+                Member
+              </TableHead>
+              <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
+                Email
+              </TableHead>
+              <TableHead className="px-4 py-3 text-[0.8125rem] font-semibold">
+                Role
+              </TableHead>
+              <TableHead className="w-12 px-4 py-3">
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
@@ -132,8 +139,12 @@ export function TeamMembers({
                   <TableCell className="text-muted-foreground">
                     {member.email ?? '—'}
                   </TableCell>
-                  <TableCell>
-                    {member.role === 'LEAD' ? 'Lead' : 'Member'}
+                  <TableCell className="px-4 py-3">
+                    <Badge
+                      variant={member.role === 'LEAD' ? 'info' : 'outline'}
+                    >
+                      {member.role === 'LEAD' ? 'Lead' : 'Member'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

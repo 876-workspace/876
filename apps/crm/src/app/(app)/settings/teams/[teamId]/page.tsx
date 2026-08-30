@@ -32,7 +32,11 @@ export default async function TeamPage({ params }: Props) {
     return (
       <Page>
         <h1 className="876-page-title mb-4">Team</h1>
-        <AppError title="Team details are temporarily unavailable" error={teamResult.error} variant="banner" />
+        <AppError
+          title="Team details are temporarily unavailable"
+          error={teamResult.error}
+          variant="banner"
+        />
       </Page>
     )
 
@@ -103,7 +107,11 @@ export default async function TeamPage({ params }: Props) {
           />
         ) : null}
         {teamMembersResult.error ? null : (
-          <TeamMembers teamId={teamId} members={members} directory={directory} />
+          <TeamMembers
+            teamId={teamId}
+            members={members}
+            directory={directory}
+          />
         )}
       </div>
     </Page>
