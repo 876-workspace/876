@@ -19,7 +19,7 @@ const CONSOLE_CUSTOMER_TABS: readonly CustomerTab[] = [
  * Console supplies only its route base. Workspace navigation remains outside
  * this component in `WorkspaceShell`, so the floating rail is preserved.
  */
-export function ConsoleCustomerCard({
+export function CustomerCard({
   customer,
   baseHref,
   children,

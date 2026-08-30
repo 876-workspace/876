@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { AppError } from '@876/ui/app-error'
-import { PageBreadcrumb } from '@876/ui/page'
 
-import { ConsoleCustomerCard } from '@/features/crm/components/customer-card'
+import { CustomerCard } from '@/features/crm/components/customer-card'
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
 import { loadOrgCustomerRecord } from '@/features/crm/customer-record-data'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
@@ -14,6 +13,13 @@ type Props = {
   params: Promise<{ slug: string; customerId: string }>
 }
 
+/**
+ * The customer card, rendered into the detail column of the customers shell.
+ *
+ * It returns the card as the column's only child: the card is `h-full`, so an
+ * intermediate wrapper with its own flow height collapses it. The list beside
+ * it is the way back to `/customers`, which is why there is no breadcrumb here.
+ */
 export default async function CrmWorkspaceCustomerLayout({
   children,
   params,
@@ -29,31 +35,25 @@ export default async function CrmWorkspaceCustomerLayout({
   if (record.result.error?.code === 'crm/customer-not-found') notFound()
   if (record.result.error || !record.row)
     return (
-      <div className="space-y-4">
-        <PageBreadcrumb href={`${base}/customers`} label="Customers" />
-        <AppError
-          title="Customer details are temporarily unavailable"
-          error={
-            record.result.error ?? {
-              code: 'crm/customer-not-found',
-              message: 'Customer details are unavailable.',
-            }
+      <AppError
+        title="Customer details are temporarily unavailable"
+        error={
+          record.result.error ?? {
+            code: 'crm/customer-not-found',
+            message: 'Customer details are unavailable.',
           }
-          variant="banner"
-          showCode
-        />
-      </div>
+        }
+        variant="banner"
+        showCode
+      />
     )
 
   return (
-    <div className="space-y-4">
-      <PageBreadcrumb href={`${base}/customers`} label="Customers" />
-      <ConsoleCustomerCard
-        customer={record.row}
-        baseHref={`${base}/customers/${encodeURIComponent(customerId)}`}
-      >
-        {children}
-      </ConsoleCustomerCard>
-    </div>
+    <CustomerCard
+      customer={record.row}
+      baseHref={`${base}/customers/${encodeURIComponent(customerId)}`}
+    >
+      {children}
+    </CustomerCard>
   )
 }
