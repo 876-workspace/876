@@ -8,9 +8,9 @@
  * different machine, so each app's public URLs must be the forwarded HTTPS
  * origins instead.
  *
- * Server-to-server calls stay on loopback. The CRM credential sync below also
- * wires its local Work service URL/key because Work is now a required CRM
- * service dependency rather than a browser-visible origin.
+ * Server-to-server calls stay on loopback. The CRM credential sync below wires
+ * its local Work service URL because Work is a required CRM service dependency
+ * rather than a browser-visible origin.
  */
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -53,11 +53,9 @@ function syncBillingPlatformCredentials() {
 function syncCrmCredentials() {
   const platformEnvPath = join(root, 'apps', 'api', '.env')
   const crmApiEnvPath = join(root, 'apps', 'crm-api', '.env')
-  const workApiEnvPath = join(root, 'apps', 'work-api', '.env')
   const platformInternalKey = readEnvValue(platformEnvPath, 'API_INTERNAL_KEY')
   const crmAppKey = readEnvValue(crmApiEnvPath, 'CRM_API_876_KEY')
   const crmInternalKey = readEnvValue(crmApiEnvPath, 'CRM_INTERNAL_KEY')
-  const workInternalKey = readEnvValue(workApiEnvPath, 'WORK_INTERNAL_KEY')
   let synced = false
 
   if (platformInternalKey || crmInternalKey) {
@@ -84,10 +82,25 @@ function syncCrmCredentials() {
   }
 
   // Work is a server-to-server dependency of CRM. Keep its URL on loopback in
-  // remote workspaces and copy only the Work service key into CRM's ignored
-  // local override; never expose it to the CRM browser app.
+  // remote workspaces; CRM authenticates with its own scoped app key.
   mergeEnvFile(
     join(root, 'apps', 'crm-api', '.env.development.local'),
+    {
+      WORK_API_URL: 'http://localhost:4020',
+    },
+    HEADER
+  )
+  synced = true
+
+  // Preparing an organization’s Work workspace is operator-tier work, so the Work
+  // service key goes to the core API and nowhere else. CRM must never receive
+  // it — it reaches Work at the integration tier with its own app key.
+  const workInternalKey = readEnvValue(
+    join(root, 'apps', 'work-api', '.env'),
+    'WORK_INTERNAL_KEY'
+  )
+  mergeEnvFile(
+    join(root, 'apps', 'api', '.env.development.local'),
     {
       WORK_API_URL: 'http://localhost:4020',
       ...(workInternalKey ? { WORK_INTERNAL_KEY: workInternalKey } : {}),
@@ -99,7 +112,8 @@ function syncCrmCredentials() {
   if (!workInternalKey) {
     console.warn(
       '[setup-dev-env] WORK_INTERNAL_KEY is not set in apps/work-api/.env. ' +
-        'CRM task/reminder operations require the Work service key.'
+        'The core API cannot prepare an organization’s Work workspace without ' +
+        'it, so CRM tasks and reminders will fail with work/tenant-not-found.'
     )
   }
 
