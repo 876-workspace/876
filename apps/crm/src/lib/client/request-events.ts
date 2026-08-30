@@ -12,7 +12,22 @@ import type {
 
 import { request } from './request'
 
-export type RequestEventCreateInput = Omit<
+/**
+ * A create payload minus the server-supplied author.
+ *
+ * The distribution matters: `CrmRequestEventCreateInput` is a discriminated
+ * union of the timed and all-day forms, and a bare `Omit<Union, K>` is not
+ * distributive — it collapses to the keys the two arms share, which drops
+ * `startAt`/`endAt`/`startDate`/`endDate` entirely and leaves the browser
+ * unable to describe either kind of event. Distributing over the union keeps
+ * both arms, so the composer still cannot mix a timed field into an all-day
+ * event.
+ */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never
+
+export type RequestEventCreateInput = DistributiveOmit<
   CrmRequestEventCreateInput,
   'createdBy'
 >
