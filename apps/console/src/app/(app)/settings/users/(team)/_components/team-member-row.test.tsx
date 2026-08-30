@@ -2,26 +2,16 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { TeamTableRow, type TeamRow } from './member-row'
-
-const mocks = vi.hoisted(() => ({
-  push: vi.fn(),
-  refresh: vi.fn(),
-  revoke: vi.fn(),
-}))
+import { TeamMemberTableRow, type TeamMemberRow } from './team-member-row'
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+  useSearchParams: () => new URLSearchParams('status=active'),
 }))
 
-vi.mock('@/lib/client', () => ({
-  client: { team: { revoke: mocks.revoke } },
-}))
-
-function row(overrides: Partial<TeamRow> = {}): TeamRow {
+function row(overrides: Partial<TeamMemberRow> = {}): TeamMemberRow {
   return {
     id: 'user_695d45c54a374ff0a570003e15668891',
     firstName: 'Alejandra',
@@ -38,20 +28,19 @@ function row(overrides: Partial<TeamRow> = {}): TeamRow {
   }
 }
 
-function renderRow(value: TeamRow) {
+function renderRow(value: TeamMemberRow) {
   return render(
     <table>
       <tbody>
-        <TeamTableRow user={value} />
+        <TeamMemberTableRow user={value} />
       </tbody>
     </table>
   )
 }
 
-describe('TeamTableRow', () => {
+describe('TeamMemberTableRow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.revoke.mockResolvedValue({ data: { count: 1 }, error: null })
   })
 
   it('renders the resolved identity and position', () => {
@@ -98,28 +87,14 @@ describe('TeamTableRow', () => {
     ).toBeInTheDocument()
   })
 
-  it('triggers onSelect when supplied', () => {
-    const onSelect = vi.fn()
-    render(
-      <table>
-        <tbody>
-          <TeamTableRow user={row()} onSelect={onSelect} />
-        </tbody>
-      </table>
-    )
-
-    fireEvent.click(screen.getByText('Alejandra Reyes'))
-    expect(onSelect).toHaveBeenCalledWith(
-      'user_695d45c54a374ff0a570003e15668891'
-    )
-  })
-
-  it('navigates via router.push when onSelect is omitted', () => {
+  it('links to the member route while preserving the list query', () => {
     renderRow(row())
 
-    fireEvent.click(screen.getByText('Alejandra Reyes'))
-    expect(mocks.push).toHaveBeenCalledWith(
-      '/settings/users/user_695d45c54a374ff0a570003e15668891'
+    expect(
+      screen.getByRole('link', { name: 'View team member Alejandra Reyes' })
+    ).toHaveAttribute(
+      'href',
+      '/settings/users/user_695d45c54a374ff0a570003e15668891?status=active'
     )
   })
 })

@@ -1,13 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
-import { Button } from '@876/ui/button'
 import { TableCell, TableRow } from '@876/ui/table'
 
-import { client } from '@/lib/client'
+import { useTeamMemberLinks } from '../_lib/use-team-member-links'
 
 const ROLE_LABELS: Record<string, string> = {
   staff: 'Staff',
@@ -16,15 +15,7 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
 }
 
-const AFFILIATION_LABELS: Record<string, string> = {
-  staff: 'Staff',
-  contractor: 'Contractor',
-  external: 'External',
-}
-
-import { cn } from '@876/core/utils'
-
-export type TeamRow = {
+export type TeamMemberRow = {
   id: string
   firstName: string
   lastName: string
@@ -41,7 +32,7 @@ export type TeamRow = {
   resolved: boolean
 }
 
-function initialsOf(user: TeamRow): string {
+function initialsOf(user: TeamMemberRow): string {
   return (
     [user.firstName?.[0], user.lastName?.[0]]
       .filter(Boolean)
@@ -52,86 +43,46 @@ function initialsOf(user: TeamRow): string {
   )
 }
 
-function formatExpiry(value: number | null, affiliation: string): string {
-  if (affiliation === 'staff' || value === null) return '—'
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(value * 1000))
-}
-
-export function TeamTableRow({
-  user,
-  selected,
-  onSelect,
-}: {
-  user: TeamRow
-  selected?: boolean
-  onSelect?: (id: string) => void
-}) {
-  const router = useRouter()
-  const [revoking, setRevoking] = useState(false)
+export function TeamMemberTableRow({ user }: { user: TeamMemberRow }) {
+  const linkTo = useTeamMemberLinks()
   const displayName = user.resolved
     ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
     : 'Unresolved account'
-  const href = `/settings/users/${user.id}`
-
-  function handleClick() {
-    if (onSelect) {
-      onSelect(user.id)
-    } else {
-      router.push(href)
-    }
-  }
-
-  async function revokeGrant() {
-    setRevoking(true)
-    const result = await client.team.revoke(user.id)
-    setRevoking(false)
-    if (!result.error) router.refresh()
-  }
-
   return (
-    <TableRow
-      className={cn(
-        'hover:bg-muted/40 cursor-pointer transition-colors',
-        selected && 'bg-muted/50'
-      )}
-      onClick={handleClick}
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') handleClick()
-      }}
-      role="link"
-      aria-label={`View team member ${displayName}`}
-      aria-selected={selected}
-    >
-      <TableCell className="py-4 pr-0 pl-5">
-        <Avatar className="size-8">
-          {user.avatar && <AvatarImage src={user.avatar} alt="" />}
-          <AvatarFallback className="text-xs">
-            {initialsOf(user)}
-          </AvatarFallback>
-        </Avatar>
-      </TableCell>
-      <TableCell className="px-5 py-4">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
-            {displayName}
-          </span>
-          {user.affiliation === 'external' ? (
-            <Badge variant="outline" className="text-xs">
-              External
-            </Badge>
-          ) : null}
+    <TableRow className="transition-colors">
+      <TableCell className="relative px-5 py-4">
+        <RowLink
+          href={linkTo(`/settings/users/${encodeURIComponent(user.id)}`)}
+          label={`View team member ${displayName}`}
+        />
+        <div className="flex items-center gap-3">
+          <Avatar className="size-8 shrink-0">
+            {user.avatar && <AvatarImage src={user.avatar} alt="" />}
+            <AvatarFallback className="text-xs">
+              {initialsOf(user)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[0.8125rem] font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+                {displayName}
+              </span>
+              {user.affiliation === 'external' ? (
+                <Badge variant="outline" className="text-xs">
+                  External
+                </Badge>
+              ) : null}
+            </div>
+            {user.resolved && user.username ? (
+              <p className="text-muted-foreground text-xs">@{user.username}</p>
+            ) : null}
+            {!user.resolved ? (
+              <p className="text-muted-foreground font-mono text-xs">
+                {user.id}
+              </p>
+            ) : null}
+          </div>
         </div>
-        {user.resolved && user.username ? (
-          <p className="text-muted-foreground text-xs">@{user.username}</p>
-        ) : null}
-        {!user.resolved ? (
-          <p className="text-muted-foreground font-mono text-xs">{user.id}</p>
-        ) : null}
       </TableCell>
       <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
         {user.email || '—'}
@@ -146,35 +97,30 @@ export function TeamTableRow({
   )
 }
 
-export function CondensedTeamRow({
+export function CondensedTeamMemberRow({
   user,
   selected,
-  onSelect,
 }: {
-  user: TeamRow
+  user: TeamMemberRow
   selected?: boolean
-  onSelect: () => void
 }) {
+  const linkTo = useTeamMemberLinks()
   const displayName = user.resolved
     ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
     : 'Unresolved account'
 
+  const subtitle = user.position || ROLE_LABELS[user.role] || user.role
+
   return (
     <TableRow
-      className={cn(
-        'hover:bg-muted/40 cursor-pointer transition-colors',
-        selected && 'bg-muted/60'
-      )}
-      onClick={onSelect}
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') onSelect()
-      }}
-      role="link"
-      aria-label={`View team member ${displayName}`}
-      aria-selected={selected}
+      data-state={selected ? 'selected' : undefined}
+      className={cn('transition-colors', selected && 'bg-muted/70 font-medium')}
     >
-      <TableCell className="py-3 pr-3 pl-4">
+      <TableCell className="relative py-3 pr-3 pl-4">
+        <RowLink
+          href={linkTo(`/settings/users/${encodeURIComponent(user.id)}`)}
+          label={`View team member ${displayName}`}
+        />
         <div className="flex min-w-0 items-center gap-2.5">
           <Avatar className="size-7 shrink-0 rounded-full after:rounded-full">
             {user.avatar && (
@@ -184,16 +130,11 @@ export function CondensedTeamRow({
               {initialsOf(user)}
             </AvatarFallback>
           </Avatar>
-          <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 truncate">
-              <span
-                className={cn(
-                  'truncate text-[0.8125rem] font-medium text-sky-600 dark:text-sky-400',
-                  selected && 'font-semibold'
-                )}
-              >
+              <p className="text-foreground truncate text-[0.8125rem] font-medium">
                 {displayName}
-              </span>
+              </p>
               {user.affiliation === 'external' ? (
                 <Badge
                   variant="outline"
@@ -203,12 +144,30 @@ export function CondensedTeamRow({
                 </Badge>
               ) : null}
             </div>
-            <span className="text-muted-foreground truncate text-xs">
-              {user.position || ROLE_LABELS[user.role] || user.role}
-            </span>
+            <p className="text-muted-foreground truncate text-[0.6875rem]">
+              {subtitle}
+            </p>
           </div>
+          {user.status && user.status !== 'active' ? (
+            <Badge
+              variant="secondary"
+              className="h-4 px-1 py-0 text-[0.625rem] capitalize"
+            >
+              {user.status}
+            </Badge>
+          ) : null}
         </div>
       </TableCell>
     </TableRow>
+  )
+}
+
+function RowLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className="focus-visible:ring-ring absolute inset-0 z-10 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+    />
   )
 }

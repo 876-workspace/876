@@ -100,9 +100,14 @@ type Module = {
 
 type Props = {
   permissions: readonly string[]
+  /**
+   * Whether the viewer may revoke this grant. The revoke button also needs an
+   * `onRevoke` handler, so a read-only render — a server component with no
+   * handler to pass — cannot produce a dead button.
+   */
   canRevoke?: boolean
   revoking?: boolean
-  onRevoke: () => void
+  onRevoke?: () => void
 }
 
 export function AccessPanel({
@@ -224,7 +229,7 @@ export function AccessPanel({
               </p>
             </div>
 
-            {canRevoke ? (
+            {canRevoke && onRevoke ? (
               <Button
                 type="button"
                 size="sm"

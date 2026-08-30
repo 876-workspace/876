@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { AccessPanel } from '../_components/access-panel'
 import { resolveMemberGrant, resolveMemberIdentity } from '../_data'
 
 type Props = { params: Promise<{ id: string }> }
@@ -24,5 +25,5 @@ export default async function TeamMemberPermissionsPage({ params }: Props) {
   const grant = await resolveMemberGrant(id)
   if (!grant) notFound()
 
-  return <div />
+  return <AccessPanel permissions={grant.role.permissions} canRevoke={false} />
 }

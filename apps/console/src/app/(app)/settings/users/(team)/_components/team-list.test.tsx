@@ -1,25 +1,19 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { TeamSplit } from '../team-split'
-import type { TeamRow } from '../member-row'
+import { render, screen } from '@testing-library/react'
+import { TeamList } from './team-list'
+import type { TeamMemberRow } from './team-member-row'
 
 const mocks = vi.hoisted(() => ({
-  push: vi.fn(),
-  refresh: vi.fn(),
-  revoke: vi.fn(),
+  segments: [] as string[],
 }))
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+  useSelectedLayoutSegments: () => mocks.segments,
   useSearchParams: () => new URLSearchParams(),
 }))
 
-vi.mock('@/lib/client', () => ({
-  client: { team: { revoke: mocks.revoke } },
-}))
-
-function aTeamMember(overrides: Partial<TeamRow> = {}): TeamRow {
+function aTeamMember(overrides: Partial<TeamMemberRow> = {}): TeamMemberRow {
   return {
     id: 'user_1',
     firstName: 'Alejandra',
@@ -39,7 +33,7 @@ function aTeamMember(overrides: Partial<TeamRow> = {}): TeamRow {
   }
 }
 
-const members: TeamRow[] = [
+const members: TeamMemberRow[] = [
   aTeamMember(),
   aTeamMember({
     id: 'user_2',
@@ -53,57 +47,42 @@ const members: TeamRow[] = [
   }),
 ]
 
-describe('TeamSplit', () => {
+describe('TeamList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.segments = []
   })
 
   it('renders team list in full table mode when no member is selected', () => {
-    render(<TeamSplit members={members} selectedId={undefined} />)
+    render(<TeamList members={members} />)
 
     expect(screen.getByText('Alejandra Reyes')).toBeInTheDocument()
     expect(screen.getByText('Marcus Sterling')).toBeInTheDocument()
     expect(screen.queryByLabelText('Close member details')).toBeNull()
   })
 
-  it('navigates to ?member=<id> when a row is clicked in full table mode', () => {
-    render(<TeamSplit members={members} selectedId={undefined} />)
+  it('links rows to their member route in full table mode', () => {
+    render(<TeamList members={members} />)
 
-    fireEvent.click(screen.getByText('Alejandra Reyes'))
-    expect(mocks.push).toHaveBeenCalledWith('/settings/users?member=user_1')
+    expect(
+      screen.getByRole('link', { name: 'View team member Alejandra Reyes' })
+    ).toHaveAttribute('href', '/settings/users/user_1')
   })
 
   it('renders team member detail card to the right when a member is selected', () => {
-    render(<TeamSplit members={members} selectedId="user_1" />)
+    mocks.segments = ['user_1']
+    render(<TeamList members={members} />)
 
-    expect(screen.getByLabelText('Close member details')).toBeInTheDocument()
+    expect(screen.getByText('Users')).toBeInTheDocument()
     expect(screen.getAllByText('Alejandra Reyes').length).toBeGreaterThan(0)
-    expect(screen.getByText('Console Role')).toBeInTheDocument()
-    expect(screen.getByText('Platform Identity')).toBeInTheDocument()
-    expect(screen.getAllByText('user_1').length).toBeGreaterThan(0)
-  })
-
-  it('allows switching between Profile, App Access, and Activity tabs in member detail card', () => {
-    render(<TeamSplit members={members} selectedId="user_1" />)
-
-    // Initial tab is Profile
-    expect(screen.getByText('Platform Identity')).toBeInTheDocument()
-
-    // Switch to App Access
-    const accessTab = screen.getByRole('tab', { name: 'App Access' })
-    fireEvent.click(accessTab)
-    expect(screen.getByRole('button', { name: /Users/ })).toBeInTheDocument()
-    expect(screen.getByText('Revoke Console Access')).toBeInTheDocument()
-
-    // Switch to Activity
-    const activityTab = screen.getByRole('tab', { name: 'Activity' })
-    fireEvent.click(activityTab)
-    expect(screen.getByText('Console access granted')).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'View team member Marcus Sterling' })
+    ).toBeInTheDocument()
   })
 
   it('renders empty state when members list is empty', () => {
-    render(<TeamSplit members={[]} selectedId={undefined} />)
+    render(<TeamList members={[]} />)
 
-    expect(screen.getByText('No team members')).toBeInTheDocument()
+    expect(screen.getByText('No users')).toBeInTheDocument()
   })
 })

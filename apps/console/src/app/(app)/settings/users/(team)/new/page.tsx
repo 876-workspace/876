@@ -1,33 +1,11 @@
-import { PromoteUserForm } from '@/app/(app)/settings/users/_components/promote-user-form'
-import {
-  Page,
-  PageBreadcrumb,
-  PageHeader,
-  PageTitle,
-  PageDescription,
-} from '@876/ui/page'
+import { AddTeamMemberCard } from './_components/add-team-member-card'
 
-export const metadata = { title: 'Add Member - Team' }
+export const metadata = { title: 'Add user - Team' }
 
+/**
+ * Create opens in the card slot, in the same place the member it creates will
+ * appear — so the list stays visible beside it and the URL is shareable.
+ */
 export default function AddTeamMemberPage() {
-  return (
-    <Page>
-      <PageBreadcrumb
-        href="/settings/users"
-        label="Console Users"
-        className="mb-4"
-      />
-
-      <PageHeader>
-        <PageTitle>Add Team Member</PageTitle>
-        <PageDescription>
-          Search for a user and assign them a Console role.
-        </PageDescription>
-      </PageHeader>
-
-      <div className="876-card max-w-lg p-6">
-        <PromoteUserForm />
-      </div>
-    </Page>
-  )
+  return <AddTeamMemberCard />
 }
