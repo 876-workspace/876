@@ -214,7 +214,10 @@ describe('createAlertsResource', () => {
       )
     )
 
-    const result = await alerts.retrieve('org_kingston_central', 'alert_missing')
+    const result = await alerts.retrieve(
+      'org_kingston_central',
+      'alert_missing'
+    )
 
     expect(result).toEqual({
       data: null,

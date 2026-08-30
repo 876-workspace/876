@@ -80,7 +80,10 @@ describe('createTaskListsResource', () => {
       )
     )
 
-    const result = await taskLists.retrieve('org_kingston_central', 'tasklist_kin_01')
+    const result = await taskLists.retrieve(
+      'org_kingston_central',
+      'tasklist_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/task-lists/tasklist_kin_01',
@@ -93,7 +96,10 @@ describe('createTaskListsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: createTaskListFixture({ isDefault: false, name: 'Custom List' }),
+          data: createTaskListFixture({
+            isDefault: false,
+            name: 'Custom List',
+          }),
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -128,9 +134,13 @@ describe('createTaskListsResource', () => {
       )
     )
 
-    const result = await taskLists.update('org_kingston_central', 'tasklist_kin_01', {
-      name: 'Renamed General',
-    })
+    const result = await taskLists.update(
+      'org_kingston_central',
+      'tasklist_kin_01',
+      {
+        name: 'Renamed General',
+      }
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/task-lists/tasklist_kin_01',
@@ -153,7 +163,11 @@ describe('createTaskListsResource', () => {
       )
     )
 
-    const result = await taskLists.delete('org_kingston_central', 'tasklist_kin_01', 'usr_tariq_01')
+    const result = await taskLists.delete(
+      'org_kingston_central',
+      'tasklist_kin_01',
+      'usr_tariq_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/task-lists/tasklist_kin_01',
@@ -173,17 +187,26 @@ describe('createTaskListsResource', () => {
       new Response(
         JSON.stringify({
           data: null,
-          error: { code: 'work/task-list-not-found', message: 'Task list not found.' },
+          error: {
+            code: 'work/task-list-not-found',
+            message: 'Task list not found.',
+          },
         }),
         { status: 404, headers: { 'content-type': 'application/json' } }
       )
     )
 
-    const result = await taskLists.retrieve('org_kingston_central', 'list_missing')
+    const result = await taskLists.retrieve(
+      'org_kingston_central',
+      'list_missing'
+    )
 
     expect(result).toEqual({
       data: null,
-      error: { code: 'work/task-list-not-found', message: 'Task list not found.' },
+      error: {
+        code: 'work/task-list-not-found',
+        message: 'Task list not found.',
+      },
     })
   })
 })

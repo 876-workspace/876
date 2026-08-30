@@ -141,7 +141,11 @@ describe('createTasksResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: createTaskFixture({ status: 'DONE', percentComplete: 100, completedAt: 1_788_084_000 }),
+          data: createTaskFixture({
+            status: 'DONE',
+            percentComplete: 100,
+            completedAt: 1_788_084_000,
+          }),
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -174,7 +178,11 @@ describe('createTasksResource', () => {
       )
     )
 
-    const result = await tasks.delete('org_kingston_central', 'task_kin_01', 'usr_tariq_01')
+    const result = await tasks.delete(
+      'org_kingston_central',
+      'task_kin_01',
+      'usr_tariq_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/tasks/task_kin_01',
