@@ -88,6 +88,9 @@ export type OrganizationBootstrapWorkspace = {
   finance: {
     ensure(params: { organizationId: string }): Promise<unknown>
   }
+  work: {
+    ensure(params: { organizationId: string }): Promise<void>
+  }
 }
 
 export type OrganizationBootstrapDeps = {
@@ -296,6 +299,7 @@ export async function bootstrapExistingUser(
     // The durable workspace identity now exists, so finish the shared finance
     // readiness barrier. A failure is preserved for an idempotent retry.
     await deps.workspace.finance.ensure({ organizationId: organization.id })
+    await deps.workspace.work.ensure({ organizationId: organization.id })
 
     return organization
   } catch (error) {

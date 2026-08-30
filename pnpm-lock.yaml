@@ -323,6 +323,9 @@ importers:
       '@876/server':
         specifier: workspace:*
         version: link:../../packages/server
+      '@876/work':
+        specifier: workspace:*
+        version: link:../../packages/work
       '@prisma/adapter-pg':
         specifier: 7.9.1
         version: 7.9.1
