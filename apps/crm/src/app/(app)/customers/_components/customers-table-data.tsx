@@ -64,7 +64,9 @@ export async function CustomersTableData({ status, selectedId }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    // Participates in the page's flex column so the split below can bound its
+    // own height; inert on the plain-table route, where Page is not a flexbox.
+    <div className="space-y-3 md:flex md:min-h-0 md:flex-1 md:flex-col">
       {result.error ? (
         <AppError
           title="Some customer data could not be loaded"
