@@ -4,6 +4,7 @@ import type {
   UpdateWorkReminderInput,
   WorkContext,
   WorkReminder,
+  WorkReminderStatus,
 } from '@876/work'
 
 import * as tenants from '../tenants/index.js'
@@ -133,6 +134,42 @@ export async function create(
   return serialize(row, organizationId)
 }
 
+/**
+ * Reminder lifecycle timestamps are owned here, the way task completion is.
+ *
+ * `sentAt` records that the reminder fired, so it survives being dismissed or
+ * cancelled — those do not undo the send. It is cleared only on a return to
+ * SCHEDULED, which is a reschedule: the reminder has not yet fired *again*.
+ *
+ * `dismissedAt` records the user's dismissal and is cleared whenever the
+ * reminder leaves DISMISSED. Re-entering a state is idempotent and never moves
+ * a timestamp that is already set.
+ */
+function lifecycleStamp(
+  current: {
+    status: WorkReminderStatus
+    sentAt: Date | null
+    dismissedAt: Date | null
+  },
+  next: WorkReminderStatus | undefined
+) {
+  if (next === undefined || next === current.status) return {}
+
+  const now = new Date()
+  return {
+    ...(next === 'SENT'
+      ? { sentAt: now }
+      : next === 'SCHEDULED' && current.sentAt
+        ? { sentAt: null }
+        : {}),
+    ...(next === 'DISMISSED'
+      ? { dismissedAt: now }
+      : current.dismissedAt
+        ? { dismissedAt: null }
+        : {}),
+  }
+}
+
 export async function update(
   organizationId: string,
   reminderId: string,
@@ -142,7 +179,9 @@ export async function update(
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, reminderId)
   if (!current) return null
+
   const row = await repository.update(reminderId, {
+    ...lifecycleStamp(current, input.status),
     ...(input.context === undefined ? {} : contextColumns(input.context)),
     ...(input.title === undefined ? {} : { title: input.title }),
     ...(input.note === undefined ? {} : { note: input.note }),
