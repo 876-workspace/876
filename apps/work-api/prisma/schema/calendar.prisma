@@ -40,21 +40,21 @@ enum WorkParticipantStatus {
 }
 
 model WorkCalendar {
-  id            String                 @id
-  uid           String                 @unique
-  tenantId      String                 @map("tenant_id")
-  ownerUserId   String?                @map("owner_user_id")
+  id            String                     @id
+  uid           String                     @unique
+  tenantId      String                     @map("tenant_id")
+  ownerUserId   String?                    @map("owner_user_id")
   name          String
   description   String?
-  timeZone      String                 @map("time_zone")
-  visibility    WorkCalendarVisibility @default(PRIVATE)
-  isPrimary     Boolean                @default(false) @map("is_primary")
-  createdBy     String                 @map("created_by")
-  createdAt     DateTime               @default(now()) @map("created_at")
-  updatedAt     DateTime               @updatedAt @map("updated_at")
-  deletedAt     DateTime?              @map("deleted_at")
-  deletedBy     String?                @map("deleted_by")
-  tenant        WorkTenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  timeZone      String                     @map("time_zone")
+  visibility    WorkCalendarVisibility     @default(PRIVATE)
+  isPrimary     Boolean                    @default(false) @map("is_primary")
+  createdBy     String                     @map("created_by")
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime                   @updatedAt @map("updated_at")
+  deletedAt     DateTime?                  @map("deleted_at")
+  deletedBy     String?                    @map("deleted_by")
+  tenant        WorkTenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   subscriptions WorkCalendarSubscription[]
   events        WorkEvent[]
 
@@ -83,33 +83,33 @@ model WorkCalendarSubscription {
 }
 
 model WorkEvent {
-  id               String              @id
-  uid              String              @unique
-  tenantId         String              @map("tenant_id")
-  calendarId       String              @map("calendar_id")
-  contextService   String?             @map("context_service")
-  contextResource  String?             @map("context_resource")
-  contextId        String?             @map("context_id")
+  id               String                 @id
+  uid              String                 @unique
+  tenantId         String                 @map("tenant_id")
+  calendarId       String                 @map("calendar_id")
+  contextService   String?                @map("context_service")
+  contextResource  String?                @map("context_resource")
+  contextId        String?                @map("context_id")
   title            String
   description      String?
   location         String?
-  status           WorkEventStatus     @default(CONFIRMED)
-  busyStatus       WorkEventBusyStatus @default(BUSY) @map("busy_status")
-  startAt          DateTime?           @map("start_at")
-  endAt            DateTime?           @map("end_at")
-  timeZone         String?             @map("time_zone")
-  startDate        DateTime?           @db.Date @map("start_date")
-  endDate          DateTime?           @db.Date @map("end_date")
-  recurrenceRuleId String?             @map("recurrence_rule_id")
-  recurrenceId     String?             @map("recurrence_id")
-  createdBy        String              @map("created_by")
-  createdAt        DateTime            @default(now()) @map("created_at")
-  updatedAt        DateTime            @updatedAt @map("updated_at")
-  deletedAt        DateTime?           @map("deleted_at")
-  deletedBy        String?             @map("deleted_by")
-  tenant           WorkTenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  calendar         WorkCalendar        @relation(fields: [calendarId], references: [id], onDelete: Restrict)
-  recurrenceRule   WorkRecurrenceRule? @relation(fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
+  status           WorkEventStatus        @default(CONFIRMED)
+  busyStatus       WorkEventBusyStatus    @default(BUSY) @map("busy_status")
+  startAt          DateTime?              @map("start_at")
+  endAt            DateTime?              @map("end_at")
+  timeZone         String?                @map("time_zone")
+  startDate        DateTime?              @map("start_date") @db.Date
+  endDate          DateTime?              @map("end_date") @db.Date
+  recurrenceRuleId String?                @map("recurrence_rule_id")
+  recurrenceId     String?                @map("recurrence_id")
+  createdBy        String                 @map("created_by")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+  deletedAt        DateTime?              @map("deleted_at")
+  deletedBy        String?                @map("deleted_by")
+  tenant           WorkTenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  calendar         WorkCalendar           @relation(fields: [calendarId], references: [id], onDelete: Restrict)
+  recurrenceRule   WorkRecurrenceRule?    @relation(fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
   participants     WorkEventParticipant[]
   alerts           WorkAlert[]
 
