@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { create876WorkIntegrationClient } from './integration'
+import { WORK_CRM_INTEGRATION_SCOPES } from './integration-scopes'
 import { createWorkWorkspaceClient } from './workspace'
 
 describe('create876WorkIntegrationClient', () => {
@@ -81,7 +82,7 @@ describe('create876WorkIntegrationClient', () => {
     })
   })
 
-  it('serializes workspace provisioning with the app id', async () => {
+  it('serializes workspace provisioning with the connecting app and its scopes', async () => {
     const fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -104,7 +105,10 @@ describe('create876WorkIntegrationClient', () => {
       fetch,
     })
 
-    const result = await client.ensure('org_1', 'app_crm')
+    const result = await client.ensure('org_1', {
+      appId: 'app_crm',
+      scopes: WORK_CRM_INTEGRATION_SCOPES,
+    })
 
     expect(result.error).toBeNull()
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -112,6 +116,7 @@ describe('create876WorkIntegrationClient', () => {
     expect(JSON.parse(request.body as string)).toEqual({
       organizationId: 'org_1',
       appId: 'app_crm',
+      scopes: [...WORK_CRM_INTEGRATION_SCOPES],
     })
     expect(request.headers).toEqual({
       'Content-Type': 'application/json',
