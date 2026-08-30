@@ -14,6 +14,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "migrate:crm": "node scripts/migrate-crm-work.mjs",
+    "verify:crm": "node scripts/verify-crm-work.mjs",
     "test": "vitest run",
     "lint": "eslint src",
     "generate": "node scripts/prisma-generate.mjs"
