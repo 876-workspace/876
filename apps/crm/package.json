@@ -14,6 +14,7 @@
     "clean": "rm -rf .next .turbo"
   },
   "dependencies": {
+    "@876/account": "workspace:*",
     "@876/core": "workspace:*",
     "@876/crm": "workspace:*",
     "@876/crm-ui": "workspace:*",
