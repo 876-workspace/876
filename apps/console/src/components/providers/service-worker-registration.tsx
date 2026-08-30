@@ -12,7 +12,25 @@ export function ServiceWorkerRegistration() {
       process.env.NEXT_PUBLIC_PWA_TEST === '1'
 
     if ('serviceWorker' in navigator && shouldRegister) {
+      let reloadedForWorkerUpdate = false
+      const reloadForWorkerUpdate = () => {
+        if (reloadedForWorkerUpdate) return
+
+        reloadedForWorkerUpdate = true
+        window.location.reload()
+      }
+
+      navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        reloadForWorkerUpdate
+      )
       void navigator.serviceWorker.register('/sw.js', { scope: '/' })
+
+      return () =>
+        navigator.serviceWorker.removeEventListener(
+          'controllerchange',
+          reloadForWorkerUpdate
+        )
     } else if ('serviceWorker' in navigator) {
       // A development service worker can serve client chunks from an earlier
       // compile, leaving React with mismatched server and client component props.

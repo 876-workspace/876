@@ -7,13 +7,7 @@ import type {
   SerwistGlobalConfig,
   SerwistPlugin,
 } from 'serwist'
-import {
-  CacheFirst,
-  disableNavigationPreload,
-  ExpirationPlugin,
-  NetworkOnly,
-  Serwist,
-} from 'serwist'
+import { disableNavigationPreload, NetworkOnly, Serwist } from 'serwist'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -56,20 +50,15 @@ const navigationRequestPlugin: SerwistPlugin = {
 
 const cacheId = process.env.SERWIST_CACHE_ID
 const runtimeCaching: RuntimeCaching[] = [
+  // Next serves the document and its RSC payload from the network. Caching
+  // client chunks independently can combine fresh server markup with a stale
+  // React tree after a deployment, causing hydration failures. The browser's
+  // normal immutable asset cache still applies to hashed chunks.
   {
     matcher: ({ sameOrigin, url }) =>
       sameOrigin && url.pathname.startsWith('/_next/static/'),
     method: 'GET',
-    handler: new CacheFirst({
-      cacheName: `${cacheId}-next-static`,
-      plugins: [
-        new ExpirationPlugin({
-          maxEntries: 128,
-          maxAgeSeconds: 365 * 24 * 60 * 60,
-          maxAgeFrom: 'last-used',
-        }),
-      ],
-    }),
+    handler: new NetworkOnly(),
   },
   {
     // Navigations are re-issued as a plain `redirect: "manual"` request (see
