@@ -15,9 +15,7 @@ describe('NoAccessPage', () => {
   })
 
   it('routes legacy no-access URLs through the normal home resolver', () => {
-    expect(() => NoAccessPage()).toThrow(
-      expect.objectContaining({ path: '/' })
-    )
+    expect(() => NoAccessPage()).toThrow(expect.objectContaining({ path: '/' }))
     expect(mocks.redirect).toHaveBeenCalledWith('/')
   })
 })
