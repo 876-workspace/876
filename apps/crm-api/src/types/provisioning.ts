@@ -50,7 +50,9 @@ export const crmProvisioningManifestSchema = z
   .superRefine((manifest, ctx) => {
     const priorityKeys = new Set(manifest.priorities.map((item) => item.key))
     const categoryKeys = new Set(manifest.categories.map((item) => item.key))
-    const defaultCount = manifest.priorities.filter((item) => item.isDefault).length
+    const defaultCount = manifest.priorities.filter(
+      (item) => item.isDefault
+    ).length
 
     if (priorityKeys.size !== manifest.priorities.length)
       ctx.addIssue({ code: 'custom', message: 'Priority keys must be unique.' })

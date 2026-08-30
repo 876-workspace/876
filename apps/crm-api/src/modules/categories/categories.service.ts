@@ -11,7 +11,9 @@ import * as tenants from '../tenants/tenants.service.js'
 import * as repository from './categories.repository.js'
 
 type CategoryRow = Awaited<ReturnType<typeof repository.list>>[number]
-type SubcategoryRow = NonNullable<Awaited<ReturnType<typeof repository.retrieveSub>>>
+type SubcategoryRow = NonNullable<
+  Awaited<ReturnType<typeof repository.retrieveSub>>
+>
 
 export function slugify(name: string) {
   return (
@@ -55,7 +57,10 @@ async function validateDefaultPriority(
   defaultPriorityId: string | null | undefined
 ) {
   if (!defaultPriorityId) return null
-  const priority = await priorities.requireActiveForTenant(tenantId, defaultPriorityId)
+  const priority = await priorities.requireActiveForTenant(
+    tenantId,
+    defaultPriorityId
+  )
   return isError(priority) ? priority : null
 }
 
@@ -78,7 +83,10 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
-  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(
+    tenant.id,
+    input.defaultPriorityId
+  )
   if (priorityError) return priorityError
 
   const category = await repository.create({
@@ -99,7 +107,10 @@ export async function update(
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) return null
 
-  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(
+    tenant.id,
+    input.defaultPriorityId
+  )
   if (priorityError) return priorityError
   const updatedCategory = await repository.update(categoryId, {
     ...input,
@@ -132,7 +143,10 @@ export async function createSub(
   const category = await repository.retrieve(tenant.id, categoryId)
   if (!category) return getError('crm/category-not-found')
 
-  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(
+    tenant.id,
+    input.defaultPriorityId
+  )
   if (priorityError) return priorityError
   return serializeSubcategory(
     await repository.createSub({
@@ -159,7 +173,10 @@ export async function updateSub(
   )
   if (!subcategory) return null
 
-  const priorityError = await validateDefaultPriority(tenant.id, input.defaultPriorityId)
+  const priorityError = await validateDefaultPriority(
+    tenant.id,
+    input.defaultPriorityId
+  )
   if (priorityError) return priorityError
   return serializeSubcategory(
     await repository.updateSub(subcategoryId, {

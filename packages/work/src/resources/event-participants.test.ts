@@ -53,7 +53,10 @@ describe('createEventParticipantsResource', () => {
       )
     )
 
-    const result = await participants.list('org_kingston_central', 'event_kin_01')
+    const result = await participants.list(
+      'org_kingston_central',
+      'event_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/events/event_kin_01/participants',
@@ -80,7 +83,11 @@ describe('createEventParticipantsResource', () => {
     )
 
     const input = { kind: 'USER' as const, participantId: 'usr_claudia_01' }
-    const result = await participants.create('org_kingston_central', 'event_kin_01', input)
+    const result = await participants.create(
+      'org_kingston_central',
+      'event_kin_01',
+      input
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/events/event_kin_01/participants',
@@ -126,14 +133,22 @@ describe('createEventParticipantsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: { object: 'event_participant', id: 'part_kin_01', deleted: true },
+          data: {
+            object: 'event_participant',
+            id: 'part_kin_01',
+            deleted: true,
+          },
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
       )
     )
 
-    const result = await participants.delete('org_kingston_central', 'event_kin_01', 'part_kin_01')
+    const result = await participants.delete(
+      'org_kingston_central',
+      'event_kin_01',
+      'part_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/events/event_kin_01/participants/part_kin_01',
@@ -149,7 +164,13 @@ describe('createEventParticipantsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: { object: 'list', data: [], has_more: false, total_count: null, url: '' },
+          data: {
+            object: 'list',
+            data: [],
+            has_more: false,
+            total_count: null,
+            url: '',
+          },
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -169,17 +190,27 @@ describe('createEventParticipantsResource', () => {
       new Response(
         JSON.stringify({
           data: null,
-          error: { code: 'work/event-participant-not-found', message: 'Participant not found.' },
+          error: {
+            code: 'work/event-participant-not-found',
+            message: 'Participant not found.',
+          },
         }),
         { status: 404, headers: { 'content-type': 'application/json' } }
       )
     )
 
-    const result = await participants.delete('org_kingston_central', 'event_kin_01', 'part_missing')
+    const result = await participants.delete(
+      'org_kingston_central',
+      'event_kin_01',
+      'part_missing'
+    )
 
     expect(result).toEqual({
       data: null,
-      error: { code: 'work/event-participant-not-found', message: 'Participant not found.' },
+      error: {
+        code: 'work/event-participant-not-found',
+        message: 'Participant not found.',
+      },
     })
   })
 })

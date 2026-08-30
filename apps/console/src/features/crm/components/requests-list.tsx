@@ -69,7 +69,13 @@ export function RequestsList({
   )
 }
 
-function RequestRow({ request, href }: { request: RequestListRow; href: string }) {
+function RequestRow({
+  request,
+  href,
+}: {
+  request: RequestListRow
+  href: string
+}) {
   const unresolved = OPEN_STATUSES.has(request.status)
 
   return (

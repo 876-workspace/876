@@ -17,7 +17,13 @@ vi.mock('@/lib/876', () => ({
 
 import { POST } from './route'
 
-function request(body: unknown = { event: 'team.viewed', source: 'console', appName: 'console' }) {
+function request(
+  body: unknown = {
+    event: 'team.viewed',
+    source: 'console',
+    appName: 'console',
+  }
+) {
   return new Request('https://console.test/api/audit-events', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

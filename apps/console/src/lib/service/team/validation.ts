@@ -21,8 +21,7 @@ export type TeamServiceError = {
 }
 
 export type TeamServiceResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: TeamServiceError }
+  { data: T; error: null } | { data: null; error: TeamServiceError }
 
 const AFFILIATIONS: readonly TeamAffiliation[] = [
   'staff',

@@ -665,7 +665,10 @@ describe('$876.organizations — logo_file_id strict contract (goldbergyoni AAA,
   })
 
   it('parses logo_file_id as string when file uploaded', async () => {
-    const organization = orgFactory({ logo_file_id: 'file_xyz', logo_url: 'https://cdn/file_xyz' })
+    const organization = orgFactory({
+      logo_file_id: 'file_xyz',
+      logo_url: 'https://cdn/file_xyz',
+    })
     const fetchMock = jsonFetch({ data: organization, error: null })
     const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
     const result = await $876.organizations.retrieve('org_123')
@@ -697,7 +700,9 @@ describe('$876.organizations — logo_file_id strict contract (goldbergyoni AAA,
   })
 
   it('rejects extra unknown field due to strictObject (no silent passthrough)', async () => {
-    const organization = orgFactory({ unknown_field: 'oops' } as unknown as Record<string, unknown>)
+    const organization = orgFactory({
+      unknown_field: 'oops',
+    } as unknown as Record<string, unknown>)
     const fetchMock = jsonFetch({ data: organization, error: null })
     const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
     const result = await $876.organizations.retrieve('org_123')
@@ -716,12 +721,18 @@ describe('$876.organizations — logo_file_id strict contract (goldbergyoni AAA,
   })
 
   it('is isolated — second call with different logo_file_id does not leak previous result', async () => {
-    const fetchMock1 = jsonFetch({ data: orgFactory({ logo_file_id: 'file_1' }), error: null })
+    const fetchMock1 = jsonFetch({
+      data: orgFactory({ logo_file_id: 'file_1' }),
+      error: null,
+    })
     const $876a = create876Client({ baseUrl: '/api', fetch: fetchMock1 })
     const r1 = await $876a.organizations.retrieve('org_1')
     expect(r1.data?.logo_file_id).toBe('file_1')
 
-    const fetchMock2 = jsonFetch({ data: orgFactory({ logo_file_id: null }), error: null })
+    const fetchMock2 = jsonFetch({
+      data: orgFactory({ logo_file_id: null }),
+      error: null,
+    })
     const $876b = create876Client({ baseUrl: '/api', fetch: fetchMock2 })
     const r2 = await $876b.organizations.retrieve('org_2')
     expect(r2.data?.logo_file_id).toBeNull()
@@ -731,13 +742,19 @@ describe('$876.organizations — logo_file_id strict contract (goldbergyoni AAA,
     [null, null],
     ['file_abc', 'https://cdn/abc'],
     [null, 'https://cdn/only-url'],
-  ])('logo_file_id %j with logo_url %j parses independently', async (fileId, url) => {
-    const organization = orgFactory({ logo_file_id: fileId as string | null, logo_url: url as string | null })
-    const fetchMock = jsonFetch({ data: organization, error: null })
-    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
-    const result = await $876.organizations.retrieve('org_123')
-    expect(result.error).toBeNull()
-    expect(result.data?.logo_file_id).toBe(fileId)
-    expect(result.data?.logo_url).toBe(url)
-  })
+  ])(
+    'logo_file_id %j with logo_url %j parses independently',
+    async (fileId, url) => {
+      const organization = orgFactory({
+        logo_file_id: fileId as string | null,
+        logo_url: url as string | null,
+      })
+      const fetchMock = jsonFetch({ data: organization, error: null })
+      const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+      const result = await $876.organizations.retrieve('org_123')
+      expect(result.error).toBeNull()
+      expect(result.data?.logo_file_id).toBe(fileId)
+      expect(result.data?.logo_url).toBe(url)
+    }
+  )
 })

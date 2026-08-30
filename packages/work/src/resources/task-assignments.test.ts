@@ -51,7 +51,10 @@ describe('createTaskAssignmentsResource', () => {
       )
     )
 
-    const result = await taskAssignments.list('org_kingston_central', 'task_kin_01')
+    const result = await taskAssignments.list(
+      'org_kingston_central',
+      'task_kin_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/tasks/task_kin_01/assignments',
@@ -83,7 +86,11 @@ describe('createTaskAssignmentsResource', () => {
       role: 'OWNER' as const,
       assignedBy: 'usr_supervisor_01',
     }
-    const result = await taskAssignments.create('org_kingston_central', 'task_kin_01', input)
+    const result = await taskAssignments.create(
+      'org_kingston_central',
+      'task_kin_01',
+      input
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/tasks/task_kin_01/assignments',
@@ -99,7 +106,10 @@ describe('createTaskAssignmentsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: createAssignmentFixture({ status: 'ACCEPTED', respondedAt: 1_788_084_000 }),
+          data: createAssignmentFixture({
+            status: 'ACCEPTED',
+            respondedAt: 1_788_084_000,
+          }),
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -127,7 +137,11 @@ describe('createTaskAssignmentsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: { object: 'task_assignment', id: 'assign_kin_01', deleted: true },
+          data: {
+            object: 'task_assignment',
+            id: 'assign_kin_01',
+            deleted: true,
+          },
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -154,7 +168,13 @@ describe('createTaskAssignmentsResource', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: { object: 'list', data: [], has_more: false, total_count: null, url: '' },
+          data: {
+            object: 'list',
+            data: [],
+            has_more: false,
+            total_count: null,
+            url: '',
+          },
           error: null,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -174,7 +194,10 @@ describe('createTaskAssignmentsResource', () => {
       new Response(
         JSON.stringify({
           data: null,
-          error: { code: 'work/task-assignment-not-found', message: 'Assignment not found.' },
+          error: {
+            code: 'work/task-assignment-not-found',
+            message: 'Assignment not found.',
+          },
         }),
         { status: 404, headers: { 'content-type': 'application/json' } }
       )
@@ -188,7 +211,10 @@ describe('createTaskAssignmentsResource', () => {
 
     expect(result).toEqual({
       data: null,
-      error: { code: 'work/task-assignment-not-found', message: 'Assignment not found.' },
+      error: {
+        code: 'work/task-assignment-not-found',
+        message: 'Assignment not found.',
+      },
     })
   })
 })

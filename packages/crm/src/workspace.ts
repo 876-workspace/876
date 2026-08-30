@@ -110,6 +110,4 @@ export function create876CrmWorkspaceClient(options: ClientOptions = {}) {
   }
 }
 
-export type CrmWorkspaceClient = ReturnType<
-  typeof create876CrmWorkspaceClient
->
+export type CrmWorkspaceClient = ReturnType<typeof create876CrmWorkspaceClient>

@@ -212,7 +212,11 @@ describe('createEventsResource', () => {
       )
     )
 
-    const result = await events.delete('org_kingston_central', 'event_kin_01', 'usr_tariq_01')
+    const result = await events.delete(
+      'org_kingston_central',
+      'event_kin_01',
+      'usr_tariq_01'
+    )
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://work.example.test/v1/organizations/org_kingston_central/events/event_kin_01',
@@ -238,7 +242,10 @@ describe('createEventsResource', () => {
       )
     )
 
-    const result = await events.retrieve('org_kingston_central', 'event_missing')
+    const result = await events.retrieve(
+      'org_kingston_central',
+      'event_missing'
+    )
 
     expect(result).toEqual({
       data: null,

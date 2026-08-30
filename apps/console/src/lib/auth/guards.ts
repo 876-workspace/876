@@ -81,19 +81,22 @@ function isExpired(expiresAt: bigint | null): boolean {
   return expiresAt <= BigInt(Math.floor(Date.now() / 1000))
 }
 
-const verifyStaffEmployment = cache(
-  async function verifyStaffEmployment(userId: string): Promise<boolean | null> {
-    const organizationId = process.env.CONSOLE_STAFF_ORGANIZATION_ID
-    if (!organizationId) return true
+const verifyStaffEmployment = cache(async function verifyStaffEmployment(
+  userId: string
+): Promise<boolean | null> {
+  const organizationId = process.env.CONSOLE_STAFF_ORGANIZATION_ID
+  if (!organizationId) return true
 
-    try {
-      const result = await $876.memberships.admin.list({
-        organizationId,
-        userId,
-        limit: 1,
-      })
-      if (result.error) {
-        Sentry.captureMessage('Console staff employment verification unavailable', {
+  try {
+    const result = await $876.memberships.admin.list({
+      organizationId,
+      userId,
+      limit: 1,
+    })
+    if (result.error) {
+      Sentry.captureMessage(
+        'Console staff employment verification unavailable',
+        {
           level: 'warning',
           tags: { category: 'console_access' },
           extra: {
@@ -101,21 +104,21 @@ const verifyStaffEmployment = cache(
             organizationId,
             errorCode: result.error.code,
           },
-        })
-        return null
-      }
-
-      const membership = result.data?.data[0]
-      return membership?.status === 'active'
-    } catch (error) {
-      Sentry.captureException(error, {
-        tags: { category: 'console_access' },
-        extra: { userId, organizationId },
-      })
+        }
+      )
       return null
     }
+
+    const membership = result.data?.data[0]
+    return membership?.status === 'active'
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { category: 'console_access' },
+      extra: { userId, organizationId },
+    })
+    return null
   }
-)
+})
 
 async function requireAccess(userId: string): Promise<{
   access: Access
@@ -156,8 +159,8 @@ async function requireAccess(userId: string): Promise<{
       result.error?.code === 'user/not-found' ||
       Boolean(
         platformUser &&
-          (platformUser.banned ||
-            (platformUser.status && platformUser.status !== 'active'))
+        (platformUser.banned ||
+          (platformUser.status && platformUser.status !== 'active'))
       )
   } catch {
     // Platform outage — preserve the valid Console session.
@@ -206,8 +209,10 @@ export async function requireConsoleCapability(
 ): Promise<Access> {
   const { access, context } = await requireAccess(userId)
 
-  if (requirement.permission && !can(context, requirement.permission)) redirect('/')
-  if (requirement.feature && !hasFeature(context, requirement.feature)) redirect('/')
+  if (requirement.permission && !can(context, requirement.permission))
+    redirect('/')
+  if (requirement.feature && !hasFeature(context, requirement.feature))
+    redirect('/')
 
   return access
 }

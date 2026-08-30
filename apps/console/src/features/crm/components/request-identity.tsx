@@ -139,7 +139,9 @@ export async function RequestIdentity({
     request.customerId
   )
   const assignee = request.assigneeId
-    ? (directory.members.find((member) => member.userId === request.assigneeId) ?? {
+    ? (directory.members.find(
+        (member) => member.userId === request.assigneeId
+      ) ?? {
         userId: request.assigneeId,
         name: request.assigneeId,
         email: null,
@@ -147,8 +149,9 @@ export async function RequestIdentity({
       })
     : null
   const teamName = request.teamId
-    ? (directory.departments.find((department) => department.id === request.teamId)
-        ?.name ?? request.teamId)
+    ? (directory.departments.find(
+        (department) => department.id === request.teamId
+      )?.name ?? request.teamId)
     : null
 
   const targetCustomerHref =
@@ -175,15 +178,23 @@ export async function RequestIdentity({
           className="text-foreground/85 hover:text-info inline-flex min-w-0 items-center gap-1.5 font-medium transition-colors"
         >
           {identity.isBusiness ? (
-            <Building2 className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+            <Building2
+              className="text-muted-foreground size-3.5 shrink-0"
+              aria-hidden="true"
+            />
           ) : (
-            <User className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+            <User
+              className="text-muted-foreground size-3.5 shrink-0"
+              aria-hidden="true"
+            />
           )}
           <span className="truncate">{identity.name}</span>
         </Link>
 
         <div className="flex items-center gap-1.5">
-          <span className="text-border" aria-hidden="true">·</span>
+          <span className="text-border" aria-hidden="true">
+            ·
+          </span>
           <span className="text-muted-foreground/80">Owner</span>
           {assignee ? (
             <span className="text-foreground/80 inline-flex items-center gap-1 truncate">
@@ -199,29 +210,48 @@ export async function RequestIdentity({
           )}
           {teamName ? (
             <>
-              <span className="text-border/60" aria-hidden="true">/</span>
+              <span className="text-border/60" aria-hidden="true">
+                /
+              </span>
               <span className="text-foreground/80 inline-flex items-center gap-1 truncate">
-                <Users className="text-muted-foreground size-3 shrink-0" aria-hidden="true" />
+                <Users
+                  className="text-muted-foreground size-3 shrink-0"
+                  aria-hidden="true"
+                />
                 <span>{teamName}</span>
               </span>
             </>
           ) : null}
         </div>
 
-        <div className="flex items-center gap-1.5" title={formatDateTime(request.updatedAt)}>
-          <span className="text-border" aria-hidden="true">·</span>
-          <Clock className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+        <div
+          className="flex items-center gap-1.5"
+          title={formatDateTime(request.updatedAt)}
+        >
+          <span className="text-border" aria-hidden="true">
+            ·
+          </span>
+          <Clock
+            className="text-muted-foreground size-3.5 shrink-0"
+            aria-hidden="true"
+          />
           <span className="text-muted-foreground truncate">
             Updated {formatAge(request.updatedAt)}
           </span>
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className="text-border" aria-hidden="true">·</span>
+          <span className="text-border" aria-hidden="true">
+            ·
+          </span>
           <span className="text-muted-foreground/80">Category</span>
           {category ? (
             <span className="text-foreground/80 inline-flex items-center gap-1 truncate font-medium">
-              <CategoryIcon name={category.icon} className="size-3.5 shrink-0" aria-hidden="true" />
+              <CategoryIcon
+                name={category.icon}
+                className="size-3.5 shrink-0"
+                aria-hidden="true"
+              />
               <span>{category.name}</span>
             </span>
           ) : (

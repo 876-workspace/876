@@ -1,10 +1,6 @@
 import type { Request, Response } from 'express'
 
-import {
-  sendCrmError,
-  sendCrmList,
-  sendCrmResult,
-} from '../../http/result.js'
+import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as service from './requests.service.js'
 import {
   createRequestBodySchema,
@@ -19,7 +15,11 @@ export async function listRequests(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const filters = listRequestsQuerySchema.parse(req.query)
   const result = await service.list(organizationId, filters)
-  return sendCrmList(res, result, `/v1/organizations/${organizationId}/requests`)
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/requests`
+  )
 }
 
 export async function retrieveRequest(req: Request, res: Response) {

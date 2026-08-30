@@ -10,14 +10,21 @@ import AccessDeniedPage from './page'
 describe('AccessDeniedPage — consumer blocked (diff: rendered not redirect)', () => {
   it('blocks consumer without linking to consumer app (core diff)', () => {
     render(<AccessDeniedPage />)
-    expect(screen.getByText('This workspace needs a work account')).toBeVisible()
+    expect(
+      screen.getByText('This workspace needs a work account')
+    ).toBeVisible()
     expect(screen.getByRole('button', { name: 'Change account' })).toBeVisible()
     expect(screen.queryByText('Go to my 876 account')).not.toBeInTheDocument()
   })
   it('renders main landmark with heading (a11y)', () => {
     render(<AccessDeniedPage />)
     const main = screen.getByRole('main')
-    expect(within(main).getByRole('heading', { level: 1, name: 'This workspace needs a work account' })).toBeVisible()
+    expect(
+      within(main).getByRole('heading', {
+        level: 1,
+        name: 'This workspace needs a work account',
+      })
+    ).toBeVisible()
   })
   it('explains why: personal 876 account vs Enterprise', () => {
     render(<AccessDeniedPage />)
@@ -30,7 +37,9 @@ describe('AccessDeniedPage — consumer blocked (diff: rendered not redirect)', 
   })
   it('contains Change account button exactly once', () => {
     render(<AccessDeniedPage />)
-    expect(screen.getAllByRole('button', { name: 'Change account' })).toHaveLength(1)
+    expect(
+      screen.getAllByRole('button', { name: 'Change account' })
+    ).toHaveLength(1)
   })
   it('does not render any anchor', () => {
     render(<AccessDeniedPage />)
@@ -57,15 +66,21 @@ describe('AccessDeniedPage — consumer blocked (diff: rendered not redirect)', 
   })
   it('is idempotent', () => {
     const { unmount } = render(<AccessDeniedPage />)
-    const first = screen.getByText('This workspace needs a work account').textContent
+    const first = screen.getByText(
+      'This workspace needs a work account'
+    ).textContent
     unmount()
     render(<AccessDeniedPage />)
-    expect(screen.getByText('This workspace needs a work account').textContent).toBe(first)
+    expect(
+      screen.getByText('This workspace needs a work account').textContent
+    ).toBe(first)
   })
   it('ChangeAccountAction is inside main', () => {
     const { container } = render(<AccessDeniedPage />)
     const main = container.querySelector('main')
-    expect(main?.contains(screen.getByRole('button', { name: 'Change account' }))).toBe(true)
+    expect(
+      main?.contains(screen.getByRole('button', { name: 'Change account' }))
+    ).toBe(true)
   })
   it('does not expose realm/crossRealm', () => {
     render(<AccessDeniedPage />)
@@ -77,7 +92,9 @@ describe('AccessDeniedPage — consumer blocked (diff: rendered not redirect)', 
   })
   it('paragraph has muted foreground', () => {
     const { container } = render(<AccessDeniedPage />)
-    expect(container.querySelector('p')?.className).toMatch(/text-muted-foreground/)
+    expect(container.querySelector('p')?.className).toMatch(
+      /text-muted-foreground/
+    )
   })
   it('heading has tracking style', () => {
     const { container } = render(<AccessDeniedPage />)

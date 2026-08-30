@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { getError, isError, isErrorCode, toAppError, ERRORS } from './helpers.js'
+import {
+  getError,
+  isError,
+  isErrorCode,
+  toAppError,
+  ERRORS,
+} from './helpers.js'
 import { HttpStatus } from '../../types/errors.js'
 
 describe('helpers - getError fallback routing', () => {
   it('routes app-access/* unknown to app-access/internal-error', () => {
     expect(getError('app-access/weird').code).toBe('app-access/internal-error')
-    expect(getError('app-membership/weird').code).toBe('app-access/internal-error')
-    expect(getError('app-permission/weird').code).toBe('app-access/internal-error')
+    expect(getError('app-membership/weird').code).toBe(
+      'app-access/internal-error'
+    )
+    expect(getError('app-permission/weird').code).toBe(
+      'app-access/internal-error'
+    )
     expect(getError('app-role/weird').code).toBe('app-access/internal-error')
   })
   it.each([
@@ -47,23 +57,40 @@ describe('helpers - isError type guard advanced', () => {
   })
   it('rejects plain Error instances', () => {
     expect(isError(new Error('hi'))).toBe(false)
-    class CustomError extends Error { code = 'x'; httpStatus = 400; message = 'hi' }
+    class CustomError extends Error {
+      code = 'x'
+      httpStatus = 400
+      message = 'hi'
+    }
     expect(isError(new CustomError('hi'))).toBe(true)
     // Even if it has fields, Error prototype fails strict shape? Our guard checks object keys, so it would pass if fields present.
     // Verify this edge: an Error with added fields
     const e = new Error('hi') as unknown as Record<string, unknown>
-    e.code = 'x'; e.httpStatus = 400
+    e.code = 'x'
+    e.httpStatus = 400
     expect(isError(e)).toBe(true)
   })
   it('rejects null prototype objects gracefully', () => {
     const obj = Object.create(null)
-    obj.code = 'x'; obj.message = 'y'; obj.httpStatus = 400
+    obj.code = 'x'
+    obj.message = 'y'
+    obj.httpStatus = 400
     expect(isError(obj)).toBe(true)
   })
   it('distinguishes missing fields', () => {
     expect(isError({ code: 'x', message: 'y' })).toBe(false)
-    expect(isError({ code: 'x', httpStatus: 400 } as unknown as Record<string, unknown>)).toBe(false)
-    expect(isError({ message: 'y', httpStatus: 400 } as unknown as Record<string, unknown>)).toBe(false)
+    expect(
+      isError({ code: 'x', httpStatus: 400 } as unknown as Record<
+        string,
+        unknown
+      >)
+    ).toBe(false)
+    expect(
+      isError({ message: 'y', httpStatus: 400 } as unknown as Record<
+        string,
+        unknown
+      >)
+    ).toBe(false)
   })
 })
 
@@ -71,13 +98,26 @@ describe('helpers - toAppError stripping', () => {
   it('preserves only code and message', () => {
     const err = getError('crm/internal')
     // artificially attach extra fields to verify stripping
-    const withExtras = { ...err, description: 'keep internal', param: 'field', extra: 'leak' } as unknown as Parameters<typeof toAppError>[0]
+    const withExtras = {
+      ...err,
+      description: 'keep internal',
+      param: 'field',
+      extra: 'leak',
+    } as unknown as Parameters<typeof toAppError>[0]
     const app = toAppError(withExtras)
     expect(app).toEqual({ code: err.code, message: err.message })
-    expect(({ ...app } as unknown as Record<string, unknown>).description).toBeUndefined()
-    expect(({ ...app } as unknown as Record<string, unknown>).param).toBeUndefined()
-    expect(({ ...app } as unknown as Record<string, unknown>).extra).toBeUndefined()
-    expect(({ ...app } as unknown as Record<string, unknown>).httpStatus).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).description
+    ).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).param
+    ).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).extra
+    ).toBeUndefined()
+    expect(
+      ({ ...app } as unknown as Record<string, unknown>).httpStatus
+    ).toBeUndefined()
   })
   it('handles code with slash and dash correctly', () => {
     const app = toAppError(getError('crm/subcategory-category-mismatch'))
@@ -113,7 +153,10 @@ describe('helpers - registry integrity', () => {
   it('every registered error has valid httpStatus in allowed set', () => {
     const allowed = new Set(Object.values(HttpStatus))
     for (const [code, def] of Object.entries(ERRORS)) {
-      expect(allowed.has(def.httpStatus), `${code} has invalid status ${def.httpStatus}`).toBe(true)
+      expect(
+        allowed.has(def.httpStatus),
+        `${code} has invalid status ${def.httpStatus}`
+      ).toBe(true)
     }
   })
   it('global ERRORS size is sum of domain registries (sanity > 80)', () => {
@@ -132,7 +175,9 @@ describe('helpers - value vs exception invariants (best-practice)', () => {
     let caught: unknown = null
     try {
       throw getError('crm/team-not-found')
-    } catch (e) { caught = e }
+    } catch (e) {
+      caught = e
+    }
     expect(isError(caught)).toBe(true)
     // But normal service should RETURN not throw — verify return path
     const returned = getError('crm/team-not-found')
@@ -141,7 +186,8 @@ describe('helpers - value vs exception invariants (best-practice)', () => {
   })
   it('service pattern: if(isError(result)) handles tenant failures without try/catch', () => {
     const tenantError = getError('crm/tenant-not-found')
-    const handle = (result: unknown) => isError(result) ? `handled:${(result as {code:string}).code}` : 'ok'
+    const handle = (result: unknown) =>
+      isError(result) ? `handled:${(result as { code: string }).code}` : 'ok'
     expect(handle(tenantError)).toBe('handled:crm/tenant-not-found')
     expect(handle({ id: 'team_1' })).toBe('ok')
   })
@@ -149,7 +195,9 @@ describe('helpers - value vs exception invariants (best-practice)', () => {
     const err = getError('crm/tenant-inactive')
     const envelope = { data: null, error: toAppError(err) }
     expect(envelope.error.code).toBe('crm/tenant-inactive')
-    expect(({ ...envelope.error } as unknown as Record<string, unknown>).httpStatus).toBeUndefined()
+    expect(
+      ({ ...envelope.error } as unknown as Record<string, unknown>).httpStatus
+    ).toBeUndefined()
     expect(envelope.data).toBeNull()
   })
 })

@@ -197,7 +197,7 @@ does the API's job in the wrong layer. If a resource's `list()` (or
 `search()`) does not yet accept a `status` param, that is a gap to close in
 `apps/api` (repository filter + router query param) and the admin/SDK client
 method — not a reason to fake the filter in Next.js. See
-`.claude/rules/api-backend.md` and `.claude/rules/sdk-conventions.md`.
+`.agents/rules/api-backend.md` and `.agents/rules/sdk-conventions.md`.
 
 ### Interaction with search (`q`)
 
@@ -269,6 +269,70 @@ export default async function WidgetsPage({ searchParams }: Props) {
 ```
 
 ---
+
+## 5a. List/detail split view (`ListDetailShell`)
+
+Read this before building any section where selecting a row should open the
+record beside the list rather than replacing it — Console Users, Console Roles,
+Console Provisioning, and CRM Customers today, and every future section like
+them.
+
+**The component is shared: `ListDetailShell` from `@876/ui/list-detail-shell`.**
+Do not copy the grid into an app. Three per-app copies had already drifted
+before it was extracted.
+
+### The shape
+
+```
+┌─ toolbar ────────────┐┌─────────────────────┐
+├─ subnav (optional) ──┤│                     │
+├──────────────────────┤│   detail card       │
+│  list                ││   (full height)     │
+└──────────────────────┘└─────────────────────┘
+```
+
+- The **list column** holds the toolbar, an optional subnav, and the list. It
+  is the full width when closed and narrows to a sidebar when a record opens.
+- The **detail column** spans all three rows, so the card fills the content
+  area rather than starting below the toolbar.
+- The **toolbar never unmounts.** It names the section and carries its actions;
+  removing it when a record opens takes the section's own affordances away at
+  exactly the moment the operator wants them. Keep `primaryLabel` set.
+
+### Rules
+
+- **Render the shell from the section's `layout.tsx`, never from a page.** That
+  is what makes the toolbar and list survive every navigation below it — opening
+  a record, switching tabs, closing again — and what lets the grid track
+  animate instead of two trees swapping places.
+- **Derive open/closed from the URL with `useListDetailRoute()`**, never from
+  state and never by filtering segments by hand. `useSelectedLayoutSegments`
+  reports route groups (`(list)`) and parallel slots (`@modal`), which are not
+  in the path; the hook removes them in one place so an index page wrapped in a
+  group cannot read as "a record is open".
+- **The list component renders both forms** — the full table and the condensed
+  sidebar list — from one file, reading `useDetailSegments()` for the selection.
+  A component swap would let the two drift and would remount on every open.
+- **Everything the full table encodes with colour or a badge stays in the
+  condensed row.** A role's colour-coded name, a setup's `Default` badge, a
+  member's status: the collapsed list is the same list, so dropping its visual
+  language makes the two views disagree about the same record.
+- **Create opens in the detail column too** (`/<section>/new`), in the place
+  the record it creates will appear, so the list stays visible and the URL is
+  shareable. Use `DetailCard` from `@876/ui/detail-card` for its chrome.
+- **`takeoverSegments` is for routes that genuinely own the screen** — a large
+  edit form, a nested runs table. Pass them to `useListDetailRoute` and return
+  `children` directly when `takeover` is true. Reach for it rarely.
+- **The breakpoint is a container query, not a viewport one.** The shell sits
+  inside an app frame with a sidebar and, in some apps, a widget rail, so the
+  viewport width does not answer how much room it actually has.
+- **The section heading is still a `StatusFilterHeading`** (§5). A split view
+  does not exempt a section from its filter; where a section has no lifecycle
+  status, filter on the axis operators actually use and set `paramKey`
+  accordingly — Roles filters `?type=system|custom`.
+
+Reference implementations: `apps/crm/src/app/(app)/customers/` and
+`apps/console/src/app/(app)/settings/users/(team)/`.
 
 ## 6. Detail-view toolbar
 
@@ -451,7 +515,7 @@ Additional rules:
 
 ## 13. Applying this to a new app
 
-When scaffolding a new sidebar-style app (see `.claude/rules/new-app-guide.md`
+When scaffolding a new sidebar-style app (see `.agents/rules/new-app-guide.md`
 for the integration side), copy the shell/sidebar/toolbar/breadcrumb/status-
 filter components from Console or Couriers rather than rebuilding them. If a
 page type doesn't have a precedent yet, look for the closest existing page

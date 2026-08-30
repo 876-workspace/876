@@ -49,22 +49,69 @@ beforeEach(() => {
 
 describe('Work event-participants service', () => {
   it('create USER participant carries participantId and no email', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ kind: 'USER', participantId: 'user_kingston_9', email: null }) as never)
-    const result = await service.create('org_kingston_1', event.id, { kind: 'USER', participantId: 'user_kingston_9' })
-    expect(result).toEqual(expect.objectContaining({ kind: 'USER', participantId: 'user_kingston_9', email: null }))
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ kind: 'USER', participantId: 'user_kingston_9', email: null }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({
+        kind: 'USER',
+        participantId: 'user_kingston_9',
+        email: null,
+      }) as never
+    )
+    const result = await service.create('org_kingston_1', event.id, {
+      kind: 'USER',
+      participantId: 'user_kingston_9',
+    })
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'USER',
+        participantId: 'user_kingston_9',
+        email: null,
+      })
+    )
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'USER',
+        participantId: 'user_kingston_9',
+        email: null,
+      })
+    )
   })
 
   it('create EMAIL participant carries email and no participantId', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ kind: 'EMAIL', participantId: null, email: 'alejandra@example.test' }) as never)
-    const result = await service.create('org_kingston_1', event.id, { kind: 'EMAIL', email: 'alejandra@example.test', name: 'Alejandra' })
-    expect(result).toEqual(expect.objectContaining({ kind: 'EMAIL', email: 'alejandra@example.test', participantId: null }))
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ kind: 'EMAIL', email: 'alejandra@example.test' }))
+    vi.mocked(repository.create).mockResolvedValue(
+      row({
+        kind: 'EMAIL',
+        participantId: null,
+        email: 'alejandra@example.test',
+      }) as never
+    )
+    const result = await service.create('org_kingston_1', event.id, {
+      kind: 'EMAIL',
+      email: 'alejandra@example.test',
+      name: 'Alejandra',
+    })
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'EMAIL',
+        email: 'alejandra@example.test',
+        participantId: null,
+      })
+    )
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'EMAIL',
+        email: 'alejandra@example.test',
+      })
+    )
   })
 
   it('list returns participants for event', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'part_a' }), row({ id: 'part_b' })] as never)
-    const result = await service.list('org_kingston_1', event.id) as { data: unknown[] }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'part_a' }),
+      row({ id: 'part_b' }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', event.id)) as {
+      data: unknown[]
+    }
     expect(result.data).toHaveLength(2)
     expect(repository.list).toHaveBeenCalledWith(event.id)
   })
@@ -86,43 +133,83 @@ describe('Work event-participants service', () => {
 
   it('create returns null when event not found and never creates', async () => {
     vi.mocked(events.retrieve).mockResolvedValue(null as never)
-    const result = await service.create('org_kingston_1', 'missing', { kind: 'USER', participantId: 'user_1' })
+    const result = await service.create('org_kingston_1', 'missing', {
+      kind: 'USER',
+      participantId: 'user_1',
+    })
     expect(result).toBeNull()
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('update accepts participant and stamps respondedAt', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ id: 'part_1', status: 'NEEDS_ACTION' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ id: 'part_1', status: 'ACCEPTED' }) as never)
-    const result = await service.update('org_kingston_1', event.id, 'part_1', { status: 'ACCEPTED' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ id: 'part_1', status: 'NEEDS_ACTION' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ id: 'part_1', status: 'ACCEPTED' }) as never
+    )
+    const result = await service.update('org_kingston_1', event.id, 'part_1', {
+      status: 'ACCEPTED',
+    })
     expect(result).toEqual(expect.objectContaining({ status: 'ACCEPTED' }))
-    expect(repository.update).toHaveBeenCalledWith('part_1', expect.objectContaining({ status: 'ACCEPTED' }))
+    expect(repository.update).toHaveBeenCalledWith(
+      'part_1',
+      expect.objectContaining({ status: 'ACCEPTED' })
+    )
   })
 
   it('update declines participant', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'NEEDS_ACTION' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'DECLINED' }) as never)
-    await service.update('org_kingston_1', event.id, 'part_1', { status: 'DECLINED' })
-    expect(repository.update).toHaveBeenCalledWith('part_1', expect.objectContaining({ status: 'DECLINED' }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'NEEDS_ACTION' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'DECLINED' }) as never
+    )
+    await service.update('org_kingston_1', event.id, 'part_1', {
+      status: 'DECLINED',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'part_1',
+      expect.objectContaining({ status: 'DECLINED' })
+    )
   })
 
   it('update with DELEGATED sets delegatedTo', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'NEEDS_ACTION' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'DELEGATED', delegatedTo: 'user_spanish_town_2' }) as never)
-    await service.update('org_kingston_1', event.id, 'part_1', { status: 'DELEGATED', delegatedTo: 'user_spanish_town_2' })
-    expect(repository.update).toHaveBeenCalledWith('part_1', expect.objectContaining({ status: 'DELEGATED', delegatedTo: 'user_spanish_town_2' }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'NEEDS_ACTION' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'DELEGATED', delegatedTo: 'user_spanish_town_2' }) as never
+    )
+    await service.update('org_kingston_1', event.id, 'part_1', {
+      status: 'DELEGATED',
+      delegatedTo: 'user_spanish_town_2',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'part_1',
+      expect.objectContaining({
+        status: 'DELEGATED',
+        delegatedTo: 'user_spanish_town_2',
+      })
+    )
   })
 
   it('update returns null when participant not found and never updates', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(null)
-    const result = await service.update('org_kingston_1', event.id, 'missing', { status: 'ACCEPTED' })
+    const result = await service.update('org_kingston_1', event.id, 'missing', {
+      status: 'ACCEPTED',
+    })
     expect(result).toBeNull()
     expect(repository.update).not.toHaveBeenCalled()
   })
 
   it('remove deletes participant', async () => {
     vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
-    vi.mocked(repository.remove).mockResolvedValue({ object: 'event_participant', id: 'part_1', deleted: true } as never)
+    vi.mocked(repository.remove).mockResolvedValue({
+      object: 'event_participant',
+      id: 'part_1',
+      deleted: true,
+    } as never)
     const result = await service.remove('org_kingston_1', event.id, 'part_1')
     expect(result).toEqual(expect.objectContaining({ deleted: true }))
     expect(repository.remove).toHaveBeenCalledWith('part_1')
@@ -138,16 +225,28 @@ describe('Work event-participants service', () => {
   it('create returns tenant error when event in other tenant and never creates', async () => {
     const err = { code: 'work/tenant-not-found', message: 'x', httpStatus: 404 }
     vi.mocked(events.retrieve).mockResolvedValue(err as never)
-    const result = await service.create('org_kingston_1', event.id, { kind: 'USER', participantId: 'user_1' })
+    const result = await service.create('org_kingston_1', event.id, {
+      kind: 'USER',
+      participantId: 'user_1',
+    })
     expect(result).toEqual(err)
     expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('update with TENTATIVE status persists it', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'NEEDS_ACTION' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'TENTATIVE' }) as never)
-    await service.update('org_kingston_1', event.id, 'part_1', { status: 'TENTATIVE' })
-    expect(repository.update).toHaveBeenCalledWith('part_1', expect.objectContaining({ status: 'TENTATIVE' }))
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'NEEDS_ACTION' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'TENTATIVE' }) as never
+    )
+    await service.update('org_kingston_1', event.id, 'part_1', {
+      status: 'TENTATIVE',
+    })
+    expect(repository.update).toHaveBeenCalledWith(
+      'part_1',
+      expect.objectContaining({ status: 'TENTATIVE' })
+    )
   })
 
   it('rejects a participant payload carrying both participantId and email via the real schema', () => {
@@ -207,8 +306,12 @@ describe('Work event-participants service', () => {
   })
 
   it('serializes the participant with the object discriminator and Unix timestamps', async () => {
-    vi.mocked(repository.list).mockResolvedValue([row({ id: 'part_1' })] as never)
-    const result = await service.list('org_kingston_1', event.id) as { data: unknown[] }
+    vi.mocked(repository.list).mockResolvedValue([
+      row({ id: 'part_1' }),
+    ] as never)
+    const result = (await service.list('org_kingston_1', event.id)) as {
+      data: unknown[]
+    }
     expect(result.data).toEqual([
       {
         object: 'event_participant',
@@ -231,7 +334,11 @@ describe('Work event-participants service', () => {
 
   it('create with status DELEGATED stamps respondedAt and persists delegatedTo', async () => {
     vi.mocked(repository.create).mockResolvedValue(
-      row({ status: 'DELEGATED', delegatedTo: 'user_spanish_town_2', respondedAt: new Date() }) as never
+      row({
+        status: 'DELEGATED',
+        delegatedTo: 'user_spanish_town_2',
+        respondedAt: new Date(),
+      }) as never
     )
     await service.create('org_kingston_1', event.id, {
       kind: 'USER',
@@ -249,17 +356,28 @@ describe('Work event-participants service', () => {
   })
 
   it('create with default status leaves respondedAt null', async () => {
-    vi.mocked(repository.create).mockResolvedValue(row({ status: 'NEEDS_ACTION', respondedAt: null }) as never)
-    await service.create('org_kingston_1', event.id, { kind: 'USER', participantId: 'user_mandeville_1' })
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ status: 'NEEDS_ACTION', respondedAt: null }) as never
+    )
+    await service.create('org_kingston_1', event.id, {
+      kind: 'USER',
+      participantId: 'user_mandeville_1',
+    })
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'NEEDS_ACTION', respondedAt: null })
     )
   })
 
   it('update resetting to NEEDS_ACTION clears respondedAt', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'ACCEPTED', respondedAt: new Date() }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ status: 'NEEDS_ACTION' }) as never)
-    await service.update('org_kingston_1', event.id, 'part_1', { status: 'NEEDS_ACTION' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'ACCEPTED', respondedAt: new Date() }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ status: 'NEEDS_ACTION' }) as never
+    )
+    await service.update('org_kingston_1', event.id, 'part_1', {
+      status: 'NEEDS_ACTION',
+    })
     expect(repository.update).toHaveBeenCalledWith(
       'part_1',
       expect.objectContaining({ status: 'NEEDS_ACTION', respondedAt: null })
@@ -267,16 +385,26 @@ describe('Work event-participants service', () => {
   })
 
   it('update changing the name only leaves the status untouched', async () => {
-    vi.mocked(repository.retrieve).mockResolvedValue(row({ status: 'ACCEPTED' }) as never)
-    vi.mocked(repository.update).mockResolvedValue(row({ name: 'Asha Brown-Jones' }) as never)
-    await service.update('org_kingston_1', event.id, 'part_1', { name: 'Asha Brown-Jones' })
-    expect(repository.update).toHaveBeenCalledWith('part_1', { name: 'Asha Brown-Jones' })
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'ACCEPTED' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ name: 'Asha Brown-Jones' }) as never
+    )
+    await service.update('org_kingston_1', event.id, 'part_1', {
+      name: 'Asha Brown-Jones',
+    })
+    expect(repository.update).toHaveBeenCalledWith('part_1', {
+      name: 'Asha Brown-Jones',
+    })
   })
 
   it('update returns event tenant error and never touches the repository', async () => {
     const err = { code: 'work/tenant-inactive', message: 'x', httpStatus: 409 }
     vi.mocked(events.retrieve).mockResolvedValue(err as never)
-    const result = await service.update('org_kingston_1', event.id, 'part_1', { status: 'ACCEPTED' })
+    const result = await service.update('org_kingston_1', event.id, 'part_1', {
+      status: 'ACCEPTED',
+    })
     expect(result).toEqual(err)
     expect(repository.retrieve).not.toHaveBeenCalled()
     expect(repository.update).not.toHaveBeenCalled()

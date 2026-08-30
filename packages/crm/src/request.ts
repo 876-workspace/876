@@ -55,8 +55,7 @@ export async function request<T>(
     }
   )
 
-  if (response.networkError)
-    return { data: null, error: NETWORK_OFFLINE_ERROR }
+  if (response.networkError) return { data: null, error: NETWORK_OFFLINE_ERROR }
 
   const envelope = envelopeSchema.safeParse(response.payload)
   if (!envelope.success) {

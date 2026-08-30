@@ -61,7 +61,10 @@ describe('can', () => {
   })
 
   it('does not match a permission that is only a prefix of a held key', () => {
-    const result = can(context({ permissions: ['users:reading'] }), 'users:read')
+    const result = can(
+      context({ permissions: ['users:reading'] }),
+      'users:read'
+    )
 
     expect(result).toBe(false)
   })
@@ -165,7 +168,10 @@ describe('variantOf', () => {
   })
 
   it('returns null for an empty experiment map', () => {
-    const result = variantOf(context({ experiments: {} }), 'console_nav_density')
+    const result = variantOf(
+      context({ experiments: {} }),
+      'console_nav_density'
+    )
 
     expect(result).toBeNull()
   })

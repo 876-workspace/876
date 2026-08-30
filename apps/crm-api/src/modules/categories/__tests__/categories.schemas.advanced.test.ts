@@ -62,9 +62,7 @@ describe('categories.schemas - create', () => {
   })
 
   it('rejects the removed defaultPriority enum field', () => {
-    expect(() =>
-      create.parse({ ...base, defaultPriority: 'HIGH' })
-    ).toThrow()
+    expect(() => create.parse({ ...base, defaultPriority: 'HIGH' })).toThrow()
   })
 
   it('trims description and enforces max 1000', () => {
@@ -93,7 +91,9 @@ describe('categories.schemas - update', () => {
 
   it('allows clearing defaults with null', () => {
     expect(update.parse({ defaultTeamId: null }).defaultTeamId).toBeNull()
-    expect(update.parse({ defaultPriorityId: null }).defaultPriorityId).toBeNull()
+    expect(
+      update.parse({ defaultPriorityId: null }).defaultPriorityId
+    ).toBeNull()
   })
 
   it('trims name on update', () => {

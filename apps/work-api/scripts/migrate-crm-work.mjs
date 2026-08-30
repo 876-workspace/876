@@ -7,12 +7,14 @@ import pg from 'pg'
 config({ path: ['.env.development.local', '.env.development', '.env'] })
 
 const { Pool } = pg
-const crmUrl = process.env.CRM_DIRECT_DATABASE_URL ?? process.env.CRM_DATABASE_URL
+const crmUrl =
+  process.env.CRM_DIRECT_DATABASE_URL ?? process.env.CRM_DATABASE_URL
 const workUrl =
   process.env.WORK_DIRECT_DATABASE_URL ?? process.env.WORK_DATABASE_URL
 
 if (!crmUrl) throw new Error('CRM_DATABASE_URL is required for CRM migration.')
-if (!workUrl) throw new Error('WORK_DATABASE_URL is required for CRM migration.')
+if (!workUrl)
+  throw new Error('WORK_DATABASE_URL is required for CRM migration.')
 
 const crm = new Pool({ connectionString: crmUrl })
 const work = new Pool({ connectionString: workUrl })

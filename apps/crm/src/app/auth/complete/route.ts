@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
   if (result.status === 'unavailable') redirect('/unavailable')
   if (result.status === 'no-organization') redirect('/onboarding')
 
-  if (result.context.accessStatus === 'active' || result.context.accessStatus === 'trialing')
+  if (
+    result.context.accessStatus === 'active' ||
+    result.context.accessStatus === 'trialing'
+  )
     redirect(returnTo)
 
   if (

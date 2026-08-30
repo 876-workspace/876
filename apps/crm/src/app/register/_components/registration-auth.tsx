@@ -35,7 +35,11 @@ export function RegistrationAuth() {
 
       <AuthFooterLink>
         Already have a workspace?{' '}
-        <Link href="/login" prefetch={false} className="auth-link auth-link-primary">
+        <Link
+          href="/login"
+          prefetch={false}
+          className="auth-link auth-link-primary"
+        >
           Sign in
         </Link>
       </AuthFooterLink>

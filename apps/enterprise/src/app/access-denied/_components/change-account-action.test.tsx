@@ -43,7 +43,9 @@ describe('ChangeAccountAction — diff: clears consumer session before login (go
     render(<ChangeAccountAction />)
     fireEvent.click(screen.getByRole('button', { name: /change account/i }))
     await waitFor(() => expect(mocks.replace).toHaveBeenCalled())
-    expect(mocks.request).toHaveBeenCalledWith('/api/auth/logout', { method: 'POST' })
+    expect(mocks.request).toHaveBeenCalledWith('/api/auth/logout', {
+      method: 'POST',
+    })
     expect(mocks.request).toHaveBeenCalledTimes(1)
   })
 
@@ -54,14 +56,18 @@ describe('ChangeAccountAction — diff: clears consumer session before login (go
     fireEvent.click(screen.getByRole('button', { name: /change account/i }))
     expect(mocks.replace).not.toHaveBeenCalled()
     resolve({})
-    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login?returnTo=/'))
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith('/login?returnTo=/')
+    )
   })
 
   it('redirects to /login?returnTo=/ on success', async () => {
     mocks.request.mockResolvedValue({})
     render(<ChangeAccountAction />)
     fireEvent.click(screen.getByRole('button', { name: /change account/i }))
-    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login?returnTo=/'))
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith('/login?returnTo=/')
+    )
   })
 
   it('is idempotent: second click while busy is ignored (no double request)', async () => {
@@ -96,14 +102,18 @@ describe('ChangeAccountAction — diff: clears consumer session before login (go
     vi.clearAllMocks()
     mocks.request.mockResolvedValue({})
     render(<ChangeAccountAction />)
-    expect(screen.getByRole('button', { name: /change account/i })).toBeVisible()
+    expect(
+      screen.getByRole('button', { name: /change account/i })
+    ).toBeVisible()
     expect(screen.getByRole('button')).toBeEnabled()
   })
 
   it('uses router.replace not push', async () => {
     render(<ChangeAccountAction />)
     fireEvent.click(screen.getByRole('button', { name: /change account/i }))
-    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login?returnTo=/'))
+    await waitFor(() =>
+      expect(mocks.replace).toHaveBeenCalledWith('/login?returnTo=/')
+    )
     expect(mocks.push).not.toHaveBeenCalled()
   })
 

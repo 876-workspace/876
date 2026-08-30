@@ -19,42 +19,42 @@ ever opens, it is one more adapter rather than a rewrite.
 
 ## Object mapping
 
-| Stripe                       | 876 Billing                                  | Notes                                              |
-| ---------------------------- | -------------------------------------------- | -------------------------------------------------- |
-| Customer                     | `Customer` (`billing_customers`)             | Already the org-customer registry of record.       |
-| Product                      | `Product` (`billing_products`)               | What is provisioned.                               |
-| Price                        | `Price` (`billing_prices`)                   | How it is charged. Immutable in monetary terms.     |
-| Plan (legacy)                | — **not modelled**                           | Product + Price only.                               |
-| Subscription                 | `Subscription`                               |                                                     |
-| Subscription Item            | `SubscriptionItem`                           |                                                     |
-| Subscription Schedule        | `SubscriptionLifecycleSchedule` / amendments | Existing engine covers phases.                      |
-| Invoice                      | `Invoice`                                    |                                                     |
-| Invoice Line Item            | `InvoiceLine`                                | Tax + discount snapshotted at finalization.         |
-| Invoice Item (pending)       | `SubscriptionCharge` / pending invoice item  |                                                     |
-| Quote                        | `Quote` / `Estimate`                         | Both already exist.                                 |
-| PaymentMethod                | `PaymentMethod`                              | **new** — non-secret metadata only.                 |
-| —                            | `PaymentCredential`                          | **new** — 876 addition; Vault or provider token.    |
-| SetupIntent                  | `SetupIntent`                                | **new**                                             |
-| Mandate                      | `Mandate`                                    | **new**                                             |
-| PaymentIntent                | `PaymentIntent`                              | **new**                                             |
-| Charge                       | `Payment`                                    | Exists; gains intent/method/snapshot fields.        |
-| —                            | `PaymentAttempt`                             | Exists; one processor round trip.                   |
-| Refund                       | `Refund`                                     | Exists.                                             |
-| Dispute                      | `Dispute`                                    | **new**                                             |
-| Coupon                       | `Coupon`                                     | Exists.                                             |
-| Promotion Code               | `PromotionCode`                              | Exists.                                             |
-| Discount                     | `SubscriptionDiscount` / applied discount    | Exists.                                             |
-| Tax Rate                     | `TaxRate`                                    | Exists; GCT is a row, not a special case.           |
-| Credit Note                  | `CreditNote`                                 | Exists.                                             |
-| Customer Balance Transaction | `CustomerLedgerEntry`                        | Exists.                                             |
-| Billing Meter                | `Meter`                                      | later                                               |
-| Meter Event                  | `MeterEvent`                                 | later                                               |
-| Credit Grant                 | `CreditGrant`                                | later                                               |
-| Active Entitlement           | `Entitlement`                                | Core API owns app entitlement; Billing mirrors.     |
-| Checkout Session             | `CheckoutSession`                            | later — orchestration, never the accounting truth.  |
-| Payment Link                 | `PaymentLink`                                | later                                               |
-| Balance Transaction          | `LedgerEntry` + `ProviderReference`          | 876 keeps its own double-entry ledger.              |
-| Connect / Radar / test clocks| — **not modelled**                           | Vendor-specific.                                    |
+| Stripe                        | 876 Billing                                  | Notes                                              |
+| ----------------------------- | -------------------------------------------- | -------------------------------------------------- |
+| Customer                      | `Customer` (`billing_customers`)             | Already the org-customer registry of record.       |
+| Product                       | `Product` (`billing_products`)               | What is provisioned.                               |
+| Price                         | `Price` (`billing_prices`)                   | How it is charged. Immutable in monetary terms.    |
+| Plan (legacy)                 | — **not modelled**                           | Product + Price only.                              |
+| Subscription                  | `Subscription`                               |                                                    |
+| Subscription Item             | `SubscriptionItem`                           |                                                    |
+| Subscription Schedule         | `SubscriptionLifecycleSchedule` / amendments | Existing engine covers phases.                     |
+| Invoice                       | `Invoice`                                    |                                                    |
+| Invoice Line Item             | `InvoiceLine`                                | Tax + discount snapshotted at finalization.        |
+| Invoice Item (pending)        | `SubscriptionCharge` / pending invoice item  |                                                    |
+| Quote                         | `Quote` / `Estimate`                         | Both already exist.                                |
+| PaymentMethod                 | `PaymentMethod`                              | **new** — non-secret metadata only.                |
+| —                             | `PaymentCredential`                          | **new** — 876 addition; Vault or provider token.   |
+| SetupIntent                   | `SetupIntent`                                | **new**                                            |
+| Mandate                       | `Mandate`                                    | **new**                                            |
+| PaymentIntent                 | `PaymentIntent`                              | **new**                                            |
+| Charge                        | `Payment`                                    | Exists; gains intent/method/snapshot fields.       |
+| —                             | `PaymentAttempt`                             | Exists; one processor round trip.                  |
+| Refund                        | `Refund`                                     | Exists.                                            |
+| Dispute                       | `Dispute`                                    | **new**                                            |
+| Coupon                        | `Coupon`                                     | Exists.                                            |
+| Promotion Code                | `PromotionCode`                              | Exists.                                            |
+| Discount                      | `SubscriptionDiscount` / applied discount    | Exists.                                            |
+| Tax Rate                      | `TaxRate`                                    | Exists; GCT is a row, not a special case.          |
+| Credit Note                   | `CreditNote`                                 | Exists.                                            |
+| Customer Balance Transaction  | `CustomerLedgerEntry`                        | Exists.                                            |
+| Billing Meter                 | `Meter`                                      | later                                              |
+| Meter Event                   | `MeterEvent`                                 | later                                              |
+| Credit Grant                  | `CreditGrant`                                | later                                              |
+| Active Entitlement            | `Entitlement`                                | Core API owns app entitlement; Billing mirrors.    |
+| Checkout Session              | `CheckoutSession`                            | later — orchestration, never the accounting truth. |
+| Payment Link                  | `PaymentLink`                                | later                                              |
+| Balance Transaction           | `LedgerEntry` + `ProviderReference`          | 876 keeps its own double-entry ledger.             |
+| Connect / Radar / test clocks | — **not modelled**                           | Vendor-specific.                                   |
 
 ## ID prefixes
 
@@ -106,7 +106,7 @@ bank account number, provider refresh tokens. Shape:
 ```
 
 **Tier 3, never stored.** CVV/CVC/CID, PIN, PIN block, track data. No column,
-ever, in any app. Only the *check result* is kept.
+ever, in any app. Only the _check result_ is kept.
 
 ## Payment Intent statuses
 

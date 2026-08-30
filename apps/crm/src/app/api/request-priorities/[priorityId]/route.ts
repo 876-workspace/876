@@ -56,9 +56,13 @@ export async function DELETE(_request: NextRequest, route: Context) {
 
   const { priorityId } = await route.params
   const $876 = await get876Client()
-  const result = await $876.requestPriorities.delete(context.orgId, priorityId, {
-    deletedBy: context.userId,
-  })
+  const result = await $876.requestPriorities.delete(
+    context.orgId,
+    priorityId,
+    {
+      deletedBy: context.userId,
+    }
+  )
 
   return Response.json(result, {
     status: result.error ? statusFor(result.error.code) : 200,

@@ -74,7 +74,8 @@ function invalidSubmission() {
 }
 
 function asText(value: unknown, max: number) {
-  if (typeof value !== 'string' || value.length > max) return invalidSubmission()
+  if (typeof value !== 'string' || value.length > max)
+    return invalidSubmission()
   return value.trim()
 }
 
@@ -270,7 +271,11 @@ export async function update(
   if (!current) return null
 
   if (input.slug) {
-    const slugError = await ensureSlugAvailable(tenant.id, input.slug, current.id)
+    const slugError = await ensureSlugAvailable(
+      tenant.id,
+      input.slug,
+      current.id
+    )
     if (slugError) return slugError
   }
 

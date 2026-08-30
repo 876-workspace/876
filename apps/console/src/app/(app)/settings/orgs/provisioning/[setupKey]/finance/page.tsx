@@ -1,0 +1,27 @@
+import { notFound } from 'next/navigation'
+
+import { workspace } from '@/lib/876'
+import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
+
+export const metadata = { title: 'Provisioning setup · Finance' }
+
+export default async function SetupFinancePage({
+  params,
+}: {
+  params: Promise<{ setupKey: string }>
+}) {
+  const { setupKey } = await params
+  const [catalogResult, manifestResult] = await Promise.all([
+    workspace.provisioning.catalog.retrieve('finance', setupKey),
+    workspace.provisioning.draft.retrieve('finance', setupKey),
+  ])
+  if (catalogResult.error || !catalogResult.data) notFound()
+  if (manifestResult.error || !manifestResult.data) notFound()
+  return (
+    <FinanceProvisioningEditor
+      catalog={catalogResult.data}
+      manifest={manifestResult.data}
+      target={{ type: 'finance', key: setupKey }}
+    />
+  )
+}

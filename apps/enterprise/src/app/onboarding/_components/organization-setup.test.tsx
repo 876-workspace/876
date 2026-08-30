@@ -19,7 +19,10 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.request.mockResolvedValue({
-      data: { object: 'onboarding_organization', organization_id: 'organization_123' },
+      data: {
+        object: 'onboarding_organization',
+        organization_id: 'organization_123',
+      },
       error: null,
     })
   })
@@ -49,13 +52,18 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
   it('keeps form visible when bootstrap reports error', async () => {
     mocks.request.mockResolvedValue({
       data: null,
-      error: { code: 'provisioning/finance-workspace-unavailable', message: 'Workspace setup is temporarily unavailable.' },
+      error: {
+        code: 'provisioning/finance-workspace-unavailable',
+        message: 'Workspace setup is temporarily unavailable.',
+      },
     })
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme Logistics')
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(await screen.findByText('Workspace setup is temporarily unavailable.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Workspace setup is temporarily unavailable.')
+    ).toBeInTheDocument()
     expect(mocks.replace).not.toHaveBeenCalled()
   })
 
@@ -63,7 +71,9 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(await screen.findByText('Enter a workspace name.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Enter a workspace name.')
+    ).toBeInTheDocument()
     expect(mocks.request).not.toHaveBeenCalled()
   })
 
@@ -72,14 +82,19 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), '   ')
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(await screen.findByText('Enter a workspace name.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Enter a workspace name.')
+    ).toBeInTheDocument()
     expect(mocks.request).not.toHaveBeenCalled()
   })
 
   it('returns stale session to Enterprise login', async () => {
     mocks.request.mockResolvedValue({
       data: null,
-      error: { code: 'auth/session-invalid', message: 'Your session is no longer valid. Please sign in again.' },
+      error: {
+        code: 'auth/session-invalid',
+        message: 'Your session is no longer valid. Please sign in again.',
+      },
     })
     const user = userEvent.setup()
     render(<OrganizationSetup />)
@@ -104,44 +119,73 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
 
   it('disables inputs while pending', async () => {
     let resolve!: (v: unknown) => void
-    mocks.request.mockReturnValue(new Promise(r => (resolve = r)))
+    mocks.request.mockReturnValue(new Promise((r) => (resolve = r)))
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme')
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
     expect(screen.getByLabelText('Workspace name')).toBeDisabled()
-    expect(screen.getByRole('button', { name: /creating workspace/i })).toBeDisabled()
-    resolve({ data: { object: 'onboarding_organization', organization_id: 'o1' }, error: null })
+    expect(
+      screen.getByRole('button', { name: /creating workspace/i })
+    ).toBeDisabled()
+    resolve({
+      data: { object: 'onboarding_organization', organization_id: 'o1' },
+      error: null,
+    })
     await waitFor(() => expect(mocks.replace).toHaveBeenCalled())
   })
 
   it('shows Creating workspace… busy text', async () => {
     let resolve!: (v: unknown) => void
-    mocks.request.mockReturnValue(new Promise(r => (resolve = r)))
+    mocks.request.mockReturnValue(new Promise((r) => (resolve = r)))
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme')
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(screen.getByRole('button', { name: 'Creating workspace…' })).toBeInTheDocument()
-    resolve({ data: { object: 'onboarding_organization', organization_id: 'o1' }, error: null })
+    expect(
+      screen.getByRole('button', { name: 'Creating workspace…' })
+    ).toBeInTheDocument()
+    resolve({
+      data: { object: 'onboarding_organization', organization_id: 'o1' },
+      error: null,
+    })
     await waitFor(() => expect(mocks.replace).toHaveBeenCalled())
   })
 
   it('resets error on new submit', async () => {
-    mocks.request.mockResolvedValueOnce({ data: null, error: { code: 'provisioning/finance-workspace-unavailable', message: 'temporarily unavailable' } })
+    mocks.request.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: 'provisioning/finance-workspace-unavailable',
+        message: 'temporarily unavailable',
+      },
+    })
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme')
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(await screen.findByText('temporarily unavailable')).toBeInTheDocument()
-    mocks.request.mockResolvedValue({ data: { object: 'onboarding_organization', organization_id: 'o1' }, error: null })
+    expect(
+      await screen.findByText('temporarily unavailable')
+    ).toBeInTheDocument()
+    mocks.request.mockResolvedValue({
+      data: { object: 'onboarding_organization', organization_id: 'o1' },
+      error: null,
+    })
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
     await waitFor(() => expect(mocks.replace).toHaveBeenCalled())
-    expect(screen.queryByText('temporarily unavailable')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('temporarily unavailable')
+    ).not.toBeInTheDocument()
   })
 
   it('error alert has role=alert (a11y)', async () => {
-    mocks.request.mockResolvedValue({ data: null, error: { code: 'provisioning/finance-workspace-unavailable', message: 'Workspace setup is temporarily unavailable.' } })
+    mocks.request.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'provisioning/finance-workspace-unavailable',
+        message: 'Workspace setup is temporarily unavailable.',
+      },
+    })
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme')
@@ -152,12 +196,14 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
   it('renders 876 Enterprise heading and Create your workspace title', () => {
     render(<OrganizationSetup />)
     expect(screen.getByText('876 Enterprise')).toBeVisible()
-    expect(screen.getByRole('heading', { name: 'Create your workspace' })).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Create your workspace' })
+    ).toBeVisible()
   })
 
   it('is idempotent: rapid double submit does not double request when pending', async () => {
     let resolve!: (v: unknown) => void
-    mocks.request.mockReturnValue(new Promise(r => (resolve = r)))
+    mocks.request.mockReturnValue(new Promise((r) => (resolve = r)))
     const user = userEvent.setup()
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme')
@@ -165,7 +211,10 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
     await user.click(btn)
     // second click while pending should be disabled so no second call
     expect(mocks.request).toHaveBeenCalledTimes(1)
-    resolve({ data: { object: 'onboarding_organization', organization_id: 'o1' }, error: null })
+    resolve({
+      data: { object: 'onboarding_organization', organization_id: 'o1' },
+      error: null,
+    })
     await waitFor(() => expect(mocks.replace).toHaveBeenCalled())
   })
 
@@ -174,8 +223,14 @@ describe('OrganizationSetup — workspace bootstrap form (goldbergyoni AAA, diff
     render(<OrganizationSetup />)
     await user.type(screen.getByLabelText('Workspace name'), 'Acme')
     await user.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(mocks.request).toHaveBeenCalledWith(expect.stringContaining('/api/onboarding/organization'), expect.objectContaining({ method: 'POST' }))
-    expect(mocks.request).not.toHaveBeenCalledWith(expect.stringContaining('/register'), expect.anything())
+    expect(mocks.request).toHaveBeenCalledWith(
+      expect.stringContaining('/api/onboarding/organization'),
+      expect.objectContaining({ method: 'POST' })
+    )
+    expect(mocks.request).not.toHaveBeenCalledWith(
+      expect.stringContaining('/register'),
+      expect.anything()
+    )
   })
 
   it('replaces to "/" on success (not /onboarding loop)', async () => {

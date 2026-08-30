@@ -24,7 +24,9 @@ export async function listCustomers(): Promise<CrmCustomer[]> {
   return body.data ?? []
 }
 
-export async function retrieveCustomer(id: string): Promise<CrmCustomer | null> {
+export async function retrieveCustomer(
+  id: string
+): Promise<CrmCustomer | null> {
   const context = await requireContext()
   const response = await crmApi(
     `/v1/organizations/${encodeURIComponent(context.orgId)}/customers/${encodeURIComponent(id)}`

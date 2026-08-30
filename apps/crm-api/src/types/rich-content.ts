@@ -78,7 +78,11 @@ function richContentStats(value: string) {
   return { textLength: trimmed.length, blockCount: 1 }
 }
 
-function validateRichContent(value: string, maxTextLength: number, ctx: z.RefinementCtx) {
+function validateRichContent(
+  value: string,
+  maxTextLength: number,
+  ctx: z.RefinementCtx
+) {
   const { textLength, blockCount } = richContentStats(value)
   if (textLength > maxTextLength)
     ctx.addIssue({
