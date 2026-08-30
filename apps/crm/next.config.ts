@@ -10,8 +10,14 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=31536000; includeSubDomains',
+  },
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=()',
+  },
 ]
 
 const previewDevOrigins = devResourceHosts()
@@ -21,11 +27,24 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   allowedDevOrigins: previewDevOrigins,
   outputFileTracingRoot: path.join(__dirname, '../../'),
-  async headers() { return [{ source: '/(.*)', headers: securityHeaders }] },
-  transpilePackages: sharedTranspilePackages(['@876/account', '@876/core', '@876/crm', '@876/workspace']),
+  async headers() {
+    return [{ source: '/(.*)', headers: securityHeaders }]
+  },
+  transpilePackages: sharedTranspilePackages([
+    '@876/account',
+    '@876/core',
+    '@876/crm',
+    '@876/workspace',
+  ]),
   experimental: {
     optimizePackageImports: ['zod'],
-    serverActions: { allowedOrigins: ['localhost:3007', '127.0.0.1:3007', ...previewDevOrigins] },
+    serverActions: {
+      allowedOrigins: [
+        'localhost:3007',
+        '127.0.0.1:3007',
+        ...previewDevOrigins,
+      ],
+    },
   },
 }
 

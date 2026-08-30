@@ -19,7 +19,11 @@ export default async function EditTeamPage({ params }: Props) {
     return (
       <Page>
         <h1 className="876-page-title mb-4">Edit team</h1>
-        <AppError title="Team data is temporarily unavailable" error={result.error} variant="banner" />
+        <AppError
+          title="Team data is temporarily unavailable"
+          error={result.error}
+          variant="banner"
+        />
       </Page>
     )
   const initial: TeamFormValues = {
@@ -29,5 +33,10 @@ export default async function EditTeamPage({ params }: Props) {
     autoAssign: result.data.autoAssign,
     isDefault: result.data.isDefault,
   }
-  return <Page><h1 className="876-page-title mb-6">Edit team</h1><TeamForm teamId={teamId} initial={initial} /></Page>
+  return (
+    <Page>
+      <h1 className="876-page-title mb-6">Edit team</h1>
+      <TeamForm teamId={teamId} initial={initial} />
+    </Page>
+  )
 }

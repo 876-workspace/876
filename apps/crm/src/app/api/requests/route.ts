@@ -7,7 +7,10 @@ export async function GET(request: NextRequest) {
   const context = await getCrmApiContext()
   if (!context)
     return Response.json(
-      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      {
+        data: null,
+        error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
+      },
       { status: 401 }
     )
 
@@ -29,7 +32,10 @@ export async function POST(request: NextRequest) {
   const context = await getCrmApiContext()
   if (!context)
     return Response.json(
-      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      {
+        data: null,
+        error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
+      },
       { status: 401 }
     )
 

@@ -3,7 +3,11 @@
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams, useSelectedLayoutSegment } from 'next/navigation'
+import {
+  useRouter,
+  useSearchParams,
+  useSelectedLayoutSegment,
+} from 'next/navigation'
 import { toast } from 'sonner'
 import { CustomerCardFrame as SharedCustomerCardFrame } from '@876/crm-ui/customer-card-frame'
 import { Button, buttonVariants } from '@876/ui/button'
@@ -100,10 +104,7 @@ export function CustomerCardFrame({
           <MoreHorizontalIcon className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-44">
-          <DropdownMenuItem
-            onClick={toggleStatus}
-            disabled={togglingStatus}
-          >
+          <DropdownMenuItem onClick={toggleStatus} disabled={togglingStatus}>
             {isActive ? 'Deactivate' : 'Activate'}
           </DropdownMenuItem>
           <DropdownMenuSeparator />

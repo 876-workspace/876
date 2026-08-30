@@ -27,7 +27,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = isSignedSession(session) ? session.user : null
   const email = user?.email ?? ''
   const displayName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || email || 'User'
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    email ||
+    'User'
 
   const orgs = organizations.map((org) => ({
     id: org.id,

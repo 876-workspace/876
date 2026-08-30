@@ -1,15 +1,31 @@
 'use client'
 
 import { create876AccountClient } from '@876/account'
-import { AUTH_RETURN_TO_COOKIE, resolveRelativeReturnTo } from '@876/core/auth/return-to'
-import { AppLogo, AuthFlow, AuthFooterLink, AuthPageShell, AuthProvider, type SocialProvider } from '@876/ui/auth'
+import {
+  AUTH_RETURN_TO_COOKIE,
+  resolveRelativeReturnTo,
+} from '@876/core/auth/return-to'
+import {
+  AppLogo,
+  AuthFlow,
+  AuthFooterLink,
+  AuthPageShell,
+  AuthProvider,
+  type SocialProvider,
+} from '@876/ui/auth'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'microsoft', 'apple']
 const authClient = create876AccountClient({ baseUrl: '/api' })
 
-export function EmbeddedAuth({ returnTo, authError }: { returnTo: string; authError?: string | null }) {
+export function EmbeddedAuth({
+  returnTo,
+  authError,
+}: {
+  returnTo: string
+  authError?: string | null
+}) {
   useEffect(() => {
     const value = encodeURIComponent(resolveRelativeReturnTo(returnTo, '/'))
     const secure = window.location.protocol === 'https:' ? '; Secure' : ''
@@ -25,8 +41,14 @@ export function EmbeddedAuth({ returnTo, authError }: { returnTo: string; authEr
           appName: '876 CRM',
           appLogo: <AppLogo name="876 CRM" />,
           socialProviders: SOCIAL_PROVIDERS,
-          initialNotice: authError ? { type: 'error', message: authError } : undefined,
-          onSuccess: () => { window.location.assign(`/auth/complete?returnTo=${encodeURIComponent(returnTo)}`) },
+          initialNotice: authError
+            ? { type: 'error', message: authError }
+            : undefined,
+          onSuccess: () => {
+            window.location.assign(
+              `/auth/complete?returnTo=${encodeURIComponent(returnTo)}`
+            )
+          },
           onEmailVerificationRequired: () => false,
         }}
       >
@@ -34,7 +56,13 @@ export function EmbeddedAuth({ returnTo, authError }: { returnTo: string; authEr
       </AuthProvider>
       <AuthFooterLink>
         New to 876 CRM?{' '}
-        <Link href="/register" prefetch={false} className="auth-link auth-link-primary">Create a workspace</Link>
+        <Link
+          href="/register"
+          prefetch={false}
+          className="auth-link auth-link-primary"
+        >
+          Create a workspace
+        </Link>
       </AuthFooterLink>
     </AuthPageShell>
   )

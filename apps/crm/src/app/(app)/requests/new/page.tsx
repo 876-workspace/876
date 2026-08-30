@@ -12,14 +12,19 @@ export const metadata = { title: 'New request' }
 export default async function NewRequestPage() {
   const context = await requireCrmContext()
   const workspace = await getWorkspace()
-  const [customers, departmentsResult, membersResult, categoriesResult, prioritiesResult] =
-    await Promise.all([
-      crm.customerProfiles.list(context.orgId),
-      workspace.departments.list(context.orgId),
-      workspace.members.list(context.orgId),
-      crm.requestCategories.list(context.orgId),
-      crm.requestPriorities.list(context.orgId, { active: true }),
-    ])
+  const [
+    customers,
+    departmentsResult,
+    membersResult,
+    categoriesResult,
+    prioritiesResult,
+  ] = await Promise.all([
+    crm.customers.list(context.orgId),
+    workspace.departments.list(context.orgId),
+    workspace.members.list(context.orgId),
+    crm.requestCategories.list(context.orgId),
+    crm.requestPriorities.list(context.orgId, { active: true }),
+  ])
 
   const departments =
     departmentsResult.data?.data.map((department) => ({
@@ -45,19 +50,39 @@ export default async function NewRequestPage() {
       </div>
       <div className="space-y-3">
         {customers.error ? (
-          <AppError title="Customer options are temporarily incomplete" error={customers.error} variant="banner" />
+          <AppError
+            title="Customer options are temporarily incomplete"
+            error={customers.error}
+            variant="banner"
+          />
         ) : null}
         {prioritiesResult.error ? (
-          <AppError title="Priority options are temporarily incomplete" error={prioritiesResult.error} variant="inline" />
+          <AppError
+            title="Priority options are temporarily incomplete"
+            error={prioritiesResult.error}
+            variant="inline"
+          />
         ) : null}
         {categoriesResult.error ? (
-          <AppError title="Category options are temporarily incomplete" error={categoriesResult.error} variant="inline" />
+          <AppError
+            title="Category options are temporarily incomplete"
+            error={categoriesResult.error}
+            variant="inline"
+          />
         ) : null}
         {departmentsResult.error ? (
-          <AppError title="Team options are temporarily incomplete" error={departmentsResult.error} variant="inline" />
+          <AppError
+            title="Team options are temporarily incomplete"
+            error={departmentsResult.error}
+            variant="inline"
+          />
         ) : null}
         {membersResult.error ? (
-          <AppError title="Assignee options are temporarily incomplete" error={membersResult.error} variant="inline" />
+          <AppError
+            title="Assignee options are temporarily incomplete"
+            error={membersResult.error}
+            variant="inline"
+          />
         ) : null}
         <RequestForm
           customers={customers.data?.data ?? []}

@@ -26,20 +26,42 @@ export const loadDirectory = cache(async () => {
     workspace.members.list(context.orgId),
   ])
   const teams: RequestTeam[] =
-    teamsResult.data?.data.map((team) => ({ id: team.id, name: team.name, color: team.color })) ?? []
+    teamsResult.data?.data.map((team) => ({
+      id: team.id,
+      name: team.name,
+      color: team.color,
+    })) ?? []
   const members: DirectoryMember[] =
     membersResult.data?.data.map((member) => {
       const nameParts = [member.first_name, member.last_name].filter(Boolean)
-      const name = nameParts.length > 0 ? nameParts.join(' ') : (member.email ?? member.user_id)
-      return { userId: member.user_id, name, email: member.email, avatar: member.avatar }
+      const name =
+        nameParts.length > 0
+          ? nameParts.join(' ')
+          : (member.email ?? member.user_id)
+      return {
+        userId: member.user_id,
+        name,
+        email: member.email,
+        avatar: member.avatar,
+      }
     }) ?? []
-  return { teams, members, teamsError: teamsResult.error, membersError: membersResult.error }
+  return {
+    teams,
+    members,
+    teamsError: teamsResult.error,
+    membersError: membersResult.error,
+  }
 })
 
 export const loadCategoryIndex = cache(async () => {
   const context = await loadCrmContext()
   const result = await crm.requestCategories.list(context.orgId)
-  return { categories: new Map((result.data?.data ?? []).map((category) => [category.id, category])), error: result.error }
+  return {
+    categories: new Map(
+      (result.data?.data ?? []).map((category) => [category.id, category])
+    ),
+    error: result.error,
+  }
 })
 
 export const loadPriorities = cache(async () => {
@@ -50,13 +72,19 @@ export const loadPriorities = cache(async () => {
 
 export const loadCustomer = cache(async (customerId: string) => {
   const context = await loadCrmContext()
-  const result = await crm.customerProfiles.retrieve(context.orgId, customerId)
-  return { profile: result.data?.profile, customer: result.data?.customer, error: result.error }
+  const result = await crm.customers.retrieve(context.orgId, customerId)
+  return {
+    profile: result.data?.profile,
+    customer: result.data?.customer,
+    error: result.error,
+  }
 })
 
 export const loadNotes = cache(async (requestId: string) => {
   const context = await loadCrmContext()
-  const result = await crm.requestNotes.list(context.orgId, requestId, { viewerId: context.userId })
+  const result = await crm.requestNotes.list(context.orgId, requestId, {
+    viewerId: context.userId,
+  })
   return { notes: result.data?.data ?? [], error: result.error }
 })
 

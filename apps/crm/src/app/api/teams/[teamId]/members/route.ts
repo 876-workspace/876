@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 type Context = { params: Promise<{ teamId: string }> }
 
@@ -25,9 +25,7 @@ export async function POST(request: NextRequest, route: Context) {
   delete input.createdBy
   delete input.addedBy
   delete input.deletedBy
-  const $876 = await get876Client()
-
-  const result = await $876.teams.members.add(context.orgId, teamId, {
+  const result = await crm.teams.members.add(context.orgId, teamId, {
     ...input,
     addedBy: context.userId,
   } as never)

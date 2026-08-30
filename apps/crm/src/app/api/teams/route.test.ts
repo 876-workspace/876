@@ -7,8 +7,12 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
 }))
 
-vi.mock('@/lib/auth/api-context', () => ({ getCrmApiContext: mocks.getCrmApiContext }))
-vi.mock('@/lib/services/crm', () => ({ crm: { teams: { create: mocks.create } } }))
+vi.mock('@/lib/auth/api-context', () => ({
+  getCrmApiContext: mocks.getCrmApiContext,
+}))
+vi.mock('@/lib/services/crm', () => ({
+  crm: { teams: { create: mocks.create } },
+}))
 
 function createRequest(body: Record<string, unknown>) {
   return new NextRequest('http://localhost/api/teams', {
@@ -42,12 +46,22 @@ function createTeamResult() {
 describe('POST /api/teams', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getCrmApiContext.mockResolvedValue({ orgId: 'org_island_123', userId: 'user_session_123' })
+    mocks.getCrmApiContext.mockResolvedValue({
+      orgId: 'org_island_123',
+      userId: 'user_session_123',
+    })
     mocks.create.mockResolvedValue(createTeamResult())
   })
 
   it('supplies createdBy from the signed-in session', async () => {
-    const response = await POST(createRequest({ name: 'Customer Support', color: 'blue', autoAssign: 'NONE', isDefault: false }))
+    const response = await POST(
+      createRequest({
+        name: 'Customer Support',
+        color: 'blue',
+        autoAssign: 'NONE',
+        isDefault: false,
+      })
+    )
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual(createTeamResult())
     expect(mocks.getCrmApiContext).toHaveBeenCalledTimes(1)
@@ -62,9 +76,17 @@ describe('POST /api/teams', () => {
   })
 
   it('ignores a body-supplied createdBy value', async () => {
-    const response = await POST(createRequest({ name: 'Customer Support', createdBy: 'user_attacker_999' }))
+    const response = await POST(
+      createRequest({
+        name: 'Customer Support',
+        createdBy: 'user_attacker_999',
+      })
+    )
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual(createTeamResult())
-    expect(mocks.create).toHaveBeenCalledWith('org_island_123', { name: 'Customer Support', createdBy: 'user_session_123' })
+    expect(mocks.create).toHaveBeenCalledWith('org_island_123', {
+      name: 'Customer Support',
+      createdBy: 'user_session_123',
+    })
   })
 })

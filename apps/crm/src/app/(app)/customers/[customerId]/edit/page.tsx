@@ -5,21 +5,28 @@ import { notFound } from 'next/navigation'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
 
-import { CustomerForm, type CustomerFormValues } from '../../_components/customer-form'
+import {
+  CustomerForm,
+  type CustomerFormValues,
+} from '../../_components/customer-form'
 
 type Props = { params: Promise<{ customerId: string }> }
 
 export default async function EditCustomerPage({ params }: Props) {
   const context = await requireCrmContext()
   const { customerId } = await params
-  const result = await crm.customerProfiles.retrieve(context.orgId, customerId)
+  const result = await crm.customers.retrieve(context.orgId, customerId)
   if (result.error?.code === 'crm/customer-not-found') notFound()
   if (result.error)
     return (
       <Page>
         <PageBreadcrumb href="/customers" label="Customers" className="mb-4" />
         <h1 className="876-page-title mb-4">Edit customer</h1>
-        <AppError title="Customer data is temporarily unavailable" error={result.error} variant="banner" />
+        <AppError
+          title="Customer data is temporarily unavailable"
+          error={result.error}
+          variant="banner"
+        />
       </Page>
     )
   const { profile, customer } = result.data
@@ -35,10 +42,23 @@ export default async function EditCustomerPage({ params }: Props) {
   }
   return (
     <Page>
-      <PageBreadcrumb href={`/customers/${encodeURIComponent(profile.id)}`} label={customer?.name ?? 'Customer'} className="mb-4" />
+      <PageBreadcrumb
+        href={`/customers/${encodeURIComponent(profile.id)}`}
+        label={customer?.name ?? 'Customer'}
+        className="mb-4"
+      />
       <h1 className="876-page-title mb-2">Edit customer</h1>
-      {customer?.customerType !== 'EXTERNAL' ? <p className="text-muted-foreground mb-6 text-sm">Identity fields are managed by the linked 876 account. CRM-local owner and status remain editable.</p> : null}
-      <CustomerForm customerId={profile.id} initial={initial} editableIdentity={customer?.customerType === 'EXTERNAL'} />
+      {customer?.customerType !== 'EXTERNAL' ? (
+        <p className="text-muted-foreground mb-6 text-sm">
+          Identity fields are managed by the linked 876 account. CRM-local owner
+          and status remain editable.
+        </p>
+      ) : null}
+      <CustomerForm
+        customerId={profile.id}
+        initial={initial}
+        editableIdentity={customer?.customerType === 'EXTERNAL'}
+      />
     </Page>
   )
 }

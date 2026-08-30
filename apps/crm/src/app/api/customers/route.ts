@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 export async function GET() {
   const context = await getCrmApiContext()
@@ -14,9 +14,7 @@ export async function GET() {
       { status: 401 }
     )
 
-  const $876 = await get876Client()
-
-  const result = await $876.customerProfiles.list(context.orgId)
+  const result = await crm.customers.list(context.orgId)
   return Response.json(result, { status: result.error ? 502 : 200 })
 }
 
@@ -45,9 +43,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
 
-  const $876 = await get876Client()
-
-  const result = await $876.customerProfiles.create(context.orgId, {
+  const result = await crm.customers.create(context.orgId, {
     ...(input as Record<string, unknown>),
     idempotencyKey,
   } as never)

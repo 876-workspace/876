@@ -6,17 +6,37 @@ import { Page } from '@876/ui/page'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
 
-import { RequestIdentity, RequestIdentitySkeleton, RequestToolbar, RequestToolbarSkeleton } from '../_components/request-identity'
-import { RequestAside, RequestAsideSkeleton } from '../_components/request-aside'
+import {
+  RequestIdentity,
+  RequestIdentitySkeleton,
+  RequestToolbar,
+  RequestToolbarSkeleton,
+} from '../_components/request-identity'
+import {
+  RequestAside,
+  RequestAsideSkeleton,
+} from '../_components/request-aside'
 
-type Props = { children: React.ReactNode; params: Promise<{ requestId: string }> }
+type Props = {
+  children: React.ReactNode
+  params: Promise<{ requestId: string }>
+}
 
-export async function generateMetadata({ params }: { params: Promise<{ requestId: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ requestId: string }>
+}): Promise<Metadata> {
   const context = await requireCrmContext()
   const { requestId } = await params
   const result = await crm.requests.retrieve(context.orgId, requestId)
   if (!result.data) return { title: 'Request' }
-  return { title: { default: `Request #${result.data.number} · ${result.data.subject}`, template: `%s · Request #${result.data.number}` } }
+  return {
+    title: {
+      default: `Request #${result.data.number} · ${result.data.subject}`,
+      template: `%s · Request #${result.data.number}`,
+    },
+  }
 }
 
 export default async function RequestRecordLayout({ children, params }: Props) {
@@ -32,7 +52,9 @@ export default async function RequestRecordLayout({ children, params }: Props) {
         headerFallback={<RequestIdentitySkeleton />}
         aside={<RequestAside requestId={requestId} />}
         asideFallback={<RequestAsideSkeleton />}
-      >{children}</RequestRecordShell>
+      >
+        {children}
+      </RequestRecordShell>
     </Page>
   )
 }
