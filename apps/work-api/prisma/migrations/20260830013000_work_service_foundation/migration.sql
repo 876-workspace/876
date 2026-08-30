@@ -69,11 +69,11 @@ CREATE TABLE "work_reminders" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "work_tenants_organization_id_key" ON "work_tenants"("organization_id");
-CREATE INDEX "work_tasks_tenant_id_context_service_context_resource_context_id_status_sort_order_idx" ON "work_tasks"("tenant_id", "context_service", "context_resource", "context_id", "status", "sort_order");
+CREATE INDEX "work_tasks_tenant_id_context_service_context_resource_conte_idx" ON "work_tasks"("tenant_id", "context_service", "context_resource", "context_id", "status", "sort_order");
 CREATE INDEX "work_tasks_tenant_id_priority_id_status_idx" ON "work_tasks"("tenant_id", "priority_id", "status");
 CREATE INDEX "work_tasks_tenant_id_assignee_id_status_idx" ON "work_tasks"("tenant_id", "assignee_id", "status");
 CREATE INDEX "work_tasks_tenant_id_due_at_idx" ON "work_tasks"("tenant_id", "due_at");
-CREATE INDEX "work_reminders_tenant_id_context_service_context_resource_context_id_remind_at_idx" ON "work_reminders"("tenant_id", "context_service", "context_resource", "context_id", "remind_at");
+CREATE INDEX "work_reminders_tenant_id_context_service_context_resource_c_idx" ON "work_reminders"("tenant_id", "context_service", "context_resource", "context_id", "remind_at");
 CREATE INDEX "work_reminders_tenant_id_user_id_status_remind_at_idx" ON "work_reminders"("tenant_id", "user_id", "status", "remind_at");
 
 -- AddForeignKey
