@@ -15,6 +15,10 @@
       "types": "./src/customer-card-frame.tsx",
       "default": "./src/customer-card-frame.tsx"
     },
+    "./customer-overview": {
+      "types": "./src/customer-overview.tsx",
+      "default": "./src/customer-overview.tsx"
+    },
     "./request-record-shell": {
       "types": "./src/request-record-shell.tsx",
       "default": "./src/request-record-shell.tsx"
