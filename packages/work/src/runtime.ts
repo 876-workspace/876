@@ -1,7 +1,7 @@
 export type WorkRuntime = {
   baseUrl: string
   internalKey: string
-  fetch?: typeof globalThis.fetch
+  fetch: typeof globalThis.fetch
   requestId?: string
 }
 
@@ -18,7 +18,7 @@ export function createWorkRuntime(
   return {
     baseUrl: (options.baseUrl ?? '').replace(/\/$/, ''),
     internalKey: options.internalKey ?? '',
-    fetch: options.fetch,
+    fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
     requestId: options.requestId,
   }
 }
