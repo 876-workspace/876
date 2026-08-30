@@ -4,6 +4,7 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 import { devResourceHosts } from '../../scripts/dev-preview.mjs'
+import { sharedTranspilePackages } from '../../scripts/shared-ui-packages.mjs'
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -57,14 +58,13 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-  transpilePackages: [
+  transpilePackages: sharedTranspilePackages([
     '@876/analytics',
     '@876/billing',
     '@876/sdk',
     '@876/admin',
     '@876/core',
-    '@876/ui',
-  ],
+  ]),
   experimental: {
     optimizePackageImports: ['radix-ui', 'zod'],
     serverActions: {
