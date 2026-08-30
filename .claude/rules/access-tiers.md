@@ -1,151 +1,127 @@
-# Access Tiers — who is calling, and through what
+# Access Principals — who is calling, and through what
 
-Read this before deciding how one 876 surface reaches data owned by another —
-Console reading an organization's CRM requests, Invoice reading Billing
-customers, a third party building against 876, or a product app reading Core.
-It fixes the tier vocabulary, the rule that a capability is implemented once,
-and the decision procedure for picking a tier.
+Read this before one 876 surface reaches data owned by another. The client entrypoint must state **whose authority** is being exercised.
 
-Companion to `.claude/rules/platform-services.md` (which bounded context owns
-what), `.claude/rules/sdk-conventions.md` (the client surface), and
-`.claude/rules/app-api-routing.md` (the browser-facing half).
+Companion rules: `platform-services.md`, `sdk-conventions.md`, and `app-api-routing.md`.
 
-## The three tiers
+## Four principals
 
-Every call into a service answers one question: **on whose authority?**
+| Principal | Caller | Typical credential | Scope |
+| --- | --- | --- | --- |
+| **session** | signed-in human | session cookie / bearer access token | what that user may do in the active organization |
+| **service** | first-party 876 app/service | scoped app/service credential | declared first-party capability, usually organization-scoped |
+| **operator** | 876 itself / Console | internal operator credential | privileged platform/product administration |
+| **integration** | external third party/provider | OAuth/app integration credential + scopes | granted external connection scope |
 
-| Tier            | Principal                               | Credential                           | Scope                                   | Consent                   |
-| --------------- | --------------------------------------- | ------------------------------------ | --------------------------------------- | ------------------------- |
-| **operator**    | 876 itself, acting as platform          | secret internal key, server-only     | every organization, including none      | none required — it is 876 |
-| **integration** | one app acting **for** one organization | app API key + finance/app connection | exactly one organization, scope-limited | the org granted it        |
-| **session**     | one signed-in user                      | session cookie / access token        | what that user may do in that org       | the user is present       |
+These are authority statements, not style labels.
 
-The tier is not a style choice. It is a statement about authority, and it is
-what a security review reads first.
+## Capability implementation rule
 
-## The rule that makes this work
+> A capability is implemented once by the service that owns it and may be routed at multiple legitimate principals. Principal-specific routes change authentication, scope checks, serializers, and auditing — not the underlying business implementation.
 
-> **A capability is implemented once by the service that owns it, and exposed
-> at as many tiers as it has legitimate callers. The tier changes the guard and
-> the scope check — never the logic.**
+If CRM has one `listRequests()` service function, session/service/operator/integration routes may all call it with different guards. A second implementation because another caller needs the capability is a defect.
 
-`listRequests(organizationId, filters)` is written once, in `crm-api`, in one
-service function. It is then routed three times:
+Adding a principal is primarily a routing/security-contract change. If a new caller requires new domain business logic, move that logic into the owning service first.
 
-```
-/v1/organizations/:organizationId/requests             guard: operator
-/integrations/organizations/:organizationId/requests   guard: integration + scope crm.requests.read
-/organizations/:organizationId/requests                guard: session + membership
-```
+## Session
 
-Three routes, three guards, one service function, one repository. A second
-implementation for a second caller is the defect this rule exists to prevent:
-the two drift, and the drift is discovered as a support ticket where Console
-and the customer's own screen disagree about the same record.
+Use `session` when a signed-in human is the principal. The bearer/session must remain request-scoped. The API decides membership, permissions, and field visibility.
 
-Adding a tier is therefore a **routing** change, never a rewrite. If exposing a
-capability at a new tier requires new business logic, the logic was in the
-wrong layer — move it into the service first.
+Examples:
 
-## Console uses the operator tier, and only the operator tier
+- CRM member reading requests;
+- Work user updating a task;
+- Billing member reading invoices;
+- Workspace member reading their organization directory.
 
-**Console must never authenticate as an integration.** It holds the secret
-internal key and calls the operator tier of every service it administers. This
-is settled; do not revisit it per feature.
+Do not replace a user bearer with an internal key merely because the call originates from a Server Component.
 
-Three reasons, in order of how expensive they are to get wrong:
+## Service
 
-1. **Consent.** The integration tier exists _because_ an organization granted a
-   connection with named scopes. Console acts without that grant — suspending a
-   workspace, purging an organization, forcing a reconcile, revoking a key.
-   Routing Console through the integration surface leaves two options, both
-   bad: those operations do not exist there and Console breaks, or we add
-   operator powers to the integration contract and **every third party
-   inherits them**. The second is a security regression that cannot be quietly
-   walked back once a partner has built against it.
-2. **Scope.** Integration is org-scoped by construction. Console's job is
-   cross-org: list every tenant, search every customer, reconcile the whole
-   finance plane. There is no organization to scope those to.
-3. **Availability.** A customer can revoke a connection. 876's ability to
-   support and oversee that customer must not depend on a grant the customer
-   can withdraw.
+Use `service` when one **first-party 876 application/service** calls another 876 service as part of the 876 product ecosystem.
 
-### What Console does share with the integration tier
+Examples:
 
-Console must not get a **second implementation** of a product feature. When
-Console embeds org-scoped product data — an org's CRM requests, its invoices,
-its customers — it calls the operator route of **the same capability** the
-integration tier exposes. Console dogfoods the _shape_, never the _credential_.
+- Invoice → Billing;
+- CRM API → Storage;
+- CRM API → Work;
+- Couriers → Billing/Storage;
+- another first-party host invoking an organization-scoped capability without pretending to be a human session.
 
-The practical test when adding a Console screen over another service's data:
+A service credential is not operator authority. It should be scoped, auditable, organization-aware where applicable, and limited to the declared caller/capability. Never introduce one universal internal key that gives every product unrestricted access to every other product.
 
-- Is there already a service function for this? → route it at operator tier and
-  call it. Done.
-- Is there only an integration route? → add the operator route beside it,
-  pointing at the same controller. Do **not** give Console an app connection.
-- Is there no service function at all? → write it in the owning service, then
-  route it. Do **not** write it in Console.
+Historical first-party entrypoints named `integration` should migrate to `service` when they are not externally published integration contracts. If the backing route is still shared during migration, the rename does not by itself strengthen authorization; service hardening must happen in the owning API.
 
-### Operator access is audited access
+## Operator
 
-The operator tier skips _organizational_ consent. It does not skip
-accountability. Every Console call still:
+Use `operator` when 876 itself administers a product/platform capability. Console is the primary operator host.
 
-- passes a Console permission check in the Console route handler
-  (`requireConsolePermission`) before the facade is touched, and
-- writes an audit event for any read of customer-identifying data and any
-  mutation.
+Examples:
 
-"876 staff may do it" is a different statement from "876 staff may do it
-unobserved". Only the first is true.
+- Console → CRM operator;
+- Console → Billing operator;
+- Console → Work operator;
+- Console → platform-wide users/organizations;
+- support/repair/reconcile actions requiring 876 authority.
 
-## Third parties get the integration tier, and nothing else
+Console must not authenticate as a customer integration. A customer revoking an external integration cannot revoke 876's ability to operate/support its own platform.
 
-The integration surface is the published product. It is org-scoped, scope-gated,
-versioned, and documented in the owning service's OpenAPI. First-party apps use
-it on exactly the same terms — Invoice reaches Billing customers through
-`/integrations/organizations/:organizationId/customers` with its own app key,
-not through an internal key.
+Operator authority still requires accountability. Console route handlers perform Console permission checks before calling an operator client, and sensitive reads/mutations remain audited according to the product's audit rules.
 
-That is deliberate: **the first-party app is the integration surface's first
-customer.** A capability a first-party app reaches by a private shortcut is a
-capability nobody has proven is usable from outside.
+Do not put unrelated product operator methods into one generic admin package. Privilege follows ownership: `crm/operator`, `billing/operator`, `storage/operator`, etc. Genuinely global operator capabilities belong in `@876/platform`.
+
+## Integration
+
+Reserve `integration` for **external** connected systems and published third-party contracts.
+
+Examples:
+
+- Salesforce → CRM;
+- Google Calendar / Microsoft Outlook ↔ Work;
+- customer/partner application → Billing/CRM through a documented OAuth/app integration.
+
+Integration is scope/consent gated and versioned as an external contract. Never add operator-only powers to it for Console convenience.
 
 ## Decision procedure
 
-```
+```text
 Who is the principal?
-├─ 876 the platform, across orgs, without a grant        → operator
-├─ an app acting for one org that granted a connection   → integration
-└─ a signed-in user acting for themselves                → session
+├─ signed-in human/user-delegated authority       → session
+├─ first-party 876 app/service                    → service
+├─ 876/Console administering the platform/product→ operator
+└─ external provider/customer/partner system      → integration
 ```
 
-Then, before writing anything:
+Then:
 
-1. Find the owning service (`platform-services.md`).
-2. Find or write the **one** service function.
-3. Route it at the tier you need, beside any existing routes.
-4. Expose it on the tier's client (`@876/admin` / product admin client for
-   operator; the product integration client for integration; `@876/sdk` for
-   session).
-5. Compose it onto the calling app's `$876` facade.
-6. Call it from a route handler that authorizes first.
+1. identify the owning service;
+2. find or implement the one domain service function;
+3. expose the legitimate guarded route for the principal;
+4. expose that route from the owning package entrypoint;
+5. construct the bounded client in the host's `src/lib/services` layer;
+6. authorize browser-originated requests in the host route before invoking it.
 
-## The Console-facing shape of all this
+Do **not** compose the capability onto a global `$876` facade.
 
-`docs/architecture/017-console-app-data-management.md` records how these tiers
-turn into a repeatable pathway for reaching **any** organization's data in **any**
-app from Console: five fixed joints (capability → operator route → tier client →
-facade → entitlement-gated surface), so adding an app is a registration rather
-than a rewrite. Read it before wiring a new app into Console's org view.
+## First-party product composition is not integration
+
+Console embedding CRM `/requests`, Invoice rendering Billing invoices, or CRM using Work are first-party product/service composition. Name them service/operator relationships according to authority, not “integrations.”
+
+The term integration is reserved for external systems so architecture and security reviews can infer the trust boundary from the name.
+
+## Shared business logic, different serializers
+
+The same capability may legitimately return different fields at different principals. Field visibility is an API route/serializer concern, not SDK-side filtering.
+
+For example, a session user, service caller, operator, and external integration may all retrieve the same customer domain record while receiving appropriately scoped representations. Keep the domain operation shared and the disclosure policy at the API boundary.
 
 ## Do not
 
-- Do not give Console an integration credential or an app connection.
-- Do not add an operator-only capability to an integration route.
-- Do not implement a capability twice because a second tier needed it.
-- Do not let an app reach another service by a private path when an integration
-  route exists for the same thing.
-- Do not treat operator tier as exempt from Console permission checks or audit.
-- Do not put business logic in a Next.js route handler to bridge a tier gap —
-  the gap belongs in the owning service.
+- do not give Console a service/integration credential instead of operator authority;
+- do not give a first-party service caller operator-wide authority for convenience;
+- do not call first-party service access an external integration;
+- do not add operator-only capabilities to external integration routes;
+- do not implement the same capability separately for each principal;
+- do not move domain business logic into a Next.js route handler to bridge a missing principal;
+- do not treat an `operator` client as permission/audit bypass;
+- do not create a global admin/mega-client that aggregates unrelated domains.
