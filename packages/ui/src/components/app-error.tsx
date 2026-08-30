@@ -62,7 +62,7 @@ export function AppError({
       )}
     >
       <div
-        className="bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full"
+        className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300"
         aria-hidden="true"
       >
         <ExclamationTriangleIcon className="size-4" />

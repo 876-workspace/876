@@ -4,7 +4,11 @@ import { describe, expect, it } from 'vitest'
 import { AppError, AppErrorCode } from './app-error'
 
 function error(overrides: Partial<{ code: string; message: string }> = {}) {
-  return { code: 'crm/team-not-found', message: 'Team not found.', ...overrides }
+  return {
+    code: 'crm/team-not-found',
+    message: 'Team not found.',
+    ...overrides,
+  }
 }
 
 describe('AppError - non-blocking notice', () => {
@@ -42,13 +46,27 @@ describe('AppError - non-blocking notice', () => {
   })
 
   it('renders section variant with border styling', () => {
-    render(<AppError error={error()} variant="section" title="Section failure" showCode />)
+    render(
+      <AppError
+        error={error()}
+        variant="section"
+        title="Section failure"
+        showCode
+      />
+    )
     expect(screen.getByText('Section failure')).toBeVisible()
     expect(screen.getByText('crm/team-not-found')).toBeVisible()
   })
 
   it('renders form variant and preserves action slot', () => {
-    render(<AppError error={error()} variant="form" title="Form error" action={<button>Retry</button>} />)
+    render(
+      <AppError
+        error={error()}
+        variant="form"
+        title="Form error"
+        action={<button>Retry</button>}
+      />
+    )
     expect(screen.getByText('Form error')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible()
   })
@@ -65,13 +83,26 @@ describe('AppError - non-blocking notice', () => {
   })
 
   it('is accessible: message is not an alert that would steal focus', () => {
-    render(<AppError error={error({ message: 'Customer not found.' })} title="Load failed" />)
+    render(
+      <AppError
+        error={error({ message: 'Customer not found.' })}
+        title="Load failed"
+      />
+    )
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toBeVisible()
   })
 
   it('showsCode reveals registry code for console debugging', () => {
-    render(<AppError error={error({ code: 'crm/tenant-inactive', message: 'Workspace not active.' })} showCode />)
+    render(
+      <AppError
+        error={error({
+          code: 'crm/tenant-inactive',
+          message: 'Workspace not active.',
+        })}
+        showCode
+      />
+    )
     expect(screen.getByText('crm/tenant-inactive')).toBeVisible()
   })
 
