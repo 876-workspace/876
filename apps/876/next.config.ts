@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: sharedTranspilePackages([
     '@876/analytics',
+    '@876/account',
     '@876/sdk',
     '@876/core',
   ]),

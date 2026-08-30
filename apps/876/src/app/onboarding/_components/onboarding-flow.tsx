@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 
-import { create876Client } from '@876/client'
+import { create876AccountClient } from '@876/account'
 import { AuthFlow, AuthPageShell, AuthProvider } from '@876/ui/auth'
 
 /**
@@ -12,9 +12,9 @@ import { AuthFlow, AuthPageShell, AuthProvider } from '@876/ui/auth'
  * against the Python API. On success the new owner lands in their org workspace.
  */
 export function BusinessOnboardingFlow() {
-  const $876 = useMemo(
+  const account = useMemo(
     () =>
-      create876Client({
+      create876AccountClient({
         baseUrl: '/api',
       }),
     []
@@ -25,7 +25,7 @@ export function BusinessOnboardingFlow() {
       <AuthProvider
         config={{
           mode: 'business-onboarding',
-          client: $876.auth,
+          client: account.auth,
           onSuccess: () => {
             window.location.assign('/org')
           },

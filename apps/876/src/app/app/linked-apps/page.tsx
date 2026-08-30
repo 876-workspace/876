@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { AppWindow, ExternalLink, ShieldCheck } from '@876/ui/icons'
 
-import { $876 } from '@/lib/876'
+import { getAccount } from '@/lib/services/account'
 import { requireConsumerFeature } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -31,7 +31,7 @@ export default async function LinkedAppsPage() {
     )
   }
 
-  const grantsResult = await $876.oauthGrants.list(session.user.id)
+  const grantsResult = await getAccount().oauthGrants.list(session.user.id)
   const grants = grantsResult.error ? [] : (grantsResult.data ?? [])
 
   return (
