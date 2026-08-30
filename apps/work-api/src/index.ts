@@ -1,1 +1,3 @@
-export { createApp as default, createApp } from './application.js'
+import { createApp } from './application.js'
+
+export default createApp()
