@@ -26,10 +26,11 @@ import {
 
 import { MemberPicker } from '@/features/directory/components/member-picker'
 import type { DirectoryMember } from '@/features/directory/types'
+import type { TeamMemberRow } from '@/features/teams/types'
 import { client } from '@/lib/client'
 import type { CrmTeamMemberRole } from '@/types/crm'
 
-export type TeamMemberRow = DirectoryMember & { role: CrmTeamMemberRole }
+export type { TeamMemberRow }
 
 export function TeamMembers({
   teamId,
