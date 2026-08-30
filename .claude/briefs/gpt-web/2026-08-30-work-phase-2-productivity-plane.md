@@ -30,6 +30,10 @@ provider-sync metadata. CRM remains a contextual consumer.
     owner.
 13. Preserve CRM's current Request Task/Reminder contracts while exposing Request
     scheduling through Work Events.
+14. Canonical Work resources stay flat on `$876`; do not introduce `$876.work.*`.
+15. CRM request-scoped resources (`requestTasks`, `requestReminders`, `requestEvents`)
+    are CRM projections, while canonical `tasks`, `reminders`, and `events` are Work
+    resources.
 
 ## Current implementation on the branch
 
@@ -40,30 +44,47 @@ subscriptions, Events, participants, My Work, exports, provider-sync architectur
 CRM Request Event server/browser adapters, shared Work UI primitives, and migration
 verification tooling.
 
+The facade discrepancies identified after the initial handoff are also closed:
+
+- `apps/crm/src/lib/876.ts` now actually supplies Work to the CRM composer using the
+  signed-session tier (`CRM_API_876_KEY` + the current user's access token). CRM does
+  not receive `WORK_INTERNAL_KEY`.
+- `apps/crm/.env.development` and `.env.example` now declare `WORK_API_URL`.
+- `RESOURCE_MANIFEST` includes `work` as a service owner and registers canonical Work
+  nouns including tasks, task lists/links/assignments, reminders, recurrence, alerts,
+  calendars/subscriptions, events/participants, My Work, sync metadata, and exports.
+- CRM request task/reminder/event resources remain explicitly CRM-owned projections.
+- `packages/client/src/work-surface.test.ts` is a facade contract for both CRM and
+  Console: CRM gets the signed-session Work surface; Console gets the full operator
+  surface; both remain flat rather than introducing a nested Work namespace.
+
 ## Integration warning
 
-`main` advanced during this implementation. At the last check it was
+`main` advanced during this implementation. At the last recorded check it was
 `44fccaccca0de5842ba9f266e5f63a9e844eb2a3` (PR #440, CRM split-view work), while this
 feature branch had already diverged. ChatGPT Web deliberately did not manufacture a
 fake merge commit because the available connector cannot compute a safe merged tree.
 
-Before verification, rebase/merge current `origin/main` locally. Preserve current main
-for CRM UI/layout conflicts. The new file
-`apps/crm/src/app/(app)/requests/_components/request-events.tsx` is intentionally
-isolated so it can be mounted into the post-#440 Request layout after the rebase.
+Before verification, rebase/merge **current** `origin/main` locally; do not rely on the
+recorded SHA being the latest. Preserve current main for CRM UI/layout conflicts. The
+new file `apps/crm/src/app/(app)/requests/_components/request-events.tsx` is
+intentionally isolated so it can be mounted into the post-#440 Request layout after
+the rebase.
 
 ## Required local execution
 
-1. Rebase or merge `origin/main`.
+1. Rebase or merge current `origin/main`.
 2. Regenerate `pnpm-lock.yaml` with `pnpm install --lockfile-only`.
 3. Run typecheck/lint/tests for core, work, work-api, crm, crm-api, client, and ui.
-4. Run service-bundle/database-env/format checks.
-5. Apply Work migrations.
-6. Run CRM→Work foundation migration/parity if the environment has not already cut
+4. Specifically run `pnpm --filter @876/client test` so the new CRM/Console facade
+   contract and `RESOURCE_MANIFEST` ownership tests execute.
+5. Run service-bundle/database-env/format checks.
+6. Apply Work migrations.
+7. Run CRM→Work foundation migration/parity if the environment has not already cut
    over.
-7. Run `pnpm --filter @876/work-api verify:phase2` after Phase 2 migrations.
-8. Mount `RequestEventsSection` into the current-main Request UX and add/adjust tests
+8. Run `pnpm --filter @876/work-api verify:phase2` after Phase 2 migrations.
+9. Mount `RequestEventsSection` into the current-main Request UX and add/adjust tests
    around that placement.
-9. Do not implement external provider synchronization as part of this handoff.
-10. Do not drop legacy CRM Task/Reminder tables until production cutover/observation
+10. Do not implement external provider synchronization as part of this handoff.
+11. Do not drop legacy CRM Task/Reminder tables until production cutover/observation
     justifies a separate cleanup migration.
