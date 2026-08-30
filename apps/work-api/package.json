@@ -1,7 +1,7 @@
 {
   "name": "@876/work-api",
-  "version": "0.1.0",
-  "description": "876 Work shared service API",
+  "version": "0.2.0",
+  "description": "876 Work shared productivity service API",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "db:deploy": "prisma migrate deploy",
     "migrate:crm": "node scripts/migrate-crm-work.mjs",
     "verify:crm": "node scripts/verify-crm-work.mjs",
+    "notifications:run": "tsx src/workers/notifications.ts",
     "test": "vitest run",
     "lint": "eslint src",
     "generate": "node scripts/prisma-generate.mjs"
@@ -29,6 +30,7 @@
     "express": "5.2.1",
     "helmet": "8.3.0",
     "pg": "8.23.0",
+    "rrule": "2.8.1",
     "zod": "4.4.3"
   },
   "devDependencies": {

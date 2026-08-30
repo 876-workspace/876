@@ -40,23 +40,23 @@ enum WorkParticipantStatus {
 }
 
 model WorkCalendar {
-  id          String                 @id
-  uid         String                 @unique
-  tenantId    String                 @map("tenant_id")
-  ownerUserId String?                @map("owner_user_id")
-  name        String
-  description String?
-  timeZone    String                 @map("time_zone")
-  visibility  WorkCalendarVisibility @default(PRIVATE)
-  isPrimary   Boolean                @default(false) @map("is_primary")
-  createdBy   String                 @map("created_by")
-  createdAt   DateTime               @default(now()) @map("created_at")
-  updatedAt   DateTime               @updatedAt @map("updated_at")
-  deletedAt   DateTime?              @map("deleted_at")
-  deletedBy   String?                @map("deleted_by")
-  tenant      WorkTenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id            String                 @id
+  uid           String                 @unique
+  tenantId      String                 @map("tenant_id")
+  ownerUserId   String?                @map("owner_user_id")
+  name          String
+  description   String?
+  timeZone      String                 @map("time_zone")
+  visibility    WorkCalendarVisibility @default(PRIVATE)
+  isPrimary     Boolean                @default(false) @map("is_primary")
+  createdBy     String                 @map("created_by")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  deletedAt     DateTime?              @map("deleted_at")
+  deletedBy     String?                @map("deleted_by")
+  tenant        WorkTenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   subscriptions WorkCalendarSubscription[]
-  events      WorkEvent[]
+  events        WorkEvent[]
 
   @@index([tenantId, ownerUserId, isPrimary])
   @@index([tenantId, visibility, name])
@@ -87,6 +87,9 @@ model WorkEvent {
   uid              String              @unique
   tenantId         String              @map("tenant_id")
   calendarId       String              @map("calendar_id")
+  contextService   String?             @map("context_service")
+  contextResource  String?             @map("context_resource")
+  contextId        String?             @map("context_id")
   title            String
   description      String?
   location         String?
@@ -112,25 +115,26 @@ model WorkEvent {
 
   @@index([tenantId, calendarId, startAt])
   @@index([tenantId, calendarId, startDate])
+  @@index([tenantId, contextService, contextResource, contextId, startAt])
   @@index([recurrenceId])
   @@map("work_events")
 }
 
 model WorkEventParticipant {
-  id               String                @id
-  eventId          String                @map("event_id")
-  kind             WorkParticipantKind
-  participantId    String?               @map("participant_id")
-  email            String?
-  name             String?
-  role             WorkParticipantRole   @default(REQUIRED)
-  status           WorkParticipantStatus @default(NEEDS_ACTION)
-  delegatedTo      String?               @map("delegated_to")
-  delegatedFrom    String?               @map("delegated_from")
-  respondedAt      DateTime?             @map("responded_at")
-  createdAt        DateTime              @default(now()) @map("created_at")
-  updatedAt        DateTime              @updatedAt @map("updated_at")
-  event            WorkEvent             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id            String                @id
+  eventId       String                @map("event_id")
+  kind          WorkParticipantKind
+  participantId String?               @map("participant_id")
+  email         String?
+  name          String?
+  role          WorkParticipantRole   @default(REQUIRED)
+  status        WorkParticipantStatus @default(NEEDS_ACTION)
+  delegatedTo   String?               @map("delegated_to")
+  delegatedFrom String?               @map("delegated_from")
+  respondedAt   DateTime?             @map("responded_at")
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+  event         WorkEvent             @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId, status])
   @@index([participantId])

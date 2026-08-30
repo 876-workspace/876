@@ -11,45 +11,28 @@ import * as tenants from '../tenants/index.js'
 import * as repository from './reminders.repository.js'
 
 type ReminderRow = Awaited<ReturnType<typeof repository.list>>[number]
-
 type ListReminderFilter = {
   context?: WorkContext
   userId?: string
+  status?: WorkReminderStatus
   limit?: number
   startingAfter?: string
   endingBefore?: string
 }
-
-function fromUnixSeconds(seconds: number) {
-  return new Date(seconds * 1000)
-}
-
-function serializeTimestamp(date: Date | null) {
-  return date ? Math.floor(date.getTime() / 1000) : null
-}
-
-function serialize(
-  reminder: ReminderRow,
-  organizationId: string
-): WorkReminder {
-  const hasContext =
-    reminder.contextService !== null &&
-    reminder.contextResource !== null &&
-    reminder.contextId !== null
+function fromUnixSeconds(seconds: number) { return new Date(seconds * 1000) }
+function serializeTimestamp(date: Date | null) { return date ? Math.floor(date.getTime() / 1000) : null }
+function serialize(reminder: ReminderRow, organizationId: string): WorkReminder {
+  const hasContext = reminder.contextService !== null && reminder.contextResource !== null && reminder.contextId !== null
   return {
     object: 'reminder',
     id: reminder.id,
     organizationId,
-    context: hasContext
-      ? {
-          service: reminder.contextService!,
-          resource: reminder.contextResource!,
-          id: reminder.contextId!,
-        }
-      : null,
+    context: hasContext ? { service: reminder.contextService!, resource: reminder.contextResource!, id: reminder.contextId! } : null,
     title: reminder.title,
     note: reminder.note,
     remindAt: serializeTimestamp(reminder.remindAt)!,
+    timeZone: reminder.timeZone,
+    recurrenceRuleId: reminder.recurrenceRuleId,
     userId: reminder.userId,
     status: reminder.status,
     sentAt: serializeTimestamp(reminder.sentAt),
@@ -59,64 +42,38 @@ function serialize(
     updatedAt: serializeTimestamp(reminder.updatedAt)!,
   }
 }
-
 async function requireTenant(organizationId: string) {
   const tenant = await tenants.retrieveByOrganization(organizationId)
   if (!tenant) return getError('work/tenant-not-found')
   if (tenant.status !== 'ACTIVE') return getError('work/tenant-inactive')
   return tenant
 }
-
 function contextColumns(context?: WorkContext | null) {
-  if (!context)
-    return { contextService: null, contextResource: null, contextId: null }
-  return {
-    contextService: context.service,
-    contextResource: context.resource,
-    contextId: context.id,
-  }
+  if (!context) return { contextService: null, contextResource: null, contextId: null }
+  return { contextService: context.service, contextResource: context.resource, contextId: context.id }
 }
-
-export async function list(
-  organizationId: string,
-  filter: ListReminderFilter = {}
-) {
+export async function list(organizationId: string, filter: ListReminderFilter = {}) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const limit = filter.limit ?? 25
   const rows = await repository.list(tenant.id, {
-    ...(filter.context
-      ? {
-          contextService: filter.context.service,
-          contextResource: filter.context.resource,
-          contextId: filter.context.id,
-        }
-      : {}),
+    ...(filter.context ? { contextService: filter.context.service, contextResource: filter.context.resource, contextId: filter.context.id } : {}),
     ...(filter.userId ? { userId: filter.userId } : {}),
+    ...(filter.status ? { status: filter.status } : {}),
     limit,
     ...(filter.startingAfter ? { startingAfter: filter.startingAfter } : {}),
     ...(filter.endingBefore ? { endingBefore: filter.endingBefore } : {}),
   })
   const page = rows.slice(0, limit)
-  return {
-    data: (filter.endingBefore ? page.reverse() : page).map((row) =>
-      serialize(row, organizationId)
-    ),
-    hasMore: rows.length > limit,
-  }
+  return { data: (filter.endingBefore ? page.reverse() : page).map((row) => serialize(row, organizationId)), hasMore: rows.length > limit }
 }
-
 export async function retrieve(organizationId: string, reminderId: string) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const row = await repository.retrieve(tenant.id, reminderId)
   return row ? serialize(row, organizationId) : null
 }
-
-export async function create(
-  organizationId: string,
-  input: CreateWorkReminderInput
-) {
+export async function create(organizationId: string, input: CreateWorkReminderInput) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const row = await repository.create({
@@ -125,6 +82,8 @@ export async function create(
     title: input.title,
     note: input.note ?? null,
     remindAt: fromUnixSeconds(input.remindAt),
+    timeZone: input.timeZone ?? 'UTC',
+    recurrenceRuleId: input.recurrenceRuleId ?? null,
     userId: input.userId,
     status: input.status ?? 'SCHEDULED',
     sentAt: null,
@@ -133,75 +92,37 @@ export async function create(
   })
   return serialize(row, organizationId)
 }
-
-/**
- * Reminder lifecycle timestamps are owned here, the way task completion is.
- *
- * `sentAt` records that the reminder fired, so it survives being dismissed or
- * cancelled — those do not undo the send. It is cleared only on a return to
- * SCHEDULED, which is a reschedule: the reminder has not yet fired *again*.
- *
- * `dismissedAt` records the user's dismissal and is cleared whenever the
- * reminder leaves DISMISSED. Re-entering a state is idempotent and never moves
- * a timestamp that is already set.
- */
-function lifecycleStamp(
-  current: {
-    status: WorkReminderStatus
-    sentAt: Date | null
-    dismissedAt: Date | null
-  },
-  next: WorkReminderStatus | undefined
-) {
+function lifecycleStamp(current: { status: WorkReminderStatus; sentAt: Date | null; dismissedAt: Date | null }, next: WorkReminderStatus | undefined) {
   if (next === undefined || next === current.status) return {}
-
   const now = new Date()
   return {
-    ...(next === 'SENT'
-      ? { sentAt: now }
-      : next === 'SCHEDULED' && current.sentAt
-        ? { sentAt: null }
-        : {}),
-    ...(next === 'DISMISSED'
-      ? { dismissedAt: now }
-      : current.dismissedAt
-        ? { dismissedAt: null }
-        : {}),
+    ...(next === 'SENT' ? { sentAt: now } : next === 'SCHEDULED' && current.sentAt ? { sentAt: null } : {}),
+    ...(next === 'DISMISSED' ? { dismissedAt: now } : current.dismissedAt ? { dismissedAt: null } : {}),
   }
 }
-
-export async function update(
-  organizationId: string,
-  reminderId: string,
-  input: UpdateWorkReminderInput
-) {
+export async function update(organizationId: string, reminderId: string, input: UpdateWorkReminderInput) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, reminderId)
   if (!current) return null
-
   const row = await repository.update(reminderId, {
     ...lifecycleStamp(current, input.status),
     ...(input.context === undefined ? {} : contextColumns(input.context)),
     ...(input.title === undefined ? {} : { title: input.title }),
     ...(input.note === undefined ? {} : { note: input.note }),
-    ...(input.remindAt === undefined
-      ? {}
-      : { remindAt: fromUnixSeconds(input.remindAt) }),
+    ...(input.remindAt === undefined ? {} : { remindAt: fromUnixSeconds(input.remindAt) }),
+    ...(input.timeZone === undefined ? {} : { timeZone: input.timeZone }),
+    ...(input.recurrenceRuleId === undefined ? {} : { recurrenceRuleId: input.recurrenceRuleId }),
     ...(input.userId === undefined ? {} : { userId: input.userId }),
     ...(input.status === undefined ? {} : { status: input.status }),
   })
   return serialize(row, organizationId)
 }
-
-export async function remove(
-  organizationId: string,
-  reminderId: string,
-  deletedBy: string
-) {
+export async function remove(organizationId: string, reminderId: string, deletedBy: string) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, reminderId)
   if (!current) return null
   return repository.remove(reminderId, deletedBy)
 }
+export { due } from './reminders.repository.js'

@@ -1,4 +1,1 @@
-export {
-  activeConnectionAuthorization,
-  ensureCrmConnection,
-} from './connections.service.js'
+export { activeConnectionAuthorization, ensureConnection, ensureCrmConnection } from './connections.service.js'
