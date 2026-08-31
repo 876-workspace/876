@@ -7,12 +7,12 @@
 export const PUBLISH_DRAFT_SUMMARY = 'Publish a provisioning draft'
 
 export const PUBLISH_DRAFT_DESCRIPTION =
-  'Atomically archives the current published revision and promotes the validated draft.'
+  'Atomically archives the current published revision and promotes the fully validated draft.'
 
 export const REPLACE_DRAFT_SUMMARY = 'Replace a provisioning draft'
 
 export const REPLACE_DRAFT_DESCRIPTION =
-  'Creates or replaces the single mutable draft. Resource rows are validated against the code-owned catalog.'
+  'Creates or replaces the single mutable draft. Operators may save an incomplete setup while authoring it across resource categories; schema and type errors are still rejected, and publication performs the complete catalog validation.'
 
 export const RETRIEVE_CATALOG_SUMMARY =
   'Retrieve provisioning resource definitions'
@@ -34,24 +34,24 @@ export const RETRIEVE_PUBLISHED_DESCRIPTION =
 export const VALIDATE_DRAFT_SUMMARY = 'Validate a provisioning draft'
 
 export const VALIDATE_DRAFT_DESCRIPTION =
-  'Validates a proposed recipe without changing control-plane data.'
+  'Validates a proposed complete recipe without changing control-plane data.'
 
 export const LIST_SETUPS_SUMMARY = 'List provisioning setups'
 
 export const LIST_SETUPS_DESCRIPTION =
-  'Returns every named day-zero configuration. Exactly one is the platform default that new organizations are provisioned with.'
+  'Returns every named day-zero configuration. Exactly one published setup is the platform default that new organizations are provisioned with.'
 
 export const RETRIEVE_SETUP_SUMMARY = 'Retrieve a provisioning setup'
 
 export const RETRIEVE_SETUP_DESCRIPTION =
-  'Returns one setup with its finance manifest target, published revision, and the number of organizations provisioned with it.'
+  'Returns one setup with its finance manifest target, published revision, draft state, and the number of organizations provisioned with it.'
 
 export const CREATE_SETUP_SUMMARY = 'Create a provisioning setup'
 
 export const CREATE_SETUP_DESCRIPTION =
-  'Creates a setup and seeds its finance manifest from an existing setup, so a new setup is publishable from the moment it exists. Pass copy_from to choose the source; the platform default is copied otherwise.'
+  'Creates a named setup with its own empty mutable finance draft so operators can build currencies, payment defaults, taxes, and other resources independently. copy_from may explicitly seed that draft from a published setup, but copying is never required and creation never publishes automatically.'
 
 export const UPDATE_SETUP_SUMMARY = 'Update a provisioning setup'
 
 export const UPDATE_SETUP_DESCRIPTION =
-  'Renames a setup, edits its locale metadata, archives it, or makes it the platform default. A setup that organizations already use cannot be archived.'
+  'Renames a setup, edits its optional locale metadata, archives or reactivates it, or makes a published active setup the platform default. A default or in-use setup cannot be archived.'
