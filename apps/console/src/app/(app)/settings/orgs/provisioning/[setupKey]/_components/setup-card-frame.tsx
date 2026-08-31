@@ -41,6 +41,7 @@ export function SetupCardFrame({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const base = `/settings/orgs/provisioning/${encodeURIComponent(setup.key)}`
+  const normalizedPathname = pathname?.replace(/\/+$/, '') ?? ''
 
   function handleDelete() {
     startTransition(async () => {
@@ -138,10 +139,13 @@ export function SetupCardFrame({
             {resourceTypes.map((tab) => {
               const Icon = getResourceTypeIcon(tab.key)
               const isRootTab = tab.key === 'workspace'
-              const href = isRootTab ? base : `${base}/${encodeURIComponent(tab.key)}`
+              const href = isRootTab
+                ? base
+                : `${base}/${encodeURIComponent(tab.key)}`
               const isActive = isRootTab
-                ? pathname === base
-                : pathname === href || pathname.startsWith(`${href}/`)
+                ? normalizedPathname === base
+                : normalizedPathname === href ||
+                  normalizedPathname.startsWith(`${href}/`)
 
               return (
                 <Link
