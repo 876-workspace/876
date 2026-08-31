@@ -1,10 +1,14 @@
+import type {
+  ProvisioningSelectionContext,
+  ProvisioningSetupSelection,
+} from '@876/core/types/provisioning-selection'
+
 import { getSettings } from '@/config'
 import { AppHttpError } from '@/http/errors'
 import { generateId, normalizeSlug } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { OWNER_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
-
 import { getAuthProvider } from '@/providers/workos/adapter'
 
 import * as repository from './organization-bootstrap.repository'
@@ -13,6 +17,10 @@ import type {
   OrganizationRow,
   UserRow,
 } from './organization-bootstrap.repository'
+import {
+  resolveInitialProvisioningSelection,
+  type ProvisioningWorkspaceDefaults,
+} from './provisioning-policy'
 import { workspace } from './workspace'
 
 const log = getLogger('organization-bootstrap')
@@ -22,11 +30,6 @@ const SLUG_MAX_LENGTH = 64
 const SLUG_COLLISION_LIMIT = 50
 const RANDOM_SUFFIX_LENGTH = 6
 const RANDOM_SUFFIX_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789'
-
-// ---------------------------------------------------------------------------
-// Injected dependencies — the same narrow-surface pattern as identity-sync.
-// Tests drive the service without a database or a live WorkOS client.
-// ---------------------------------------------------------------------------
 
 export type OrganizationBootstrapProvider = {
   createOrganization(params: {
@@ -51,8 +54,15 @@ export type OrganizationBootstrapRepository = {
     name: string
     slug: string
     status: string
+    countryCode: string | null
     currencyCode: string
     language: string
+    provisioningSetupKey: string
+    provisioningSelectionType: 'policy' | 'fallback'
+    provisioningMatchGroupKey: string | null
+    provisioningMatchPriority: number | null
+    provisioningMatchedFields: string[]
+    provisioningSetupSelectedAt: bigint
     metadata: unknown
     createdAt: bigint
     updatedAt: bigint
@@ -70,18 +80,13 @@ export type OrganizationBootstrapRepository = {
   }): Promise<MembershipRow>
 }
 
-/**
- * The organization-workspace control plane, narrowed to what bootstrap needs.
- *
- * `setup` is split from `finance.ensure` so bootstrap can establish the durable
- * owner membership *before* crossing the finance barrier.
- */
 export type OrganizationBootstrapWorkspace = {
   setup(
     organizationId: string,
     options?: {
       sourceAppId?: string | null
       finance?: 'ready' | 'defer'
+      requireProvisioningSelection?: boolean
       now?: number
     }
   ): Promise<Record<string, { id: string }>>
@@ -97,11 +102,11 @@ export type OrganizationBootstrapDeps = {
   provider: OrganizationBootstrapProvider
   repository: OrganizationBootstrapRepository
   workspace: OrganizationBootstrapWorkspace
+  resolveProvisioning(context: Partial<ProvisioningSelectionContext>): Promise<{
+    selection: ProvisioningSetupSelection
+    defaults: ProvisioningWorkspaceDefaults
+  }>
 }
-
-// ---------------------------------------------------------------------------
-// Slug helpers — pure, matching the Python implementation exactly.
-// ---------------------------------------------------------------------------
 
 export function appendSlugSuffix(base: string, suffix: string): string {
   const prefix = base
@@ -190,10 +195,6 @@ async function resolveSlug(
   return explicitSlug
 }
 
-// ---------------------------------------------------------------------------
-// Public service surface
-// ---------------------------------------------------------------------------
-
 export async function resolveRegistrationSlug(
   deps: OrganizationBootstrapDeps,
   name: string,
@@ -202,13 +203,26 @@ export async function resolveRegistrationSlug(
   return resolveSlug(deps.repository, name, slug, 'auth')
 }
 
+function isRetryableWorkspaceFailure(error: unknown): boolean {
+  return (
+    error instanceof AppHttpError &&
+    (error.code === 'provisioning/finance-workspace-unavailable' ||
+      error.code === 'provisioning/work-workspace-unavailable')
+  )
+}
+
 export async function bootstrapExistingUser(
   deps: OrganizationBootstrapDeps,
   params: {
     ownerUserId: string
     name: string
     slug?: string | null
+    countryCode?: string | null
+    subdivision?: string | null
+    jurisdiction?: string | null
+    /** Compatibility override; setup finance default is used when omitted. */
     currencyCode?: string | null
+    /** Compatibility override; setup workspace language is used when omitted. */
     language?: string | null
     sourceAppId?: string | null
   }
@@ -237,6 +251,12 @@ export async function bootstrapExistingUser(
     params.slug ?? null,
     'organization'
   )
+  const resolved = await deps.resolveProvisioning({
+    country: params.countryCode ?? null,
+    subdivision: params.subdivision ?? null,
+    jurisdiction: params.jurisdiction ?? null,
+  })
+
   const organizationId = generateId('organization')
   let workosOrganizationId: string | null = null
 
@@ -256,6 +276,9 @@ export async function bootstrapExistingUser(
 
     const now = nowUnixSeconds()
     const nowBigint = BigInt(now)
+    const selectionType = resolved.selection.match_type
+    if (selectionType !== 'policy' && selectionType !== 'fallback')
+      throw new Error('Initial organization selection must be policy or fallback.')
 
     const organization = await deps.repository.createOrganization({
       id: organizationId,
@@ -263,21 +286,27 @@ export async function bootstrapExistingUser(
       name: organizationName,
       slug: resolvedSlug,
       status: 'active',
-      // Single operating currency for the organization — every product app
-      // inherits it rather than choosing its own.
-      currencyCode: params.currencyCode?.trim().toUpperCase() || 'JMD',
-      language: params.language?.trim() || 'en',
+      countryCode:
+        resolved.selection.context.country ?? resolved.defaults.country_code,
+      currencyCode:
+        params.currencyCode?.trim().toUpperCase() ||
+        resolved.defaults.currency_code,
+      language: params.language?.trim() || resolved.defaults.language,
+      provisioningSetupKey: resolved.selection.setup_key,
+      provisioningSelectionType: selectionType,
+      provisioningMatchGroupKey: resolved.selection.match_group_key,
+      provisioningMatchPriority: resolved.selection.match_priority,
+      provisioningMatchedFields: resolved.selection.matched_fields,
+      provisioningSetupSelectedAt: nowBigint,
       metadata: (workosOrg as { metadata?: unknown }).metadata ?? null,
       createdAt: nowBigint,
       updatedAt: nowBigint,
     })
 
-    // Prepare the durable workspace first, but defer the finance barrier until
-    // the owner membership exists. A finance outage must not strand an org that
-    // its owner cannot route back to on retry.
     const orgRoles = await deps.workspace.setup(organization.id, {
       sourceAppId: params.sourceAppId ?? null,
       finance: 'defer',
+      requireProvisioningSelection: true,
       now,
     })
     const ownerRole = (orgRoles as Record<string, { id: string } | undefined>)[
@@ -296,18 +325,14 @@ export async function bootstrapExistingUser(
       updatedAt: nowBigint,
     })
 
-    // The durable workspace identity now exists, so finish the shared finance
-    // readiness barrier. A failure is preserved for an idempotent retry.
     await deps.workspace.finance.ensure({ organizationId: organization.id })
     await deps.workspace.work.ensure({ organizationId: organization.id })
 
     return organization
   } catch (error) {
-    const isFinanceUnavailable =
-      error instanceof AppHttpError &&
-      (error as AppHttpError).code ===
-        'provisioning/finance-workspace-unavailable'
-    if (isFinanceUnavailable) throw error
+    // Durable org/membership/workspace failures are retried against the persisted
+    // setup. Do not delete the provider org after the local identity exists.
+    if (isRetryableWorkspaceFailure(error)) throw error
 
     if (workosOrganizationId !== null) {
       try {
@@ -327,11 +352,6 @@ export async function bootstrapExistingUser(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Class wrapper — mirrors the Python `OrganizationBootstrapService` for callers
-// that prefer the object form. Both surfaces share the same implementation.
-// ---------------------------------------------------------------------------
-
 export class OrganizationBootstrapService {
   constructor(private readonly deps: OrganizationBootstrapDeps) {}
 
@@ -346,22 +366,15 @@ export class OrganizationBootstrapService {
     ownerUserId: string
     name: string
     slug?: string | null
+    countryCode?: string | null
+    subdivision?: string | null
+    jurisdiction?: string | null
     sourceAppId?: string | null
   }): Promise<OrganizationRow> {
     return bootstrapExistingUser(this.deps, params)
   }
 }
 
-// ---------------------------------------------------------------------------
-// Default wiring
-// ---------------------------------------------------------------------------
-
-/**
- * Narrow a raw WorkOS record to the `{ id }` shape the service contracts
- * declare. The adapter returns the vendor payload untyped, so the id is
- * asserted here rather than being allowed to flow on as `undefined` and
- * surface later as an organization row with a null provider link.
- */
 function requireProviderId(
   record: Record<string, unknown>,
   resource: string
@@ -379,14 +392,6 @@ function requireProviderId(
   return { id, metadata: record['metadata'] }
 }
 
-/**
- * The dependency set wired to the real repository, WorkOS adapter, and the
- * workspace control plane.
- *
- * Built per call rather than cached at module scope: `getSettings()` is
- * resolved once at boot, but a test that reconfigures it must not be handed a
- * provider bound to the previous credentials.
- */
 export function createOrganizationBootstrapDeps(): OrganizationBootstrapDeps {
   const workos = getAuthProvider(getSettings())
 
@@ -407,5 +412,10 @@ export function createOrganizationBootstrapDeps(): OrganizationBootstrapDeps {
     },
     repository,
     workspace,
+    resolveProvisioning: async (context) => {
+      const { selection, defaults } =
+        await resolveInitialProvisioningSelection(context)
+      return { selection, defaults }
+    },
   }
 }
