@@ -30,7 +30,8 @@ export function CreateSetupForm() {
     if (!keyEdited) setKey(slugify(value))
   }
 
-  function submit() {
+  function submit(e?: React.FormEvent) {
+    if (e) e.preventDefault()
     setError(null)
     if (!name.trim() || !key.trim()) {
       setError('A name and key are required.')
@@ -49,27 +50,20 @@ export function CreateSetupForm() {
       }
 
       router.push(
-        `/settings/orgs/provisioning/${encodeURIComponent(data.key)}/workspace`
+        `/settings/orgs/provisioning/${encodeURIComponent(data.key)}`
       )
     })
   }
 
   return (
-    <div className="876-card max-w-2xl space-y-4 p-5">
-      <div>
-        <h2 className="text-foreground text-sm font-semibold">Setup identity</h2>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Create the setup first, then build its currencies, payment defaults,
-          tax authorities, and other provisioning records from its tabs.
-        </p>
-      </div>
-
+    <form onSubmit={submit} className="max-w-xl space-y-4">
       <FormRow label="Name" htmlFor="setup-name" required>
         <Input
           id="setup-name"
           value={name}
           onChange={(event) => handleName(event.target.value)}
           placeholder="New Zealand"
+          autoFocus
         />
       </FormRow>
 
@@ -95,25 +89,26 @@ export function CreateSetupForm() {
           id="setup-description"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
-          rows={2}
+          rows={3}
           placeholder="Optional description for operators."
         />
       </FormRow>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-2">
         <Button
+          type="button"
           variant="outline"
           onClick={() => router.push('/settings/orgs/provisioning')}
           disabled={isPending}
         >
           Cancel
         </Button>
-        <Button variant="info" onClick={submit} disabled={isPending}>
+        <Button type="submit" variant="info" disabled={isPending}>
           {isPending ? 'Creating…' : 'Create setup'}
         </Button>
       </div>
-    </div>
+    </form>
   )
 }

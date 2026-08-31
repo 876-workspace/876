@@ -332,22 +332,14 @@ export function FinanceProvisioningEditor({
         </div>
       )}
 
-      {/* Resource heading + actions */}
-      <div className="876-header-row flex shrink-0 items-center justify-between gap-4 border-b px-5 py-3">
-        <div className="min-w-0">
-          <h3 className="text-foreground truncate text-sm font-semibold">
-            {activeDefinition?.label}
-          </h3>
-          {activeDefinition?.description ? (
-            <p className="text-muted-foreground mt-0.5 truncate text-xs">
-              {activeDefinition.description}
-            </p>
-          ) : null}
-          {message ? (
-            <p className="text-muted-foreground mt-1 text-xs" role="status">
+      {/* Toolbar */}
+      <div className="876-header-row flex shrink-0 items-center justify-between gap-2 border-b px-5 py-2">
+        <div className="flex items-center gap-2">
+          {message && (
+            <span className="text-muted-foreground text-xs" role="status">
               {message}
-            </p>
-          ) : null}
+            </span>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">

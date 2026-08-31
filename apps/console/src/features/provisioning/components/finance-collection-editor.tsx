@@ -74,7 +74,7 @@ function InlineFieldControl({
     : field.value_type === 'reference' && referenceRows.length > 0
       ? referenceRows.map(rowReferenceKey).filter(Boolean)
       : null
-  const className = 'h-8 min-w-28 bg-background text-[0.8125rem]'
+  const className = 'h-8 w-full min-w-28 bg-background text-[0.8125rem]'
 
   if (field.value_type === 'boolean') {
     return (
@@ -203,7 +203,7 @@ export function FinanceCollectionEditor({
               {field.label}
             </TableHead>
           ))}
-          <TableHead className="w-20 px-3 py-3.5" />
+          <TableHead className="w-28 min-w-28 px-5 py-3.5" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -221,7 +221,7 @@ export function FinanceCollectionEditor({
 
                 if (isEditing) {
                   return (
-                    <TableCell key={field.key} className="px-3 py-2">
+                    <TableCell key={field.key} className="px-5 py-2">
                       <InlineFieldControl
                         field={field}
                         value={value}
@@ -260,52 +260,54 @@ export function FinanceCollectionEditor({
                 )
               })}
 
-              <TableCell className="w-20 px-3 py-2 text-right">
+              <TableCell className="w-28 min-w-28 px-5 py-2 text-right">
                 {isEditing ? (
-                  <div className="flex h-7 justify-end gap-0.5">
+                  <div className="flex justify-end gap-0.5">
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="ghost"
                       aria-label={`Save ${singularLabel.toLowerCase()}`}
                       onClick={() => onSave(draft)}
-                      className="text-foreground"
+                      className="text-foreground size-8 shrink-0"
                     >
-                      <CheckIcon className="size-4.5" />
+                      <CheckIcon className="size-4" />
                     </Button>
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="ghost"
                       aria-label={`Cancel ${singularLabel.toLowerCase()}`}
                       onClick={onCancel}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground size-8 shrink-0"
                     >
-                      <XIcon className="size-4.5" />
+                      <XIcon className="size-4" />
                     </Button>
                   </div>
-                ) : editingRow ? null : (
-                  <div className="pointer-events-none flex h-7 justify-end gap-0.5 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+                ) : editingRow ? (
+                  <div className="h-8 w-[4.25rem]" />
+                ) : (
+                  <div className="pointer-events-none flex justify-end gap-0.5 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="ghost"
                       aria-label={`Edit ${singularLabel.toLowerCase()}`}
                       onClick={() => onEdit(row)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground size-8 shrink-0"
                     >
-                      <Pencil className="size-4.5" />
+                      <Pencil className="size-4" />
                     </Button>
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="ghost"
                       aria-label={`Delete ${singularLabel.toLowerCase()}`}
                       disabled={atMinimum}
                       onClick={() => deleteRow(row.localId)}
-                      className="text-destructive/80 hover:bg-destructive/10 hover:text-destructive"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive size-8 shrink-0"
                     >
-                      <Trash className="size-4.5" />
+                      <Trash className="text-destructive size-4" />
                     </Button>
                   </div>
                 )}

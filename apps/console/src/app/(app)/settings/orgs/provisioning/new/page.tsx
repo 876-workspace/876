@@ -1,21 +1,10 @@
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { NewSetupCard } from './_components/new-setup-card'
 
-import { CreateSetupForm } from './_components/create-setup-form'
+export const metadata = { title: 'New Provisioning Setup' }
 
-export const metadata = { title: 'New provisioning setup' }
-
+/**
+ * Renders in the right-side detail slot beside the setups list when `/new` is active.
+ */
 export default function NewProvisioningSetupPage() {
-  return (
-    <Page className="space-y-6">
-      <div>
-        <PageBreadcrumb
-          href="/settings/orgs/provisioning"
-          label="Provisioning setups"
-          className="mb-4"
-        />
-        <h1 className="876-page-title">New provisioning setup</h1>
-      </div>
-      <CreateSetupForm />
-    </Page>
-  )
+  return <NewSetupCard />
 }

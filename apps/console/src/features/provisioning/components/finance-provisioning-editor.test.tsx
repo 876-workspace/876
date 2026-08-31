@@ -167,7 +167,7 @@ describe('FinanceProvisioningEditor', () => {
     const deleteButton = screen.getByRole('button', {
       name: 'Delete currency',
     })
-    expect(deleteButton).toHaveClass('text-destructive/80')
+    expect(deleteButton).toHaveClass('text-destructive')
     expect(deleteButton.parentElement).toHaveClass('opacity-0')
 
     await user.click(editButton)

@@ -1,14 +1,26 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, useTransition, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '@876/ui/alert-dialog'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { getResourceTypeIcon } from '@/features/provisioning/finance-provisioning-utils'
-import { XIcon } from '@876/ui/icons'
+import { Trash, XIcon } from '@876/ui/icons'
+import { client } from '@/lib/client'
 
 type ResourceTypeTab = {
   key: string
@@ -26,7 +38,23 @@ export function SetupCardFrame({
 }) {
   const router = useRouter()
   const pathname = usePathname()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const base = `/settings/orgs/provisioning/${encodeURIComponent(setup.key)}`
+
+  function handleDelete() {
+    startTransition(async () => {
+      const { error } = await client.provisioningSetups.update(setup.key, {
+        status: 'archived',
+      })
+      if (error) {
+        return
+      }
+      setDeleteDialogOpen(false)
+      router.push('/settings/orgs/provisioning')
+      router.refresh()
+    })
+  }
 
   return (
     <section
@@ -49,17 +77,56 @@ export function SetupCardFrame({
             ) : null}
           </div>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => router.push('/settings/orgs/provisioning')}
-          aria-label="Close provisioning setup"
-          className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive dark:bg-destructive/15 dark:hover:bg-destructive/20 shrink-0"
-        >
-          <XIcon className="size-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setDeleteDialogOpen(true)}
+            aria-label={`Delete ${setup.name} setup`}
+            disabled={setup.is_default || isPending}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive size-8 shrink-0"
+          >
+            <Trash className="text-destructive size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => router.push('/settings/orgs/provisioning')}
+            aria-label="Close provisioning setup"
+            className="text-muted-foreground hover:text-foreground size-8 shrink-0"
+          >
+            <XIcon className="size-4" />
+          </Button>
+        </div>
       </header>
+
+      {/* Delete / Archive Setup Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10">
+              <Trash className="text-destructive size-6" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Archive setup?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive <strong>{setup.name}</strong>? It
+              will no longer be available for new organization provisioning.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isPending}
+              onClick={handleDelete}
+            >
+              {isPending ? 'Archiving…' : 'Archive setup'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Resource type tabs */}
       {resourceTypes.length > 0 && (
@@ -70,9 +137,11 @@ export function SetupCardFrame({
           >
             {resourceTypes.map((tab) => {
               const Icon = getResourceTypeIcon(tab.key)
-              const href = `${base}/${encodeURIComponent(tab.key)}`
-              const isActive =
-                pathname === href || pathname.startsWith(`${href}/`)
+              const isRootTab = tab.key === 'workspace'
+              const href = isRootTab ? base : `${base}/${encodeURIComponent(tab.key)}`
+              const isActive = isRootTab
+                ? pathname === base
+                : pathname === href || pathname.startsWith(`${href}/`)
 
               return (
                 <Link
