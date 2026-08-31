@@ -1,8 +1,13 @@
+import countries from '@876/core/countries.json'
 import {
   PROVISIONING_SETUP_CONDITION_FIELDS,
   type ProvisioningSetupConditionField,
 } from '@876/core/types/provisioning-policy'
 import { z } from 'zod'
+
+const COUNTRY_CODES = new Set<string>(
+  countries.map((country) => country.countryCode)
+)
 
 export const provisioningSetupPolicyParamsSchema = z.strictObject({
   setup_key: z.string().min(1).max(60),
@@ -42,13 +47,22 @@ export const provisioningSetupConditionInputSchema = z
     value: normalizeConditionValue(condition.field, condition.value),
   }))
   .superRefine((condition, ctx) => {
-    if (condition.field === 'country' && !/^[A-Z]{2}$/.test(condition.value)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['value'],
-        message: 'Country conditions require a two-letter country code.',
-      })
+    if (condition.field === 'country') {
+      if (!/^[A-Z]{2}$/.test(condition.value)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['value'],
+          message: 'Country conditions require a two-letter country code.',
+        })
+      } else if (!COUNTRY_CODES.has(condition.value)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['value'],
+          message: 'Country conditions must use the shared 876 country catalog.',
+        })
+      }
     }
+
     if (
       condition.field === 'subdivision' &&
       !/^[A-Z]{2}-[A-Z0-9]{1,8}$/.test(condition.value)
