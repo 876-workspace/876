@@ -6,9 +6,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
-import { Button, buttonVariants } from '@876/ui/button'
+import { Button } from '@876/ui/button'
 import { getResourceTypeIcon } from '@/features/provisioning/finance-provisioning-utils'
-import { Pencil, XIcon } from '@876/ui/icons'
+import { XIcon } from '@876/ui/icons'
 
 type ResourceTypeTab = {
   key: string
@@ -49,20 +49,13 @@ export function SetupCardFrame({
             ) : null}
           </div>
         </div>
-        <Link
-          href={`${base}/edit`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          <Pencil className="size-3.5" />
-          Edit
-        </Link>
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
           onClick={() => router.push('/settings/orgs/provisioning')}
           aria-label="Close provisioning setup"
-          className="text-muted-foreground hover:text-foreground shrink-0"
+          className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive dark:bg-destructive/15 dark:hover:bg-destructive/20 shrink-0"
         >
           <XIcon className="size-4" />
         </Button>
