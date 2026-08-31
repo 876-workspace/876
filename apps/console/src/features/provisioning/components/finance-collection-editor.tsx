@@ -20,6 +20,7 @@ import {
   fieldDisplayValue,
   financeFieldOptions,
   formatOptionLabel,
+  type FinanceCurrencyOption,
   type FinanceFieldDefinition,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
@@ -29,6 +30,7 @@ type Props = {
   definition: FinanceResourceDefinition
   rows: FinanceResourceRow[]
   allRows: FinanceResourceRow[]
+  currencyOptions: readonly FinanceCurrencyOption[]
   editingRow: FinanceResourceRow | null
   isNewItem: boolean
   onAdd: () => void
@@ -117,6 +119,7 @@ export function FinanceCollectionEditor({
   definition,
   rows,
   allRows,
+  currencyOptions,
   editingRow,
   isNewItem,
   onAdd,
@@ -132,6 +135,23 @@ export function FinanceCollectionEditor({
   const atMinimum = rows.length <= definition.minimum_items
   const singularLabel = definition.label.replace(/ies$/, 'y').replace(/s$/, '')
   const visibleRows = isNewItem && editingRow ? [...rows, editingRow] : rows
+
+  function updateCurrency(row: FinanceResourceRow, code: string) {
+    const currency = currencyOptions.find((option) => option.code === code)
+    if (!currency) return
+
+    onEditChange({
+      ...row,
+      values: {
+        ...row.values,
+        code: currency.code,
+        name: currency.name,
+        minorUnit: String(currency.decimalPlaces),
+        symbol: currency.symbol,
+        numericCode: '',
+      },
+    })
+  }
 
   function updateEditingField(
     row: FinanceResourceRow,
@@ -196,6 +216,44 @@ export function FinanceCollectionEditor({
                 const value = isEditing
                   ? draft.values[field.key]
                   : row.values[field.key]
+
+                if (isEditing && definition.resource_type === 'currency') {
+                  if (field.key === 'code') {
+                    return (
+                      <TableCell key={field.key} className="px-5 py-2">
+                        <NativeSelect
+                          aria-label={field.label}
+                          autoFocus={idx === 0}
+                          className="bg-background h-8 w-full min-w-28 text-[0.8125rem]"
+                          disabled={!isNewItem}
+                          size="sm"
+                          value={String(value ?? '')}
+                          onChange={(event) =>
+                            updateCurrency(draft, event.target.value)
+                          }
+                        >
+                          <NativeSelectOption value="" disabled>
+                            Select currency
+                          </NativeSelectOption>
+                          {currencyOptions.map((currency) => (
+                            <NativeSelectOption
+                              key={currency.code}
+                              value={currency.code}
+                            >
+                              {currency.code} — {currency.name}
+                            </NativeSelectOption>
+                          ))}
+                        </NativeSelect>
+                      </TableCell>
+                    )
+                  }
+
+                  return (
+                    <TableCell key={field.key} className="px-5 py-3.5">
+                      {fieldDisplayValue(value)}
+                    </TableCell>
+                  )
+                }
 
                 if (isEditing) {
                   return (

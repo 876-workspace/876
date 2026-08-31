@@ -32,12 +32,14 @@ import {
   emptyRow,
   getResourceTypeColor,
   getResourceTypeIcon,
-  resourceKey,
-  resourceProperties,
-  resourceRow,
+  financeResourceKey,
+  financeResourceProperties,
+  financeResourceRow,
   revisionRows,
+  type FinanceCurrencyOption,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
+  type FinanceSelectOption,
 } from '../finance-provisioning-utils'
 import { FinanceCollectionEditor } from './finance-collection-editor'
 import { FinanceSetupMetadataEditor } from './finance-setup-metadata-editor'
@@ -62,6 +64,8 @@ export function FinanceProvisioningEditor({
   target,
   /** When provided, locks the editor to this resource type (URL-driven tabs). */
   initialType,
+  currencyOptions = [],
+  languageOptions = [],
 }: {
   catalog: AdminProvisioningCatalog
   manifest: AdminProvisioningManifest | null
@@ -69,6 +73,8 @@ export function FinanceProvisioningEditor({
   /** `finance` targets a provisioning setup by key; `application` an app. */
   target: { type: 'finance' | 'application'; key: string }
   initialType?: string
+  currencyOptions?: readonly FinanceCurrencyOption[]
+  languageOptions?: readonly FinanceSelectOption[]
 }) {
   const initialRevision =
     initialManifest?.draft ?? initialManifest?.published ?? null
@@ -201,11 +207,15 @@ export function FinanceProvisioningEditor({
           client.provisioningSetups.resources.forType(typeKey)
         const result = isNewItem
           ? await resourceClient.create(target.key, {
-              key: resourceKey(savedRow, activeDefinition, categoryRows.length),
-              properties: resourceProperties(activeDefinition, savedRow),
+              key: financeResourceKey(
+                savedRow,
+                activeDefinition,
+                categoryRows.length
+              ),
+              properties: financeResourceProperties(activeDefinition, savedRow),
             })
           : await resourceClient.update(target.key, savedRow.key, {
-              properties: resourceProperties(activeDefinition, savedRow),
+              properties: financeResourceProperties(activeDefinition, savedRow),
             })
 
         if (result.error || !result.data) {
@@ -215,7 +225,7 @@ export function FinanceProvisioningEditor({
           return
         }
 
-        const persistedRow = resourceRow(result.data)
+        const persistedRow = financeResourceRow(result.data)
         replaceType(
           typeKey,
           isNewItem
@@ -296,11 +306,11 @@ export function FinanceProvisioningEditor({
           client.provisioningSetups.resources.forType(typeKey)
         const result = existing
           ? await resourceClient.update(target.key, existing.key, {
-              properties: resourceProperties(activeDefinition, row),
+              properties: financeResourceProperties(activeDefinition, row),
             })
           : await resourceClient.create(target.key, {
-              key: resourceKey(row, activeDefinition, 0),
-              properties: resourceProperties(activeDefinition, row),
+              key: financeResourceKey(row, activeDefinition, 0),
+              properties: financeResourceProperties(activeDefinition, row),
             })
         if (result.error || !result.data) {
           setMessage(
@@ -308,7 +318,7 @@ export function FinanceProvisioningEditor({
           )
           return
         }
-        handleSingletonChange(typeKey, resourceRow(result.data))
+        handleSingletonChange(typeKey, financeResourceRow(result.data))
         setMessage(`${activeDefinition.label} saved.`)
       } else {
         setMessage('This provisioning resource type is not supported.')
@@ -564,6 +574,7 @@ export function FinanceProvisioningEditor({
               definition={activeDefinition}
               rows={currentCategoryRows}
               allRows={rows}
+              currencyOptions={currencyOptions}
               editingRow={editingRow}
               isNewItem={isNewItem}
               onAdd={openAddItem}
@@ -599,6 +610,7 @@ export function FinanceProvisioningEditor({
                       emptyRow(activeDefinition, 'default')
                     }
                     allRows={rows}
+                    languageOptions={languageOptions}
                     onChange={(nextRow) =>
                       handleSingletonChange(activeType, nextRow)
                     }

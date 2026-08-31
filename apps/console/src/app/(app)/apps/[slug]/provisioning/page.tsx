@@ -7,6 +7,10 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { resolveApp } from '../_data'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
+import {
+  toFinanceCurrencyOptions,
+  toFinanceLanguageOptions,
+} from '@/features/provisioning/finance-provisioning-utils'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -23,10 +27,13 @@ async function AppProvisioningData({ params }: Props) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const [manifestResult, catalogResult] = await Promise.all([
-    workspace.provisioning.retrieve('application', app.id),
-    workspace.provisioning.retrieveCatalog('application', app.id),
-  ])
+  const [manifestResult, catalogResult, currenciesResult, languagesResult] =
+    await Promise.all([
+      workspace.provisioning.retrieve('application', app.id),
+      workspace.provisioning.retrieveCatalog('application', app.id),
+      workspace.geo.listCurrencies(),
+      workspace.geo.listLanguages(),
+    ])
   if (
     manifestResult.error &&
     manifestResult.error.code !== 'provisioning/manifest-not-found'
@@ -35,6 +42,14 @@ async function AppProvisioningData({ params }: Props) {
   if (catalogResult.error || !catalogResult.data)
     throw new Error(
       catalogResult.error?.message ?? 'Failed to load provisioning catalog.'
+    )
+  if (currenciesResult.error || !currenciesResult.data)
+    throw new Error(
+      currenciesResult.error?.message ?? 'Failed to load currencies.'
+    )
+  if (languagesResult.error || !languagesResult.data)
+    throw new Error(
+      languagesResult.error?.message ?? 'Failed to load languages.'
     )
 
   return (
@@ -64,6 +79,8 @@ async function AppProvisioningData({ params }: Props) {
         catalog={catalogResult.data}
         manifest={manifestResult.data ?? null}
         target={{ type: 'application', key: app.id }}
+        currencyOptions={toFinanceCurrencyOptions(currenciesResult.data)}
+        languageOptions={toFinanceLanguageOptions(languagesResult.data)}
       />
     </div>
   )

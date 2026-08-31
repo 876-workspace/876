@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildFinanceDraft,
   emptyRow,
+  financeFieldOptions,
   formatOptionLabel,
   getResourceTypeColor,
   revisionRows,
@@ -191,6 +192,26 @@ describe('finance provisioning utilities', () => {
     expect(formatOptionLabel('END_OF_MONTH')).toBe('End of Month')
     expect(formatOptionLabel('END_OF_NEXT_MONTH')).toBe('End of Next Month')
     expect(formatOptionLabel('credit_note')).toBe('Credit Note')
+  })
+
+  it('uses supplied language catalog options without a hard-coded fallback', () => {
+    const languageField = {
+      key: 'defaultLanguage',
+      label: 'Default language',
+      value_type: 'reference' as const,
+      required: true,
+      reference_namespace: 'language',
+      allowed_values: null,
+    }
+
+    expect(financeFieldOptions(languageField, [], [])).toEqual([])
+    expect(
+      financeFieldOptions(
+        languageField,
+        [],
+        [{ value: 'en', label: 'English (en)' }]
+      )
+    ).toEqual([{ value: 'en', label: 'English (en)' }])
   })
 
   it('maps resource types to matching semantic color classes', () => {

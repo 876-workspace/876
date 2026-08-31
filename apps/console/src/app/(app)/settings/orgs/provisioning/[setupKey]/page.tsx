@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation'
 
 import { workspace } from '@/lib/services/workspace'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
+import {
+  toFinanceCurrencyOptions,
+  toFinanceLanguageOptions,
+} from '@/features/provisioning/finance-provisioning-utils'
 import { WorkspaceTabSkeleton } from '@/features/provisioning/components/provisioning-page-skeleton'
 import { getProvisioningCatalog, getProvisioningSetup } from './_data'
 
@@ -25,14 +29,24 @@ export default async function ProvisioningSetupIndexPage({ params }: Props) {
 async function ProvisioningSetupIndexData({ params }: Props) {
   const { setupKey } = await params
 
-  const [catalogResult, manifestResult, setupResult] = await Promise.all([
+  const [
+    catalogResult,
+    manifestResult,
+    setupResult,
+    currenciesResult,
+    languagesResult,
+  ] = await Promise.all([
     getProvisioningCatalog(setupKey),
     workspace.provisioning.retrieve('finance', setupKey),
     getProvisioningSetup(setupKey),
+    workspace.geo.listCurrencies(),
+    workspace.geo.listLanguages(),
   ])
   if (catalogResult.error || !catalogResult.data) notFound()
   if (manifestResult.error || !manifestResult.data) notFound()
   if (setupResult.error || !setupResult.data) notFound()
+  if (currenciesResult.error || !currenciesResult.data) notFound()
+  if (languagesResult.error || !languagesResult.data) notFound()
 
   return (
     <FinanceProvisioningEditor
@@ -41,6 +55,8 @@ async function ProvisioningSetupIndexData({ params }: Props) {
       setup={setupResult.data}
       target={{ type: 'finance', key: setupKey }}
       initialType="workspace"
+      currencyOptions={toFinanceCurrencyOptions(currenciesResult.data)}
+      languageOptions={toFinanceLanguageOptions(languagesResult.data)}
     />
   )
 }

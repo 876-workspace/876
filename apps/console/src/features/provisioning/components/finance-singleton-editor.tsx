@@ -9,12 +9,14 @@ import {
   financeFieldOptions,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
+  type FinanceSelectOption,
 } from '../finance-provisioning-utils'
 
 type Props = {
   definition: FinanceResourceDefinition
   row: FinanceResourceRow
   allRows: FinanceResourceRow[]
+  languageOptions: readonly FinanceSelectOption[]
   onChange: (row: FinanceResourceRow) => void
   onSave: () => void
   isSaving?: boolean
@@ -24,6 +26,7 @@ export function FinanceSingletonEditor({
   definition,
   row,
   allRows,
+  languageOptions,
   onChange,
   onSave,
   isSaving = false,
@@ -33,7 +36,7 @@ export function FinanceSingletonEditor({
       {definition.fields.map((field) => {
         const inputId = `singleton-${definition.resource_type}-${field.key}`
         const value = row.values[field.key]
-        const options = financeFieldOptions(field, allRows)
+        const options = financeFieldOptions(field, allRows, languageOptions)
 
         return (
           <FormRow

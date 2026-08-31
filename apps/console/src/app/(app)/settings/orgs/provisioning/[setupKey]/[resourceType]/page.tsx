@@ -3,6 +3,10 @@ import { notFound, redirect } from 'next/navigation'
 
 import { workspace } from '@/lib/services/workspace'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
+import {
+  toFinanceCurrencyOptions,
+  toFinanceLanguageOptions,
+} from '@/features/provisioning/finance-provisioning-utils'
 import { ProvisioningResourceTypeSkeleton } from '@/features/provisioning/components/provisioning-page-skeleton'
 import { getProvisioningCatalog } from '../_data'
 
@@ -31,12 +35,17 @@ async function ProvisioningResourceTypeData({ params }: Props) {
     redirect(`/settings/orgs/provisioning/${encodeURIComponent(setupKey)}`)
   }
 
-  const [catalogResult, manifestResult] = await Promise.all([
-    getProvisioningCatalog(setupKey),
-    workspace.provisioning.retrieve('finance', setupKey),
-  ])
+  const [catalogResult, manifestResult, currenciesResult, languagesResult] =
+    await Promise.all([
+      getProvisioningCatalog(setupKey),
+      workspace.provisioning.retrieve('finance', setupKey),
+      workspace.geo.listCurrencies(),
+      workspace.geo.listLanguages(),
+    ])
   if (catalogResult.error || !catalogResult.data) notFound()
   if (manifestResult.error || !manifestResult.data) notFound()
+  if (currenciesResult.error || !currenciesResult.data) notFound()
+  if (languagesResult.error || !languagesResult.data) notFound()
 
   // Validate that the resourceType segment maps to a known catalog type.
   const typeExists = catalogResult.data.resource_types.some(
@@ -52,6 +61,8 @@ async function ProvisioningResourceTypeData({ params }: Props) {
       manifest={manifestResult.data}
       target={{ type: 'finance', key: setupKey }}
       initialType={resourceType}
+      currencyOptions={toFinanceCurrencyOptions(currenciesResult.data)}
+      languageOptions={toFinanceLanguageOptions(languagesResult.data)}
     />
   )
 }

@@ -34,6 +34,38 @@ export type FinanceSelectOption = {
   label: string
 }
 
+export type FinanceCurrencyOption = {
+  code: string
+  name: string
+  symbol: string
+  decimalPlaces: number
+}
+
+export function toFinanceCurrencyOptions(
+  currencies: ReadonlyArray<{
+    code: string
+    name: string
+    symbol: string
+    decimal_places: number
+  }>
+): FinanceCurrencyOption[] {
+  return currencies.map((currency) => ({
+    code: currency.code,
+    name: currency.name,
+    symbol: currency.symbol,
+    decimalPlaces: currency.decimal_places,
+  }))
+}
+
+export function toFinanceLanguageOptions(
+  languages: ReadonlyArray<{ code: string; name: string }>
+): FinanceSelectOption[] {
+  return languages.map((language) => ({
+    value: language.code,
+    label: `${language.name} (${language.code})`,
+  }))
+}
+
 export const FINANCE_PROVISIONING_TABS: readonly FinanceProvisioningTab[] = [
   { key: 'workspace', label: 'Workspace', multiple: false },
   { key: 'currency', label: 'Currencies', multiple: true },
@@ -122,7 +154,7 @@ export function revisionRows(
   }))
 }
 
-export function resourceRow(
+export function financeResourceRow(
   resource: AdminProvisioningResource
 ): FinanceResourceRow {
   return {
@@ -194,7 +226,8 @@ function rowOptionLabel(row: FinanceResourceRow, key: string): string {
  */
 export function financeFieldOptions(
   field: FinanceFieldDefinition,
-  allRows: FinanceResourceRow[]
+  allRows: FinanceResourceRow[],
+  languageOptions: readonly FinanceSelectOption[] = []
 ): FinanceSelectOption[] | null {
   if (field.allowed_values)
     return field.allowed_values.map((value) => ({
@@ -210,8 +243,7 @@ export function financeFieldOptions(
       label: `${country.flag} ${country.name} (${country.countryCode})`,
     }))
 
-  if (field.reference_namespace === 'language')
-    return [{ value: 'en', label: 'English (en)' }]
+  if (field.reference_namespace === 'language') return [...languageOptions]
 
   const referenceRows = allRows.filter(
     (candidate) => candidate.resourceType === field.reference_namespace
@@ -225,7 +257,7 @@ export function financeFieldOptions(
     .filter((option): option is FinanceSelectOption => option !== null)
 }
 
-export function resourceKey(
+export function financeResourceKey(
   row: FinanceResourceRow,
   definition: FinanceResourceDefinition,
   index: number
@@ -234,7 +266,7 @@ export function resourceKey(
   return rowReferenceKey(row) || `${definition.resource_type}_${index + 1}`
 }
 
-export function resourceProperties(
+export function financeResourceProperties(
   definition: FinanceResourceDefinition,
   row: FinanceResourceRow
 ): DraftProperty[] {
@@ -274,9 +306,9 @@ export function buildFinanceDraft(
         position += 10
         return {
           resource_type: definition.resource_type,
-          key: resourceKey(row, definition, index),
+          key: financeResourceKey(row, definition, index),
           position: resourcePosition,
-          properties: resourceProperties(definition, row),
+          properties: financeResourceProperties(definition, row),
         }
       })
   )

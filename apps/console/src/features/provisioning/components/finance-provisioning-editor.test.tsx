@@ -219,7 +219,7 @@ describe('FinanceProvisioningEditor', () => {
   it('adds and edits typed collection rows inline without a drawer', async () => {
     const user = userEvent.setup()
     resourceApi.create.mockResolvedValueOnce(resource('usd', 'USD', '2'))
-    resourceApi.update.mockResolvedValueOnce(resource('usd', 'CAD', '2'))
+    resourceApi.update.mockResolvedValueOnce(resource('usd', 'USD', '2'))
 
     render(
       <FinanceProvisioningEditor
@@ -227,6 +227,14 @@ describe('FinanceProvisioningEditor', () => {
         manifest={null}
         target={{ type: 'finance', key: 'jamaica' }}
         initialType="currency"
+        currencyOptions={[
+          {
+            code: 'USD',
+            name: 'United States Dollar',
+            symbol: '$',
+            decimalPlaces: 2,
+          },
+        ]}
       />
     )
 
@@ -235,15 +243,10 @@ describe('FinanceProvisioningEditor', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
-    const codeInput = screen.getByRole('textbox', { name: 'ISO code' })
-    const minorUnitInput = screen.getByRole('spinbutton', {
-      name: 'Minor unit',
-    })
-    expect(codeInput).toBeInTheDocument()
-    expect(minorUnitInput).toBeInTheDocument()
+    const currencySelect = screen.getByRole('combobox', { name: 'ISO code' })
+    expect(currencySelect).toBeInTheDocument()
 
-    await user.type(codeInput, 'USD')
-    await user.type(minorUnitInput, '2')
+    await user.selectOptions(currencySelect, 'USD')
     await user.click(screen.getByRole('button', { name: 'Save currency' }))
 
     expect(await screen.findByText('USD')).toBeInTheDocument()
@@ -264,16 +267,13 @@ describe('FinanceProvisioningEditor', () => {
     expect(deleteButton.parentElement).toHaveClass('opacity-0')
 
     await user.click(editButton)
-    const editCodeInput = screen.getByRole('textbox', { name: 'ISO code' })
-    await user.clear(editCodeInput)
-    await user.type(editCodeInput, 'CAD')
+    expect(screen.getByRole('combobox', { name: 'ISO code' })).toBeDisabled()
     await user.click(screen.getByRole('button', { name: 'Save currency' }))
 
-    expect(await screen.findByText('CAD')).toBeInTheDocument()
-    expect(screen.queryByText('USD')).not.toBeInTheDocument()
+    expect(await screen.findByText('USD')).toBeInTheDocument()
     expect(resourceApi.update).toHaveBeenCalledWith('jamaica', 'usd', {
       properties: expect.arrayContaining([
-        expect.objectContaining({ key: 'code', string_value: 'CAD' }),
+        expect.objectContaining({ key: 'code', string_value: 'USD' }),
       ]),
     })
   })
