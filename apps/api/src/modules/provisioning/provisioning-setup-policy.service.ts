@@ -10,6 +10,7 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 import * as repository from './provisioning-setup-policy.repository'
 import type { ProvisioningSetupPolicyReplace } from './provisioning-setup-policy.schemas'
 
+const ENTERPRISE_APP_SLUG = '876-enterprise'
 const SERVICE_TARGET_KEYS = new Set<string>(
   PROVISIONING_SERVICE_ENTITLEMENTS.map((entry) => entry.target_key)
 )
@@ -55,6 +56,36 @@ function serializePolicy(
   }
 }
 
+function withRequiredEnterprise(
+  entitlements: ProvisioningSetupPolicyReplace['entitlements']
+): ProvisioningSetupPolicyReplace['entitlements'] {
+  const enterprise = entitlements.find(
+    (entitlement) =>
+      entitlement.target_type === 'application' &&
+      entitlement.target_key === ENTERPRISE_APP_SLUG
+  )
+
+  if (enterprise && !enterprise.enabled) {
+    throw new AppHttpError({
+      code: 'provisioning/enterprise-entitlement-required',
+      message:
+        '876 Enterprise is a base organization entitlement and cannot be disabled.',
+      httpStatus: 400,
+    })
+  }
+
+  if (enterprise) return entitlements
+
+  return [
+    ...entitlements,
+    {
+      target_type: 'application',
+      target_key: ENTERPRISE_APP_SLUG,
+      enabled: true,
+    },
+  ]
+}
+
 async function validateEntitlements(
   entitlements: ProvisioningSetupPolicyReplace['entitlements']
 ): Promise<void> {
@@ -79,20 +110,6 @@ async function validateEntitlements(
       })
     }
   }
-
-  const enterprise = entitlements.find(
-    (entitlement) =>
-      entitlement.target_type === 'application' &&
-      entitlement.target_key === '876-enterprise'
-  )
-  if (enterprise && !enterprise.enabled) {
-    throw new AppHttpError({
-      code: 'provisioning/enterprise-entitlement-required',
-      message:
-        '876 Enterprise is a base organization entitlement and cannot be disabled.',
-      httpStatus: 400,
-    })
-  }
 }
 
 export async function retrieveSetupPolicy(
@@ -110,7 +127,8 @@ export async function replaceSetupPolicy(
   const setup = await repository.findPolicySetupByKey(setupKey)
   if (!setup) return notFound()
 
-  await validateEntitlements(body.entitlements)
+  const entitlements = withRequiredEnterprise(body.entitlements)
+  await validateEntitlements(entitlements)
 
   const now = BigInt(nowUnixSeconds())
   const row = await repository.replaceSetupPolicy({
@@ -124,7 +142,7 @@ export async function replaceSetupPolicy(
       priority: condition.priority,
       now,
     })),
-    entitlements: body.entitlements.map((entitlement) => ({
+    entitlements: entitlements.map((entitlement) => ({
       id: generateId('provisioningSetupEntitlement'),
       targetType: entitlement.target_type,
       targetKey: entitlement.target_key,
