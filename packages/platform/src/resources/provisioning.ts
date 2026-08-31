@@ -1,4 +1,8 @@
 import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+import type {
+  ProvisioningSetupPolicy,
+  ProvisioningSetupPolicyReplaceParams,
+} from '@876/core/types/provisioning-policy'
 
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
@@ -117,6 +121,24 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
         return adminRequest<AdminProvisioningSetup>(runtime, {
           method: 'PATCH',
           path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
+          body,
+        })
+      },
+
+      retrievePolicy(setupKey: string) {
+        return adminRequest<ProvisioningSetupPolicy>(runtime, {
+          method: 'GET',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}/policy`,
+        })
+      },
+
+      replacePolicy(
+        setupKey: string,
+        body: ProvisioningSetupPolicyReplaceParams
+      ) {
+        return adminRequest<ProvisioningSetupPolicy>(runtime, {
+          method: 'PUT',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}/policy`,
           body,
         })
       },
