@@ -34,14 +34,14 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 - `DONE` Existing-user/bootstrap path resolves and persists before workspace provisioning.
 - `DONE` Persisted selections are reused on retry/resume.
 - `DONE` Older organizations with no persisted selection are not silently re-resolved when policy changes.
-- `IN PROGRESS` Replace remaining generic retry errors with stable provisioning error contracts where needed.
+- `DONE` Stable `provisioning/setup-selection-missing` contract replaces silent rerouting for required Phase 2 operations.
 
 ## Signup routing facts
 
-- `TODO` Add canonical `countryCode` to business registration SDK/API contract.
-- `TODO` Add optional canonical subdivision/region routing input where available.
+- `IN PROGRESS` Canonical `countryCode` business registration contract: shared country validation exists in Account SDK and API body schema; service/repository/UI threading is being completed.
+- `TODO` Add canonical subdivision/Region selection to signup only when a definitive Region source exists; do not accept free-form subdivision strings.
 - `TODO` Add canonical country selector to business onboarding UI.
-- `TODO` Resolve subdivision from canonical Region rows rather than free-form strings.
+- `DONE` Resolver derives subdivision from canonical organization Region rows when present.
 - `DONE` Organization `countryCode` wins over Region country when both are present; Region country is a fallback only.
 
 ## Entitlements and service provisioning
@@ -50,54 +50,58 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 - `DONE` Enterprise remains mandatory.
 - `DONE` Explicit source-app signup remains an additional entitlement request.
 - `DONE` Billing/Invoice app access stays separate from shared finance infrastructure.
-- `IN PROGRESS` Work service gate controls Work tenant provisioning.
-- `IN PROGRESS` Work capabilities control granted scopes.
+- `DONE` Work `service/work` gate controls whether an organization receives a Work tenant.
+- `DONE` Work tenant is created independently of CRM/product connections.
+- `DONE` Work capabilities narrow each Work-dependent app's declared scopes.
+- `DONE` Required Work configuration/tenant/connection failures fail closed with retryable provisioning errors.
 - `DONE` Member app assignment uses effective setup entitlements plus explicit source-app access.
 
 ## Finance provisioning
 
-- `TODO` Remove remaining implicit "use current default setup" behavior when an organization has no persisted setup.
-- `TODO` Require persisted setup for Phase 2 finance readiness on new/routed organizations.
-- `TODO` Copy setup-selection audit fields into every new provisioning run.
-- `TODO` Ensure finance retries reuse persisted finance/setup revision context where required.
+- `DONE` Removed implicit runtime assignment of the platform's current default setup from finance provisioning.
+- `DONE` Embedded-finance readiness requires an already-persisted organization setup.
+- `DONE` Embedded-finance readiness requires the published finance manifest for that exact setup.
+- `DONE` New provisioning runs snapshot setup key, selection type, group, priority, and matched fields.
+- `IN PROGRESS` Add focused regression tests proving run-audit stamping and no-default fallback across all finance paths.
 
 ## Existing-organization backfill
 
-- `TODO` Add explicit backfill command/service for organizations without persisted selection.
-- `TODO` Mark backfilled selections as `backfill` rather than `policy`/`fallback`.
-- `TODO` Make backfill idempotent and non-overwriting.
-- `TODO` Add dry-run/report mode if consistent with existing scripts.
+- `DONE` Explicit `provisioning:backfill-selections` command/service for organizations without persisted selection.
+- `DONE` Backfilled selections are stored as `backfill`, never rewritten as initial `policy`/`fallback` history.
+- `DONE` Conditional writes make backfill repeated/concurrent runs non-overwriting.
+- `DONE` `--dry-run`, page-size, and maximum-row controls with structured summary output.
+- `DONE` Backfill is not a seed/startup hook and uses the same deterministic resolver as signup.
 
 ## Tests
 
 - `DONE` Dedicated exhaustive Muse test brief added at `.claude/briefs/muse/2026-08-31-provisioning-phase-2-routing-exhaustive-tests.md`.
-- `TODO` Resolver unit matrix.
-- `TODO` Specificity/priority/tie-break regression tests.
-- `TODO` Fallback invariant tests.
-- `TODO` Persistence + retry no-reroute tests.
-- `TODO` Signup/admin creation integration tests.
-- `TODO` Work gate/capability integration tests.
+- `DONE` Resolver unit matrix covering normalization, OR/AND semantics and empty context.
+- `DONE` Specificity/priority/setup-key/group-key deterministic tie-break regression tests including candidate permutations.
+- `DONE` Zero/one/multiple fallback invariant tests.
+- `IN PROGRESS` Persistence + retry no-reroute tests.
+- `TODO` Signup/admin creation integration tests for canonical country routing.
+- `DONE` Work gate/tenant/capability/error/retry orchestration tests updated to Phase 2 semantics.
 - `TODO` Finance run-audit tests.
-- `TODO` Backfill tests including repeated/concurrent runs.
-- `TODO` Express-stack route tests where public/admin HTTP contracts change.
+- `DONE` Backfill dry-run/persistence/concurrent-skip/pagination/limit/canonical Region tests.
+- `TODO` Express-stack route tests for the changed business registration country contract.
 
 ## PR #449 cleanup obligations
 
-- `TODO` Fix Console test environment regression: `React.act is not a function`.
-- `TODO` Fix CRM feature-layer sibling import/boundary lint violation documented in the Phase 2 handoff.
+- `DONE` Console Vitest now uses `jsdom`, fixing the environment mismatch behind `React.act is not a function` component-test failures.
+- `DONE` CRM `request-customer-option.ts` uses a same-feature relative import instead of violating the `@/features/*` sibling boundary rule.
 
 ## Documentation and handoff
 
 - `TODO` Update `docs/handoff/2026-08-31-provisioning-phase-2-handoff.md` with final implementation and local migration/backfill instructions.
 - `TODO` Document final new-org routing sequence and retry invariants.
-- `TODO` Document explicit existing-org backfill sequence.
+- `TODO` Document explicit existing-org backfill sequence and exact dry-run/write commands.
 
 ## Local-only completion
 
 - `LOCAL` Review/apply Phase 2 Prisma migration.
 - `LOCAL` Regenerate Prisma client if required by repository workflow.
 - `LOCAL` Execute Phase 1 one-time provisioning defaults import if not already applied.
-- `LOCAL` Run any Phase 2 existing-org selection backfill after code/migration review.
+- `LOCAL` Run Phase 2 selection backfill only after migration/import review, beginning with `--dry-run`.
 - `LOCAL` Run full `pnpm` typecheck/lint/test/build/DB verification suite.
 
 ## Completion definition
