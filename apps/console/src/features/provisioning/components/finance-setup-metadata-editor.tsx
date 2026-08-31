@@ -53,7 +53,8 @@ export function FinanceSetupMetadataEditor({
   const [policy, setPolicy] = useState<ProvisioningSetupPolicy | null>(null)
   const [policyLoading, setPolicyLoading] = useState(true)
   const [policySaving, setPolicySaving] = useState(false)
-  const [policyError, setPolicyError] = useState<string | null>(null)
+  const [policyMessage, setPolicyMessage] = useState<string | null>(null)
+  const [policyMessageIsError, setPolicyMessageIsError] = useState(false)
   const [countryCodes, setCountryCodes] = useState<string[]>([])
   const [countryToAdd, setCountryToAdd] = useState('')
   const [entitlements, setEntitlements] = useState<Record<string, boolean>>({})
@@ -63,14 +64,17 @@ export function FinanceSetupMetadataEditor({
 
     async function loadPolicy() {
       setPolicyLoading(true)
-      setPolicyError(null)
+      setPolicyMessage(null)
+      setPolicyMessageIsError(false)
+
       const { data, error } = await client.provisioningSetups.retrievePolicy(
         setup.key
       )
       if (cancelled) return
 
       if (error || !data) {
-        setPolicyError(error?.message ?? 'Failed to load the setup policy.')
+        setPolicyMessageIsError(true)
+        setPolicyMessage(error?.message ?? 'Failed to load the setup policy.')
         setPolicyLoading(false)
         return
       }
@@ -82,6 +86,7 @@ export function FinanceSetupMetadataEditor({
         group.push(condition)
         groups.set(condition.group_key, group)
       }
+
       setCountryCodes(
         [...groups.values()]
           .filter(
@@ -107,7 +112,10 @@ export function FinanceSetupMetadataEditor({
   }, [setup.key])
 
   const availableCountries = useMemo(
-    () => countries.filter((country) => !countryCodes.includes(country.countryCode)),
+    () =>
+      countries.filter(
+        (country) => !countryCodes.includes(country.countryCode)
+      ),
     [countryCodes]
   )
 
@@ -154,7 +162,8 @@ export function FinanceSetupMetadataEditor({
     if (!policy || policySaving) return
 
     setPolicySaving(true)
-    setPolicyError(null)
+    setPolicyMessage(null)
+    setPolicyMessageIsError(false)
 
     const groups = new Map<string, typeof policy.conditions>()
     for (const condition of policy.conditions) {
@@ -183,7 +192,7 @@ export function FinanceSetupMetadataEditor({
         priority: condition.priority,
       }))
 
-    const catalogKeys = new Set(
+    const catalogKeys = new Set<string>(
       PROVISIONING_SETUP_ENTITLEMENT_CATALOG.map((entry) =>
         entitlementKey(entry.target_type, entry.target_key)
       )
@@ -219,8 +228,11 @@ export function FinanceSetupMetadataEditor({
             target_type: entry.target_type,
             target_key: entry.target_key,
             enabled:
-              entitlements[entitlementKey(entry.target_type, entry.target_key)] ??
-              entry.default_enabled,
+              entry.target_key === '876-enterprise'
+                ? true
+                : (entitlements[
+                    entitlementKey(entry.target_type, entry.target_key)
+                  ] ?? entry.default_enabled),
           })),
           ...preservedEntitlements,
         ],
@@ -229,12 +241,13 @@ export function FinanceSetupMetadataEditor({
 
     setPolicySaving(false)
     if (error || !data) {
-      setPolicyError(error?.message ?? 'Failed to save the setup policy.')
+      setPolicyMessageIsError(true)
+      setPolicyMessage(error?.message ?? 'Failed to save the setup policy.')
       return
     }
 
     setPolicy(data)
-    setPolicyError('Policy saved.')
+    setPolicyMessage('Policy saved.')
     router.refresh()
   }
 
@@ -330,7 +343,9 @@ export function FinanceSetupMetadataEditor({
                   onChange={(event) => setCountryToAdd(event.target.value)}
                   aria-label="Country to add"
                 >
-                  <NativeSelectOption value="">Select a country</NativeSelectOption>
+                  <NativeSelectOption value="">
+                    Select a country
+                  </NativeSelectOption>
                   {availableCountries.map((country) => (
                     <NativeSelectOption
                       key={country.countryCode}
@@ -408,6 +423,7 @@ export function FinanceSetupMetadataEditor({
                   const key = entitlementKey(entry.target_type, entry.target_key)
                   const enabled = entitlements[key] ?? entry.default_enabled
                   const locked = entry.target_key === '876-enterprise'
+
                   return (
                     <div
                       key={key}
@@ -438,15 +454,15 @@ export function FinanceSetupMetadataEditor({
 
             <div className="flex min-h-8 items-center justify-between gap-4 pt-2">
               <div aria-live="polite">
-                {policyError ? (
+                {policyMessage ? (
                   <p
                     className={
-                      policyError === 'Policy saved.'
-                        ? 'text-muted-foreground text-xs'
-                        : 'text-destructive text-xs'
+                      policyMessageIsError
+                        ? 'text-destructive text-xs'
+                        : 'text-muted-foreground text-xs'
                     }
                   >
-                    {policyError}
+                    {policyMessage}
                   </p>
                 ) : null}
               </div>
@@ -461,7 +477,7 @@ export function FinanceSetupMetadataEditor({
           </>
         ) : (
           <p className="text-destructive text-sm">
-            {policyError ?? 'The setup policy could not be loaded.'}
+            {policyMessage ?? 'The setup policy could not be loaded.'}
           </p>
         )}
       </div>
@@ -475,7 +491,10 @@ export function FinanceSetupMetadataEditor({
             size="sm"
             disabled={!canMakeDefault || isPending}
             onClick={() =>
-              runUpdate({ is_default: true }, 'Setup is now the platform default.')
+              runUpdate(
+                { is_default: true },
+                'Setup is now the platform default.'
+              )
             }
           >
             {setup.is_default ? 'Platform default' : 'Make default'}
