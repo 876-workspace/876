@@ -11,8 +11,8 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/services/platform', () => ({
-  platform: {
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
     features: {
       retrieve: mocks.retrieve,
       update: mocks.update,
