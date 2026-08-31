@@ -148,7 +148,7 @@ export async function retrieveRun(req: Request, res: Response): Promise<void> {
 
 export async function retryRun(req: Request, res: Response): Promise<void> {
   const { run_id } = validParams<{ run_id: string }>(req)
-  const result = await service.retryRun(run_id, nowUnixSeconds())
+  const result = await service.retryRun(run_id)
   res.status(200).json(result)
 }
 
