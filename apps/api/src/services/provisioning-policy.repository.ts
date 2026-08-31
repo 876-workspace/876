@@ -16,6 +16,7 @@ export function findOrganizationProvisioningSelection(organizationId: string) {
       language: true,
       regionId: true,
       region: { select: { code: true, countryCode: true } },
+      createdAt: true,
     },
   })
 }
@@ -72,6 +73,7 @@ export async function listOrganizationsMissingProvisioningSelection(params: {
       language: true,
       regionId: true,
       region: { select: { code: true, countryCode: true } },
+      createdAt: true,
     },
   })
 }
@@ -79,6 +81,12 @@ export async function listOrganizationsMissingProvisioningSelection(params: {
 export function findAppBySlugWithKind(slug: string) {
   return prisma.app.findUnique({
     where: { slug },
-    select: { id: true, slug: true, appKind: true, status: true, deletedAt: true },
+    select: {
+      id: true,
+      slug: true,
+      appKind: true,
+      status: true,
+      deletedAt: true,
+    },
   })
 }
