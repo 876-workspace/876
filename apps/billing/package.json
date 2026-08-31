@@ -16,7 +16,6 @@
   "dependencies": {
     "@876/account": "workspace:*",
     "@876/analytics": "workspace:*",
-    "@876/account": "workspace:*",
     "@876/billing": "workspace:*",
     "@876/core": "workspace:*",
     "@876/ui": "workspace:*",

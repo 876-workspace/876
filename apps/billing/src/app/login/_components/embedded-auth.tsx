@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import { create876AccountClient } from '@876/account'
 import {
   AUTH_RETURN_TO_COOKIE,
@@ -12,10 +14,6 @@ import {
   AuthProvider,
   type SocialProvider,
 } from '@876/ui/auth'
-import {
-  AUTH_RETURN_TO_COOKIE,
-  resolveRelativeReturnTo,
-} from '@876/core/auth/return-to'
 import { account } from '@/lib/services/account-browser'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
