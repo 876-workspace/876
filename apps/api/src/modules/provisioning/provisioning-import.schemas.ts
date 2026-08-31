@@ -1,7 +1,13 @@
 import countries from '@876/core/countries.json'
+import { PROVISIONING_SETUP_ENTITLEMENT_CATALOG } from '@876/core/types/provisioning-policy'
 import { z } from 'zod'
 
 const countryCodes = new Set(countries.map((country) => country.countryCode))
+const entitlementCatalogKeys = new Set<string>(
+  PROVISIONING_SETUP_ENTITLEMENT_CATALOG.map(
+    (entry) => `${entry.target_type}:${entry.target_key}`
+  )
+)
 
 const countryCodeSchema = z
   .string()
@@ -278,6 +284,17 @@ export const provisioningImportSpecificationSchema = z
       })
     }
 
+    spec.default_entitlements.forEach((entry, index) => {
+      const key = `${entry.target_type}:${entry.target_key}`
+      if (!entitlementCatalogKeys.has(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['default_entitlements', index],
+          message: `Unknown provisioning entitlement target: ${key}.`,
+        })
+      }
+    })
+
     const enterprise = spec.default_entitlements.find(
       (entry) =>
         entry.target_type === 'application' &&
@@ -289,6 +306,21 @@ export const provisioningImportSpecificationSchema = z
         path: ['default_entitlements'],
         message:
           '876 Enterprise must be enabled in the default entitlement policy.',
+      })
+    }
+
+    const workService = spec.default_entitlements.find(
+      (entry) => entry.target_type === 'service' && entry.target_key === 'work'
+    )
+    const hasWorkCapabilities = spec.default_entitlements.some(
+      (entry) => entry.target_type === 'service_capability'
+    )
+    if (hasWorkCapabilities && !workService) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['default_entitlements'],
+        message:
+          'Work service capabilities require an explicit service/work entitlement gate.',
       })
     }
 
