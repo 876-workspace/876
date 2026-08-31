@@ -1,0 +1,48 @@
+// Provisioning setup matching/access policy.
+//
+// Conditions are intentionally generic. Match groups are OR alternatives and
+// conditions inside a group are AND requirements. For example:
+//
+//   group jm       -> country = JM
+//   group us-ca    -> country = US AND subdivision = US-CA
+//
+// This supports many countries per setup, multiple competing setups for one
+// country, and future state/jurisdiction selection without a schema rewrite.
+
+model ProvisioningSetupCondition {
+  id        String @id @db.VarChar
+  setupId   String @map("setup_id") @db.VarChar
+  groupKey  String @map("group_key") @db.VarChar
+  field     String @db.VarChar
+  operator  String @default("equals") @db.VarChar
+  value     String @db.VarChar
+  priority  Int    @default(0)
+  createdAt BigInt @map("created_at")
+  updatedAt BigInt @map("updated_at")
+
+  setup ProvisioningSetup @relation(fields: [setupId], references: [id], onDelete: Cascade)
+
+  @@unique([setupId, groupKey, field, operator, value], map: "uq_provisioning_setup_conditions")
+  @@index([setupId, groupKey], map: "ix_provisioning_setup_conditions_group")
+  @@index([field, value, priority], map: "ix_provisioning_setup_conditions_match")
+  @@map("provisioning_setup_conditions")
+}
+
+// Access policy declared by a provisioning setup. Application targets resolve
+// to organization app subscriptions; service targets represent shared platform
+// services such as Work and must never be confused with an App subscription.
+model ProvisioningSetupEntitlement {
+  id         String  @id @db.VarChar
+  setupId    String  @map("setup_id") @db.VarChar
+  targetType String  @map("target_type") @db.VarChar
+  targetKey  String  @map("target_key") @db.VarChar
+  enabled    Boolean @default(false)
+  createdAt  BigInt  @map("created_at")
+  updatedAt  BigInt  @map("updated_at")
+
+  setup ProvisioningSetup @relation(fields: [setupId], references: [id], onDelete: Cascade)
+
+  @@unique([setupId, targetType, targetKey], map: "uq_provisioning_setup_entitlements")
+  @@index([targetType, targetKey, enabled], map: "ix_provisioning_setup_entitlements_target")
+  @@map("provisioning_setup_entitlements")
+}
