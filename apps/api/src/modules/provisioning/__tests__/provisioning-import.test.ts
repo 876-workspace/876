@@ -122,4 +122,24 @@ describe('one-time provisioning import specification', () => {
       )
     ).toEqual({ target_type: 'service', target_key: 'work', enabled: true })
   })
+
+  it('includes explicit Work capability policy beneath the Work service gate', async () => {
+    const spec = await loadSpec()
+    const capabilities = spec.default_entitlements.filter(
+      (entry) => entry.target_type === 'service_capability'
+    )
+
+    expect(capabilities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ target_key: 'work.tasks', enabled: true }),
+        expect.objectContaining({ target_key: 'work.reminders', enabled: true }),
+        expect.objectContaining({ target_key: 'work.calendars', enabled: true }),
+        expect.objectContaining({ target_key: 'work.events', enabled: true }),
+        expect.objectContaining({ target_key: 'work.alerts', enabled: true }),
+        expect.objectContaining({ target_key: 'work.my-work', enabled: true }),
+        expect.objectContaining({ target_key: 'work.sync', enabled: false }),
+      ])
+    )
+    expect(capabilities).toHaveLength(7)
+  })
 })
