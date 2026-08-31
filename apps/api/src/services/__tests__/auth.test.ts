@@ -134,6 +134,7 @@ type Harness = {
       | 'resolveRegistrationSlug'
       | 'provisionOrganization'
       | 'assignMemberApps'
+      | 'ensureWork'
       | 'ensureDefaultContact'
       | 'deliverOtp'
     >
@@ -147,6 +148,7 @@ function makeHarness(otpDeliveryUrl = ''): Harness {
     resolveRegistrationSlug: vi.fn(),
     provisionOrganization: vi.fn(),
     assignMemberApps: vi.fn(),
+    ensureWork: vi.fn().mockResolvedValue(undefined),
     ensureDefaultContact: vi.fn(),
     deliverOtp: vi.fn(),
   } as unknown as Harness['deps']
@@ -735,7 +737,7 @@ describe('AuthService.registerBusiness', () => {
     harness.repository.updateUser.mockResolvedValue(userRow())
   }
 
-  it('creates the org, links the owner, assigns apps, and activates', async () => {
+  it('creates the org with canonical country, provisions apps and Work, and activates', async () => {
     const harness = makeHarness()
     arrange(harness)
     const session = authSession()
@@ -747,6 +749,7 @@ describe('AuthService.registerBusiness', () => {
       firstName: 'Alejandra',
       lastName: 'Reyes',
       organizationName: ' Reyes Logistics ',
+      countryCode: 'jm',
       sourceAppId: 'app_1',
     })
 
@@ -757,7 +760,15 @@ describe('AuthService.registerBusiness', () => {
         metadata: {
           slug: 'reyes-logistics',
           owner_workos_user_id: 'user_2kL9mN4q',
+          country_code: 'JM',
         },
+      })
+    )
+    expect(harness.repository.createOrganization).toHaveBeenCalledWith(
+      expect.objectContaining({
+        countryCode: 'JM',
+        currencyCode: 'USD',
+        language: 'en',
       })
     )
     expect(harness.deps.provisionOrganization).toHaveBeenCalledWith(
@@ -765,6 +776,7 @@ describe('AuthService.registerBusiness', () => {
       NOW,
       { sourceAppId: 'app_1' }
     )
+    expect(harness.deps.ensureWork).toHaveBeenCalledWith('organization_1')
     expect(harness.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: 'organization_1',
@@ -784,7 +796,7 @@ describe('AuthService.registerBusiness', () => {
     })
   })
 
-  it('Test A: finance 503 does not compensate provider org and preserves durable state', async () => {
+  it('finance 503 does not compensate provider org and preserves durable state', async () => {
     const harness = makeHarness()
     arrange(harness)
     const finance503 = new AppHttpError({
@@ -801,6 +813,7 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
         sourceAppId: '876-invoice',
       })
     ).rejects.toMatchObject({
@@ -808,14 +821,14 @@ describe('AuthService.registerBusiness', () => {
       httpStatus: 503,
     })
 
-    // Assert that the WorkOS org and local bootstrap were NOT deleted/compensated
     expect(harness.provider.deleteOrganization).not.toHaveBeenCalled()
     expect(harness.provider.createOrganization).toHaveBeenCalledTimes(1)
     expect(harness.repository.createOrganization).toHaveBeenCalledTimes(1)
     expect(harness.repository.createMembership).toHaveBeenCalledTimes(1)
+    expect(harness.deps.ensureWork).not.toHaveBeenCalled()
   })
 
-  it('Test B: identical retry resumes same organization without duplicate orgs or slug drift', async () => {
+  it('identical retry resumes same organization and requires persisted selection', async () => {
     const harness = makeHarness()
     arrange(harness)
     const finance503 = new AppHttpError({
@@ -823,8 +836,6 @@ describe('AuthService.registerBusiness', () => {
       message: 'The finance workspace could not be prepared.',
       httpStatus: 503,
     })
-
-    // First attempt fails during finance ensure
     harness.deps.provisionOrganization.mockRejectedValueOnce(finance503)
 
     await expect(
@@ -834,13 +845,13 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
         sourceAppId: '876-invoice',
       })
     ).rejects.toMatchObject({
       code: 'provisioning/finance-workspace-unavailable',
     })
 
-    // Second attempt: user already exists locally and has the created membership
     harness.provider.register.mockRejectedValue(
       new AppHttpError({
         code: 'auth/email-already-exists',
@@ -859,7 +870,6 @@ describe('AuthService.registerBusiness', () => {
       roleId: 'role_owner',
       status: 'active',
     })
-    // Finance workspace is now ready
     harness.deps.provisionOrganization.mockResolvedValue({
       owner: { id: 'role_owner' },
     })
@@ -870,24 +880,29 @@ describe('AuthService.registerBusiness', () => {
       firstName: 'Alejandra',
       lastName: 'Reyes',
       organizationName: 'Reyes Logistics',
+      // Deliberately different: an existing membership must never be re-routed
+      // from the newly submitted country.
+      countryCode: 'US',
       sourceAppId: '876-invoice',
     })
 
     expect(result.status).toBe('ok')
-    // No second WorkOS or local org created
     expect(harness.provider.createOrganization).toHaveBeenCalledTimes(1)
     expect(harness.repository.createOrganization).toHaveBeenCalledTimes(1)
     expect(harness.deps.resolveRegistrationSlug).toHaveBeenCalledTimes(1)
-    // Provision organization was re-executed for finance readiness
     expect(harness.deps.provisionOrganization).toHaveBeenCalledTimes(2)
     expect(harness.deps.provisionOrganization).toHaveBeenLastCalledWith(
       'organization_1',
       NOW,
-      { sourceAppId: '876-invoice' }
+      {
+        sourceAppId: '876-invoice',
+        requireProvisioningSelection: true,
+      }
     )
+    expect(harness.deps.ensureWork).toHaveBeenCalledTimes(1)
   })
 
-  it('Test C: existing membership cannot bypass finance check', async () => {
+  it('existing membership cannot bypass persisted finance selection', async () => {
     const harness = makeHarness()
     arrange(harness)
     harness.provider.register.mockRejectedValue(
@@ -909,7 +924,6 @@ describe('AuthService.registerBusiness', () => {
       status: 'active',
     })
 
-    // Finance is unavailable on first retry
     const finance503 = new AppHttpError({
       code: 'provisioning/finance-workspace-unavailable',
       message: 'Finance unavailable',
@@ -924,13 +938,14 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
         sourceAppId: '876-invoice',
       })
     ).rejects.toMatchObject({
       code: 'provisioning/finance-workspace-unavailable',
     })
+    expect(harness.deps.ensureWork).not.toHaveBeenCalled()
 
-    // Finance becomes available on subsequent call
     harness.deps.provisionOrganization.mockResolvedValueOnce({
       owner: { id: 'role_owner' },
     })
@@ -941,13 +956,15 @@ describe('AuthService.registerBusiness', () => {
       firstName: 'Alejandra',
       lastName: 'Reyes',
       organizationName: 'Reyes Logistics',
+      countryCode: 'JM',
       sourceAppId: '876-invoice',
     })
 
     expect(result.status).toBe('ok')
+    expect(harness.deps.ensureWork).toHaveBeenCalledTimes(1)
   })
 
-  it('Test D: authentication challenge does not defer organization/product provisioning', async () => {
+  it('authentication challenge does not defer organization/product/Work provisioning', async () => {
     const harness = makeHarness()
     arrange(harness)
     const event = authEvent({ kind: 'email_verification_required' })
@@ -959,17 +976,18 @@ describe('AuthService.registerBusiness', () => {
       firstName: 'Alejandra',
       lastName: 'Reyes',
       organizationName: 'Reyes Logistics',
+      countryCode: 'JM',
       sourceAppId: '876-invoice',
     })
 
     expect(result).toEqual({ status: 'pending', event })
-    // Product provisioning is complete immediately, never deferred
     expect(harness.deps.provisionOrganization).toHaveBeenCalledWith(
       'organization_1',
       NOW,
       { sourceAppId: '876-invoice' }
     )
     expect(harness.deps.assignMemberApps).toHaveBeenCalledTimes(1)
+    expect(harness.deps.ensureWork).toHaveBeenCalledWith('organization_1')
     expect(harness.deps.ensureDefaultContact).toHaveBeenCalledTimes(1)
     expect(harness.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -978,11 +996,10 @@ describe('AuthService.registerBusiness', () => {
         status: 'active',
       })
     )
-    // User session remains unverified pending verification challenge
     expect(harness.repository.updateUser).not.toHaveBeenCalled()
   })
 
-  it('Test E: source provisioning profile missing fails closed', async () => {
+  it('source provisioning profile missing fails closed', async () => {
     const harness = makeHarness()
     arrange(harness)
     const missingProfileError = new AppHttpError({
@@ -1000,6 +1017,7 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
         sourceAppId: '876-invoice',
       })
     ).rejects.toMatchObject({
@@ -1008,7 +1026,37 @@ describe('AuthService.registerBusiness', () => {
     })
   })
 
-  it('deletes the provider organization when a genuine database failure occurs during bootstrap', async () => {
+  it('Work failure preserves the durable provider/local organization for retry', async () => {
+    const harness = makeHarness()
+    arrange(harness)
+    harness.deps.ensureWork.mockRejectedValue(
+      new AppHttpError({
+        code: 'provisioning/work-workspace-unavailable',
+        message: 'The Work workspace could not be prepared.',
+        httpStatus: 503,
+      })
+    )
+
+    await expect(
+      harness.service.registerBusiness({
+        email: 'alejandra@example.com',
+        password: PASSWORD,
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+        organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
+        sourceAppId: '876-crm',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/work-workspace-unavailable',
+      httpStatus: 503,
+    })
+
+    expect(harness.provider.deleteOrganization).not.toHaveBeenCalled()
+    expect(harness.repository.createOrganization).toHaveBeenCalledTimes(1)
+  })
+
+  it('deletes the provider organization when the local org write fails', async () => {
     const harness = makeHarness()
     arrange(harness)
     const failure = new Error('database unavailable')
@@ -1021,6 +1069,7 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
       })
     ).rejects.toBe(failure)
 
@@ -1030,7 +1079,7 @@ describe('AuthService.registerBusiness', () => {
     )
   })
 
-  it('does not compensate a failure that happened before the org was created', async () => {
+  it('does not compensate a failure that happened before the provider org was created', async () => {
     const harness = makeHarness()
     arrange(harness)
     const failure = new Error('workos unavailable')
@@ -1043,6 +1092,7 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: 'Reyes Logistics',
+        countryCode: 'JM',
       })
     ).rejects.toBe(failure)
 
@@ -1059,9 +1109,28 @@ describe('AuthService.registerBusiness', () => {
         firstName: 'Alejandra',
         lastName: 'Reyes',
         organizationName: '   ',
+        countryCode: 'JM',
       })
     ).rejects.toThrowError(
       expect.objectContaining({ code: 'auth/missing-organization-name' })
+    )
+    expect(provider.register).not.toHaveBeenCalled()
+  })
+
+  it('rejects a blank country before touching the provider', async () => {
+    const { service, provider } = makeHarness()
+
+    await expect(
+      service.registerBusiness({
+        email: 'alejandra@example.com',
+        password: PASSWORD,
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+        organizationName: 'Reyes Logistics',
+        countryCode: ' ',
+      })
+    ).rejects.toThrowError(
+      expect.objectContaining({ code: 'auth/invalid-input', httpStatus: 400 })
     )
     expect(provider.register).not.toHaveBeenCalled()
   })
