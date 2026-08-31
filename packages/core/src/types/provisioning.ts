@@ -1,3 +1,5 @@
+import type { ProvisioningSetupPolicyReplaceParams } from './provisioning-policy'
+
 /** Canonical contracts for the permanent provisioning manifest v1 protocol. */
 
 export type ProvisioningTargetType = 'organization' | 'finance' | 'application'
@@ -196,9 +198,11 @@ export type ProvisioningReconciliationResult = {
 export type ProvisioningSetupStatus = 'active' | 'archived'
 
 /**
- * A named day-zero configuration — Jamaica, United States, and so on. Its
- * finance manifest is stored at `finance/<key>`, and exactly one setup is the
- * platform default that new organizations are provisioned with.
+ * A named day-zero configuration. Geographic applicability is stored in its
+ * setup policy and finance defaults live in `finance/<key>` manifest v1.
+ *
+ * `country_code` and `currency_code` are temporary read-only compatibility
+ * fields for development backfill. New clients must not configure through them.
  */
 export type ProvisioningSetup = {
   object: 'provisioning_setup'
@@ -228,9 +232,8 @@ export type ProvisioningSetupCreateParams = {
   key: string
   name: string
   description?: string | null
-  country_code?: string | null
-  currency_code?: string | null
-  is_default?: boolean
+  /** Initial matching/application/service policy saved with the setup. */
+  policy?: ProvisioningSetupPolicyReplaceParams
   /** Setup whose published finance manifest seeds the new one. */
   copy_from?: string | null
 }
@@ -238,8 +241,6 @@ export type ProvisioningSetupCreateParams = {
 export type ProvisioningSetupUpdateParams = {
   name?: string
   description?: string | null
-  country_code?: string | null
-  currency_code?: string | null
   status?: ProvisioningSetupStatus
   is_default?: boolean
 }
