@@ -22,7 +22,7 @@ export function createProvisioningSetupPolicyRouter(
     operationId: 'provisioning-retrieve_setup_policy',
     summary: 'Retrieve provisioning setup policy',
     description:
-      'Returns match conditions and application/service entitlements independently of the manifest-v1 finance configuration.',
+      'Returns match conditions and application, shared-service, and service-capability policy independently of the manifest-v1 finance configuration.',
     request: { params: provisioningSetupPolicyParamsSchema },
     responses: {
       200: {
@@ -39,7 +39,7 @@ export function createProvisioningSetupPolicyRouter(
     operationId: 'provisioning-replace_setup_policy',
     summary: 'Replace provisioning setup policy',
     description:
-      'Atomically replaces match conditions and explicit application/service entitlement declarations for one setup.',
+      'Atomically replaces match conditions and explicit application, shared-service, and service-capability declarations for one setup.',
     request: {
       params: provisioningSetupPolicyParamsSchema,
       body: provisioningSetupPolicyReplaceSchema,
