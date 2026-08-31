@@ -104,6 +104,7 @@ export type {
   AdminProvisioningSetupStatus,
   AdminProvisioningSetupCreateParams,
   AdminProvisioningSetupUpdateParams,
+  AdminDeletedProvisioningSetup,
   AdminDeletedProvisioningNote,
   AdminApiKey,
   AdminApiKeyCreated,

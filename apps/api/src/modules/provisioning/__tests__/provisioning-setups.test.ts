@@ -18,12 +18,14 @@ const {
     create: vi.fn(),
     update: vi.fn(),
     updateMany: vi.fn(),
+    delete: vi.fn(),
     count: vi.fn(),
   },
   provisioningManifest: {
     findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteMany: vi.fn(),
   },
   provisioningManifestRevision: {
     findFirst: vi.fn(),
@@ -587,5 +589,76 @@ describe('PATCH /provisioning/setups/:setup_key', () => {
 
     expect(response.status).toBe(422)
     expect(provisioningSetup.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('DELETE /provisioning/setups/:setup_key', () => {
+  it('archives a setup and returns a deleted tombstone', async () => {
+    const setup = setupRow({
+      id: 'psu_us',
+      key: 'united-states',
+      isDefault: false,
+    })
+    provisioningSetup.findFirst.mockResolvedValue(setup)
+    provisioningSetup.update.mockResolvedValue({ ...setup, status: 'archived' })
+
+    const response = await request(createApp())
+      .delete('/provisioning/setups/united-states')
+      .set(AUTH)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({
+      object: 'provisioning_setup',
+      id: 'psu_us',
+      deleted: true,
+    })
+    expect(provisioningSetup.update).toHaveBeenCalledWith({
+      where: { id: 'psu_us' },
+      data: expect.objectContaining({ status: 'archived' }),
+      select: expect.any(Object),
+    })
+  })
+
+  it('refuses to delete an in-use setup', async () => {
+    provisioningSetup.findFirst.mockResolvedValue(
+      setupRow({ id: 'psu_us', key: 'united-states', isDefault: false })
+    )
+    organization.count.mockResolvedValue(1)
+
+    const response = await request(createApp())
+      .delete('/provisioning/setups/united-states')
+      .set(AUTH)
+
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe('provisioning/setup-in-use')
+    expect(provisioningSetup.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('DELETE /provisioning/setups/:setup_key/purge', () => {
+  it('permanently removes a removable setup and its finance manifest', async () => {
+    provisioningSetup.findFirst.mockResolvedValue(
+      setupRow({ id: 'psu_us', key: 'united-states', isDefault: false })
+    )
+    $transaction.mockImplementation(async (callback) =>
+      callback({ provisioningManifest, provisioningSetup })
+    )
+
+    const response = await request(createApp())
+      .delete('/provisioning/setups/united-states/purge')
+      .set(AUTH)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({
+      object: 'provisioning_setup',
+      id: 'psu_us',
+      deleted: true,
+    })
+    expect(provisioningManifest.deleteMany).toHaveBeenCalledWith({
+      where: { targetType: 'finance', targetKey: 'united-states' },
+    })
+    expect(provisioningSetup.delete).toHaveBeenCalledWith({
+      where: { id: 'psu_us' },
+    })
   })
 })

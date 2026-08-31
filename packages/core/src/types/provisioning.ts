@@ -218,6 +218,12 @@ export type ProvisioningSetup = {
   updated_at: number
 }
 
+export type DeletedProvisioningSetup = {
+  object: 'provisioning_setup'
+  id: string
+  deleted: true
+}
+
 export type ProvisioningSetupCreateParams = {
   key: string
   name: string

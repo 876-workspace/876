@@ -577,6 +577,7 @@ export type AdminProvisioningRun = ProvisioningRun
 export type AdminProvisioningRunStatus = ProvisioningRunStatus
 export type AdminProvisioningReconciliationResult =
   ProvisioningReconciliationResult
+export type AdminDeletedProvisioningSetup = DeletedProvisioningSetup
 export type AdminProvisioningSetup = ProvisioningSetup
 export type AdminProvisioningSetupStatus = ProvisioningSetupStatus
 export type AdminProvisioningSetupCreateParams = ProvisioningSetupCreateParams
@@ -1695,6 +1696,7 @@ export type AdminPlatformClientOptions = {
 }
 import type {
   ProvisioningCatalog,
+  DeletedProvisioningSetup,
   ProvisioningDraftReplaceParams,
   ProvisioningManifest,
   ProvisioningManifestRevision,

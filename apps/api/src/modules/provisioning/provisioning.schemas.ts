@@ -656,6 +656,14 @@ export const provisioningSetupResponseSchema = z
   })
   .meta({ id: 'ProvisioningSetup' })
 
+export const deletedProvisioningSetupResponseSchema = z
+  .object({
+    object: z.literal('provisioning_setup'),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({ id: 'DeletedProvisioningSetup' })
+
 export type ProvisioningSetupCreate = z.infer<
   typeof provisioningSetupCreateSchema
 >

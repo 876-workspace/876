@@ -1,11 +1,10 @@
-import { z } from 'zod'
-
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import { listObjectSchema } from '@/http/envelope'
 
 import * as controller from './provisioning.controller'
 import * as docs from './provisioning.docs'
 import {
+  deletedProvisioningSetupResponseSchema,
   listNotesQuerySchema,
   listRunsQuerySchema,
   provisioningApplicationClaimRequestSchema,
@@ -106,6 +105,40 @@ export function createProvisioningRouter(resolveGuards: GuardResolver) {
       409: { description: 'Setup cannot be archived or un-defaulted.' },
     },
     handler: controller.updateSetup,
+  })
+
+  api.delete({
+    path: '/setups/:setup_key',
+    operationId: 'provisioning-delete_setup',
+    summary: docs.DELETE_SETUP_SUMMARY,
+    description: docs.DELETE_SETUP_DESCRIPTION,
+    request: { params: provisioningSetupParamsSchema },
+    responses: {
+      200: {
+        description: 'Setup archived.',
+        schema: deletedProvisioningSetupResponseSchema,
+      },
+      404: { description: 'Setup not found.' },
+      409: { description: 'Setup cannot be deleted.' },
+    },
+    handler: controller.deleteSetup,
+  })
+
+  api.delete({
+    path: '/setups/:setup_key/purge',
+    operationId: 'provisioning-purge_setup',
+    summary: docs.PURGE_SETUP_SUMMARY,
+    description: docs.PURGE_SETUP_DESCRIPTION,
+    request: { params: provisioningSetupParamsSchema },
+    responses: {
+      200: {
+        description: 'Setup permanently deleted.',
+        schema: deletedProvisioningSetupResponseSchema,
+      },
+      404: { description: 'Setup not found.' },
+      409: { description: 'Setup cannot be purged.' },
+    },
+    handler: controller.purgeSetup,
   })
 
   // Catalog

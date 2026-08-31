@@ -569,6 +569,30 @@ async function requireSetup(key: string): Promise<repository.SetupRow> {
   return row
 }
 
+async function assertSetupCanBeRemoved(
+  setup: repository.SetupRow,
+  action: 'archived' | 'removed'
+) {
+  if (setup.isDefault) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-default-required',
+      message: `The default provisioning setup cannot be ${action}. Make another setup the default first.`,
+      httpStatus: 409,
+    })
+  }
+
+  const organizationCount = await repository.countOrganizationsForSetup(
+    setup.key
+  )
+  if (organizationCount > 0) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-in-use',
+      message: `${organizationCount} organization(s) are provisioned with this setup, so it cannot be ${action}.`,
+      httpStatus: 409,
+    })
+  }
+}
+
 export async function retrieveSetup(key: string) {
   const row = await requireSetup(key)
   return serializeSetup(row, await setupContext(row))
@@ -662,24 +686,7 @@ export async function updateSetup(
   const now = nowUnixSeconds()
 
   if (body.status === 'archived') {
-    if (setup.isDefault && body.is_default !== true) {
-      throw new AppHttpError({
-        code: 'provisioning/setup-default-required',
-        message:
-          'The default provisioning setup cannot be archived. Make another setup the default first.',
-        httpStatus: 409,
-      })
-    }
-    const organizationCount = await repository.countOrganizationsForSetup(
-      setup.key
-    )
-    if (organizationCount > 0) {
-      throw new AppHttpError({
-        code: 'provisioning/setup-in-use',
-        message: `${organizationCount} organization(s) are provisioned with this setup, so it cannot be archived.`,
-        httpStatus: 409,
-      })
-    }
+    await assertSetupCanBeRemoved(setup, 'archived')
   }
 
   if (body.is_default === false && setup.isDefault) {
@@ -742,4 +749,33 @@ export async function updateSetup(
   }
 
   return serializeSetup(updated, await setupContext(updated))
+}
+
+export async function deleteSetup(key: string) {
+  const setup = await requireSetup(key)
+  await assertSetupCanBeRemoved(setup, 'removed')
+
+  await repository.updateSetup(setup.id, {
+    status: 'archived',
+    now: nowUnixSeconds(),
+  })
+
+  return {
+    object: 'provisioning_setup' as const,
+    id: setup.id,
+    deleted: true as const,
+  }
+}
+
+export async function purgeSetup(key: string) {
+  const setup = await requireSetup(key)
+  await assertSetupCanBeRemoved(setup, 'removed')
+
+  await repository.purgeSetup(setup.id, setup.key)
+
+  return {
+    object: 'provisioning_setup' as const,
+    id: setup.id,
+    deleted: true as const,
+  }
 }

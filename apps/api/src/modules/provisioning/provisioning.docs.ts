@@ -55,3 +55,13 @@ export const UPDATE_SETUP_SUMMARY = 'Update a provisioning setup'
 
 export const UPDATE_SETUP_DESCRIPTION =
   'Renames a setup, edits its optional locale metadata, archives or reactivates it, or makes a published active setup the platform default. A default or in-use setup cannot be archived.'
+
+export const DELETE_SETUP_SUMMARY = 'Delete a provisioning setup'
+
+export const DELETE_SETUP_DESCRIPTION =
+  'Archives a setup so it is unavailable for future organization provisioning. Default and in-use setups cannot be deleted.'
+
+export const PURGE_SETUP_SUMMARY = 'Purge a provisioning setup'
+
+export const PURGE_SETUP_DESCRIPTION =
+  'Permanently removes a setup and its finance manifest. Default and in-use setups cannot be purged.'

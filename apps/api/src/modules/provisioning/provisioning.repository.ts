@@ -720,6 +720,20 @@ export function updateSetup(
 }
 
 /**
+ * Permanently removes a setup and the finance manifest it owns. The manifest's
+ * dependent revisions, resources, properties, steps, and notes cascade in the
+ * database transaction.
+ */
+export async function purgeSetup(id: string, key: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await tx.provisioningManifest.deleteMany({
+      where: { targetType: 'finance', targetKey: key },
+    })
+    await tx.provisioningSetup.delete({ where: { id } })
+  })
+}
+
+/**
  * Moves the platform default onto one setup. Run as a transaction because the
  * partial unique index permits exactly one `is_default = true` row: clearing
  * and setting in two statements would leave a window where two rows claim it.

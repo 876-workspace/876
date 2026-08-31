@@ -4,6 +4,7 @@ import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
   AdminDeletedProvisioningNote,
+  AdminDeletedProvisioningSetup,
   AdminListResponse,
   AdminProvisioningCatalog,
   AdminProvisioningDraftReplaceParams,
@@ -117,6 +118,20 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
           method: 'PATCH',
           path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
           body,
+        })
+      },
+
+      del(setupKey: string) {
+        return adminRequest<AdminDeletedProvisioningSetup>(runtime, {
+          method: 'DELETE',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
+        })
+      },
+
+      purge(setupKey: string) {
+        return adminRequest<AdminDeletedProvisioningSetup>(runtime, {
+          method: 'DELETE',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}/purge`,
         })
       },
     },
