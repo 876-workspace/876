@@ -36,6 +36,7 @@ export default async function PaymentsPage({ searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus = status ?? 'all'
   void selectedStatus
+
   return (
     <Page>
       <ResourceToolbar
@@ -74,56 +75,37 @@ export default async function PaymentsPage({ searchParams }: Props) {
 async function PaymentsTableData() {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
+
   const billing = await getBilling(context.orgId)
-  const result = (await billing.payments
-    .list()
-    .catch(
-      () => ({ data: null, error: { code: 'unreachable' } }) as const
-    )) as unknown as { data: { data: unknown[] } | null; error: unknown | null }
-  if (result.error || !result.data || result.data.data.length === 0) {
+  const result = await billing.payments.list()
+
+  if (result.error) {
     return (
-      <PaymentsTable
-        payments={[]}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CreditCardIcon />
-              </EmptyMedia>
-              <EmptyTitle>No payments received</EmptyTitle>
-              <EmptyDescription>
-                Record a customer payment and distribute it across one or more
-                open invoices.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
+      <div className="rounded-lg border border-dashed p-10 text-center">
+        <p className="text-sm font-medium">
+          Payments are unavailable right now
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {result.error.message}
+        </p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">
+          {result.error.code}
+        </p>
+      </div>
     )
   }
-  const payments = (result.data.data as Record<string, unknown>[]).map((p) => ({
-    id: String(p.id),
-    number: String(p.number ?? p.id),
-    customer: {
-      name: String(
-        (p.customer as Record<string, unknown>)?.name ?? p.customerName ?? '—'
-      ),
-    },
-    amount: (p.amount as string) ?? '0',
-    currency: String(p.currency ?? 'JMD'),
-    paymentDate:
-      typeof p.paymentDate === 'number'
-        ? p.paymentDate
-        : typeof p.createdAt === 'number'
-          ? p.createdAt
-          : null,
-    status: String(p.status ?? 'RECEIVED'),
-    depositAccount: String(
-      (p.depositAccount as Record<string, unknown>)?.name ??
-        p.accountName ??
-        'Undeposited'
-    ),
+
+  const payments = result.data.data.map((payment) => ({
+    id: payment.id,
+    number: payment.number,
+    customer: { name: payment.customer.name },
+    amount: payment.amount,
+    currency: payment.currency,
+    paymentDate: payment.paymentDate,
+    status: payment.status,
+    depositAccount: payment.depositAccount.name,
   }))
+
   return (
     <PaymentsTable
       payments={payments}
