@@ -9,7 +9,7 @@ const countryCodeSchema = z
   .transform((value) => value.toUpperCase())
 
 const entitlementSchema = z.strictObject({
-  target_type: z.enum(['application', 'service']),
+  target_type: z.enum(['application', 'service', 'service_capability']),
   target_key: z.string().min(1).max(120),
   enabled: z.boolean(),
 })
@@ -287,7 +287,8 @@ export const provisioningImportSpecificationSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['default_entitlements'],
-        message: '876 Enterprise must be enabled in the default entitlement policy.',
+        message:
+          '876 Enterprise must be enabled in the default entitlement policy.',
       })
     }
 

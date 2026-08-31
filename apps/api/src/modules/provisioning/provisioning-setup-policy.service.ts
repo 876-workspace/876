@@ -1,5 +1,6 @@
 import {
   PROVISIONING_SERVICE_ENTITLEMENTS,
+  PROVISIONING_WORK_SERVICE_CAPABILITIES,
   type ProvisioningSetupPolicy,
 } from '@876/core/types/provisioning-policy'
 
@@ -13,6 +14,9 @@ import type { ProvisioningSetupPolicyReplace } from './provisioning-setup-policy
 const ENTERPRISE_APP_SLUG = '876-enterprise'
 const SERVICE_TARGET_KEYS = new Set<string>(
   PROVISIONING_SERVICE_ENTITLEMENTS.map((entry) => entry.target_key)
+)
+const SERVICE_CAPABILITY_TARGET_KEYS = new Set<string>(
+  PROVISIONING_WORK_SERVICE_CAPABILITIES.map((entry) => entry.target_key)
 )
 
 function notFound(): never {
@@ -34,7 +38,8 @@ function serializePolicy(
       object: 'provisioning_setup_condition',
       id: condition.id,
       group_key: condition.groupKey,
-      field: condition.field as ProvisioningSetupPolicy['conditions'][number]['field'],
+      field:
+        condition.field as ProvisioningSetupPolicy['conditions'][number]['field'],
       operator:
         condition.operator as ProvisioningSetupPolicy['conditions'][number]['operator'],
       value: condition.value,
@@ -95,6 +100,17 @@ async function validateEntitlements(
         throw new AppHttpError({
           code: 'provisioning/unknown-service-entitlement',
           message: `Unknown provisioning service entitlement: ${entitlement.target_key}.`,
+          httpStatus: 400,
+        })
+      }
+      continue
+    }
+
+    if (entitlement.target_type === 'service_capability') {
+      if (!SERVICE_CAPABILITY_TARGET_KEYS.has(entitlement.target_key)) {
+        throw new AppHttpError({
+          code: 'provisioning/unknown-service-capability',
+          message: `Unknown provisioning service capability: ${entitlement.target_key}.`,
           httpStatus: 400,
         })
       }

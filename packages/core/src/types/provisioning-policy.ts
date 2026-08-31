@@ -35,7 +35,8 @@ export type ProvisioningSetupCondition = {
   updated_at: number
 }
 
-export type ProvisioningSetupEntitlementTargetType = 'application' | 'service'
+export type ProvisioningSetupEntitlementTargetType =
+  'application' | 'service' | 'service_capability'
 
 export type ProvisioningSetupEntitlement = {
   object: 'provisioning_setup_entitlement'
@@ -125,7 +126,63 @@ export const PROVISIONING_SERVICE_ENTITLEMENTS = [
   },
 ] as const
 
+/**
+ * Work is a service, not a sellable application. Its gate controls whether an
+ * organization receives a Work tenant at all; these capability selections
+ * describe which Work domains the tenant may use when it is enabled.
+ *
+ * They deliberately group the integration scopes exported by `@876/work` into
+ * operator-configurable product capabilities. Phase 2 will translate them to
+ * Work's concrete tenant/access configuration rather than treating an app
+ * subscription as authorization for Work.
+ */
+export const PROVISIONING_WORK_SERVICE_CAPABILITIES = [
+  {
+    target_type: 'service_capability',
+    target_key: 'work.tasks',
+    label: 'Tasks',
+    default_enabled: true,
+  },
+  {
+    target_type: 'service_capability',
+    target_key: 'work.reminders',
+    label: 'Reminders',
+    default_enabled: true,
+  },
+  {
+    target_type: 'service_capability',
+    target_key: 'work.calendars',
+    label: 'Calendars',
+    default_enabled: true,
+  },
+  {
+    target_type: 'service_capability',
+    target_key: 'work.events',
+    label: 'Events & scheduling',
+    default_enabled: true,
+  },
+  {
+    target_type: 'service_capability',
+    target_key: 'work.alerts',
+    label: 'Alerts',
+    default_enabled: true,
+  },
+  {
+    target_type: 'service_capability',
+    target_key: 'work.my-work',
+    label: 'My Work',
+    default_enabled: true,
+  },
+  {
+    target_type: 'service_capability',
+    target_key: 'work.sync',
+    label: 'Calendar sync',
+    default_enabled: false,
+  },
+] as const
+
 export const PROVISIONING_SETUP_ENTITLEMENT_CATALOG = [
   ...PROVISIONING_APPLICATION_ENTITLEMENTS,
   ...PROVISIONING_SERVICE_ENTITLEMENTS,
+  ...PROVISIONING_WORK_SERVICE_CAPABILITIES,
 ] as const

@@ -15,7 +15,11 @@ export const provisioningSetupPolicyParamsSchema = z.strictObject({
 
 const conditionFieldSchema = z.enum(PROVISIONING_SETUP_CONDITION_FIELDS)
 const conditionOperatorSchema = z.literal('equals')
-const entitlementTargetTypeSchema = z.enum(['application', 'service'])
+const entitlementTargetTypeSchema = z.enum([
+  'application',
+  'service',
+  'service_capability',
+])
 
 function normalizeConditionValue(
   field: ProvisioningSetupConditionField,
@@ -35,7 +39,8 @@ export const provisioningSetupConditionInputSchema = z
       .max(80)
       .transform((value) => value.trim().toLowerCase())
       .refine((value) => /^[a-z0-9][a-z0-9-]*$/.test(value), {
-        message: 'Condition group keys use lowercase letters, digits, and hyphens.',
+        message:
+          'Condition group keys use lowercase letters, digits, and hyphens.',
       }),
     field: conditionFieldSchema,
     operator: conditionOperatorSchema.optional().default('equals'),
@@ -58,7 +63,8 @@ export const provisioningSetupConditionInputSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['value'],
-          message: 'Country conditions must use the shared 876 country catalog.',
+          message:
+            'Country conditions must use the shared 876 country catalog.',
         })
       }
     }
@@ -82,8 +88,9 @@ export const provisioningSetupEntitlementInputSchema = z.strictObject({
     .min(1)
     .max(120)
     .transform((value) => value.trim().toLowerCase())
-    .refine((value) => /^[a-z0-9][a-z0-9-]*$/.test(value), {
-      message: 'Entitlement target keys use lowercase letters, digits, and hyphens.',
+    .refine((value) => /^[a-z0-9][a-z0-9.-]*$/.test(value), {
+      message:
+        'Entitlement target keys use lowercase letters, digits, and hyphens.',
     }),
   enabled: z.boolean(),
 })
@@ -117,7 +124,8 @@ export const provisioningSetupPolicyReplaceSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['conditions', index, 'priority'],
-          message: 'Every condition in one match group must use the same priority.',
+          message:
+            'Every condition in one match group must use the same priority.',
         })
       }
     })

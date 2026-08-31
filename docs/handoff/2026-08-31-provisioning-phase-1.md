@@ -137,6 +137,31 @@ service/work
 
 Work is deliberately represented as a service rather than pretending it is an application subscription.
 
+## Work service capabilities
+
+`service/work` is the tenant-level gate, not a product entitlement. When it is
+disabled, Phase 2 must not create or grant Work access. When it is enabled, the
+policy separately records the initial Work domains available to the organization:
+
+```text
+work.tasks       work.reminders    work.calendars
+work.events      work.alerts       work.my-work
+work.sync
+```
+
+These are service capabilities, not application plans and not integration
+scopes granted to another product. They are intentionally persisted now so
+Phase 2 can map them to Work tenant/access configuration without conflating
+Work with a sellable application. The Console preserves capability choices when
+the Work gate is turned off, but disables their controls until Work is enabled
+again. Current bootstrap enables every capability except external calendar sync.
+
+Application entitlement policy remains available for future initial product
+offers. `876-enterprise` is always present as organization-management access;
+other product entitlements remain disabled in the Phase 1 bootstrap. Before a
+future setup grants a sellable product, Phase 2/product provisioning must also
+select an explicit plan—there is no implicit free-plan fallback.
+
 The default one-time bootstrap policy currently defines:
 
 ```text

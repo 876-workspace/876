@@ -58,6 +58,26 @@ describe('provisioningSetupPolicyReplaceSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('accepts registered Work capability targets', () => {
+    const result = provisioningSetupPolicyReplaceSchema.safeParse({
+      conditions: [],
+      entitlements: [
+        {
+          target_type: 'service',
+          target_key: 'work',
+          enabled: true,
+        },
+        {
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: true,
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
   it('supports country and subdivision in the same AND group', () => {
     const result = provisioningSetupPolicyReplaceSchema.safeParse({
       conditions: [

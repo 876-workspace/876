@@ -9,10 +9,7 @@ import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@876/ui/native-select'
+import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Switch } from '@876/ui/switch'
 import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
@@ -35,7 +32,14 @@ const ENTITLEMENT_DESCRIPTIONS: Record<string, string> = {
   'application:876-crm':
     'Standalone 876 CRM product access. Source-app signup may still explicitly request CRM in Phase 2.',
   'service:work':
-    'Shared Work service used for tasks, reminders, calendar/workspace records and other Work-backed modules.',
+    'Creates/enables the shared Work service workspace. Turn it off to withhold Work entirely; choose the enabled Work capabilities below when it is on.',
+  'service_capability:work.tasks': 'Organization tasks and task lists.',
+  'service_capability:work.reminders': 'Standalone reminders.',
+  'service_capability:work.calendars': 'Calendars and calendar subscriptions.',
+  'service_capability:work.events': 'Events, attendees, and scheduling.',
+  'service_capability:work.alerts': 'Task and event alerts.',
+  'service_capability:work.my-work': 'The consolidated My Work view.',
+  'service_capability:work.sync': 'External calendar synchronization.',
 }
 
 export function FinanceSetupMetadataEditor({
@@ -262,6 +266,16 @@ export function FinanceSetupMetadataEditor({
     setup.status === 'active' &&
     setup.published_revision !== null
   const canArchive = !setup.is_default && setup.organization_count === 0
+  const workEnabled = entitlements['service:work'] ?? true
+  const applicationEntitlements = PROVISIONING_SETUP_ENTITLEMENT_CATALOG.filter(
+    (entry) => entry.target_type === 'application'
+  )
+  const serviceEntitlements = PROVISIONING_SETUP_ENTITLEMENT_CATALOG.filter(
+    (entry) => entry.target_type === 'service'
+  )
+  const workCapabilities = PROVISIONING_SETUP_ENTITLEMENT_CATALOG.filter(
+    (entry) => entry.target_type === 'service_capability'
+  )
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -419,8 +433,11 @@ export function FinanceSetupMetadataEditor({
               </div>
 
               <div className="divide-y rounded-md border">
-                {PROVISIONING_SETUP_ENTITLEMENT_CATALOG.map((entry) => {
-                  const key = entitlementKey(entry.target_type, entry.target_key)
+                {applicationEntitlements.map((entry) => {
+                  const key = entitlementKey(
+                    entry.target_type,
+                    entry.target_key
+                  )
                   const enabled = entitlements[key] ?? entry.default_enabled
                   const locked = entry.target_key === '876-enterprise'
 
@@ -449,6 +466,92 @@ export function FinanceSetupMetadataEditor({
                     </div>
                   )
                 })}
+              </div>
+
+              <div className="space-y-3 border-t pt-4">
+                <div>
+                  <p className="text-foreground text-sm font-medium">
+                    Shared services
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    A service workspace is infrastructure rather than a product
+                    subscription. Work capabilities are meaningful only while
+                    the Work service is enabled.
+                  </p>
+                </div>
+
+                <div className="divide-y rounded-md border">
+                  {serviceEntitlements.map((entry) => {
+                    const key = entitlementKey(
+                      entry.target_type,
+                      entry.target_key
+                    )
+                    const enabled = entitlements[key] ?? entry.default_enabled
+
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between gap-4 px-3 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">{entry.label}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {ENTITLEMENT_DESCRIPTIONS[key]}
+                          </p>
+                        </div>
+                        <Switch
+                          checked={enabled}
+                          onCheckedChange={(checked) =>
+                            setEntitlements((current) => ({
+                              ...current,
+                              [key]: checked,
+                            }))
+                          }
+                          disabled={policySaving}
+                          aria-label={`Toggle ${entry.label}`}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div className="divide-y rounded-md border">
+                  <div className="bg-muted/30 px-3 py-2.5">
+                    <p className="text-sm font-medium">Work capabilities</p>
+                    <p className="text-muted-foreground text-xs">
+                      Configure the initial Work domains for organizations that
+                      receive the Work service. This stores policy now; Phase 2
+                      applies it while creating the Work tenant/access records.
+                    </p>
+                  </div>
+                  {workCapabilities.map((entry) => {
+                    const key = entitlementKey(
+                      entry.target_type,
+                      entry.target_key
+                    )
+                    const enabled = entitlements[key] ?? entry.default_enabled
+
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between gap-4 px-3 py-3"
+                      >
+                        <p className="text-sm font-medium">{entry.label}</p>
+                        <Switch
+                          checked={enabled}
+                          onCheckedChange={(checked) =>
+                            setEntitlements((current) => ({
+                              ...current,
+                              [key]: checked,
+                            }))
+                          }
+                          disabled={!workEnabled || policySaving}
+                          aria-label={`Toggle ${entry.label}`}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
 

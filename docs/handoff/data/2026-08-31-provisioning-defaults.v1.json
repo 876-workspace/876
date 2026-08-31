@@ -28,7 +28,14 @@
     { "target_type": "application", "target_key": "876-billing", "enabled": false },
     { "target_type": "application", "target_key": "876-invoice", "enabled": false },
     { "target_type": "application", "target_key": "876-crm", "enabled": false },
-    { "target_type": "service", "target_key": "work", "enabled": true }
+    { "target_type": "service", "target_key": "work", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.tasks", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.reminders", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.calendars", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.events", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.alerts", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.my-work", "enabled": true },
+    { "target_type": "service_capability", "target_key": "work.sync", "enabled": false }
   ],
   "currencies": {
     "AWG": { "name": "Aruban Florin", "minor_unit": 2 },
