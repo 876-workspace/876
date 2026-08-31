@@ -18,9 +18,13 @@ const SPEC_PATH = fileURLToPath(
   )
 )
 
-async function loadSpec() {
+async function loadRawSpec(): Promise<Record<string, unknown>> {
   const text = await readFile(SPEC_PATH, 'utf8')
-  return provisioningImportSpecificationSchema.parse(JSON.parse(text))
+  return JSON.parse(text) as Record<string, unknown>
+}
+
+async function loadSpec() {
+  return provisioningImportSpecificationSchema.parse(await loadRawSpec())
 }
 
 describe('one-time provisioning import specification', () => {
@@ -32,6 +36,9 @@ describe('one-time provisioning import specification', () => {
     expect(spec.runtime_source_of_truth).toBe(false)
     expect(spec.default_setup_key).toBe('global-usd')
     expect(spec.default_language).toBe('en')
+    expect(spec.matching.current_condition).toBe(
+      'country equals ISO-3166-1 alpha-2 code'
+    )
   })
 
   it('covers the declared Caribbean, US, and Canada regional scope', async () => {
@@ -141,5 +148,53 @@ describe('one-time provisioning import specification', () => {
       ])
     )
     expect(capabilities).toHaveLength(7)
+  })
+
+  it('rejects unknown entitlement and Work capability targets during dry-run schema validation', async () => {
+    const raw = await loadRawSpec()
+    const entitlements = raw.default_entitlements as Array<Record<string, unknown>>
+    entitlements.push({
+      target_type: 'service_capability',
+      target_key: 'work.unknown',
+      enabled: true,
+    })
+
+    const result = provisioningImportSpecificationSchema.safeParse(raw)
+
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining(
+              'Unknown provisioning entitlement target'
+            ),
+          }),
+        ])
+      )
+  })
+
+  it('rejects Work capability bootstrap policy without an explicit Work service gate', async () => {
+    const raw = await loadRawSpec()
+    raw.default_entitlements = (
+      raw.default_entitlements as Array<Record<string, unknown>>
+    ).filter(
+      (entry) =>
+        !(entry.target_type === 'service' && entry.target_key === 'work')
+    )
+
+    const result = provisioningImportSpecificationSchema.safeParse(raw)
+
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining(
+              'Work service capabilities require an explicit service/work entitlement gate'
+            ),
+          }),
+        ])
+      )
   })
 })
