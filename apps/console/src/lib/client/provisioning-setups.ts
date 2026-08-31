@@ -1,4 +1,8 @@
 import type {
+  ProvisioningSetupPolicy,
+  ProvisioningSetupPolicyReplaceParams,
+} from '@876/core/types/provisioning-policy'
+import type {
   AdminDeletedProvisioningSetup,
   AdminProvisioningDraftReplaceParams,
   AdminProvisioningManifestRevision,
@@ -14,8 +18,8 @@ const path = (setupKey: string) =>
   `/api/organizations/provisioning/setups/${encodeURIComponent(setupKey)}`
 
 /**
- * Named day-zero configurations (Jamaica, United States, …). Each owns the
- * finance manifest that new organizations are provisioned from.
+ * Named day-zero configurations. Finance remains manifest v1; matching and
+ * access policy are edited independently at `/policy`.
  */
 export const provisioningSetups = {
   create(params: AdminProvisioningSetupCreateParams) {
@@ -28,6 +32,20 @@ export const provisioningSetups = {
   update(setupKey: string, params: AdminProvisioningSetupUpdateParams) {
     return request<AdminProvisioningSetup>(path(setupKey), {
       method: 'PATCH',
+      body: JSON.stringify(params),
+    })
+  },
+
+  retrievePolicy(setupKey: string) {
+    return request<ProvisioningSetupPolicy>(`${path(setupKey)}/policy`)
+  },
+
+  replacePolicy(
+    setupKey: string,
+    params: ProvisioningSetupPolicyReplaceParams
+  ) {
+    return request<ProvisioningSetupPolicy>(`${path(setupKey)}/policy`, {
+      method: 'PUT',
       body: JSON.stringify(params),
     })
   },
