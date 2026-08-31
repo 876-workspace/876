@@ -49,6 +49,7 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/core": "workspace:*",
     "@876/sdk": "workspace:*",
     "@876/work-ui": "workspace:*",
     "@base-ui/react": "1.7.0",
