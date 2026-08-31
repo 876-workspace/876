@@ -179,10 +179,26 @@ function resourcesForPreset(preset: RegionalProvisioningPreset): ResourceDef[] {
 }
 
 const REGIONAL_STEPS = [
-  { key: 'workspace', description: 'Create the finance workspace.', position: 0 },
-  { key: 'currencies', description: 'Create configured currencies.', position: 10 },
-  { key: 'payment-modes', description: 'Create payment modes.', position: 20 },
-  { key: 'payment-terms', description: 'Create payment terms.', position: 30 },
+  {
+    key: 'workspace',
+    description: 'Create the finance workspace.',
+    position: 0,
+  },
+  {
+    key: 'currencies',
+    description: 'Create configured currencies.',
+    position: 10,
+  },
+  {
+    key: 'payment-modes',
+    description: 'Create payment modes.',
+    position: 20,
+  },
+  {
+    key: 'payment-terms',
+    description: 'Create payment terms.',
+    position: 30,
+  },
   {
     key: 'invoice-preferences',
     description: 'Create invoice preferences.',
@@ -235,7 +251,7 @@ export async function seedRegionalProvisioningSetups(): Promise<RegionalProvisio
   for (const preset of ALL_REGIONAL_PROVISIONING_PRESETS) {
     let setup = await findRegionalSetupByKey(preset.key)
     if (!setup) {
-      setup = await createRegionalSetup({
+      await createRegionalSetup({
         id: generateId('provisioningSetup'),
         key: preset.key,
         name: preset.name,
@@ -243,14 +259,16 @@ export async function seedRegionalProvisioningSetups(): Promise<RegionalProvisio
         countryCode: preset.countryCode,
         currencyCode: preset.currency.code,
         now,
-      }) as Awaited<ReturnType<typeof findRegionalSetupByKey>>
+      })
       setupsCreated += 1
+      setup = await findRegionalSetupByKey(preset.key)
     }
 
     if (!setup) continue
     if (preset.isFallback) fallbackId = setup.id
 
-    const hadPolicy = setup.conditions.length > 0 || setup.entitlements.length > 0
+    const hadPolicy =
+      setup.conditions.length > 0 || setup.entitlements.length > 0
     await seedRegionalSetupPolicy({
       setupId: setup.id,
       conditions: preset.countryCode
