@@ -34,6 +34,7 @@ export const FINANCE_PROVISIONING_TABS: readonly FinanceProvisioningTab[] = [
   { key: 'payment_term', label: 'Payment terms', multiple: true },
   { key: 'invoice_preference', label: 'Invoice preferences', multiple: false },
   { key: 'tax_authority', label: 'Tax authorities', multiple: true },
+  { key: 'tax_jurisdiction', label: 'Tax jurisdictions', multiple: true },
   { key: 'tax_rate', label: 'Tax rates', multiple: true },
 ] as const
 
@@ -55,6 +56,7 @@ export const RESOURCE_TYPE_ICONS: Record<string, IconComponent> = {
   payment_term: Calendar,
   invoice_preference: ReceiptText,
   tax_authority: ShieldCheck,
+  tax_jurisdiction: Globe,
   tax_rate: ReceiptPercent,
   document_preference: DocumentTextIcon,
   organization_profile: Building2,
@@ -71,6 +73,7 @@ export const RESOURCE_TYPE_COLORS: Record<string, string> = {
   payment_term: 'text-emerald-500 dark:text-emerald-400',
   invoice_preference: 'text-rose-500 dark:text-rose-400',
   tax_authority: 'text-teal-500 dark:text-teal-400',
+  tax_jurisdiction: 'text-cyan-500 dark:text-cyan-400',
   tax_rate: 'text-violet-500 dark:text-violet-400',
   document_preference: 'text-blue-500 dark:text-blue-400',
   organization_profile: 'text-purple-500 dark:text-purple-400',
@@ -230,9 +233,7 @@ export function formatOptionLabel(value: string): string {
   return words
     .map((word, index) => {
       const lower = word.toLowerCase()
-      if (index > 0 && SMALL_WORDS.has(lower)) {
-        return lower
-      }
+      if (index > 0 && SMALL_WORDS.has(lower)) return lower
       return lower.charAt(0).toUpperCase() + lower.slice(1)
     })
     .join(' ')
