@@ -48,7 +48,7 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await workspace.apps.entitlements.update(
+  const { data, error } = await workspace.organizations.subscriptions.update(
     orgId,
     appId,
     {
