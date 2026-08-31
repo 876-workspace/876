@@ -20,24 +20,21 @@ const BankTransactionStatusSchema = z.enum([
   'EXCLUDED',
 ])
 
-/**
- * The schema for a created bank transaction response.
- */
+/** The schema for a created bank transaction response. */
 export const BankTransactionCreatedSchema = createdResourceSchema(
   'bank_transaction'
 ) satisfies z.ZodType<BankTransactionCreated>
 
-/**
- * The schema for a deleted bank transaction tombstone.
- */
+/** The schema for a deleted bank transaction tombstone. */
 export const BankTransactionDeletedSchema = deletedResourceSchema(
   'bank_transaction'
 ) satisfies z.ZodType<BankTransactionDeleted>
 
 /**
- * The schema for a bank transaction resource.
+ * Stable public bank-transaction DTO. Backend-only tenant and relation fields
+ * are stripped rather than becoming part of the SDK surface.
  */
-export const BankTransactionSchema = z.strictObject({
+export const BankTransactionSchema = z.object({
   object: z.literal('bank_transaction'),
   id: z.string().min(1),
   accountId: z.string().min(1),
@@ -52,9 +49,7 @@ export const BankTransactionSchema = z.strictObject({
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<BankTransaction>
 
-/**
- * The schema for a paginated list of bank transactions.
- */
+/** The schema for a paginated list of bank transactions. */
 export const BankTransactionListSchema = listSchema(
   BankTransactionSchema
 ) satisfies z.ZodType<List<BankTransaction>>
