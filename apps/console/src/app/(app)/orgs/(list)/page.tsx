@@ -96,8 +96,8 @@ async function OrganizationsTableData({
     const batchResult = await workspace.apps.entitlements.list({
       organizationIds: orgIds,
     })
-    if (batchResult.data?.data) {
-      for (const row of batchResult.data.data) {
+    if (batchResult.data) {
+      for (const row of batchResult.data) {
         if (!subscriptionsMap[row.organization_id])
           subscriptionsMap[row.organization_id] = []
         subscriptionsMap[row.organization_id]!.push(row)

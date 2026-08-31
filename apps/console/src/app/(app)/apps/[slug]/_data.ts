@@ -78,7 +78,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   }
 
   const hydratedById = new Map<string, AdminSubscription>(
-    (hydratedResult.data?.data ?? [])
+    (hydratedResult.data ?? [])
       .filter((subscription) => subscription.app_id === appId)
       .map((subscription) => [subscription.id, subscription])
   )
