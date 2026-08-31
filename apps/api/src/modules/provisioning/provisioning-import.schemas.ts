@@ -156,7 +156,7 @@ export const provisioningImportSpecificationSchema = z
     }),
     matching: z.strictObject({
       semantics: z.literal('OR_OF_AND_GROUPS'),
-      current_seed_condition: z.string().min(1),
+      current_condition: z.string().min(1),
       future_fields: z.array(z.enum(['subdivision', 'jurisdiction'])),
     }),
     default_entitlements: z.array(entitlementSchema).min(1),
