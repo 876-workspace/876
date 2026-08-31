@@ -1,4 +1,8 @@
 import type {
+  ProvisioningManifest,
+  ProvisioningSetup,
+} from '@876/core/types/provisioning'
+import type {
   ProvisioningSetupPolicy,
   ProvisioningSetupPolicyReplaceParams,
 } from '@876/core/types/provisioning-policy'
@@ -12,22 +16,7 @@ import {
   buildSetupPolicy,
 } from './provisioning-import.builders'
 import type { ProvisioningImportSpecification } from './provisioning-import.schemas'
-import {
-  createSetup,
-  publishDraft,
-  replaceDraft,
-  retrieveManifest,
-  retrieveSetup,
-  updateSetup,
-} from './provisioning.service'
-import {
-  replaceSetupPolicy,
-  retrieveSetupPolicy,
-} from './provisioning-setup-policy.service'
 import type { ProvisioningDraftReplace } from './provisioning.schemas'
-
-type Setup = Awaited<ReturnType<typeof retrieveSetup>>
-type Manifest = Awaited<ReturnType<typeof retrieveManifest>>
 
 export type ProvisioningImportSummary = {
   object: 'provisioning_import_summary'
@@ -47,7 +36,7 @@ export type ProvisioningImportSummary = {
 }
 
 export type ProvisioningImportDependencies = {
-  findSetup(key: string): Promise<Setup | null>
+  findSetup(key: string): Promise<ProvisioningSetup | null>
   createSetup(body: {
     key: string
     name: string
@@ -56,28 +45,29 @@ export type ProvisioningImportDependencies = {
     currency_code: null
     is_default: false
     copy_from: null
-  }): Promise<Setup>
-  findManifest(targetType: string, targetKey: string): Promise<Manifest | null>
+  }): Promise<ProvisioningSetup>
+  findManifest(
+    targetType: string,
+    targetKey: string
+  ): Promise<ProvisioningManifest | null>
   replaceDraft(
     targetType: string,
     targetKey: string,
     body: ProvisioningDraftReplace
-  ): ReturnType<typeof replaceDraft>
-  publishDraft(
-    targetType: string,
-    targetKey: string
-  ): ReturnType<typeof publishDraft>
+  ): Promise<unknown>
+  publishDraft(targetType: string, targetKey: string): Promise<unknown>
   retrievePolicy(setupKey: string): Promise<ProvisioningSetupPolicy>
   replacePolicy(
     setupKey: string,
     body: ProvisioningSetupPolicyReplaceParams
   ): Promise<ProvisioningSetupPolicy>
-  setDefault(setupKey: string): Promise<Setup>
+  setDefault(setupKey: string): Promise<ProvisioningSetup>
 }
 
-async function optionalSetup(key: string): Promise<Setup | null> {
+async function findSetup(key: string): Promise<ProvisioningSetup | null> {
+  const service = await import('./provisioning.service')
   try {
-    return await retrieveSetup(key)
+    return await service.retrieveSetup(key)
   } catch (error) {
     if (isAppHttpError(error) && error.code === 'provisioning/setup-not-found')
       return null
@@ -85,12 +75,13 @@ async function optionalSetup(key: string): Promise<Setup | null> {
   }
 }
 
-async function optionalManifest(
+async function findManifest(
   targetType: string,
   targetKey: string
-): Promise<Manifest | null> {
+): Promise<ProvisioningManifest | null> {
+  const service = await import('./provisioning.service')
   try {
-    return await retrieveManifest(targetType, targetKey)
+    return await service.retrieveManifest(targetType, targetKey)
   } catch (error) {
     if (
       isAppHttpError(error) &&
@@ -102,19 +93,37 @@ async function optionalManifest(
 }
 
 const DEFAULT_DEPENDENCIES: ProvisioningImportDependencies = {
-  findSetup: optionalSetup,
-  createSetup,
-  findManifest: optionalManifest,
-  replaceDraft,
-  publishDraft,
-  retrievePolicy: retrieveSetupPolicy,
-  replacePolicy: replaceSetupPolicy,
-  setDefault(setupKey) {
-    return updateSetup(setupKey, { is_default: true })
+  findSetup,
+  async createSetup(body) {
+    const service = await import('./provisioning.service')
+    return service.createSetup(body)
+  },
+  findManifest,
+  async replaceDraft(targetType, targetKey, body) {
+    const service = await import('./provisioning.service')
+    return service.replaceDraft(targetType, targetKey, body)
+  },
+  async publishDraft(targetType, targetKey) {
+    const service = await import('./provisioning.service')
+    return service.publishDraft(targetType, targetKey)
+  },
+  async retrievePolicy(setupKey) {
+    const service = await import('./provisioning-setup-policy.service')
+    return service.retrieveSetupPolicy(setupKey)
+  },
+  async replacePolicy(setupKey, body) {
+    const service = await import('./provisioning-setup-policy.service')
+    return service.replaceSetupPolicy(setupKey, body)
+  },
+  async setDefault(setupKey) {
+    const service = await import('./provisioning.service')
+    return service.updateSetup(setupKey, { is_default: true })
   },
 }
 
-function isPristineDraft(revision: Manifest['draft']): boolean {
+function isPristineDraft(
+  revision: ProvisioningManifest['draft']
+): boolean {
   if (!revision) return true
   return (
     revision.finance_dependency === 'none' &&
@@ -140,7 +149,7 @@ function mergePolicy(
     const exists = conditions.some(
       (candidate) =>
         candidate.field === condition.field &&
-        candidate.operator === condition.operator &&
+        candidate.operator === (condition.operator ?? 'equals') &&
         candidate.value === condition.value
     )
     if (!exists) conditions.push(condition)
@@ -181,10 +190,10 @@ function policyChanged(
         (candidate) =>
           candidate.group_key === condition.group_key &&
           candidate.field === condition.field &&
-          candidate.operator === condition.operator &&
+          candidate.operator === (condition.operator ?? 'equals') &&
           candidate.value === condition.value
       )
-      return currentCondition?.priority !== condition.priority
+      return currentCondition?.priority !== (condition.priority ?? 0)
     }) ||
     merged.entitlements.some((entitlement) => {
       const currentEntitlement = current.entitlements.find(
@@ -214,8 +223,8 @@ async function ensurePublishedManifest(
 }
 
 /**
- * Imports the development provisioning specification without taking ownership
- * of existing operator configuration.
+ * Import the temporary Phase 1 development specification without taking
+ * ownership of existing operator configuration.
  *
  * Missing setups and pristine/unpublished manifests are initialized. Existing
  * published manifests and non-empty drafts are preserved. Setup policies are
@@ -287,7 +296,11 @@ export async function importProvisioningSpecification(
     else {
       summary.finance_manifests_preserved += 1
       const current = await dependencies.findManifest('finance', setupSpec.key)
-      if (!current?.published && current?.draft && !isPristineDraft(current.draft)) {
+      if (
+        !current?.published &&
+        current?.draft &&
+        !isPristineDraft(current.draft)
+      ) {
         summary.warnings.push(
           `Setup '${setupSpec.key}' has an unpublished non-empty finance draft; the importer preserved it and did not publish specification defaults over it.`
         )
@@ -318,7 +331,11 @@ export async function importProvisioningSpecification(
         'application',
         application.app_slug
       )
-      if (!current?.published && current?.draft && !isPristineDraft(current.draft)) {
+      if (
+        !current?.published &&
+        current?.draft &&
+        !isPristineDraft(current.draft)
+      ) {
         summary.warnings.push(
           `Application '${application.app_slug}' has an unpublished non-empty provisioning draft; it was preserved.`
         )
