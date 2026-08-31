@@ -3,7 +3,7 @@
 import '@testing-library/jest-dom/vitest'
 
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { AdminProvisioningSetup } from '@876/platform/compat'
 
 import { SetupsList } from './setups-list'
@@ -12,8 +12,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
+let detailSegments: string[] = []
+
 vi.mock('@876/ui/list-detail-shell', () => ({
-  useDetailSegments: () => [],
+  useDetailSegments: () => detailSegments,
 }))
 
 const mockSetups: AdminProvisioningSetup[] = [
@@ -54,15 +56,21 @@ const mockSetups: AdminProvisioningSetup[] = [
 ]
 
 describe('SetupsList', () => {
-  it('renders table headers for Setup, Description, Currencies, Organizations, Status', () => {
+  afterEach(() => {
+    detailSegments = []
+  })
+
+  it('renders table headers for setup details, published revision, organizations, and status', () => {
     render(<SetupsList setups={mockSetups} />)
 
-    expect(screen.getByRole('columnheader', { name: 'Setup' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('columnheader', { name: 'Setup' })
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('columnheader', { name: 'Description' })
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('columnheader', { name: 'Currencies' })
+      screen.getByRole('columnheader', { name: 'Published revision' })
     ).toBeInTheDocument()
     expect(
       screen.getByRole('columnheader', { name: 'Organizations' })
@@ -72,7 +80,7 @@ describe('SetupsList', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders setup rows with badges for currencies and status', () => {
+  it('renders setup rows with revision and status', () => {
     render(<SetupsList setups={mockSetups} />)
 
     expect(screen.getByText('Jamaica')).toBeInTheDocument()
@@ -81,9 +89,10 @@ describe('SetupsList', () => {
       screen.getByText('Standard Jamaican finance setup')
     ).toBeInTheDocument()
 
-    // Currencies rendered as badges
-    expect(screen.getByText('JMD')).toBeInTheDocument()
-    expect(screen.getAllByText('USD').length).toBeGreaterThanOrEqual(1)
+    // Published revisions
+    expect(screen.getByText('v3')).toBeInTheDocument()
+    expect(screen.getByText('v1')).toBeInTheDocument()
+    expect(screen.getByText('Draft')).toBeInTheDocument()
 
     // Organizations
     expect(screen.getByText('14')).toBeInTheDocument()
@@ -92,5 +101,13 @@ describe('SetupsList', () => {
     // Status badges
     expect(screen.getByText('active')).toBeInTheDocument()
     expect(screen.getByText('archived')).toBeInTheDocument()
+  })
+
+  it('keeps condensed setup names blue while a provisioning card is open', () => {
+    detailSegments = ['barbados']
+    render(<SetupsList setups={mockSetups} />)
+
+    expect(screen.getByText('Jamaica')).toHaveClass('text-sky-600')
+    expect(screen.getByText('Jamaica')).toHaveClass('dark:text-sky-400')
   })
 })
