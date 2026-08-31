@@ -29,7 +29,6 @@ export default async function EditCustomerPage({ params }: Props) {
   }
 
   const customer = customerResult.data
-
   const organization = await platform.organizations.retrieve({
     id: context.orgId,
   })
@@ -49,12 +48,8 @@ export default async function EditCustomerPage({ params }: Props) {
           name: customer.name,
           email: customer.email,
           phone: customer.phone,
-          companyName:
-            'companyName' in customer ? String(customer.companyName) : null,
-          status:
-            'status' in customer
-              ? (customer.status as 'ACTIVE' | 'ARCHIVED')
-              : undefined,
+          companyName: customer.companyName,
+          status: customer.status,
         }}
       />
     </Page>
