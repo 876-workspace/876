@@ -33,7 +33,7 @@ function specification(): ProvisioningImportSpecification {
     },
     matching: {
       semantics: 'OR_OF_AND_GROUPS',
-      current_seed_condition: 'country equals ISO code',
+      current_condition: 'country equals ISO code',
       future_fields: ['subdivision', 'jurisdiction'],
     },
     default_entitlements: [
