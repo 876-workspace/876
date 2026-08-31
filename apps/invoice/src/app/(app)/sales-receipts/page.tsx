@@ -1,3 +1,4 @@
+import type { InvoiceStatus } from '@876/billing'
 import { ReceiptText } from '@876/ui/icons'
 import { Suspense } from 'react'
 import {
@@ -33,15 +34,42 @@ const SALES_RECEIPT_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'void', label: 'Void', headingLabel: 'Void Sales Receipts' },
 ]
 
+type SalesReceiptStatusFilter = 'all' | 'draft' | 'sent' | 'paid' | 'void'
 type Props = { searchParams: Promise<{ status?: string }> }
+
+function getStatusFilter(status?: string): SalesReceiptStatusFilter {
+  switch (status) {
+    case 'draft':
+    case 'sent':
+    case 'paid':
+    case 'void':
+      return status
+    default:
+      return 'all'
+  }
+}
+
+function getApiStatus(
+  status: SalesReceiptStatusFilter
+): InvoiceStatus | undefined {
+  switch (status) {
+    case 'draft':
+      return 'DRAFT'
+    case 'sent':
+      return 'SENT'
+    case 'paid':
+      return 'PAID'
+    case 'void':
+      return 'VOID'
+    case 'all':
+      return undefined
+  }
+}
 
 export default async function SalesReceiptsPage({ searchParams }: Props) {
   const { status } = await searchParams
-  const selectedStatus = ['draft', 'sent', 'paid', 'void'].includes(
-    status ?? ''
-  )
-    ? status!
-    : 'all'
+  const selectedStatus = getStatusFilter(status)
+
   return (
     <Page>
       <ResourceToolbar
@@ -72,63 +100,52 @@ export default async function SalesReceiptsPage({ searchParams }: Props) {
           />
         }
       >
-        <SalesReceiptsTableData />
+        <SalesReceiptsTableData searchParams={searchParams} />
       </Suspense>
     </Page>
   )
 }
 
-async function SalesReceiptsTableData() {
+async function SalesReceiptsTableData({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = getStatusFilter(status)
+  const apiStatus = getApiStatus(selectedStatus)
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
+
   const billing = await getBilling(context.orgId)
-  // Sales Receipts share the invoice family — reuse invoices endpoint until dedicated resource exists.
-  const result = (await billing.invoices
-    .list()
-    .catch(
-      () => ({ data: null, error: { code: 'unreachable' } }) as const
-    )) as unknown as { data: { data: unknown[] } | null; error: unknown | null }
-  if (result.error || !result.data || result.data.data.length === 0) {
+  // Sales receipts still share the invoice family until Billing exposes a
+  // dedicated receipt discriminator/resource. Keep the source data truthful.
+  const result = await billing.invoices.list(
+    apiStatus ? { status: apiStatus } : undefined
+  )
+
+  if (result.error) {
     return (
-      <SalesReceiptsTable
-        receipts={[]}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ReceiptText />
-              </EmptyMedia>
-              <EmptyTitle>No sales receipts yet</EmptyTitle>
-              <EmptyDescription>
-                Record a cash sale when payment is received at the point of
-                sale.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
+      <div className="rounded-lg border border-dashed p-10 text-center">
+        <p className="text-sm font-medium">
+          Sales receipts are unavailable right now
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {result.error.message}
+        </p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">
+          {result.error.code}
+        </p>
+      </div>
     )
   }
-  const receipts = (result.data.data as Record<string, unknown>[])
-    .slice(0, 5)
-    .map((r) => ({
-      id: String(r.id),
-      number: String(r.number ?? r.id),
-      customer: {
-        name: String(
-          (r.customer as Record<string, unknown>)?.name ?? r.customerName ?? '—'
-        ),
-      },
-      totalAmount: (r.totalAmount as string) ?? '0',
-      currency: String(r.currency ?? 'JMD'),
-      status: String(r.status ?? 'PAID'),
-      date:
-        typeof r.createdAt === 'number'
-          ? (r.createdAt as number)
-          : typeof r.date === 'number'
-            ? (r.date as number)
-            : null,
-    }))
+
+  const receipts = result.data.data.map((receipt) => ({
+    id: receipt.id,
+    number: receipt.number,
+    customer: { name: receipt.customer.name },
+    totalAmount: receipt.totalAmount,
+    currency: receipt.currency,
+    status: receipt.status,
+    date: receipt.paidAt,
+  }))
+
   return (
     <SalesReceiptsTable
       receipts={receipts}
