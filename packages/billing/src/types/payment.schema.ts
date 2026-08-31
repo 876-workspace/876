@@ -7,7 +7,6 @@ import {
   listSchema,
 } from './common.schema'
 import { BankAccountTypeSchema } from './bank-account.schema'
-import { BankTransactionSchema } from './bank-transaction.schema'
 import type { Payment, PaymentCreated, PaymentDeleted } from './payment'
 
 /** The schema for a created payment response. */
@@ -32,6 +31,21 @@ const PaymentAllocationSchema = z.object({
     amountDue: z.string(),
     status: z.string(),
   }),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+})
+
+const PaymentBankTransactionSchema = z.object({
+  object: z.literal('bank_transaction'),
+  id: z.string().min(1),
+  accountId: z.string().min(1),
+  paymentId: z.string().min(1).nullable(),
+  type: z.enum(['CREDIT', 'DEBIT']),
+  amount: z.string(),
+  date: z.number().int(),
+  description: z.string().nullable(),
+  status: z.enum(['UNCATEGORIZED', 'CATEGORIZED', 'MATCHED', 'EXCLUDED']),
+  reference: z.string().nullable(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 })
@@ -88,7 +102,7 @@ export const PaymentSchema = z.object({
     currency: z.string(),
   }),
   invoiceAllocations: z.array(PaymentAllocationSchema),
-  bankTransaction: BankTransactionSchema.nullable().optional(),
+  bankTransaction: PaymentBankTransactionSchema.nullable().optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<Payment>
