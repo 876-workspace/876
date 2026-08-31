@@ -1,4 +1,4 @@
-import type { AppCreateParams, AppCreated } from '@876/sdk'
+import type { AppCreateParams, AppCreated } from '@876/account'
 
 import { post } from '@/lib/client/request'
 

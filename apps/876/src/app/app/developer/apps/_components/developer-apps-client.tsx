@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
 import { Copy, KeyRound, Plus, Shield } from '@876/ui/icons'
 
-import type { App, AppCreated } from '@876/sdk'
+import type { App, AppCreated } from '@876/account'
 import { Input } from '@876/ui/input'
 import { Textarea } from '@876/ui/textarea'
 
