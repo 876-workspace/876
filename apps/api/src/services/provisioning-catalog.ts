@@ -3,10 +3,9 @@ import { BILLING_APP_SLUG } from './provisioning'
 const CRM_APP_SLUG = '876-crm'
 
 // Provisioning catalog — the closed set of resource types each provisioning
-// target may declare, and the validation that keeps a draft consistent.
-//
-// Mirrors `services/provisioning_catalog.py` exactly so the same manifests
-// pass or fail on either side of the migration.
+// target may declare, and the validation that keeps a manifest-v1 draft
+// consistent. The catalog describes allowed configuration; operational values
+// live in database-backed provisioning manifests.
 
 export type ProvisioningTargetType = 'organization' | 'finance' | 'application'
 export type ProvisioningValueType =
@@ -116,6 +115,7 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
     1,
     {
       countryCode: field('Country', 'reference', {
+        required: false,
         referenceNamespace: 'country',
       }),
       baseCurrency: field('Base currency', 'reference', {
@@ -190,12 +190,44 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
     'Tax authorities',
     'Tax administrations available to newly created organizations.',
     true,
-    1,
+    0,
     {
       name: field('Name', 'string'),
       description: field('Description', 'string', { required: false }),
       countryCode: field('Country', 'reference', {
         referenceNamespace: 'country',
+      }),
+      jurisdiction: field('Jurisdiction', 'reference', {
+        required: false,
+        referenceNamespace: 'tax_jurisdiction',
+      }),
+    }
+  ),
+  tax_jurisdiction: resource(
+    'Tax jurisdictions',
+    'Geographic tax areas used to model national and sub-national tax rules.',
+    true,
+    0,
+    {
+      name: field('Name', 'string'),
+      countryCode: field('Country', 'reference', {
+        referenceNamespace: 'country',
+      }),
+      type: field('Jurisdiction type', 'string', {
+        allowedValues: [
+          'country',
+          'state',
+          'province',
+          'county',
+          'city',
+          'district',
+          'other',
+        ],
+      }),
+      code: field('Jurisdiction code', 'string', { required: false }),
+      parent: field('Parent jurisdiction', 'reference', {
+        required: false,
+        referenceNamespace: 'tax_jurisdiction',
       }),
     }
   ),
@@ -203,7 +235,7 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
     'Tax rates',
     'Tax rates created for newly provisioned finance workspaces.',
     true,
-    1,
+    0,
     {
       name: field('Name', 'string'),
       description: field('Description', 'string', { required: false }),
@@ -211,8 +243,15 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
       rate: field('Rate', 'decimal'),
       inclusive: field('Inclusive', 'boolean'),
       authority: field('Tax authority', 'reference', {
+        required: false,
         referenceNamespace: 'tax_authority',
       }),
+      jurisdiction: field('Jurisdiction', 'reference', {
+        required: false,
+        referenceNamespace: 'tax_jurisdiction',
+      }),
+      effectiveFrom: field('Effective from', 'string', { required: false }),
+      effectiveUntil: field('Effective until', 'string', { required: false }),
     }
   ),
 }
