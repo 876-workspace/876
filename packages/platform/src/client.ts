@@ -18,6 +18,7 @@ import { createAdminAuthResource } from './resources/auth'
 import { createAdminAuthAttemptsResource } from './resources/auth-attempts'
 import { createAdminDevicesResource } from './resources/devices'
 import { createAdminFeaturesResource } from './resources/features'
+import { createAdminGeoResource } from './resources/geo'
 import { createAdminMembershipsResource } from './resources/memberships'
 import { createAdminModulesResource } from './resources/modules'
 import { createAdminOnboardingResource } from './resources/onboarding'
@@ -87,6 +88,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     orgAppRoles: appAccess.orgAppRoles,
     appMemberships: appAccess.appMemberships,
     features,
+    geo: createAdminGeoResource(runtime),
     organizationFeatures,
     apiKeys: createAdminApiKeysResource(runtime),
     organizations: {

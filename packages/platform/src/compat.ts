@@ -86,6 +86,8 @@ export type {
   AdminAppCreateParams,
   AdminAppUpdateParams,
   AdminDeletedApp,
+  AdminGeoCurrency,
+  AdminGeoLanguage,
   AdminProvisioningTargetType,
   AdminProvisioningValueType,
   AdminProvisioningProperty,

@@ -31,6 +31,7 @@ export type WorkspaceOperatorClient = {
   features: CoreOperator['features']
   organizationFeatures: CoreOperator['organizationFeatures']
   onboarding: CoreOperator['onboarding']
+  geo: CoreOperator['geo']
   provisioning: CoreOperator['provisioning']
   modules: CoreOperator['modules']
   addresses: CoreOperator['addresses']
@@ -67,6 +68,7 @@ export function create876WorkspaceOperatorClient(
     features: core.features,
     organizationFeatures: core.organizationFeatures,
     onboarding: core.onboarding,
+    geo: core.geo,
     provisioning: core.provisioning,
     modules: core.modules,
     addresses: core.addresses,

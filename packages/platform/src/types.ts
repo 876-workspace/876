@@ -562,6 +562,22 @@ export type AdminDeletedApp = {
   deleted: boolean
 }
 
+/** A read-only currency record from the Core geo catalog. */
+export type AdminGeoCurrency = {
+  object: 'currency'
+  code: string
+  name: string
+  symbol: string
+  decimal_places: number
+}
+
+/** A read-only language record from the Core geo catalog. */
+export type AdminGeoLanguage = {
+  object: 'language'
+  code: string
+  name: string
+}
+
 export type AdminProvisioningTargetType = ProvisioningTargetType
 export type AdminProvisioningValueType = ProvisioningValueType
 export type AdminProvisioningProperty = ProvisioningProperty
