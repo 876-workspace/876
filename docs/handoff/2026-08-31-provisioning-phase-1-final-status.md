@@ -45,9 +45,9 @@ setups, finance manifests, revisions, or organization setup assignments.
 It also enforces database-level checks for the current closed policy vocabulary:
 
 ```text
-condition field   = country | subdivision | jurisdiction
+condition field    = country | subdivision | jurisdiction
 condition operator = equals
-entitlement type  = application | service
+entitlement type   = application | service | service_capability
 ```
 
 Foreign keys cascade when a setup is physically purged, and indexes support
@@ -73,6 +73,38 @@ country/subdivision/jurisdiction -> setup policy conditions
 currency                         -> finance manifest resources
 ```
 
+### Work service and capability policy is explicit
+
+Work is not modeled as an application subscription.
+
+The setup policy contains an explicit Work service gate:
+
+```text
+service/work
+```
+
+and explicit Work capability rows:
+
+```text
+service_capability/work.tasks
+service_capability/work.reminders
+service_capability/work.calendars
+service_capability/work.events
+service_capability/work.alerts
+service_capability/work.my-work
+service_capability/work.sync
+```
+
+Current one-time defaults enable all of the above except `work.sync`.
+
+Capability policy requires an explicit `service/work` row. The Work service gate
+may be disabled while capability preferences remain stored, but Phase 2 must
+honor the service gate first and must not create/enable Work merely because one
+of its capability rows is enabled.
+
+The API rejects unknown Work capabilities and capability policy without the
+explicit Work service gate.
+
 ### Import execution/idempotency tests added
 
 The one-time importer now has tests beyond file/schema construction. Coverage
@@ -84,7 +116,7 @@ includes:
 - preserving already published manifests;
 - preserving non-empty operator drafts;
 - merging missing policy rows without replacing operator-authored rules;
-- preserving explicit Work/application entitlement choices;
+- preserving explicit application/service/service-capability choices;
 - forcing mandatory Enterprise behavior;
 - second-run/no-op preservation behavior.
 
@@ -104,7 +136,10 @@ Additional coverage includes:
 - mandatory Enterprise insertion;
 - rejecting an explicitly disabled Enterprise entitlement;
 - validating Work as a shared service target;
+- validating registered Work capabilities;
+- requiring an explicit Work gate for capability rows;
 - rejecting unknown service targets;
+- rejecting unknown service capabilities;
 - rejecting unknown/internal application targets;
 - setup-policy serialization;
 - stable setup-not-found behavior;
@@ -147,7 +182,7 @@ It checks:
 - every expected setup has a published finance manifest v1;
 - expected country conditions are present;
 - the fallback remains location-neutral;
-- expected entitlement target rows exist;
+- expected application/service/service-capability target rows exist;
 - 876 Enterprise is enabled;
 - the organization manifest is published;
 - every application manifest declared in the import specification is published.
@@ -179,7 +214,9 @@ Purpose:
 - Jamaica TAJ/GCT baseline;
 - CRM defaults;
 - application finance contracts;
-- application/service entitlement defaults including `service/work`.
+- application entitlement defaults;
+- Work service gate defaults;
+- Work capability defaults.
 
 It explicitly declares:
 
@@ -280,6 +317,10 @@ Confirm at minimum:
 - all setups use English as the bootstrap language;
 - country policy rows are normalized rather than relying on setup country code;
 - Work is represented as `service/work`;
+- Work capability rows exist for tasks, reminders, calendars, events, alerts,
+  My Work, and calendar sync;
+- `work.sync` is disabled by default while the other current Work capabilities
+  are enabled by default;
 - 876 Enterprise is enabled;
 - Billing and Invoice are not granted merely because finance infrastructure is
   present;
@@ -325,9 +366,11 @@ Implemented in branch code:
 - [x] normalized country/subdivision/jurisdiction policy model;
 - [x] many countries per setup / many setups per country capable schema;
 - [x] canonical country catalog selectors and API validation;
-- [x] explicit application/service entitlement policy;
+- [x] explicit application/service/service-capability policy;
 - [x] mandatory Enterprise behavior;
-- [x] Work service entitlement;
+- [x] Work service entitlement gate;
+- [x] Work capability configuration;
+- [x] Work capability gate/validation invariants;
 - [x] Billing/Invoice separated from finance infrastructure;
 - [x] international finance catalog;
 - [x] optional tax configuration;
@@ -344,6 +387,7 @@ Implemented in branch code:
 - [x] provisioning seeds removed;
 - [x] regional one-time data file;
 - [x] one-time import schema/builders/service;
+- [x] Work capability bootstrap coverage;
 - [x] conservative/idempotent importer coverage;
 - [x] database-free import dry-run;
 - [x] explicit additive Prisma migration file;
@@ -372,6 +416,14 @@ finish Phase 1.
 
 Phase 2 remains responsible for resolving/persisting a setup during organization
 creation using authoritative country/subdivision/jurisdiction data, then applying
-finance manifest v1 plus application/service entitlement policy idempotently.
+finance manifest v1 plus application/service/service-capability policy
+idempotently.
+
+Phase 2 must interpret Work policy in this order:
+
+```text
+service/work disabled -> do not provision/enable Work
+service/work enabled  -> provision Work and then apply enabled capability rows
+```
 
 See the main Phase 1 report and ADR-015 for the full Phase 2 boundary.
