@@ -73,8 +73,6 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
         <TableHeader className="876-header-row">
           <TableRow>
             <TableHead className="px-5 py-3.5">Setup</TableHead>
-            <TableHead className="px-5 py-3.5">Country</TableHead>
-            <TableHead className="px-5 py-3.5">Currency</TableHead>
             <TableHead className="px-5 py-3.5">Revision</TableHead>
             <TableHead className="px-5 py-3.5">Organizations</TableHead>
             <TableHead className="px-5 py-3.5">Status</TableHead>
@@ -84,7 +82,7 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
           {setups.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={4}
                 className="text-muted-foreground px-5 py-8 text-center text-[0.8125rem]"
               >
                 No setups match this view.
@@ -155,14 +153,8 @@ function SetupRow({
           {setup.key}
         </div>
       </TableCell>
-      <TableCell className="text-muted-foreground px-5 py-3.5">
-        {setup.country_code ?? '—'}
-      </TableCell>
-      <TableCell className="text-muted-foreground px-5 py-3.5">
-        {setup.currency_code ?? '—'}
-      </TableCell>
       <TableCell className="px-5 py-3.5 tabular-nums">
-        {setup.published_revision ?? '—'}
+        {setup.published_revision ?? 'Draft'}
       </TableCell>
       <TableCell className="px-5 py-3.5 tabular-nums">
         {setup.organization_count}
