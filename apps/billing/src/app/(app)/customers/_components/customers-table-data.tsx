@@ -12,33 +12,12 @@ import { service } from '@/lib/service'
 
 import { CustomersTable } from './customers-table'
 
-type Props = {
-  searchParams: Promise<{
-    status?: string
-  }>
-}
-
-/**
- * The customers list's data half, kept out of `page.tsx` because a route file
- * may only export Next's own contract — an extra export there fails the build
- * with a route-type constraint error.
- */
-export async function CustomersTableData({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus =
-    status === 'active' || status === 'archived' ? status : 'all'
-  const filterStatus =
-    selectedStatus === 'all'
-      ? undefined
-      : (selectedStatus.toUpperCase() as 'ACTIVE' | 'ARCHIVED')
-
+/** Data half of the persistent customers list column. */
+export async function CustomersTableData() {
   const context = await getWorkspaceContext()
   if (!context) return null
 
-  const customers = await service.customers.list(
-    context.tenant.id,
-    filterStatus
-  )
+  const customers = await service.customers.list(context.tenant.id)
   const rows = customers.map((customer) => {
     const contact = customer.primaryContact ?? customer.contacts?.[0]
     const contactName =

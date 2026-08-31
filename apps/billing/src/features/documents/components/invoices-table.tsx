@@ -1,12 +1,14 @@
 'use client'
 
 import * as React from 'react'
-
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+import { ResourceSplitList } from '@876/ui/resource-split-list'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
+
 import { formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
 
@@ -25,10 +27,14 @@ interface InvoiceRow {
   customer: { name: string }
 }
 
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
-
 export function InvoicesTable({ invoices, emptyState }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const status = searchParams.get('status') ?? 'all'
+  const visibleInvoices = invoices.filter((invoice) =>
+    status === 'all' ? true : invoice.status === status.toUpperCase()
+  )
+
   const columns: ColumnDef<InvoiceRow, unknown>[] = [
     {
       id: 'invoice',
@@ -88,14 +94,27 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
     },
   ]
 
-  return (
+  const table = (
     <div className="876-card overflow-hidden">
       <DataTable
         emptyState={emptyState}
         columns={columns}
-        data={invoices}
+        data={visibleInvoices}
         onRowClick={(invoice) => router.push(`/invoices/${invoice.id}`)}
       />
     </div>
+  )
+
+  return (
+    <ResourceSplitList
+      table={table}
+      items={visibleInvoices.map((invoice) => ({
+        id: invoice.id,
+        href: `/invoices/${invoice.id}`,
+        title: invoice.number,
+        description: invoice.customer.name,
+        meta: `${formatMoney(invoice.amountDue, invoice.currency)} due · ${invoice.status.toLowerCase().replace(/_/g, ' ')}`,
+      }))}
+    />
   )
 }

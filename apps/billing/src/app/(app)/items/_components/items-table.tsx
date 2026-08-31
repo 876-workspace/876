@@ -1,13 +1,15 @@
 'use client'
 
 import * as React from 'react'
-
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+import { ResourceSplitList } from '@876/ui/resource-split-list'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import { formatMoney } from '@/lib/format'
+
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
+import { formatMoney } from '@/lib/format'
 
 type Props = {
   emptyState?: React.ReactNode
@@ -28,10 +30,16 @@ interface ItemRow {
   prices: unknown[]
 }
 
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
-
 export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const status = searchParams.get('status') ?? 'all'
+  const visibleItems = items.filter((item) => {
+    if (status === 'active') return item.isActive
+    if (status === 'inactive') return !item.isActive
+    return true
+  })
+
   const columns: ColumnDef<ItemRow, unknown>[] = [
     {
       id: 'item',
@@ -115,15 +123,31 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
     },
   ]
 
-  return (
+  const table = (
     <div className="876-card overflow-hidden">
       <DataTable
         emptyState={emptyState}
         columns={columns}
-        data={items}
+        data={visibleItems}
         className="text-[0.8125rem]"
         onRowClick={(item) => router.push(`/items/${item.id}`)}
       />
     </div>
+  )
+
+  return (
+    <ResourceSplitList
+      table={table}
+      items={visibleItems.map((item) => ({
+        id: item.id,
+        href: `/items/${item.id}`,
+        title: item.name,
+        description: `${item.type.toLowerCase()} · ${item.sku ?? item.unit ?? 'No SKU'}`,
+        meta: `${formatMoney(
+          item.defaultSellingAmount,
+          item.defaultSellingCurrency ?? defaultCurrency
+        )} · ${item.isActive ? 'Active' : 'Archived'}`,
+      }))}
+    />
   )
 }
