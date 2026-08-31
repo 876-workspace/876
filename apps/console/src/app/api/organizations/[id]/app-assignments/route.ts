@@ -22,7 +22,7 @@ export async function GET(
   const appId = searchParams.get('app_id') ?? undefined
   const includeRevoked = searchParams.get('include_revoked') === 'true'
 
-  const { data, error } = await workspace.apps.list(id, {
+  const { data, error } = await workspace.appAssignments.list(id, {
     userId,
     appId,
     includeRevoked,
