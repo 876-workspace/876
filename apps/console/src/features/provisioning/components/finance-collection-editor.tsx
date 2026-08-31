@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import {
@@ -26,12 +27,12 @@ import {
   TableHeader,
   TableRow,
 } from '@876/ui/table'
-import { cn } from '@876/core/utils'
 
 import {
   fieldDisplayValue,
+  financeFieldOptions,
   formatOptionLabel,
-  rowReferenceKey,
+  type FinanceFieldDefinition,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
 } from '../finance-provisioning-utils'
@@ -50,8 +51,6 @@ type Props = {
   onCancel: () => void
 }
 
-type FieldDefinition = FinanceResourceDefinition['fields'][number]
-
 function InlineFieldControl({
   field,
   value,
@@ -59,22 +58,13 @@ function InlineFieldControl({
   autoFocus,
   onChange,
 }: {
-  field: FieldDefinition
+  field: FinanceFieldDefinition
   value: string | boolean | undefined
   allRows: FinanceResourceRow[]
   autoFocus: boolean
   onChange: (value: string | boolean) => void
 }) {
-  const referenceRows = field.reference_namespace
-    ? allRows.filter(
-        (candidate) => candidate.resourceType === field.reference_namespace
-      )
-    : []
-  const options = field.allowed_values
-    ? field.allowed_values
-    : field.value_type === 'reference' && referenceRows.length > 0
-      ? referenceRows.map(rowReferenceKey).filter(Boolean)
-      : null
+  const options = financeFieldOptions(field, allRows)
   const className = 'h-8 w-full min-w-28 bg-background text-[0.8125rem]'
 
   if (field.value_type === 'boolean') {
@@ -103,12 +93,12 @@ function InlineFieldControl({
         value={String(value ?? '')}
         onChange={(event) => onChange(event.target.value)}
       >
-        {!field.required && (
-          <NativeSelectOption value="">None</NativeSelectOption>
-        )}
+        <NativeSelectOption value="" disabled={field.required}>
+          {field.required ? `Select ${field.label.toLowerCase()}` : 'None'}
+        </NativeSelectOption>
         {options.map((option) => (
-          <NativeSelectOption key={option} value={option}>
-            {field.allowed_values ? formatOptionLabel(option) : option}
+          <NativeSelectOption key={option.value} value={option.value}>
+            {option.label}
           </NativeSelectOption>
         ))}
       </NativeSelect>
@@ -123,7 +113,9 @@ function InlineFieldControl({
       type={
         field.value_type === 'integer' || field.value_type === 'decimal'
           ? 'number'
-          : 'text'
+          : field.key === 'effectiveFrom' || field.key === 'effectiveUntil'
+            ? 'date'
+            : 'text'
       }
       step={field.value_type === 'decimal' ? 'any' : undefined}
       value={String(value ?? '')}
