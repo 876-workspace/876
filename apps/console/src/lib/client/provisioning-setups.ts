@@ -17,12 +17,17 @@ import { request } from './request'
 const path = (setupKey: string) =>
   `/api/organizations/provisioning/setups/${encodeURIComponent(setupKey)}`
 
+export type ConsoleProvisioningSetupCreateParams =
+  AdminProvisioningSetupCreateParams & {
+    policy?: ProvisioningSetupPolicyReplaceParams
+  }
+
 /**
  * Named day-zero configurations. Finance remains manifest v1; matching and
  * access policy are edited independently at `/policy`.
  */
 export const provisioningSetups = {
-  create(params: AdminProvisioningSetupCreateParams) {
+  create(params: ConsoleProvisioningSetupCreateParams) {
     return request<AdminProvisioningSetup>(
       '/api/organizations/provisioning/setups',
       { method: 'POST', body: JSON.stringify(params) }
