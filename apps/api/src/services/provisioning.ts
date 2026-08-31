@@ -12,6 +12,8 @@ import { enqueueCustomerEnsureForOrganization } from './billing-customer-sync'
 import { createBillingCustomerSyncRepository } from './billing-customer-sync.repository'
 import {
   enabledProvisioningApplicationSlugs,
+  requirePersistedProvisioningPolicy,
+  resolveFreshProvisioningPolicy,
   retrievePersistedProvisioningPolicy,
 } from './provisioning-policy'
 
@@ -19,10 +21,10 @@ import {
  * Organization provisioning: default roles, database-owned setup entitlements,
  * member assignments, and shared financial infrastructure.
  *
- * A selected provisioning setup supplies the organization's default product
- * entitlements. The authenticated source app remains an explicit additional
- * request: signing up through CRM may grant CRM even when the setup does not
- * grant CRM to every organization in that market.
+ * Fresh organizations are routed exactly once before their first entitlement
+ * write. Existing organizations without a persisted setup are deliberately left
+ * on the legacy Enterprise-only behavior until the explicit Phase 2 backfill
+ * assigns them a setup.
  */
 
 const log = getLogger('provisioning')
@@ -102,9 +104,19 @@ export async function seedDefaultRoles(
 }
 
 async function provisionedApplicationSlugs(
-  organizationId: string
+  organizationId: string,
+  creationTimestamp?: number
 ): Promise<string[]> {
-  const persisted = await retrievePersistedProvisioningPolicy(organizationId)
+  let persisted = await retrievePersistedProvisioningPolicy(organizationId)
+
+  if (!persisted && creationTimestamp !== undefined) {
+    const fresh = await resolveFreshProvisioningPolicy(
+      organizationId,
+      creationTimestamp
+    )
+    if (fresh) persisted = fresh
+  }
+
   return persisted
     ? enabledProvisioningApplicationSlugs(persisted.policy)
     : [...DEFAULT_ORG_APP_SLUGS]
@@ -116,11 +128,17 @@ async function provisionedApplicationSlugs(
  */
 export async function ensureOrgAppSubscriptions(
   organizationId: string,
-  options: { sourceAppId?: string | null } = {}
+  options: {
+    sourceAppId?: string | null
+    selectionTimestamp?: number
+  } = {}
 ): Promise<{ appIds: string[]; provisioned: string[] }> {
   const appIds: string[] = []
 
-  for (const slug of await provisionedApplicationSlugs(organizationId)) {
+  for (const slug of await provisionedApplicationSlugs(
+    organizationId,
+    options.selectionTimestamp
+  )) {
     const app = await repository.findAppBySlug(slug)
     if (!app) {
       log.error(
@@ -199,11 +217,14 @@ export async function ensureOrgAppsFinanceReady(
 
 export async function provisionOrgApps(
   organizationId: string,
-  options: { sourceAppId?: string | null } = {}
+  options: { sourceAppId?: string | null; now?: number } = {}
 ): Promise<string[]> {
   const { appIds, provisioned } = await ensureOrgAppSubscriptions(
     organizationId,
-    options
+    {
+      sourceAppId: options.sourceAppId ?? null,
+      selectionTimestamp: options.now,
+    }
   )
   await ensureOrgAppsFinanceReady(organizationId, { appIds })
   return provisioned
@@ -211,9 +232,12 @@ export async function provisionOrgApps(
 
 /**
  * Idempotently provision roles, setup app entitlements, customer-registry
- * identity, and finance readiness. New-organization callers may require a
- * persisted setup; legacy organizations remain usable until the explicit
- * Phase-2 backfill assigns them one.
+ * identity, and finance readiness.
+ *
+ * A fresh organization is selected automatically when its `createdAt` equals
+ * the bootstrap timestamp passed here. Older unselected organizations are not
+ * routed implicitly; callers that require Phase 2 semantics use
+ * `requireProvisioningSelection` and receive a stable 409 until backfill.
  */
 export async function provisionOrganization(
   organizationId: string,
@@ -226,17 +250,15 @@ export async function provisionOrganization(
   } = {}
 ): Promise<Record<string, OrgRoleRow>> {
   if (options.requireProvisioningSelection) {
-    const persisted = await retrievePersistedProvisioningPolicy(organizationId)
-    if (!persisted) {
-      throw new Error(
-        `Organization ${organizationId} must persist its provisioning setup before provisioning.`
-      )
-    }
+    await requirePersistedProvisioningPolicy(organizationId)
+  } else {
+    await resolveFreshProvisioningPolicy(organizationId, now)
   }
 
   const roles = await seedDefaultRoles(organizationId, now)
   const { appIds } = await ensureOrgAppSubscriptions(organizationId, {
     sourceAppId: options.sourceAppId ?? null,
+    selectionTimestamp: now,
   })
 
   const organization = await repository.findOrganization(organizationId)
@@ -339,7 +361,10 @@ export async function assignMemberApps(params: {
   const assignedBy = params.assignedBy ?? null
   const appIds: string[] = []
 
-  for (const slug of await provisionedApplicationSlugs(params.organizationId)) {
+  for (const slug of await provisionedApplicationSlugs(
+    params.organizationId,
+    params.now
+  )) {
     const app = await repository.findAppBySlug(slug)
     if (app && !appIds.includes(app.id)) appIds.push(app.id)
   }
