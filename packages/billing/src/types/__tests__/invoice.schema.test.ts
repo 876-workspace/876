@@ -16,7 +16,7 @@ function customer() {
   }
 }
 
-function invoice(overrides: Record<string, unknown> = {}) {
+function invoice(overrides: object = {}) {
   return {
     object: 'invoice' as const,
     id: 'inv_1',
