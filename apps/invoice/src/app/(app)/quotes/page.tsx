@@ -1,3 +1,4 @@
+import type { QuoteStatus } from '@876/billing'
 import { ClipboardList } from '@876/ui/icons'
 import { Suspense } from 'react'
 import {
@@ -35,20 +36,54 @@ const QUOTE_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'canceled', label: 'Canceled', headingLabel: 'Canceled Quotes' },
 ]
 
+type QuoteStatusFilter =
+  | 'all'
+  | 'draft'
+  | 'sent'
+  | 'accepted'
+  | 'declined'
+  | 'expired'
+  | 'canceled'
+
 type Props = { searchParams: Promise<{ status?: string }> }
+
+function getStatusFilter(status?: string): QuoteStatusFilter {
+  switch (status) {
+    case 'draft':
+    case 'sent':
+    case 'accepted':
+    case 'declined':
+    case 'expired':
+    case 'canceled':
+      return status
+    default:
+      return 'all'
+  }
+}
+
+function getApiStatus(status: QuoteStatusFilter): QuoteStatus | undefined {
+  switch (status) {
+    case 'draft':
+      return 'DRAFT'
+    case 'sent':
+      return 'SENT'
+    case 'accepted':
+      return 'ACCEPTED'
+    case 'declined':
+      return 'DECLINED'
+    case 'expired':
+      return 'EXPIRED'
+    case 'canceled':
+      return 'CANCELED'
+    case 'all':
+      return undefined
+  }
+}
 
 export default async function QuotesPage({ searchParams }: Props) {
   const { status } = await searchParams
-  const selectedStatus = [
-    'draft',
-    'sent',
-    'accepted',
-    'declined',
-    'expired',
-    'canceled',
-  ].includes(status ?? '')
-    ? status!
-    : 'all'
+  const selectedStatus = getStatusFilter(status)
+
   return (
     <Page>
       <ResourceToolbar
@@ -86,58 +121,42 @@ export default async function QuotesPage({ searchParams }: Props) {
 
 async function QuotesTableData({ searchParams }: Props) {
   const { status } = await searchParams
-  const selectedStatus = [
-    'draft',
-    'sent',
-    'accepted',
-    'declined',
-    'expired',
-    'canceled',
-  ].includes(status ?? '')
-    ? status!
-    : 'all'
+  const selectedStatus = getStatusFilter(status)
+  const apiStatus = getApiStatus(selectedStatus)
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
+
   const billing = await getBilling(context.orgId)
-  const result = (await billing.quotes
-    .list()
-    .catch(
-      () => ({ data: null, error: { code: 'unreachable' } }) as const
-    )) as unknown as { data: { data: unknown[] } | null; error: unknown | null }
-  if (result.error || !result.data) {
+  const result = await billing.quotes.list(
+    apiStatus ? { status: apiStatus } : undefined
+  )
+
+  if (result.error) {
     return (
-      <QuotesTable
-        quotes={[]}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ClipboardList />
-              </EmptyMedia>
-              <EmptyTitle>No quotes yet</EmptyTitle>
-              <EmptyDescription>
-                Create a customer and item, then prepare the first draft quote.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
+      <div className="rounded-lg border border-dashed p-10 text-center">
+        <p className="text-sm font-medium">Quotes are unavailable right now</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {result.error.message}
+        </p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">
+          {result.error.code}
+        </p>
+      </div>
     )
   }
-  const quotes = (result.data.data as Record<string, unknown>[]).map((q) => ({
-    id: String(q.id),
-    number: String(q.number ?? q.id),
-    totalAmount: (q.totalAmount as string) ?? (q.amount as string) ?? '0',
-    currency: String(q.currency ?? 'JMD'),
-    status: String(q.status ?? 'DRAFT'),
-    customer: {
-      name: String(
-        (q.customer as Record<string, unknown>)?.name ?? q.customerName ?? '—'
-      ),
-    },
-    convertedInvoice: (q.convertedInvoice as { number: string } | null) ?? null,
+
+  const quotes = result.data.data.map((quote) => ({
+    id: quote.id,
+    number: quote.number,
+    totalAmount: quote.totalAmount,
+    currency: quote.currency,
+    status: quote.status,
+    customer: { name: quote.customer.name },
+    convertedInvoice: quote.convertedInvoice
+      ? { number: quote.convertedInvoice.number }
+      : null,
   }))
-  void selectedStatus
+
   return (
     <QuotesTable
       quotes={quotes}
