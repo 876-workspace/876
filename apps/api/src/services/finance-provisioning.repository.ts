@@ -20,6 +20,31 @@ function toSubscriptionRow(row: {
   return row
 }
 
+async function provisioningSelectionAudit(organizationId: string) {
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      provisioningSetupKey: true,
+      provisioningSelectionType: true,
+      provisioningMatchGroupKey: true,
+      provisioningMatchPriority: true,
+      provisioningMatchedFields: true,
+    },
+  })
+
+  return {
+    provisioningSetupKey: organization?.provisioningSetupKey ?? null,
+    provisioningSelectionType:
+      organization?.provisioningSelectionType ?? null,
+    provisioningMatchGroupKey:
+      organization?.provisioningMatchGroupKey ?? null,
+    provisioningMatchPriority:
+      organization?.provisioningMatchPriority ?? null,
+    provisioningMatchedFields:
+      organization?.provisioningMatchedFields ?? [],
+  }
+}
+
 export function createFinanceProvisioningRepository(): FinanceProvisioningRepository {
   return {
     async findSubscriptionById(id) {
@@ -104,28 +129,13 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
         select: { provisioningSetupKey: true },
       })
       const assigned = organization?.provisioningSetupKey ?? null
-      if (assigned) {
-        const setup = await prisma.provisioningSetup.findFirst({
-          where: { key: assigned },
-          select: { key: true },
-        })
-        if (setup) return setup.key
-      }
+      if (!assigned) return null
 
-      const fallback = await prisma.provisioningSetup.findFirst({
-        where: { isDefault: true },
+      const setup = await prisma.provisioningSetup.findFirst({
+        where: { key: assigned },
         select: { key: true },
       })
-      if (!fallback) return null
-
-      // An organization keeps the setup it was first provisioned with, so
-      // changing the platform default never silently re-points existing
-      // organizations at a different currency or tax regime.
-      await prisma.organization.updateMany({
-        where: { id: organizationId, provisioningSetupKey: null },
-        data: { provisioningSetupKey: fallback.key },
-      })
-      return fallback.key
+      return setup?.key ?? null
     },
 
     async findLatestOutboxEvent(aggregateId) {
@@ -177,6 +187,7 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
       const { generateId } = await import('@/platform/ids')
       const nowBigint = BigInt(params.now)
       const runId = generateId('provisioningRun')
+      const selection = await provisioningSelectionAudit(params.organizationId)
 
       const run = await prisma.provisioningRun.create({
         data: {
@@ -188,6 +199,7 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
           trigger: params.trigger,
           status: 'queued',
           manifestVersion: 1,
+          ...selection,
           financeRevisionId: null,
           financeRevision: null,
           applicationRevisionId: params.applicationRevision.id,
@@ -202,8 +214,6 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
         },
       })
 
-      // Create run steps from the revision — at least one step even when the
-      // revision has none, matching the Python `create_for_application`.
       const steps: unknown[] =
         (params.applicationRevision as unknown as { steps?: unknown[] })
           .steps ?? []
@@ -245,6 +255,7 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
       const { generateId } = await import('@/platform/ids')
       const nowBigint = BigInt(params.now)
       const runId = generateId('provisioningRun')
+      const selection = await provisioningSelectionAudit(params.organizationId)
 
       const run = await prisma.provisioningRun.create({
         data: {
@@ -256,6 +267,7 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
           trigger: params.trigger,
           status: 'queued',
           manifestVersion: 1,
+          ...selection,
           financeRevisionId: params.financeRevision?.id ?? null,
           financeRevision: params.financeRevision?.revision ?? null,
           applicationRevisionId: params.applicationRevision?.id ?? null,
