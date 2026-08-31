@@ -19,10 +19,7 @@ export function createQuotesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: '/api/v1/quotes',
-          query: params as Record<
-            string,
-            string | number | boolean | undefined
-          >,
+          query: { status: params.status },
           signal: options?.signal,
         },
         QuoteListSchema
@@ -41,10 +38,7 @@ export function createEstimatesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: '/api/v1/estimates',
-          query: params as Record<
-            string,
-            string | number | boolean | undefined
-          >,
+          query: { status: params.status },
           signal: options?.signal,
         },
         EstimateListSchema
