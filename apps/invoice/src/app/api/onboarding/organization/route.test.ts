@@ -20,7 +20,7 @@ vi.mock('@/lib/auth/session', () => ({
   isSignedSession: (session: { user: unknown }) => session.user !== null,
 }))
 
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mockGetPlatformClient,
 }))
 

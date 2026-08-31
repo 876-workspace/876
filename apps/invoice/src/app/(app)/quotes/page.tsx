@@ -16,7 +16,7 @@ import {
 } from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
 
-import { get876Client } from '@/lib/876'
+import { getBilling } from '@/lib/services/billing'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { QuotesTable } from './_components/quotes-table'
 
@@ -98,8 +98,8 @@ async function QuotesTableData({ searchParams }: Props) {
     : 'all'
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const $876 = await get876Client(context.orgId)
-  const result = (await $876.quotes
+  const billing = await getBilling(context.orgId)
+  const result = (await billing.quotes
     .list()
     .catch(
       () => ({ data: null, error: { code: 'unreachable' } }) as const

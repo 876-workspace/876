@@ -17,7 +17,7 @@ import {
 } from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
 
-import { get876Client } from '@/lib/876'
+import { getBilling } from '@/lib/services/billing'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
 import { InvoicesTable } from './_components/invoices-table'
@@ -88,8 +88,8 @@ async function InvoicesTableData({ searchParams }: Props) {
   void status
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const $876 = await get876Client(context.orgId)
-  const result = await $876.invoices.list()
+  const billing = await getBilling(context.orgId)
+  const result = await billing.invoices.list()
   if (result.error) {
     redirectIfSignedOut(result.error.code, '/invoices')
 

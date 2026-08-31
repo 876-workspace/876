@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { getInvoiceBillingConfig } from '@/lib/876/billing-config'
+import { getInvoiceBillingConfig } from '@/lib/services/billing-config'
 
 /**
  * Request-scoped Billing tenant client for Invoice.

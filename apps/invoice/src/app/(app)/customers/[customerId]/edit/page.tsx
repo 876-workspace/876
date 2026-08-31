@@ -1,9 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { get876Client } from '@/lib/876'
+import { getBilling } from '@/lib/services/billing'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { CustomerForm } from '../../_components/customer-form'
 
 export const metadata = { title: 'Edit Customer' }
@@ -17,9 +17,9 @@ export default async function EditCustomerPage({ params }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const $876 = await get876Client(context.orgId)
+  const billing = await getBilling(context.orgId)
   const [customerResult, platform] = await Promise.all([
-    $876.customers.retrieve(customerId),
+    billing.customers.retrieve(customerId),
     getPlatformClient(),
   ])
 
