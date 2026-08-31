@@ -3,6 +3,7 @@ import type { Router } from 'express'
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import { listObjectSchema } from '@/http/envelope'
 
+import { registerBusiness as registerBusinessWithProvisioning } from './auth-business-registration.controller'
 import * as controller from './auth.controller'
 import * as docs from './auth.docs'
 import {
@@ -150,7 +151,7 @@ export function createAuthRouter(resolveGuards: GuardResolver): Router {
       403: docs.REGISTER_BUSINESS_RESPONSES[403],
       409: docs.REGISTER_BUSINESS_RESPONSES[409],
     },
-    handler: controller.registerBusiness,
+    handler: registerBusinessWithProvisioning,
   })
 
   // POST /auth/social-login — apiKey
