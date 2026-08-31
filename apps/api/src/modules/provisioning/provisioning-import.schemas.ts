@@ -1,7 +1,12 @@
 import countries from '@876/core/countries.json'
 import { z } from 'zod'
 
-const countryCodes = new Set(countries.map((country) => country.code))
+const countryCodes = new Set(countries.map((country) => country.countryCode))
+
+const countryCodeSchema = z
+  .string()
+  .length(2)
+  .transform((value) => value.toUpperCase())
 
 const entitlementSchema = z.strictObject({
   target_type: z.enum(['application', 'service']),
@@ -47,7 +52,7 @@ const invoicePreferenceSchema = z.strictObject({
 const taxJurisdictionSchema = z.strictObject({
   key: z.string().min(1).max(120),
   name: z.string().min(1).max(120),
-  country_code: z.string().length(2),
+  country_code: countryCodeSchema,
   type: z.enum([
     'country',
     'state',
@@ -65,7 +70,7 @@ const taxAuthoritySchema = z.strictObject({
   key: z.string().min(1).max(120),
   name: z.string().min(1).max(120),
   description: z.string().max(2000).nullable().optional(),
-  country_code: z.string().length(2),
+  country_code: countryCodeSchema,
   jurisdiction: z.string().max(120).nullable().optional(),
 })
 
@@ -102,8 +107,11 @@ const setupSchema = z.strictObject({
   key: z.string().min(2).max(60),
   name: z.string().min(1).max(120),
   description: z.string().max(2000).optional(),
-  country_codes: z.array(z.string().length(2)).max(100),
-  currency_code: z.string().length(3),
+  country_codes: z.array(countryCodeSchema).max(100),
+  currency_code: z
+    .string()
+    .length(3)
+    .transform((value) => value.toUpperCase()),
   is_fallback: z.boolean().optional().default(false),
   tax: setupTaxSchema.optional(),
 })
@@ -136,8 +144,16 @@ export const provisioningImportSpecificationSchema = z
     object: z.literal('provisioning_import_specification'),
     manifest_version: z.literal(1),
     purpose: z.string().min(1),
+    import_mode: z.literal('one_time_database_bootstrap'),
+    runtime_source_of_truth: z.literal(false),
+    delete_after_verified_import: z.boolean(),
     default_setup_key: z.string().min(2).max(60),
     default_language: z.literal('en'),
+    country_scope: z.strictObject({
+      caribbean: z.array(countryCodeSchema).min(1),
+      united_states: z.tuple([z.literal('US')]),
+      canada: z.tuple([z.literal('CA')]),
+    }),
     matching: z.strictObject({
       semantics: z.literal('OR_OF_AND_GROUPS'),
       current_seed_condition: z.string().min(1),
@@ -187,6 +203,38 @@ export const provisioningImportSpecificationSchema = z
         path: ['setups'],
         message: 'The fallback setup must not assert a country.',
       })
+    }
+
+    const setupCountryCodes = new Set(
+      spec.setups.flatMap((setup) => setup.country_codes)
+    )
+    const scopedCountryCodes = [
+      ...spec.country_scope.caribbean,
+      ...spec.country_scope.united_states,
+      ...spec.country_scope.canada,
+    ]
+    if (new Set(scopedCountryCodes).size !== scopedCountryCodes.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['country_scope'],
+        message: 'Regional country scope codes must not overlap.',
+      })
+    }
+    for (const code of scopedCountryCodes) {
+      if (!countryCodes.has(code)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['country_scope'],
+          message: `Scoped country ${code} is not present in the canonical country catalog.`,
+        })
+      }
+      if (!setupCountryCodes.has(code)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['country_scope'],
+          message: `Scoped country ${code} does not have a provisioning setup definition.`,
+        })
+      }
     }
 
     for (const [index, setup] of spec.setups.entries()) {
@@ -243,7 +291,9 @@ export const provisioningImportSpecificationSchema = z
       })
     }
 
-    const appSlugs = spec.application_manifests.map((manifest) => manifest.app_slug)
+    const appSlugs = spec.application_manifests.map(
+      (manifest) => manifest.app_slug
+    )
     if (new Set(appSlugs).size !== appSlugs.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -256,6 +306,7 @@ export const provisioningImportSpecificationSchema = z
 export type ProvisioningImportSpecification = z.infer<
   typeof provisioningImportSpecificationSchema
 >
-export type ProvisioningImportSetup = ProvisioningImportSpecification['setups'][number]
+export type ProvisioningImportSetup =
+  ProvisioningImportSpecification['setups'][number]
 export type ProvisioningImportApplicationManifest =
   ProvisioningImportSpecification['application_manifests'][number]
