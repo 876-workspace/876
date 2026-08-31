@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus } from '@/lib/couriers'
-import { couriersAdmin } from '@/lib/876'
+import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await couriersAdmin.settings.list(ctx.tenant.id)
+  const result = await couriersOperator.settings.list(ctx.tenant.id)
   if (result.error)
     return apiJson(
       { error: result.error.message },
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await couriersAdmin.settings.update(
+  const result = await couriersOperator.settings.update(
     ctx.tenant.id,
     parsed.data.module,
     {

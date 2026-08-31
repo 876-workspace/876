@@ -5,14 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
   listItems: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/876', () => ({
+vi.mock('@/lib/services/couriers', () => ({
   billingIntegration: { items: { list: mocks.listItems } },
 }))
 vi.mock('next/navigation', () => ({
@@ -51,7 +51,7 @@ function listResult<T>(data: T[], hasMore = false) {
 describe('Couriers items page data', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue(context)
-    mocks.get876Client.mockResolvedValue({})
+    mocks.getCouriers.mockResolvedValue({})
   })
 
   it('when catalog items exist, formats prices and displays catalog fields', async () => {

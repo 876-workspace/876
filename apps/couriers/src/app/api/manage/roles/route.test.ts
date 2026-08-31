@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   create: vi.fn(),
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
   couriersErrorStatus: vi.fn((error: { code: string }) =>
     error.code === 'request/invalid' ? 422 : 502
   ),
@@ -12,8 +12,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('@/lib/services/couriers', () => ({
+  getCouriers: mocks.getCouriers,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -57,7 +57,7 @@ const validBody = {
 describe('Couriers roles create route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.get876Client.mockImplementation(() => ({
+    mocks.getCouriers.mockImplementation(() => ({
       roles: { create: mocks.create },
     }))
     mocks.getManageContext.mockResolvedValue(ctx('owner'))

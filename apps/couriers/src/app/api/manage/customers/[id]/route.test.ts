@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
       delete: vi.fn(),
     },
   },
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
   couriersErrorStatus: vi.fn((error: { code: string }) => {
     if (error.code.endsWith('/not-found')) return 404
     if (error.code === 'request/invalid') return 422
@@ -28,8 +28,8 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/manage/customers', () => ({
   updateManagedCustomer: mocks.updateManagedCustomer,
 }))
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('@/lib/services/couriers', () => ({
+  getCouriers: mocks.getCouriers,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -81,7 +81,7 @@ function ctx(
 describe('customer [id] route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.get876Client.mockImplementation(() => mocks.client)
+    mocks.getCouriers.mockImplementation(() => mocks.client)
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.updateManagedCustomer.mockResolvedValue({
       data: { id: 'cprof_nkr' },

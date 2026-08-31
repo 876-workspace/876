@@ -69,7 +69,7 @@ const nextConfig: NextConfig = {
     '@876/couriers',
     '@876/storage',
     '@876/widgets',
-    '@876/sdk',
+    '@876/workspace',
   ]),
   experimental: {
     optimizePackageImports: ['@base-ui/react', 'radix-ui'],

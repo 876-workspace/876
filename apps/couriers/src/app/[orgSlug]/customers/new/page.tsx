@@ -3,7 +3,8 @@ import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { billingIntegration, get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/services/billing'
 import type { GlobalCustomerOption } from '@/types/customer'
 import { AddCustomerPanel } from '../_components/add-customer-panel'
 import type { CustomerBranchOption } from '../_components/customer-branch-field'
@@ -39,7 +40,7 @@ async function NewCustomerAccess({ orgSlug }: { orgSlug: string }) {
       </div>
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const branches = loadBranches($876)
   const customers = loadAvailableCustomers($876, ctx.orgId)
 
@@ -53,7 +54,7 @@ async function NewCustomerAccess({ orgSlug }: { orgSlug: string }) {
 }
 
 async function loadBranches(
-  client: Awaited<ReturnType<typeof get876Client>>
+  client: Awaited<ReturnType<typeof getCouriers>>
 ): Promise<CustomerBranchOption[]> {
   const result = await client.branches.list()
   if (result.error) throw new Error(result.error.message)
@@ -61,7 +62,7 @@ async function loadBranches(
 }
 
 async function loadAvailableCustomers(
-  client: Awaited<ReturnType<typeof get876Client>>,
+  client: Awaited<ReturnType<typeof getCouriers>>,
   organizationId: string
 ): Promise<CustomerSelection> {
   const [enrolled, global] = await Promise.all([
@@ -83,7 +84,7 @@ async function loadAvailableCustomers(
 type LoadResult<T> = { data: T; error: null } | { data: null; error: string }
 
 async function listEnrolledCustomerIds(
-  client: Awaited<ReturnType<typeof get876Client>>
+  client: Awaited<ReturnType<typeof getCouriers>>
 ): Promise<LoadResult<Set<string>>> {
   const ids = new Set<string>()
   let startingAfter: string | undefined

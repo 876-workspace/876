@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus, toCouriersTenant } from '@/lib/couriers'
-import { couriersAdmin } from '@/lib/876'
+import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
   const { name, slug } = parsed.data
 
-  const result = await couriersAdmin.tenants.create({
+  const result = await couriersOperator.tenants.create({
     org_id: ctx.orgId,
     name,
     slug,

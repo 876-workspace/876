@@ -10,7 +10,7 @@ import {
   toAddressUpdateBody,
   toAddressView,
 } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import { addressUpdateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'
@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.addresses.update(
     id,
     toAddressUpdateBody(parsed.data)
@@ -81,7 +81,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.addresses.delete(id)
   if (result.error)
     return apiJson(

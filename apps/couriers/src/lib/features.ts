@@ -8,7 +8,7 @@ import {
   notepadWidgetMetadata,
 } from '@876/widgets'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import type { CouriersFeatureRequest, CouriersFeatures } from '@/types/features'
 

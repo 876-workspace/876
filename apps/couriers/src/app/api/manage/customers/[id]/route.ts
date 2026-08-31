@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import { updateManagedCustomer } from '@/lib/manage/customers'
 import { customerUpdateParamsSchema } from '@/types/customer'
 
@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest, context: Context) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
   const { id } = await context.params
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.customers.delete(id, {
     deleted_by: ctx.userId,
   })

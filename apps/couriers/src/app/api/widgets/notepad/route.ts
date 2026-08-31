@@ -2,7 +2,7 @@ import { apiError, apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 
 import { requireNotepadMember } from '@/lib/widgets-auth'
-import { widgets876 } from '@/lib/876'
+import { widgets } from '@/lib/services/widgets'
 
 export const runtime = 'nodejs'
 
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const unfiled =
     unfiledParam === '1' || unfiledParam === 'true' ? true : undefined
 
-  const result = await widgets876.notes.list(
+  const result = await widgets.notes.list(
     { userId: access.userId },
     {
       limit: Number(url.searchParams.get('limit') ?? '') || undefined,
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await widgets876.notes.create(
+  const result = await widgets.notes.create(
     { userId: access.userId },
     {
       title: typeof record.title === 'string' ? record.title : '',

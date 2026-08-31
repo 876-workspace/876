@@ -6,7 +6,7 @@ import {
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 

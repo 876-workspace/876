@@ -6,7 +6,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { CircleStackIcon } from '@876/ui/icons'
-import { billingIntegration } from '@/lib/876'
+import { billingIntegration } from '@/lib/services/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 import { ItemsTable } from './items-table'

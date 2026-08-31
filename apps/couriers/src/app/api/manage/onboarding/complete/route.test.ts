@@ -14,11 +14,11 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
-vi.mock('@/lib/876', () => ({
-  couriersAdmin: {
+vi.mock('@/lib/services/couriers', () => ({
+  couriersOperator: {
     tenants: {
       create: mocks.createTenant,
       update: mocks.updateTenant,

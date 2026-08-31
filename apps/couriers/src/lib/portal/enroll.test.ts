@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   createPortalCouriersClient: vi.fn(),
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
   billingIntegration: {},
   ensureSharedCoreUserCustomer: vi.fn(),
   retrieve: vi.fn(),
@@ -15,8 +15,8 @@ vi.mock('./client', () => ({
   isPortalNotFound: (result: { error: { code: string } | null }) =>
     result.error?.code.endsWith('/not-found') ?? false,
 }))
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('@/lib/services/billing', () => ({
+  getCouriers: mocks.getCouriers,
   billingIntegration: mocks.billingIntegration,
 }))
 vi.mock('@/lib/finance/customers', () => ({
@@ -83,7 +83,7 @@ describe('ensurePortalCustomer', () => {
         enrollments: { create: mocks.enroll },
       },
     })
-    mocks.get876Client.mockResolvedValue({ billing: 'billing-client' })
+    mocks.getCouriers.mockResolvedValue({ billing: 'billing-client' })
     mocks.ensureSharedCoreUserCustomer.mockResolvedValue({
       data: { id: customer.billing_customer_id },
       error: null,

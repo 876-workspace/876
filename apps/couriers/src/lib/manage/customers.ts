@@ -18,8 +18,8 @@ export async function enrollManagedCustomer({
   tenant: CouriersTenant
   params: CustomerEnrollmentParams
 }): ServiceResult<CustomerView> {
-  const { get876Client } = await import('@/lib/876')
-  const client = await get876Client()
+  const { getCouriers } = await import('@/lib/services/couriers')
+  const client = await getCouriers()
   const result = await client.customers.create({
     mode: 'existing',
     billingCustomerId: params.billingCustomerId,
@@ -44,8 +44,8 @@ export async function createManagedCustomer({
   tenant: CouriersTenant
   params: CustomerCreateParams
 }): ServiceResult<CustomerView> {
-  const { get876Client } = await import('@/lib/876')
-  const client = await get876Client()
+  const { getCouriers } = await import('@/lib/services/couriers')
+  const client = await getCouriers()
   const result = await client.customers.create({
     mode: 'new',
     idempotencyKey: params.idempotencyKey,
@@ -78,8 +78,8 @@ export async function updateManagedCustomer({
   id: string
   params: CustomerUpdateParams
 }): ServiceResult<CustomerView> {
-  const { get876Client } = await import('@/lib/876')
-  const client = await get876Client()
+  const { getCouriers } = await import('@/lib/services/couriers')
+  const client = await getCouriers()
   const result = await client.customers.update(id, {
     ...(params.firstName === undefined ? {} : { firstName: params.firstName }),
     ...(params.lastName === undefined ? {} : { lastName: params.lastName }),

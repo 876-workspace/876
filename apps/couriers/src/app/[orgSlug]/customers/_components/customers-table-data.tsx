@@ -1,6 +1,7 @@
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
-import { billingIntegration, couriersAdmin } from '@/lib/876'
+import { couriersOperator } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/services/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toCustomerView } from '@/lib/couriers'
 import { customerStatusSchema, type CustomerView } from '@/types/customer'
@@ -48,7 +49,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   for (;;) {
     try {
       const page = requireCouriersData(
-        await couriersAdmin.customers.list(ctx.tenant.id, {
+        await couriersOperator.customers.list(ctx.tenant.id, {
           ...(profileStatus === undefined ? {} : { status: profileStatus }),
           limit: 100,
           ...(startingAfter === undefined

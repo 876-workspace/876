@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus, toRoleView } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import { roleCreateParamsSchema } from '@/types/role'
 
 export const runtime = 'nodejs'
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.roles.create(params)
   if (result.error)
     return apiJson(
