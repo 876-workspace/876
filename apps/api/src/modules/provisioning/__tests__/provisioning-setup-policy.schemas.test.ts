@@ -80,13 +80,23 @@ describe('provisioningSetupPolicyReplaceSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejects invalid country and subdivision codes', () => {
-    const country = provisioningSetupPolicyReplaceSchema.safeParse({
+  it('rejects invalid or unsupported country codes and invalid subdivisions', () => {
+    const malformedCountry = provisioningSetupPolicyReplaceSchema.safeParse({
       conditions: [
         {
           group_key: 'bad',
           field: 'country',
           value: 'JAM',
+        },
+      ],
+      entitlements: [],
+    })
+    const unsupportedCountry = provisioningSetupPolicyReplaceSchema.safeParse({
+      conditions: [
+        {
+          group_key: 'zz',
+          field: 'country',
+          value: 'ZZ',
         },
       ],
       entitlements: [],
@@ -102,7 +112,8 @@ describe('provisioningSetupPolicyReplaceSchema', () => {
       entitlements: [],
     })
 
-    expect(country.success).toBe(false)
+    expect(malformedCountry.success).toBe(false)
+    expect(unsupportedCountry.success).toBe(false)
     expect(subdivision.success).toBe(false)
   })
 
