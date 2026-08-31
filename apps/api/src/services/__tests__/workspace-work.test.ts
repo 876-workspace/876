@@ -20,8 +20,7 @@ vi.mock('../provisioning.repository', () => ({
   listSubscribedAppIds: mocks.listSubscribedAppIds,
 }))
 vi.mock('../provisioning-policy', () => ({
-  requirePersistedProvisioningPolicy:
-    mocks.requirePersistedProvisioningPolicy,
+  requirePersistedProvisioningPolicy: mocks.requirePersistedProvisioningPolicy,
   isProvisionedWorkEnabled: mocks.isProvisionedWorkEnabled,
   workScopesForProvisionedApp: mocks.workScopesForProvisionedApp,
 }))
@@ -117,7 +116,7 @@ beforeEach(() => {
   mocks.requirePersistedProvisioningPolicy.mockResolvedValue(selectedPolicy())
   mocks.isProvisionedWorkEnabled.mockReturnValue(true)
   mocks.workScopesForProvisionedApp.mockReturnValue([...DEFAULT_SCOPES])
-  fetchMock.mockResolvedValue(workTenantResponse())
+  fetchMock.mockImplementation(() => Promise.resolve(workTenantResponse()))
 })
 
 afterEach(() => {
@@ -276,7 +275,7 @@ describe('workspace.work.ensure', () => {
     expect(mocks.findAppBySlug).not.toHaveBeenCalled()
   })
 
-  it('propagates a network failure while creating the tenant', async () => {
+  it('normalizes a network failure while creating the tenant', async () => {
     // ARRANGE
     fetchMock.mockRejectedValue(new Error('network down'))
 
@@ -287,8 +286,11 @@ describe('workspace.work.ensure', () => {
     })
 
     // ASSERT
-    await expect(act).rejects.toThrow('network down')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    await expect(act).rejects.toMatchObject({
+      code: 'provisioning/work-workspace-unavailable',
+      httpStatus: 503,
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(3)
     expect(mocks.findAppBySlug).not.toHaveBeenCalled()
   })
 

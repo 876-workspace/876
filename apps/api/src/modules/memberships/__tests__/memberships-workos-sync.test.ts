@@ -21,6 +21,7 @@ vi.mock('@/platform/ids', () => ({
   generateId: vi.fn(() => 'mem_generated'),
 }))
 vi.mock('@/services/provisioning', () => ({
+  BILLING_APP_SLUG: '876-billing',
   linkMembershipRole,
   assignMemberApps,
 }))

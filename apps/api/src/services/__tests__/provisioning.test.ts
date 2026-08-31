@@ -336,7 +336,9 @@ describe('provisionOrganization', () => {
     prisma.organization.findUnique.mockResolvedValue(null)
     const enqueue = vi.fn().mockResolvedValue(undefined)
 
-    await provisionOrganization(ORG, NOW, { enqueueCustomerEnsure: enqueue })
+    await expect(
+      provisionOrganization(ORG, NOW, { enqueueCustomerEnsure: enqueue })
+    ).rejects.toMatchObject({ code: 'organization/not-found' })
 
     expect(enqueue).not.toHaveBeenCalled()
   })

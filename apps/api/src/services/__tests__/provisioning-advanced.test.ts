@@ -539,7 +539,9 @@ describe('provisionOrganization — full lifecycle', () => {
   it('does not enqueue when organization row is missing', async () => {
     prisma.organization.findUnique.mockResolvedValue(null)
     const enqueue = vi.fn()
-    await provisionOrganization(ORG, NOW, { enqueueCustomerEnsure: enqueue })
+    await expect(
+      provisionOrganization(ORG, NOW, { enqueueCustomerEnsure: enqueue })
+    ).rejects.toMatchObject({ code: 'organization/not-found' })
     expect(enqueue).not.toHaveBeenCalled()
   })
 

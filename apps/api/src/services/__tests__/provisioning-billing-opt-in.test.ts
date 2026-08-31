@@ -17,6 +17,12 @@ const repo = vi.hoisted(() => ({
 }))
 
 vi.mock('../provisioning.repository', () => repo)
+vi.mock('../provisioning-policy', () => ({
+  enabledProvisioningApplicationSlugs: vi.fn(() => ['876-enterprise']),
+  requirePersistedProvisioningPolicy: vi.fn(),
+  resolveFreshProvisioningPolicy: vi.fn().mockResolvedValue(null),
+  retrievePersistedProvisioningPolicy: vi.fn().mockResolvedValue(null),
+}))
 vi.mock('../billing-customer-sync', () => ({
   enqueueCustomerEnsureForOrganization: vi.fn().mockResolvedValue(undefined),
 }))
