@@ -123,6 +123,46 @@ function publishedRevisionRow() {
   }
 }
 
+function emptyDraftRow(targetKey = 'new-zealand') {
+  return {
+    id: 'pmr_nz',
+    manifestId: 'pm_nz',
+    revision: 1,
+    status: 'draft',
+    reconciliation: 'create_missing',
+    preserveTenantOverrides: true,
+    financeDependency: 'none',
+    financeScopes: [],
+    publishedAt: null,
+    createdAt: BigInt(NOW),
+    updatedAt: BigInt(NOW),
+    provisioningResources: [],
+    provisioningSteps: [],
+    provisioningManifest: { targetKey },
+  }
+}
+
+function configureBlankDraftPersistence(targetKey = 'new-zealand') {
+  const manifest = {
+    id: 'pm_nz',
+    targetType: 'finance',
+    targetKey,
+    manifestVersion: 1,
+    createdAt: BigInt(NOW),
+    updatedAt: BigInt(NOW),
+  }
+  provisioningManifest.findFirst.mockResolvedValue(null)
+  provisioningManifest.create.mockResolvedValue(manifest)
+  provisioningManifestRevision.findFirst
+    .mockResolvedValueOnce(null)
+    .mockResolvedValueOnce(null)
+  provisioningManifestRevision.create.mockResolvedValue(emptyDraftRow(targetKey))
+  provisioningManifestRevision.findUnique.mockResolvedValue(
+    emptyDraftRow(targetKey)
+  )
+  provisioningManifest.update.mockResolvedValue(manifest)
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   apiKey.findUnique.mockResolvedValue({
@@ -217,109 +257,229 @@ describe('POST /provisioning/setups', () => {
     expect(provisioningSetup.create).not.toHaveBeenCalled()
   })
 
-  it('refuses to create a setup when no published manifest can seed it', async () => {
-    const response = await request(createApp())
-      .post('/provisioning/setups')
-      .set(AUTH)
-      .send({ key: 'united-states', name: 'United States' })
-
-    expect(response.status).toBe(422)
-    expect(response.body.error.code).toBe(
-      'provisioning/setup-source-unavailable'
-    )
-    expect(provisioningSetup.create).not.toHaveBeenCalled()
-  })
-
-  it('copies the default setup manifest into the new setup and publishes it', async () => {
-    // findSetupByKey(new key) → null, findDefaultSetup → Jamaica.
-    provisioningSetup.findFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValue(setupRow())
-    provisioningManifestRevision.findFirst
-      // the published Jamaica revision that seeds the copy
-      .mockResolvedValueOnce(publishedRevisionRow())
-      // replaceDraft: no existing draft, no prior revision
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null)
-      // retrieveDraftForUpdate → the draft just written
-      .mockResolvedValueOnce({ ...publishedRevisionRow(), status: 'draft' })
-      // promoteDraft: no currently published revision for the new manifest
-      .mockResolvedValue(null)
-    const usManifest = {
-      id: 'pm_us',
-      targetType: 'finance',
-      targetKey: 'united-states',
-      manifestVersion: 1,
-      createdAt: BigInt(NOW),
-      updatedAt: BigInt(NOW),
-    }
-    // The manifest does not exist yet, then exists for every later lookup.
-    provisioningManifest.findFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValue(usManifest)
-    provisioningManifest.create.mockResolvedValue({
-      id: 'pm_us',
-      targetType: 'finance',
-      targetKey: 'united-states',
-      createdAt: BigInt(NOW),
-      updatedAt: BigInt(NOW),
-    })
-    provisioningManifestRevision.create.mockResolvedValue({
-      ...publishedRevisionRow(),
-      id: 'pmr_us',
-      status: 'draft',
-    })
-    provisioningManifestRevision.findUnique.mockResolvedValue({
-      ...publishedRevisionRow(),
-      id: 'pmr_us',
-      status: 'draft',
-    })
-    provisioningManifestRevision.update.mockResolvedValue({
-      ...publishedRevisionRow(),
-      id: 'pmr_us',
-    })
+  it('creates a blank setup with an editable draft and no copied resources', async () => {
+    configureBlankDraftPersistence()
     provisioningSetup.create.mockResolvedValue(
       setupRow({
-        id: 'psu_us',
-        key: 'united-states',
-        name: 'United States',
-        countryCode: 'US',
-        currencyCode: 'USD',
+        id: 'psu_nz',
+        key: 'new-zealand',
+        name: 'New Zealand',
+        description: null,
+        countryCode: null,
+        currencyCode: null,
         isDefault: false,
       })
     )
+    provisioningManifestRevision.findMany.mockResolvedValue([
+      {
+        revision: 1,
+        status: 'draft',
+        provisioningManifest: { targetKey: 'new-zealand' },
+      },
+    ])
+
+    const response = await request(createApp())
+      .post('/provisioning/setups')
+      .set(AUTH)
+      .send({ key: 'new-zealand', name: 'New Zealand' })
+
+    expect(response.status).toBe(201)
+    expect(response.body.data).toMatchObject({
+      key: 'new-zealand',
+      country_code: null,
+      currency_code: null,
+      published_revision: null,
+      has_draft: true,
+      is_default: false,
+    })
+    expect(provisioningResource.create).not.toHaveBeenCalled()
+    expect(provisioningStep.create).not.toHaveBeenCalled()
+    expect(provisioningManifestRevision.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'published' }),
+      })
+    )
+  })
+
+  it('supports an explicit copy source without forcing or publishing the copy', async () => {
+    provisioningSetup.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(setupRow())
+    provisioningSetup.create.mockResolvedValue(
+      setupRow({
+        id: 'psu_nz',
+        key: 'new-zealand',
+        name: 'New Zealand',
+        isDefault: false,
+      })
+    )
+    provisioningManifestRevision.findFirst
+      .mockResolvedValueOnce(publishedRevisionRow())
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+    provisioningManifest.findFirst.mockResolvedValue(null)
+    provisioningManifest.create.mockResolvedValue({
+      id: 'pm_nz',
+      targetType: 'finance',
+      targetKey: 'new-zealand',
+      manifestVersion: 1,
+      createdAt: BigInt(NOW),
+      updatedAt: BigInt(NOW),
+    })
+    provisioningManifestRevision.create.mockResolvedValue(
+      emptyDraftRow('new-zealand')
+    )
+    provisioningManifestRevision.findUnique.mockResolvedValue({
+      ...emptyDraftRow('new-zealand'),
+      provisioningResources: publishedRevisionRow().provisioningResources,
+      provisioningSteps: publishedRevisionRow().provisioningSteps,
+    })
+    provisioningManifestRevision.findMany.mockResolvedValue([
+      {
+        revision: 1,
+        status: 'draft',
+        provisioningManifest: { targetKey: 'new-zealand' },
+      },
+    ])
 
     const response = await request(createApp())
       .post('/provisioning/setups')
       .set(AUTH)
       .send({
-        key: 'united-states',
-        name: 'United States',
-        country_code: 'us',
-        currency_code: 'usd',
+        key: 'new-zealand',
+        name: 'New Zealand',
+        copy_from: 'jamaica',
       })
 
     expect(response.status).toBe(201)
-    expect(response.body.data.object).toBe('provisioning_setup')
-    expect(response.body.data.key).toBe('united-states')
-    expect(response.body.data.manifest_target).toBe('finance/united-states')
-    expect(provisioningSetup.create).toHaveBeenCalledTimes(1)
-    expect(provisioningSetup.create.mock.calls[0]![0].data).toMatchObject({
-      key: 'united-states',
-      countryCode: 'US',
-      currencyCode: 'USD',
-      isDefault: false,
-      status: 'active',
+    expect(provisioningResource.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        resourceType: 'workspace',
+        key: 'default',
+      }),
     })
-    // The copied resource is written under the new manifest's draft revision.
-    expect(provisioningResource.create).toHaveBeenCalledTimes(1)
-    expect(provisioningStep.create).toHaveBeenCalledTimes(1)
-    // …and that draft is published, so the setup can provision immediately.
-    expect(provisioningManifestRevision.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ status: 'published' }),
+    expect(provisioningProperty.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        key: 'countryCode',
+        valueType: 'reference',
+        referenceNamespace: 'country',
+        referenceKey: 'JM',
+      }),
+    })
+    expect(response.body.data.published_revision).toBeNull()
+  })
+
+  it('refuses to create a blank setup as the platform default', async () => {
+    const response = await request(createApp())
+      .post('/provisioning/setups')
+      .set(AUTH)
+      .send({
+        key: 'new-zealand',
+        name: 'New Zealand',
+        is_default: true,
       })
-    )
+
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe('provisioning/setup-not-published')
+    expect(provisioningSetup.create).not.toHaveBeenCalled()
+  })
+})
+
+describe('PUT /provisioning/manifests/finance/:setup_key/draft', () => {
+  it('persists a partial draft and maps API field names before Prisma writes', async () => {
+    configureBlankDraftPersistence()
+    provisioningManifestRevision.findUnique.mockResolvedValue({
+      ...emptyDraftRow('new-zealand'),
+      provisioningResources: [
+        {
+          id: 'prs_nzd',
+          resourceType: 'currency',
+          key: 'NZD',
+          position: 10,
+          provisioningProperties: [
+            {
+              id: 'prp_code',
+              key: 'code',
+              valueType: 'string',
+              stringValue: 'NZD',
+              integerValue: null,
+              decimalValue: null,
+              booleanValue: null,
+              referenceNamespace: null,
+              referenceKey: null,
+            },
+            {
+              id: 'prp_name',
+              key: 'name',
+              valueType: 'string',
+              stringValue: 'New Zealand Dollar',
+              integerValue: null,
+              decimalValue: null,
+              booleanValue: null,
+              referenceNamespace: null,
+              referenceKey: null,
+            },
+            {
+              id: 'prp_minor',
+              key: 'minorUnit',
+              valueType: 'integer',
+              stringValue: null,
+              integerValue: 2n,
+              decimalValue: null,
+              booleanValue: null,
+              referenceNamespace: null,
+              referenceKey: null,
+            },
+          ],
+        },
+      ],
+    })
+
+    const response = await request(createApp())
+      .put('/provisioning/manifests/finance/new-zealand/draft')
+      .set(AUTH)
+      .send({
+        manifest_version: 1,
+        resources: [
+          {
+            resource_type: 'currency',
+            key: 'NZD',
+            position: 10,
+            properties: [
+              {
+                key: 'code',
+                value_type: 'string',
+                string_value: 'NZD',
+              },
+              {
+                key: 'name',
+                value_type: 'string',
+                string_value: 'New Zealand Dollar',
+              },
+              {
+                key: 'minorUnit',
+                value_type: 'integer',
+                integer_value: 2,
+              },
+            ],
+          },
+        ],
+      })
+
+    expect(response.status).toBe(200)
+    expect(provisioningResource.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        resourceType: 'currency',
+        key: 'NZD',
+      }),
+    })
+    expect(provisioningProperty.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        key: 'minorUnit',
+        valueType: 'integer',
+        integerValue: 2n,
+      }),
+    })
   })
 })
 
@@ -339,7 +499,7 @@ describe('POST /provisioning/setups reserved keys', () => {
 })
 
 describe('PATCH /provisioning/setups/:setup_key', () => {
-  it('moves the platform default onto another setup in one transaction', async () => {
+  it('moves the platform default onto another published setup in one transaction', async () => {
     const target = setupRow({
       id: 'psu_us',
       key: 'united-states',
@@ -347,6 +507,9 @@ describe('PATCH /provisioning/setups/:setup_key', () => {
       isDefault: false,
     })
     provisioningSetup.findFirst.mockResolvedValue(target)
+    provisioningManifestRevision.findFirst.mockResolvedValue(
+      publishedRevisionRow()
+    )
     $transaction.mockResolvedValue([
       { count: 1 },
       { ...target, isDefault: true },
@@ -364,6 +527,27 @@ describe('PATCH /provisioning/setups/:setup_key', () => {
       where: { isDefault: true, NOT: { id: 'psu_us' } },
       data: { isDefault: false, updatedAt: expect.anything() },
     })
+  })
+
+  it('refuses to make an unpublished setup the platform default', async () => {
+    provisioningSetup.findFirst.mockResolvedValue(
+      setupRow({
+        id: 'psu_nz',
+        key: 'new-zealand',
+        name: 'New Zealand',
+        isDefault: false,
+      })
+    )
+    provisioningManifestRevision.findFirst.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .patch('/provisioning/setups/new-zealand')
+      .set(AUTH)
+      .send({ is_default: true })
+
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe('provisioning/setup-not-published')
+    expect($transaction).not.toHaveBeenCalled()
   })
 
   it('refuses to archive the platform default', async () => {
