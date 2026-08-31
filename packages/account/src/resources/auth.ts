@@ -1,6 +1,10 @@
 import { sendAuthRequest } from '../request.ts'
 import type { SdkRuntime } from '../request.ts'
 import type { RequestOptions } from '../types/api.ts'
+import {
+  auth876RegisterBusinessParamsSchema,
+  type RegisterBusinessParams,
+} from '../types/business-registration.ts'
 import type {
   GetSessionResult,
   ListProvidersResult,
@@ -12,7 +16,6 @@ import type {
   OAuthSessionResult,
   RecoverParams,
   RecoverResult,
-  RegisterBusinessParams,
   RegisterBusinessResult,
   RegisterParams,
   RegisterResult,
@@ -44,7 +47,6 @@ import {
   auth876OAuthSessionResponseSchema,
   auth876RecoverParamsSchema,
   auth876RecoverResponseSchema,
-  auth876RegisterBusinessParamsSchema,
   auth876RegisterParamsSchema,
   auth876RegisterResponseSchema,
   auth876ResetPasswordParamsSchema,
@@ -179,10 +181,10 @@ export function createAuthResource(runtime: SdkRuntime) {
     /**
      * Creates a business owner account and initial organization.
      *
-     * Use this for business onboarding flows where the owner and organization
-     * are created together. The response shape matches consumer registration.
+     * Country is required because the organization is routed to a provisioning
+     * setup before its first app/finance/Work writes.
      *
-     * @param params - Owner credentials plus organization details.
+     * @param params - Owner credentials plus organization details and canonical country.
      * @param requestOptions - Optional per-request fetch options.
      * @returns A `{ data, error }` result envelope.
      * @see POST /auth/register-business
