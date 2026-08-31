@@ -76,7 +76,23 @@ describe('workspace.work.ensure', () => {
           'Content-Type': 'application/json',
           'x-internal-key': 'work-internal-key',
         },
-        body: JSON.stringify({ organizationId: 'org_1', appId: 'app_crm' }),
+        body: JSON.stringify({
+          organizationId: 'org_1',
+          appId: 'app_crm',
+          scopes: [
+            'work.tasks.read',
+            'work.tasks.write',
+            'work.reminders.read',
+            'work.reminders.write',
+            'work.calendars.read',
+            'work.calendars.write',
+            'work.events.read',
+            'work.events.write',
+            'work.alerts.read',
+            'work.alerts.write',
+            'work.my-work.read',
+          ],
+        }),
       }
     )
     expect(mocks.warn).not.toHaveBeenCalled()
@@ -184,7 +200,23 @@ describe('workspace.work.ensure', () => {
           'Content-Type': 'application/json',
           'x-internal-key': 'work-internal-key',
         },
-        body: JSON.stringify({ organizationId: 'org_1', appId: 'app_crm' }),
+        body: JSON.stringify({
+          organizationId: 'org_1',
+          appId: 'app_crm',
+          scopes: [
+            'work.tasks.read',
+            'work.tasks.write',
+            'work.reminders.read',
+            'work.reminders.write',
+            'work.calendars.read',
+            'work.calendars.write',
+            'work.events.read',
+            'work.events.write',
+            'work.alerts.read',
+            'work.alerts.write',
+            'work.my-work.read',
+          ],
+        }),
       }
     )
   })
