@@ -1,11 +1,11 @@
 import { listObject } from '@/http/envelope'
 import { AppHttpError } from '@/http/errors'
 
-import type { ProvisioningDraftReplace } from './provisioning.schemas'
 import type {
   ProvisioningSetupResourceCreate,
   ProvisioningSetupResourceUpdate,
 } from './provisioning-resource.schemas'
+import type { ProvisioningDraftReplace } from './provisioning.schemas'
 import {
   replaceDraft,
   retrieveCatalog,
@@ -36,10 +36,13 @@ async function resourceDefinition(
     (candidate) => candidate.resource_type === resourceType
   )
   if (!definition) return resourceNotFound(resourceType)
+
   return definition
 }
 
-function revisionAsDraft(revision: NonNullable<Revision>): ProvisioningDraftReplace {
+function revisionAsDraft(
+  revision: NonNullable<Revision>
+): ProvisioningDraftReplace {
   return {
     manifest_version: 1,
     reconciliation: 'create_missing',
@@ -72,7 +75,9 @@ function revisionAsDraft(revision: NonNullable<Revision>): ProvisioningDraftRepl
   }
 }
 
-async function editableDraft(setupKey: string): Promise<ProvisioningDraftReplace> {
+async function editableDraft(
+  setupKey: string
+): Promise<ProvisioningDraftReplace> {
   const manifest = await retrieveManifest('finance', setupKey)
   const revision = manifest.draft ?? manifest.published
 
@@ -90,7 +95,10 @@ async function editableDraft(setupKey: string): Promise<ProvisioningDraftReplace
 }
 
 function nextPosition(resources: ProvisioningDraftReplace['resources']): number {
-  return resources.reduce((max, resource) => Math.max(max, resource.position), 0) + 10
+  return (
+    resources.reduce((max, resource) => Math.max(max, resource.position), 0) +
+    10
+  )
 }
 
 function ensurePositionAvailable(
@@ -126,6 +134,7 @@ function responseResource(
       candidate.resource_type === resourceType && candidate.key === resourceKey
   )
   if (!resource) return resourceNotFound(resourceType, resourceKey)
+
   return resource
 }
 
@@ -134,6 +143,7 @@ export async function listSetupResources(
   resourceType: string
 ) {
   await resourceDefinition(setupKey, resourceType)
+
   const manifest = await retrieveManifest('finance', setupKey)
   const revision = manifest.draft ?? manifest.published
   const data = (revision?.resources ?? []).filter(
@@ -154,8 +164,11 @@ export async function retrieveSetupResource(
   resourceKey: string
 ): Promise<Resource> {
   const result = await listSetupResources(setupKey, resourceType)
-  const resource = result.data.find((candidate) => candidate.key === resourceKey)
+  const resource = result.data.find(
+    (candidate) => candidate.key === resourceKey
+  )
   if (!resource) return resourceNotFound(resourceType, resourceKey)
+
   return resource
 }
 
@@ -223,6 +236,7 @@ export async function updateSetupResource(
   body: ProvisioningSetupResourceUpdate
 ): Promise<Resource> {
   await resourceDefinition(setupKey, resourceType)
+
   const draft = await editableDraft(setupKey)
   const index = draft.resources.findIndex(
     (resource) =>
@@ -276,12 +290,16 @@ export async function deleteSetupResource(
     })
   }
 
-  const referencing = draft.resources.find((resource) =>
-    resource.properties.some(
-      (property) =>
-        property.reference_namespace === resourceType &&
-        property.reference_key === resourceKey
-    )
+  const referencing = draft.resources.find(
+    (resource) =>
+      !(
+        resource.resource_type === resourceType && resource.key === resourceKey
+      ) &&
+      resource.properties.some(
+        (property) =>
+          property.reference_namespace === resourceType &&
+          property.reference_key === resourceKey
+      )
   )
   if (referencing) {
     throw new AppHttpError({
