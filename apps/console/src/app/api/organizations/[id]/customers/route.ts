@@ -1,4 +1,4 @@
-import { billing } from '@/lib/services/billing'
+import { billing, createBilling } from '@/lib/services/billing'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
@@ -19,8 +19,8 @@ export async function POST(request: NextRequest, context: Context) {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(requestId)
-  const { data, error } = await billing.customers.create(organizationId, body, {
+  const billingClient = createBilling(requestId)
+  const { data, error } = await billingClient.customers.create(organizationId, body, {
     idempotencyKey: `console:${requestId}`,
   })
   if (error || !data)
