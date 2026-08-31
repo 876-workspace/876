@@ -73,7 +73,8 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
         <TableHeader className="876-header-row">
           <TableRow>
             <TableHead className="px-5 py-3.5">Setup</TableHead>
-            <TableHead className="px-5 py-3.5">Revision</TableHead>
+            <TableHead className="px-5 py-3.5">Description</TableHead>
+            <TableHead className="px-5 py-3.5">Currencies</TableHead>
             <TableHead className="px-5 py-3.5">Organizations</TableHead>
             <TableHead className="px-5 py-3.5">Status</TableHead>
           </TableRow>
@@ -82,7 +83,7 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
           {setups.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={4}
+                colSpan={5}
                 className="text-muted-foreground px-5 py-8 text-center text-[0.8125rem]"
               >
                 No setups match this view.
@@ -137,6 +138,12 @@ function SetupRow({
         </TableCell>
       </TableRow>
     )
+
+  const currencies = (setup.currency_code ?? '')
+    .split(/[,;\s]+/)
+    .map((c) => c.trim())
+    .filter(Boolean)
+
   return (
     <TableRow className="transition-colors">
       <TableCell className="relative px-5 py-3.5">
@@ -153,8 +160,25 @@ function SetupRow({
           {setup.key}
         </div>
       </TableCell>
-      <TableCell className="px-5 py-3.5 tabular-nums">
-        {setup.published_revision ?? 'Draft'}
+      <TableCell className="text-muted-foreground max-w-xs truncate px-5 py-3.5 text-[0.8125rem]">
+        {setup.description || '—'}
+      </TableCell>
+      <TableCell className="px-5 py-3.5">
+        {currencies.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {currencies.map((code) => (
+              <Badge
+                key={code}
+                variant="outline"
+                className="font-mono text-xs font-medium"
+              >
+                {code}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
       </TableCell>
       <TableCell className="px-5 py-3.5 tabular-nums">
         {setup.organization_count}
