@@ -10,23 +10,17 @@ import type {
 } from './provisioning.schemas'
 import * as service from './provisioning.service'
 
-function rejectLegacySetupLocationWrite(body: {
-  country_code?: string | null
-  currency_code?: string | null
-}): void {
-  if (body.country_code !== undefined && body.country_code !== null) {
+function rejectLegacySetupLocationWrite(body: unknown): void {
+  if (!body || typeof body !== 'object') return
+  const record = body as Record<string, unknown>
+  if (
+    Object.prototype.hasOwnProperty.call(record, 'country_code') ||
+    Object.prototype.hasOwnProperty.call(record, 'currency_code')
+  ) {
     throw new AppHttpError({
       code: 'provisioning/setup-location-read-only',
       message:
-        'Setup country matching is configured through setup policy conditions, not country_code.',
-      httpStatus: 422,
-    })
-  }
-  if (body.currency_code !== undefined && body.currency_code !== null) {
-    throw new AppHttpError({
-      code: 'provisioning/setup-location-read-only',
-      message:
-        'Setup currency is configured through the finance manifest, not currency_code.',
+        'Setup country matching and currency are configured through policy conditions and the finance manifest.',
       httpStatus: 422,
     })
   }
@@ -214,26 +208,16 @@ export async function retrieveSetup(
 }
 
 export async function createSetup(req: Request, res: Response): Promise<void> {
+  rejectLegacySetupLocationWrite(req.body)
   const body = validBody<ProvisioningSetupCreate>(req)
-  rejectLegacySetupLocationWrite(body)
   const result = await service.createSetup(body)
   res.status(201).json(result)
 }
 
 export async function updateSetup(req: Request, res: Response): Promise<void> {
   const { setup_key } = validParams<{ setup_key: string }>(req)
+  rejectLegacySetupLocationWrite(req.body)
   const body = validBody<ProvisioningSetupUpdate>(req)
-  if (
-    Object.prototype.hasOwnProperty.call(body, 'country_code') ||
-    Object.prototype.hasOwnProperty.call(body, 'currency_code')
-  ) {
-    throw new AppHttpError({
-      code: 'provisioning/setup-location-read-only',
-      message:
-        'Setup country matching and currency are configured through policy conditions and the finance manifest.',
-      httpStatus: 422,
-    })
-  }
   const result = await service.updateSetup(setup_key, body)
   res.status(200).json(result)
 }
