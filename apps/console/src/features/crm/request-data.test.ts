@@ -4,14 +4,14 @@ const { platformOrg, guards, client } = vi.hoisted(() => ({
   platformOrg: { getPlatformOrganization: vi.fn() },
   guards: { requireSession: vi.fn() },
   client: {
-    departments: { list: vi.fn(), admin: { list: vi.fn() } },
-    organizationMembers: { list: vi.fn(), admin: { list: vi.fn() } },
+    departments: { list: vi.fn() },
+    members: { list: vi.fn() },
   },
 }))
 
 vi.mock('@/lib/platform-org', () => platformOrg)
 vi.mock('@/lib/auth/guards', () => guards)
-vi.mock('@/lib/services/platform', () => ({ platform: client }))
+vi.mock('@/lib/services/workspace', () => ({ workspace: client }))
 
 const ORG = { id: 'org_fa2cfb0b', slug: 'efesto' }
 
@@ -34,39 +34,30 @@ describe('loadDirectory', () => {
     vi.clearAllMocks()
     platformOrg.getPlatformOrganization.mockResolvedValue(ORG)
     guards.requireSession.mockResolvedValue({ id: 'user_695d45c5' })
-    client.departments.admin.list.mockResolvedValue({
+    client.departments.list.mockResolvedValue({
       data: { data: [{ id: 'team_1', name: 'Support' }] },
       error: null,
     })
-    client.organizationMembers.admin.list.mockResolvedValue({
+    client.members.list.mockResolvedValue({
       data: { data: [MEMBER], has_more: false },
       error: null,
     })
   })
 
-  // Console holds the internal key and has no session, so the session-tier
-  // `organizationMembers.list` resolves nothing here. It type-checks either way,
-  // so only this test stands between us and every note rendering two characters
-  // of a raw user id instead of a name and a picture.
-  it('reads members at the operator tier, not the session tier', async () => {
+  it('reads members through the workspace operator client', async () => {
     await loadDirectory()
 
-    expect(client.organizationMembers.admin.list).toHaveBeenCalledTimes(1)
-    expect(client.organizationMembers.admin.list).toHaveBeenCalledWith(ORG.id, {
+    expect(client.members.list).toHaveBeenCalledTimes(1)
+    expect(client.members.list).toHaveBeenCalledWith(ORG.id, {
       limit: 100,
     })
-    expect(client.organizationMembers.list).not.toHaveBeenCalled()
   })
 
-  it('reads departments at the operator tier, not the session tier', async () => {
-    // Regression: the session route needs a signed-in org member. Console has
-    // an app key and no session, so the session projection answered
-    // auth/invalid-response and the request page showed two enrichment errors.
+  it('reads departments through the workspace operator client', async () => {
     await loadDirectory()
 
-    expect(client.departments.admin.list).toHaveBeenCalledTimes(1)
-    expect(client.departments.admin.list).toHaveBeenCalledWith(ORG.id)
-    expect(client.departments.list).not.toHaveBeenCalled()
+    expect(client.departments.list).toHaveBeenCalledTimes(1)
+    expect(client.departments.list).toHaveBeenCalledWith(ORG.id)
   })
 
   it('carries the avatar through so a note can picture its author', async () => {
@@ -83,7 +74,7 @@ describe('loadDirectory', () => {
   })
 
   it('falls back to the email when a member has no name', async () => {
-    client.organizationMembers.admin.list.mockResolvedValue({
+    client.members.list.mockResolvedValue({
       data: { data: [{ ...MEMBER, first_name: null, last_name: null }] },
       error: null,
     })
@@ -94,7 +85,7 @@ describe('loadDirectory', () => {
   })
 
   it('falls back to the user id when a member has neither name nor email', async () => {
-    client.organizationMembers.admin.list.mockResolvedValue({
+    client.members.list.mockResolvedValue({
       data: {
         data: [{ ...MEMBER, first_name: null, last_name: null, email: null }],
       },
@@ -117,6 +108,6 @@ describe('loadDirectory', () => {
       members: [],
       membersError: null,
     })
-    expect(client.organizationMembers.admin.list).not.toHaveBeenCalled()
+    expect(client.members.list).not.toHaveBeenCalled()
   })
 })
