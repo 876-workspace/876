@@ -19,6 +19,13 @@ import { client } from '@/lib/client'
 const entitlementKey = (targetType: string, targetKey: string) =>
   `${targetType}:${targetKey}`
 
+function entitlementDescription(targetType: string): string {
+  if (targetType === 'service') return 'Shared platform service gate.'
+  if (targetType === 'service_capability')
+    return 'Capability available when its shared service is enabled.'
+  return 'Standalone application entitlement.'
+}
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -230,11 +237,11 @@ export function CreateSetupForm() {
 
       <div className="space-y-3 border-t pt-5">
         <div>
-          <p className="text-sm font-medium">Initial entitlements</p>
+          <p className="text-sm font-medium">Initial access policy</p>
           <p className="text-muted-foreground text-xs">
-            Choose standalone product and shared-service access separately from
-            finance workspace defaults. Enterprise is required for every
-            organization.
+            Choose standalone products, shared-service gates, and service
+            capabilities separately from finance workspace defaults. Enterprise
+            is required for every organization.
           </p>
         </div>
 
@@ -254,9 +261,7 @@ export function CreateSetupForm() {
                 <div>
                   <p className="text-sm font-medium">{entry.label}</p>
                   <p className="text-muted-foreground text-xs">
-                    {entry.target_type === 'service'
-                      ? 'Shared platform service access.'
-                      : 'Standalone application entitlement.'}
+                    {entitlementDescription(entry.target_type)}
                   </p>
                 </div>
                 <Switch
