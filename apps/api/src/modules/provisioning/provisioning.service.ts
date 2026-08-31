@@ -106,6 +106,50 @@ function revisionAsDraft(row: {
   }
 }
 
+function draftForRepository(body: ProvisioningDraftReplace) {
+  return {
+    reconciliation: body.reconciliation ?? 'create_missing',
+    preserveTenantOverrides: body.preserve_tenant_overrides ?? true,
+    financeDependency: body.finance_dependency ?? 'none',
+    financeScopes: body.finance_scopes ?? [],
+    resources: body.resources.map((resource) => ({
+      resourceType: resource.resource_type,
+      key: resource.key,
+      position: resource.position,
+      properties: resource.properties.map((property) => ({
+        key: property.key,
+        valueType: property.value_type,
+        stringValue: property.string_value ?? null,
+        integerValue: property.integer_value ?? null,
+        decimalValue: property.decimal_value ?? null,
+        booleanValue: property.boolean_value ?? null,
+        referenceNamespace: property.reference_namespace ?? null,
+        referenceKey: property.reference_key ?? null,
+      })),
+    })),
+    steps: body.steps.map((step) => ({
+      key: step.key,
+      description: step.description,
+      position: step.position,
+    })),
+  }
+}
+
+const PARTIAL_DRAFT_ISSUE_CODES = new Set([
+  'resource_minimum',
+  'unresolved_reference',
+])
+
+function validateDraftForSave(
+  targetType: string,
+  targetKey: string,
+  body: ProvisioningDraftReplace
+) {
+  return validateDraft(targetType as never, targetKey, body as never).filter(
+    (issue) => !PARTIAL_DRAFT_ISSUE_CODES.has(issue.code)
+  )
+}
+
 export async function retrieveCatalog(targetType: string, targetKey: string) {
   const catalogKey = await requireValidTarget(targetType, targetKey)
   const definitions = catalogDefinitions(targetType as never, catalogKey)
@@ -163,7 +207,7 @@ export async function replaceDraft(
 ) {
   const catalogKey = await requireValidTarget(targetType, targetKey)
   const storageKey = await storageTargetKey(targetType, targetKey)
-  const issues = validateDraft(targetType as never, catalogKey, body as never)
+  const issues = validateDraftForSave(targetType, catalogKey, body)
   if (issues.length > 0) {
     throw new AppHttpError({
       code: 'provisioning/invalid-draft',
@@ -171,15 +215,10 @@ export async function replaceDraft(
       httpStatus: 422,
     })
   }
-  const now = nowUnixSeconds()
+
   const revision = await repository.replaceDraft(targetType, storageKey, {
-    reconciliation: body.reconciliation ?? 'create_missing',
-    preserveTenantOverrides: body.preserve_tenant_overrides ?? true,
-    financeDependency: body.finance_dependency ?? 'none',
-    financeScopes: body.finance_scopes ?? [],
-    resources: body.resources as never,
-    steps: body.steps as never,
-    now,
+    ...draftForRepository(body),
+    now: nowUnixSeconds(),
   })
   return serializeRevision(revision as never)
 }
@@ -553,26 +592,45 @@ export async function createSetup(body: {
     })
   }
 
-  // A setup with no published manifest cannot provision anything, so a new one
-  // always starts from a working configuration: the named source, or the
-  // platform default.
-  const source = body.copy_from
-    ? await requireSetup(body.copy_from)
-    : await repository.findDefaultSetup()
-  const sourceRevision = source
-    ? await repository.findRevisionByStatus('finance', source.key, 'published')
-    : null
-  if (!sourceRevision) {
+  if (body.is_default) {
     throw new AppHttpError({
-      code: 'provisioning/setup-source-unavailable',
+      code: 'provisioning/setup-not-published',
       message:
-        'No published finance manifest is available to copy. Publish one first.',
-      httpStatus: 422,
+        'Create and publish the provisioning setup before making it the platform default.',
+      httpStatus: 409,
     })
   }
 
+  let initialDraft: ProvisioningDraftReplace = {
+    manifest_version: 1,
+    reconciliation: 'create_missing',
+    preserve_tenant_overrides: true,
+    finance_dependency: 'none',
+    finance_scopes: [],
+    resources: [],
+    steps: [],
+  }
+
+  if (body.copy_from) {
+    const source = await requireSetup(body.copy_from)
+    const sourceRevision = await repository.findRevisionByStatus(
+      'finance',
+      source.key,
+      'published'
+    )
+    if (!sourceRevision) {
+      throw new AppHttpError({
+        code: 'provisioning/setup-source-unavailable',
+        message:
+          'The requested source setup does not have a published finance manifest.',
+        httpStatus: 422,
+      })
+    }
+    initialDraft = revisionAsDraft(sourceRevision as never)
+  }
+
   const now = nowUnixSeconds()
-  let created = await repository.createSetup({
+  const created = await repository.createSetup({
     key: body.key,
     name: body.name,
     description: body.description,
@@ -581,27 +639,10 @@ export async function createSetup(body: {
     now,
   })
 
-  const draftInput = revisionAsDraft(sourceRevision as never)
   await repository.replaceDraft('finance', created.key, {
-    reconciliation: 'create_missing',
-    preserveTenantOverrides: true,
-    financeDependency: 'none',
-    financeScopes: [],
-    resources: draftInput.resources as never,
-    steps: draftInput.steps as never,
+    ...draftForRepository(initialDraft),
     now,
   })
-  const locked = await repository.retrieveDraftForUpdate('finance', created.key)
-  if (locked) {
-    await repository.promoteDraft(
-      locked.manifest as never,
-      locked.draft as never,
-      now
-    )
-  }
-
-  if (body.is_default)
-    created = await repository.setDefaultSetup(created.id, now)
 
   return serializeSetup(created, await setupContext(created))
 }
@@ -683,6 +724,20 @@ export async function updateSetup(
         httpStatus: 409,
       })
     }
+
+    const published = await repository.findRevisionByStatus(
+      'finance',
+      updated.key,
+      'published'
+    )
+    if (!published) {
+      throw new AppHttpError({
+        code: 'provisioning/setup-not-published',
+        message: 'Publish this provisioning setup before making it the default.',
+        httpStatus: 409,
+      })
+    }
+
     updated = await repository.setDefaultSetup(updated.id, now)
   }
 
