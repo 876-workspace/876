@@ -1,3 +1,5 @@
+import type { ProvisioningDraftReplaceParams as ProvisioningWireDraftReplace } from '@876/core/types/provisioning'
+
 import { BILLING_APP_SLUG } from './provisioning'
 
 const CRM_APP_SLUG = '876-crm'
@@ -64,6 +66,44 @@ export type ProvisioningDraftReplace = {
   financeScopes?: string[]
   resources: ProvisioningResourceInput[]
   steps?: unknown[]
+}
+
+/**
+ * Convert the public manifest-v1 wire contract into the catalog's internal
+ * camel-case representation. API schemas, bounded clients and handoff imports
+ * all use the public snake-case contract; catalog validation must never rely on
+ * casts between those shapes.
+ */
+export function provisioningDraftForCatalog(
+  draft: ProvisioningWireDraftReplace
+): ProvisioningDraftReplace {
+  return {
+    manifestVersion: draft.manifest_version ?? 1,
+    reconciliation: draft.reconciliation ?? 'create_missing',
+    preserveTenantOverrides: draft.preserve_tenant_overrides ?? true,
+    financeDependency: draft.finance_dependency ?? 'none',
+    financeScopes: draft.finance_scopes ?? [],
+    resources: (draft.resources ?? []).map((resource) => ({
+      resourceType: resource.resource_type,
+      key: resource.key,
+      position: resource.position,
+      properties: resource.properties.map((property) => ({
+        key: property.key,
+        valueType: property.value_type,
+        stringValue: property.string_value ?? null,
+        integerValue:
+          property.integer_value === null ||
+          property.integer_value === undefined
+            ? null
+            : Number(property.integer_value),
+        decimalValue: property.decimal_value ?? null,
+        booleanValue: property.boolean_value ?? null,
+        referenceNamespace: property.reference_namespace ?? null,
+        referenceKey: property.reference_key ?? null,
+      })),
+    })),
+    steps: draft.steps ?? [],
+  }
 }
 
 type Field = {
@@ -629,4 +669,12 @@ export function validateDraft(
   }
 
   return issues
+}
+
+export function validateProvisioningWireDraft(
+  targetType: ProvisioningTargetType,
+  targetKey: string,
+  draft: ProvisioningWireDraftReplace
+): ProvisioningValidationIssue[] {
+  return validateDraft(targetType, targetKey, provisioningDraftForCatalog(draft))
 }
