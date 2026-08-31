@@ -5,8 +5,7 @@ import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 
 import {
-  formatOptionLabel,
-  rowReferenceKey,
+  financeFieldOptions,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
 } from '../finance-provisioning-utils'
@@ -29,17 +28,7 @@ export function FinanceSingletonEditor({
       {definition.fields.map((field) => {
         const inputId = `singleton-${definition.resource_type}-${field.key}`
         const value = row.values[field.key]
-        const referenceRows = field.reference_namespace
-          ? allRows.filter(
-              (candidate) =>
-                candidate.resourceType === field.reference_namespace
-            )
-          : []
-        const options = field.allowed_values
-          ? field.allowed_values
-          : field.value_type === 'reference' && referenceRows.length > 0
-            ? referenceRows.map(rowReferenceKey).filter(Boolean)
-            : null
+        const options = financeFieldOptions(field, allRows)
 
         return (
           <FormRow
@@ -81,12 +70,12 @@ export function FinanceSingletonEditor({
                   })
                 }
               >
-                {!field.required && (
-                  <NativeSelectOption value="">None</NativeSelectOption>
-                )}
+                <NativeSelectOption value="" disabled={field.required}>
+                  {field.required ? `Select ${field.label.toLowerCase()}` : 'None'}
+                </NativeSelectOption>
                 {options.map((option) => (
-                  <NativeSelectOption key={option} value={option}>
-                    {field.allowed_values ? formatOptionLabel(option) : option}
+                  <NativeSelectOption key={option.value} value={option.value}>
+                    {option.label}
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
@@ -98,7 +87,10 @@ export function FinanceSingletonEditor({
                   field.value_type === 'integer' ||
                   field.value_type === 'decimal'
                     ? 'number'
-                    : 'text'
+                    : field.key === 'effectiveFrom' ||
+                        field.key === 'effectiveUntil'
+                      ? 'date'
+                      : 'text'
                 }
                 step={field.value_type === 'decimal' ? 'any' : undefined}
                 value={String(value ?? '')}
