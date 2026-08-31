@@ -10,14 +10,17 @@ export type ProvisioningSelectionContext = {
   jurisdiction: string | null
 }
 
-export type ProvisioningSelectionMatchType = 'policy' | 'fallback' | 'persisted'
+export type ProvisioningStoredSelectionType = 'policy' | 'fallback' | 'backfill'
+export type ProvisioningSelectionMatchType =
+  | ProvisioningStoredSelectionType
+  | 'persisted'
 
 /**
- * Durable explanation of why an organization uses a provisioning setup.
+ * Explanation of why an organization uses a provisioning setup.
  *
- * `persisted` is returned on retries after the initial policy/fallback decision
- * has already been stored on the organization. Callers must never re-resolve a
- * persisted organization from newer or transient location signals.
+ * `persisted` is a retry/runtime observation, never the stored origin. The
+ * organization retains its original `policy`, `fallback`, or `backfill`
+ * selection so later retries cannot erase the initial decision trail.
  */
 export type ProvisioningSetupSelection = {
   setup_id: string
@@ -37,13 +40,11 @@ export type ProvisioningSelectionCandidate = {
   policy: Pick<ProvisioningSetupPolicy, 'conditions' | 'entitlements'>
 }
 
-export type PersistedProvisioningSelection = Pick<
-  ProvisioningSetupSelection,
-  | 'setup_key'
-  | 'match_type'
-  | 'match_group_key'
-  | 'match_priority'
-  | 'matched_fields'
-> & {
+export type PersistedProvisioningSelection = {
+  setup_key: string
+  selection_type: ProvisioningStoredSelectionType | null
+  match_group_key: string | null
+  match_priority: number | null
+  matched_fields: ProvisioningSetupConditionField[]
   selected_at: number | null
 }
