@@ -64,6 +64,15 @@ function policy() {
         created_at: 1_785_000_000,
         updated_at: 1_785_000_000,
       },
+      {
+        object: 'provisioning_setup_entitlement' as const,
+        id: 'pse_work_tasks',
+        target_type: 'service_capability' as const,
+        target_key: 'work.tasks',
+        enabled: true,
+        created_at: 1_785_000_000,
+        updated_at: 1_785_000_000,
+      },
     ],
     updated_at: 1_785_000_000,
   }
@@ -93,10 +102,17 @@ describe('provisioning setup policy routes', () => {
     expect(response.body.data).toMatchObject({
       setup_key: 'jamaica',
       conditions: [expect.objectContaining({ field: 'country', value: 'JM' })],
+      entitlements: expect.arrayContaining([
+        expect.objectContaining({
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: true,
+        }),
+      ]),
     })
   })
 
-  it('normalizes country conditions before passing the policy to the service', async () => {
+  it('normalizes country conditions and accepts Work capabilities before service execution', async () => {
     policyService.replaceSetupPolicy.mockResolvedValue(policy())
 
     const response = await request(createApp())
@@ -117,6 +133,11 @@ describe('provisioning setup policy routes', () => {
             target_key: 'work',
             enabled: true,
           },
+          {
+            target_type: 'service_capability',
+            target_key: 'work.tasks',
+            enabled: true,
+          },
         ],
       })
 
@@ -133,6 +154,11 @@ describe('provisioning setup policy routes', () => {
       ],
       entitlements: [
         { target_type: 'service', target_key: 'work', enabled: true },
+        {
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: true,
+        },
       ],
     })
   })
