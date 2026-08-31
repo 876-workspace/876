@@ -30,13 +30,7 @@ const PAYMENT_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Payments' },
 ]
 
-type Props = { searchParams: Promise<{ status?: string }> }
-
-export default async function PaymentsPage({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus = status ?? 'all'
-  void selectedStatus
-
+export default async function PaymentsPage() {
   return (
     <Page>
       <ResourceToolbar
