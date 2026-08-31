@@ -54,7 +54,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   const organizationIds = [
     ...new Set(summaries.map((subscription) => subscription.organization_id)),
   ]
-  const hydratedResult = await workspace.apps.entitlements.list({
+  const hydratedResult = await workspace.organizations.subscriptions.list({
     organizationIds,
   })
 
