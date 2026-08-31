@@ -1,4 +1,5 @@
 import { prisma } from '@/db/client'
+import type { Prisma } from '@/db/generated/prisma/client'
 
 const POLICY_SELECT = {
   id: true,
@@ -32,7 +33,7 @@ const POLICY_SELECT = {
       updatedAt: true,
     },
   },
-} as const
+} satisfies Prisma.ProvisioningSetupSelect
 
 export async function listActivePublishedSelectionSetups() {
   const setups = await prisma.provisioningSetup.findMany({

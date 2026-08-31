@@ -19,11 +19,11 @@ import {
   retrieveProvisioningSetupPolicy,
   retrieveProvisioningWorkspaceDefaults,
   type ProvisioningWorkspaceDefaults,
-} from '@/modules/provisioning'
+} from '@/modules/provisioning/provisioning-selection.service'
 
 import * as repository from './provisioning-policy.repository'
 
-export type { ProvisioningWorkspaceDefaults } from '@/modules/provisioning'
+export type { ProvisioningWorkspaceDefaults } from '@/modules/provisioning/provisioning-selection.service'
 
 const ENTERPRISE_APP_SLUG = '876-enterprise'
 const WORK_SERVICE_KEY = 'work'

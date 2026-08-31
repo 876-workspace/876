@@ -1946,6 +1946,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../core
       '@876/sdk':
         specifier: workspace:*
         version: link:../sdk

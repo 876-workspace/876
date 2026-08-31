@@ -65,6 +65,7 @@
     "@types/express": "5.0.6",
     "@types/node": "26.2.0",
     "@types/pg": "8.23.1",
+    "@types/supertest": "7.2.1",
     "dependency-cruiser": "18.2.0",
     "dotenv": "17.4.2",
     "pino-pretty": "13.1.3",
