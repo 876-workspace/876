@@ -19,7 +19,7 @@
   },
   "matching": {
     "semantics": "OR_OF_AND_GROUPS",
-    "current_seed_condition": "country equals ISO-3166-1 alpha-2 code",
+    "current_condition": "country equals ISO-3166-1 alpha-2 code",
     "future_fields": ["subdivision", "jurisdiction"]
   },
   "default_entitlements": [
