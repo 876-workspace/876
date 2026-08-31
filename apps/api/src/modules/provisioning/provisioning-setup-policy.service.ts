@@ -10,7 +10,7 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 import * as repository from './provisioning-setup-policy.repository'
 import type { ProvisioningSetupPolicyReplace } from './provisioning-setup-policy.schemas'
 
-const SERVICE_TARGET_KEYS = new Set(
+const SERVICE_TARGET_KEYS = new Set<string>(
   PROVISIONING_SERVICE_ENTITLEMENTS.map((entry) => entry.target_key)
 )
 
@@ -60,7 +60,7 @@ async function validateEntitlements(
 ): Promise<void> {
   for (const entitlement of entitlements) {
     if (entitlement.target_type === 'service') {
-      if (!SERVICE_TARGET_KEYS.has(entitlement.target_key as 'work')) {
+      if (!SERVICE_TARGET_KEYS.has(entitlement.target_key)) {
         throw new AppHttpError({
           code: 'provisioning/unknown-service-entitlement',
           message: `Unknown provisioning service entitlement: ${entitlement.target_key}.`,
@@ -88,7 +88,8 @@ async function validateEntitlements(
   if (enterprise && !enterprise.enabled) {
     throw new AppHttpError({
       code: 'provisioning/enterprise-entitlement-required',
-      message: '876 Enterprise is a base organization entitlement and cannot be disabled.',
+      message:
+        '876 Enterprise is a base organization entitlement and cannot be disabled.',
       httpStatus: 400,
     })
   }
