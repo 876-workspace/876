@@ -3,6 +3,7 @@ import type { Request, Response } from 'express'
 import { getAppId, getPrincipal } from '@/http/auth/principal'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import { createMembership as createMembershipLifecycle } from '@/modules/memberships'
+import { workspace } from '@/services/workspace'
 
 import type {
   InviteCreateBody,
@@ -31,7 +32,9 @@ export async function createOrganization(
   res: Response
 ): Promise<void> {
   const body = validBody<OrganizationCreateBody>(req)
-  res.status(201).json(await service.createOrganization(body))
+  const organization = await service.createOrganization(body)
+  await workspace.work.ensure({ organizationId: organization.id })
+  res.status(201).json(organization)
 }
 
 export async function bootstrapOrganization(
