@@ -5,6 +5,7 @@ import type {
   AdminProvisioningCatalog,
   AdminProvisioningManifest,
   AdminProvisioningManifestRevision,
+  AdminProvisioningSetup,
   AdminProvisioningValidation,
 } from '@876/platform/compat'
 import { Button, buttonVariants } from '@876/ui/button'
@@ -34,6 +35,7 @@ import {
   type FinanceResourceRow,
 } from '../finance-provisioning-utils'
 import { FinanceCollectionEditor } from './finance-collection-editor'
+import { FinanceSetupMetadataEditor } from './finance-setup-metadata-editor'
 import { FinanceSingletonEditor } from './finance-singleton-editor'
 
 function getDefinitionType(definition: FinanceResourceDefinition): string {
@@ -51,12 +53,14 @@ function newId() {
 export function FinanceProvisioningEditor({
   catalog,
   manifest: initialManifest,
+  setup,
   target,
   /** When provided, locks the editor to this resource type (URL-driven tabs). */
   initialType,
 }: {
   catalog: AdminProvisioningCatalog
   manifest: AdminProvisioningManifest | null
+  setup?: AdminProvisioningSetup
   /** `finance` targets a provisioning setup by key; `application` an app. */
   target: { type: 'finance' | 'application'; key: string }
   initialType?: string
@@ -114,8 +118,10 @@ export function FinanceProvisioningEditor({
     [catalog.resource_types, selectedType]
   )
 
+  const activeType = activeDefinition ? getDefinitionType(activeDefinition) : ''
+  const isWorkspace = activeType === 'workspace'
   const currentCategoryRows = activeDefinition
-    ? (groupedRows[getDefinitionType(activeDefinition)] ?? [])
+    ? (groupedRows[activeType] ?? [])
     : []
 
   const atMaximum =
@@ -435,9 +441,7 @@ export function FinanceProvisioningEditor({
               allRows={rows}
               editingRow={editingRow}
               isNewItem={isNewItem}
-              onChange={(next) =>
-                replaceType(getDefinitionType(activeDefinition), next)
-              }
+              onChange={(next) => replaceType(activeType, next)}
               onAdd={openAddItem}
               onEdit={openEditItem}
               onEditChange={setEditingRow}
@@ -445,19 +449,32 @@ export function FinanceProvisioningEditor({
               onCancel={cancelInlineEdit}
             />
           ) : (
-            <div className="p-6">
+            <div className="space-y-6 p-6">
+              {isWorkspace && setup ? (
+                <FinanceSetupMetadataEditor setup={setup} />
+              ) : null}
+
+              {isWorkspace && setup ? (
+                <div className="max-w-2xl">
+                  <h4 className="text-foreground text-sm font-semibold">
+                    Workspace defaults
+                  </h4>
+                  <p className="text-muted-foreground mt-1 mb-3 text-xs">
+                    Locale and currency values applied inside each finance
+                    workspace created from this setup.
+                  </p>
+                </div>
+              ) : null}
+
               <FinanceSingletonEditor
                 definition={activeDefinition}
                 row={
-                  groupedRows[getDefinitionType(activeDefinition)]?.[0] ??
+                  groupedRows[activeType]?.[0] ??
                   emptyRow(activeDefinition, 'default')
                 }
                 allRows={rows}
                 onChange={(nextRow) =>
-                  handleSingletonChange(
-                    getDefinitionType(activeDefinition),
-                    nextRow
-                  )
+                  handleSingletonChange(activeType, nextRow)
                 }
               />
             </div>
