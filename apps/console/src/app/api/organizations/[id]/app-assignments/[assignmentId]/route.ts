@@ -17,7 +17,10 @@ export async function DELETE(
   if (response) return response
 
   const { id, assignmentId } = await params
-  const { data, error } = await workspace.appAssignments.unassign(id, assignmentId)
+  const { data, error } = await workspace.appAssignments.revoke(
+    id,
+    assignmentId
+  )
 
   if (error || !data) {
     return apiJson(

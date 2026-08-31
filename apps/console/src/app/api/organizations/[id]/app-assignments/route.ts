@@ -66,7 +66,7 @@ export async function POST(
     )
   }
 
-  const { data, error } = await workspace.appAssignments.assign(id, {
+  const { data, error } = await workspace.appAssignments.create(id, {
     user_id: userId,
     ...(appId ? { app_id: appId } : { app_slug: appSlug }),
   })
