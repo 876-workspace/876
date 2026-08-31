@@ -155,7 +155,7 @@ export function SetupCardFrame({
                   className={cn(
                     'group relative flex items-center gap-2 border-b-2 px-3.5 py-3 text-[0.8125rem] font-medium whitespace-nowrap transition-all',
                     isActive
-                      ? 'border-foreground text-foreground font-semibold'
+                      ? 'border-foreground text-muted-foreground'
                       : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
                   )}
                 >
