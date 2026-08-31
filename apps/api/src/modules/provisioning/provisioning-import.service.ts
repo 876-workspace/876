@@ -36,6 +36,9 @@ export type ProvisioningImportSummary = {
 }
 
 export type ProvisioningImportDependencies = {
+  preflightEntitlements(
+    entitlements: ProvisioningSetupPolicyReplaceParams['entitlements']
+  ): Promise<void>
   findSetup(key: string): Promise<ProvisioningSetup | null>
   createSetup(body: {
     key: string
@@ -93,6 +96,10 @@ async function findManifest(
 }
 
 const DEFAULT_DEPENDENCIES: ProvisioningImportDependencies = {
+  async preflightEntitlements(entitlements) {
+    const service = await import('./provisioning-setup-policy.service')
+    await service.validateProvisioningSetupEntitlements(entitlements)
+  },
   findSetup,
   async createSetup(body) {
     const service = await import('./provisioning.service')
@@ -233,15 +240,19 @@ async function ensurePublishedManifest(
  * Import the temporary Phase 1 development specification without taking
  * ownership of existing operator configuration.
  *
- * Missing setups and pristine/unpublished manifests are initialized. Existing
- * published manifests and non-empty drafts are preserved. Setup policies are
- * merged additively so missing country/entitlement rows are backfilled without
- * discarding operator-authored conditions or entitlement choices.
+ * The entitlement catalog is validated against the live first-party App
+ * registry before any provisioning records are created. Missing setups and
+ * pristine/unpublished manifests are then initialized. Existing published
+ * manifests and non-empty drafts are preserved. Setup policies are merged
+ * additively so missing country/access rows are backfilled without discarding
+ * operator-authored conditions or choices.
  */
 export async function importProvisioningSpecification(
   spec: ProvisioningImportSpecification,
   dependencies: ProvisioningImportDependencies = DEFAULT_DEPENDENCIES
 ): Promise<ProvisioningImportSummary> {
+  await dependencies.preflightEntitlements(spec.default_entitlements)
+
   const summary: ProvisioningImportSummary = {
     object: 'provisioning_import_summary',
     setups_created: 0,
