@@ -18,7 +18,15 @@ CREATE TABLE "provisioning_setup_conditions" (
     "created_at" BIGINT NOT NULL,
     "updated_at" BIGINT NOT NULL,
 
-    CONSTRAINT "provisioning_setup_conditions_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "provisioning_setup_conditions_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "ck_provisioning_setup_conditions_group_key"
+      CHECK (length(btrim("group_key")) > 0),
+    CONSTRAINT "ck_provisioning_setup_conditions_field"
+      CHECK ("field" IN ('country', 'subdivision', 'jurisdiction')),
+    CONSTRAINT "ck_provisioning_setup_conditions_operator"
+      CHECK ("operator" = 'equals'),
+    CONSTRAINT "ck_provisioning_setup_conditions_value"
+      CHECK (length(btrim("value")) > 0)
 );
 
 CREATE TABLE "provisioning_setup_entitlements" (
@@ -30,7 +38,11 @@ CREATE TABLE "provisioning_setup_entitlements" (
     "created_at" BIGINT NOT NULL,
     "updated_at" BIGINT NOT NULL,
 
-    CONSTRAINT "provisioning_setup_entitlements_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "provisioning_setup_entitlements_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "ck_provisioning_setup_entitlements_target_type"
+      CHECK ("target_type" IN ('application', 'service')),
+    CONSTRAINT "ck_provisioning_setup_entitlements_target_key"
+      CHECK (length(btrim("target_key")) > 0)
 );
 
 CREATE UNIQUE INDEX "uq_provisioning_setup_conditions"
