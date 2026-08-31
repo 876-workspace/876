@@ -195,30 +195,27 @@ export function FinanceProvisioningEditor({
     setMessage('Changes reverted.')
   }
 
-  async function replaceValidatedDraft(
+  async function replaceDraft(
     action: 'saving' | 'publishing'
   ): Promise<AdminProvisioningManifestRevision | null> {
     const draft = buildFinanceDraft(catalog, rows, currentRevision)
-    const validation =
-      target.type === 'finance'
-        ? await client.provisioningSetups.validate(target.key, draft)
-        : await client.provisioning.validate(target.key, draft)
-    if (validation.error || !validation.data) {
-      setMessage(
-        validation.error?.message ??
-          (action === 'saving'
-            ? 'Failed to validate finance defaults.'
-            : 'Validation failed.')
-      )
-      return null
+
+    if (action === 'publishing') {
+      const validation =
+        target.type === 'finance'
+          ? await client.provisioningSetups.validate(target.key, draft)
+          : await client.provisioning.validate(target.key, draft)
+      if (validation.error || !validation.data) {
+        setMessage(validation.error?.message ?? 'Validation failed.')
+        return null
+      }
+      if (!validation.data.valid) {
+        setIssues(validation.data.issues)
+        setMessage('Resolve the validation issues before publishing.')
+        return null
+      }
     }
-    if (!validation.data.valid) {
-      setIssues(validation.data.issues)
-      setMessage(
-        `Resolve the validation issues before ${action === 'saving' ? 'saving' : 'publishing'}.`
-      )
-      return null
-    }
+
     const saved =
       target.type === 'finance'
         ? await client.provisioningSetups.replaceDraft(target.key, draft)
@@ -227,6 +224,7 @@ export function FinanceProvisioningEditor({
       setMessage(saved.error?.message ?? 'Failed to save finance defaults.')
       return null
     }
+
     setDraftRevision(saved.data)
     setRows(revisionRows(saved.data))
     return saved.data
@@ -236,10 +234,8 @@ export function FinanceProvisioningEditor({
     setMessage(null)
     setIssues([])
     startTransition(async () => {
-      const saved = await replaceValidatedDraft('saving')
+      const saved = await replaceDraft('saving')
       if (!saved) return
-      setDraftRevision(saved)
-      setRows(revisionRows(saved))
       setMessage(`Draft revision ${saved.revision} saved.`)
     })
   }
@@ -248,7 +244,7 @@ export function FinanceProvisioningEditor({
     setMessage(null)
     setIssues([])
     startTransition(async () => {
-      const saved = await replaceValidatedDraft('publishing')
+      const saved = await replaceDraft('publishing')
       if (!saved) return
       const published =
         target.type === 'finance'
