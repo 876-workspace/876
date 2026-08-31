@@ -1,7 +1,7 @@
-import { WORK_CRM_INTEGRATION_SCOPES } from '@876/work'
 import { create876WorkOperatorClient } from '@876/work/operator'
 
 import { getSettings } from '@/config'
+import { AppHttpError } from '@/http/errors'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
@@ -12,45 +12,23 @@ import {
   provisionOrganization,
   WORK_DEPENDENT_APP_SLUGS,
 } from './provisioning'
+import {
+  isProvisionedWorkEnabled,
+  retrievePersistedProvisioningPolicy,
+  workScopesForProvisionedApp,
+} from './provisioning-policy'
 import * as provisioningRepository from './provisioning.repository'
 
 const log = getLogger('workspace')
 
-function scopesForWorkConsumer(slug: string) {
-  if (slug === '876-crm') return WORK_CRM_INTEGRATION_SCOPES
-  return [] as const
-}
-
-/**
- * Internal organization-workspace control plane.
- *
- * `$876` remains the resource/data facade (`$876.invoices.create()`,
- * `$876.customers.list()`, ...). This object owns the orchestration needed to
- * prepare and govern the organization environment itself.
- *
- * The descriptive implementation helpers stay in their owning modules. Callers
- * should prefer this facade so they read in terms of intent rather than outbox,
- * reconciliation, or repository mechanics.
- *
- * Only add a method here when a call site actually migrates onto it. A wrapper
- * with no caller is a second permanent path to the same operation, which is
- * exactly what `workspace-control-plane.md` forbids.
- */
+/** Internal organization-workspace control plane. */
 export const workspace = {
-  /**
-   * Prepare an organization's durable workspace: default roles, app
-   * entitlements, and relationship-registry synchronization.
-   *
-   * `finance: 'defer'` skips the shared finance readiness barrier; the caller
-   * must then run {@link workspace.finance.ensure} once the durable owner
-   * membership exists, so a finance outage cannot strand an org whose owner
-   * has no membership to route back to.
-   */
   async setup(
     organizationId: string,
     options: {
       sourceAppId?: string | null
       finance?: 'ready' | 'defer'
+      requireProvisioningSelection?: boolean
       now?: number
     } = {}
   ) {
@@ -60,12 +38,13 @@ export const workspace = {
       {
         sourceAppId: options.sourceAppId ?? null,
         deferFinanceReadiness: options.finance === 'defer',
+        requireProvisioningSelection:
+          options.requireProvisioningSelection ?? false,
       }
     )
   },
 
   apps: {
-    /** Grant a member their organization's app assignments. */
     assign(params: {
       organizationId: string
       userId: string
@@ -81,7 +60,6 @@ export const workspace = {
   },
 
   roles: {
-    /** Point a membership at its organization's role row for `role`. */
     link(
       membership: {
         id: string
@@ -96,7 +74,6 @@ export const workspace = {
   },
 
   finance: {
-    /** Run the shared finance readiness barrier for an org's apps. */
     ensure(params: { organizationId: string; appIds?: string[] }) {
       return ensureOrgAppsFinanceReady(
         params.organizationId,
@@ -106,19 +83,48 @@ export const workspace = {
   },
 
   work: {
-    /** Prepare an org's Work workspace and each Work-dependent app's connection. */
+    /**
+     * Apply the selected setup's Work gate and capability policy.
+     *
+     * The tenant is created from `service/work`, independently of any product
+     * app. Connections are then created only for subscribed Work consumers and
+     * receive the intersection of that app's declared grant with capabilities
+     * enabled by the setup. This operation is idempotent in Work.
+     */
     async ensure(params: {
       organizationId: string
       appIds?: string[]
     }): Promise<void> {
+      const selected = await retrievePersistedProvisioningPolicy(
+        params.organizationId
+      )
+      if (!selected) {
+        log.warn(
+          { organization_id: params.organizationId },
+          'work_provisioning.setup_selection_missing'
+        )
+        return
+      }
+
+      if (!isProvisionedWorkEnabled(selected.policy)) {
+        log.info(
+          {
+            organization_id: params.organizationId,
+            setup_key: selected.selection.setup_key,
+          },
+          'work_provisioning.disabled_by_setup'
+        )
+        return
+      }
+
       const settings = getSettings()
       const url = settings.work.url.trim()
       const internalKey = settings.work.internalKey.trim()
-
       if (!url || !internalKey) {
         log.warn(
           {
             organization_id: params.organizationId,
+            setup_key: selected.selection.setup_key,
             has_work_api_url: Boolean(url),
             has_work_internal_key: Boolean(internalKey),
           },
@@ -134,50 +140,42 @@ export const workspace = {
         ))
       const work = create876WorkOperatorClient({ baseUrl: url, internalKey })
 
+      const tenant = await work.workspace.ensure(params.organizationId)
+      if (tenant.error) {
+        throw new AppHttpError({
+          code: 'provisioning/work-workspace-unavailable',
+          message: 'The Work workspace could not be prepared.',
+          httpStatus: 503,
+        })
+      }
+
       for (const slug of WORK_DEPENDENT_APP_SLUGS) {
         const app = await provisioningRepository.findAppBySlug(slug)
-        if (!app) {
-          log.warn(
-            { organization_id: params.organizationId, app_slug: slug },
-            'work_provisioning.app_not_found'
-          )
-          continue
-        }
-        if (!appIds.includes(app.id)) continue
+        if (!app || !appIds.includes(app.id)) continue
 
-        const scopes = scopesForWorkConsumer(slug)
-        if (!scopes.length) {
-          log.warn(
-            { organization_id: params.organizationId, app_slug: slug },
-            'work_provisioning.no_scope_grant'
-          )
-          continue
-        }
-
-        try {
-          const result = await work.workspace.ensure(params.organizationId, {
-            appId: app.id,
-            scopes,
-          })
-          if (result.error) {
-            log.error(
-              {
-                organization_id: params.organizationId,
-                app_id: app.id,
-                error_code: result.error.code,
-              },
-              'work_provisioning.failed'
-            )
-          }
-        } catch (error) {
-          log.error(
+        const scopes = workScopesForProvisionedApp(slug, selected.policy)
+        if (scopes.length === 0) {
+          log.info(
             {
-              err: error,
               organization_id: params.organizationId,
-              app_id: app.id,
+              app_slug: slug,
+              setup_key: selected.selection.setup_key,
             },
-            'work_provisioning.failed'
+            'work_provisioning.no_enabled_capabilities'
           )
+          continue
+        }
+
+        const connection = await work.workspace.ensure(params.organizationId, {
+          appId: app.id,
+          scopes,
+        })
+        if (connection.error) {
+          throw new AppHttpError({
+            code: 'provisioning/work-workspace-unavailable',
+            message: `The Work connection for ${slug} could not be prepared.`,
+            httpStatus: 503,
+          })
         }
       }
     },
