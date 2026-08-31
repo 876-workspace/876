@@ -1,9 +1,10 @@
-import { platform } from '@/lib/services/platform'
 import { billingOperator } from '@/lib/services/billing'
-import 'server-only'
-import { billing } from '@/lib/services/billing'
+import { platform } from '@/lib/services/platform'
 import { workspace } from '@/lib/services/workspace'
+import 'server-only'
 
+import type { CustomerCreateParams } from '@876/billing/admin'
+import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 import type {
   AdminOrganization,
   AdminPrice,
@@ -11,8 +12,6 @@ import type {
   AdminSubscription,
   AdminSubscriptionStatus,
 } from '@876/platform/compat'
-import type { CustomerCreateParams } from '@876/billing/admin'
-import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 
 /**
  * One-way Console -> Billing mirror. Core stays the entitlement source of
@@ -270,7 +269,7 @@ export async function mirrorCoreSubscription(
   const legalName = org.data?.name ?? subscription.organization_id
   const contact = await resolveOrgPrimaryContact(org.data)
 
-  const createdCustomer = await billing.customers.create({
+  const createdCustomer = await billingOperator.customers.create({
     organizationId: subscription.organization_id,
     customerType: 'CORE_ORGANIZATION',
     customerKind: 'BUSINESS',
@@ -389,9 +388,10 @@ export async function reconcileBillingMirror() {
 
       for (const org of orgResult.data.data) {
         try {
-          const subscriptionResult = await workspace.apps.entitlements.list({
-            organizationId: org.id,
-          })
+          const subscriptionResult =
+            await workspace.organizations.subscriptions.list({
+              organizationId: org.id,
+            })
           if (subscriptionResult.error) {
             failures += 1
             console.error(
