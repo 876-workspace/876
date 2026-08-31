@@ -14,7 +14,7 @@ import {
 } from './provisioning'
 import {
   isProvisionedWorkEnabled,
-  retrievePersistedProvisioningPolicy,
+  requirePersistedProvisioningPolicy,
   workScopesForProvisionedApp,
 } from './provisioning-policy'
 import * as provisioningRepository from './provisioning.repository'
@@ -84,27 +84,19 @@ export const workspace = {
 
   work: {
     /**
-     * Apply the selected setup's Work gate and capability policy.
+     * Apply the persisted setup's Work gate and capability policy.
      *
-     * The tenant is created from `service/work`, independently of any product
-     * app. Connections are then created only for subscribed Work consumers and
-     * receive the intersection of that app's declared grant with capabilities
-     * enabled by the setup. This operation is idempotent in Work.
+     * The Work tenant belongs to the organization, not CRM. Product
+     * connections are secondary and receive only the intersection of the app's
+     * declared Work grant and the capabilities enabled by provisioning.
      */
     async ensure(params: {
       organizationId: string
       appIds?: string[]
     }): Promise<void> {
-      const selected = await retrievePersistedProvisioningPolicy(
+      const selected = await requirePersistedProvisioningPolicy(
         params.organizationId
       )
-      if (!selected) {
-        log.warn(
-          { organization_id: params.organizationId },
-          'work_provisioning.setup_selection_missing'
-        )
-        return
-      }
 
       if (!isProvisionedWorkEnabled(selected.policy)) {
         log.info(
@@ -121,7 +113,7 @@ export const workspace = {
       const url = settings.work.url.trim()
       const internalKey = settings.work.internalKey.trim()
       if (!url || !internalKey) {
-        log.warn(
+        log.error(
           {
             organization_id: params.organizationId,
             setup_key: selected.selection.setup_key,
@@ -130,7 +122,11 @@ export const workspace = {
           },
           'work_provisioning.not_configured'
         )
-        return
+        throw new AppHttpError({
+          code: 'provisioning/work-workspace-unavailable',
+          message: 'The Work workspace could not be prepared.',
+          httpStatus: 503,
+        })
       }
 
       const appIds =
