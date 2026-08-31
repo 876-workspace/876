@@ -222,10 +222,18 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
     handler: controller.refundsCreate,
   })
   const base = '/integrations/organizations/:organizationId/payments'
+  const integrationRead = {
+    kind: 'integration' as const,
+    scope: 'billing.payments.read',
+  }
+  const integrationWrite = {
+    kind: 'integration' as const,
+    scope: 'billing.payments.write',
+  }
   api.get({
     path: base,
     summary: 'List organization Billing payments',
-    security: { kind: 'integration', scope: 'billing.payments.read' },
+    security: integrationRead,
     request: { params: org },
     responses: {
       200: {
@@ -239,7 +247,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
   api.post({
     path: base,
     summary: 'Create an organization Billing payment',
-    security: { kind: 'integration', scope: 'billing.payments.write' },
+    security: integrationWrite,
     request: { params: org, body: IntegrationPaymentCreateSchema },
     responses: {
       200: {
@@ -257,7 +265,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
   api.get({
     path: `${base}/:paymentId`,
     summary: 'Retrieve an organization Billing payment',
-    security: { kind: 'integration', scope: 'billing.payments.read' },
+    security: integrationRead,
     request: { params: orgPayment },
     responses: {
       200: {
@@ -268,10 +276,38 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.integrationGet,
   })
+  api.patch({
+    path: `${base}/:paymentId`,
+    summary: 'Update an organization Billing payment',
+    security: integrationWrite,
+    request: { params: orgPayment, body: PaymentUpdateSchema },
+    responses: {
+      200: {
+        description: 'Payment updated',
+        schema: successEnvelopeSchema(resource('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.integrationUpdate,
+  })
+  api.delete({
+    path: `${base}/:paymentId`,
+    summary: 'Cancel an organization Billing payment',
+    security: integrationWrite,
+    request: { params: orgPayment },
+    responses: {
+      200: {
+        description: 'Payment canceled',
+        schema: successEnvelopeSchema(deleted('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.integrationDelete,
+  })
   api.get({
     path: '/integrations/organizations/:organizationId/payment-modes',
     summary: 'List organization Billing payment modes',
-    security: { kind: 'integration', scope: 'billing.payments.read' },
+    security: integrationRead,
     request: { params: org },
     responses: {
       200: {

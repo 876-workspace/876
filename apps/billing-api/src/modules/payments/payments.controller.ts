@@ -111,6 +111,18 @@ export const paymentsController = {
       )
     )
   },
+  async integrationUpdate(req: Request, res: Response) {
+    const tenantId = tenant(req)
+    const paymentId = param(req, 'paymentId')
+    await service.getPayment(tenantId, paymentId, sourceApp(req))
+    res.json(
+      await service.updatePayment(
+        tenantId,
+        paymentId,
+        validBody<PaymentUpdateParams>(req)
+      )
+    )
+  },
   async apply(req: Request, res: Response) {
     res
       .status(201)
@@ -124,6 +136,12 @@ export const paymentsController = {
   },
   async del(req: Request, res: Response) {
     res.json(await service.deletePayment(tenant(req), param(req, 'paymentId')))
+  },
+  async integrationDelete(req: Request, res: Response) {
+    const tenantId = tenant(req)
+    const paymentId = param(req, 'paymentId')
+    await service.getPayment(tenantId, paymentId, sourceApp(req))
+    res.json(await service.deletePayment(tenantId, paymentId))
   },
   async refundsList(req: Request, res: Response) {
     res.json(await service.listRefunds(tenant(req)))

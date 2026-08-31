@@ -77,6 +77,17 @@ export interface BillingPaymentCreateParams {
 }
 
 /**
+ * Parameters for correcting a payment through the integration API.
+ *
+ * A correction replaces the payment values and allocations as one operation.
+ * Source attribution is immutable after creation.
+ */
+export type BillingPaymentUpdateParams = Omit<
+  BillingPaymentCreateParams,
+  'sourceExternalReference'
+>
+
+/**
  * This object represents a payment exposed through the integration API.
  */
 export interface BillingPayment {
@@ -226,6 +237,15 @@ export interface BillingPayment {
    * Time at which the object was last updated. Measured in seconds since the Unix epoch.
    */
   updatedAt: number
+}
+
+/**
+ * Tombstone returned after a payment is canceled/deleted.
+ */
+export interface DeletedBillingPayment {
+  object: 'payment'
+  id: string
+  deleted: true
 }
 
 /**

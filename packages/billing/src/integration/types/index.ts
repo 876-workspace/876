@@ -9,6 +9,7 @@ export type {
   IntegrationClientOptions,
   IntegrationCreateOptions,
   BillingSource,
+  DeletedBillingResource,
   IntegrationError,
   IntegrationResult,
   List,
@@ -82,10 +83,13 @@ export {
 export type {
   BillingPaymentAllocationCreateParams,
   BillingPaymentCreateParams,
+  BillingPaymentUpdateParams,
   BillingPayment,
+  DeletedBillingPayment,
   BillingPaymentList,
 } from './payment'
 export {
   BillingPaymentSchema,
   BillingPaymentListSchema,
+  DeletedBillingPaymentSchema,
 } from './payment.schema'

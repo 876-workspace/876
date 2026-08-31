@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { BillingInvoiceListSchema, BillingInvoiceSchema } from '../schemas'
 import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
@@ -9,6 +11,7 @@ import type {
   BillingInvoiceListParams,
   BillingInvoiceUpdateParams,
   BillingInvoiceVoidParams,
+  DeletedBillingResource,
   IntegrationCreateOptions,
 } from '../types'
 
@@ -19,6 +22,12 @@ function collectionPath(organizationId: string): string {
 function resourcePath(organizationId: string, invoiceId: string): string {
   return `${collectionPath(organizationId)}/${encodeURIComponent(invoiceId)}`
 }
+
+const DeletedBillingInvoiceSchema = z.strictObject({
+  object: z.literal('invoice'),
+  id: z.string().min(1),
+  deleted: z.literal(true),
+}) satisfies z.ZodType<DeletedBillingResource<'invoice'>>
 
 /** `$876.billing.invoices.*` — shared finance invoice integrations. */
 export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
@@ -73,6 +82,14 @@ export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
           body: params,
         },
         BillingInvoiceSchema
+      )
+    },
+
+    delete(organizationId: string, invoiceId: string) {
+      return IntegrationRequest<DeletedBillingResource<'invoice'>>(
+        runtime,
+        { method: 'DELETE', path: resourcePath(organizationId, invoiceId) },
+        DeletedBillingInvoiceSchema
       )
     },
 

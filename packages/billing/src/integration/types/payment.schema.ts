@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
-import type { BillingPayment, BillingPaymentList } from './payment'
+import type {
+  BillingPayment,
+  BillingPaymentList,
+  DeletedBillingPayment,
+} from './payment'
 import { sourceSchema } from './customer.schema'
 import { BillingPaymentModeSchema } from './payment-mode.schema'
 
@@ -83,3 +87,12 @@ export const BillingPaymentListSchema = z.strictObject({
   total_count: z.number().int().nullable(),
   url: z.string(),
 }) satisfies z.ZodType<BillingPaymentList>
+
+/**
+ * The schema for a deleted payment tombstone.
+ */
+export const DeletedBillingPaymentSchema = z.strictObject({
+  object: z.literal('payment'),
+  id: z.string().min(1),
+  deleted: z.literal(true),
+}) satisfies z.ZodType<DeletedBillingPayment>

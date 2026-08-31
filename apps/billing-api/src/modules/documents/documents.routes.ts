@@ -497,6 +497,22 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.invoicesIntegrationUpdate,
   })
+  api.delete({
+    path: `${base}/:invoiceId`,
+    summary: 'Delete an organization Billing invoice',
+    security: integrationWrite,
+    request: { params: orgInvoice },
+    responses: {
+      200: {
+        description: 'Invoice deleted',
+        schema: successEnvelopeSchema(
+          resource('invoice').extend({ deleted: z.literal(true) })
+        ),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesIntegrationDelete,
+  })
   api.post({
     path: `${base}/:invoiceId/finalize`,
     summary: 'Finalize an organization Billing invoice',

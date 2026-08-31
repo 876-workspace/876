@@ -150,6 +150,12 @@ export const documentsController = {
   async invoicesDelete(req: Request, res: Response) {
     res.json(await service.deleteInvoice(tenant(req), param(req, 'invoiceId')))
   },
+  async invoicesIntegrationDelete(req: Request, res: Response) {
+    const tenantId = tenant(req)
+    const invoiceId = param(req, 'invoiceId')
+    await service.getInvoice(tenantId, invoiceId, sourceApp(req))
+    res.json(await service.deleteInvoice(tenantId, invoiceId))
+  },
   async quotesList(req: Request, res: Response) {
     res.json(
       await service.listQuotes(

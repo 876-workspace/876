@@ -19,4 +19,5 @@ export {
   BillingPaymentSchema,
   DeletedBillingCustomerSchema,
   DeletedBillingItemSchema,
+  DeletedBillingPaymentSchema,
 } from './types'

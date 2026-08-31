@@ -61,6 +61,15 @@ export interface BillingSource {
 }
 
 /**
+ * Tombstone returned by integration resources after a successful delete.
+ */
+export interface DeletedBillingResource<TObject extends string> {
+  object: TObject
+  id: string
+  deleted: true
+}
+
+/**
  * A client-safe integration error. Alias of the shared Billing error shape.
  */
 export type IntegrationError = Error
