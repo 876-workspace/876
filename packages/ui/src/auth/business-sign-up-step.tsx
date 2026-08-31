@@ -86,27 +86,26 @@ export function BusinessSignUpStep({ flow }: { flow: AuthFlowController }) {
         className="flex w-full flex-col gap-1.5 text-sm font-medium text-[var(--color-base-content)]"
       >
         Country
-        <NativeSelect className="w-full">
-          <select
-            id="auth-business-country"
-            name="countryCode"
-            autoComplete="country"
-            required
-            value={countryCode}
-            onChange={(event) => setCountryCode(event.target.value)}
-          >
-            <NativeSelectOption value="" disabled>
-              Select country
+        <NativeSelect
+          id="auth-business-country"
+          name="countryCode"
+          autoComplete="country"
+          required
+          className="w-full"
+          value={countryCode}
+          onChange={(event) => setCountryCode(event.target.value)}
+        >
+          <NativeSelectOption value="" disabled>
+            Select country
+          </NativeSelectOption>
+          {countryOptions.map((country) => (
+            <NativeSelectOption
+              key={country.countryCode}
+              value={country.countryCode}
+            >
+              {country.flag} {country.name}
             </NativeSelectOption>
-            {countryOptions.map((country) => (
-              <NativeSelectOption
-                key={country.countryCode}
-                value={country.countryCode}
-              >
-                {country.flag} {country.name}
-              </NativeSelectOption>
-            ))}
-          </select>
+          ))}
         </NativeSelect>
       </label>
 
