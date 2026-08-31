@@ -4,10 +4,32 @@ import '@testing-library/jest-dom/vitest'
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AdminProvisioningCatalog } from '@876/platform/compat'
 
 import { FinanceProvisioningEditor } from './finance-provisioning-editor'
+
+const resourceApi = vi.hoisted(() => ({
+  create: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+}))
+
+vi.mock('@/lib/client', () => ({
+  client: {
+    provisioning: {
+      replaceDraft: vi.fn(),
+      validate: vi.fn(),
+      publish: vi.fn(),
+    },
+    provisioningSetups: {
+      replaceDraft: vi.fn(),
+      validate: vi.fn(),
+      publish: vi.fn(),
+      resources: { forType: vi.fn(() => resourceApi) },
+    },
+  },
+}))
 
 const testCatalog: AdminProvisioningCatalog = {
   object: 'provisioning_catalog',
@@ -98,6 +120,50 @@ const testCatalog: AdminProvisioningCatalog = {
 }
 
 describe('FinanceProvisioningEditor', () => {
+  function resource(
+    key: string,
+    code: string,
+    minorUnit: string,
+    id = `resource_${key}`
+  ) {
+    return {
+      data: {
+        id,
+        object: 'provisioning_resource',
+        resource_type: 'currency',
+        key,
+        position: 10,
+        properties: [
+          {
+            key: 'code',
+            value_type: 'string',
+            string_value: code,
+            integer_value: null,
+            decimal_value: null,
+            boolean_value: null,
+            reference_namespace: null,
+            reference_key: null,
+          },
+          {
+            key: 'minorUnit',
+            value_type: 'integer',
+            string_value: null,
+            integer_value: minorUnit,
+            decimal_value: null,
+            boolean_value: null,
+            reference_namespace: null,
+            reference_key: null,
+          },
+        ],
+      },
+      error: null,
+    }
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('renders horizontal category tabs and switches categories', async () => {
     const user = userEvent.setup()
 
@@ -152,6 +218,8 @@ describe('FinanceProvisioningEditor', () => {
 
   it('adds and edits typed collection rows inline without a drawer', async () => {
     const user = userEvent.setup()
+    resourceApi.create.mockResolvedValueOnce(resource('usd', 'USD', '2'))
+    resourceApi.update.mockResolvedValueOnce(resource('usd', 'CAD', '2'))
 
     render(
       <FinanceProvisioningEditor
@@ -178,8 +246,15 @@ describe('FinanceProvisioningEditor', () => {
     await user.type(minorUnitInput, '2')
     await user.click(screen.getByRole('button', { name: 'Save currency' }))
 
-    expect(screen.getByText('USD')).toBeInTheDocument()
+    expect(await screen.findByText('USD')).toBeInTheDocument()
     expect(screen.getByText('2')).toBeInTheDocument()
+    expect(resourceApi.create).toHaveBeenCalledWith('jamaica', {
+      key: 'usd',
+      properties: expect.arrayContaining([
+        expect.objectContaining({ key: 'code', string_value: 'USD' }),
+        expect.objectContaining({ key: 'minorUnit', integer_value: '2' }),
+      ]),
+    })
 
     const editButton = screen.getByRole('button', { name: 'Edit currency' })
     const deleteButton = screen.getByRole('button', {
@@ -194,8 +269,13 @@ describe('FinanceProvisioningEditor', () => {
     await user.type(editCodeInput, 'CAD')
     await user.click(screen.getByRole('button', { name: 'Save currency' }))
 
-    expect(screen.getByText('CAD')).toBeInTheDocument()
+    expect(await screen.findByText('CAD')).toBeInTheDocument()
     expect(screen.queryByText('USD')).not.toBeInTheDocument()
+    expect(resourceApi.update).toHaveBeenCalledWith('jamaica', 'usd', {
+      properties: expect.arrayContaining([
+        expect.objectContaining({ key: 'code', string_value: 'CAD' }),
+      ]),
+    })
   })
 
   it('does not render toolbar section on workspace tab', () => {

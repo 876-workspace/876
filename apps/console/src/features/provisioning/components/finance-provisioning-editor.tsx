@@ -26,11 +26,15 @@ import {
 import { cn } from '@876/core/utils'
 
 import { client } from '@/lib/client'
+import { isProvisioningSetupResourceType } from '@/types/provisioning'
 import {
   buildFinanceDraft,
   emptyRow,
   getResourceTypeColor,
   getResourceTypeIcon,
+  resourceKey,
+  resourceProperties,
+  resourceRow,
   revisionRows,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
@@ -162,25 +166,154 @@ export function FinanceProvisioningEditor({
     setIsNewItem(false)
   }
 
+  async function replaceRowsForApplication(
+    nextRows: FinanceResourceRow[]
+  ): Promise<boolean> {
+    const saved = await replaceDraft('saving', nextRows)
+    if (!saved) return false
+    setMessage(`Draft revision ${saved.revision} saved.`)
+    return true
+  }
+
   function saveInlineItem(savedRow: FinanceResourceRow) {
     if (!activeDefinition) return
 
     const typeKey = getDefinitionType(activeDefinition)
     const categoryRows = groupedRows[typeKey] ?? []
-
-    if (isNewItem) {
-      replaceType(typeKey, [...categoryRows, savedRow])
-    } else {
-      replaceType(
-        typeKey,
-        categoryRows.map((row) =>
+    const nextRows = isNewItem
+      ? [...categoryRows, savedRow]
+      : categoryRows.map((row) =>
           row.localId === savedRow.localId ? savedRow : row
         )
-      )
-    }
 
-    setEditingRow(null)
-    setIsNewItem(false)
+    setMessage(null)
+    startTransition(async () => {
+      if (target.type === 'application') {
+        if (
+          !(await replaceRowsForApplication([
+            ...rows.filter((row) => row.resourceType !== typeKey),
+            ...nextRows,
+          ]))
+        )
+          return
+      } else if (isProvisioningSetupResourceType(typeKey)) {
+        const resourceClient =
+          client.provisioningSetups.resources.forType(typeKey)
+        const result = isNewItem
+          ? await resourceClient.create(target.key, {
+              key: resourceKey(savedRow, activeDefinition, categoryRows.length),
+              properties: resourceProperties(activeDefinition, savedRow),
+            })
+          : await resourceClient.update(target.key, savedRow.key, {
+              properties: resourceProperties(activeDefinition, savedRow),
+            })
+
+        if (result.error || !result.data) {
+          setMessage(
+            result.error?.message ?? 'Failed to save provisioning resource.'
+          )
+          return
+        }
+
+        const persistedRow = resourceRow(result.data)
+        replaceType(
+          typeKey,
+          isNewItem
+            ? [...categoryRows, persistedRow]
+            : categoryRows.map((row) =>
+                row.localId === savedRow.localId ? persistedRow : row
+              )
+        )
+        setMessage(`${activeDefinition.label} saved.`)
+      } else {
+        setMessage('This provisioning resource type is not supported.')
+        return
+      }
+
+      setEditingRow(null)
+      setIsNewItem(false)
+    })
+  }
+
+  function deleteInlineItem(row: FinanceResourceRow) {
+    if (!activeDefinition) return
+
+    const typeKey = getDefinitionType(activeDefinition)
+    const categoryRows = groupedRows[typeKey] ?? []
+    const nextRows = categoryRows.filter(
+      (candidate) => candidate.localId !== row.localId
+    )
+    setMessage(null)
+
+    startTransition(async () => {
+      if (target.type === 'application') {
+        if (
+          !(await replaceRowsForApplication([
+            ...rows.filter((candidate) => candidate.resourceType !== typeKey),
+            ...nextRows,
+          ]))
+        )
+          return
+      } else if (isProvisioningSetupResourceType(typeKey)) {
+        const result = await client.provisioningSetups.resources
+          .forType(typeKey)
+          .delete(target.key, row.key)
+        if (result.error || !result.data) {
+          setMessage(
+            result.error?.message ?? 'Failed to delete provisioning resource.'
+          )
+          return
+        }
+        replaceType(typeKey, nextRows)
+        setMessage(`${activeDefinition.label} deleted.`)
+      } else {
+        setMessage('This provisioning resource type is not supported.')
+        return
+      }
+    })
+  }
+
+  function saveSingleton() {
+    if (!activeDefinition) return
+
+    const typeKey = getDefinitionType(activeDefinition)
+    const row =
+      groupedRows[typeKey]?.[0] ?? emptyRow(activeDefinition, 'default')
+    const existing = groupedRows[typeKey]?.[0]
+    setMessage(null)
+
+    startTransition(async () => {
+      if (target.type === 'application') {
+        if (
+          !(await replaceRowsForApplication([
+            ...rows.filter((candidate) => candidate.resourceType !== typeKey),
+            row,
+          ]))
+        )
+          return
+      } else if (isProvisioningSetupResourceType(typeKey)) {
+        const resourceClient =
+          client.provisioningSetups.resources.forType(typeKey)
+        const result = existing
+          ? await resourceClient.update(target.key, existing.key, {
+              properties: resourceProperties(activeDefinition, row),
+            })
+          : await resourceClient.create(target.key, {
+              key: resourceKey(row, activeDefinition, 0),
+              properties: resourceProperties(activeDefinition, row),
+            })
+        if (result.error || !result.data) {
+          setMessage(
+            result.error?.message ?? 'Failed to save provisioning resource.'
+          )
+          return
+        }
+        handleSingletonChange(typeKey, resourceRow(result.data))
+        setMessage(`${activeDefinition.label} saved.`)
+      } else {
+        setMessage('This provisioning resource type is not supported.')
+      }
+    })
   }
 
   function cancelInlineEdit() {
@@ -197,9 +330,10 @@ export function FinanceProvisioningEditor({
   }
 
   async function replaceDraft(
-    action: 'saving' | 'publishing'
+    action: 'saving' | 'publishing',
+    rowsToSave = rows
   ): Promise<AdminProvisioningManifestRevision | null> {
-    const draft = buildFinanceDraft(catalog, rows, currentRevision)
+    const draft = buildFinanceDraft(catalog, rowsToSave, currentRevision)
 
     if (action === 'publishing') {
       const validation =
@@ -304,7 +438,7 @@ export function FinanceProvisioningEditor({
                     'group relative inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors',
                     isSelected
                       ? 'border-foreground text-foreground font-semibold'
-                      : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                      : 'text-muted-foreground hover:border-border hover:text-foreground border-transparent'
                   )}
                 >
                   <Icon
@@ -432,12 +566,13 @@ export function FinanceProvisioningEditor({
               allRows={rows}
               editingRow={editingRow}
               isNewItem={isNewItem}
-              onChange={(next) => replaceType(activeType, next)}
               onAdd={openAddItem}
               onEdit={openEditItem}
               onEditChange={setEditingRow}
               onSave={saveInlineItem}
+              onDelete={deleteInlineItem}
               onCancel={cancelInlineEdit}
+              isSaving={isPending}
             />
           ) : (
             <div className={cn('p-6', isWorkspace && 'space-y-8')}>
@@ -467,6 +602,8 @@ export function FinanceProvisioningEditor({
                     onChange={(nextRow) =>
                       handleSingletonChange(activeType, nextRow)
                     }
+                    onSave={saveSingleton}
+                    isSaving={isPending}
                   />
                 </div>
               )}

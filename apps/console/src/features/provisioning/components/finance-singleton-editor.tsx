@@ -3,6 +3,7 @@
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { Button } from '@876/ui/button'
 
 import {
   financeFieldOptions,
@@ -15,6 +16,8 @@ type Props = {
   row: FinanceResourceRow
   allRows: FinanceResourceRow[]
   onChange: (row: FinanceResourceRow) => void
+  onSave: () => void
+  isSaving?: boolean
 }
 
 export function FinanceSingletonEditor({
@@ -22,6 +25,8 @@ export function FinanceSingletonEditor({
   row,
   allRows,
   onChange,
+  onSave,
+  isSaving = false,
 }: Props) {
   return (
     <div className="max-w-2xl space-y-4">
@@ -71,7 +76,9 @@ export function FinanceSingletonEditor({
                 }
               >
                 <NativeSelectOption value="" disabled={field.required}>
-                  {field.required ? `Select ${field.label.toLowerCase()}` : 'None'}
+                  {field.required
+                    ? `Select ${field.label.toLowerCase()}`
+                    : 'None'}
                 </NativeSelectOption>
                 {options.map((option) => (
                   <NativeSelectOption key={option.value} value={option.value}>
@@ -108,6 +115,11 @@ export function FinanceSingletonEditor({
           </FormRow>
         )
       })}
+      <div className="pt-2">
+        <Button type="button" size="sm" disabled={isSaving} onClick={onSave}>
+          Save {definition.label.toLowerCase()}
+        </Button>
+      </div>
     </div>
   )
 }

@@ -3,21 +3,9 @@
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@876/ui/empty'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { Input } from '@876/ui/input'
-import {
-  CheckIcon,
-  Pencil,
-  Plus,
-  TableIcon,
-  Trash,
-  XIcon,
-} from '@876/ui/icons'
+import { CheckIcon, Pencil, Plus, TableIcon, Trash, XIcon } from '@876/ui/icons'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import {
   Table,
@@ -43,12 +31,13 @@ type Props = {
   allRows: FinanceResourceRow[]
   editingRow: FinanceResourceRow | null
   isNewItem: boolean
-  onChange: (rows: FinanceResourceRow[]) => void
   onAdd: () => void
   onEdit: (row: FinanceResourceRow) => void
   onEditChange: (row: FinanceResourceRow) => void
   onSave: (row: FinanceResourceRow) => void
+  onDelete: (row: FinanceResourceRow) => void
   onCancel: () => void
+  isSaving?: boolean
 }
 
 function InlineFieldControl({
@@ -130,24 +119,19 @@ export function FinanceCollectionEditor({
   allRows,
   editingRow,
   isNewItem,
-  onChange,
   onAdd,
   onEdit,
   onEditChange,
   onSave,
+  onDelete,
   onCancel,
+  isSaving = false,
 }: Props) {
   const atMaximum =
     definition.maximum_items !== null && rows.length >= definition.maximum_items
   const atMinimum = rows.length <= definition.minimum_items
-  const singularLabel = definition.label
-    .replace(/ies$/, 'y')
-    .replace(/s$/, '')
+  const singularLabel = definition.label.replace(/ies$/, 'y').replace(/s$/, '')
   const visibleRows = isNewItem && editingRow ? [...rows, editingRow] : rows
-
-  function deleteRow(localId: string) {
-    onChange(rows.filter((row) => row.localId !== localId))
-  }
 
   function updateEditingField(
     row: FinanceResourceRow,
@@ -171,7 +155,9 @@ export function FinanceCollectionEditor({
             <EmptyMedia variant="icon">
               <TableIcon />
             </EmptyMedia>
-            <EmptyTitle>No {definition.label.toLowerCase()} configured</EmptyTitle>
+            <EmptyTitle>
+              No {definition.label.toLowerCase()} configured
+            </EmptyTitle>
           </EmptyHeader>
           <Button
             type="button"
@@ -201,8 +187,7 @@ export function FinanceCollectionEditor({
       </TableHeader>
       <TableBody>
         {visibleRows.map((row) => {
-          const draft =
-            editingRow?.localId === row.localId ? editingRow : null
+          const draft = editingRow?.localId === row.localId ? editingRow : null
           const isEditing = draft !== null
 
           return (
@@ -264,6 +249,7 @@ export function FinanceCollectionEditor({
                       variant="ghost"
                       aria-label={`Save ${singularLabel.toLowerCase()}`}
                       onClick={() => onSave(draft)}
+                      disabled={isSaving}
                       className="text-foreground size-8 shrink-0"
                     >
                       <CheckIcon className="size-4" />
@@ -274,6 +260,7 @@ export function FinanceCollectionEditor({
                       variant="ghost"
                       aria-label={`Cancel ${singularLabel.toLowerCase()}`}
                       onClick={onCancel}
+                      disabled={isSaving}
                       className="text-muted-foreground hover:text-foreground size-8 shrink-0"
                     >
                       <XIcon className="size-4" />
@@ -282,7 +269,7 @@ export function FinanceCollectionEditor({
                 ) : editingRow ? (
                   <div className="h-8 w-[4.25rem]" />
                 ) : (
-                  <div className="pointer-events-none flex justify-end gap-0.5 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+                  <div className="pointer-events-none flex justify-end gap-0.5 opacity-0 transition-opacity group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100">
                     <Button
                       type="button"
                       size="icon-sm"
@@ -299,7 +286,7 @@ export function FinanceCollectionEditor({
                       variant="ghost"
                       aria-label={`Delete ${singularLabel.toLowerCase()}`}
                       disabled={atMinimum}
-                      onClick={() => deleteRow(row.localId)}
+                      onClick={() => onDelete(row)}
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive size-8 shrink-0"
                     >
                       <Trash className="text-destructive size-4" />

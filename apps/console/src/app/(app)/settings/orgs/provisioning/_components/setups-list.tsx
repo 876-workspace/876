@@ -120,7 +120,7 @@ function SetupRow({
         <TableCell className="relative px-4 py-3">
           <SetupLink href={href} name={setup.name} />
           <div className="flex min-w-0 items-center gap-1.5">
-            <p className="text-foreground truncate text-[0.8125rem] font-medium">
+            <p className="truncate text-[0.8125rem] font-medium text-sky-600 dark:text-sky-400">
               {setup.name}
             </p>
             {setup.is_default ? (
@@ -159,7 +159,9 @@ function SetupRow({
         {setup.description || '—'}
       </TableCell>
       <TableCell className="px-5 py-3.5 font-mono text-xs tabular-nums">
-        {setup.published_revision === null ? '—' : `v${setup.published_revision}`}
+        {setup.published_revision === null
+          ? '—'
+          : `v${setup.published_revision}`}
         {setup.has_draft ? (
           <Badge variant="outline" className="ml-2">
             Draft

@@ -122,6 +122,22 @@ export function revisionRows(
   }))
 }
 
+export function resourceRow(
+  resource: AdminProvisioningResource
+): FinanceResourceRow {
+  return {
+    localId: resource.id,
+    resourceType: resource.resource_type,
+    key: resource.key,
+    values: Object.fromEntries(
+      resource.properties.map((property) => [
+        property.key,
+        propertyValue(property),
+      ])
+    ),
+  }
+}
+
 export function emptyRow(
   definition: FinanceResourceDefinition,
   localId: string
@@ -209,13 +225,39 @@ export function financeFieldOptions(
     .filter((option): option is FinanceSelectOption => option !== null)
 }
 
-function resourceKey(
+export function resourceKey(
   row: FinanceResourceRow,
   definition: FinanceResourceDefinition,
   index: number
 ) {
   if (!definition.multiple) return 'default'
   return rowReferenceKey(row) || `${definition.resource_type}_${index + 1}`
+}
+
+export function resourceProperties(
+  definition: FinanceResourceDefinition,
+  row: FinanceResourceRow
+): DraftProperty[] {
+  return definition.fields.flatMap<DraftProperty>((field) => {
+    const value = row.values[field.key]
+    if (value === '' || value === undefined) return []
+    const property = { key: field.key, value_type: field.value_type }
+    if (field.value_type === 'boolean')
+      return [{ ...property, boolean_value: value === true }]
+    if (field.value_type === 'integer')
+      return [{ ...property, integer_value: String(value) }]
+    if (field.value_type === 'decimal')
+      return [{ ...property, decimal_value: String(value) }]
+    if (field.value_type === 'reference')
+      return [
+        {
+          ...property,
+          reference_namespace: field.reference_namespace,
+          reference_key: String(value),
+        },
+      ]
+    return [{ ...property, string_value: String(value) }]
+  })
 }
 
 export function buildFinanceDraft(
@@ -234,26 +276,7 @@ export function buildFinanceDraft(
           resource_type: definition.resource_type,
           key: resourceKey(row, definition, index),
           position: resourcePosition,
-          properties: definition.fields.flatMap<DraftProperty>((field) => {
-            const value = row.values[field.key]
-            if (value === '' || value === undefined) return []
-            const property = { key: field.key, value_type: field.value_type }
-            if (field.value_type === 'boolean')
-              return [{ ...property, boolean_value: value === true }]
-            if (field.value_type === 'integer')
-              return [{ ...property, integer_value: String(value) }]
-            if (field.value_type === 'decimal')
-              return [{ ...property, decimal_value: String(value) }]
-            if (field.value_type === 'reference')
-              return [
-                {
-                  ...property,
-                  reference_namespace: field.reference_namespace,
-                  reference_key: String(value),
-                },
-              ]
-            return [{ ...property, string_value: String(value) }]
-          }),
+          properties: resourceProperties(definition, row),
         }
       })
   )
