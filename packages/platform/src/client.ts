@@ -25,6 +25,7 @@ import { createAdminOrgsResource } from './resources/orgs'
 import { createAdminPricesResource } from './resources/prices'
 import { createAdminProductsResource } from './resources/products'
 import { createAdminProvisioningResource } from './resources/provisioning'
+import { createAdminProvisioningSetupResourcesResource } from './resources/provisioning-setup-resources'
 import { createAdminReservedUsernamesResource } from './resources/reserved-usernames'
 import { createAdminSessionsResource } from './resources/sessions'
 import { createAdminUsersResource } from './resources/users'
@@ -65,6 +66,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
   } = createAdminOrgsResource(runtime)
   const subscriptions = createAdminSubscriptionsResource(runtime)
   const communications = createAdminCommunicationsResource(runtime)
+  const provisioning = createAdminProvisioningResource(runtime)
 
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
@@ -109,7 +111,10 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     prices: createAdminPricesResource(runtime),
     products: createAdminProductsResource(runtime),
     onboarding: createAdminOnboardingResource(runtime),
-    provisioning: createAdminProvisioningResource(runtime),
+    provisioning: {
+      ...provisioning,
+      resources: createAdminProvisioningSetupResourcesResource(runtime),
+    },
     memberships: createAdminMembershipsResource(runtime),
     modules: createAdminModulesResource(runtime),
     addresses: createAdminAddressesResource(runtime),
