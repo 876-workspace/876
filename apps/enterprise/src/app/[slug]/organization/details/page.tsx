@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import type { Organization } from '@876/sdk'
+import type { Organization } from '@876/account/compat'
 import { buttonVariants } from '@876/ui/button'
 import { Pencil } from '@876/ui/icons'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'

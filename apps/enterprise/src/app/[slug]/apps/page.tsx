@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import type { Subscription } from '@876/sdk'
+import type { Subscription } from '@876/account/compat'
 import { Badge } from '@876/ui/badge'
 import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'

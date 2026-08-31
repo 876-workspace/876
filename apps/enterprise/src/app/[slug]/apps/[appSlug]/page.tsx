@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
-import type { Price, Product, Subscription } from '@876/sdk'
+import type { Price, Product, Subscription } from '@876/account/compat'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 

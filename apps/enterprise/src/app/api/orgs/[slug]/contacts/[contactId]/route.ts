@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { OrgContactUpdateParams } from '@876/sdk'
+import type { OrgContactUpdateParams } from '@876/account/compat'
 
 import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'

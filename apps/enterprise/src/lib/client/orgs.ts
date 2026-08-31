@@ -7,8 +7,8 @@ import type {
   OrgLocationCreateParams,
   OrgLocationUpdateParams,
   OrgMember,
-} from '@876/sdk'
-import type { Organization, OrganizationSelfUpdateParams } from '@876/sdk'
+} from '@876/account/compat'
+import type { Organization, OrganizationSelfUpdateParams } from '@876/account/compat'
 
 import { request } from './request'
 

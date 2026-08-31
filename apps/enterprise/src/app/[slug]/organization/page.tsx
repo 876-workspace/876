@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 
-import type { Organization } from '@876/sdk'
+import type { Organization } from '@876/account/compat'
 import { Badge } from '@876/ui/badge'
 import { ChevronRight } from '@876/ui/icons'
 import { Page } from '@876/ui/page'

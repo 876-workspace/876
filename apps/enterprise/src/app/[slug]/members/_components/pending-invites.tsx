@@ -4,7 +4,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import type { InviteToken } from '@876/sdk'
+import type { InviteToken } from '@876/account/compat'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
