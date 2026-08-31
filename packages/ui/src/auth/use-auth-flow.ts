@@ -439,6 +439,7 @@ export function useAuthFlow() {
       firstName: string
       lastName: string
       organizationName: string
+      countryCode: string
     }) => {
       if (!params.email.trim()) {
         showAuthError('auth/missing-email')
@@ -460,6 +461,13 @@ export function useAuthFlow() {
         return
       }
 
+      if (!params.countryCode.trim()) {
+        const message = 'Select a country.'
+        dispatch({ type: 'notice', notice: { type: 'error', message } })
+        emit({ type: 'error', message, code: 'auth/invalid-input' })
+        return
+      }
+
       if (!params.password.trim()) {
         showAuthError('auth/missing-password')
         return
@@ -467,14 +475,17 @@ export function useAuthFlow() {
 
       dispatch({ type: 'submit_start' })
 
+      const registration = {
+        email: params.email,
+        password: params.password,
+        firstName: params.firstName,
+        lastName: params.lastName,
+        organizationName: params.organizationName,
+        countryCode: params.countryCode,
+      }
+
       try {
-        const result = await client.registerBusiness({
-          email: params.email,
-          password: params.password,
-          firstName: params.firstName,
-          lastName: params.lastName,
-          organizationName: params.organizationName,
-        })
+        const result = await client.registerBusiness(registration)
 
         if (result.error) {
           dispatch({
@@ -496,16 +507,7 @@ export function useAuthFlow() {
               pendingAuthenticationToken:
                 result.data.pendingAuthenticationToken,
             },
-            () =>
-              client
-                .registerBusiness({
-                  email: params.email,
-                  password: params.password,
-                  firstName: params.firstName,
-                  lastName: params.lastName,
-                  organizationName: params.organizationName,
-                })
-                .then(() => undefined)
+            () => client.registerBusiness(registration).then(() => undefined)
           )
           return
         }
