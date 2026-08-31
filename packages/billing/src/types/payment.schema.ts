@@ -8,7 +8,6 @@ import {
 } from './common.schema'
 import { BankAccountTypeSchema } from './bank-account.schema'
 import { BankTransactionSchema } from './bank-transaction.schema'
-import { PaymentModeSchema } from './payment-mode.schema'
 import type { Payment, PaymentCreated, PaymentDeleted } from './payment'
 
 /** The schema for a created payment response. */
@@ -21,11 +20,11 @@ export const PaymentDeletedSchema = deletedResourceSchema(
   'payment'
 ) satisfies z.ZodType<PaymentDeleted>
 
-const PaymentAllocationSchema = z.strictObject({
+const PaymentAllocationSchema = z.object({
   object: z.literal('payment_allocation'),
   id: z.string().min(1),
   amount: z.string(),
-  invoice: z.strictObject({
+  invoice: z.object({
     object: z.literal('invoice'),
     id: z.string().min(1),
     number: z.string(),
@@ -37,8 +36,11 @@ const PaymentAllocationSchema = z.strictObject({
   updatedAt: z.number().int(),
 })
 
-/** The schema for a payment resource. */
-export const PaymentSchema = z.strictObject({
+/**
+ * Stable public payment DTO. The API serializer includes internal relation
+ * fields; this schema validates the public contract and strips those extras.
+ */
+export const PaymentSchema = z.object({
   object: z.literal('payment'),
   id: z.string().min(1),
   number: z.string(),
@@ -63,13 +65,22 @@ export const PaymentSchema = z.strictObject({
   paymentDate: z.number().int(),
   referenceNumber: z.string().nullable(),
   notes: z.string().nullable(),
-  customer: z.strictObject({
+  customer: z.object({
     object: z.literal('customer'),
     id: z.string().min(1),
     name: z.string(),
   }),
-  paymentMode: PaymentModeSchema,
-  depositAccount: z.strictObject({
+  paymentMode: z.object({
+    object: z.literal('payment_mode'),
+    id: z.string().min(1),
+    name: z.string(),
+    isDefault: z.boolean(),
+    isActive: z.boolean(),
+    isSystem: z.boolean(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
+  }),
+  depositAccount: z.object({
     object: z.literal('bank_account'),
     id: z.string().min(1),
     name: z.string(),
