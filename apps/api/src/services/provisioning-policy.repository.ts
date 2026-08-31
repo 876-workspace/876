@@ -12,6 +12,8 @@ export function findOrganizationProvisioningSelection(organizationId: string) {
       provisioningMatchedFields: true,
       provisioningSetupSelectedAt: true,
       countryCode: true,
+      currencyCode: true,
+      language: true,
       regionId: true,
       region: { select: { code: true, countryCode: true } },
     },
@@ -26,6 +28,8 @@ export async function persistOrganizationProvisioningSelection(params: {
   matchPriority: number | null
   matchedFields: string[]
   selectedAt: bigint
+  currencyCode?: string | null
+  language?: string | null
 }): Promise<boolean> {
   const result = await prisma.organization.updateMany({
     where: {
@@ -39,6 +43,10 @@ export async function persistOrganizationProvisioningSelection(params: {
       provisioningMatchPriority: params.matchPriority,
       provisioningMatchedFields: params.matchedFields,
       provisioningSetupSelectedAt: params.selectedAt,
+      ...(params.currencyCode
+        ? { currencyCode: params.currencyCode.toUpperCase() }
+        : {}),
+      ...(params.language ? { language: params.language } : {}),
       updatedAt: params.selectedAt,
     },
   })
@@ -60,6 +68,8 @@ export async function listOrganizationsMissingProvisioningSelection(params: {
     select: {
       id: true,
       countryCode: true,
+      currencyCode: true,
+      language: true,
       regionId: true,
       region: { select: { code: true, countryCode: true } },
     },
