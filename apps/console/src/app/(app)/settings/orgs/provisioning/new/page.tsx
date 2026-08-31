@@ -1,20 +1,10 @@
-import { workspace } from '@/lib/services/workspace'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { CreateSetupForm } from './_components/create-setup-form'
 
 export const metadata = { title: 'New provisioning setup' }
 
-export default async function NewProvisioningSetupPage() {
-  const result = await workspace.provisioning.setups.list()
-  const sources = (result.data?.data ?? [])
-    .filter((setup) => setup.published_revision !== null)
-    .map((setup) => ({
-      key: setup.key,
-      name: setup.name,
-      isDefault: setup.is_default,
-    }))
-
+export default function NewProvisioningSetupPage() {
   return (
     <Page className="space-y-6">
       <div>
@@ -25,7 +15,7 @@ export default async function NewProvisioningSetupPage() {
         />
         <h1 className="876-page-title">New provisioning setup</h1>
       </div>
-      <CreateSetupForm sources={sources} />
+      <CreateSetupForm />
     </Page>
   )
 }
