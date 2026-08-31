@@ -6,9 +6,8 @@ import {
   buildApplicationImportDraft,
   buildFinanceImportDraft,
   buildOrganizationImportDraft,
-  importProvisioningSpecification,
-  provisioningImportSpecificationSchema,
-} from '@/modules/provisioning'
+} from '@/modules/provisioning/provisioning-import.builders'
+import { provisioningImportSpecificationSchema } from '@/modules/provisioning/provisioning-import.schemas'
 
 const DEFAULT_SPEC_PATH = fileURLToPath(
   new URL(
@@ -33,18 +32,18 @@ async function loadSpecification(path: string) {
   return provisioningImportSpecificationSchema.parse(json)
 }
 
-async function main(): Promise<void> {
+async function main(): Promise<'dry-run' | 'import'> {
   if (hasFlag('help') || hasFlag('h')) {
     console.log(`Usage: pnpm --filter @876/api provisioning:import [options]
 
-Explicitly imports versioned provisioning bootstrap data. This command is not a
-seed and is never run by service startup or pnpm seed.
+Explicitly imports the one-time provisioning bootstrap file. This command is
+not a seed and is never run by service startup or pnpm seed.
 
 Options:
   --file=<path>  Import specification JSON. Defaults to the Phase 1 handoff file.
-  --dry-run      Parse and build every manifest without writing to the database.
+  --dry-run      Parse and build every manifest without initializing Prisma.
   --help, -h     Show this help.`)
-    return
+    return 'dry-run'
   }
 
   const file = argumentValue('file')
@@ -54,7 +53,8 @@ Options:
   if (hasFlag('dry-run')) {
     for (const setup of spec.setups) buildFinanceImportDraft(spec, setup)
     buildOrganizationImportDraft(spec)
-    for (const app of spec.application_manifests) buildApplicationImportDraft(app)
+    for (const app of spec.application_manifests)
+      buildApplicationImportDraft(app)
 
     console.log(
       JSON.stringify(
@@ -62,8 +62,12 @@ Options:
           object: 'provisioning_import_validation',
           valid: true,
           manifest_version: 1,
+          import_mode: spec.import_mode,
           file: path,
           setups: spec.setups.length,
+          caribbean_markets: spec.country_scope.caribbean.length,
+          united_states: spec.country_scope.united_states,
+          canada: spec.country_scope.canada,
           application_manifests: spec.application_manifests.length,
           default_setup_key: spec.default_setup_key,
         },
@@ -71,20 +75,19 @@ Options:
         2
       )
     )
-    return
+    return 'dry-run'
   }
 
+  const { importProvisioningSpecification } = await import(
+    '@/modules/provisioning/provisioning-import.service'
+  )
   const summary = await importProvisioningSpecification(spec)
   console.log(JSON.stringify({ ...summary, file: path }, null, 2))
+  return 'import'
 }
 
-try {
-  await main()
-} finally {
-  try {
-    const { disconnectDb } = await import('@/db/client')
-    await disconnectDb()
-  } catch {
-    // The dry-run path may never initialize Prisma.
-  }
+const mode = await main()
+if (mode === 'import') {
+  const { disconnectDb } = await import('@/db/client')
+  await disconnectDb()
 }
