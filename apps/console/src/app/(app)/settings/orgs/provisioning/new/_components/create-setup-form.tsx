@@ -5,18 +5,9 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@876/ui/select'
 import { Textarea } from '@876/ui/textarea'
 
 import { client } from '@/lib/client'
-
-export type SetupSource = { key: string; name: string; isDefault: boolean }
 
 function slugify(value: string): string {
   return value
@@ -25,17 +16,12 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-export function CreateSetupForm({ sources }: { sources: SetupSource[] }) {
+export function CreateSetupForm() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [key, setKey] = useState('')
   const [keyEdited, setKeyEdited] = useState(false)
   const [description, setDescription] = useState('')
-  const [countryCode, setCountryCode] = useState('')
-  const [currencyCode, setCurrencyCode] = useState('')
-  const [copyFrom, setCopyFrom] = useState(
-    sources.find((source) => source.isDefault)?.key ?? sources[0]?.key ?? ''
-  )
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -50,31 +36,40 @@ export function CreateSetupForm({ sources }: { sources: SetupSource[] }) {
       setError('A name and key are required.')
       return
     }
+
     startTransition(async () => {
       const { data, error: failure } = await client.provisioningSetups.create({
         key,
-        name,
+        name: name.trim(),
         description: description.trim() || null,
-        country_code: countryCode.trim() ? countryCode.trim() : null,
-        currency_code: currencyCode.trim() ? currencyCode.trim() : null,
-        copy_from: copyFrom || null,
       })
       if (failure || !data) {
         setError(failure?.message ?? 'Failed to create the setup.')
         return
       }
-      router.push(`/settings/orgs/provisioning/${encodeURIComponent(data.key)}`)
+
+      router.push(
+        `/settings/orgs/provisioning/${encodeURIComponent(data.key)}/workspace`
+      )
     })
   }
 
   return (
     <div className="876-card max-w-2xl space-y-4 p-5">
+      <div>
+        <h2 className="text-foreground text-sm font-semibold">Setup identity</h2>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Create the setup first, then build its currencies, payment defaults,
+          tax authorities, and other provisioning records from its tabs.
+        </p>
+      </div>
+
       <FormRow label="Name" htmlFor="setup-name" required>
         <Input
           id="setup-name"
           value={name}
           onChange={(event) => handleName(event.target.value)}
-          placeholder="United States"
+          placeholder="New Zealand"
         />
       </FormRow>
 
@@ -91,7 +86,7 @@ export function CreateSetupForm({ sources }: { sources: SetupSource[] }) {
             setKeyEdited(true)
             setKey(slugify(event.target.value))
           }}
-          placeholder="united-states"
+          placeholder="new-zealand"
         />
       </FormRow>
 
@@ -101,51 +96,8 @@ export function CreateSetupForm({ sources }: { sources: SetupSource[] }) {
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           rows={2}
+          placeholder="Optional description for operators."
         />
-      </FormRow>
-
-      <FormRow label="Country" htmlFor="setup-country">
-        <Input
-          id="setup-country"
-          value={countryCode}
-          onChange={(event) =>
-            setCountryCode(event.target.value.toUpperCase().slice(0, 2))
-          }
-          placeholder="US"
-        />
-      </FormRow>
-
-      <FormRow label="Currency" htmlFor="setup-currency">
-        <Input
-          id="setup-currency"
-          value={currencyCode}
-          onChange={(event) =>
-            setCurrencyCode(event.target.value.toUpperCase().slice(0, 3))
-          }
-          placeholder="USD"
-        />
-      </FormRow>
-
-      <FormRow
-        label="Copy defaults from"
-        hint="The new setup starts as a copy of this one's published defaults, which you then edit."
-      >
-        <Select
-          value={copyFrom}
-          onValueChange={(value) => setCopyFrom(value ?? '')}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a setup" />
-          </SelectTrigger>
-          <SelectContent>
-            {sources.map((source) => (
-              <SelectItem key={source.key} value={source.key}>
-                {source.name}
-                {source.isDefault ? ' (default)' : ''}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </FormRow>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
@@ -159,7 +111,7 @@ export function CreateSetupForm({ sources }: { sources: SetupSource[] }) {
           Cancel
         </Button>
         <Button variant="info" onClick={submit} disabled={isPending}>
-          {isPending ? 'Creating…' : 'Create'}
+          {isPending ? 'Creating…' : 'Create setup'}
         </Button>
       </div>
     </div>
