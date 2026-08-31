@@ -1,8 +1,8 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -20,7 +20,7 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.users.admin.updateContact(
+  const { data, error } = await platform.users.updateContact(
     id,
     contactId,
     body
@@ -42,7 +42,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, contactId } = await context.params
-  const { data, error } = await $876.users.admin.deleteContact(id, contactId)
+  const { data, error } = await platform.users.deleteContact(id, contactId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete contact.' },

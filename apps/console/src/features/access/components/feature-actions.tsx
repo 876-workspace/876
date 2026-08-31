@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { AdminApp, AdminFeature } from '@876/admin'
+import type { AdminApp, AdminFeature } from '@876/platform/compat'
 import { Button, buttonVariants } from '@876/ui/button'
 import {
   Dialog,

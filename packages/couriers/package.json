@@ -9,9 +9,17 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./service": {
+      "types": "./src/service.ts",
+      "default": "./src/service.ts"
+    },
     "./integration": {
       "types": "./src/integration/index.ts",
       "default": "./src/integration/index.ts"
+    },
+    "./operator": {
+      "types": "./src/operator.ts",
+      "default": "./src/operator.ts"
     },
     "./admin": {
       "types": "./src/admin/index.ts",

@@ -15,7 +15,7 @@ import {
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 
-import { $876 } from '@/lib/876'
+import { account } from '@/lib/services/account'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 
@@ -50,7 +50,7 @@ export function EmbeddedAuth({
       <AuthProvider
         config={{
           mode: 'enterprise',
-          client: $876.auth,
+          client: account.auth,
           appName: '876 Enterprise',
           socialProviders: SOCIAL_PROVIDERS,
           initialNotice: authError

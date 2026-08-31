@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 type Context = {
   params: Promise<{ categoryId: string; subcategoryId: string }>
@@ -30,9 +30,7 @@ export async function PATCH(request: NextRequest, route: Context) {
   delete input.createdBy
   delete input.addedBy
   delete input.deletedBy
-  const $876 = await get876Client()
-
-  const result = await $876.requestCategories.subcategories.update(
+  const result = await crm.requestCategories.subcategories.update(
     context.orgId,
     categoryId,
     subcategoryId,
@@ -50,9 +48,7 @@ export async function DELETE(request: NextRequest, route: Context) {
   const body = ((await request.json().catch(() => null)) ?? {}) as {
     reason?: string
   }
-  const $876 = await get876Client()
-
-  const result = await $876.requestCategories.subcategories.delete(
+  const result = await crm.requestCategories.subcategories.delete(
     context.orgId,
     categoryId,
     subcategoryId,

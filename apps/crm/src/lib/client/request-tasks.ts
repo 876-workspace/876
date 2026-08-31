@@ -5,16 +5,9 @@ import type {
   CrmRequestTaskCreateInput,
   CrmRequestTaskList,
   CrmRequestTaskUpdateInput,
-} from '@876/client'
-
+} from '@/types/crm'
 import { request } from './request'
 
-/**
- * `createdBy` and `completedBy` are omitted deliberately: both name the acting
- * user, and the route handler fills them from the signed-in session. Accepting
- * either from the browser would let a caller attribute its own work to someone
- * else.
- */
 export type RequestTaskCreateInput = Omit<
   CrmRequestTaskCreateInput,
   'createdBy'
@@ -23,7 +16,6 @@ export type RequestTaskUpdateInput = Omit<
   CrmRequestTaskUpdateInput,
   'completedBy'
 >
-
 function root(requestId: string) {
   return `/api/requests/${encodeURIComponent(requestId)}/tasks`
 }

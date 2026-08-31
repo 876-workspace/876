@@ -6,7 +6,7 @@ import type {
   AdminProvisioningManifest,
   AdminProvisioningManifestRevision,
   AdminProvisioningValidation,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
 import {

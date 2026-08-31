@@ -4,7 +4,7 @@ import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { LocationForm } from '../../_components/location-form'
@@ -22,7 +22,7 @@ export default async function EditLocationPage({
     'structure:manage'
   )
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const result = await client.locations.retrieve(
     membership.organization.id,
     locationId

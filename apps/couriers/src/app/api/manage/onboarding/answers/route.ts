@@ -5,7 +5,7 @@ import type { PlatformOnboardingTargetType } from '@876/core/platform'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { AdminAddress, AdminUser } from '@876/admin'
+import type { AdminAddress, AdminUser } from '@876/platform/compat'
 import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,

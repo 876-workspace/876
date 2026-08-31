@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { AdminInviteToken, AdminOrgMember } from '@876/admin'
+import type { AdminInviteToken, AdminOrgMember } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'

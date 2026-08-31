@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import type { RouteTabItem } from '@876/ui/route-tabs'
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { appColor } from '@/lib/app-color'
 

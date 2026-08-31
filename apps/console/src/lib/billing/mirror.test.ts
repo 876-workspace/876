@@ -1,4 +1,9 @@
-import type { AdminPrice, AdminProduct, AdminSubscription } from '@876/admin'
+import { billingOperator } from '@/lib/services/billing'
+import type {
+  AdminPrice,
+  AdminProduct,
+  AdminSubscription,
+} from '@876/platform/compat'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -23,20 +28,31 @@ const mocks = vi.hoisted(() => ({
   productList: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({
-  billingAdmin: {
+vi.mock('@/lib/services/platform', () => ({
+  billingOperator: {
     products: { create: mocks.productCreate },
     subscriptions: { create: mocks.subscriptionCreate },
   },
-  coreAdmin: {
-    products: { retrieve: mocks.productRetrieve, list: mocks.productList },
-    subscriptions: { retrieve: mocks.subscriptionRetrieve },
-    organizations: { retrieve: mocks.orgRetrieve, list: mocks.orgList },
-    users: { retrieve: mocks.usersRetrieve },
-    memberships: { list: mocks.membershipsList },
-  },
-  $876: {
+  platform: {
+    products: {
+      retrieve: mocks.productRetrieve,
+      list: mocks.productList,
+      admin: {
+        create: mocks.productCreate,
+        retrieve: mocks.productRetrieve,
+        list: mocks.productList,
+      },
+    },
+    subscriptions: {
+      retrieve: mocks.subscriptionRetrieve,
+      admin: {
+        create: mocks.subscriptionCreate,
+        retrieve: mocks.subscriptionRetrieve,
+      },
+    },
     organizations: {
+      retrieve: mocks.orgRetrieve,
+      list: mocks.orgList,
       admin: {
         retrieve: mocks.orgRetrieve,
         list: mocks.orgList,
@@ -45,24 +61,24 @@ vi.mock('@/lib/876', () => ({
         },
       },
     },
-    products: {
-      admin: {
-        create: mocks.productCreate,
-        retrieve: mocks.productRetrieve,
-        list: mocks.productList,
-      },
+    users: {
+      retrieve: mocks.usersRetrieve,
+      admin: { retrieve: mocks.usersRetrieve },
     },
-    subscriptions: {
-      admin: {
-        create: mocks.subscriptionCreate,
-        retrieve: mocks.subscriptionRetrieve,
-      },
+    memberships: {
+      list: mocks.membershipsList,
+      admin: { list: mocks.membershipsList },
     },
-    memberships: { admin: { list: mocks.membershipsList } },
-    users: { admin: { retrieve: mocks.usersRetrieve } },
     plans: { admin: { create: mocks.planCreate } },
     prices: { admin: { create: mocks.priceCreate } },
     customers: { admin: { create: mocks.customerCreate } },
+  },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: {
+    organizations: { retrieve: mocks.orgRetrieve, list: mocks.orgList },
+    users: { retrieve: mocks.usersRetrieve },
   },
 }))
 

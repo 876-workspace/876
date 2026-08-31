@@ -1,4 +1,4 @@
-import type { AdminSubscription, AdminSubscriptionItem } from '@876/admin'
+import type { AdminSubscription, AdminSubscriptionItem } from '@876/platform/compat'
 
 import { formatDate } from '@/lib/format'
 import { cn } from '@876/core/utils'

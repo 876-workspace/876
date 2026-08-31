@@ -18,14 +18,18 @@ vi.mock('./workspace-icon', () => ({
 
 vi.mock('./workspace-nav', () => ({
   WorkspaceNav: ({ collapsed }: { collapsed?: boolean }) => (
-    <nav data-collapsed={collapsed ? 'true' : 'false'}>Workspace navigation</nav>
+    <nav data-collapsed={collapsed ? 'true' : 'false'}>
+      Workspace navigation
+    </nav>
   ),
 }))
 
 import { APP_WORKSPACES } from '../app-workspaces'
 import { WorkspaceShell } from './workspace-shell'
 
-const crmWorkspace = APP_WORKSPACES.find((workspace) => workspace.key === 'crm')!
+const crmWorkspace = APP_WORKSPACES.find(
+  (workspace) => workspace.key === 'crm'
+)!
 
 describe('WorkspaceShell', () => {
   beforeEach(() => {

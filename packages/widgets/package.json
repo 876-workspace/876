@@ -12,6 +12,18 @@
       "types": "./src/react/index.ts",
       "default": "./src/react/index.ts"
     },
+    "./service": {
+      "types": "./src/service.ts",
+      "default": "./src/service.ts"
+    },
+    "./operator": {
+      "types": "./src/operator.ts",
+      "default": "./src/operator.ts"
+    },
+    "./browser": {
+      "types": "./src/browser/notes.ts",
+      "default": "./src/browser/notes.ts"
+    },
     "./server": {
       "types": "./src/server/index.ts",
       "default": "./src/server/index.ts"
@@ -19,10 +31,6 @@
     "./server/admin": {
       "types": "./src/server/admin.ts",
       "default": "./src/server/admin.ts"
-    },
-    "./browser": {
-      "types": "./src/browser/notes.ts",
-      "default": "./src/browser/notes.ts"
     }
   },
   "scripts": {

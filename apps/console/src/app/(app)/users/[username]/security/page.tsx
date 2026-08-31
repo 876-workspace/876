@@ -1,9 +1,9 @@
+import { platform } from '@/lib/services/platform'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@876/ui/skeleton'
 import { resolveUser } from '../_data'
-import { isExpired } from '@876/admin'
-import { $876 } from '@/lib/876'
+import { isExpired } from '@876/platform/compat'
 import { AccountStatusSection } from './_components/account-status-section'
 import { AuthMethodsSection } from './_components/auth-methods-section'
 import { UsernameSection } from './_components/username-section'
@@ -70,7 +70,7 @@ async function SecurityData({ params }: Props) {
 }
 
 async function AuthMethodsData({ userId }: { userId: string }) {
-  const accountsResult = await $876.users.admin.listAccounts(userId)
+  const accountsResult = await platform.users.listAccounts(userId)
   const accounts = accountsResult.error ? [] : accountsResult.data.data
   return <AuthMethodsSection userId={userId} accounts={accounts} />
 }
@@ -96,7 +96,7 @@ function describeDevice(device: {
 }
 
 async function DevicesData({ userId }: { userId: string }) {
-  const result = await $876.users.admin.listDevices(userId, { limit: 20 })
+  const result = await platform.users.listDevices(userId, { limit: 20 })
   const devices: DeviceRow[] = result.error
     ? []
     : result.data.data.map((device) => ({
@@ -116,7 +116,7 @@ async function DevicesData({ userId }: { userId: string }) {
 }
 
 async function SessionsData({ userId }: { userId: string }) {
-  const result = await $876.users.admin.listSessions(userId, { limit: 20 })
+  const result = await platform.users.listSessions(userId, { limit: 20 })
   const sessions: SessionRow[] = result.error
     ? []
     : result.data.data.map((session) => ({
@@ -134,7 +134,7 @@ async function SessionsData({ userId }: { userId: string }) {
 }
 
 async function SignInActivityData({ userId }: { userId: string }) {
-  const result = await $876.users.admin.listAuthAttempts(userId, { limit: 20 })
+  const result = await platform.users.listAuthAttempts(userId, { limit: 20 })
   const attempts: AttemptRow[] = result.error
     ? []
     : result.data.data.map((attempt) => ({
@@ -154,13 +154,13 @@ async function SignInActivityData({ userId }: { userId: string }) {
 }
 
 async function IdentificationsData({ userId }: { userId: string }) {
-  const result = await $876.identifications.list(userId)
+  const result = await platform.identifications.list(userId)
   const identifications = result.error ? [] : result.data.data
   return <IdentificationsSection identifications={identifications} />
 }
 
 async function PinData({ userId }: { userId: string }) {
-  const result = await $876.users.admin.pin.retrieve(userId)
+  const result = await platform.users.pin.retrieve(userId)
   if (result.error) return null
   return <PinSection userId={userId} pin={result.data} />
 }

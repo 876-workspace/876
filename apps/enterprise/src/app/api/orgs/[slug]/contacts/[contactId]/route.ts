@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { OrgContactUpdateParams } from '@876/sdk'
+import type { OrgContactUpdateParams } from '@876/account/compat'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -44,7 +44,7 @@ export async function PATCH(
     if (field in body) updates[field] = body[field] as never
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.contacts.update(
     auth.membership.organization.id,
     contactId,
@@ -70,7 +70,7 @@ export async function DELETE(
   const auth = await authorizeOrgRequest(slug, 'org:update')
   if (auth.response) return auth.response
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.contacts.delete(
     auth.membership.organization.id,
     contactId

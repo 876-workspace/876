@@ -2,6 +2,7 @@ import 'server-only'
 
 import type {
   BillingCustomer,
+  BillingCustomerCreated,
   BillingIntegrationClient,
   IntegrationError,
   IntegrationResult,
@@ -29,7 +30,7 @@ export async function ensureSharedCoreUserCustomer(
   finance: BillingIntegrationClient,
   organizationId: string,
   user: CoreUserSnapshot
-): Promise<IntegrationResult<BillingCustomer>> {
+): Promise<IntegrationResult<BillingCustomer | BillingCustomerCreated>> {
   const existing = await findCoreUserCustomer(finance, organizationId, user.id)
   if (existing.error) return { data: null, error: existing.error }
   if (existing.data) return { data: existing.data, error: null }
@@ -101,7 +102,7 @@ export async function createExternalCustomer(
     email?: string | null
     phone?: string | null
   }
-): Promise<IntegrationResult<BillingCustomer>> {
+): Promise<IntegrationResult<BillingCustomerCreated>> {
   const name = resolveCustomerName(params.customerKind, params)
   const key = `couriers:create:${params.idempotencyKey}`
 

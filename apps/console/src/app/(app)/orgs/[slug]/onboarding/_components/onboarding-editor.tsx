@@ -6,7 +6,7 @@ import type {
   AdminOnboardingCatalog,
   AdminOnboardingSession,
   AdminOnboardingValidationIssue,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { Accordion } from '@876/ui/accordion'
 import { Button } from '@876/ui/button'
 import { Progress } from '@876/ui/progress'

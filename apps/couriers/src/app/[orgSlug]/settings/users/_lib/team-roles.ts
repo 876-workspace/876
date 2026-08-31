@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
 import { requireCouriersData, toRoleView } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 
 /**
  * The tenant's roles, deduplicated for the lifetime of one request.
@@ -13,6 +13,6 @@ import { get876Client } from '@/lib/876'
  * toolbar, once behind Suspense.
  */
 export const listTeamRoles = cache(async (tenantId: string) => {
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   return requireCouriersData(await $876.roles.list()).data.map(toRoleView)
 })

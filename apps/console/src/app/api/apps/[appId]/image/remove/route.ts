@@ -1,7 +1,8 @@
+import { storage } from '@/lib/services/storage'
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -14,7 +15,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { appId } = await context.params
-  const retrieveResult = await $876.apps.admin.retrieve(appId)
+  const retrieveResult = await platform.apps.retrieve(appId)
   if (retrieveResult.error || !retrieveResult.data)
     return apiJson(
       { error: retrieveResult.error ?? 'Failed to retrieve the app.' },
@@ -28,7 +29,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { status: 409 }
     )
 
-  const updateResult = await $876.apps.admin.update(appId, {
+  const updateResult = await platform.apps.update(appId, {
     logo_file_id: null,
     logo_url: null,
   })
@@ -42,7 +43,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (!fileId) return apiJson({ data: null })
 
   // An app logo is platform-owned, so the creating app stands in for the owner.
-  const deleteResult = await $876.files.delete(fileId, {
+  const deleteResult = await storage.files.delete(fileId, {
     sourceAppId: '876-console',
   })
   if (deleteResult.error || !deleteResult.data)

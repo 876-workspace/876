@@ -1,3 +1,4 @@
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -8,7 +9,6 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { workspace } from '@/lib/876'
 import { resolveApp, resolveProduct } from '../../../_data'
 import { EntitlementsTable } from './_components/entitlements-table'
 

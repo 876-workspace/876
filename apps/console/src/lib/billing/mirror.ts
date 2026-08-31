@@ -1,16 +1,17 @@
+import { billingOperator } from '@/lib/services/billing'
+import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import 'server-only'
 
+import type { CustomerCreateParams } from '@876/billing/admin'
+import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 import type {
   AdminOrganization,
   AdminPrice,
   AdminProduct,
   AdminSubscription,
   AdminSubscriptionStatus,
-} from '@876/admin'
-import type { CustomerCreateParams } from '@876/billing/admin'
-import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
-
-import { $876, billingAdmin, coreAdmin, workspace } from '@/lib/876'
+} from '@876/platform/compat'
 
 /**
  * One-way Console -> Billing mirror. Core stays the entitlement source of
@@ -35,7 +36,7 @@ async function resolveOrgPrimaryContact(
 
   let contactUserId = org.primary_contact_user_id
   if (!contactUserId) {
-    const memberships = await $876.memberships.admin.list({
+    const memberships = await workspace.memberships.list({
       organizationId: org.id,
       limit: 100,
     })
@@ -50,7 +51,7 @@ async function resolveOrgPrimaryContact(
     contactUserId = owner.user_id
   }
 
-  const user = await $876.users.admin.retrieve({ id: contactUserId })
+  const user = await platform.users.retrieve({ id: contactUserId })
   if (!user.data) return { userId: contactUserId }
 
   return {
@@ -136,7 +137,7 @@ export async function mirrorCoreProductPrices(
 
   // Control-plane workflow: Console intentionally coordinates Core entitlements + Billing commercial projection.
   // Uses standard create() (idempotent via externalReference/sourceAppId) — Billing service handles idempotency.
-  const createdProduct = await billingAdmin.products.create({
+  const createdProduct = await billingOperator.products.create({
     sourceAppId: product.app_id,
     slug: product.app_slug ?? product.app_id,
     name: product.app_name ?? product.app_slug ?? product.app_id,
@@ -165,7 +166,7 @@ export async function mirrorCoreProductPrices(
     }
 
     const { intervalUnit, intervalCount } = cadence
-    const createdPlan = await $876.plans.admin.create({
+    const createdPlan = await billingOperator.plans.create({
       productId: createdProduct.data.id,
       entitlementReferenceId: product.id,
       code: product.slug,
@@ -186,7 +187,7 @@ export async function mirrorCoreProductPrices(
       continue
     }
 
-    const createdPrice = await $876.prices.admin.create({
+    const createdPrice = await billingOperator.prices.create({
       planId: createdPlan.data.id,
       entitlementReferenceId: price.id,
       nickname: price.nickname ?? price.name ?? null,
@@ -230,11 +231,11 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const orgPromise = $876.organizations.admin.retrieve({
+  const orgPromise = platform.organizations.retrieve({
     id: subscription.organization_id,
   })
   const productPromises = productIds.map((productId) =>
-    coreAdmin.products.retrieve(productId)
+    platform.products.retrieve(productId)
   )
   const [org, productResults] = await Promise.all([
     orgPromise,
@@ -268,7 +269,7 @@ export async function mirrorCoreSubscription(
   const legalName = org.data?.name ?? subscription.organization_id
   const contact = await resolveOrgPrimaryContact(org.data)
 
-  const createdCustomer = await $876.customers.admin.create({
+  const createdCustomer = await billingOperator.customers.create({
     organizationId: subscription.organization_id,
     customerType: 'CORE_ORGANIZATION',
     customerKind: 'BUSINESS',
@@ -289,7 +290,7 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const createdSubscription = await billingAdmin.subscriptions.create({
+  const createdSubscription = await billingOperator.subscriptions.create({
     externalReference: subscription.id,
     sourceAppId: subscription.app_id,
     customerId: createdCustomer.data.id,
@@ -317,7 +318,7 @@ export async function mirrorCoreSubscription(
 export async function mirrorCoreSubscriptionById(
   subscriptionId: string
 ): Promise<boolean> {
-  const result = await coreAdmin.subscriptions.retrieve(subscriptionId)
+  const result = await platform.subscriptions.retrieve(subscriptionId)
   if (!result.data) {
     console.error(
       '[console.billing.mirror] subscription retrieve failed:',
@@ -337,7 +338,7 @@ export async function reconcileBillingMirror() {
   let failures = 0
 
   try {
-    const productResult = await coreAdmin.products.list()
+    const productResult = await platform.products.list()
     if (productResult.error) {
       failures += 1
       console.error(
@@ -372,7 +373,7 @@ export async function reconcileBillingMirror() {
   let hasMore = true
   while (hasMore) {
     try {
-      const orgResult = await $876.organizations.admin.list({
+      const orgResult = await platform.organizations.list({
         limit: 100,
         startingAfter,
       })
@@ -387,9 +388,10 @@ export async function reconcileBillingMirror() {
 
       for (const org of orgResult.data.data) {
         try {
-          const subscriptionResult = await workspace.apps.entitlements.list({
-            organizationId: org.id,
-          })
+          const subscriptionResult =
+            await workspace.organizations.subscriptions.list({
+              organizationId: org.id,
+            })
           if (subscriptionResult.error) {
             failures += 1
             console.error(

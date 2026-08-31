@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { notFound } from 'next/navigation'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { workspace } from '@/lib/876'
 import { EditSetupForm } from './_components/edit-setup-form'
 
 export const metadata = { title: 'Edit provisioning setup' }

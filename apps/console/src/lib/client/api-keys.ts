@@ -2,7 +2,7 @@ import type {
   AdminApiKey,
   AdminApiKeyCreated,
   AdminDeletedApiKey,
-} from '@876/admin'
+} from '@876/platform/compat'
 
 import { request } from './request'
 

@@ -1,7 +1,8 @@
-import type { AdminSubscription } from '@876/admin'
+import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/services/platform'
+import type { AdminSubscription } from '@876/platform/compat'
 import { cache } from 'react'
 
-import { $876, workspace } from '@/lib/876'
 import { listConsoleApps } from '@/lib/apps-catalog'
 
 export const resolveApp = cache(async (slug: string) => {
@@ -17,7 +18,7 @@ export const resolveApp = cache(async (slug: string) => {
 })
 
 export const resolveProduct = cache(async (appId: string, slugOrId: string) => {
-  const { data } = await $876.entitlementPlans.admin.list({ appId })
+  const { data } = await platform.products.list({ appId })
   return (
     data?.data.find(
       (product) => product.id === slugOrId || product.slug === slugOrId
@@ -44,7 +45,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   data: AdminSubscription[]
   error: { code: string; message: string } | null
 }> {
-  const summariesResult = await $876.appSubscriptions.list(appId)
+  const summariesResult = await workspace.apps.entitlements.list(appId)
   if (summariesResult.error) return { data: [], error: summariesResult.error }
 
   const summaries = summariesResult.data ?? []
@@ -53,7 +54,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   const organizationIds = [
     ...new Set(summaries.map((subscription) => subscription.organization_id)),
   ]
-  const hydratedResult = await workspace.apps.entitlements.list({
+  const hydratedResult = await workspace.organizations.subscriptions.list({
     organizationIds,
   })
 
@@ -77,7 +78,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   }
 
   const hydratedById = new Map<string, AdminSubscription>(
-    (hydratedResult.data?.data ?? [])
+    (hydratedResult.data ?? [])
       .filter((subscription) => subscription.app_id === appId)
       .map((subscription) => [subscription.id, subscription])
   )

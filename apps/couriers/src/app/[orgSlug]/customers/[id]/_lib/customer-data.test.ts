@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
   couriersRetrieve: vi.fn(),
   couriersBranchesRetrieve: vi.fn(),
   mailboxesList: vi.fn(),
@@ -13,12 +13,12 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('@/lib/services/couriers', () => ({
+  getCouriers: mocks.getCouriers,
   billingIntegration: {
     customers: { retrieve: mocks.billingRetrieve },
   },
-  couriersAdmin: {
+  couriersOperator: {
     customers: { mailboxes: { list: mocks.mailboxesList } },
   },
 }))
@@ -86,7 +86,7 @@ describe('resolveCustomer', () => {
       branches: { retrieve: mocks.couriersBranchesRetrieve },
     }
     mocks.getManageContext.mockResolvedValue(tenantCtx())
-    mocks.get876Client.mockResolvedValue(request876)
+    mocks.getCouriers.mockResolvedValue(request876)
     mocks.couriersRetrieve.mockResolvedValue({
       data: rawCustomer(),
       error: null,
@@ -198,7 +198,7 @@ describe('resolveCustomer', () => {
   it('passes correct orgSlug to getManageContext and requestId path', async () => {
     await resolveCustomer('nkr-express', 'cprof_123')
     expect(mocks.getManageContext).toHaveBeenCalledWith('nkr-express')
-    expect(mocks.get876Client).toHaveBeenCalledTimes(1)
+    expect(mocks.getCouriers).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -209,7 +209,7 @@ describe('resolveCustomerTitle', () => {
       customers: { retrieve: mocks.couriersRetrieve },
     }
     mocks.getManageContext.mockResolvedValue(tenantCtx())
-    mocks.get876Client.mockResolvedValue(request876)
+    mocks.getCouriers.mockResolvedValue(request876)
     mocks.couriersRetrieve.mockResolvedValue({
       data: rawCustomer(),
       error: null,

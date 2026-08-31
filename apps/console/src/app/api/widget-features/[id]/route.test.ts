@@ -11,13 +11,11 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/services/platform', () => ({
+  platform: {
     features: {
-      admin: {
-        retrieve: mocks.retrieve,
-        update: mocks.update,
-      },
+      retrieve: mocks.retrieve,
+      update: mocks.update,
     },
   },
 }))

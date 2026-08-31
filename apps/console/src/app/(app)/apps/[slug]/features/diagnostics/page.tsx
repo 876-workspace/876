@@ -1,3 +1,4 @@
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
@@ -13,7 +14,6 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
 
 type Props = {
@@ -107,7 +107,7 @@ async function FeatureDiagnosticsResult({
   }
   if (!organizationId && !userId) return null
 
-  const result = await $876.features.admin.evaluateDetails({
+  const result = await workspace.features.evaluateDetails({
     appId: app.id,
     organizationId: organizationId || undefined,
     userId: userId || undefined,

@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('@/lib/services/couriers', () => ({
+  getCouriers: mocks.getCouriers,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: (error: { code: string }) =>
@@ -59,7 +59,7 @@ const courierCustomer = {
 describe('managed customers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.get876Client.mockImplementation(() => ({
+    mocks.getCouriers.mockImplementation(() => ({
       customers: { create: mocks.create, update: mocks.update },
     }))
     mocks.create.mockResolvedValue({ data: courierCustomer, error: null })

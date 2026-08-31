@@ -16,14 +16,14 @@ describe('organization members loading strategy', () => {
 
   it('uses the cached canonical admin organization member directory', () => {
     expect(dataSource).toContain('export const resolveOrgMembers = cache')
-    expect(dataSource).toContain('$876.organizationMembers.admin.list(orgId')
-    expect(dataSource).not.toContain('$876.memberships.admin.list')
+    expect(dataSource).toContain('workspace.members.list(orgId')
+    expect(dataSource).not.toContain('workspace.memberships.list')
   })
 
   it('does not rebuild the roster with a second users request', () => {
     expect(pageSource).toMatch(/resolveOrgMembers\([\w.]+\.id\)/)
-    expect(pageSource).not.toContain('$876.memberships.admin.list')
-    expect(pageSource).not.toContain('$876.users.admin.list')
+    expect(pageSource).not.toContain('workspace.memberships.list')
+    expect(pageSource).not.toContain('platform.users.list')
   })
 
   it('streams invites outside the member table critical path', () => {
@@ -34,7 +34,7 @@ describe('organization members loading strategy', () => {
     expect(invitesStart).toBeGreaterThan(membersStart)
 
     const memberLoader = pageSource.slice(membersStart, invitesStart)
-    expect(memberLoader).not.toContain('$876.invites.admin.list')
+    expect(memberLoader).not.toContain('workspace.invites.list')
     expect(pageSource).toContain(
       '<PendingInvitesData params={params} searchParams={searchParams} />'
     )

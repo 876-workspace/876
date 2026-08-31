@@ -1,4 +1,4 @@
-import type { AdminOrgMember } from '@876/admin'
+import type { AdminOrgMember } from '@876/platform/compat'
 
 export function initialsOf(user: {
   first_name?: string | null

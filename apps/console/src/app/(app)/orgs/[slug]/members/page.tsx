@@ -1,3 +1,4 @@
+import { workspace } from '@/lib/services/workspace'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -5,7 +6,6 @@ import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
-import { $876, workspace } from '@/lib/876'
 import { resolveUser } from '@/app/(app)/users/[username]/_data'
 import {
   resolveOrg,
@@ -125,7 +125,7 @@ async function MemberAppsData({
   organizationId: string
   membershipId: string
 }) {
-  const result = await workspace.apps.memberships.listForMember(
+  const result = await workspace.appMemberships.listForMember(
     organizationId,
     membershipId
   )
@@ -142,8 +142,8 @@ async function MemberAppsData({
   const entries = await Promise.all(
     (result.data?.data ?? []).map(async (membership) => {
       const [rolesResult, permissionsResult] = await Promise.all([
-        workspace.apps.orgRoles.list(organizationId, membership.app_id),
-        workspace.apps.permissions.list(membership.app_id),
+        workspace.orgAppRoles.list(organizationId, membership.app_id),
+        workspace.permissions.list(membership.app_id),
       ])
       if (rolesResult.error || permissionsResult.error) return null
 
@@ -262,7 +262,7 @@ async function PendingInvitesData({
   const orgResult = await resolveOrgResult(slug)
   if (!orgResult.data) return null
 
-  const invitesResult = await $876.invites.admin.list(orgResult.data.id)
+  const invitesResult = await workspace.invites.list(orgResult.data.id)
   if (invitesResult.error)
     return (
       <AppError

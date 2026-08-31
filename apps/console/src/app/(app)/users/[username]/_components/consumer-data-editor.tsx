@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminConsumerProfile, AdminUser } from '@876/admin'
+import type { AdminConsumerProfile, AdminUser } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'

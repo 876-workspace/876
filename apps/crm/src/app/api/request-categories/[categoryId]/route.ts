@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 type Context = { params: Promise<{ categoryId: string }> }
 
@@ -34,9 +34,7 @@ export async function PATCH(request: NextRequest, route: Context) {
   delete input.createdBy
   delete input.addedBy
   delete input.deletedBy
-  const $876 = await get876Client()
-
-  const result = await $876.requestCategories.update(
+  const result = await crm.requestCategories.update(
     context.orgId,
     categoryId,
     input as never
@@ -55,13 +53,10 @@ export async function DELETE(request: NextRequest, route: Context) {
   const body = ((await request.json().catch(() => null)) ?? {}) as {
     reason?: string
   }
-  const $876 = await get876Client()
-
-  const result = await $876.requestCategories.delete(
-    context.orgId,
-    categoryId,
-    { deletedBy: context.userId, reason: body.reason }
-  )
+  const result = await crm.requestCategories.delete(context.orgId, categoryId, {
+    deletedBy: context.userId,
+    reason: body.reason,
+  })
 
   return Response.json(result, {
     status: result.error ? statusFor(result.error.code) : 200,

@@ -4,8 +4,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 const mockList = vi.fn()
 const mockCreate = vi.fn()
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/services/billing', () => ({
+  billing: {
     paymentMethods: {
       list: (...args: unknown[]) => mockList(...args),
       create: (...args: unknown[]) => mockCreate(...args),

@@ -36,7 +36,7 @@ Consequences, all non-negotiable:
 
 - File metadata lives in the Storage service's own database.
 - Storage references core entities (`user_…`, `org_…`, `app_…`) as **opaque ID
-  columns with no cross-DB foreign key**, resolving details through `$876`.
+  columns with no cross-DB foreign key**, resolving details through `workspace` and `platform`.
 - Applications reference files by **opaque `fileId`**, never by object key,
   bucket name, or provider URL. `organizations.logo_file_id` is the canonical
   link; a rendered URL is a cache, never the source of truth.

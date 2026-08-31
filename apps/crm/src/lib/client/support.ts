@@ -1,7 +1,6 @@
 'use client'
 
-import type { CrmRequest, CrmRequestList } from '@876/client'
-
+import type { CrmRequest, CrmRequestList } from '@/types/crm'
 import { request } from './request'
 
 export type SupportRequestInput = {
@@ -9,10 +8,7 @@ export type SupportRequestInput = {
   description?: string | null
   categoryId?: string | null
 }
-
-/** The in-app support widget's browser transport. */
 export const support = {
-  /** Raises a request from the widget on behalf of the signed-in member. */
   create(params: SupportRequestInput) {
     return request<CrmRequest>('/api/support', {
       method: 'POST',
@@ -20,7 +16,6 @@ export const support = {
       body: JSON.stringify(params),
     })
   },
-  /** The signed-in member's own requests, newest first. */
   list() {
     return request<CrmRequestList>('/api/support', { method: 'GET' })
   },

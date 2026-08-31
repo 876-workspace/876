@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import { notFound } from 'next/navigation'
 
-import { workspace } from '@/lib/876'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 
 export const metadata = { title: 'Provisioning setup' }
@@ -11,8 +11,8 @@ export default async function ProvisioningSetupPage({ params }: Props) {
   const { setupKey } = await params
 
   const [catalogResult, manifestResult] = await Promise.all([
-    workspace.provisioning.catalog.retrieve('finance', setupKey),
-    workspace.provisioning.draft.retrieve('finance', setupKey),
+    workspace.provisioning.retrieveCatalog('finance', setupKey),
+    workspace.provisioning.retrieve('finance', setupKey),
   ])
   if (catalogResult.error || !catalogResult.data) notFound()
   if (manifestResult.error || !manifestResult.data) notFound()

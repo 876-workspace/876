@@ -1,7 +1,6 @@
+import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { PageBreadcrumb } from '@876/ui/page'
-
-import { $876 } from '@/lib/876'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../../_data'
 import {
@@ -48,7 +47,7 @@ async function loadSubscriptionSetup(
 
   const [accounts, productsResult] = await Promise.all([
     resolveOrgBillingAccounts(org.id),
-    $876.entitlementPlans.admin.list({ status: 'active' }),
+    platform.products.list({ status: 'active' }),
   ])
   if (productsResult.error) throw new Error(productsResult.error.message)
 

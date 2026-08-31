@@ -1,8 +1,8 @@
+import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminApp, AdminOrganization } from '@876/admin'
+import type { AdminApp, AdminOrganization } from '@876/platform/compat'
 
-import { $876 } from '@/lib/876'
 import { listCompleteAppSubscriptions, resolveApp } from '../../_data'
 import { SubscribersTable } from '../_components/subscribers-table'
 import { Suspense } from 'react'
@@ -45,7 +45,7 @@ async function AppSubscribersShell({ slug }: { slug: string }) {
 async function SubscribersTableData({ app }: { app: AdminApp }) {
   const [subscriptionsResult, productsResult] = await Promise.all([
     listCompleteAppSubscriptions(app.id),
-    $876.entitlementPlans.admin.list({ appId: app.id, status: 'active' }),
+    platform.products.list({ appId: app.id, status: 'active' }),
   ])
   const subscriptions = subscriptionsResult.data
   const prices = (productsResult.data?.data ?? []).flatMap((product) =>
@@ -61,7 +61,7 @@ async function SubscribersTableData({ app }: { app: AdminApp }) {
   const orgMap = new Map<string, AdminOrganization>()
   await Promise.all(
     orgIds.map(async (id) => {
-      const { data: org } = await $876.organizations.admin.retrieve({ id })
+      const { data: org } = await platform.organizations.retrieve({ id })
       if (org) orgMap.set(id, org)
     })
   )

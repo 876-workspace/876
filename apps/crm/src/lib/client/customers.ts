@@ -4,8 +4,7 @@ import type {
   CrmCustomer,
   CrmCustomerCreateInput,
   CrmCustomerUpdateInput,
-} from '@876/client'
-
+} from '@/types/crm'
 import { request } from './request'
 
 export type CustomerInput = Omit<CrmCustomerCreateInput, 'idempotencyKey'>

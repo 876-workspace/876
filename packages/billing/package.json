@@ -9,9 +9,13 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./admin": {
-      "types": "./src/admin/index.ts",
-      "default": "./src/admin/index.ts"
+    "./operator": {
+      "types": "./src/operator.ts",
+      "default": "./src/operator.ts"
+    },
+    "./service": {
+      "types": "./src/service.ts",
+      "default": "./src/service.ts"
     },
     "./integration": {
       "types": "./src/integration/index.ts",
@@ -24,6 +28,10 @@
     "./server": {
       "types": "./src/server/index.ts",
       "default": "./src/server/index.ts"
+    },
+    "./admin": {
+      "types": "./src/admin/index.ts",
+      "default": "./src/admin/index.ts"
     }
   },
   "scripts": {

@@ -1,7 +1,8 @@
+import { storage } from '@/lib/services/storage'
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -14,7 +15,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { id: userId } = await context.params
-  const retrieveResult = await $876.users.admin.retrieve({ id: userId })
+  const retrieveResult = await platform.users.retrieve({ id: userId })
   if (retrieveResult.error || !retrieveResult.data)
     return apiJson(
       { error: retrieveResult.error ?? 'Failed to retrieve the user.' },
@@ -28,7 +29,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { status: 409 }
     )
 
-  const updateResult = await $876.users.admin.update(userId, {
+  const updateResult = await platform.users.update(userId, {
     avatar_file_id: null,
     avatar: null,
   })
@@ -41,7 +42,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   // An avatar predating 876 Storage has a URL but no file to delete.
   if (!fileId) return apiJson({ data: null })
 
-  const deleteResult = await $876.files.delete(fileId, {
+  const deleteResult = await storage.files.delete(fileId, {
     sourceAppId: '876-console',
     actorUserId: userId,
   })

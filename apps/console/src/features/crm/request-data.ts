@@ -4,8 +4,10 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { requireSession } from '@/lib/auth/guards'
-import { $876 } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
+import { billing } from '@/lib/services/billing'
+import { crm } from '@/lib/services/crm'
+import { workspace } from '@/lib/services/workspace'
 
 import { toRequestCustomerOption } from './request-customer-option'
 import { PLATFORM_REQUESTS_HREF } from './request-paths'
@@ -30,8 +32,8 @@ export const loadPlatformRequestContext = cache(async (requestId?: string) => {
 
 export const loadOrgDirectory = cache(async (orgId: string) => {
   const [departmentsResult, membersResult] = await Promise.all([
-    $876.departments.admin.list(orgId),
-    $876.organizationMembers.admin.list(orgId, { limit: 100 }),
+    workspace.departments.list(orgId),
+    workspace.members.list(orgId, { limit: 100 }),
   ])
 
   const departments: RequestDepartment[] =
@@ -58,7 +60,7 @@ export const loadOrgDirectory = cache(async (orgId: string) => {
 })
 
 export const loadOrgCategoryIndex = cache(async (orgId: string) => {
-  const result = await $876.requestCategories.list(orgId)
+  const result = await crm.requestCategories.list(orgId)
   return {
     categories: new Map(
       (result.data?.data ?? []).map((category) => [category.id, category])
@@ -68,12 +70,12 @@ export const loadOrgCategoryIndex = cache(async (orgId: string) => {
 })
 
 export const loadOrgPriorities = cache(async (orgId: string) => {
-  const result = await $876.requestPriorities.list(orgId)
+  const result = await crm.requestPriorities.list(orgId)
   return { priorities: result.data?.data ?? [], error: result.error }
 })
 
 export const loadOrgRequestCustomers = cache(async (orgId: string) => {
-  const result = await $876.customerProfiles.list(orgId)
+  const result = await crm.customers.list(orgId)
 
   return {
     customers:
@@ -86,7 +88,7 @@ export const loadOrgRequestCustomers = cache(async (orgId: string) => {
 
 export const loadOrgCustomer = cache(
   async (orgId: string, customerId: string) => {
-    const result = await $876.customerProfiles.retrieve(orgId, customerId)
+    const result = await crm.customers.retrieve(orgId, customerId)
     if (result.data) {
       return {
         profile: result.data.profile,
@@ -95,7 +97,7 @@ export const loadOrgCustomer = cache(
       }
     }
 
-    const fallbackResult = await $876.customers.retrieve(orgId, customerId)
+    const fallbackResult = await billing.customers.retrieve(orgId, customerId)
     return {
       profile: null,
       customer: fallbackResult.data ?? null,
@@ -110,7 +112,7 @@ async function loadOrgRequestUncached(
   returnPath: string = PLATFORM_REQUESTS_HREF
 ) {
   const session = await requireSession(returnPath)
-  const result = await $876.requests.retrieve(orgId, requestId)
+  const result = await crm.requests.retrieve(orgId, requestId)
   if (result.error?.code === 'crm/request-not-found') notFound()
 
   return {
@@ -124,26 +126,26 @@ async function loadOrgRequestUncached(
 export const loadOrgRequest = cache(loadOrgRequestUncached)
 
 export const loadOrgNotes = cache(async (orgId: string, requestId: string) => {
-  const result = await $876.requestNotes.list(orgId, requestId, {
+  const result = await crm.requestNotes.list(orgId, requestId, {
     includePrivate: true,
   })
   return { notes: result.data?.data ?? [], error: result.error }
 })
 
 export const loadOrgTasks = cache(async (orgId: string, requestId: string) => {
-  const result = await $876.requestTasks.list(orgId, requestId)
+  const result = await crm.requestTasks.list(orgId, requestId)
   return { tasks: result.data?.data ?? [], error: result.error }
 })
 
 export const loadOrgReminders = cache(
   async (orgId: string, requestId: string) => {
-    const result = await $876.requestReminders.list(orgId, requestId)
+    const result = await crm.requestReminders.list(orgId, requestId)
     return { reminders: result.data?.data ?? [], error: result.error }
   }
 )
 
 export const loadOrgEvents = cache(async (orgId: string, requestId: string) => {
-  const result = await $876.requestEvents.list(orgId, requestId)
+  const result = await crm.requestEvents.list(orgId, requestId)
   return { events: result.data?.data ?? [], error: result.error }
 })
 
@@ -167,7 +169,7 @@ export function requestCustomerHref(
 
 export const loadRequestRowContext = cache(async (orgId: string) => {
   const [profiles, directory] = await Promise.all([
-    $876.customerProfiles.list(orgId),
+    crm.customers.list(orgId),
     loadOrgDirectory(orgId),
   ])
   return {

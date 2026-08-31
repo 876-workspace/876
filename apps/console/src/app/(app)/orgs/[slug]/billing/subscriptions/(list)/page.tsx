@@ -1,13 +1,12 @@
+import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization } from '@876/platform/compat'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { AppError } from '@876/ui/app-error'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
-
-import { $876 } from '@/lib/876'
 
 import {
   resolveOrg,
@@ -70,7 +69,7 @@ async function BillingSubscriptionsData({
   const [accounts, subscriptions, productsResult] = await Promise.all([
     resolveOrgBillingAccounts(org.id),
     resolveOrgSubscriptions(org.id),
-    $876.entitlementPlans.admin.list({ status: 'active' }),
+    platform.products.list({ status: 'active' }),
   ])
 
   const error = subscriptions.error ?? accounts.error ?? productsResult.error

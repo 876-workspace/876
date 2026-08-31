@@ -29,8 +29,9 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: sharedTranspilePackages([
     '@876/analytics',
-    '@876/sdk',
+    '@876/account',
     '@876/core',
+    '@876/workspace',
   ]),
   experimental: {
     optimizePackageImports: ['@base-ui/react', 'radix-ui', 'zod'],

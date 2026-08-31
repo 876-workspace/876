@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   listAppMemberships: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({
+vi.mock('@/lib/services/workspace', () => ({
   workspace: {
     apps: { memberships: { list: mocks.listAppMemberships } },
   },

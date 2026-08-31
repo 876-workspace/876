@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 import {
@@ -32,11 +32,14 @@ export async function POST(
     return apiJson({ error: 'Provide app_slug or app_id.' }, { status: 400 })
   }
 
-  const { data, error } = await workspace.apps.entitlements.grant(orgId, {
-    appSlug: body.app_slug,
-    appId: body.app_id,
-    priceId: body.price_id,
-  })
+  const { data, error } = await workspace.organizations.subscriptions.create(
+    orgId,
+    {
+      appSlug: body.app_slug,
+      appId: body.app_id,
+      priceId: body.price_id,
+    }
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to create subscription.' },

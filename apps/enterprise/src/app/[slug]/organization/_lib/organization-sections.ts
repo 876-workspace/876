@@ -1,4 +1,4 @@
-import type { OrganizationSelfUpdateParams } from '@876/sdk'
+import type { OrganizationSelfUpdateParams } from '@876/account/compat'
 import { Building2, ClipboardList, Globe } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 

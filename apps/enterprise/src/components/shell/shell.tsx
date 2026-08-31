@@ -14,8 +14,7 @@ import {
 import { SidebarTrigger } from '@876/ui/sidebar'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 
-import { get876ServerClient } from '@/lib/876/server'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getWorkspace } from '@/lib/services/workspace'
 import { unwrapResult } from '@876/core/client/lookup'
 import { Sidebar } from './sidebar'
 import { AppsGroup, AppNavLink } from './apps-group'
@@ -98,7 +97,7 @@ async function buildAppsSlot(
   orgId: string,
   orgSlug: string
 ): Promise<ReactNode> {
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const result = await client.entitlements.list(orgId)
   // Navigation degrades to an empty group on failure — never crash the shell.
   const subscriptions = (result.data?.data ?? []).filter(
@@ -128,12 +127,9 @@ async function buildAppsSlot(
  * switcher. On any platform failure the switcher degrades to a single-org view
  * (hidden in the topbar), so the shell never crashes.
  */
-async function buildSwitcherOrgs(userId: string): Promise<OrgSwitcherOrg[]> {
-  const client = await getPlatformClient()
-  const result = await client.memberships.listRouting({
-    userId,
-    status: 'active',
-  })
+async function buildSwitcherOrgs(_userId: string): Promise<OrgSwitcherOrg[]> {
+  const client = await getWorkspace()
+  const result = await client.memberships.list({ status: 'active' })
   if (result.error) return []
 
   return unwrapResult(result, 'routing memberships')

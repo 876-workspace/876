@@ -124,7 +124,7 @@ it — the Cloudflare build fails outright.
 
 All routing, session, and permission checks live in **RSC layouts and server
 components**, via the app's `src/lib/auth/guards.ts`. See `docs/cloudflare.md`
-→ "Runtime constraints" and `.agents/rules/navigation-performance.md`.
+→ "Runtime constraints" and `.claude/rules/navigation-performance.md`.
 
 ### 3d. Session cookie
 
@@ -157,23 +157,30 @@ the API directly.
 
 ## 4. Data access
 
-Initialize one client per app and export it as `$876` from `src/lib/876.ts`,
-then call `$876.<resource>.<verb>()` directly. Never a raw `fetch` to the API,
+Initialize bounded service clients under `src/lib/` for the domains the app uses,
+then call `<domain>.<resource>.<verb>()` directly. Never a raw `fetch` to the API,
 and never a bespoke flat wrapper.
 
-| Tier                   | Package      | Credential                            | Runs             |
-| ---------------------- | ------------ | ------------------------------------- | ---------------- |
-| Consumer / first-party | `@876/sdk`   | app API key or session cookie         | server + browser |
-| Platform admin         | `@876/admin` | `API_INTERNAL_KEY` (`x-internal-key`) | **server only**  |
+| Caller intent | Import shape                | Typical credential                   |
+| ------------- | --------------------------- | ------------------------------------ |
+| Account       | `@876/account`              | app API key or session/access token  |
+| Session       | `@876/<domain>/session`     | access token plus app credential     |
+| Service       | `@876/<domain>/service`     | scoped server credential/app grant   |
+| Operator      | `@876/<domain>/operator`    | internal key, server-only            |
+| Integration   | `@876/<domain>/integration` | OAuth/app credential plus org scopes |
 
 An exposable key must never carry admin scope. Client-initiated mutations go
-through a thin route handler that authorizes and then calls `$876` — **no server
-actions**. See `.agents/rules/sdk-conventions.md` and
-`.agents/rules/api-access.md`.
+through a thin route handler that authorizes and then calls the service client — **no server
+actions**. See `.claude/rules/sdk-conventions.md` and
+`.claude/rules/api-access.md`.
+
+Use a lazy module singleton only for static credentials. Use a request-scoped
+factory when a token or active organization belongs to one request. Do not hide
+either lifetime behind a lazy `Proxy`.
 
 If the app owns a bounded context it may run its own datastore, referencing core
 876 entities by **opaque ID only** — no cross-database foreign keys. See
-`.agents/rules/platform-services.md`. An app with no bounded context of its own
+`.claude/rules/platform-services.md`. An app with no bounded context of its own
 must not grow `db/` or `service/`.
 
 ---
@@ -258,7 +265,7 @@ user's Apps accordion.
 If Console needs to act on the app's own domain data, expose a narrow internal
 admin surface at `/api/admin/*` guarded by `x-internal-key`, and give Console a
 server-only client for it. The app must never query the identity database
-directly — it resolves user/org details through `$876`.
+directly — it resolves user/org details through `workspace` and `platform`.
 
 ---
 
@@ -268,7 +275,7 @@ If the app gates access on an organization, a signed-in account with **no**
 organization must reach onboarding, never `/no-access`, and an `owner`/`admin`
 whose org merely lacks the entitlement must be routed to setup rather than a
 wall. Sign-up and onboarding ship together, or neither ships. See
-`.agents/rules/product-org-signup.md`.
+`.claude/rules/product-org-signup.md`.
 
 ---
 
@@ -305,12 +312,12 @@ anyone's credentials.
 
 The integration points are identical; only the implementation differs.
 
-| Concern        | Next.js                        | Vite / SPA                                   | Native                                          |
-| -------------- | ------------------------------ | -------------------------------------------- | ----------------------------------------------- |
-| Auth bridge    | `/api/auth/[...path]/route.ts` | Thin server (Hono/Express) with same logic   | Platform SDK against the API                    |
-| Session cookie | app origin, set by the API     | same, via the thin server                    | secure storage (Keychain, EncryptedSharedPrefs) |
-| Client         | `$876` in server components    | `create876Client` + `credentials: 'include'` | `create876Client` on native HTTP                |
-| Route guard    | RSC layout guards              | server middleware on the thin server         | auth-state nav guard                            |
+| Concern        | Next.js                        | Vite / SPA                                 | Native                                          |
+| -------------- | ------------------------------ | ------------------------------------------ | ----------------------------------------------- |
+| Auth bridge    | `/api/auth/[...path]/route.ts` | Thin server (Hono/Express) with same logic | Platform SDK against the API                    |
+| Session cookie | app origin, set by the API     | same, via the thin server                  | secure storage (Keychain, EncryptedSharedPrefs) |
+| Client         | explicit bounded roots         | Account + explicit product roots           | Account + explicit product roots                |
+| Route guard    | RSC layout guards              | server middleware on the thin server       | auth-state nav guard                            |
 
 The invariant: **all auth flows and identity API calls go through a server-side
 bridge.** The browser never holds an API key.

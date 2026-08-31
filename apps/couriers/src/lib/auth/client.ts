@@ -1,9 +1,11 @@
 'use client'
 
-import { create876Client } from '@876/client'
+import { create876AccountClient } from '@876/account'
 
-/** Consumer-realm auth bridge (/api/auth). */
-export const authClient = create876Client({ baseUrl: '/api' })
+/** Consumer-realm Account auth bridge (`/api/auth`). */
+export const authClient = create876AccountClient({ baseUrl: '/api' })
 
-/** Enterprise (manage) realm auth bridge (/api/manage-auth/auth). */
-export const manageAuthClient = create876Client({ baseUrl: '/api/manage-auth' })
+/** Enterprise manage-realm Account auth bridge (`/api/manage-auth/auth`). */
+export const manageAuthClient = create876AccountClient({
+  baseUrl: '/api/manage-auth',
+})

@@ -13,7 +13,7 @@ alone - in PostHog, in the local `features` catalog, and in code.
   `app_id`, provider metadata), synced at startup by the seeds in
   `apps/api/services/feature_seeds.py`. Parent/child is modeled with
   `parent_feature_id`.
-- **Apps evaluate** through `$876.features.evaluate({ appId, userId })` —
+- **Apps evaluate** through `workspace.features.evaluate({ appId, userId })` —
   never by calling PostHog directly from a Next.js app.
 - The **same key string** is used in PostHog, the `features.slug` column,
   and every code reference. Never let them drift; a rename touches all three

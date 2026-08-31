@@ -4,9 +4,9 @@ Read this before adding, storing, reading, or rendering **any organization-level
 setting or preference** in any 876 SaaS app — couriers, billing, enterprise, and
 every future product app. It fixes the terminology, the placement, and the
 contract so a new app inherits the whole pattern instead of inventing a fourth
-one. Companion to `.agents/rules/platform-services.md` (three-bucket placement),
-`.agents/rules/sdk-conventions.md` (client surface), and
-`.agents/rules/app-layout.md` (the settings pages themselves).
+one. Companion to `.claude/rules/platform-services.md` (three-bucket placement),
+`.claude/rules/sdk-conventions.md` (client surface), and
+`.claude/rules/app-layout.md` (the settings pages themselves).
 
 ## The three layers, and why settings is not provisioning
 
@@ -39,7 +39,7 @@ a working default, so an org that never opens Settings still has a functioning a
 | **Override**   | A stored row. Only written when it differs from the default.                                | —                                  |
 | **Readiness**  | The post-provisioning "you still need to set up X" checklist.                               | "onboarding" (that is sign-up)     |
 
-**A module is not a feature flag.** A feature flag (`.agents/rules/feature-flags.md`)
+**A module is not a feature flag.** A feature flag (`.claude/rules/feature-flags.md`)
 is _platform-controlled rollout_ — 876 decides who gets it, via PostHog. A module is
 _org-controlled usage_ — the customer decides whether they use it. A flag can hide a
 module from every org; a module toggle cannot enable something the flag has disabled.
@@ -47,7 +47,7 @@ Never model a rollout as a module, and never model a customer choice as a flag.
 
 ## Placement — always the app's own datastore
 
-By decision step #2 of `.agents/rules/platform-services.md`, module state and
+By decision step #2 of `.claude/rules/platform-services.md`, module state and
 preferences are **app-local operational data**: internal to exactly one app and
 meaningless to the rest of the platform. Couriers' volumetric divisor means nothing
 to Billing.
@@ -58,7 +58,7 @@ to Billing.
 - Any reference to a core entity (`updatedBy` = an 876 user id) is an **opaque ID
   column with no cross-database foreign key**.
 - Reads and writes go through the app's `service.<resource>.<verb>()` layer — the
-  only caller allowed to touch `prisma` (`.agents/rules/sdk-conventions.md`).
+  only caller allowed to touch `prisma` (`.claude/rules/sdk-conventions.md`).
 
 ## The shared contract: `@876/settings`
 
@@ -131,7 +131,7 @@ every stored row for every org.
 The settings nav is data that crosses the React Server → Client boundary, so it
 carries **no icon components and no functions** — only plain data, with a **string
 icon key** the app resolves to a component itself. This is the same technique
-`ResourceToolbar`'s `DropdownAction.icon` already uses (`.agents/rules/app-layout.md`).
+`ResourceToolbar`'s `DropdownAction.icon` already uses (`.claude/rules/app-layout.md`).
 
 A registry with imported icon components appears to work right up until the first
 client component needs it, then fails at the boundary. Do not put components in it.

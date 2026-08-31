@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getContext } from '@/lib/auth/billing-context'
 import { requireValidSession } from '@/lib/auth/guards'
 

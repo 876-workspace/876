@@ -1,9 +1,10 @@
+import { workspace } from '@/lib/services/workspace'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { FeatureAccessBoard } from '@/features/access/components/feature-access-board'
 import { loadGrants, toAccessFlag } from '@/features/access/to-access-flag'
-import { $876 } from '@/lib/876'
+
 import { resolveFeature } from '../../../../../features/[id]/_data'
 import { resolveApp } from '../../../_data'
 
@@ -32,7 +33,7 @@ export default async function AppFeatureAccessPage({ params }: Props) {
   if (!app || !feature || feature.app_id !== app.id) notFound()
 
   // Children AND with this flag, so they belong on the same screen.
-  const siblingsResult = await $876.features.admin.list({
+  const siblingsResult = await workspace.features.list({
     limit: 100,
     appId: app.id,
   })
@@ -42,7 +43,7 @@ export default async function AppFeatureAccessPage({ params }: Props) {
 
   const family = [feature, ...children]
   const grantsById = await loadGrants(family, (id) =>
-    $876.features.admin.retrieveGrants(id)
+    workspace.features.retrieveGrants(id)
   )
 
   return (

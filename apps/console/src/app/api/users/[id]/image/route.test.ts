@@ -14,12 +14,15 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/services/storage', () => ({
+  storage: {
     uploads: { create: mocks.create, complete: mocks.complete },
     files: { delete: mocks.deleteFile },
-    users: { admin: { retrieve: mocks.retrieve, update: mocks.update } },
   },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: { users: { retrieve: mocks.retrieve, update: mocks.update } },
 }))
 
 import { POST as start } from './route'

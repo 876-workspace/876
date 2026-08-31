@@ -15,6 +15,10 @@
       "types": "./src/operator.ts",
       "default": "./src/operator.ts"
     },
+    "./service": {
+      "types": "./src/service.ts",
+      "default": "./src/service.ts"
+    },
     "./integration": {
       "types": "./src/integration.ts",
       "default": "./src/integration.ts"

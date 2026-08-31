@@ -9,7 +9,7 @@ import {
   requireCouriersData,
   toWarehouseView,
 } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 
 import { WarehouseForm } from '../../_components/warehouse-form'
 
@@ -50,7 +50,7 @@ async function EditWarehouseData({ orgSlug, id }: EditWarehouseDataProps) {
       </div>
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.warehouses.retrieve(id)
   if (!result.data && isCouriersNotFound(result)) notFound()
 

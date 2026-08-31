@@ -60,10 +60,16 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: sharedTranspilePackages([
     '@876/analytics',
+    '@876/account',
     '@876/billing',
-    '@876/sdk',
-    '@876/admin',
     '@876/core',
+    '@876/crm',
+    '@876/couriers',
+    '@876/platform',
+    '@876/storage',
+    '@876/widgets',
+    '@876/work',
+    '@876/workspace',
   ]),
   experimental: {
     optimizePackageImports: ['radix-ui', 'zod'],
@@ -84,7 +90,5 @@ export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
-  sourcemaps: {
-    disable: true,
-  },
+  sourcemaps: { disable: true },
 })

@@ -1,3 +1,6 @@
+import { billing } from '@/lib/services/billing'
+import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import { CreditCard } from '@876/ui/icons'
 import {
@@ -9,8 +12,6 @@ import {
 } from '@876/ui/empty'
 import { Page, PageHeader, PageTitle, PageDescription } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
-
-import { $876 } from '@/lib/876'
 
 export const metadata = {
   title: 'Billing',
@@ -40,7 +41,7 @@ export default function BillingPage() {
 }
 
 async function BillingAccountsCard() {
-  const result = await $876.billingAccounts.list({ limit: 25 })
+  const result = await workspace.billingAccounts.list({ limit: 25 })
   const accounts = result.data?.data ?? []
 
   return (
@@ -87,7 +88,7 @@ async function BillingAccountsCard() {
 }
 
 async function SubscriptionsCard() {
-  const result = await $876.subscriptions.admin.list({ limit: 25 })
+  const result = await platform.subscriptions.list({ limit: 25 })
   const subscriptions = result.data?.data ?? []
 
   return (

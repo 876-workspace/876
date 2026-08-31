@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -25,7 +25,7 @@ export async function PATCH(
   if (!appRoleId)
     return apiJson({ error: 'appRoleId is required.' }, { status: 400 })
 
-  const { data, error } = await workspace.apps.memberships.update(
+  const { data, error } = await workspace.appMemberships.update(
     organizationId,
     assignmentId,
     { app_role_id: appRoleId }
@@ -48,7 +48,7 @@ export async function DELETE(
   if (response) return response
 
   const { id: organizationId, assignmentId } = await params
-  const { data, error } = await workspace.apps.memberships.delete(
+  const { data, error } = await workspace.appMemberships.delete(
     organizationId,
     assignmentId
   )

@@ -1,13 +1,12 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 import type { CrmRequestEventParticipantUpdateInput } from '@/types/crm'
 
 type Context = {
   params: Promise<{ requestId: string; eventId: string; participantId: string }>
 }
-
 function unauthorized() {
   return Response.json(
     {
@@ -21,7 +20,6 @@ function unauthorized() {
 export async function PATCH(request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
   if (!context) return unauthorized()
-  const $876 = await get876Client()
   const { requestId, eventId, participantId } = await route.params
   const input = (await request
     .json()
@@ -34,7 +32,7 @@ export async function PATCH(request: NextRequest, route: Context) {
       },
       { status: 400 }
     )
-  const result = await $876.requestEvents.participants.update(
+  const result = await crm.requestEvents.participants.update(
     context.orgId,
     requestId,
     eventId,
@@ -47,9 +45,8 @@ export async function PATCH(request: NextRequest, route: Context) {
 export async function DELETE(_request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
   if (!context) return unauthorized()
-  const $876 = await get876Client()
   const { requestId, eventId, participantId } = await route.params
-  const result = await $876.requestEvents.participants.delete(
+  const result = await crm.requestEvents.participants.delete(
     context.orgId,
     requestId,
     eventId,

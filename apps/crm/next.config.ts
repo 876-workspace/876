@@ -21,7 +21,6 @@ const securityHeaders = [
 ]
 
 const previewDevOrigins = devResourceHosts()
-
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   reactCompiler: true,
@@ -31,7 +30,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
-  transpilePackages: sharedTranspilePackages(['@876/client', '@876/core']),
+  transpilePackages: sharedTranspilePackages([
+    '@876/account',
+    '@876/core',
+    '@876/crm',
+    '@876/workspace',
+  ]),
   experimental: {
     optimizePackageImports: ['zod'],
     serverActions: {

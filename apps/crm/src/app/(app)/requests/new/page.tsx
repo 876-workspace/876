@@ -1,8 +1,9 @@
 import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
+import { getWorkspace } from '@/lib/services/workspace'
 
 import { RequestForm } from '../_components/request-form'
 
@@ -10,7 +11,7 @@ export const metadata = { title: 'New request' }
 
 export default async function NewRequestPage() {
   const context = await requireCrmContext()
-  const $876 = await get876Client()
+  const workspace = await getWorkspace()
   const [
     customers,
     departmentsResult,
@@ -18,22 +19,27 @@ export default async function NewRequestPage() {
     categoriesResult,
     prioritiesResult,
   ] = await Promise.all([
-    $876.customerProfiles.list(context.orgId),
-    $876.departments.list(context.orgId),
-    $876.organizationMembers.list(context.orgId),
-    $876.requestCategories.list(context.orgId),
-    $876.requestPriorities.list(context.orgId, { active: true }),
+    crm.customers.list(context.orgId),
+    workspace.departments.list(context.orgId),
+    workspace.members.list(context.orgId),
+    crm.requestCategories.list(context.orgId),
+    crm.requestPriorities.list(context.orgId, { active: true }),
   ])
 
   const departments =
-    departmentsResult.data?.data.map((d) => ({ id: d.id, name: d.name })) ?? []
+    departmentsResult.data?.data.map((department) => ({
+      id: department.id,
+      name: department.name,
+    })) ?? []
 
   const members =
-    membersResult.data?.data.map((m) => {
-      const nameParts = [m.first_name, m.last_name].filter(Boolean)
+    membersResult.data?.data.map((member) => {
+      const nameParts = [member.first_name, member.last_name].filter(Boolean)
       const name =
-        nameParts.length > 0 ? nameParts.join(' ') : (m.email ?? m.user_id)
-      return { userId: m.user_id, name, email: m.email }
+        nameParts.length > 0
+          ? nameParts.join(' ')
+          : (member.email ?? member.user_id)
+      return { userId: member.user_id, name, email: member.email }
     }) ?? []
 
   return (

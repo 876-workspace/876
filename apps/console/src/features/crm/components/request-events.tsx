@@ -7,11 +7,11 @@ import {
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
-import type { Console876Client } from '@/lib/876'
+import type { CrmOperatorClient } from '@876/crm/operator'
 import { client } from '@/lib/client'
 
 type RequestEventList = NonNullable<
-  Awaited<ReturnType<Console876Client['requestEvents']['list']>>['data']
+  Awaited<ReturnType<CrmOperatorClient['requestEvents']['list']>>['data']
 >
 
 type Props = {

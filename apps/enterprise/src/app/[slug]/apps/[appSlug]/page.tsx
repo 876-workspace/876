@@ -1,12 +1,12 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
-import type { Price, Product, Subscription } from '@876/sdk'
+import type { Price, Product, Subscription } from '@876/account/compat'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 export default async function OrganizationAppDetailPage({
@@ -22,7 +22,7 @@ export default async function OrganizationAppDetailPage({
     'apps:read'
   )
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
 
   const subscriptionResult = await client.entitlements.retrieve({
     organizationId: membership.organization.id,

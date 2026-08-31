@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { OrgContactCreateParams } from '@876/sdk'
+import type { OrgContactCreateParams } from '@876/account/compat'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -46,7 +46,7 @@ export async function POST(
     if (body && field in body) params[field] = body[field] as never
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.contacts.create(
     auth.membership.organization.id,
     { ...params, first_name: firstName }

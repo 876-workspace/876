@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({ retrieve: vi.fn() }))
-vi.mock('@/lib/876/platform-client', () => ({
-  getPlatformClient: vi.fn(async () => ({
+vi.mock('@/lib/services/account-server', () => ({
+  getAccount: vi.fn(async () => ({
     users: { retrieve: mocks.retrieve },
   })),
 }))
@@ -21,7 +21,7 @@ describe('isAccountUsable — goldbergyoni: resilience, AAA, boundary', () => {
     })
     const result = await isAccountUsable('user_1')
     expect(result).toBe(true)
-    expect(mocks.retrieve).toHaveBeenCalledWith({ id: 'user_1' })
+    expect(mocks.retrieve).toHaveBeenCalledWith()
   })
   it('returns false when error code is user/not-found (account deleted)', async () => {
     mocks.retrieve.mockResolvedValue({
@@ -109,7 +109,7 @@ describe('isAccountUsable — goldbergyoni: resilience, AAA, boundary', () => {
         error: null,
       })
       await isAccountUsable(userId)
-      expect(mocks.retrieve).toHaveBeenCalledWith({ id: userId })
+      expect(mocks.retrieve).toHaveBeenCalledWith()
       vi.clearAllMocks()
       mocks.retrieve.mockResolvedValue({
         data: { id: 'user_1', status: 'active', banned: false },

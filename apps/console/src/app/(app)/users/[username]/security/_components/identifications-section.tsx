@@ -1,4 +1,4 @@
-import type { AdminUserIdentification } from '@876/admin'
+import type { AdminUserIdentification } from '@876/platform/compat'
 import { Fingerprint } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
 import {

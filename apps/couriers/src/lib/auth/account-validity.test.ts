@@ -10,7 +10,7 @@ vi.mock('react', async (importOriginal) => {
   return { ...actual, cache: <T>(fn: T) => fn }
 })
 
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 

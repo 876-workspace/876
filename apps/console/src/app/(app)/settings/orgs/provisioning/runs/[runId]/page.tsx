@@ -1,3 +1,5 @@
+import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -15,7 +17,6 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { $876, workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
 import { RetryRunButton } from '../_components/run-actions'
@@ -50,8 +51,8 @@ async function ProvisioningRunData({ params }: Props) {
     throw new Error(result.error?.message ?? 'Failed to load provisioning run.')
   const run = result.data
   const [appResult, organizationResult] = await Promise.all([
-    $876.apps.admin.retrieve(run.app_id),
-    $876.organizations.admin.retrieve({ id: run.organization_id }),
+    platform.apps.retrieve(run.app_id),
+    platform.organizations.retrieve({ id: run.organization_id }),
   ])
   const app = appResult.data
   const organization = organizationResult.data

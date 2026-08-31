@@ -1,6 +1,6 @@
 import { apiJson } from '@876/core/api'
 
-import { platform } from '@/lib/876'
+import { platform } from '@/lib/services/platform'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 type Context = { params: Promise<{ id: string }> }

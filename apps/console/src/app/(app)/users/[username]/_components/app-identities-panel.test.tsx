@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import type { AdminUser } from '@876/admin'
+import type { AdminUser } from '@876/platform/compat'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 

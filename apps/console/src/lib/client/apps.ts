@@ -4,7 +4,7 @@ import type {
   AdminAppCreateParams,
   AdminAppUpdateParams,
   AdminDeletedApp,
-} from '@876/admin'
+} from '@876/platform/compat'
 import type {
   DeletedImageFile,
   ImageFile,

@@ -8,8 +8,9 @@ import { Pencil } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import type { DirectoryMember } from '@/features/directory/types'
-import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
+import { getWorkspace } from '@/lib/services/workspace'
 
 import { TeamActions } from './_components/team-actions'
 import { TeamMembers, type TeamMemberRow } from './_components/team-members'
@@ -19,15 +20,14 @@ type Props = { params: Promise<{ teamId: string }> }
 export default async function TeamPage({ params }: Props) {
   const { teamId } = await params
   const context = await requireCrmContext()
-  const $876 = await get876Client()
+  const workspace = await getWorkspace()
   const [teamResult, teamMembersResult, directoryResult] = await Promise.all([
-    $876.teams.retrieve(context.orgId, teamId),
-    $876.teams.members.list(context.orgId, teamId),
-    $876.organizationMembers.list(context.orgId),
+    crm.teams.retrieve(context.orgId, teamId),
+    crm.teams.members.list(context.orgId, teamId),
+    workspace.members.list(context.orgId),
   ])
 
   if (teamResult.error?.code === 'crm/team-not-found') notFound()
-
   if (teamResult.error)
     return (
       <Page>
@@ -90,7 +90,6 @@ export default async function TeamPage({ params }: Props) {
           <TeamActions teamId={teamId} status={teamResult.data.status} />
         </div>
       </header>
-
       <div className="space-y-3">
         {teamMembersResult.error ? (
           <AppError

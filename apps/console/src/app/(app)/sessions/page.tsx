@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import { Badge } from '@876/ui/badge'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
@@ -13,8 +14,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { isExpired } from '@876/admin'
-import { $876 } from '@/lib/876'
+import { isExpired } from '@876/platform/compat'
 import { SESSIONS_SKELETON_COLUMNS } from './_components/sessions-skeleton-columns'
 
 export const metadata = { title: 'Sessions' }
@@ -67,7 +67,7 @@ async function SessionsTable({
   // The API separates revoked from expired, so the filter belongs in the query.
   // Splitting the rows here instead would leave has_more describing the
   // unsplit set and silently break pagination.
-  const result = await $876.sessions.list({
+  const result = await platform.sessions.list({
     limit: 25,
     startingAfter: params.after,
     endingBefore: params.before,

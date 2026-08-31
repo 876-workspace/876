@@ -14,13 +14,16 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/services/storage', () => ({
+  storage: {
     uploads: { create: mocks.create, complete: mocks.complete },
     files: { delete: mocks.deleteFile },
-    organizations: {
-      admin: { retrieve: mocks.retrieve, update: mocks.update },
-    },
+  },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: {
+    organizations: { retrieve: mocks.retrieve, update: mocks.update },
   },
 }))
 

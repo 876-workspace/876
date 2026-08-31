@@ -7,7 +7,7 @@ import type {
   AdminBillingAccount,
   AdminProduct,
   AdminSubscription,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { buttonVariants, Button } from '@876/ui/button'
 import {
   Empty,

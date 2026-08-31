@@ -1,5 +1,8 @@
+import { billing } from '@/lib/services/billing'
+import { billingOperator } from '@/lib/services/billing'
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization } from '@876/platform/compat'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import {
@@ -12,7 +15,6 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { $876, billingAdmin } from '@/lib/876'
 import {
   listCompleteAppSubscriptions,
   resolveApp,
@@ -57,7 +59,7 @@ function isSubscriberStatus(status: string | undefined): boolean {
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await billingAdmin.stats.apps.retrieve(sourceAppId)
+    const result = await billingOperator.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',
@@ -164,7 +166,7 @@ async function PlanSubscribersData({
     const orgMap = new Map<string, AdminOrganization>()
     await Promise.all(
       orgIds.map(async (organizationId) => {
-        const result = await $876.organizations.admin.retrieve({
+        const result = await platform.organizations.retrieve({
           id: organizationId,
         })
         if (result.data) orgMap.set(organizationId, result.data)

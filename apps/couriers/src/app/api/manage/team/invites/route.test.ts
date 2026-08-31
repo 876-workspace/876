@@ -5,18 +5,18 @@ const mocks = vi.hoisted(() => ({
   getPlatformClient: vi.fn(),
   retrieveRole: vi.fn(),
   createInvite: vi.fn(),
-  get876Client: vi.fn(),
+  getCouriers: vi.fn(),
   couriersErrorStatus: vi.fn(() => 502),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('@/lib/services/couriers', () => ({
+  getCouriers: mocks.getCouriers,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -56,7 +56,7 @@ const validBody = {
 describe('Couriers team invite route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.get876Client.mockImplementation(() => ({
+    mocks.getCouriers.mockImplementation(() => ({
       roles: { retrieve: mocks.retrieveRole },
     }))
     mocks.getManageContext.mockResolvedValue(ctx('admin'))

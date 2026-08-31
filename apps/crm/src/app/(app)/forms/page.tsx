@@ -3,8 +3,8 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Suspense } from 'react'
 
-import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
 
 import {
   FormsList,
@@ -33,10 +33,7 @@ export default function FormsPage() {
 
 async function FormsListData() {
   const context = await requireCrmContext()
-  const $876 = await get876Client()
-
-  const result = await $876.requestForms.list(context.orgId)
-
+  const result = await crm.requestForms.list(context.orgId)
   const forms: RequestFormRow[] =
     result.data?.data.map((form) => ({
       id: form.id,

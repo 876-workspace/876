@@ -18,7 +18,7 @@ import type {
   AdminUsernameAvailability,
   SessionRevoke,
   UnlinkedAccount,
-} from '@876/admin'
+} from '@876/platform/compat'
 import type { UserIdentity } from '@/types/member'
 import type {
   DeletedImageFile,

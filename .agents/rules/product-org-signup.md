@@ -4,9 +4,9 @@ Read this before building, reviewing, or changing the authenticated entry path o
 any **org-workspace product app** — couriers and billing today, and every future
 SaaS product an organization signs into (enterprise-realm apps). It fixes the
 rule that a brand-new authenticated account must always have somewhere to land.
-Companion to `.agents/rules/platform-services.md` (org provisioning),
-`.agents/rules/new-app-guide.md` (app scaffolding), and
-`.agents/rules/navigation-performance.md` (guards).
+Companion to `.claude/rules/platform-services.md` (org provisioning),
+`.claude/rules/new-app-guide.md` (app scaffolding), and
+`.claude/rules/navigation-performance.md` (guards).
 
 ## The rule
 
@@ -108,7 +108,7 @@ do not invent a second onboarding pattern.
   No-access is an authorization answer, not the answer to "no org yet".
 - Org creation and app provisioning run through pure-transport route handlers
   (`app/api/...`) that authorize the session and call the platform client — no
-  business logic in the app (`.agents/rules/api-access.md`).
+  business logic in the app (`.claude/rules/api-access.md`).
 
 ### A missing entitlement is a setup step, never a wall
 

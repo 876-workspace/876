@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -31,10 +31,10 @@ export async function PATCH(
     return apiJson({ error: 'A role is required.' }, { status: 400 })
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const orgId = auth.membership.organization.id
 
-  const membersResult = await client.organizationMembers.list(orgId)
+  const membersResult = await client.members.list(orgId)
   const members = membersResult.data?.data ?? []
   const target = members.find((member) => member.id === membershipId)
   if (!target) {
@@ -49,11 +49,9 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await client.organizationMembers.update(
-    orgId,
-    membershipId,
-    { role }
-  )
+  const { data, error } = await client.members.update(orgId, membershipId, {
+    role,
+  })
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to change the member role.' },
@@ -85,10 +83,10 @@ export async function DELETE(
     )
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const orgId = auth.membership.organization.id
 
-  const membersResult = await client.organizationMembers.list(orgId)
+  const membersResult = await client.members.list(orgId)
   const members = membersResult.data?.data ?? []
   const target = members.find((member) => member.id === membershipId)
   if (!target) {
@@ -117,10 +115,7 @@ export async function DELETE(
     }
   }
 
-  const { data, error } = await client.organizationMembers.delete(
-    orgId,
-    membershipId
-  )
+  const { data, error } = await client.members.delete(orgId, membershipId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to remove the member.' },

@@ -1,4 +1,4 @@
-import type { AdminAddress } from '@876/admin'
+import type { AdminAddress } from '@876/platform/compat'
 
 import { addressPreviewSummary, formatAddressType } from '../_lib/address-utils'
 

@@ -1,7 +1,7 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -21,7 +21,7 @@ export async function POST(
   } | null
   const reason = body && typeof body.reason === 'string' ? body.reason : null
 
-  const { data, error } = await $876.users.admin.ban(id, { reason })
+  const { data, error } = await platform.users.ban(id, { reason })
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to ban user.' },

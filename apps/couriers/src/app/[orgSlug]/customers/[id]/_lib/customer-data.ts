@@ -2,7 +2,8 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { billingIntegration, couriersAdmin, get876Client } from '@/lib/876'
+import { couriersOperator, getCouriers } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/services/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 import {
   isCouriersNotFound,
@@ -14,7 +15,7 @@ import {
 export const resolveCustomer = cache(async (orgSlug: string, id: string) => {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
 
   const customerResult = await $876.customers.retrieve(id)
   if (isCouriersNotFound(customerResult)) return null
@@ -26,7 +27,7 @@ export const resolveCustomer = cache(async (orgSlug: string, id: string) => {
       ctx.tenant.orgId,
       profile.billingCustomerId
     ),
-    couriersAdmin.customers.mailboxes.list(ctx.tenant.id, profile.id),
+    couriersOperator.customers.mailboxes.list(ctx.tenant.id, profile.id),
     profile.branchId ? $876.branches.retrieve(profile.branchId) : null,
   ])
 
@@ -50,7 +51,7 @@ export const resolveCustomerTitle = cache(
   async (orgSlug: string, id: string) => {
     const ctx = await getManageContext(orgSlug)
     if (!ctx?.tenant) return null
-    const $876 = await get876Client()
+    const $876 = await getCouriers()
     const customerResult = await $876.customers.retrieve(id)
     if (isCouriersNotFound(customerResult)) return null
     const profile = toCustomerView(requireCouriersData(customerResult))

@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 type Context = { params: Promise<{ teamId: string; userId: string }> }
 
@@ -23,14 +23,9 @@ export async function PATCH(request: NextRequest, route: Context) {
   const body = ((await request.json().catch(() => null)) ?? {}) as {
     role?: unknown
   }
-  const $876 = await get876Client()
-
-  const result = await $876.teams.members.update(
-    context.orgId,
-    teamId,
-    userId,
-    { role: body.role } as never
-  )
+  const result = await crm.teams.members.update(context.orgId, teamId, userId, {
+    role: body.role,
+  } as never)
 
   return Response.json(result, { status: result.error ? 400 : 200 })
 }
@@ -40,8 +35,7 @@ export async function DELETE(_request: NextRequest, route: Context) {
   if (!context) return unauthorized()
 
   const { teamId, userId } = await route.params
-  const $876 = await get876Client()
-  const result = await $876.teams.members.remove(context.orgId, teamId, userId)
+  const result = await crm.teams.members.remove(context.orgId, teamId, userId)
 
   return Response.json(result, { status: result.error ? 400 : 200 })
 }

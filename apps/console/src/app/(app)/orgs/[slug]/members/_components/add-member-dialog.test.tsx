@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest'
 
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AdminOrgRole, AdminUser } from '@876/admin'
+import type { AdminOrgRole, AdminUser } from '@876/platform/compat'
 
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),

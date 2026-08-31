@@ -1,3 +1,4 @@
+import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
@@ -11,7 +12,6 @@ import {
 } from '@876/core/auth/return-to'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { $876 } from '@/lib/876'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 
 import { EmbeddedAuth } from './_components/embedded-auth'
@@ -57,7 +57,7 @@ export default async function ConsoleLoginPage({
  */
 async function getConsoleLogoUrl(): Promise<string | null> {
   try {
-    const { data } = await $876.apps.admin.list({
+    const { data } = await platform.apps.list({
       appKind: 'internal',
       limit: 100,
     })

@@ -16,7 +16,7 @@ import {
 } from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
 
-import { get876Client } from '@/lib/876'
+import { getBilling } from '@/lib/services/billing'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { SalesReceiptsTable } from './_components/sales-receipts-table'
 
@@ -81,9 +81,9 @@ export default async function SalesReceiptsPage({ searchParams }: Props) {
 async function SalesReceiptsTableData() {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const $876 = await get876Client(context.orgId)
+  const billing = await getBilling(context.orgId)
   // Sales Receipts share the invoice family — reuse invoices endpoint until dedicated resource exists.
-  const result = (await $876.invoices
+  const result = (await billing.invoices
     .list()
     .catch(
       () => ({ data: null, error: { code: 'unreachable' } }) as const

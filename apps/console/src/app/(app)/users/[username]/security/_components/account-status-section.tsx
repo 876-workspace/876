@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminUser } from '@876/admin'
+import type { AdminUser } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Shield } from '@876/ui/icons'
 import { cn } from '@876/core/utils'

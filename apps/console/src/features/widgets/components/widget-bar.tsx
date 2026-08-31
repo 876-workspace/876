@@ -1,7 +1,7 @@
 'use client'
 
 import { createElement } from 'react'
-import type { AdminAuditEvent } from '@876/admin'
+import type { AdminAuditEvent } from '@876/platform/compat'
 import { ChatRail } from '@876/widgets/react'
 
 import { PopoutBar } from './popout-bar'

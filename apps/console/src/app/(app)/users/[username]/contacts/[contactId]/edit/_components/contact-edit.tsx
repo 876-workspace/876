@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminConsumerContact, AdminUser } from '@876/admin'
+import type { AdminConsumerContact, AdminUser } from '@876/platform/compat'
 import { client } from '@/lib/client'
 import { ContactForm } from '@/app/(app)/users/[username]/contacts/_components/contact-form'
 

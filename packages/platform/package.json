@@ -1,0 +1,44 @@
+{
+  "name": "@876/platform",
+  "version": "0.1.0",
+  "description": "Server-only operator client for the 876 platform control plane.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./operator": {
+      "types": "./src/operator.ts",
+      "default": "./src/operator.ts"
+    },
+    "./internal": {
+      "types": "./src/internal.ts",
+      "default": "./src/internal.ts"
+    },
+    "./compat": {
+      "types": "./src/compat.ts",
+      "default": "./src/compat.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@876/billing": "workspace:*",
+    "@876/core": "workspace:*",
+    "@876/storage": "workspace:*",
+    "@876/widgets": "workspace:*",
+    "server-only": "0.0.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

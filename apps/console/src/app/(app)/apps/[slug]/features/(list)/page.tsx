@@ -1,3 +1,4 @@
+import { workspace } from '@/lib/services/workspace'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -15,7 +16,6 @@ import {
 } from '@876/ui/empty'
 import { Flag } from '@876/ui/icons'
 
-import { $876, workspace } from '@/lib/876'
 import { resolveApp } from '../../_data'
 import { AppFeaturesTable } from '../_components/features-table'
 import { FEATURES_SKELETON_COLUMNS } from '../_components/features-skeleton-columns'
@@ -63,7 +63,7 @@ async function FeaturesTableData({
   if (!app) notFound()
 
   const [featureResult, modulesResult] = await Promise.all([
-    $876.features.admin.list({
+    workspace.features.list({
       appId: app.id,
       limit: 100,
       search: query,

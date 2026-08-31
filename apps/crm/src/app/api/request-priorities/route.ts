@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 function unauthorized() {
   return Response.json(
@@ -16,7 +16,6 @@ function unauthorized() {
 export async function POST(request: NextRequest) {
   const context = await getCrmApiContext()
   if (!context) return unauthorized()
-
   const body = ((await request.json().catch(() => null)) ?? {}) as Record<
     string,
     unknown
@@ -24,12 +23,9 @@ export async function POST(request: NextRequest) {
   const input = { ...body }
   delete input.createdBy
   delete input.deletedBy
-  const $876 = await get876Client()
-
-  const result = await $876.requestPriorities.create(context.orgId, {
+  const result = await crm.requestPriorities.create(context.orgId, {
     ...input,
     createdBy: context.userId,
   } as never)
-
   return Response.json(result, { status: result.error ? 400 : 201 })
 }

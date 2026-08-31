@@ -37,7 +37,7 @@ Never call an app role a feature. Never call an app permission a feature flag. N
 - Core identity API owns app access data and effective-permission resolution.
 - The app declares its permission catalog; core persists it.
 - `workspace.apps` owns privileged organization governance for app permission catalogs, role templates, org app roles, and app memberships.
-- A session-tier self read may remain `$876.appMemberships.me.retrieve()`.
+- A session-tier self read may remain `workspace.appMemberships.me.retrieve()`.
 - 876 Enterprise itself is not app-role gated. Its existing organization-role permission plane governs the Enterprise surface.
 - Organization permissions and app permissions are separate planes. `apps:assign` never grants an in-app permission.
 
@@ -96,7 +96,7 @@ Resolution must never throw because of malformed or stale stored permission data
 - Do not filter the global user directory in a product UI to simulate org-scoped search; query the organization member endpoint.
 - Do not add a Next.js `proxy.ts` or `middleware.ts` for this feature.
 - Do not add Server Actions; browser mutations use thin authorized route handlers and typed clients.
-- Do not put admin-tier endpoints into `@876/sdk`; they belong in `@876/admin` and the appropriate control-plane composer.
+- Do not put admin-tier endpoints into `@876/account`; they belong in `@876/platform` and the appropriate control-plane composer.
 - Do not expose Console's privileged workspace controls to browser/consumer surfaces.
 - Do not introduce `eslint-disable` comments or `as any` casts to satisfy a gate.
 - Do not run database migrations against a live database while implementing schema changes; write additive migration SQL for CI/deployment.

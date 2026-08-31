@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -46,7 +46,7 @@ export async function DELETE(
   if (response) return response
 
   const { organizationId, featureId } = await context.params
-  const { data, error } = await workspace.features.revoke(
+  const { data, error } = await workspace.features.orgs.revoke(
     organizationId,
     featureId
   )

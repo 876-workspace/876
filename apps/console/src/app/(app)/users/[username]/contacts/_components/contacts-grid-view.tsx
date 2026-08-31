@@ -1,6 +1,6 @@
 'use client'
 
-import type { AdminConsumerContact } from '@876/admin'
+import type { AdminConsumerContact } from '@876/platform/compat'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { buttonVariants } from '@876/ui/button'
 import {

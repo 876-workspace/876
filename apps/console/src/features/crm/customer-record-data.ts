@@ -1,9 +1,10 @@
 import 'server-only'
 
-import { cache } from 'react'
 import type { CrmCustomerRow } from '@876/crm-ui/customer-list'
+import { cache } from 'react'
 
-import { $876 } from '@/lib/876'
+import { crm } from '@/lib/services/crm'
+
 import { resolveCustomerIdentity } from './customer-identity'
 
 /**
@@ -13,11 +14,17 @@ import { resolveCustomerIdentity } from './customer-identity'
  */
 export const loadOrgCustomerRecord = cache(
   async (organizationId: string, customerId: string) => {
-    const result = await $876.customerProfiles.retrieve(organizationId, customerId)
+    const result = await crm.customers.retrieve(
+      organizationId,
+      customerId
+    )
     if (!result.data) return { row: null, result }
 
     const { profile, customer } = result.data
-    const identity = resolveCustomerIdentity(customer, profile.billingCustomerId)
+    const identity = resolveCustomerIdentity(
+      customer,
+      profile.billingCustomerId
+    )
     const row: CrmCustomerRow = {
       profileId: profile.id,
       billingCustomerId: profile.billingCustomerId,

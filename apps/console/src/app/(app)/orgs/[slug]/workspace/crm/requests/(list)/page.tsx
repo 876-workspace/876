@@ -16,7 +16,7 @@ import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
 } from '@/features/crm/request-status'
-import { $876 } from '@/lib/876'
+import { crm } from '@/lib/services/crm'
 import type { CrmRequestStatus } from '@/types/crm'
 
 import { resolveOrg } from '../../../../_data'
@@ -75,7 +75,7 @@ async function RequestsData({
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const result = await $876.requests.list(org.id, {
+  const result = await crm.requests.list(org.id, {
     status: status === 'all' ? undefined : status,
   })
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />

@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import type { AdminUser, AdminUserApp } from '@876/admin'
+import type { AdminUser, AdminUserApp } from '@876/platform/compat'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 

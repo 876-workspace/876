@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { AdminProvisioningSetup } from '@876/admin'
+import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'

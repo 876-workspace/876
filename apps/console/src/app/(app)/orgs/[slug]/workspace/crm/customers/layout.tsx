@@ -1,16 +1,16 @@
-import { Suspense, type ReactNode } from 'react'
-import { notFound } from 'next/navigation'
 import { CustomerListShell } from '@876/crm-ui/customer-list-shell'
 import { AppError } from '@876/ui/app-error'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { notFound } from 'next/navigation'
+import { Suspense, type ReactNode } from 'react'
 
 import { CustomerList } from '@/features/crm/components/customer-list'
 import { CRM_CUSTOMERS_SKELETON_COLUMNS } from '@/features/crm/components/customers-skeleton-columns'
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
 import { toCustomerRow } from '@/features/crm/customer-rows'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
-import { $876 } from '@/lib/876'
+import { crm } from '@/lib/services/crm'
 
 import { resolveOrg } from '../../../_data'
 
@@ -62,7 +62,7 @@ async function CustomerListData({ params }: Pick<Props, 'params'>) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const result = await $876.customerProfiles.list(org.id)
+  const result = await crm.customers.list(org.id)
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
 
   // The list column scrolls inside the shell rather than growing the page, so

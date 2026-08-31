@@ -1,10 +1,10 @@
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { workspace } from '@/lib/876'
 import { resolveApp } from '../_data'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 
@@ -24,8 +24,8 @@ async function AppProvisioningData({ params }: Props) {
   if (!app) notFound()
 
   const [manifestResult, catalogResult] = await Promise.all([
-    workspace.provisioning.draft.retrieve('application', app.id),
-    workspace.provisioning.catalog.retrieve('application', app.id),
+    workspace.provisioning.retrieve('application', app.id),
+    workspace.provisioning.retrieveCatalog('application', app.id),
   ])
   if (
     manifestResult.error &&

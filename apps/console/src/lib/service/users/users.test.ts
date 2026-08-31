@@ -18,21 +18,20 @@ const mocks = vi.hoisted(() => ({
   applyRoleChange: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
+    memberships: { create: mocks.membershipCreate },
+  },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: {
     users: {
-      admin: {
-        create: mocks.userCreate,
-        delete: mocks.userDelete,
-        update: mocks.userUpdate,
-      },
+      create: mocks.userCreate,
+      delete: mocks.userDelete,
+      update: mocks.userUpdate,
     },
-    organizations: {
-      admin: { create: mocks.orgCreate },
-    },
-    memberships: {
-      admin: { create: mocks.membershipCreate },
-    },
+    organizations: { create: mocks.orgCreate },
   },
 }))
 

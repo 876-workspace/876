@@ -11,7 +11,7 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
+vi.mock('@/lib/services/workspace', () => ({
   workspace: {
     apps: {
       list: mocks.list,

@@ -2,6 +2,11 @@
 
 import { useEffect } from 'react'
 
+import { create876AccountClient } from '@876/account'
+import {
+  AUTH_RETURN_TO_COOKIE,
+  resolveRelativeReturnTo,
+} from '@876/core/auth/return-to'
 import {
   AppLogo,
   AuthFlow,
@@ -9,14 +14,10 @@ import {
   AuthProvider,
   type SocialProvider,
 } from '@876/ui/auth'
-import {
-  AUTH_RETURN_TO_COOKIE,
-  resolveRelativeReturnTo,
-} from '@876/core/auth/return-to'
-import { create876Client } from '@876/client'
+import { account } from '@/lib/services/account-browser'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
-const authClient = create876Client({ baseUrl: '/api' })
+const authClient = account
 
 export function EmbeddedAuth({
   returnTo,

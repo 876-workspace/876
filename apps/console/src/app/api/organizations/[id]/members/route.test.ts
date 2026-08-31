@@ -10,13 +10,9 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
-    organizationMembers: {
-      admin: {
-        create: mocks.createOrgMember,
-      },
-    },
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
+    members: { create: mocks.createOrgMember },
   },
 }))
 

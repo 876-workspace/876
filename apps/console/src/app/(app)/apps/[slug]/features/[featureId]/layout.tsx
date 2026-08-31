@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import { Skeleton } from '@876/ui/skeleton'

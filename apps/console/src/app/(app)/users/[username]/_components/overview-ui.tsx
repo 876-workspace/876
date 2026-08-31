@@ -4,7 +4,7 @@ import { cn } from '@876/core/utils'
 import { KeyRound } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 import { PROVIDER_ICONS } from '@876/ui/auth/provider-icons'
-import type { AdminAccount } from '@876/admin'
+import type { AdminAccount } from '@876/platform/compat'
 import { statusBadgeClass } from '@/lib/format'
 
 /**

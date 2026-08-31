@@ -1,11 +1,10 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 import type { CrmRequestEventParticipantCreateInput } from '@/types/crm'
 
 type Context = { params: Promise<{ requestId: string; eventId: string }> }
-
 function unauthorized() {
   return Response.json(
     {
@@ -19,9 +18,8 @@ function unauthorized() {
 export async function GET(_request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
   if (!context) return unauthorized()
-  const $876 = await get876Client()
   const { requestId, eventId } = await route.params
-  const result = await $876.requestEvents.participants.list(
+  const result = await crm.requestEvents.participants.list(
     context.orgId,
     requestId,
     eventId
@@ -32,7 +30,6 @@ export async function GET(_request: NextRequest, route: Context) {
 export async function POST(request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
   if (!context) return unauthorized()
-  const $876 = await get876Client()
   const { requestId, eventId } = await route.params
   const input = (await request
     .json()
@@ -48,7 +45,7 @@ export async function POST(request: NextRequest, route: Context) {
       },
       { status: 400 }
     )
-  const result = await $876.requestEvents.participants.create(
+  const result = await crm.requestEvents.participants.create(
     context.orgId,
     requestId,
     eventId,

@@ -10,7 +10,7 @@ import {
   toBranchCreateBody,
   toBranchView,
 } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import { branchCreateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.branches.create(toBranchCreateBody(parsed.data))
   if (result.error)
     return apiJson(

@@ -13,19 +13,15 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
-    organizationMembers: {
-      admin: {
-        update: mocks.updateOrgMember,
-        delete: mocks.deleteOrgMember,
-      },
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
+    members: {
+      update: mocks.updateOrgMember,
+      delete: mocks.deleteOrgMember,
     },
     memberships: {
-      admin: {
-        update: mocks.updateMembership,
-        delete: mocks.deleteMembership,
-      },
+      update: mocks.updateMembership,
+      delete: mocks.deleteMembership,
     },
   },
 }))

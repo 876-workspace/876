@@ -1,8 +1,8 @@
+import { workspace } from '@/lib/services/workspace'
 import { Suspense, type ReactNode } from 'react'
-import type { AdminProvisioningSetup } from '@876/admin'
+import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
-import { workspace } from '@/lib/876'
 import { ProvisioningShell } from './_components/provisioning-shell'
 import { SetupsList } from './_components/setups-list'
 import { SETUPS_SKELETON_COLUMNS } from './_components/setups-skeleton-columns'

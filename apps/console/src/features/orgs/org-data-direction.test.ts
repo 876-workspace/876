@@ -25,7 +25,7 @@ const WORKSPACE_REQUESTS = readFileSync(
 describe('org CRM surfaces read the tenant their name implies', () => {
   it('support reads 876s own tenant, not the organizations', () => {
     expect(SUPPORT).toContain('getPlatformOrganization')
-    expect(SUPPORT).toContain('$876.requests.list(platformOrg.id')
+    expect(SUPPORT).toContain('crm.requests.list(platformOrg.id')
   })
 
   it('support scopes to the customer record representing the organization', () => {
@@ -34,7 +34,7 @@ describe('org CRM surfaces read the tenant their name implies', () => {
   })
 
   it('the workspace reads the organizations own tenant', () => {
-    expect(WORKSPACE_REQUESTS).toContain('$876.requests.list(org.id')
+    expect(WORKSPACE_REQUESTS).toContain('crm.requests.list(org.id')
   })
 
   it('the workspace never reaches for the platform organization', () => {

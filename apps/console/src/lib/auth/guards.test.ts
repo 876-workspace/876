@@ -28,15 +28,14 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: mocks.captureException,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
-    users: {
-      admin: { retrieve: mocks.retrieveUser },
-    },
-    memberships: {
-      admin: { list: mocks.listMemberships },
-    },
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
+    memberships: { list: mocks.listMemberships },
   },
+}))
+
+vi.mock('@/lib/services/platform', () => ({
+  platform: { users: { retrieve: mocks.retrieveUser } },
 }))
 
 vi.mock('@/lib/features', () => ({

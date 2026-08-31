@@ -1,7 +1,7 @@
+import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { coreAdmin } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -27,7 +27,7 @@ export async function PUT(
       { status: 400 }
     )
 
-  const { data, error } = await coreAdmin.products.replaceModules(id, {
+  const { data, error } = await platform.products.replaceModules(id, {
     module_ids: body.module_ids,
   })
   if (error || !data)

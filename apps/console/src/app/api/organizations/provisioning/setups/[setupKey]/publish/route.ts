@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -13,7 +13,7 @@ export async function POST(
   if (response) return response
 
   const { setupKey } = await params
-  const result = await workspace.provisioning.draft.publish('finance', setupKey)
+  const result = await workspace.provisioning.publish('finance', setupKey)
   if (result.error || !result.data)
     return apiJson(
       {

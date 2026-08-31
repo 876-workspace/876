@@ -1,3 +1,5 @@
+import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import { Page } from '@876/ui/page'
 import {
@@ -13,7 +15,6 @@ import {
   getConsoleWidgetDetailHref,
   getConsoleWidgetStatusFeatureSlug,
 } from '@/features/widgets/widget-catalog'
-import { $876 } from '@/lib/876'
 
 import { WidgetsTable, type WidgetTableRow } from './_components/widgets-table'
 
@@ -86,8 +87,8 @@ async function WidgetsTableData({
   distribution: 'all' | 'shared' | 'host'
 }) {
   const [featuresResult, appsResult] = await Promise.all([
-    $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
+    workspace.features.list({ limit: 100, includeTag: 'widget' }),
+    platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
   const features = new Map(
     (featuresResult.data?.data ?? []).map((feature) => [feature.slug, feature])

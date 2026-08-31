@@ -1,4 +1,4 @@
-import type { CrmCustomer } from '@876/client'
+import type { CrmCustomer } from '@/features/crm/types'
 
 import { resolveCustomerIdentity } from './customer-identity'
 

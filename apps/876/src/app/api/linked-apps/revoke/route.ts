@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { getAccount } from '@/lib/services/account'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export const runtime = 'nodejs'
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   const grantId = formData?.get('grant_id')
 
   if (isSignedSession(session) && typeof grantId === 'string' && grantId) {
-    await $876.oauthGrants.revoke(session.user.id, grantId)
+    await getAccount().oauthGrants.revoke(session.user.id, grantId)
   }
 
   return Response.redirect(

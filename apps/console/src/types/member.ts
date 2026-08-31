@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { AdminMembership, AdminOrganization } from '@876/admin'
+import type { AdminMembership, AdminOrganization } from '@876/platform/compat'
 
 export const memberStatusSchema = z.enum(['active', 'suspended'])
 export type MemberStatus = z.infer<typeof memberStatusSchema>

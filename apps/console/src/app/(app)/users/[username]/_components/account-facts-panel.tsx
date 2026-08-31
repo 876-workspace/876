@@ -1,4 +1,4 @@
-import type { AdminUser } from '@876/admin'
+import type { AdminUser } from '@876/platform/compat'
 
 import { formatDate } from '@/lib/format'
 import { Fact, FactGrid, StatusBadge } from './overview-ui'

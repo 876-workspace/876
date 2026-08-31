@@ -11,7 +11,7 @@ import type {
   AdminOrganizationCreateParams,
   AdminOrganizationUpdateParams,
   AdminUser,
-} from '@876/admin'
+} from '@876/platform/compat'
 import type {
   DeletedImageFile,
   ImageFile,

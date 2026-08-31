@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -29,7 +29,7 @@ export async function PATCH(
   // Keep Console on the organization-scoped access path. Besides preventing a
   // membership ID from another org being mutated through this route, this path
   // enforces the owner/last-owner invariants in the Core API.
-  const { data, error } = await $876.organizationMembers.admin.update(
+  const { data, error } = await workspace.members.update(
     id,
     membershipId,
     { role }
@@ -53,7 +53,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, membershipId } = await params
-  const { data, error } = await $876.organizationMembers.admin.delete(
+  const { data, error } = await workspace.members.delete(
     id,
     membershipId
   )

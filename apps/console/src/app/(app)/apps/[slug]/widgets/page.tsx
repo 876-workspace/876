@@ -1,3 +1,4 @@
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -17,7 +18,7 @@ import {
   getConsoleWidgetDetailHref,
 } from '@/features/widgets/widget-catalog'
 import { WidgetCatalogIcon } from '@/features/widgets/components/widget-catalog-icon'
-import { $876 } from '@/lib/876'
+
 import { resolveApp } from '../_data'
 
 /**
@@ -77,7 +78,7 @@ async function AppWidgetsData({
     )
   }
 
-  const result = await $876.features.admin.list({
+  const result = await workspace.features.list({
     limit: 100,
     includeTag: 'widget',
   })

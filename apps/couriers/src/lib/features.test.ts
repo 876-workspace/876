@@ -12,7 +12,7 @@ vi.mock('react', async (importOriginal) => {
     cache: <T extends (...args: never[]) => unknown>(fn: T) => fn,
   }
 })
-vi.mock('@/lib/876/platform-client', () => ({
+vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/couriers-app', () => ({

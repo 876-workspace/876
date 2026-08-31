@@ -1,6 +1,7 @@
+import { billing } from '@/lib/services/billing'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization } from '@876/platform/compat'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
@@ -9,7 +10,6 @@ import {
 } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
-import { $876 } from '@/lib/876'
 import { resolveOrg } from '../../_data'
 import { CUSTOMERS_SKELETON_COLUMNS } from '../_components/customers-skeleton-columns'
 import { CustomersTable } from '../_components/customers-table'
@@ -93,7 +93,7 @@ async function CustomersData({
     status === 'all'
       ? undefined
       : { status: status.toUpperCase() as 'ACTIVE' | 'ARCHIVED' }
-  const { data, error } = await $876.customers.list(org.id, listParams)
+  const { data, error } = await billing.customers.list(org.id, listParams)
 
   if (error) {
     return (

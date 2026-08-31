@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 export async function GET(request: NextRequest) {
   const context = await getCrmApiContext()
@@ -14,15 +14,12 @@ export async function GET(request: NextRequest) {
       { status: 401 }
     )
 
-  const $876 = await get876Client()
-
   const searchParams = request.nextUrl.searchParams
   const status = searchParams.get('status') ?? undefined
   const teamId = searchParams.get('teamId') ?? undefined
   const assigneeId = searchParams.get('assigneeId') ?? undefined
   const customerId = searchParams.get('customerId') ?? undefined
-
-  const result = await $876.requests.list(context.orgId, {
+  const result = await crm.requests.list(context.orgId, {
     status: status as never,
     teamId,
     assigneeId,
@@ -42,13 +39,10 @@ export async function POST(request: NextRequest) {
       { status: 401 }
     )
 
-  const $876 = await get876Client()
-
   const input = await request.json().catch(() => null)
-  const result = await $876.requests.create(context.orgId, {
+  const result = await crm.requests.create(context.orgId, {
     ...(input as Record<string, unknown>),
     createdBy: context.userId,
   } as never)
-
   return Response.json(result, { status: result.error ? 400 : 201 })
 }

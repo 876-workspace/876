@@ -13,7 +13,7 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 
 import { client } from '@/lib/client'
 import { generateOrgSlug } from '@/lib/slug'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization } from '@876/platform/compat'
 
 const STATUSES = ['active', 'suspended', 'pending']
 

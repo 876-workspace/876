@@ -4,11 +4,11 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { couriersErrorStatus } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const roleResult = await $876.roles.retrieve(parsed.data.roleId)
   if (roleResult.error) {
     if (roleResult.error.code.endsWith('/not-found'))

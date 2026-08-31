@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, use } from 'react'
-import type { AdminApp, AdminFeature } from '@876/admin'
+import type { AdminApp, AdminFeature } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { Skeleton } from '@876/ui/skeleton'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'

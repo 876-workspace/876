@@ -1,4 +1,4 @@
-import type { AdminFeature } from '@876/admin'
+import type { AdminFeature } from '@876/platform/compat'
 
 import { request } from './request'
 import type { WidgetFeatureUpdate } from '@/types/widgets'

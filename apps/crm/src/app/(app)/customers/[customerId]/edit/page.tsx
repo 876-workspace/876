@@ -2,8 +2,8 @@ import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
-import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
 
 import {
   CustomerForm,
@@ -14,11 +14,9 @@ type Props = { params: Promise<{ customerId: string }> }
 
 export default async function EditCustomerPage({ params }: Props) {
   const context = await requireCrmContext()
-  const $876 = await get876Client()
   const { customerId } = await params
-  const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
+  const result = await crm.customers.retrieve(context.orgId, customerId)
   if (result.error?.code === 'crm/customer-not-found') notFound()
-
   if (result.error)
     return (
       <Page>
@@ -31,7 +29,6 @@ export default async function EditCustomerPage({ params }: Props) {
         />
       </Page>
     )
-
   const { profile, customer } = result.data
   const initial: CustomerFormValues = {
     customerKind: customer?.customerKind ?? 'INDIVIDUAL',
@@ -43,7 +40,6 @@ export default async function EditCustomerPage({ params }: Props) {
     ownerId: profile.ownerId ?? '',
     status: profile.status,
   }
-
   return (
     <Page>
       <PageBreadcrumb

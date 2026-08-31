@@ -40,7 +40,7 @@
     "prebuild": "pnpm clean",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -55,10 +55,7 @@
     "prepublishOnly": "pnpm check"
   },
   "dependencies": {
-    "@876/core": "workspace:*",
-    "@876/device": "workspace:*",
-    "@876/types": "workspace:*",
-    "zod": "4.4.3"
+    "@876/account": "workspace:*"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

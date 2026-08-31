@@ -1,6 +1,6 @@
 'use client'
 
-import { create876Client } from '@876/client'
+import { create876AccountClient } from '@876/account'
 import {
   AppLogo,
   AuthFlow,
@@ -12,7 +12,7 @@ import {
 import Link from 'next/link'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'microsoft', 'apple']
-const authClient = create876Client({ baseUrl: '/api' })
+const authClient = create876AccountClient({ baseUrl: '/api' })
 
 export function RegistrationAuth() {
   return (
@@ -32,7 +32,6 @@ export function RegistrationAuth() {
       >
         <AuthFlow />
       </AuthProvider>
-
       <AuthFooterLink>
         Already have a workspace?{' '}
         <Link

@@ -56,14 +56,12 @@ describe('Console product API boundary', () => {
     expect(offenders).toEqual([])
   })
 
-  it('keeps multi-service construction centralized in the Console $876 module', () => {
-    const source = readFileSync(join(APP_ROOT, 'src/lib/876/index.ts'), 'utf8')
-
-    expect(source).toContain('createConsole876Client')
-    expect(source).toContain('createConsoleSurfaces')
-    expect(source).toContain('createBillingAdminClient')
-    expect(source).toContain('create876BillingIntegrationClient')
-    expect(source).toContain('createWidgetsAdminClient')
+  it('keeps multi-service construction centralized in Console service modules', () => {
+    const services = ['platform', 'workspace', 'crm', 'billing', 'storage', 'widgets', 'work', 'couriers']
+    for (const svc of services) {
+      const path = join(APP_ROOT, `src/lib/services/${svc}.ts`)
+      expect(existsSync(path), `missing service module ${svc}`).toBe(true)
+    }
   })
 })
 

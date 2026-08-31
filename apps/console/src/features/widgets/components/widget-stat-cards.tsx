@@ -1,9 +1,9 @@
 import 'server-only'
+import { widgets } from '@/lib/services/widgets'
 
 import type { WidgetMetadata } from '@876/widgets'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { widgetsAdmin } from '@/lib/876'
 
 type Stat = {
   label: string
@@ -30,7 +30,7 @@ export async function WidgetStatCards({ widget }: { widget: WidgetMetadata }) {
   const session = await getAuthSession()
   if (!isSignedSession(session)) return null
 
-  const { data, error } = await widgetsAdmin.stats.notepad({
+  const { data, error } = await widgets.stats.notepad({
     userId: session.user.id,
   })
   if (error || !data) {

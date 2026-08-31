@@ -1,4 +1,4 @@
-import type { AdminOrgMember, AdminUser } from '@876/admin'
+import type { AdminOrgMember, AdminUser } from '@876/platform/compat'
 import { formatDateTime } from '@/lib/format'
 import { cn } from '@876/core/utils'
 

@@ -1,6 +1,6 @@
-import type { AdminUser, AdminUserUpdateParams } from '@876/admin'
+import { platform } from '@/lib/services/platform'
+import type { AdminUser, AdminUserUpdateParams } from '@876/platform/compat'
 
-import { $876 } from '@/lib/876'
 import { assertRoleChangeAllowed } from '@/lib/auth/role-change'
 import type { Access } from '@/types/auth'
 import type { ServiceResult } from '@/types/api'
@@ -22,7 +22,7 @@ export async function update(
     if (!check.ok) return err(check.error, check.status)
   }
 
-  const { data, error } = await $876.users.admin.update(id, body)
+  const { data, error } = await platform.users.update(id, body)
   if (error || !data) return err(error?.message ?? 'Failed to update user.')
 
   return ok(data)

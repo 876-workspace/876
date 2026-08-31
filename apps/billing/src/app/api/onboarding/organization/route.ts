@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export const runtime = 'nodejs'

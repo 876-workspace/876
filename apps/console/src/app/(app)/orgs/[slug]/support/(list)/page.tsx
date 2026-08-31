@@ -1,3 +1,4 @@
+import { crm } from '@/lib/services/crm'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -18,7 +19,7 @@ import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
 } from '@/features/crm/request-status'
-import { $876 } from '@/lib/876'
+
 import { getPlatformOrganization } from '@/lib/platform-org'
 import type { CrmRequestStatus } from '@/types/crm'
 import {
@@ -102,7 +103,7 @@ async function SupportRequestsData({
     )
   if (!customerResult.data) return <NoSupportHistory />
 
-  const result = await $876.requests.list(platformOrg.id, {
+  const result = await crm.requests.list(platformOrg.id, {
     customerId: customerResult.data.profile.id,
     status: status === 'all' ? undefined : status,
   })

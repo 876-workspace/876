@@ -1,6 +1,6 @@
 'use client'
 
-import { create876Client } from '@876/client'
+import { create876AccountClient } from '@876/account'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { track } from '@/lib/analytics/track'
@@ -60,7 +60,7 @@ function getRequestPath(input: RequestInfo | URL): string {
  * Browser auth-bridge client for the embedded login/logout surfaces. Talks to
  * the same-origin `/api` bridge and tags each request for analytics.
  */
-export const authClient = create876Client({
+export const authClient = create876AccountClient({
   baseUrl: '/api',
   fetch: fetchWithAnalytics,
 })

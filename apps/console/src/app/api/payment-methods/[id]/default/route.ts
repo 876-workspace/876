@@ -1,7 +1,7 @@
+import { billing } from '@/lib/services/billing'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -18,7 +18,7 @@ export async function POST(
   if (!organizationId)
     return apiJson({ error: 'organizationId is required.' }, { status: 400 })
   const { id } = await context.params
-  const { data, error } = await $876.paymentMethods.setDefault(
+  const { data, error } = await billing.paymentMethods.setDefault(
     organizationId,
     id
   )

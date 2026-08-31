@@ -3,7 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import type { PlatformOrganization } from '@876/core/platform'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 
 /** Where a customer's primary contact details were sourced from. */
 export type PrimaryContactSource = 'org-owner' | 'org-member' | 'user' | 'self'

@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -21,7 +21,7 @@ export async function PUT(
       { status: 400 }
     )
 
-  const result = await workspace.provisioning.draft.update(
+  const result = await workspace.provisioning.replaceDraft(
     'finance',
     setupKey,
     body

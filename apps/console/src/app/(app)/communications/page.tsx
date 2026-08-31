@@ -1,8 +1,9 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type {
   AdminCommunicationCall,
   AdminCommunicationMessage,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
 import {
   DataTableSkeleton,
@@ -26,7 +27,6 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 import { formatDateTime } from '@/lib/format'
-import { $876 } from '@/lib/876'
 
 export const metadata = { title: 'Communications' }
 
@@ -114,8 +114,8 @@ export default async function CommunicationsPage({ searchParams }: Props) {
 async function CommunicationsTableData({ status }: { status: string }) {
   const statusFilter = status === 'all' ? undefined : status
   const [messagesResult, callsResult] = await Promise.all([
-    $876.messages.list({ limit: 50, status: statusFilter }),
-    $876.calls.list({ limit: 50, status: statusFilter }),
+    platform.messages.list({ limit: 50, status: statusFilter }),
+    platform.calls.list({ limit: 50, status: statusFilter }),
   ])
   if (messagesResult.error) throw new Error(messagesResult.error.message)
   if (callsResult.error) throw new Error(callsResult.error.message)

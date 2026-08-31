@@ -3,7 +3,7 @@ import type {
   AdminProvisioningDraftReplaceParams,
   AdminProvisioningManifestRevision,
   AdminProvisioningResource,
-} from '@876/admin'
+} from '@876/platform/compat'
 import type { IconComponent } from '@876/ui/icons'
 import {
   Building2,

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { AdminFeature } from '@876/admin'
+import type { AdminFeature } from '@876/platform/compat'
 import { buttonVariants } from '@876/ui/button'
 import { Switch } from '@876/ui/switch'
 import { toast } from 'sonner'

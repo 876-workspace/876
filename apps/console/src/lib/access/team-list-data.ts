@@ -1,8 +1,9 @@
+import { platform } from '@/lib/services/platform'
 import 'server-only'
+import { workspace } from '@/lib/services/workspace'
 
-import type { AdminEmployeeProfile } from '@876/admin'
+import type { AdminEmployeeProfile } from '@876/platform/compat'
 
-import { $876 } from '@/lib/876'
 import { service } from '@/lib/service'
 import type { TeamGrantStatus } from '@/lib/service/team/list'
 
@@ -37,7 +38,7 @@ async function loadStaffProfiles(
   organizationId: string
 ): Promise<StaffProfiles> {
   try {
-    const result = await $876.employees.admin.list(organizationId)
+    const result = await workspace.employees.list(organizationId)
     return {
       profiles: result.data?.data ?? [],
       unavailable: Boolean(result.error),
@@ -80,7 +81,7 @@ export async function loadTeamListData(
   const ids = grants.map((grant) => grant.userId)
   const identityPromise =
     ids.length > 0
-      ? $876.users.admin.list({ ids, limit: ids.length })
+      ? platform.users.list({ ids, limit: ids.length })
       : Promise.resolve(null)
 
   const [identityResult, staffProfiles] = await Promise.all([

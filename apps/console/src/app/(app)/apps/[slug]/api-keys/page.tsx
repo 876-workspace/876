@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { platform } from '@/lib/876'
+import { platform } from '@/lib/services/platform'
 import { resolveApp } from '../_data'
 import { ApiKeysTable } from './_components/api-keys-table'
 import { CreateApiKeyDialog } from './_components/create-api-key-dialog'

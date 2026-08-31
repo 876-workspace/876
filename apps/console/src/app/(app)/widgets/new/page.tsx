@@ -1,3 +1,5 @@
+import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import Link from 'next/link'
 import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
@@ -5,7 +7,6 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
-import { $876 } from '@/lib/876'
 
 import {
   RegisterWidgetFlagsForm,
@@ -54,8 +55,8 @@ export default function NewWidgetFlagsPage() {
 
 async function loadPendingWidgets(): Promise<PendingWidget[]> {
   const [featuresResult, appsResult] = await Promise.all([
-    $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
+    workspace.features.list({ limit: 100, includeTag: 'widget' }),
+    platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
   if (featuresResult.error) throw new Error(featuresResult.error.message)
   if (appsResult.error) throw new Error(appsResult.error.message)

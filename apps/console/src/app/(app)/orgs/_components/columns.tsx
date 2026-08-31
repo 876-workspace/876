@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import type { AdminOrganization, AdminSubscription } from '@876/admin'
+import type { AdminOrganization, AdminSubscription } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'

@@ -1,14 +1,14 @@
 'use client'
 
 import { createAuditEventMirror, createBrowserAnalytics } from '@876/analytics'
-import { create876Client } from '@876/client'
+import { create876AccountClient } from '@876/account'
 
 import { CONSUMER_APP_SLUG } from '@/lib/consumer-app'
 
 import { AnalyticsEvent, type AnalyticsEventName } from './events'
 
 const apiKey = resolvePublicApiKey()
-const auditClient = create876Client({
+const auditClient = create876AccountClient({
   apiKey,
   credentials: 'include',
 })

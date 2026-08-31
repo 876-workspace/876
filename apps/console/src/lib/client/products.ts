@@ -7,7 +7,7 @@ import type {
   AdminProductCreateParams,
   AdminProductModulesReplaceParams,
   AdminProductUpdateParams,
-} from '@876/admin'
+} from '@876/platform/compat'
 
 import { request } from './request'
 

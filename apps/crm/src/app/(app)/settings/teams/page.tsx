@@ -8,10 +8,11 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { get876Client } from '@/lib/876'
-import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import type { CrmTeamStatus } from '@/types/crm'
 import type { DirectoryMember } from '@/features/directory/types'
+import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
+import { getWorkspace } from '@/lib/services/workspace'
+import type { CrmTeamStatus } from '@/types/crm'
 
 import { TEAMS_SKELETON_COLUMNS } from './_components/teams-skeleton-columns'
 import type { TeamRow } from './_components/team-row'
@@ -19,24 +20,20 @@ import { TeamSplit } from './_components/team-split'
 import { TeamSplitSkeleton } from './_components/team-split-skeleton'
 
 export const metadata = { title: 'Teams - Settings' }
-
 const TEAM_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All teams' },
   { value: 'ACTIVE', label: 'Active' },
   { value: 'ARCHIVED', label: 'Archived' },
 ]
-
 function isTeamStatus(value: string | undefined): value is CrmTeamStatus {
   return value === 'ACTIVE' || value === 'ARCHIVED'
 }
-
 type Props = { searchParams: Promise<{ status?: string; team?: string }> }
 
 export default async function TeamsPage({ searchParams }: Props) {
   const { status, team } = await searchParams
   const selectedStatus = isTeamStatus(status) ? status : 'all'
   const selectedTeamId = team
-
   return (
     <Page>
       <ResourceToolbar
@@ -83,10 +80,10 @@ async function TeamsTableData({
   selectedTeamId?: string
 }) {
   const context = await requireCrmContext()
-  const $876 = await get876Client()
+  const workspace = await getWorkspace()
   const [teamsResult, membersResult] = await Promise.all([
-    $876.teams.list(context.orgId, { status, includeMembers: true }),
-    $876.organizationMembers.list(context.orgId),
+    crm.teams.list(context.orgId, { status, includeMembers: true }),
+    workspace.members.list(context.orgId),
   ])
   if (teamsResult.error) throw new Error(teamsResult.error.message)
 
@@ -101,11 +98,9 @@ async function TeamsTableData({
       avatar: member.avatar,
     })
   )
-
   const directory = new Map<string, DirectoryMember>(
     directoryList.map((member) => [member.userId, member])
   )
-
   const teams: TeamRow[] = teamsResult.data.data.map((team) => ({
     id: team.id,
     name: team.name,
@@ -127,7 +122,6 @@ async function TeamsTableData({
     createdAt: team.createdAt,
     updatedAt: team.updatedAt,
   }))
-
   return (
     <TeamSplit
       teams={teams}

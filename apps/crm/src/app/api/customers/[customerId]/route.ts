@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
+import { crm } from '@/lib/services/crm'
 
 type Context = { params: Promise<{ customerId: string }> }
 
@@ -20,10 +20,8 @@ export async function GET(_request: NextRequest, route: Context) {
       { status: 401 }
     )
 
-  const $876 = await get876Client()
-
   const { customerId } = await route.params
-  const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
+  const result = await crm.customers.retrieve(context.orgId, customerId)
   return Response.json(result, {
     status: result.error ? statusFor(result.error.code) : 200,
   })
@@ -41,10 +39,8 @@ export async function PATCH(request: NextRequest, route: Context) {
     )
 
   const { customerId } = await route.params
-  const $876 = await get876Client()
-
   const input = await request.json().catch(() => null)
-  const result = await $876.customerProfiles.update(
+  const result = await crm.customers.update(
     context.orgId,
     customerId,
     input as never
@@ -66,12 +62,10 @@ export async function DELETE(request: NextRequest, route: Context) {
     )
 
   const { customerId } = await route.params
-  const $876 = await get876Client()
-
   const input = (await request.json().catch(() => ({}))) as {
     reason?: string | null
   }
-  const result = await $876.customerProfiles.delete(context.orgId, customerId, {
+  const result = await crm.customers.delete(context.orgId, customerId, {
     deletedBy: context.userId,
     reason: input.reason ?? null,
   })

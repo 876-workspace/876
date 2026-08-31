@@ -2,7 +2,7 @@ import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { redirect } from 'next/navigation'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { ItemForm } from '../_components/item-form'
 
 export const metadata = { title: 'New Item' }

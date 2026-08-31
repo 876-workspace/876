@@ -1,8 +1,8 @@
+import { widgetsService } from '@/lib/services/widgets'
 import { apiError, apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 
 import { requireNotepadMember } from '@/lib/widgets-auth'
-import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -10,7 +10,7 @@ export async function GET() {
   const access = await requireNotepadMember()
   if (access.response) return access.response
 
-  const result = await $876.collections.list({ userId: access.userId })
+  const result = await widgetsService.collections.list({ userId: access.userId })
   if (result.error)
     return apiError(result.error.message, {
       status: 502,
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.collections.create(
+  const result = await widgetsService.collections.create(
     { userId: access.userId },
     {
       name: typeof record.name === 'string' ? record.name : '',

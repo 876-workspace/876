@@ -8,8 +8,7 @@ import type {
   CrmRequestSubcategory,
   CrmRequestSubcategoryCreateInput,
   CrmRequestSubcategoryUpdateInput,
-} from '@876/client'
-
+} from '@/types/crm'
 import { request } from './request'
 
 export type RequestCategoryCreateInput = Omit<
@@ -20,7 +19,6 @@ export type RequestSubcategoryCreateInput = Omit<
   CrmRequestSubcategoryCreateInput,
   'createdBy'
 >
-
 function categoryPath(categoryId: string): string {
   return `/api/request-categories/${encodeURIComponent(categoryId)}`
 }
@@ -44,15 +42,14 @@ export const requestCategories = {
     })
   },
   delete(categoryId: string, reason?: string) {
-    return request<{
-      object: 'request_category'
-      id: string
-      deleted: true
-    }>(categoryPath(categoryId), {
-      method: 'DELETE',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ reason }),
-    })
+    return request<{ object: 'request_category'; id: string; deleted: true }>(
+      categoryPath(categoryId),
+      {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      }
+    )
   },
   subcategories: {
     create(categoryId: string, params: RequestSubcategoryCreateInput) {

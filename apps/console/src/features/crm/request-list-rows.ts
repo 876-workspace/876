@@ -2,7 +2,7 @@ import { resolveCustomerIdentity } from './customer-identity'
 import type { RequestListRow } from './components/requests-list'
 import type { CrmRequest, DirectoryMember, RequestDepartment } from './types'
 
-/** One entry of `$876.customerProfiles.list()`. */
+/** One entry of `crm.customers.list()`. */
 type CustomerProfileEntry = {
   profile: { id: string; billingCustomerId: string }
   customer: Parameters<typeof resolveCustomerIdentity>[0]

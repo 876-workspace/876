@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 import { Badge } from '@876/ui/badge'
-import { platform } from '@/lib/876'
+import { platform } from '@/lib/services/platform'
 
 export const metadata = { title: 'Sign-ins' }
 export default async function SignInsPage() {

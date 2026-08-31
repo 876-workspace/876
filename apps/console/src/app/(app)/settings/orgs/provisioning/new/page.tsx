@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { workspace } from '@/lib/876'
 import { CreateSetupForm } from './_components/create-setup-form'
 
 export const metadata = { title: 'New provisioning setup' }

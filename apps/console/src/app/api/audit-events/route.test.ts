@@ -11,8 +11,8 @@ vi.mock('@/lib/auth/session', () => ({
   isSignedSession: mocks.isSignedSession,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: { auditEvents: { create: mocks.createAuditEvent } },
+vi.mock('@/lib/services/platform', () => ({
+  platform: { auditEvents: { create: mocks.createAuditEvent } },
 }))
 
 import { POST } from './route'

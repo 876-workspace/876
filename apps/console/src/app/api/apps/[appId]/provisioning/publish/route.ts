@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -10,7 +10,7 @@ export async function POST(_request: Request, context: Context) {
   const { response } = await requireConsolePermission('console:apps')
   if (response) return response
   const { appId } = await context.params
-  const result = await workspace.provisioning.draft.publish(
+  const result = await workspace.provisioning.publish(
     'application',
     appId
   )

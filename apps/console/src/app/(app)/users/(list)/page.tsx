@@ -1,5 +1,6 @@
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
-import type { AdminUser, AdminUserApp } from '@876/admin'
+import type { AdminUser, AdminUserApp } from '@876/platform/compat'
 import { Users } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
@@ -12,7 +13,6 @@ import {
   EmptyDescription,
 } from '@876/ui/empty'
 
-import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isUserStatus } from '@/lib/user-status'
@@ -68,7 +68,7 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
   let hasMore = false
 
   if (isSearching) {
-    const result = await $876.users.admin.search({
+    const result = await platform.users.search({
       query: q!,
       limit: 50,
       status: userStatus,
@@ -76,7 +76,7 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
     if (result.error) throw new Error(result.error.message)
     users = result.data.data
   } else {
-    const result = await $876.users.admin.list({
+    const result = await platform.users.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,
@@ -89,9 +89,7 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
 
   const enrollmentsMap: Record<string, AdminUserApp[]> = {}
   if (users.length > 0) {
-    const result = await $876.users.admin.listAppsByUsers(
-      users.map((u) => u.id)
-    )
+    const result = await platform.users.listAppsByUsers(users.map((u) => u.id))
     if (!result.error && result.data) {
       for (const group of result.data.data) {
         enrollmentsMap[group.user_id] = group.data ?? []

@@ -7,8 +7,7 @@ import type {
   CrmRequestNoteCreateInput,
   CrmRequestNoteList,
   CrmRequestUpdateInput,
-} from '@876/client'
-
+} from '@/types/crm'
 import { request } from './request'
 
 export type RequestCreateInput = Omit<CrmRequestCreateInput, 'createdBy'>
@@ -74,9 +73,7 @@ export const requestNotes = {
   delete(requestId: string, noteId: string) {
     return request<{ object: 'request_note'; id: string; deleted: true }>(
       `/api/requests/${encodeURIComponent(requestId)}/notes/${encodeURIComponent(noteId)}`,
-      {
-        method: 'DELETE',
-      }
+      { method: 'DELETE' }
     )
   },
 }

@@ -4,33 +4,26 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import type { DirectoryMember } from '@/features/directory/types'
-import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
+import { getWorkspace } from '@/lib/services/workspace'
 
 export const loadCrmContext = cache(requireCrmContext)
-
-/**
- * A CRM team. `request.teamId` references `crm.Team`, not a platform
- * organization department — the two are different records with different ids,
- * so a department id sent as `teamId` fails the API's `teamExists` check.
- */
 export type RequestTeam = { id: string; name: string; color: string | null }
 
 export const loadRequest = cache(async (requestId: string) => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requests.retrieve(context.orgId, requestId)
+  const result = await crm.requests.retrieve(context.orgId, requestId)
   if (result.error?.code === 'crm/request-not-found') notFound()
-
   return { context, request: result.data, error: result.error }
 })
 
 export const loadDirectory = cache(async () => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
+  const workspace = await getWorkspace()
   const [teamsResult, membersResult] = await Promise.all([
-    $876.teams.list(context.orgId, { status: 'ACTIVE' }),
-    $876.organizationMembers.list(context.orgId),
+    crm.teams.list(context.orgId, { status: 'ACTIVE' }),
+    workspace.members.list(context.orgId),
   ])
   const teams: RequestTeam[] =
     teamsResult.data?.data.map((team) => ({
@@ -39,18 +32,19 @@ export const loadDirectory = cache(async () => {
       color: team.color,
     })) ?? []
   const members: DirectoryMember[] =
-    membersResult.data?.data.map((m) => {
-      const nameParts = [m.first_name, m.last_name].filter(Boolean)
+    membersResult.data?.data.map((member) => {
+      const nameParts = [member.first_name, member.last_name].filter(Boolean)
       const name =
-        nameParts.length > 0 ? nameParts.join(' ') : (m.email ?? m.user_id)
+        nameParts.length > 0
+          ? nameParts.join(' ')
+          : (member.email ?? member.user_id)
       return {
-        userId: m.user_id,
+        userId: member.user_id,
         name,
-        email: m.email,
-        avatar: m.avatar,
+        email: member.email,
+        avatar: member.avatar,
       }
     }) ?? []
-
   return {
     teams,
     members,
@@ -61,9 +55,7 @@ export const loadDirectory = cache(async () => {
 
 export const loadCategoryIndex = cache(async () => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requestCategories.list(context.orgId)
-
+  const result = await crm.requestCategories.list(context.orgId)
   return {
     categories: new Map(
       (result.data?.data ?? []).map((category) => [category.id, category])
@@ -74,17 +66,13 @@ export const loadCategoryIndex = cache(async () => {
 
 export const loadPriorities = cache(async () => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requestPriorities.list(context.orgId)
-
+  const result = await crm.requestPriorities.list(context.orgId)
   return { priorities: result.data?.data ?? [], error: result.error }
 })
 
 export const loadCustomer = cache(async (customerId: string) => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
-
+  const result = await crm.customers.retrieve(context.orgId, customerId)
   return {
     profile: result.data?.profile,
     customer: result.data?.customer,
@@ -94,34 +82,26 @@ export const loadCustomer = cache(async (customerId: string) => {
 
 export const loadNotes = cache(async (requestId: string) => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requestNotes.list(context.orgId, requestId, {
+  const result = await crm.requestNotes.list(context.orgId, requestId, {
     viewerId: context.userId,
   })
-
   return { notes: result.data?.data ?? [], error: result.error }
 })
 
 export const loadTasks = cache(async (requestId: string) => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requestTasks.list(context.orgId, requestId)
-
+  const result = await crm.requestTasks.list(context.orgId, requestId)
   return { tasks: result.data?.data ?? [], error: result.error }
 })
 
 export const loadReminders = cache(async (requestId: string) => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requestReminders.list(context.orgId, requestId)
-
+  const result = await crm.requestReminders.list(context.orgId, requestId)
   return { reminders: result.data?.data ?? [], error: result.error }
 })
 
 export const loadEvents = cache(async (requestId: string) => {
   const context = await loadCrmContext()
-  const $876 = await get876Client()
-  const result = await $876.requestEvents.list(context.orgId, requestId)
-
+  const result = await crm.requestEvents.list(context.orgId, requestId)
   return { events: result.data?.data ?? [], error: result.error }
 })

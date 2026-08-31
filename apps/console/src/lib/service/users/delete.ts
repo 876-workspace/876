@@ -1,6 +1,6 @@
-import type { AdminDeletedUser } from '@876/admin'
+import { platform } from '@/lib/services/platform'
+import type { AdminDeletedUser } from '@876/platform/compat'
 
-import { $876 } from '@/lib/876'
 import type { Access } from '@/types/auth'
 import type { ServiceResult } from '@/types/api'
 
@@ -11,7 +11,7 @@ export async function deleteUser(
   id: string,
   caller: Access
 ): ServiceResult<AdminDeletedUser> {
-  const { data, error } = await $876.users.admin.delete(id, {
+  const { data, error } = await platform.users.delete(id, {
     deletedBy: caller.id,
   })
   if (error || !data) return err(error?.message ?? 'Failed to delete user.')

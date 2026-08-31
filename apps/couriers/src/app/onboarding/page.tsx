@@ -3,7 +3,7 @@ import Link from 'next/link'
 import * as Sentry from '@sentry/nextjs'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireValidSession } from '@/lib/auth/guards'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'

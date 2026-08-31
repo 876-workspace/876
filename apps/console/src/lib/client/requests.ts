@@ -1,12 +1,12 @@
-import type { Console876Client } from '@/lib/876'
+import type { CrmOperatorClient } from '@876/crm/operator'
 
 import { request } from './request'
 
-type RequestsResource = Console876Client['requests']
-type RequestTasksResource = Console876Client['requestTasks']
-type RequestRemindersResource = Console876Client['requestReminders']
-type RequestEventsResource = Console876Client['requestEvents']
-type RequestNotesResource = Console876Client['requestNotes']
+type RequestsResource = CrmOperatorClient['requests']
+type RequestTasksResource = CrmOperatorClient['requestTasks']
+type RequestRemindersResource = CrmOperatorClient['requestReminders']
+type RequestEventsResource = CrmOperatorClient['requestEvents']
+type RequestNotesResource = CrmOperatorClient['requestNotes']
 type CreateRequestInput = Parameters<RequestsResource['create']>[1]
 type UpdateRequestInput = Parameters<RequestsResource['update']>[2]
 type DeleteInput = Parameters<RequestsResource['delete']>[2]

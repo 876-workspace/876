@@ -1,7 +1,7 @@
 # Data Fetching Boundaries
 
-Read `.agents/rules/data-loading.md` before adding or changing any page that
-renders live data. Read `.agents/rules/error-handling.md` before handling a
+Read `.claude/rules/data-loading.md` before adding or changing any page that
+renders live data. Read `.claude/rules/error-handling.md` before handling a
 failed service/SDK result. Data ownership and data loading are separate concerns:
 this file defines **where data comes from**; `data-loading.md` defines **how pages
 wait for it without blocking the UI**.
@@ -13,18 +13,18 @@ not** contain raw service fetches or direct DB/provider access.
 
 ## Correct pattern
 
-| App                              | Package / facade | Auth method                                              |
-| -------------------------------- | ---------------- | -------------------------------------------------------- |
-| `@876/app` (consumer/enterprise) | `@876/sdk`       | Session cookie / OAuth                                   |
-| `@876/console`                   | `$876`           | Internal service credentials, server-only                |
-| `@876/billing-app`               | `$876` / billing | OAuth/session through its authenticated application path |
+| Host                      | Bounded roots                                                                       | Authority                          |
+| ------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------- |
+| `@876/app`                | `$876` from `@876/account`                                                          | signed-in account / app credential |
+| organization product apps | `$876`, `workspace`, and only the product roots they need                           | session or first-party service     |
+| `@876/console`            | `platform`, `workspace`, `billing`, `couriers`, `crm`, `storage`, `widgets`, `work` | operator credentials, server-only  |
 
 ### Console server component example
 
 ```tsx
 import { Suspense } from 'react'
 import { AppError } from '@876/ui/app-error'
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/services/platform'
 
 export default function UsersPage() {
   return (
@@ -38,7 +38,7 @@ export default function UsersPage() {
 }
 
 async function UsersTableData() {
-  const result = await $876.users.admin.list({ limit: 25 })
+  const result = await platform.users.list({ limit: 25 })
   const rows = result.data?.data ?? []
 
   return (
@@ -73,26 +73,27 @@ it is a Server Component.
 ### Consumer app example
 
 ```ts
-import { create876Client } from '@876/sdk'
-// SDK handles auth transport; session/cookies stay in the app.
+import { create876AccountClient } from '@876/account'
+// Account handles auth transport; session/cookies stay in the app.
 ```
 
 ## What goes where
 
 - **HTTP data services** — SQL queries, provider calls, credential validation,
   business rules, batching and joins owned by that service.
-- **`@876/admin` / composed `$876` admin projections** — typed internal clients
-  for Console and other trusted server surfaces.
-- **`@876/sdk`** — typed platform client for consumer/enterprise/session-tier
-  resources.
-- **`@876/billing`** — typed Billing resources and integrations.
+- **`@876/account`** — Account auth and current-user resources.
+- **`@876/workspace/session` / `@876/workspace/operator`** — organization-plane
+  access at the named caller authority.
+- **`@876/platform/operator`** — genuinely platform-wide operator resources.
+- **Product authority entrypoints** — typed product resources for the named
+  `session`, `service`, `operator`, or `integration` caller.
 - **Next.js apps** — rendering, routing, UX state, Suspense boundaries and
   request composition; no direct database/provider business logic.
 
 ## Never do this in a Next.js app
 
 ```ts
-// ❌ Raw service fetch with an internal key — use the typed facade.
+// ❌ Raw service fetch with an internal key — use the owning typed client.
 const res = await fetch(`${process.env.API_URL}/users`, {
   headers: { 'x-internal-key': process.env.API_INTERNAL_KEY },
 })
@@ -102,7 +103,7 @@ import { db } from '@876/db'
 
 // ❌ Blocking otherwise-renderable page chrome on live data.
 export default async function Page() {
-  const result = await $876.users.admin.list({ limit: 25 })
+  const result = await platform.users.list({ limit: 25 })
   return <UsersPage data={result.data?.data ?? []} />
 }
 
@@ -113,13 +114,13 @@ if (result.error) throw new Error(result.error.message)
 ## Adding new API operations
 
 1. Add the operation to its owning Express data-service module.
-2. Add the typed method to `@876/admin`, `@876/sdk`, `@876/billing`, or the
-   owning package.
-3. Expose it through the app's canonical `$876` facade when the resource belongs
-   on that app surface.
-4. Call through the typed facade in the Next.js app — never fetch the service
+2. Add the typed method to the owning bounded package at the entrypoint for the
+   actual caller principal.
+3. Add or update the host's domain module under `src/lib/services/`; do not add
+   an aggregator.
+4. Call the named bounded root in the Next.js app — never fetch the service
    directly.
 5. For page-sized enrichment, add a **batch/purpose-built operation** rather than
    issuing one HTTP request per row.
 6. Preserve expected errors as values and render them at the smallest useful UI
-   scope per `.agents/rules/error-handling.md`.
+   scope per `.claude/rules/error-handling.md`.

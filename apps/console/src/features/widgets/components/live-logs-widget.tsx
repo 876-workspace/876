@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useMemo, useState } from 'react'
 import Link from 'next/link'
-import type { AdminAuditEvent } from '@876/admin'
+import type { AdminAuditEvent } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'

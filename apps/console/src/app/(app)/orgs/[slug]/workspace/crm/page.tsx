@@ -1,18 +1,19 @@
+import { AppError } from '@876/ui/app-error'
+import { ClipboardList, Clock, Users } from '@876/ui/icons'
+import { Skeleton } from '@876/ui/skeleton'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { AppError } from '@876/ui/app-error'
-import { ClipboardList, Clock, Users } from '@876/ui/icons'
-import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
 import { StatTile } from '@/components/patterns/detail/stat-tile'
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
 import { RequestsList } from '@/features/crm/components/requests-list'
 import { loadRequestRowContext } from '@/features/crm/request-data'
 import { toRequestListRows } from '@/features/crm/request-list-rows'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { crm } from '@/lib/services/crm'
+
 import { resolveOrg } from '../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -46,8 +47,8 @@ async function OverviewData({ slug }: { slug: string }) {
   if (!org) notFound()
 
   const [requestsResult, customersResult] = await Promise.all([
-    $876.requests.list(org.id),
-    $876.customerProfiles.list(org.id),
+    crm.requests.list(org.id),
+    crm.customers.list(org.id),
   ])
 
   if (

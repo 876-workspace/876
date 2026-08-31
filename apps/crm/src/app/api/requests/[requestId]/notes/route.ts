@@ -1,32 +1,29 @@
 import type { NextRequest } from 'next/server'
 
-import { get876Client } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
 import { canCreatePrivateRequestNote } from '@/lib/auth/roles'
+import { crm } from '@/lib/services/crm'
 
 type Context = { params: Promise<{ requestId: string }> }
-
 function statusFor(code: string | undefined) {
   if (code === 'crm/request-not-found') return 404
   return 400
 }
+function unauthorized() {
+  return Response.json(
+    {
+      data: null,
+      error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
+    },
+    { status: 401 }
+  )
+}
 
 export async function GET(_request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
-  if (!context) {
-    return Response.json(
-      {
-        data: null,
-        error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
-      },
-      { status: 401 }
-    )
-  }
-
-  const $876 = await get876Client()
-
+  if (!context) return unauthorized()
   const { requestId } = await route.params
-  const result = await $876.requestNotes.list(context.orgId, requestId, {
+  const result = await crm.requestNotes.list(context.orgId, requestId, {
     viewerId: context.userId,
   })
   return Response.json(result, {
@@ -36,25 +33,13 @@ export async function GET(_request: NextRequest, route: Context) {
 
 export async function POST(request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
-  if (!context) {
-    return Response.json(
-      {
-        data: null,
-        error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
-      },
-      { status: 401 }
-    )
-  }
-
-  const $876 = await get876Client()
-
+  if (!context) return unauthorized()
   const { requestId } = await route.params
   const input = (await request.json().catch(() => null)) as {
     body?: string
     visibility?: 'PUBLIC' | 'INTERNAL' | 'PRIVATE'
   } | null
-
-  if (!input?.body?.trim()) {
+  if (!input?.body?.trim())
     return Response.json(
       {
         data: null,
@@ -65,12 +50,10 @@ export async function POST(request: NextRequest, route: Context) {
       },
       { status: 400 }
     )
-  }
-
   if (
     input.visibility === 'PRIVATE' &&
     !canCreatePrivateRequestNote(context.role)
-  ) {
+  )
     return Response.json(
       {
         data: null,
@@ -81,14 +64,11 @@ export async function POST(request: NextRequest, route: Context) {
       },
       { status: 403 }
     )
-  }
-
-  const result = await $876.requestNotes.create(context.orgId, requestId, {
+  const result = await crm.requestNotes.create(context.orgId, requestId, {
     body: input.body.trim(),
     authorId: context.userId,
     visibility: input.visibility ?? 'INTERNAL',
   })
-
   return Response.json(result, {
     status: result.error ? statusFor(result.error.code) : 201,
   })

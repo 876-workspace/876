@@ -2,10 +2,10 @@ import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toTeamMemberView } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import type {
   PendingTeamInvite,
   TeamMemberRow,
@@ -90,7 +90,7 @@ async function UsersSettingsData({ params, searchParams }: Props) {
     )
 
   const platform = await getPlatformClient()
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const [membersResult, roleViews, invitesResult] = await Promise.all([
     $876.memberships.list({ status }),
     listTeamRoles(ctx.tenant.id),

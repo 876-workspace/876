@@ -1,0 +1,73 @@
+{
+  "name": "@876/account",
+  "version": "0.1.0",
+  "description": "Typed client and contracts for the 876 Account identity plane.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": false,
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./internal": {
+      "types": "./src/internal.ts",
+      "default": "./src/internal.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
+    },
+    "./compat": {
+      "types": "./src/compat.ts",
+      "default": "./src/compat.ts"
+    },
+    "./oauth": {
+      "types": "./src/oauth.ts",
+      "default": "./src/oauth.ts"
+    },
+    "./errors": {
+      "types": "./src/errors.ts",
+      "default": "./src/errors.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "clean": "node --eval \"fs.rmSync('dist', { recursive: true, force: true })\"",
+    "prebuild": "pnpm clean",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@876/core": "workspace:*",
+    "@876/device": "workspace:*",
+    "@876/types": "workspace:*",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "10.0.1",
+    "eslint": "9.39.4",
+    "prettier": "3.9.6",
+    "publint": "0.3.24",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "4.1.11"
+  }
+}

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
-import type { AdminAddress, AdminUser } from '@876/admin'
+import type { AdminAddress, AdminUser } from '@876/platform/compat'
 
 import { resolveUser, resolveUserAddresses } from '../../_data'
 import {

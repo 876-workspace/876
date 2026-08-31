@@ -10,7 +10,7 @@ import {
   toAddressCreateBody,
   toAddressView,
 } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import { addressCreateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.addresses.create(toAddressCreateBody(parsed.data))
   if (result.error)
     return apiJson(

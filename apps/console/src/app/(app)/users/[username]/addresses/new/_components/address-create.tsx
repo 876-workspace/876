@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminUser } from '@876/admin'
+import type { AdminUser } from '@876/platform/compat'
 import { client } from '@/lib/client'
 import { AddressForm } from '@/app/(app)/users/[username]/addresses/_components/address-form'
 import {

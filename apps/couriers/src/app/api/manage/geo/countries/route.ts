@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 
 export const runtime = 'nodejs'
 

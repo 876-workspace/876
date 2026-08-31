@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { OrganizationSelfUpdateParams } from '@876/sdk'
+import type { OrganizationSelfUpdateParams } from '@876/account/compat'
 
-import { get876ServerClient } from '@/lib/876/server'
+import { getWorkspace } from '@/lib/services/workspace'
 import { findActiveOrgMembership, hasOrgPermission } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -88,7 +88,7 @@ export async function PATCH(
     }
   }
 
-  const client = await get876ServerClient()
+  const client = await getWorkspace()
   const { data, error } = await client.organizations.update(
     membership.organization.id,
     updates

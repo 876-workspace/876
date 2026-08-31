@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import type { AdminApp, AdminFeature } from '@876/admin'
+import type { AdminApp, AdminFeature } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'

@@ -13,7 +13,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **`@876/console`** — the internal 876 admin console used to manage and support the whole platform (users, orgs, roles/permissions, settings). Privileged; invite-only embedded sign-in.
 - **`@876/api`** — the Express core that owns all DB/provider access and business logic, including the OAuth Authorization Server (`/oauth`, dormant — reserved for future third-party "Sign in with 876").
 
-Future apps (e.g. an "876 Eats" ordering app, an "876 Commerce" storefront platform, native/mobile clients) consume 876 for login and account data through the same client surface, adding their own API services and SDK packages. **All clients use the standardized `$876.<resource>.<verb>()` surface, tiered by API auth so admin-only operations never reach consumer apps.** See `.claude/rules/sdk-conventions.md` — read it before changing any client/data-access code.
+Future apps consume `$876` for 876 Account concerns and explicit bounded roots
+for Workspace, Platform, and product resources. **`$876` never contains product
+resources. Caller authority is selected by the package entrypoint: `session`,
+`service`, `operator`, or `integration`.** See
+`.claude/rules/sdk-conventions.md` before changing client/data-access code.
 
 ## Package Manager
 
@@ -31,12 +35,16 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ### Shared packages
 
-| Package      | Path             | Role                                                                                                                                                                                         |
-| ------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@876/sdk`   | `packages/sdk`   | Consumer/first-party client (`$876`). App-API-key/session tier; browser + server. Auth, OAuth, and self-scoped (non-`AdminDep`) resources. No session or DB access.                          |
-| `@876/admin` | `packages/admin` | Privileged platform-admin client (`$876`). Internal-key tier, server-only. All `AdminDep` CRUD/list/search across users, orgs, memberships, roles, features, apps.                           |
-| `@876/core`  | `packages/core`  | Errors, ID generation, timestamps, shared utilities.                                                                                                                                         |
-| `@876/ui`    | `packages/ui`    | shadcn/ui primitives (Base UI + Tailwind v4) + shared design tokens/auth CSS. Subpath imports only. Embeddable auth UI lives at `@876/ui/auth` (presentation + flow only; no session state). |
+| Package          | Path                 | Role                                                                                                                                                                                         |
+| ---------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@876/account`   | `packages/account`   | 876 Account client (`$876`): auth, current user, sessions, OAuth grants, and mobile numbers. No product resources.                                                                           |
+| `@876/workspace` | `packages/workspace` | Organization/B2B Core API projection with explicit `session` and `operator` entrypoints.                                                                                                     |
+| `@876/platform`  | `packages/platform`  | Server-only 876 operator-plane Core API projection.                                                                                                                                          |
+| product SDKs     | `packages/<product>` | Explicit bounded roots such as `crm`, `work`, `billing`, `storage`, `couriers`, and `widgets`, with caller-named entrypoints where supported.                                                |
+| `@876/sdk`       | `packages/sdk`       | Temporary compatibility shim over `@876/account`; do not add methods.                                                                                                                        |
+| `@876/admin`     | `packages/admin`     | Temporary compatibility shim over `@876/platform`; do not add methods.                                                                                                                       |
+| `@876/core`      | `packages/core`      | Errors, ID generation, timestamps, shared utilities.                                                                                                                                         |
+| `@876/ui`        | `packages/ui`        | shadcn/ui primitives (Base UI + Tailwind v4) + shared design tokens/auth CSS. Subpath imports only. Embeddable auth UI lives at `@876/ui/auth` (presentation + flow only; no session state). |
 
 ## Cloudflare Deployment
 
@@ -87,12 +95,13 @@ See `.claude/rules/express-api.md` for the module shape and layer rules, and
 
 Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) and are mirrored into:
 
-| Mirror           | Audience                                      | Notes                                                                                                                                                                              |
-| ---------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.agents/rules/` | Codex, `agy`, Gemini, other non-Claude agents | Full mirror (includes `cli.md`). Relative links use `.agents/rules/`.                                                                                                              |
-| `.grok/rules/`   | Grok                                          | Same shared rules **except `cli.md`** (never present). Grok-only extras: `00-grok.md`, `agents.md`, `advisor.md` (and `.grok/skills/advisor/`). Relative links use `.grok/rules/`. |
+| Mirror           | Audience                                      | Notes                                      |
+| ---------------- | --------------------------------------------- | ------------------------------------------ |
+| `.agents/rules/` | Codex, `agy`, Gemini, other non-Claude agents | Byte-identical mirror, including `cli.md`. |
 
-**When you edit a shared rule, update all three trees** (or run a sync pass) — do not let them drift. Do **not** copy `cli.md` into `.grok/rules/` (Grok must never read that file). Do **not** copy `advisor.md` into `.claude/rules/` or `.agents/rules/` — advisor is Grok-only. See `.claude/rules/implementation-tracker.md` for tracking multi-file work.
+**When you edit a shared rule, update both trees** and keep matching files
+byte-identical. `.grok/rules/` no longer exists; do not recreate it. See
+`.claude/rules/implementation-tracker.md` for tracking multi-file work.
 
 `.claude/rules/performance.md` is a short index; it links out to eight category files (`performance-waterfalls.md`, `performance-bundle-size.md`, `performance-server-side.md`, `performance-client-fetching.md`, `performance-rerender.md`, `performance-rendering.md`, `performance-js.md`, `performance-advanced.md`). Open only the categories relevant to the change, not the whole set.
 
@@ -110,9 +119,9 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 - Read `.claude/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.claude/rules/api-access.md` before writing any data-fetching code in `apps/876` or `apps/console`.
 - Read `.claude/rules/access-control.md` before changing permissions, roles, access context, navigation gating, route guards, or any authorization decision in any app. It is the platform standard every product app follows.
-- Read `.claude/rules/access-tiers.md` before making one 876 surface reach data owned by another (Console reading a product app, an app reading Core, anything a third party could also call). It fixes the operator/integration/session tiers and the rule that a capability is implemented once and merely routed again.
-- Read `.claude/rules/app-api-routing.md` before adding or moving any `src/app/api/` route in a Next.js app. Every app is a full-stack Next app from the browser's side; the `$876` facade is its server half, not a competitor.
-- Read `.claude/rules/sdk-conventions.md` before adding or changing any client/data-access method in `@876/sdk`, `@876/admin`, or app data-fetching code (covers the `$876.<resource>.<verb>()` surface, client tiers, and the auth-tier gating rule).
+- Read `.claude/rules/access-tiers.md` before making one 876 surface reach data owned by another. It fixes the operator/service/integration/session tiers and the rule that a capability is implemented once and merely routed again.
+- Read `.claude/rules/app-api-routing.md` before adding or moving any `src/app/api/` route in a Next.js app. Every app is a full-stack Next app from the browser's side; bounded clients are its server half.
+- Read `.claude/rules/sdk-conventions.md` before adding or changing any Account, Workspace, Platform, product SDK, or app data-access method (covers bounded roots, caller entrypoints, and client lifetime).
 - Read `.claude/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).
 - Read `.claude/rules/module-settings.md` before adding, storing, reading, or rendering any organization-level setting or preference in any SaaS app (the provisioning/modules/preferences layering, the `@876/settings` contract, app-local storage, defaults-are-never-stored, RSC-serializable settings nav). A module is org-controlled usage; a feature flag is platform-controlled rollout — do not confuse them.
 - Read `.claude/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
@@ -136,11 +145,11 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 ## Boundaries
 
 - **Core identity & shared-platform data, provider calls, and platform business logic belong in `apps/api` (Express).** Next.js apps must not contain raw `fetch` calls to the API or any direct access to identity/platform data or providers.
-- **App-local operational data may use the app's own datastore.** An app that owns a bounded context (e.g. Console's admin-internal state) may run its own database — Console uses an in-app Prisma 7 datastore (`apps/console/prisma/`) — provided it (1) never stores or duplicates identity/platform tables, (2) references core 876 entities by **opaque ID only** (no cross-DB foreign keys), resolving identity details through `$876`, and (3) stays server-only. This is a deliberate, scoped exception to the rule above; see `.claude/rules/platform-services.md`.
-- `@876/app` and `@876/console` fetch data exclusively through `@876/sdk` (consumer/auth) or `@876/admin` (Console server components).
-- **No server actions.** Client-initiated mutations go through a thin pure-transport route handler (`app/api/...`) that authorizes and calls `$876`, invoked via the app's typed browser client (`client` from `@/lib/client`). Route handlers contain no business logic. See `.claude/rules/api-access.md` and `.claude/rules/sdk-conventions.md`.
-- `@876/admin` server-side calls authenticate with a **secret service key** (`API_876_SERVICE_KEY`; legacy alias `API_INTERNAL_KEY`). It is the `sk_`-tier credential for privileged platform mutations and must never reach the browser — the Console route handlers exist precisely to keep it server-side. An exposable/publishable key must never carry admin scope. See `.claude/rules/platform-services.md` for the key tiers and hardening.
-- `@876/sdk` is request-only auth/OAuth transport; apps own cookies, session stores, and navigation.
+- **App-local operational data may use the app's own datastore.** An app that owns a bounded context (e.g. Console's admin-internal state) may run its own database — Console uses an in-app Prisma 7 datastore (`apps/console/prisma/`) — provided it (1) never stores or duplicates identity/platform tables, (2) references core 876 entities by **opaque ID only** (no cross-DB foreign keys), resolving identity details through the appropriate Account, Workspace, or Platform client, and (3) stays server-only. This is a deliberate, scoped exception to the rule above; see `.claude/rules/platform-services.md`.
+- Next.js apps fetch service data through host-owned modules under `src/lib/services/`, using only the Account, Workspace, Platform, and product clients they need. There is no ecosystem aggregator.
+- **No server actions.** Client-initiated mutations go through a thin pure-transport route handler (`app/api/...`) that authorizes and calls the owning bounded client, invoked via the app's typed browser client (`client` from `@/lib/client`). Route handlers contain no business logic. See `.claude/rules/api-access.md` and `.claude/rules/sdk-conventions.md`.
+- Operator entrypoints authenticate with server-only internal credentials that must never reach the browser. An exposable/publishable key must never carry operator scope. See `.claude/rules/platform-services.md` for key handling and hardening.
+- `@876/account` is request-only auth/Account transport; apps own cookies, session stores, and navigation.
 - `@876/ui/auth` (the auth UI subpath of `@876/ui`) is presentation and flow logic only; do not add session state there.
 - Console-only logic stays under `apps/console/src/lib/` and must not be imported by consumer/org code.
 - App-owned timestamps are Unix seconds in DB/API/SDK/client contracts.
@@ -196,41 +205,41 @@ schema. See `.claude/rules/express-api.md`.
 | provisioning  | `/provisioning`  | admin                                                                |
 | health        | `/health`        | Public                                                               |
 
-The tier names are the Express guards. `AdminDep` in the SDK rules below is the
-same tier under its FastAPI name — the auth-tier gating rule for `@876/sdk` vs
-`@876/admin` is unchanged by the port.
+The Express guards enforce caller authority. Client imports make the intended
+principal visible (`session`, `service`, `operator`, or `integration`) but do
+not replace backend authorization.
 
 `requireApiKey` protects every protected route and validates `876_app_secret_*` API keys. `requireAdmin` requires the `x-internal-key` header to match `API_INTERNAL_KEY`; when that key is empty, admin routes reject every request. Tiers stack rather than replace: `session` = apiKey + session, `admin` = apiKey + admin. Guards attach **per route**, never with `router.use`, so an unknown path still 404s instead of 401ing. Prisma models live in `prisma/schema/`; only a `*.repository.ts` may query them. See `.claude/rules/express-api.md`.
 
 ## Data Fetching Pattern
 
-Each app initializes its client once and exports it as `$876` (Prisma-style singleton), then calls `$876.<resource>.<verb>()` directly. Do not add bespoke flat wrappers (`listUsers()`, etc.).
+Each app composes only the bounded roots it needs under `src/lib/services/`.
+`$876` is the 876 Account root only. Product resources use explicit roots such
+as `crm.requests.list()` or `billing.invoices.create()`; Workspace and Platform
+use their own roots. Do not add bespoke flat wrappers or a replacement
+aggregator.
 
-Console's admin client lives at `apps/console/src/lib/876.ts`:
+Console has eight operator modules under `apps/console/src/lib/services/`. A
+server component imports only the domain it needs:
 
 ```ts
 import 'server-only'
-import { create876AdminClient } from '@876/admin'
-
-export const $876 = create876AdminClient({
-  internalKey: process.env.API_INTERNAL_KEY,
-  apiKey: process.env.API_876_KEY,
-})
+import { platform } from '@/lib/services/platform'
+const { data } = await platform.users.list({ limit: 25 })
 ```
 
-```ts
-// In a server component:
-import { $876 } from '@/lib/876'
-const { data } = await $876.orgs.list({ limit: 25 })
-```
-
-The consumer app uses an API-key-tier `$876` at `apps/876/src/lib/876.ts` for self-scoped server calls (developer apps, connected apps). Privileged session bootstrap stays on the internal-key admin client in `apps/876/src/lib/auth/guards.ts` only.
+Use a lazily constructed module singleton only when its credential is static.
+Use a request-scoped factory when an access token or active organization
+belongs to one request. Never use a lazy `Proxy` to hide the wrong lifetime.
 
 Adding a new API operation (see `.claude/rules/sdk-conventions.md` for the full recipe):
 
-1. Add the endpoint to `apps/api` (module route + repository method) with its auth tier.
-2. Add the typed method to the correct tier: `@876/admin` (`packages/admin/src/client.ts`) if `AdminDep`, and/or `@876/sdk` (`packages/sdk/src/client.ts`) if API-key/session and self-scoped.
-3. Call through the package's `$876` in the Next.js app — never fetch directly.
+1. Add or reuse the capability in the owning backend service. Implement it once
+   and expose additional caller tiers through routes and guards.
+2. Add the typed method to the owning bounded package at the caller-named
+   entrypoint.
+3. Add or update only the host's matching module under `src/lib/services/`, then
+   call that root directly — never fetch the service or register it centrally.
 
 ## API Contracts
 

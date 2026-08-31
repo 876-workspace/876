@@ -6,7 +6,8 @@ import * as Sentry from '@sentry/nextjs'
 import { redirect } from 'next/navigation'
 
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getAccount } from '@/lib/services/account-server'
+import { getWorkspace } from '@/lib/services/workspace'
 
 import { consumerUrl } from './app-urls'
 import { getAuthSession, isSignedSession } from './session'
@@ -66,20 +67,15 @@ export async function requireOrgPermission(
 }
 
 export async function findAuthRoutingUser(
-  userId: string
+  _userId: string
 ): Promise<AuthRoutingUser | null> {
-  const client = await getPlatformClient()
-  const result = await client.users.retrieve({ id: userId })
+  const account = await getAccount()
+  const result = await account.users.retrieve()
 
-  // Distinguish a real "user not found" (safe to treat as no account) from a
-  // transient/server error, which throws rather than silently denying access.
-  const localUser = unwrapOptional(result, 'auth routing user')
-  const row =
-    localUser ??
-    unwrapOptional(
-      await client.users.retrieve({ workosId: userId }),
-      'auth routing user'
-    )
+  // A session-scoped account client can only retrieve its signed-in user. The
+  // requested id comes from that sealed session and is retained for callers'
+  // existing contract; the live response remains the source of account state.
+  const row = unwrapOptional(result, 'auth routing user')
   if (!row) return null
   if (!row.id || !row.email) return null
 
@@ -135,15 +131,11 @@ export async function findActiveOrgMembership(
 }
 
 async function findActiveMembershipBySlug(
-  userId: string,
+  _userId: string,
   slug: string
 ): Promise<ActiveMembership | null> {
-  const client = await getPlatformClient()
-  const result = await client.memberships.listRouting({
-    userId,
-    orgSlug: slug,
-    status: 'active',
-  })
+  const client = await getWorkspace()
+  const result = await client.memberships.list({ status: 'active' })
   // An empty list is the legitimate "no membership"; an error envelope is a real
   // failure and must not be downgraded to a silent access denial.
   const memberships = unwrapResult(result, 'routing memberships').data
@@ -151,13 +143,10 @@ async function findActiveMembershipBySlug(
 }
 
 export async function resolvePrimaryOrganizationPath(
-  userId: string
+  _userId: string
 ): Promise<string | null> {
-  const client = await getPlatformClient()
-  const result = await client.memberships.listRouting({
-    userId,
-    status: 'active',
-  })
+  const client = await getWorkspace()
+  const result = await client.memberships.list({ status: 'active' })
   const memberships = unwrapResult(result, 'routing memberships').data
   const first = memberships.find(
     (m) => m.status === 'active' && m.organization.status === 'active'
@@ -183,7 +172,7 @@ export async function resolveHomePathForUser(userId: string): Promise<string> {
 export async function getEnabledEnterpriseFeatureSlugs(
   organizationId?: string
 ): Promise<Set<string>> {
-  const client = await getPlatformClient()
+  const client = await getWorkspace()
   const result = await client.features.evaluate({
     organizationId,
     appSlug: ENTERPRISE_APP_SLUG,

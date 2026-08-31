@@ -10,7 +10,7 @@ import {
   toWarehouseUpdateBody,
   toWarehouseView,
 } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 import { warehouseUpdateParamsSchema } from '@/types/warehouse'
 
 export const runtime = 'nodejs'
@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.warehouses.update(
     id,
     toWarehouseUpdateBody(parsed.data)

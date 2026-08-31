@@ -9,13 +9,11 @@ import type {
   CrmTeamMemberAddInput,
   CrmTeamMemberUpdateInput,
   CrmTeamUpdateInput,
-} from '@876/client'
-
+} from '@/types/crm'
 import { request } from './request'
 
 export type TeamCreateInput = Omit<CrmTeamCreateInput, 'createdBy'>
 export type TeamMemberAddInput = Omit<CrmTeamMemberAddInput, 'addedBy'>
-
 function teamPath(teamId: string): string {
   return `/api/teams/${encodeURIComponent(teamId)}`
 }
@@ -26,7 +24,6 @@ export const teams = {
     if (params.status) search.set('status', params.status)
     if (params.includeMembers) search.set('includeMembers', 'true')
     const query = search.toString()
-
     return request<CrmTeamList>(`/api/teams${query ? `?${query}` : ''}`)
   },
   create(params: TeamCreateInput) {
@@ -72,14 +69,10 @@ export const teams = {
       )
     },
     remove(teamId: string, userId: string) {
-      return request<{
-        object: 'team_member'
-        id: string
-        deleted: true
-      }>(`${teamPath(teamId)}/members/${encodeURIComponent(userId)}`, {
-        method: 'DELETE',
-        headers: { 'content-type': 'application/json' },
-      })
+      return request<{ object: 'team_member'; id: string; deleted: true }>(
+        `${teamPath(teamId)}/members/${encodeURIComponent(userId)}`,
+        { method: 'DELETE', headers: { 'content-type': 'application/json' } }
+      )
     },
   },
 }

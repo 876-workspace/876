@@ -1,4 +1,4 @@
-import type { AdminConsumerContact } from '@876/admin'
+import type { AdminConsumerContact } from '@876/platform/compat'
 
 export function contactDisplayName(contact: AdminConsumerContact): string {
   return (

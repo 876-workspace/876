@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { AdminConsumerContact } from '@876/admin'
+import type { AdminConsumerContact } from '@876/platform/compat'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { ChevronRight } from '@876/ui/icons'

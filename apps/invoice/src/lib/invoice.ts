@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
+import { getInvoiceBillingIntegration } from '@/lib/services/billing-integration'
 import { getInvoiceContext } from '@/lib/auth/context'
 
 type BoundResource<T> = {

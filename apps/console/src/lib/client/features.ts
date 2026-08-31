@@ -11,7 +11,7 @@ import type {
   AdminUserFeatureGrantParams,
   AdminUserFeatureUpdateParams,
   AdminFeatureUpdateParams,
-} from '@876/admin'
+} from '@876/platform/compat'
 
 import { request } from './request'
 

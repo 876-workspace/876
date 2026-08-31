@@ -9,7 +9,7 @@ import {
   requireCouriersData,
   toBranchView,
 } from '@/lib/couriers'
-import { get876Client } from '@/lib/876'
+import { getCouriers } from '@/lib/services/couriers'
 
 import { BranchForm } from '../../_components/branch-form'
 
@@ -50,7 +50,7 @@ async function EditBranchData({ orgSlug, id }: EditBranchDataProps) {
       </div>
     )
 
-  const $876 = await get876Client()
+  const $876 = await getCouriers()
   const result = await $876.branches.retrieve(id)
   if (!result.data && isCouriersNotFound(result)) notFound()
 

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus, toCouriersTenant } from '@/lib/couriers'
-import { couriersAdmin } from '@/lib/876'
+import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
 
@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest) {
   const prefix =
     typeof raw === 'string' ? raw.trim().toUpperCase() || null : null
 
-  const result = await couriersAdmin.tenants.update(ctx.tenant.id, {
+  const result = await couriersOperator.tenants.update(ctx.tenant.id, {
     mailbox_prefix: prefix,
   })
   if (result.error) {

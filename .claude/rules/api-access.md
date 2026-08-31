@@ -4,11 +4,12 @@ Read this file before writing or modifying data access in `apps/876` or `apps/co
 
 ## Core Rule
 
-**Next.js feature code talks through the application's approved server facade and product-owned API surface. Backend/service topology is not a browser contract.**
+**Next.js feature code talks through the host's bounded server clients and product-owned API surface. Backend/service topology is not a browser contract.**
 
 - Do not access databases or external providers from Next.js feature code.
 - Do not call dedicated service origins directly from browser code.
-- Do not create dedicated service clients in pages, feature components, or route handlers when the application facade already owns that integration.
+- Do not construct package clients in pages, feature components, or route
+  handlers. Import the host-owned domain module under `src/lib/services/`.
 - Client-initiated mutations use thin route handlers under the application's own `/api/<resource>` vocabulary. Do not use Server Actions for backend mutations.
 - Route handlers authorize and adapt transport only. Business/domain logic remains in the owning backend service.
 - Browser components call the typed app client under `src/lib/client`; they do not know service URLs, internal keys, integration paths, or backend API versions.
@@ -17,12 +18,16 @@ Protocol adapters such as auth callbacks/bridges and Uploadthing may keep protoc
 
 ## Consumer app (`apps/876`)
 
-Server-side platform data goes through the app's `$876` facade and the canonical 876 API. Browser auth/data operations use the approved typed clients and same-origin bridge routes where required.
+Server-side Account data goes through the app's Account module. `$876` names
+the Account client surface; Workspace and product data use their own bounded
+roots. Browser auth/data operations use the approved typed clients and
+same-origin bridge routes where required.
 
 ```ts
-import { $876 } from '@/lib/876'
+import { getAccount } from '@/lib/services/account'
 
-const result = await $876.apps.retrieve(appId)
+const account = getAccount()
+const result = await account.apps.retrieve(appId)
 ```
 
 Do not bypass the core API with direct provider or database access from the Next.js application.
@@ -31,19 +36,22 @@ Do not bypass the core API with direct provider or database access from the Next
 
 Console is intentionally broader than a normal product app. Its server boundary spans the services Console administrates.
 
-**The canonical composition point is `createConsole876Client()` / `$876` in `apps/console/src/lib/876`.** It composes the platform admin client plus approved Billing, Couriers, Storage, and Widgets clients. That construction belongs in `src/lib/876`; feature code consumes the resource-oriented surface instead of constructing service clients.
+**The canonical composition points are the eight explicit modules in
+`apps/console/src/lib/services/`.** They export `billing`, `couriers`, `crm`,
+`platform`, `storage`, `widgets`, `work`, and `workspace` operator roots.
+Feature code imports only the root it needs.
 
 ```ts
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/services/platform'
+import { billing } from '@/lib/services/billing'
 
-const user = await $876.users.admin.retrieve({ id: userId })
-const plan = await $876.plans.admin.create(params)
-const customer = await $876.customers.admin.create(params)
+const user = await platform.users.retrieve({ id: userId })
+const plan = await billing.plans.create(params)
 ```
 
-Some service-specific admin capabilities are not yet present on the canonical composed surface. `src/lib/876` may expose narrow internal aliases such as `billingAdmin`, `billingIntegration`, or `widgetsAdmin` for those cases. Import those aliases only from `@/lib/876`; never construct the underlying service package client in a feature or route. Prefer wrapping specialized workflows in `src/lib` when they coordinate multiple resources.
-
-When request metadata must be propagated, construct the request-scoped facade through `createConsole876Client(requestId)` inside the thin route adapter.
+When request metadata must be propagated, use that domain module's named
+factory, such as `createCrm(requestId)`, inside the thin route adapter. Do not
+compose unrelated roots around the request ID.
 
 ### Console browser routes
 
@@ -77,7 +85,8 @@ Shared browser packages may expose host-route configuration when the same UI run
 ## Client-initiated mutations
 
 1. Add or reuse the canonical backend capability in the service that owns the domain.
-2. Expose that capability through the app's server facade/package client.
+2. Expose that capability through the package entrypoint for the caller's
+   authority and the host's matching domain module.
 3. Add a thin, permission-checked app route under the product-owned resource path.
 4. Call the route from the typed browser client.
 5. Add boundary/authorization regression coverage.
@@ -90,8 +99,8 @@ export async function POST(request: NextRequest) {
   if (response) return response
 
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const $876 = createConsole876Client(requestId)
-  // Parse transport input, call one approved facade operation, return envelope.
+  const crm = createCrm(requestId)
+  // Parse transport input, write the required audit event, call one CRM operation.
 }
 ```
 
@@ -101,16 +110,17 @@ Keep route handlers free of database queries, provider SDKs, and duplicated doma
 
 - Server-side guards (`requireSession`, `requireConsoleAccount`, `requireConsolePermission`, etc.) are authoritative.
 - Client state is display state, never an authorization boundary.
-- Service credentials/internal keys remain server-only inside approved facade construction.
+- Service credentials/internal keys remain server-only inside the host's
+  approved domain modules.
 - Never expose internal keys or service base URLs through `NEXT_PUBLIC_*` merely to let browser code call a backend directly.
 
 ## Adding a New Cross-Service Console Capability
 
 1. Add/verify the canonical operation in the owning backend.
-2. Add the typed operation to the appropriate server package/facade tier.
-3. Wire it into `createConsole876Client()` if Console does not already expose it.
+2. Add the typed operation to the owning package's `operator` entrypoint.
+3. Add or update only the matching Console module under `src/lib/services/`.
 4. Choose a Console resource URL based on what the administrator is acting on, not which service receives the request.
 5. Add the thin route and typed browser call only when client-side interaction is needed.
 6. Add tests proving permissions, canonical envelopes, and the absence of a leaked service namespace.
 
-See `product-api-boundary.md` and `sdk-conventions.md` for the broader resource/facade conventions.
+See `product-api-boundary.md` and `sdk-conventions.md` for the broader bounded-client conventions.

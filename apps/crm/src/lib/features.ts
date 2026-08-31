@@ -3,7 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { CRM_APP_SLUG } from '@/lib/crm-app'
 import type {
   CrmFeatureRequest,

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import type { OrgLocation, OrgLocationCreateParams } from '@876/sdk'
+import type { OrgLocation, OrgLocationCreateParams } from '@876/account/compat'
 import {
   AlertDialog,
   AlertDialogAction,

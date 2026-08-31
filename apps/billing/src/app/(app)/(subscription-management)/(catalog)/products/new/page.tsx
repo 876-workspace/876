@@ -4,7 +4,7 @@ import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { CreateForm } from '@/components/patterns/create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { $876 } from '@/lib/876'
+import { getAccount } from '@/lib/services/account'
 import type { FormField } from '@/types/form'
 
 export const metadata = { title: 'New Product' }
@@ -12,7 +12,7 @@ export const metadata = { title: 'New Product' }
 export default async function NewProductPage() {
   await requirePagePermission('catalog:write')
 
-  const apps = await $876.apps.list({ limit: 100 })
+  const apps = await (await getAccount()).apps.list({ limit: 100 })
   const appOptions = (apps.data?.data ?? [])
     .filter((app) => app.app_kind === 'product')
     .map((app) => ({ label: `${app.name} (${app.slug})`, value: app.id }))

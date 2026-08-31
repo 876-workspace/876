@@ -1,4 +1,4 @@
-import type { AdminDevice } from '@876/admin'
+import type { AdminDevice } from '@876/platform/compat'
 
 import { request } from './request'
 

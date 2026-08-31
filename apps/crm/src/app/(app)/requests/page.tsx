@@ -8,8 +8,9 @@ import {
 import { Suspense } from 'react'
 
 import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
-import { get876Client } from '@/lib/876'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import { crm } from '@/lib/services/crm'
+import { getWorkspace } from '@/lib/services/workspace'
 import type { RequestStatus } from '@/types/crm'
 
 import {
@@ -33,14 +34,12 @@ const REQUEST_STATUSES: RequestStatus[] = [
   'CLOSED',
   'CANCELLED',
 ]
-
 function isRequestStatus(value: string | undefined): value is RequestStatus {
   return (
     typeof value === 'string' &&
     REQUEST_STATUSES.includes(value as RequestStatus)
   )
 }
-
 const REQUEST_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All requests' },
   { value: 'OPEN', label: 'Open' },
@@ -52,11 +51,7 @@ const REQUEST_STATUS_OPTIONS: StatusFilterOption[] = [
 ]
 
 type Props = {
-  searchParams: Promise<{
-    status?: string
-    team?: string
-    assignee?: string
-  }>
+  searchParams: Promise<{ status?: string; team?: string; assignee?: string }>
 }
 
 export default async function RequestsPage({ searchParams }: Props) {
@@ -82,7 +77,6 @@ export default async function RequestsPage({ searchParams }: Props) {
         primaryVariant="info"
         refresh
       />
-
       <Suspense fallback={<RequestsListSkeleton />}>
         <RequestsListData
           status={
@@ -116,23 +110,23 @@ async function RequestsListData({
   assignee: string
 }) {
   const context = await requireCrmContext()
-  const $876 = await get876Client()
+  const workspace = await getWorkspace()
 
-  let teamId: string | undefined = undefined
+  let teamId: string | undefined
   if (team === 'none') teamId = 'unassigned'
   else if (team !== 'all') teamId = team
 
-  let assigneeId: string | undefined = undefined
+  let assigneeId: string | undefined
   if (assignee === 'me') assigneeId = context.userId
   else if (assignee === 'unassigned') assigneeId = 'unassigned'
   else if (assignee !== 'all') assigneeId = assignee
 
   const [requestsResult, customersResult, departmentsResult, membersResult] =
     await Promise.all([
-      $876.requests.list(context.orgId, { status, teamId, assigneeId }),
-      $876.customerProfiles.list(context.orgId),
-      $876.departments.list(context.orgId),
-      $876.organizationMembers.list(context.orgId),
+      crm.requests.list(context.orgId, { status, teamId, assigneeId }),
+      crm.customers.list(context.orgId),
+      workspace.departments.list(context.orgId),
+      workspace.members.list(context.orgId),
     ])
 
   if (departmentsResult.error)
@@ -145,30 +139,32 @@ async function RequestsListData({
     )
 
   const departments: FilterDepartment[] =
-    departmentsResult.data?.data.map((dept) => ({
-      id: dept.id,
-      name: dept.name,
+    departmentsResult.data?.data.map((department) => ({
+      id: department.id,
+      name: department.name,
     })) ?? []
-
   const departmentNames = new Map(
-    departments.map((dept) => [dept.id, dept.name])
+    departments.map((department) => [department.id, department.name])
   )
 
   const members: FilterMember[] =
-    membersResult.data?.data.map((m) => {
-      const nameParts = [m.first_name, m.last_name].filter(Boolean)
+    membersResult.data?.data.map((member) => {
+      const nameParts = [member.first_name, member.last_name].filter(Boolean)
       const name =
-        nameParts.length > 0 ? nameParts.join(' ') : (m.email ?? m.user_id)
+        nameParts.length > 0
+          ? nameParts.join(' ')
+          : (member.email ?? member.user_id)
       return {
-        id: m.id,
-        userId: m.user_id,
+        id: member.id,
+        userId: member.user_id,
         name,
-        email: m.email,
-        avatar: m.avatar,
+        email: member.email,
+        avatar: member.avatar,
       }
     }) ?? []
-
-  const membersByUserId = new Map(members.map((m) => [m.userId, m]))
+  const membersByUserId = new Map(
+    members.map((member) => [member.userId, member])
+  )
 
   const customersById = new Map(
     (customersResult.data?.data ?? []).map(({ profile, customer }) => [
@@ -180,10 +176,9 @@ async function RequestsListData({
   const rows: RequestListRow[] = (requestsResult.data?.data ?? []).map(
     (request) => {
       const customer = customersById.get(request.customerId)
-      const assignee = request.assigneeId
+      const requestAssignee = request.assigneeId
         ? membersByUserId.get(request.assigneeId)
         : undefined
-
       return {
         id: request.id,
         number: request.number,
@@ -195,8 +190,8 @@ async function RequestsListData({
         customerName: customer?.name ?? 'Unknown customer',
         customerIsBusiness: customer?.isBusiness ?? false,
         isAssigned: Boolean(request.assigneeId),
-        assigneeName: assignee?.name ?? null,
-        assigneeAvatar: assignee?.avatar ?? null,
+        assigneeName: requestAssignee?.name ?? null,
+        assigneeAvatar: requestAssignee?.avatar ?? null,
         teamName: request.teamId
           ? (departmentNames.get(request.teamId) ?? null)
           : null,

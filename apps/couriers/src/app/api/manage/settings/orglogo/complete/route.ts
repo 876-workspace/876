@@ -4,10 +4,10 @@ import { apiJson } from '@876/core/api'
 import type { AppError } from '@876/core'
 import type { NextRequest } from 'next/server'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
+import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getError } from '@/lib/errors'
-import { storage876 } from '@/lib/876'
+import { storage } from '@/lib/services/storage'
 import { organizationLogoUploadCompleteSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       { status: 403, code: 'auth/forbidden' }
     )
 
-  const result = await storage876.uploads.complete(parsed.data.id)
+  const result = await storage.uploads.complete(parsed.data.id)
   if (result.error) return storageErrorResponse(result.error)
 
   const file = result.data

@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import type { AdminAccount } from '@876/admin'
+import type { AdminAccount } from '@876/platform/compat'
 import { KeyRound } from '@876/ui/icons'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { AdminProvisioningSetup } from '@876/admin'
+import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useDetailSegments } from '@876/ui/list-detail-shell'

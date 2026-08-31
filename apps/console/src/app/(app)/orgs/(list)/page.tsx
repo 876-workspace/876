@@ -1,5 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
-import type { AdminOrganization, AdminSubscription } from '@876/admin'
+import type { AdminOrganization, AdminSubscription } from '@876/platform/compat'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import {
   Empty,
@@ -11,7 +13,6 @@ import {
 import { Building2 } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { $876, workspace } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isOrgStatus } from '@/lib/org-status'
@@ -70,7 +71,7 @@ async function OrganizationsTableData({
   let hasMore = false
 
   if (isSearching) {
-    const result = await $876.organizations.admin.search({
+    const result = await platform.organizations.search({
       query: q!,
       limit: 50,
       status: orgStatus,
@@ -78,7 +79,7 @@ async function OrganizationsTableData({
     if (result.error) throw new Error(result.error.message)
     orgs = result.data.data
   } else {
-    const result = await $876.organizations.admin.list({
+    const result = await platform.organizations.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,
@@ -92,11 +93,11 @@ async function OrganizationsTableData({
   const orgIds = orgs.map((o) => o.id)
   const subscriptionsMap: Record<string, AdminSubscription[]> = {}
   if (orgIds.length > 0) {
-    const batchResult = await workspace.apps.entitlements.list({
+    const batchResult = await workspace.organizations.subscriptions.list({
       organizationIds: orgIds,
     })
-    if (batchResult.data?.data) {
-      for (const row of batchResult.data.data) {
+    if (batchResult.data) {
+      for (const row of batchResult.data) {
         if (!subscriptionsMap[row.organization_id])
           subscriptionsMap[row.organization_id] = []
         subscriptionsMap[row.organization_id]!.push(row)

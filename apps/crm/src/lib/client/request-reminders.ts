@@ -5,23 +5,14 @@ import type {
   CrmRequestReminderCreateInput,
   CrmRequestReminderList,
   CrmRequestReminderUpdateInput,
-} from '@876/client'
-
+} from '@/types/crm'
 import { request } from './request'
 
-/**
- * `createdBy` is dropped because the route handler fills it from the session.
- *
- * `userId` stays but becomes optional: a reminder can legitimately be set *for*
- * a colleague — it is who gets reminded, not who is acting — and omitting it
- * means "me", which the route handler resolves from the same session.
- */
 export type RequestReminderCreateInput = Omit<
   CrmRequestReminderCreateInput,
   'createdBy' | 'userId'
 > & { userId?: string }
 export type RequestReminderUpdateInput = CrmRequestReminderUpdateInput
-
 function root(requestId: string) {
   return `/api/requests/${encodeURIComponent(requestId)}/reminders`
 }

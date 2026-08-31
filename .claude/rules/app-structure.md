@@ -193,17 +193,17 @@ is _deliberately_ a contract, not a convenience.
 `apps/console/src/lib/` is the canonical layout. Every app carries the same
 spine; only apps that genuinely own a datastore carry the datastore layers.
 
-| Directory / file   | Present in            | Holds                                                            |
-| ------------------ | --------------------- | ---------------------------------------------------------------- |
-| `876.ts` or `876/` | every app             | the `$876` singleton (see `.claude/rules/sdk-conventions.md`)    |
-| `<app>-app.ts`     | every app             | the app's slug/identity constants                                |
-| `analytics/`       | every app             | PostHog/analytics dispatch                                       |
-| `auth/`            | every app             | `guards.ts`, session helpers, route guards                       |
-| `client/`          | every app             | the typed browser mutation client                                |
-| `errors/`          | every app             | the app's error registry and mappers                             |
-| `id/`              | every app             | id generation/parsing helpers                                    |
-| `db/`              | apps with a datastore | the request-scoped `prisma` singleton, generated client          |
-| `service/<res>/`   | apps with a datastore | `<verb>.ts` per file — the only caller allowed to query `prisma` |
+| Directory / file | Present in                 | Holds                                                            |
+| ---------------- | -------------------------- | ---------------------------------------------------------------- |
+| `services/`      | apps with 876 service data | one explicit bounded client module per domain the host consumes  |
+| `<app>-app.ts`   | every app                  | the app's slug/identity constants                                |
+| `analytics/`     | every app                  | PostHog/analytics dispatch                                       |
+| `auth/`          | every app                  | `guards.ts`, session helpers, route guards                       |
+| `client/`        | every app                  | the typed browser mutation client                                |
+| `errors/`        | every app                  | the app's error registry and mappers                             |
+| `id/`            | every app                  | id generation/parsing helpers                                    |
+| `db/`            | apps with a datastore      | the request-scoped `prisma` singleton, generated client          |
+| `service/<res>/` | apps with a datastore      | `<verb>.ts` per file — the only caller allowed to query `prisma` |
 
 Apps with a datastore today: `console`, `billing`, `couriers`. `876` and
 `enterprise` must **not** grow `db/` or `service/` — they have no bounded
