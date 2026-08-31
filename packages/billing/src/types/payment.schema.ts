@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-import type { Payment, PaymentCreated, PaymentDeleted } from './payment'
 import type { List } from './common'
 import {
   createdResourceSchema,
@@ -10,17 +9,14 @@ import {
 import { BankAccountTypeSchema } from './bank-account.schema'
 import { BankTransactionSchema } from './bank-transaction.schema'
 import { PaymentModeSchema } from './payment-mode.schema'
+import type { Payment, PaymentCreated, PaymentDeleted } from './payment'
 
-/**
- * The schema for a created payment response.
- */
+/** The schema for a created payment response. */
 export const PaymentCreatedSchema = createdResourceSchema(
   'payment'
 ) satisfies z.ZodType<PaymentCreated>
 
-/**
- * The schema for a deleted payment tombstone.
- */
+/** The schema for a deleted payment tombstone. */
 export const PaymentDeletedSchema = deletedResourceSchema(
   'payment'
 ) satisfies z.ZodType<PaymentDeleted>
@@ -41,16 +37,25 @@ const PaymentAllocationSchema = z.strictObject({
   updatedAt: z.number().int(),
 })
 
-/**
- * The schema for a payment resource.
- */
+/** The schema for a payment resource. */
 export const PaymentSchema = z.strictObject({
   object: z.literal('payment'),
   id: z.string().min(1),
   number: z.string(),
   amount: z.string(),
   unappliedAmount: z.string(),
-  status: z.enum(['PENDING', 'SUCCEEDED', 'FAILED', 'CANCELED']),
+  status: z.enum([
+    'PENDING',
+    'REQUIRES_ACTION',
+    'AUTHORIZED',
+    'PROCESSING',
+    'SUCCEEDED',
+    'FAILED',
+    'CANCELED',
+    'PARTIALLY_REFUNDED',
+    'REFUNDED',
+    'DISPUTED',
+  ]),
   providerConnectionId: z.string().nullable().optional(),
   providerPaymentId: z.string().nullable().optional(),
   bankCharges: z.string(),
@@ -77,9 +82,7 @@ export const PaymentSchema = z.strictObject({
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<Payment>
 
-/**
- * The schema for a paginated list of payments.
- */
+/** The schema for a paginated list of payments. */
 export const PaymentListSchema = listSchema(PaymentSchema) satisfies z.ZodType<
   List<Payment>
 >
