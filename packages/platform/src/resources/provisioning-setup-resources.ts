@@ -1,40 +1,14 @@
-import type { ProvisioningDraftReplaceParams, ProvisioningResource } from '@876/core/types/provisioning'
+import type { ProvisioningResource } from '@876/core/types/provisioning'
+import type {
+  DeletedProvisioningSetupResource,
+  ProvisioningSetupResourceCreateParams,
+  ProvisioningSetupResourceType,
+  ProvisioningSetupResourceUpdateParams,
+} from '@876/core/types/provisioning-resources'
 
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type { AdminListResponse } from '../types'
-
-export type ProvisioningSetupResourceType =
-  | 'workspace'
-  | 'currency'
-  | 'payment_mode'
-  | 'payment_term'
-  | 'invoice_preference'
-  | 'tax_authority'
-  | 'tax_jurisdiction'
-  | 'tax_code'
-  | 'tax_rate'
-
-type DraftResource = NonNullable<ProvisioningDraftReplaceParams['resources']>[number]
-export type ProvisioningSetupResourcePropertyInput = DraftResource['properties'][number]
-
-export type ProvisioningSetupResourceCreateParams = {
-  key: string
-  position?: number
-  properties?: ProvisioningSetupResourcePropertyInput[]
-}
-
-export type ProvisioningSetupResourceUpdateParams = {
-  position?: number
-  properties?: ProvisioningSetupResourcePropertyInput[]
-}
-
-export type DeletedProvisioningSetupResource = {
-  object: 'provisioning_resource'
-  resource_type: string
-  key: string
-  deleted: true
-}
 
 const resourcePath = (setupKey: string, resourceType: string) =>
   `/provisioning/setups/${encodeURIComponent(setupKey)}/resources/${encodeURIComponent(resourceType)}`
