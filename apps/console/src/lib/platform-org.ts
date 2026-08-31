@@ -1,3 +1,4 @@
+import { crm } from '@/lib/services/crm'
 import { platform } from '@/lib/services/platform'
 import 'server-only'
 import { workspace } from '@/lib/services/workspace'
@@ -23,9 +24,9 @@ export const getPlatformOrganization = cache(async () => {
  */
 export const ensurePlatformRequestWorkspace = cache(async () => {
   const organization = await getPlatformOrganization()
-  if (!organization || !workspace.crm) return null
+  if (!organization) return null
 
-  const result = await workspace.crm.ensure(organization.id, undefined, {
+  const result = await crm.ensure(organization.id, undefined, {
     fixtures: ['876_SUPPORT'],
   })
   return result.error ? null : result.data

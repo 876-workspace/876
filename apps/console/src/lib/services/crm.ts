@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { create876CrmOperatorClient } from '@876/crm/operator'
+import { create876CrmWorkspaceClient } from '@876/crm'
 
 function options(requestId?: string) {
   return {
@@ -11,7 +12,13 @@ function options(requestId?: string) {
 }
 
 export function createCrm(requestId?: string) {
-  return create876CrmOperatorClient(options(requestId))
+  const op = create876CrmOperatorClient(options(requestId))
+  const ws = create876CrmWorkspaceClient(options(requestId))
+  return {
+    ...op,
+    workspaces: ws,
+    ensure: ws.ensure.bind(ws),
+  } as typeof op & { workspaces: typeof ws; ensure: typeof ws.ensure }
 }
 
 export const crm = createCrm()
