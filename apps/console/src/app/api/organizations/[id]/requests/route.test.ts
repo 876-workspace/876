@@ -15,6 +15,7 @@ vi.mock('@/lib/auth/route-guard', () => ({
 }))
 
 vi.mock('@/lib/services/crm', () => ({
+  createCrm: mocks.createClient,
   crm: { requests: { list: mocks.list, create: mocks.create } },
 }))
 
