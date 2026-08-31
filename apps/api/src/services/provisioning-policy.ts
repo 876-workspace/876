@@ -18,9 +18,12 @@ import {
   resolveProvisioningSetup,
   retrieveProvisioningSetupPolicy,
   retrieveProvisioningWorkspaceDefaults,
+  type ProvisioningWorkspaceDefaults,
 } from '@/modules/provisioning'
 
 import * as repository from './provisioning-policy.repository'
+
+export type { ProvisioningWorkspaceDefaults } from '@/modules/provisioning'
 
 const ENTERPRISE_APP_SLUG = '876-enterprise'
 const WORK_SERVICE_KEY = 'work'
@@ -35,6 +38,15 @@ const WORK_CAPABILITY_SCOPES: Readonly<
   'work.alerts': ['work.alerts.read', 'work.alerts.write'],
   'work.my-work': ['work.my-work.read'],
   'work.sync': ['work.sync.read', 'work.sync.write'],
+}
+
+export type PersistedProvisioningPolicy = {
+  selection: PersistedProvisioningSelection
+  policy: ProvisioningSetupPolicy
+}
+
+export type InitialProvisioningPolicy = PersistedProvisioningPolicy & {
+  defaults: ProvisioningWorkspaceDefaults
 }
 
 function entitlement(
@@ -98,7 +110,11 @@ export function workScopesForProvisionedApp(
 
 export async function resolveInitialProvisioningSelection(
   context: Partial<ProvisioningSelectionContext>
-) {
+): Promise<{
+  selection: ProvisioningSetupSelection
+  defaults: ProvisioningWorkspaceDefaults
+  policy: ProvisioningSetupPolicy
+}> {
   const selection = await resolveProvisioningSetup(context)
   const defaults = await retrieveProvisioningWorkspaceDefaults(
     selection.setup_key
@@ -107,36 +123,64 @@ export async function resolveInitialProvisioningSelection(
   return { selection, defaults, policy }
 }
 
-export async function retrievePersistedProvisioningPolicy(
-  organizationId: string
-): Promise<{
-  selection: PersistedProvisioningSelection
-  policy: ProvisioningSetupPolicy
-} | null> {
-  const row =
-    await repository.findOrganizationProvisioningSelection(organizationId)
-  if (!row?.provisioningSetupKey) return null
-
-  const selection: PersistedProvisioningSelection = {
+function serializePersistedSelection(row: {
+  provisioningSetupKey: string
+  provisioningSelectionType: string | null
+  provisioningMatchGroupKey: string | null
+  provisioningMatchPriority: number | null
+  provisioningMatchedFields: unknown
+  provisioningSetupSelectedAt: bigint | null
+}): PersistedProvisioningSelection {
+  return {
     setup_key: row.provisioningSetupKey,
     selection_type:
       (row.provisioningSelectionType as ProvisioningStoredSelectionType | null) ??
       null,
     match_group_key: row.provisioningMatchGroupKey,
     match_priority: row.provisioningMatchPriority,
-    matched_fields:
-      row.provisioningMatchedFields as PersistedProvisioningSelection['matched_fields'],
-    selected_at: row.provisioningSetupSelectedAt
-      ? Number(row.provisioningSetupSelectedAt)
-      : null,
+    matched_fields: Array.isArray(row.provisioningMatchedFields)
+      ? (row.provisioningMatchedFields as PersistedProvisioningSelection['matched_fields'])
+      : [],
+    selected_at:
+      row.provisioningSetupSelectedAt !== null
+        ? Number(row.provisioningSetupSelectedAt)
+        : null,
   }
+}
+
+export async function retrievePersistedProvisioningPolicy(
+  organizationId: string
+): Promise<PersistedProvisioningPolicy | null> {
+  const row =
+    await repository.findOrganizationProvisioningSelection(organizationId)
+  if (!row?.provisioningSetupKey) return null
+
+  const selection = serializePersistedSelection({
+    ...row,
+    provisioningSetupKey: row.provisioningSetupKey,
+  })
   const policy = await retrieveProvisioningSetupPolicy(selection.setup_key)
   return { selection, policy }
+}
+
+export async function requirePersistedProvisioningPolicy(
+  organizationId: string
+): Promise<PersistedProvisioningPolicy> {
+  const persisted = await retrievePersistedProvisioningPolicy(organizationId)
+  if (persisted) return persisted
+
+  throw new AppHttpError({
+    code: 'provisioning/setup-selection-missing',
+    message:
+      'The organization has no persisted provisioning setup. Run the provisioning setup backfill before retrying.',
+    httpStatus: 409,
+  })
 }
 
 export async function persistInitialProvisioningSelection(params: {
   organizationId: string
   selection: ProvisioningSetupSelection
+  defaults: ProvisioningWorkspaceDefaults
   selectedAt: number
 }): Promise<PersistedProvisioningSelection> {
   if (
@@ -156,6 +200,8 @@ export async function persistInitialProvisioningSelection(params: {
     matchPriority: params.selection.match_priority,
     matchedFields: params.selection.matched_fields,
     selectedAt: BigInt(params.selectedAt),
+    currencyCode: params.defaults.currency_code,
+    language: params.defaults.language,
   })
 
   const persisted = await retrievePersistedProvisioningPolicy(
@@ -169,6 +215,49 @@ export async function persistInitialProvisioningSelection(params: {
     })
   }
   return persisted.selection
+}
+
+/**
+ * Resolve and persist the initial setup for a freshly-created organization.
+ * Concurrent callers converge on the first successfully persisted selection.
+ */
+export async function resolveAndPersistInitialProvisioningPolicy(
+  organizationId: string,
+  selectedAt: number
+): Promise<InitialProvisioningPolicy> {
+  const row =
+    await repository.findOrganizationProvisioningSelection(organizationId)
+  if (!row) {
+    throw new AppHttpError({
+      code: 'organization/not-found',
+      message: 'No organization exists with the provided identifier.',
+      httpStatus: 404,
+    })
+  }
+
+  if (row.provisioningSetupKey) {
+    const persisted = await requirePersistedProvisioningPolicy(organizationId)
+    const defaults = await retrieveProvisioningWorkspaceDefaults(
+      persisted.selection.setup_key
+    )
+    return { ...persisted, defaults }
+  }
+
+  const resolved = await resolveInitialProvisioningSelection(
+    organizationSelectionContext(row)
+  )
+  await persistInitialProvisioningSelection({
+    organizationId,
+    selection: resolved.selection,
+    defaults: resolved.defaults,
+    selectedAt,
+  })
+
+  const persisted = await requirePersistedProvisioningPolicy(organizationId)
+  const defaults = await retrieveProvisioningWorkspaceDefaults(
+    persisted.selection.setup_key
+  )
+  return { ...persisted, defaults }
 }
 
 export async function persistBackfillProvisioningSelection(params: {
