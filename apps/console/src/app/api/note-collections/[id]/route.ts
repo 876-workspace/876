@@ -1,4 +1,4 @@
-import { widgets } from '@/lib/services/widgets'
+import { widgetsService } from '@/lib/services/widgets'
 import { apiError, apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 
@@ -22,7 +22,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await widgets.collections.update({ userId: access.userId }, id, {
+  const result = await widgetsService.collections.update({ userId: access.userId }, id, {
     name: typeof record.name === 'string' ? record.name : undefined,
     color:
       record.color === null
@@ -48,7 +48,7 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await widgets.collections.delete({ userId: access.userId }, id)
+  const result = await widgetsService.collections.delete({ userId: access.userId }, id)
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,
