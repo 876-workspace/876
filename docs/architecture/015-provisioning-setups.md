@@ -91,7 +91,8 @@ stores and edits the policy.
 
 ### Access policy is separate from finance dependency
 
-Setup policy also contains explicit application/service entitlement declarations.
+Setup policy contains explicit application, service, and service-capability
+declarations.
 
 Current application targets:
 
@@ -105,6 +106,21 @@ Current shared service target:
 
 - `service/work`.
 
+Current Work capability targets:
+
+- `service_capability/work.tasks`;
+- `service_capability/work.reminders`;
+- `service_capability/work.calendars`;
+- `service_capability/work.events`;
+- `service_capability/work.alerts`;
+- `service_capability/work.my-work`;
+- `service_capability/work.sync`.
+
+A Work capability policy requires an explicit `service/work` gate row. Capability
+preferences may remain stored when the Work service gate is disabled, but they do
+not imply that Work itself should be created or enabled. Phase 2 must evaluate
+the service gate first and only apply capabilities when Work is enabled.
+
 `console` is internal and is not an organization product entitlement.
 `876-consumer` is not part of the organization entitlement surface.
 
@@ -114,6 +130,7 @@ The following are deliberately independent concepts:
 shared finance workspace != 876 Billing entitlement
 shared finance workspace != 876 Invoice entitlement
 application finance_dependency != application entitlement
+Work service entitlement != Work capability selection
 ```
 
 An application can require embedded finance infrastructure without granting the
@@ -212,19 +229,23 @@ The API workspace provides:
 ```bash
 pnpm --filter @876/api provisioning:import -- --dry-run
 pnpm --filter @876/api provisioning:import
+pnpm --filter @876/api provisioning:verify
 ```
 
 The importer is conservative:
 
 - missing setups are created;
 - missing policy rows are backfilled additively;
-- explicit operator entitlement choices are preserved except mandatory
-  Enterprise cannot remain disabled;
+- explicit operator application/service/service-capability choices are
+  preserved except mandatory Enterprise cannot remain disabled;
 - published manifests are preserved;
 - non-empty unpublished operator drafts are preserved;
 - pristine/missing manifests may be initialized and published;
 - the intended fallback is promoted only after its finance manifest is
   published.
+
+The verifier is read-only and checks that the required setup/policy/published
+manifest structure exists after import.
 
 Provisioning is intentionally absent from `pnpm node:seed`.
 
@@ -241,6 +262,10 @@ uses USD without asserting a legal country.
 
 Jamaica retains the explicit TAJ/GCT baseline. Other regional setups do not
 fabricate tax authorities or rates merely to satisfy provisioning validation.
+
+The default Work policy enables the Work service and current Tasks, Reminders,
+Calendars, Events, Alerts, and My Work capabilities while leaving external
+calendar sync disabled by default.
 
 ### Resource-level CRUD
 
@@ -287,6 +312,8 @@ fallback/default must not silently repoint already-provisioned organizations.
   infrastructure.
 - Work can be enabled/disabled by setup policy without pretending Work is an App
   subscription.
+- Work capabilities can be provisioned independently beneath the Work service
+  gate.
 - Billing and Invoice are never inferred merely from finance workspace creation.
 - Tax configuration can model hierarchical jurisdictions while remaining useful
   for Jamaica and other VAT/GST/GCT regimes.
@@ -308,8 +335,8 @@ The resolver should:
 5. use the sole fallback/default when no specific setup matches;
 6. persist the chosen setup so retries reuse it;
 7. apply the selected published finance manifest v1;
-8. apply application/service entitlement policy independently;
-9. honor `service/work` policy;
+8. apply application/service/service-capability policy independently;
+9. honor `service/work` before applying Work capability rows;
 10. remain idempotent across retries.
 
 Network/device/fingerprint location may only be a fallback signal if product and
@@ -345,6 +372,11 @@ policy.
 
 Rejected because embedded finance infrastructure is a platform dependency, not
 standalone product entitlement.
+
+### Treat Work capabilities as application entitlements
+
+Rejected because Work is a shared service boundary. Its capabilities belong to
+the service's tenant/access configuration and must be gated by `service/work`.
 
 ### Put transaction-time tax logic in provisioning
 
