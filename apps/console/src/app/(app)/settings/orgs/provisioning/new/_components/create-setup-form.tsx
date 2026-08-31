@@ -13,7 +13,6 @@ import { Switch } from '@876/ui/switch'
 import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 
@@ -78,14 +77,7 @@ export function CreateSetupForm() {
         key,
         name: name.trim(),
         description: description.trim() || null,
-      })
-      if (failure || !data) {
-        setError(failure?.message ?? 'Failed to create the setup.')
-        return
-      }
-
-      const { error: policyFailure } =
-        await client.provisioningSetups.replacePolicy(data.key, {
+        policy: {
           conditions: countryCodes.map((countryCode) => ({
             group_key: countryCode.toLowerCase(),
             field: 'country',
@@ -103,12 +95,12 @@ export function CreateSetupForm() {
                     entitlementKey(entry.target_type, entry.target_key)
                   ] ?? entry.default_enabled),
           })),
-        })
-
-      if (policyFailure)
-        toast.error(
-          'The setup was created, but its matching/access policy could not be saved. Review it on the Workspace tab.'
-        )
+        },
+      })
+      if (failure || !data) {
+        setError(failure?.message ?? 'Failed to create the setup.')
+        return
+      }
 
       router.push(
         `/settings/orgs/provisioning/${encodeURIComponent(data.key)}`
