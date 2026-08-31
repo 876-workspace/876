@@ -30,6 +30,7 @@ import { cn } from '@876/core/utils'
 
 import {
   fieldDisplayValue,
+  formatOptionLabel,
   rowReferenceKey,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
@@ -107,7 +108,7 @@ function InlineFieldControl({
         )}
         {options.map((option) => (
           <NativeSelectOption key={option} value={option}>
-            {option}
+            {field.allowed_values ? formatOptionLabel(option) : option}
           </NativeSelectOption>
         ))}
       </NativeSelect>
@@ -255,7 +256,9 @@ export function FinanceCollectionEditor({
                         : 'text-muted-foreground text-[0.8125rem]'
                     )}
                   >
-                    {fieldDisplayValue(value)}
+                    {field.allowed_values && typeof value === 'string'
+                      ? formatOptionLabel(value)
+                      : fieldDisplayValue(value)}
                   </TableCell>
                 )
               })}

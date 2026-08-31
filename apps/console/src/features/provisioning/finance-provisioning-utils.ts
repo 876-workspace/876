@@ -21,6 +21,22 @@ import {
 export type FinanceResourceDefinition =
   AdminProvisioningCatalog['resource_types'][number]
 
+export type FinanceProvisioningTab = {
+  key: string
+  label: string
+  multiple: boolean
+}
+
+export const FINANCE_PROVISIONING_TABS: readonly FinanceProvisioningTab[] = [
+  { key: 'workspace', label: 'Workspace', multiple: false },
+  { key: 'currency', label: 'Currencies', multiple: true },
+  { key: 'payment_mode', label: 'Payment modes', multiple: true },
+  { key: 'payment_term', label: 'Payment terms', multiple: true },
+  { key: 'invoice_preference', label: 'Invoice preferences', multiple: false },
+  { key: 'tax_authority', label: 'Tax authorities', multiple: true },
+  { key: 'tax_rate', label: 'Tax rates', multiple: true },
+] as const
+
 export type FinanceResourceRow = {
   localId: string
   resourceType: string
@@ -46,6 +62,24 @@ export const RESOURCE_TYPE_ICONS: Record<string, IconComponent> = {
 
 export function getResourceTypeIcon(resourceType: string): IconComponent {
   return RESOURCE_TYPE_ICONS[resourceType] ?? TableIcon
+}
+
+export const RESOURCE_TYPE_COLORS: Record<string, string> = {
+  workspace: 'text-sky-500 dark:text-sky-400',
+  currency: 'text-amber-500 dark:text-amber-400',
+  payment_mode: 'text-indigo-500 dark:text-indigo-400',
+  payment_term: 'text-emerald-500 dark:text-emerald-400',
+  invoice_preference: 'text-rose-500 dark:text-rose-400',
+  tax_authority: 'text-teal-500 dark:text-teal-400',
+  tax_rate: 'text-violet-500 dark:text-violet-400',
+  document_preference: 'text-blue-500 dark:text-blue-400',
+  organization_profile: 'text-purple-500 dark:text-purple-400',
+}
+
+export function getResourceTypeColor(resourceType: string): string {
+  return (
+    RESOURCE_TYPE_COLORS[resourceType] ?? 'text-blue-600 dark:text-blue-400'
+  )
 }
 
 function propertyValue(
@@ -176,6 +210,32 @@ export function buildFinanceDraft(
         position: step.position,
       })) ?? [],
   }
+}
+
+const SMALL_WORDS = new Set([
+  'of',
+  'on',
+  'in',
+  'and',
+  'the',
+  'for',
+  'to',
+  'a',
+  'an',
+])
+
+export function formatOptionLabel(value: string): string {
+  if (!value) return value
+  const words = value.split(/[_\s]+/)
+  return words
+    .map((word, index) => {
+      const lower = word.toLowerCase()
+      if (index > 0 && SMALL_WORDS.has(lower)) {
+        return lower
+      }
+      return lower.charAt(0).toUpperCase() + lower.slice(1)
+    })
+    .join(' ')
 }
 
 export function fieldDisplayValue(value: string | boolean | undefined) {

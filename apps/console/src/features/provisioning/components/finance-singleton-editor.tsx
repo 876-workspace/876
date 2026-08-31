@@ -5,6 +5,7 @@ import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 
 import {
+  formatOptionLabel,
   rowReferenceKey,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
@@ -85,7 +86,7 @@ export function FinanceSingletonEditor({
                 )}
                 {options.map((option) => (
                   <NativeSelectOption key={option} value={option}>
-                    {option}
+                    {field.allowed_values ? formatOptionLabel(option) : option}
                   </NativeSelectOption>
                 ))}
               </NativeSelect>

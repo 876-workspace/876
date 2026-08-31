@@ -76,6 +76,24 @@ const testCatalog: AdminProvisioningCatalog = {
         },
       ],
     },
+    {
+      resource_type: 'invoice_preference',
+      label: 'Invoice preferences',
+      description: 'Invoice preferences',
+      multiple: false,
+      minimum_items: 1,
+      maximum_items: 1,
+      fields: [
+        {
+          key: 'defaultTaxBehavior',
+          label: 'Tax behavior',
+          value_type: 'string',
+          required: true,
+          reference_namespace: null,
+          allowed_values: ['EXCLUSIVE', 'INCLUSIVE'],
+        },
+      ],
+    },
   ],
 }
 
@@ -178,5 +196,37 @@ describe('FinanceProvisioningEditor', () => {
 
     expect(screen.getByText('CAD')).toBeInTheDocument()
     expect(screen.queryByText('USD')).not.toBeInTheDocument()
+  })
+
+  it('does not render toolbar section on workspace tab', () => {
+    render(
+      <FinanceProvisioningEditor
+        catalog={testCatalog}
+        manifest={null}
+        target={{ type: 'finance', key: 'jamaica' }}
+      />
+    )
+
+    expect(
+      screen.queryByLabelText('More provisioning actions')
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders singleton preference tab with Title Case option labels and no Workspace defaults title', () => {
+    render(
+      <FinanceProvisioningEditor
+        catalog={testCatalog}
+        manifest={null}
+        target={{ type: 'finance', key: 'jamaica' }}
+        initialType="invoice_preference"
+      />
+    )
+
+    expect(screen.getByText('Tax behavior')).toBeInTheDocument()
+    expect(screen.queryByText('Workspace defaults')).not.toBeInTheDocument()
+
+    // Allowed values options are formatted in Title Case
+    expect(screen.getByText('Exclusive')).toBeInTheDocument()
+    expect(screen.getByText('Inclusive')).toBeInTheDocument()
   })
 })

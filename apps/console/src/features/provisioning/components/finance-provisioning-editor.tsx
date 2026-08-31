@@ -29,6 +29,7 @@ import { client } from '@/lib/client'
 import {
   buildFinanceDraft,
   emptyRow,
+  getResourceTypeColor,
   getResourceTypeIcon,
   revisionRows,
   type FinanceResourceDefinition,
@@ -310,7 +311,7 @@ export function FinanceProvisioningEditor({
                     className={cn(
                       'size-4 shrink-0 transition-colors',
                       isSelected
-                        ? 'text-foreground'
+                        ? getResourceTypeColor(typeKey)
                         : 'text-muted-foreground group-hover:text-foreground'
                     )}
                   />
@@ -332,72 +333,74 @@ export function FinanceProvisioningEditor({
         </div>
       )}
 
-      {/* Toolbar */}
-      <div className="876-header-row flex shrink-0 items-center justify-between gap-2 border-b px-5 py-2">
-        <div className="flex items-center gap-2">
-          {message && (
-            <span className="text-muted-foreground text-xs" role="status">
-              {message}
-            </span>
-          )}
-        </div>
+      {/* Toolbar — only rendered on subpages / non-workspace tabs */}
+      {!isWorkspace && (
+        <div className="876-header-row flex shrink-0 items-center justify-between gap-2 border-b px-5 py-2">
+          <div className="flex items-center gap-2">
+            {message && (
+              <span className="text-muted-foreground text-xs" role="status">
+                {message}
+              </span>
+            )}
+          </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {activeDefinition?.multiple && (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!!atMaximum || editingRow !== null}
-              onClick={openAddItem}
-            >
-              <Plus className="size-3.5" strokeWidth={2.25} />
-              Add
-            </Button>
-          )}
+          <div className="flex shrink-0 items-center gap-2">
+            {activeDefinition?.multiple && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!atMaximum || editingRow !== null}
+                onClick={openAddItem}
+              >
+                <Plus className="size-3.5" strokeWidth={2.25} />
+                Add
+              </Button>
+            )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'icon-sm' })
-              )}
-              aria-label="More provisioning actions"
-            >
-              <MoreHorizontalIcon className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                disabled={isPending || editingRow !== null}
-                onClick={save}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'icon-sm' })
+                )}
+                aria-label="More provisioning actions"
               >
-                Save draft
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={isPending || editingRow !== null}
-                onClick={publish}
-              >
-                Publish
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                <ArrowUpFromLine className="size-4" />
-                Import...
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <ArrowDownFromLine className="size-4" />
-                Export...
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                disabled={isPending}
-                onClick={discardChanges}
-              >
-                Reset changes
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <MoreHorizontalIcon className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  disabled={isPending || editingRow !== null}
+                  onClick={save}
+                >
+                  Save draft
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={isPending || editingRow !== null}
+                  onClick={publish}
+                >
+                  Publish
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>
+                  <ArrowUpFromLine className="size-4" />
+                  Import...
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  <ArrowDownFromLine className="size-4" />
+                  Export...
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={isPending}
+                  onClick={discardChanges}
+                >
+                  Reset changes
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Validation Issues Alert (if any) */}
       {issues.length > 0 && (
@@ -437,16 +440,23 @@ export function FinanceProvisioningEditor({
               onCancel={cancelInlineEdit}
             />
           ) : (
-            <div className="space-y-8 p-6">
+            <div className={cn('p-6', isWorkspace && 'space-y-8')}>
               {isWorkspace && setup ? (
                 <FinanceSetupMetadataEditor setup={setup} />
               ) : null}
 
               {activeDefinition.fields.length > 0 && (
-                <div className="max-w-2xl space-y-4 border-t pt-6">
-                  <h3 className="text-foreground text-sm font-semibold">
-                    Workspace defaults
-                  </h3>
+                <div
+                  className={cn(
+                    'max-w-2xl space-y-4',
+                    isWorkspace && 'border-t pt-6'
+                  )}
+                >
+                  {isWorkspace ? (
+                    <h3 className="text-foreground text-sm font-semibold">
+                      Workspace defaults
+                    </h3>
+                  ) : null}
                   <FinanceSingletonEditor
                     definition={activeDefinition}
                     row={
