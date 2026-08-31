@@ -81,6 +81,7 @@ function spec(): ProvisioningImportSpecification {
         name: 'Jamaica',
         country_codes: ['JM'],
         currency_code: 'JMD',
+        is_fallback: false,
       },
       {
         key: 'global-usd',
@@ -238,9 +239,11 @@ function createDependencies(options: {
     const key = `${targetType}:${targetKey}`
     manifests.set(
       key,
-      manifest(targetType as 'finance' | 'organization' | 'application', targetKey, {
-        published: true,
-      })
+      manifest(
+        targetType as 'finance' | 'organization' | 'application',
+        targetKey,
+        { published: true }
+      )
     )
   })
   const setDefault = vi.fn(async (setupKey: string) => {
@@ -273,12 +276,9 @@ function createDependencies(options: {
   return {
     dependencies,
     setups,
-    manifests,
-    policies,
     replacePolicy,
     replaceDraft,
     publishDraft,
-    setDefault,
   }
 }
 
@@ -313,7 +313,9 @@ describe('importProvisioningSpecification', () => {
     expect(result.finance_manifests_preserved).toBe(2)
     expect(result.organization_manifest_preserved).toBe(true)
     expect(result.warnings).toContainEqual(
-      expect.stringContaining("Setup 'jamaica' has an unpublished non-empty finance draft")
+      expect.stringContaining(
+        "Setup 'jamaica' has an unpublished non-empty finance draft"
+      )
     )
     expect(state.replaceDraft).not.toHaveBeenCalledWith(
       'finance',
