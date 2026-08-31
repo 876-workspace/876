@@ -19,7 +19,7 @@ export default defineConfig({
   },
   test: {
     clearMocks: true,
-    environment: 'node',
+    environment: 'jsdom',
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
