@@ -16,3 +16,9 @@ export {
   type ProvisioningImportDependencies,
   type ProvisioningImportSummary,
 } from './provisioning-import.service'
+export {
+  verifyProvisioningImport,
+  type ProvisioningImportVerification,
+  type ProvisioningImportVerificationDependencies,
+  type ProvisioningImportVerificationIssue,
+} from './provisioning-import-verification.service'
