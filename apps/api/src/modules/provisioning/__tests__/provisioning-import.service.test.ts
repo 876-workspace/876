@@ -34,7 +34,7 @@ function spec(): ProvisioningImportSpecification {
     },
     matching: {
       semantics: 'OR_OF_AND_GROUPS',
-      current_seed_condition: 'country equals ISO code',
+      current_condition: 'country equals ISO code',
       future_fields: ['subdivision', 'jurisdiction'],
     },
     default_entitlements: [
@@ -44,6 +44,11 @@ function spec(): ProvisioningImportSpecification {
         enabled: true,
       },
       { target_type: 'service', target_key: 'work', enabled: true },
+      {
+        target_type: 'service_capability',
+        target_key: 'work.tasks',
+        enabled: true,
+      },
     ],
     currencies: {
       JMD: {
@@ -358,6 +363,15 @@ describe('importProvisioningSpecification', () => {
           created_at: NOW,
           updated_at: NOW,
         },
+        {
+          object: 'provisioning_setup_entitlement',
+          id: 'pse_tasks',
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: false,
+          created_at: NOW,
+          updated_at: NOW,
+        },
       ],
     })
     const state = createDependencies({
@@ -397,6 +411,11 @@ describe('importProvisioningSpecification', () => {
         expect.objectContaining({
           target_type: 'service',
           target_key: 'work',
+          enabled: false,
+        }),
+        expect.objectContaining({
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
           enabled: false,
         }),
       ])
