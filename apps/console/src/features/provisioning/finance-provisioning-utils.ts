@@ -1,3 +1,4 @@
+import countries from '@876/core/countries.json'
 import type {
   AdminProvisioningCatalog,
   AdminProvisioningDraftReplaceParams,
@@ -20,11 +21,17 @@ import {
 
 export type FinanceResourceDefinition =
   AdminProvisioningCatalog['resource_types'][number]
+export type FinanceFieldDefinition = FinanceResourceDefinition['fields'][number]
 
 export type FinanceProvisioningTab = {
   key: string
   label: string
   multiple: boolean
+}
+
+export type FinanceSelectOption = {
+  value: string
+  label: string
 }
 
 export const FINANCE_PROVISIONING_TABS: readonly FinanceProvisioningTab[] = [
@@ -148,6 +155,55 @@ export function rowReferenceKey(row: FinanceResourceRow) {
       ? row.values.documentType.trim()
       : '')
   return typeof preferred === 'string' ? slug(preferred) : ''
+}
+
+function rowOptionLabel(row: FinanceResourceRow, key: string): string {
+  const name = typeof row.values.name === 'string' ? row.values.name.trim() : ''
+  const code = typeof row.values.code === 'string' ? row.values.code.trim() : ''
+
+  if (code && name && code !== name) return `${code} — ${name}`
+  if (name && name !== key) return `${name} (${key})`
+  if (code && code !== key) return `${code} (${key})`
+  return key
+}
+
+/**
+ * Returns the closed option set for a field when one exists.
+ *
+ * References never fall back to arbitrary text: country/language use platform
+ * catalogs and manifest-internal references resolve from the current rows.
+ */
+export function financeFieldOptions(
+  field: FinanceFieldDefinition,
+  allRows: FinanceResourceRow[]
+): FinanceSelectOption[] | null {
+  if (field.allowed_values)
+    return field.allowed_values.map((value) => ({
+      value,
+      label: formatOptionLabel(value),
+    }))
+
+  if (field.value_type !== 'reference') return null
+
+  if (field.reference_namespace === 'country')
+    return countries.map((country) => ({
+      value: country.countryCode,
+      label: `${country.flag} ${country.name} (${country.countryCode})`,
+    }))
+
+  if (field.reference_namespace === 'language')
+    return [{ value: 'en', label: 'English (en)' }]
+
+  const referenceRows = allRows.filter(
+    (candidate) => candidate.resourceType === field.reference_namespace
+  )
+
+  return referenceRows
+    .map((row) => {
+      const value = rowReferenceKey(row)
+      return value ? { value, label: rowOptionLabel(row, value) } : null
+    })
+    .filter((option): option is FinanceSelectOption => option !== null)
 }
 
 function resourceKey(
