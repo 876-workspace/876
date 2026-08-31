@@ -1,4 +1,4 @@
-import type { Country, Currency, Region } from './geo.schemas'
+import type { Country, Currency, Language, Region } from './geo.schemas'
 
 /**
  * Row → API resource.
@@ -13,6 +13,11 @@ export type CurrencyRow = {
   name: string
   symbol: string
   decimalPlaces: number
+}
+
+export type LanguageRow = {
+  code: string
+  name: string
 }
 
 export type CountryRow = {
@@ -37,6 +42,14 @@ export function serializeCurrency(row: CurrencyRow): Currency {
     name: row.name,
     symbol: row.symbol,
     decimal_places: row.decimalPlaces,
+  }
+}
+
+export function serializeLanguage(row: LanguageRow): Language {
+  return {
+    object: 'language',
+    code: row.code,
+    name: row.name,
   }
 }
 

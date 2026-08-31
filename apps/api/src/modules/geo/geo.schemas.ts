@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /**
- * Geographic reference data: currencies, countries, and their regions.
+ * Geographic reference data: currencies, languages, countries, and their regions.
  *
  * Zod is the single source of truth — these schemas type the responses, shape
  * the OpenAPI document, and validate the request params, so there is no second
@@ -28,6 +28,20 @@ export const currencySchema = z
       .meta({ description: 'Number of decimal places.', examples: [2] }),
   })
   .meta({ id: 'Currency' })
+
+export const languageSchema = z
+  .object({
+    object: z.literal('language').meta({ description: "Always 'language'." }),
+    code: z.string().meta({
+      description: 'BCP 47 language tag.',
+      examples: ['en'],
+    }),
+    name: z.string().meta({
+      description: 'Language display name.',
+      examples: ['English'],
+    }),
+  })
+  .meta({ id: 'Language' })
 
 export const countrySchema = z
   .object({
@@ -83,5 +97,6 @@ export const listRegionsParamsSchema = z.strictObject({
 })
 
 export type Currency = z.infer<typeof currencySchema>
+export type Language = z.infer<typeof languageSchema>
 export type Country = z.infer<typeof countrySchema>
 export type Region = z.infer<typeof regionSchema>

@@ -1,6 +1,11 @@
 import { prisma } from '@/db/client'
 
-import type { CountryRow, CurrencyRow, RegionRow } from './geo.serializers'
+import type {
+  CountryRow,
+  CurrencyRow,
+  LanguageRow,
+  RegionRow,
+} from './geo.serializers'
 
 /**
  * Every query against the geo tables — `currencies`, `countries`, `regions`.
@@ -15,6 +20,14 @@ export function listEnabledCurrencies(): Promise<CurrencyRow[]> {
     where: { isEnabled: true },
     orderBy: { code: 'asc' },
     select: { code: true, name: true, symbol: true, decimalPlaces: true },
+  })
+}
+
+export function listEnabledLanguages(): Promise<LanguageRow[]> {
+  return prisma.language.findMany({
+    where: { isEnabled: true },
+    orderBy: { code: 'asc' },
+    select: { code: true, name: true },
   })
 }
 

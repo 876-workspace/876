@@ -11,3 +11,14 @@ model Currency {
 
   @@map("currencies")
 }
+
+// Language — table `languages`.
+// Module: geo. Read-only locale reference data selected during provisioning.
+
+model Language {
+  code      String  @id @db.VarChar(35)
+  name      String  @db.VarChar
+  isEnabled Boolean @default(true) @map("is_enabled")
+
+  @@map("languages")
+}

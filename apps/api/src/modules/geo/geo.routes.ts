@@ -7,6 +7,7 @@ import * as docs from './geo.docs'
 import {
   countrySchema,
   currencySchema,
+  languageSchema,
   listRegionsParamsSchema,
   regionSchema,
 } from './geo.schemas'
@@ -29,6 +30,20 @@ api.get({
     },
   },
   handler: controller.listCurrencies,
+})
+
+api.get({
+  path: '/languages',
+  operationId: 'geo-list_languages',
+  summary: docs.LIST_LANGUAGES_SUMMARY,
+  description: docs.LIST_LANGUAGES_DESCRIPTION,
+  responses: {
+    200: {
+      ...docs.LIST_LANGUAGES_RESPONSES[200],
+      schema: z.array(languageSchema),
+    },
+  },
+  handler: controller.listLanguages,
 })
 
 api.get({
