@@ -159,12 +159,14 @@ describe('one-time provisioning importer reruns', () => {
     const manifests = new Map<string, ProvisioningManifest>()
 
     const replaceDraft = vi.fn(async () => undefined)
-    const publishDraft = vi.fn(async (targetType: string, targetKey: string) => {
-      manifests.set(
-        `${targetType}:${targetKey}`,
-        publishedManifest(targetType as 'finance' | 'organization', targetKey)
-      )
-    })
+    const publishDraft = vi.fn(
+      async (targetType: string, targetKey: string) => {
+        manifests.set(
+          `${targetType}:${targetKey}`,
+          publishedManifest(targetType as 'finance' | 'organization', targetKey)
+        )
+      }
+    )
     const replacePolicy = vi.fn(
       async (_setupKey: string, body: ProvisioningSetupPolicyReplaceParams) => {
         currentPolicy = {
@@ -186,6 +188,7 @@ describe('one-time provisioning importer reruns', () => {
     })
 
     const dependencies: ProvisioningImportDependencies = {
+      async preflightEntitlements() {},
       async findSetup() {
         return currentSetup
       },

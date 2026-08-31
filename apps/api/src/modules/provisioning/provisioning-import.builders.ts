@@ -1,5 +1,7 @@
-import type { ProvisioningSetupPolicyReplaceParams } from '@876/core/types/provisioning-policy'
-
+import {
+  provisioningSetupPolicyReplaceSchema,
+  type ProvisioningSetupPolicyReplace,
+} from './provisioning-setup-policy.schemas'
 import { provisioningDraftReplaceSchema } from './provisioning.schemas'
 import type { ProvisioningDraftReplace } from './provisioning.schemas'
 import type {
@@ -54,8 +56,8 @@ function step(key: string, description: string, position: number) {
 export function buildSetupPolicy(
   spec: ProvisioningImportSpecification,
   setup: ProvisioningImportSetup
-): ProvisioningSetupPolicyReplaceParams {
-  return {
+): ProvisioningSetupPolicyReplace {
+  return provisioningSetupPolicyReplaceSchema.parse({
     conditions: setup.country_codes.map((countryCode) => ({
       group_key: `country-${countryCode.toLowerCase()}`,
       field: 'country' as const,
@@ -64,7 +66,7 @@ export function buildSetupPolicy(
       priority: 100,
     })),
     entitlements: spec.default_entitlements.map((entry) => ({ ...entry })),
-  }
+  })
 }
 
 export function buildFinanceImportDraft(
@@ -317,7 +319,11 @@ function crmResources(
   for (const raw of subcategories) {
     const item = raw as Record<string, unknown>
     add('request_subcategory', item, [
-      referenceProp('category', 'request_category', String(item.category ?? '')),
+      referenceProp(
+        'category',
+        'request_category',
+        String(item.category ?? '')
+      ),
       stringProp('name', String(item.name ?? '')),
       ...optionalStringProp(
         'description',

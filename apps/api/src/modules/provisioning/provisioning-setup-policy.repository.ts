@@ -1,13 +1,18 @@
 import { prisma } from '@/db/client'
+import type { Prisma } from '@/db/generated/prisma/client'
 
 const POLICY_INCLUDE = {
   conditions: {
-    orderBy: [{ priority: 'desc' as const }, { groupKey: 'asc' as const }, { field: 'asc' as const }],
+    orderBy: [
+      { priority: 'desc' as const },
+      { groupKey: 'asc' as const },
+      { field: 'asc' as const },
+    ],
   },
   entitlements: {
     orderBy: [{ targetType: 'asc' as const }, { targetKey: 'asc' as const }],
   },
-} as const
+} satisfies Prisma.ProvisioningSetupInclude
 
 export function findPolicySetupByKey(key: string) {
   return prisma.provisioningSetup.findFirst({

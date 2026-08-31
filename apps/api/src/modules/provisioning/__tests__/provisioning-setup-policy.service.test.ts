@@ -11,6 +11,9 @@ vi.mock('../provisioning-setup-policy.repository', () => repository)
 const service = await import('../provisioning-setup-policy.service')
 
 const NOW = 1_785_000_000n
+type ReplacePolicyParams = Parameters<
+  typeof import('../provisioning-setup-policy.repository').replaceSetupPolicy
+>[0]
 
 function setupRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -38,30 +41,31 @@ beforeEach(() => {
     slug,
     appKind: 'product',
   }))
-  repository.replaceSetupPolicy.mockImplementation(async (params) =>
-    setupRow({
-      updatedAt: params.now,
-      conditions: params.conditions.map((condition) => ({
-        id: condition.id,
-        setupId: params.setupId,
-        groupKey: condition.groupKey,
-        field: condition.field,
-        operator: condition.operator,
-        value: condition.value,
-        priority: condition.priority,
-        createdAt: condition.now,
-        updatedAt: condition.now,
-      })),
-      entitlements: params.entitlements.map((entitlement) => ({
-        id: entitlement.id,
-        setupId: params.setupId,
-        targetType: entitlement.targetType,
-        targetKey: entitlement.targetKey,
-        enabled: entitlement.enabled,
-        createdAt: entitlement.now,
-        updatedAt: entitlement.now,
-      })),
-    })
+  repository.replaceSetupPolicy.mockImplementation(
+    async (params: ReplacePolicyParams) =>
+      setupRow({
+        updatedAt: params.now,
+        conditions: params.conditions.map((condition) => ({
+          id: condition.id,
+          setupId: params.setupId,
+          groupKey: condition.groupKey,
+          field: condition.field,
+          operator: condition.operator,
+          value: condition.value,
+          priority: condition.priority,
+          createdAt: condition.now,
+          updatedAt: condition.now,
+        })),
+        entitlements: params.entitlements.map((entitlement) => ({
+          id: entitlement.id,
+          setupId: params.setupId,
+          targetType: entitlement.targetType,
+          targetKey: entitlement.targetKey,
+          enabled: entitlement.enabled,
+          createdAt: entitlement.now,
+          updatedAt: entitlement.now,
+        })),
+      })
   )
 })
 
@@ -150,7 +154,9 @@ describe('provisioning setup policy service', () => {
       ],
     })
 
-    expect(repository.findPolicyAppBySlug).toHaveBeenCalledWith('876-enterprise')
+    expect(repository.findPolicyAppBySlug).toHaveBeenCalledWith(
+      '876-enterprise'
+    )
     expect(repository.replaceSetupPolicy).toHaveBeenCalledWith(
       expect.objectContaining({
         setupId: 'psu_jamaica',

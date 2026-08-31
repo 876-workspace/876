@@ -14,6 +14,7 @@ import {
   importProvisioningSpecification,
   type ProvisioningImportDependencies,
 } from '../provisioning-import.service'
+import type { ProvisioningDraftReplace } from '../provisioning.schemas'
 
 const NOW = 1_785_000_000
 
@@ -181,6 +182,51 @@ function manifest(
   }
 }
 
+function revisionFromDraft(
+  manifestId: string,
+  draft: ProvisioningDraftReplace
+): ProvisioningManifestRevision {
+  return {
+    ...revision(manifestId, 'draft'),
+    reconciliation: draft.reconciliation,
+    preserve_tenant_overrides: draft.preserve_tenant_overrides,
+    finance_dependency: draft.finance_dependency,
+    finance_scopes: draft.finance_scopes,
+    resources: draft.resources.map((resource, resourceIndex) => ({
+      object: 'provisioning_resource',
+      id: `prs_${resourceIndex}`,
+      resource_type: resource.resource_type,
+      key: resource.key,
+      position: resource.position,
+      properties: resource.properties.map((property, propertyIndex) => ({
+        object: 'provisioning_property',
+        id: `prp_${resourceIndex}_${propertyIndex}`,
+        key: property.key,
+        value_type: property.value_type,
+        string_value: property.string_value ?? null,
+        integer_value:
+          property.integer_value == null
+            ? null
+            : String(property.integer_value),
+        decimal_value:
+          property.decimal_value == null
+            ? null
+            : String(property.decimal_value),
+        boolean_value: property.boolean_value ?? null,
+        reference_namespace: property.reference_namespace ?? null,
+        reference_key: property.reference_key ?? null,
+      })),
+    })),
+    steps: draft.steps.map((step, index) => ({
+      object: 'provisioning_step',
+      id: `pvs_${index}`,
+      key: step.key,
+      description: step.description,
+      position: step.position,
+    })),
+  }
+}
+
 function policy(
   setupKey: string,
   overrides: Partial<ProvisioningSetupPolicy> = {}
@@ -196,11 +242,13 @@ function policy(
   }
 }
 
-function createDependencies(options: {
-  setups?: ProvisioningSetup[]
-  manifests?: ProvisioningManifest[]
-  policies?: ProvisioningSetupPolicy[]
-} = {}) {
+function createDependencies(
+  options: {
+    setups?: ProvisioningSetup[]
+    manifests?: ProvisioningManifest[]
+    policies?: ProvisioningSetupPolicy[]
+  } = {}
+) {
   const setups = new Map((options.setups ?? []).map((row) => [row.key, row]))
   const manifests = new Map(
     (options.manifests ?? []).map((row) => [
@@ -239,7 +287,27 @@ function createDependencies(options: {
     }
   )
 
-  const replaceDraft = vi.fn(async () => undefined)
+  const replaceDraft = vi.fn(
+    async (
+      targetType: string,
+      targetKey: string,
+      draft: ProvisioningDraftReplace
+    ) => {
+      const key = `${targetType}:${targetKey}`
+      const id = `pvm_${targetType}_${targetKey}`
+      manifests.set(key, {
+        object: 'provisioning_manifest',
+        id,
+        target_type: targetType as 'finance' | 'organization' | 'application',
+        target_key: targetKey,
+        manifest_version: 1,
+        published: null,
+        draft: revisionFromDraft(id, draft),
+        created_at: NOW,
+        updated_at: NOW,
+      })
+    }
+  )
   const publishDraft = vi.fn(async (targetType: string, targetKey: string) => {
     const key = `${targetType}:${targetKey}`
     manifests.set(
@@ -258,6 +326,7 @@ function createDependencies(options: {
   })
 
   const dependencies: ProvisioningImportDependencies = {
+    async preflightEntitlements() {},
     async findSetup(key) {
       return setups.get(key) ?? null
     },
@@ -291,7 +360,10 @@ describe('importProvisioningSpecification', () => {
   it('creates missing setups, publishes missing manifests, and promotes the fallback', async () => {
     const state = createDependencies()
 
-    const result = await importProvisioningSpecification(spec(), state.dependencies)
+    const result = await importProvisioningSpecification(
+      spec(),
+      state.dependencies
+    )
 
     expect(result.setups_created).toBe(2)
     expect(result.finance_manifests_published).toBe(2)
@@ -313,7 +385,10 @@ describe('importProvisioningSpecification', () => {
       ],
     })
 
-    const result = await importProvisioningSpecification(spec(), state.dependencies)
+    const result = await importProvisioningSpecification(
+      spec(),
+      state.dependencies
+    )
 
     expect(result.finance_manifests_preserved).toBe(2)
     expect(result.organization_manifest_preserved).toBe(true)
@@ -329,9 +404,34 @@ describe('importProvisioningSpecification', () => {
     )
   })
 
+  it('publishes an importer-owned draft when retrying after publish failure', async () => {
+    const state = createDependencies()
+    state.publishDraft.mockRejectedValueOnce(new Error('temporary failure'))
+
+    await expect(
+      importProvisioningSpecification(spec(), state.dependencies)
+    ).rejects.toThrow('temporary failure')
+
+    await importProvisioningSpecification(spec(), state.dependencies)
+
+    expect(state.replaceDraft).toHaveBeenCalledTimes(3)
+    expect(state.publishDraft).toHaveBeenCalledWith('finance', 'jamaica')
+  })
+
   it('backfills missing policy rows without overriding explicit operator choices', async () => {
     const jamaicaPolicy = policy('jamaica', {
       conditions: [
+        {
+          object: 'provisioning_setup_condition',
+          id: 'psc_composite_country',
+          group_key: 'jamaica-subdivision',
+          field: 'country',
+          operator: 'equals',
+          value: 'JM',
+          priority: 200,
+          created_at: NOW,
+          updated_at: NOW,
+        },
         {
           object: 'provisioning_setup_condition',
           id: 'psc_custom',
@@ -399,6 +499,12 @@ describe('importProvisioningSpecification', () => {
           priority: 500,
         }),
         expect.objectContaining({ field: 'country', value: 'JM' }),
+        expect.objectContaining({
+          group_key: 'country-jm',
+          field: 'country',
+          value: 'JM',
+          priority: 100,
+        }),
       ])
     )
     expect(body?.entitlements).toEqual(

@@ -2,10 +2,7 @@ import type {
   ProvisioningManifest,
   ProvisioningSetup,
 } from '@876/core/types/provisioning'
-import type {
-  ProvisioningSetupPolicy,
-  ProvisioningSetupPolicyReplaceParams,
-} from '@876/core/types/provisioning-policy'
+import type { ProvisioningSetupPolicy } from '@876/core/types/provisioning-policy'
 
 import { isAppHttpError } from '@/http/errors'
 
@@ -16,6 +13,7 @@ import {
   buildSetupPolicy,
 } from './provisioning-import.builders'
 import type { ProvisioningImportSpecification } from './provisioning-import.schemas'
+import type { ProvisioningSetupPolicyReplace } from './provisioning-setup-policy.schemas'
 import type { ProvisioningDraftReplace } from './provisioning.schemas'
 
 export type ProvisioningImportSummary = {
@@ -37,7 +35,7 @@ export type ProvisioningImportSummary = {
 
 export type ProvisioningImportDependencies = {
   preflightEntitlements(
-    entitlements: ProvisioningSetupPolicyReplaceParams['entitlements']
+    entitlements: ProvisioningSetupPolicyReplace['entitlements']
   ): Promise<void>
   findSetup(key: string): Promise<ProvisioningSetup | null>
   createSetup(body: {
@@ -62,7 +60,7 @@ export type ProvisioningImportDependencies = {
   retrievePolicy(setupKey: string): Promise<ProvisioningSetupPolicy>
   replacePolicy(
     setupKey: string,
-    body: ProvisioningSetupPolicyReplaceParams
+    body: ProvisioningSetupPolicyReplace
   ): Promise<ProvisioningSetupPolicy>
   setDefault(setupKey: string): Promise<ProvisioningSetup>
 }
@@ -128,9 +126,7 @@ const DEFAULT_DEPENDENCIES: ProvisioningImportDependencies = {
   },
 }
 
-function isPristineDraft(
-  revision: ProvisioningManifest['draft']
-): boolean {
+function isPristineDraft(revision: ProvisioningManifest['draft']): boolean {
   if (!revision) return true
   return (
     revision.finance_dependency === 'none' &&
@@ -142,8 +138,8 @@ function isPristineDraft(
 
 function mergePolicy(
   current: ProvisioningSetupPolicy,
-  desired: ProvisioningSetupPolicyReplaceParams
-): ProvisioningSetupPolicyReplaceParams {
+  desired: ProvisioningSetupPolicyReplace
+): ProvisioningSetupPolicyReplace {
   const conditions = current.conditions.map((condition) => ({
     group_key: condition.group_key,
     field: condition.field,
@@ -160,13 +156,15 @@ function mergePolicy(
       value: condition.value,
       priority: condition.priority ?? 0,
     }
-    const exists = conditions.some(
+    const existingIndex = conditions.findIndex(
       (candidate) =>
+        candidate.group_key === normalized.group_key &&
         candidate.field === normalized.field &&
         candidate.operator === normalized.operator &&
         candidate.value === normalized.value
     )
-    if (!exists) conditions.push(normalized)
+    if (existingIndex < 0) conditions.push(normalized)
+    else conditions[existingIndex] = normalized
   }
 
   const entitlements = current.entitlements.map((entitlement) => ({
@@ -193,7 +191,7 @@ function mergePolicy(
 
 function policyChanged(
   current: ProvisioningSetupPolicy,
-  merged: ProvisioningSetupPolicyReplaceParams
+  merged: ProvisioningSetupPolicyReplace
 ): boolean {
   if (current.conditions.length !== merged.conditions.length) return true
   if (current.entitlements.length !== merged.entitlements.length) return true
@@ -220,6 +218,82 @@ function policyChanged(
   )
 }
 
+function nullableString(value: string | number | null | undefined) {
+  return value == null ? null : String(value)
+}
+
+function draftMatchesRevision(
+  revision: NonNullable<ProvisioningManifest['draft']>,
+  draft: ProvisioningDraftReplace
+): boolean {
+  if (revision.reconciliation !== draft.reconciliation) return false
+  if (
+    revision.preserve_tenant_overrides !== draft.preserve_tenant_overrides ||
+    revision.finance_dependency !== draft.finance_dependency
+  )
+    return false
+  if (
+    revision.finance_scopes.length !== draft.finance_scopes.length ||
+    revision.finance_scopes.some(
+      (scope, index) => scope !== draft.finance_scopes[index]
+    )
+  )
+    return false
+  if (
+    revision.resources.length !== draft.resources.length ||
+    revision.steps.length !== draft.steps.length
+  )
+    return false
+
+  const resourcesMatch = draft.resources.every((expected) => {
+    const actual = revision.resources.find(
+      (candidate) =>
+        candidate.resource_type === expected.resource_type &&
+        candidate.key === expected.key
+    )
+    if (
+      !actual ||
+      actual.position !== expected.position ||
+      actual.properties.length !== expected.properties.length
+    )
+      return false
+
+    return expected.properties.every((expectedProperty) => {
+      const actualProperty = actual.properties.find(
+        (candidate) => candidate.key === expectedProperty.key
+      )
+      if (!actualProperty) return false
+
+      return (
+        actualProperty.value_type === expectedProperty.value_type &&
+        nullableString(actualProperty.string_value) ===
+          nullableString(expectedProperty.string_value) &&
+        nullableString(actualProperty.integer_value) ===
+          nullableString(expectedProperty.integer_value) &&
+        nullableString(actualProperty.decimal_value) ===
+          nullableString(expectedProperty.decimal_value) &&
+        actualProperty.boolean_value ===
+          (expectedProperty.boolean_value ?? null) &&
+        actualProperty.reference_namespace ===
+          (expectedProperty.reference_namespace ?? null) &&
+        actualProperty.reference_key ===
+          (expectedProperty.reference_key ?? null)
+      )
+    })
+  })
+  if (!resourcesMatch) return false
+
+  return draft.steps.every((expected) => {
+    const actual = revision.steps.find(
+      (candidate) => candidate.key === expected.key
+    )
+    return (
+      actual?.description === expected.description &&
+      actual.position === expected.position
+    )
+  })
+}
+
 async function ensurePublishedManifest(
   dependencies: ProvisioningImportDependencies,
   targetType: 'finance' | 'application' | 'organization',
@@ -229,7 +303,12 @@ async function ensurePublishedManifest(
   const current = await dependencies.findManifest(targetType, targetKey)
   if (current?.published) return 'preserved'
 
-  if (current?.draft && !isPristineDraft(current.draft)) return 'preserved'
+  if (current?.draft && !isPristineDraft(current.draft)) {
+    if (!draftMatchesRevision(current.draft, draft)) return 'preserved'
+
+    await dependencies.publishDraft(targetType, targetKey)
+    return 'published'
+  }
 
   await dependencies.replaceDraft(targetType, targetKey, draft)
   await dependencies.publishDraft(targetType, targetKey)

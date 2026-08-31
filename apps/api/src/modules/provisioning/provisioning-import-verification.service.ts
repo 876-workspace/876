@@ -110,9 +110,11 @@ export async function verifyProvisioningImport(
       for (const condition of expected.conditions) {
         const present = policy.conditions.some(
           (candidate) =>
+            candidate.group_key === condition.group_key &&
             candidate.field === condition.field &&
             candidate.operator === (condition.operator ?? 'equals') &&
-            candidate.value === condition.value
+            candidate.value === condition.value &&
+            candidate.priority === (condition.priority ?? 0)
         )
         if (!present) {
           issues.push({

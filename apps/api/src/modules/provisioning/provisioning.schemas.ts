@@ -39,21 +39,21 @@ export const provisioningPropertyInputSchema = z
     decimal_value: z
       .union([z.string(), z.number()])
       .nullable()
-      .optional()
-      .transform((v) => (v === null || v === undefined ? null : String(v))),
+      .transform((v) => (v === null ? null : String(v)))
+      .optional(),
     boolean_value: z.boolean().nullable().optional(),
     reference_namespace: z
       .string()
       .max(120)
       .nullable()
-      .optional()
-      .transform((v) => (v == null ? null : v.trim())),
+      .transform((v) => (v === null ? null : v.trim()))
+      .optional(),
     reference_key: z
       .string()
       .max(240)
       .nullable()
-      .optional()
-      .transform((v) => (v == null ? null : v.trim())),
+      .transform((v) => (v === null ? null : v.trim()))
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data.integer_value !== null && data.integer_value !== undefined) {
