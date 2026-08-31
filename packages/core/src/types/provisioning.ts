@@ -1,5 +1,3 @@
-import type { ProvisioningSetupPolicyReplaceParams } from './provisioning-policy'
-
 /** Canonical contracts for the permanent provisioning manifest v1 protocol. */
 
 export type ProvisioningTargetType = 'organization' | 'finance' | 'application'
@@ -232,8 +230,6 @@ export type ProvisioningSetupCreateParams = {
   key: string
   name: string
   description?: string | null
-  /** Initial matching/application/service policy saved with the setup. */
-  policy?: ProvisioningSetupPolicyReplaceParams
   /** Setup whose published finance manifest seeds the new one. */
   copy_from?: string | null
 }
