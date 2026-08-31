@@ -32,6 +32,7 @@ export type {
   RequestOptions,
   Result,
 } from './types/api.ts'
+export type { RegisterBusinessParams } from './types/business-registration.ts'
 export type {
   AuthEvent,
   AuthEventType,
@@ -55,7 +56,6 @@ export type {
   RecoverResponse,
   RecoverResult,
   Redirect,
-  RegisterBusinessParams,
   RegisterBusinessResult,
   RegisterParams,
   RegisterResponse,
