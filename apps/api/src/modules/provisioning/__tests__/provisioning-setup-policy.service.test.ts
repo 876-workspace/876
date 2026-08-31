@@ -92,6 +92,15 @@ describe('provisioning setup policy service', () => {
             createdAt: NOW,
             updatedAt: NOW,
           },
+          {
+            id: 'pse_work_tasks',
+            setupId: 'psu_jamaica',
+            targetType: 'service_capability',
+            targetKey: 'work.tasks',
+            enabled: true,
+            createdAt: NOW,
+            updatedAt: NOW,
+          },
         ],
       })
     )
@@ -110,13 +119,18 @@ describe('provisioning setup policy service', () => {
           priority: 100,
         }),
       ],
-      entitlements: [
+      entitlements: expect.arrayContaining([
         expect.objectContaining({
           target_type: 'service',
           target_key: 'work',
           enabled: true,
         }),
-      ],
+        expect.objectContaining({
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: true,
+        }),
+      ]),
     })
   })
 
@@ -168,6 +182,79 @@ describe('provisioning setup policy service', () => {
         }),
       ])
     )
+  })
+
+  it('accepts registered Work capabilities when the Work gate is explicit', async () => {
+    const result = await service.replaceSetupPolicy('jamaica', {
+      conditions: [],
+      entitlements: [
+        { target_type: 'service', target_key: 'work', enabled: true },
+        {
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: true,
+        },
+        {
+          target_type: 'service_capability',
+          target_key: 'work.sync',
+          enabled: false,
+        },
+      ],
+    })
+
+    expect(result.entitlements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target_type: 'service_capability',
+          target_key: 'work.tasks',
+          enabled: true,
+        }),
+        expect.objectContaining({
+          target_type: 'service_capability',
+          target_key: 'work.sync',
+          enabled: false,
+        }),
+      ])
+    )
+  })
+
+  it('requires an explicit Work service gate before capability policy', async () => {
+    await expect(
+      service.replaceSetupPolicy('jamaica', {
+        conditions: [],
+        entitlements: [
+          {
+            target_type: 'service_capability',
+            target_key: 'work.tasks',
+            enabled: true,
+          },
+        ],
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/work-service-entitlement-required',
+      httpStatus: 400,
+    })
+
+    expect(repository.replaceSetupPolicy).not.toHaveBeenCalled()
+  })
+
+  it('rejects unknown Work capability targets', async () => {
+    await expect(
+      service.replaceSetupPolicy('jamaica', {
+        conditions: [],
+        entitlements: [
+          { target_type: 'service', target_key: 'work', enabled: true },
+          {
+            target_type: 'service_capability',
+            target_key: 'work.unknown',
+            enabled: true,
+          },
+        ],
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/unknown-service-capability',
+      httpStatus: 400,
+    })
   })
 
   it('rejects an explicit attempt to disable Enterprise', async () => {
