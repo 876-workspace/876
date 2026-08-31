@@ -93,7 +93,7 @@ async function OrganizationsTableData({
   const orgIds = orgs.map((o) => o.id)
   const subscriptionsMap: Record<string, AdminSubscription[]> = {}
   if (orgIds.length > 0) {
-    const batchResult = await workspace.apps.entitlements.list({
+    const batchResult = await workspace.organizations.subscriptions.list({
       organizationIds: orgIds,
     })
     if (batchResult.data) {
