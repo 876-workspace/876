@@ -4,6 +4,7 @@ import type {
 } from '@876/core/types/provisioning-policy'
 import type {
   AdminDeletedProvisioningSetup,
+  AdminListResponse,
   AdminProvisioningDraftReplaceParams,
   AdminProvisioningManifestRevision,
   AdminProvisioningSetup,
@@ -12,10 +13,62 @@ import type {
   AdminProvisioningValidation,
 } from '@876/platform/compat'
 
+import type {
+  DeletedProvisioningSetupResource,
+  ProvisioningSetupResource,
+  ProvisioningSetupResourceCreateParams,
+  ProvisioningSetupResourceType,
+  ProvisioningSetupResourceUpdateParams,
+} from '@/types/provisioning'
+
 import { request } from './request'
 
 const path = (setupKey: string) =>
   `/api/organizations/provisioning/setups/${encodeURIComponent(setupKey)}`
+
+const resourcePath = (setupKey: string, resourceType: string) =>
+  `${path(setupKey)}/resources/${encodeURIComponent(resourceType)}`
+
+function resourceClient(resourceType: ProvisioningSetupResourceType) {
+  return {
+    list(setupKey: string) {
+      return request<AdminListResponse<ProvisioningSetupResource>>(
+        resourcePath(setupKey, resourceType)
+      )
+    },
+
+    create(setupKey: string, params: ProvisioningSetupResourceCreateParams) {
+      return request<ProvisioningSetupResource>(
+        resourcePath(setupKey, resourceType),
+        { method: 'POST', body: JSON.stringify(params) }
+      )
+    },
+
+    retrieve(setupKey: string, resourceKey: string) {
+      return request<ProvisioningSetupResource>(
+        `${resourcePath(setupKey, resourceType)}/${encodeURIComponent(resourceKey)}`
+      )
+    },
+
+    update(
+      setupKey: string,
+      resourceKey: string,
+      params: ProvisioningSetupResourceUpdateParams
+    ) {
+      return request<ProvisioningSetupResource>(
+        `${resourcePath(setupKey, resourceType)}/${encodeURIComponent(resourceKey)}`,
+        { method: 'PATCH', body: JSON.stringify(params) }
+      )
+    },
+
+    delete(setupKey: string, resourceKey: string) {
+      return request<DeletedProvisioningSetupResource>(
+        `${resourcePath(setupKey, resourceType)}/${encodeURIComponent(resourceKey)}`,
+        { method: 'DELETE' }
+      )
+    },
+  }
+}
 
 export type ConsoleProvisioningSetupCreateParams =
   AdminProvisioningSetupCreateParams & {
@@ -89,5 +142,18 @@ export const provisioningSetups = {
       `${path(setupKey)}/publish`,
       { method: 'POST' }
     )
+  },
+
+  resources: {
+    forType: resourceClient,
+    workspaceDefaults: resourceClient('workspace'),
+    currencies: resourceClient('currency'),
+    paymentModes: resourceClient('payment_mode'),
+    paymentTerms: resourceClient('payment_term'),
+    invoicePreferences: resourceClient('invoice_preference'),
+    taxAuthorities: resourceClient('tax_authority'),
+    taxJurisdictions: resourceClient('tax_jurisdiction'),
+    taxCodes: resourceClient('tax_code'),
+    taxRates: resourceClient('tax_rate'),
   },
 }
