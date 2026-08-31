@@ -1,419 +1,293 @@
-import type { LateFeeCalculationType, TaxBehavior } from './enums'
 import type { MinorAmount } from './common'
+import type { LateFeeCalculationType, TaxBehavior } from './enums'
 
-/**
- * A line used when creating a quote or invoice.
- */
+/** A line used when creating a quote or invoice. */
 export interface DocumentLineCreateParams {
-  /**
-   * ID of the catalog item this line references, if any.
-   */
   itemId?: string | null
-
-  /**
-   * ID of the price this line references, if any.
-   */
   priceId?: string | null
-
-  /**
-   * An arbitrary description of the line. Often useful for displaying to users.
-   */
   description?: string | null
-
-  /**
-   * The quantity of units for the line.
-   */
   quantity?: number
-
-  /**
-   * Unit amount in the smallest currency unit when overriding the catalog price.
-   */
   unitAmount?: MinorAmount | null
-
-  /**
-   * Tax amount in the smallest currency unit for the line.
-   */
   taxAmount?: MinorAmount
-
-  /**
-   * Discount amount in the smallest currency unit for the line.
-   */
   discountAmount?: MinorAmount
 }
 
-/**
- * Parameters for creating a draft invoice.
- */
+/** Parameters for creating a draft invoice. */
 export interface InvoiceCreateParams {
-  /**
-   * ID of the quote to convert into an invoice.
-   */
   quoteId?: string | null
-
-  /**
-   * ID of the estimate to convert into an invoice.
-   */
   estimateId?: string | null
-
-  /**
-   * ID of the customer who receives the invoice.
-   */
   customerId?: string | null
-
-  /**
-   * ID of the subscription that generated the invoice.
-   */
   subscriptionId?: string | null
-
-  /**
-   * ID of the salesperson associated with the invoice.
-   */
   salespersonId?: string | null
-
-  /**
-   * ID of the price list used when resolving line prices.
-   */
   priceListId?: string | null
-
-  /**
-   * Three-letter ISO currency code for the invoice.
-   */
   currency?: string
-
-  /**
-   * Time at which the invoice is issued. Measured in seconds since the Unix epoch.
-   */
   issueAt?: number
-
-  /**
-   * Time at which the invoice is due. Measured in seconds since the Unix epoch.
-   */
   dueAt?: number
-
-  /**
-   * Customer-facing order number.
-   */
   orderNumber?: string | null
-
-  /**
-   * An arbitrary reference number attached to the invoice.
-   */
   referenceNumber?: string | null
-
-  /**
-   * A short subject line for the invoice.
-   */
   subject?: string | null
-
-  /**
-   * Tax behavior applied to the invoice totals. One of `EXCLUSIVE` or `INCLUSIVE`.
-   */
   taxBehavior?: TaxBehavior
-
-  /**
-   * Document-level discount in the smallest currency unit.
-   */
   discountAmount?: MinorAmount
-
-  /**
-   * Shipping amount in the smallest currency unit.
-   */
   shippingAmount?: MinorAmount
-
-  /**
-   * Manual adjustment amount in the smallest currency unit.
-   */
   adjustmentAmount?: MinorAmount
-
-  /**
-   * Notes printed on the invoice.
-   */
   notes?: string | null
-
-  /**
-   * Payment terms printed on the invoice.
-   */
   terms?: string | null
-
-  /**
-   * Line items to include on the invoice.
-   */
   lines?: DocumentLineCreateParams[]
 }
 
-/**
- * Parameters for updating tenant invoice preferences.
- */
+/** Parameters for updating tenant invoice preferences. */
 export interface InvoicePreferenceUpdateParams {
-  /**
-   * Default tax behavior for newly created invoices. One of `EXCLUSIVE` or `INCLUSIVE`.
-   */
   defaultTaxBehavior: TaxBehavior
-
-  /**
-   * Default notes applied to new invoices.
-   */
   defaultNotes?: string | null
-
-  /**
-   * Default terms applied to new invoices.
-   */
   defaultTerms?: string | null
-
-  /**
-   * Whether sent invoices remain editable.
-   */
   allowEditingSentInvoices: boolean
-
-  /**
-   * Whether automatic late fees are enabled.
-   */
   lateFeesEnabled: boolean
-
-  /**
-   * How late fees are calculated. One of `PERCENTAGE` or `FIXED`.
-   */
   lateFeeCalculationType: LateFeeCalculationType
-
-  /**
-   * Late fee percentage when `lateFeeCalculationType` is `PERCENTAGE`.
-   */
   lateFeePercent: number | null
-
-  /**
-   * Fixed late fee amount when `lateFeeCalculationType` is `FIXED`.
-   */
   lateFeeAmount: MinorAmount | null
-
-  /**
-   * Number of grace days before late fees apply.
-   */
   lateFeeGraceDays: number
-
-  /**
-   * Whether late-fee invoices are created as drafts.
-   */
   lateFeeGenerateAsDraft: boolean
 }
 
-/**
- * Tenant defaults that control invoice presentation and late fees.
- */
+/** Tenant defaults that control invoice presentation and late fees. */
 export interface InvoicePreference {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'invoice_preference'
-
-  /**
-   * ID of the tenant that owns these preferences.
-   */
   tenantId: string
-
-  /**
-   * Default tax behavior for newly created invoices. One of `EXCLUSIVE` or `INCLUSIVE`.
-   */
   defaultTaxBehavior: TaxBehavior
-
-  /**
-   * Default notes applied to new invoices.
-   */
   defaultNotes: string | null
-
-  /**
-   * Default terms applied to new invoices.
-   */
   defaultTerms: string | null
-
-  /**
-   * Whether sent invoices remain editable.
-   */
   allowEditingSentInvoices: boolean
-
-  /**
-   * Whether automatic late fees are enabled.
-   */
   lateFeesEnabled: boolean
-
-  /**
-   * How late fees are calculated. One of `PERCENTAGE` or `FIXED`.
-   */
   lateFeeCalculationType: LateFeeCalculationType
-
-  /**
-   * Late fee percentage as a decimal string.
-   */
   lateFeePercent: string | null
-
-  /**
-   * Fixed late fee amount as a decimal string.
-   */
   lateFeeAmount: string | null
-
-  /**
-   * Number of grace days before late fees apply.
-   */
   lateFeeGraceDays: number
-
-  /**
-   * Whether late-fee invoices are created as drafts.
-   */
   lateFeeGenerateAsDraft: boolean
-
-  /**
-   * Time at which the object was created. Measured in seconds since the Unix epoch.
-   */
   createdAt: number
-
-  /**
-   * Time at which the object was last updated. Measured in seconds since the Unix epoch.
-   */
   updatedAt: number
 }
 
-/**
- * A confirmation returned after updating invoice preferences.
- */
+/** A confirmation returned after updating invoice preferences. */
 export interface InvoicePreferenceUpdated {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'invoice_preference'
-
-  /**
-   * ID of the tenant that owns the updated preferences.
-   */
   tenantId: string
 }
 
-/**
- * Summary of a late-fee generation run.
- */
+/** Summary of a late-fee generation run. */
 export interface LateFeeRun {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'late_fee_run'
-
-  /**
-   * Number of late-fee invoices created.
-   */
   created: number
-
-  /**
-   * Number of candidates skipped.
-   */
   skipped: number
-
-  /**
-   * True if more candidates remain beyond this run's batch.
-   */
   hasMore: boolean
 }
 
-/**
- * Parameters for finalizing a draft invoice.
- */
+/** Parameters for finalizing a draft invoice. */
 export interface InvoiceFinalizeParams {
-  /**
-   * ID of the payment term applied at finalize time.
-   */
   paymentTermId?: string | null
-
-  /**
-   * ID of the salesperson applied at finalize time.
-   */
   salespersonId?: string | null
-
-  /**
-   * Whether available credits should be applied automatically.
-   */
   autoApplyCredits?: boolean
 }
 
-/**
- * Parameters for voiding an invoice.
- */
+/** Parameters for voiding an invoice. */
 export interface InvoiceVoidParams {
-  /**
-   * An arbitrary reason recorded with the void.
-   */
   reason?: string | null
 }
 
-/**
- * A minimal invoice resource returned after creation.
- */
+/** A minimal invoice resource returned after creation. */
 export interface InvoiceCreated {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'invoice'
-
-  /**
-   * Unique identifier for the object.
-   */
   id: string
 }
-/**
- * Parameters for listing invoices.
- */
+
+/** Statuses emitted by the invoice data model. */
+export type InvoiceStatus =
+  | 'DRAFT'
+  | 'OPEN'
+  | 'SENT'
+  | 'PARTIALLY_PAID'
+  | 'OVERDUE'
+  | 'PAID'
+  | 'UNCOLLECTIBLE'
+  | 'VOID'
+
+/** Statuses emitted by quote resources. */
+export type QuoteStatus =
+  | 'DRAFT'
+  | 'SENT'
+  | 'ACCEPTED'
+  | 'DECLINED'
+  | 'EXPIRED'
+  | 'CANCELED'
+
+/** Statuses emitted by estimate resources. */
+export type EstimateStatus = QuoteStatus
+
+/** Billing reasons emitted by invoice resources. */
+export type InvoiceBillingReason =
+  | 'MANUAL'
+  | 'QUOTE'
+  | 'ESTIMATE'
+  | 'SUBSCRIPTION_CREATE'
+  | 'SUBSCRIPTION_CYCLE'
+  | 'SUBSCRIPTION_UPDATE'
+  | 'OPENING_BALANCE'
+  | 'LATE_FEE'
+
+/** Stable customer projection expanded on commercial documents. */
+export interface DocumentCustomer {
+  object: 'customer'
+  id: string
+  name: string
+}
+
+/** Stable invoice-line projection returned by invoice lists. */
+export interface InvoiceLine {
+  object: 'invoice_line'
+  id: string
+  itemId: string | null
+  priceId: string | null
+  description: string
+  quantity: number
+  unitAmount: string
+  taxAmount: string
+  discountAmount: string
+  totalAmount: string
+  createdAt: number
+  updatedAt: number
+}
+
+/** Stable quote/estimate line projection returned by list endpoints. */
+export interface ProposalLine {
+  id: string
+  itemId: string | null
+  priceId: string | null
+  description: string
+  quantity: number
+  unitAmount: string
+  taxAmount: string
+  discountAmount: string
+  totalAmount: string
+  createdAt: number
+  updatedAt: number
+}
+
+/** Parameters for listing invoices. */
 export interface InvoiceListParams {
-  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+  status?: InvoiceStatus
 }
 
 /**
- * A tenant invoice resource returned by the list endpoint.
- * The API guarantees object/id and uses a passthrough shape for forward compat.
+ * Stable tenant invoice contract.
+ *
+ * The Billing API may return additional internal fields. Runtime parsing keeps
+ * this public DTO intentionally bounded so application code cannot couple to
+ * arbitrary Prisma fields or reconstruct the resource through casts.
  */
-export type Invoice = {
+export interface Invoice {
   object: 'invoice'
   id: string
-} & Record<string, unknown>
+  customerId: string
+  quoteId: string | null
+  estimateId: string | null
+  subscriptionId: string | null
+  number: string
+  status: InvoiceStatus
+  billingReason: InvoiceBillingReason
+  currency: string
+  orderNumber: string | null
+  referenceNumber: string | null
+  subject: string | null
+  taxBehavior: TaxBehavior
+  customerName: string | null
+  customerEmail: string | null
+  issueAt: number | null
+  dueAt: number | null
+  sentAt: number | null
+  paidAt: number | null
+  voidedAt: number | null
+  finalizedAt: number | null
+  subtotalAmount: string
+  taxAmount: string
+  discountAmount: string
+  shippingAmount: string
+  adjustmentAmount: string
+  totalAmount: string
+  amountDue: string
+  amountPaid: string
+  amountCredited: string
+  amountWrittenOff: string
+  notes: string | null
+  terms: string | null
+  createdAt: number
+  updatedAt: number
+  customer: DocumentCustomer
+  lines: InvoiceLine[]
+}
 
-/**
- * Paginated list of invoices.
- */
+/** Paginated list of invoices. */
 export type InvoiceList = import('./common').List<Invoice>
 
-/**
- * Parameters for listing quotes.
- */
+/** Parameters for listing quotes. */
 export interface QuoteListParams {
-  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+  status?: QuoteStatus
 }
 
-/**
- * A tenant quote resource returned by the list endpoint.
- * The API guarantees object/id and uses a passthrough shape for forward compat.
- */
-export type Quote = {
+/** Stable tenant quote contract. */
+export interface Quote {
   object: 'quote'
   id: string
-} & Record<string, unknown>
-
-/**
- * Paginated list of quotes.
- */
-export type QuoteList = import('./common').List<Quote>
-
-/**
- * Parameters for listing estimates.
- */
-export interface EstimateListParams {
-  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+  customerId: string
+  number: string
+  status: QuoteStatus
+  currency: string
+  issueAt: number | null
+  expiresAt: number | null
+  acceptedAt: number | null
+  declinedAt: number | null
+  canceledAt: number | null
+  subtotalAmount: string
+  taxAmount: string
+  totalAmount: string
+  notes: string | null
+  terms: string | null
+  createdAt: number
+  updatedAt: number
+  customer: DocumentCustomer
+  lines: ProposalLine[]
+  convertedInvoice: { id: string; number: string } | null
 }
 
-/**
- * A tenant estimate resource returned by the list endpoint.
- * The API guarantees object/id and uses a passthrough shape for forward compat.
- */
-export type Estimate = {
+/** Paginated list of quotes. */
+export type QuoteList = import('./common').List<Quote>
+
+/** Parameters for listing estimates. */
+export interface EstimateListParams {
+  status?: EstimateStatus
+}
+
+/** Stable tenant estimate contract. */
+export interface Estimate {
   object: 'estimate'
   id: string
-} & Record<string, unknown>
+  customerId: string
+  number: string
+  status: EstimateStatus
+  currency: string
+  issueAt: number | null
+  expiresAt: number | null
+  acceptedAt: number | null
+  declinedAt: number | null
+  canceledAt: number | null
+  subtotalAmount: string
+  taxAmount: string
+  totalAmount: string
+  notes: string | null
+  terms: string | null
+  createdAt: number
+  updatedAt: number
+  customer: DocumentCustomer
+  lines: ProposalLine[]
+}
 
-/**
- * Paginated list of estimates.
- */
+/** Paginated list of estimates. */
 export type EstimateList = import('./common').List<Estimate>
