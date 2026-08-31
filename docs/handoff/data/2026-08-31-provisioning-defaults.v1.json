@@ -1,9 +1,22 @@
 {
   "object": "provisioning_import_specification",
   "manifest_version": 1,
-  "purpose": "Temporary development import source for the local migration agent. Operational provisioning configuration belongs in the database after import; this file must not be treated as a runtime source of truth.",
+  "purpose": "One-time development database import source for the local migration agent. Operational provisioning configuration belongs in the database after import; this file must never become a runtime source of truth or ordinary seed.",
+  "import_mode": "one_time_database_bootstrap",
+  "runtime_source_of_truth": false,
+  "delete_after_verified_import": true,
   "default_setup_key": "global-usd",
   "default_language": "en",
+  "country_scope": {
+    "caribbean": [
+      "AG", "AI", "AW", "BB", "BL", "BM", "BQ", "BS", "BZ", "CU",
+      "CW", "DM", "DO", "GD", "GF", "GP", "GY", "HT", "JM", "KN",
+      "KY", "LC", "MF", "MQ", "MS", "PR", "SR", "SX", "TC", "TT",
+      "VC", "VG", "VI"
+    ],
+    "united_states": ["US"],
+    "canada": ["CA"]
+  },
   "matching": {
     "semantics": "OR_OF_AND_GROUPS",
     "current_seed_condition": "country equals ISO-3166-1 alpha-2 code",
