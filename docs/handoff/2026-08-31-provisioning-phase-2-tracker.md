@@ -22,17 +22,19 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 - `DONE` Workspace defaults read from published finance manifest v1.
 - `DONE` Application, Work service, and Work capability policy helpers.
 - `DONE` Work capabilities narrow application-declared Work scopes.
+- `DONE` Persist selected setup plus workspace currency/language defaults atomically with the initial routing decision.
 
 ## Organization persistence and retry behavior
 
 - `DONE` Organization schema fields for selected setup and routing audit.
 - `DONE` Provisioning run schema fields for selection audit.
-- `IN PROGRESS` Route all new-organization creation paths through initial resolver/persistence.
-- `IN PROGRESS` Ensure retry/resume paths require and reuse persisted selection.
-- `TODO` Finish admin organization-create routing integration.
-- `TODO` Finish business registration routing integration.
-- `TODO` Finish existing-user/bootstrap routing integration.
-- `TODO` Ensure no existing organization is silently re-resolved when policy changes.
+- `DONE` Central fresh-org routing guard: only an org whose `createdAt` equals the current bootstrap timestamp may be automatically selected.
+- `DONE` Admin organization-create reaches the central fresh-org resolver before first provisioning writes.
+- `DONE` Business registration/member assignment reaches the central fresh-org resolver before effective app assignment/subscription writes.
+- `DONE` Existing-user/bootstrap path resolves and persists before workspace provisioning.
+- `DONE` Persisted selections are reused on retry/resume.
+- `DONE` Older organizations with no persisted selection are not silently re-resolved when policy changes.
+- `IN PROGRESS` Replace remaining generic retry errors with stable provisioning error contracts where needed.
 
 ## Signup routing facts
 
@@ -40,17 +42,17 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 - `TODO` Add optional canonical subdivision/region routing input where available.
 - `TODO` Add canonical country selector to business onboarding UI.
 - `TODO` Resolve subdivision from canonical Region rows rather than free-form strings.
-- `TODO` Define authoritative precedence when both organization country and region country are present.
+- `DONE` Organization `countryCode` wins over Region country when both are present; Region country is a fallback only.
 
 ## Entitlements and service provisioning
 
-- `IN PROGRESS` Make setup application entitlements drive default subscriptions.
+- `DONE` Setup application entitlements drive default subscriptions.
 - `DONE` Enterprise remains mandatory.
 - `DONE` Explicit source-app signup remains an additional entitlement request.
 - `DONE` Billing/Invoice app access stays separate from shared finance infrastructure.
 - `IN PROGRESS` Work service gate controls Work tenant provisioning.
 - `IN PROGRESS` Work capabilities control granted scopes.
-- `TODO` Ensure member app assignment reflects effective setup/source-app entitlements consistently.
+- `DONE` Member app assignment uses effective setup entitlements plus explicit source-app access.
 
 ## Finance provisioning
 
