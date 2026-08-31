@@ -1,12 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-import type { AdminProvisioningSetup } from '@876/platform/compat'
-import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useDetailSegments } from '@876/ui/list-detail-shell'
 import { cn } from '@876/core/utils'
+import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
+import { useDetailSegments } from '@876/ui/list-detail-shell'
 import {
   Table,
   TableBody,
@@ -15,6 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from '@876/ui/table'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useMemo } from 'react'
 
 export function SetupsList({ setups }: { setups: AdminProvisioningSetup[] }) {
   const segments = useDetailSegments()
@@ -74,7 +74,7 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
           <TableRow>
             <TableHead className="px-5 py-3.5">Setup</TableHead>
             <TableHead className="px-5 py-3.5">Description</TableHead>
-            <TableHead className="px-5 py-3.5">Currencies</TableHead>
+            <TableHead className="px-5 py-3.5">Published revision</TableHead>
             <TableHead className="px-5 py-3.5">Organizations</TableHead>
             <TableHead className="px-5 py-3.5">Status</TableHead>
           </TableRow>
@@ -139,11 +139,6 @@ function SetupRow({
       </TableRow>
     )
 
-  const currencies = (setup.currency_code ?? '')
-    .split(/[,;\s]+/)
-    .map((c) => c.trim())
-    .filter(Boolean)
-
   return (
     <TableRow className="transition-colors">
       <TableCell className="relative px-5 py-3.5">
@@ -163,22 +158,13 @@ function SetupRow({
       <TableCell className="text-muted-foreground max-w-xs truncate px-5 py-3.5 text-[0.8125rem]">
         {setup.description || '—'}
       </TableCell>
-      <TableCell className="px-5 py-3.5">
-        {currencies.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {currencies.map((code) => (
-              <Badge
-                key={code}
-                variant="outline"
-                className="font-mono text-xs font-medium"
-              >
-                {code}
-              </Badge>
-            ))}
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
+      <TableCell className="px-5 py-3.5 font-mono text-xs tabular-nums">
+        {setup.published_revision === null ? '—' : `v${setup.published_revision}`}
+        {setup.has_draft ? (
+          <Badge variant="outline" className="ml-2">
+            Draft
+          </Badge>
+        ) : null}
       </TableCell>
       <TableCell className="px-5 py-3.5 tabular-nums">
         {setup.organization_count}
