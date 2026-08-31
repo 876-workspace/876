@@ -82,6 +82,7 @@ function InlineFieldControl({
         aria-label={field.label}
         autoFocus={autoFocus}
         className={className}
+        size="sm"
         value={String(value ?? false)}
         onChange={(event) => onChange(event.target.value === 'true')}
       >
@@ -97,6 +98,7 @@ function InlineFieldControl({
         aria-label={field.label}
         autoFocus={autoFocus}
         className={className}
+        size="sm"
         value={String(value ?? '')}
         onChange={(event) => onChange(event.target.value)}
       >
