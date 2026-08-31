@@ -17,6 +17,7 @@
     "areaCode": "+1-246",
     "flag": "🇧🇧"
   },
+  { "name": "Belize", "countryCode": "BZ", "areaCode": "+501", "flag": "🇧🇿" },
   { "name": "Cuba", "countryCode": "CU", "areaCode": "+53", "flag": "🇨🇺" },
   {
     "name": "Dominica",
@@ -36,6 +37,7 @@
     "areaCode": "+1-473",
     "flag": "🇬🇩"
   },
+  { "name": "Guyana", "countryCode": "GY", "areaCode": "+592", "flag": "🇬🇾" },
   { "name": "Haiti", "countryCode": "HT", "areaCode": "+509", "flag": "🇭🇹" },
   {
     "name": "Jamaica",
@@ -61,6 +63,7 @@
     "areaCode": "+1-784",
     "flag": "🇻🇨"
   },
+  { "name": "Suriname", "countryCode": "SR", "areaCode": "+597", "flag": "🇸🇷" },
   {
     "name": "Trinidad and Tobago",
     "countryCode": "TT",
@@ -122,6 +125,42 @@
     "countryCode": "SX",
     "areaCode": "+1-721",
     "flag": "🇸🇽"
+  },
+  {
+    "name": "Bonaire, Sint Eustatius and Saba",
+    "countryCode": "BQ",
+    "areaCode": "+599",
+    "flag": "🇧🇶"
+  },
+  {
+    "name": "Guadeloupe",
+    "countryCode": "GP",
+    "areaCode": "+590",
+    "flag": "🇬🇵"
+  },
+  {
+    "name": "Martinique",
+    "countryCode": "MQ",
+    "areaCode": "+596",
+    "flag": "🇲🇶"
+  },
+  {
+    "name": "Saint Barthélemy",
+    "countryCode": "BL",
+    "areaCode": "+590",
+    "flag": "🇧🇱"
+  },
+  {
+    "name": "Saint Martin",
+    "countryCode": "MF",
+    "areaCode": "+590",
+    "flag": "🇲🇫"
+  },
+  {
+    "name": "French Guiana",
+    "countryCode": "GF",
+    "areaCode": "+594",
+    "flag": "🇬🇫"
   },
   {
     "name": "United States",
