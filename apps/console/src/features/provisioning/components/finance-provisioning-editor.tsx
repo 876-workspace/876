@@ -34,7 +34,6 @@ import {
   type FinanceResourceRow,
 } from '../finance-provisioning-utils'
 import { FinanceCollectionEditor } from './finance-collection-editor'
-import { FinanceResourceDrawer } from './finance-resource-drawer'
 import { FinanceSingletonEditor } from './finance-singleton-editor'
 
 function getDefinitionType(definition: FinanceResourceDefinition): string {
@@ -90,8 +89,7 @@ export function FinanceProvisioningEditor({
   const selectedType = initialType ?? localSelectedType
   const isUrlDriven = initialType !== undefined
 
-  // Drawer state for adding / editing collection items
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  // Collection items edit directly in their table row.
   const [editingRow, setEditingRow] = useState<FinanceResourceRow | null>(null)
   const [isNewItem, setIsNewItem] = useState(false)
 
@@ -144,20 +142,22 @@ export function FinanceProvisioningEditor({
 
   function openAddItem() {
     if (!activeDefinition) return
-    const row = emptyRow(activeDefinition, newId())
-    setEditingRow(row)
+
+    setEditingRow(emptyRow(activeDefinition, newId()))
     setIsNewItem(true)
-    setDrawerOpen(true)
   }
 
   function openEditItem(row: FinanceResourceRow) {
-    setEditingRow(row)
+    setEditingRow({
+      ...row,
+      values: { ...row.values },
+    })
     setIsNewItem(false)
-    setDrawerOpen(true)
   }
 
-  function saveDrawerItem(savedRow: FinanceResourceRow) {
+  function saveInlineItem(savedRow: FinanceResourceRow) {
     if (!activeDefinition) return
+
     const typeKey = getDefinitionType(activeDefinition)
     const categoryRows = groupedRows[typeKey] ?? []
 
@@ -166,16 +166,25 @@ export function FinanceProvisioningEditor({
     } else {
       replaceType(
         typeKey,
-        categoryRows.map((r) => (r.localId === savedRow.localId ? savedRow : r))
+        categoryRows.map((row) =>
+          row.localId === savedRow.localId ? savedRow : row
+        )
       )
     }
 
-    setDrawerOpen(false)
     setEditingRow(null)
+    setIsNewItem(false)
+  }
+
+  function cancelInlineEdit() {
+    setEditingRow(null)
+    setIsNewItem(false)
   }
 
   function discardChanges() {
     setRows(revisionRows(currentRevision))
+    setEditingRow(null)
+    setIsNewItem(false)
     setIssues([])
     setMessage('Changes reverted.')
   }
@@ -284,7 +293,10 @@ export function FinanceProvisioningEditor({
                 <button
                   key={typeKey}
                   type="button"
-                  onClick={() => setLocalSelectedType(typeKey)}
+                  onClick={() => {
+                    cancelInlineEdit()
+                    setLocalSelectedType(typeKey)
+                  }}
                   className={cn(
                     'group relative inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors',
                     isSelected
@@ -318,23 +330,30 @@ export function FinanceProvisioningEditor({
         </div>
       )}
 
-      {/* Toolbar */}
-      <div className="876-header-row flex shrink-0 items-center justify-between gap-2 border-b px-5 py-2">
-        <div className="flex items-center gap-2">
-          {message && (
-            <span className="text-muted-foreground text-xs" role="status">
+      {/* Resource heading + actions */}
+      <div className="876-header-row flex shrink-0 items-center justify-between gap-4 border-b px-5 py-3">
+        <div className="min-w-0">
+          <h3 className="text-foreground truncate text-sm font-semibold">
+            {activeDefinition?.label}
+          </h3>
+          {activeDefinition?.description ? (
+            <p className="text-muted-foreground mt-0.5 truncate text-xs">
+              {activeDefinition.description}
+            </p>
+          ) : null}
+          {message ? (
+            <p className="text-muted-foreground mt-1 text-xs" role="status">
               {message}
-            </span>
-          )}
+            </p>
+          ) : null}
         </div>
 
-        {/* Right: add + overflow */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {activeDefinition?.multiple && (
             <Button
               variant="outline"
               size="sm"
-              disabled={!!atMaximum}
+              disabled={!!atMaximum || editingRow !== null}
               onClick={openAddItem}
             >
               <Plus className="size-3.5" strokeWidth={2.25} />
@@ -352,10 +371,16 @@ export function FinanceProvisioningEditor({
               <MoreHorizontalIcon className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem disabled={isPending} onClick={save}>
+              <DropdownMenuItem
+                disabled={isPending || editingRow !== null}
+                onClick={save}
+              >
                 Save draft
               </DropdownMenuItem>
-              <DropdownMenuItem disabled={isPending} onClick={publish}>
+              <DropdownMenuItem
+                disabled={isPending || editingRow !== null}
+                onClick={publish}
+              >
                 Publish
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -393,8 +418,7 @@ export function FinanceProvisioningEditor({
           <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-xs">
             {issues.map((issue) => (
               <li key={`${issue.path}-${issue.code}`}>
-                <span className="font-mono">{issue.path}</span>:{' '}
-                {issue.message}
+                <span className="font-mono">{issue.path}</span>: {issue.message}
               </li>
             ))}
           </ul>
@@ -408,11 +432,17 @@ export function FinanceProvisioningEditor({
             <FinanceCollectionEditor
               definition={activeDefinition}
               rows={currentCategoryRows}
+              allRows={rows}
+              editingRow={editingRow}
+              isNewItem={isNewItem}
               onChange={(next) =>
                 replaceType(getDefinitionType(activeDefinition), next)
               }
               onAdd={openAddItem}
               onEdit={openEditItem}
+              onEditChange={setEditingRow}
+              onSave={saveInlineItem}
+              onCancel={cancelInlineEdit}
             />
           ) : (
             <div className="p-6">
@@ -434,22 +464,6 @@ export function FinanceProvisioningEditor({
           )
         ) : null}
       </div>
-
-      {/* Slide-over Item Drawer */}
-      {activeDefinition && (
-        <FinanceResourceDrawer
-          open={drawerOpen}
-          definition={activeDefinition}
-          row={editingRow}
-          allRows={rows}
-          isNew={isNewItem}
-          onSave={saveDrawerItem}
-          onClose={() => {
-            setDrawerOpen(false)
-            setEditingRow(null)
-          }}
-        />
-      )}
     </div>
   )
 }

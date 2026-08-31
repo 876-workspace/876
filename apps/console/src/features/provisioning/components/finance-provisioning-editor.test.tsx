@@ -132,7 +132,7 @@ describe('FinanceProvisioningEditor', () => {
     expect(addButtons.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('opens and closes the slide-over drawer when clicking Add', async () => {
+  it('adds and edits typed collection rows inline without a drawer', async () => {
     const user = userEvent.setup()
 
     render(
@@ -147,13 +147,36 @@ describe('FinanceProvisioningEditor', () => {
     const toolbarAddButton = screen.getAllByRole('button', { name: /Add/ })[0]!
     await user.click(toolbarAddButton)
 
-    // Drawer dialog should now be open
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-
-    // Close the drawer
-    const cancelButton = screen.getByRole('button', { name: /Cancel/i })
-    await user.click(cancelButton)
-
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    const codeInput = screen.getByRole('textbox', { name: 'ISO code' })
+    const minorUnitInput = screen.getByRole('spinbutton', {
+      name: 'Minor unit',
+    })
+    expect(codeInput).toBeInTheDocument()
+    expect(minorUnitInput).toBeInTheDocument()
+
+    await user.type(codeInput, 'USD')
+    await user.type(minorUnitInput, '2')
+    await user.click(screen.getByRole('button', { name: 'Save currency' }))
+
+    expect(screen.getByText('USD')).toBeInTheDocument()
+    expect(screen.getByText('2')).toBeInTheDocument()
+
+    const editButton = screen.getByRole('button', { name: 'Edit currency' })
+    const deleteButton = screen.getByRole('button', {
+      name: 'Delete currency',
+    })
+    expect(deleteButton).toHaveClass('text-destructive/80')
+    expect(deleteButton.parentElement).toHaveClass('opacity-0')
+
+    await user.click(editButton)
+    const editCodeInput = screen.getByRole('textbox', { name: 'ISO code' })
+    await user.clear(editCodeInput)
+    await user.type(editCodeInput, 'CAD')
+    await user.click(screen.getByRole('button', { name: 'Save currency' }))
+
+    expect(screen.getByText('CAD')).toBeInTheDocument()
+    expect(screen.queryByText('USD')).not.toBeInTheDocument()
   })
 })
