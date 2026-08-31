@@ -1,149 +1,97 @@
-# Provisioning Phase 1 — implementation and handoff
+# Provisioning Phase 1 — implementation and local database handoff
 
 Date: 2026-08-31  
 Branch: `feature/console-settings-provisioning`  
-Status: **Phase 1 web/code implementation substantially complete; local Prisma migration/database import and repository verification still required**
+Manifest protocol: **version 1**  
+Status: **Phase 1 code implementation is substantially complete. Local Prisma migration/application, one-time database import, and full repository verification remain local-only.**
 
 ## Purpose
 
-Phase 1 turns provisioning into database-owned, reusable configuration instead of a Jamaica-only seed path or a single-country setup record.
+Phase 1 changes provisioning from Jamaica-specific seed-owned bootstrap data into database-owned reusable setup configuration.
 
-The model after this phase is:
+After Phase 1:
 
-- a `ProvisioningSetup` is a reusable named day-zero configuration;
-- setup identity is separate from country identity;
-- country/subdivision/jurisdiction are matching conditions;
-- condition groups use OR-of-AND semantics;
-- one setup may match several countries;
-- one country may have several competing setups;
-- finance configuration remains manifest v1;
-- application/service entitlements are separate from finance dependencies;
-- Work is represented as a service entitlement, not an application subscription;
-- operational setup policy/manifests belong in the database;
-- repository code owns schemas, validation, API behavior, Console UX, and an explicit development import specification;
-- automatic signup/setup selection remains Phase 2.
+- a provisioning setup is a named day-zero configuration, not a country record;
+- a setup can match several countries;
+- a country can have several setups;
+- future state/province/jurisdiction matching fits the same policy model;
+- currency/default language/workspace behavior belongs to manifest v1;
+- geographic applicability belongs to setup policy conditions;
+- application/service access policy is explicit and separate from finance infrastructure;
+- Work is a service entitlement;
+- Billing/Invoice access is not implied merely because a finance workspace exists;
+- operational provisioning values live in the database;
+- normal platform seeds no longer own provisioning;
+- an explicit one-time import file exists only to initialize the development database after the local migration;
+- automatic organization signup/setup resolution is Phase 2.
 
-No manifest v2 was introduced.
+No manifest v2 is introduced by this work.
 
 ---
 
-# Phase 1 decisions
+# 1. Setup identity and matching policy
 
-## 1. Setup identity is not country identity
+Legacy `ProvisioningSetup.countryCode` and `ProvisioningSetup.currencyCode` database fields may remain temporarily for migration/backfill compatibility, but they are not the new configuration source of truth.
 
-Legacy `ProvisioningSetup.countryCode` and `ProvisioningSetup.currencyCode` fields may remain temporarily for additive migration/backfill compatibility, but they are not the long-term source of truth.
-
-Country belongs in setup matching policy. Currency belongs in the finance manifest.
-
-This permits configurations such as:
+The intended ownership is:
 
 ```text
-United States general
-  country = US
+setup name/key/description        -> ProvisioningSetup
+country/state/jurisdiction match -> ProvisioningSetupPolicy conditions
+currency/language/workspace      -> finance manifest v1
+application/service access       -> ProvisioningSetupPolicy entitlements
+```
+
+Conditions use OR-of-AND groups.
+
+Example:
+
+```text
+US general
+  group us
+    country = US
 
 California
-  country = US
-  subdivision = US-CA
+  group us-ca
+    country = US
+    subdivision = US-CA
 
 Special California jurisdiction
-  country = US
-  subdivision = US-CA
-  jurisdiction = <jurisdiction>
+  group us-ca-special
+    country = US
+    subdivision = US-CA
+    jurisdiction = <jurisdiction>
 ```
 
-## 2. Matching uses OR-of-AND groups
+Conditions in one group are ANDed. Separate groups are alternatives.
 
-Conditions sharing a `group_key` are AND requirements. Separate groups are alternatives.
-
-```text
-group us-ca
-  country = US
-  subdivision = US-CA
-
-group ca-on
-  country = CA
-  subdivision = CA-ON
-```
-
-The setup matches when one complete group matches.
-
-Phase 1 Console edits simple country alternatives while preserving advanced groups it does not understand yet.
-
-## 3. Product entitlement is not finance infrastructure
-
-These concepts remain separate:
-
-```text
-finance workspace != 876 Billing entitlement
-finance workspace != 876 Invoice entitlement
-```
-
-Current setup entitlement catalog:
-
-- application `876-enterprise` — base organization access, always enabled;
-- application `876-couriers`;
-- application `876-billing`;
-- application `876-invoice`;
-- application `876-crm`;
-- service `work`.
-
-`console` is internal and `876-consumer` is not an organization product entitlement.
-
-## 4. Work is a shared service entitlement
-
-Work is represented as `service/work`. Phase 1 stores the setup policy. Phase 2 will consume it when an organization is actually provisioned.
-
-## 5. Unknown-region fallback
-
-The development import specification defines `global-usd` as the intended fallback setup. It uses USD and English but deliberately has no country condition and no required finance workspace country.
-
-## 6. Tax defaults must not be fabricated
-
-International provisioning may legitimately contain no tax authority/rate. Jamaica can retain its explicit TAJ/GCT baseline, while unrelated jurisdictions are not assigned invented tax values.
-
-The finance catalog now supports:
-
-- optional tax authorities;
-- optional hierarchical tax jurisdictions;
-- optional tax applicability/tax codes;
-- optional tax rates;
-- optional authority and jurisdiction references from tax rates;
-- optional applicability reference from tax rates;
-- effective-from/effective-until metadata;
-- open tax type strings such as GCT/VAT/GST/sales-tax terminology.
-
-Provisioning remains configuration. Transaction-time tax calculation is outside this subsystem.
+Phase 1 Console primarily edits simple country alternatives while the normalized model already supports future subdivision/jurisdiction rules.
 
 ---
 
-# Completed implementation
+# 2. Provisioning setup policy persistence
 
-## A. Normalized setup policy persistence
+The Core API Prisma schema now contains normalized setup policy records for:
 
-Core API Prisma schema contains normalized setup policy records for:
+- setup matching conditions;
+- setup application/service entitlements.
 
-- matching conditions;
-- application/service entitlements.
-
-Conditions support:
+Supported condition fields:
 
 - `country`;
 - `subdivision`;
-- `jurisdiction`;
-- `equals` operator;
-- grouped AND conditions;
-- alternative OR groups;
-- group priority.
+- `jurisdiction`.
 
-Entitlements support:
+Supported operator today:
 
-- `application` targets;
-- `service` targets;
-- explicit enabled state.
+- `equals`.
 
-## B. Setup policy API
+Each condition also stores:
 
-Core API:
+- `group_key`;
+- `priority`.
+
+The policy API is:
 
 ```text
 GET /provisioning/setups/:setup_key/policy
@@ -152,25 +100,90 @@ PUT /provisioning/setups/:setup_key/policy
 
 Validation covers:
 
-- supported country values from the canonical country catalog;
+- country values from `@876/core/countries.json`;
 - subdivision syntax;
 - duplicate conditions;
-- one priority per group;
+- consistent priority within a condition group;
 - duplicate entitlement targets;
-- known shared-service targets;
 - registered non-internal application targets;
-- Enterprise cannot be disabled;
-- Enterprise is normalized into persisted policy when omitted.
+- known service targets;
+- mandatory 876 Enterprise behavior.
 
-## C. Canonical country selection
+876 Enterprise cannot be explicitly disabled. Missing Enterprise access is normalized into persisted policy.
 
-Console uses `@876/core/countries.json` for provisioning country choices.
+---
 
-Country is selected rather than typed arbitrarily. The API also validates country conditions against the same catalog, so another admin client cannot bypass the definitive country list merely by posting a two-letter string.
+# 3. Application and service entitlement policy
 
-## D. Generic international finance catalog
+Current organization-facing application entitlement targets are:
 
-Current finance resource families:
+```text
+876-enterprise
+876-couriers
+876-billing
+876-invoice
+876-crm
+```
+
+`console` is internal and is not setup entitlement policy.
+
+`876-consumer` is not an organization application entitlement.
+
+Current shared service target:
+
+```text
+service/work
+```
+
+Work is deliberately represented as a service rather than pretending it is an application subscription.
+
+The default one-time bootstrap policy currently defines:
+
+```text
+876-enterprise -> enabled
+876-couriers   -> disabled
+876-billing    -> disabled
+876-invoice    -> disabled
+876-crm        -> disabled
+work           -> enabled
+```
+
+These are initial setup values only. Once imported, database/Console configuration is authoritative.
+
+## Finance infrastructure is separate
+
+The following must remain distinct:
+
+```text
+finance workspace != Billing product entitlement
+finance workspace != Invoice product entitlement
+```
+
+An application may have `finance_dependency = embedded` without every organization being entitled to that application.
+
+---
+
+# 4. Canonical countries
+
+Console provisioning country selection now uses:
+
+```text
+packages/core/src/countries.json
+```
+
+Countries are selected from the definitive catalog rather than typed arbitrarily.
+
+The Core API validates setup country conditions against the same catalog, so an alternate admin client cannot bypass the canonical list by posting any two-character string.
+
+The country catalog was expanded for the requested regional Phase 1 scope where necessary.
+
+---
+
+# 5. International finance manifest v1
+
+Finance provisioning remains manifest version 1.
+
+Current resource families:
 
 ```text
 workspace
@@ -184,233 +197,139 @@ tax_jurisdiction
 tax_rate
 ```
 
-Important cardinality behavior:
-
-- `workspace`: singleton, required;
-- `currency`: collection, minimum 1;
-- `payment_mode`: collection, minimum 1;
-- `payment_term`: collection, minimum 1;
-- `invoice_preference`: singleton, required;
-- `tax_code`: optional collection;
-- `tax_authority`: optional collection;
-- `tax_jurisdiction`: optional collection;
-- `tax_rate`: optional collection.
-
-Workspace `countryCode` is optional so a location-neutral fallback does not claim the United States.
-
-## E. Provisioning card reference controls
-
-The generic Console provisioning editor now resolves reference values from defined choices instead of requiring operators to type internal identifiers manually.
-
-Examples:
-
-- country -> canonical country catalog;
-- language -> currently supported platform language choices (`en` today);
-- base/default currency -> configured currency resources;
-- tax authority -> configured tax authorities;
-- tax jurisdiction -> configured jurisdictions;
-- tax applicability -> configured tax codes;
-- other internal references -> matching manifest resource rows.
-
-Effective-date fields render as date controls.
-
-## F. Setup metadata and policy UX
-
-The Workspace tab owns setup-level editing rather than restoring the old standalone edit page.
-
-It contains:
-
-1. setup key/name/description;
-2. matching/access policy;
-3. finance workspace defaults;
-4. lifecycle controls.
-
-The setup card keeps the branch’s existing split-view behavior and destructive-light close treatment.
-
-## G. New setup flow
-
-New setup creation supports:
-
-- name;
-- stable key;
-- description;
-- country matching via selectors;
-- initial application entitlements;
-- initial Work entitlement.
-
-Console coordinates setup creation and initial policy as one server-side domain operation rather than requiring the browser to perform two independent backend mutations. A freshly created setup is cleaned up if initial policy creation fails.
-
-## H. Provisioning seed ownership removed
-
-Provisioning is absent from normal `pnpm node:seed` orchestration.
-
-The old provisioning/regional seed implementation was removed. Running ordinary platform seeds must not create/update provisioning profiles or manifests.
-
-Operational provisioning configuration is database-owned after explicit bootstrap/import.
-
-## I. Explicit development import specification
-
-The handoff import source is:
+Cardinality:
 
 ```text
-docs/handoff/data/2026-08-31-provisioning-defaults.v1.json
+workspace          singleton, required
+currency           collection, minimum 1
+payment_mode       collection, minimum 1
+payment_term       collection, minimum 1
+invoice_preference singleton, required
+tax_code           optional collection
+tax_authority      optional collection
+tax_jurisdiction   optional collection
+tax_rate           optional collection
 ```
 
-It is intentionally not a runtime source of truth.
+`workspace.countryCode` is optional. This is necessary for `global-usd`, because a location-neutral fallback must not falsely claim that the organization is located in the United States.
 
-It describes the current development bootstrap state including:
-
-- regional setup definitions;
-- `global-usd` fallback;
-- currency definitions;
-- common payment modes;
-- common payment terms;
-- invoice defaults;
-- setup entitlement defaults;
-- Jamaica tax baseline;
-- CRM provisioning defaults;
-- application finance dependency/scope defaults.
-
-After import, Console/database edits are authoritative.
+Default language is currently English (`en`) because the applications are currently English-only.
 
 ---
 
-# Resource-level CRUD added for provisioning cards
+# 6. Tax configuration
 
-The provisioning cards previously had UI-level add/edit/delete behavior but persisted the result only by replacing the complete manifest draft.
+Tax configuration was generalized without fabricating tax rules for every market.
 
-Phase 1 now also exposes proper resource-level CRUD underneath the card model.
+Supported manifest-v1 concepts now include:
 
-This does **not** remove the existing draft-first UX. Operators may still make several edits locally and use `Save draft`/`Publish`. Resource CRUD exists as a reusable API/client capability for direct row operations, future screens, automation, tests, and local agents.
+- optional tax applicability / tax codes;
+- optional tax authorities;
+- optional hierarchical tax jurisdictions;
+- optional tax rates;
+- authority references;
+- jurisdiction references;
+- tax-code/applicability references;
+- effective-from/effective-until dates;
+- open tax-type labels such as GCT, VAT, GST, or sales tax.
 
-## Core API routes
+Tax authority/rate collections are allowed to be empty.
 
-For a named setup:
+Jamaica retains an explicit baseline:
+
+```text
+Tax Administration Jamaica
+Standard GCT
+15.00000000
+exclusive
+```
+
+The other regional bootstrap setups deliberately do **not** invent tax authority/rate values merely to satisfy validation.
+
+Provisioning remains configuration; transaction-time tax calculation is outside this subsystem.
+
+---
+
+# 7. Console provisioning UX
+
+The branch keeps the existing progressed provisioning-card work.
+
+Setup editing is integrated into the Workspace tab rather than restoring the old `/edit` page.
+
+Workspace/setup editing includes:
+
+- setup key;
+- setup name;
+- description;
+- country matching policy;
+- application entitlement policy;
+- Work service policy;
+- finance workspace defaults.
+
+Country values are selected from the canonical catalog.
+
+Reference-valued finance properties use defined selectors where possible instead of raw text entry:
+
+- country -> canonical countries;
+- language -> supported language choices (`en` currently);
+- base/default currency -> configured currency resources;
+- tax authority -> tax authority resources;
+- tax jurisdiction -> tax jurisdiction resources;
+- tax applicability -> tax code resources;
+- other internal references -> matching manifest resources.
+
+Effective-date properties use date controls.
+
+The setup card keeps the existing close-button/destructive-light treatment and removal of the large standalone Edit button.
+
+---
+
+# 8. New setup creation
+
+The new setup flow supports:
+
+- stable key;
+- name;
+- description;
+- country matching selection;
+- application entitlement selection;
+- Work service selection.
+
+Console performs setup creation plus initial policy initialization as one server-side domain operation rather than requiring the browser to coordinate independent mutations.
+
+If policy initialization fails immediately after a fresh setup is created, the fresh setup is cleaned up rather than leaving an accidental incomplete setup behind.
+
+---
+
+# 9. Provisioning resource CRUD
+
+Provisioning cards still support the existing draft-first editing model, but the underlying finance setup data now also has proper row-level CRUD.
+
+Core API routes:
 
 ```text
 GET    /provisioning/setups/:setup_key/resources/:resource_type
 POST   /provisioning/setups/:setup_key/resources/:resource_type
-
 GET    /provisioning/setups/:setup_key/resources/:resource_type/:resource_key
 PATCH  /provisioning/setups/:setup_key/resources/:resource_type/:resource_key
 DELETE /provisioning/setups/:setup_key/resources/:resource_type/:resource_key
 ```
 
-Read behavior:
-
-- use the current draft when one exists;
-- otherwise read the published revision.
-
-Mutation behavior:
-
-- create/update/delete modifies only the selected resource;
-- every unrelated resource family is preserved;
-- manifest steps and finance dependency/scope metadata are preserved;
-- writes produce/update the setup draft;
-- existing manifest-v1 validation remains authoritative.
-
-## CRUD safety rules
-
-Resource CRUD enforces:
-
-- registered resource type;
-- unique resource type/key pair;
-- singleton cardinality;
-- maximum-item limits;
-- minimum-item protection on delete;
-- unique resource positions;
-- immutable resource key on update;
-- reference protection before delete.
-
-Example: a currency referenced elsewhere cannot be deleted until those references are changed. The final required payment mode/currency/payment term cannot be deleted.
-
-## Shared contracts
-
-Shared CRUD contracts live in:
+Current named finance namespaces:
 
 ```text
-packages/core/src/types/provisioning-resources.ts
+workspaceDefaults
+currencies
+paymentModes
+paymentTerms
+invoicePreferences
+taxCodes
+taxAuthorities
+taxJurisdictions
+taxRates
 ```
 
-This avoids separate Platform/Console definitions drifting apart.
-
-## Platform / Workspace operator client
-
-The bounded client surface is:
-
-```ts
-workspace.provisioning.resources.forType(type)
-workspace.provisioning.resources.workspaceDefaults
-workspace.provisioning.resources.currencies
-workspace.provisioning.resources.paymentModes
-workspace.provisioning.resources.paymentTerms
-workspace.provisioning.resources.invoicePreferences
-workspace.provisioning.resources.taxCodes
-workspace.provisioning.resources.taxAuthorities
-workspace.provisioning.resources.taxJurisdictions
-workspace.provisioning.resources.taxRates
-```
-
-Each named resource exposes standard verbs:
-
-```ts
-.list(setupKey)
-.create(setupKey, params)
-.retrieve(setupKey, resourceKey)
-.update(setupKey, resourceKey, params)
-.delete(setupKey, resourceKey)
-```
-
-Examples:
-
-```ts
-await workspace.provisioning.resources.currencies.list('jamaica')
-
-await workspace.provisioning.resources.currencies.create('jamaica', {
-  key: 'USD',
-  properties: [/* typed provisioning properties */],
-})
-
-await workspace.provisioning.resources.paymentModes.update(
-  'jamaica',
-  'cash',
-  { properties: [/* replacement property set */] }
-)
-
-await workspace.provisioning.resources.taxRates.delete(
-  'jamaica',
-  'legacy-rate'
-)
-```
-
-## Console same-origin API
-
-Browser code remains same-origin:
-
-```text
-/api/organizations/provisioning/setups/:setupKey/resources/:resourceType
-/api/organizations/provisioning/setups/:setupKey/resources/:resourceType/:resourceKey
-```
-
-The route validates `resourceType` against the closed shared provisioning setup resource catalog before invoking the Workspace operator client. It is not a generic service gateway.
-
-## Console browser client
-
-The browser client mirrors the named namespaces:
-
-```ts
-client.provisioningSetups.resources.currencies
-client.provisioningSetups.resources.paymentModes
-client.provisioningSetups.resources.paymentTerms
-client.provisioningSetups.resources.invoicePreferences
-client.provisioningSetups.resources.taxCodes
-client.provisioningSetups.resources.taxAuthorities
-client.provisioningSetups.resources.taxJurisdictions
-client.provisioningSetups.resources.taxRates
-client.provisioningSetups.resources.workspaceDefaults
-```
-
-and each exposes:
+Each exposes:
 
 ```text
 list
@@ -420,102 +339,360 @@ update
 delete
 ```
 
-The generic `forType()` entry is also available for registered setup resource types.
+Workspace/Platform operator example:
 
-## CRUD tests
+```ts
+workspace.provisioning.resources.currencies.list('jamaica')
+workspace.provisioning.resources.currencies.create('jamaica', params)
+workspace.provisioning.resources.currencies.retrieve('jamaica', 'JMD')
+workspace.provisioning.resources.currencies.update('jamaica', 'JMD', params)
+workspace.provisioning.resources.currencies.delete('jamaica', 'USD')
+```
 
-Added service regression coverage for:
+Console browser client mirrors the same namespaces under:
 
-- listing one resource family;
-- creating while preserving unrelated resources;
-- duplicate-key rejection;
-- updating one resource while retaining its stable key;
-- preventing deletion of the last required row;
-- preventing deletion of referenced resources;
-- deleting optional resources while preserving the rest of the draft.
+```ts
+client.provisioningSetups.resources
+```
+
+CRUD safeguards include:
+
+- closed registered resource types;
+- unique resource type/key;
+- singleton enforcement;
+- maximum-cardinality enforcement;
+- minimum-row protection;
+- position uniqueness;
+- stable keys on update;
+- reference protection before delete;
+- preservation of unrelated resources, steps, finance dependency, and scopes.
+
+The card itself remains batch/draft-first. Row CRUD exists underneath it for direct API/client use, future screens, automation, and tests.
 
 ---
 
-# Main files added/changed
+# 10. Provisioning seeds removed
 
-## Shared/core
+Provisioning is no longer part of normal API seed ownership.
 
-- `packages/core/src/types/provisioning-policy.ts`
-- `packages/core/src/types/provisioning-resources.ts`
-- canonical country catalog additions where required.
+Removed:
 
-## Core API
+```text
+apps/api/src/seeds/provisioning.ts
+apps/api/src/seeds/provisioning.repository.ts
+```
 
-Policy persistence/API:
+Provisioning was removed from the normal seed orchestration and seed CLI targets.
 
-- provisioning setup policy Prisma schema;
-- policy schemas/repository/service/controller/routes;
-- provisioning route composition.
+`pnpm seed` / `pnpm node:seed` must not create or overwrite provisioning setups/manifests.
 
-Finance catalog:
+This is intentional. Provisioning configuration becomes database-owned after explicit bootstrap.
 
-- `apps/api/src/services/provisioning-catalog.ts`
-- provisioning catalog regression tests.
+---
 
-Resource CRUD:
+# 11. ONE-TIME LOCAL DATABASE IMPORT FILE
 
-- `apps/api/src/modules/provisioning/provisioning-resource.schemas.ts`
-- `apps/api/src/modules/provisioning/provisioning-resource.service.ts`
-- `apps/api/src/modules/provisioning/provisioning-resource.controller.ts`
-- `apps/api/src/modules/provisioning/provisioning-resource.routes.ts`
-- `apps/api/src/modules/provisioning/__tests__/provisioning-resource.service.test.ts`
-- provisioning module/root router composition.
+## File
 
-Seed ownership:
+The local AI must use:
 
-- provisioning removed from `apps/api/src/seeds/index.ts` and seed CLI;
-- old provisioning seed implementation removed.
+```text
+docs/handoff/data/2026-08-31-provisioning-defaults.v1.json
+```
 
-## Platform / Workspace clients
+This is a **one-time development database bootstrap file**.
 
-- `packages/platform/src/resources/provisioning-setup-resources.ts`
-- `packages/platform/src/client.ts`
-- Workspace operator inherits the expanded Core operator provisioning surface.
+It is **not**:
+
+- a runtime configuration file;
+- an application source of truth;
+- an ordinary seed;
+- something that should execute on service startup;
+- something Phase 2 should read on each organization signup.
+
+The file now explicitly declares:
+
+```json
+{
+  "import_mode": "one_time_database_bootstrap",
+  "runtime_source_of_truth": false,
+  "delete_after_verified_import": true
+}
+```
+
+After a verified successful local import/backfill, the local AI may delete this temporary import file in the follow-up migration work. The resulting database records remain authoritative.
+
+## Regional scope encoded by the file
+
+The file contains an explicit `country_scope` object.
+
+### Caribbean
+
+Current Caribbean regional scope includes:
+
+```text
+AG AI AW BB BL BM BQ BS BZ CU CW DM DO GD GF GP GY HT JM KN KY LC
+MF MQ MS PR SR SX TC TT VC VG VI
+```
+
+This includes the requested Caribbean sovereign markets plus the Caribbean territories already represented by the platform country catalog/setup list.
+
+### United States
+
+```text
+US
+```
+
+### Canada
+
+```text
+CA
+```
+
+Canada is retained because it was part of the earlier Phase 1 scope.
+
+The import schema verifies that every declared scope code has an actual setup definition and exists in the canonical country catalog.
+
+## Setup/currency bootstrap data
+
+The file defines country-specific setups for the regional scope, including currencies such as:
+
+```text
+JMD USD CAD XCD XCG BBD BSD BZD TTD GYD SRD HTG DOP CUP KYD BMD AWG EUR
+```
+
+Curaçao and Sint Maarten use `XCG`.
+
+Every setup gets English as the default language.
+
+The file also defines a location-neutral fallback:
+
+```text
+global-usd
+```
+
+`global-usd` has:
+
+```text
+currency = USD
+language = en
+country condition = none
+```
+
+It is the intended default/fallback after the development bootstrap.
+
+## Common finance bootstrap values
+
+The one-time file contains:
+
+Payment modes:
+
+```text
+Cash
+Credit Card
+Bank Transfer
+```
+
+Payment terms:
+
+```text
+Due on Receipt
+Net 15
+Net 30
+Net 45
+Net 60
+```
+
+Invoice preferences:
+
+```text
+defaultTaxBehavior = EXCLUSIVE
+lateFeesEnabled = false
+lateFeeCalculationType = PERCENTAGE
+lateFeeGraceDays = 0
+lateFeeGenerateAsDraft = true
+```
+
+It also contains:
+
+- Jamaica TAJ/GCT baseline;
+- CRM request priorities;
+- CRM request categories;
+- empty CRM request-subcategory defaults;
+- application finance dependency/scopes;
+- default setup application/service entitlement policy.
+
+---
+
+# 12. Explicit one-time importer
+
+The API workspace now has an explicit importer separate from seeds.
+
+Command:
+
+```bash
+pnpm --filter @876/api provisioning:import
+```
+
+Dry-run validation:
+
+```bash
+pnpm --filter @876/api provisioning:import -- --dry-run
+```
+
+The dry run:
+
+- reads the one-time file;
+- validates its schema;
+- validates regional scope declarations;
+- builds every finance manifest-v1 draft;
+- builds organization/application manifests;
+- does not intentionally write database rows;
+- does not need the importer to be restored to the seed runner.
+
+The importer is conservative/idempotent in intent:
+
+- create missing setups;
+- preserve existing setup lifecycle state;
+- merge missing policy entries rather than blindly replacing operator-authored policy;
+- force mandatory Enterprise behavior;
+- initialize missing/pristine manifests;
+- preserve existing published manifests;
+- preserve non-empty unpublished operator drafts;
+- publish bootstrap-created/pristine manifests;
+- only promote `global-usd` after it has a published finance manifest;
+- report warnings when an existing operator draft prevents safe bootstrap publication.
+
+The importer must **not** become a recurring task.
+
+---
+
+# 13. Import validation tests
+
+Added tests for the checked-in one-time file covering:
+
+- manifest version remains 1;
+- import mode is one-time database bootstrap;
+- runtime source-of-truth flag is false;
+- Caribbean scope maps to setup definitions;
+- US setup exists;
+- Canada setup exists;
+- fallback contains no country assertion;
+- every setup can build a finance manifest-v1 draft;
+- setup policies build from country conditions;
+- Enterprise is present/enabled;
+- Work is represented as a service entitlement;
+- Billing/Invoice entitlement remains separate from finance dependency;
+- organization/application bootstrap manifests remain manifest v1.
+
+---
+
+# 14. Main files added/changed
+
+## Core/shared
+
+```text
+packages/core/src/countries.json
+packages/core/src/types/provisioning-policy.ts
+packages/core/src/types/provisioning-resources.ts
+packages/core/src/types/provisioning.ts
+```
+
+## Core API policy
+
+```text
+apps/api/prisma/schema/provisioning-setup-policy.prisma
+apps/api/src/modules/provisioning/provisioning-setup-policy.schemas.ts
+apps/api/src/modules/provisioning/provisioning-setup-policy.repository.ts
+apps/api/src/modules/provisioning/provisioning-setup-policy.service.ts
+apps/api/src/modules/provisioning/provisioning-setup-policy.controller.ts
+apps/api/src/modules/provisioning/provisioning-setup-policy.routes.ts
+```
+
+## Core API resource CRUD
+
+```text
+apps/api/src/modules/provisioning/provisioning-resource.schemas.ts
+apps/api/src/modules/provisioning/provisioning-resource.service.ts
+apps/api/src/modules/provisioning/provisioning-resource.controller.ts
+apps/api/src/modules/provisioning/provisioning-resource.routes.ts
+```
+
+## Import implementation
+
+```text
+apps/api/src/modules/provisioning/provisioning-import.schemas.ts
+apps/api/src/modules/provisioning/provisioning-import.builders.ts
+apps/api/src/modules/provisioning/provisioning-import.service.ts
+apps/api/src/modules/provisioning/__tests__/provisioning-import.test.ts
+apps/api/scripts/import-provisioning.ts
+apps/api/package.json
+```
+
+## Finance catalog
+
+```text
+apps/api/src/services/provisioning-catalog.ts
+apps/api/src/services/__tests__/provisioning-catalog.test.ts
+```
 
 ## Console
 
-- provisioning setup metadata/policy editor;
-- finance provisioning editor/reference controls;
-- `apps/console/src/types/provisioning.ts` shared-contract projection;
-- `apps/console/src/lib/client/provisioning-setups.ts`;
-- same-origin resource collection/item routes;
-- setup/new-flow changes;
-- setup list metadata cleanup.
+Includes setup-card routing/editing, new-setup creation, policy editing, finance reference controls, same-origin resource CRUD routes, typed provisioning clients, loading/skeleton behavior, and associated tests.
 
-## Handoff data/docs
+## Handoff
 
-- `docs/handoff/data/2026-08-31-provisioning-defaults.v1.json`
-- this report.
+```text
+docs/handoff/data/2026-08-31-provisioning-defaults.v1.json
+docs/handoff/2026-08-31-provisioning-phase-1.md
+```
 
 ---
 
-# Work intentionally left for the local AI
+# 15. Local AI database work
 
-The web branch does not execute the user’s database migration or local repository command suite.
+The web implementation must not pretend the database migration/import has already run.
 
-The local AI should:
+The local AI should perform these steps in order:
 
 1. Pull `feature/console-settings-provisioning`.
-2. Read repo rules and this report.
-3. Inspect the complete branch diff before changing the database.
-4. Generate the Prisma migration for normalized setup condition/entitlement tables and related schema changes.
-5. Keep the migration/backfill safe for existing Jamaica provisioning data.
+2. Read `CLAUDE.md`, applicable `.claude/rules/*`, and this report.
+3. Inspect the complete branch diff.
+4. Generate the Prisma migration for the normalized setup policy tables and related schema changes.
+5. Keep migration/backfill additive and safe for existing Jamaica data.
 6. Apply the migration locally.
-7. Regenerate Prisma client output as required by the repo.
-8. Import `docs/handoff/data/2026-08-31-provisioning-defaults.v1.json` using an explicit one-time migration/bootstrap operation, **not** by restoring provisioning to ordinary seeds.
-9. Preserve operator-authored setup/manifests rather than overwriting them blindly.
-10. Backfill Jamaica’s setup policy when required.
-11. Verify `global-usd` is the intended sole fallback/default after import.
-12. Verify every setup intended for automatic Phase 2 selection has a publishable/published finance manifest v1.
-13. Decide when legacy setup `country_code`/`currency_code` columns can be removed after backfill compatibility is no longer needed.
-14. Run the required checks.
+7. Regenerate Prisma client output as required.
+8. Run the one-time import dry-run:
 
-Recommended verification commands include the repo-defined equivalents of:
+```bash
+pnpm --filter @876/api provisioning:import -- --dry-run
+```
+
+9. Fix any schema/manifest mismatch before database writes.
+10. Run the actual one-time import:
+
+```bash
+pnpm --filter @876/api provisioning:import
+```
+
+11. Review the importer summary/warnings.
+12. Verify Caribbean, US, Canada, and `global-usd` setup records exist.
+13. Verify setup condition/entitlement rows exist.
+14. Verify every automatically selectable setup has a published finance manifest v1.
+15. Verify `global-usd` is the intended default/fallback.
+16. Verify Jamaica preserves the intended TAJ/GCT baseline.
+17. Verify no existing operator-authored non-empty draft was overwritten.
+18. Verify Work entitlement rows are present as `service/work`.
+19. Verify Billing/Invoice are not automatically granted merely because finance infrastructure exists.
+20. Perform full local checks.
+21. After verified successful import/backfill, remove the temporary one-time JSON/import machinery if that is the desired cleanup point. Do not reintroduce provisioning seeds.
+22. Decide separately when legacy setup `country_code` / `currency_code` columns can safely be dropped after compatibility/backfill is complete.
+
+---
+
+# 16. Required local verification
+
+Use the actual workspace scripts from package files. At minimum:
 
 ```bash
 pnpm --filter @876/core typecheck
@@ -535,126 +712,139 @@ pnpm --filter @876/api test
 pnpm --filter @876/api build
 pnpm --filter @876/api db:validate
 
-pnpm --filter <console-workspace-name> typecheck
-pnpm --filter <console-workspace-name> lint
-pnpm --filter <console-workspace-name> test
+pnpm --filter @876/console typecheck
+pnpm --filter @876/console lint
+pnpm --filter @876/console test
 ```
 
-Use the actual workspace name/scripts from `package.json` rather than copying `<console-workspace-name>` literally.
-
-If typecheck reports formatting/typing defects in the newly added CRUD files, fix them on this same Phase 1 branch before starting Phase 2.
+Also manually validate Console provisioning against the migrated/imported local database.
 
 ---
 
-# Phase 1 acceptance state
+# 17. Phase 1 acceptance state
 
-Implemented in code:
+Implemented in branch code:
 
 - [x] setup identity separated from country matching;
 - [x] normalized setup conditions;
-- [x] normalized setup application/service entitlements;
-- [x] multi-country condition support;
+- [x] normalized application/service entitlements;
+- [x] multi-country setup support;
 - [x] future subdivision/jurisdiction condition storage;
-- [x] canonical country selector + API validation;
-- [x] Enterprise mandatory entitlement behavior;
-- [x] Work service entitlement policy;
-- [x] location-neutral global USD fallback model;
-- [x] workspace country optional;
+- [x] canonical country selection;
+- [x] API canonical-country validation;
+- [x] Enterprise mandatory behavior;
+- [x] Work service entitlement configuration;
+- [x] finance access separated from Billing/Invoice product access;
+- [x] optional workspace country;
+- [x] English default-language bootstrap;
 - [x] optional tax configuration;
 - [x] tax jurisdictions;
 - [x] tax applicability/tax codes;
 - [x] tax-rate jurisdiction/applicability/effective dates;
-- [x] generic reference selectors in Console;
-- [x] setup metadata editing in Workspace tab;
-- [x] new setup policy selection;
-- [x] ordinary provisioning seed ownership removed;
-- [x] explicit version-controlled import specification;
-- [x] resource-level CRUD API for setup cards;
-- [x] resource-level bounded Workspace/Platform client;
-- [x] resource-level same-origin Console API;
-- [x] named Console CRUD clients for current finance resource families;
-- [x] CRUD service regression tests.
+- [x] Console reference selectors;
+- [x] setup metadata/policy editing in Workspace tab;
+- [x] setup creation country/policy controls;
+- [x] ordinary provisioning seeds removed;
+- [x] regional Caribbean/US/Canada one-time database file;
+- [x] `global-usd` location-neutral fallback definition;
+- [x] explicit one-time import schema;
+- [x] explicit one-time import builders;
+- [x] explicit conservative import service;
+- [x] explicit `provisioning:import` command;
+- [x] database-free import dry-run path;
+- [x] one-time import specification tests;
+- [x] row-level provisioning resource CRUD;
+- [x] bounded Workspace/Platform CRUD clients;
+- [x] same-origin Console CRUD routes;
+- [x] named Console CRUD clients;
+- [x] resource CRUD regression tests.
 
-Still external/local:
+Local/external only:
 
-- [ ] generate/apply Prisma migration;
-- [ ] import/backfill the development provisioning specification into the local database;
-- [ ] run full local typecheck/lint/boundaries/test/build validation;
-- [ ] perform final manual Console validation against the migrated database.
+- [ ] generate Prisma migration;
+- [ ] apply Prisma migration;
+- [ ] regenerate local Prisma output;
+- [ ] execute one-time database import;
+- [ ] review/backfill existing Jamaica data against migrated structures;
+- [ ] execute full local typecheck/lint/boundaries/test/build/db validation;
+- [ ] manually verify Console with the migrated database;
+- [ ] remove temporary import file/import tooling after successful verified one-time use if desired.
 
 ---
 
-# Phase 2 — deliberately not implemented here
+# 18. Phase 2 — deliberately separate branch
 
-Phase 2 belongs on a new branch after Phase 1 is migrated and verified locally.
+Phase 2 should begin only after the Phase 1 migration/import is locally verified.
 
-Its purpose is automatic provisioning setup selection and application during organization signup/creation.
+Phase 2 responsibility is automatic setup selection/application during organization creation/signup.
 
-## Phase 2 responsibilities
-
-### 1. Resolve provisioning context
+## Phase 2 resolver
 
 Use authoritative organization/onboarding data first:
 
 - country;
 - subdivision/state/province;
-- jurisdiction when available;
-- explicit organization location data.
+- jurisdiction where known;
+- explicit organization legal/location data.
 
-Network/device geolocation can only be a fallback signal where product/privacy policy permits it. It must not override known legal organization data.
+Network/device/fingerprint geolocation may only be a fallback signal if permitted by product/privacy policy. It must not override known organization legal data.
 
-### 2. Evaluate setup policy
-
-Implement deterministic matching approximately as:
+Resolution should be approximately:
 
 ```text
 resolveProvisioningSetup(context)
   -> load active setup policies
   -> evaluate complete AND groups
-  -> compare matching alternatives by specificity/priority
+  -> compare alternatives by specificity/priority
   -> deterministic tie-break
-  -> use sole fallback/default when no specific setup matches
+  -> fall back to the sole fallback/default when no specific policy matches
 ```
 
-### 3. Persist the selected setup
+Do **not** hard-code country-to-setup switches in signup code. The Phase 1 database policy is the source.
 
-Once selected, store the organization’s provisioning setup assignment. Retries must reuse that assignment rather than re-resolving against transient signals.
+## Persist selected setup
 
-### 4. Provision finance independently
+Once a setup is selected, persist the organization/setup assignment. Retry flows must reuse that assignment rather than resolving again from transient location signals.
 
-Create/reconcile shared finance/customer infrastructure from the selected finance manifest without implying Billing/Invoice product entitlement.
+## Provision shared finance independently
 
-### 5. Apply setup entitlements
+Apply the selected published finance manifest v1 to shared finance infrastructure.
 
-Use setup policy as one input into initial application entitlement creation.
+This must not imply Billing/Invoice application entitlement.
 
-Enterprise remains base organization access. Source-app signup may intentionally add the source product according to final onboarding rules.
+## Apply application/service policy
 
-### 6. Apply Work policy
+Apply setup application entitlements as one input to the initial organization access plane.
 
-If `service/work` is enabled, provision/enable the Work service using the Work ownership boundary. If disabled, do not silently enable it unless a documented product dependency requires a deliberate conflict resolution.
+Enterprise remains base organization access.
 
-### 7. Idempotency and reconciliation
+If `service/work` is enabled, provision/enable Work according to the Work service ownership boundary. If disabled, do not silently grant it unless a separately documented product dependency deliberately overrides that setup policy.
 
-Organization creation/provisioning must be retryable without duplicate workspaces, subscriptions, memberships, resources, or changing setup selection.
+## Idempotency
 
-### 8. Existing-organization backfill
+Retries must not create duplicate:
 
-Do not blindly infer and overwrite setup assignments. Use known organization data; unresolved records remain on their current/default configuration until deliberately migrated.
+- finance workspaces;
+- app assignments/subscriptions;
+- Work service state;
+- provisioning resources;
+- provisioning runs.
 
-## Phase 2 acceptance criteria
+## Existing organizations
+
+Do not blindly re-resolve and overwrite existing organizations. Backfill known location/setup assignments deliberately; unresolved organizations retain their current/default state until intentionally migrated.
+
+## Phase 2 acceptance
 
 Phase 2 is complete only when:
 
-- setup selection is automatic and deterministic;
+- automatic resolution is deterministic;
 - selected setup is persisted;
-- finance provisioning consumes the setup’s published manifest;
-- application entitlements consume setup policy without conflating finance access;
+- country/subdivision/jurisdiction priority cases are tested;
+- fallback is tested;
+- finance manifest v1 is applied from the selected setup;
+- application entitlements consume setup policy without conflating finance infrastructure;
 - Work service policy is honored;
 - retries are idempotent;
-- fallback behavior is tested;
-- country/subdivision priority/tie cases are tested;
-- existing organizations have an explicit migration/backfill strategy;
-- provisioning runs/auditability expose enough information to explain which setup/revision was applied and why.
-
-Do not begin Phase 2 by reintroducing hard-coded country-to-setup switches in signup code. Phase 1 policy tables are the selection source.
+- existing-organization backfill is explicit;
+- provisioning runs/audit data explain which setup/revision was selected and why.
