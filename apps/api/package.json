@@ -13,6 +13,7 @@
     "boundaries": "depcruise src --config .dependency-cruiser.cjs",
     "seed": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local src/seeds/cli.ts",
     "provisioning:import": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local scripts/import-provisioning.ts",
+    "provisioning:verify": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local scripts/verify-provisioning.ts",
     "generate": "node scripts/prisma-generate.mjs",
     "node:dev": "tsx watch --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local src/server.ts",
     "node:build": "tsup",
@@ -59,7 +60,7 @@
   },
   "devDependencies": {
     "@types/compression": "1.8.1",
-    "@types/cors": "2.8.19",
+    "@types/cors": "1.8.19",
     "@types/express": "5.0.6",
     "@types/node": "26.2.0",
     "@types/pg": "8.23.1",
