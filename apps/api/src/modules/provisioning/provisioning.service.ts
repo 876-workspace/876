@@ -4,7 +4,7 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 import { listObject, type ListObject } from '@/http/envelope'
 import {
   catalogDefinitions,
-  validateDraft,
+  validateProvisioningWireDraft,
 } from '@/services/provisioning-catalog'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
@@ -145,9 +145,11 @@ function validateDraftForSave(
   targetKey: string,
   body: ProvisioningDraftReplace
 ) {
-  return validateDraft(targetType as never, targetKey, body as never).filter(
-    (issue) => !PARTIAL_DRAFT_ISSUE_CODES.has(issue.code)
-  )
+  return validateProvisioningWireDraft(
+    targetType as never,
+    targetKey,
+    body
+  ).filter((issue) => !PARTIAL_DRAFT_ISSUE_CODES.has(issue.code))
 }
 
 export async function retrieveCatalog(targetType: string, targetKey: string) {
@@ -229,7 +231,11 @@ export async function validateDraftRequest(
   body: ProvisioningDraftReplace
 ) {
   const catalogKey = await requireValidTarget(targetType, targetKey)
-  const issues = validateDraft(targetType as never, catalogKey, body as never)
+  const issues = validateProvisioningWireDraft(
+    targetType as never,
+    catalogKey,
+    body
+  )
   return {
     object: 'provisioning_validation' as const,
     valid: issues.length === 0,
@@ -249,10 +255,10 @@ export async function publishDraft(targetType: string, targetKey: string) {
   }
   const catalogKey = await requireValidTarget(targetType, targetKey)
   const draftAsInput = revisionAsDraft(locked.draft as never)
-  const issues = validateDraft(
+  const issues = validateProvisioningWireDraft(
     targetType as never,
     catalogKey,
-    draftAsInput as never
+    draftAsInput
   )
   if (issues.length > 0) {
     throw new AppHttpError({
