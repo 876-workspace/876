@@ -31,7 +31,7 @@ function spec(): ProvisioningImportSpecification {
     },
     matching: {
       semantics: 'OR_OF_AND_GROUPS',
-      current_seed_condition: 'country equals ISO code',
+      current_condition: 'country equals ISO code',
       future_fields: ['subdivision', 'jurisdiction'],
     },
     default_entitlements: [
@@ -41,6 +41,11 @@ function spec(): ProvisioningImportSpecification {
         enabled: true,
       },
       { target_type: 'service', target_key: 'work', enabled: true },
+      {
+        target_type: 'service_capability',
+        target_key: 'work.tasks',
+        enabled: true,
+      },
     ],
     currencies: {
       JMD: { name: 'Jamaican Dollar', minor_unit: 2 },
@@ -163,7 +168,11 @@ function manifest(
 
 function policy(
   setupKey: string,
-  options: { fallbackCondition?: boolean; enterpriseEnabled?: boolean } = {}
+  options: {
+    fallbackCondition?: boolean
+    enterpriseEnabled?: boolean
+    omitWorkTasks?: boolean
+  } = {}
 ): ProvisioningSetupPolicy {
   const isJamaica = setupKey === 'jamaica'
   return {
@@ -205,6 +214,19 @@ function policy(
         created_at: NOW,
         updated_at: NOW,
       },
+      ...(options.omitWorkTasks
+        ? []
+        : [
+            {
+              object: 'provisioning_setup_entitlement' as const,
+              id: `pse_${setupKey}_work_tasks`,
+              target_type: 'service_capability' as const,
+              target_key: 'work.tasks',
+              enabled: true,
+              created_at: NOW,
+              updated_at: NOW,
+            },
+          ]),
     ],
     updated_at: NOW,
   }
@@ -215,6 +237,7 @@ function dependencies(options: {
   unpublishedApp?: boolean
   fallbackCondition?: boolean
   enterpriseEnabled?: boolean
+  omitWorkTasks?: boolean
 } = {}): ProvisioningImportVerificationDependencies {
   return {
     async retrieveSetup(key) {
@@ -234,6 +257,7 @@ function dependencies(options: {
         fallbackCondition:
           key === 'global-usd' ? options.fallbackCondition : false,
         enterpriseEnabled: options.enterpriseEnabled,
+        omitWorkTasks: options.omitWorkTasks,
       })
     },
   }
@@ -287,6 +311,21 @@ describe('verifyProvisioningImport', () => {
       expect.arrayContaining([
         expect.objectContaining({ code: 'enterprise_disabled' }),
       ])
+    )
+  })
+
+  it('requires expected Work capability rows to exist', async () => {
+    const result = await verifyProvisioningImport(
+      spec(),
+      dependencies({ omitWorkTasks: true })
+    )
+
+    expect(result.valid).toBe(false)
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({
+        code: 'entitlement_missing',
+        message: expect.stringContaining('service_capability/work.tasks'),
+      })
     )
   })
 })
