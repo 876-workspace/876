@@ -1,69 +1,84 @@
-# Provisioning Phase 2 — handoff for the next AI
+# Provisioning Phase 2 — final handoff
 
 Date: 2026-08-31
-Branch: `feature/console-settings-provisioning`
-Read first: `docs/handoff/2026-08-31-provisioning-phase-1.md` and
-`docs/handoff/2026-08-31-provisioning-phase-1-final-status.md`.
+Branch: `feature/provisioning-phase-2`
+Base: Phase 1 merged by PR #449
 
-## Phase 1 is now final
+## Outcome
 
-Phase 1 was completed and the final PR opened on this branch. The work landed
-as six commits:
+Phase 2 is complete. Organization creation now resolves a published provisioning
+setup from canonical location facts, persists the decision and its audit fields
+once, applies setup-owned application and Work policy, and reuses the persisted
+selection on retries. Finance readiness no longer assigns the platform's current
+default setup implicitly.
 
-1. `feat(geo)`: read-only `languages` catalog (`GET /geo/languages`), Prisma
-   migration `20260831000002_geo_languages`, seed for English.
-2. `feat(platform)`: typed `geo.listCurrencies()` / `geo.listLanguages()` on the
-   admin and workspace operator clients.
-3. `feat(console-provisioning)`: currency and language fields in the provisioning
-   editor are now selections backed by the geo catalogs instead of free text.
-4. `fix(provisioning)`: one-time import is retry-safe (an importer-owned draft
-   matching the requested manifest is published directly, so a retry after a
-   publish failure converges) and the policy merge normalizes by group key and
-   updates existing rows rather than appending duplicates.
-5. `test(provisioning)`: Work capability/scope expectations aligned with Phase 1
-   (events, calendars, My Work permissions; Work tenant scopes list).
-6. `chore(api)`: pin helmet to the lockfile's 8.3.0.
+Business registration requires a canonical ISO country from the shared country
+catalog. Subdivision and jurisdiction remain unset until signup has an
+authoritative Region/jurisdiction identifier; free-form values are not accepted.
 
-The migration was applied and the one-time import + verifier ran against the
-remote development database: verifier reported `valid: true` (36 setups,
-7 application manifests, `global-usd` default).
+## New-organization sequence
 
-## Known errors to be aware of (pre-existing, not from this PR)
+1. Validate canonical country and create the organization identity.
+2. Resolve active, published setup candidates using OR between condition groups
+   and AND within a group.
+3. Select by specificity, priority, setup key, then group key; use the single
+   published fallback only when no policy matches.
+4. Persist setup key, selection explanation, selected timestamp, currency, and
+   language before setup-driven subscription, finance, or Work writes.
+5. Apply application entitlements, the `service/work` gate, and enabled Work
+   capability scopes.
+6. On retry, require and reuse the stored selection. Never reroute an existing
+   organization under newer policy.
 
-- **Console component tests fail with `React.act is not a function`** across the
-  whole console suite (not just provisioning). Reproduced on the base branch
-  with an untouched test file. Cause: React 19.2.8 + `@testing-library/react`
-  16.3.2 incompatibility in this environment. Fixing it is a separate concern
-  from Phase 2; do not treat provisioning test failures as regressions until
-  this is resolved.
-- **Console lint has one pre-existing error** in
-  `apps/console/src/features/crm/request-customer-option.ts` — a feature
-  importing another feature via `@/features/*` (no-restricted-imports). Not
-  touched by Phase 1.
-- API lint passes with only pre-existing warnings (unused vars in
-  `provisioning-billing-opt-in.test.ts`, `features.repository.ts`, `features.ts`).
+## Existing organizations
 
-## Phase 2 scope (unchanged)
-
-Phase 2 is responsible for resolving/persisting a setup during organization
-creation using authoritative country/subdivision/jurisdiction data, then
-applying finance manifest v1 plus application/service/service-capability policy
-idempotently. Do not add signup-time automatic setup selection to this branch.
-
-Interpret Work policy in this order:
-
-```text
-service/work disabled -> do not provision/enable Work
-service/work enabled  -> provision Work and then apply enabled capability rows
-```
-
-## Verification commands that pass on this branch
+The backfill is explicit and conditional: it reads only organizations without a
+setup and writes only while the setup key remains null. Run the dry pass first:
 
 ```bash
-pnpm --filter @876/platform typecheck
-pnpm --filter @876/workspace typecheck
-pnpm --filter @876/api typecheck
-pnpm --filter @876/console typecheck
-pnpm --filter @876/api lint            # 0 errors (pre-existing warnings only)
-pnpm --filter @876/api exec vitest run --run src/modules/geo src/modules/provisioning src/services/__tests__/workspace-work.test.ts src/seeds/app-access.test.ts
+pnpm --filter @876/api provisioning:backfill-selections --dry-run
+pnpm --filter @876/api provisioning:backfill-selections
+```
+
+Use `--page-size=<1-500>` and `--limit=<n>` to bound either pass. On 2026-08-31,
+the configured development database dry run examined zero organizations, so no
+write pass was necessary.
+
+## Database state
+
+Migration `20260831010000_provisioning_setup_selection` was deployed to the
+configured Neon development database. `prisma migrate status` reports all 11
+migrations applied. Provisioning import verification reports `valid: true`, 36
+setups, 7 application manifests, and `global-usd` as the sole default.
+
+## Local repair pass
+
+Executable review fixed issues that the authoring environment could not detect:
+
+- restored the API Supertest type dependency and synchronized the UI workspace
+  dependency in `pnpm-lock.yaml`;
+- removed obsolete duplicate business-registration controller/UI paths;
+- corrected the Prisma selection type and removed a provisioning barrel cycle;
+- repaired stale dependency mocks and consumed-`Response` test fixtures;
+- isolated the one Console filesystem test to the Node Vitest environment;
+- added Express-stack tests for missing, unsupported, conflicting, and
+  normalized business-registration country input.
+
+## Verification
+
+```text
+@876/api typecheck                 passed
+@876/account typecheck             passed
+@876/ui typecheck                  passed
+@876/console typecheck             passed
+@876/api boundaries                passed (575 modules, 0 violations)
+@876/api test                      passed (103 files, 2150 tests)
+@876/console test                  passed (133 files, 1353 tests)
+@876/ui test                       passed (17 files, 111 tests)
+@876/api lint                      passed with pre-existing warnings only
+@876/console lint                  passed with pre-existing warnings only
+prisma validate                    passed
+prisma migrate deploy/status       passed
+provisioning:verify                valid: true
+backfill --dry-run                 0 rows
 ```

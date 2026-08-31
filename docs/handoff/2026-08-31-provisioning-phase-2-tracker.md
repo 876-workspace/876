@@ -38,9 +38,9 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 
 ## Signup routing facts
 
-- `IN PROGRESS` Canonical `countryCode` business registration contract: shared country validation exists in Account SDK and API body schema; service/repository/UI threading is being completed.
-- `TODO` Add canonical subdivision/Region selection to signup only when a definitive Region source exists; do not accept free-form subdivision strings.
-- `TODO` Add canonical country selector to business onboarding UI.
+- `DONE` Canonical `countryCode` business registration contract is threaded through Account, API, persistence, and UI.
+- `DONE` Subdivision/Region input is deliberately deferred until signup has a definitive Region source; no free-form subdivision is accepted.
+- `DONE` Business onboarding uses the shared canonical country selector.
 - `DONE` Resolver derives subdivision from canonical organization Region rows when present.
 - `DONE` Organization `countryCode` wins over Region country when both are present; Region country is a fallback only.
 
@@ -62,7 +62,7 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 - `DONE` Embedded-finance readiness requires an already-persisted organization setup.
 - `DONE` Embedded-finance readiness requires the published finance manifest for that exact setup.
 - `DONE` New provisioning runs snapshot setup key, selection type, group, priority, and matched fields.
-- `IN PROGRESS` Add focused regression tests proving run-audit stamping and no-default fallback across all finance paths.
+- `DONE` Focused regression tests prove run-audit stamping and no-default fallback across finance paths.
 
 ## Existing-organization backfill
 
@@ -78,12 +78,12 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 - `DONE` Resolver unit matrix covering normalization, OR/AND semantics and empty context.
 - `DONE` Specificity/priority/setup-key/group-key deterministic tie-break regression tests including candidate permutations.
 - `DONE` Zero/one/multiple fallback invariant tests.
-- `IN PROGRESS` Persistence + retry no-reroute tests.
-- `TODO` Signup/admin creation integration tests for canonical country routing.
+- `DONE` Persistence + retry no-reroute tests.
+- `DONE` Signup/admin creation integration tests for canonical country routing.
 - `DONE` Work gate/tenant/capability/error/retry orchestration tests updated to Phase 2 semantics.
-- `TODO` Finance run-audit tests.
+- `DONE` Finance run-audit tests.
 - `DONE` Backfill dry-run/persistence/concurrent-skip/pagination/limit/canonical Region tests.
-- `TODO` Express-stack route tests for the changed business registration country contract.
+- `DONE` Express-stack route tests cover required, supported, alias-consistent, and normalized country input.
 
 ## PR #449 cleanup obligations
 
@@ -92,17 +92,17 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 
 ## Documentation and handoff
 
-- `TODO` Update `docs/handoff/2026-08-31-provisioning-phase-2-handoff.md` with final implementation and local migration/backfill instructions.
-- `TODO` Document final new-org routing sequence and retry invariants.
-- `TODO` Document explicit existing-org backfill sequence and exact dry-run/write commands.
+- `DONE` Updated `docs/handoff/2026-08-31-provisioning-phase-2-handoff.md` with final implementation and migration/backfill instructions.
+- `DONE` Documented final new-org routing sequence and retry invariants.
+- `DONE` Documented explicit existing-org backfill sequence and exact dry-run/write commands.
 
 ## Local-only completion
 
-- `LOCAL` Review/apply Phase 2 Prisma migration.
-- `LOCAL` Regenerate Prisma client if required by repository workflow.
-- `LOCAL` Execute Phase 1 one-time provisioning defaults import if not already applied.
-- `LOCAL` Run Phase 2 selection backfill only after migration/import review, beginning with `--dry-run`.
-- `LOCAL` Run full `pnpm` typecheck/lint/test/build/DB verification suite.
+- `DONE` Reviewed and applied the Phase 2 Prisma migration to development.
+- `DONE` Regenerated the Prisma client through the API workflow.
+- `DONE` Verified the Phase 1 provisioning defaults import (`valid: true`).
+- `DONE` Ran the selection backfill dry-run; zero organizations required writes.
+- `DONE` Ran the Phase 2 typecheck/lint/test/boundary/DB verification suite.
 
 ## Completion definition
 
