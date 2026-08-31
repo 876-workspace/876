@@ -44,27 +44,8 @@ export const RESOURCE_TYPE_ICONS: Record<string, IconComponent> = {
   organization_profile: Building2,
 }
 
-export const RESOURCE_TYPE_ICON_COLORS: Record<string, string> = {
-  workspace: 'text-blue-500 dark:text-blue-400',
-  currency: 'text-emerald-500 dark:text-emerald-400',
-  payment_mode: 'text-purple-500 dark:text-purple-400',
-  payment_term: 'text-amber-500 dark:text-amber-400',
-  invoice_preference: 'text-indigo-500 dark:text-indigo-400',
-  tax_authority: 'text-rose-500 dark:text-rose-400',
-  tax_rate: 'text-orange-500 dark:text-orange-400',
-  document_preference: 'text-teal-500 dark:text-teal-400',
-  organization_profile: 'text-sky-500 dark:text-sky-400',
-}
-
 export function getResourceTypeIcon(resourceType: string): IconComponent {
   return RESOURCE_TYPE_ICONS[resourceType] ?? TableIcon
-}
-
-export function getResourceTypeIconColor(resourceType: string): string {
-  return (
-    RESOURCE_TYPE_ICON_COLORS[resourceType] ??
-    'text-slate-500 dark:text-slate-400'
-  )
 }
 
 function propertyValue(

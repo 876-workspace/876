@@ -2,21 +2,30 @@
 
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
+import { getResourceTypeIcon } from '@/features/provisioning/finance-provisioning-utils'
 import { Pencil, XIcon } from '@876/ui/icons'
+
+type ResourceTypeTab = {
+  key: string
+  label: string
+}
 
 export function SetupCardFrame({
   setup,
+  resourceTypes,
   children,
 }: {
   setup: AdminProvisioningSetup
+  resourceTypes: ResourceTypeTab[]
   children: ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const base = `/settings/orgs/provisioning/${encodeURIComponent(setup.key)}`
 
   return (
@@ -28,8 +37,8 @@ export function SetupCardFrame({
       )}
     >
       {/* Header */}
-      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
-        <div className="min-w-0 flex-1 space-y-1.5">
+      <header className="border-876-surface-border flex shrink-0 items-center gap-4 border-b px-6 py-4">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
               {setup.name}
@@ -39,11 +48,6 @@ export function SetupCardFrame({
               <Badge variant="secondary">Archived</Badge>
             ) : null}
           </div>
-          <p className="text-muted-foreground truncate text-xs">
-            <span className="font-mono">{setup.key}</span> ·{' '}
-            {setup.country_code ?? '—'} · {setup.currency_code ?? '—'} ·{' '}
-            {setup.organization_count} organization(s)
-          </p>
         </div>
         <Link
           href={`${base}/edit`}
@@ -64,8 +68,49 @@ export function SetupCardFrame({
         </Button>
       </header>
 
-      {/* Body: Direct editor content with its resource category sidebar */}
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+      {/* Resource type tabs */}
+      {resourceTypes.length > 0 && (
+        <div className="border-876-surface-border shrink-0 border-b px-6 pt-1">
+          <nav
+            aria-label="Resource categories"
+            className="no-scrollbar -mb-px flex items-end gap-0.5 overflow-x-auto"
+          >
+            {resourceTypes.map((tab) => {
+              const Icon = getResourceTypeIcon(tab.key)
+              const href = `${base}/${encodeURIComponent(tab.key)}`
+              const isActive =
+                pathname === href || pathname.startsWith(`${href}/`)
+
+              return (
+                <Link
+                  key={tab.key}
+                  href={href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'group relative flex items-center gap-2 border-b-2 px-3.5 py-3 text-[0.8125rem] font-medium whitespace-nowrap transition-all',
+                    isActive
+                      ? 'border-foreground text-foreground font-semibold'
+                      : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'size-3.5 shrink-0 transition-colors',
+                      isActive
+                        ? 'text-foreground'
+                        : 'text-muted-foreground/70 group-hover:text-foreground'
+                    )}
+                  />
+                  <span>{tab.label}</span>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+      )}
+
+      {/* Body */}
+      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {children}
       </div>
 

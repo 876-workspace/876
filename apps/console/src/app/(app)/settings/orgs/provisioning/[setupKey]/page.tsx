@@ -1,27 +1,23 @@
-import { workspace } from '@/lib/services/workspace'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
-import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
-
-export const metadata = { title: 'Provisioning setup' }
+import { getProvisioningCatalog } from './_data'
+import { getDefinitionType } from './setup-type-utils'
 
 type Props = { params: Promise<{ setupKey: string }> }
 
-export default async function ProvisioningSetupPage({ params }: Props) {
+/**
+ * The bare `/settings/orgs/provisioning/[setupKey]` route redirects to the
+ * first resource-type tab so the URL always reflects the active category.
+ */
+export default async function ProvisioningSetupIndexPage({ params }: Props) {
   const { setupKey } = await params
+  const result = await getProvisioningCatalog(setupKey)
+  if (result.error || !result.data) notFound()
 
-  const [catalogResult, manifestResult] = await Promise.all([
-    workspace.provisioning.retrieveCatalog('finance', setupKey),
-    workspace.provisioning.retrieve('finance', setupKey),
-  ])
-  if (catalogResult.error || !catalogResult.data) notFound()
-  if (manifestResult.error || !manifestResult.data) notFound()
+  const firstType = result.data.resource_types[0]
+  if (!firstType) notFound()
 
-  return (
-    <FinanceProvisioningEditor
-      catalog={catalogResult.data}
-      manifest={manifestResult.data}
-      target={{ type: 'finance', key: setupKey }}
-    />
+  redirect(
+    `/settings/orgs/provisioning/${encodeURIComponent(setupKey)}/${encodeURIComponent(getDefinitionType(firstType))}`
   )
 }

@@ -4,7 +4,6 @@ import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import {
   Empty,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -51,19 +50,13 @@ export function FinanceCollectionEditor({
 
   if (rows.length === 0) {
     return (
-      <div className="876-card p-12">
+      <div className="flex flex-1 items-center justify-center p-12">
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <TableIcon />
             </EmptyMedia>
-            <EmptyTitle>
-              No {definition.label.toLowerCase()} configured
-            </EmptyTitle>
-            <EmptyDescription>
-              Add at least {definition.minimum_items} item to satisfy
-              provisioning requirements.
-            </EmptyDescription>
+            <EmptyTitle>No {definition.label.toLowerCase()} configured</EmptyTitle>
           </EmptyHeader>
           <Button
             type="button"
@@ -72,7 +65,8 @@ export function FinanceCollectionEditor({
             disabled={atMaximum}
             onClick={onAdd}
           >
-            <Plus className="size-3.5" /> Add
+            <Plus className="size-3.5" /> Add{' '}
+            {definition.label.replace(/ies$/, 'y').replace(/s$/, '')}
           </Button>
         </Empty>
       </div>
@@ -80,78 +74,79 @@ export function FinanceCollectionEditor({
   }
 
   return (
-    <div className="876-card overflow-hidden">
-      <Table>
-        <TableHeader className="876-header-row">
-          <TableRow>
-            {definition.fields.map((field) => (
-              <TableHead key={field.key} className="px-5 py-3.5 font-medium">
-                {field.label}
-              </TableHead>
-            ))}
-            <TableHead className="w-24 px-5 py-3.5 text-right font-medium">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow
-              key={row.localId}
-              className="hover:bg-muted/50 transition-colors"
+    <Table>
+      <TableHeader className="876-header-row">
+        <TableRow>
+          {definition.fields.map((field) => (
+            <TableHead
+              key={field.key}
+              className="px-6 py-4 text-xs font-semibold tracking-wide uppercase"
             >
-              {definition.fields.map((field, idx) => {
-                const value = row.values[field.key]
-                if (field.value_type === 'boolean') {
-                  return (
-                    <TableCell key={field.key} className="px-5 py-3.5">
-                      <Badge variant={value ? 'default' : 'secondary'}>
-                        {value ? 'Yes' : 'No'}
-                      </Badge>
-                    </TableCell>
-                  )
-                }
+              {field.label}
+            </TableHead>
+          ))}
+          <TableHead className="w-28 px-6 py-4 text-right text-xs font-semibold tracking-wide uppercase">
+            Actions
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow
+            key={row.localId}
+            className="hover:bg-muted/40 group transition-colors"
+          >
+            {definition.fields.map((field, idx) => {
+              const value = row.values[field.key]
+              if (field.value_type === 'boolean') {
                 return (
-                  <TableCell
-                    key={field.key}
-                    className={cn(
-                      'px-5 py-3.5',
-                      idx === 0
-                        ? 'text-foreground font-medium'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {fieldDisplayValue(value)}
+                  <TableCell key={field.key} className="px-6 py-4">
+                    <Badge variant={value ? 'default' : 'secondary'}>
+                      {value ? 'Yes' : 'No'}
+                    </Badge>
                   </TableCell>
                 )
-              })}
-              <TableCell className="px-5 py-3.5 text-right">
-                <div className="flex justify-end gap-1">
-                  <Button
-                    type="button"
-                    size="icon-xs"
-                    variant="ghost"
-                    aria-label={`Edit ${definition.label}`}
-                    onClick={() => onEdit(row)}
-                  >
-                    <Pencil className="size-3.5" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="icon-xs"
-                    variant="ghost"
-                    aria-label={`Delete ${definition.label}`}
-                    disabled={atMinimum}
-                    onClick={() => deleteRow(row.localId)}
-                  >
-                    <Trash className="size-3.5" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+              }
+              return (
+                <TableCell
+                  key={field.key}
+                  className={cn(
+                    'px-6 py-4',
+                    idx === 0
+                      ? 'text-foreground text-[0.8125rem] font-medium'
+                      : 'text-muted-foreground text-sm'
+                  )}
+                >
+                  {fieldDisplayValue(value)}
+                </TableCell>
+              )
+            })}
+            <TableCell className="px-6 py-4 text-right">
+              <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label={`Edit ${definition.label}`}
+                  onClick={() => onEdit(row)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label={`Delete ${definition.label}`}
+                  disabled={atMinimum}
+                  onClick={() => deleteRow(row.localId)}
+                >
+                  <Trash className="size-3.5" />
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   )
 }

@@ -64,8 +64,6 @@ async function AppProvisioningData({ params }: Props) {
         catalog={catalogResult.data}
         manifest={manifestResult.data ?? null}
         target={{ type: 'application', key: app.id }}
-        heading={`${app.name} application defaults`}
-        description={`Typed defaults created when a new organization activates ${app.name}. Empty catalogs are valid until the application declares a provisionable resource.`}
       />
     </div>
   )

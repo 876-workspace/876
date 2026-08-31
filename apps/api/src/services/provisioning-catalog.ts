@@ -109,21 +109,8 @@ function resource(
 }
 
 export const FINANCE_RESOURCES: Record<string, Resource> = {
-  currency: resource(
-    'Currencies',
-    'Currencies created for every new finance workspace.',
-    true,
-    1,
-    {
-      code: field('ISO code', 'string'),
-      name: field('Name', 'string'),
-      numericCode: field('Numeric code', 'string', { required: false }),
-      minorUnit: field('Minor unit', 'integer'),
-      symbol: field('Symbol', 'string', { required: false }),
-    }
-  ),
   workspace: resource(
-    'Workspace defaults',
+    'Workspace',
     'Locale and currency defaults for a finance workspace.',
     false,
     1,
@@ -140,6 +127,19 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
       defaultLanguage: field('Default language', 'reference', {
         referenceNamespace: 'language',
       }),
+    }
+  ),
+  currency: resource(
+    'Currencies',
+    'Currencies created for every new finance workspace.',
+    true,
+    1,
+    {
+      code: field('ISO code', 'string'),
+      name: field('Name', 'string'),
+      numericCode: field('Numeric code', 'string', { required: false }),
+      minorUnit: field('Minor unit', 'integer'),
+      symbol: field('Symbol', 'string', { required: false }),
     }
   ),
   payment_mode: resource(
