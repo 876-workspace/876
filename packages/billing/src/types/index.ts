@@ -65,8 +65,15 @@ export {
   DeletedCustomerSchema,
 } from './customer.schema'
 
-// Invoice
+// Invoice and commercial documents
 export type {
+  InvoiceStatus,
+  QuoteStatus,
+  EstimateStatus,
+  InvoiceBillingReason,
+  DocumentCustomer,
+  InvoiceLine,
+  ProposalLine,
   InvoiceListParams,
   Invoice,
   InvoiceList,
