@@ -260,6 +260,42 @@ export async function resolveAndPersistInitialProvisioningPolicy(
   return { ...persisted, defaults }
 }
 
+/**
+ * Resolve only organizations created by the current bootstrap operation.
+ *
+ * An older organization with no persisted setup is deliberately returned as
+ * `null`; it must go through the explicit Phase 2 backfill instead of being
+ * silently routed under today's policy.
+ */
+export async function resolveFreshProvisioningPolicy(
+  organizationId: string,
+  creationTimestamp: number
+): Promise<InitialProvisioningPolicy | null> {
+  const row =
+    await repository.findOrganizationProvisioningSelection(organizationId)
+  if (!row) {
+    throw new AppHttpError({
+      code: 'organization/not-found',
+      message: 'No organization exists with the provided identifier.',
+      httpStatus: 404,
+    })
+  }
+
+  if (row.provisioningSetupKey) {
+    const persisted = await requirePersistedProvisioningPolicy(organizationId)
+    const defaults = await retrieveProvisioningWorkspaceDefaults(
+      persisted.selection.setup_key
+    )
+    return { ...persisted, defaults }
+  }
+
+  if (Number(row.createdAt) !== creationTimestamp) return null
+  return resolveAndPersistInitialProvisioningPolicy(
+    organizationId,
+    creationTimestamp
+  )
+}
+
 export async function persistBackfillProvisioningSelection(params: {
   organizationId: string
   selection: ProvisioningSetupSelection
