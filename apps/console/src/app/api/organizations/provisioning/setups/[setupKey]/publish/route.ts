@@ -13,7 +13,7 @@ export async function POST(
   if (response) return response
 
   const { setupKey } = await params
-  const result = await workspace.provisioning.draft.publish('finance', setupKey)
+  const result = await workspace.provisioning.publish('finance', setupKey)
   if (result.error || !result.data)
     return apiJson(
       {

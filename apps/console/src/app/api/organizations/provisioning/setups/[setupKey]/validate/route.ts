@@ -21,7 +21,7 @@ export async function POST(
       { status: 400 }
     )
 
-  const result = await workspace.provisioning.draft.validate(
+  const result = await workspace.provisioning.validate(
     'finance',
     setupKey,
     body

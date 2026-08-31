@@ -14,7 +14,7 @@ export async function POST(request: NextRequest, context: Context) {
   const body = await request.json().catch(() => null)
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid provisioning draft.' }, { status: 400 })
-  const result = await workspace.provisioning.draft.validate(
+  const result = await workspace.provisioning.validate(
     'application',
     appId,
     body

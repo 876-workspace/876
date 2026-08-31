@@ -21,7 +21,7 @@ export async function PUT(
       { status: 400 }
     )
 
-  const result = await workspace.provisioning.draft.update(
+  const result = await workspace.provisioning.replaceDraft(
     'finance',
     setupKey,
     body

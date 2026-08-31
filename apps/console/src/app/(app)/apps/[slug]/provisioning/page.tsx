@@ -24,8 +24,8 @@ async function AppProvisioningData({ params }: Props) {
   if (!app) notFound()
 
   const [manifestResult, catalogResult] = await Promise.all([
-    workspace.provisioning.draft.retrieve('application', app.id),
-    workspace.provisioning.catalog.retrieve('application', app.id),
+    workspace.provisioning.retrieve('application', app.id),
+    workspace.provisioning.retrieveCatalog('application', app.id),
   ])
   if (
     manifestResult.error &&

@@ -10,7 +10,7 @@ export async function POST(_request: Request, context: Context) {
   const { response } = await requireConsolePermission('console:apps')
   if (response) return response
   const { appId } = await context.params
-  const result = await workspace.provisioning.draft.publish(
+  const result = await workspace.provisioning.publish(
     'application',
     appId
   )
