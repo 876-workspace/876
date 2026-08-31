@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { PaymentListSchema, PaymentSchema } from '../payment.schema'
 
-function payment(overrides: Record<string, unknown> = {}) {
+function payment(overrides: object = {}) {
   return {
     object: 'payment' as const,
     id: 'pay_1',
