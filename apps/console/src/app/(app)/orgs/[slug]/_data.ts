@@ -69,7 +69,7 @@ export const resolveOrgRoles = cache(async (orgId: string) => {
 /** Cached org entitlements, plus the registered lookup error. */
 export const resolveOrgSubscriptions = cache(
   async (orgId: string, status?: AdminSubscriptionStatus) => {
-    const result = await workspace.apps.entitlements.list({
+    const result = await workspace.organizations.subscriptions.list({
       organizationId: orgId,
       status,
     })
