@@ -31,10 +31,10 @@ export const BankTransactionDeletedSchema = deletedResourceSchema(
 ) satisfies z.ZodType<BankTransactionDeleted>
 
 /**
- * Stable public bank-transaction DTO. Backend-only tenant and relation fields
- * are stripped rather than becoming part of the SDK surface.
+ * The Banking API serializes this standalone resource to the exact public
+ * shape, so unknown fields remain a contract violation here.
  */
-export const BankTransactionSchema = z.object({
+export const BankTransactionSchema = z.strictObject({
   object: z.literal('bank_transaction'),
   id: z.string().min(1),
   accountId: z.string().min(1),
