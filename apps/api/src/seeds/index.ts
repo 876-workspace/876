@@ -17,6 +17,7 @@ import { seedDefaultAppPrices } from './default-prices'
 import { seedGeoCatalog } from './geo'
 import { seedAllFeatures } from './features'
 import { seedFirstPartyProvisioningManifests } from './provisioning'
+import { seedRegionalProvisioningSetups } from './provisioning-regional'
 import { seedPlans } from './plans'
 
 const log = getLogger('seeds:index')
@@ -31,6 +32,9 @@ export type RunSeedsSummary = {
   geo: Awaited<ReturnType<typeof seedGeoCatalog>> | null
   provisioning: Awaited<
     ReturnType<typeof seedFirstPartyProvisioningManifests>
+  > | null
+  provisioningRegional: Awaited<
+    ReturnType<typeof seedRegionalProvisioningSetups>
   > | null
   features: Awaited<ReturnType<typeof seedAllFeatures>> | null
   plans: Awaited<ReturnType<typeof seedPlans>> | null
@@ -48,6 +52,7 @@ export async function runSeeds(
     appAccess: null,
     geo: null,
     provisioning: null,
+    provisioningRegional: null,
     features: null,
     plans: null,
     defaultPrices: null,
@@ -78,6 +83,16 @@ export async function runSeeds(
     log.info('seeds.provisioning.started')
     summary.provisioning = await seedFirstPartyProvisioningManifests()
     log.info({ summary: summary.provisioning }, 'seeds.provisioning.completed')
+
+    // Regional setup policy depends on the base Jamaica manifest existing first.
+    // It fills the rest of the target presets and promotes Global USD as the
+    // fallback; it never overwrites an operator-authored policy or finance draft.
+    log.info('seeds.provisioning_regional.started')
+    summary.provisioningRegional = await seedRegionalProvisioningSetups()
+    log.info(
+      { summary: summary.provisioningRegional },
+      'seeds.provisioning_regional.completed'
+    )
   }
 
   if (shouldRun('features')) {
