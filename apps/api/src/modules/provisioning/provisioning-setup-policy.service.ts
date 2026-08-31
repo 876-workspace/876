@@ -12,6 +12,7 @@ import * as repository from './provisioning-setup-policy.repository'
 import type { ProvisioningSetupPolicyReplace } from './provisioning-setup-policy.schemas'
 
 const ENTERPRISE_APP_SLUG = '876-enterprise'
+const WORK_SERVICE_KEY = 'work'
 const SERVICE_TARGET_KEYS = new Set<string>(
   PROVISIONING_SERVICE_ENTITLEMENTS.map((entry) => entry.target_key)
 )
@@ -91,9 +92,34 @@ function withRequiredEnterprise(
   ]
 }
 
+function validateServiceCapabilityGate(
+  entitlements: ProvisioningSetupPolicyReplace['entitlements']
+): void {
+  const capabilities = entitlements.filter(
+    (entitlement) => entitlement.target_type === 'service_capability'
+  )
+  if (capabilities.length === 0) return
+
+  const workService = entitlements.find(
+    (entitlement) =>
+      entitlement.target_type === 'service' &&
+      entitlement.target_key === WORK_SERVICE_KEY
+  )
+  if (!workService) {
+    throw new AppHttpError({
+      code: 'provisioning/work-service-entitlement-required',
+      message:
+        'Work capability policy requires an explicit service/work entitlement gate.',
+      httpStatus: 400,
+    })
+  }
+}
+
 async function validateEntitlements(
   entitlements: ProvisioningSetupPolicyReplace['entitlements']
 ): Promise<void> {
+  validateServiceCapabilityGate(entitlements)
+
   for (const entitlement of entitlements) {
     if (entitlement.target_type === 'service') {
       if (!SERVICE_TARGET_KEYS.has(entitlement.target_key)) {
