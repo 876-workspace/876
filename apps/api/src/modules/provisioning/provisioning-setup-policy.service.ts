@@ -154,6 +154,20 @@ async function validateEntitlements(
   }
 }
 
+/**
+ * Validate the access policy against the live application registry and the
+ * closed shared-service capability catalogs without persisting a setup policy.
+ * The one-time importer uses this as a fail-fast preflight before it creates any
+ * provisioning records.
+ */
+export async function validateProvisioningSetupEntitlements(
+  entitlements: ProvisioningSetupPolicyReplace['entitlements']
+): Promise<ProvisioningSetupPolicyReplace['entitlements']> {
+  const normalized = withRequiredEnterprise(entitlements)
+  await validateEntitlements(normalized)
+  return normalized
+}
+
 export async function retrieveSetupPolicy(
   setupKey: string
 ): Promise<ProvisioningSetupPolicy> {
@@ -169,8 +183,9 @@ export async function replaceSetupPolicy(
   const setup = await repository.findPolicySetupByKey(setupKey)
   if (!setup) return notFound()
 
-  const entitlements = withRequiredEnterprise(body.entitlements)
-  await validateEntitlements(entitlements)
+  const entitlements = await validateProvisioningSetupEntitlements(
+    body.entitlements
+  )
 
   const now = BigInt(nowUnixSeconds())
   const row = await repository.replaceSetupPolicy({
