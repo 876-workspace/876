@@ -1,4 +1,5 @@
 import type {
+  AdminDeletedProvisioningSetup,
   AdminProvisioningDraftReplaceParams,
   AdminProvisioningManifestRevision,
   AdminProvisioningSetup,
@@ -28,6 +29,18 @@ export const provisioningSetups = {
     return request<AdminProvisioningSetup>(path(setupKey), {
       method: 'PATCH',
       body: JSON.stringify(params),
+    })
+  },
+
+  del(setupKey: string) {
+    return request<AdminDeletedProvisioningSetup>(path(setupKey), {
+      method: 'DELETE',
+    })
+  },
+
+  purge(setupKey: string) {
+    return request<AdminDeletedProvisioningSetup>(`${path(setupKey)}/purge`, {
+      method: 'DELETE',
     })
   },
 

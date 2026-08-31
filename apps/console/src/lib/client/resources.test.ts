@@ -203,6 +203,18 @@ const cases: RequestCase[] = [
     init: { method: 'PATCH', body: '{"is_default":true}' },
   },
   {
+    name: 'deletes a provisioning setup',
+    act: () => provisioningSetups.del('setup /1'),
+    url: '/api/organizations/provisioning/setups/setup%20%2F1',
+    init: { method: 'DELETE' },
+  },
+  {
+    name: 'purges a provisioning setup',
+    act: () => provisioningSetups.purge('setup /1'),
+    url: '/api/organizations/provisioning/setups/setup%20%2F1/purge',
+    init: { method: 'DELETE' },
+  },
+  {
     name: "replaces a provisioning setup's finance draft",
     act: () => provisioningSetups.replaceDraft('setup /1', EMPTY),
     url: '/api/organizations/provisioning/setups/setup%20%2F1/draft',
