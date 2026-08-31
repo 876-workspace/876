@@ -146,13 +146,20 @@ function mergePolicy(
   }))
 
   for (const condition of desired.conditions) {
+    const normalized = {
+      group_key: condition.group_key,
+      field: condition.field,
+      operator: condition.operator ?? ('equals' as const),
+      value: condition.value,
+      priority: condition.priority ?? 0,
+    }
     const exists = conditions.some(
       (candidate) =>
-        candidate.field === condition.field &&
-        candidate.operator === (condition.operator ?? 'equals') &&
-        candidate.value === condition.value
+        candidate.field === normalized.field &&
+        candidate.operator === normalized.operator &&
+        candidate.value === normalized.value
     )
-    if (!exists) conditions.push(condition)
+    if (!exists) conditions.push(normalized)
   }
 
   const entitlements = current.entitlements.map((entitlement) => ({
