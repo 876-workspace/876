@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import { notFound } from 'next/navigation'
 
-import { workspace } from '@/lib/876'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 
 export const metadata = { title: 'Provisioning setup' }

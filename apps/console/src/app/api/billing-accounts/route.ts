@@ -1,7 +1,8 @@
+import { billing } from '@/lib/services/billing'
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.billingAccounts.create(body)
+  const { data, error } = await workspace.billingAccounts.create(body)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to create billing account.' },

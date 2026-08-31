@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import type { Metadata } from 'next'
 
-import { workspace } from '@/lib/876'
 import { resolveApp } from '../../_data'
 import {
   CreatePlanForm,

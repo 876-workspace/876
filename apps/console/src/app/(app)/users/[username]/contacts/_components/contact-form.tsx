@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { AdminConsumerContact } from '@876/admin'
+import type { AdminConsumerContact } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'

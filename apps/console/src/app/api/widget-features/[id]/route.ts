@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import { widgetFeatureUpdateSchema } from '@/types/widgets'
 
@@ -23,12 +23,12 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const { id } = await context.params
-  const current = await $876.features.admin.retrieve(id)
+  const current = await workspace.features.retrieve(id)
   if (current.error || !current.data || !current.data.tags.includes('widget')) {
     return apiJson({ error: 'Widget feature not found.' }, { status: 404 })
   }
 
-  const { data, error } = await $876.features.admin.update(id, {
+  const { data, error } = await workspace.features.update(id, {
     enabled: body.data.enabled,
   })
   if (error || !data) {

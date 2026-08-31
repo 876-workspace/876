@@ -1,7 +1,7 @@
 import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 
 import { resolveApp } from '../../_data'
 import { PlansTable } from '../_components/plans-table'

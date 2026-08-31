@@ -1,10 +1,10 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
 import {
   DetailAccordionGroup,
@@ -57,7 +57,7 @@ async function SubscriptionDetailData({ params }: Props) {
 
   if (!app || app.app_kind !== 'product') notFound()
 
-  const { data } = await $876.appSubscriptions.list(app.id)
+  const { data } = await workspace.apps.entitlements.list(app.id)
   const subscriptions = data ?? []
   const subscription = subscriptions.find((s) => s.id === subscriptionId)
 

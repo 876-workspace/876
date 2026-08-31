@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 
 import { request } from '@/lib/client/request'
 

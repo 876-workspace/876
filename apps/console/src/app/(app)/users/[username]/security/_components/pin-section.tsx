@@ -3,7 +3,7 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import type { AdminUserPin } from '@876/admin'
+import type { AdminUserPin } from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { KeyRound } from '@876/ui/icons'

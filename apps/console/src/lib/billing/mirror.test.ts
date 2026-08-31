@@ -1,4 +1,5 @@
-import type { AdminPrice, AdminProduct, AdminSubscription } from '@876/admin'
+import { billingOperator } from '@/lib/services/billing'
+import type { AdminPrice, AdminProduct, AdminSubscription } from '@876/platform/compat'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -23,19 +24,19 @@ const mocks = vi.hoisted(() => ({
   productList: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({
-  billingAdmin: {
+vi.mock('@/lib/services/platform', () => ({
+  billingOperator: {
     products: { create: mocks.productCreate },
     subscriptions: { create: mocks.subscriptionCreate },
   },
-  coreAdmin: {
+  platform: {
     products: { retrieve: mocks.productRetrieve, list: mocks.productList },
     subscriptions: { retrieve: mocks.subscriptionRetrieve },
     organizations: { retrieve: mocks.orgRetrieve, list: mocks.orgList },
     users: { retrieve: mocks.usersRetrieve },
     memberships: { list: mocks.membershipsList },
   },
-  $876: {
+  platform: {
     organizations: {
       admin: {
         retrieve: mocks.orgRetrieve,

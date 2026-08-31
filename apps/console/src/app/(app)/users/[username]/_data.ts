@@ -1,8 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
 import { cache } from 'react'
 import { service } from '@/lib/service'
-
-import { $876 } from '@/lib/876'
 
 /**
  * Resolve a user by `user_*` id or username, including soft-deleted records so
@@ -61,7 +60,7 @@ export const resolveUserMcRole = cache(async (userId: string) => {
  * without the per-org N+1 (org details load lazily when the panel opens).
  */
 export const resolveUserMembershipCount = cache(async (userId: string) => {
-  const result = await $876.memberships.admin.list({ userId, limit: 50 })
+  const result = await workspace.memberships.list({ userId, limit: 50 })
   if (result.error) return 0
   return result.data.total_count ?? result.data.data.length
 })

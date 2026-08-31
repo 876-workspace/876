@@ -1,3 +1,4 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import Image from 'next/image'
@@ -16,7 +17,6 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
 import { RetryRunButton } from '../_components/run-actions'

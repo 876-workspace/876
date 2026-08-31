@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { notFound } from 'next/navigation'
-import type { AdminApplicationModule } from '@876/admin'
+import type { AdminApplicationModule } from '@876/platform/compat'
 
-import { $876, workspace } from '@/lib/876'
 import { resolveApp } from '../_data'
 import {
   ModulesManager,
@@ -44,7 +44,7 @@ async function loadModuleFeatures(
   const { appId, canManage } = await context
   if (!canManage) return []
 
-  const result = await $876.features.admin.list({
+  const result = await workspace.features.list({
     appId,
     rootOnly: true,
     limit: 100,

@@ -3,7 +3,7 @@ import type {
   AdminOnboardingCatalog,
   AdminOnboardingSession,
   AdminOnboardingValidation,
-} from '@876/admin'
+} from '@876/platform/compat'
 
 import { request } from './request'
 

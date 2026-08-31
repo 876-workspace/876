@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
 
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization } from '@876/platform/compat'
 import { DeleteOrgDialog } from './delete-org-dialog'
 import { PurgeOrgDialog } from './purge-org-dialog'
 import { RestoreOrgDialog } from './restore-org-dialog'

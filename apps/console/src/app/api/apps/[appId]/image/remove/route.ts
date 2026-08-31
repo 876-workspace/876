@@ -1,8 +1,8 @@
+import { storage } from '@/lib/services/storage'
 import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -43,7 +43,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (!fileId) return apiJson({ data: null })
 
   // An app logo is platform-owned, so the creating app stands in for the owner.
-  const deleteResult = await $876.files.delete(fileId, {
+  const deleteResult = await storage.files.delete(fileId, {
     sourceAppId: '876-console',
   })
   if (deleteResult.error || !deleteResult.data)

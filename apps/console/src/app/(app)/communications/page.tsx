@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import type {
   AdminCommunicationCall,
   AdminCommunicationMessage,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
 import {
   DataTableSkeleton,

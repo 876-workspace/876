@@ -2,7 +2,7 @@ import type {
   AdminBillingAccount,
   AdminBillingAccountCreateParams,
   AdminBillingAccountUpdateParams,
-} from '@876/admin'
+} from '@876/platform/compat'
 
 export type BillingAccountDraft = {
   name: string

@@ -1,6 +1,6 @@
 import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
-import type { AdminUser, AdminUserApp } from '@876/admin'
+import type { AdminUser, AdminUserApp } from '@876/platform/compat'
 import { Users } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'

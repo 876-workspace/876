@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, assignmentId } = await params
-  const { data, error } = await workspace.apps.unassign(id, assignmentId)
+  const { data, error } = await workspace.appAssignments.unassign(id, assignmentId)
 
   if (error || !data) {
     return apiJson(

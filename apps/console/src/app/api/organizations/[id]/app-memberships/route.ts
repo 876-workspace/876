@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -33,7 +33,7 @@ export async function POST(
       { status: 400 }
     )
 
-  const { data, error } = await workspace.apps.memberships.create(
+  const { data, error } = await workspace.appMemberships.create(
     organizationId,
     {
       membership_id: membershipId,

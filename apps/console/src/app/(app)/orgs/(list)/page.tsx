@@ -1,6 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
-import type { AdminOrganization, AdminSubscription } from '@876/admin'
+import type { AdminOrganization, AdminSubscription } from '@876/platform/compat'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import {
   Empty,
@@ -12,7 +13,6 @@ import {
 import { Building2 } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { workspace } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isOrgStatus } from '@/lib/org-status'

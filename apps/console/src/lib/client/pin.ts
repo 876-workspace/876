@@ -1,4 +1,4 @@
-import type { AdminUserPin, AdminDeletedUserPin } from '@876/admin'
+import type { AdminUserPin, AdminDeletedUserPin } from '@876/platform/compat'
 
 import { request } from './request'
 

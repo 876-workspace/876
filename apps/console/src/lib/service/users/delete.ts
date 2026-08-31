@@ -1,5 +1,5 @@
 import { platform } from '@/lib/services/platform'
-import type { AdminDeletedUser } from '@876/admin'
+import type { AdminDeletedUser } from '@876/platform/compat'
 
 import type { Access } from '@/types/auth'
 import type { ServiceResult } from '@/types/api'

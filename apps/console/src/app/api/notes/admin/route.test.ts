@@ -9,13 +9,9 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
-    notes: {
-      admin: {
-        list: mocks.list,
-      },
-    },
+vi.mock('@/lib/services/widgets', () => ({
+  widgets: {
+    notes: { list: mocks.list },
   },
 }))
 

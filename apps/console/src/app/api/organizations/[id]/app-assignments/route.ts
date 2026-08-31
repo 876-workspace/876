@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -66,7 +66,7 @@ export async function POST(
     )
   }
 
-  const { data, error } = await workspace.apps.assign(id, {
+  const { data, error } = await workspace.appAssignments.assign(id, {
     user_id: userId,
     ...(appId ? { app_id: appId } : { app_slug: appSlug }),
   })

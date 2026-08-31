@@ -1,8 +1,8 @@
+import { storage } from '@/lib/services/storage'
 import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import { imageUploadCompleteSchema } from '@/types/storage'
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest, context: Context) {
     return apiJson({ error: 'The upload request is invalid.' }, { status: 400 })
 
   const { id: organizationId } = await context.params
-  const result = await $876.uploads.complete(parsed.data.id)
+  const result = await storage.uploads.complete(parsed.data.id)
   if (result.error || !result.data)
     return apiJson(
       { error: result.error ?? 'Failed to verify the image upload.' },

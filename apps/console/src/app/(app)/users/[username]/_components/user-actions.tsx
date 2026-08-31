@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
 
-import type { AdminUser } from '@876/admin'
+import type { AdminUser } from '@876/platform/compat'
 import { BanUserDialog } from './ban-user-dialog'
 import { DeleteUserDialog } from './delete-user-dialog'
 import { PurgeUserDialog } from './purge-user-dialog'

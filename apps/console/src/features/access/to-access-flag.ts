@@ -1,4 +1,4 @@
-import type { AdminFeature, AdminFeatureGrants } from '@876/admin'
+import type { AdminFeature, AdminFeatureGrants } from '@876/platform/compat'
 
 import type { AccessFlag } from './components/feature-access-board'
 

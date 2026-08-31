@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { isExpired } from '@876/admin'
+import { isExpired } from '@876/platform/compat'
 import { SESSIONS_SKELETON_COLUMNS } from './_components/sessions-skeleton-columns'
 
 export const metadata = { title: 'Sessions' }

@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -27,7 +27,7 @@ export async function POST(
   if (!userId) return apiJson({ error: 'userId is required.' }, { status: 400 })
   if (!role) return apiJson({ error: 'role is required.' }, { status: 400 })
 
-  const { data, error } = await $876.organizationMembers.admin.create(id, {
+  const { data, error } = await workspace.members.create(id, {
     userId,
     role,
   })

@@ -1,5 +1,6 @@
 import { platform } from '@/lib/services/platform'
 import 'server-only'
+import { workspace } from '@/lib/services/workspace'
 
 import { can, hasFeature, type AccessContext } from '@876/core/access'
 import { createAuthLoginPath } from '@876/core/auth/return-to'
@@ -7,7 +8,6 @@ import * as Sentry from '@sentry/nextjs'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 
-import { $876 } from '@/lib/876'
 import {
   resolveAccessContext,
   resolveConsoleGrant,
@@ -89,7 +89,7 @@ const verifyStaffEmployment = cache(async function verifyStaffEmployment(
   if (!organizationId) return true
 
   try {
-    const result = await $876.memberships.admin.list({
+    const result = await workspace.memberships.list({
       organizationId,
       userId,
       limit: 1,

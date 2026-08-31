@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { SubscriptionActivity } from '../subscription-activity'

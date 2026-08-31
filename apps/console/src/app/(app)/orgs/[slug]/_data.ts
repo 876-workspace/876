@@ -1,7 +1,10 @@
+import { billing } from '@/lib/services/billing'
+import { crm } from '@/lib/services/crm'
+import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import { cache } from 'react'
-import type { AdminSubscriptionStatus } from '@876/admin'
+import type { AdminSubscriptionStatus } from '@876/platform/compat'
 
-import { $876, workspace } from '@/lib/876'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
 /**
@@ -14,7 +17,7 @@ import { getPlatformOrganization } from '@/lib/platform-org'
  * error is preserved rather than collapsed into `null`.
  */
 export const resolveOrgResult = cache(async (slug: string) =>
-  $876.organizations.admin.retrieve({
+  platform.organizations.retrieve({
     slug,
     includeDeleted: true,
   })
@@ -41,7 +44,7 @@ export const resolveOrg = cache(async (slug: string) => {
  * same render.
  */
 export const resolveOrgMembers = cache(async (orgId: string) => {
-  const result = await $876.organizationMembers.admin.list(orgId, {
+  const result = await workspace.members.list(orgId, {
     limit: 100,
   })
   if (result.data?.has_more) {
@@ -59,7 +62,7 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
 
 /** Cached role catalog used by member-management controls, plus its error. */
 export const resolveOrgRoles = cache(async (orgId: string) => {
-  const result = await $876.roles.admin.list(orgId)
+  const result = await workspace.roles.list(orgId)
   return { data: result.data?.data ?? [], error: result.error }
 })
 
@@ -76,7 +79,7 @@ export const resolveOrgSubscriptions = cache(
 
 /** Cached billing accounts for the org, plus the registered lookup error. */
 export const resolveOrgBillingAccounts = cache(async (orgId: string) => {
-  const result = await $876.billingAccounts.list({
+  const result = await workspace.billingAccounts.list({
     organizationId: orgId,
     limit: 25,
   })
@@ -115,7 +118,7 @@ export const resolveOrgCustomerWithUs = cache(async (orgId: string) => {
   const platformOrg = await getPlatformOrganization()
   if (!platformOrg) return { data: null, error: null }
 
-  const result = await $876.customerProfiles.list(platformOrg.id, {
+  const result = await crm.customers.list(platformOrg.id, {
     customerOrganizationId: orgId,
   })
   if (result.error?.code === 'crm/tenant-not-found')

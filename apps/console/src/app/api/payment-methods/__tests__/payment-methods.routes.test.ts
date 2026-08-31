@@ -9,7 +9,7 @@ const mockDelete = vi.fn()
 const mockSetDefault = vi.fn()
 const mockRequire = vi.fn()
 
-vi.mock('@/lib/876', () => ({
+vi.mock('@/lib/services/billing', () => ({
   $876: {
     paymentMethods: {
       list: (...args: unknown[]) => mockList(...args),
@@ -60,7 +60,7 @@ describe('console payment-methods routes', () => {
     expect(JSON.stringify(body)).toContain('organizationId')
   })
 
-  it('GET list proxies query to $876.paymentMethods.list', async () => {
+  it('GET list proxies query to billing.paymentMethods.list', async () => {
     mockList.mockResolvedValue({
       data: { object: 'list', data: [] },
       error: null,
@@ -111,7 +111,7 @@ describe('console payment-methods routes', () => {
     expect(res.status).toBe(400)
   })
 
-  it('POST create proxies to $876.paymentMethods.create with 201', async () => {
+  it('POST create proxies to billing.paymentMethods.create with 201', async () => {
     mockCreate.mockResolvedValue({
       data: { object: 'payment_method', id: 'pm_1' },
       error: null,
@@ -159,7 +159,7 @@ describe('console payment-methods [id] routes', () => {
     expect(res.status).toBe(400)
   })
 
-  it('GET retrieve proxies to $876.paymentMethods.retrieve', async () => {
+  it('GET retrieve proxies to billing.paymentMethods.retrieve', async () => {
     mockRetrieve.mockResolvedValue({
       data: { object: 'payment_method', id: 'pm_1' },
       error: null,

@@ -1,8 +1,8 @@
+import { storage } from '@/lib/services/storage'
 import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -48,7 +48,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   // A logo predating 876 Storage has a URL but no file to delete.
   if (!fileId) return apiJson({ data: null })
 
-  const deleteResult = await $876.files.delete(fileId, {
+  const deleteResult = await storage.files.delete(fileId, {
     sourceAppId: '876-console',
     actorOrgId: organizationId,
   })

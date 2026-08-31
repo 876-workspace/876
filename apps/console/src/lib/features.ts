@@ -1,10 +1,10 @@
 import 'server-only'
+import { workspace } from '@/lib/services/workspace'
 
 import * as Sentry from '@sentry/nextjs'
 import { chatWidgetMetadata, isWidgetEnabled } from '@876/widgets'
 import { cache } from 'react'
 
-import { $876 } from '@/lib/876'
 import { listConsoleApps } from '@/lib/apps-catalog'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 import { logger } from '@/lib/logger'
@@ -56,7 +56,7 @@ const resolveConsoleFeatureKeys = cache(
       return []
     }
 
-    const enabledResult = await $876.features.admin.evaluate({
+    const enabledResult = await workspace.features.evaluate({
       appId: consoleApp.id,
       userId,
     })

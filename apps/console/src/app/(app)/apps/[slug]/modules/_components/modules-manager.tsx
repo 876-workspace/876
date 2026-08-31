@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import type { AdminApplicationModule } from '@876/admin'
+import type { AdminApplicationModule } from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import type { AdminApiKey } from '@876/admin'
+import type { AdminApiKey } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import {
   Eye,

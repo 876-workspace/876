@@ -1,6 +1,6 @@
 import { Badge } from '@876/ui/badge'
 import { cn } from '@876/core/utils'
-import type { AdminProvisioningRunStatus } from '@876/admin'
+import type { AdminProvisioningRunStatus } from '@876/platform/compat'
 
 const styles: Record<AdminProvisioningRunStatus, string> = {
   queued: 'border-sky-400/40 bg-sky-400/10 text-sky-700 dark:text-sky-400',

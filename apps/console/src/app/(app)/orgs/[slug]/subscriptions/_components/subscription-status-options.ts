@@ -1,4 +1,4 @@
-import type { AdminSubscriptionStatus } from '@876/admin'
+import type { AdminSubscriptionStatus } from '@876/platform/compat'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 export const SUBSCRIPTION_STATUS_OPTIONS: StatusFilterOption[] = [

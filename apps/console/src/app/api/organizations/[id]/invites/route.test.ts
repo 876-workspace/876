@@ -13,8 +13,8 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
     invites: {
       list: mocks.platformListInvites,
       create: mocks.platformCreateInvite,

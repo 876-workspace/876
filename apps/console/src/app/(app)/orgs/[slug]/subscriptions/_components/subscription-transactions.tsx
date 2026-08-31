@@ -1,5 +1,6 @@
-import { billingIntegration } from '@/lib/876'
-import type { AdminSubscription } from '@876/admin'
+
+import { billing } from '@/lib/services/billing'
+import type { AdminSubscription } from '@876/platform/compat'
 import {
   Empty,
   EmptyDescription,
@@ -85,7 +86,7 @@ export async function SubscriptionTransactions({
   organizationId: string
   subscription: AdminSubscription
 }) {
-  const result = await billingIntegration.invoices.list(organizationId)
+  const result = await billing.invoices.list(organizationId)
   if (result.error) throw new Error(result.error.message)
 
   const invoices = ((result.data?.data ?? []) as InvoiceRow[]).filter(

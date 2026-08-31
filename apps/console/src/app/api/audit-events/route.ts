@@ -1,6 +1,6 @@
 import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
-import type { AdminAuditEventCreateParams } from '@876/admin'
+import type { AdminAuditEventCreateParams } from '@876/platform/compat'
 import type { NextRequest } from 'next/server'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'

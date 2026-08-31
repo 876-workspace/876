@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization } from '@876/platform/compat'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'

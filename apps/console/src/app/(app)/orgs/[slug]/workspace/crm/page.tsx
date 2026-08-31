@@ -48,7 +48,7 @@ async function OverviewData({ slug }: { slug: string }) {
 
   const [requestsResult, customersResult] = await Promise.all([
     crm.requests.list(org.id),
-    crm.customerProfiles.list(org.id),
+    crm.customers.list(org.id),
   ])
 
   if (

@@ -1,6 +1,6 @@
 import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Calendar, Fingerprint, KeyRound } from '@876/ui/icons'

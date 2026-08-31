@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import type { Metadata } from 'next'
 
-import { $876 } from '@/lib/876'
 import {
   CreateFeatureForm,
   type CreateFeatureFormSetup,
@@ -48,7 +48,7 @@ async function loadAppFeatureSetup(
   const [app, parentResult] = await Promise.all([
     resolveApp(slug),
     parent
-      ? $876.features.admin.retrieve(parent)
+      ? workspace.features.retrieve(parent)
       : Promise.resolve({ data: null, error: null }),
   ])
   if (!app) throw new Error('App not found.')

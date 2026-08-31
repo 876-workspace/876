@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminBillingAccount, AdminProduct } from '@876/admin'
+import type { AdminBillingAccount, AdminProduct } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'

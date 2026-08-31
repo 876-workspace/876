@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminApp, AdminAppKind, AdminAppStatus } from '@876/admin'
+import type { AdminApp, AdminAppKind, AdminAppStatus } from '@876/platform/compat'
 import type { ReactNode } from 'react'
 import { Trash } from '@876/ui/icons'
 import {

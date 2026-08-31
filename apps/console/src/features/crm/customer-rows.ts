@@ -2,7 +2,7 @@ import type { CrmCustomerRow } from '@876/crm-ui/customer-list'
 
 import { resolveCustomerIdentity } from './customer-identity'
 
-/** The shape `crm.customerProfiles.list()` returns one of. */
+/** The shape `crm.customers.list()` returns one of. */
 type CustomerProfileEntry = {
   profile: {
     id: string

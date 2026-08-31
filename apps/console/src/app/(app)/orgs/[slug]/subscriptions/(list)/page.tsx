@@ -1,7 +1,8 @@
+import { billing } from '@/lib/services/billing'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization, AdminSubscriptionStatus } from '@876/admin'
-import type { AdminSubscription } from '@876/admin'
+import type { AdminOrganization, AdminSubscriptionStatus } from '@876/platform/compat'
+import type { AdminSubscription } from '@876/platform/compat'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
@@ -27,7 +28,6 @@ import {
   SubscriptionBillingSummary,
   SubscriptionBillingSummaryFallback,
 } from '@/features/billing/components/subscription-billing-summary'
-import { $876 } from '@/lib/876'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -172,7 +172,7 @@ async function SubscriptionBillingData({
 }) {
   const [accounts, customers] = await Promise.all([
     resolveOrgBillingAccounts(organizationId),
-    $876.customers.list(organizationId, { limit: 25 }),
+    billing.customers.list(organizationId, { limit: 25 }),
   ])
   const account = subscription.billing_account_id
     ? (accounts.data.find(
@@ -200,7 +200,7 @@ async function SubscriptionBillingData({
       />
     )
 
-  const methods = await $876.paymentMethods.listForCustomer(
+  const methods = await billing.paymentMethods.listForCustomer(
     organizationId,
     customer.id,
     { limit: 25 }

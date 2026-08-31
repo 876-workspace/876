@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { AdminOrgMember, AdminUser } from '@876/admin'
+import type { AdminOrgMember, AdminUser } from '@876/platform/compat'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'

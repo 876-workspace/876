@@ -1,4 +1,4 @@
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 import type { RouteTabItem } from '@876/ui/route-tabs'
 
 export function getAppTabs(

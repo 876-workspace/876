@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, inviteId } = await params
-  const { data, error } = await $876.invites.revoke(id, inviteId)
+  const { data, error } = await workspace.invites.revoke(id, inviteId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to revoke invite.' },

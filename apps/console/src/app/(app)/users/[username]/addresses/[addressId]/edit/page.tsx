@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import type { AdminAddress } from '@876/admin'
+import type { AdminAddress } from '@876/platform/compat'
 import { resolveUser, resolveUserAddresses } from '../../../_data'
 import { AddressEdit } from './_components/address-edit'
 

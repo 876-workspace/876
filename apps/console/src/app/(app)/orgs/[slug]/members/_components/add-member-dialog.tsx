@@ -7,7 +7,7 @@ import type {
   AdminMembership,
   AdminOrgRole,
   AdminUser,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { CheckIcon, Copy, UserPlusIcon } from '@876/ui/icons'
 import { Input } from '@876/ui/input'

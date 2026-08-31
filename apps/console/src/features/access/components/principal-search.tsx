@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, useState } from 'react'
-import type { AdminOrganization, AdminUser } from '@876/admin'
+import type { AdminOrganization, AdminUser } from '@876/platform/compat'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Input } from '@876/ui/input'
 import { Spinner } from '@876/ui/spinner'

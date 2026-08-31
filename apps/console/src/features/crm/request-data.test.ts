@@ -11,7 +11,7 @@ const { platformOrg, guards, client } = vi.hoisted(() => ({
 
 vi.mock('@/lib/platform-org', () => platformOrg)
 vi.mock('@/lib/auth/guards', () => guards)
-vi.mock('@/lib/876', () => ({ $876: client }))
+vi.mock('@/lib/services/platform', () => ({ platform: client }))
 
 const ORG = { id: 'org_fa2cfb0b', slug: 'efesto' }
 

@@ -1,8 +1,8 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 import { cache } from 'react'
 
-import { $876, workspace } from '@/lib/876'
 import { listConsoleApps } from '@/lib/apps-catalog'
 
 export const resolveApp = cache(async (slug: string) => {
@@ -45,7 +45,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   data: AdminSubscription[]
   error: { code: string; message: string } | null
 }> {
-  const summariesResult = await $876.appSubscriptions.list(appId)
+  const summariesResult = await workspace.apps.entitlements.list(appId)
   if (summariesResult.error) return { data: [], error: summariesResult.error }
 
   const summaries = summariesResult.data ?? []

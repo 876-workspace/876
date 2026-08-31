@@ -1,4 +1,4 @@
-import type { AdminAppStatus } from '@876/admin'
+import type { AdminAppStatus } from '@876/platform/compat'
 
 export type AppStatusFilterValue = 'all' | AdminAppStatus
 

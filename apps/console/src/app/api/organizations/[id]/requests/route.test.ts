@@ -14,8 +14,8 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsoleCrmPermission: mocks.requireCrmPermission,
 }))
 
-vi.mock('@/lib/876', () => ({
-  createConsole876Client: mocks.createClient,
+vi.mock('@/lib/services/crm', () => ({
+  crm: { requests: { list: mocks.list, create: mocks.create } },
 }))
 
 import { GET, POST } from './route'

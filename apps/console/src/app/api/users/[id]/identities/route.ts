@@ -1,9 +1,9 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -17,7 +17,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await context.params
-  const memberships = await $876.memberships.admin.list({
+  const memberships = await workspace.memberships.list({
     userId: id,
     limit: 50,
   })

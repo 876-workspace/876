@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { AdminOrgMember, AdminUser } from '@876/admin'
+import type { AdminOrgMember, AdminUser } from '@876/platform/compat'
 import {
   Calendar,
   ExternalLink,

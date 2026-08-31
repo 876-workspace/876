@@ -1,7 +1,7 @@
 import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminApp, AdminOrganization } from '@876/admin'
+import type { AdminApp, AdminOrganization } from '@876/platform/compat'
 
 import { listCompleteAppSubscriptions, resolveApp } from '../../_data'
 import { SubscribersTable } from '../_components/subscribers-table'

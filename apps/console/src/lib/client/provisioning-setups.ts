@@ -5,7 +5,7 @@ import type {
   AdminProvisioningSetupCreateParams,
   AdminProvisioningSetupUpdateParams,
   AdminProvisioningValidation,
-} from '@876/admin'
+} from '@876/platform/compat'
 
 import { request } from './request'
 

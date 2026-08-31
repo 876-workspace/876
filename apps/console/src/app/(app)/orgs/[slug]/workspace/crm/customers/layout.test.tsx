@@ -17,9 +17,9 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
-    customerProfiles: {
+vi.mock('@/lib/services/crm', () => ({
+  crm: {
+    customers: {
       list: mocks.listCustomers,
     },
   },

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { AdminUser, AdminUserApp } from '@876/admin'
+import type { AdminUser, AdminUserApp } from '@876/platform/compat'
 import { Building2, ShieldCheck, User, type IconComponent } from '@876/ui/icons'
 
 import { IconChip, type Tone } from './overview-ui'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import type { AdminAccount } from '@876/admin'
+import type { AdminAccount } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Trash, Lock, KeyRound } from '@876/ui/icons'
 import { PROVIDER_ICONS } from '@876/ui/auth/provider-icons'

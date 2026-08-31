@@ -1,8 +1,8 @@
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { workspace } from '@/lib/876'
 import { resolveOrg } from '../_data'
 import { OnboardingEditor } from './_components/onboarding-editor'
 

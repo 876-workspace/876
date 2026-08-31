@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { AdminOrgMember } from '@876/admin'
+import type { AdminOrgMember } from '@876/platform/compat'
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemberActivity } from '../member-activity'

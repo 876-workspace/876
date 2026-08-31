@@ -1,7 +1,7 @@
 'use client'
 
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import type { AdminConsumerContact } from '@876/admin'
+import type { AdminConsumerContact } from '@876/platform/compat'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Button } from '@876/ui/button'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'

@@ -1,7 +1,7 @@
+import { billing } from '@/lib/services/billing'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -22,7 +22,7 @@ export async function GET(
   if (!orgId)
     return apiJson({ error: 'organizationId is required.' }, { status: 400 })
   const { id } = await context.params
-  const { data, error } = await $876.paymentMethods.retrieve(orgId, id)
+  const { data, error } = await billing.paymentMethods.retrieve(orgId, id)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to retrieve payment method.' },
@@ -42,7 +42,7 @@ export async function PATCH(
   if (!orgId || !body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request.' }, { status: 400 })
   const { id } = await context.params
-  const { data, error } = await $876.paymentMethods.update(
+  const { data, error } = await billing.paymentMethods.update(
     orgId,
     id,
     body as never
@@ -65,7 +65,7 @@ export async function DELETE(
   if (!orgId)
     return apiJson({ error: 'organizationId is required.' }, { status: 400 })
   const { id } = await context.params
-  const { data, error } = await $876.paymentMethods.delete(orgId, id)
+  const { data, error } = await billing.paymentMethods.delete(orgId, id)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete payment method.' },

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminBillingAccount } from '@876/admin'
+import type { AdminBillingAccount } from '@876/platform/compat'
 
 import { client } from '@/lib/client'
 

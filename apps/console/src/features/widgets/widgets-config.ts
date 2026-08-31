@@ -1,7 +1,7 @@
 import { NotepadIcon } from '@876/widgets/react'
 import { Terminal, type IconComponent } from '@876/ui/icons'
 import type { ComponentType } from 'react'
-import type { AdminAuditEvent } from '@876/admin'
+import type { AdminAuditEvent } from '@876/platform/compat'
 import type { PopoutSize } from './components/popout-bar'
 
 import { LiveLogsWidget } from './components/live-logs-widget'

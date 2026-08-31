@@ -2,7 +2,7 @@ import type {
   AdminAddress,
   AdminAddressCreateParams,
   AdminAddressUpdateParams,
-} from '@876/admin'
+} from '@876/platform/compat'
 import type {
   AddressCreateDraft,
   AddressType,

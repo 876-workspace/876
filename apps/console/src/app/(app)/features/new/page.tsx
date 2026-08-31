@@ -1,9 +1,9 @@
 import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
-import { $876 } from '@/lib/876'
 import {
   CreateFeatureForm,
   type CreateFeatureFormSetup,
@@ -49,7 +49,7 @@ async function loadFeatureSetup(
 ): Promise<CreateFeatureFormSetup> {
   const [parentResult, ...results] = await Promise.all([
     parent
-      ? $876.features.admin.retrieve(parent)
+      ? workspace.features.retrieve(parent)
       : Promise.resolve({ data: null, error: null }),
     ...APP_KINDS.map((appKind) =>
       platform.apps.list({

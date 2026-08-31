@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 import { Alert, AlertDescription, AlertTitle } from '@876/ui/alert'
 import { Button } from '@876/ui/button'
 import { Info } from '@876/ui/icons'

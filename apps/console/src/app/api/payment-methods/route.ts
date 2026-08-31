@@ -1,7 +1,7 @@
+import { billing } from '@/lib/services/billing'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (!orgId)
     return apiJson({ error: 'organizationId is required.' }, { status: 400 })
 
-  const { data, error } = await $876.paymentMethods.list(orgId, {
+  const { data, error } = await billing.paymentMethods.list(orgId, {
     customerId: request.nextUrl.searchParams.get('customerId') ?? undefined,
     limit: request.nextUrl.searchParams.get('limit')
       ? Number(request.nextUrl.searchParams.get('limit'))
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   if (typeof orgId !== 'string' || !orgId)
     return apiJson({ error: 'organizationId is required.' }, { status: 400 })
 
-  const { data, error } = await $876.paymentMethods.create(
+  const { data, error } = await billing.paymentMethods.create(
     orgId,
     params as never
   )

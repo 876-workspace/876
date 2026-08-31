@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import type { AdminAddress } from '@876/admin'
+import type { AdminAddress } from '@876/platform/compat'
 import { DataTable } from '@876/ui/data-table'
 
 import {

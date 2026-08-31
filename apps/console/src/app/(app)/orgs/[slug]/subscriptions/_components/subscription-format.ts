@@ -1,4 +1,4 @@
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 
 export function humanize(value: string | null | undefined): string {
   // Several of the fields this formats are nullable on the resource, so an

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { AdminOrgMember, AdminUser } from '@876/admin'
+import type { AdminOrgMember, AdminUser } from '@876/platform/compat'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Button } from '@876/ui/button'
 import { XIcon } from '@876/ui/icons'

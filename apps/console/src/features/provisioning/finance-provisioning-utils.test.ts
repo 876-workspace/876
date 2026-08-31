@@ -1,7 +1,7 @@
 import type {
   AdminProvisioningCatalog,
   AdminProvisioningManifestRevision,
-} from '@876/admin'
+} from '@876/platform/compat'
 import { describe, expect, it } from 'vitest'
 
 import {

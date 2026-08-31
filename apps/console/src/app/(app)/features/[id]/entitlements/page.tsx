@@ -1,11 +1,12 @@
 import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 import { FeatureAccessBoard } from '@/features/access/components/feature-access-board'
 import { loadGrants, toAccessFlag } from '@/features/access/to-access-flag'
-import { $876 } from '@/lib/876'
+
 import { resolveFeature } from '../_data'
 
 type Props = { params: Promise<{ id: string }> }
@@ -33,7 +34,7 @@ async function FeatureEntitlementsData({ params }: Props) {
   // Children AND with this flag, so they belong on the same screen — an admin
   // reading "enabled" here needs to see what that does and does not switch on.
   const [siblingsResult, appsResult] = await Promise.all([
-    $876.features.admin.list({
+    workspace.features.list({
       limit: 100,
       appId: feature.app_id ?? undefined,
     }),
@@ -49,7 +50,7 @@ async function FeatureEntitlementsData({ params }: Props) {
 
   const family = [feature, ...children]
   const grantsById = await loadGrants(family, (id) =>
-    $876.features.admin.retrieveGrants(id)
+    workspace.features.retrieveGrants(id)
   )
 
   return (

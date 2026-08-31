@@ -1,6 +1,6 @@
 'use client'
 
-import type { AdminAddress } from '@876/admin'
+import type { AdminAddress } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Pencil, Star, Trash } from '@876/ui/icons'
 

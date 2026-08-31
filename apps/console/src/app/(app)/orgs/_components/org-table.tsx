@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import type { AdminOrganization, AdminSubscription } from '@876/admin'
+import type { AdminOrganization, AdminSubscription } from '@876/platform/compat'
 import { DataTable } from '@876/ui/data-table'
 
 import { CursorPagination } from '@/components/patterns/cursor-pagination'

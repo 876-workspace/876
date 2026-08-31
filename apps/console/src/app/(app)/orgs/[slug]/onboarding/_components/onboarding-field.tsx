@@ -1,6 +1,6 @@
 'use client'
 
-import type { AdminJsonValue, AdminOnboardingField } from '@876/admin'
+import type { AdminJsonValue, AdminOnboardingField } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
 import { Field, FieldDescription, FieldLabel } from '@876/ui/field'

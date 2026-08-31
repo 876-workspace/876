@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdminProduct } from '@876/admin'
+import type { AdminProduct } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'

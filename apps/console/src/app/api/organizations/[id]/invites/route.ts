@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await params
-  const { data, error } = await $876.invites.admin.list(id)
+  const { data, error } = await workspace.invites.list(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to list invites.' },
@@ -45,7 +45,7 @@ export async function POST(
 
   if (!email) return apiJson({ error: 'email is required.' }, { status: 400 })
 
-  const { data, error } = await $876.invites.admin.create(id, {
+  const { data, error } = await workspace.invites.create(id, {
     email,
     ...(role ? { role } : {}),
   })

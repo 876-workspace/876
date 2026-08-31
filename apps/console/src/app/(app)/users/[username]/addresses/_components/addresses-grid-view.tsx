@@ -1,6 +1,6 @@
 'use client'
 
-import type { AdminAddress } from '@876/admin'
+import type { AdminAddress } from '@876/platform/compat'
 import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,

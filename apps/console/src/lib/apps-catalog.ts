@@ -2,7 +2,7 @@ import { platform } from '@/lib/services/platform'
 import 'server-only'
 
 import { cache } from 'react'
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 import type { AppError } from '@876/core/types/errors'
 
 /**

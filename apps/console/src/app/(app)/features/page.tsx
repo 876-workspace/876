@@ -1,6 +1,7 @@
 import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
-import type { AdminApp } from '@876/admin'
+import type { AdminApp } from '@876/platform/compat'
 import { Flag } from '@876/ui/icons'
 import {
   Empty,
@@ -16,7 +17,6 @@ import {
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
-import { $876 } from '@/lib/876'
 import { FeaturesTable } from './_components/features-table'
 
 export const metadata = {
@@ -68,7 +68,7 @@ export default function FeaturesPage({ searchParams }: Props) {
 async function FeaturesTableData({ searchParams }: Props) {
   const { after, before } = await searchParams
   const [featuresResult, ...appResults] = await Promise.all([
-    $876.features.admin.list({
+    workspace.features.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,

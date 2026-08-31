@@ -1,7 +1,7 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
-import type { AdminUser, AdminUserCreateParams } from '@876/admin'
+import type { AdminUser, AdminUserCreateParams } from '@876/platform/compat'
 
-import { $876 } from '@/lib/876'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
@@ -29,7 +29,7 @@ export async function create(
       return ok(user, 'User created but organization could not be created.')
     }
 
-    const { error: membershipError } = await $876.memberships.admin.create({
+    const { error: membershipError } = await workspace.memberships.create({
       user_id: user.id,
       organization_id: org.id,
       role: 'owner',

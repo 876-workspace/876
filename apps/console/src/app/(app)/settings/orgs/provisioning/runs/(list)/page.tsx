@@ -1,7 +1,8 @@
+import { workspace } from '@/lib/services/workspace'
 import { platform } from '@/lib/services/platform'
 import Image from 'next/image'
 import Link from 'next/link'
-import type { AdminProvisioningRunStatus } from '@876/admin'
+import type { AdminProvisioningRunStatus } from '@876/platform/compat'
 import { buttonVariants } from '@876/ui/button'
 import { OrgAvatar } from '@876/ui/org-avatar'
 import { Page } from '@876/ui/page'
@@ -14,7 +15,6 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { workspace } from '@/lib/876'
 import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
 import { ReconcileRunsButton } from '../_components/run-actions'

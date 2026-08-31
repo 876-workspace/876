@@ -1,4 +1,4 @@
-import type { AdminPrice, AdminProduct } from '@876/admin'
+import type { AdminPrice, AdminProduct } from '@876/platform/compat'
 
 export type PriceOption = {
   product: AdminProduct

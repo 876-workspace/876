@@ -1,3 +1,5 @@
+import { billing } from '@/lib/services/billing'
+import { billingOperator } from '@/lib/services/billing'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -14,7 +16,7 @@ import {
 } from '@876/ui/card'
 import { Button } from '@876/ui/button'
 import { Skeleton } from '@876/ui/skeleton'
-import { billingAdmin } from '@/lib/876'
+
 import {
   Table,
   TableBody,
@@ -35,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await billingAdmin.stats.apps.retrieve(sourceAppId)
+    const result = await billingOperator.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',

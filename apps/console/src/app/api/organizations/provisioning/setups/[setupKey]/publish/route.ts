@@ -1,6 +1,6 @@
+import { workspace } from '@/lib/services/workspace'
 import { apiJson } from '@876/core/api'
 
-import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'

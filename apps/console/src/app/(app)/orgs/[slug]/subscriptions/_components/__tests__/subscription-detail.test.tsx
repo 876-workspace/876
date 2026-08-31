@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'

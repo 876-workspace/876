@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import type { AdminSubscription } from '@876/admin'
+import type { AdminSubscription } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
 import { XIcon } from '@876/ui/icons'
 import { cn } from '@876/core/utils'

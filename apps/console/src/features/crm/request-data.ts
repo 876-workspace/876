@@ -75,7 +75,7 @@ export const loadOrgPriorities = cache(async (orgId: string) => {
 })
 
 export const loadOrgRequestCustomers = cache(async (orgId: string) => {
-  const result = await crm.customerProfiles.list(orgId)
+  const result = await crm.customers.list(orgId)
 
   return {
     customers:
@@ -88,7 +88,7 @@ export const loadOrgRequestCustomers = cache(async (orgId: string) => {
 
 export const loadOrgCustomer = cache(
   async (orgId: string, customerId: string) => {
-    const result = await crm.customerProfiles.retrieve(orgId, customerId)
+    const result = await crm.customers.retrieve(orgId, customerId)
     if (result.data) {
       return {
         profile: result.data.profile,
@@ -169,7 +169,7 @@ export function requestCustomerHref(
 
 export const loadRequestRowContext = cache(async (orgId: string) => {
   const [profiles, directory] = await Promise.all([
-    crm.customerProfiles.list(orgId),
+    crm.customers.list(orgId),
     loadOrgDirectory(orgId),
   ])
   return {

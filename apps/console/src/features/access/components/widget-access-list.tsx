@@ -1,5 +1,6 @@
 import { platform } from '@/lib/services/platform'
-import type { AdminFeature } from '@876/admin'
+import { workspace } from '@/lib/services/workspace'
+import type { AdminFeature } from '@876/platform/compat'
 import {
   getWidgetPlatformFeatureKeys,
   WIDGET_HOST_APP_SLUGS,
@@ -13,7 +14,6 @@ import {
   type AccessScope,
 } from './feature-access-board'
 import { loadGrants, toAccessFlag } from '../to-access-flag'
-import { $876 } from '@/lib/876'
 
 const HOST_LABELS: Record<WidgetHost, string> = {
   console: 'Console',
@@ -31,7 +31,7 @@ const HOST_LABELS: Record<WidgetHost, string> = {
  */
 export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
   const [featuresResult, appsResult] = await Promise.all([
-    $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
+    workspace.features.list({ limit: 100, includeTag: 'widget' }),
     platform.apps.list({ limit: 100, clientType: 'public' }),
   ])
 
@@ -81,7 +81,7 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
       .filter((feature): feature is AdminFeature => feature !== undefined)
   )
   const grantsById = await loadGrants(resolved, (id) =>
-    $876.features.admin.retrieveGrants(id)
+    workspace.features.retrieveGrants(id)
   )
 
   const scopes: AccessScope[] = scopeSpecs.map((spec) => {

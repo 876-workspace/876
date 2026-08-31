@@ -1,10 +1,10 @@
+import { billing } from '@/lib/services/billing'
+import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
-
-import { $876 } from '@/lib/876'
 
 import { resolveOrg } from '../../../../_data'
 import { BillingAccountEdit } from './_components/account-edit'
@@ -52,7 +52,7 @@ async function BillingAccountEditData({
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const { data: account } = await $876.billingAccounts.retrieve(accountId)
+  const { data: account } = await workspace.billingAccounts.retrieve(accountId)
   if (!account || account.organization_id !== org.id) notFound()
 
   return <BillingAccountEdit account={account} orgSlug={slug} />

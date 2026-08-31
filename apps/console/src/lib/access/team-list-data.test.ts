@@ -10,9 +10,9 @@ vi.mock('@/lib/service', () => ({
   service: { team: { list: mocks.listGrants } },
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
-    employees: { admin: { list: mocks.listEmployees } },
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
+    employees: { list: mocks.listEmployees },
   },
 }))
 
@@ -20,7 +20,7 @@ vi.mock('@/lib/services/platform', () => ({
   platform: { users: { list: mocks.listUsers } },
 }))
 
-import type { AdminEmployeeProfile } from '@876/admin'
+import type { AdminEmployeeProfile } from '@876/platform/compat'
 
 import {
   buildStaffPositionMap,

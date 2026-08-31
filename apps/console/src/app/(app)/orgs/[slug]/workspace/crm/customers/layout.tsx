@@ -62,7 +62,7 @@ async function CustomerListData({ params }: Pick<Props, 'params'>) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const result = await crm.customerProfiles.list(org.id)
+  const result = await crm.customers.list(org.id)
   if (result.error?.code === 'crm/tenant-not-found') return <NoCrmWorkspace />
 
   // The list column scrolls inside the shell rather than growing the page, so
