@@ -11,14 +11,14 @@ import type {
 import {
   WORK_CRM_INTEGRATION_SCOPES,
   type WorkIntegrationScope,
-} from '@876/work/integration-scopes'
+} from '@876/work'
 
+import { AppHttpError } from '@/http/errors'
 import {
   resolveProvisioningSetup,
   retrieveProvisioningSetupPolicy,
   retrieveProvisioningWorkspaceDefaults,
 } from '@/modules/provisioning'
-import { AppHttpError } from '@/http/errors'
 
 import * as repository from './provisioning-policy.repository'
 
@@ -54,18 +54,17 @@ export function enabledProvisioningApplicationSlugs(
   policy: ProvisioningSetupPolicy
 ): string[] {
   const enabled = policy.entitlements
-    .filter(
-      (entry) => entry.target_type === 'application' && entry.enabled
-    )
+    .filter((entry) => entry.target_type === 'application' && entry.enabled)
     .map((entry) => entry.target_key)
 
-  // Enterprise is a platform invariant even if an older policy row predates
-  // Phase 1's normalization rule.
-  if (!enabled.includes(ENTERPRISE_APP_SLUG)) enabled.unshift(ENTERPRISE_APP_SLUG)
+  if (!enabled.includes(ENTERPRISE_APP_SLUG))
+    enabled.unshift(ENTERPRISE_APP_SLUG)
   return [...new Set(enabled)]
 }
 
-export function isProvisionedWorkEnabled(policy: ProvisioningSetupPolicy): boolean {
+export function isProvisionedWorkEnabled(
+  policy: ProvisioningSetupPolicy
+): boolean {
   return entitlement(policy, 'service', WORK_SERVICE_KEY)?.enabled === true
 }
 
@@ -84,7 +83,7 @@ export function enabledWorkCapabilityScopes(
 }
 
 /**
- * The setup may narrow an app's Work access, never expand the app's declared
+ * A setup may narrow an app's Work access, never expand the app's declared
  * integration grant. CRM is the only Work-consuming product today.
  */
 export function workScopesForProvisionedApp(
@@ -101,7 +100,9 @@ export async function resolveInitialProvisioningSelection(
   context: Partial<ProvisioningSelectionContext>
 ) {
   const selection = await resolveProvisioningSetup(context)
-  const defaults = await retrieveProvisioningWorkspaceDefaults(selection.setup_key)
+  const defaults = await retrieveProvisioningWorkspaceDefaults(
+    selection.setup_key
+  )
   const policy = await retrieveProvisioningSetupPolicy(selection.setup_key)
   return { selection, defaults, policy }
 }
@@ -112,15 +113,19 @@ export async function retrievePersistedProvisioningPolicy(
   selection: PersistedProvisioningSelection
   policy: ProvisioningSetupPolicy
 } | null> {
-  const row = await repository.findOrganizationProvisioningSelection(organizationId)
+  const row =
+    await repository.findOrganizationProvisioningSelection(organizationId)
   if (!row?.provisioningSetupKey) return null
 
   const selection: PersistedProvisioningSelection = {
     setup_key: row.provisioningSetupKey,
-    selection_type: (row.provisioningSelectionType as ProvisioningStoredSelectionType | null) ?? null,
+    selection_type:
+      (row.provisioningSelectionType as ProvisioningStoredSelectionType | null) ??
+      null,
     match_group_key: row.provisioningMatchGroupKey,
     match_priority: row.provisioningMatchPriority,
-    matched_fields: row.provisioningMatchedFields as PersistedProvisioningSelection['matched_fields'],
+    matched_fields:
+      row.provisioningMatchedFields as PersistedProvisioningSelection['matched_fields'],
     selected_at: row.provisioningSetupSelectedAt
       ? Number(row.provisioningSetupSelectedAt)
       : null,
@@ -134,8 +139,13 @@ export async function persistInitialProvisioningSelection(params: {
   selection: ProvisioningSetupSelection
   selectedAt: number
 }): Promise<PersistedProvisioningSelection> {
-  if (params.selection.match_type === 'persisted' || params.selection.match_type === 'backfill') {
-    throw new Error('Initial provisioning selection must originate from policy or fallback resolution.')
+  if (
+    params.selection.match_type === 'persisted' ||
+    params.selection.match_type === 'backfill'
+  ) {
+    throw new Error(
+      'Initial provisioning selection must originate from policy or fallback resolution.'
+    )
   }
 
   await repository.persistOrganizationProvisioningSelection({
@@ -148,7 +158,9 @@ export async function persistInitialProvisioningSelection(params: {
     selectedAt: BigInt(params.selectedAt),
   })
 
-  const persisted = await retrievePersistedProvisioningPolicy(params.organizationId)
+  const persisted = await retrievePersistedProvisioningPolicy(
+    params.organizationId
+  )
   if (!persisted) {
     throw new AppHttpError({
       code: 'provisioning/setup-selection-persist-failed',
