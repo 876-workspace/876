@@ -1,3 +1,4 @@
+import countries from '@876/core/countries.json'
 import type {
   AdminProvisioningCatalog,
   AdminProvisioningDraftReplaceParams,
@@ -20,6 +21,62 @@ import {
 
 export type FinanceResourceDefinition =
   AdminProvisioningCatalog['resource_types'][number]
+export type FinanceFieldDefinition = FinanceResourceDefinition['fields'][number]
+
+export type FinanceProvisioningTab = {
+  key: string
+  label: string
+  multiple: boolean
+}
+
+export type FinanceSelectOption = {
+  value: string
+  label: string
+}
+
+export type FinanceCurrencyOption = {
+  code: string
+  name: string
+  symbol: string
+  decimalPlaces: number
+}
+
+export function toFinanceCurrencyOptions(
+  currencies: ReadonlyArray<{
+    code: string
+    name: string
+    symbol: string
+    decimal_places: number
+  }>
+): FinanceCurrencyOption[] {
+  return currencies.map((currency) => ({
+    code: currency.code,
+    name: currency.name,
+    symbol: currency.symbol,
+    decimalPlaces: currency.decimal_places,
+  }))
+}
+
+export function toFinanceLanguageOptions(
+  languages: ReadonlyArray<{ code: string; name: string }>
+): FinanceSelectOption[] {
+  return languages.map((language) => ({
+    value: language.code,
+    label: `${language.name} (${language.code})`,
+  }))
+}
+
+export const FINANCE_PROVISIONING_TABS: readonly FinanceProvisioningTab[] = [
+  { key: 'workspace', label: 'Workspace', multiple: false },
+  { key: 'currency', label: 'Currencies', multiple: true },
+  { key: 'payment_mode', label: 'Payment modes', multiple: true },
+  { key: 'payment_term', label: 'Payment terms', multiple: true },
+  { key: 'invoice_preference', label: 'Invoice preferences', multiple: false },
+  { key: 'tax_code', label: 'Tax applicability', multiple: true },
+  { key: 'tax_authority', label: 'Tax authorities', multiple: true },
+  { key: 'tax_jurisdiction', label: 'Tax jurisdictions', multiple: true },
+  { key: 'tax_rate', label: 'Tax rates', multiple: true },
+] as const
 
 export type FinanceResourceRow = {
   localId: string
@@ -38,32 +95,35 @@ export const RESOURCE_TYPE_ICONS: Record<string, IconComponent> = {
   payment_mode: CreditCard,
   payment_term: Calendar,
   invoice_preference: ReceiptText,
+  tax_code: TableIcon,
   tax_authority: ShieldCheck,
+  tax_jurisdiction: Globe,
   tax_rate: ReceiptPercent,
   document_preference: DocumentTextIcon,
   organization_profile: Building2,
-}
-
-export const RESOURCE_TYPE_ICON_COLORS: Record<string, string> = {
-  workspace: 'text-blue-500 dark:text-blue-400',
-  currency: 'text-emerald-500 dark:text-emerald-400',
-  payment_mode: 'text-purple-500 dark:text-purple-400',
-  payment_term: 'text-amber-500 dark:text-amber-400',
-  invoice_preference: 'text-indigo-500 dark:text-indigo-400',
-  tax_authority: 'text-rose-500 dark:text-rose-400',
-  tax_rate: 'text-orange-500 dark:text-orange-400',
-  document_preference: 'text-teal-500 dark:text-teal-400',
-  organization_profile: 'text-sky-500 dark:text-sky-400',
 }
 
 export function getResourceTypeIcon(resourceType: string): IconComponent {
   return RESOURCE_TYPE_ICONS[resourceType] ?? TableIcon
 }
 
-export function getResourceTypeIconColor(resourceType: string): string {
+export const RESOURCE_TYPE_COLORS: Record<string, string> = {
+  workspace: 'text-sky-500 dark:text-sky-400',
+  currency: 'text-amber-500 dark:text-amber-400',
+  payment_mode: 'text-indigo-500 dark:text-indigo-400',
+  payment_term: 'text-emerald-500 dark:text-emerald-400',
+  invoice_preference: 'text-rose-500 dark:text-rose-400',
+  tax_code: 'text-orange-500 dark:text-orange-400',
+  tax_authority: 'text-teal-500 dark:text-teal-400',
+  tax_jurisdiction: 'text-cyan-500 dark:text-cyan-400',
+  tax_rate: 'text-violet-500 dark:text-violet-400',
+  document_preference: 'text-blue-500 dark:text-blue-400',
+  organization_profile: 'text-purple-500 dark:text-purple-400',
+}
+
+export function getResourceTypeColor(resourceType: string): string {
   return (
-    RESOURCE_TYPE_ICON_COLORS[resourceType] ??
-    'text-slate-500 dark:text-slate-400'
+    RESOURCE_TYPE_COLORS[resourceType] ?? 'text-blue-600 dark:text-blue-400'
   )
 }
 
@@ -92,6 +152,22 @@ export function revisionRows(
       ])
     ),
   }))
+}
+
+export function financeResourceRow(
+  resource: AdminProvisioningResource
+): FinanceResourceRow {
+  return {
+    localId: resource.id,
+    resourceType: resource.resource_type,
+    key: resource.key,
+    values: Object.fromEntries(
+      resource.properties.map((property) => [
+        property.key,
+        propertyValue(property),
+      ])
+    ),
+  }
 }
 
 export function emptyRow(
@@ -132,13 +208,88 @@ export function rowReferenceKey(row: FinanceResourceRow) {
   return typeof preferred === 'string' ? slug(preferred) : ''
 }
 
-function resourceKey(
+function rowOptionLabel(row: FinanceResourceRow, key: string): string {
+  const name = typeof row.values.name === 'string' ? row.values.name.trim() : ''
+  const code = typeof row.values.code === 'string' ? row.values.code.trim() : ''
+
+  if (code && name && code !== name) return `${code} — ${name}`
+  if (name && name !== key) return `${name} (${key})`
+  if (code && code !== key) return `${code} (${key})`
+  return key
+}
+
+/**
+ * Returns the closed option set for a field when one exists.
+ *
+ * References never fall back to arbitrary text: country/language use platform
+ * catalogs and manifest-internal references resolve from the current rows.
+ */
+export function financeFieldOptions(
+  field: FinanceFieldDefinition,
+  allRows: FinanceResourceRow[],
+  languageOptions: readonly FinanceSelectOption[] = []
+): FinanceSelectOption[] | null {
+  if (field.allowed_values)
+    return field.allowed_values.map((value) => ({
+      value,
+      label: formatOptionLabel(value),
+    }))
+
+  if (field.value_type !== 'reference') return null
+
+  if (field.reference_namespace === 'country')
+    return countries.map((country) => ({
+      value: country.countryCode,
+      label: `${country.flag} ${country.name} (${country.countryCode})`,
+    }))
+
+  if (field.reference_namespace === 'language') return [...languageOptions]
+
+  const referenceRows = allRows.filter(
+    (candidate) => candidate.resourceType === field.reference_namespace
+  )
+
+  return referenceRows
+    .map((row) => {
+      const value = rowReferenceKey(row)
+      return value ? { value, label: rowOptionLabel(row, value) } : null
+    })
+    .filter((option): option is FinanceSelectOption => option !== null)
+}
+
+export function financeResourceKey(
   row: FinanceResourceRow,
   definition: FinanceResourceDefinition,
   index: number
 ) {
   if (!definition.multiple) return 'default'
   return rowReferenceKey(row) || `${definition.resource_type}_${index + 1}`
+}
+
+export function financeResourceProperties(
+  definition: FinanceResourceDefinition,
+  row: FinanceResourceRow
+): DraftProperty[] {
+  return definition.fields.flatMap<DraftProperty>((field) => {
+    const value = row.values[field.key]
+    if (value === '' || value === undefined) return []
+    const property = { key: field.key, value_type: field.value_type }
+    if (field.value_type === 'boolean')
+      return [{ ...property, boolean_value: value === true }]
+    if (field.value_type === 'integer')
+      return [{ ...property, integer_value: String(value) }]
+    if (field.value_type === 'decimal')
+      return [{ ...property, decimal_value: String(value) }]
+    if (field.value_type === 'reference')
+      return [
+        {
+          ...property,
+          reference_namespace: field.reference_namespace,
+          reference_key: String(value),
+        },
+      ]
+    return [{ ...property, string_value: String(value) }]
+  })
 }
 
 export function buildFinanceDraft(
@@ -155,28 +306,9 @@ export function buildFinanceDraft(
         position += 10
         return {
           resource_type: definition.resource_type,
-          key: resourceKey(row, definition, index),
+          key: financeResourceKey(row, definition, index),
           position: resourcePosition,
-          properties: definition.fields.flatMap<DraftProperty>((field) => {
-            const value = row.values[field.key]
-            if (value === '' || value === undefined) return []
-            const property = { key: field.key, value_type: field.value_type }
-            if (field.value_type === 'boolean')
-              return [{ ...property, boolean_value: value === true }]
-            if (field.value_type === 'integer')
-              return [{ ...property, integer_value: String(value) }]
-            if (field.value_type === 'decimal')
-              return [{ ...property, decimal_value: String(value) }]
-            if (field.value_type === 'reference')
-              return [
-                {
-                  ...property,
-                  reference_namespace: field.reference_namespace,
-                  reference_key: String(value),
-                },
-              ]
-            return [{ ...property, string_value: String(value) }]
-          }),
+          properties: financeResourceProperties(definition, row),
         }
       })
   )
@@ -195,6 +327,30 @@ export function buildFinanceDraft(
         position: step.position,
       })) ?? [],
   }
+}
+
+const SMALL_WORDS = new Set([
+  'of',
+  'on',
+  'in',
+  'and',
+  'the',
+  'for',
+  'to',
+  'a',
+  'an',
+])
+
+export function formatOptionLabel(value: string): string {
+  if (!value) return value
+  const words = value.split(/[_\s]+/)
+  return words
+    .map((word, index) => {
+      const lower = word.toLowerCase()
+      if (index > 0 && SMALL_WORDS.has(lower)) return lower
+      return lower.charAt(0).toUpperCase() + lower.slice(1)
+    })
+    .join(' ')
 }
 
 export function fieldDisplayValue(value: string | boolean | undefined) {

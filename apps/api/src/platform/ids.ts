@@ -71,6 +71,8 @@ export const ENTITY_PREFIXES = {
   refreshToken: 'ort',
   registeredApp: 'rap',
   provisioningSetup: 'psu',
+  provisioningSetupCondition: 'psc',
+  provisioningSetupEntitlement: 'pse',
   provisioningManifest: 'pm',
   provisioningRevision: 'pmr',
   provisioningResource: 'prs',

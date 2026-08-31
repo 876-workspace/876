@@ -28,57 +28,45 @@ const mocks = vi.hoisted(() => ({
   productList: vi.fn(),
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/services/billing', () => ({
   billingOperator: {
     products: { create: mocks.productCreate },
+    plans: { create: mocks.planCreate },
+    prices: { create: mocks.priceCreate },
+    customers: { create: mocks.customerCreate },
     subscriptions: { create: mocks.subscriptionCreate },
-  },
-  platform: {
-    products: {
-      retrieve: mocks.productRetrieve,
-      list: mocks.productList,
-      admin: {
-        create: mocks.productCreate,
-        retrieve: mocks.productRetrieve,
-        list: mocks.productList,
-      },
-    },
-    subscriptions: {
-      retrieve: mocks.subscriptionRetrieve,
-      admin: {
-        create: mocks.subscriptionCreate,
-        retrieve: mocks.subscriptionRetrieve,
-      },
-    },
-    organizations: {
-      retrieve: mocks.orgRetrieve,
-      list: mocks.orgList,
-      admin: {
-        retrieve: mocks.orgRetrieve,
-        list: mocks.orgList,
-        subscriptions: {
-          list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }),
-        },
-      },
-    },
-    users: {
-      retrieve: mocks.usersRetrieve,
-      admin: { retrieve: mocks.usersRetrieve },
-    },
-    memberships: {
-      list: mocks.membershipsList,
-      admin: { list: mocks.membershipsList },
-    },
-    plans: { admin: { create: mocks.planCreate } },
-    prices: { admin: { create: mocks.priceCreate } },
-    customers: { admin: { create: mocks.customerCreate } },
   },
 }))
 
 vi.mock('@/lib/services/platform', () => ({
   platform: {
-    organizations: { retrieve: mocks.orgRetrieve, list: mocks.orgList },
-    users: { retrieve: mocks.usersRetrieve },
+    products: {
+      retrieve: mocks.productRetrieve,
+      list: mocks.productList,
+    },
+    subscriptions: {
+      retrieve: mocks.subscriptionRetrieve,
+    },
+    organizations: {
+      retrieve: mocks.orgRetrieve,
+      list: mocks.orgList,
+    },
+    users: {
+      retrieve: mocks.usersRetrieve,
+    },
+  },
+}))
+
+vi.mock('@/lib/services/workspace', () => ({
+  workspace: {
+    memberships: {
+      list: mocks.membershipsList,
+    },
+    organizations: {
+      subscriptions: {
+        list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }),
+      },
+    },
   },
 }))
 

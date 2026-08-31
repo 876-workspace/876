@@ -16,12 +16,8 @@ vi.mock('@/lib/auth/route-guard', () => ({
 vi.mock('@/lib/services/workspace', () => ({
   workspace: {
     invites: {
-      list: mocks.platformListInvites,
-      create: mocks.platformCreateInvite,
-      admin: {
-        list: mocks.listInvites,
-        create: mocks.createInvite,
-      },
+      list: mocks.listInvites,
+      create: mocks.createInvite,
     },
   },
 }))

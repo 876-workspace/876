@@ -19,6 +19,13 @@ export async function listCurrencies(
   res.status(200).json(await service.listCurrencies())
 }
 
+export async function listLanguages(
+  _req: Request,
+  res: Response
+): Promise<void> {
+  res.status(200).json(await service.listLanguages())
+}
+
 export async function listCountries(
   _req: Request,
   res: Response

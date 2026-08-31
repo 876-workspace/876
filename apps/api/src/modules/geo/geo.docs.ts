@@ -13,6 +13,15 @@ export const LIST_CURRENCIES_RESPONSES = {
   200: { description: 'Currencies returned.' },
 } as const
 
+export const LIST_LANGUAGES_SUMMARY = 'List enabled languages'
+
+export const LIST_LANGUAGES_DESCRIPTION =
+  'Returns all enabled languages sorted by code.'
+
+export const LIST_LANGUAGES_RESPONSES = {
+  200: { description: 'Languages returned.' },
+} as const
+
 export const LIST_COUNTRIES_SUMMARY = 'List enabled countries'
 
 export const LIST_COUNTRIES_DESCRIPTION =

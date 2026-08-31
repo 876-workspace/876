@@ -1,12 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-import type { AdminProvisioningSetup } from '@876/platform/compat'
-import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useDetailSegments } from '@876/ui/list-detail-shell'
 import { cn } from '@876/core/utils'
+import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
+import { useDetailSegments } from '@876/ui/list-detail-shell'
 import {
   Table,
   TableBody,
@@ -15,6 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from '@876/ui/table'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useMemo } from 'react'
 
 export function SetupsList({ setups }: { setups: AdminProvisioningSetup[] }) {
   const segments = useDetailSegments()
@@ -73,9 +73,8 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
         <TableHeader className="876-header-row">
           <TableRow>
             <TableHead className="px-5 py-3.5">Setup</TableHead>
-            <TableHead className="px-5 py-3.5">Country</TableHead>
-            <TableHead className="px-5 py-3.5">Currency</TableHead>
-            <TableHead className="px-5 py-3.5">Revision</TableHead>
+            <TableHead className="px-5 py-3.5">Description</TableHead>
+            <TableHead className="px-5 py-3.5">Published revision</TableHead>
             <TableHead className="px-5 py-3.5">Organizations</TableHead>
             <TableHead className="px-5 py-3.5">Status</TableHead>
           </TableRow>
@@ -84,7 +83,7 @@ function SetupsTable({ setups }: { setups: AdminProvisioningSetup[] }) {
           {setups.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={5}
                 className="text-muted-foreground px-5 py-8 text-center text-[0.8125rem]"
               >
                 No setups match this view.
@@ -121,7 +120,7 @@ function SetupRow({
         <TableCell className="relative px-4 py-3">
           <SetupLink href={href} name={setup.name} />
           <div className="flex min-w-0 items-center gap-1.5">
-            <p className="text-foreground truncate text-[0.8125rem] font-medium">
+            <p className="truncate text-[0.8125rem] font-medium text-sky-600 dark:text-sky-400">
               {setup.name}
             </p>
             {setup.is_default ? (
@@ -139,6 +138,7 @@ function SetupRow({
         </TableCell>
       </TableRow>
     )
+
   return (
     <TableRow className="transition-colors">
       <TableCell className="relative px-5 py-3.5">
@@ -155,14 +155,18 @@ function SetupRow({
           {setup.key}
         </div>
       </TableCell>
-      <TableCell className="text-muted-foreground px-5 py-3.5">
-        {setup.country_code ?? '—'}
+      <TableCell className="text-muted-foreground max-w-xs truncate px-5 py-3.5 text-[0.8125rem]">
+        {setup.description || '—'}
       </TableCell>
-      <TableCell className="text-muted-foreground px-5 py-3.5">
-        {setup.currency_code ?? '—'}
-      </TableCell>
-      <TableCell className="px-5 py-3.5 tabular-nums">
-        {setup.published_revision ?? '—'}
+      <TableCell className="px-5 py-3.5 font-mono text-xs tabular-nums">
+        {setup.published_revision === null
+          ? '—'
+          : `v${setup.published_revision}`}
+        {setup.has_draft ? (
+          <Badge variant="outline" className="ml-2">
+            Draft
+          </Badge>
+        ) : null}
       </TableCell>
       <TableCell className="px-5 py-3.5 tabular-nums">
         {setup.organization_count}

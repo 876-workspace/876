@@ -18,6 +18,7 @@ import { createAdminAuthResource } from './resources/auth'
 import { createAdminAuthAttemptsResource } from './resources/auth-attempts'
 import { createAdminDevicesResource } from './resources/devices'
 import { createAdminFeaturesResource } from './resources/features'
+import { createAdminGeoResource } from './resources/geo'
 import { createAdminMembershipsResource } from './resources/memberships'
 import { createAdminModulesResource } from './resources/modules'
 import { createAdminOnboardingResource } from './resources/onboarding'
@@ -25,6 +26,7 @@ import { createAdminOrgsResource } from './resources/orgs'
 import { createAdminPricesResource } from './resources/prices'
 import { createAdminProductsResource } from './resources/products'
 import { createAdminProvisioningResource } from './resources/provisioning'
+import { createAdminProvisioningSetupResourcesResource } from './resources/provisioning-setup-resources'
 import { createAdminReservedUsernamesResource } from './resources/reserved-usernames'
 import { createAdminSessionsResource } from './resources/sessions'
 import { createAdminUsersResource } from './resources/users'
@@ -65,6 +67,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
   } = createAdminOrgsResource(runtime)
   const subscriptions = createAdminSubscriptionsResource(runtime)
   const communications = createAdminCommunicationsResource(runtime)
+  const provisioning = createAdminProvisioningResource(runtime)
 
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
@@ -85,6 +88,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     orgAppRoles: appAccess.orgAppRoles,
     appMemberships: appAccess.appMemberships,
     features,
+    geo: createAdminGeoResource(runtime),
     organizationFeatures,
     apiKeys: createAdminApiKeysResource(runtime),
     organizations: {
@@ -109,7 +113,10 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     prices: createAdminPricesResource(runtime),
     products: createAdminProductsResource(runtime),
     onboarding: createAdminOnboardingResource(runtime),
-    provisioning: createAdminProvisioningResource(runtime),
+    provisioning: {
+      ...provisioning,
+      resources: createAdminProvisioningSetupResourcesResource(runtime),
+    },
     memberships: createAdminMembershipsResource(runtime),
     modules: createAdminModulesResource(runtime),
     addresses: createAdminAddressesResource(runtime),

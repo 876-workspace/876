@@ -13,9 +13,9 @@ vi.mock('@/lib/auth/route-guard', () => ({
 
 vi.mock('@/lib/services/workspace', () => ({
   workspace: {
-    apps: {
+    appAssignments: {
       list: mocks.list,
-      assign: mocks.create,
+      create: mocks.create,
     },
   },
 }))

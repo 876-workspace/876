@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 
+import { AppHttpError } from '@/http/errors'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
 import type {
@@ -8,6 +9,22 @@ import type {
   ProvisioningSetupUpdate,
 } from './provisioning.schemas'
 import * as service from './provisioning.service'
+
+function rejectLegacySetupLocationWrite(body: unknown): void {
+  if (!body || typeof body !== 'object') return
+  const record = body as Record<string, unknown>
+  if (
+    Object.prototype.hasOwnProperty.call(record, 'country_code') ||
+    Object.prototype.hasOwnProperty.call(record, 'currency_code')
+  ) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-location-read-only',
+      message:
+        'Setup country matching and currency are configured through policy conditions and the finance manifest.',
+      httpStatus: 422,
+    })
+  }
+}
 
 export async function retrieveCatalog(
   req: Request,
@@ -191,6 +208,7 @@ export async function retrieveSetup(
 }
 
 export async function createSetup(req: Request, res: Response): Promise<void> {
+  rejectLegacySetupLocationWrite(req.body)
   const body = validBody<ProvisioningSetupCreate>(req)
   const result = await service.createSetup(body)
   res.status(201).json(result)
@@ -198,7 +216,20 @@ export async function createSetup(req: Request, res: Response): Promise<void> {
 
 export async function updateSetup(req: Request, res: Response): Promise<void> {
   const { setup_key } = validParams<{ setup_key: string }>(req)
+  rejectLegacySetupLocationWrite(req.body)
   const body = validBody<ProvisioningSetupUpdate>(req)
   const result = await service.updateSetup(setup_key, body)
+  res.status(200).json(result)
+}
+
+export async function deleteSetup(req: Request, res: Response): Promise<void> {
+  const { setup_key } = validParams<{ setup_key: string }>(req)
+  const result = await service.deleteSetup(setup_key)
+  res.status(200).json(result)
+}
+
+export async function purgeSetup(req: Request, res: Response): Promise<void> {
+  const { setup_key } = validParams<{ setup_key: string }>(req)
+  const result = await service.purgeSetup(setup_key)
   res.status(200).json(result)
 }

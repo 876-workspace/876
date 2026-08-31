@@ -26,3 +26,20 @@ export async function PATCH(
     )
   return apiJson({ data: result.data })
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ setupKey: string }> }
+) {
+  const { response } = await requireConsolePermission('console:danger_zone')
+  if (response) return response
+
+  const { setupKey } = await params
+  const result = await workspace.provisioning.setups.del(setupKey)
+  if (result.error || !result.data)
+    return apiJson(
+      { error: result.error?.message ?? 'Failed to delete the setup.' },
+      { status: 400 }
+    )
+  return apiJson({ data: result.data })
+}

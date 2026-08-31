@@ -7,6 +7,9 @@ import { describe, expect, it } from 'vitest'
 import {
   buildFinanceDraft,
   emptyRow,
+  financeFieldOptions,
+  formatOptionLabel,
+  getResourceTypeColor,
   revisionRows,
   rowReferenceKey,
 } from './finance-provisioning-utils'
@@ -180,5 +183,58 @@ describe('finance provisioning utilities', () => {
         values: { code: '   ', name: 'Tax Administration Jamaica' },
       })
     ).toBe('tax_administration_jamaica')
+  })
+
+  it('formats option labels to title case handling underscores and short words', () => {
+    expect(formatOptionLabel('EXCLUSIVE')).toBe('Exclusive')
+    expect(formatOptionLabel('INCLUSIVE')).toBe('Inclusive')
+    expect(formatOptionLabel('DUE_ON_RECEIPT')).toBe('Due on Receipt')
+    expect(formatOptionLabel('END_OF_MONTH')).toBe('End of Month')
+    expect(formatOptionLabel('END_OF_NEXT_MONTH')).toBe('End of Next Month')
+    expect(formatOptionLabel('credit_note')).toBe('Credit Note')
+  })
+
+  it('uses supplied language catalog options without a hard-coded fallback', () => {
+    const languageField = {
+      key: 'defaultLanguage',
+      label: 'Default language',
+      value_type: 'reference' as const,
+      required: true,
+      reference_namespace: 'language',
+      allowed_values: null,
+    }
+
+    expect(financeFieldOptions(languageField, [], [])).toEqual([])
+    expect(
+      financeFieldOptions(
+        languageField,
+        [],
+        [{ value: 'en', label: 'English (en)' }]
+      )
+    ).toEqual([{ value: 'en', label: 'English (en)' }])
+  })
+
+  it('maps resource types to matching semantic color classes', () => {
+    expect(getResourceTypeColor('workspace')).toBe(
+      'text-sky-500 dark:text-sky-400'
+    )
+    expect(getResourceTypeColor('currency')).toBe(
+      'text-amber-500 dark:text-amber-400'
+    )
+    expect(getResourceTypeColor('payment_mode')).toBe(
+      'text-indigo-500 dark:text-indigo-400'
+    )
+    expect(getResourceTypeColor('payment_term')).toBe(
+      'text-emerald-500 dark:text-emerald-400'
+    )
+    expect(getResourceTypeColor('invoice_preference')).toBe(
+      'text-rose-500 dark:text-rose-400'
+    )
+    expect(getResourceTypeColor('tax_authority')).toBe(
+      'text-teal-500 dark:text-teal-400'
+    )
+    expect(getResourceTypeColor('tax_rate')).toBe(
+      'text-violet-500 dark:text-violet-400'
+    )
   })
 })

@@ -26,6 +26,7 @@ export function create876PlatformOperatorClient(
     products: core.products,
     prices: core.prices,
     subscriptions: core.subscriptions,
+    geo: core.geo,
     reservedUsernames: core.reservedUsernames,
   }
 }

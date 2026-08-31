@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 import { getLogger } from '@/platform/logger'
 
-import { upsertCountry, upsertRegion } from './geo.repository'
+import { upsertCountry, upsertLanguage, upsertRegion } from './geo.repository'
 
 const log = getLogger('seeds:geo')
 
@@ -40,6 +40,7 @@ export type GeoCatalog = {
 
 export type GeoSeedSummary = {
   countries: number
+  languages: number
   regions: number
 }
 
@@ -162,6 +163,8 @@ export async function seedGeoCatalog(
   let countryCount = 0
   let regionCount = 0
 
+  await upsertLanguage({ code: 'en', name: 'English', isEnabled: true })
+
   for (const country of resolved.countries) {
     await upsertCountry({
       code: country.code,
@@ -190,5 +193,5 @@ export async function seedGeoCatalog(
     'geo.seed.completed'
   )
 
-  return { countries: countryCount, regions: regionCount }
+  return { countries: countryCount, languages: 1, regions: regionCount }
 }

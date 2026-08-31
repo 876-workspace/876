@@ -97,7 +97,7 @@ async function OrganizationsTableData({
       organizationIds: orgIds,
     })
     if (batchResult.data) {
-      for (const row of batchResult.data) {
+      for (const row of batchResult.data.data) {
         if (!subscriptionsMap[row.organization_id])
           subscriptionsMap[row.organization_id] = []
         subscriptionsMap[row.organization_id]!.push(row)

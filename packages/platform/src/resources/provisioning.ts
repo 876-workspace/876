@@ -1,9 +1,14 @@
 import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+import type {
+  ProvisioningSetupPolicy,
+  ProvisioningSetupPolicyReplaceParams,
+} from '@876/core/types/provisioning-policy'
 
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
   AdminDeletedProvisioningNote,
+  AdminDeletedProvisioningSetup,
   AdminListResponse,
   AdminProvisioningCatalog,
   AdminProvisioningDraftReplaceParams,
@@ -117,6 +122,38 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
           method: 'PATCH',
           path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
           body,
+        })
+      },
+
+      retrievePolicy(setupKey: string) {
+        return adminRequest<ProvisioningSetupPolicy>(runtime, {
+          method: 'GET',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}/policy`,
+        })
+      },
+
+      replacePolicy(
+        setupKey: string,
+        body: ProvisioningSetupPolicyReplaceParams
+      ) {
+        return adminRequest<ProvisioningSetupPolicy>(runtime, {
+          method: 'PUT',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}/policy`,
+          body,
+        })
+      },
+
+      del(setupKey: string) {
+        return adminRequest<AdminDeletedProvisioningSetup>(runtime, {
+          method: 'DELETE',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
+        })
+      },
+
+      purge(setupKey: string) {
+        return adminRequest<AdminDeletedProvisioningSetup>(runtime, {
+          method: 'DELETE',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}/purge`,
         })
       },
     },

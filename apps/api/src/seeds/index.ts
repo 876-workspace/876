@@ -7,6 +7,11 @@
  * (`.claude/rules/express-api.md`). Seeds are idempotent CLI operations;
  * the service boots without them and they are invoked explicitly via
  * `pnpm node:seed`.
+ *
+ * Provisioning configuration is intentionally absent. Production provisioning
+ * profiles/manifests are operator-managed database configuration, not seed
+ * ownership. New environments import the versioned provisioning handoff spec
+ * explicitly during database bootstrap.
  */
 
 import { getLogger } from '@/platform/logger'
@@ -16,7 +21,6 @@ import { seedBootstrap } from './bootstrap'
 import { seedDefaultAppPrices } from './default-prices'
 import { seedGeoCatalog } from './geo'
 import { seedAllFeatures } from './features'
-import { seedFirstPartyProvisioningManifests } from './provisioning'
 import { seedPlans } from './plans'
 
 const log = getLogger('seeds:index')
@@ -29,9 +33,6 @@ export type RunSeedsSummary = {
   bootstrap: Awaited<ReturnType<typeof seedBootstrap>> | null
   appAccess: Awaited<ReturnType<typeof seedAppAccess>> | null
   geo: Awaited<ReturnType<typeof seedGeoCatalog>> | null
-  provisioning: Awaited<
-    ReturnType<typeof seedFirstPartyProvisioningManifests>
-  > | null
   features: Awaited<ReturnType<typeof seedAllFeatures>> | null
   plans: Awaited<ReturnType<typeof seedPlans>> | null
   defaultPrices: Awaited<ReturnType<typeof seedDefaultAppPrices>> | null
@@ -47,7 +48,6 @@ export async function runSeeds(
     bootstrap: null,
     appAccess: null,
     geo: null,
-    provisioning: null,
     features: null,
     plans: null,
     defaultPrices: null,
@@ -72,12 +72,6 @@ export async function runSeeds(
     log.info('seeds.geo.started')
     summary.geo = await seedGeoCatalog()
     log.info({ summary: summary.geo }, 'seeds.geo.completed')
-  }
-
-  if (shouldRun('provisioning')) {
-    log.info('seeds.provisioning.started')
-    summary.provisioning = await seedFirstPartyProvisioningManifests()
-    log.info({ summary: summary.provisioning }, 'seeds.provisioning.completed')
   }
 
   if (shouldRun('features')) {

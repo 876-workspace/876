@@ -10,7 +10,7 @@ const mockSetDefault = vi.fn()
 const mockRequire = vi.fn()
 
 vi.mock('@/lib/services/billing', () => ({
-  $876: {
+  billing: {
     paymentMethods: {
       list: (...args: unknown[]) => mockList(...args),
       create: (...args: unknown[]) => mockCreate(...args),

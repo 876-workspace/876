@@ -1,10 +1,11 @@
 import { AppHttpError } from '@/http/errors'
 
 import * as repository from './geo.repository'
-import type { Country, Currency, Region } from './geo.schemas'
+import type { Country, Currency, Language, Region } from './geo.schemas'
 import {
   serializeCountry,
   serializeCurrency,
+  serializeLanguage,
   serializeRegion,
 } from './geo.serializers'
 
@@ -18,6 +19,11 @@ import {
 export async function listCurrencies(): Promise<Currency[]> {
   const rows = await repository.listEnabledCurrencies()
   return rows.map(serializeCurrency)
+}
+
+export async function listLanguages(): Promise<Language[]> {
+  const rows = await repository.listEnabledLanguages()
+  return rows.map(serializeLanguage)
 }
 
 export async function listCountries(): Promise<Country[]> {

@@ -6,14 +6,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * real router, validation, service, serializer, and envelope — everything except
  * the database round trip.
  */
-const { currency, country, region } = vi.hoisted(() => ({
+const { currency, language, country, region } = vi.hoisted(() => ({
   currency: { findMany: vi.fn() },
+  language: { findMany: vi.fn() },
   country: { findMany: vi.fn(), findUnique: vi.fn() },
   region: { findMany: vi.fn() },
 }))
 
 vi.mock('@/db/client', () => ({
-  prisma: { currency, country, region },
+  prisma: { currency, language, country, region },
   disconnectDb: vi.fn(),
   pingDb: vi.fn(),
 }))
@@ -43,6 +44,7 @@ const KINGSTON = {
 beforeEach(() => {
   vi.clearAllMocks()
   currency.findMany.mockResolvedValue([JMD])
+  language.findMany.mockResolvedValue([{ code: 'en', name: 'English' }])
   country.findMany.mockResolvedValue([JAMAICA])
   country.findUnique.mockResolvedValue({ code: 'JM' })
   region.findMany.mockResolvedValue([KINGSTON])
@@ -91,6 +93,23 @@ describe('GET /geo/currencies', () => {
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({ data: [], error: null })
+  })
+})
+
+describe('GET /geo/languages', () => {
+  it('returns enabled languages as language resources', async () => {
+    const response = await request(createApp()).get('/geo/languages')
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: [{ object: 'language', code: 'en', name: 'English' }],
+      error: null,
+    })
+    expect(language.findMany).toHaveBeenCalledWith({
+      where: { isEnabled: true },
+      orderBy: { code: 'asc' },
+      select: { code: true, name: true },
+    })
   })
 })
 
@@ -215,6 +234,7 @@ describe('the published OpenAPI document', () => {
     expect(Object.keys(response.body.paths)).toEqual(
       expect.arrayContaining([
         '/geo/currencies',
+        '/geo/languages',
         '/geo/countries',
         '/geo/countries/{country_code}/regions',
       ])

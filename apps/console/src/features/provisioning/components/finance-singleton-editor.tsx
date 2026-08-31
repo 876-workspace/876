@@ -3,42 +3,40 @@
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { Button } from '@876/ui/button'
 
 import {
-  rowReferenceKey,
+  financeFieldOptions,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
+  type FinanceSelectOption,
 } from '../finance-provisioning-utils'
 
 type Props = {
   definition: FinanceResourceDefinition
   row: FinanceResourceRow
   allRows: FinanceResourceRow[]
+  languageOptions: readonly FinanceSelectOption[]
   onChange: (row: FinanceResourceRow) => void
+  onSave: () => void
+  isSaving?: boolean
 }
 
 export function FinanceSingletonEditor({
   definition,
   row,
   allRows,
+  languageOptions,
   onChange,
+  onSave,
+  isSaving = false,
 }: Props) {
   return (
-    <div className="876-card max-w-2xl space-y-4 p-6">
+    <div className="max-w-2xl space-y-4">
       {definition.fields.map((field) => {
         const inputId = `singleton-${definition.resource_type}-${field.key}`
         const value = row.values[field.key]
-        const referenceRows = field.reference_namespace
-          ? allRows.filter(
-              (candidate) =>
-                candidate.resourceType === field.reference_namespace
-            )
-          : []
-        const options = field.allowed_values
-          ? field.allowed_values
-          : field.value_type === 'reference' && referenceRows.length > 0
-            ? referenceRows.map(rowReferenceKey).filter(Boolean)
-            : null
+        const options = financeFieldOptions(field, allRows, languageOptions)
 
         return (
           <FormRow
@@ -80,12 +78,14 @@ export function FinanceSingletonEditor({
                   })
                 }
               >
-                {!field.required && (
-                  <NativeSelectOption value="">None</NativeSelectOption>
-                )}
+                <NativeSelectOption value="" disabled={field.required}>
+                  {field.required
+                    ? `Select ${field.label.toLowerCase()}`
+                    : 'None'}
+                </NativeSelectOption>
                 {options.map((option) => (
-                  <NativeSelectOption key={option} value={option}>
-                    {option}
+                  <NativeSelectOption key={option.value} value={option.value}>
+                    {option.label}
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
@@ -97,7 +97,10 @@ export function FinanceSingletonEditor({
                   field.value_type === 'integer' ||
                   field.value_type === 'decimal'
                     ? 'number'
-                    : 'text'
+                    : field.key === 'effectiveFrom' ||
+                        field.key === 'effectiveUntil'
+                      ? 'date'
+                      : 'text'
                 }
                 step={field.value_type === 'decimal' ? 'any' : undefined}
                 value={String(value ?? '')}
@@ -115,6 +118,11 @@ export function FinanceSingletonEditor({
           </FormRow>
         )
       })}
+      <div className="pt-2">
+        <Button type="button" size="sm" disabled={isSaving} onClick={onSave}>
+          Save {definition.label.toLowerCase()}
+        </Button>
+      </div>
     </div>
   )
 }

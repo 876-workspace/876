@@ -562,6 +562,22 @@ export type AdminDeletedApp = {
   deleted: boolean
 }
 
+/** A read-only currency record from the Core geo catalog. */
+export type AdminGeoCurrency = {
+  object: 'currency'
+  code: string
+  name: string
+  symbol: string
+  decimal_places: number
+}
+
+/** A read-only language record from the Core geo catalog. */
+export type AdminGeoLanguage = {
+  object: 'language'
+  code: string
+  name: string
+}
+
 export type AdminProvisioningTargetType = ProvisioningTargetType
 export type AdminProvisioningValueType = ProvisioningValueType
 export type AdminProvisioningProperty = ProvisioningProperty
@@ -577,6 +593,7 @@ export type AdminProvisioningRun = ProvisioningRun
 export type AdminProvisioningRunStatus = ProvisioningRunStatus
 export type AdminProvisioningReconciliationResult =
   ProvisioningReconciliationResult
+export type AdminDeletedProvisioningSetup = DeletedProvisioningSetup
 export type AdminProvisioningSetup = ProvisioningSetup
 export type AdminProvisioningSetupStatus = ProvisioningSetupStatus
 export type AdminProvisioningSetupCreateParams = ProvisioningSetupCreateParams
@@ -1695,6 +1712,7 @@ export type AdminPlatformClientOptions = {
 }
 import type {
   ProvisioningCatalog,
+  DeletedProvisioningSetup,
   ProvisioningDraftReplaceParams,
   ProvisioningManifest,
   ProvisioningManifestRevision,

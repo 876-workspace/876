@@ -1,22 +1,30 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import countries from '@876/core/countries.json'
+import { PROVISIONING_SETUP_ENTITLEMENT_CATALOG } from '@876/core/types/provisioning-policy'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@876/ui/select'
+  NativeSelect,
+  NativeSelectOption,
+} from '@876/ui/native-select'
+import { Switch } from '@876/ui/switch'
 import { Textarea } from '@876/ui/textarea'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState, useTransition } from 'react'
 
 import { client } from '@/lib/client'
 
-export type SetupSource = { key: string; name: string; isDefault: boolean }
+const entitlementKey = (targetType: string, targetKey: string) =>
+  `${targetType}:${targetKey}`
+
+function entitlementDescription(targetType: string): string {
+  if (targetType === 'service') return 'Shared platform service gate.'
+  if (targetType === 'service_capability')
+    return 'Capability available when its shared service is enabled.'
+  return 'Standalone application entitlement.'
+}
 
 function slugify(value: string): string {
   return value
@@ -25,143 +33,269 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-export function CreateSetupForm({ sources }: { sources: SetupSource[] }) {
+export function CreateSetupForm() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [key, setKey] = useState('')
   const [keyEdited, setKeyEdited] = useState(false)
   const [description, setDescription] = useState('')
-  const [countryCode, setCountryCode] = useState('')
-  const [currencyCode, setCurrencyCode] = useState('')
-  const [copyFrom, setCopyFrom] = useState(
-    sources.find((source) => source.isDefault)?.key ?? sources[0]?.key ?? ''
+  const [countryCodes, setCountryCodes] = useState<string[]>([])
+  const [countryToAdd, setCountryToAdd] = useState('')
+  const [entitlements, setEntitlements] = useState<Record<string, boolean>>(
+    Object.fromEntries(
+      PROVISIONING_SETUP_ENTITLEMENT_CATALOG.map((entry) => [
+        entitlementKey(entry.target_type, entry.target_key),
+        entry.default_enabled,
+      ])
+    )
   )
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const availableCountries = useMemo(
+    () =>
+      countries.filter(
+        (country) => !countryCodes.includes(country.countryCode)
+      ),
+    [countryCodes]
+  )
 
   function handleName(value: string) {
     setName(value)
     if (!keyEdited) setKey(slugify(value))
   }
 
-  function submit() {
+  function addCountry() {
+    if (!countryToAdd || countryCodes.includes(countryToAdd)) return
+    setCountryCodes((current) => [...current, countryToAdd])
+    setCountryToAdd('')
+  }
+
+  function submit(e?: React.FormEvent) {
+    if (e) e.preventDefault()
     setError(null)
     if (!name.trim() || !key.trim()) {
       setError('A name and key are required.')
       return
     }
+
     startTransition(async () => {
       const { data, error: failure } = await client.provisioningSetups.create({
         key,
-        name,
+        name: name.trim(),
         description: description.trim() || null,
-        country_code: countryCode.trim() ? countryCode.trim() : null,
-        currency_code: currencyCode.trim() ? currencyCode.trim() : null,
-        copy_from: copyFrom || null,
+        policy: {
+          conditions: countryCodes.map((countryCode) => ({
+            group_key: countryCode.toLowerCase(),
+            field: 'country',
+            operator: 'equals',
+            value: countryCode,
+            priority: 100,
+          })),
+          entitlements: PROVISIONING_SETUP_ENTITLEMENT_CATALOG.map((entry) => ({
+            target_type: entry.target_type,
+            target_key: entry.target_key,
+            enabled:
+              entry.target_key === '876-enterprise'
+                ? true
+                : (entitlements[
+                    entitlementKey(entry.target_type, entry.target_key)
+                  ] ?? entry.default_enabled),
+          })),
+        },
       })
       if (failure || !data) {
         setError(failure?.message ?? 'Failed to create the setup.')
         return
       }
-      router.push(`/settings/orgs/provisioning/${encodeURIComponent(data.key)}`)
+
+      router.push(
+        `/settings/orgs/provisioning/${encodeURIComponent(data.key)}`
+      )
     })
   }
 
   return (
-    <div className="876-card max-w-2xl space-y-4 p-5">
-      <FormRow label="Name" htmlFor="setup-name" required>
-        <Input
-          id="setup-name"
-          value={name}
-          onChange={(event) => handleName(event.target.value)}
-          placeholder="United States"
-        />
-      </FormRow>
+    <form onSubmit={submit} className="max-w-xl space-y-6">
+      <div className="space-y-4">
+        <FormRow label="Name" htmlFor="setup-name" required>
+          <Input
+            id="setup-name"
+            value={name}
+            onChange={(event) => handleName(event.target.value)}
+            placeholder="United States — general"
+            autoFocus
+          />
+        </FormRow>
 
-      <FormRow
-        label="Key"
-        htmlFor="setup-key"
-        required
-        hint="Permanent identifier for this setup's finance manifest. Renaming it orphans the manifest."
-      >
-        <Input
-          id="setup-key"
-          value={key}
-          onChange={(event) => {
-            setKeyEdited(true)
-            setKey(slugify(event.target.value))
-          }}
-          placeholder="united-states"
-        />
-      </FormRow>
-
-      <FormRow label="Description" htmlFor="setup-description">
-        <Textarea
-          id="setup-description"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          rows={2}
-        />
-      </FormRow>
-
-      <FormRow label="Country" htmlFor="setup-country">
-        <Input
-          id="setup-country"
-          value={countryCode}
-          onChange={(event) =>
-            setCountryCode(event.target.value.toUpperCase().slice(0, 2))
-          }
-          placeholder="US"
-        />
-      </FormRow>
-
-      <FormRow label="Currency" htmlFor="setup-currency">
-        <Input
-          id="setup-currency"
-          value={currencyCode}
-          onChange={(event) =>
-            setCurrencyCode(event.target.value.toUpperCase().slice(0, 3))
-          }
-          placeholder="USD"
-        />
-      </FormRow>
-
-      <FormRow
-        label="Copy defaults from"
-        hint="The new setup starts as a copy of this one's published defaults, which you then edit."
-      >
-        <Select
-          value={copyFrom}
-          onValueChange={(value) => setCopyFrom(value ?? '')}
+        <FormRow
+          label="Key"
+          htmlFor="setup-key"
+          required
+          hint="Permanent identifier for this setup's finance manifest. Renaming it orphans the manifest."
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a setup" />
-          </SelectTrigger>
-          <SelectContent>
-            {sources.map((source) => (
-              <SelectItem key={source.key} value={source.key}>
-                {source.name}
-                {source.isDefault ? ' (default)' : ''}
-              </SelectItem>
+          <Input
+            id="setup-key"
+            value={key}
+            onChange={(event) => {
+              setKeyEdited(true)
+              setKey(slugify(event.target.value))
+            }}
+            placeholder="united-states-general"
+          />
+        </FormRow>
+
+        <FormRow label="Description" htmlFor="setup-description">
+          <Textarea
+            id="setup-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={3}
+            placeholder="Optional description for operators."
+          />
+        </FormRow>
+      </div>
+
+      <div className="space-y-3 border-t pt-5">
+        <div>
+          <p className="text-sm font-medium">Matching countries</p>
+          <p className="text-muted-foreground text-xs">
+            Countries are matching conditions, not setup identity. Add as many
+            as apply. Leave this empty for a location-neutral fallback.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <NativeSelect
+            className="min-w-0 flex-1"
+            value={countryToAdd}
+            onChange={(event) => setCountryToAdd(event.target.value)}
+            aria-label="Country to add"
+          >
+            <NativeSelectOption value="">Select a country</NativeSelectOption>
+            {availableCountries.map((country) => (
+              <NativeSelectOption
+                key={country.countryCode}
+                value={country.countryCode}
+              >
+                {country.flag} {country.name} ({country.countryCode})
+              </NativeSelectOption>
             ))}
-          </SelectContent>
-        </Select>
-      </FormRow>
+          </NativeSelect>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addCountry}
+            disabled={!countryToAdd || isPending}
+          >
+            Add
+          </Button>
+        </div>
+
+        {countryCodes.length > 0 ? (
+          <div className="space-y-2">
+            {countryCodes.map((countryCode) => {
+              const country = countries.find(
+                (candidate) => candidate.countryCode === countryCode
+              )
+
+              return (
+                <div
+                  key={countryCode}
+                  className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+                >
+                  <span className="text-sm">
+                    {country?.flag} {country?.name ?? countryCode}{' '}
+                    <span className="text-muted-foreground">
+                      ({countryCode})
+                    </span>
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isPending}
+                    onClick={() =>
+                      setCountryCodes((current) =>
+                        current.filter((value) => value !== countryCode)
+                      )
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-muted-foreground rounded-md border border-dashed px-3 py-2 text-xs">
+            No country condition. This setup may be used as a fallback once
+            Phase 2 routing is enabled.
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-3 border-t pt-5">
+        <div>
+          <p className="text-sm font-medium">Initial access policy</p>
+          <p className="text-muted-foreground text-xs">
+            Choose standalone products, shared-service gates, and service
+            capabilities separately from finance workspace defaults. Enterprise
+            is required for every organization.
+          </p>
+        </div>
+
+        <div className="divide-y rounded-md border">
+          {PROVISIONING_SETUP_ENTITLEMENT_CATALOG.map((entry) => {
+            const itemKey = entitlementKey(entry.target_type, entry.target_key)
+            const locked = entry.target_key === '876-enterprise'
+            const enabled = locked
+              ? true
+              : (entitlements[itemKey] ?? entry.default_enabled)
+
+            return (
+              <div
+                key={itemKey}
+                className="flex items-center justify-between gap-4 px-3 py-3"
+              >
+                <div>
+                  <p className="text-sm font-medium">{entry.label}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {entitlementDescription(entry.target_type)}
+                  </p>
+                </div>
+                <Switch
+                  checked={enabled}
+                  disabled={locked || isPending}
+                  onCheckedChange={(checked) =>
+                    setEntitlements((current) => ({
+                      ...current,
+                      [itemKey]: checked,
+                    }))
+                  }
+                  aria-label={`Toggle ${entry.label}`}
+                />
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-2">
         <Button
+          type="button"
           variant="outline"
           onClick={() => router.push('/settings/orgs/provisioning')}
           disabled={isPending}
         >
           Cancel
         </Button>
-        <Button variant="info" onClick={submit} disabled={isPending}>
-          {isPending ? 'Creating…' : 'Create'}
+        <Button type="submit" variant="info" disabled={isPending}>
+          {isPending ? 'Creating…' : 'Create setup'}
         </Button>
       </div>
-    </div>
+    </form>
   )
 }

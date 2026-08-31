@@ -35,7 +35,11 @@ import {
   registerOrgStructureRoutes,
 } from '@/modules/organizations'
 import { createProductsRouter } from '@/modules/products'
-import { createProvisioningRouter } from '@/modules/provisioning'
+import {
+  createProvisioningResourceRouter,
+  createProvisioningRouter,
+  createProvisioningSetupPolicyRouter,
+} from '@/modules/provisioning'
 import { createSessionsRouter } from '@/modules/sessions'
 import {
   registerAddressRoutes,
@@ -88,6 +92,8 @@ export function buildRoutes(): Router {
   root.use(registerOrgAccessRoutes(resolveGuards))
   root.use(createProductsRouter(resolveGuards))
   root.use(createProvisioningRouter(resolveGuards))
+  root.use(createProvisioningResourceRouter(resolveGuards))
+  root.use(createProvisioningSetupPolicyRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
   root.use(registerSelfRoutes(resolveGuards))
   root.use(registerProfileRoutes(resolveGuards))

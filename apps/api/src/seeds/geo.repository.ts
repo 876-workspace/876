@@ -17,6 +17,12 @@ export type RegionSeedInput = {
   isEnabled: boolean
 }
 
+export type LanguageSeedInput = {
+  code: string
+  name: string
+  isEnabled: boolean
+}
+
 export async function upsertCountry(input: CountrySeedInput): Promise<void> {
   await prisma.country.upsert({
     where: { code: input.code },
@@ -54,6 +60,14 @@ export async function upsertRegion(input: RegionSeedInput): Promise<void> {
       type: input.type,
       isEnabled: input.isEnabled,
     },
+  })
+}
+
+export async function upsertLanguage(input: LanguageSeedInput): Promise<void> {
+  await prisma.language.upsert({
+    where: { code: input.code },
+    create: input,
+    update: { name: input.name, isEnabled: input.isEnabled },
   })
 }
 

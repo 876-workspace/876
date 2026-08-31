@@ -17,11 +17,11 @@ async function main(): Promise<void> {
   const help = args.includes('--help') || args.includes('-h')
 
   if (help) {
-    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,provisioning,features,plans,defaultPrices]
+    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,features,plans,defaultPrices]
 
-Seeds the platform database idempotently. Each seed only creates absent rows
-or refreshes platform-owned catalogs/templates and never clobbers tenant roles.
-Re-running is safe.
+Seeds platform-owned catalogs/bootstrap records idempotently. Provisioning
+profiles/manifests are intentionally excluded: they are database configuration
+initialized through an explicit environment import, not ordinary seed ownership.
 
 Options:
   --only=<names>  Run only the named seeds (comma-separated).
@@ -33,7 +33,6 @@ Options:
     'bootstrap',
     'appAccess',
     'geo',
-    'provisioning',
     'features',
     'plans',
     'defaultPrices',

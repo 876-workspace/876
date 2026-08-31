@@ -143,7 +143,7 @@ async function MemberAppsData({
     (result.data?.data ?? []).map(async (membership) => {
       const [rolesResult, permissionsResult] = await Promise.all([
         workspace.orgAppRoles.list(organizationId, membership.app_id),
-        workspace.permissions.list(membership.app_id),
+        workspace.appPermissions.list(membership.app_id),
       ])
       if (rolesResult.error || permissionsResult.error) return null
 
