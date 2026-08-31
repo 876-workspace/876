@@ -72,16 +72,10 @@ export function FinanceSetupMetadataEditor({
   const canArchive = !setup.is_default && setup.organization_count === 0
 
   return (
-    <section className="876-card max-w-2xl space-y-5 p-6">
-      <div>
-        <h4 className="text-foreground text-sm font-semibold">Setup details</h4>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Identity and optional locale metadata for this provisioning setup.
-          Provisioned currencies are managed separately in the Currencies tab.
-        </p>
-      </div>
-
+    <div className="max-w-2xl space-y-6">
       <div className="space-y-4">
+        <h3 className="text-foreground text-sm font-semibold">Setup details</h3>
+
         <FormRow label="Key">
           <Input value={setup.key} readOnly disabled />
         </FormRow>
@@ -103,56 +97,52 @@ export function FinanceSetupMetadataEditor({
           />
         </FormRow>
 
-        <FormRow label="Country" htmlFor="setup-country">
-          <Input
-            id="setup-country"
-            value={countryCode}
-            onChange={(event) =>
-              setCountryCode(event.target.value.toUpperCase().slice(0, 2))
-            }
-          />
-        </FormRow>
-
-        <FormRow label="Currency" htmlFor="setup-currency">
-          <Input
-            id="setup-currency"
-            value={currencyCode}
-            onChange={(event) =>
-              setCurrencyCode(event.target.value.toUpperCase().slice(0, 3))
-            }
-          />
-        </FormRow>
-      </div>
-
-      <div className="flex min-h-8 items-center justify-between gap-4 border-t pt-4">
-        <div aria-live="polite">
-          {message ? (
-            <p
-              className={
-                messageIsError
-                  ? 'text-destructive text-xs'
-                  : 'text-muted-foreground text-xs'
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormRow label="Country" htmlFor="setup-country">
+            <Input
+              id="setup-country"
+              value={countryCode}
+              onChange={(event) =>
+                setCountryCode(event.target.value.toUpperCase().slice(0, 2))
               }
-            >
-              {message}
-            </p>
-          ) : null}
+              placeholder="e.g. US"
+            />
+          </FormRow>
+
+          <FormRow label="Currency" htmlFor="setup-currency">
+            <Input
+              id="setup-currency"
+              value={currencyCode}
+              onChange={(event) =>
+                setCurrencyCode(event.target.value.toUpperCase().slice(0, 3))
+              }
+              placeholder="e.g. USD"
+            />
+          </FormRow>
         </div>
-        <Button variant="info" onClick={save} disabled={isPending}>
-          {isPending ? 'Saving…' : 'Save setup'}
-        </Button>
+
+        <div className="flex min-h-8 items-center justify-between gap-4 pt-2">
+          <div aria-live="polite">
+            {message ? (
+              <p
+                className={
+                  messageIsError
+                    ? 'text-destructive text-xs'
+                    : 'text-muted-foreground text-xs'
+                }
+              >
+                {message}
+              </p>
+            ) : null}
+          </div>
+          <Button variant="info" onClick={save} disabled={isPending}>
+            {isPending ? 'Saving…' : 'Save setup'}
+          </Button>
+        </div>
       </div>
 
-      <div className="border-t pt-4">
-        <div className="mb-3">
-          <h5 className="text-foreground text-xs font-semibold">
-            Setup lifecycle
-          </h5>
-          <p className="text-muted-foreground mt-1 text-xs">
-            A setup must be published before it can become the platform
-            default. In-use or default setups cannot be archived.
-          </p>
-        </div>
+      <div className="space-y-3 border-t pt-5">
+        <h3 className="text-foreground text-sm font-semibold">Lifecycle</h3>
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
@@ -192,17 +182,17 @@ export function FinanceSetupMetadataEditor({
           )}
         </div>
         {!setup.is_default && setup.published_revision === null ? (
-          <p className="text-muted-foreground mt-2 text-xs">
+          <p className="text-muted-foreground text-xs">
             Publish a complete revision to enable “Make default”.
           </p>
         ) : null}
         {!setup.is_default && setup.organization_count > 0 ? (
-          <p className="text-muted-foreground mt-2 text-xs">
+          <p className="text-muted-foreground text-xs">
             {setup.organization_count} organization(s) use this setup, so it
             cannot be archived.
           </p>
         ) : null}
       </div>
-    </section>
+    </div>
   )
 }

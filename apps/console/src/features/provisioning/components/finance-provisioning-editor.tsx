@@ -437,34 +437,29 @@ export function FinanceProvisioningEditor({
               onCancel={cancelInlineEdit}
             />
           ) : (
-            <div className="space-y-6 p-6">
+            <div className="space-y-8 p-6">
               {isWorkspace && setup ? (
                 <FinanceSetupMetadataEditor setup={setup} />
               ) : null}
 
-              {isWorkspace && setup ? (
-                <div className="max-w-2xl">
-                  <h4 className="text-foreground text-sm font-semibold">
+              {activeDefinition.fields.length > 0 && (
+                <div className="max-w-2xl space-y-4 border-t pt-6">
+                  <h3 className="text-foreground text-sm font-semibold">
                     Workspace defaults
-                  </h4>
-                  <p className="text-muted-foreground mt-1 mb-3 text-xs">
-                    Locale and currency values applied inside each finance
-                    workspace created from this setup.
-                  </p>
+                  </h3>
+                  <FinanceSingletonEditor
+                    definition={activeDefinition}
+                    row={
+                      groupedRows[activeType]?.[0] ??
+                      emptyRow(activeDefinition, 'default')
+                    }
+                    allRows={rows}
+                    onChange={(nextRow) =>
+                      handleSingletonChange(activeType, nextRow)
+                    }
+                  />
                 </div>
-              ) : null}
-
-              <FinanceSingletonEditor
-                definition={activeDefinition}
-                row={
-                  groupedRows[activeType]?.[0] ??
-                  emptyRow(activeDefinition, 'default')
-                }
-                allRows={rows}
-                onChange={(nextRow) =>
-                  handleSingletonChange(activeType, nextRow)
-                }
-              />
+              )}
             </div>
           )
         ) : null}

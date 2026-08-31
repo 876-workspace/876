@@ -24,7 +24,7 @@ export function FinanceSingletonEditor({
   onChange,
 }: Props) {
   return (
-    <div className="876-card max-w-2xl space-y-4 p-6">
+    <div className="max-w-2xl space-y-4">
       {definition.fields.map((field) => {
         const inputId = `singleton-${definition.resource_type}-${field.key}`
         const value = row.values[field.key]
