@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
+import type { InvoiceStatus } from '@876/billing'
 import { CreditCardIcon } from '@876/ui/icons'
 import { Suspense } from 'react'
 import {
@@ -30,24 +31,82 @@ export const metadata = {
 const INVOICE_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Invoices' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
+  { value: 'open', label: 'Open', headingLabel: 'Open Invoices' },
   { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },
+  {
+    value: 'partially-paid',
+    label: 'Partially paid',
+    headingLabel: 'Partially Paid Invoices',
+  },
   { value: 'overdue', label: 'Overdue', headingLabel: 'Overdue Invoices' },
   { value: 'paid', label: 'Paid', headingLabel: 'Paid Invoices' },
+  {
+    value: 'uncollectible',
+    label: 'Uncollectible',
+    headingLabel: 'Uncollectible Invoices',
+  },
   { value: 'void', label: 'Void', headingLabel: 'Void Invoices' },
 ]
 
 const TENANT_NOT_FOUND = 'billing/tenant-not-found'
 const BILLING_UNREACHABLE = 'billing/unreachable'
 
+type InvoiceStatusFilter =
+  | 'all'
+  | 'draft'
+  | 'open'
+  | 'sent'
+  | 'partially-paid'
+  | 'overdue'
+  | 'paid'
+  | 'uncollectible'
+  | 'void'
+
 type Props = { searchParams: Promise<{ status?: string }> }
+
+function getStatusFilter(status?: string): InvoiceStatusFilter {
+  switch (status) {
+    case 'draft':
+    case 'open':
+    case 'sent':
+    case 'partially-paid':
+    case 'overdue':
+    case 'paid':
+    case 'uncollectible':
+    case 'void':
+      return status
+    default:
+      return 'all'
+  }
+}
+
+function getApiStatus(status: InvoiceStatusFilter): InvoiceStatus | undefined {
+  switch (status) {
+    case 'draft':
+      return 'DRAFT'
+    case 'open':
+      return 'OPEN'
+    case 'sent':
+      return 'SENT'
+    case 'partially-paid':
+      return 'PARTIALLY_PAID'
+    case 'overdue':
+      return 'OVERDUE'
+    case 'paid':
+      return 'PAID'
+    case 'uncollectible':
+      return 'UNCOLLECTIBLE'
+    case 'void':
+      return 'VOID'
+    case 'all':
+      return undefined
+  }
+}
 
 export default async function InvoicesPage({ searchParams }: Props) {
   const { status } = await searchParams
-  const selectedStatus = ['draft', 'sent', 'overdue', 'paid', 'void'].includes(
-    status ?? ''
-  )
-    ? status!
-    : 'all'
+  const selectedStatus = getStatusFilter(status)
+
   return (
     <Page>
       <ResourceToolbar
@@ -85,11 +144,16 @@ export default async function InvoicesPage({ searchParams }: Props) {
 
 async function InvoicesTableData({ searchParams }: Props) {
   const { status } = await searchParams
-  void status
+  const selectedStatus = getStatusFilter(status)
+  const apiStatus = getApiStatus(selectedStatus)
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
+
   const billing = await getBilling(context.orgId)
-  const result = await billing.invoices.list()
+  const result = await billing.invoices.list(
+    apiStatus ? { status: apiStatus } : undefined
+  )
+
   if (result.error) {
     redirectIfSignedOut(result.error.code, '/invoices')
 
@@ -165,25 +229,17 @@ async function InvoicesTableData({ searchParams }: Props) {
       </div>
     )
   }
-  const invoices = result.data.data.map((invoice) => {
-    const inv = invoice as unknown as Record<string, unknown>
-    return {
-      id: String(inv.id),
-      number: String(inv.number ?? inv.id),
-      totalAmount: (inv.totalAmount as string) ?? '0',
-      amountDue:
-        (inv.amountDue as string) ?? (inv.totalAmount as string) ?? '0',
-      currency: String(inv.currency ?? 'JMD'),
-      status: String(inv.status ?? 'DRAFT'),
-      customer: {
-        name: String(
-          (inv.customer as Record<string, unknown>)?.name ??
-            inv.customerName ??
-            '—'
-        ),
-      },
-    }
-  })
+
+  const invoices = result.data.data.map((invoice) => ({
+    id: invoice.id,
+    number: invoice.number,
+    totalAmount: invoice.totalAmount,
+    amountDue: invoice.amountDue,
+    currency: invoice.currency,
+    status: invoice.status,
+    customer: { name: invoice.customer.name },
+  }))
+
   return (
     <InvoicesTable
       invoices={invoices}
