@@ -214,9 +214,6 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@876/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@876/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -435,9 +432,6 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@876/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -632,18 +626,15 @@ importers:
 
   apps/console:
     dependencies:
-      '@876/admin':
+      '@876/account':
         specifier: workspace:*
-        version: link:../../packages/admin
+        version: link:../../packages/account
       '@876/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
-      '@876/client':
-        specifier: workspace:*
-        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -662,9 +653,6 @@ importers:
       '@876/platform':
         specifier: workspace:*
         version: link:../../packages/platform
-      '@876/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@876/storage':
         specifier: workspace:*
         version: link:../../packages/storage
@@ -813,24 +801,21 @@ importers:
 
   apps/couriers:
     dependencies:
+      '@876/account':
+        specifier: workspace:*
+        version: link:../../packages/account
       '@876/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
-      '@876/client':
-        specifier: workspace:*
-        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@876/couriers':
         specifier: workspace:*
         version: link:../../packages/couriers
-      '@876/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@876/settings':
         specifier: workspace:*
         version: link:../../packages/settings
@@ -843,6 +828,9 @@ importers:
       '@876/widgets':
         specifier: workspace:*
         version: link:../../packages/widgets
+      '@876/workspace':
+        specifier: workspace:*
+        version: link:../../packages/workspace
       '@sentry/nextjs':
         specifier: 10.56.0
         version: 10.56.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.1(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.107.1(esbuild@0.28.2))
@@ -1195,9 +1183,6 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@876/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@876/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -1268,21 +1253,18 @@ importers:
 
   apps/invoice:
     dependencies:
+      '@876/account':
+        specifier: workspace:*
+        version: link:../../packages/account
       '@876/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
-      '@876/client':
-        specifier: workspace:*
-        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@876/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui
