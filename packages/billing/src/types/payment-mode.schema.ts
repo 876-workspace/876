@@ -1,35 +1,33 @@
 import { z } from 'zod'
 
-import type {
-  PaymentMode,
-  PaymentModeCreated,
-  PaymentModeDeleted,
-} from './payment-mode'
 import type { List } from './common'
 import {
   createdResourceSchema,
   deletedResourceSchema,
   listSchema,
 } from './common.schema'
+import type {
+  PaymentMode,
+  PaymentModeCreated,
+  PaymentModeDeleted,
+} from './payment-mode'
 
-/**
- * The schema for a created payment mode response.
- */
+/** The schema for a created payment mode response. */
 export const PaymentModeCreatedSchema = createdResourceSchema(
   'payment_mode'
 ) satisfies z.ZodType<PaymentModeCreated>
 
-/**
- * The schema for a deleted payment mode tombstone.
- */
+/** The schema for a deleted payment mode tombstone. */
 export const PaymentModeDeletedSchema = deletedResourceSchema(
   'payment_mode'
 ) satisfies z.ZodType<PaymentModeDeleted>
 
 /**
- * The schema for a payment mode resource.
+ * Stable public payment-mode DTO. The Billing API serializer starts from the
+ * Prisma row, so backend-only fields such as tenantId are stripped here rather
+ * than becoming part of the SDK contract or causing valid responses to fail.
  */
-export const PaymentModeSchema = z.strictObject({
+export const PaymentModeSchema = z.object({
   object: z.literal('payment_mode'),
   id: z.string().min(1),
   name: z.string(),
@@ -40,9 +38,7 @@ export const PaymentModeSchema = z.strictObject({
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<PaymentMode>
 
-/**
- * The schema for a paginated list of payment modes.
- */
+/** The schema for a paginated list of payment modes. */
 export const PaymentModeListSchema = listSchema(
   PaymentModeSchema
 ) satisfies z.ZodType<List<PaymentMode>>
