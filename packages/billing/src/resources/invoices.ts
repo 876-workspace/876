@@ -2,14 +2,12 @@ import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import { InvoiceCreatedSchema, InvoiceListSchema } from '../schemas'
 import type {
-  Invoice,
   InvoiceCreated,
   InvoiceCreateParams,
   InvoiceFinalizeParams,
   InvoiceList,
   InvoiceListParams,
   InvoiceVoidParams,
-  List,
   RequestOptions,
 } from '../types'
 
@@ -23,10 +21,7 @@ export function createInvoicesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: '/api/v1/invoices',
-          query: params as Record<
-            string,
-            string | number | boolean | undefined
-          >,
+          query: { status: params.status },
           signal: options?.signal,
         },
         InvoiceListSchema
