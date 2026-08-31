@@ -21,7 +21,7 @@ export const SETUP_STATUS_OPTIONS: StatusFilterOption[] = [
 ]
 
 /** Routes that own the whole content area instead of opening beside the list. */
-const TAKEOVER_SEGMENTS = ['new', 'runs', 'edit'] as const
+const TAKEOVER_SEGMENTS = ['new', 'runs'] as const
 
 type Props = {
   /** The setup list — a table when closed, a condensed list when open. */
