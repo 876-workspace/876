@@ -18,8 +18,8 @@ export const auth876BusinessCountryCodeSchema = z
 /**
  * Business sign-up creates the organization that Phase 2 routes. Country is
  * therefore required and must come from the platform country catalog rather
- * than a free-form value. Subdivision/jurisdiction remain optional routing facts
- * for hosts that already have a canonical value.
+ * than a free-form value. More specific subdivision/jurisdiction routing is
+ * added only when the signup surface has a canonical Region/jurisdiction id.
  */
 export const auth876RegisterBusinessParamsSchema = z.strictObject({
   email: z.string().trim().email(),
@@ -28,8 +28,6 @@ export const auth876RegisterBusinessParamsSchema = z.strictObject({
   lastName: z.string().trim().min(1),
   organizationName: z.string().trim().min(1),
   countryCode: auth876BusinessCountryCodeSchema,
-  subdivision: z.string().trim().min(1).optional().nullable(),
-  jurisdiction: z.string().trim().min(1).optional().nullable(),
 })
 
 export type RegisterBusinessParams = z.infer<
