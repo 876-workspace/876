@@ -17,6 +17,8 @@ import {
 } from '@876/ui/dropdown-menu'
 import {
   AlertCircle,
+  ArrowDownFromLine,
+  ArrowUpFromLine,
   MoreHorizontalIcon,
   Plus,
 } from '@876/ui/icons'
@@ -316,8 +318,8 @@ export function FinanceProvisioningEditor({
         </div>
       )}
 
-      {/* Action toolbar */}
-      <div className="border-border/50 flex shrink-0 items-center justify-between gap-3 border-b bg-transparent px-6 py-2.5">
+      {/* Toolbar */}
+      <div className="876-header-row flex shrink-0 items-center justify-between gap-2 border-b px-5 py-2">
         <div className="flex items-center gap-2">
           {message && (
             <span className="text-muted-foreground text-xs" role="status">
@@ -326,27 +328,19 @@ export function FinanceProvisioningEditor({
           )}
         </div>
 
+        {/* Right: add + overflow */}
         <div className="flex items-center gap-2">
           {activeDefinition?.multiple && (
             <Button
-              variant="info"
+              variant="outline"
               size="sm"
               disabled={!!atMaximum}
               onClick={openAddItem}
             >
               <Plus className="size-3.5" strokeWidth={2.25} />
-              <span>Add</span>
+              Add
             </Button>
           )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isPending}
-            onClick={publish}
-          >
-            Publish
-          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -357,9 +351,21 @@ export function FinanceProvisioningEditor({
             >
               <MoreHorizontalIcon className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem disabled={isPending} onClick={save}>
                 Save draft
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={isPending} onClick={publish}>
+                Publish
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled>
+                <ArrowUpFromLine className="size-4" />
+                Import...
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                <ArrowDownFromLine className="size-4" />
+                Export...
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

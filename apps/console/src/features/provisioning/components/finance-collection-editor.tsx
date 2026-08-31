@@ -78,29 +78,21 @@ export function FinanceCollectionEditor({
       <TableHeader className="876-header-row">
         <TableRow>
           {definition.fields.map((field) => (
-            <TableHead
-              key={field.key}
-              className="px-6 py-4 text-xs font-semibold tracking-wide uppercase"
-            >
+            <TableHead key={field.key} className="px-5 py-3.5">
               {field.label}
             </TableHead>
           ))}
-          <TableHead className="w-28 px-6 py-4 text-right text-xs font-semibold tracking-wide uppercase">
-            Actions
-          </TableHead>
+          <TableHead className="w-20 px-5 py-3.5" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {rows.map((row) => (
-          <TableRow
-            key={row.localId}
-            className="hover:bg-muted/40 group transition-colors"
-          >
+          <TableRow key={row.localId} className="transition-colors">
             {definition.fields.map((field, idx) => {
               const value = row.values[field.key]
               if (field.value_type === 'boolean') {
                 return (
-                  <TableCell key={field.key} className="px-6 py-4">
+                  <TableCell key={field.key} className="px-5 py-3.5">
                     <Badge variant={value ? 'default' : 'secondary'}>
                       {value ? 'Yes' : 'No'}
                     </Badge>
@@ -111,18 +103,18 @@ export function FinanceCollectionEditor({
                 <TableCell
                   key={field.key}
                   className={cn(
-                    'px-6 py-4',
+                    'px-5 py-3.5',
                     idx === 0
                       ? 'text-foreground text-[0.8125rem] font-medium'
-                      : 'text-muted-foreground text-sm'
+                      : 'text-muted-foreground text-[0.8125rem]'
                   )}
                 >
                   {fieldDisplayValue(value)}
                 </TableCell>
               )
             })}
-            <TableCell className="px-6 py-4 text-right">
-              <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <TableCell className="px-5 py-3.5 text-right">
+              <div className="flex justify-end gap-1">
                 <Button
                   type="button"
                   size="icon-xs"
