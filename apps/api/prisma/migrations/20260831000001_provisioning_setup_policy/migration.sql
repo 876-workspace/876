@@ -3,7 +3,8 @@
 -- This migration is intentionally additive. Existing ProvisioningSetup rows,
 -- finance manifests, revisions, and organization assignments are left intact.
 -- The one-time Phase 1 provisioning importer backfills country-match conditions
--- and application/service entitlement rows after this migration is applied.
+-- and application/service/service-capability policy rows after this migration
+-- is applied.
 --
 -- Manifest protocol remains version 1.
 
@@ -40,7 +41,7 @@ CREATE TABLE "provisioning_setup_entitlements" (
 
     CONSTRAINT "provisioning_setup_entitlements_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "ck_provisioning_setup_entitlements_target_type"
-      CHECK ("target_type" IN ('application', 'service')),
+      CHECK ("target_type" IN ('application', 'service', 'service_capability')),
     CONSTRAINT "ck_provisioning_setup_entitlements_target_key"
       CHECK (length(btrim("target_key")) > 0)
 );
