@@ -1,6 +1,7 @@
 import { BILLING_APP_SLUG } from './provisioning'
 
 const CRM_APP_SLUG = '876-crm'
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 // Provisioning catalog — the closed set of resource types each provisioning
 // target may declare, and the validation that keeps a manifest-v1 draft
@@ -186,6 +187,18 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
       lateFeeGenerateAsDraft: field('Generate as draft', 'boolean'),
     }
   ),
+  tax_code: resource(
+    'Tax applicability',
+    'Optional tax categories/scopes used to associate rates with goods or services; this is configuration metadata, not a calculation engine.',
+    true,
+    0,
+    {
+      name: field('Name', 'string'),
+      description: field('Description', 'string', { required: false }),
+      code: field('Code', 'string', { required: false, unique: true }),
+      scope: field('Scope', 'string', { required: false }),
+    }
+  ),
   tax_authority: resource(
     'Tax authorities',
     'Tax administrations available to newly created organizations.',
@@ -249,6 +262,10 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
       jurisdiction: field('Jurisdiction', 'reference', {
         required: false,
         referenceNamespace: 'tax_jurisdiction',
+      }),
+      taxCode: field('Tax applicability', 'reference', {
+        required: false,
+        referenceNamespace: 'tax_code',
       }),
       effectiveFrom: field('Effective from', 'string', { required: false }),
       effectiveUntil: field('Effective until', 'string', { required: false }),
@@ -388,6 +405,14 @@ export function catalogDefinitions(
   return definitions
 }
 
+function stringProperty(
+  resource: ProvisioningResourceInput,
+  key: string
+): string | null {
+  const property = resource.properties.find((candidate) => candidate.key === key)
+  return property?.valueType === 'string' ? property.stringValue : null
+}
+
 export function validateDraft(
   targetType: ProvisioningTargetType,
   targetKey: string,
@@ -473,6 +498,38 @@ export function validateDraft(
           code: 'unknown_property',
           message: `Property '${key}' is not registered for resource type '${resource.resourceType}'.`,
         })
+
+    if (resource.resourceType === 'tax_rate') {
+      const effectiveFrom = stringProperty(resource, 'effectiveFrom')
+      const effectiveUntil = stringProperty(resource, 'effectiveUntil')
+      const fromValid = !effectiveFrom || ISO_DATE_PATTERN.test(effectiveFrom)
+      const untilValid = !effectiveUntil || ISO_DATE_PATTERN.test(effectiveUntil)
+
+      if (!fromValid)
+        issues.push({
+          path: `${path}.properties.effectiveFrom`,
+          code: 'invalid_date',
+          message: 'Effective from must use YYYY-MM-DD.',
+        })
+      if (!untilValid)
+        issues.push({
+          path: `${path}.properties.effectiveUntil`,
+          code: 'invalid_date',
+          message: 'Effective until must use YYYY-MM-DD.',
+        })
+      if (
+        effectiveFrom &&
+        effectiveUntil &&
+        fromValid &&
+        untilValid &&
+        effectiveFrom > effectiveUntil
+      )
+        issues.push({
+          path: `${path}.properties.effectiveUntil`,
+          code: 'invalid_date_range',
+          message: 'Effective until cannot be earlier than effective from.',
+        })
+    }
   })
 
   for (const [resourceType, count] of Object.entries(counts))
