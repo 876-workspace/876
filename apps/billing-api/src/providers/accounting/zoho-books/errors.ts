@@ -10,7 +10,10 @@ export class ZohoBooksError extends Error {
     retryable?: boolean
     cause?: unknown
   }) {
-    super(options.message, options.cause === undefined ? undefined : { cause: options.cause })
+    super(
+      options.message,
+      options.cause === undefined ? undefined : { cause: options.cause }
+    )
     this.name = 'ZohoBooksError'
     this.code = options.code
     this.httpStatus = options.httpStatus ?? null
@@ -30,8 +33,8 @@ export function toZohoBooksError(error: unknown): ZohoBooksError {
 
 export function classifyZohoHttpError(
   status: number,
-  providerCode: string,
-  providerMessage: string
+  _providerCode: string,
+  _providerMessage: string
 ): ZohoBooksError {
   if (status === 401 || status === 403)
     return new ZohoBooksError({
@@ -63,7 +66,7 @@ export function classifyZohoHttpError(
     })
   return new ZohoBooksError({
     code: 'billing/provider-invalid-request',
-    message: `Zoho Books rejected the request (${providerCode || 'unknown'}: ${providerMessage || 'invalid request'}).`,
+    message: 'Zoho Books rejected the request.',
     httpStatus: status,
     retryable: false,
   })
