@@ -23,6 +23,15 @@ export const PROFILE_STATUS_OPTIONS: StatusFilterOption[] = [
 /** Routes that own the whole content area instead of opening beside the list. */
 const TAKEOVER_SEGMENTS = ['runs'] as const
 
+/**
+ * The split view lives below the Console top bar, app identity header, tabs,
+ * and page padding. Give it a definite viewport so the list and detail card
+ * remain equal-height siblings and own their scrolling instead of growing the
+ * outer page. The minimum keeps the cards usable on short screens while
+ * allowing the Console page scroller to take over.
+ */
+const PROVISIONING_CONTENT_HEIGHT = 'h-[calc(100svh-14rem)] min-h-[32rem]'
+
 type Props = {
   slug: string
   appId: string
@@ -42,7 +51,7 @@ export function AppProvisioningShell({ slug, appId, list, children }: Props) {
   const status = searchParams.get('status') ?? 'all'
 
   return (
-    <div className="h-full min-h-0">
+    <div className={PROVISIONING_CONTENT_HEIGHT}>
       <ListDetailShell
         open={open}
         toolbar={
