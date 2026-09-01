@@ -46,7 +46,7 @@ const RESOURCE_WRITE = [
 /**
  * Team-grant management. Granting Console access is itself privilege
  * escalation, so it sits with admin and above — never with staff.
- * `assertRoleChangeAllowed` still keeps owner/super_admin grants to a
+ * `assertRoleChangeAllowed` still keeps owner/super-admin grants to a
  * super admin.
  */
 const TEAM_MANAGE = [
@@ -64,8 +64,9 @@ export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 /** Permission that gates destructive (danger-zone) operations. */
 export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger-zone'
 
-/** Exact persisted alias accepted only during the naming migration. */
+export const SUPER_ADMIN_ROLE = 'super-admin'
 const LEGACY_CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
+const LEGACY_SUPER_ADMIN_ROLE = 'super_admin'
 
 function canonicalPermission(permission: string): string {
   return permission === LEGACY_CONSOLE_DANGER_ZONE_PERMISSION
@@ -75,6 +76,10 @@ function canonicalPermission(permission: string): string {
 
 function canonicalPermissions(permissions: readonly string[]): string[] {
   return [...new Set(permissions.map(canonicalPermission))]
+}
+
+export function canonicalConsoleRoleName(role: string): string {
+  return role === LEGACY_SUPER_ADMIN_ROLE ? SUPER_ADMIN_ROLE : role
 }
 
 function accessContext(access: Pick<Access, 'permissions'>): AccessContext {
@@ -161,7 +166,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     ],
   },
   {
-    name: 'super_admin',
+    name: SUPER_ADMIN_ROLE,
     displayName: 'Super Admin',
     description: 'All permissions including danger zone operations.',
     permissions: [
@@ -216,15 +221,18 @@ const FALLBACK: Record<string, string[]> = Object.fromEntries(
 
 /**
  * Permissions for a role name from a supplied catalog (defaults to the system
- * fallback). During the naming cutover an old database row may still contain
- * `console:danger_zone`; callers always receive the canonical equivalent.
+ * fallback). During the naming cutover old database rows may still carry the
+ * exact `super_admin` role or `console:danger_zone` permission aliases; callers
+ * always receive the canonical equivalents.
  */
 export function permissionsForRole(
   role: string | null | undefined,
   catalog: Record<string, string[]> = FALLBACK
 ): string[] {
   if (!role) return []
-  return canonicalPermissions(catalog[role] ?? [])
+  const canonicalRole = canonicalConsoleRoleName(role)
+  const permissions = catalog[canonicalRole] ?? catalog[role] ?? []
+  return canonicalPermissions(permissions)
 }
 
 function actionLabel(action: string): string {
