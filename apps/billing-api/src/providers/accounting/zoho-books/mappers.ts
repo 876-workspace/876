@@ -7,6 +7,7 @@ import type {
   AccountingPaymentInput,
   AccountingRecurringInvoiceInput,
 } from '../types'
+import { ZohoBooksError } from './errors'
 import type {
   ZohoContactInput,
   ZohoCustomerPaymentInput,
@@ -40,8 +41,14 @@ export function minorUnitsToZohoNumber(amount: bigint, currency: string) {
   const absolute = amount < 0n ? -amount : amount
   const whole = absolute / factor
   const fraction = (absolute % factor).toString().padStart(digits, '0')
-  const value = Number(digits === 0 ? whole.toString() : `${whole}.${fraction}`)
-  if (!Number.isFinite(value)) throw new Error('Amount is outside provider range.')
+  const value = Number(
+    digits === 0 ? whole.toString() : `${whole}.${fraction}`
+  )
+  if (!Number.isFinite(value))
+    throw new ZohoBooksError({
+      code: 'billing/accounting-projection-invalid',
+      retryable: false,
+    })
   return sign * value
 }
 
@@ -86,7 +93,9 @@ function toZohoLine(line: AccountingDocumentLineInput): ZohoLineItemInput {
   }
 }
 
-export function toZohoEstimate(input: AccountingEstimateInput): ZohoEstimateInput {
+export function toZohoEstimate(
+  input: AccountingEstimateInput
+): ZohoEstimateInput {
   return {
     customer_id: input.providerCustomerId,
     estimate_number: input.number,
