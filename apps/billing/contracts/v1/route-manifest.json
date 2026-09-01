@@ -2258,7 +2258,7 @@
         }
       ],
       "path": "/providers/zoho-books/oauth/callback",
-      "source": "apps/billing-api/src/modules/accounting-providers/accounting-sync.routes.ts"
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
     }
   ],
   "version": 1
