@@ -58,7 +58,7 @@ describe('requireConsolePermission route guard', () => {
     mocks.isSignedSession.mockReturnValue(true)
     mocks.findConsoleAccess.mockResolvedValue(caller)
     mocks.resolveAccessContext.mockResolvedValue(
-      context(['console:access', 'users:update'], ['console_widgets'])
+      context(['console:access', 'users:update'], ['console-widgets'])
     )
   })
 
@@ -160,19 +160,19 @@ describe('requireConsoleFeature route guard', () => {
     mocks.isSignedSession.mockReturnValue(true)
     mocks.findConsoleAccess.mockResolvedValue(caller)
     mocks.resolveAccessContext.mockResolvedValue(
-      context(['console:access'], ['console_widgets'])
+      context(['console:access'], ['console-widgets'])
     )
   })
 
   it('authorizes a caller holding the required feature', async () => {
-    const result = await requireConsoleFeature('console_widgets')
+    const result = await requireConsoleFeature('console-widgets')
 
     expect(result.response).toBeNull()
     expect(result.caller).toEqual(caller)
   })
 
   it('returns 403 when the required feature is not enabled', async () => {
-    const result = await requireConsoleFeature('console_chat')
+    const result = await requireConsoleFeature('console-chat')
 
     expect(result.caller).toBeNull()
     expect(result.response?.status).toBe(403)
@@ -203,9 +203,6 @@ describe('requireConsoleCrmPermission route guard', () => {
   })
 
   it('never consults the target organization app-access plane', async () => {
-    // Console acts at the operator tier. Requiring an in-org app membership
-    // would make 876's ability to support a customer depend on a grant that
-    // customer can revoke, and would deny every cross-org operation outright.
     await requireConsoleCrmPermission('org_876', 'requests.edit')
 
     expect(mocks.listAppMemberships).not.toHaveBeenCalled()
@@ -251,8 +248,6 @@ describe('requireConsoleCrmPermission route guard', () => {
 
     const result = await requireConsoleCrmPermission('org_876', 'requests.edit')
 
-    // A body carrying only `error` fails the client's envelope check and
-    // surfaces as client/invalid-response, so a denial reads as a server fault.
     await expect(result.response?.json()).resolves.toEqual({
       data: null,
       error: {
