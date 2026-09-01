@@ -121,7 +121,7 @@ function viewerPermissions(
 function standardRoles(permissions: AppPermissionSeed[]): AppRoleSeed[] {
   return [
     {
-      key: 'super_admin',
+      key: 'super-admin',
       name: 'Super Admin',
       description: 'Full access to this application.',
       permissions: keysFor(permissions),
