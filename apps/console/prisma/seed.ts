@@ -25,7 +25,7 @@ import { SYSTEM_ROLE_DEFINITIONS } from '../src/lib/permissions'
 
 config({ path: ['.env.development.local', '.env'] })
 
-const BOOTSTRAP_ROLE_NAME = 'super_admin'
+const BOOTSTRAP_ROLE_NAME = 'super-admin'
 
 const adapter = new PrismaPg({
   connectionString: process.env.CONSOLE_DIRECT_DATABASE_URL,
