@@ -18,7 +18,7 @@ export const zohoBooksAdapter = {
     recurringInvoices: true,
     paymentsReceived: true,
     imports: true,
-    webhooks: true,
+    webhooks: false,
   },
   customers: zohoCustomers,
   items: zohoItems,
