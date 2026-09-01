@@ -27,7 +27,7 @@ export default async function OrgLayout({
   if (!ctx) redirect('/')
 
   if (ctx.accessStatus !== 'active') {
-    const canActivate = ctx.role === 'super_admin' || ctx.role === 'admin'
+    const canActivate = ctx.role === 'super-admin' || ctx.role === 'admin'
     redirect(canActivate ? '/onboarding' : '/no-access')
   }
 
