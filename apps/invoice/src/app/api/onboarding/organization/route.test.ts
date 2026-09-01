@@ -34,7 +34,7 @@ function createRequest(body: unknown) {
   }) as unknown as Parameters<typeof POST>[0]
 }
 
-function membershipsFor(organizationId: string | null, role = 'super_admin') {
+function membershipsFor(organizationId: string | null, role = 'super-admin') {
   return {
     data: {
       data: organizationId

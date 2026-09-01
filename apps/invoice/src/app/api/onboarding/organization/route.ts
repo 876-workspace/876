@@ -21,7 +21,7 @@ const organizationSchema = z.strictObject({
 })
 
 /** Roles allowed to add an app to an organization. */
-const PROVISIONING_ROLES = new Set(['super_admin', 'admin'])
+const PROVISIONING_ROLES = new Set(['super-admin', 'admin'])
 
 /** Slug/name collisions the caller can fix by choosing another name. */
 const CONFLICT_CODES = new Set([
