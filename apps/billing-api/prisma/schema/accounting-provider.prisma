@@ -47,7 +47,11 @@ model AccountingProviderConnection {
   syncJobs           AccountingProviderSyncJob[]
 
   @@unique([tenantId, id], map: "billing_accounting_provider_connections_tenant_id_id_key")
-  @@unique([tenantId, providerId, name], map: "billing_accounting_provider_connections_tenant_provider_name_key")
+  /// Postgres truncates identifiers at 63 bytes, and the natural name for this
+  /// index is 64. The migration's 64-char literal therefore lands as this
+  /// 63-char name in every database; declaring the untruncated form here would
+  /// report permanent drift. Do not "restore" the trailing `y`.
+  @@unique([tenantId, providerId, name], map: "billing_accounting_provider_connections_tenant_provider_name_ke")
   @@unique([tenantId, providerId, providerOrganizationId], map: "billing_accounting_provider_connections_external_org_key")
   @@index([tenantId, status], map: "billing_accounting_provider_connections_tenant_status_idx")
   @@index([providerId], map: "billing_accounting_provider_connections_provider_id_idx")
