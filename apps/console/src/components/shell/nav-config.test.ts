@@ -74,8 +74,8 @@ describe('navConfig', () => {
     ])
   })
 
-  it('shows super_admin the same complete entry set as owner', () => {
-    expect(visibleHrefs('super_admin')).toEqual(visibleHrefs('owner'))
+  it('shows super-admin the same complete entry set as owner', () => {
+    expect(visibleHrefs('super-admin')).toEqual(visibleHrefs('owner'))
   })
 
   it('hides every permission-gated entry from a context with no permissions', () => {
