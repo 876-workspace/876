@@ -134,6 +134,26 @@ WHERE permission_denies && ARRAY[
 
 -- Core application-module catalog keys, when present, use the same canonical
 -- module vocabulary as the app permission plane.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM application_modules legacy
+    JOIN application_modules canonical
+      ON canonical.app_id = legacy.app_id
+     AND canonical.key = CASE legacy.key
+       WHEN 'pre_alerts' THEN 'pre-alerts'
+       WHEN 'my_work' THEN 'my-work'
+       WHEN 'request_forms' THEN 'request-forms'
+     END
+    JOIN apps app ON app.id = legacy.app_id
+    WHERE (app.slug = '876-couriers' AND legacy.key = 'pre_alerts')
+       OR (app.slug = '876-crm' AND legacy.key IN ('my_work', 'request_forms'))
+  ) THEN
+    RAISE EXCEPTION 'naming-contract module collision; reconcile canonical and legacy rows before migration';
+  END IF;
+END $$;
+
 UPDATE application_modules AS module
 SET key = CASE module.key
   WHEN 'pre_alerts' THEN 'pre-alerts'
