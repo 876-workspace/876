@@ -86,21 +86,21 @@ export const notepadWidgetMetadata = {
   implementedHosts: ['console', 'billing', 'couriers'],
   features: {
     platform: {
-      parent: 'platform_widgets',
-      widget: 'platform_widgets_notepad',
+      parent: 'platform-widgets',
+      widget: 'platform-widgets-notepad',
     },
     apps: {
       console: {
-        parent: 'console_widgets',
-        widget: 'console_widgets_notepad',
+        parent: 'console-widgets',
+        widget: 'console-widgets-notepad',
       },
       billing: {
-        parent: 'billing_widgets',
-        widget: 'billing_widgets_notepad',
+        parent: 'billing-widgets',
+        widget: 'billing-widgets-notepad',
       },
       couriers: {
-        parent: 'couriers_widgets',
-        widget: 'couriers_widgets_notepad',
+        parent: 'couriers-widgets',
+        widget: 'couriers-widgets-notepad',
       },
     },
   },
@@ -127,21 +127,21 @@ export const chatWidgetMetadata = {
   implementedHosts: ['console', 'billing', 'couriers'],
   features: {
     platform: {
-      parent: 'platform_widgets',
-      widget: 'platform_widgets_chat',
+      parent: 'platform-widgets',
+      widget: 'platform-widgets-chat',
     },
     apps: {
       console: {
-        parent: 'console_widgets',
-        widget: 'console_widgets_chat',
+        parent: 'console-widgets',
+        widget: 'console-widgets-chat',
       },
       billing: {
-        parent: 'billing_widgets',
-        widget: 'billing_widgets_chat',
+        parent: 'billing-widgets',
+        widget: 'billing-widgets-chat',
       },
       couriers: {
-        parent: 'couriers_widgets',
-        widget: 'couriers_widgets_chat',
+        parent: 'couriers-widgets',
+        widget: 'couriers-widgets-chat',
       },
     },
   },
