@@ -280,17 +280,29 @@ export async function assignApp(params: {
   })
 }
 
+/**
+ * Finds the provisioned app role selected for assignment.
+ *
+ * During the naming migration `super-admin` may still be stored as
+ * `super_admin`. New writes request only the canonical key, while this read
+ * accepts the exact legacy alias until the follow-up migration has run.
+ */
 export function findProvisionedAppRole(
   organizationId: string,
   appId: string,
   roleKey?: string
 ) {
+  const keys =
+    roleKey === 'super-admin' ? ['super-admin', 'super_admin'] : undefined
+
   return prisma.appRole.findFirst({
     where: {
       organizationId,
       appId,
       deletedAt: null,
-      ...(roleKey ? { key: roleKey } : { isDefault: true }),
+      ...(roleKey
+        ? { key: keys ? { in: keys } : roleKey }
+        : { isDefault: true }),
     },
     select: { id: true },
   })
