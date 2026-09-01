@@ -20,6 +20,17 @@ export const ZOHO_BOOKS_SCOPES = [
   'ZohoBooks.customerpayments.UPDATE',
 ] as const
 
+const allowedAccountsDomains = new Set([
+  'https://accounts.zoho.com',
+  'https://accounts.zoho.eu',
+  'https://accounts.zoho.in',
+  'https://accounts.zoho.com.au',
+  'https://accounts.zoho.jp',
+  'https://accounts.zoho.ca',
+  'https://accounts.zoho.com.cn',
+  'https://accounts.zoho.sa',
+])
+
 const tokenResponseSchema = z.object({
   access_token: z.string().min(1),
   refresh_token: z.string().min(1).optional(),
@@ -28,12 +39,34 @@ const tokenResponseSchema = z.object({
   expires_in: z.number().int().optional(),
 })
 
-const oauthErrorSchema = z.object({
-  error: z.string(),
+const oauthErrorSchema = z.object({ error: z.string() }).passthrough()
+const organizationsResponseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+  organizations: z.array(
+    z.object({
+      organization_id: z.string(),
+      name: z.string(),
+      is_default_org: z.boolean().optional(),
+      is_org_active: z.boolean().optional(),
+      currency_code: z.string().optional(),
+    }).passthrough()
+  ),
 }).passthrough()
 
+export function normalizeZohoAccountsDomain(value: string): string {
+  const domain = value.replace(/\/+$/, '')
+  if (!allowedAccountsDomains.has(domain))
+    throw new ZohoBooksError({
+      code: 'billing/provider-invalid-domain',
+      message: 'The Zoho accounts data center is not supported.',
+      retryable: false,
+    })
+  return domain
+}
+
 function tokenUrl(accountsDomain: string) {
-  return `${accountsDomain.replace(/\/+$/, '')}/oauth/v2/token`
+  return `${normalizeZohoAccountsDomain(accountsDomain)}/oauth/v2/token`
 }
 
 export function buildZohoBooksAuthorizeUrl(params: {
@@ -43,7 +76,9 @@ export function buildZohoBooksAuthorizeUrl(params: {
   state: string
   scopes?: readonly string[]
 }) {
-  const url = new URL(`${params.accountsDomain.replace(/\/+$/, '')}/oauth/v2/auth`)
+  const url = new URL(
+    `${normalizeZohoAccountsDomain(params.accountsDomain)}/oauth/v2/auth`
+  )
   url.searchParams.set('client_id', params.clientId)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('redirect_uri', params.redirectUri)
@@ -139,4 +174,38 @@ export function refreshZohoBooksToken(params: {
     }),
     params.fetchImpl
   )
+}
+
+export async function listZohoBooksOrganizations(params: {
+  apiDomain: string
+  accessToken: string
+  fetchImpl?: typeof fetch
+}) {
+  const root = params.apiDomain.replace(/\/+$/, '')
+  let response: Response
+  try {
+    response = await (params.fetchImpl ?? fetch)(`${root}/books/v4/organizations`, {
+      headers: {
+        Authorization: `Zoho-oauthtoken ${params.accessToken}`,
+        Accept: 'application/json',
+      },
+    })
+  } catch (error) {
+    throw new ZohoBooksError({
+      code: 'billing/provider-unavailable',
+      message: 'Zoho Books organization discovery failed.',
+      retryable: true,
+      cause: error,
+    })
+  }
+  const raw: unknown = await response.json().catch(() => ({}))
+  const parsed = organizationsResponseSchema.safeParse(raw)
+  if (!response.ok || !parsed.success || parsed.data.code !== 0)
+    throw new ZohoBooksError({
+      code: 'billing/provider-invalid-response',
+      message: 'Zoho Books organization discovery returned an invalid response.',
+      httpStatus: response.status,
+      retryable: response.status >= 500 || response.status === 429,
+    })
+  return parsed.data.organizations
 }
