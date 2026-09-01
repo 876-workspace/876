@@ -30,10 +30,8 @@
  * ## Array order is a stored contract
  *
  * These permission arrays are seeded into `organization_roles.permissions`.
- * `owner` and `admin` are **sorted**; `billing_manager` and `member` are in
- * **declaration order**. That asymmetry is inherited from the Python and is
- * preserved deliberately — sorting all four "for consistency" would change the
- * rows every existing organization was seeded with.
+ * Every organization receives the same three system roles: `super_admin`,
+ * `admin`, and `staff`.
  */
 
 /** The catalog, grouped for display. Group order and member order are both preserved. */
@@ -53,7 +51,7 @@ export const ALL_ORG_PERMISSIONS: ReadonlySet<string> = new Set(
   Object.values(ORG_PERMISSION_GROUPS).flat()
 )
 
-/** The catalog as a sorted array — the exact value seeded for the owner role. */
+/** The catalog as a sorted array — the exact value seeded for super admins. */
 export const ALL_ORG_PERMISSIONS_SORTED: readonly string[] = [
   ...ALL_ORG_PERMISSIONS,
 ].sort()
@@ -62,28 +60,20 @@ export function isValidOrgPermission(permission: string): boolean {
   return ALL_ORG_PERMISSIONS.has(permission)
 }
 
-const READ_ONLY_MEMBER: readonly string[] = [
+const READ_ONLY_STAFF: readonly string[] = [
   'org:read',
   'members:read',
   'structure:read',
 ]
 
 /**
- * Billing visibility/management and org deletion stay owner/billing-manager
- * territory (Zoho One model: Admin manages users and apps, not billing).
+ * Billing visibility/management and org deletion stay super-admin territory.
  */
 const ADMIN_EXCLUDED = new Set(['billing:read', 'billing:manage', 'org:delete'])
 
 const ADMIN: readonly string[] = ALL_ORG_PERMISSIONS_SORTED.filter(
   (permission) => !ADMIN_EXCLUDED.has(permission)
 )
-
-const BILLING_MANAGER: readonly string[] = [
-  'org:read',
-  'billing:read',
-  'billing:manage',
-  'members:read',
-]
 
 export interface OrgRoleDefinition {
   readonly name: string
@@ -94,8 +84,8 @@ export interface OrgRoleDefinition {
 
 export const DEFAULT_ORG_ROLES: readonly OrgRoleDefinition[] = [
   {
-    name: 'owner',
-    displayName: 'Owner',
+    name: 'super_admin',
+    displayName: 'Super Admin',
     description:
       'Full control of the organization, including billing and deletion.',
     permissions: ALL_ORG_PERMISSIONS_SORTED,
@@ -108,17 +98,10 @@ export const DEFAULT_ORG_ROLES: readonly OrgRoleDefinition[] = [
     permissions: ADMIN,
   },
   {
-    name: 'billing_manager',
-    displayName: 'Billing Manager',
-    description:
-      'Views and manages billing, payment details, and subscriptions.',
-    permissions: BILLING_MANAGER,
-  },
-  {
-    name: 'member',
-    displayName: 'Member',
+    name: 'staff',
+    displayName: 'Staff',
     description: 'Default role. Views the organization directory.',
-    permissions: READ_ONLY_MEMBER,
+    permissions: READ_ONLY_STAFF,
   },
 ]
 
@@ -127,15 +110,14 @@ export const DEFAULT_ORG_ROLES_BY_NAME: ReadonlyMap<string, OrgRoleDefinition> =
 
 /**
  * The role auto-assigned to new memberships when none is specified
- * (WorkOS-style default member role).
+ * (WorkOS-style default membership role).
  */
-export const DEFAULT_MEMBER_ROLE_NAME = 'member'
+export const DEFAULT_MEMBER_ROLE_NAME = 'staff'
 
 /**
- * The role granted to the organization creator. "Owner" is an org-lifecycle
- * role (the account that created/controls the org), not a job title.
+ * The role granted to the organization creator.
  */
-export const OWNER_ROLE_NAME = 'owner'
+export const SUPER_ADMIN_ROLE_NAME = 'super_admin'
 
 /**
  * Fallback permission resolution for legacy memberships without `role_id`.
@@ -149,7 +131,7 @@ export function defaultPermissionsForRoleName(roleName: string): string[] {
     DEFAULT_ORG_ROLES_BY_NAME.get(roleName) ??
     DEFAULT_ORG_ROLES_BY_NAME.get(DEFAULT_MEMBER_ROLE_NAME)
 
-  // The member role is always present, so this cannot be reached — the
+  // The staff role is always present, so this cannot be reached — the
   // fallback keeps the return type honest without an assertion.
   if (!definition) return []
 

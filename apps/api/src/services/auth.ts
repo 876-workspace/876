@@ -3,7 +3,7 @@ import { AppHttpError } from '@/http/errors'
 import { isDisposableEmailDomain } from '@/platform/email'
 import { generateId, generatePlatformOwnerUserId } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
-import { OWNER_ROLE_NAME } from '@/platform/permissions'
+import { SUPER_ADMIN_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { getAuthProvider } from '@/providers/workos/adapter'
 import { isWorkOsNotFound } from '@/providers/workos/errors'
@@ -278,12 +278,13 @@ export type AuthDeps = {
       requireProvisioningSelection?: boolean
     }
   ): Promise<Record<string, { id: string }>>
-  /** `services/provisioning.ts` — the owner's effective app assignments. */
+  /** `services/provisioning.ts` — the creator's effective app assignments. */
   assignMemberApps(params: {
     organizationId: string
     userId: string
     now: number
     sourceAppId?: string | null
+    appRoleKey?: 'super_admin' | 'admin' | 'staff'
   }): Promise<void>
   /** Apply the selected setup's Work service/capability policy. */
   ensureWork(organizationId: string): Promise<void>
@@ -649,7 +650,7 @@ export class AuthService {
       firstName: params.workosUser.firstName || params.fallbackFirstName,
       lastName: params.workosUser.lastName || params.fallbackLastName,
       avatar: params.workosUser.avatar,
-      platformRole: isOwner ? 'owner' : null,
+      platformRole: isOwner ? 'super_admin' : null,
       status: 'inactive',
       createdAt: nowBigint,
       updatedAt: nowBigint,
@@ -851,6 +852,7 @@ export class AuthService {
         userId: localUser.id,
         now,
         sourceAppId: params.sourceAppId ?? null,
+        appRoleKey: 'super_admin',
       })
 
       await this.deps.ensureDefaultContact(
@@ -930,7 +932,7 @@ export class AuthService {
         organizationId: localOrg.id,
         userId: localUser.id,
         workosMembershipId: workosMembership.id,
-        role: OWNER_ROLE_NAME,
+        role: SUPER_ADMIN_ROLE_NAME,
         roleId: null,
         status: 'active',
         createdAt: nowBigint,
@@ -961,18 +963,19 @@ export class AuthService {
         userId: localUser.id,
         now,
         sourceAppId: params.sourceAppId ?? null,
+        appRoleKey: 'super_admin',
       })
       await this.deps.ensureWork(localOrg.id)
 
-      const ownerRole = orgRoles[OWNER_ROLE_NAME]
-      if (ownerRole?.id) {
+      const superAdminRole = orgRoles[SUPER_ADMIN_ROLE_NAME]
+      if (superAdminRole?.id) {
         const membership = await this.deps.repository.findMembership(
           localOrg.id,
           localUser.id
         )
         if (membership) {
           await this.deps.repository.updateMembership(membership.id, {
-            roleId: ownerRole.id,
+            roleId: superAdminRole.id,
             updatedAt: nowBigint,
           })
         }
@@ -1211,7 +1214,7 @@ export class AuthService {
         firstName: providerUser.firstName || 'Unknown',
         lastName: providerUser.lastName || 'User',
         avatar: providerUser.avatar,
-        platformRole: isOwner ? 'owner' : null,
+        platformRole: isOwner ? 'super_admin' : null,
         status: 'active',
         createdAt: now,
         updatedAt: now,

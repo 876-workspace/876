@@ -10,6 +10,7 @@ export const APP_ROLE_PROVISIONING_RESOURCE_TYPE = 'app_role'
 const ENTERPRISE_APP_SLUG = '876-enterprise'
 const ROLE_KEY = /^[a-z][a-z0-9_]*$/
 const PERMISSION_KEY = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/
+const STANDARD_ROLE_KEYS = ['super_admin', 'admin', 'staff'] as const
 
 export type ProvisioningAppRoleTemplate = {
   key: string
@@ -19,6 +20,87 @@ export type ProvisioningAppRoleTemplate = {
   isDefault: boolean
   isSystem: boolean
   position: number
+}
+
+function provisioningString(key: string, value: string) {
+  return {
+    key,
+    valueType: 'string' as const,
+    stringValue: value,
+    integerValue: null,
+    decimalValue: null,
+    booleanValue: null,
+    referenceNamespace: null,
+    referenceKey: null,
+  }
+}
+
+/** Builds the mandatory role resources for a newly created app profile. */
+export async function buildStandardAppRoleProvisioningResources(
+  appId: string,
+  appSlug: string
+): Promise<ProvisioningResourceInput[]> {
+  if (appSlug === ENTERPRISE_APP_SLUG) return []
+
+  const catalog = (await listAppPermissionKeysForProvisioning(appId)).sort()
+  const definitions = [
+    {
+      key: 'super_admin',
+      name: 'Super Admin',
+      description: 'Full access to this application.',
+      permissions: catalog,
+      isDefault: false,
+      position: 0,
+    },
+    {
+      key: 'admin',
+      name: 'Admin',
+      description:
+        'Administrative and operational access without destructive actions.',
+      permissions: catalog.filter((permission) => !permission.endsWith('.delete')),
+      isDefault: false,
+      position: 10,
+    },
+    {
+      key: 'staff',
+      name: 'Staff',
+      description: 'Read-only access to this application.',
+      permissions: catalog.filter((permission) => permission.endsWith('.view')),
+      isDefault: true,
+      position: 20,
+    },
+  ] as const
+
+  return definitions.map((definition) => ({
+    resourceType: APP_ROLE_PROVISIONING_RESOURCE_TYPE,
+    key: `${appSlug}:${definition.key}`,
+    position: definition.position,
+    properties: [
+      provisioningString('app_slug', appSlug),
+      provisioningString('role_key', definition.key),
+      provisioningString('name', definition.name),
+      provisioningString('description', definition.description),
+      provisioningString('permissions', definition.permissions.join(',')),
+      {
+        ...provisioningString('is_default', ''),
+        valueType: 'boolean' as const,
+        stringValue: null,
+        booleanValue: definition.isDefault,
+      },
+      {
+        ...provisioningString('is_system', ''),
+        valueType: 'boolean' as const,
+        stringValue: null,
+        booleanValue: true,
+      },
+      {
+        ...provisioningString('position', ''),
+        valueType: 'integer' as const,
+        stringValue: null,
+        integerValue: definition.position,
+      },
+    ],
+  }))
 }
 
 /** Catalog definition that can be merged into an application target registry. */
@@ -33,7 +115,7 @@ export function appRoleProvisioningDefinition(
     description:
       'Organization-scoped role templates materialized when this app is provisioned.',
     multiple: true,
-    minimumItems: 1,
+    minimumItems: STANDARD_ROLE_KEYS.length,
     maximumItems: null,
     fields: [
       field('app_slug', 'App slug', 'string', true),
@@ -166,6 +248,14 @@ export function validateAppRoleProvisioningResources(
     return issues
   }
 
+  if (roleResources.length !== STANDARD_ROLE_KEYS.length)
+    issues.push({
+      path: 'resources',
+      code: 'app_role_standard_shape',
+      message:
+        'Application manifests must declare exactly super_admin, admin, and staff roles.',
+    })
+
   const roleKeys = new Set<string>()
   let defaultCount = 0
 
@@ -201,6 +291,13 @@ export function validateAppRoleProvisioningResources(
         })
       roleKeys.add(roleKey)
 
+      if (!STANDARD_ROLE_KEYS.includes(roleKey as (typeof STANDARD_ROLE_KEYS)[number]))
+        issues.push({
+          path: `${path}.properties.role_key`,
+          code: 'app_role_standard_key_required',
+          message: `Role key must be one of: ${STANDARD_ROLE_KEYS.join(', ')}.`,
+        })
+
       if (resource.key !== `${appSlug}:${roleKey}`)
         issues.push({
           path: `${path}.key`,
@@ -232,11 +329,30 @@ export function validateAppRoleProvisioningResources(
       })
     else if (isDefault) defaultCount += 1
 
+    if (roleKey === 'staff' && isDefault !== true)
+      issues.push({
+        path: `${path}.properties.is_default`,
+        code: 'app_role_staff_default_required',
+        message: 'Staff must be the default application role.',
+      })
+    if (roleKey !== 'staff' && isDefault === true)
+      issues.push({
+        path: `${path}.properties.is_default`,
+        code: 'app_role_default_invalid',
+        message: 'Only Staff may be the default application role.',
+      })
+
     if (isSystem === null)
       issues.push({
         path: `${path}.properties.is_system`,
         code: 'app_role_system_required',
         message: 'is_system must be provided as a boolean.',
+      })
+    else if (!isSystem)
+      issues.push({
+        path: `${path}.properties.is_system`,
+        code: 'app_role_system_required',
+        message: 'Standard application roles must be system roles.',
       })
 
     if (position === null)
@@ -254,6 +370,14 @@ export function validateAppRoleProvisioningResources(
       message:
         'Application manifests must declare exactly one default app role.',
     })
+
+  for (const roleKey of STANDARD_ROLE_KEYS)
+    if (!roleKeys.has(roleKey))
+      issues.push({
+        path: 'resources',
+        code: 'app_role_standard_key_missing',
+        message: `Application manifest is missing the '${roleKey}' role.`,
+      })
 
   return issues
 }
@@ -291,6 +415,28 @@ export async function validateAppRoleProvisioningPermissions(params: {
             message: `Permission '${permission}' is not registered for '${params.appSlug}'.`,
           })
       }
+
+      const roleKey = readString(resource, 'role_key')
+      const expected =
+        roleKey === 'super_admin'
+          ? [...catalog]
+          : roleKey === 'admin'
+            ? [...catalog].filter((permission) => !permission.endsWith('.delete'))
+            : roleKey === 'staff'
+              ? [...catalog].filter((permission) => permission.endsWith('.view'))
+              : []
+      if (
+        STANDARD_ROLE_KEYS.includes(
+          roleKey as (typeof STANDARD_ROLE_KEYS)[number]
+        ) &&
+        (permissions.length !== expected.length ||
+          expected.some((permission) => !permissions.includes(permission)))
+      )
+        issues.push({
+          path: `resources.${index}.properties.permissions`,
+          code: 'app_role_permission_shape_invalid',
+          message: `Role '${roleKey}' does not match the standard permission policy.`,
+        })
     })
 
   return issues

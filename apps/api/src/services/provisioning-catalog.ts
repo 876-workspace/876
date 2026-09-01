@@ -1,7 +1,10 @@
 import type { ProvisioningDraftReplaceParams as ProvisioningWireDraftReplace } from '@876/core/types/provisioning'
 
+import { validateAppRoleProvisioningResources } from './app-role-provisioning-catalog'
+
 export const BILLING_APP_SLUG = '876-billing'
 const CRM_APP_SLUG = '876-crm'
+const ENTERPRISE_APP_SLUG = '876-enterprise'
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 // Provisioning catalog — the closed set of resource types each provisioning
@@ -404,13 +407,34 @@ export const APPLICATION_RESOURCES: Record<string, Record<string, Resource>> = {
   },
 }
 
+const APP_ROLE_RESOURCE = resource(
+  'App roles',
+  'Organization-scoped system roles materialized when the app is provisioned.',
+  true,
+  3,
+  {
+    app_slug: field('App slug', 'string'),
+    role_key: field('Role key', 'string', { unique: true }),
+    name: field('Name', 'string'),
+    description: field('Description', 'string', { required: false }),
+    permissions: field('Permissions', 'string'),
+    is_default: field('Default role', 'boolean'),
+    is_system: field('System role', 'boolean'),
+    position: field('Position', 'integer'),
+  }
+)
+
 export function resourceRegistry(
   targetType: ProvisioningTargetType,
   targetKey: string
 ): Record<string, Resource> {
   if (targetType === 'finance') return FINANCE_RESOURCES
   if (targetType === 'organization') return ORGANIZATION_RESOURCES
-  return APPLICATION_RESOURCES[targetKey] ?? {}
+  if (targetKey === ENTERPRISE_APP_SLUG) return APPLICATION_RESOURCES[targetKey] ?? {}
+  return {
+    ...(APPLICATION_RESOURCES[targetKey] ?? {}),
+    app_role: APP_ROLE_RESOURCE,
+  }
 }
 
 export function catalogDefinitions(
@@ -666,6 +690,11 @@ export function validateDraft(
           'CRM provisioning requires exactly one default request priority.',
       })
   }
+
+  if (targetType === 'application')
+    issues.push(
+      ...validateAppRoleProvisioningResources(targetKey, draft.resources)
+    )
 
   return issues
 }

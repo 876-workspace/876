@@ -165,8 +165,9 @@ async function resolveOrgPrimaryContact(
     return a.id.localeCompare(b.id)
   })
 
-  const owner = sorted.find((m) => m.role === 'owner') ?? sorted[0]!
-  return repository.findUserById(owner.userId)
+  const primary =
+    sorted.find((membership) => membership.role === 'super_admin') ?? sorted[0]!
+  return repository.findUserById(primary.userId)
 }
 
 export async function snapshotForOrganization(

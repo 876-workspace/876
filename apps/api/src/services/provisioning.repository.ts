@@ -248,6 +248,7 @@ export async function assignApp(params: {
   organizationId: string
   userId: string
   appId: string
+  appRoleId: string | null
   assignedBy: string | null
   now: bigint
 }): Promise<void> {
@@ -264,6 +265,7 @@ export async function assignApp(params: {
       organizationId: params.organizationId,
       userId: params.userId,
       appId: params.appId,
+      appRoleId: params.appRoleId,
       status: 'active',
       assignedBy: params.assignedBy,
       createdAt: params.now,
@@ -271,9 +273,26 @@ export async function assignApp(params: {
     },
     update: {
       status: 'active',
+      appRoleId: params.appRoleId,
       assignedBy: params.assignedBy,
       updatedAt: params.now,
     },
+  })
+}
+
+export function findProvisionedAppRole(
+  organizationId: string,
+  appId: string,
+  roleKey?: string
+) {
+  return prisma.appRole.findFirst({
+    where: {
+      organizationId,
+      appId,
+      deletedAt: null,
+      ...(roleKey ? { key: roleKey } : { isDefault: true }),
+    },
+    select: { id: true },
   })
 }
 

@@ -22,7 +22,7 @@ import {
   DEFAULT_ORG_ROLES_BY_NAME,
   isValidOrgPermission,
   ORG_PERMISSION_GROUPS,
-  OWNER_ROLE_NAME,
+  SUPER_ADMIN_ROLE_NAME,
   defaultPermissionsForRoleName,
 } from '../permissions'
 
@@ -59,14 +59,7 @@ const PY_ADMIN = [
   'structure:read',
 ]
 
-const PY_BILLING_MANAGER = [
-  'org:read',
-  'billing:read',
-  'billing:manage',
-  'members:read',
-]
-
-const PY_MEMBER = ['org:read', 'members:read', 'structure:read']
+const PY_STAFF = ['org:read', 'members:read', 'structure:read']
 
 describe('the org permission catalog', () => {
   it('groups the permissions exactly as the Python catalog does', () => {
@@ -85,7 +78,7 @@ describe('the org permission catalog', () => {
     expect([...ALL_ORG_PERMISSIONS].sort()).toEqual(PY_ALL_SORTED)
   })
 
-  it('exposes the sorted catalog in the order the owner role is seeded with', () => {
+  it('exposes the sorted catalog in the order the super admin role is seeded with', () => {
     expect(ALL_ORG_PERMISSIONS_SORTED).toEqual(PY_ALL_SORTED)
   })
 
@@ -112,19 +105,18 @@ describe('the org permission catalog', () => {
 })
 
 describe('the default org roles', () => {
-  it('defines exactly the four seeded roles, in order', () => {
+  it('defines exactly the three seeded roles, in order', () => {
     expect(DEFAULT_ORG_ROLES.map((role) => role.name)).toEqual([
-      'owner',
+      'super_admin',
       'admin',
-      'billing_manager',
-      'member',
+      'staff',
     ])
   })
 
-  it('seeds owner with the full sorted catalog', () => {
-    expect(DEFAULT_ORG_ROLES_BY_NAME.get('owner')).toEqual({
-      name: 'owner',
-      displayName: 'Owner',
+  it('seeds super admin with the full sorted catalog', () => {
+    expect(DEFAULT_ORG_ROLES_BY_NAME.get('super_admin')).toEqual({
+      name: 'super_admin',
+      displayName: 'Super Admin',
       description:
         'Full control of the organization, including billing and deletion.',
       permissions: PY_ALL_SORTED,
@@ -150,27 +142,13 @@ describe('the default org roles', () => {
     }
   )
 
-  it('seeds billing_manager in declaration order, not sorted', () => {
-    expect(DEFAULT_ORG_ROLES_BY_NAME.get('billing_manager')).toEqual({
-      name: 'billing_manager',
-      displayName: 'Billing Manager',
-      description:
-        'Views and manages billing, payment details, and subscriptions.',
-      permissions: PY_BILLING_MANAGER,
-    })
-    // Guards the asymmetry the module documents: sorting this array would
-    // change what every existing organization was seeded with.
-    expect(PY_BILLING_MANAGER).not.toEqual([...PY_BILLING_MANAGER].sort())
-  })
-
-  it('seeds member in declaration order, not sorted', () => {
-    expect(DEFAULT_ORG_ROLES_BY_NAME.get('member')).toEqual({
-      name: 'member',
-      displayName: 'Member',
+  it('seeds staff in declaration order', () => {
+    expect(DEFAULT_ORG_ROLES_BY_NAME.get('staff')).toEqual({
+      name: 'staff',
+      displayName: 'Staff',
       description: 'Default role. Views the organization directory.',
-      permissions: PY_MEMBER,
+      permissions: PY_STAFF,
     })
-    expect(PY_MEMBER).not.toEqual([...PY_MEMBER].sort())
   })
 
   it('grants every default role only catalog permissions', () => {
@@ -181,20 +159,19 @@ describe('the default org roles', () => {
     }
   })
 
-  it('names the member role as the membership default and owner as the creator role', () => {
-    expect(DEFAULT_MEMBER_ROLE_NAME).toBe('member')
-    expect(OWNER_ROLE_NAME).toBe('owner')
+  it('names staff as the default and super admin as the creator role', () => {
+    expect(DEFAULT_MEMBER_ROLE_NAME).toBe('staff')
+    expect(SUPER_ADMIN_ROLE_NAME).toBe('super_admin')
     expect(DEFAULT_ORG_ROLES_BY_NAME.has(DEFAULT_MEMBER_ROLE_NAME)).toBe(true)
-    expect(DEFAULT_ORG_ROLES_BY_NAME.has(OWNER_ROLE_NAME)).toBe(true)
+    expect(DEFAULT_ORG_ROLES_BY_NAME.has(SUPER_ADMIN_ROLE_NAME)).toBe(true)
   })
 })
 
 describe('defaultPermissionsForRoleName', () => {
   it.each([
-    ['owner', PY_ALL_SORTED],
+    ['super_admin', PY_ALL_SORTED],
     ['admin', PY_ADMIN],
-    ['billing_manager', PY_BILLING_MANAGER],
-    ['member', PY_MEMBER],
+    ['staff', PY_STAFF],
   ])('resolves %s to its seeded permissions', (roleName, expected) => {
     expect(defaultPermissionsForRoleName(roleName as string)).toEqual(expected)
   })
@@ -202,17 +179,17 @@ describe('defaultPermissionsForRoleName', () => {
   it.each([
     ['an unknown role', 'superuser'],
     ['the empty string', ''],
-    ['a differently cased known role', 'Owner'],
-  ])('falls back to the member permissions for %s', (_label, roleName) => {
+    ['a differently cased known role', 'Super_Admin'],
+  ])('falls back to the staff permissions for %s', (_label, roleName) => {
     // An unrecognised name must never widen access — it resolves to the least
-    // privileged role, never to owner.
-    expect(defaultPermissionsForRoleName(roleName)).toEqual(PY_MEMBER)
+    // privileged role, never to super admin.
+    expect(defaultPermissionsForRoleName(roleName)).toEqual(PY_STAFF)
   })
 
   it('returns a copy the caller cannot use to mutate the catalog', () => {
-    const first = defaultPermissionsForRoleName('member')
+    const first = defaultPermissionsForRoleName('staff')
     first.push('org:delete')
 
-    expect(defaultPermissionsForRoleName('member')).toEqual(PY_MEMBER)
+    expect(defaultPermissionsForRoleName('staff')).toEqual(PY_STAFF)
   })
 })

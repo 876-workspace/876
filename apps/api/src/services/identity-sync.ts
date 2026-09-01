@@ -1,6 +1,6 @@
 import { isAppHttpError } from '@/http/errors'
 import { getLogger } from '@/platform/logger'
-import { OWNER_ROLE_NAME } from '@/platform/permissions'
+import { SUPER_ADMIN_ROLE_NAME } from '@/platform/permissions'
 
 /**
  * Keeps the identity provider (WorkOS) in step with local lifecycle writes.
@@ -23,7 +23,7 @@ const log = getLogger('identity-sync')
 const ALREADY_GONE_STATUS = 404
 
 /**
- * WorkOS ships `admin` and `member` in every environment. The 876 owner role
+ * WorkOS ships `admin` and `member` in every environment. The 876 super-admin role
  * maps to provider admin; all other/custom org roles map to provider member so
  * application-specific authorization stays in the 876 data plane.
  */
@@ -31,7 +31,7 @@ const PROVIDER_ADMIN_ROLE_SLUG = 'admin'
 const PROVIDER_MEMBER_ROLE_SLUG = 'member'
 
 function providerRoleSlug(role: string): string {
-  return role === OWNER_ROLE_NAME
+  return role === SUPER_ADMIN_ROLE_NAME
     ? PROVIDER_ADMIN_ROLE_SLUG
     : PROVIDER_MEMBER_ROLE_SLUG
 }
@@ -87,10 +87,10 @@ export async function ensureProviderMembership(
     return null
   }
 
-  // Creation intentionally omits the role for non-owners so WorkOS can apply
-  // the environment's configured default. Owner must be elevated explicitly.
+  // Creation intentionally omits the role for non-super-admins so WorkOS can
+  // apply the environment's configured default.
   const roleSlug =
-    params.role === OWNER_ROLE_NAME ? PROVIDER_ADMIN_ROLE_SLUG : null
+    params.role === SUPER_ADMIN_ROLE_NAME ? PROVIDER_ADMIN_ROLE_SLUG : null
 
   let created: Record<string, unknown>
   try {
