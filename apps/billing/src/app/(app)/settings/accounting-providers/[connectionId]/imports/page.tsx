@@ -6,7 +6,7 @@ import type {
   AccountingImportResourceType,
   AccountingProviderImportCandidate,
 } from '@876/billing/operator'
-import { Button } from '@876/ui/button'
+import { Button, buttonVariants } from '@876/ui/button'
 import { CircleStackIcon } from '@876/ui/icons'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
@@ -115,20 +115,24 @@ export default async function AccountingProviderImportsPage({
         {localError ? <Notice>{localError}</Notice> : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button
-            asChild
-            size="sm"
-            variant={resourceType === 'customer' ? 'default' : 'outline'}
+          <Link
+            href="?type=customer&page=1"
+            className={buttonVariants({
+              size: 'sm',
+              variant: resourceType === 'customer' ? 'default' : 'outline',
+            })}
           >
-            <Link href="?type=customer&page=1">Customers</Link>
-          </Button>
-          <Button
-            asChild
-            size="sm"
-            variant={resourceType === 'item' ? 'default' : 'outline'}
+            Customers
+          </Link>
+          <Link
+            href="?type=item&page=1"
+            className={buttonVariants({
+              size: 'sm',
+              variant: resourceType === 'item' ? 'default' : 'outline',
+            })}
           >
-            <Link href="?type=item&page=1">Items</Link>
-          </Button>
+            Items
+          </Link>
         </div>
 
         <div className="876-card overflow-hidden">
@@ -156,13 +160,12 @@ export default async function AccountingProviderImportsPage({
         {connection?.status === 'active' ? (
           <div className="flex items-center justify-between gap-3">
             {pageNumber > 1 ? (
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  href={`?type=${resourceType}&page=${Math.max(1, pageNumber - 1)}`}
-                >
-                  Previous
-                </Link>
-              </Button>
+              <Link
+                href={`?type=${resourceType}&page=${Math.max(1, pageNumber - 1)}`}
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              >
+                Previous
+              </Link>
             ) : (
               <Button variant="outline" size="sm" disabled>
                 Previous
@@ -172,11 +175,12 @@ export default async function AccountingProviderImportsPage({
               Page {pageNumber}
             </span>
             {candidates?.has_more ? (
-              <Button asChild variant="outline" size="sm">
-                <Link href={`?type=${resourceType}&page=${pageNumber + 1}`}>
-                  Next
-                </Link>
-              </Button>
+              <Link
+                href={`?type=${resourceType}&page=${pageNumber + 1}`}
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              >
+                Next
+              </Link>
             ) : (
               <Button variant="outline" size="sm" disabled>
                 Next

@@ -15,7 +15,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@876/ui/alert-dialog'
-import { Button } from '@876/ui/button'
+import { Button, buttonVariants } from '@876/ui/button'
 import { Loader2Icon, RefreshCw, Trash } from '@876/ui/icons'
 
 import { client } from '@/lib/client'
@@ -78,9 +78,13 @@ export function ConnectionActions({
               run(
                 'authorize',
                 () =>
-                  client.accountingProviders.connections.authorize(connectionId),
+                  client.accountingProviders.connections.authorize(
+                    connectionId
+                  ),
                 (data) => {
-                  const authorization = data as { authorizeUrl?: unknown } | null
+                  const authorization = data as {
+                    authorizeUrl?: unknown
+                  } | null
                   if (typeof authorization?.authorizeUrl === 'string')
                     window.location.assign(authorization.authorizeUrl)
                 }
@@ -95,13 +99,12 @@ export function ConnectionActions({
         ) : null}
 
         {status === 'active' ? (
-          <Button asChild variant="outline" size="sm">
-            <Link
-              href={`/settings/accounting-providers/${encodeURIComponent(connectionId)}/imports`}
-            >
-              Adopt records
-            </Link>
-          </Button>
+          <Link
+            href={`/settings/accounting-providers/${encodeURIComponent(connectionId)}/imports`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Adopt records
+          </Link>
         ) : null}
 
         {canValidate ? (
@@ -155,7 +158,10 @@ export function ConnectionActions({
       </div>
 
       {error ? (
-        <p role="alert" className="text-destructive max-w-sm text-xs sm:text-right">
+        <p
+          role="alert"
+          className="text-destructive max-w-sm text-xs sm:text-right"
+        >
           {error}
         </p>
       ) : null}
@@ -185,7 +191,9 @@ export function ConnectionActions({
                 run(
                   'disable',
                   () =>
-                    client.accountingProviders.connections.disable(connectionId),
+                    client.accountingProviders.connections.disable(
+                      connectionId
+                    ),
                   () => setDisableOpen(false)
                 )
               }
