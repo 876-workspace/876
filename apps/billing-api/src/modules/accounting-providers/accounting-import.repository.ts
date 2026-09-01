@@ -32,17 +32,23 @@ export function listAccountingReferencesByExternalIds(params: {
   })
 }
 
-export function findAccountingReferenceByExternalId(params: {
-  connectionId: string
-  resourceType: AccountingResourceType
+export function findAccountingReferenceByProviderExternal(params: {
+  provider: string
+  externalType: string
   externalId: string
 }) {
-  return prisma.providerReference.findFirst({
+  return prisma.providerReference.findUnique({
     where: {
-      accountingProviderConnectionId: params.connectionId,
-      resourceType: params.resourceType,
-      externalId: params.externalId,
+      billing_provider_references_external_key: {
+        provider: params.provider,
+        externalType: params.externalType,
+        externalId: params.externalId,
+      },
     },
-    select: { resourceId: true, externalId: true },
+    select: {
+      resourceId: true,
+      externalId: true,
+      accountingProviderConnectionId: true,
+    },
   })
 }
