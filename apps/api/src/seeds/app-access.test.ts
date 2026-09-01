@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { APP_ACCESS_SEED_DEFINITIONS } from './app-access'
 
-const KEY = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/
+const KEY = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/
 
 function app(slug: string) {
   const definition = APP_ACCESS_SEED_DEFINITIONS.find(
@@ -31,7 +31,7 @@ describe('app access seed catalog', () => {
   )
 
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
-    '$appSlug permission keys are unique and permanent-format compatible',
+    '$appSlug permission keys are unique and canonical kebab/dot format',
     (definition) => {
       const keys = definition.permissions.map((permission) => permission.key)
       expect(new Set(keys).size).toBe(keys.length)
@@ -71,10 +71,10 @@ describe('app access seed catalog', () => {
       'packages.edit',
       'packages.delete',
       'packages.export',
-      'pre_alerts.view',
-      'pre_alerts.create',
-      'pre_alerts.edit',
-      'pre_alerts.delete',
+      'pre-alerts.view',
+      'pre-alerts.create',
+      'pre-alerts.edit',
+      'pre-alerts.delete',
       'warehouse.view',
       'warehouse.create',
       'warehouse.edit',
@@ -158,7 +158,7 @@ describe('app access seed catalog', () => {
       'calendars.view',
       'calendars.create',
       'calendars.edit',
-      'my_work.view',
+      'my-work.view',
       'notes.view',
       'notes.create',
       'notes.edit',
@@ -196,12 +196,12 @@ describe('app access seed catalog', () => {
       'reminders.view',
       'events.view',
       'calendars.view',
-      'my_work.view',
+      'my-work.view',
       'notes.view',
       'teams.view',
       'categories.view',
       'priorities.view',
-      'request_forms.view',
+      'request-forms.view',
       'reports.view',
       'settings.view',
     ])

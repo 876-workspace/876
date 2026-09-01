@@ -10,8 +10,8 @@ import type { AppPermission, AppPermissionCatalog } from './types'
  * Copying a catalog into an app or into the seeds reintroduces the drift this
  * module exists to prevent — import from here instead.
  *
- * A key is a permanent identifier: renaming one orphans every stored role and
- * assignment that references it.
+ * A key is a durable identifier. Rename one only through an explicit coordinated
+ * contract + data migration that updates stored roles and assignments.
  */
 
 type ModuleDraft = {
@@ -51,7 +51,7 @@ function crud(
 
 function titleCase(value: string): string {
   return value
-    .split('_')
+    .split(/[-_]/)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }
@@ -87,7 +87,8 @@ export function toStoredPermissionKeys(permissions: unknown): string[] {
  *
  * Console's real app slug is also `console`, while the generic builder validates
  * product slugs as `876-*`. The compatibility adapter keeps that exception here,
- * next to the only catalog that needs it.
+ * next to the only catalog that needs it. Its remaining `danger_zone` action is
+ * tracked as a legacy operator-plane exception by the naming-contract migration.
  */
 function defineConsolePermissionCatalog(): AppPermissionCatalog {
   const catalog = defineAppPermissionCatalog({
@@ -166,7 +167,7 @@ export const couriersPermissionCatalog: AppPermissionCatalog =
       crud('items', 'Items'),
       crud('customers', 'Customers', ['import', 'export']),
       crud('packages', 'Packages', ['export']),
-      crud('pre_alerts', 'Pre-alerts'),
+      crud('pre-alerts', 'Pre-alerts'),
       crud('warehouse', 'Warehouse'),
       crud('manifests', 'Manifests'),
       crud('deliveries', 'Deliveries'),
@@ -187,12 +188,12 @@ export const crmPermissionCatalog: AppPermissionCatalog =
       crud('reminders', 'Reminders'),
       crud('events', 'Events'),
       crud('calendars', 'Calendars'),
-      { key: 'my_work', label: 'My Work', actions: ['view'] },
+      { key: 'my-work', label: 'My Work', actions: ['view'] },
       crud('notes', 'Notes'),
       crud('teams', 'Teams'),
       crud('categories', 'Categories'),
       crud('priorities', 'Priorities'),
-      crud('request_forms', 'Request forms'),
+      crud('request-forms', 'Request forms'),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),

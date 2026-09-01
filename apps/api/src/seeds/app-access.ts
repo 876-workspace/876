@@ -37,7 +37,7 @@ type AppAccessSeedDefinition = {
 
 function title(value: string): string {
   return value
-    .split('_')
+    .split('-')
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }
@@ -82,10 +82,6 @@ function keysFor(
   return permissions.filter(predicate).map((permission) => permission.key)
 }
 
-// Couriers and CRM are seeded from the canonical catalogs in
-// `@876/core/access/catalogs`, which the product apps resolve their guards
-// against. Re-declaring either vocabulary here would put the same permission
-// keys in two places with nothing keeping them equal.
 const couriersPermissions = fromCatalog(couriersPermissionCatalog)
 const crmPermissions = fromCatalog(crmPermissionCatalog)
 
@@ -229,7 +225,7 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
               'reminders',
               'events',
               'calendars',
-              'my_work',
+              'my-work',
               'notes',
             ].includes(permission.moduleKey) && permission.action !== 'delete'
         ),

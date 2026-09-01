@@ -25,13 +25,21 @@ export type { NavEntry, NavGroupDefinition, NavRequirement } from './navigation'
 
 // Bounded on purpose: a permission key is a stable, persisted identifier, so an
 // unbounded one is both a storage hazard and an unusable UI label.
-const KEY_PART = /^[a-z][a-z0-9_]{0,63}$/
+const KEY_PART = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
+const LEGACY_CONSOLE_KEY_PART = /^[a-z][a-z0-9_]*$/
 const APP_SLUG = /^876-[a-z][a-z0-9-]{0,63}$/
 
-function assertKeyPart(value: string, field: string): void {
-  if (!KEY_PART.test(value))
+function assertKeyPart(
+  value: string,
+  field: string,
+  allowLegacyConsoleKey = false
+): void {
+  const pattern = allowLegacyConsoleKey ? LEGACY_CONSOLE_KEY_PART : KEY_PART
+  if (value.length > 64 || !pattern.test(value))
     throw new TypeError(
-      `${field} must be at most 64 lowercase letters, digits, or underscores.`
+      allowLegacyConsoleKey
+        ? `${field} must be at most 64 lowercase letters, digits, or underscores.`
+        : `${field} must be at most 64 characters in lowercase kebab-case.`
     )
 }
 
@@ -46,13 +54,18 @@ function permissionRows(
 ): AppPermission[] {
   const rows: AppPermission[] = []
   const seen = new Set<string>()
+  const allowLegacyConsoleKey = definition.app === '876-console'
 
   for (const module of definition.modules) {
-    assertKeyPart(module.key, 'Module key')
+    assertKeyPart(module.key, 'Module key', allowLegacyConsoleKey)
     assertLabel(module.label, 'Module label')
 
     for (const permission of module.permissions) {
-      assertKeyPart(permission.action, 'Permission action')
+      assertKeyPart(
+        permission.action,
+        'Permission action',
+        allowLegacyConsoleKey
+      )
       assertLabel(permission.label, 'Permission label')
       const key = `${module.key}.${permission.action}`
       if (seen.has(key))

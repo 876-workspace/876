@@ -6,22 +6,8 @@ import { defineModuleCatalog } from '@876/settings'
  * Keys deliberately reuse CRM permission-catalog module keys, so
  * `<module>.view` / `<module>.edit` already gate each module's settings page.
  *
- * The catalog is a strict subset of the permission catalog, and the three
- * omissions are decisions rather than gaps:
- *
- * - `customers` is the shared org-customer registry, not a CRM-owned area an
- *   organization can switch off (`.claude/rules/customer-architecture.md`).
- * - `priorities` is structural: every request carries a non-null priority, so
- *   there is no working CRM with priorities disabled.
- * - `settings` is where modules are toggled; it cannot toggle itself.
- * - `calendars` and `my_work` are Work-owned surfaces. CRM holds those
- *   permissions so a CRM member can reach Work through the request record, but
- *   CRM renders no calendar manager and no My Work page of its own, so there is
- *   nothing here for an organization to switch off
- *   (`.claude/rules/workspace-control-plane.md`).
- *
- * `CRM_EXCLUDED_MODULE_KEYS` records that, and `modules.test.ts` fails if a
- * permission module ever appears in neither list.
+ * The catalog is a strict subset of the permission catalog, and the omissions
+ * below are decisions rather than gaps.
  */
 export const CRM_MODULE_KEYS = [
   'requests',
@@ -31,7 +17,7 @@ export const CRM_MODULE_KEYS = [
   'notes',
   'teams',
   'categories',
-  'request_forms',
+  'request-forms',
   'reports',
 ] as const
 
@@ -41,7 +27,7 @@ export type CrmModuleKey = (typeof CRM_MODULE_KEYS)[number]
 export const CRM_EXCLUDED_MODULE_KEYS = [
   'calendars',
   'customers',
-  'my_work',
+  'my-work',
   'priorities',
   'settings',
 ] as const
@@ -97,7 +83,7 @@ export const crmModuleCatalog = defineModuleCatalog([
     preferences: [],
   },
   {
-    key: 'request_forms',
+    key: 'request-forms',
     label: 'Request forms',
     optional: true,
     enabledByDefault: true,
