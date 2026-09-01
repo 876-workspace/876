@@ -12,6 +12,14 @@ export const accountingConnectionStatusSchema = z.enum([
   'error',
 ])
 export const accountingProviderEnvironmentSchema = z.enum(['sandbox', 'live'])
+export const accountingResourceTypeSchema = z.enum([
+  'customer',
+  'item',
+  'estimate',
+  'invoice',
+  'recurring-invoice',
+  'payment',
+])
 
 export const accountingCapabilitiesSchema = z.strictObject({
   customers: z.boolean(),
@@ -70,6 +78,29 @@ export const accountingConnectionUpdateBodySchema = z
     message: 'Nothing to update.',
   })
 
+export const accountingReconcileBodySchema = z.strictObject({
+  resourceTypes: z.array(accountingResourceTypeSchema).min(1).max(6).optional(),
+})
+export const accountingReconcileSchema = z.strictObject({
+  object: z.literal('accounting-provider-reconcile'),
+  connectionId: z.string(),
+  resourceTypes: z.array(accountingResourceTypeSchema),
+  enqueued: z.number().int().nonnegative(),
+})
+
+export const accountingSyncRunBodySchema = z.strictObject({
+  limit: z.number().int().min(1).max(100).optional(),
+})
+export const accountingSyncRunSchema = z.strictObject({
+  object: z.literal('accounting-sync-run'),
+  claimed: z.number().int().nonnegative(),
+  succeeded: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+  blocked: z.number().int().nonnegative(),
+  skipped: z.number().int().nonnegative(),
+  disabled: z.boolean(),
+})
+
 export const organizationAccountingParamsSchema = z.object({
   organizationId: z.string().min(1),
 })
@@ -101,4 +132,6 @@ export type AccountingConnectionCreateBody = z.infer<
 export type AccountingConnectionUpdateBody = z.infer<
   typeof accountingConnectionUpdateBodySchema
 >
+export type AccountingReconcileBody = z.infer<typeof accountingReconcileBodySchema>
+export type AccountingSyncRunBody = z.infer<typeof accountingSyncRunBodySchema>
 export type ZohoOauthCallbackQuery = z.infer<typeof zohoOauthCallbackQuerySchema>

@@ -15,6 +15,8 @@ import {
   accountingConnectionSchema,
   accountingConnectionUpdateBodySchema,
   accountingProviderSchema,
+  accountingReconcileBodySchema,
+  accountingReconcileSchema,
   organizationAccountingParamsSchema,
   zohoOauthCallbackQuerySchema,
 } from './accounting-providers.schemas'
@@ -150,6 +152,24 @@ export function createAccountingProvidersRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.validate,
+  })
+
+  api.post({
+    path: '/admin/organizations/:organizationId/accounting-provider-connections/:connectionId/reconcile',
+    ...docs.reconcile,
+    security: { kind: 'admin' },
+    request: {
+      params: accountingConnectionParamsSchema,
+      body: accountingReconcileBodySchema,
+    },
+    responses: {
+      200: {
+        description: 'Accounting reconciliation queued',
+        schema: successEnvelopeSchema(accountingReconcileSchema),
+      },
+      ...clientErrors,
+    },
+    handler: controller.reconcile,
   })
 
   api.get({

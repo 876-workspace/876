@@ -6,7 +6,10 @@ import {
   createInternalAccessRouter,
   effectiveMemberAuthorization,
 } from '@/modules/access'
-import { createAccountingProvidersRouter } from '@/modules/accounting-providers'
+import {
+  createAccountingProvidersRouter,
+  createInternalAccountingProvidersRouter,
+} from '@/modules/accounting-providers'
 import { createBankingRouter } from '@/modules/banking'
 import {
   createBillingEngineRouter,
@@ -81,6 +84,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createSubscriptionsRouter(resolveGuards))
   root.use('/api/v1', createBillingEngineRouter(resolveGuards))
   root.use('/internal', createInternalBillingEngineRouter(resolveGuards))
+  root.use('/internal', createInternalAccountingProvidersRouter(resolveGuards))
   root.use('/internal', createInternalTenantsRouter(resolveGuards))
   root.use('/internal', createInternalAccessRouter(resolveGuards))
   root.use('/internal', createInternalCustomersRouter(resolveGuards))

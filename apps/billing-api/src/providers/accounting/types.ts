@@ -142,6 +142,12 @@ export interface AccountingProviderResource<TInput, TRecord = unknown> {
     ctx: AccountingProviderContext,
     params?: { page?: number; perPage?: number }
   ): Promise<AccountingProviderPage<TRecord>>
+  remove(ctx: AccountingProviderContext, externalId: string): Promise<void>
+  setActive?(
+    ctx: AccountingProviderContext,
+    externalId: string,
+    active: boolean
+  ): Promise<void>
 }
 
 export interface AccountingProviderAdapter {

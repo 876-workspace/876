@@ -6,18 +6,23 @@ export const ZOHO_BOOKS_SCOPES = [
   'ZohoBooks.settings.READ',
   'ZohoBooks.settings.CREATE',
   'ZohoBooks.settings.UPDATE',
+  'ZohoBooks.settings.DELETE',
   'ZohoBooks.contacts.READ',
   'ZohoBooks.contacts.CREATE',
   'ZohoBooks.contacts.UPDATE',
+  'ZohoBooks.contacts.DELETE',
   'ZohoBooks.estimates.READ',
   'ZohoBooks.estimates.CREATE',
   'ZohoBooks.estimates.UPDATE',
+  'ZohoBooks.estimates.DELETE',
   'ZohoBooks.invoices.READ',
   'ZohoBooks.invoices.CREATE',
   'ZohoBooks.invoices.UPDATE',
+  'ZohoBooks.invoices.DELETE',
   'ZohoBooks.customerpayments.READ',
   'ZohoBooks.customerpayments.CREATE',
   'ZohoBooks.customerpayments.UPDATE',
+  'ZohoBooks.customerpayments.DELETE',
 ] as const
 
 const allowedAccountsDomains = new Set([
@@ -40,19 +45,23 @@ const tokenResponseSchema = z.object({
 })
 
 const oauthErrorSchema = z.object({ error: z.string() }).passthrough()
-const organizationsResponseSchema = z.object({
-  code: z.number(),
-  message: z.string(),
-  organizations: z.array(
-    z.object({
-      organization_id: z.string(),
-      name: z.string(),
-      is_default_org: z.boolean().optional(),
-      is_org_active: z.boolean().optional(),
-      currency_code: z.string().optional(),
-    }).passthrough()
-  ),
-}).passthrough()
+const organizationsResponseSchema = z
+  .object({
+    code: z.number(),
+    message: z.string(),
+    organizations: z.array(
+      z
+        .object({
+          organization_id: z.string(),
+          name: z.string(),
+          is_default_org: z.boolean().optional(),
+          is_org_active: z.boolean().optional(),
+          currency_code: z.string().optional(),
+        })
+        .passthrough()
+    ),
+  })
+  .passthrough()
 
 export function normalizeZohoAccountsDomain(value: string): string {
   const domain = value.replace(/\/+$/, '')
@@ -113,7 +122,9 @@ async function postToken(
   const raw: unknown = await response.json().catch(() => ({}))
   const oauthError = oauthErrorSchema.safeParse(raw)
   if (!response.ok || oauthError.success) {
-    const providerCode = oauthError.success ? oauthError.data.error : 'oauth-error'
+    const providerCode = oauthError.success
+      ? oauthError.data.error
+      : 'oauth-error'
     throw new ZohoBooksError({
       code:
         providerCode === 'invalid_grant'
@@ -184,12 +195,15 @@ export async function listZohoBooksOrganizations(params: {
   const root = params.apiDomain.replace(/\/+$/, '')
   let response: Response
   try {
-    response = await (params.fetchImpl ?? fetch)(`${root}/books/v4/organizations`, {
-      headers: {
-        Authorization: `Zoho-oauthtoken ${params.accessToken}`,
-        Accept: 'application/json',
-      },
-    })
+    response = await (params.fetchImpl ?? fetch)(
+      `${root}/books/v4/organizations`,
+      {
+        headers: {
+          Authorization: `Zoho-oauthtoken ${params.accessToken}`,
+          Accept: 'application/json',
+        },
+      }
+    )
   } catch (error) {
     throw new ZohoBooksError({
       code: 'billing/provider-unavailable',
@@ -203,7 +217,8 @@ export async function listZohoBooksOrganizations(params: {
   if (!response.ok || !parsed.success || parsed.data.code !== 0)
     throw new ZohoBooksError({
       code: 'billing/provider-invalid-response',
-      message: 'Zoho Books organization discovery returned an invalid response.',
+      message:
+        'Zoho Books organization discovery returned an invalid response.',
       httpStatus: response.status,
       retryable: response.status >= 500 || response.status === 429,
     })

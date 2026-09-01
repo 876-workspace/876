@@ -5,6 +5,12 @@ import type {
   AccountingProviderPage,
   AccountingProviderResource,
   AccountingProviderWriteResult,
+  AccountingCustomerInput,
+  AccountingEstimateInput,
+  AccountingInvoiceInput,
+  AccountingItemInput,
+  AccountingPaymentInput,
+  AccountingRecurringInvoiceInput,
 } from '../types'
 import { ZohoBooksClient } from './client'
 import {
@@ -23,23 +29,26 @@ import type {
   ZohoItem,
   ZohoRecurringInvoice,
 } from './types'
-import type {
-  AccountingCustomerInput,
-  AccountingEstimateInput,
-  AccountingInvoiceInput,
-  AccountingItemInput,
-  AccountingPaymentInput,
-  AccountingRecurringInvoiceInput,
-} from '../types'
 
 const pageContextSchema = z.object({
   page: z.number().int(),
   per_page: z.number().int(),
   has_more_page: z.boolean(),
 })
+const actionSchema = z
+  .object({ code: z.number(), message: z.string() })
+  .passthrough()
 
-function page<T>(data: T[], ctx: z.infer<typeof pageContextSchema>): AccountingProviderPage<T> {
-  return { data, page: ctx.page, perPage: ctx.per_page, hasMore: ctx.has_more_page }
+function page<T>(
+  data: T[],
+  ctx: z.infer<typeof pageContextSchema>
+): AccountingProviderPage<T> {
+  return {
+    data,
+    page: ctx.page,
+    perPage: ctx.per_page,
+    hasMore: ctx.has_more_page,
+  }
 }
 
 function resource<TInput, TRecord extends object>(options: {
@@ -49,22 +58,29 @@ function resource<TInput, TRecord extends object>(options: {
   idKey: string
   externalType: string
   map: (input: TInput) => unknown
+  supportsActiveState?: boolean
 }) {
   const client = new ZohoBooksClient()
   const recordSchema = z.object({ [options.idKey]: z.string() }).passthrough()
-  const oneSchema = z.object({
-    code: z.number(),
-    message: z.string(),
-    [options.responseKey]: recordSchema,
-  }).passthrough()
-  const listSchema = z.object({
-    code: z.number(),
-    message: z.string(),
-    [options.listKey]: z.array(recordSchema),
-    page_context: pageContextSchema,
-  }).passthrough()
+  const oneSchema = z
+    .object({
+      code: z.number(),
+      message: z.string(),
+      [options.responseKey]: recordSchema,
+    })
+    .passthrough()
+  const listSchema = z
+    .object({
+      code: z.number(),
+      message: z.string(),
+      [options.listKey]: z.array(recordSchema),
+      page_context: pageContextSchema,
+    })
+    .passthrough()
 
-  function writeResult(record: Record<string, unknown>): AccountingProviderWriteResult {
+  function writeResult(
+    record: Record<string, unknown>
+  ): AccountingProviderWriteResult {
     return {
       externalId: String(record[options.idKey]),
       externalType: options.externalType,
@@ -72,8 +88,8 @@ function resource<TInput, TRecord extends object>(options: {
     }
   }
 
-  return {
-    async create(ctx: AccountingProviderContext, input: TInput) {
+  const providerResource: AccountingProviderResource<TInput, TRecord> = {
+    async create(ctx, input) {
       const response = await client.request({
         ctx,
         method: 'POST',
@@ -81,9 +97,11 @@ function resource<TInput, TRecord extends object>(options: {
         body: options.map(input),
         schema: oneSchema,
       })
-      return writeResult(response[options.responseKey] as Record<string, unknown>)
+      return writeResult(
+        response[options.responseKey] as Record<string, unknown>
+      )
     },
-    async update(ctx: AccountingProviderContext, externalId: string, input: TInput) {
+    async update(ctx, externalId, input) {
       const response = await client.request({
         ctx,
         method: 'PUT',
@@ -91,9 +109,11 @@ function resource<TInput, TRecord extends object>(options: {
         body: options.map(input),
         schema: oneSchema,
       })
-      return writeResult(response[options.responseKey] as Record<string, unknown>)
+      return writeResult(
+        response[options.responseKey] as Record<string, unknown>
+      )
     },
-    async retrieve(ctx: AccountingProviderContext, externalId: string) {
+    async retrieve(ctx, externalId) {
       const response = await client.request({
         ctx,
         method: 'GET',
@@ -102,7 +122,7 @@ function resource<TInput, TRecord extends object>(options: {
       })
       return response[options.responseKey] as TRecord
     },
-    async list(ctx: AccountingProviderContext, params: { page?: number; perPage?: number } = {}) {
+    async list(ctx, params = {}) {
       const response = await client.request({
         ctx,
         method: 'GET',
@@ -112,7 +132,28 @@ function resource<TInput, TRecord extends object>(options: {
       })
       return page(response[options.listKey] as TRecord[], response.page_context)
     },
-  } satisfies AccountingProviderResource<TInput, TRecord>
+    async remove(ctx, externalId) {
+      await client.request({
+        ctx,
+        method: 'DELETE',
+        path: `${options.path}/${encodeURIComponent(externalId)}`,
+        schema: actionSchema,
+      })
+    },
+  }
+
+  if (options.supportsActiveState) {
+    providerResource.setActive = async (ctx, externalId, active) => {
+      await client.request({
+        ctx,
+        method: 'POST',
+        path: `${options.path}/${encodeURIComponent(externalId)}/${active ? 'active' : 'inactive'}`,
+        schema: actionSchema,
+      })
+    }
+  }
+
+  return providerResource
 }
 
 export const zohoCustomers = resource<AccountingCustomerInput, ZohoContact>({
@@ -122,6 +163,7 @@ export const zohoCustomers = resource<AccountingCustomerInput, ZohoContact>({
   idKey: 'contact_id',
   externalType: 'contact',
   map: toZohoContact,
+  supportsActiveState: true,
 })
 
 export const zohoItems = resource<AccountingItemInput, ZohoItem>({
@@ -131,6 +173,7 @@ export const zohoItems = resource<AccountingItemInput, ZohoItem>({
   idKey: 'item_id',
   externalType: 'item',
   map: toZohoItem,
+  supportsActiveState: true,
 })
 
 export const zohoEstimates = resource<AccountingEstimateInput, ZohoEstimate>({
@@ -163,7 +206,10 @@ export const zohoRecurringInvoices = resource<
   map: toZohoRecurringInvoice,
 })
 
-export const zohoPayments = resource<AccountingPaymentInput, ZohoCustomerPayment>({
+export const zohoPayments = resource<
+  AccountingPaymentInput,
+  ZohoCustomerPayment
+>({
   path: '/customerpayments',
   responseKey: 'payment',
   listKey: 'customerpayments',

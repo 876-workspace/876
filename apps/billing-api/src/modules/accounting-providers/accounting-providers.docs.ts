@@ -7,5 +7,6 @@ export const accountingProvidersDocs = {
   deleteConnection: { summary: 'Disable an accounting connection' },
   authorize: { summary: 'Start accounting provider authorization' },
   validate: { summary: 'Validate an accounting provider connection' },
+  reconcile: { summary: 'Queue a full accounting provider reconciliation' },
   zohoCallback: { summary: 'Complete Zoho Books OAuth authorization' },
 } as const
