@@ -192,7 +192,7 @@ catalogs.
 
 Console administers a customer organization's CRM roles and assignments
 through Core's generic app-access control plane. CRM registers its catalog and
-the `owner`, `admin`, `agent`, and `viewer` system templates there; Console does
+the `super_admin`, `admin`, and `staff` system templates there; Console does
 not own a CRM-specific role table. This operator administration does not grant
 Console itself a `876-crm` product entitlement. Console reaches 876's CRM
 workspace with its operator credential, while the operator's CRM app-membership

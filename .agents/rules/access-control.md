@@ -83,7 +83,7 @@ Platform account type is irrelevant to affiliation. An external auditor may use 
 
 Employment verification is subtractive and one-directional. An explicit inactive or missing Efesto membership denies a `staff` grant. A provider/infrastructure outage does not: the already-valid Console grant remains usable, the outage is captured, and verification is retried on the next request. This check can only remove access; it can never create or widen access.
 
-Only `staff` may hold `owner` or `super_admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
+Only `staff` may hold `super_admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
 
 ## Subtractive verification and outage direction
 

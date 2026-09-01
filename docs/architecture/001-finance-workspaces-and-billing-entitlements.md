@@ -31,7 +31,7 @@ owns the finance domain and links tenants to opaque Core organization IDs.
   lifecycle revisions, and commits its app connection with a durable inbox
   receipt in one Billing transaction.
 - Provision embedded workspaces without a Billing member. Paid activation adds
-  the matching owner/admin access grant to the existing workspace; it does not
+  the matching super-admin/admin access grant to the existing workspace; it does not
   toggle the app connection or migrate finance records.
 - Preserve operational records in each source app and tag financial records
   with their source app and external reference.
