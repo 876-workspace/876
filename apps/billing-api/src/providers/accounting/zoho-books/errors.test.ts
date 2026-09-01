@@ -45,17 +45,17 @@ describe('Zoho Books error classification', () => {
     }
   )
 
-  it('marks provider-side validation errors as terminal and preserves only bounded detail', () => {
+  it('marks provider-side validation errors as terminal without exposing raw provider detail', () => {
     const error = classifyZohoHttpError(400, '1001', 'Invalid contact')
 
     expect(error).toMatchObject({
       code: 'billing/provider-invalid-request',
+      message: 'Zoho Books rejected the request.',
       httpStatus: 400,
       retryable: false,
     })
-    expect(error.message).toBe(
-      'Zoho Books rejected the request (1001: Invalid contact).'
-    )
+    expect(error.message).not.toContain('1001')
+    expect(error.message).not.toContain('Invalid contact')
   })
 
   it('keeps a classified provider error unchanged', () => {
