@@ -34,7 +34,7 @@ const members = [
     user_id: 'user_2',
     first_name: 'John',
     email: 'john@example.com',
-    role: 'member',
+    role: 'staff',
   }),
 ]
 

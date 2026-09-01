@@ -70,7 +70,7 @@ describe('Console organization member create route', () => {
   })
 
   it('rejects a missing user id before calling the facade', async () => {
-    const response = await POST(postRequest({ role: 'member' }), context)
+    const response = await POST(postRequest({ role: 'staff' }), context)
 
     expect(response.status).toBe(400)
     expect(mocks.createOrgMember).not.toHaveBeenCalled()
@@ -91,7 +91,7 @@ describe('Console organization member create route', () => {
     })
 
     const response = await POST(
-      postRequest({ userId: 'user_target', role: 'member' }),
+      postRequest({ userId: 'user_target', role: 'staff' }),
       context
     )
 

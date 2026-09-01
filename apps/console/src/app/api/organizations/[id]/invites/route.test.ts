@@ -79,7 +79,7 @@ describe('Console organization invite route', () => {
     })
 
     const response = await POST(
-      postRequest({ email: ' new@example.com ', role: ' member ' }),
+      postRequest({ email: ' new@example.com ', role: ' staff ' }),
       context
     )
 
@@ -87,13 +87,13 @@ describe('Console organization invite route', () => {
     expect(mocks.createInvite).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledWith('org_target', {
       email: 'new@example.com',
-      role: 'member',
+      role: 'staff',
     })
     expect(mocks.platformCreateInvite).not.toHaveBeenCalled()
   })
 
   it('rejects a missing email before calling the facade', async () => {
-    const response = await POST(postRequest({ role: 'member' }), context)
+    const response = await POST(postRequest({ role: 'staff' }), context)
 
     expect(response.status).toBe(400)
     expect(mocks.createInvite).not.toHaveBeenCalled()

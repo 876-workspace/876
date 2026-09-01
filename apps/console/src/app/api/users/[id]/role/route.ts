@@ -28,7 +28,7 @@ export async function PATCH(
     return apiJson(
       {
         error:
-          'Invalid role. Must be user, staff, admin, owner, or super_admin.',
+          'Invalid role. Must be user, staff, admin, or super_admin.',
       },
       { status: 400 }
     )

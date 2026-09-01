@@ -26,8 +26,8 @@ const SEARCH_DELAY_MS = 300
 
 function defaultRole(roles: AdminOrgRole[]): string {
   return (
-    roles.find((role) => role.name === 'member')?.name ??
-    roles.find((role) => role.name !== 'owner')?.name ??
+    roles.find((role) => role.name === 'staff')?.name ??
+    roles.find((role) => role.name !== 'super_admin')?.name ??
     roles[0]?.name ??
     ''
   )
@@ -369,10 +369,10 @@ export function AddMemberDialog({ orgId, orgName, roles }: Props) {
                   </option>
                 ))}
               </select>
-              {role === 'owner' && (
+              {role === 'super_admin' && (
                 <p className="text-876-gold-fg mt-1.5 text-xs">
-                  Owners have full organization control and can manage other
-                  owners.
+                  Super admins have full organization control and can manage
+                  other super admins.
                 </p>
               )}
             </div>
