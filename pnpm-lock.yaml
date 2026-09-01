@@ -907,6 +907,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/couriers':
+        specifier: workspace:*
+        version: link:../../packages/couriers
       '@876/server':
         specifier: workspace:*
         version: link:../../packages/server
@@ -1679,6 +1682,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../core
+      '@876/settings':
+        specifier: workspace:*
+        version: link:../settings
       server-only:
         specifier: 0.0.1
         version: 0.0.1

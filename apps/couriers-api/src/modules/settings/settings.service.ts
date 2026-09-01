@@ -8,7 +8,7 @@ import type { StoredPreferenceRow } from '@876/settings'
 
 import { AppHttpError } from '@/platform/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
-import { COURIERS_MODULE_CATALOG } from './settings.catalog'
+import { COURIERS_MODULE_CATALOG } from '@876/couriers/settings-catalog'
 import * as repo from './settings.repository'
 
 type Module = (typeof COURIERS_MODULE_CATALOG)[number]
