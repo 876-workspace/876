@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 import type {
-  AccountingProviderContext,
   AccountingProviderPage,
   AccountingProviderResource,
   AccountingProviderWriteResult,
@@ -130,7 +129,13 @@ function resource<TInput, TRecord extends object>(options: {
         query: { page: params.page ?? 1, per_page: params.perPage ?? 200 },
         schema: listSchema,
       })
-      return page(response[options.listKey] as TRecord[], response.page_context)
+      // `listSchema` is built with a computed key, which erases the static type
+      // of its siblings. Re-narrow the already-validated page context rather
+      // than casting it back.
+      return page(
+        response[options.listKey] as TRecord[],
+        pageContextSchema.parse(response.page_context)
+      )
     },
     async remove(ctx, externalId) {
       await client.request({

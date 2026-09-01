@@ -25,10 +25,15 @@ function dateFromUnix(value: number | null | undefined): string | undefined {
 
 function fractionDigits(currency: string) {
   try {
-    return new Intl.NumberFormat('en', {
-      style: 'currency',
-      currency,
-    }).resolvedOptions().maximumFractionDigits
+    // `maximumFractionDigits` is optional in the TS lib type; every ICU
+    // implementation supplies it for a currency format, but fall back rather
+    // than produce a NaN scaling factor if one does not.
+    return (
+      new Intl.NumberFormat('en', {
+        style: 'currency',
+        currency,
+      }).resolvedOptions().maximumFractionDigits ?? 2
+    )
   } catch {
     return 2
   }
@@ -41,9 +46,7 @@ export function minorUnitsToZohoNumber(amount: bigint, currency: string) {
   const absolute = amount < 0n ? -amount : amount
   const whole = absolute / factor
   const fraction = (absolute % factor).toString().padStart(digits, '0')
-  const value = Number(
-    digits === 0 ? whole.toString() : `${whole}.${fraction}`
-  )
+  const value = Number(digits === 0 ? whole.toString() : `${whole}.${fraction}`)
   if (!Number.isFinite(value))
     throw new ZohoBooksError({
       code: 'billing/accounting-projection-invalid',
@@ -56,7 +59,9 @@ function recoveryField(resourceId: string) {
   return [{ label: '876 Resource ID', value: resourceId }]
 }
 
-export function toZohoContact(input: AccountingCustomerInput): ZohoContactInput {
+export function toZohoContact(
+  input: AccountingCustomerInput
+): ZohoContactInput {
   return {
     contact_name: input.name,
     company_name: input.companyName ?? undefined,
