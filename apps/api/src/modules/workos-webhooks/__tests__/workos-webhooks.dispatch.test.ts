@@ -123,7 +123,7 @@ describe('workos-webhooks dispatch', () => {
     })
   })
 
-  it('defaults an unrecognized role shape to member', async () => {
+  it('defaults an unrecognized role shape to staff', async () => {
     organizations.findLocalOrgIdByWorkosId.mockResolvedValue('local_org_1')
     users.findLocalUserIdByWorkosId.mockResolvedValue('local_user_1')
     memberships.upsertMembershipFromWorkos.mockResolvedValue('created')
