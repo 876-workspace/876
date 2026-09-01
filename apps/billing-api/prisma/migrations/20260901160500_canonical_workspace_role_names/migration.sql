@@ -18,6 +18,14 @@ BEGIN
   END IF;
 END $$;
 
+-- Legacy custom role slugs may contain underscores. Preserve them while
+-- allowing the canonical hyphenated system role name before rewriting it.
+ALTER TABLE "billing_roles"
+  DROP CONSTRAINT IF EXISTS "billing_roles_slug_check";
+ALTER TABLE "billing_roles"
+  ADD CONSTRAINT "billing_roles_slug_check"
+  CHECK ("slug" ~ '^[a-z0-9_-]{2,50}$');
+
 -- billing_members references the stable billing_roles.id value, so no member FK
 -- rewrite is needed when only the symbolic slug changes.
 UPDATE "billing_roles"
