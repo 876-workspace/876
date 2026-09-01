@@ -75,6 +75,8 @@ model Tenant {
   subscriptionDiscounts           SubscriptionDiscount[]
   billingRuns                     SubscriptionBillingRun[]
   paymentProviderConnections      PaymentProviderConnection[]
+  accountingProviderConnections   AccountingProviderConnection[]
+  accountingProviderSyncJobs      AccountingProviderSyncJob[]
   paymentAttempts                 PaymentAttempt[]
   paymentMethods                  PaymentMethod[]
   paymentCredentials              PaymentCredential[]
