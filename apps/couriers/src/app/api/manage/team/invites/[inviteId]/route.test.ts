@@ -23,7 +23,7 @@ function deleteRequest(url: string) {
 }
 
 function ctx(
-  role: 'super_admin' | 'admin' | 'staff',
+  role: 'super-admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return {
@@ -37,7 +37,7 @@ function ctx(
 describe('Couriers team invite revoke route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getManageContext.mockResolvedValue(ctx('super_admin'))
+    mocks.getManageContext.mockResolvedValue(ctx('super-admin'))
     mocks.getPlatformClient.mockResolvedValue({
       invites: { revoke: mocks.revokeInvite },
     })

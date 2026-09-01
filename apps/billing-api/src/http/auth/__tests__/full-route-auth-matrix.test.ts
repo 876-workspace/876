@@ -11,6 +11,12 @@ function fixturePath(path: string): string {
   )
 }
 
+function protectedPublicOperations() {
+  return registeredOperations('public').filter(
+    ({ operation }) => (operation.security?.length ?? 0) > 0
+  )
+}
+
 describe('frozen v1 route authentication matrix', () => {
   beforeAll(() => {
     process.env.BILLING_WRITER = 'express'
@@ -19,12 +25,25 @@ describe('frozen v1 route authentication matrix', () => {
     resetSettingsForTest(process.env)
   })
 
+  it('keeps intentionally public operations out of the protected matrix', () => {
+    const app = createApp()
+    void app
+    const operations = registeredOperations('public')
+    const callback = operations.find(
+      ({ method, path }) =>
+        method === 'get' && path === '/providers/zoho-books/oauth/callback'
+    )
+
+    expect(operations).toHaveLength(213)
+    expect(protectedPublicOperations()).toHaveLength(212)
+    expect(callback).toBeDefined()
+    expect(callback?.operation.security ?? []).toEqual([])
+  })
+
   it('enforces credential extraction through the assembled middleware on every protected operation', async () => {
     const app = createApp()
-    const operations = registeredOperations('public')
 
-    expect(operations).toHaveLength(200)
-    for (const operation of operations) {
+    for (const operation of protectedPublicOperations()) {
       const call = request(app)
         [operation.method](fixturePath(operation.path))
         .set('x-billing-organization-id', 'fixture_organizationId')
@@ -40,9 +59,9 @@ describe('frozen v1 route authentication matrix', () => {
     }
   })
 
-  it('rejects ambiguous credential kinds before route validation on every operation', async () => {
+  it('rejects ambiguous credential kinds before route validation on every protected operation', async () => {
     const app = createApp()
-    for (const operation of registeredOperations('public')) {
+    for (const operation of protectedPublicOperations()) {
       const call = request(app)
         [operation.method](fixturePath(operation.path))
         .set('x-billing-organization-id', 'fixture_organizationId')

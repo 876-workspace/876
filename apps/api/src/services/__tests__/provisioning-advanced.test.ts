@@ -228,16 +228,16 @@ describe('seedDefaultRoles — advanced', () => {
 
   it('keeps custom permissions when org has already customised a system role', async () => {
     const custom = roleRow({
-      name: 'super_admin',
+      name: 'super-admin',
       permissions: ['custom:permission'],
       id: 'rol_custom',
     })
     prisma.organizationRole.findMany.mockResolvedValue([custom])
     const roles = await seedDefaultRoles(ORG, NOW)
-    expect(roles.super_admin!.permissions).toEqual(['custom:permission'])
+    expect(roles['super-admin']!.permissions).toEqual(['custom:permission'])
     expect(prisma.organizationRole.create).not.toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ name: 'super_admin' }),
+        data: expect.objectContaining({ name: 'super-admin' }),
       })
     )
   })
@@ -267,9 +267,9 @@ describe('seedDefaultRoles — advanced', () => {
 
   it('copies permissions array by value so caller mutation cannot affect input catalog', async () => {
     const roles = await seedDefaultRoles(ORG, NOW)
-    const superAdminPermissions = roles.super_admin!.permissions
+    const superAdminPermissions = roles['super-admin']!.permissions
     superAdminPermissions.push('injected:perm')
-    const definition = DEFAULT_ORG_ROLES.find((r) => r.name === 'super_admin')!
+    const definition = DEFAULT_ORG_ROLES.find((r) => r.name === 'super-admin')!
     expect(definition.permissions).not.toContain('injected:perm')
   })
 

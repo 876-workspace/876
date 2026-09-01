@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     return apiJson({ error: 'Invalid customer.' }, { status: 422 })
   const ctx = await getManageContext(envelope.data.orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'super_admin' && ctx.role !== 'admin') return forbidden()
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin') return forbidden()
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
   const rest = { ...(body as Record<string, unknown>) }
@@ -64,7 +64,7 @@ export async function DELETE(request: NextRequest, context: Context) {
     return apiJson({ error: 'Organization is required.' }, { status: 422 })
   const ctx = await getManageContext(orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'super_admin' && ctx.role !== 'admin') return forbidden()
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin') return forbidden()
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
   const { id } = await context.params

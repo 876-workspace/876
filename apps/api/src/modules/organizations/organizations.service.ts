@@ -7,7 +7,10 @@ import { getLogger } from '@/platform/logger'
 import { listObject, type ListObject } from '@/http/envelope'
 import { generateId, normalizeSlug } from '@/platform/ids'
 import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
-import { defaultPermissionsForRoleName } from '@/platform/permissions'
+import {
+  defaultPermissionsForRoleName,
+  SUPER_ADMIN_ROLE_NAME,
+} from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { ensureAppReady } from '@/services/finance-provisioning-readiness'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
@@ -522,7 +525,7 @@ export async function updateOrganizationProfile(
   principal: Principal
 ): Promise<Organization> {
   await requireOrgMembership(organizationId, principal, [
-    'super_admin',
+    SUPER_ADMIN_ROLE_NAME,
     'admin',
   ])
   const org = await repository.findOrganizationById(organizationId)

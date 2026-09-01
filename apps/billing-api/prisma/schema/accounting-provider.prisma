@@ -1,0 +1,89 @@
+/// Catalog of external accounting systems that Billing can use as execution
+/// or mirror targets. Provider-specific DTOs and credentials never live here.
+model AccountingProvider {
+  id           String  @id
+  key          String  @unique
+  name         String
+  adapter      String
+  capabilities Json
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    Int     @map("created_at")
+  updatedAt    Int     @map("updated_at")
+
+  connections AccountingProviderConnection[]
+
+  @@map("billing_accounting_providers")
+}
+
+/// Tenant-owned connection to an accounting system. The refresh token is
+/// encrypted with the shared secure-field abstraction and bound to this row.
+model AccountingProviderConnection {
+  id                        String   @id
+  tenantId                  String   @map("tenant_id")
+  providerId                String   @map("provider_id")
+  name                      String
+  environment               String   @default("live")
+  status                    String   @default("pending")
+  mode                      String   @default("mirror")
+  providerOrganizationId    String?  @map("provider_organization_id")
+  accountsDomain            String?  @map("accounts_domain")
+  apiDomain                 String?  @map("api_domain")
+  scopes                    String[] @default([])
+  sealedRefreshToken        String?  @map("sealed_refresh_token") @db.Text
+  refreshTokenKeyId         String?  @map("refresh_token_key_id")
+  refreshTokenVaultProvider String?  @map("refresh_token_vault_provider")
+  oauthStateHash            String?  @map("oauth_state_hash")
+  oauthStateExpiresAt       Int?     @map("oauth_state_expires_at")
+  settings                  Json?
+  lastSyncedAt              Int?     @map("last_synced_at")
+  lastSuccessfulSyncAt      Int?     @map("last_successful_sync_at")
+  lastErrorCode             String?  @map("last_error_code")
+  createdAt                 Int      @map("created_at")
+  updatedAt                 Int      @map("updated_at")
+
+  tenant             Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_accounting_provider_connections_tenant_fkey")
+  provider           AccountingProvider          @relation(fields: [providerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_accounting_provider_connections_provider_fkey")
+  providerReferences ProviderReference[]
+  syncJobs           AccountingProviderSyncJob[]
+
+  @@unique([tenantId, id], map: "billing_accounting_provider_connections_tenant_id_id_key")
+  /// Postgres truncates identifiers at 63 bytes, and the natural name for this
+  /// index is 64. The migration's 64-char literal therefore lands as this
+  /// 63-char name in every database; declaring the untruncated form here would
+  /// report permanent drift. Do not "restore" the trailing `y`.
+  @@unique([tenantId, providerId, name], map: "billing_accounting_provider_connections_tenant_provider_name_ke")
+  @@unique([tenantId, providerId, providerOrganizationId], map: "billing_accounting_provider_connections_external_org_key")
+  @@index([tenantId, status], map: "billing_accounting_provider_connections_tenant_status_idx")
+  @@index([providerId], map: "billing_accounting_provider_connections_provider_id_idx")
+  @@map("billing_accounting_provider_connections")
+}
+
+/// Coalescing transactional outbox for accounting-provider synchronization.
+/// `generation` prevents a worker completing an old snapshot from overwriting a
+/// newer enqueue that arrived while provider I/O was in flight.
+model AccountingProviderSyncJob {
+  id            String @id
+  tenantId      String @map("tenant_id")
+  connectionId  String @map("connection_id")
+  resourceType  String @map("resource_type")
+  resourceId    String @map("resource_id")
+  operation     String
+  status        String @default("pending")
+  generation    Int    @default(1)
+  attemptCount  Int    @default(0) @map("attempt_count")
+  availableAt   Int    @map("available_at")
+  lockedAt      Int?   @map("locked_at")
+  deliveredAt   Int?   @map("delivered_at")
+  lastErrorCode String? @map("last_error_code")
+  lastError     String? @map("last_error") @db.Text
+  createdAt     Int    @map("created_at")
+  updatedAt     Int    @map("updated_at")
+
+  tenant     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_accounting_provider_sync_jobs_tenant_fkey")
+  connection AccountingProviderConnection @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_accounting_provider_sync_jobs_connection_fkey")
+
+  @@unique([connectionId, resourceType, resourceId], map: "billing_accounting_provider_sync_jobs_resource_key")
+  @@index([status, availableAt, createdAt], map: "billing_accounting_provider_sync_jobs_delivery_idx")
+  @@index([tenantId, connectionId], map: "billing_accounting_provider_sync_jobs_connection_idx")
+  @@map("billing_accounting_provider_sync_jobs")
+}

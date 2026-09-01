@@ -1,5 +1,6 @@
 'use client'
 
+import { accountingProviders } from './accounting-providers'
 import { bankAccounts } from './bank-accounts'
 import { addons } from './addons'
 import { auth } from './auth'
@@ -30,6 +31,7 @@ import { taxAuthorities } from './tax-authorities'
 import { taxRates } from './tax-rates'
 
 export const client = {
+  accountingProviders,
   addons,
   auth,
   bankAccounts,

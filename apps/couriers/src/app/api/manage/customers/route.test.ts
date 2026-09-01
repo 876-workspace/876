@@ -31,7 +31,7 @@ function tenant() {
   }
 }
 function ctx(
-  role: 'super_admin' | 'admin' | 'staff',
+  role: 'super-admin' | 'admin' | 'staff',
   currentTenant: ReturnType<typeof tenant> | null = tenant()
 ) {
   return { role, tenant: currentTenant, userId: 'usr_ops' }

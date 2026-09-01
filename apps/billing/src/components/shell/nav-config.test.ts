@@ -125,6 +125,7 @@ describe('getVisibleNav', () => {
     expect(sections.map((section) => section.title)).toEqual([
       'Payment Modes',
       'Payment Providers',
+      'Accounting Providers',
       'Roles & Permissions',
     ])
   })

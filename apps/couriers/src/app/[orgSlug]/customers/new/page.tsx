@@ -33,7 +33,7 @@ export default async function NewCustomerPage({ params }: Props) {
 async function NewCustomerAccess({ orgSlug }: { orgSlug: string }) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
-  if (ctx.role !== 'super_admin' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return (
       <div className="876-empty-dashed max-w-2xl">
         You do not have permission to manage customers.

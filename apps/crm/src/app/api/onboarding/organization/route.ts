@@ -17,7 +17,7 @@ const organizationSchema = z.strictObject({
   name: z.string().trim().min(1).max(120).optional(),
 })
 
-const PROVISIONING_ROLES = new Set(['super_admin', 'admin'])
+const PROVISIONING_ROLES = new Set(['super-admin', 'admin'])
 const CONFLICT_CODES = new Set([
   'organization/slug-taken',
   'organization/already-exists',

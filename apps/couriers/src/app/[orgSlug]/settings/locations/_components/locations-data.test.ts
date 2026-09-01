@@ -31,7 +31,7 @@ describe('Branches settings page data', () => {
     vi.clearAllMocks()
     mockGetManageContext.mockResolvedValue({
       tenant: { id: TENANT_ID },
-      role: 'super_admin',
+      role: 'super-admin',
     })
     mockGet876Client.mockImplementation(() => ({
       branches: { list: mockBranches },

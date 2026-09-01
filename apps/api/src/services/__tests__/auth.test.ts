@@ -782,7 +782,7 @@ describe('AuthService.registerBusiness', () => {
         organizationId: 'organization_1',
         userId: 'user_local_1',
         workosMembershipId: 'om_1',
-        role: 'super_admin',
+        role: 'super-admin',
         roleId: null,
         status: 'active',
       })

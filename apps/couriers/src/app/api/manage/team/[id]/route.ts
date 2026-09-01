@@ -32,7 +32,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const { orgSlug, ...params } = parsed.data
   const ctx = await getManageContext(orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'super_admin' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return apiJson(
       { error: 'You do not have permission to update users.' },
       { status: 403, code: 'auth/forbidden' }
@@ -62,7 +62,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   const ctx = await getManageContext(orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'super_admin' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return apiJson(
       { error: 'You do not have permission to remove users.' },
       { status: 403, code: 'auth/forbidden' }

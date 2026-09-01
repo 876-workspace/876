@@ -66,7 +66,7 @@ function makeDeps(
   const provider = makeProvider(overrides.provider as never)
   const setupWorkspace = vi
     .fn()
-    .mockResolvedValue({ super_admin: { id: 'rol_owner' } })
+    .mockResolvedValue({ 'super-admin': { id: 'rol_owner' } })
   const ensureFinance = vi.fn().mockResolvedValue(undefined)
   const ensureWork = vi.fn().mockResolvedValue(undefined)
   const resolveProvisioning = vi.fn().mockResolvedValue({
@@ -378,7 +378,7 @@ describe('bootstrapExistingUser', () => {
     })
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
-        role: 'super_admin',
+        role: 'super-admin',
         roleId: 'rol_owner',
         workosMembershipId: 'wos_mem_1',
       })
@@ -737,7 +737,7 @@ describe('bootstrapExistingUser', () => {
     // The super admin membership was recorded, so a retry finds this org through
     // routing memberships and does not create a second one...
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'super_admin' })
+      expect.objectContaining({ role: 'super-admin' })
     )
     // ...and the WorkOS org is NOT torn down for a finance outage.
     expect(deps.provider.deleteOrganization).not.toHaveBeenCalled()
@@ -764,7 +764,7 @@ describe('bootstrapExistingUser', () => {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     }))
-    deps.setupWorkspace.mockResolvedValue({ super_admin: { id: 'rol_1' } })
+    deps.setupWorkspace.mockResolvedValue({ 'super-admin': { id: 'rol_1' } })
     deps.repository.createMembership.mockResolvedValue({} as never)
 
     await bootstrapExistingUser(deps, {

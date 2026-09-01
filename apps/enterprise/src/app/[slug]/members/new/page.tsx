@@ -39,8 +39,7 @@ export default async function InviteMemberPage({
 
   const assignableRoles = rolesResult.data.data
     .filter(
-      (role) =>
-        membership.role === 'super_admin' || role.name !== 'super_admin'
+      (role) => membership.role === 'super-admin' || role.name !== 'super-admin'
     )
     .map((role) => ({ name: role.name, display_name: role.display_name }))
 

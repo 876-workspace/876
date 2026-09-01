@@ -23,7 +23,7 @@ function request(body: string | Record<string, unknown>) {
   }) as never
 }
 
-function ctx(role: 'super_admin' | 'admin' | 'staff') {
+function ctx(role: 'super-admin' | 'admin' | 'staff') {
   return { orgId: 'org_123', orgSlug: 'island-logistics', role }
 }
 
@@ -128,7 +128,7 @@ describe('Couriers organization profile route', () => {
   })
 
   it('updates the profile for an owner', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('super_admin'))
+    mocks.getManageContext.mockResolvedValue(ctx('super-admin'))
 
     const response = await PATCH(
       request({ orgSlug: 'island-logistics', name: 'Island Logistics' })

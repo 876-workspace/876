@@ -24,7 +24,7 @@
     "db:reconcile": "tsx scripts/reconcile_databases.ts",
     "billing:run": "tsx src/workers/billing-sweep.cli.ts",
     "api:contract:check": "tsx scripts/generate_v1_contract_manifest.ts --check && tsx scripts/check_express_contract.ts",
-    "api:contract:generate": "tsx scripts/generate_v1_contract_manifest.ts",
+    "api:contract:generate": "tsx scripts/generate_v1_openapi_snapshot.ts && tsx scripts/generate_v1_contract_manifest.ts",
     "api:contract:manifest:generate": "tsx scripts/generate_v1_contract_manifest.ts",
     "api:contract:manifest:check": "tsx scripts/generate_v1_contract_manifest.ts --check"
   },

@@ -73,7 +73,7 @@ describe('ensureProviderMembership', () => {
     await ensureProviderMembership(provider, {
       workosOrganizationId: 'org_workos',
       workosUserId: 'user_workos',
-      role: 'super_admin',
+      role: 'super-admin',
     })
 
     expect(provider.createOrganizationMembership).toHaveBeenCalledWith(
@@ -137,7 +137,7 @@ describe('updateProviderMembershipRole', () => {
     const result = await updateProviderMembershipRole(
       provider,
       'om_1',
-      'super_admin',
+      'super-admin',
       { localMembershipId: 'mem_1' }
     )
 
@@ -164,7 +164,7 @@ describe('updateProviderMembershipRole', () => {
   )
 
   it('skips the provider call when the local membership has no provider id', async () => {
-    const result = await updateProviderMembershipRole(provider, null, 'super_admin', {
+    const result = await updateProviderMembershipRole(provider, null, 'super-admin', {
       localMembershipId: 'mem_1',
     })
 

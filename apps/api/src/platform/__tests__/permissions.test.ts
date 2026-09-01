@@ -107,15 +107,15 @@ describe('the org permission catalog', () => {
 describe('the default org roles', () => {
   it('defines exactly the three seeded roles, in order', () => {
     expect(DEFAULT_ORG_ROLES.map((role) => role.name)).toEqual([
-      'super_admin',
+      'super-admin',
       'admin',
       'staff',
     ])
   })
 
   it('seeds super admin with the full sorted catalog', () => {
-    expect(DEFAULT_ORG_ROLES_BY_NAME.get('super_admin')).toEqual({
-      name: 'super_admin',
+    expect(DEFAULT_ORG_ROLES_BY_NAME.get('super-admin')).toEqual({
+      name: 'super-admin',
       displayName: 'Super Admin',
       description:
         'Full control of the organization, including billing and deletion.',
@@ -161,7 +161,7 @@ describe('the default org roles', () => {
 
   it('names staff as the default and super admin as the creator role', () => {
     expect(DEFAULT_MEMBER_ROLE_NAME).toBe('staff')
-    expect(SUPER_ADMIN_ROLE_NAME).toBe('super_admin')
+    expect(SUPER_ADMIN_ROLE_NAME).toBe('super-admin')
     expect(DEFAULT_ORG_ROLES_BY_NAME.has(DEFAULT_MEMBER_ROLE_NAME)).toBe(true)
     expect(DEFAULT_ORG_ROLES_BY_NAME.has(SUPER_ADMIN_ROLE_NAME)).toBe(true)
   })
@@ -169,7 +169,7 @@ describe('the default org roles', () => {
 
 describe('defaultPermissionsForRoleName', () => {
   it.each([
-    ['super_admin', PY_ALL_SORTED],
+    ['super-admin', PY_ALL_SORTED],
     ['admin', PY_ADMIN],
     ['staff', PY_STAFF],
   ])('resolves %s to its seeded permissions', (roleName, expected) => {

@@ -37,7 +37,7 @@ const tenant = {
   updatedAt: 1_785_427_200,
 }
 
-function context(role: 'super_admin' | 'admin' | 'staff') {
+function context(role: 'super-admin' | 'admin' | 'staff') {
   return { role, tenant, userId: 'usr_ops' }
 }
 

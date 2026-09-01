@@ -46,7 +46,7 @@ const resolveConsoleFeatureKeys = cache(
       }
       Sentry.captureMessage(message, {
         level: 'error',
-        tags: { category: 'feature_flags' },
+        tags: { category: 'feature-flags' },
         extra: context,
       })
       logger.error(context, message)
@@ -65,7 +65,7 @@ const resolveConsoleFeatureKeys = cache(
       }
       Sentry.captureMessage(message, {
         level: 'error',
-        tags: { category: 'feature_flags' },
+        tags: { category: 'feature-flags' },
         extra: context,
       })
       logger.error(context, message)
@@ -87,7 +87,7 @@ const resolveConsoleFeatureKeys = cache(
       }
       Sentry.captureMessage(message, {
         level: 'error',
-        tags: { category: 'feature_flags' },
+        tags: { category: 'feature-flags' },
         extra: context,
       })
       logger.error(context, message)

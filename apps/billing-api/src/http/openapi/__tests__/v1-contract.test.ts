@@ -52,19 +52,35 @@ describe('Billing v1 compatibility metadata', () => {
     )
   })
 
-  it('returns exact generated route metadata and rejects unknown operations', () => {
+  it('returns exact generated route metadata for a baseline operation', () => {
     expect(v1Operation('post', '/vendors')).toEqual({
       description: 'Ported from `src/app/api/billing/vendors/route.ts`.',
       operationId: 'billing-billing_post_vendors',
       summary: 'Billing POST /vendors',
       tags: ['Billing'],
     })
+  })
+
+  it('resolves an Express path parameter to the same frozen entry as its OpenAPI form', () => {
     expect(v1Operation('get', '/vendors/:vendorId')).toEqual(
       v1Operation('get', '/vendors/{vendorId}')
     )
-    expect(() => v1Operation('get', '/not-a-v1-route')).toThrow(
-      'Unknown Billing v1 operation: GET /not-a-v1-route'
+  })
+
+  it('returns metadata for an operation added after the baseline was cut', () => {
+    // Accounting providers post-date the frozen Next.js baseline. They resolve
+    // because the regenerated contract was committed, which is what keeps the
+    // published documentation from drifting away from the routes.
+    expect(v1Operation('get', '/admin/accounting-providers')).toEqual(
+      expect.objectContaining({ tags: expect.any(Array) })
     )
+  })
+
+  it('returns undefined for an operation absent from the frozen contract', () => {
+    // Not a throw: a brand-new route must be able to boot so the contract can
+    // be regenerated from it. `api:contract:check` still fails the route as an
+    // extra operation until that regenerated baseline is committed.
+    expect(v1Operation('get', '/not-a-v1-route')).toBeUndefined()
   })
 
   it('renders frozen shapes only when route-owned security and statuses match', () => {
