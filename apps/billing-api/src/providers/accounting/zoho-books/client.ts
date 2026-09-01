@@ -3,10 +3,12 @@ import { z } from 'zod'
 import type { AccountingProviderContext } from '../types'
 import { classifyZohoHttpError, ZohoBooksError } from './errors'
 
-const responseBaseSchema = z.object({
-  code: z.number(),
-  message: z.string(),
-}).passthrough()
+const responseBaseSchema = z
+  .object({
+    code: z.number(),
+    message: z.string(),
+  })
+  .passthrough()
 
 export class ZohoBooksClient {
   constructor(private readonly fetchImpl: typeof fetch = fetch) {}
@@ -36,12 +38,12 @@ export class ZohoBooksClient {
             ? {}
             : { 'Content-Type': 'application/json' }),
         },
-        body: params.body === undefined ? undefined : JSON.stringify(params.body),
+        body:
+          params.body === undefined ? undefined : JSON.stringify(params.body),
       })
     } catch (error) {
       throw new ZohoBooksError({
         code: 'billing/provider-unavailable',
-        message: 'Zoho Books could not be reached.',
         retryable: true,
         cause: error,
       })
@@ -62,7 +64,6 @@ export class ZohoBooksClient {
     if (!parsed.success)
       throw new ZohoBooksError({
         code: 'billing/provider-invalid-response',
-        message: 'Zoho Books returned an unexpected response shape.',
         httpStatus: response.status,
         retryable: false,
       })
