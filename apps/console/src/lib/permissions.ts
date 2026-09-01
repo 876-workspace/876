@@ -61,12 +61,43 @@ const TEAM_MANAGE = [
 export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 
 /** Permission that gates destructive (danger-zone) operations. */
-export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
+export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger-zone'
+
+/** Canonical top-level Console role. */
+export const CONSOLE_SUPER_ADMIN_ROLE = 'super-admin'
+
+/** Exact persisted aliases accepted only during the naming migration. */
+const LEGACY_CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
+const LEGACY_CONSOLE_SUPER_ADMIN_ROLE = 'super_admin'
+
+export function canonicalConsoleRole(role: string): string {
+  return role === LEGACY_CONSOLE_SUPER_ADMIN_ROLE
+    ? CONSOLE_SUPER_ADMIN_ROLE
+    : role
+}
+
+function canonicalPermission(permission: string): string {
+  return permission === LEGACY_CONSOLE_DANGER_ZONE_PERMISSION
+    ? CONSOLE_DANGER_ZONE_PERMISSION
+    : permission
+}
+
+function canonicalPermissions(permissions: readonly string[]): string[] {
+  return [
+    ...new Set(
+      permissions
+        .filter((permission): permission is string =>
+          typeof permission === 'string'
+        )
+        .map(canonicalPermission)
+    ),
+  ]
+}
 
 function accessContext(access: Pick<Access, 'permissions'>): AccessContext {
   return {
     subject: { userId: '' },
-    permissions: access.permissions,
+    permissions: canonicalPermissions(access.permissions),
     features: [],
     experiments: {},
   }
@@ -76,7 +107,8 @@ export function hasPermission(
   access: Pick<Access, 'permissions'>,
   permission: string
 ): boolean {
-  return can(accessContext(access), permission)
+  if (typeof permission !== 'string') return false
+  return can(accessContext(access), canonicalPermission(permission))
 }
 
 /**
@@ -119,7 +151,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     ],
   },
   {
-    name: 'super_admin',
+    name: CONSOLE_SUPER_ADMIN_ROLE,
     displayName: 'Super Admin',
     description: 'All permissions including danger zone operations.',
     permissions: [
@@ -135,7 +167,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:storage',
       'console:reports',
       'console:security',
-      'console:danger-zone',
+      CONSOLE_DANGER_ZONE_PERMISSION,
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
@@ -174,21 +206,28 @@ const FALLBACK: Record<string, string[]> = Object.fromEntries(
 
 /**
  * Permissions for a role name from a supplied catalog (defaults to the system
- * fallback). During the naming cutover old database rows may still carry the
- * exact `super_admin` role or `console:danger_zone` permission aliases; callers
- * always receive the canonical equivalents.
+ * fallback). During the naming cutover an old database row may still contain
+ * `super_admin` or `console:danger_zone`; callers always receive canonical
+ * equivalents and new writes never recreate those aliases.
  */
 export function permissionsForRole(
   role: string | null | undefined,
   catalog: Record<string, string[]> = FALLBACK
 ): string[] {
   if (!role) return []
-  return [...(catalog[role] ?? [])]
+  const canonicalRole = canonicalConsoleRole(role)
+  const legacyRolePermissions =
+    canonicalRole === CONSOLE_SUPER_ADMIN_ROLE
+      ? catalog[LEGACY_CONSOLE_SUPER_ADMIN_ROLE]
+      : undefined
+  return canonicalPermissions(
+    catalog[canonicalRole] ?? legacyRolePermissions ?? []
+  )
 }
 
 function actionLabel(action: string): string {
   return action
-    .split('_')
+    .split(/[-_]/)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }
