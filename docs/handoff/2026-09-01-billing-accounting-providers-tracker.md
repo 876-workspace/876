@@ -57,7 +57,8 @@ Add a minimal, provider-agnostic accounting integration layer to 876 Billing wit
 - `DONE` Add Zoho recurring-invoice mapping from canonical Billing subscription state.
 - `DONE` Add Zoho customer-payment mapping and invoice allocations.
 - `DONE` Support provider create/update/retrieve/list/remove operations and active/inactive state where Zoho exposes it.
-- `TODO` Verify the adapter's `webhooks: true` capability against an implemented inbound webhook route; either implement the minimal inbound webhook boundary or mark the capability false until that route exists.
+- `DONE` Do not advertise inbound webhook support before an inbound Zoho webhook boundary exists; `webhooks` is explicitly `false` for the minimal adapter.
+- `DEFERRED` Inbound Zoho webhook ingestion. Outbound synchronization and explicit reconciliation are the supported minimal release mechanisms.
 
 ## OAuth and connection lifecycle
 
@@ -173,6 +174,6 @@ These are execution gates, not substitutes for implementation. They cannot curre
 
 ## Current status
 
-**IN PROGRESS — BACKEND FOUNDATION, DURABLE ZOHO PROJECTION, ADOPTION API, DOCS, AND OPERATOR SDK ARE IMPLEMENTED. REMAINING IMPLEMENTATION IS HTTP-STACK HARDENING, MINIMAL MANAGEMENT UI, WEBHOOK-CAPABILITY CORRECTION/IMPLEMENTATION, FINAL NAMING-BRANCH RECONCILIATION, AND FINAL HANDOFF. LOCAL DATABASE/RUNTIME VALIDATION REMAINS REQUIRED BEFORE MERGE.**
+**IN PROGRESS — BACKEND FOUNDATION, DURABLE ZOHO PROJECTION, ADOPTION API, DOCS, OPERATOR SDK, AND CAPABILITY REPORTING ARE IMPLEMENTED. REMAINING IMPLEMENTATION IS HTTP-STACK HARDENING, MINIMAL MANAGEMENT UI, FINAL NAMING-BRANCH RECONCILIATION, AND FINAL HANDOFF. LOCAL DATABASE/RUNTIME VALIDATION REMAINS REQUIRED BEFORE MERGE.**
 
-Current branch head when this tracker was introduced: `07f00fc18e415fed4c0187fde7ef097f13f67794`.
+Current branch head at this tracker update: `2e9529f486ff6f38a7d70a929737bacf6bc6bc9a`.
