@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { ZohoBooksError } from './errors'
+import { classifyZohoHttpError, ZohoBooksError } from './errors'
 
 export const ZOHO_BOOKS_SCOPES = [
   'ZohoBooks.settings.READ',
@@ -68,7 +68,6 @@ export function normalizeZohoAccountsDomain(value: string): string {
   if (!allowedAccountsDomains.has(domain))
     throw new ZohoBooksError({
       code: 'billing/provider-invalid-domain',
-      message: 'The Zoho accounts data center is not supported.',
       retryable: false,
     })
   return domain
@@ -76,6 +75,54 @@ export function normalizeZohoAccountsDomain(value: string): string {
 
 function tokenUrl(accountsDomain: string) {
   return `${normalizeZohoAccountsDomain(accountsDomain)}/oauth/v2/token`
+}
+
+async function postToken(
+  accountsDomain: string,
+  body: URLSearchParams,
+  fetchImpl: typeof fetch = fetch
+) {
+  let response: Response
+  try {
+    response = await fetchImpl(tokenUrl(accountsDomain), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    })
+  } catch (error) {
+    throw new ZohoBooksError({
+      code: 'billing/provider-unavailable',
+      retryable: true,
+      cause: error,
+    })
+  }
+
+  const raw: unknown = await response.json().catch(() => ({}))
+  const oauthError = oauthErrorSchema.safeParse(raw)
+  if (!response.ok || oauthError.success) {
+    const providerCode = oauthError.success
+      ? oauthError.data.error
+      : 'oauth-error'
+    if (response.status === 429 || response.status >= 500)
+      throw classifyZohoHttpError(response.status, providerCode, '')
+    throw new ZohoBooksError({
+      code:
+        providerCode === 'invalid_grant'
+          ? 'billing/provider-authorization-required'
+          : 'billing/provider-authentication-failed',
+      httpStatus: response.status,
+      retryable: false,
+    })
+  }
+
+  const parsed = tokenResponseSchema.safeParse(raw)
+  if (!parsed.success)
+    throw new ZohoBooksError({
+      code: 'billing/provider-invalid-response',
+      httpStatus: response.status,
+      retryable: false,
+    })
+  return parsed.data
 }
 
 export function buildZohoBooksAuthorizeUrl(params: {
@@ -96,55 +143,6 @@ export function buildZohoBooksAuthorizeUrl(params: {
   url.searchParams.set('prompt', 'consent')
   url.searchParams.set('state', params.state)
   return url.toString()
-}
-
-async function postToken(
-  accountsDomain: string,
-  body: URLSearchParams,
-  fetchImpl: typeof fetch = fetch
-) {
-  let response: Response
-  try {
-    response = await fetchImpl(tokenUrl(accountsDomain), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    })
-  } catch (error) {
-    throw new ZohoBooksError({
-      code: 'billing/provider-unavailable',
-      message: 'Zoho OAuth could not be reached.',
-      retryable: true,
-      cause: error,
-    })
-  }
-
-  const raw: unknown = await response.json().catch(() => ({}))
-  const oauthError = oauthErrorSchema.safeParse(raw)
-  if (!response.ok || oauthError.success) {
-    const providerCode = oauthError.success
-      ? oauthError.data.error
-      : 'oauth-error'
-    throw new ZohoBooksError({
-      code:
-        providerCode === 'invalid_grant'
-          ? 'billing/provider-authorization-required'
-          : 'billing/provider-authentication-failed',
-      message: 'Zoho OAuth rejected the authorization request.',
-      httpStatus: response.status,
-      retryable: response.status >= 500,
-    })
-  }
-
-  const parsed = tokenResponseSchema.safeParse(raw)
-  if (!parsed.success)
-    throw new ZohoBooksError({
-      code: 'billing/provider-invalid-response',
-      message: 'Zoho OAuth returned an invalid token response.',
-      httpStatus: response.status,
-      retryable: false,
-    })
-  return parsed.data
 }
 
 export function exchangeZohoBooksCode(params: {
@@ -207,20 +205,26 @@ export async function listZohoBooksOrganizations(params: {
   } catch (error) {
     throw new ZohoBooksError({
       code: 'billing/provider-unavailable',
-      message: 'Zoho Books organization discovery failed.',
       retryable: true,
       cause: error,
     })
   }
   const raw: unknown = await response.json().catch(() => ({}))
   const parsed = organizationsResponseSchema.safeParse(raw)
-  if (!response.ok || !parsed.success || parsed.data.code !== 0)
+  if (!response.ok) {
+    const providerCode = parsed.success ? String(parsed.data.code) : ''
+    const providerMessage = parsed.success ? parsed.data.message : ''
+    throw classifyZohoHttpError(
+      response.status,
+      providerCode,
+      providerMessage
+    )
+  }
+  if (!parsed.success || parsed.data.code !== 0)
     throw new ZohoBooksError({
       code: 'billing/provider-invalid-response',
-      message:
-        'Zoho Books organization discovery returned an invalid response.',
       httpStatus: response.status,
-      retryable: response.status >= 500 || response.status === 429,
+      retryable: false,
     })
   return parsed.data.organizations
 }
