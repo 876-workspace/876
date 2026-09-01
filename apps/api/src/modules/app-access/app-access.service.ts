@@ -18,6 +18,11 @@ import {
 } from '@/modules/organizations'
 import { AppHttpError, appError } from '@/platform/errors'
 import { generateId } from '@/platform/ids'
+import {
+  canonicalOrgRoleName,
+  isSuperAdminRoleName,
+  SUPER_ADMIN_ROLE_NAME,
+} from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import * as repository from './app-access.repository'
@@ -263,12 +268,16 @@ async function requireSuperAdminForElevation(
   role: AppRoleRow,
   principal: OrgAccessPrincipal
 ): Promise<void> {
-  if (role.key !== 'super_admin' || principal.internal) return
+  if (
+    canonicalOrgRoleName(role.key) !== SUPER_ADMIN_ROLE_NAME ||
+    principal.internal
+  )
+    return
 
   const caller = principal.userId
     ? await findMembershipForAccess(organizationId, principal.userId)
     : null
-  if (caller?.status === 'active' && caller.role === 'super_admin') return
+  if (caller?.status === 'active' && isSuperAdminRoleName(caller.role)) return
 
   throw new AppHttpError({
     code: 'app-membership/super-admin-required',
