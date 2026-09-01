@@ -7822,16 +7822,16 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "creator_user_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
                   "name": {
                     "maxLength": 120,
                     "minLength": 1,
                     "type": "string",
                   },
                   "org_id": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
-                  "creator_user_id": {
                     "minLength": 1,
                     "type": "string",
                   },
