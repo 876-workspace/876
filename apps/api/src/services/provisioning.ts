@@ -10,12 +10,15 @@ import * as repository from './provisioning.repository'
 import type { OrgRoleRow } from './provisioning.repository'
 import { enqueueCustomerEnsureForOrganization } from './billing-customer-sync'
 import { createBillingCustomerSyncRepository } from './billing-customer-sync.repository'
+import { createFinanceProvisioningRepository } from './finance-provisioning.repository'
+import { ensureAppReady } from './finance-provisioning-readiness'
 import {
   enabledProvisioningApplicationSlugs,
   requirePersistedProvisioningPolicy,
   resolveFreshProvisioningPolicy,
   retrievePersistedProvisioningPolicy,
 } from './provisioning-policy'
+export { BILLING_APP_SLUG } from './provisioning-catalog'
 
 /**
  * Organization provisioning: default roles, database-owned setup entitlements,
@@ -31,9 +34,6 @@ const log = getLogger('provisioning')
 
 /** Every organization retains the Enterprise directory access plane. */
 export const ENTERPRISE_APP_SLUG = '876-enterprise'
-
-/** Standalone Billing product access remains independent of shared finance. */
-export const BILLING_APP_SLUG = '876-billing'
 
 /** Legacy-safe entitlement set for organizations not yet explicitly backfilled. */
 export const DEFAULT_ORG_APP_SLUGS = [ENTERPRISE_APP_SLUG] as const
@@ -245,12 +245,6 @@ export async function ensureOrgAppsFinanceReady(
   organizationId: string,
   options: { appIds?: string[] } = {}
 ): Promise<void> {
-  const [{ ensureAppReady }, { createFinanceProvisioningRepository }] =
-    await Promise.all([
-      import('./finance-provisioning-readiness'),
-      import('./finance-provisioning.repository'),
-    ])
-
   const appIds =
     options.appIds ?? (await repository.listSubscribedAppIds(organizationId))
   const deps = { repository: createFinanceProvisioningRepository() }

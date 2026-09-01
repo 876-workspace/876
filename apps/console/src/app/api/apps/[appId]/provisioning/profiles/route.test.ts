@@ -66,6 +66,7 @@ describe('Console application provisioning profile collection route', () => {
           key: 'default',
         },
       ],
+      error: null,
     })
     expect(mocks.requireConsolePermission).toHaveBeenCalledOnce()
     expect(mocks.requireConsolePermission).toHaveBeenCalledWith('console:apps')

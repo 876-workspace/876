@@ -22,7 +22,7 @@ const profileKeySchema = z
   .string()
   .min(1)
   .max(80)
-  .transform((value) => value.trim().toLowerCase())
+  .transform((value) => value.trim().toLowerCase().replace(/\s+/g, '-'))
   .refine((value) => /^[a-z0-9][a-z0-9-]*$/.test(value), {
     message: 'Profile keys use lowercase letters, digits, and hyphens.',
   })
@@ -30,7 +30,12 @@ const profileKeySchema = z
 export const applicationProvisioningProfileCreateSchema = z.strictObject({
   key: profileKeySchema,
   name: z.string().min(1).max(120).transform((value) => value.trim()),
-  description: z.string().max(1000).optional().nullable(),
+  description: z
+    .string()
+    .max(1000)
+    .transform((value) => value.trim())
+    .optional()
+    .nullable(),
   is_default: z.boolean().optional().default(false),
   copy_from: z.string().min(1).max(120).optional().nullable(),
 })
@@ -38,7 +43,12 @@ export const applicationProvisioningProfileCreateSchema = z.strictObject({
 export const applicationProvisioningProfileUpdateSchema = z
   .strictObject({
     name: z.string().min(1).max(120).transform((value) => value.trim()).optional(),
-    description: z.string().max(1000).optional().nullable(),
+    description: z
+      .string()
+      .max(1000)
+      .transform((value) => value.trim())
+      .optional()
+      .nullable(),
     status: z.enum(['draft', 'active', 'archived']).optional(),
     is_default: z.boolean().optional(),
   })

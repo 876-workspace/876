@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { listObjectSchema } from '@/http/envelope'
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 
 import * as controller from './application-provisioning-profile.controller'
@@ -37,7 +38,7 @@ export function createApplicationProvisioningProfileRouter(
     responses: {
       200: {
         description: 'Application provisioning profiles returned.',
-        schema: z.array(applicationProvisioningProfileResponseSchema),
+        schema: listObjectSchema(applicationProvisioningProfileResponseSchema),
       },
       404: { description: 'Application not found.' },
     },

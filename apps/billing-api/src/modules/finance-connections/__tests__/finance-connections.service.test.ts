@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   findStatsProduct: vi.fn(),
   findStatsSubscriptions: vi.fn(),
   findStatsTenant: vi.fn(),
+  findStatsTenantBySlug: vi.fn(),
   LifecycleConflict: class FinanceConnectionLifecycleConflict extends Error {},
 }))
 
@@ -19,6 +20,7 @@ vi.mock('../finance-connections.repository', () => ({
   findStatsProduct: mocks.findStatsProduct,
   findStatsSubscriptions: mocks.findStatsSubscriptions,
   findStatsTenant: mocks.findStatsTenant,
+  findStatsTenantBySlug: mocks.findStatsTenantBySlug,
   FinanceConnectionLifecycleConflict: mocks.LifecycleConflict,
 }))
 
@@ -26,6 +28,7 @@ import {
   activeConnectionAuthorization,
   appStats,
   ensureFinanceConnection,
+  platformAppStats,
 } from '../finance-connections.service'
 
 function event(
@@ -329,6 +332,18 @@ describe('appStats', () => {
     await expect(appStats('ten_1')).resolves.toEqual([])
     expect(mocks.findStatsSubscriptions).toHaveBeenCalledWith(
       'ten_1',
+      undefined
+    )
+  })
+
+  it('resolves Console statistics through the configured platform tenant', async () => {
+    mocks.findStatsTenantBySlug.mockResolvedValue({ id: 'ten_platform' })
+    mocks.findStatsTenant.mockResolvedValue({ defaultCurrency: 'USD' })
+    mocks.findStatsSubscriptions.mockResolvedValue([])
+
+    await expect(platformAppStats()).resolves.toEqual([])
+    expect(mocks.findStatsSubscriptions).toHaveBeenCalledWith(
+      'ten_platform',
       undefined
     )
   })

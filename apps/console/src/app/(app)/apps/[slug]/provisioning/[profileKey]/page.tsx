@@ -1,5 +1,3 @@
-import { buttonVariants } from '@876/ui/button'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
@@ -11,6 +9,9 @@ import { platform } from '@/lib/services/platform'
 import { workspace } from '@/lib/services/workspace'
 import { resolveApp } from '../../_data'
 import { ProfileSettingsForm } from '../_components/profile-settings-form'
+import { ProfileCardFrame } from './_components/profile-card-frame'
+
+export const metadata = { title: 'Provisioning profile' }
 
 type Props = {
   params: Promise<{ slug: string; profileKey: string }>
@@ -23,22 +24,29 @@ export default async function ApplicationProvisioningProfilePage({
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const [profileResult, manifestResult, catalogResult, currenciesResult, languagesResult] =
-    await Promise.all([
-      platform.provisioning.applicationProfiles.retrieve(app.id, profileKey),
-      platform.provisioning.applicationProfiles.retrieveManifest(app.id, profileKey),
-      workspace.provisioning.retrieveCatalog('application', app.id),
-      workspace.geo.listCurrencies(),
-      workspace.geo.listLanguages(),
-    ])
+  const [
+    profileResult,
+    manifestResult,
+    catalogResult,
+    currenciesResult,
+    languagesResult,
+  ] = await Promise.all([
+    platform.provisioning.applicationProfiles.retrieve(app.id, profileKey),
+    platform.provisioning.applicationProfiles.retrieveManifest(
+      app.id,
+      profileKey
+    ),
+    workspace.provisioning.retrieveCatalog('application', app.id),
+    workspace.geo.listCurrencies(),
+    workspace.geo.listLanguages(),
+  ])
 
-  if (
-    profileResult.error?.code === 'provisioning/application-profile-not-found' ||
-    !profileResult.data
-  )
+  if (profileResult.error?.code === 'provisioning/application-profile-not-found')
     notFound()
-  if (profileResult.error)
-    throw new Error(profileResult.error.message)
+  if (profileResult.error || !profileResult.data)
+    throw new Error(
+      profileResult.error?.message ?? 'Failed to load provisioning profile.'
+    )
 
   if (
     manifestResult.error &&
@@ -59,58 +67,32 @@ export default async function ApplicationProvisioningProfilePage({
     )
 
   const profile = profileResult.data
+  const primaryResourceType = catalogResult.data.resource_types[0]
+  const resourceTabLabel = primaryResourceType?.label ?? 'Documents'
+  const manifestRevision =
+    manifestResult.data?.draft ?? manifestResult.data?.published ?? null
+  const resourceCount =
+    manifestRevision?.resources.filter(
+      (r) =>
+        r.resource_type ===
+        (primaryResourceType?.resource_type ||
+          (primaryResourceType as { resourceType?: string })?.resourceType)
+    ).length ?? 0
 
   return (
-    <div className="space-y-5">
-      <section className="876-card flex flex-wrap items-start justify-between gap-4 p-4">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-semibold">{profile.name}</h2>
-            {profile.is_default ? (
-              <span className="bg-muted rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
-                Default
-              </span>
-            ) : null}
-            <span className="text-muted-foreground rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
-              {profile.status}
-            </span>
-          </div>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {profile.key} · {profile.selection_count} selected organizations ·{' '}
-            {profile.published_revision === null
-              ? 'not published'
-              : `published revision ${profile.published_revision}`}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/apps/${encodeURIComponent(app.slug)}/provisioning`}
-            className={buttonVariants({ variant: 'outline' })}
-          >
-            All profiles
-          </Link>
-          <Link
-            href={`/settings/orgs/provisioning/runs?app_id=${encodeURIComponent(app.id)}`}
-            className={buttonVariants({ variant: 'outline' })}
-          >
-            View runs
-          </Link>
-        </div>
-      </section>
-
-      <section className="876-card p-6">
-        <ProfileSettingsForm appId={app.id} profile={profile} />
-      </section>
-
-      <section className="876-card overflow-hidden">
-        <div className="border-b px-6 py-4">
-          <h3 className="text-sm font-semibold">Provisioned application defaults</h3>
-          <p className="text-muted-foreground mt-1 text-xs">
-            This is manifest v1 for this profile only. Publishing changes affects
-            future reconciliations for organizations already assigned this
-            profile, but does not change which profile an organization uses.
-          </p>
-        </div>
+    <ProfileCardFrame
+      profile={profile}
+      slug={app.slug}
+      appId={app.id}
+      resourceTabLabel={resourceTabLabel}
+      documentsCount={resourceCount}
+      settingsContent={
+        <ProfileSettingsForm appId={app.id} profile={profile} mode="settings" />
+      }
+      routingContent={
+        <ProfileSettingsForm appId={app.id} profile={profile} mode="routing" />
+      }
+      documentsContent={
         <FinanceProvisioningEditor
           catalog={catalogResult.data}
           manifest={manifestResult.data ?? null}
@@ -122,7 +104,7 @@ export default async function ApplicationProvisioningProfilePage({
           currencyOptions={toFinanceCurrencyOptions(currenciesResult.data)}
           languageOptions={toFinanceLanguageOptions(languagesResult.data)}
         />
-      </section>
-    </div>
+      }
+    />
   )
 }

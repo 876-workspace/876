@@ -9,7 +9,7 @@ function jsonResponse(payload: unknown) {
   })
 }
 
-function client(fetchMock: ReturnType<typeof vi.fn>) {
+function client(fetchMock: typeof fetch) {
   return create876AdminClient({
     baseUrl: 'https://api.test',
     internalKey: 'test-internal-key',
@@ -20,7 +20,7 @@ function client(fetchMock: ReturnType<typeof vi.fn>) {
 describe('platform application provisioning profile resource', () => {
   it('uses encoded app/profile paths for list and retrieve', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [] }))
-    const $876 = client(fetchMock)
+    const $876 = client(fetchMock as unknown as typeof fetch)
 
     await $876.provisioning.applicationProfiles.list('876/crm')
     await $876.provisioning.applicationProfiles.retrieve(
@@ -47,7 +47,7 @@ describe('platform application provisioning profile resource', () => {
         id: 'apppr_1',
       })
     )
-    const $876 = client(fetchMock)
+    const $876 = client(fetchMock as unknown as typeof fetch)
     const createBody = {
       key: 'jamaica-enterprise',
       name: 'Jamaica Enterprise',
@@ -122,11 +122,11 @@ describe('platform application provisioning profile resource', () => {
         id: 'pmr_1',
       })
     )
-    const $876 = client(fetchMock)
+    const $876 = client(fetchMock as unknown as typeof fetch)
     const draft = {
       manifest_version: 1 as const,
       reconciliation: 'create_missing' as const,
-      preserve_tenant_overrides: true,
+      preserve_tenant_overrides: true as const,
       finance_dependency: 'embedded' as const,
       finance_scopes: ['billing.customers.read'],
       resources: [],

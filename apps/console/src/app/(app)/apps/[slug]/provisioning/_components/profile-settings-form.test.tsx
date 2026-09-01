@@ -146,7 +146,7 @@ describe('ProfileSettingsForm', () => {
       name: 'Make this the default application provisioning profile',
     })
     expect(defaultSwitch).toBeChecked()
-    expect(defaultSwitch).toBeDisabled()
+    expect(defaultSwitch).toHaveAttribute('aria-disabled', 'true')
     expect(screen.queryByRole('button', { name: 'Add condition' })).toBeNull()
   })
 })

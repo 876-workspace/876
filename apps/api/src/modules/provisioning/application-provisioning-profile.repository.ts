@@ -1,4 +1,5 @@
 import { prisma } from '@/db/client'
+import type { Prisma } from '@/db/generated/prisma/client'
 import { generateId } from '@/platform/ids'
 
 export function findAppByIdOrSlug(value: string) {
@@ -26,7 +27,7 @@ const PROFILE_INCLUDE = {
   app: { select: { id: true, slug: true } },
   conditions: { orderBy: [{ groupKey: 'asc' }, { field: 'asc' }] },
   _count: { select: { selections: true } },
-} as const
+} satisfies Prisma.ApplicationProvisioningProfileInclude
 
 export function findProfile(appId: string, value: string) {
   return prisma.applicationProvisioningProfile.findFirst({

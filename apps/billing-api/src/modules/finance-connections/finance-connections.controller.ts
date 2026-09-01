@@ -9,8 +9,8 @@ import {
   type FinanceProvisioningEvent,
 } from './finance-connections.schemas'
 import {
-  appStats,
   ensureFinanceConnection,
+  platformAppStats,
 } from './finance-connections.service'
 
 function parseEvent(body: unknown): FinanceProvisioningEvent {
@@ -24,21 +24,12 @@ export const financeConnectionsController = {
     res.json(await ensureFinanceConnection(parseEvent(req.body)))
   },
   async stats(_req: Request, res: Response) {
-    const tenantId = getPrincipal(_req).tenantId
-    if (!tenantId)
-      throw new Error('Billing admin guard did not resolve a tenant.')
-
-    res.json({ object: 'list', data: await appStats(tenantId) })
+    res.json({ object: 'list', data: await platformAppStats() })
   },
   async statsForApp(req: Request, res: Response) {
-    const tenantId = getPrincipal(req).tenantId
-    if (!tenantId)
-      throw new Error('Billing admin guard did not resolve a tenant.')
-
     const value = req.params.sourceAppId
     res.json(
-      await appStats(
-        tenantId,
+      await platformAppStats(
         Array.isArray(value) ? (value[0] ?? '') : (value ?? '')
       )
     )

@@ -117,10 +117,16 @@ beforeEach(() => {
 
 describe('application provisioning profile routes', () => {
   it('lists profiles through the assembled Express app', async () => {
-    service.listApplicationProvisioningProfiles.mockResolvedValue([
-      profile({ is_default: true, key: 'default', name: 'Default' }),
-      profile(),
-    ])
+    service.listApplicationProvisioningProfiles.mockResolvedValue({
+      object: 'list',
+      data: [
+        profile({ is_default: true, key: 'default', name: 'Default' }),
+        profile(),
+      ],
+      has_more: false,
+      url: '/provisioning/apps/876-crm/profiles',
+      total_count: 2,
+    })
 
     const response = await request(createApp())
       .get('/provisioning/apps/876-crm/profiles')

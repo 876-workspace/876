@@ -50,9 +50,11 @@ function newCondition(): ConditionDraft {
 export function ProfileSettingsForm({
   appId,
   profile,
+  mode = 'all',
 }: {
   appId: string
   profile: ApplicationProvisioningProfile
+  mode?: 'all' | 'settings' | 'routing'
 }) {
   const router = useRouter()
   const [name, setName] = useState(profile.name)
@@ -135,197 +137,227 @@ export function ProfileSettingsForm({
         }
       )
       if (updated.error || !updated.data) {
-        setError(updated.error?.message ?? 'Failed to save provisioning profile.')
+        setError(
+          updated.error?.message ?? 'Failed to save provisioning profile.'
+        )
         return
       }
 
-      setMessage('Provisioning profile saved.')
+      setMessage(
+        mode === 'routing'
+          ? 'Routing policy saved.'
+          : 'Provisioning profile saved.'
+      )
       router.refresh()
     })
   }
 
+  const showSettings = mode === 'all' || mode === 'settings'
+  const showRouting = mode === 'all' || mode === 'routing'
+
   return (
     <form onSubmit={save} className="space-y-6">
-      <div className="max-w-2xl space-y-4">
-        <FormRow label="Name" htmlFor="profile-name" required>
-          <Input
-            id="profile-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </FormRow>
+      {showSettings && (
+        <div className="max-w-2xl space-y-4">
+          <FormRow label="Name" htmlFor="profile-name" required>
+            <Input
+              id="profile-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </FormRow>
 
-        <FormRow label="Description" htmlFor="profile-description">
-          <Textarea
-            id="profile-description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={3}
-          />
-        </FormRow>
+          <FormRow label="Description" htmlFor="profile-description">
+            <Textarea
+              id="profile-description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              rows={3}
+            />
+          </FormRow>
 
-        <FormRow label="Status" htmlFor="profile-status">
-          <NativeSelect
-            id="profile-status"
-            value={status}
-            onChange={(event) =>
-              setStatus(
-                event.target.value as ApplicationProvisioningProfile['status']
-              )
-            }
-            disabled={profile.is_default || isPending}
-          >
-            <NativeSelectOption value="draft">Draft</NativeSelectOption>
-            <NativeSelectOption value="active">Active</NativeSelectOption>
-            <NativeSelectOption value="archived">Archived</NativeSelectOption>
-          </NativeSelect>
-        </FormRow>
-
-        <div className="flex items-start justify-between gap-4 rounded-md border p-4">
-          <div>
-            <p className="text-sm font-medium">Default profile</p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Exactly one active default exists per app. Existing organization
-              selections are not changed when the default changes. Promoting a
-              profile clears its routing conditions because the default is the
-              location-neutral fallback.
-            </p>
-          </div>
-          <Switch
-            checked={isDefault}
-            disabled={profile.is_default || isPending}
-            onCheckedChange={(checked) => {
-              setIsDefault(checked)
-              if (checked) setConditions([])
-            }}
-            aria-label="Make this the default application provisioning profile"
-          />
-        </div>
-      </div>
-
-      <section className="space-y-3 border-t pt-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold">Routing conditions</h3>
-            <p className="text-muted-foreground mt-1 max-w-2xl text-xs">
-              Conditions inside one group are AND requirements. Separate groups
-              are OR alternatives. Specificity wins before priority. Workspace
-              setup is preferred over repeating geography where possible.
-            </p>
-          </div>
-          {!isDefault ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isPending}
-              onClick={() =>
-                setConditions((current) => [...current, newCondition()])
+          <FormRow label="Status" htmlFor="profile-status">
+            <NativeSelect
+              id="profile-status"
+              value={status}
+              onChange={(event) =>
+                setStatus(
+                  event.target.value as ApplicationProvisioningProfile['status']
+                )
               }
+              disabled={profile.is_default || isPending}
             >
-              Add condition
-            </Button>
-          ) : null}
-        </div>
+              <NativeSelectOption value="draft">Draft</NativeSelectOption>
+              <NativeSelectOption value="active">Active</NativeSelectOption>
+              <NativeSelectOption value="archived">Archived</NativeSelectOption>
+            </NativeSelect>
+          </FormRow>
 
-        {isDefault ? (
-          <p className="text-muted-foreground rounded-md border border-dashed px-3 py-3 text-xs">
-            The default profile is location-neutral and cannot have routing
-            conditions. It is used only when no active variant matches.
-          </p>
-        ) : conditions.length === 0 ? (
-          <p className="text-muted-foreground rounded-md border border-dashed px-3 py-3 text-xs">
-            No routing conditions yet. Add at least one before activating this
-            profile.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {conditions.map((condition) => (
-              <div
-                key={condition.localId}
-                className="grid gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_1.4fr_7rem_auto]"
-              >
-                <Input
-                  aria-label="Condition group"
-                  value={condition.group_key}
-                  onChange={(event) =>
-                    updateCondition(condition.localId, {
-                      group_key: event.target.value,
-                    })
-                  }
-                  placeholder="jamaica-enterprise"
-                />
-                <NativeSelect
-                  aria-label="Condition field"
-                  value={condition.field}
-                  onChange={(event) =>
-                    updateCondition(condition.localId, {
-                      field: event.target
-                        .value as ApplicationProvisioningProfileConditionField,
-                    })
-                  }
-                >
-                  {FIELD_OPTIONS.map((option) => (
-                    <NativeSelectOption key={option.value} value={option.value}>
-                      {option.label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-                <Input
-                  aria-label="Condition value"
-                  value={condition.value}
-                  onChange={(event) =>
-                    updateCondition(condition.localId, {
-                      value: event.target.value,
-                    })
-                  }
-                  placeholder={
-                    condition.field === 'setup'
-                      ? 'jamaica'
-                      : condition.field === 'country'
-                        ? 'JM'
-                        : condition.field === 'plan'
-                          ? 'enterprise'
-                          : 'value'
-                  }
-                />
-                <Input
-                  aria-label="Condition priority"
-                  type="number"
-                  value={condition.priority}
-                  onChange={(event) =>
-                    updateCondition(condition.localId, {
-                      priority: Number(event.target.value) || 0,
-                    })
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={() =>
-                    setConditions((current) =>
-                      current.filter(
-                        (candidate) => candidate.localId !== condition.localId
-                      )
-                    )
-                  }
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
+          <div className="flex items-start justify-between gap-4 rounded-md border p-4">
+            <div>
+              <p className="text-sm font-medium">Default profile</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Exactly one active default exists per app. Existing organization
+                selections are not changed when the default changes. Promoting a
+                profile clears its routing conditions because the default is the
+                location-neutral fallback.
+              </p>
+            </div>
+            <Switch
+              checked={isDefault}
+              disabled={profile.is_default || isPending}
+              onCheckedChange={(checked) => {
+                setIsDefault(checked)
+                if (checked) setConditions([])
+              }}
+              aria-label="Make this the default application provisioning profile"
+            />
           </div>
-        )}
-      </section>
+        </div>
+      )}
+
+      {showRouting && (
+        <section
+          className={
+            showSettings && mode === 'all'
+              ? 'space-y-3 border-t pt-5'
+              : 'space-y-3'
+          }
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold">Routing conditions</h3>
+              <p className="text-muted-foreground mt-1 max-w-2xl text-xs">
+                Conditions inside one group are AND requirements. Separate
+                groups are OR alternatives. Specificity wins before priority.
+                Workspace setup is preferred over repeating geography where
+                possible.
+              </p>
+            </div>
+            {!isDefault ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending}
+                onClick={() =>
+                  setConditions((current) => [...current, newCondition()])
+                }
+              >
+                Add condition
+              </Button>
+            ) : null}
+          </div>
+
+          {isDefault ? (
+            <p className="text-muted-foreground rounded-md border border-dashed px-3 py-3 text-xs">
+              The default profile is location-neutral and cannot have routing
+              conditions. It is used only when no active variant matches.
+            </p>
+          ) : conditions.length === 0 ? (
+            <p className="text-muted-foreground rounded-md border border-dashed px-3 py-3 text-xs">
+              No routing conditions yet. Add at least one before activating this
+              profile.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {conditions.map((condition) => (
+                <div
+                  key={condition.localId}
+                  className="grid gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_1.4fr_7rem_auto]"
+                >
+                  <Input
+                    aria-label="Condition group"
+                    value={condition.group_key}
+                    onChange={(event) =>
+                      updateCondition(condition.localId, {
+                        group_key: event.target.value,
+                      })
+                    }
+                    placeholder="jamaica-enterprise"
+                  />
+                  <NativeSelect
+                    aria-label="Condition field"
+                    value={condition.field}
+                    onChange={(event) =>
+                      updateCondition(condition.localId, {
+                        field: event.target
+                          .value as ApplicationProvisioningProfileConditionField,
+                      })
+                    }
+                  >
+                    {FIELD_OPTIONS.map((option) => (
+                      <NativeSelectOption
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                  <Input
+                    aria-label="Condition value"
+                    value={condition.value}
+                    onChange={(event) =>
+                      updateCondition(condition.localId, {
+                        value: event.target.value,
+                      })
+                    }
+                    placeholder={
+                      condition.field === 'setup'
+                        ? 'jamaica'
+                        : condition.field === 'country'
+                          ? 'JM'
+                          : condition.field === 'plan'
+                            ? 'enterprise'
+                            : 'value'
+                    }
+                  />
+                  <Input
+                    aria-label="Condition priority"
+                    type="number"
+                    value={condition.priority}
+                    onChange={(event) =>
+                      updateCondition(condition.localId, {
+                        priority: Number(event.target.value) || 0,
+                      })
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isPending}
+                    onClick={() =>
+                      setConditions((current) =>
+                        current.filter(
+                          (candidate) =>
+                            candidate.localId !== condition.localId
+                        )
+                      )
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
-      {message ? <p className="text-muted-foreground text-sm">{message}</p> : null}
+      {message ? (
+        <p className="text-muted-foreground text-sm">{message}</p>
+      ) : null}
 
       <div className="flex justify-end">
         <Button type="submit" variant="info" disabled={isPending}>
-          {isPending ? 'Saving…' : 'Save profile'}
+          {isPending
+            ? 'Saving…'
+            : mode === 'routing'
+              ? 'Save routing policy'
+              : 'Save profile'}
         </Button>
       </div>
     </form>

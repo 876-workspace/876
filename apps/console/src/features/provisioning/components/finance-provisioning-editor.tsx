@@ -462,7 +462,7 @@ export function FinanceProvisioningEditor({
 
   return (
     <div className="flex h-full flex-col">
-      {!isUrlDriven && (
+      {!isUrlDriven && catalog.resource_types.length > 1 && (
         <div className="border-border/80 border-b pb-px">
           <nav
             aria-label="Provisioning resource categories"

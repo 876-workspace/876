@@ -10,6 +10,7 @@ import {
 } from '@876/core/types/application-provisioning-profile'
 
 import { AppHttpError } from '@/http/errors'
+import { listObject } from '@/http/envelope'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { validateProvisioningWireDraft } from '@/services/provisioning-catalog'
@@ -142,7 +143,13 @@ export async function ensureDefaultApplicationProvisioningProfile(
 export async function listApplicationProvisioningProfiles(appKey: string) {
   const app = await requireApp(appKey)
   await repository.ensureDefaultProfile(app.id, BigInt(nowUnixSeconds()))
-  return serializeProfiles((await repository.listProfiles(app.id)) as ProfileRow[])
+  return listObject({
+    data: await serializeProfiles(
+      (await repository.listProfiles(app.id)) as ProfileRow[]
+    ),
+    hasMore: false,
+    url: `/provisioning/apps/${encodeURIComponent(appKey)}/profiles`,
+  })
 }
 
 export async function retrieveApplicationProvisioningProfile(
