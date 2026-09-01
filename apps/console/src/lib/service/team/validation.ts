@@ -1,3 +1,8 @@
+import {
+  canonicalConsoleRole,
+  CONSOLE_SUPER_ADMIN_ROLE,
+} from '@/lib/permissions'
+
 export type TeamAffiliation = 'staff' | 'contractor' | 'external'
 
 export type TeamGrantFields = {
@@ -21,7 +26,8 @@ export type TeamServiceError = {
 }
 
 export type TeamServiceResult<T> =
-  { data: T; error: null } | { data: null; error: TeamServiceError }
+  | { data: T; error: null }
+  | { data: null; error: TeamServiceError }
 
 const AFFILIATIONS: readonly TeamAffiliation[] = [
   'staff',
@@ -29,7 +35,7 @@ const AFFILIATIONS: readonly TeamAffiliation[] = [
   'external',
 ]
 
-const STAFF_ONLY_ROLES = new Set(['super_admin'])
+const STAFF_ONLY_ROLES = new Set([CONSOLE_SUPER_ADMIN_ROLE])
 
 export function validateTeamGrant(
   input: Partial<TeamGrantFields>,
@@ -46,12 +52,13 @@ export function validateTeamGrant(
       },
     }
 
-  if (affiliation !== 'staff' && STAFF_ONLY_ROLES.has(roleName))
+  const canonicalRole = canonicalConsoleRole(roleName)
+  if (affiliation !== 'staff' && STAFF_ONLY_ROLES.has(canonicalRole))
     return {
       data: null,
       error: {
         code: 'team/role-not-allowed-for-affiliation',
-        message: `Role "${roleName}" is not allowed for affiliation "${affiliation}".`,
+        message: `Role "${canonicalRole}" is not allowed for affiliation "${affiliation}".`,
       },
     }
 
