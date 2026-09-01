@@ -15,7 +15,7 @@ const apiMember = {
   object: 'organization_member',
   id: 'mem_59a9a00efb334bbf93d32f6be97c21ae',
   user_id: 'user_695d45c54a374ff0a570003e15668891',
-  role: 'super_admin',
+  role: 'super-admin',
   role_id: 'rol_80b29727b7584df0b538f7a16501ba8f',
   position: null,
   status: 'active',

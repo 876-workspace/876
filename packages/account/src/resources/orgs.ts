@@ -629,7 +629,7 @@ export function createOrgsResource(runtime: SdkRuntime) {
     },
 
     /**
-     * Org roles: default system roles (super_admin, admin, staff)
+     * Org roles: default system roles (super-admin, admin, staff)
      * seeded at org creation, plus the org's custom roles. Reads require
      * membership; mutations require `roles:manage`. System roles are immutable.
      */
