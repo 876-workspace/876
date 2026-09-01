@@ -21,7 +21,7 @@ export default async function OnboardingPage() {
     // The organization exists — including one already using 876 Billing — but
     // has no Invoice subscription. An owner or admin can simply turn it on;
     // anyone else genuinely has to ask them.
-    if (accessStatus === 'blocked' || (role !== 'owner' && role !== 'admin'))
+    if (accessStatus === 'blocked' || (role !== 'super_admin' && role !== 'admin'))
       redirect('/no-access?reason=subscription')
 
     return <OnboardingForm existingOrgName={orgName} />

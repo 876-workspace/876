@@ -1,5 +1,5 @@
 const PRIVATE_NOTE_ROLES = new Set([
-  'owner',
+  'super_admin',
   'admin',
   'superadmin',
   'super_admin',
