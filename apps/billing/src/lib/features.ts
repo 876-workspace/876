@@ -32,6 +32,35 @@ const BILLING_PURCHASES_EXPENSES_SLUG = 'billing-purchases-expenses'
 const BILLING_BANKING_SLUG = 'billing-banking'
 const BILLING_DOCUMENTS_SLUG = 'billing-documents'
 const BILLING_PAYROLL_SLUG = 'billing-payroll'
+
+const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
+  [BILLING_SEARCH_BAR_SLUG]: ['billing_search_bar'],
+  [BILLING_THEME_SWITCHER_SLUG]: ['billing_theme_switcher'],
+  [BILLING_GLOBAL_ADD_SLUG]: ['billing_global_add'],
+  [BILLING_APP_SWITCHER_SLUG]: ['billing_app_switcher'],
+  [BILLING_ORG_SWITCHER_SLUG]: ['billing_org_switcher'],
+  [BILLING_SALES_SLUG]: ['billing_sales'],
+  [BILLING_SALES_QUOTES_SLUG]: ['billing_sales_quotes'],
+  [BILLING_SALES_ESTIMATES_SLUG]: ['billing_sales_estimates'],
+  [BILLING_SALES_INVOICES_SLUG]: ['billing_sales_invoices'],
+  [BILLING_SUBSCRIPTIONS_SLUG]: ['billing_subscriptions'],
+  [BILLING_PURCHASES_SLUG]: ['billing_purchases'],
+  [BILLING_PURCHASES_VENDORS_SLUG]: ['billing_purchases_vendors'],
+  [BILLING_PURCHASES_EXPENSES_SLUG]: ['billing_purchases_expenses'],
+  [BILLING_BANKING_SLUG]: ['billing_banking'],
+  [BILLING_DOCUMENTS_SLUG]: ['billing_documents'],
+  [BILLING_PAYROLL_SLUG]: ['billing_payroll'],
+}
+
+function hasFeature(enabledSlugs: ReadonlySet<string>, canonicalSlug: string) {
+  return (
+    enabledSlugs.has(canonicalSlug) ||
+    (LEGACY_FEATURE_SLUGS[canonicalSlug] ?? []).some((legacySlug) =>
+      enabledSlugs.has(legacySlug)
+    )
+  )
+}
+
 const DEFAULT_UI_FEATURES: BillingUiFeatures = {
   searchBar: false,
   themeSwitcher: false,
@@ -98,30 +127,33 @@ const getCachedFeatures = cache(async function getCachedFeatures(
   const enabledSlugs = new Set(
     evaluateResult.data.map((feature) => feature.slug)
   )
-  const sales = enabledSlugs.has(BILLING_SALES_SLUG)
-  const purchases = enabledSlugs.has(BILLING_PURCHASES_SLUG)
+  const sales = hasFeature(enabledSlugs, BILLING_SALES_SLUG)
+  const purchases = hasFeature(enabledSlugs, BILLING_PURCHASES_SLUG)
 
   return {
     uiFeatures: {
-      searchBar: enabledSlugs.has(BILLING_SEARCH_BAR_SLUG),
-      themeSwitcher: enabledSlugs.has(BILLING_THEME_SWITCHER_SLUG),
-      globalAdd: enabledSlugs.has(BILLING_GLOBAL_ADD_SLUG),
-      appSwitcher: enabledSlugs.has(BILLING_APP_SWITCHER_SLUG),
-      orgSwitcher: enabledSlugs.has(BILLING_ORG_SWITCHER_SLUG),
+      searchBar: hasFeature(enabledSlugs, BILLING_SEARCH_BAR_SLUG),
+      themeSwitcher: hasFeature(enabledSlugs, BILLING_THEME_SWITCHER_SLUG),
+      globalAdd: hasFeature(enabledSlugs, BILLING_GLOBAL_ADD_SLUG),
+      appSwitcher: hasFeature(enabledSlugs, BILLING_APP_SWITCHER_SLUG),
+      orgSwitcher: hasFeature(enabledSlugs, BILLING_ORG_SWITCHER_SLUG),
       chat: isWidgetEnabled(chatWidgetMetadata, 'billing', enabledSlugs),
     },
     productFeatures: {
       sales,
-      quotes: sales && enabledSlugs.has(BILLING_SALES_QUOTES_SLUG),
-      estimates: sales && enabledSlugs.has(BILLING_SALES_ESTIMATES_SLUG),
-      invoices: sales && enabledSlugs.has(BILLING_SALES_INVOICES_SLUG),
-      subscriptions: enabledSlugs.has(BILLING_SUBSCRIPTIONS_SLUG),
+      quotes: sales && hasFeature(enabledSlugs, BILLING_SALES_QUOTES_SLUG),
+      estimates:
+        sales && hasFeature(enabledSlugs, BILLING_SALES_ESTIMATES_SLUG),
+      invoices: sales && hasFeature(enabledSlugs, BILLING_SALES_INVOICES_SLUG),
+      subscriptions: hasFeature(enabledSlugs, BILLING_SUBSCRIPTIONS_SLUG),
       purchases,
-      vendors: purchases && enabledSlugs.has(BILLING_PURCHASES_VENDORS_SLUG),
-      expenses: purchases && enabledSlugs.has(BILLING_PURCHASES_EXPENSES_SLUG),
-      banking: enabledSlugs.has(BILLING_BANKING_SLUG),
-      documents: enabledSlugs.has(BILLING_DOCUMENTS_SLUG),
-      payroll: enabledSlugs.has(BILLING_PAYROLL_SLUG),
+      vendors:
+        purchases && hasFeature(enabledSlugs, BILLING_PURCHASES_VENDORS_SLUG),
+      expenses:
+        purchases && hasFeature(enabledSlugs, BILLING_PURCHASES_EXPENSES_SLUG),
+      banking: hasFeature(enabledSlugs, BILLING_BANKING_SLUG),
+      documents: hasFeature(enabledSlugs, BILLING_DOCUMENTS_SLUG),
+      payroll: hasFeature(enabledSlugs, BILLING_PAYROLL_SLUG),
     },
     widgets: {
       notepad: isWidgetEnabled(notepadWidgetMetadata, 'billing', enabledSlugs),
