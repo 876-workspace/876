@@ -24,6 +24,12 @@ import type {
 import { billingPermissionValues } from './access.schemas'
 import { serializeRole } from './access.serializers'
 
+type OrganizationRole = 'super-admin' | 'super_admin' | 'admin' | 'staff'
+
+function isSuperAdminRole(role: OrganizationRole): boolean {
+  return role === 'super-admin' || role === 'super_admin'
+}
+
 export async function activeMemberAuthorization(
   tenantId: string,
   userId: string
@@ -37,7 +43,7 @@ export async function activeMemberAuthorization(
 export async function effectiveMemberAuthorization(
   tenantId: string,
   userId: string,
-  organizationRole: 'super_admin' | 'admin' | 'staff'
+  organizationRole: OrganizationRole
 ) {
   const member = await resolveMemberAccess(tenantId, userId, organizationRole)
   return member?.status === 'ACTIVE'
@@ -75,18 +81,17 @@ function memberAccess(
 export async function resolveMemberAccess(
   tenantId: string,
   userId: string,
-  organizationRole: 'super_admin' | 'admin' | 'staff'
+  organizationRole: OrganizationRole
 ) {
-  if (organizationRole !== 'super_admin') {
+  if (!isSuperAdminRole(organizationRole)) {
     const current = await findMemberRow(tenantId, userId)
     if (current) return memberAccess(userId, current.status, current.role)
   }
-  const slug =
-    organizationRole === 'super_admin'
-      ? 'super_admin'
-      : organizationRole === 'admin'
-        ? 'admin'
-        : 'staff'
+  const slug = isSuperAdminRole(organizationRole)
+    ? 'super-admin'
+    : organizationRole === 'admin'
+      ? 'admin'
+      : 'staff'
   return memberAccess(userId, 'ACTIVE', await findRoleBySlug(tenantId, slug))
 }
 
