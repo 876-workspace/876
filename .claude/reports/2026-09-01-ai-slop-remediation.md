@@ -170,6 +170,9 @@ pnpm --filter @876/crm-api build
 pnpm --filter @876/crm typecheck
 pnpm --filter @876/console typecheck
 pnpm --filter @876/console lint
+pnpm check:service-bundle          # the guard the branch had not been run against
+pnpm check:structure
+pnpm check:transpile
 ```
 
 Defects found and fixed during the review:
@@ -184,7 +187,13 @@ Defects found and fixed during the review:
 3. **The new rule was not referenced from either rule index**, so nothing would
    ever load it. `ai-code-quality.md` is now listed in the Required Context
    section of both `CLAUDE.md` and `AGENTS.md`.
-4. **Console still hand-wrote the request-status union** the branch had just
+4. **`@876/crm` was not inlined into the crm-api container bundle.**
+   `apps/crm-api/tsup.config.ts` left the new dependency external. The package
+   ships raw TypeScript, so `pnpm build` stays green and the container then
+   crashes at boot with `ERR_MODULE_NOT_FOUND` — the failure mode that took the
+   deployed API down in #274. Caught by `pnpm check:service-bundle`, which the
+   branch had never been run against; `@876/crm` is now in `noExternal`.
+5. **Console still hand-wrote the request-status union** the branch had just
    canonicalized — a third copy, which is precisely what the new rule forbids.
    `apps/console/src/types/crm.ts` now aliases `RequestStatus` from `@876/crm`
    (matching how `apps/crm/src/types/crm.ts` already does it), and
