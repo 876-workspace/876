@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { APP_ACCESS_SEED_DEFINITIONS } from './app-access'
 
 const KEY = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/
-const ROLE_KEY = /^[a-z][a-z0-9_]*$/
+const ROLE_KEY = /^[a-z][a-z0-9-]*$/
 
 function app(slug: string) {
   const definition = APP_ACCESS_SEED_DEFINITIONS.find(
@@ -41,7 +41,7 @@ describe('app access seed catalog', () => {
   )
 
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
-    '$appSlug system role keys use canonical snake_case',
+    '$appSlug system role keys use canonical kebab-case',
     (definition) => {
       expect(definition.roles.every((role) => ROLE_KEY.test(role.key))).toBe(true)
     }
@@ -123,7 +123,7 @@ describe('app access seed catalog', () => {
     '$appSlug uses the shared role vocabulary and order',
     (definition) => {
       expect(definition.roles.map((role) => role.key)).toEqual([
-        'super_admin',
+        'super-admin',
         'admin',
         'staff',
       ])
@@ -160,7 +160,7 @@ describe('app access seed catalog', () => {
     '$appSlug super admin receives the complete declared catalog',
     (definition) => {
       const superAdmin = definition.roles.find(
-        (role) => role.key === 'super_admin'
+        (role) => role.key === 'super-admin'
       )
       expect(superAdmin?.permissions).toEqual(
         definition.permissions.map((permission) => permission.key)

@@ -410,7 +410,7 @@ export async function assignMemberApps(params: {
   now: number
   sourceAppId?: string | null
   assignedBy?: string | null
-  appRoleKey?: 'super_admin' | 'admin' | 'staff'
+  appRoleKey?: 'super-admin' | 'admin' | 'staff'
 }): Promise<void> {
   const now = BigInt(params.now)
   const assignedBy = params.assignedBy ?? null

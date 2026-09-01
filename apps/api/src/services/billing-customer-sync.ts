@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 
 import { generateId } from '@/platform/ids'
+import { SUPER_ADMIN_ROLE_NAME } from '@/platform/permissions'
 
 export const CUSTOMER_EVENT_TYPE = 'customer.ensure'
 
@@ -166,7 +167,8 @@ async function resolveOrgPrimaryContact(
   })
 
   const primary =
-    sorted.find((membership) => membership.role === 'super_admin') ?? sorted[0]!
+    sorted.find((membership) => membership.role === SUPER_ADMIN_ROLE_NAME) ??
+    sorted[0]!
   return repository.findUserById(primary.userId)
 }
 

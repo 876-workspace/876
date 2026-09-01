@@ -150,7 +150,7 @@ describe('seedDefaultRoles', () => {
     prisma.organizationRole.findMany.mockResolvedValue([
       {
         id: 'rol_custom',
-        name: 'super_admin',
+        name: 'super-admin',
         displayName: 'Owner',
         description: null,
         permissions: ['custom:permission'],
@@ -160,7 +160,7 @@ describe('seedDefaultRoles', () => {
 
     const roles = await seedDefaultRoles(ORG, NOW)
 
-    expect(roles.super_admin?.permissions).toEqual(['custom:permission'])
+    expect(roles['super-admin']?.permissions).toEqual(['custom:permission'])
     expect(prisma.organizationRole.create).toHaveBeenCalledTimes(
       DEFAULT_ORG_ROLES.length - 1
     )
