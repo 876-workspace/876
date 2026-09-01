@@ -667,6 +667,10 @@ No PR should be opened until explicitly requested.
 
 # Current progress snapshot
 
+_Last updated 2026-09-01 after the local execution gates were run for the first
+time. Everything above this line is the plan as written; this section is the
+state of the code that actually exists._
+
 ## Completed implementation
 
 - provider/connection/outbox schema and migrations;
@@ -684,17 +688,95 @@ No PR should be opened until explicitly requested.
 - provider error-classification tests with raw-provider-message leak prevention;
 - dependency-pending sync regression tests;
 - generation-guard repository regression tests;
-- webhook capability corrected to `false` in adapter and persisted provider catalog migration.
+- webhook capability corrected to `false` in adapter and persisted provider catalog migration;
+- Billing accounting-provider management surface (list/detail/create, connection
+  actions, adoption preview and release);
+- adoption UI — `DONE`, not deferred. The decision recorded in Phase 8 was to add
+  it only if a clean, narrow selector was possible; it was, so it landed at
+  `/settings/accounting-providers/[connectionId]/imports`;
+- naming-branch reconciliation — `DONE`. `refactor/platform-naming-contract` is
+  now a strict ancestor of this branch, so no manual reconciliation remains.
 
-## Active implementation
+## Phase 11 local verification — executed 2026-09-01
 
-- `IN PROGRESS` Billing accounting-provider management surface;
-- `IN PROGRESS` final accounting-provider error-code convention sweep;
-- `IN PROGRESS` documentation updates as UI and migration details settle.
+These are the gates the connector environment could not run. All were executed
+locally against the development Neon database and all now pass.
 
-## Remaining after UI/hardening
+| Gate                                             | Result                                        |
+| ------------------------------------------------ | --------------------------------------------- |
+| `@876/billing-api` `db:generate` / `db:validate` | pass                                          |
+| `@876/billing-api` `db:migration:check`          | 36 migrations applied, schema up to date      |
+| `@876/billing-api` `db:drift`                    | no accounting-provider drift (see note below) |
+| `@876/billing-api` `typecheck`                   | pass                                          |
+| `@876/billing-api` `lint`                        | pass, 0 errors                                |
+| `@876/billing-api` `boundaries`                  | pass, 0 violations                            |
+| `@876/billing-api` `test`                        | 560 passed                                    |
+| `@876/billing-api` `build`                       | pass                                          |
+| `@876/billing-api` `api:contract:check`          | 213 frozen == 213 Express, 0 mismatches       |
+| `@876/billing` SDK `typecheck` / `test`          | pass, 213 tests                               |
+| `@876/billing-app` `typecheck` / `lint` / `test` | pass, 723 tests                               |
+| `scripts/check-app-structure.mjs`                | pass                                          |
 
-- `TODO` adoption UI decision/implementation;
-- `TODO` latest naming-branch reconciliation;
-- `TODO` final handoff/SHA update;
-- `LOCAL` database, build, test, and live Zoho verification.
+### Defects the gates found, and how each was resolved
+
+1. **Prisma compound-key name.** `accounting-import.repository` queried
+   `billing_provider_references_external_key`, which is the `map:` (database
+   constraint) name. Prisma generates the client key from the field list, so the
+   correct key is `provider_externalType_externalId`.
+2. **Half-applied uniqueness hardening.** `findAccountingReferenceByExternalId`
+   had been replaced by `findAccountingReferenceByProviderExternal` without
+   updating its caller or test. The rewrite was the right call — the unique index
+   is `(provider, externalType, externalId)`, so a conflict on a sibling
+   connection is just as real as one on this connection — so the caller was moved
+   onto it and now also rejects a cross-connection conflict, with a test.
+3. **`accountingResourceTypes` exported as a type.** `providers/accounting/index.ts`
+   used `export type *`, so the runtime array was not exported as a value.
+4. **Provider layer imported HTTP errors.** `providers/accounting/registry.ts`
+   threw `AppHttpError`, violating the `providers-are-leaf` boundary. Extracted
+   `AccountingProviderError` as the provider-layer error; `ZohoBooksError` now
+   extends it and the module-layer mapper normalizes the base class.
+5. **Service queried Prisma directly.** `accounting-sync.service.ts` ran six
+   `prisma.*.findFirst` reads, violating `prisma-only-in-repositories`. The
+   queries moved to `accounting-sync.repository.ts` as `findProjectable*`
+   loaders; the mapping stayed in the service.
+6. **Role migration violated a CHECK constraint.** `billing_roles_slug_check` was
+   `^[a-z0-9_]{2,50}$` — no hyphen — so the canonical `super_admin` →
+   `super-admin` rewrite could not have applied. The migration now widens the
+   constraint first. Verified against the live database: the constraint is now
+   `^[a-z0-9_-]{2,50}$` and all role slugs are `super-admin`/`admin`/`staff`.
+7. **Truncated index identifier.** The foundation migration declares a 64-byte
+   index name; Postgres truncates at 63. The schema now declares the truncated
+   form so drift stays clean, with a comment so it is not "fixed" back.
+8. **New operations could not boot.** `v1Operation` threw for any route absent
+   from the frozen contract, so a new endpoint could never start the app that
+   generates the contract. It now returns `undefined` and the route falls back to
+   its inline spec; `api:contract:check` still fails an unregistered route as an
+   extra operation, so parity is unchanged.
+9. **`<Button asChild>` in the Billing UI.** `@876/ui`'s Button wraps Base UI, not
+   Radix, and has no `asChild`. Converted to the platform pattern —
+   `className={buttonVariants({ … })}` on the `<Link>`.
+10. **Unregistered surfaces.** The app's anti-drift tests correctly caught the new
+    resource client, settings nav entry, route manifest, and contract inventory.
+    All four were registered rather than relaxed. The proxied-resource test was
+    additionally corrected to detect real proxy routes by their use of
+    `createBillingResourceRoute`, so the hand-written accounting dispatcher can
+    never be mistaken for a generic passthrough.
+
+### Known, out of scope
+
+- `db:drift` reports three index renames and one orphan `BillingInterval` enum.
+  Every schema file involved is byte-identical to `main`; this drift pre-dates the
+  branch and is not touched here.
+- `packages/core` `phone.test.ts` expects 32 dial codes and receives 41. Its
+  inputs are byte-identical to `main`; pre-existing and out of scope.
+
+## Remaining — live Zoho validation only
+
+The Phase 11 "Live Zoho validation" list is unchanged and still outstanding. It
+needs a disposable Billing organization plus a real Zoho Books sandbox
+organization and credentials, which this environment does not have. Nothing in
+the code path is blocked on it; it is an operator acceptance gate before the
+feature is enabled for a real tenant.
+
+`ACCOUNTING_PROVIDER_SYNC_ENABLED` defaults to `false`, so merging this branch
+enables no projection anywhere until an operator turns it on.
