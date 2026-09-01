@@ -142,7 +142,7 @@ describe('Enterprise organization onboarding route', () => {
       error: null,
     })
     expect(mocks.createOrganization).toHaveBeenCalledWith({
-      ownerUserId: 'user_123',
+      creatorUserId: 'user_123',
       name: 'Acme Logistics',
     })
   })
@@ -233,7 +233,7 @@ describe('Enterprise organization onboarding route', () => {
     await POST(request({ name: 'Acme' }))
     expect(mocks.listRouting).toHaveBeenCalledWith({ userId: 'local_999' })
     expect(mocks.createOrganization).toHaveBeenCalledWith(
-      expect.objectContaining({ ownerUserId: 'local_999' })
+      expect.objectContaining({ creatorUserId: 'local_999' })
     )
   })
 

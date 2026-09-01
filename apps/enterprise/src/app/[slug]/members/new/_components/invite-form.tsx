@@ -24,7 +24,7 @@ export function InviteForm({
   const [isPending, startTransition] = useTransition()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState(
-    roles.some((r) => r.name === 'member') ? 'member' : (roles[0]?.name ?? '')
+    roles.some((r) => r.name === 'staff') ? 'staff' : (roles[0]?.name ?? '')
   )
 
   function handleSubmit(event: React.FormEvent) {

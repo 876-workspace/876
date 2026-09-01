@@ -29,10 +29,9 @@ export async function POST(
     )
   }
 
-  // Granting owner via invite is owner-only, same as direct role changes.
-  if (role === 'owner' && auth.membership.role !== 'owner') {
+  if (role === 'super_admin' && auth.membership.role !== 'super_admin') {
     return apiJson(
-      { error: 'Only an owner can invite another owner.' },
+      { error: 'Only a super admin can invite another super admin.' },
       { status: 403 }
     )
   }
