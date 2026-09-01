@@ -398,7 +398,10 @@ describe('GET /v1/tenants', () => {
     expect(response.status).toBe(401)
     expect(response.body).toEqual({
       data: null,
-      error: { code: 'auth/no-session', message: 'No active session.' },
+      error: {
+        code: 'auth/no-session',
+        message: 'You are not signed in. Please sign in to continue.',
+      },
     })
   })
 
