@@ -21,13 +21,13 @@ describe('defineAppPermissionCatalog — security boundary', () => {
     ).toThrow(TypeError)
   })
 
-  it('rejects module key with dash', () => {
-    expect(() =>
+  it('accepts canonical kebab-case module keys', () => {
+    expect(
       defineAppPermissionCatalog({
         app: '876-test',
         modules: [{ key: 'bad-key', label: 'Bad', permissions: [] }],
-      })
-    ).toThrow(TypeError)
+      }).modules[0]?.key
+    ).toBe('bad-key')
   })
 
   it('rejects module key starting with number', () => {

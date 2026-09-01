@@ -14,7 +14,7 @@ function cat(
     app: '876-test',
     modules: [
       {
-        key: 'm_one',
+        key: 'm-one',
         label: 'M One',
         permissions: [
           { action: 'view', label: 'View m one' },
@@ -22,7 +22,7 @@ function cat(
         ],
       },
       {
-        key: 'm_two',
+        key: 'm-two',
         label: 'M Two',
         permissions: [{ action: 'view', label: 'View m two' }],
       },
@@ -57,13 +57,13 @@ describe('defineAppPermissionCatalog — weird', () => {
       slug
     )
   })
-  it('rejects module key with dash', () => {
-    expect(() =>
+  it('accepts a kebab-case module key', () => {
+    expect(
       defineAppPermissionCatalog({
         app: '876-test',
         modules: [{ key: 'my-module', label: 'M', permissions: [] }],
-      })
-    ).toThrow(TypeError)
+      }).modules[0]?.key
+    ).toBe('my-module')
   })
   it('rejects module key with dot', () => {
     expect(() =>
@@ -141,8 +141,8 @@ describe('defineAppPermissionCatalog — weird', () => {
       })
     ).toThrow(TypeError)
   })
-  it('rejects permission action with dash', () => {
-    expect(() =>
+  it('accepts a kebab-case permission action', () => {
+    expect(
       defineAppPermissionCatalog({
         app: '876-test',
         modules: [
@@ -152,8 +152,8 @@ describe('defineAppPermissionCatalog — weird', () => {
             permissions: [{ action: 'my-action', label: 'M' }],
           },
         ],
-      })
-    ).toThrow(TypeError)
+      }).permissions[0]?.key
+    ).toBe('mod.my-action')
   })
   it('rejects duplicate module keys', () => {
     expect(() =>
@@ -222,7 +222,7 @@ describe('defineAppPermissionCatalog — weird', () => {
       app: '876-test',
       modules: [
         {
-          key: 'b_mod',
+          key: 'b-mod',
           label: 'B',
           position: 2,
           permissions: [
@@ -231,21 +231,21 @@ describe('defineAppPermissionCatalog — weird', () => {
           ],
         },
         {
-          key: 'a_mod',
+          key: 'a-mod',
           label: 'A',
           position: 1,
           permissions: [{ action: 'view', label: 'V' }],
         },
       ],
     })
-    expect(c.modules.map((m) => m.key)).toEqual(['a_mod', 'b_mod'])
+    expect(c.modules.map((m) => m.key)).toEqual(['a-mod', 'b-mod'])
     expect(
-      c.modules.find((m) => m.key === 'b_mod')?.permissions.map((p) => p.action)
+      c.modules.find((m) => m.key === 'b-mod')?.permissions.map((p) => p.action)
     ).toEqual(['edit', 'view'])
     expect(c.permissions.map((p) => p.key)).toEqual([
-      'a_mod.view',
-      'b_mod.edit',
-      'b_mod.view',
+      'a-mod.view',
+      'b-mod.edit',
+      'b-mod.view',
     ])
   })
   it('handles position as NaN -> treated as NaN sorting (still not throw)', () => {
@@ -297,7 +297,7 @@ describe('resolveEffectivePermissions — weird', () => {
   it('returns [] when catalog is null', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
+        role: { permissions: ['m-one.view'] },
         catalog: null as unknown as AppPermissionCatalog,
       })
     ).toEqual([])
@@ -305,7 +305,7 @@ describe('resolveEffectivePermissions — weird', () => {
   it('returns [] when catalog is undefined', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
+        role: { permissions: ['m-one.view'] },
         catalog: undefined as unknown as AppPermissionCatalog,
       })
     ).toEqual([])
@@ -313,7 +313,7 @@ describe('resolveEffectivePermissions — weird', () => {
   it('returns [] when catalog is string', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
+        role: { permissions: ['m-one.view'] },
         catalog: 'evil' as unknown as AppPermissionCatalog,
       })
     ).toEqual([])
@@ -326,7 +326,7 @@ describe('resolveEffectivePermissions — weird', () => {
   it('handles role permissions not an array', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: 'm_one.view' as unknown as string[] },
+        role: { permissions: 'm-one.view' as unknown as string[] },
         catalog,
       })
     ).toEqual([])
@@ -336,40 +336,40 @@ describe('resolveEffectivePermissions — weird', () => {
       resolveEffectivePermissions({
         role: {
           permissions: [
-            'm_one.view',
+            'm-one.view',
             42 as unknown as string,
             null as unknown as string,
           ],
         },
         catalog,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('ignores non-string grants', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
-        grants: [42 as unknown as string, 'm_two.view'],
+        role: { permissions: ['m-one.view'] },
+        grants: [42 as unknown as string, 'm-two.view'],
         catalog,
       })
-    ).toEqual(['m_one.view', 'm_two.view'])
+    ).toEqual(['m-one.view', 'm-two.view'])
   })
   it('ignores non-string denies', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view', 'm_two.view'] },
-        denies: [null as unknown as string, 'm_two.view'],
+        role: { permissions: ['m-one.view', 'm-two.view'] },
+        denies: [null as unknown as string, 'm-two.view'],
         catalog,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('filters out permissions not in catalog', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view', 'not:in_catalog'] },
+        role: { permissions: ['m-one.view', 'not:in_catalog'] },
         catalog,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('grants not in catalog are dropped', () => {
     expect(
@@ -383,48 +383,48 @@ describe('resolveEffectivePermissions — weird', () => {
   it('denies that are not held are no-ops', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
-        denies: ['m_two.view'],
+        role: { permissions: ['m-one.view'] },
+        denies: ['m-two.view'],
         catalog,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('grants and denies interaction — deny wins over grant', () => {
     expect(
       resolveEffectivePermissions({
         role: { permissions: [] },
-        grants: ['m_one.view'],
-        denies: ['m_one.view'],
+        grants: ['m-one.view'],
+        denies: ['m-one.view'],
         catalog,
       })
     ).toEqual([])
   })
   it('grant adds, deny removes, sorted output', () => {
     const res = resolveEffectivePermissions({
-      role: { permissions: ['m_two.view'] },
-      grants: ['m_one.edit'],
-      denies: ['m_two.view'],
+      role: { permissions: ['m-two.view'] },
+      grants: ['m-one.edit'],
+      denies: ['m-two.view'],
       catalog,
     })
-    expect(res).toEqual(['m_one.edit'])
+    expect(res).toEqual(['m-one.edit'])
   })
   it('handles duplicate grants and denies', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
-        grants: ['m_one.edit', 'm_one.edit'],
-        denies: ['m_one.view', 'm_one.view'],
+        role: { permissions: ['m-one.view'] },
+        grants: ['m-one.edit', 'm-one.edit'],
+        denies: ['m-one.view', 'm-one.view'],
         catalog,
       })
-    ).toEqual(['m_one.edit'])
+    ).toEqual(['m-one.edit'])
   })
   it('handles catalog as array of permissions', () => {
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
+        role: { permissions: ['m-one.view'] },
         catalog: catalog.permissions,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('handles catalog array with null entries filtered', () => {
     const weird = [
@@ -434,10 +434,10 @@ describe('resolveEffectivePermissions — weird', () => {
     ]
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
+        role: { permissions: ['m-one.view'] },
         catalog: weird as unknown as AppPermissionCatalog,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('handles role with __proto__ permission (allowed if in catalog? not, so dropped)', () => {
     expect(
@@ -448,7 +448,7 @@ describe('resolveEffectivePermissions — weird', () => {
     ).toEqual([])
   })
   it('handles extremely large permission set (1000 perms) filtering', () => {
-    const many = Array.from({ length: 1000 }, (_, i) => `m_one.view${i}`)
+    const many = Array.from({ length: 1000 }, (_, i) => `m-one.view${i}`)
     const res = resolveEffectivePermissions({
       role: { permissions: many },
       catalog,
@@ -465,89 +465,89 @@ describe('resolveEffectivePermissions — weird', () => {
     expect(resolveEffectivePermissions(evil)).toEqual([])
   })
   it('handles grants as array-like object (not array) -> ignored', () => {
-    const fake = { 0: 'm_one.edit', length: 1 } as unknown as string[]
+    const fake = { 0: 'm-one.edit', length: 1 } as unknown as string[]
     expect(
       resolveEffectivePermissions({
-        role: { permissions: ['m_one.view'] },
+        role: { permissions: ['m-one.view'] },
         grants: fake,
         catalog,
       })
-    ).toEqual(['m_one.view'])
+    ).toEqual(['m-one.view'])
   })
   it('handles Object.create(null) role permissions', () => {
     const role = Object.create(null) as any
-    role.permissions = ['m_one.view']
+    role.permissions = ['m-one.view']
     expect(resolveEffectivePermissions({ role, catalog })).toEqual([
-      'm_one.view',
+      'm-one.view',
     ])
   })
   it('handles frozen role and catalog', () => {
-    const role = Object.freeze({ permissions: ['m_one.view'] })
+    const role = Object.freeze({ permissions: ['m-one.view'] })
     const fr = Object.freeze(catalog)
     expect(resolveEffectivePermissions({ role, catalog: fr })).toEqual([
-      'm_one.view',
+      'm-one.view',
     ])
   })
   it('does not mutate input arrays', () => {
-    const rolePerms = ['m_one.view']
-    const grants = ['m_one.edit']
-    const denies = ['m_one.view']
+    const rolePerms = ['m-one.view']
+    const grants = ['m-one.edit']
+    const denies = ['m-one.view']
     resolveEffectivePermissions({
       role: { permissions: rolePerms },
       grants,
       denies,
       catalog,
     })
-    expect(rolePerms).toEqual(['m_one.view'])
-    expect(grants).toEqual(['m_one.edit'])
-    expect(denies).toEqual(['m_one.view'])
+    expect(rolePerms).toEqual(['m-one.view'])
+    expect(grants).toEqual(['m-one.edit'])
+    expect(denies).toEqual(['m-one.view'])
   })
   it('output is sorted lexicographically', () => {
     const res = resolveEffectivePermissions({
-      role: { permissions: ['m_two.view', 'm_one.view', 'm_one.edit'] },
+      role: { permissions: ['m-two.view', 'm-one.view', 'm-one.edit'] },
       catalog,
     })
-    expect(res).toEqual(['m_one.edit', 'm_one.view', 'm_two.view'])
+    expect(res).toEqual(['m-one.edit', 'm-one.view', 'm-two.view'])
   })
 })
 
 describe('hasPermission — weird', () => {
   it('returns false when effective is null', () => {
-    expect(hasPermission(null, 'm_one.view')).toBe(false)
+    expect(hasPermission(null, 'm-one.view')).toBe(false)
   })
   it('returns false when effective is undefined', () => {
-    expect(hasPermission(undefined, 'm_one.view')).toBe(false)
+    expect(hasPermission(undefined, 'm-one.view')).toBe(false)
   })
   it('returns false when effective is string', () => {
     expect(
-      hasPermission('m_one.view' as unknown as string[], 'm_one.view')
+      hasPermission('m-one.view' as unknown as string[], 'm-one.view')
     ).toBe(false)
   })
   it('returns false when effective is object', () => {
     expect(
-      hasPermission({ 0: 'm_one.view' } as unknown as string[], 'm_one.view')
+      hasPermission({ 0: 'm-one.view' } as unknown as string[], 'm-one.view')
     ).toBe(false)
   })
   it('returns false for empty permission string', () => {
-    expect(hasPermission(['m_one.view'], '')).toBe(false)
+    expect(hasPermission(['m-one.view'], '')).toBe(false)
   })
   it('returns true for exact match', () => {
-    expect(hasPermission(['m_one.view'], 'm_one.view')).toBe(true)
+    expect(hasPermission(['m-one.view'], 'm-one.view')).toBe(true)
   })
   it('is case-sensitive', () => {
-    expect(hasPermission(['m_one.view'], 'M_ONE.VIEW')).toBe(false)
+    expect(hasPermission(['m-one.view'], 'M_ONE.VIEW')).toBe(false)
   })
   it('does not match prefix', () => {
-    expect(hasPermission(['m_one.view_extra'], 'm_one.view')).toBe(false)
+    expect(hasPermission(['m-one.view_extra'], 'm-one.view')).toBe(false)
   })
   it('handles sparse effective array', () => {
     const sparse = Array(2) as unknown as string[]
-    sparse[1] = 'm_one.view'
-    expect(hasPermission(sparse, 'm_one.view')).toBe(true)
+    sparse[1] = 'm-one.view'
+    expect(hasPermission(sparse, 'm-one.view')).toBe(true)
   })
   it('handles Uint8Array effective (not array)', () => {
     expect(
-      hasPermission(new Uint8Array([1]) as unknown as string[], 'm_one.view')
+      hasPermission(new Uint8Array([1]) as unknown as string[], 'm-one.view')
     ).toBe(false)
   })
 })
@@ -556,16 +556,16 @@ describe('groupByModule — weird', () => {
   const catalog = cat()
 
   it('marks granted correctly', () => {
-    const res = groupByModule(catalog, ['m_one.view'])
+    const res = groupByModule(catalog, ['m-one.view'])
     expect(
       res
-        .find((m) => m.key === 'm_one')
-        ?.permissions.find((p) => p.key === 'm_one.view')?.granted
+        .find((m) => m.key === 'm-one')
+        ?.permissions.find((p) => p.key === 'm-one.view')?.granted
     ).toBe(true)
     expect(
       res
-        .find((m) => m.key === 'm_one')
-        ?.permissions.find((p) => p.key === 'm_one.edit')?.granted
+        .find((m) => m.key === 'm-one')
+        ?.permissions.find((p) => p.key === 'm-one.edit')?.granted
     ).toBe(false)
   })
   it('handles effective null', () => {
@@ -581,20 +581,20 @@ describe('groupByModule — weird', () => {
     ).toBe(true)
   })
   it('handles effective with non-strings filtered', () => {
-    const res = groupByModule(catalog, ['m_one.view', 42 as unknown as string])
+    const res = groupByModule(catalog, ['m-one.view', 42 as unknown as string])
     expect(
       res
-        .find((m) => m.key === 'm_one')
-        ?.permissions.find((p) => p.key === 'm_one.view')?.granted
+        .find((m) => m.key === 'm-one')
+        ?.permissions.find((p) => p.key === 'm-one.view')?.granted
     ).toBe(true)
   })
   it('returns modules in catalog order (not sorted by effective)', () => {
-    const res = groupByModule(catalog, ['m_two.view', 'm_one.edit'])
-    expect(res.map((m) => m.key)).toEqual(['m_one', 'm_two'])
+    const res = groupByModule(catalog, ['m-two.view', 'm-one.edit'])
+    expect(res.map((m) => m.key)).toEqual(['m-one', 'm-two'])
   })
   it('does not mutate catalog', () => {
     const before = JSON.stringify(catalog)
-    groupByModule(catalog, ['m_one.view'])
+    groupByModule(catalog, ['m-one.view'])
     expect(JSON.stringify(catalog)).toBe(before)
   })
   it('handles catalog with no modules', () => {
@@ -602,7 +602,7 @@ describe('groupByModule — weird', () => {
     expect(groupByModule(empty, ['x'])).toEqual([])
   })
   it('handles effective as array-like object (ignored)', () => {
-    const fake = { 0: 'm_one.view', length: 1 } as unknown as string[]
+    const fake = { 0: 'm-one.view', length: 1 } as unknown as string[]
     const res = groupByModule(catalog, fake)
     expect(
       res.every((m) => m.permissions.every((p) => p.granted === false))

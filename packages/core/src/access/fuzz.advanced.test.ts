@@ -84,7 +84,6 @@ describe('fuzz — defineAppPermissionCatalog rejects weird keys', () => {
     ' ',
     '\n',
     'A',
-    'a-b',
     'a.b',
     '1a',
     '__proto__',
@@ -107,7 +106,6 @@ describe('fuzz — defineAppPermissionCatalog rejects weird keys', () => {
     ' ',
     '\n',
     'View',
-    'a-b',
     'a.b',
     '1a',
     '__proto__',
@@ -129,6 +127,21 @@ describe('fuzz — defineAppPermissionCatalog rejects weird keys', () => {
         })
       ).toThrow()
     })
+  })
+
+  it('accepts canonical kebab-case module and action keys', () => {
+    expect(
+      defineAppPermissionCatalog({
+        app: '876-fuzz',
+        modules: [
+          {
+            key: 'my-module',
+            label: 'My module',
+            permissions: [{ action: 'view-all', label: 'View all' }],
+          },
+        ],
+      }).permissions[0]?.key
+    ).toBe('my-module.view-all')
   })
 })
 

@@ -184,7 +184,7 @@ describe('catalogs — massive edge coverage', () => {
   })
 
   it('defineAppPermissionCatalog rejects invalid keys fuzz', () => {
-    const bad = ['', ' ', 'A', 'a-b', 'a.b', '1a', 'a'.repeat(65)]
+    const bad = ['', ' ', 'A', 'a.b', '1a', 'a'.repeat(65)]
     for (const key of bad) {
       expect(() =>
         defineAppPermissionCatalog({
