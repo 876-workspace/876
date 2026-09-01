@@ -1,8 +1,11 @@
-import { AppHttpError } from '@/http/errors'
 import { tenantAuthorizationByOrganizationId } from '@/modules/tenants'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { accountingProvider } from '@/providers/accounting'
 
+import {
+  accountingProviderCall,
+  accountingProviderError,
+} from './accounting-provider-errors'
 import {
   findAccountingReferenceByExternalId,
   listAccountingReferencesByExternalIds,
@@ -18,18 +21,10 @@ export const accountingImportResourceTypes = ['customer', 'item'] as const
 export type AccountingImportResourceType =
   (typeof accountingImportResourceTypes)[number]
 
-function error(code: string, message: string, httpStatus: number) {
-  return new AppHttpError({ code, message, httpStatus })
-}
-
 async function tenantIdForOrganization(organizationId: string) {
   const tenant = await tenantAuthorizationByOrganizationId(organizationId)
   if (!tenant || !tenant.active)
-    throw error(
-      'billing/workspace-not-found',
-      'The Billing workspace was not found.',
-      404
-    )
+    throw accountingProviderError('billing/workspace-not-found')
   return tenant.id
 }
 
@@ -38,12 +33,12 @@ async function connectionContext(
   connectionId: string
 ) {
   const tenantId = await tenantIdForOrganization(organizationId)
-  const access = await zohoAccessContext(connectionId)
+  const access = await accountingProviderCall(() =>
+    zohoAccessContext(connectionId)
+  )
   if (access.row.tenantId !== tenantId)
-    throw error(
-      'billing/accounting-provider-connection-not-found',
-      'Accounting provider connection not found.',
-      404
+    throw accountingProviderError(
+      'billing/accounting-provider-connection-not-found'
     )
   return { tenantId, ...access }
 }
@@ -63,11 +58,7 @@ function externalId(
   const value = record as Record<string, unknown>
   const id = resourceType === 'customer' ? value.contact_id : value.item_id
   if (typeof id !== 'string' || !id)
-    throw error(
-      'billing/provider-invalid-response',
-      'The accounting provider returned a resource without an identifier.',
-      502
-    )
+    throw accountingProviderError('billing/provider-invalid-response')
   return id
 }
 
@@ -105,9 +96,11 @@ export async function listAccountingImportCandidates(params: {
     params.organizationId,
     params.connectionId
   )
-  const page = await providerResource(row.provider.key, params.resourceType).list(
-    ctx,
-    { page: params.page, perPage: params.perPage }
+  const page = await accountingProviderCall(() =>
+    providerResource(row.provider.key, params.resourceType).list(ctx, {
+      page: params.page,
+      perPage: params.perPage,
+    })
   )
   const externalIds = page.data.map((record) =>
     externalId(params.resourceType, record)
@@ -150,15 +143,15 @@ export async function adoptAccountingProviderResource(params: {
       params.resourceId
     ))
   )
-    throw error(
-      `${params.resourceType}/not-found`,
-      `${params.resourceType === 'customer' ? 'Customer' : 'Item'} not found.`,
-      404
+    throw accountingProviderError(
+      'billing/accounting-provider-local-resource-not-found'
     )
 
-  await providerResource(row.provider.key, params.resourceType).retrieve(
-    ctx,
-    params.externalId
+  await accountingProviderCall(() =>
+    providerResource(row.provider.key, params.resourceType).retrieve(
+      ctx,
+      params.externalId
+    )
   )
   const existing = await findAccountingReferenceByExternalId({
     connectionId: params.connectionId,
@@ -166,10 +159,8 @@ export async function adoptAccountingProviderResource(params: {
     externalId: params.externalId,
   })
   if (existing && existing.resourceId !== params.resourceId)
-    throw error(
-      'billing/accounting-provider-resource-already-adopted',
-      'This provider resource is already mapped to another Billing resource.',
-      409
+    throw accountingProviderError(
+      'billing/accounting-provider-resource-already-adopted'
     )
 
   await upsertAccountingReference({
@@ -204,10 +195,8 @@ export async function releaseAccountingProviderResource(params: {
     params.resourceId
   )
   if (!removed.count)
-    throw error(
-      'billing/accounting-provider-adoption-not-found',
-      'Accounting provider adoption not found.',
-      404
+    throw accountingProviderError(
+      'billing/accounting-provider-adoption-not-found'
     )
   return {
     object: 'accounting-provider-adoption' as const,
