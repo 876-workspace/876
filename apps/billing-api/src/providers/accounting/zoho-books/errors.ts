@@ -1,3 +1,5 @@
+import { getError, isErrorCode } from '@876/core'
+
 export class ZohoBooksError extends Error {
   readonly code: string
   readonly httpStatus: number | null
@@ -5,18 +7,19 @@ export class ZohoBooksError extends Error {
 
   constructor(options: {
     code: string
-    message: string
+    message?: string
     httpStatus?: number | null
     retryable?: boolean
     cause?: unknown
   }) {
+    const registered = isErrorCode(options.code) ? getError(options.code) : null
     super(
-      options.message,
+      options.message ?? registered?.message ?? 'An accounting provider error occurred.',
       options.cause === undefined ? undefined : { cause: options.cause }
     )
     this.name = 'ZohoBooksError'
-    this.code = options.code
-    this.httpStatus = options.httpStatus ?? null
+    this.code = registered?.code ?? options.code
+    this.httpStatus = options.httpStatus ?? registered?.httpStatus ?? null
     this.retryable = options.retryable ?? false
   }
 }
@@ -25,7 +28,6 @@ export function toZohoBooksError(error: unknown): ZohoBooksError {
   if (error instanceof ZohoBooksError) return error
   return new ZohoBooksError({
     code: 'billing/provider-unavailable',
-    message: 'Zoho Books could not be reached.',
     retryable: true,
     cause: error,
   })
@@ -39,34 +41,29 @@ export function classifyZohoHttpError(
   if (status === 401 || status === 403)
     return new ZohoBooksError({
       code: 'billing/provider-authorization-required',
-      message: 'Zoho Books authorization must be renewed.',
       httpStatus: status,
       retryable: false,
     })
   if (status === 404)
     return new ZohoBooksError({
       code: 'billing/provider-resource-not-found',
-      message: 'The mapped Zoho Books resource was not found.',
       httpStatus: status,
       retryable: false,
     })
   if (status === 429)
     return new ZohoBooksError({
       code: 'billing/provider-rate-limited',
-      message: 'Zoho Books rate limited the request.',
       httpStatus: status,
       retryable: true,
     })
   if (status >= 500)
     return new ZohoBooksError({
       code: 'billing/provider-unavailable',
-      message: 'Zoho Books is temporarily unavailable.',
       httpStatus: status,
       retryable: true,
     })
   return new ZohoBooksError({
     code: 'billing/provider-invalid-request',
-    message: 'Zoho Books rejected the request.',
     httpStatus: status,
     retryable: false,
   })
