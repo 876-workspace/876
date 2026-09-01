@@ -1,365 +1,304 @@
 # Express API Service Rules
 
-Read this before writing or changing **any** code in a Node/Express backend
-service on this platform — `apps/api` today, `apps/billing-api`,
-`apps/storage-api`, `apps/widgets-api` and every future service after it. It
-fixes the module shape, the layer responsibilities, the contract surface, the
-auth tiers, and the database conventions so a new service inherits the whole
-pattern instead of inventing a fifth one.
+Read this before changing any Node/Express backend service. Companion rules:
+`api-backend.md`, `stripe-api-pattern.md`, `sdk-conventions.md`,
+`platform-services.md`, `error-handling.md`, `testing.md`, and `naming.md`.
 
-Companion to `.claude/rules/api-backend.md`, `.claude/rules/stripe-api-pattern.md`
-(resource shapes), `.claude/rules/sdk-conventions.md` (the client surface these
-services are consumed through), and `.claude/rules/platform-services.md`
-(which bounded context owns what).
+The naming rule is binding here: **new 876-owned JSON properties are camelCase;
+new 876-owned symbolic values are kebab-case; physical SQL identifiers keep their
+existing snake_case names; provider/protocol spelling is preserved at its
+boundary.**
 
-## The stack, fixed
+## Stack
 
-| Concern        | Choice                                     | Not                               |
-| -------------- | ------------------------------------------ | --------------------------------- |
-| HTTP framework | **Express 5**                              | Fastify, Nest, Koa                |
-| Language       | **TypeScript**, ESM, `strict`              | JavaScript, CommonJS              |
-| Runtime        | **Node 22+** in a Cloudflare **Container** | workerd (Express needs real Node) |
-| ORM            | **Prisma 7**, multi-file schema            | raw `pg`, Drizzle, Kysely         |
-| Validation     | **Zod 4**, one schema per contract         | joi, class-validator, hand-rolled |
-| OpenAPI        | generated **from the Zod schemas**         | hand-written spec, decorators     |
-| Tests          | **Vitest + supertest**                     | jest, mocha                       |
-| Logging        | **pino**, structured JSON                  | console.log, winston              |
+| Concern    | Standard                     |
+| ---------- | ---------------------------- |
+| HTTP       | Express 5                    |
+| Language   | TypeScript ESM, strict       |
+| Runtime    | Node 22+                     |
+| ORM        | Prisma 7 multi-file schema   |
+| Validation | Zod 4                        |
+| OpenAPI    | generated from Zod contracts |
+| Tests      | Vitest + supertest           |
+| Logging    | pino structured JSON         |
 
-Express 5 propagates rejected promises from async handlers to the error
-middleware natively. Do **not** install `express-async-errors`, and do not wrap
-every handler in try/catch to call `next(err)` — throw and let the error
-middleware own it.
+Express 5 propagates rejected async handlers. Do not add
+`express-async-errors` or wrap every route in boilerplate try/catch.
 
-## The shape: modules, not layers
+## Module shape
 
-A service is a **modular monolith**. The module — a bounded domain — is the unit
-of organization; the layer is the unit _inside_ a module.
+A service is a modular monolith. Organize by bounded domain, then layer inside
+the module:
 
-```
+```text
 apps/<service>/
-  prisma/
-    schema/                 one .prisma per module + schema.prisma (generator/datasource)
-    migrations/
-  prisma.config.ts
+  prisma/schema/
+  prisma/migrations/
   src/
-    server.ts               boot: listen, signal handling, background workers
-    app.ts                  express assembly only — never calls listen()
-    config/                 zod-validated env → one typed settings object
-    db/client.ts            the prisma singleton
+    server.ts
+    app.ts
+    config/
+    db/client.ts
     http/
-      middleware/           request-id, logging, envelope, error handler, cors, helmet, rate-limit
-      auth/                 requireApiKey · requireSession · requireAdmin · realm guards
-      openapi/              registry → /openapi.json + docs UI
-      envelope.ts           ListObject, cursor pagination, tombstones
-      errors.ts             AppHttpError + the code registry
-    platform/               cross-module primitives: ids, timestamps, phone, permissions, crypto
-    providers/              one directory per external vendor (workos, twilio, stripe, posthog)
+    platform/
+    providers/
     modules/
-      users/
-        users.routes.ts
-        users.controller.ts
-        users.service.ts
-        users.repository.ts
-        users.schemas.ts
-        users.serializers.ts
-        users.docs.ts
-        index.ts            ← the module's public API
-        __tests__/
-      organizations/ · auth/ · oauth/ · …
-    workers/                background loops (outbox dispatch, reconcilers)
+      customers/
+        customers.routes.ts
+        customers.controller.ts
+        customers.service.ts
+        customers.repository.ts
+        customers.schemas.ts
+        customers.serializers.ts
+        customers.docs.ts
+        index.ts
+    workers/
 ```
 
-**Never create top-level `routes/`, `controllers/`, `services/`, or
-`repositories/` directories.** That layout is what most Express tutorials show
-and it is the same failure this repo already banned for Next apps in
-`.claude/rules/app-structure.md`: at 300+ endpoints it produces a `services/`
-directory of 100 peer files where nothing tells you what may import what, and
-the dependency graph becomes circular within a year. The layer belongs _inside_
-the module, where the compiler can see the boundary.
+Do not create top-level `routes/`, `controllers/`, `services/`, or
+`repositories/` directories.
 
-### Layer responsibilities — one job each
+Layer ownership:
 
-| File               | Owns                                                                   | Must never                                   |
-| ------------------ | ---------------------------------------------------------------------- | -------------------------------------------- |
-| `*.routes.ts`      | path, method, guard chain, which validator runs                        | contain logic; touch prisma                  |
-| `*.controller.ts`  | reading validated input, calling one service, choosing the status code | contain business rules; touch prisma         |
-| `*.service.ts`     | business rules, orchestration, provider calls, authorization decisions | know about `req`/`res`; build HTTP responses |
-| `*.repository.ts`  | every prisma query for this module's tables                            | contain business rules; call another module  |
-| `*.schemas.ts`     | Zod request + response contracts                                       | import prisma types directly                 |
-| `*.serializers.ts` | model row → API resource, incl. the `object` discriminator             | perform I/O                                  |
-| `*.docs.ts`        | OpenAPI summaries, descriptions, response examples — **pure data**     | import anything but types                    |
-| `index.ts`         | the module's public exports                                            | re-export internals wholesale                |
+- `*.routes.ts` — paths, methods, guards, validators.
+- `*.controller.ts` — validated request input → one service call → status.
+- `*.service.ts` — business rules/orchestration/provider calls/authz decisions.
+- `*.repository.ts` — Prisma access for tables owned by this module.
+- `*.schemas.ts` — Zod request/response contracts.
+- `*.serializers.ts` — model/domain → public resource contract.
+- `*.docs.ts` — OpenAPI prose/examples, pure data.
+- `index.ts` — intentional module public API only.
 
-A controller that reads `prisma`, or a service that touches `res`, is the defect
-this table exists to prevent. Both are caught in review; the import boundaries
-below are caught by the build.
+A controller does not touch Prisma. A service does not depend on Express
+`req`/`res`. Cross-module access goes through the owning module's public service
+API, never a join into another module's tables.
 
-### Boundaries are a build error, not a convention
+Use dependency-cruiser boundaries in services that have them:
 
-`dependency-cruiser` runs in CI and enforces:
+1. cross-module imports go through `index.ts`;
+2. only repositories import `db/client`;
+3. platform/providers do not import modules;
+4. modules do not import app/server assembly.
 
-1. A module may import another module **only through its `index.ts`**.
-2. Only `*.repository.ts` may import `src/db/client`.
-3. `platform/` and `providers/` may not import `modules/`.
-4. No module may import `app.ts` or `server.ts`.
+## Zod is the contract source
 
-Without enforcement the "only import from `index.ts`" rule survives about six
-weeks — someone debugging at midnight imports three folders deep, the tired
-reviewer approves it, and the contract is gone. Make it a build error and every
-engineer who joins inherits the boundary for free.
+Use one Zod contract for validation, inferred types, and OpenAPI. Schema
+variables are camelCase ending in `Schema`; inferred types are PascalCase.
 
-**Cross-module data access goes through the owning module's service**, never a
-join into its tables. If organizations needs user names, it calls
-`users.getManyByIds()`; it does not `prisma.user.findMany()`. The tables are
-owned by exactly one module, and that ownership is what makes a module
-extractable into its own service later.
-
-## Contracts: Zod is the single source of truth
-
-One Zod schema per contract, in `*.schemas.ts`, used for **all three** of:
-request validation, response typing, and OpenAPI generation. There is no second
-declaration of a shape anywhere — no hand-written spec, no separate DTO
-interface, no decorator metadata.
+Canonical new resource example:
 
 ```ts
-export const userSchema = z
-  .object({
-    object: z.literal('user'),
-    id: z.string(),
-    email: z.email(),
-    created_at: z.number().int(),
-  })
-  .meta({ id: 'User', description: 'A platform user account.' })
-
-export type User = z.infer<typeof userSchema>
+export const userSchema = z.object({
+  object: z.literal('user'),
+  id: z.string(),
+  email: z.email(),
+  createdAt: z.number().int(),
+})
 ```
 
 Rules:
 
-- **Schemas are named `camelCase` ending in `Schema`**; inferred types are
-  `PascalCase`. Same as `.claude/rules/types.md`.
-- **Wire field names are `snake_case`** (`created_at`, `has_more`,
-  `starting_after`) because that is the existing platform contract. Internal
-  TypeScript is `camelCase`. The serializer is where the two meet — never leak a
-  Prisma field name straight onto the wire.
-- **Every serialized resource carries a literal `object` discriminator**
-  (`z.literal('user')`), per `.claude/rules/stripe-api-pattern.md`.
-- **Request schemas are strict** (`z.strictObject`) so unknown fields are
-  rejected. Response schemas are plain `z.object`.
-- **Validation happens in one place**: a `validate({ body, query, params })`
-  middleware in the route definition. A controller must never re-parse raw input.
-- **Timestamps are Unix seconds** (`z.number().int()`), never `Date`, never ISO
-  strings, per the platform contract.
+- New **876-owned** JSON request/response properties use camelCase (`createdAt`,
+  `hasMore`, `startingAfter`, `totalCount`).
+- New 876-owned discriminator/status/event/error/module/feature values follow
+  `naming.md`; multiword symbolic values use kebab-case.
+- Provider/protocol DTOs keep provider spelling exactly. Normalize once at the
+  provider boundary before values enter the app contract.
+- Request objects are strict where forward-compatible unknown fields are not
+  explicitly required.
+- Timestamps use the platform's existing Unix-second convention unless a
+  specific public contract documents otherwise.
+- Never leak a Prisma model directly as the API resource merely because its
+  TypeScript field names happen to be camelCase.
 
-### OpenAPI is generated, never written
+### Existing v1 snake_case wire contracts
 
-Routes register themselves into an OpenAPI registry as they are defined, so a
-route cannot exist undocumented. The prose lives in `*.docs.ts` as plain
-exported constants — summaries, descriptions, response examples — mirroring the
-documentation split the other Express services use, and for the same reason:
-route files stay readable when the documentation is somewhere else.
+Many existing endpoints predate the canonical naming contract and already expose
+fields such as `created_at`, `has_more`, `starting_after`, or object values such
+as `application_module`. These are **legacy public contracts**, not the format
+for new endpoints.
 
-`/openapi.json` is served from the registry. A snapshot test asserts the
-generated document does not change unintentionally.
+Do not rename an established v1 field/discriminator in place. A wire migration
+must be coordinated across:
 
-## Envelopes, lists, and errors
+- Zod/OpenAPI schemas;
+- serializers/controllers;
+- SDK request and response adapters;
+- every first-party caller;
+- generated/client documentation;
+- tests and fixtures;
+- any external clients covered by compatibility guarantees.
 
-Every JSON response is `{ data, error }` — `data` populated and `error: null` on
-success, the reverse on failure. This is applied by middleware so a controller
-returns the resource itself and never hand-builds the envelope.
+Use one of these explicit migration strategies:
 
-Lists use the platform list object, always:
+1. a versioned endpoint/contract;
+2. a bounded compatibility window that accepts legacy input while emitting the
+   documented canonical shape;
+3. an SDK boundary adapter when the server contract cannot change yet.
 
-```ts
-{ object: 'list', data: T[], has_more: boolean, url: string, total_count: number | null }
-```
+Record the removal point. Do not leave permanent undocumented dual shapes.
 
-Cursor pagination is `starting_after` / `ending_before` on item IDs. Never
-offset/limit on a public list endpoint.
+This migration rule is why the presence of legacy snake_case in an existing v1
+serializer does not authorize new snake_case APIs.
 
-**Expected failures are returned as values; only genuinely unexpected faults
-throw.** A service returns the registered error object and its controller
-translates it to a response, so a not-found or a conflict never travels through
-Express control flow as an exception. See `.claude/rules/error-handling.md` for
-the full contract; `apps/crm-api` is the reference implementation.
+## Envelopes, lists, pagination
 
-```ts
-import { getError, isError } from '@876/core'
-
-const tenant = await tenants.retrieveByOrganization(organizationId)
-if (!tenant) return getError('crm/tenant-not-found')
-```
+Keep the service's established success/error envelope while its public contract
+remains compatible. For a **new canonical** list shape, use camelCase:
 
 ```ts
-// controller
-const result = await service.list(organizationId)
-return sendCrmList(res, result, url)
+{
+  object: 'list',
+  data: rows,
+  hasMore: false,
+  totalCount: rows.length,
+  url: '/v1/customers'
+}
 ```
 
-`apps/api`, `apps/billing-api`, and `apps/couriers-api` still throw registered
-errors to the central error middleware:
+New cursor properties are `startingAfter` / `endingBefore`. Existing v1 routes
+that expose `starting_after` / `ending_before` remain legacy until their explicit
+wire migration.
 
-```ts
-import { appError } from '@/http/errors'
+Prefer cursor pagination on public list endpoints. Do not introduce public
+offset pagination where the platform cursor pattern is available.
 
-throw appError('auth/no-session')
-```
+## Errors
 
-That form remains correct in those services until they are migrated — it is a
-pending migration, not a second sanctioned pattern. **Do not add new throwing
-call sites for expected failures**, and do not mix the two forms inside one
-module: a caller cannot check a return value and catch an exception for the same
-outcome without one of the two paths going unhandled.
+Expected domain failures use the owning registered error catalog. Do not repeat
+a known error's code/message/status ad hoc at call sites.
 
-- **Do not repeat a registered error's code, message, and HTTP status at the
-  call site.** The registry is the source of truth; `appError(code)` resolves
-  the canonical definition.
-- `AppHttpError` is the transport primitive behind the factory. Normal module,
-  provider, and middleware code must not instantiate it directly for a known
-  application error. Legacy direct construction is registry-normalized by the
-  primitive so an old call site cannot override a registered HTTP status.
-- A new public/domain error code must be added to the owning error registry
-  before use. Service-local compatibility codes that have not yet been promoted
-  may temporarily provide their existing message/status through `appError`, but
-  must not create a second ad-hoc registry in a service file.
-- `code` is a stable, namespaced, machine-readable string. It is part of the
-  contract — clients branch on it, so renaming one is a breaking change.
-- `message` is user-safe. **Never** put a provider exception, a SQL error, a
-  stack trace, a file path, a token, or PII in it.
-- `httpStatus` is server-only. The error middleware uses it as the HTTP status
-  and **strips it from the body** — a client-facing error carries `code` and
-  `message` only.
-- Provider errors are normalized in `providers/<vendor>/errors.ts` before they
-  cross into a service. A raw vendor error must never reach a controller.
-- An unrecognized thrown value becomes a generic 500 with a logged
-  `request_id` — the client learns nothing about internals.
+- Error codes are stable namespaced 876-owned symbolic values and therefore use
+  kebab-case segments (`billing/workspace-not-found`).
+- Existing legacy error codes are migrated only through a coordinated contract
+  change; never silently rename a code clients may branch on.
+- User-facing messages do not contain SQL/provider exceptions, stack traces,
+  tokens, secrets, or PII.
+- `httpStatus` is transport metadata; do not expose internal implementation
+  details merely because they exist on the server error object.
+- Raw provider errors are normalized under `providers/<vendor>/`.
+- Unexpected values become a generic 500 and are logged with request context.
 
-## Auth tiers
+Follow `error-handling.md` for the service's value-vs-throw migration state. Do
+not invent a second expected-error pattern inside one module.
 
-The tier model from `.claude/rules/platform-services.md` is implemented as
-composable Express middleware, one per tier:
+## Authentication / authorization tiers
 
-| Middleware                                            | Credential                 | Grants                                           |
-| ----------------------------------------------------- | -------------------------- | ------------------------------------------------ |
-| `requireApiKey`                                       | `876_app_secret_*` app key | the protected router; sets `req.principal.appId` |
-| `requireSession`                                      | OAuth bearer access token  | acting as a user                                 |
-| `requireAdmin`                                        | `x-internal-key`           | every privileged operation                       |
-| `requireConsumerSession` / `requireEnterpriseSession` | session + realm claim      | realm-gated routes                               |
+Use the platform's existing composable guard tier for the service (app API key,
+user session/OAuth access token, internal admin key, realm guard, integration
+scope, app membership permission, etc.).
 
 Non-negotiable:
 
-- **An exposable key never carries privileged scope.** Admin operations require
-  the secret internal key, which never reaches a browser.
-- **API keys are compared by hash**, never by plaintext lookup, and the internal
-  key is compared with a **timing-safe** comparison (`crypto.timingSafeEqual`).
-- **When the internal key is unset, admin routes reject everything.** An empty
-  secret must never mean "allow".
-- **Only `token_use === 'access'` tokens authorize a user.** An id token or a
-  client-credentials token presented as a session is rejected — accepting either
-  would let any token a client holds stand in for the user's first-party
-  session, ignoring the scopes actually consented to.
-- **The acting app comes from the validated credential** (`req.principal.appId`),
-  never from a client-supplied body field. An app cannot claim to be another app.
-- Rejections log a reason and a non-reversible key fingerprint — never the raw
-  credential.
+- browser/exposable credentials never grant admin operations;
+- internal secrets fail closed when unset;
+- compare secrets using the established hashed/timing-safe path;
+- acting app/user/org identity comes from validated credentials/context, not a
+  client-supplied body field;
+- access-token purpose/scope is validated before treating a bearer token as a
+  user session;
+- permission/module/scope identifiers are durable contracts and follow the
+  naming migration procedure when changed.
 
-## Prisma conventions
+## Prisma and database boundary
 
-- **Multi-file schema.** `prisma/schema/schema.prisma` holds the `generator` and
-  `datasource` blocks and nothing else; one `<module>.prisma` per module beside
-  it. `prisma.config.ts` sets `schema: 'prisma/schema'` — pointing it at the
-  _file_ silently ignores every sibling (Prisma 7 behaviour), so it must be the
-  directory.
-- **The database is snake_case; the client is camelCase.** Every model carries
-  `@@map("table_name")` and every column `@map("column_name")`. Renaming a table
-  or column is forbidden by `.claude/rules/naming.md` — the map attribute is how
-  a readable client coexists with the existing schema.
-- **Migrations are files, never startup DDL.** A service must not run `ALTER
-TABLE` from its boot path. Schema changes are `prisma migrate` files, applied
-  by CI, reviewable in a diff.
-- **An existing database is introspected and baselined**, never recreated:
-  `prisma db pull` → split → `prisma migrate diff` → `migrate resolve --applied`.
-- **Only `*.repository.ts` imports the prisma client.**
-- **Soft deletes per `.claude/rules/deletions.md`.** End-user reads filter
-  `deleted_at IS NULL`; admin reads opt in with an explicit `includeDeleted`.
-- References to another bounded context are **opaque ID columns with no
-  cross-database foreign key**.
+Use Prisma 7 multi-file schemas. `prisma.config.ts` points to the schema
+directory when the service is multi-file.
+
+The existing physical Postgres schema is intentionally allowed to remain
+snake_case:
+
+```prisma
+model CustomerPayment {
+  organizationId String @map("organization_id")
+  createdAt      BigInt @map("created_at")
+
+  @@map("customer_payments")
+}
+```
+
+Do **not** rename physical tables/columns/indexes merely to match TypeScript.
+Application fields stay camelCase through `@map`/`@@map`.
+
+Stored 876-owned **values** inside those columns are different: permission keys,
+module keys, role template keys, feature slugs, statuses/events, and preference
+keys may require explicit old→new data migrations even while the containing
+column name remains snake_case.
+
+Other DB rules:
+
+- migrations are reviewable files, never startup DDL;
+- existing databases are introspected/baselined rather than recreated;
+- only repositories import Prisma directly;
+- soft-delete semantics follow `deletions.md`;
+- cross-context references are opaque IDs with no cross-database FK;
+- data migrations fail closed on collisions rather than guessing which durable
+  identifier is authoritative.
 
 ## Configuration
 
-One `config/` module parses `process.env` through a Zod schema **once at boot**
-and exports a frozen, typed settings object. Nothing else in the service reads
-`process.env`.
+Parse environment variables once through the service config module. Fail fast
+for invalid required configuration. Other modules do not read `process.env`
+directly. Secrets are never logged or returned from diagnostics.
 
-The schema fails fast: a missing or malformed required variable crashes the
-process at startup with a readable message, rather than surfacing as a 500 on a
-route three days later. Secrets are never logged, never echoed by a debug
-endpoint, and never included in an error body.
+Environment variable names remain conventional `SCREAMING_SNAKE_CASE` and are
+not part of the kebab/camel naming migration.
 
-## Logging and observability
+## Observability and security
 
-- **pino**, structured JSON, one line per event.
-- Every request gets an `x-request-id` (honoured from the inbound header when
-  present, generated otherwise), bound for the request's lifetime via
-  `AsyncLocalStorage`, echoed on the response, and attached to Sentry.
-- Log the **path only, never the query string** — codes, tokens, and invite
-  secrets travel as query parameters and must not land in logs.
-- `4xx` logs at `warn`, `5xx` at `error`, everything else at `info`.
-- Never log credentials, PINs, identification values, or full session cookies.
+- pino structured logs;
+- request IDs propagated/created consistently;
+- log route paths without secret-bearing query strings;
+- bind request context to Sentry/logging;
+- `helmet()` and bounded JSON body size;
+- explicit credential-aware CORS allow-list;
+- rate-limit auth/OTP/PIN and similarly sensitive endpoints;
+- validate redirect destinations;
+- verify webhook signatures against the required raw body;
+- never log credentials, session cookies, PINs, or sensitive identification
+  values.
 
-## Security baseline
-
-- `helmet()` on every service.
-- CORS from an explicit allow-list in config. Never `origin: '*'` on a service
-  that accepts credentials.
-- `express.json({ limit })` — a bounded body size, always.
-- Rate limiting on auth, OTP, and PIN endpoints at minimum.
-- `app.disable('x-powered-by')`.
-- Validate every redirect target against an allow-list before `res.redirect` —
-  an unchecked `?url=` is an open redirect.
-- Webhook signatures verified against the **raw** body, so the raw-body capture
-  must happen before JSON parsing on those routes.
-- No dynamic `require`/`import` of a path derived from user input.
+Provider logging fields may preserve provider vocabulary inside a provider
+adapter. 876-owned structured log/event identifiers should follow the naming
+contract when they are durable machine-readable values.
 
 ## Performance
 
-- **The prisma client is a module singleton**, created once. Never per request.
-- Independent awaits run under `Promise.all`. A route that awaits three
-  unrelated queries in sequence pays three round trips for no reason.
-- Never issue a query per row of a list — batch by ID and join in memory with a
-  `Map`. This is the single most common cause of a slow list endpoint.
-- `select`/`include` only the columns the response actually serializes.
-- Every list endpoint is bounded by a maximum `limit`.
-- `compression()` for JSON responses above ~1KB.
+- one Prisma client per process, not per request;
+- avoid N+1 lookups; batch ownership-safe queries;
+- paginate unbounded collections;
+- keep serialization pure;
+- do not put network/provider work in schemas or serializers;
+- add indexes through migrations based on actual access patterns.
 
-## Testing
+## Testing minimum
 
-Follows `.claude/rules/testing.md`. Service-specific additions:
+For changed modules, cover the contract and the risky boundary, not only the
+happy path:
 
-- Tests live in `__tests__/` beside the module they cover.
-- `app.ts` exports the assembled app without listening, so **supertest drives
-  the real middleware chain** — guards, validation, envelope, error handler —
-  rather than a controller called directly.
-- Every route has at least: the happy path with a **full body assertion**, one
-  validation failure, and one authorization failure asserting the exact `code`.
-- Assert the complete `{ data, error }` shape, both sides. `expect(res.body.data)
-.toBeDefined()` passes for a catastrophic error object and is not a test.
-- The generated OpenAPI document is snapshot-tested.
+- schema acceptance/rejection;
+- authorization tier/permission behavior;
+- tenant/org isolation;
+- repository query constraints;
+- serializer/resource contract;
+- pagination boundaries;
+- expected errors and generic unexpected errors;
+- migration compatibility aliases/collision behavior when renaming durable
+  identifiers;
+- OpenAPI snapshots/contracts where the service generates them.
+
+Run the repository-prescribed typecheck, lint, boundary, test, and DB validation
+commands from `CLAUDE.md` / `cli.md` for the affected workspace before claiming
+verification.
 
 ## Do not
 
-- Do not create top-level `routes/`, `controllers/`, or `services/` directories.
-- Do not import another module's internals — only its `index.ts`.
-- Do not query another module's tables, including for "just a read-only report".
-- Do not touch prisma outside a `*.repository.ts`.
-- Do not put business logic in a controller or HTTP concerns in a service.
-- Do not hand-write an OpenAPI document or let a route exist undocumented.
-- Do not declare a contract shape twice — Zod is the source of truth.
-- Do not return `httpStatus` in a client-facing error body.
-- Do not leak a provider or database error message to a client.
-- Do not run DDL at startup; ship a migration.
-- Do not rename a database table, column, env var, or error code — they are
-  contracts (`.claude/rules/naming.md`).
-- Do not read `process.env` outside `config/`.
-- Do not trust a client-supplied `app_id`, `owner_id`, or realm.
-- Do not install `express-async-errors`; Express 5 handles it.
+- Do not create new snake_case 876-owned JSON fields because legacy v1 examples
+  exist.
+- Do not rename an existing public wire field without an explicit compatibility
+  plan.
+- Do not rename physical SQL identifiers for style.
+- Do not normalize provider/protocol payloads by mutating the raw contract.
+- Do not mass-replace underscores in stored data.
+- Do not bypass module boundaries for convenience.
+- Do not run schema/data migration SQL from application startup.

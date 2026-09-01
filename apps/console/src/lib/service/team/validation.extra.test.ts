@@ -236,8 +236,7 @@ describe('validateTeamGrant — comprehensive access control', () => {
     expect(r.error).toBeNull()
   })
 
-  it('legacy permissions not part of validation — only affiliation/title/expiry', () => {
-    // Validation is orthogonal to permission catalog; ensure legacy alias not confused
+  it('permission migration aliases do not affect affiliation validation', () => {
     const r = validateTeamGrant({ affiliation: 'staff' }, 'admin', now)
     expect(r.error).toBeNull()
   })

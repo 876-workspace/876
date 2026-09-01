@@ -7,6 +7,7 @@ import {
   hasPermission,
   PERMISSION_GROUPS,
   permissionsForRole,
+  SUPER_ADMIN_ROLE,
   SYSTEM_ROLE_DEFINITIONS,
   SYSTEM_ROLE_NAMES,
 } from './permissions'
@@ -85,7 +86,7 @@ describe('Console permission catalog', () => {
 
   it('grants super admin every permission the catalog declares', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
-      (role) => role.name === 'super_admin'
+      (role) => role.name === SUPER_ADMIN_ROLE
     )
     const missing = consolePermissionCatalog.permissions
       .map((permission) => permission.key)
@@ -100,7 +101,7 @@ describe('Console permission catalog', () => {
     expect(staff?.permissions).not.toContain('team:list')
     expect(staff?.permissions).not.toContain('team:revoke')
     expect(staff?.permissions).not.toContain('console:security')
-    expect(staff?.permissions).not.toContain('console:danger_zone')
+    expect(staff?.permissions).not.toContain('console:danger-zone')
   })
 
   it('withholds security and the danger zone from admin', () => {
@@ -108,7 +109,7 @@ describe('Console permission catalog', () => {
 
     expect(admin?.permissions).toContain('team:revoke')
     expect(admin?.permissions).not.toContain('console:security')
-    expect(admin?.permissions).not.toContain('console:danger_zone')
+    expect(admin?.permissions).not.toContain('console:danger-zone')
   })
 
   it('checks a supplied permission list through the core access primitive', () => {
@@ -117,6 +118,26 @@ describe('Console permission catalog', () => {
     const result = hasPermission(access, 'users:update')
 
     expect(result).toBe(true)
+  })
+
+  it('accepts the exact legacy danger-zone permission during the migration', () => {
+    expect(
+      hasPermission(
+        { permissions: ['console:danger_zone'] },
+        CONSOLE_DANGER_ZONE_PERMISSION
+      )
+    ).toBe(true)
+  })
+
+  it('normalizes the exact legacy super-admin role during the migration', () => {
+    const legacyCatalog = {
+      super_admin: ['console:access', 'console:danger_zone'],
+    }
+
+    expect(permissionsForRole('super_admin', legacyCatalog)).toEqual([
+      'console:access',
+      'console:danger-zone',
+    ])
   })
 
   it('returns false when a supplied permission list omits the key', () => {

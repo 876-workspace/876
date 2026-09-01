@@ -135,7 +135,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:storage',
       'console:reports',
       'console:security',
-      'console:danger_zone',
+      'console:danger-zone',
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
@@ -174,7 +174,9 @@ const FALLBACK: Record<string, string[]> = Object.fromEntries(
 
 /**
  * Permissions for a role name from a supplied catalog (defaults to the system
- * fallback). The live catalog comes from the `roles` table at runtime.
+ * fallback). During the naming cutover old database rows may still carry the
+ * exact `super_admin` role or `console:danger_zone` permission aliases; callers
+ * always receive the canonical equivalents.
  */
 export function permissionsForRole(
   role: string | null | undefined,

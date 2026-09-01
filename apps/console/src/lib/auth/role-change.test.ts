@@ -29,7 +29,7 @@ describe('assertRoleChangeAllowed', () => {
     vi.clearAllMocks()
   })
 
-  it.each(['', 'support', 'ADMIN', '__proto__'])(
+  it.each(['', 'support', 'ADMIN', '__proto__', 'super_admin'])(
     'rejects invalid role %j without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -40,8 +40,7 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error:
-          'Invalid role. Must be user, staff, admin, or super_admin.',
+        error: 'Invalid role. Must be user, staff, admin, or super_admin.',
         status: 400,
       })
       expect(mocks.retrieve).not.toHaveBeenCalled()
@@ -52,7 +51,7 @@ describe('assertRoleChangeAllowed', () => {
     'allows a super admin to grant %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
-        createCaller({ role: 'super_admin' }),
+        createCaller({ role: 'super-admin' }),
         'user_target',
         role
       )
@@ -93,7 +92,9 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error: `Only a super admin can change a ${targetRole}'s role.`,
+        error: `Only a super admin can change a ${
+          targetRole === 'super_admin' ? 'super-admin' : targetRole
+        }'s role.`,
         status: 403,
       })
       expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -167,6 +168,24 @@ describe('applyRoleChange', () => {
       roleName: 'admin',
     })
     expect(mocks.create).not.toHaveBeenCalled()
+  })
+
+  it('normalizes a legacy persisted role returned by the service', async () => {
+    mocks.retrieve.mockResolvedValue({
+      userId: 'user_target',
+      roleName: 'staff',
+    })
+    mocks.update.mockResolvedValue({
+      data: { userId: 'user_target', roleName: 'super_admin' },
+      error: null,
+    })
+
+    const result = await applyRoleChange('user_target', 'super-admin')
+
+    expect(result).toEqual({
+      data: { userId: 'user_target', role: 'super-admin', revoked: false },
+      error: null,
+    })
   })
 
   it('creates a missing access grant', async () => {

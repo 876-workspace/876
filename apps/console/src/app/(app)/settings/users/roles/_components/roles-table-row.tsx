@@ -10,6 +10,8 @@ const ROLE_BADGE_FALLBACK =
   'border-purple-400/40 bg-purple-400/10 text-purple-700 dark:text-purple-400'
 
 const ROLE_BADGE: Record<string, string> = {
+  'super-admin':
+    'border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-400',
   super_admin:
     'border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-400',
   admin: 'border-sky-400/40 bg-sky-400/10 text-sky-700 dark:text-sky-400',

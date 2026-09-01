@@ -52,7 +52,7 @@ describe('getFeatures', () => {
   it.each([
     [
       'search bar',
-      'couriers_search_bar',
+      'couriers-search-bar',
       {
         searchBar: true,
         themeSwitcher: false,
@@ -64,7 +64,7 @@ describe('getFeatures', () => {
     ],
     [
       'theme switcher',
-      'couriers_theme_switcher',
+      'couriers-theme-switcher',
       {
         searchBar: false,
         themeSwitcher: true,
@@ -76,7 +76,7 @@ describe('getFeatures', () => {
     ],
     [
       'global add',
-      'couriers_global_add',
+      'couriers-global-add',
       {
         searchBar: false,
         themeSwitcher: false,
@@ -88,7 +88,7 @@ describe('getFeatures', () => {
     ],
     [
       'app switcher',
-      'couriers_app_switcher',
+      'couriers-app-switcher',
       {
         searchBar: false,
         themeSwitcher: false,
@@ -100,7 +100,7 @@ describe('getFeatures', () => {
     ],
     [
       'organization switcher',
-      'couriers_org_switcher',
+      'couriers-org-switcher',
       {
         searchBar: false,
         themeSwitcher: false,
@@ -138,7 +138,7 @@ describe('getFeatures', () => {
 
   it('enables organization logo uploads only when its flag is present', async () => {
     mocks.evaluate.mockResolvedValue(
-      createEvaluationResult(['couriers_storage_org_logo_upload'])
+      createEvaluationResult(['couriers-storage-org-logo-upload'])
     )
 
     const result = await getFeatures({
@@ -165,13 +165,13 @@ describe('getFeatures', () => {
     })
   })
 
-  it('does not enable logo uploads for a similarly named unrelated flag', async () => {
+  it('does not enable logo uploads for similarly named unrelated flags', async () => {
     mocks.evaluate.mockResolvedValue(
       createEvaluationResult([
-        'couriers_storage',
-        'couriers_storage_org_logo',
-        'storage_org_logo_upload',
-        'platform_storage_org_logo_upload',
+        'couriers-storage',
+        'couriers-storage-org-logo',
+        'storage-org-logo-upload',
+        'platform-storage-org-logo-upload',
       ])
     )
 
@@ -183,12 +183,12 @@ describe('getFeatures', () => {
     expect(result.storageOrgLogoUpload).toBe(false)
   })
 
-  it('keeps the notepad widget enabled when every existing widget flag is present', async () => {
+  it('keeps the notepad widget enabled when every widget flag is present', async () => {
     const evaluation = createEvaluationResult([
-      'platform_widgets',
-      'platform_widgets_notepad',
-      'couriers_widgets',
-      'couriers_widgets_notepad',
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'couriers-widgets',
+      'couriers-widgets-notepad',
     ])
     mocks.evaluate.mockResolvedValue(evaluation)
 
@@ -219,9 +219,9 @@ describe('getFeatures', () => {
 
   it('keeps the notepad widget disabled when one required widget flag is absent', async () => {
     const evaluation = createEvaluationResult([
-      'platform_widgets',
-      'platform_widgets_notepad',
-      'couriers_widgets',
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'couriers-widgets',
     ])
     mocks.evaluate.mockResolvedValue(evaluation)
 
@@ -253,10 +253,10 @@ describe('getFeatures', () => {
   it('requires the shared and Couriers widget hierarchy for Chat', async () => {
     mocks.evaluate.mockResolvedValue(
       createEvaluationResult([
-        'platform_widgets',
-        'platform_widgets_chat',
-        'couriers_widgets',
-        'couriers_widgets_chat',
+        'platform-widgets',
+        'platform-widgets-chat',
+        'couriers-widgets',
+        'couriers-widgets-chat',
       ])
     )
 
@@ -268,9 +268,9 @@ describe('getFeatures', () => {
 
     mocks.evaluate.mockResolvedValue(
       createEvaluationResult([
-        'platform_widgets_chat',
-        'couriers_widgets',
-        'couriers_widgets_chat',
+        'platform-widgets-chat',
+        'couriers-widgets',
+        'couriers-widgets-chat',
       ])
     )
     const missingPlatformMaster = await getFeatures({

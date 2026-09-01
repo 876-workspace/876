@@ -3,6 +3,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
+import { CONSOLE_DANGER_ZONE_PERMISSION } from '@/lib/permissions'
 
 export const runtime = 'nodejs'
 
@@ -10,7 +11,9 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ setupKey: string }> }
 ) {
-  const { response } = await requireConsolePermission('console:danger_zone')
+  const { response } = await requireConsolePermission(
+    CONSOLE_DANGER_ZONE_PERMISSION
+  )
   if (response) return response
 
   const { setupKey } = await params

@@ -19,25 +19,25 @@ describe('getFeatures', () => {
     mocks.evaluate.mockResolvedValue({
       data: {
         data: [
-          { slug: 'billing_search_bar' },
-          { slug: 'billing_theme_switcher' },
-          { slug: 'billing_org_switcher' },
-          { slug: 'platform_widgets_chat' },
-          { slug: 'billing_widgets_chat' },
-          { slug: 'billing_sales' },
-          { slug: 'billing_sales_quotes' },
-          { slug: 'billing_sales_estimates' },
-          { slug: 'billing_sales_invoices' },
-          { slug: 'billing_subscriptions' },
-          { slug: 'billing_purchases' },
-          { slug: 'billing_purchases_vendors' },
-          { slug: 'billing_banking' },
-          { slug: 'billing_documents' },
-          { slug: 'billing_payroll' },
-          { slug: 'platform_widgets' },
-          { slug: 'platform_widgets_notepad' },
-          { slug: 'billing_widgets' },
-          { slug: 'billing_widgets_notepad' },
+          { slug: 'billing-search-bar' },
+          { slug: 'billing-theme-switcher' },
+          { slug: 'billing-org-switcher' },
+          { slug: 'platform-widgets-chat' },
+          { slug: 'billing-widgets-chat' },
+          { slug: 'billing-sales' },
+          { slug: 'billing-sales-quotes' },
+          { slug: 'billing-sales-estimates' },
+          { slug: 'billing-sales-invoices' },
+          { slug: 'billing-subscriptions' },
+          { slug: 'billing-purchases' },
+          { slug: 'billing-purchases-vendors' },
+          { slug: 'billing-banking' },
+          { slug: 'billing-documents' },
+          { slug: 'billing-payroll' },
+          { slug: 'platform-widgets' },
+          { slug: 'platform-widgets-notepad' },
+          { slug: 'billing-widgets' },
+          { slug: 'billing-widgets-notepad' },
         ],
       },
       error: null,
@@ -79,10 +79,10 @@ describe('getFeatures', () => {
     mocks.evaluate.mockResolvedValue({
       data: {
         data: [
-          { slug: 'billing_sales_quotes' },
-          { slug: 'billing_sales_invoices' },
-          { slug: 'billing_purchases_vendors' },
-          { slug: 'billing_purchases_expenses' },
+          { slug: 'billing-sales-quotes' },
+          { slug: 'billing-sales-invoices' },
+          { slug: 'billing-purchases-vendors' },
+          { slug: 'billing-purchases-expenses' },
         ],
       },
       error: null,
@@ -124,9 +124,9 @@ describe('getFeatures', () => {
     mocks.evaluate.mockResolvedValue({
       data: {
         data: [
-          { slug: 'platform_widgets_chat' },
-          { slug: 'billing_widgets' },
-          { slug: 'billing_widgets_chat' },
+          { slug: 'platform-widgets-chat' },
+          { slug: 'billing-widgets' },
+          { slug: 'billing-widgets-chat' },
         ],
       },
       error: null,
@@ -140,7 +140,7 @@ describe('getFeatures', () => {
   it('keeps the organization switcher disabled when its feature key is absent', async () => {
     mocks.evaluate.mockResolvedValue({
       data: {
-        data: [{ slug: 'billing_search_bar' }],
+        data: [{ slug: 'billing-search-bar' }],
       },
       error: null,
     })
