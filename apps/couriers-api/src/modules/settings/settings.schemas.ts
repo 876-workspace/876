@@ -1,10 +1,11 @@
 import { z } from 'zod'
+
 export const moduleKeySchema = z.enum([
   'general',
   'customers',
   'items',
   'packages',
-  'pre_alerts',
+  'pre-alerts',
   'warehouse',
   'manifests',
   'deliveries',
@@ -12,6 +13,7 @@ export const moduleKeySchema = z.enum([
   'payments',
   'portal',
 ])
+
 export const moduleStateSchema = z
   .object({
     object: z.literal('organization_module'),
@@ -21,13 +23,17 @@ export const moduleStateSchema = z
     is_enabled: z.boolean(),
   })
   .meta({ id: 'OrganizationModule' })
+
 export const tenantParamsSchema = z.strictObject({
   tenantId: z.string().min(1),
 })
+
 export const moduleParamsSchema = tenantParamsSchema.extend({
   module: moduleKeySchema,
 })
+
 export const toggleBodySchema = z.strictObject({ is_enabled: z.boolean() })
+
 export const modulePreferencesSchema = z
   .object({
     object: z.literal('module_preferences'),
@@ -39,10 +45,12 @@ export const modulePreferencesSchema = z
     updated_at: z.number().int().optional(),
   })
   .meta({ id: 'ModulePreferences' })
+
 export const modulePreferencesUpdateBodySchema = z.record(
   z.string(),
   z.union([z.boolean(), z.string(), z.number()])
 )
+
 export type TenantParams = z.infer<typeof tenantParamsSchema>
 export type ModuleParams = z.infer<typeof moduleParamsSchema>
 export type ToggleBody = z.infer<typeof toggleBodySchema>

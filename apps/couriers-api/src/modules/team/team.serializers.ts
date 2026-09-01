@@ -1,5 +1,6 @@
 import { fromDbUnixSeconds } from '@/platform/timestamps'
 import type { Role, TeamMember } from './team.schemas'
+
 const validPermissions = new Set([
   'items.view',
   'items.create',
@@ -16,10 +17,10 @@ const validPermissions = new Set([
   'packages.edit',
   'packages.delete',
   'packages.export',
-  'pre_alerts.view',
-  'pre_alerts.create',
-  'pre_alerts.edit',
-  'pre_alerts.delete',
+  'pre-alerts.view',
+  'pre-alerts.create',
+  'pre-alerts.edit',
+  'pre-alerts.delete',
   'warehouse.view',
   'warehouse.create',
   'warehouse.edit',
@@ -44,13 +45,16 @@ const validPermissions = new Set([
   'settings.view',
   'settings.edit',
 ])
+
 const adminPermissions = [...validPermissions]
 const staffPermissions = adminPermissions.filter(
   (key) => !key.startsWith('reports.') && !key.startsWith('settings.')
 )
+
 export function isValidPermission(key: string) {
   return validPermissions.has(key)
 }
+
 export function serializeRole(row: {
   id: string
   tenantId: string
@@ -73,6 +77,7 @@ export function serializeRole(row: {
                 typeof value === 'string' && isValidPermission(value)
             )
           : []
+
   return {
     object: 'role',
     id: row.id,
@@ -90,6 +95,7 @@ export function serializeRole(row: {
     updated_at: fromDbUnixSeconds(row.updatedAt),
   }
 }
+
 export function serializeMember(row: {
   id: string
   tenantId: string

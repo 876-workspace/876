@@ -1,6 +1,6 @@
 import { defineModuleCatalog, type ModuleDefinition } from '@876/settings'
 
-const courierModules = [
+export const COURIERS_MODULE_CATALOG = defineModuleCatalog([
   {
     key: 'general',
     label: 'General',
@@ -379,17 +379,4 @@ const courierModules = [
       },
     ],
   },
-] as const satisfies ModuleDefinition[]
-
-type CourierModuleKey = (typeof courierModules)[number]['key']
-
-export const COURIERS_MODULE_CATALOG = defineModuleCatalog([...courierModules])
-
-export const COURIERS_MODULE_KEYS: readonly CourierModuleKey[] =
-  COURIERS_MODULE_CATALOG.map((module) => module.key as CourierModuleKey)
-
-const courierModuleKeys = new Set<string>(COURIERS_MODULE_KEYS)
-
-export function isCourierModuleKey(value: string): value is CourierModuleKey {
-  return courierModuleKeys.has(value)
-}
+] as const satisfies ModuleDefinition[])
