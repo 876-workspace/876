@@ -20,7 +20,7 @@ export type Signed876Session = {
 
 export type Current876Session = Signed876Session | { user: null }
 
-export type OrgRole = 'super_admin' | 'admin' | 'staff'
+export type OrgRole = 'super-admin' | 'admin' | 'staff'
 export type AccessStatus = 'active' | 'blocked' | 'none'
 
 export type BillingOrganization = {
