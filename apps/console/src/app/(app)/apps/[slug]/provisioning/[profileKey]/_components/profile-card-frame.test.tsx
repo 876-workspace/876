@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { ApplicationProvisioningProfile } from '@876/core/types/application-provisioning-profile'
 
@@ -29,20 +29,32 @@ const mockProfile: ApplicationProvisioningProfile = {
   published_revision: 2,
   has_draft: false,
   selection_count: 15,
-  conditions: [],
+  conditions: [
+    {
+      object: 'application_provisioning_profile_condition',
+      id: 'cond-1',
+      group_key: 'default-rule',
+      field: 'setup',
+      operator: 'equals',
+      value: 'jamaica',
+      priority: 1,
+      created_at: 1700000000,
+      updated_at: 1700000000,
+    },
+  ],
   created_at: 1700000000,
   updated_at: 1700000000,
 }
 
 describe('ProfileCardFrame', () => {
-  it('renders 3 top-level tabs (Settings, Routing, Documents) and switches between them', () => {
+  it('defaults to collapsed icon-only floating sidebar and can be expanded', () => {
     render(
       <ProfileCardFrame
         profile={mockProfile}
         slug="876-billing"
         appId="app_billing"
         resourceTabLabel="Documents"
-        documentsCount={0}
+        documentsCount={4}
         settingsContent={<div>Settings Form Content</div>}
         routingContent={<div>Routing Form Content</div>}
         documentsContent={<div>Documents Editor Content</div>}
@@ -55,52 +67,58 @@ describe('ProfileCardFrame', () => {
     expect(screen.getByText('r2')).toBeInTheDocument()
     expect(screen.getByText('app_prof_default')).toBeInTheDocument()
 
-    // Runs link
-    const runsLink = screen.getByRole('link', { name: 'Runs' })
-    expect(runsLink).toHaveAttribute(
-      'href',
-      '/settings/orgs/provisioning/runs?app_id=app_billing'
-    )
+    // Sidebar navigation exists
+    const nav = screen.getByRole('navigation', { name: 'Profile sections' })
+    expect(nav).toBeInTheDocument()
 
-    // 3 Tabs present
-    expect(
-      screen.getByRole('button', { name: /Settings/i })
-    ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Routing/i })).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /Documents/i })
-    ).toBeInTheDocument()
+    // Expand button is present in collapsed mode
+    const expandBtn = within(nav).getByRole('button', {
+      name: 'Expand sidebar',
+    })
+    expect(expandBtn).toBeInTheDocument()
 
-    // Initial tab content is Settings
+    const settingsBtn = within(nav).getByRole('button', { name: 'Settings' })
+    const routingBtn = within(nav).getByRole('button', { name: 'Routing' })
+    const documentsBtn = within(nav).getByRole('button', { name: 'Documents' })
+
+    expect(settingsBtn).toBeInTheDocument()
+    expect(routingBtn).toBeInTheDocument()
+    expect(documentsBtn).toBeInTheDocument()
+
+    // Initial state: Settings active
+    expect(settingsBtn).toHaveAttribute('aria-current', 'page')
     expect(screen.getByText('Settings Form Content')).toBeInTheDocument()
-    expect(screen.queryByText('Routing Form Content')).not.toBeInTheDocument()
-    expect(
-      screen.queryByText('Documents Editor Content')
-    ).not.toBeInTheDocument()
 
-    // Switch to Routing tab
-    const routingTab = screen.getByRole('button', { name: /Routing/i })
-    fireEvent.click(routingTab)
-
-    expect(screen.queryByText('Settings Form Content')).not.toBeInTheDocument()
+    // Switch to Routing in collapsed mode
+    fireEvent.click(routingBtn)
+    expect(routingBtn).toHaveAttribute('aria-current', 'page')
     expect(screen.getByText('Routing Form Content')).toBeInTheDocument()
-    expect(
-      screen.queryByText('Documents Editor Content')
-    ).not.toBeInTheDocument()
 
-    // Switch to Documents tab
-    const documentsTab = screen.getByRole('button', { name: /Documents/i })
-    fireEvent.click(documentsTab)
+    // Click expand button
+    fireEvent.click(expandBtn)
 
-    expect(screen.queryByText('Settings Form Content')).not.toBeInTheDocument()
-    expect(screen.queryByText('Routing Form Content')).not.toBeInTheDocument()
+    // In expanded mode, "Profile" heading and collapse button appear
+    expect(within(nav).getByText('Profile')).toBeInTheDocument()
+    const collapseBtn = within(nav).getByRole('button', {
+      name: 'Collapse sidebar',
+    })
+    expect(collapseBtn).toBeInTheDocument()
+
+    // Condition count pill is visible in expanded mode
+    expect(within(nav).getByText('1')).toBeInTheDocument()
+
+    // Switch to Documents in expanded mode
+    const expandedDocumentsBtn = within(nav).getByRole('button', {
+      name: /Documents/i,
+    })
+    fireEvent.click(expandedDocumentsBtn)
+    expect(expandedDocumentsBtn).toHaveAttribute('aria-current', 'page')
     expect(screen.getByText('Documents Editor Content')).toBeInTheDocument()
 
-    // Close button
-    const closeBtn = screen.getByRole('button', {
-      name: 'Close provisioning profile',
-    })
-    fireEvent.click(closeBtn)
-    expect(mockPush).toHaveBeenCalledWith('/apps/876-billing/provisioning')
+    // Collapse again
+    fireEvent.click(collapseBtn)
+    expect(
+      within(nav).getByRole('button', { name: 'Expand sidebar' })
+    ).toBeInTheDocument()
   })
 })
