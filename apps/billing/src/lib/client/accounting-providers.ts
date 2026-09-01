@@ -1,6 +1,9 @@
 'use client'
 
 import type {
+  AccountingImportResourceType,
+  AccountingProviderAdoption,
+  AccountingProviderAdoptionDeleted,
   AccountingProviderAuthorization,
   AccountingProviderConnection,
   AccountingProviderReconcile,
@@ -15,9 +18,27 @@ type CreateConnectionInput = {
   mode?: 'native' | 'mirror' | 'provider-backed'
 }
 
+type AdoptionInput = {
+  connectionId: string
+  resourceType: AccountingImportResourceType
+  resourceId: string
+  externalId: string
+}
+
+type ReleaseInput = Omit<AdoptionInput, 'externalId'>
+
 function connectionPath(connectionId: string, action?: string) {
   const root = `/api/accounting-providers/connections/${encodeURIComponent(connectionId)}`
   return action ? `${root}/${action}` : root
+}
+
+function adoptionPath(
+  connectionId: string,
+  resourceType: AccountingImportResourceType,
+  resourceId?: string
+) {
+  const root = `${connectionPath(connectionId)}/imports/${resourceType}/adoptions`
+  return resourceId ? `${root}/${encodeURIComponent(resourceId)}` : root
 }
 
 const createConnection = (params: CreateConnectionInput) =>
@@ -49,6 +70,24 @@ const disableConnection = (connectionId: string) =>
     { method: 'DELETE' }
   )
 
+const adopt = (params: AdoptionInput) =>
+  request<AccountingProviderAdoption>(
+    adoptionPath(params.connectionId, params.resourceType),
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        resourceId: params.resourceId,
+        externalId: params.externalId,
+      }),
+    }
+  )
+
+const release = (params: ReleaseInput) =>
+  request<AccountingProviderAdoptionDeleted>(
+    adoptionPath(params.connectionId, params.resourceType, params.resourceId),
+    { method: 'DELETE' }
+  )
+
 export const accountingProviders = {
   connections: {
     create: createConnection,
@@ -56,5 +95,6 @@ export const accountingProviders = {
     validate: validateConnection,
     reconcile: reconcileConnection,
     disable: disableConnection,
+    imports: { adopt, release },
   },
 }
