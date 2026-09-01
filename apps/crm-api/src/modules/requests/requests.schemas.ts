@@ -1,16 +1,12 @@
 import { z } from 'zod'
 
-import { requestChannelSchema } from '../../types/request.js'
+import {
+  requestChannelSchema,
+  requestStatusSchema,
+} from '@876/crm/contracts'
 import { optionalRichContentSchema } from '../../types/rich-content.js'
 
-export const requestStatusSchema = z.enum([
-  'OPEN',
-  'IN_PROGRESS',
-  'WAITING',
-  'RESOLVED',
-  'CLOSED',
-  'CANCELLED',
-])
+export { requestStatusSchema } from '@876/crm/contracts'
 
 export const organizationParamsSchema = z.strictObject({
   organizationId: z.string().trim().min(1),
