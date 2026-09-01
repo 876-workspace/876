@@ -1,6 +1,7 @@
 export { createProvisioningRouter } from './provisioning.routes'
 export { createProvisioningResourceRouter } from './provisioning-resource.routes'
 export { createProvisioningSetupPolicyRouter } from './provisioning-setup-policy.routes'
+export { createApplicationProvisioningProfileRouter } from './application-provisioning-profile.routes'
 export {
   provisioningImportSpecificationSchema,
   type ProvisioningImportSpecification,
@@ -29,3 +30,24 @@ export {
   retrieveProvisioningWorkspaceDefaults,
   type ProvisioningWorkspaceDefaults,
 } from './provisioning-selection.service'
+export {
+  buildApplicationProvisioningSelectionContext,
+  createApplicationProvisioningProfile,
+  ensureDefaultApplicationProvisioningProfile,
+  listApplicationProvisioningProfiles,
+  publishApplicationProvisioningProfileDraft,
+  replaceApplicationProvisioningProfileDraft,
+  replaceApplicationProvisioningProfilePolicy,
+  requirePersistedApplicationProvisioningProfileSelection,
+  resolveAndPersistApplicationProvisioningProfile,
+  resolveApplicationManifestTarget,
+  resolveApplicationProvisioningProfileFromCandidates,
+  resolveDefaultApplicationManifestTarget,
+  retrieveApplicationProvisioningProfile,
+  retrieveApplicationProvisioningProfileManifest,
+  retrieveApplicationProvisioningProfilePolicy,
+  retrieveApplicationProvisioningProfilePublished,
+  retrievePersistedApplicationProvisioningProfileSelection,
+  updateApplicationProvisioningProfile,
+  validateApplicationProvisioningProfileDraft,
+} from './application-provisioning-profile.service'

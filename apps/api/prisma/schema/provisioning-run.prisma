@@ -2,33 +2,40 @@
 // Module: provisioning. Provisioning manifests, revisions, resources, properties, steps, and runs.
 
 model ProvisioningRun {
-  id                         String                @id @db.VarChar
-  organizationId             String                @map("organization_id") @db.VarChar
-  appId                      String                @map("app_id") @db.VarChar
-  subscriptionId             String?               @map("subscription_id") @db.VarChar
-  outboxEventId              String?               @unique @map("outbox_event_id") @db.VarChar
-  trigger                    String                @db.VarChar
-  status                     String                @db.VarChar
-  manifestVersion            Int                   @default(1) @map("manifest_version")
-  provisioningSetupKey       String?               @map("provisioning_setup_key") @db.VarChar
-  provisioningSelectionType  String?               @map("provisioning_selection_type") @db.VarChar
-  provisioningMatchGroupKey  String?               @map("provisioning_match_group_key") @db.VarChar
-  provisioningMatchPriority  Int?                  @map("provisioning_match_priority")
-  provisioningMatchedFields  String[]              @default([]) @map("provisioning_matched_fields") @db.VarChar
-  financeRevisionId          String?               @map("finance_revision_id") @db.VarChar
-  financeRevision            Int?                  @map("finance_revision")
-  applicationRevisionId      String?               @map("application_revision_id") @db.VarChar
-  applicationRevision        Int?                  @map("application_revision")
-  attemptCount               Int                   @default(0) @map("attempt_count")
-  availableAt                BigInt                @map("available_at")
-  startedAt                  BigInt?               @map("started_at")
-  completedAt                BigInt?               @map("completed_at")
-  lastError                  String?               @map("last_error")
-  createdAt                  BigInt                @map("created_at")
-  updatedAt                  BigInt                @map("updated_at")
-  provisioningRunSteps       ProvisioningRunStep[]
+  id                                      String                @id @db.VarChar
+  organizationId                          String                @map("organization_id") @db.VarChar
+  appId                                   String                @map("app_id") @db.VarChar
+  subscriptionId                          String?               @map("subscription_id") @db.VarChar
+  outboxEventId                           String?               @unique @map("outbox_event_id") @db.VarChar
+  trigger                                 String                @db.VarChar
+  status                                  String                @db.VarChar
+  manifestVersion                         Int                   @default(1) @map("manifest_version")
+  provisioningSetupKey                    String?               @map("provisioning_setup_key") @db.VarChar
+  provisioningSelectionType               String?               @map("provisioning_selection_type") @db.VarChar
+  provisioningMatchGroupKey               String?               @map("provisioning_match_group_key") @db.VarChar
+  provisioningMatchPriority               Int?                  @map("provisioning_match_priority")
+  provisioningMatchedFields               String[]              @default([]) @map("provisioning_matched_fields") @db.VarChar
+  applicationProvisioningProfileId        String?               @map("application_provisioning_profile_id") @db.VarChar
+  applicationProvisioningProfileKey       String?               @map("application_provisioning_profile_key") @db.VarChar
+  applicationProvisioningSelectionType    String?               @map("application_provisioning_selection_type") @db.VarChar
+  applicationProvisioningMatchGroupKey    String?               @map("application_provisioning_match_group_key") @db.VarChar
+  applicationProvisioningMatchPriority    Int?                  @map("application_provisioning_match_priority")
+  applicationProvisioningMatchedFields    String[]              @default([]) @map("application_provisioning_matched_fields") @db.VarChar
+  financeRevisionId                       String?               @map("finance_revision_id") @db.VarChar
+  financeRevision                         Int?                  @map("finance_revision")
+  applicationRevisionId                   String?               @map("application_revision_id") @db.VarChar
+  applicationRevision                     Int?                  @map("application_revision")
+  attemptCount                            Int                   @default(0) @map("attempt_count")
+  availableAt                             BigInt                @map("available_at")
+  startedAt                               BigInt?               @map("started_at")
+  completedAt                             BigInt?               @map("completed_at")
+  lastError                               String?               @map("last_error")
+  createdAt                               BigInt                @map("created_at")
+  updatedAt                               BigInt                @map("updated_at")
+  provisioningRunSteps                    ProvisioningRunStep[]
 
   @@index([appId], map: "ix_provisioning_runs_app_id")
+  @@index([applicationProvisioningProfileId], map: "ix_provisioning_runs_app_profile_id")
   @@index([status, availableAt, createdAt], map: "ix_provisioning_runs_delivery")
   @@index([organizationId, createdAt], map: "ix_provisioning_runs_org_created")
   @@index([organizationId], map: "ix_provisioning_runs_organization_id")

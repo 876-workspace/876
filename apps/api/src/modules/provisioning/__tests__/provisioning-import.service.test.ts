@@ -324,6 +324,7 @@ function createDependencies(
       setups.set(key, { ...row, is_default: key === setupKey })
     return setups.get(setupKey)!
   })
+  const ensureDefaultApplicationProfile = vi.fn(async () => undefined)
 
   const dependencies: ProvisioningImportDependencies = {
     async preflightEntitlements() {},
@@ -335,6 +336,7 @@ function createDependencies(
       setups.set(row.key, row)
       return row
     },
+    ensureDefaultApplicationProfile,
     async findManifest(targetType, targetKey) {
       return manifests.get(`${targetType}:${targetKey}`) ?? null
     },
@@ -353,6 +355,7 @@ function createDependencies(
     replacePolicy,
     replaceDraft,
     publishDraft,
+    ensureDefaultApplicationProfile,
   }
 }
 
@@ -367,12 +370,49 @@ describe('importProvisioningSpecification', () => {
 
     expect(result.setups_created).toBe(2)
     expect(result.finance_manifests_published).toBe(2)
+    expect(result.application_profiles_ensured).toBe(0)
     expect(result.organization_manifest_published).toBe(true)
     expect(result.default_setup_changed).toBe(true)
     expect(state.setups.get('global-usd')?.is_default).toBe(true)
     expect(state.publishDraft).toHaveBeenCalledWith('finance', 'jamaica')
     expect(state.publishDraft).toHaveBeenCalledWith('finance', 'global-usd')
     expect(state.publishDraft).toHaveBeenCalledWith('organization', 'global')
+  })
+
+  it('ensures the app default profile before importing its generic manifest', async () => {
+    const input = spec()
+    input.application_manifests = [
+      {
+        app_slug: '876-crm',
+        finance_dependency: 'none',
+        finance_scopes: [],
+        resources: [],
+        steps: [],
+      },
+    ]
+    const state = createDependencies({
+      setups: [setup('jamaica'), setup('global-usd', true)],
+      manifests: [
+        manifest('finance', 'jamaica', { published: true }),
+        manifest('finance', 'global-usd', { published: true }),
+        manifest('organization', 'global', { published: true }),
+      ],
+    })
+
+    const result = await importProvisioningSpecification(
+      input,
+      state.dependencies
+    )
+
+    expect(result.application_profiles_ensured).toBe(1)
+    expect(state.ensureDefaultApplicationProfile).toHaveBeenCalledTimes(1)
+    expect(state.ensureDefaultApplicationProfile).toHaveBeenCalledWith('876-crm')
+    expect(state.replaceDraft).toHaveBeenCalledWith(
+      'application',
+      '876-crm',
+      expect.objectContaining({ manifest_version: 1 })
+    )
+    expect(state.publishDraft).toHaveBeenCalledWith('application', '876-crm')
   })
 
   it('preserves published manifests and non-empty operator drafts', async () => {

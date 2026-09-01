@@ -61,6 +61,7 @@ model Organization {
   orgDepartments               OrgDepartment[]
   orgFeatures                  OrgFeature[]
   orgLocations                 OrgLocation[]
+  organizationApplicationProvisioning OrganizationApplicationProvisioning[]
   organizationRoles            OrganizationRole[]
   country                      Country?            @relation(fields: [countryCode], references: [code], onUpdate: NoAction)
   currency                     Currency?           @relation(fields: [currencyCode], references: [code], onUpdate: NoAction)

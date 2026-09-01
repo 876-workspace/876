@@ -10,7 +10,10 @@ const REVOKED_SUBSCRIPTION_STATES = new Set(['canceled', 'incomplete_expired'])
 
 export type FinanceConnectionStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED'
 export type ProvisioningRunTrigger =
-  'app_activation' | 'manifest_publish' | 'manual_reconcile' | 'retry'
+  | 'app_activation'
+  | 'manifest_publish'
+  | 'manual_reconcile'
+  | 'retry'
 
 export type SubscriptionRow = {
   id: string
@@ -37,8 +40,15 @@ export type AppRow = {
   deletedAt: bigint | null
 }
 
+export type ApplicationProfileSelectionRow = {
+  profileId: string
+  profileKey: string
+  manifestTargetKey: string
+}
+
 export type ProvisioningManifestRevisionRow = {
   id: string
+  targetKey: string
   revision: number
   financeDependency: string
   financeScopes: string[]
@@ -91,15 +101,14 @@ export type FinanceProvisioningRepository = {
     organizationId: string,
     appId: string
   ): Promise<SubscriptionRow[]>
+  resolveApplicationProfileSelection(
+    organizationId: string,
+    appId: string
+  ): Promise<ApplicationProfileSelectionRow | null>
   findPublishedRevision(
     targetType: string,
     targetKey: string
   ): Promise<ProvisioningManifestRevisionRow | null>
-  /**
-   * The provisioning setup an organization is configured with — the key of its
-   * `finance/<key>` manifest. Null when no setup exists at all, which only
-   * happens before the provisioning seeds have run.
-   */
   resolveFinanceSetupKey(organizationId: string): Promise<string | null>
   findLatestOutboxEvent(
     aggregateId: string
@@ -179,24 +188,27 @@ function effectiveSubscriptionState(subscriptions: SubscriptionRow[]): {
   const active = subscriptions.filter((row) =>
     ACTIVE_SUBSCRIPTION_STATES.has(row.status.trim().toLowerCase())
   )
-  if (active.length > 0) {
+  if (active.length > 0)
     return { status: 'ACTIVE', entitlementReference: active[0]!.id }
-  }
 
   const suspended = subscriptions.filter(
     (row) => !REVOKED_SUBSCRIPTION_STATES.has(row.status.trim().toLowerCase())
   )
-  if (suspended.length > 0) {
+  if (suspended.length > 0)
     return { status: 'SUSPENDED', entitlementReference: suspended[0]!.id }
-  }
 
-  if (subscriptions.length > 0) {
+  if (subscriptions.length > 0)
     return { status: 'REVOKED', entitlementReference: subscriptions[0]!.id }
-  }
 
-  throw new Error(
-    'A finance connection cannot be derived without a subscription.'
-  )
+  throw new Error('A finance connection cannot be derived without a subscription.')
+}
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false
+  for (let index = 0; index < a.length; index += 1) {
+    if (a[index] !== b[index]) return false
+  }
+  return true
 }
 
 function eventMatches(
@@ -216,14 +228,6 @@ function eventMatches(
     event.sourceAppId === params.sourceAppId &&
     event.entitlementReference === params.entitlementReference
   )
-}
-
-function arraysEqual(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false
-  }
-  return true
 }
 
 async function attachRun(
@@ -251,7 +255,6 @@ async function attachRun(
     now: params.now,
   })
   await repository.updateOutboxEventRunId(event.id, run.id)
-  // Keep in-memory row consistent so callers see the linkage without a reload.
   event.runId = run.id
   return run
 }
@@ -268,71 +271,74 @@ export async function enqueueFinanceConnectionEvent(
 ): Promise<FinanceProvisioningOutboxRow | ProvisioningRunRow | null> {
   const trigger = options.trigger ?? 'app_activation'
   const desiredStatus = options.desiredStatus ?? null
-
   const locked = await deps.repository.findSubscriptionById(subscription.id)
   if (!locked) return null
 
   const organization = await deps.repository.findOrganizationById(
     locked.organizationId
   )
-  if (!organization) {
+  if (!organization)
     throw new Error(
       `Subscription ${locked.id} references missing organization ${locked.organizationId}.`
     )
-  }
 
   const sourceApp = await deps.repository.findAppById(locked.appId)
-  if (!sourceApp) {
+  if (!sourceApp)
     throw new Error(
       `Subscription ${locked.id} references missing app ${locked.appId}.`
     )
-  }
 
+  const selectedProfile =
+    await deps.repository.resolveApplicationProfileSelection(
+      locked.organizationId,
+      locked.appId
+    )
+  if (!selectedProfile)
+    throw new AppHttpError({
+      code: 'provisioning/application-profile-selection-missing',
+      message:
+        'The organization has no persisted provisioning profile for this application.',
+      httpStatus: 409,
+    })
+
+  const profile = await deps.repository.findPublishedRevision(
+    'application',
+    selectedProfile.manifestTargetKey
+  )
   const connectionAggregateId = `${locked.organizationId}:${locked.appId}`
   const subscriptions = await deps.repository.listSubscriptionsByOrgAndApp(
     locked.organizationId,
     locked.appId
   )
-
-  const profile = await deps.repository.findPublishedRevision(
-    'application',
-    locked.appId
-  )
-  const latest = await deps.repository.findLatestOutboxEvent(
-    connectionAggregateId
-  )
-
+  const latest = await deps.repository.findLatestOutboxEvent(connectionAggregateId)
   const isStrictTarget =
-    options.strict ||
+    options.strict === true ||
     (Boolean(options.strictSourceAppId) &&
       options.strictSourceAppId === locked.appId)
 
-  if (!profile) {
-    if (isStrictTarget) {
-      throw new AppHttpError({
-        code: 'provisioning/application-profile-missing',
-        message: `Published provisioning profile is missing for application ${locked.appId}.`,
-        httpStatus: 500,
-      })
-    }
-  } else if (isStrictTarget) {
-    if (profile.financeDependency === 'none') {
+  if (!profile && isStrictTarget)
+    throw new AppHttpError({
+      code: 'provisioning/application-profile-missing',
+      message: `Published provisioning profile ${selectedProfile.profileKey} is missing for application ${locked.appId}.`,
+      httpStatus: 500,
+    })
+
+  if (profile && isStrictTarget) {
+    if (profile.financeDependency === 'none')
       throw new AppHttpError({
         code: 'provisioning/finance-dependency-missing',
-        message: `Application ${locked.appId} requires foreground finance provisioning but its published profile declares no finance dependency.`,
+        message: `Application ${locked.appId} requires foreground finance provisioning but selected profile ${selectedProfile.profileKey} declares no finance dependency.`,
         httpStatus: 500,
       })
-    }
     if (
       profile.financeDependency === 'embedded' &&
       profile.financeScopes.length === 0
-    ) {
+    )
       throw new AppHttpError({
         code: 'provisioning/finance-scopes-missing',
-        message: `Application ${locked.appId} declares embedded finance without scopes.`,
+        message: `Application profile ${selectedProfile.profileKey} declares embedded finance without scopes.`,
         httpStatus: 500,
       })
-    }
   }
 
   if (!profile || profile.financeDependency === 'none') {
@@ -359,7 +365,6 @@ export async function enqueueFinanceConnectionEvent(
     const entitlementReference = latest.entitlementReference
 
     if (
-      latest &&
       eventMatches(latest, {
         desiredStatus: nextStatus,
         scopes,
@@ -368,26 +373,24 @@ export async function enqueueFinanceConnectionEvent(
         entitlementReference,
       })
     ) {
-      if (latest.runId == null) {
+      if (latest.runId === null)
         return attachRun(deps.repository, latest, {
           subscriptionId: entitlementReference,
           applicationRevision: profile,
           trigger,
           now: nowUnixSeconds(),
         })
-      }
       return latest
     }
 
     const now = nowUnixSeconds()
-    const lifecycleVersion = latest ? latest.lifecycleVersion + 1 : 1
+    const lifecycleVersion = latest.lifecycleVersion + 1
     await deps.repository.updateSubscriptionsLifecycleVersion(
-      subscriptions.map((s) => s.id),
+      subscriptions.map((candidate) => candidate.id),
       lifecycleVersion
     )
-    for (const candidate of subscriptions) {
+    for (const candidate of subscriptions)
       candidate.financeLifecycleVersion = lifecycleVersion
-    }
 
     const event = await deps.repository.createOutboxEvent({
       id: generateId('financeProvisioningEvent'),
@@ -418,21 +421,17 @@ export async function enqueueFinanceConnectionEvent(
       updatedAt: BigInt(now),
       runId: null,
     })
-
     await attachRun(deps.repository, event, {
       subscriptionId: entitlementReference,
       applicationRevision: profile,
       trigger,
       now,
     })
-
     return event
   }
 
-  // Embedded finance path
   const scopes = [...new Set(profile.financeScopes)].sort()
   const provisioningRevision = profile.revision
-  // Resolved once: `nextStatus` is reassigned below, the reference is not.
   const state = effectiveSubscriptionState(subscriptions)
   const { entitlementReference } = state
   let nextStatus = state.status
@@ -441,16 +440,14 @@ export async function enqueueFinanceConnectionEvent(
     desiredStatus === 'REVOKED' ||
     organization.deletedAt !== null ||
     sourceApp.deletedAt !== null
-  ) {
+  )
     nextStatus = 'REVOKED'
-  } else if (desiredStatus !== null) {
-    nextStatus = desiredStatus
-  } else if (
+  else if (desiredStatus !== null) nextStatus = desiredStatus
+  else if (
     organization.status !== 'active' ||
     sourceApp.status !== 'active'
-  ) {
+  )
     nextStatus = 'SUSPENDED'
-  }
 
   if (
     latest &&
@@ -462,26 +459,24 @@ export async function enqueueFinanceConnectionEvent(
       entitlementReference,
     })
   ) {
-    if (latest.runId == null) {
+    if (latest.runId === null)
       await attachRun(deps.repository, latest, {
         subscriptionId: entitlementReference,
         applicationRevision: profile,
         trigger,
         now: nowUnixSeconds(),
       })
-    }
     return latest
   }
 
   const now = nowUnixSeconds()
   const lifecycleVersion = latest ? latest.lifecycleVersion + 1 : 1
   await deps.repository.updateSubscriptionsLifecycleVersion(
-    subscriptions.map((s) => s.id),
+    subscriptions.map((candidate) => candidate.id),
     lifecycleVersion
   )
-  for (const candidate of subscriptions) {
+  for (const candidate of subscriptions)
     candidate.financeLifecycleVersion = lifecycleVersion
-  }
 
   const event = await deps.repository.createOutboxEvent({
     id: generateId('financeProvisioningEvent'),
@@ -492,9 +487,7 @@ export async function enqueueFinanceConnectionEvent(
     organizationName: financeWorkspaceName(organization),
     organizationSlug: financeWorkspaceSlug(organization),
     organizationCountryCode: organization.countryCode ?? null,
-    organizationCurrencyCode: (
-      organization.currencyCode ?? 'JMD'
-    ).toUpperCase(),
+    organizationCurrencyCode: (organization.currencyCode ?? 'JMD').toUpperCase(),
     sourceAppId: locked.appId,
     entitlementReference,
     provisioningVersion: provisioningRevision,
@@ -512,14 +505,12 @@ export async function enqueueFinanceConnectionEvent(
     updatedAt: BigInt(now),
     runId: null,
   })
-
   await attachRun(deps.repository, event, {
     subscriptionId: entitlementReference,
     applicationRevision: profile,
     trigger,
     now,
   })
-
   return event
 }
 
@@ -543,15 +534,12 @@ export async function reconcileFinanceConnections(
 }> {
   const limit = options.limit === undefined ? 1000 : options.limit
   const trigger = options.trigger ?? 'app_activation'
-
-  const { rows, hasMore } = await deps.repository.listSubscriptionsForReconcile(
-    {
-      appId: options.appId ?? null,
-      organizationId: options.organizationId ?? null,
-      limit,
-      startingAfter: options.startingAfter ?? null,
-    }
-  )
+  const { rows, hasMore } = await deps.repository.listSubscriptionsForReconcile({
+    appId: options.appId ?? null,
+    organizationId: options.organizationId ?? null,
+    limit,
+    startingAfter: options.startingAfter ?? null,
+  })
 
   let changed = 0
   const eventIds: string[] = []
@@ -563,23 +551,16 @@ export async function reconcileFinanceConnections(
       strictSourceAppId: options.strictSourceAppId ?? null,
       strict: options.strict,
     })
-
     const isProvisioningRun =
       result !== null &&
       typeof result === 'object' &&
       'id' in result &&
       !('aggregateId' in result)
-
     const isFinanceEvent =
       result !== null && typeof result === 'object' && 'aggregateId' in result
-
-    if (isFinanceEvent) {
-      eventIds.push((result as FinanceProvisioningOutboxRow).id)
-    }
-
-    if (subscription.financeLifecycleVersion !== before || isProvisioningRun) {
+    if (isFinanceEvent) eventIds.push((result as FinanceProvisioningOutboxRow).id)
+    if (subscription.financeLifecycleVersion !== before || isProvisioningRun)
       changed += 1
-    }
   }
 
   const nextCursor =

@@ -24,6 +24,7 @@ export type ProvisioningImportSummary = {
   policies_unchanged: number
   finance_manifests_published: number
   finance_manifests_preserved: number
+  application_profiles_ensured: number
   application_manifests_published: number
   application_manifests_preserved: number
   organization_manifest_published: boolean
@@ -47,6 +48,7 @@ export type ProvisioningImportDependencies = {
     is_default: false
     copy_from: null
   }): Promise<ProvisioningSetup>
+  ensureDefaultApplicationProfile(appKey: string): Promise<void>
   findManifest(
     targetType: string,
     targetKey: string
@@ -102,6 +104,10 @@ const DEFAULT_DEPENDENCIES: ProvisioningImportDependencies = {
   async createSetup(body) {
     const service = await import('./provisioning.service')
     return service.createSetup(body)
+  },
+  async ensureDefaultApplicationProfile(appKey) {
+    const service = await import('./application-provisioning-profile.service')
+    await service.ensureDefaultApplicationProvisioningProfile(appKey)
   },
   findManifest,
   async replaceDraft(targetType, targetKey, body) {
@@ -315,17 +321,6 @@ async function ensurePublishedManifest(
   return 'published'
 }
 
-/**
- * Import the temporary Phase 1 development specification without taking
- * ownership of existing operator configuration.
- *
- * The entitlement catalog is validated against the live first-party App
- * registry before any provisioning records are created. Missing setups and
- * pristine/unpublished manifests are then initialized. Existing published
- * manifests and non-empty drafts are preserved. Setup policies are merged
- * additively so missing country/access rows are backfilled without discarding
- * operator-authored conditions or choices.
- */
 export async function importProvisioningSpecification(
   spec: ProvisioningImportSpecification,
   dependencies: ProvisioningImportDependencies = DEFAULT_DEPENDENCIES
@@ -340,6 +335,7 @@ export async function importProvisioningSpecification(
     policies_unchanged: 0,
     finance_manifests_published: 0,
     finance_manifests_preserved: 0,
+    application_profiles_ensured: 0,
     application_manifests_published: 0,
     application_manifests_preserved: 0,
     organization_manifest_published: false,
@@ -364,11 +360,10 @@ export async function importProvisioningSpecification(
       summary.setups_created += 1
     } else {
       summary.setups_preserved += 1
-      if (setup.status !== 'active') {
+      if (setup.status !== 'active')
         summary.warnings.push(
           `Setup '${setup.key}' is archived and was preserved without changing its lifecycle state.`
         )
-      }
     }
 
     const currentPolicy = await dependencies.retrievePolicy(setupSpec.key)
@@ -397,11 +392,10 @@ export async function importProvisioningSpecification(
         !current?.published &&
         current?.draft &&
         !isPristineDraft(current.draft)
-      ) {
+      )
         summary.warnings.push(
           `Setup '${setupSpec.key}' has an unpublished non-empty finance draft; the importer preserved it and did not publish specification defaults over it.`
         )
-      }
     }
   }
 
@@ -415,6 +409,9 @@ export async function importProvisioningSpecification(
   summary.organization_manifest_preserved = organizationResult === 'preserved'
 
   for (const application of spec.application_manifests) {
+    await dependencies.ensureDefaultApplicationProfile(application.app_slug)
+    summary.application_profiles_ensured += 1
+
     const result = await ensurePublishedManifest(
       dependencies,
       'application',
@@ -432,34 +429,31 @@ export async function importProvisioningSpecification(
         !current?.published &&
         current?.draft &&
         !isPristineDraft(current.draft)
-      ) {
+      )
         summary.warnings.push(
           `Application '${application.app_slug}' has an unpublished non-empty provisioning draft; it was preserved.`
         )
-      }
     }
   }
 
   const defaultSetup = await dependencies.findSetup(spec.default_setup_key)
-  if (!defaultSetup) {
+  if (!defaultSetup)
     throw new Error(
       `Provisioning import did not create default setup '${spec.default_setup_key}'.`
     )
-  }
+
   const defaultManifest = await dependencies.findManifest(
     'finance',
     spec.default_setup_key
   )
-  if (!defaultManifest?.published) {
+  if (!defaultManifest?.published)
     throw new Error(
       `Default setup '${spec.default_setup_key}' does not have a published finance manifest.`
     )
-  }
-  if (defaultSetup.status !== 'active') {
+  if (defaultSetup.status !== 'active')
     throw new Error(
       `Default setup '${spec.default_setup_key}' is archived and cannot be promoted.`
     )
-  }
   if (!defaultSetup.is_default) {
     await dependencies.setDefault(spec.default_setup_key)
     summary.default_setup_changed = true

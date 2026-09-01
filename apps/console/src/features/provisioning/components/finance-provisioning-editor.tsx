@@ -57,6 +57,10 @@ function newId() {
   return `new-${crypto.randomUUID()}`
 }
 
+type ProvisioningEditorTarget =
+  | { type: 'finance'; key: string }
+  | { type: 'application'; key: string; profileKey?: string }
+
 export function FinanceProvisioningEditor({
   catalog,
   manifest: initialManifest,
@@ -70,8 +74,7 @@ export function FinanceProvisioningEditor({
   catalog: AdminProvisioningCatalog
   manifest: AdminProvisioningManifest | null
   setup?: AdminProvisioningSetup
-  /** `finance` targets a provisioning setup by key; `application` an app. */
-  target: { type: 'finance' | 'application'; key: string }
+  target: ProvisioningEditorTarget
   initialType?: string
   currencyOptions?: readonly FinanceCurrencyOption[]
   languageOptions?: readonly FinanceSelectOption[]
@@ -95,8 +98,6 @@ export function FinanceProvisioningEditor({
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  // When initialType is provided (URL-driven), that type is always active.
-  // When not provided (legacy embedded mode), use local state.
   const firstType = catalog.resource_types[0]
     ? getDefinitionType(catalog.resource_types[0])
     : ''
@@ -104,7 +105,6 @@ export function FinanceProvisioningEditor({
   const selectedType = initialType ?? localSelectedType
   const isUrlDriven = initialType !== undefined
 
-  // Collection items edit directly in their table row.
   const [editingRow, setEditingRow] = useState<FinanceResourceRow | null>(null)
   const [isNewItem, setIsNewItem] = useState(false)
 
@@ -165,11 +165,50 @@ export function FinanceProvisioningEditor({
   }
 
   function openEditItem(row: FinanceResourceRow) {
-    setEditingRow({
-      ...row,
-      values: { ...row.values },
-    })
+    setEditingRow({ ...row, values: { ...row.values } })
     setIsNewItem(false)
+  }
+
+  async function validateApplicationDraft(
+    draft: Parameters<typeof client.provisioning.validate>[1]
+  ) {
+    if (target.type !== 'application')
+      throw new Error('Application draft validation requires an app target.')
+
+    return target.profileKey
+      ? client.applicationProvisioningProfiles.validate(
+          target.key,
+          target.profileKey,
+          draft
+        )
+      : client.provisioning.validate(target.key, draft)
+  }
+
+  async function saveApplicationDraft(
+    draft: Parameters<typeof client.provisioning.replaceDraft>[1]
+  ) {
+    if (target.type !== 'application')
+      throw new Error('Application draft save requires an app target.')
+
+    return target.profileKey
+      ? client.applicationProvisioningProfiles.replaceDraft(
+          target.key,
+          target.profileKey,
+          draft
+        )
+      : client.provisioning.replaceDraft(target.key, draft)
+  }
+
+  async function publishApplicationDraft() {
+    if (target.type !== 'application')
+      throw new Error('Application publish requires an app target.')
+
+    return target.profileKey
+      ? client.applicationProvisioningProfiles.publish(
+          target.key,
+          target.profileKey
+        )
+      : client.provisioning.publish(target.key)
   }
 
   async function replaceRowsForApplication(
@@ -349,7 +388,7 @@ export function FinanceProvisioningEditor({
       const validation =
         target.type === 'finance'
           ? await client.provisioningSetups.validate(target.key, draft)
-          : await client.provisioning.validate(target.key, draft)
+          : await validateApplicationDraft(draft)
       if (validation.error || !validation.data) {
         setMessage(validation.error?.message ?? 'Validation failed.')
         return null
@@ -364,7 +403,7 @@ export function FinanceProvisioningEditor({
     const saved =
       target.type === 'finance'
         ? await client.provisioningSetups.replaceDraft(target.key, draft)
-        : await client.provisioning.replaceDraft(target.key, draft)
+        : await saveApplicationDraft(draft)
     if (saved.error || !saved.data) {
       setMessage(saved.error?.message ?? 'Failed to save finance defaults.')
       return null
@@ -394,7 +433,7 @@ export function FinanceProvisioningEditor({
       const published =
         target.type === 'finance'
           ? await client.provisioningSetups.publish(target.key)
-          : await client.provisioning.publish(target.key)
+          : await publishApplicationDraft()
       if (published.error || !published.data) {
         setMessage(
           published.error?.message ?? 'Failed to publish finance defaults.'
@@ -423,8 +462,7 @@ export function FinanceProvisioningEditor({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Internal tab strip — only shown in legacy non-URL-driven mode */}
-      {!isUrlDriven && (
+      {!isUrlDriven && catalog.resource_types.length > 1 && (
         <div className="border-border/80 border-b pb-px">
           <nav
             aria-label="Provisioning resource categories"
@@ -477,7 +515,6 @@ export function FinanceProvisioningEditor({
         </div>
       )}
 
-      {/* Toolbar — only rendered on subpages / non-workspace tabs */}
       {!isWorkspace && (
         <div className="876-header-row flex shrink-0 items-center justify-between gap-2 border-b px-5 py-2">
           <div className="flex items-center gap-2">
@@ -546,7 +583,6 @@ export function FinanceProvisioningEditor({
         </div>
       )}
 
-      {/* Validation Issues Alert (if any) */}
       {issues.length > 0 && (
         <section className="border-destructive/40 bg-destructive/5 mx-6 mt-4 rounded-lg border p-4">
           <div className="flex items-center gap-2">
@@ -566,7 +602,6 @@ export function FinanceProvisioningEditor({
         </section>
       )}
 
-      {/* Standard Data Table or Singleton Form */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {activeDefinition ? (
           activeDefinition.multiple ? (

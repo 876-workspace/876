@@ -1,15 +1,17 @@
 import { AppHttpError } from '@/http/errors'
+import { listObject, type ListObject } from '@/http/envelope'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
-import { listObject, type ListObject } from '@/http/envelope'
+import { reconcileFinanceConnections } from '@/services/finance-provisioning'
+import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
 import {
   catalogDefinitions,
   validateProvisioningWireDraft,
 } from '@/services/provisioning-catalog'
-import { reconcileFinanceConnections } from '@/services/finance-provisioning'
-import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
 
+import { resolveDefaultApplicationManifestTarget } from './application-provisioning-profile.service'
 import * as repository from './provisioning.repository'
+import type { ProvisioningDraftReplace } from './provisioning.schemas'
 import {
   serializeCatalog,
   serializeManifest,
@@ -18,9 +20,7 @@ import {
   serializeRun,
   serializeSetup,
 } from './provisioning.serializers'
-import type { ProvisioningDraftReplace } from './provisioning.schemas'
 
-// Helper to resolve application target: returns { storageKey (id), catalogKey (slug) }
 async function requireValidTarget(
   targetType: string,
   targetKey: string
@@ -37,20 +37,17 @@ async function requireValidTarget(
   return app.slug
 }
 
+/**
+ * Generic application manifest operations are the backwards-compatible default
+ * profile surface. Variant-aware callers use the explicit profile routes.
+ */
 async function storageTargetKey(
   targetType: string,
   targetKey: string
 ): Promise<string> {
   if (targetType !== 'application') return targetKey
-  const app = await repository.findAppByIdOrSlug(targetKey)
-  if (!app) {
-    throw new AppHttpError({
-      code: 'provisioning/target-not-found',
-      message: 'Provisioning target was not found.',
-      httpStatus: 404,
-    })
-  }
-  return app.id
+  const target = await resolveDefaultApplicationManifestTarget(targetKey)
+  return target.manifestTargetKey
 }
 
 function revisionAsDraft(row: {
@@ -272,7 +269,6 @@ export async function publishDraft(targetType: string, targetKey: string) {
     locked.draft as never,
     nowUnixSeconds()
   )
-  // Note: finance reconciliation would happen here in Python; stubbed to avoid circular deps
   return serializeRevision(published as never)
 }
 
@@ -516,10 +512,6 @@ export async function deleteNote(
     deleted: true as const,
   }
 }
-
-// ---------------------------------------------------------------------------
-// Setups — named day-zero configurations, each owning `finance/<key>`.
-// ---------------------------------------------------------------------------
 
 async function setupContext(row: repository.SetupRow) {
   const [summaries, organizationCount] = await Promise.all([

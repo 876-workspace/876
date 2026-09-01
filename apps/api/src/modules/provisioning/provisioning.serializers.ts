@@ -82,6 +82,17 @@ type RunRow = {
   trigger: string
   status: string
   manifestVersion: number
+  provisioningSetupKey: string | null
+  provisioningSelectionType: string | null
+  provisioningMatchGroupKey: string | null
+  provisioningMatchPriority: number | null
+  provisioningMatchedFields: string[]
+  applicationProvisioningProfileId: string | null
+  applicationProvisioningProfileKey: string | null
+  applicationProvisioningSelectionType: string | null
+  applicationProvisioningMatchGroupKey: string | null
+  applicationProvisioningMatchPriority: number | null
+  applicationProvisioningMatchedFields: string[]
   financeRevisionId: string | null
   financeRevision: number | null
   applicationRevisionId: string | null
@@ -202,6 +213,22 @@ export function serializeRun(row: RunRow) {
     trigger: row.trigger as never,
     status: row.status as never,
     manifest_version: 1 as const,
+    provisioning_setup_key: row.provisioningSetupKey,
+    provisioning_selection_type: row.provisioningSelectionType,
+    provisioning_match_group_key: row.provisioningMatchGroupKey,
+    provisioning_match_priority: row.provisioningMatchPriority,
+    provisioning_matched_fields: [...row.provisioningMatchedFields],
+    application_provisioning_profile_id: row.applicationProvisioningProfileId,
+    application_provisioning_profile_key: row.applicationProvisioningProfileKey,
+    application_provisioning_selection_type:
+      row.applicationProvisioningSelectionType,
+    application_provisioning_match_group_key:
+      row.applicationProvisioningMatchGroupKey,
+    application_provisioning_match_priority:
+      row.applicationProvisioningMatchPriority,
+    application_provisioning_matched_fields: [
+      ...row.applicationProvisioningMatchedFields,
+    ],
     finance_revision_id: row.financeRevisionId,
     finance_revision: row.financeRevision,
     application_revision_id: row.applicationRevisionId,

@@ -1,0 +1,72 @@
+// Application provisioning profiles.
+//
+// One App may expose multiple provisioning profiles. Conditions are OR-of-AND:
+// groups are OR alternatives, while conditions inside one group are AND
+// requirements. Only one profile may be marked default for an app. The default
+// is used only when no condition group matches.
+
+model ApplicationProvisioningProfile {
+  id                String  @id @db.VarChar
+  appId             String  @map("app_id") @db.VarChar
+  key               String  @db.VarChar
+  name              String  @db.VarChar
+  description       String?
+  status            String  @default("draft") @db.VarChar
+  isDefault         Boolean @default(false) @map("is_default")
+  manifestTargetKey String  @unique @map("manifest_target_key") @db.VarChar
+  createdAt         BigInt  @map("created_at")
+  updatedAt         BigInt  @map("updated_at")
+
+  app        App                                      @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  conditions ApplicationProvisioningProfileCondition[]
+  selections OrganizationApplicationProvisioning[]
+
+  @@unique([appId, key], map: "uq_application_provisioning_profiles_app_key")
+  @@unique([appId], map: "uq_application_provisioning_profiles_default", where: raw("is_default = true"))
+  @@index([appId, status], map: "ix_application_provisioning_profiles_app_status")
+  @@map("application_provisioning_profiles")
+}
+
+model ApplicationProvisioningProfileCondition {
+  id        String @id @db.VarChar
+  profileId String @map("profile_id") @db.VarChar
+  groupKey  String @map("group_key") @db.VarChar
+  field     String @db.VarChar
+  operator  String @default("equals") @db.VarChar
+  value     String @db.VarChar
+  priority  Int    @default(0)
+  createdAt BigInt @map("created_at")
+  updatedAt BigInt @map("updated_at")
+
+  profile ApplicationProvisioningProfile @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([profileId, groupKey, field, operator, value], map: "uq_application_provisioning_profile_conditions")
+  @@index([profileId, groupKey], map: "ix_application_provisioning_profile_conditions_group")
+  @@index([field, value, priority], map: "ix_application_provisioning_profile_conditions_match")
+  @@map("application_provisioning_profile_conditions")
+}
+
+// Persisted route-once decision for one organization using one app. Runtime
+// retries read this row and never silently resolve the app profile again.
+model OrganizationApplicationProvisioning {
+  id                  String   @id @db.VarChar
+  organizationId      String   @map("organization_id") @db.VarChar
+  appId               String   @map("app_id") @db.VarChar
+  profileId           String   @map("profile_id") @db.VarChar
+  selectionType       String   @map("selection_type") @db.VarChar
+  matchGroupKey       String?  @map("match_group_key") @db.VarChar
+  matchPriority       Int?     @map("match_priority")
+  matchedFields       String[] @default([]) @map("matched_fields") @db.VarChar
+  selectedAt          BigInt   @map("selected_at")
+  createdAt           BigInt   @map("created_at")
+  updatedAt           BigInt   @map("updated_at")
+
+  organization Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  app          App                            @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profile      ApplicationProvisioningProfile @relation(fields: [profileId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@unique([organizationId, appId], map: "uq_organization_application_provisioning_org_app")
+  @@index([appId, profileId], map: "ix_organization_application_provisioning_app_profile")
+  @@index([profileId], map: "ix_organization_application_provisioning_profile")
+  @@map("organization_application_provisioning")
+}

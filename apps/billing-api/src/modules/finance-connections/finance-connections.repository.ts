@@ -173,6 +173,13 @@ export function findStatsTenant(tenantId: string) {
   })
 }
 
+export function findStatsTenantBySlug(slug: string) {
+  return prisma.tenant.findUnique({
+    where: { slug },
+    select: { id: true },
+  })
+}
+
 export function findStatsProduct(tenantId: string, sourceAppId: string) {
   return prisma.product.findFirst({
     where: { tenantId, sourceAppId },

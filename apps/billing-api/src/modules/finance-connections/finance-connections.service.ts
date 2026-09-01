@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 
+import { getSettings } from '@/config'
 import { AppHttpError } from '@/platform/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
@@ -10,6 +11,7 @@ import {
   findStatsProduct,
   findStatsSubscriptions,
   findStatsTenant,
+  findStatsTenantBySlug,
 } from './finance-connections.repository'
 import type { FinanceProvisioningEvent } from './finance-connections.schemas'
 
@@ -108,6 +110,21 @@ export async function appStats(tenantId: string, sourceAppId?: string) {
     .map(([appId, appSubscriptions]) =>
       buildAppStats(appId, tenant.defaultCurrency, appSubscriptions)
     )
+}
+
+/** Statistics in Console are always scoped to the configured 876 operator tenant. */
+export async function platformAppStats(sourceAppId?: string) {
+  const tenant = await findStatsTenantBySlug(
+    getSettings().platformTenantSlug
+  )
+  if (!tenant)
+    throw new AppHttpError({
+      code: 'billing/platform-tenant-not-found',
+      message: 'The configured platform Billing workspace was not found.',
+      httpStatus: 503,
+    })
+
+  return appStats(tenant.id, sourceAppId)
 }
 
 function buildAppStats(

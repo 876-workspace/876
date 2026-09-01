@@ -1,7 +1,6 @@
 import type { ProvisioningDraftReplaceParams as ProvisioningWireDraftReplace } from '@876/core/types/provisioning'
 
-import { BILLING_APP_SLUG } from './provisioning'
-
+export const BILLING_APP_SLUG = '876-billing'
 const CRM_APP_SLUG = '876-crm'
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
@@ -332,7 +331,7 @@ export const ORGANIZATION_RESOURCES: Record<string, Resource> = {
 export const APPLICATION_RESOURCES: Record<string, Record<string, Resource>> = {
   [BILLING_APP_SLUG]: {
     document_preference: resource(
-      'Document preferences',
+      'Documents',
       'Default customer note and terms per document type. Subscription-generated invoices inherit the invoice preference.',
       true,
       0,

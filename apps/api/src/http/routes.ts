@@ -36,6 +36,7 @@ import {
 } from '@/modules/organizations'
 import { createProductsRouter } from '@/modules/products'
 import {
+  createApplicationProvisioningProfileRouter,
   createProvisioningResourceRouter,
   createProvisioningRouter,
   createProvisioningSetupPolicyRouter,
@@ -94,6 +95,7 @@ export function buildRoutes(): Router {
   root.use(createProvisioningRouter(resolveGuards))
   root.use(createProvisioningResourceRouter(resolveGuards))
   root.use(createProvisioningSetupPolicyRouter(resolveGuards))
+  root.use(createApplicationProvisioningProfileRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
   root.use(registerSelfRoutes(resolveGuards))
   root.use(registerProfileRoutes(resolveGuards))

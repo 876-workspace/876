@@ -1,3 +1,6 @@
+import type { ApplicationProvisioningProfileStoredSelectionType } from './application-provisioning-profile'
+import type { ProvisioningStoredSelectionType } from './provisioning-selection'
+
 /** Canonical contracts for the permanent provisioning manifest v1 protocol. */
 
 export type ProvisioningTargetType = 'organization' | 'finance' | 'application'
@@ -172,6 +175,19 @@ export type ProvisioningRun = {
   trigger: ProvisioningRunTrigger
   status: ProvisioningRunStatus
   manifest_version: 1
+  provisioning_setup_key: string | null
+  provisioning_selection_type: ProvisioningStoredSelectionType | null
+  provisioning_match_group_key: string | null
+  provisioning_match_priority: number | null
+  provisioning_matched_fields: string[]
+  application_provisioning_profile_id: string | null
+  application_provisioning_profile_key: string | null
+  application_provisioning_selection_type:
+    | ApplicationProvisioningProfileStoredSelectionType
+    | null
+  application_provisioning_match_group_key: string | null
+  application_provisioning_match_priority: number | null
+  application_provisioning_matched_fields: string[]
   finance_revision_id: string | null
   finance_revision: number | null
   application_revision_id: string | null
