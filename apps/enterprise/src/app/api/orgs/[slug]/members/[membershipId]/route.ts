@@ -6,7 +6,7 @@ import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-const SUPER_ADMIN_ROLE = 'super_admin'
+const SUPER_ADMIN_ROLE = 'super-admin'
 
 /**
  * Changes a member's org role. Pure transport over `$876.organizationMembers.update`.

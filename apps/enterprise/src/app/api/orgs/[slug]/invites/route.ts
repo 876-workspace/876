@@ -29,7 +29,7 @@ export async function POST(
     )
   }
 
-  if (role === 'super_admin' && auth.membership.role !== 'super_admin') {
+  if (role === 'super-admin' && auth.membership.role !== 'super-admin') {
     return apiJson(
       { error: 'Only a super admin can invite another super admin.' },
       { status: 403 }
