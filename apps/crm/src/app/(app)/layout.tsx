@@ -19,7 +19,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     result.context
   if (accessStatus === 'blocked') redirect('/no-access')
   if (accessStatus !== 'active' && accessStatus !== 'trialing') {
-    if (role === 'super_admin' || role === 'admin') redirect('/onboarding')
+    if (role === 'super-admin' || role === 'admin') redirect('/onboarding')
     redirect('/no-access')
   }
 
