@@ -14,7 +14,7 @@ export async function POST() {
     return apiJson({ error: 'Not authenticated' }, { status: 401 })
   }
 
-  if (ctx.role === 'member') {
+  if (ctx.role === 'staff') {
     return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
   }
 

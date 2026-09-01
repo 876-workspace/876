@@ -31,7 +31,7 @@ function tenant() {
   }
 }
 function ctx(
-  role: 'owner' | 'admin' | 'member',
+  role: 'super_admin' | 'admin' | 'staff',
   currentTenant: ReturnType<typeof tenant> | null = tenant()
 ) {
   return { role, tenant: currentTenant, userId: 'usr_ops' }
@@ -62,7 +62,7 @@ describe('POST /api/manage/customers', () => {
     expect(mocks.createManagedCustomer).not.toHaveBeenCalled()
   })
   it('returns auth/forbidden for a member', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('member'))
+    mocks.getManageContext.mockResolvedValue(ctx('staff'))
     const response = await POST(
       request({ orgSlug: 'nkr-express', firstName: 'Marlon' })
     )

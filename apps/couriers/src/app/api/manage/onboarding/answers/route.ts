@@ -20,7 +20,7 @@ const AnswersSchema = z.strictObject({
 export async function PUT(request: NextRequest) {
   const ctx = await getManageContext()
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role === 'member')
+  if (ctx.role === 'staff')
     return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
 
   let body: unknown
