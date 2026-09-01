@@ -113,7 +113,7 @@ await billing.accountingProviders.connections.imports.adopt({
 })
 ```
 
-Billing verifies both sides before writing the provider reference and rejects an external object already mapped to another local resource. Adoption itself does not overwrite either side. Queue reconciliation when the operator is ready for canonical Billing state to be projected to Zoho.
+Billing verifies both sides before writing the provider reference. Provider references are unique on `(provider, externalType, externalId)`, so adoption is rejected when the remote object is already mapped to a different local resource **or** already adopted on another connection of the same provider. Re-adopting the same pair on the same connection is idempotent. Adoption itself does not overwrite either side. Queue reconciliation when the operator is ready for canonical Billing state to be projected to Zoho.
 
 Use `imports.release()` to remove a mapping without deleting either the canonical Billing resource or the remote Zoho object.
 
@@ -138,6 +138,7 @@ Relevant migrations begin with:
 - `20260901080000_accounting_provider_foundation`
 - `20260901081500_accounting_provider_oauth_state`
 - `20260901100000_accounting_provider_outbox`
+- `20260901113000_accounting_provider_capability_correction`
 
 After migration, configure Zoho OAuth, create and authorize a connection, validate it, inspect import candidates/adopt existing resources if required, queue reconciliation, and only then enable scheduled provider sync in the target environment.
 
@@ -156,4 +157,23 @@ pnpm --filter @876/billing-api db:drift
 pnpm --filter @876/billing-api api:contract:check
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/billing test
+pnpm --filter @876/billing-app typecheck
+pnpm --filter @876/billing-app lint
+pnpm --filter @876/billing-app test
 ```
+
+`db:drift` reports pre-existing index-rename and orphan-enum differences that are
+unrelated to accounting providers; it should report no accounting-provider drift.
+
+## Management surface
+
+Operators manage connections from Billing at `/settings/accounting-providers`:
+the list and detail views cover connection status, environment, mode, connected
+Zoho organization, last sync and last successful sync, and the last error code.
+Connect/reconnect, validate, reconcile and disable are actions there, and
+`/settings/accounting-providers/[connectionId]/imports` is the adoption preview
+where a remote customer or item is paired with a canonical Billing record or an
+existing mapping is released.
+
+The browser never receives access or refresh token material; authorization is a
+server-returned redirect URL and nothing more.
