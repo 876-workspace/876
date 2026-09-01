@@ -15,7 +15,7 @@ const SYSTEM_ROLE_KEYS = [
   'console:access',
   'console:apps',
   'console:billing',
-  'console:danger_zone',
+  'console:danger-zone',
   'console:features',
   'console:organizations',
   'console:settings',
@@ -55,7 +55,7 @@ const SORTED_CONSOLE_KEYS = [
   'console:access',
   'console:apps',
   'console:billing',
-  'console:danger_zone',
+  'console:danger-zone',
   'console:features',
   'console:organizations',
   'console:reports',
@@ -219,7 +219,7 @@ describe('consolePermissionCatalog', () => {
   it('marks console danger-zone access dangerous', () => {
     expect(
       consolePermissionCatalog.permissions.find(
-        (row) => row.key === 'console:danger_zone'
+        (row) => row.key === 'console:danger-zone'
       )?.isDangerous
     ).toBe(true)
   })
