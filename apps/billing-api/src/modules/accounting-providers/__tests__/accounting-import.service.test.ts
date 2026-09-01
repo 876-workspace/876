@@ -13,7 +13,8 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/modules/tenants', () => ({
-  tenantAuthorizationByOrganizationId: mocks.tenantAuthorizationByOrganizationId,
+  tenantAuthorizationByOrganizationId:
+    mocks.tenantAuthorizationByOrganizationId,
 }))
 vi.mock('../accounting-providers.service', () => ({
   zohoAccessContext: mocks.zohoAccessContext,
@@ -32,7 +33,7 @@ vi.mock('@/providers/accounting', () => ({
 }))
 vi.mock('../accounting-import.repository', () => ({
   listAccountingReferencesByExternalIds: mocks.listReferences,
-  findAccountingReferenceByExternalId: mocks.findReference,
+  findAccountingReferenceByProviderExternal: mocks.findReference,
   localAccountingResourceExists: mocks.localExists,
 }))
 vi.mock('../accounting-sync.repository', () => ({
@@ -87,9 +88,8 @@ describe('accounting import preview', () => {
       { externalId: 'zc_1', resourceId: 'cus_1' },
     ])
 
-    const { listAccountingImportCandidates } = await import(
-      '../accounting-import.service'
-    )
+    const { listAccountingImportCandidates } =
+      await import('../accounting-import.service')
     const result = await listAccountingImportCandidates({
       organizationId: ORGANIZATION,
       connectionId: CONNECTION,
@@ -119,9 +119,8 @@ describe('accounting provider adoption', () => {
       contact_name: 'Acme Ltd',
     })
 
-    const { adoptAccountingProviderResource } = await import(
-      '../accounting-import.service'
-    )
+    const { adoptAccountingProviderResource } =
+      await import('../accounting-import.service')
     const result = await adoptAccountingProviderResource({
       organizationId: ORGANIZATION,
       connectionId: CONNECTION,
@@ -132,6 +131,11 @@ describe('accounting provider adoption', () => {
 
     expect(mocks.localExists).toHaveBeenCalledWith(TENANT, 'customer', 'cus_1')
     expect(mocks.providerRetrieve).toHaveBeenCalledWith(CONTEXT, 'zc_1')
+    expect(mocks.findReference).toHaveBeenCalledWith({
+      provider: 'zoho-books',
+      externalType: 'contact',
+      externalId: 'zc_1',
+    })
     expect(mocks.upsertReference).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: TENANT,
@@ -151,16 +155,52 @@ describe('accounting provider adoption', () => {
   })
 
   it('rejects adopting a provider object already mapped elsewhere', async () => {
-    mocks.providerRetrieve.mockResolvedValue({ item_id: 'zi_1', name: 'Support' })
+    mocks.providerRetrieve.mockResolvedValue({
+      item_id: 'zi_1',
+      name: 'Support',
+    })
     mocks.findReference.mockResolvedValue({
       externalId: 'zi_1',
       resourceId: 'item_other',
+      accountingProviderConnectionId: CONNECTION,
     })
 
-    const { adoptAccountingProviderResource } = await import(
-      '../accounting-import.service'
-    )
+    const { adoptAccountingProviderResource } =
+      await import('../accounting-import.service')
 
+    await expect(
+      adoptAccountingProviderResource({
+        organizationId: ORGANIZATION,
+        connectionId: CONNECTION,
+        resourceType: 'item',
+        resourceId: 'item_1',
+        externalId: 'zi_1',
+      })
+    ).rejects.toMatchObject({
+      code: 'billing/accounting-provider-resource-already-adopted',
+      httpStatus: 409,
+    })
+    expect(mocks.upsertReference).not.toHaveBeenCalled()
+  })
+
+  it('rejects adopting a provider object already mapped on another connection', async () => {
+    // ARRANGE — provider references are unique on (provider, externalType,
+    // externalId), so a sibling connection holding this Zoho item is a genuine
+    // conflict even though the local resource id matches.
+    mocks.providerRetrieve.mockResolvedValue({
+      item_id: 'zi_1',
+      name: 'Support',
+    })
+    mocks.findReference.mockResolvedValue({
+      externalId: 'zi_1',
+      resourceId: 'item_1',
+      accountingProviderConnectionId: 'apcon_other',
+    })
+
+    const { adoptAccountingProviderResource } =
+      await import('../accounting-import.service')
+
+    // ACT / ASSERT
     await expect(
       adoptAccountingProviderResource({
         organizationId: ORGANIZATION,
@@ -182,9 +222,8 @@ describe('accounting provider adoption', () => {
       ctx: CONTEXT,
     })
 
-    const { listAccountingImportCandidates } = await import(
-      '../accounting-import.service'
-    )
+    const { listAccountingImportCandidates } =
+      await import('../accounting-import.service')
 
     await expect(
       listAccountingImportCandidates({

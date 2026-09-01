@@ -39,7 +39,7 @@ export function findAccountingReferenceByProviderExternal(params: {
 }) {
   return prisma.providerReference.findUnique({
     where: {
-      billing_provider_references_external_key: {
+      provider_externalType_externalId: {
         provider: params.provider,
         externalType: params.externalType,
         externalId: params.externalId,

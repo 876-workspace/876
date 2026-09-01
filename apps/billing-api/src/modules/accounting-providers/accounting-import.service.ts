@@ -7,7 +7,7 @@ import {
   accountingProviderError,
 } from './accounting-provider-errors'
 import {
-  findAccountingReferenceByExternalId,
+  findAccountingReferenceByProviderExternal,
   listAccountingReferencesByExternalIds,
   localAccountingResourceExists,
 } from './accounting-import.repository'
@@ -28,10 +28,7 @@ async function tenantIdForOrganization(organizationId: string) {
   return tenant.id
 }
 
-async function connectionContext(
-  organizationId: string,
-  connectionId: string
-) {
+async function connectionContext(organizationId: string, connectionId: string) {
   const tenantId = await tenantIdForOrganization(organizationId)
   const access = await accountingProviderCall(() =>
     zohoAccessContext(connectionId)
@@ -69,11 +66,12 @@ function candidate(
 ) {
   const value = record as Record<string, unknown>
   const id = externalId(resourceType, value)
-  const nameValue = resourceType === 'customer' ? value.contact_name : value.name
+  const nameValue =
+    resourceType === 'customer' ? value.contact_name : value.name
   const secondaryValue =
     resourceType === 'customer'
-      ? value.company_name ?? value.email ?? null
-      : value.sku ?? null
+      ? (value.company_name ?? value.email ?? null)
+      : (value.sku ?? null)
   return {
     object: 'accounting-provider-import-candidate' as const,
     resourceType,
@@ -153,12 +151,21 @@ export async function adoptAccountingProviderResource(params: {
       params.externalId
     )
   )
-  const existing = await findAccountingReferenceByExternalId({
-    connectionId: params.connectionId,
-    resourceType: params.resourceType,
+  const externalType = params.resourceType === 'customer' ? 'contact' : 'item'
+
+  // Provider references are unique on (provider, externalType, externalId), so
+  // a conflict on another connection of the same provider is just as real as a
+  // conflict on this one. Scope the check to the constraint, not the connection.
+  const existing = await findAccountingReferenceByProviderExternal({
+    provider: row.provider.key,
+    externalType,
     externalId: params.externalId,
   })
-  if (existing && existing.resourceId !== params.resourceId)
+  if (
+    existing &&
+    (existing.resourceId !== params.resourceId ||
+      existing.accountingProviderConnectionId !== params.connectionId)
+  )
     throw accountingProviderError(
       'billing/accounting-provider-resource-already-adopted'
     )
@@ -169,7 +176,7 @@ export async function adoptAccountingProviderResource(params: {
     provider: row.provider.key,
     resourceType: params.resourceType,
     resourceId: params.resourceId,
-    externalType: params.resourceType === 'customer' ? 'contact' : 'item',
+    externalType,
     externalId: params.externalId,
     now: nowUnixSeconds(),
   })
