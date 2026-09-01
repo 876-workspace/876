@@ -27,14 +27,14 @@ describe('shared widget catalog', () => {
 
   it('derives every host gate from the typed widget definition', () => {
     expect(getWidgetFeatureSlugs(notepadWidgetMetadata)).toEqual([
-      'platform_widgets',
-      'platform_widgets_notepad',
-      'console_widgets',
-      'console_widgets_notepad',
-      'billing_widgets',
-      'billing_widgets_notepad',
-      'couriers_widgets',
-      'couriers_widgets_notepad',
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'console-widgets',
+      'console-widgets-notepad',
+      'billing-widgets',
+      'billing-widgets-notepad',
+      'couriers-widgets',
+      'couriers-widgets-notepad',
     ])
     const billingRequirements = getRequiredWidgetFeatureSlugs(
       notepadWidgetMetadata,
@@ -58,10 +58,10 @@ describe('shared widget catalog', () => {
     expect(
       getRequiredWidgetFeatureSlugs(notepadWidgetMetadata, 'couriers')
     ).toEqual([
-      'platform_widgets',
-      'platform_widgets_notepad',
-      'couriers_widgets',
-      'couriers_widgets_notepad',
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'couriers-widgets',
+      'couriers-widgets-notepad',
     ])
   })
 
@@ -72,10 +72,10 @@ describe('shared widget catalog', () => {
     )
 
     expect(billingRequirements).toEqual([
-      'platform_widgets',
-      'platform_widgets_chat',
-      'billing_widgets',
-      'billing_widgets_chat',
+      'platform-widgets',
+      'platform-widgets-chat',
+      'billing-widgets',
+      'billing-widgets-chat',
     ])
     expect(
       isWidgetEnabled(
@@ -89,7 +89,7 @@ describe('shared widget catalog', () => {
         chatWidgetMetadata,
         'billing',
         new Set(
-          billingRequirements.filter((slug) => slug !== 'billing_widgets')
+          billingRequirements.filter((slug) => slug !== 'billing-widgets')
         )
       )
     ).toBe(false)
