@@ -15,14 +15,14 @@ export type Signed876Session = {
 
 export type Current876Session = Signed876Session | { user: null }
 
-export type OrgRole = 'super_admin' | 'admin' | 'staff'
+export type OrgRole = 'super-admin' | 'admin' | 'staff'
 export type AccessStatus = 'active' | 'trialing' | 'blocked' | 'none'
 
 export type CrmOrganization = {
   id: string
   name: string
   slug: string | null
-  role: string
+  role: OrgRole
 }
 
 export type CrmContext = {
@@ -30,7 +30,7 @@ export type CrmContext = {
   orgId: string
   orgName: string
   orgSlug: string | null
-  role: string
+  role: OrgRole
   organizations: CrmOrganization[]
   accessStatus: AccessStatus
 }
