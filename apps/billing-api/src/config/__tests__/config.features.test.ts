@@ -95,6 +95,7 @@ describe('billing feature flags', () => {
     expect(Object.isFrozen(s)).toBe(true)
     expect(s.features).toEqual({
       lateFees: true,
+      accountingProviderSync: false,
       dunning: false,
       payouts: false,
     })

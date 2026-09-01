@@ -108,6 +108,7 @@ describe('Config / booleanish / property-based truthy parsing', () => {
     // Assert
     expect(s.features).toEqual({
       lateFees: false,
+      accountingProviderSync: false,
       dunning: false,
       payouts: false,
     })
@@ -168,6 +169,7 @@ describe('Config / contract / settings shape is frozen and complete @advanced', 
     expect(s).toHaveProperty('isProduction')
     expect(s.features).toEqual({
       lateFees: true,
+      accountingProviderSync: false,
       dunning: false,
       payouts: false,
     })
