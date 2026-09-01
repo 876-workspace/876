@@ -18,6 +18,8 @@ function seedFor(appSlug: string, featureSlug: string) {
   )
 }
 
+const CANONICAL = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
+
 describe('feature seed catalog', () => {
   it('keeps every app and platform catalog structurally valid', () => {
     validateFeatureSeeds(null, PLATFORM_FEATURE_SEEDS)
@@ -26,42 +28,91 @@ describe('feature seed catalog', () => {
     }
   })
 
+  it('publishes only canonical kebab-case feature slugs', () => {
+    const seeds = [
+      ...PLATFORM_FEATURE_SEEDS,
+      ...Object.values(FEATURE_SEEDS_BY_APP).flat(),
+    ]
+    expect(seeds.every((seed) => CANONICAL.test(seed.slug))).toBe(true)
+    expect(seeds.some((seed) => seed.slug.includes('_'))).toBe(false)
+  })
+
+  it('keeps explicit legacy aliases for every renamed seed', () => {
+    const seeds = [
+      ...PLATFORM_FEATURE_SEEDS,
+      ...Object.values(FEATURE_SEEDS_BY_APP).flat(),
+    ]
+    expect(seeds.every((seed) => (seed.legacySlugs?.length ?? 0) > 0)).toBe(true)
+  })
+
   it('seeds Estimates as a disabled child of Billing Sales', () => {
-    expect(seedFor('876-billing', 'billing_sales_estimates')).toMatchObject({
-      parentSlug: 'billing_sales',
+    expect(seedFor('876-billing', 'billing-sales-estimates')).toMatchObject({
+      parentSlug: 'billing-sales',
       defaultEnabled: false,
+      legacySlugs: ['billing_sales_estimates'],
     })
   })
 
   it.each([
-    ['console', 'console_widgets_chat', 'console_widgets', 'console_chat'],
-    ['876-billing', 'billing_widgets_chat', 'billing_widgets', 'billing_chat'],
+    ['console', 'console-widgets-chat', 'console-widgets', 'console-chat'],
+    ['876-billing', 'billing-widgets-chat', 'billing-widgets', 'billing-chat'],
     [
       '876-couriers',
-      'couriers_widgets_chat',
-      'couriers_widgets',
-      'couriers_chat',
+      'couriers-widgets-chat',
+      'couriers-widgets',
+      'couriers-chat',
     ],
   ])(
-    'migrates %s Chat into the app widget hierarchy without removing its legacy flag',
-    (appSlug, widgetSlug, parentSlug, legacySlug) => {
+    'copies %s Chat state through canonical feature slugs',
+    (appSlug, widgetSlug, parentSlug, sourceSlug) => {
       expect(seedFor(appSlug, widgetSlug)).toMatchObject({
         parentSlug,
         tags: ['widget'],
-        copyStateFromSlug: legacySlug,
+        copyStateFromSlug: sourceSlug,
       })
-      expect(seedFor(appSlug, legacySlug)).toBeDefined()
+      expect(seedFor(appSlug, sourceSlug)).toBeDefined()
     }
   )
 
   it('adds a platform Chat gate above every app-specific Chat gate', () => {
     expect(
       PLATFORM_FEATURE_SEEDS.find(
-        (seed) => seed.slug === 'platform_widgets_chat'
+        (seed) => seed.slug === 'platform-widgets-chat'
       )
     ).toMatchObject({
-      parentSlug: 'platform_widgets',
+      parentSlug: 'platform-widgets',
       tags: ['widget'],
+      legacySlugs: ['platform_widgets_chat'],
     })
+  })
+
+  it('rejects underscore canonical slugs', () => {
+    expect(() =>
+      validateFeatureSeeds('console', [
+        {
+          slug: 'console_bad-key',
+          name: 'Bad',
+          description: 'Bad key',
+        },
+      ])
+    ).toThrow('must be kebab-case')
+  })
+
+  it('rejects a child that does not extend its canonical parent key', () => {
+    expect(() =>
+      validateFeatureSeeds('console', [
+        {
+          slug: 'console-widgets',
+          name: 'Widgets',
+          description: 'Group',
+        },
+        {
+          slug: 'console-notepad',
+          name: 'Notepad',
+          description: 'Bad child',
+          parentSlug: 'console-widgets',
+        },
+      ])
+    ).toThrow('must extend parent key')
   })
 })
