@@ -1,6 +1,7 @@
 import { apiError, apiSuccess } from '@876/core/api'
 import type {
   AccountingConnectionMode,
+  AccountingImportResourceType,
   AccountingProviderEnvironment,
 } from '@876/billing/operator'
 
@@ -22,6 +23,11 @@ type CreateBody = {
   name?: unknown
   environment?: unknown
   mode?: unknown
+}
+
+type AdoptionBody = {
+  resourceId?: unknown
+  externalId?: unknown
 }
 
 async function requireAccountingProviderManager() {
@@ -70,6 +76,25 @@ function connectionAction(path: string[]) {
   }
 }
 
+function importAction(path: string[]) {
+  if (
+    path.length < 5 ||
+    path[0] !== 'connections' ||
+    path[2] !== 'imports' ||
+    path[4] !== 'adoptions'
+  )
+    return null
+
+  const resourceType = path[3]
+  if (resourceType !== 'customer' && resourceType !== 'item') return null
+
+  return {
+    connectionId: path[1] ?? '',
+    resourceType: resourceType as AccountingImportResourceType,
+    resourceId: path[5] ?? null,
+  }
+}
+
 export async function POST(
   request: Request,
   routeContext: RouteContext
@@ -109,7 +134,35 @@ export async function POST(
       mode,
     })
     if (result.error || !result.data)
-      return providerError(result, 'Failed to create the accounting connection.')
+      return providerError(
+        result,
+        'Failed to create the accounting connection.'
+      )
+    return apiSuccess(result.data, { status: 201 })
+  }
+
+  const adoption = importAction(path)
+  if (adoption && !adoption.resourceId) {
+    const body = (await request.json().catch(() => ({}))) as AdoptionBody
+    const resourceId =
+      typeof body.resourceId === 'string' ? body.resourceId.trim() : ''
+    const externalId =
+      typeof body.externalId === 'string' ? body.externalId.trim() : ''
+    if (!resourceId || !externalId)
+      return apiError('Billing resource and provider resource are required.', {
+        status: 400,
+      })
+
+    const result =
+      await accounting.accountingProviders.connections.imports.adopt({
+        organizationId: gate.context.orgId,
+        connectionId: adoption.connectionId,
+        resourceType: adoption.resourceType,
+        resourceId,
+        externalId,
+      })
+    if (result.error || !result.data)
+      return providerError(result, 'Failed to adopt the provider resource.')
     return apiSuccess(result.data, { status: 201 })
   }
 
@@ -136,7 +189,10 @@ export async function POST(
       params
     )
     if (result.error || !result.data)
-      return providerError(result, 'Failed to validate the accounting connection.')
+      return providerError(
+        result,
+        'Failed to validate the accounting connection.'
+      )
     return apiSuccess(result.data)
   }
 
@@ -145,7 +201,10 @@ export async function POST(
       params
     )
     if (result.error || !result.data)
-      return providerError(result, 'Failed to queue accounting reconciliation.')
+      return providerError(
+        result,
+        'Failed to queue accounting reconciliation.'
+      )
     return apiSuccess(result.data)
   }
 
@@ -160,11 +219,26 @@ export async function DELETE(
   if (gate.response || !gate.context) return gate.response as Response
 
   const { path = [] } = await routeContext.params
+  const accounting = await getAccountingProviderClient()
+  const adoption = importAction(path)
+
+  if (adoption?.resourceId) {
+    const result =
+      await accounting.accountingProviders.connections.imports.release({
+        organizationId: gate.context.orgId,
+        connectionId: adoption.connectionId,
+        resourceType: adoption.resourceType,
+        resourceId: adoption.resourceId,
+      })
+    if (result.error || !result.data)
+      return providerError(result, 'Failed to release the provider mapping.')
+    return apiSuccess(result.data)
+  }
+
   const action = connectionAction(path)
   if (!action?.connectionId || action.action)
     return apiError('Unknown accounting-provider action.', { status: 404 })
 
-  const accounting = await getAccountingProviderClient()
   const result = await accounting.accountingProviders.connections.delete({
     organizationId: gate.context.orgId,
     connectionId: action.connectionId,
