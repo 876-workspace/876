@@ -6,7 +6,7 @@ Related rules: `access-tiers.md`, `app-access.md`, `feature-flags.md`, and `app-
 
 ## One catalog format, storage chosen by tier
 
-Every app declares permissions with the canonical `AppPermissionCatalog` format from `@876/core/access`. Permission keys are durable identifiers once persisted; do not rename a live key as a refactor.
+Every app declares permissions with the canonical `AppPermissionCatalog` format from `@876/core/access`. Permission keys are durable identifiers once persisted; rename one only through an explicit coordinated contract and data migration.
 
 The access tier decides where roles live, not how permissions are described or resolved:
 
@@ -83,7 +83,7 @@ Platform account type is irrelevant to affiliation. An external auditor may use 
 
 Employment verification is subtractive and one-directional. An explicit inactive or missing Efesto membership denies a `staff` grant. A provider/infrastructure outage does not: the already-valid Console grant remains usable, the outage is captured, and verification is retried on the next request. This check can only remove access; it can never create or widen access.
 
-Only `staff` may hold `owner` or `super_admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
+Only `staff` may hold `owner` or `super-admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
 
 ## Subtractive verification and outage direction
 
@@ -126,7 +126,7 @@ For every app that adopts this standard:
 - Do not maintain a second hand-written permission list for a role editor.
 - Do not ship the full privileged navigation registry to an unprivileged browser and filter it client-side.
 - Do not persist React components/functions in a navigation registry that crosses an RSC boundary.
-- Do not rename persisted permission keys casually.
+- Do not rename persisted permission keys casually; use a coordinated compatibility and data migration.
 - Do not make organization membership implicitly grant an operator-tier surface.
 - Do not copy operator-tier role storage into org-tier product apps; copy the catalog/context/registry pattern instead.
 - Do not fail open when a verification can widen access.
