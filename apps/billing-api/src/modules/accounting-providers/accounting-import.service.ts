@@ -61,8 +61,7 @@ function externalId(
   record: unknown
 ): string {
   const value = record as Record<string, unknown>
-  const id =
-    resourceType === 'customer' ? value.contact_id : value.item_id
+  const id = resourceType === 'customer' ? value.contact_id : value.item_id
   if (typeof id !== 'string' || !id)
     throw error(
       'billing/provider-invalid-response',
@@ -79,8 +78,7 @@ function candidate(
 ) {
   const value = record as Record<string, unknown>
   const id = externalId(resourceType, value)
-  const nameValue =
-    resourceType === 'customer' ? value.contact_name : value.name
+  const nameValue = resourceType === 'customer' ? value.contact_name : value.name
   const secondaryValue =
     resourceType === 'customer'
       ? value.company_name ?? value.email ?? null
@@ -90,8 +88,7 @@ function candidate(
     resourceType,
     externalId: id,
     name: typeof nameValue === 'string' ? nameValue : id,
-    secondary:
-      typeof secondaryValue === 'string' ? secondaryValue : null,
+    secondary: typeof secondaryValue === 'string' ? secondaryValue : null,
     status: typeof value.status === 'string' ? value.status : null,
     mappedResourceId,
   }
@@ -200,10 +197,7 @@ export async function releaseAccountingProviderResource(params: {
   resourceType: AccountingImportResourceType
   resourceId: string
 }) {
-  const { tenantId } = await connectionContext(
-    params.organizationId,
-    params.connectionId
-  )
+  await connectionContext(params.organizationId, params.connectionId)
   const removed = await removeAccountingReference(
     params.connectionId,
     params.resourceType,
@@ -221,6 +215,5 @@ export async function releaseAccountingProviderResource(params: {
     resourceType: params.resourceType,
     resourceId: params.resourceId,
     deleted: true as const,
-    tenantId,
   }
 }
