@@ -91,7 +91,7 @@ describe('finance-created workspace Billing upgrade', () => {
     expect(tx.role.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         tenantId: 'ten_shared_finance',
-        slug: 'super_admin',
+        slug: 'super-admin',
         isSystem: true,
       }),
       select: { id: true },

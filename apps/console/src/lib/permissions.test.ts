@@ -4,10 +4,10 @@ import { describe, expect, it } from 'vitest'
 import {
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
+  CONSOLE_SUPER_ADMIN_ROLE,
   hasPermission,
   PERMISSION_GROUPS,
   permissionsForRole,
-  SUPER_ADMIN_ROLE,
   SYSTEM_ROLE_DEFINITIONS,
   SYSTEM_ROLE_NAMES,
 } from './permissions'
@@ -15,12 +15,12 @@ import {
 const EXPECTED_ROLE_COUNTS = {
   staff: 15,
   admin: 39,
-  super_admin: 46,
+  'super-admin': 46,
 } as const
 
 describe('Console permission catalog', () => {
   it('publishes the built-in roles in privilege order', () => {
-    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super_admin'])
+    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super-admin'])
   })
 
   it('pins the exact staff permission count', () => {
@@ -37,7 +37,7 @@ describe('Console permission catalog', () => {
 
   it('pins the exact super-admin permission count', () => {
     expect(SYSTEM_ROLE_DEFINITIONS[2]?.permissions.length).toBe(
-      EXPECTED_ROLE_COUNTS.super_admin
+      EXPECTED_ROLE_COUNTS['super-admin']
     )
   })
 
@@ -54,7 +54,7 @@ describe('Console permission catalog', () => {
       SYSTEM_ROLE_DEFINITIONS.filter((role) =>
         role.permissions.includes(CONSOLE_DANGER_ZONE_PERMISSION)
       ).map((role) => role.name)
-    ).toEqual(['super_admin'])
+    ).toEqual(['super-admin'])
   })
 
   it('keeps staff free of delete permissions', () => {
@@ -86,7 +86,7 @@ describe('Console permission catalog', () => {
 
   it('grants super admin every permission the catalog declares', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
-      (role) => role.name === SUPER_ADMIN_ROLE
+      (role) => role.name === CONSOLE_SUPER_ADMIN_ROLE
     )
     const missing = consolePermissionCatalog.permissions
       .map((permission) => permission.key)

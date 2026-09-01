@@ -116,7 +116,7 @@ describe('provisionTenantWorkspace', () => {
       ])
       expect(harness.created.role).toEqual([
         expect.objectContaining({
-          slug: 'super_admin',
+          slug: 'super-admin',
           isSystem: true,
           permissions: expect.arrayContaining([
             'billing:access',
@@ -159,7 +159,7 @@ describe('provisionTenantWorkspace', () => {
       })
 
       const role = harness.created.role.find(
-        (candidate) => (candidate as { slug: string }).slug === 'super_admin'
+        (candidate) => (candidate as { slug: string }).slug === 'super-admin'
       ) as { id: string }
       expect(harness.created.member).toEqual([
         expect.objectContaining({
@@ -248,7 +248,7 @@ describe('provisionTenantWorkspace', () => {
         slug: string
         permissions: string[]
       }>
-      const superAdmin = roles.find((r) => r.slug === 'super_admin')!
+      const superAdmin = roles.find((r) => r.slug === 'super-admin')!
       const admin = roles.find((r) => r.slug === 'admin')!
       const staff = roles.find((r) => r.slug === 'staff')!
       expect(superAdmin.permissions.length).toBeGreaterThan(admin.permissions.length)
@@ -264,7 +264,7 @@ describe('provisionTenantWorkspace', () => {
         slug: string
         permissions: string[]
       }>
-      const superAdmin = roles.find((r) => r.slug === 'super_admin')!
+      const superAdmin = roles.find((r) => r.slug === 'super-admin')!
       const admin = roles.find((r) => r.slug === 'admin')!
       expect(admin.permissions).not.toContain('roles:write')
       expect(superAdmin.permissions).toContain('roles:write')
@@ -354,7 +354,7 @@ describe('provisionTenantWorkspace', () => {
       })
       const ownerRole = (
         harness.created.role as Array<{ slug: string; id: string }>
-      ).find((r) => r.slug === 'super_admin')!
+      ).find((r) => r.slug === 'super-admin')!
       expect(harness.created.member[0]!).toMatchObject({ roleId: ownerRole.id })
     })
   })
@@ -394,7 +394,7 @@ describe('provisionTenantWorkspace', () => {
 
       expect(
         (harness.created.role as { slug: string }[]).map((role) => role.slug)
-      ).toEqual(['super_admin', 'admin', 'staff'])
+      ).toEqual(['super-admin', 'admin', 'staff'])
     })
 
     it('does not create member when superAdminUserId is empty string', async () => {

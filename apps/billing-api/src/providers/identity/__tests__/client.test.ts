@@ -89,7 +89,7 @@ describe('HttpIdentityGateway', () => {
       'org_123'
     )
 
-    expect(result).toEqual({ role: 'super_admin' })
+    expect(result).toEqual({ role: 'super-admin' })
   })
 
   it('preserves admin and normalizes every other organization role to member', async () => {
@@ -168,7 +168,7 @@ describe('HttpIdentityGateway', () => {
         'access-token',
         'org_123'
       )
-    ).resolves.toEqual({ role: 'super_admin' })
+    ).resolves.toEqual({ role: 'super-admin' })
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
@@ -184,7 +184,7 @@ describe('HttpIdentityGateway', () => {
           'access-token',
           'org_123'
         )
-      ).resolves.toEqual({ role: 'super_admin' })
+      ).resolves.toEqual({ role: 'super-admin' })
       expect(fetchMock).toHaveBeenCalledTimes(2)
     }
   )

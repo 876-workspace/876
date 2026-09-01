@@ -4,7 +4,7 @@ import {
   hasPermission,
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
-  SUPER_ADMIN_ROLE,
+  CONSOLE_SUPER_ADMIN_ROLE,
   SYSTEM_ROLE_DEFINITIONS,
 } from './permissions'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
@@ -72,7 +72,7 @@ describe('permissions — console access gate', () => {
 
   it('super admin can access danger_zone and security', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
-      (role) => role.name === 'super_admin'
+      (role) => role.name === 'super-admin'
     )!
     expect(hasPermission(superAdmin, 'console:danger_zone')).toBe(true)
     expect(hasPermission(superAdmin, 'console:security')).toBe(true)
@@ -147,7 +147,7 @@ describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
     expect(SYSTEM_ROLE_DEFINITIONS.map((r) => r.name)).toEqual([
       'staff',
       'admin',
-      'super_admin',
+      'super-admin',
     ])
   })
 
@@ -166,7 +166,7 @@ describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
       SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'admin')!.permissions
     )
     const superAdminPerms = new Set(
-      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'super_admin')!.permissions
+      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'super-admin')!.permissions
     )
     for (const permission of adminPerms)
       expect(superAdminPerms.has(permission)).toBe(true)
@@ -174,7 +174,7 @@ describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
 
   it('super-admin has all dangerous permissions', () => {
     const superPerms = SYSTEM_ROLE_DEFINITIONS.find(
-      (r) => r.name === SUPER_ADMIN_ROLE
+      (r) => r.name === CONSOLE_SUPER_ADMIN_ROLE
     )!.permissions
     const dangerous = consolePermissionCatalog.permissions
       .filter((p) => p.isDangerous)
