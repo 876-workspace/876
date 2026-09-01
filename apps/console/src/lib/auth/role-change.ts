@@ -17,14 +17,14 @@ export async function assertRoleChangeAllowed(
   if (!isAssignableRole(requestedRole)) {
     return {
       ok: false,
-      error: 'Invalid role. Must be user, staff, admin, owner, or super_admin.',
+      error: 'Invalid role. Must be user, staff, admin, or super_admin.',
       status: 400,
     }
   }
 
   if (caller.role === 'super_admin') return { ok: true }
 
-  if (requestedRole === 'super_admin' || requestedRole === 'owner') {
+  if (requestedRole === 'super_admin') {
     return {
       ok: false,
       error: `Only a super admin can grant the ${requestedRole} role.`,
@@ -33,7 +33,7 @@ export async function assertRoleChangeAllowed(
   }
 
   const target = await team.retrieve(targetUserId)
-  if (target?.roleName === 'super_admin' || target?.roleName === 'owner') {
+  if (target?.roleName === 'super_admin') {
     return {
       ok: false,
       error: `Only a super admin can change a ${target.roleName}'s role.`,

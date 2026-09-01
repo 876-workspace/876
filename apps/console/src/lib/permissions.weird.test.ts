@@ -175,12 +175,7 @@ describe('permissions — weird edge cases', () => {
     expect(() => permissionsForRole('staff', null)).toThrow(TypeError)
   })
   it('SYSTEM_ROLE_NAMES is in privilege order (staff first, super_admin last)', () => {
-    expect(SYSTEM_ROLE_NAMES).toEqual([
-      'staff',
-      'admin',
-      'owner',
-      'super_admin',
-    ])
+    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super_admin'])
   })
   it('SYSTEM_ROLE_DEFINITIONS contains no unknown permissions (weird check with empty catalog)', () => {
     const keys = new Set(consolePermissionCatalog.permissions.map((p) => p.key))

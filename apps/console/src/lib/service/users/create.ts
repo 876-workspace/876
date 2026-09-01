@@ -8,7 +8,7 @@ import { err, ok } from '../result'
 
 /**
  * Create a platform user, optionally bootstrapping an organization and an
- * owner membership in the same call.
+ * super-admin membership in the same call.
  */
 export async function create(
   params: AdminUserCreateParams & { organization_name?: string | null }
@@ -32,7 +32,7 @@ export async function create(
     const { error: membershipError } = await workspace.memberships.create({
       user_id: user.id,
       organization_id: org.id,
-      role: 'owner',
+      role: 'super_admin',
       status: 'active',
     })
     if (membershipError) {

@@ -163,11 +163,7 @@ describe('ROUTE_PERMISSIONS', () => {
     ])
   })
 
-  it('gives owner the exact guarded route set their cumulative permissions allow', () => {
-    expect(reachablePaths('owner')).toEqual(Object.keys(ROUTE_PERMISSIONS))
-  })
-
-  it('gives super_admin the same complete route set as owner', () => {
+  it('gives super_admin the complete guarded route set', () => {
     expect(reachablePaths('super_admin')).toEqual(
       Object.keys(ROUTE_PERMISSIONS)
     )

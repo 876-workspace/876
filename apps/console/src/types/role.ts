@@ -64,14 +64,12 @@ export const ASSIGNABLE_ROLES = [
   'user',
   'staff',
   'admin',
-  'owner',
   'super_admin',
 ] as const
 export const assignableRoleSchema = z.enum([
   'user',
   'staff',
   'admin',
-  'owner',
   'super_admin',
 ])
 export type AssignableRole = z.infer<typeof assignableRoleSchema>

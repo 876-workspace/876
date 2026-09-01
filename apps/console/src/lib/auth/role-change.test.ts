@@ -41,14 +41,14 @@ describe('assertRoleChangeAllowed', () => {
       expect(result).toEqual({
         ok: false,
         error:
-          'Invalid role. Must be user, staff, admin, owner, or super_admin.',
+          'Invalid role. Must be user, staff, admin, or super_admin.',
         status: 400,
       })
       expect(mocks.retrieve).not.toHaveBeenCalled()
     }
   )
 
-  it.each(['user', 'staff', 'admin', 'owner', 'super_admin'])(
+  it.each(['user', 'staff', 'admin', 'super_admin'])(
     'allows a super admin to grant %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -62,7 +62,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['owner', 'super_admin'])(
+  it.each(['super_admin'])(
     'prevents an admin from granting %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -80,7 +80,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['owner', 'super_admin'])(
+  it.each(['super_admin'])(
     'prevents an admin from changing an existing %s',
     async (targetRole) => {
       mocks.retrieve.mockResolvedValue({ roleName: targetRole })

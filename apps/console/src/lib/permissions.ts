@@ -46,8 +46,7 @@ const RESOURCE_WRITE = [
 /**
  * Team-grant management. Granting Console access is itself privilege
  * escalation, so it sits with admin and above — never with staff.
- * `assertRoleChangeAllowed` still keeps owner/super_admin grants to a
- * super admin.
+ * `assertRoleChangeAllowed` keeps super-admin grants to a super admin.
  */
 const TEAM_MANAGE = [
   'team:read',
@@ -81,7 +80,7 @@ export function hasPermission(
 }
 
 /**
- * Seed definitions for the 4 system Console roles. Used to seed `roles` on
+ * Seed definitions for the 3 system Console roles. Used to seed `roles` on
  * first run and as a fallback before the table is populated. Consumers (no
  * team row) have no role and no permissions.
  */
@@ -117,34 +116,6 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
-    ],
-  },
-  {
-    name: 'owner',
-    displayName: 'Owner',
-    description: 'Platform owner with unrestricted Console access.',
-    permissions: [
-      'console:access',
-      'console:requests',
-      'console:settings',
-      'console:billing',
-      'console:users',
-      'console:organizations',
-      'console:apps',
-      'console:features',
-      'console:widgets',
-      'console:storage',
-      'console:reports',
-      'console:security',
-      'console:danger_zone',
-      ...RESOURCE_READ,
-      ...RESOURCE_WRITE,
-      ...TEAM_MANAGE,
-      'roles:delete',
-      'users:delete',
-      'organizations:delete',
-      'memberships:delete',
-      'apps:delete',
     ],
   },
   {
@@ -191,7 +162,7 @@ for (const role of SYSTEM_ROLE_DEFINITIONS) {
     )
 }
 
-/** The four built-in system role names, in privilege order. */
+/** The three built-in system role names, in privilege order. */
 export const SYSTEM_ROLE_NAMES = SYSTEM_ROLE_DEFINITIONS.map(
   (role) => role.name
 )

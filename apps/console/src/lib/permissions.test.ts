@@ -14,18 +14,12 @@ import {
 const EXPECTED_ROLE_COUNTS = {
   staff: 15,
   admin: 39,
-  owner: 46,
   super_admin: 46,
 } as const
 
 describe('Console permission catalog', () => {
   it('publishes the built-in roles in privilege order', () => {
-    expect(SYSTEM_ROLE_NAMES).toEqual([
-      'staff',
-      'admin',
-      'owner',
-      'super_admin',
-    ])
+    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super_admin'])
   })
 
   it('pins the exact staff permission count', () => {
@@ -40,14 +34,8 @@ describe('Console permission catalog', () => {
     )
   })
 
-  it('pins the exact owner permission count', () => {
-    expect(SYSTEM_ROLE_DEFINITIONS[2]?.permissions.length).toBe(
-      EXPECTED_ROLE_COUNTS.owner
-    )
-  })
-
   it('pins the exact super-admin permission count', () => {
-    expect(SYSTEM_ROLE_DEFINITIONS[3]?.permissions.length).toBe(
+    expect(SYSTEM_ROLE_DEFINITIONS[2]?.permissions.length).toBe(
       EXPECTED_ROLE_COUNTS.super_admin
     )
   })
@@ -60,12 +48,12 @@ describe('Console permission catalog', () => {
     ).toEqual([])
   })
 
-  it('reserves danger-zone access for owner and super admin', () => {
+  it('reserves danger-zone access for super admin', () => {
     expect(
       SYSTEM_ROLE_DEFINITIONS.filter((role) =>
         role.permissions.includes(CONSOLE_DANGER_ZONE_PERMISSION)
       ).map((role) => role.name)
-    ).toEqual(['owner', 'super_admin'])
+    ).toEqual(['super_admin'])
   })
 
   it('keeps staff free of delete permissions', () => {
