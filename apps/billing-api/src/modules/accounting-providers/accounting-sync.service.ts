@@ -1,5 +1,4 @@
 import { getSettings } from '@/config'
-import { prisma } from '@/db/client'
 import { AppHttpError } from '@/http/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import {
@@ -23,6 +22,12 @@ import {
   claimAccountingSyncJobs,
   enqueueConnectionResources,
   findAccountingReference,
+  findProjectableCustomer,
+  findProjectableEstimate,
+  findProjectableInvoice,
+  findProjectableItem,
+  findProjectablePayment,
+  findProjectableSubscription,
   markAccountingConnectionSyncFailure,
   markAccountingConnectionSyncSuccess,
   markAccountingSyncDelivered,
@@ -71,7 +76,7 @@ async function loadResource(
 ): Promise<LoadedResource | null> {
   switch (type) {
     case 'customer': {
-      const row = await prisma.customer.findFirst({ where: { tenantId, id } })
+      const row = await findProjectableCustomer(tenantId, id)
       if (!row) return null
       return {
         type,
@@ -86,7 +91,7 @@ async function loadResource(
       }
     }
     case 'item': {
-      const row = await prisma.item.findFirst({ where: { tenantId, id } })
+      const row = await findProjectableItem(tenantId, id)
       if (!row) return null
       return {
         type,
@@ -105,10 +110,7 @@ async function loadResource(
       }
     }
     case 'estimate': {
-      const row = await prisma.estimate.findFirst({
-        where: { tenantId, id },
-        include: { lines: { orderBy: { createdAt: 'asc' } } },
-      })
+      const row = await findProjectableEstimate(tenantId, id)
       if (!row) return null
       const providerCustomerId = await externalId(
         connectionId,
@@ -129,8 +131,13 @@ async function loadResource(
           lines: await Promise.all(
             row.lines.map(async (line) => ({
               providerItemId: line.itemId
-                ? (await findAccountingReference(connectionId, 'item', line.itemId))
-                    ?.externalId ?? null
+                ? ((
+                    await findAccountingReference(
+                      connectionId,
+                      'item',
+                      line.itemId
+                    )
+                  )?.externalId ?? null)
                 : null,
               description: line.description,
               quantity: line.quantity,
@@ -142,10 +149,7 @@ async function loadResource(
       }
     }
     case 'invoice': {
-      const row = await prisma.invoice.findFirst({
-        where: { tenantId, id },
-        include: { lines: { orderBy: { position: 'asc' } } },
-      })
+      const row = await findProjectableInvoice(tenantId, id)
       if (!row) return null
       const providerCustomerId = await externalId(
         connectionId,
@@ -167,8 +171,13 @@ async function loadResource(
           lines: await Promise.all(
             row.lines.map(async (line) => ({
               providerItemId: line.itemId
-                ? (await findAccountingReference(connectionId, 'item', line.itemId))
-                    ?.externalId ?? null
+                ? ((
+                    await findAccountingReference(
+                      connectionId,
+                      'item',
+                      line.itemId
+                    )
+                  )?.externalId ?? null)
                 : null,
               description: line.description,
               quantity: line.quantity,
@@ -180,16 +189,7 @@ async function loadResource(
       }
     }
     case 'recurring-invoice': {
-      const row = await prisma.subscription.findFirst({
-        where: { tenantId, id, deletedAt: null },
-        include: {
-          items: {
-            where: { isActive: true },
-            orderBy: { position: 'asc' },
-            include: { price: { include: { item: true, plan: true } } },
-          },
-        },
-      })
+      const row = await findProjectableSubscription(tenantId, id)
       if (!row || !['ACTIVE', 'TRIALING'].includes(row.status)) return null
       const providerCustomerId = await externalId(
         connectionId,
@@ -220,11 +220,13 @@ async function loadResource(
           lines: await Promise.all(
             row.items.map(async (item) => {
               const providerItemId = item.price.itemId
-                ? (await findAccountingReference(
-                    connectionId,
-                    'item',
-                    item.price.itemId
-                  ))?.externalId ?? null
+                ? ((
+                    await findAccountingReference(
+                      connectionId,
+                      'item',
+                      item.price.itemId
+                    )
+                  )?.externalId ?? null)
                 : null
               const unitAmount = item.unitAmount ?? item.price.unitAmount
               if (unitAmount == null)
@@ -245,13 +247,7 @@ async function loadResource(
       }
     }
     case 'payment': {
-      const row = await prisma.payment.findFirst({
-        where: { tenantId, id },
-        include: {
-          paymentMode: true,
-          invoiceAllocations: { where: { reversedAt: null } },
-        },
-      })
+      const row = await findProjectablePayment(tenantId, id)
       if (
         !row ||
         !['SUCCEEDED', 'PARTIALLY_REFUNDED', 'REFUNDED'].includes(row.status)
@@ -290,10 +286,7 @@ async function loadResource(
   }
 }
 
-function providerResource(
-  providerKey: string,
-  type: AccountingResourceType
-) {
+function providerResource(providerKey: string, type: AccountingResourceType) {
   const adapter = accountingProvider(providerKey)
   switch (type) {
     case 'customer':
@@ -353,7 +346,11 @@ async function writeLoaded(
     switch (loaded.type) {
       case 'customer': {
         const result = reference
-          ? await adapter.customers.update(ctx, reference.externalId, loaded.input)
+          ? await adapter.customers.update(
+              ctx,
+              reference.externalId,
+              loaded.input
+            )
           : await adapter.customers.create(ctx, loaded.input)
         if (adapter.customers.setActive)
           await adapter.customers.setActive(
@@ -385,7 +382,11 @@ async function writeLoaded(
           : adapter.invoices.create(ctx, loaded.input)
       case 'recurring-invoice':
         return reference
-          ? adapter.recurringInvoices.update(ctx, reference.externalId, loaded.input)
+          ? adapter.recurringInvoices.update(
+              ctx,
+              reference.externalId,
+              loaded.input
+            )
           : adapter.recurringInvoices.create(ctx, loaded.input)
       case 'payment':
         return reference
@@ -564,7 +565,8 @@ export async function reconcileAccountingConnection(params: {
   if (connection.status !== 'active')
     throw new AppHttpError({
       code: 'billing/accounting-connection-inactive',
-      message: 'Activate the accounting provider connection before reconciling.',
+      message:
+        'Activate the accounting provider connection before reconciling.',
       httpStatus: 409,
     })
   const resourceTypes = params.resourceTypes?.length

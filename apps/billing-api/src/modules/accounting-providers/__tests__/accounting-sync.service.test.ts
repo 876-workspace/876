@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   accountingProvider: vi.fn(),
   zohoAccessContext: vi.fn(),
   findConnection: vi.fn(),
-  invoiceFindFirst: vi.fn(),
+  loadInvoice: vi.fn(),
 }))
 
 vi.mock('@/config', () => ({
@@ -23,17 +23,8 @@ vi.mock('@/config', () => ({
   }),
 }))
 
-vi.mock('@/platform/timestamps', () => ({ nowUnixSeconds: () => 1_800_000_000 }))
-
-vi.mock('@/db/client', () => ({
-  prisma: {
-    customer: { findFirst: vi.fn() },
-    item: { findFirst: vi.fn() },
-    estimate: { findFirst: vi.fn() },
-    invoice: { findFirst: mocks.invoiceFindFirst },
-    subscription: { findFirst: vi.fn() },
-    payment: { findFirst: vi.fn() },
-  },
+vi.mock('@/platform/timestamps', () => ({
+  nowUnixSeconds: () => 1_800_000_000,
 }))
 
 vi.mock('@/providers/accounting', () => ({
@@ -60,6 +51,12 @@ vi.mock('../accounting-sync.repository', () => ({
   claimAccountingSyncJobs: mocks.claimJobs,
   enqueueConnectionResources: mocks.enqueueResources,
   findAccountingReference: mocks.findReference,
+  findProjectableCustomer: vi.fn(),
+  findProjectableEstimate: vi.fn(),
+  findProjectableInvoice: mocks.loadInvoice,
+  findProjectableItem: vi.fn(),
+  findProjectablePayment: vi.fn(),
+  findProjectableSubscription: vi.fn(),
   markAccountingConnectionSyncFailure: mocks.markConnectionFailure,
   markAccountingConnectionSyncSuccess: mocks.markConnectionSuccess,
   markAccountingSyncDelivered: mocks.markDelivered,
@@ -127,7 +124,7 @@ describe('accounting sync dependency handling', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.claimJobs.mockResolvedValue([invoiceJob])
-    mocks.invoiceFindFirst.mockResolvedValue({
+    mocks.loadInvoice.mockResolvedValue({
       id: 'inv_1',
       tenantId: 'ten_1',
       customerId: 'cust_1',

@@ -322,3 +322,51 @@ export async function enqueueConnectionResources(
     )
   return enqueued
 }
+
+// Canonical row loaders for projection. The sync service maps these rows onto
+// provider input shapes; only this repository may reach the database.
+
+export function findProjectableCustomer(tenantId: string, id: string) {
+  return prisma.customer.findFirst({ where: { tenantId, id } })
+}
+
+export function findProjectableItem(tenantId: string, id: string) {
+  return prisma.item.findFirst({ where: { tenantId, id } })
+}
+
+export function findProjectableEstimate(tenantId: string, id: string) {
+  return prisma.estimate.findFirst({
+    where: { tenantId, id },
+    include: { lines: { orderBy: { createdAt: 'asc' } } },
+  })
+}
+
+export function findProjectableInvoice(tenantId: string, id: string) {
+  return prisma.invoice.findFirst({
+    where: { tenantId, id },
+    include: { lines: { orderBy: { position: 'asc' } } },
+  })
+}
+
+export function findProjectableSubscription(tenantId: string, id: string) {
+  return prisma.subscription.findFirst({
+    where: { tenantId, id, deletedAt: null },
+    include: {
+      items: {
+        where: { isActive: true },
+        orderBy: { position: 'asc' },
+        include: { price: { include: { item: true, plan: true } } },
+      },
+    },
+  })
+}
+
+export function findProjectablePayment(tenantId: string, id: string) {
+  return prisma.payment.findFirst({
+    where: { tenantId, id },
+    include: {
+      paymentMode: true,
+      invoiceAllocations: { where: { reversedAt: null } },
+    },
+  })
+}
