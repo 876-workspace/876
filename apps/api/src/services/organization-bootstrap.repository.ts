@@ -14,6 +14,15 @@ export type OrganizationRow = {
   name: string | null
   slug: string
   status: string
+  countryCode: string | null
+  currencyCode: string | null
+  language: string | null
+  provisioningSetupKey: string | null
+  provisioningSelectionType: string | null
+  provisioningMatchGroupKey: string | null
+  provisioningMatchPriority: number | null
+  provisioningMatchedFields: string[]
+  provisioningSetupSelectedAt: bigint | null
   metadata: unknown
   createdAt: bigint
   updatedAt: bigint
@@ -31,31 +40,40 @@ export type MembershipRow = {
   updatedAt: bigint
 }
 
+const ORGANIZATION_SELECT = {
+  id: true,
+  workosOrganizationId: true,
+  name: true,
+  slug: true,
+  status: true,
+  countryCode: true,
+  currencyCode: true,
+  language: true,
+  provisioningSetupKey: true,
+  provisioningSelectionType: true,
+  provisioningMatchGroupKey: true,
+  provisioningMatchPriority: true,
+  provisioningMatchedFields: true,
+  provisioningSetupSelectedAt: true,
+  metadata: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
+
 export async function findUserById(userId: string): Promise<UserRow | null> {
-  const row = await prisma.user.findFirst({
+  return prisma.user.findFirst({
     where: { id: userId, deletedAt: null },
     select: { id: true, workosUserId: true },
   })
-  return row
 }
 
 export async function findOrganizationBySlug(
   slug: string
 ): Promise<OrganizationRow | null> {
-  const row = await prisma.organization.findFirst({
+  return prisma.organization.findFirst({
     where: { slug, deletedAt: null },
-    select: {
-      id: true,
-      workosOrganizationId: true,
-      name: true,
-      slug: true,
-      status: true,
-      metadata: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: ORGANIZATION_SELECT,
   })
-  return row
 }
 
 export async function createOrganization(data: {
@@ -64,37 +82,41 @@ export async function createOrganization(data: {
   name: string
   slug: string
   status: string
+  countryCode: string | null
   currencyCode: string
   language: string
+  provisioningSetupKey: string
+  provisioningSelectionType: 'policy' | 'fallback'
+  provisioningMatchGroupKey: string | null
+  provisioningMatchPriority: number | null
+  provisioningMatchedFields: string[]
+  provisioningSetupSelectedAt: bigint
   metadata: unknown
   createdAt: bigint
   updatedAt: bigint
 }): Promise<OrganizationRow> {
-  const row = await prisma.organization.create({
+  return prisma.organization.create({
     data: {
       id: data.id,
       workosOrganizationId: data.workosOrganizationId,
       name: data.name,
       slug: data.slug,
       status: data.status,
+      countryCode: data.countryCode,
       currencyCode: data.currencyCode,
       language: data.language,
+      provisioningSetupKey: data.provisioningSetupKey,
+      provisioningSelectionType: data.provisioningSelectionType,
+      provisioningMatchGroupKey: data.provisioningMatchGroupKey,
+      provisioningMatchPriority: data.provisioningMatchPriority,
+      provisioningMatchedFields: data.provisioningMatchedFields,
+      provisioningSetupSelectedAt: data.provisioningSetupSelectedAt,
       metadata: data.metadata as never,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     },
-    select: {
-      id: true,
-      workosOrganizationId: true,
-      name: true,
-      slug: true,
-      status: true,
-      metadata: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: ORGANIZATION_SELECT,
   })
-  return row
 }
 
 export async function createMembership(data: {
@@ -108,7 +130,7 @@ export async function createMembership(data: {
   createdAt: bigint
   updatedAt: bigint
 }): Promise<MembershipRow> {
-  const row = await prisma.membership.create({
+  return prisma.membership.create({
     data: {
       id: data.id,
       organizationId: data.organizationId,
@@ -132,5 +154,4 @@ export async function createMembership(data: {
       updatedAt: true,
     },
   })
-  return row
 }

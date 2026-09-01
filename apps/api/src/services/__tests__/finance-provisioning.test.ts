@@ -998,9 +998,12 @@ describe('ensureAppReady', () => {
     repo.findOrganizationById.mockResolvedValue(org())
     repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
     repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
-    repo.findPublishedRevision.mockImplementation(async (targetType) =>
-      targetType === 'application' ? (profile() as never) : null
-    )
+    repo.findPublishedRevision.mockImplementation(async (targetType) => {
+      if (targetType === 'application') return profile() as never
+      if (targetType === 'finance')
+        return { id: 'pmr_finance_1', revision: 1 } as never
+      return null
+    })
     repo.findLatestOutboxEvent.mockResolvedValue(null)
     repo.createOutboxEvent.mockImplementation(
       async (data) => ({ id: 'fpe_new', ...data }) as never
@@ -1043,9 +1046,12 @@ describe('ensureAppReady', () => {
     repo.findOrganizationById.mockResolvedValue(org())
     repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
     repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
-    repo.findPublishedRevision.mockImplementation(async (targetType) =>
-      targetType === 'application' ? (prof as never) : null
-    )
+    repo.findPublishedRevision.mockImplementation(async (targetType) => {
+      if (targetType === 'application') return prof as never
+      if (targetType === 'finance')
+        return { id: 'pmr_finance_1', revision: 1 } as never
+      return null
+    })
     repo.findLatestOutboxEvent.mockResolvedValue({
       id: 'fpe_existing',
       desiredStatus: 'ACTIVE',

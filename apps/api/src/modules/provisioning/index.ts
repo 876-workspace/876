@@ -22,3 +22,10 @@ export {
   type ProvisioningImportVerificationDependencies,
   type ProvisioningImportVerificationIssue,
 } from './provisioning-import-verification.service'
+export {
+  resolveProvisioningSetup,
+  resolveProvisioningSetupFromCandidates,
+  retrieveProvisioningSetupPolicy,
+  retrieveProvisioningWorkspaceDefaults,
+  type ProvisioningWorkspaceDefaults,
+} from './provisioning-selection.service'

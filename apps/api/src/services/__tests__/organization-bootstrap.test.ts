@@ -60,6 +60,7 @@ function makeDeps(
   setupWorkspace: ReturnType<typeof vi.fn>
   ensureFinance: ReturnType<typeof vi.fn>
   ensureWork: ReturnType<typeof vi.fn>
+  resolveProvisioning: ReturnType<typeof vi.fn>
 } {
   const repository = makeRepository(overrides.repository as never)
   const provider = makeProvider(overrides.provider as never)
@@ -68,6 +69,25 @@ function makeDeps(
     .mockResolvedValue({ owner: { id: 'rol_owner' } })
   const ensureFinance = vi.fn().mockResolvedValue(undefined)
   const ensureWork = vi.fn().mockResolvedValue(undefined)
+  const resolveProvisioning = vi.fn().mockResolvedValue({
+    selection: {
+      setup_id: 'setup_jamaica',
+      setup_key: 'jamaica',
+      match_type: 'fallback',
+      match_group_key: null,
+      match_priority: null,
+      matched_fields: [],
+      context: { country: null, subdivision: null, jurisdiction: null },
+    },
+    defaults: {
+      setup_key: 'jamaica',
+      finance_revision_id: 'pmr_finance_1',
+      finance_revision: 1,
+      country_code: 'JM',
+      currency_code: 'JMD',
+      language: 'en',
+    },
+  })
   return {
     provider,
     repository,
@@ -79,6 +99,7 @@ function makeDeps(
     setupWorkspace,
     ensureFinance,
     ensureWork,
+    resolveProvisioning,
   } as never
 }
 
@@ -352,6 +373,7 @@ describe('bootstrapExistingUser', () => {
     expect(deps.setupWorkspace).toHaveBeenCalledWith(expect.any(String), {
       sourceAppId: null,
       finance: 'defer',
+      requireProvisioningSelection: true,
       now: NOW,
     })
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
@@ -410,7 +432,12 @@ describe('bootstrapExistingUser', () => {
     expect(deps.setupWorkspace).toHaveBeenCalledTimes(1)
     expect(deps.setupWorkspace).toHaveBeenCalledWith(
       expect.stringMatching(/^org_/),
-      { sourceAppId: 'app_couriers', finance: 'defer', now: NOW }
+      {
+        sourceAppId: 'app_couriers',
+        finance: 'defer',
+        requireProvisioningSelection: true,
+        now: NOW,
+      }
     )
   })
 

@@ -10,8 +10,8 @@
 import type { ReactNode } from 'react'
 import { useAuthUI } from './context'
 import { AuthHeader, StepShell } from './components'
+import { BusinessSignUpStep } from './business-sign-up-step'
 import {
-  BusinessSignUpStep,
   EmailStep,
   OtpStep,
   PasswordStep,

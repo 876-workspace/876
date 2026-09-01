@@ -58,8 +58,8 @@ export {
   StepShell,
   SubmitButton,
 } from './components'
+export { BusinessSignUpStep } from './business-sign-up-step'
 export {
-  BusinessSignUpStep,
   EmailStep,
   OtpStep,
   PasswordStep,

@@ -2,67 +2,73 @@
 // Module: organizations. Organizations, memberships, org roles, locations, contacts, and departments.
 
 model Organization {
-  id                    String              @id @db.VarChar
-  workosOrganizationId  String?             @unique @map("workos_organization_id") @db.VarChar
-  name                  String?             @db.VarChar
-  shortName             String?             @map("short_name") @db.VarChar
-  doingBusinessAs       String?             @map("doing_business_as") @db.VarChar
-  slug                  String              @unique @db.VarChar
-  status                String              @default("active") @db.VarChar
-  logoUrl               String?             @map("logo_url") @db.VarChar
-  industry              String?             @db.VarChar
-  businessType          String?             @map("business_type") @db.VarChar
-  registrationNumber    String?             @map("registration_number") @db.VarChar
-  trn                   String?             @db.VarChar
-  nisNumber             String?             @map("nis_number") @db.VarChar
-  gctNumber             String?             @map("gct_number") @db.VarChar
-  taxId                 String?             @map("tax_id") @db.VarChar
-  incorporationDate     String?             @map("incorporation_date") @db.VarChar
-  primaryPhone          String?             @map("primary_phone") @db.VarChar
-  primaryEmail          String?             @map("primary_email") @db.VarChar
-  fax                   String?             @db.VarChar
-  websiteUrl            String?             @map("website_url") @db.VarChar
-  supportUrl            String?             @map("support_url") @db.VarChar
-  primaryContactUserId  String?             @map("primary_contact_user_id") @db.VarChar
-  timezone              String?             @db.VarChar
-  language              String?             @db.VarChar
-  addressLine1          String?             @map("address_line1") @db.VarChar
-  addressLine2          String?             @map("address_line2") @db.VarChar
-  city                  String?             @db.VarChar
-  regionId              String?             @map("region_id") @db.VarChar
-  countryCode           String?             @map("country_code") @db.VarChar(2)
-  currencyCode          String?             @default("JMD") @map("currency_code") @db.VarChar(3)
-  provisioningSetupKey  String?             @map("provisioning_setup_key") @db.VarChar
-  enrollmentCompletedAt BigInt?             @map("enrollment_completed_at")
-  metadata              Json?               @db.Json
-  deletedAt             BigInt?             @map("deleted_at")
-  deletedBy             String?             @map("deleted_by") @db.VarChar
-  deletionReason        String?             @map("deletion_reason")
-  createdAt             BigInt              @map("created_at")
-  updatedAt             BigInt              @map("updated_at")
-  stripeCustomerId      String?             @unique @map("stripe_customer_id") @db.VarChar
-  logoFileId            String?             @map("logo_file_id") @db.VarChar
-  addresses             Address[]
-  appAssignments        AppAssignment[]
-  appRoles              AppRole[]
-  apps                  App[]
-  authorizationCodes    AuthorizationCode[]
-  billingAccounts       BillingAccount[]
-  employeeProfiles      EmployeeProfile[]
-  inviteTokens          InviteToken[]
-  memberships           Membership[]
-  onboardingSessions    OnboardingSession[]
-  orgContacts           OrgContact[]
-  orgDepartments        OrgDepartment[]
-  orgFeatures           OrgFeature[]
-  orgLocations          OrgLocation[]
-  organizationRoles     OrganizationRole[]
-  country               Country?            @relation(fields: [countryCode], references: [code], onUpdate: NoAction)
-  currency              Currency?           @relation(fields: [currencyCode], references: [code], onUpdate: NoAction)
-  user                  User?               @relation(fields: [primaryContactUserId], references: [id], onUpdate: NoAction)
-  region                Region?             @relation(fields: [regionId], references: [id], onUpdate: NoAction)
-  ssoConnections        SsoConnection[]
-  subscriptions         Subscription[]
+  id                           String              @id @db.VarChar
+  workosOrganizationId         String?             @unique @map("workos_organization_id") @db.VarChar
+  name                         String?             @db.VarChar
+  shortName                    String?             @map("short_name") @db.VarChar
+  doingBusinessAs              String?             @map("doing_business_as") @db.VarChar
+  slug                         String              @unique @db.VarChar
+  status                       String              @default("active") @db.VarChar
+  logoUrl                      String?             @map("logo_url") @db.VarChar
+  industry                     String?             @db.VarChar
+  businessType                 String?             @map("business_type") @db.VarChar
+  registrationNumber           String?             @map("registration_number") @db.VarChar
+  trn                          String?             @db.VarChar
+  nisNumber                    String?             @map("nis_number") @db.VarChar
+  gctNumber                    String?             @map("gct_number") @db.VarChar
+  taxId                        String?             @map("tax_id") @db.VarChar
+  incorporationDate            String?             @map("incorporation_date") @db.VarChar
+  primaryPhone                 String?             @map("primary_phone") @db.VarChar
+  primaryEmail                 String?             @map("primary_email") @db.VarChar
+  fax                          String?             @db.VarChar
+  websiteUrl                   String?             @map("website_url") @db.VarChar
+  supportUrl                   String?             @map("support_url") @db.VarChar
+  primaryContactUserId         String?             @map("primary_contact_user_id") @db.VarChar
+  timezone                     String?             @db.VarChar
+  language                     String?             @db.VarChar
+  addressLine1                 String?             @map("address_line1") @db.VarChar
+  addressLine2                 String?             @map("address_line2") @db.VarChar
+  city                         String?             @db.VarChar
+  regionId                     String?             @map("region_id") @db.VarChar
+  countryCode                  String?             @map("country_code") @db.VarChar(2)
+  currencyCode                 String?             @default("JMD") @map("currency_code") @db.VarChar(3)
+  provisioningSetupKey         String?             @map("provisioning_setup_key") @db.VarChar
+  provisioningSelectionType    String?             @map("provisioning_selection_type") @db.VarChar
+  provisioningMatchGroupKey    String?             @map("provisioning_match_group_key") @db.VarChar
+  provisioningMatchPriority    Int?                @map("provisioning_match_priority")
+  provisioningMatchedFields    String[]            @default([]) @map("provisioning_matched_fields") @db.VarChar
+  provisioningSetupSelectedAt  BigInt?             @map("provisioning_setup_selected_at")
+  enrollmentCompletedAt        BigInt?             @map("enrollment_completed_at")
+  metadata                     Json?               @db.Json
+  deletedAt                    BigInt?             @map("deleted_at")
+  deletedBy                    String?             @map("deleted_by") @db.VarChar
+  deletionReason               String?             @map("deletion_reason")
+  createdAt                    BigInt              @map("created_at")
+  updatedAt                    BigInt              @map("updated_at")
+  stripeCustomerId             String?             @unique @map("stripe_customer_id") @db.VarChar
+  logoFileId                   String?             @map("logo_file_id") @db.VarChar
+  addresses                    Address[]
+  appAssignments               AppAssignment[]
+  appRoles                     AppRole[]
+  apps                         App[]
+  authorizationCodes           AuthorizationCode[]
+  billingAccounts              BillingAccount[]
+  employeeProfiles             EmployeeProfile[]
+  inviteTokens                 InviteToken[]
+  memberships                  Membership[]
+  onboardingSessions           OnboardingSession[]
+  orgContacts                  OrgContact[]
+  orgDepartments               OrgDepartment[]
+  orgFeatures                  OrgFeature[]
+  orgLocations                 OrgLocation[]
+  organizationRoles            OrganizationRole[]
+  country                      Country?            @relation(fields: [countryCode], references: [code], onUpdate: NoAction)
+  currency                     Currency?           @relation(fields: [currencyCode], references: [code], onUpdate: NoAction)
+  user                         User?               @relation(fields: [primaryContactUserId], references: [id], onUpdate: NoAction)
+  region                       Region?             @relation(fields: [regionId], references: [id], onUpdate: NoAction)
+  ssoConnections               SsoConnection[]
+  subscriptions                Subscription[]
 
+  @@index([provisioningSetupKey], map: "ix_organizations_provisioning_setup_key")
   @@map("organizations")
 }

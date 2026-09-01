@@ -1,3 +1,4 @@
+import countries from '@876/core/countries.json' with { type: 'json' }
 import { z } from 'zod'
 
 /**
@@ -9,6 +10,19 @@ import { z } from 'zod'
  * snake_case alias so a caller sending either form validates, matching the
  * FastAPI behaviour byte for byte.
  */
+
+const COUNTRY_CODES = new Set(
+  countries.map((country) => country.countryCode.toUpperCase())
+)
+
+const canonicalCountryCodeSchema = z
+  .string()
+  .trim()
+  .length(2)
+  .transform((value) => value.toUpperCase())
+  .refine((value) => COUNTRY_CODES.has(value), {
+    message: 'Select a supported country.',
+  })
 
 export const emailResolveBodySchema = z.strictObject({
   identifier: z.string().min(1),
@@ -46,23 +60,47 @@ export const registerBodySchema = z.strictObject({
 
 export type RegisterBody = z.infer<typeof registerBodySchema>
 
-export const registerBusinessBodySchema = z.strictObject({
-  email: z.string().min(1),
-  password: z.string().min(1),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  organizationName: z.string().optional(),
-  organization_name: z.string().optional(),
-  organizationSlug: z.string().optional().nullable(),
-  organization_slug: z.string().optional().nullable(),
-  // The organization's single operating currency and language, chosen at
-  // sign-up. Every product app inherits them.
-  currencyCode: z.string().length(3).optional().nullable(),
-  currency_code: z.string().length(3).optional().nullable(),
-  language: z.string().min(2).max(8).optional().nullable(),
-})
+export const registerBusinessBodySchema = z
+  .strictObject({
+    email: z.string().min(1),
+    password: z.string().min(1),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    organizationName: z.string().optional(),
+    organization_name: z.string().optional(),
+    organizationSlug: z.string().optional().nullable(),
+    organization_slug: z.string().optional().nullable(),
+    countryCode: canonicalCountryCodeSchema.optional(),
+    country_code: canonicalCountryCodeSchema.optional(),
+    // Compatibility inputs. Phase 2 setup workspace defaults overwrite these
+    // during the initial persisted selection; country is the routing fact.
+    currencyCode: z.string().length(3).optional().nullable(),
+    currency_code: z.string().length(3).optional().nullable(),
+    language: z.string().min(2).max(8).optional().nullable(),
+  })
+  .superRefine((value, ctx) => {
+    const countryCode = value.countryCode ?? value.country_code
+    if (!countryCode) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['countryCode'],
+        message: 'Select a country.',
+      })
+    }
+    if (
+      value.countryCode &&
+      value.country_code &&
+      value.countryCode !== value.country_code
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['countryCode'],
+        message: 'Country code aliases must agree.',
+      })
+    }
+  })
 
 export type RegisterBusinessBody = z.infer<typeof registerBusinessBodySchema>
 

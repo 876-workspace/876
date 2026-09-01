@@ -233,6 +233,7 @@ export async function createOrganization(data: {
   name: string
   slug: string
   status: string
+  countryCode: string
   currencyCode: string
   language: string
   metadata: unknown
@@ -243,6 +244,7 @@ export async function createOrganization(data: {
   return prisma.organization.create({
     data: {
       ...rest,
+      countryCode: data.countryCode.toUpperCase(),
       metadata:
         metadata === null || metadata === undefined ? undefined : metadata,
     },

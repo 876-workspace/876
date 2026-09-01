@@ -25,6 +25,7 @@ import {
   ensureDefaultContact,
   provisionOrganization,
 } from './provisioning'
+import { workspace } from './workspace'
 
 /**
  * The authentication service — login, registration, OTP, recovery, and the
@@ -239,6 +240,7 @@ export type AuthRepositoryPort = {
     name: string
     slug: string
     status: string
+    countryCode: string
     currencyCode: string
     language: string
     metadata: unknown
@@ -267,19 +269,24 @@ export type AuthDeps = {
     name: string,
     slug: string | null | undefined
   ): Promise<string>
-  /** `services/provisioning.ts` — seeds roles and default app subscriptions. */
+  /** `services/provisioning.ts` — roles, setup subscriptions, and finance. */
   provisionOrganization(
     organizationId: string,
     now: number,
-    options: { sourceAppId?: string | null }
+    options: {
+      sourceAppId?: string | null
+      requireProvisioningSelection?: boolean
+    }
   ): Promise<Record<string, { id: string }>>
-  /** `services/provisioning.ts` — the owner's first app assignments. */
+  /** `services/provisioning.ts` — the owner's effective app assignments. */
   assignMemberApps(params: {
     organizationId: string
     userId: string
     now: number
     sourceAppId?: string | null
   }): Promise<void>
+  /** Apply the selected setup's Work service/capability policy. */
+  ensureWork(organizationId: string): Promise<void>
   /** `services/provisioning.ts` — seeds the org's primary contact. */
   ensureDefaultContact(
     organizationId: string,
@@ -602,23 +609,13 @@ export class AuthService {
     if (adopted === null) throw registrationError
 
     if (loginResult.kind === 'email_verification_required') {
-      // The account already existed, so no verification code was issued by the
-      // failed create. Without an explicit resend the user is prompted for a
-      // code that was never sent — or one from an abandoned signup days
-      // earlier — and every attempt comes back as `invalid_one_time_code`.
       await this.sendVerificationEmail(adopted)
     }
 
     return { user: adopted, createdNow: false }
   }
 
-  /**
-   * Resend the verification code, best-effort.
-   *
-   * A failure here must not fail the registration: the account is usable and
-   * the user can request another code, whereas raising would strand a signup
-   * that has otherwise succeeded.
-   */
+  /** Resend the verification code, best-effort. */
   private async sendVerificationEmail(user: ProviderUser): Promise<void> {
     const send = this.deps.provider.sendVerificationEmail
     if (!send) return
@@ -691,8 +688,6 @@ export class AuthService {
         userAgent: params.userAgent,
       })
     } catch (error) {
-      // Re-word only the credential failure, so the message names the field the
-      // caller actually typed. Every other provider failure passes through.
       if (
         error instanceof AppHttpError &&
         error.code === 'auth/invalid-credentials'
@@ -749,7 +744,6 @@ export class AuthService {
     })
     if (created) await this.grantDefaultConsumerFeatures(localUser.id, now)
 
-    // Log in to discover whether email verification is required.
     const loginResult = await this.deps.provider.login({
       email,
       password,
@@ -779,6 +773,7 @@ export class AuthService {
     firstName: string
     lastName: string
     organizationName: string
+    countryCode: string
     organizationSlug?: string | null
     currencyCode?: string | null
     language?: string | null
@@ -804,6 +799,18 @@ export class AuthService {
       'auth/missing-organization-name',
       'Please enter your organization name.'
     )
+    const countryCode = checkRequired(
+      params.countryCode,
+      'auth/invalid-input',
+      'Please select your organization country.'
+    ).toUpperCase()
+    if (!/^[A-Z]{2}$/.test(countryCode)) {
+      throw new AppHttpError({
+        code: 'auth/invalid-input',
+        message: 'Please select a valid organization country.',
+        httpStatus: 400,
+      })
+    }
     const password = validatePassword(params.password)
     const email = validateEmail(params.email)
 
@@ -824,7 +831,8 @@ export class AuthService {
       now,
     })
 
-    // Check if the user already has an existing organization bootstrap to resume.
+    // A retry must reuse the setup persisted by the first attempt. The country
+    // submitted on a retry is never allowed to re-route an existing org.
     const existingMembership = await this.deps.repository.findFirstMembership(
       localUser.id
     )
@@ -832,11 +840,11 @@ export class AuthService {
     if (existingMembership) {
       const organizationId = existingMembership.organizationId
 
-      // Re-run strict product provisioning to ensure all required app resources
-      // and finance connections are ready before reporting success.
       await this.deps.provisionOrganization(organizationId, now, {
         sourceAppId: params.sourceAppId ?? null,
+        requireProvisioningSelection: true,
       })
+      await this.deps.ensureWork(organizationId)
 
       await this.deps.assignMemberApps({
         organizationId,
@@ -878,12 +886,17 @@ export class AuthService {
     )
 
     let workosOrganizationId: string | null = null
+    let localOrganizationCreated = false
     try {
       const organizationId = generateId('organization')
       const workosOrg = await this.deps.provider.createOrganization({
         name: organizationName,
         externalId: organizationId,
-        metadata: { slug, owner_workos_user_id: workosUser.id },
+        metadata: {
+          slug,
+          owner_workos_user_id: workosUser.id,
+          country_code: countryCode,
+        },
       })
       workosOrganizationId = workosOrg.id
 
@@ -900,17 +913,18 @@ export class AuthService {
         name: organizationName,
         slug,
         status: 'active',
-        // Single operating currency for the organization — every product app
-        // inherits it rather than choosing its own.
-        currencyCode: params.currencyCode?.trim().toUpperCase() || 'JMD',
+        countryCode,
+        // Compatibility placeholders only. `resolveFreshProvisioningPolicy()`
+        // replaces these with the selected setup's v1 workspace defaults before
+        // the first app entitlement/finance write.
+        currencyCode: params.currencyCode?.trim().toUpperCase() || 'USD',
         language: params.language?.trim() || 'en',
         metadata: workosOrg.metadata ?? null,
         createdAt: nowBigint,
         updatedAt: nowBigint,
       })
+      localOrganizationCreated = true
 
-      // Phase A: Create owner membership, app assignments, and default contact
-      // as part of durable organization bootstrap.
       await this.deps.repository.createMembership({
         id: generateId('membership'),
         organizationId: localOrg.id,
@@ -935,17 +949,21 @@ export class AuthService {
         now
       )
 
+      // The first provisioning call resolves and persists the setup from the
+      // country above before creating any setup-driven subscription/finance
+      // state. Subsequent operations require/reuse that persisted decision.
+      const orgRoles = await this.deps.provisionOrganization(localOrg.id, now, {
+        sourceAppId: params.sourceAppId ?? null,
+      })
+
       await this.deps.assignMemberApps({
         organizationId: localOrg.id,
         userId: localUser.id,
         now,
         sourceAppId: params.sourceAppId ?? null,
       })
+      await this.deps.ensureWork(localOrg.id)
 
-      // Phase A/B: Provision default roles, subscriptions, and synchronous finance readiness
-      const orgRoles = await this.deps.provisionOrganization(localOrg.id, now, {
-        sourceAppId: params.sourceAppId ?? null,
-      })
       const ownerRole = orgRoles[OWNER_ROLE_NAME]
       if (ownerRole?.id) {
         const membership = await this.deps.repository.findMembership(
@@ -960,16 +978,13 @@ export class AuthService {
         }
       }
 
-      // Phase C: Provider login & session finalization
       const loginResult = await this.deps.provider.login({
         email,
         password,
         clientId: this.clientId,
       })
 
-      if (isAuthEvent(loginResult)) {
-        return pending(loginResult)
-      }
+      if (isAuthEvent(loginResult)) return pending(loginResult)
 
       await this.deps.repository.updateUser(localUser.id, {
         emailVerified: loginResult.user.emailVerified,
@@ -978,10 +993,10 @@ export class AuthService {
       })
       return ok(loginResult)
     } catch (error) {
-      if (isFinanceWorkspaceUnavailable(error)) {
-        throw error
-      }
-      if (workosOrganizationId !== null) {
+      // Once the local organization exists it is the durable retry anchor. Do
+      // not delete the provider organization after a finance/Work/policy error;
+      // the next attempt must reuse the same local org and persisted selection.
+      if (!localOrganizationCreated && workosOrganizationId !== null) {
         try {
           await this.deps.provider.deleteOrganization(workosOrganizationId)
           log.info(
@@ -1002,11 +1017,6 @@ export class AuthService {
           )
         }
       }
-      // The WorkOS user is deliberately NOT compensated. It is left in place so
-      // a retry re-adopts it via registerOrAdoptWorkosUser instead of forcing
-      // the person to register again — deleting real credentials over a
-      // transient local failure is the worse outcome. An orphan that is never
-      // retried is cleaned up by scripts/reconcile_workos.py.
       throw error
     }
   }
@@ -1117,13 +1127,6 @@ export class AuthService {
     try {
       await this.deps.provider.sendRecovery(email, this.clientId)
     } catch (error) {
-      // Swallow the unknown-user case so the response cannot be used to
-      // enumerate which addresses have accounts.
-      //
-      // Read the upstream WorkOS failure, not the HTTP status: the shared error
-      // registry pins `auth/oauth-failed` at 401, so the 404 this once matched
-      // can no longer reach here and every unknown address was surfacing as an
-      // error — which is the disclosure this guard exists to prevent.
       if (isWorkOsNotFound(error)) return email
       throw error
     }
@@ -1171,8 +1174,6 @@ export class AuthService {
       clientId: this.clientId,
     })
 
-    // Verification always produces a session; a further step here means the
-    // flow did not complete, which is an error rather than a pending state.
     if (isAuthEvent(result)) {
       throw new AppHttpError({
         code: 'auth/verification-failed',
@@ -1185,9 +1186,6 @@ export class AuthService {
     const email = validateEmail(providerUser.email)
     const now = BigInt(nowUnixSeconds())
 
-    // Match on the WorkOS id first. Matching on email alone leaves a row still
-    // pointing at a stale provider id (e.g. after the account was recreated in
-    // WorkOS), so the link is repaired here.
     const localUser =
       (await this.deps.repository.findUserByWorkosId(providerUser.id)) ??
       (await this.deps.repository.findUserByEmail(email))
@@ -1292,12 +1290,6 @@ export class AuthService {
 // Default wiring
 // ---------------------------------------------------------------------------
 
-/**
- * Narrow a raw WorkOS record to the `{ id }` shape the service contracts
- * declare. The adapter returns the vendor payload untyped, so the id is
- * asserted here rather than being allowed to flow on as `undefined` and
- * surface later as an organization row with a null provider link.
- */
 function requireProviderId(
   record: Record<string, unknown>,
   resource: string
@@ -1315,13 +1307,6 @@ function requireProviderId(
   return { id, metadata: record['metadata'] }
 }
 
-/**
- * Deliver a magic-auth code to the configured endpoint.
- *
- * Returns whether delivery succeeded rather than throwing, so the service maps
- * every failure — transport or status — to the single `auth/internal-error` the
- * Python raises, without a provider message reaching the client.
- */
 async function postOtpCode(params: {
   url: string
   email: string
@@ -1343,7 +1328,6 @@ async function postOtpCode(params: {
 /** The service wired to the real repository, provider, and ported services. */
 export function createAuthService(): AuthService {
   const settings = getSettings()
-
   const workos = getAuthProvider(settings)
 
   return new AuthService({
@@ -1380,6 +1364,8 @@ export function createAuthService(): AuthService {
     provisionOrganization: (organizationId, now, options) =>
       provisionOrganization(organizationId, now, options),
     assignMemberApps: (params) => assignMemberApps(params),
+    ensureWork: (organizationId) =>
+      workspace.work.ensure({ organizationId }),
     ensureDefaultContact: (organizationId, user, now) =>
       ensureDefaultContact(organizationId, user, now),
     deliverOtp: postOtpCode,
