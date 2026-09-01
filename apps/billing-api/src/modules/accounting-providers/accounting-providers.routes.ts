@@ -8,12 +8,19 @@ import {
 import { accountingProvidersController as controller } from './accounting-providers.controller'
 import { accountingProvidersDocs as docs } from './accounting-providers.docs'
 import {
+  accountingAdoptionBodySchema,
+  accountingAdoptionDeletedSchema,
+  accountingAdoptionParamsSchema,
+  accountingAdoptionSchema,
   accountingAuthorizationSchema,
   accountingConnectionCreateBodySchema,
   accountingConnectionDeletedSchema,
   accountingConnectionParamsSchema,
   accountingConnectionSchema,
   accountingConnectionUpdateBodySchema,
+  accountingImportCandidateListSchema,
+  accountingImportParamsSchema,
+  accountingImportQuerySchema,
   accountingProviderSchema,
   accountingReconcileBodySchema,
   accountingReconcileSchema,
@@ -170,6 +177,57 @@ export function createAccountingProvidersRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.reconcile,
+  })
+
+  api.get({
+    path: '/admin/organizations/:organizationId/accounting-provider-connections/:connectionId/imports/:resourceType',
+    ...docs.listImports,
+    security: { kind: 'admin' },
+    request: {
+      params: accountingImportParamsSchema,
+      query: accountingImportQuerySchema,
+    },
+    responses: {
+      200: {
+        description: 'Provider import candidates',
+        schema: successEnvelopeSchema(accountingImportCandidateListSchema),
+      },
+      ...clientErrors,
+    },
+    handler: controller.listImports,
+  })
+
+  api.post({
+    path: '/admin/organizations/:organizationId/accounting-provider-connections/:connectionId/imports/:resourceType/adoptions',
+    ...docs.adoptImport,
+    security: { kind: 'admin' },
+    request: {
+      params: accountingImportParamsSchema,
+      body: accountingAdoptionBodySchema,
+    },
+    responses: {
+      201: {
+        description: 'Provider resource adopted',
+        schema: successEnvelopeSchema(accountingAdoptionSchema),
+      },
+      ...clientErrors,
+    },
+    handler: controller.adoptImport,
+  })
+
+  api.delete({
+    path: '/admin/organizations/:organizationId/accounting-provider-connections/:connectionId/imports/:resourceType/adoptions/:resourceId',
+    ...docs.releaseImport,
+    security: { kind: 'admin' },
+    request: { params: accountingAdoptionParamsSchema },
+    responses: {
+      200: {
+        description: 'Provider resource adoption released',
+        schema: successEnvelopeSchema(accountingAdoptionDeletedSchema),
+      },
+      ...clientErrors,
+    },
+    handler: controller.releaseImport,
   })
 
   api.get({
