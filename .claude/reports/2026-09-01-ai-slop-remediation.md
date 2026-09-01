@@ -134,8 +134,6 @@ pnpm --filter @876/crm-api typecheck
 pnpm --filter @876/crm-api lint
 pnpm --filter @876/crm-api test
 pnpm --filter @876/crm-api build
-pnpm --filter @876/crm-app typecheck
-pnpm --filter @876/crm-app lint
 ```
 
 Because `apps/crm-api/package.json` gained a workspace dependency, a local `pnpm install` should refresh `pnpm-lock.yaml` if the importer section is tracked there. The lockfile was intentionally not hand-edited without package-manager execution.
@@ -144,7 +142,6 @@ Because `apps/crm-api/package.json` gained a workspace dependency, a local `pnpm
 
 - `.agents/rules/ai-code-quality.md`
 - `.claude/rules/ai-code-quality.md`
-- `.claude/tracker/implementation_plan.md`
 - `apps/crm-api/package.json`
 - `apps/crm-api/src/modules/requests/requests.schemas.ts`
 - `apps/crm-api/src/types/request.ts`
@@ -157,3 +154,46 @@ Because `apps/crm-api/package.json` gained a workspace dependency, a local `pnpm
 ## Outcome
 
 The branch fixes the highest-confidence slop identified in the scan without introducing a new framework: one CRM contract owner, fewer duplicated domain declarations, one established response-envelope implementation, and explicit procedural rules aimed at preventing future agents from recreating existing platform behavior.
+
+## Local review pass (2026-09-01)
+
+The branch was reviewed and verified locally after the connector session above.
+
+Executed, all green:
+
+```
+pnpm install                       # refreshed pnpm-lock.yaml (+3 lines, the real dependency only)
+pnpm --filter @876/crm-api typecheck
+pnpm --filter @876/crm-api lint     # 0 errors (9 pre-existing test warnings)
+pnpm --filter @876/crm-api test     # 57 files, 747 tests passed
+pnpm --filter @876/crm-api build
+pnpm --filter @876/crm typecheck
+pnpm --filter @876/console typecheck
+pnpm --filter @876/console lint
+```
+
+Defects found and fixed during the review:
+
+1. **`pnpm-lock.yaml` was not updated** for the new `@876/crm` dependency on
+   `@876/crm-api`, so `pnpm install --frozen-lockfile` — the CI default — failed
+   outright. The lockfile is now committed; the diff is the three-line importer
+   entry and nothing else.
+2. **`.claude/tracker/implementation_plan.md` was committed past `.gitignore`**
+   (line 87, "Local implementation tracker — not committed to git"). Untracked;
+   `.claude/rules/implementation-tracker.md` keeps the tracker local-only.
+3. **The new rule was not referenced from either rule index**, so nothing would
+   ever load it. `ai-code-quality.md` is now listed in the Required Context
+   section of both `CLAUDE.md` and `AGENTS.md`.
+4. **Console still hand-wrote the request-status union** the branch had just
+   canonicalized — a third copy, which is precisely what the new rule forbids.
+   `apps/console/src/types/crm.ts` now aliases `RequestStatus` from `@876/crm`
+   (matching how `apps/crm/src/types/crm.ts` already does it), and
+   `REQUEST_STATUSES` in `apps/console/src/features/crm/request-status.ts` is
+   derived from `requestStatusSchema.options` rather than relisting the six
+   values.
+
+Behaviour was checked, not assumed: `apiError`/`apiSuccess` emit byte-identical
+envelopes to the hand-built ones they replace, and the only caller of
+`/api/auth/switch-org` (`components/shell/org-switcher.tsx`) sends exactly
+`{ organizationId }`, so tightening the schema to `strictObject` rejects nothing
+that was previously accepted.
