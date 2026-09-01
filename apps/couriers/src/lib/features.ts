@@ -12,12 +12,12 @@ import { getPlatformClient } from '@/lib/services/platform'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import type { CouriersFeatureRequest, CouriersFeatures } from '@/types/features'
 
-const COURIERS_SEARCH_BAR_SLUG = 'couriers_search_bar'
-const COURIERS_THEME_SWITCHER_SLUG = 'couriers_theme_switcher'
-const COURIERS_GLOBAL_ADD_SLUG = 'couriers_global_add'
-const COURIERS_APP_SWITCHER_SLUG = 'couriers_app_switcher'
-const COURIERS_ORG_SWITCHER_SLUG = 'couriers_org_switcher'
-const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers_storage_org_logo_upload'
+const COURIERS_SEARCH_BAR_SLUG = 'couriers-search-bar'
+const COURIERS_THEME_SWITCHER_SLUG = 'couriers-theme-switcher'
+const COURIERS_GLOBAL_ADD_SLUG = 'couriers-global-add'
+const COURIERS_APP_SWITCHER_SLUG = 'couriers-app-switcher'
+const COURIERS_ORG_SWITCHER_SLUG = 'couriers-org-switcher'
+const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers-storage-org-logo-upload'
 const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   searchBar: false,
   themeSwitcher: false,
