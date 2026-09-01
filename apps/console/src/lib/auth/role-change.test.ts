@@ -29,7 +29,7 @@ describe('assertRoleChangeAllowed', () => {
     vi.clearAllMocks()
   })
 
-  it.each(['', 'support', 'ADMIN', '__proto__'])(
+  it.each(['', 'support', 'ADMIN', '__proto__', 'super_admin']) (
     'rejects invalid role %j without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -41,18 +41,18 @@ describe('assertRoleChangeAllowed', () => {
       expect(result).toEqual({
         ok: false,
         error:
-          'Invalid role. Must be user, staff, admin, owner, or super_admin.',
+          'Invalid role. Must be user, staff, admin, owner, or super-admin.',
         status: 400,
       })
       expect(mocks.retrieve).not.toHaveBeenCalled()
     }
   )
 
-  it.each(['user', 'staff', 'admin', 'owner', 'super_admin'])(
+  it.each(['user', 'staff', 'admin', 'owner', 'super-admin'])(
     'allows a super admin to grant %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
-        createCaller({ role: 'super_admin' }),
+        createCaller({ role: 'super-admin' }),
         'user_target',
         role
       )
@@ -62,7 +62,18 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['owner', 'super_admin'])(
+  it('recognizes a legacy persisted super_admin caller during migration', async () => {
+    const result = await assertRoleChangeAllowed(
+      createCaller({ role: 'super_admin' }),
+      'user_target',
+      'owner'
+    )
+
+    expect(result).toEqual({ ok: true })
+    expect(mocks.retrieve).not.toHaveBeenCalled()
+  })
+
+  it.each(['owner', 'super-admin'])(
     'prevents an admin from granting %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -80,7 +91,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['owner', 'super_admin'])(
+  it.each(['owner', 'super-admin', 'super_admin'])(
     'prevents an admin from changing an existing %s',
     async (targetRole) => {
       mocks.retrieve.mockResolvedValue({ roleName: targetRole })
@@ -93,7 +104,9 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error: `Only a super admin can change a ${targetRole}'s role.`,
+        error: `Only a super admin can change a ${
+          targetRole === 'super_admin' ? 'super-admin' : targetRole
+        }'s role.`,
         status: 403,
       })
       expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -167,6 +180,21 @@ describe('applyRoleChange', () => {
       roleName: 'admin',
     })
     expect(mocks.create).not.toHaveBeenCalled()
+  })
+
+  it('normalizes a legacy persisted role returned by the service', async () => {
+    mocks.retrieve.mockResolvedValue({ userId: 'user_target', roleName: 'staff' })
+    mocks.update.mockResolvedValue({
+      data: { userId: 'user_target', roleName: 'super_admin' },
+      error: null,
+    })
+
+    const result = await applyRoleChange('user_target', 'super-admin')
+
+    expect(result).toEqual({
+      data: { userId: 'user_target', role: 'super-admin', revoked: false },
+      error: null,
+    })
   })
 
   it('creates a missing access grant', async () => {
