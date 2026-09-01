@@ -2,8 +2,8 @@ import { prisma } from '@/db/client'
 import type { Prisma } from '@/db'
 import { generateId } from '@/platform/ids'
 
-/** Every permission a workspace owner holds. */
-const OWNER_PERMISSIONS = [
+/** Every permission a workspace super admin holds. */
+const SUPER_ADMIN_PERMISSIONS = [
   'billing:access',
   'dashboard:read',
   'customers:read',
@@ -41,31 +41,30 @@ const OWNER_PERMISSIONS = [
  *
  * `resolveMemberAccess` maps an 876 organization role onto one of these slugs
  * for an account with no member row, so an organization's admins and members
- * have no Billing access at all unless `admin` and `viewer` exist. Only `owner`
- * used to be created, which is why every non-owner was locked out.
+ * have no Billing access at all unless `admin` and `staff` exist.
  */
 const SYSTEM_ROLES = [
   {
-    slug: 'owner',
-    name: 'Owner',
+    slug: 'super_admin',
+    name: 'Super Admin',
     description:
       'Unrestricted workspace access, including roles and member grants.',
-    permissions: OWNER_PERMISSIONS,
+    permissions: SUPER_ADMIN_PERMISSIONS,
   },
   {
     slug: 'admin',
     name: 'Admin',
     description:
-      'Full workspace access except editing roles, which stays with the owner.',
-    permissions: OWNER_PERMISSIONS.filter(
+      'Administrative and operational access without role administration.',
+    permissions: SUPER_ADMIN_PERMISSIONS.filter(
       (permission) => permission !== 'roles:write'
     ),
   },
   {
-    slug: 'viewer',
-    name: 'Viewer',
+    slug: 'staff',
+    name: 'Staff',
     description: 'Read-only access to the workspace.',
-    permissions: OWNER_PERMISSIONS.filter(
+    permissions: SUPER_ADMIN_PERMISSIONS.filter(
       (permission) =>
         permission === 'billing:access' || permission.endsWith(':read')
     ),
@@ -121,43 +120,43 @@ export type TenantProvisioningInput = {
   defaultCurrency: string
   defaultLanguage?: string
   /**
-   * The 876 account to seat as the workspace owner. Omitted by the finance
+   * The 876 account to seat as the workspace super admin. Omitted by the finance
    * provisioning path, which is delivered by a machine and knows no user.
    */
-  ownerUserId?: string | null
+  superAdminUserId?: string | null
   now: number
 }
 
 /**
- * Seats the explicit Billing owner when an existing workspace is upgraded from
+ * Seats the explicit Billing super admin when an existing workspace is upgraded from
  * shared-finance-only usage to the full 876 Billing product.
  *
  * Finance provisioning knows the organization but not the acting user, so it
  * intentionally creates no Member row. A later Billing setup supplies that
  * user and must not return early merely because the shared tenant already
- * exists. The system-role migration/backfill normally guarantees `owner`, but
+ * exists. The system-role migration normally guarantees `super_admin`, but
  * creating it here as well keeps this path self-healing for legacy bare tenants.
  */
-async function ensureOwnerMembership(
+async function ensureSuperAdminMembership(
   tx: TenantProvisioningClient,
   tenantId: string,
   userId: string,
   now: number
 ) {
-  let ownerRole = await tx.role.findFirst({
-    where: { tenantId, slug: 'owner' },
+  let superAdminRole = await tx.role.findFirst({
+    where: { tenantId, slug: 'super_admin' },
     select: { id: true },
   })
-  if (!ownerRole) {
-    ownerRole = await tx.role.create({
+  if (!superAdminRole) {
+    superAdminRole = await tx.role.create({
       data: {
         id: generateId('Role'),
         tenantId,
-        slug: 'owner',
-        name: 'Owner',
+        slug: 'super_admin',
+        name: 'Super Admin',
         description:
           'Unrestricted workspace access, including roles and member grants.',
-        permissions: OWNER_PERMISSIONS,
+        permissions: SUPER_ADMIN_PERMISSIONS,
         isSystem: true,
         isDefault: false,
         createdAt: now,
@@ -177,7 +176,7 @@ async function ensureOwnerMembership(
         id: generateId('Member'),
         tenantId,
         userId,
-        roleId: ownerRole.id,
+        roleId: superAdminRole.id,
         status: 'ACTIVE',
         createdAt: now,
         updatedAt: now,
@@ -186,10 +185,10 @@ async function ensureOwnerMembership(
     return
   }
 
-  if (member.roleId !== ownerRole.id || member.status !== 'ACTIVE')
+  if (member.roleId !== superAdminRole.id || member.status !== 'ACTIVE')
     await tx.member.update({
       where: { id: member.id },
-      data: { roleId: ownerRole.id, status: 'ACTIVE', updatedAt: now },
+      data: { roleId: superAdminRole.id, status: 'ACTIVE', updatedAt: now },
     })
 }
 
@@ -203,8 +202,8 @@ async function ensureOwnerMembership(
  * finance path wrote a bare tenant with no roles, leaving a workspace nobody
  * could administer.
  *
- * Idempotent on `organizationId`. If Billing setup supplies an owner for an
- * existing finance-created workspace, the owner grant is repaired before the
+ * Idempotent on `organizationId`. If Billing setup supplies a super admin for an
+ * existing finance-created workspace, the grant is repaired before the
  * existing workspace is returned.
  */
 export async function provisionTenantWorkspace(
@@ -215,8 +214,13 @@ export async function provisionTenantWorkspace(
     where: { organizationId: input.organizationId },
   })
   if (existing) {
-    if (input.ownerUserId)
-      await ensureOwnerMembership(tx, existing.id, input.ownerUserId, input.now)
+    if (input.superAdminUserId)
+      await ensureSuperAdminMembership(
+        tx,
+        existing.id,
+        input.superAdminUserId,
+        input.now
+      )
     return {
       id: existing.id,
       created: false,
@@ -251,10 +255,10 @@ export async function provisionTenantWorkspace(
       updatedAt: input.now,
     },
   })
-  let ownerRoleId = ''
+  let superAdminRoleId = ''
   for (const role of SYSTEM_ROLES) {
     const id = generateId('Role')
-    if (role.slug === 'owner') ownerRoleId = id
+    if (role.slug === 'super_admin') superAdminRoleId = id
     await tx.role.create({
       data: {
         id,
@@ -264,20 +268,20 @@ export async function provisionTenantWorkspace(
         description: role.description,
         permissions: [...role.permissions],
         isSystem: true,
-        isDefault: false,
+        isDefault: role.slug === 'staff',
         createdAt: input.now,
         updatedAt: input.now,
       },
     })
   }
 
-  if (input.ownerUserId)
+  if (input.superAdminUserId)
     await tx.member.create({
       data: {
         id: generateId('Member'),
         tenantId,
-        userId: input.ownerUserId,
-        roleId: ownerRoleId,
+        userId: input.superAdminUserId,
+        roleId: superAdminRoleId,
         status: 'ACTIVE',
         createdAt: input.now,
         updatedAt: input.now,
@@ -400,7 +404,7 @@ export async function provisionTenantRow(input: {
       name: input.name,
       slug: input.slug,
       defaultCurrency: input.defaultCurrency,
-      ownerUserId: input.userId,
+      superAdminUserId: input.userId,
       now: input.now,
     })
   )

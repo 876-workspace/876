@@ -7,7 +7,7 @@ export type TokenIntrospection = {
   scopes: ReadonlySet<string>
 }
 
-export type OrganizationRole = 'owner' | 'admin' | 'member'
+export type OrganizationRole = 'super_admin' | 'admin' | 'staff'
 
 export type OrganizationMembership = {
   role: OrganizationRole

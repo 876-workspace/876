@@ -35,7 +35,7 @@ function membership(options?: {
 }) {
   return {
     id: options?.id ?? 'om_123',
-    role: options?.role ?? 'owner',
+    role: options?.role ?? 'super_admin',
     status: options?.status ?? 'active',
     permissions: [],
     organization: {
@@ -81,7 +81,7 @@ describe('HttpIdentityGateway', () => {
     vi.unstubAllGlobals()
   })
 
-  it('returns the canonical owner organization role from a successful list', async () => {
+  it('returns the canonical super admin organization role from a successful list', async () => {
     fetchMock.mockResolvedValueOnce(membershipList([membership()]))
 
     const result = await new HttpIdentityGateway().organizationMembership(
@@ -89,7 +89,7 @@ describe('HttpIdentityGateway', () => {
       'org_123'
     )
 
-    expect(result).toEqual({ role: 'owner' })
+    expect(result).toEqual({ role: 'super_admin' })
   })
 
   it('preserves admin and normalizes every other organization role to member', async () => {
@@ -103,7 +103,7 @@ describe('HttpIdentityGateway', () => {
     ).resolves.toEqual({ role: 'admin' })
     await expect(
       gateway.organizationMembership('access-token', 'org_123')
-    ).resolves.toEqual({ role: 'member' })
+    ).resolves.toEqual({ role: 'staff' })
   })
 
   it('returns null only after a valid response proves no active membership exists', async () => {
@@ -144,7 +144,7 @@ describe('HttpIdentityGateway', () => {
 
   it('treats malformed membership rows as unavailable instead of skipping into a false denial', async () => {
     fetchMock.mockResolvedValueOnce(
-      membershipList([{ id: 'om_bad', role: 'owner', organization: null }])
+      membershipList([{ id: 'om_bad', role: 'super_admin', organization: null }])
     )
 
     await expect(
@@ -168,7 +168,7 @@ describe('HttpIdentityGateway', () => {
         'access-token',
         'org_123'
       )
-    ).resolves.toEqual({ role: 'owner' })
+    ).resolves.toEqual({ role: 'super_admin' })
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
@@ -184,7 +184,7 @@ describe('HttpIdentityGateway', () => {
           'access-token',
           'org_123'
         )
-      ).resolves.toEqual({ role: 'owner' })
+      ).resolves.toEqual({ role: 'super_admin' })
       expect(fetchMock).toHaveBeenCalledTimes(2)
     }
   )
