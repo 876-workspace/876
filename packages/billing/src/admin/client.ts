@@ -1,4 +1,5 @@
 import { buildAdminRuntime } from './runtime'
+import { createAdminAccountingProvidersResource } from './resources/accounting-providers'
 import { createAdminCustomersResource } from './resources/customers'
 import { createAdminPlansResource } from './resources/plans'
 import { createAdminPricesResource } from './resources/prices'
@@ -22,6 +23,7 @@ export function create876AdminClient(options: AdminClientOptions = {}) {
     stats: createAdminStatsResource(runtime),
     paymentMethods: createAdminPaymentMethodsResource(runtime),
     paymentIntents: createAdminPaymentIntentsResource(runtime),
+    accountingProviders: createAdminAccountingProvidersResource(runtime),
   }
 }
 
