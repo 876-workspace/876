@@ -14,7 +14,7 @@ function preferenceRow(overrides: Record<string, unknown> = {}) {
     id: 'mpref_test',
     tenantId: 'ten_1',
     module: 'packages',
-    key: 'volumetric_divisor',
+    key: 'volumetric-divisor',
     valueType: 'integer',
     stringValue: null,
     integerValue: 6000,
@@ -42,10 +42,8 @@ const { modulePreference, organizationModule, apiKey } = vi.hoisted(() => ({
   apiKey: { findUnique: vi.fn(), update: vi.fn() },
 }))
 
-// $transaction mock that executes callback with a tx containing modulePreference
 const transactionMock = vi.fn(async (callback: (tx: unknown) => unknown) => {
   const tx = { modulePreference }
-  // prisma.$transaction can be called as (callback) or (operations)
   if (typeof callback === 'function') return callback(tx)
   return callback
 })
@@ -127,8 +125,8 @@ describe('settings preferences', () => {
         object: 'module_preferences',
         module: 'packages',
         preferences: expect.objectContaining({
-          volumetric_divisor: 5000,
-          chargeable_weight_rule: 'greater_of',
+          'volumetric-divisor': 5000,
+          'chargeable-weight-rule': 'greater-of',
         }),
       },
       error: null,
@@ -148,7 +146,7 @@ describe('settings preferences', () => {
       .set(ADMIN_HEADERS)
 
     expect(response.status).toBe(200)
-    expect(response.body.data.preferences.volumetric_divisor).toBe(6000)
+    expect(response.body.data.preferences['volumetric-divisor']).toBe(6000)
   })
 
   it('requires admin for preferences retrieve', async () => {
@@ -159,20 +157,17 @@ describe('settings preferences', () => {
     expect(response.status).toBe(401)
   })
 
-  it('404s for unknown module on retrieve', async () => {
+  it('404s or validation-rejects an unknown canonical-shaped module', async () => {
     const response = await request(createApp())
-      .get('/v1/tenants/ten_1/modules/unknown_module/preferences')
+      .get('/v1/tenants/ten_1/modules/unknown-module/preferences')
       .set(ADMIN_HEADERS)
 
-    // validation enum rejects unknown_module as 422, service would 404 if it reached
     expect([404, 422]).toContain(response.status)
-    if (response.status === 404) {
+    if (response.status === 404)
       expect(response.body.error.code).toBe('module/not-found')
-    }
   })
 
   it('updates a preference with non-default value', async () => {
-    // current has no rows, after write returns row with 6000
     modulePreference.findMany
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([preferenceRow({ integerValue: 6000 })])
@@ -180,10 +175,10 @@ describe('settings preferences', () => {
     const response = await request(createApp())
       .patch('/v1/tenants/ten_1/modules/packages/preferences')
       .set(ADMIN_HEADERS)
-      .send({ volumetric_divisor: 6000 })
+      .send({ 'volumetric-divisor': 6000 })
 
     expect(response.status).toBe(200)
-    expect(response.body.data.preferences.volumetric_divisor).toBe(6000)
+    expect(response.body.data.preferences['volumetric-divisor']).toBe(6000)
     expect(response.body.data.object).toBe('module_preferences')
     expect(typeof response.body.data.updated_at).toBe('number')
     expect(modulePreference.upsert).toHaveBeenCalled()
@@ -191,7 +186,6 @@ describe('settings preferences', () => {
   })
 
   it('removes stored row when submitting default value', async () => {
-    // current has stored 6000, updating to default 5000 should delete
     modulePreference.findMany
       .mockResolvedValueOnce([preferenceRow({ integerValue: 6000 })])
       .mockResolvedValueOnce([])
@@ -199,15 +193,15 @@ describe('settings preferences', () => {
     const response = await request(createApp())
       .patch('/v1/tenants/ten_1/modules/packages/preferences')
       .set(ADMIN_HEADERS)
-      .send({ volumetric_divisor: 5000 })
+      .send({ 'volumetric-divisor': 5000 })
 
     expect(response.status).toBe(200)
-    expect(response.body.data.preferences.volumetric_divisor).toBe(5000)
+    expect(response.body.data.preferences['volumetric-divisor']).toBe(5000)
     expect(modulePreference.deleteMany).toHaveBeenCalledWith({
       where: {
         tenantId: 'ten_1',
         module: 'packages',
-        key: 'volumetric_divisor',
+        key: 'volumetric-divisor',
       },
     })
     expect(modulePreference.upsert).not.toHaveBeenCalled()
@@ -217,7 +211,7 @@ describe('settings preferences', () => {
     const response = await request(createApp())
       .patch('/v1/tenants/ten_1/modules/packages/preferences')
       .set(ADMIN_HEADERS)
-      .send({ volumetric_divisor: 50 })
+      .send({ 'volumetric-divisor': 50 })
 
     expect(response.status).toBe(422)
     expect(response.body.error.code).toBe('request/invalid')
@@ -229,7 +223,7 @@ describe('settings preferences', () => {
     const response = await request(createApp())
       .patch('/v1/tenants/ten_1/modules/packages/preferences')
       .set(ADMIN_HEADERS)
-      .send({ warp_speed: true })
+      .send({ 'warp-speed': true })
 
     expect(response.status).toBe(422)
     expect(response.body.error.code).toBe('request/invalid')
@@ -238,9 +232,8 @@ describe('settings preferences', () => {
   it('isolates tenants: queries only requested tenant', async () => {
     modulePreference.findMany.mockImplementation(
       async (args: { where: { tenantId: string } }) => {
-        if (args.where.tenantId === 'ten_other') {
+        if (args.where.tenantId === 'ten_other')
           return [preferenceRow({ tenantId: 'ten_other', integerValue: 7000 })]
-        }
         return []
       }
     )
@@ -248,15 +241,14 @@ describe('settings preferences', () => {
     const resA = await request(createApp())
       .get('/v1/tenants/ten_1/modules/packages/preferences')
       .set(ADMIN_HEADERS)
-
     const resB = await request(createApp())
       .get('/v1/tenants/ten_other/modules/packages/preferences')
       .set(ADMIN_HEADERS)
 
     expect(resA.status).toBe(200)
     expect(resB.status).toBe(200)
-    expect(resA.body.data.preferences.volumetric_divisor).toBe(5000)
-    expect(resB.body.data.preferences.volumetric_divisor).toBe(7000)
+    expect(resA.body.data.preferences['volumetric-divisor']).toBe(5000)
+    expect(resB.body.data.preferences['volumetric-divisor']).toBe(7000)
     expect(modulePreference.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tenantId: 'ten_1', module: 'packages' },
@@ -273,7 +265,7 @@ describe('settings preferences', () => {
     modulePreference.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
       preferenceRow({
         module: 'warehouse',
-        key: 'storage_fee_per_day',
+        key: 'storage-fee-per-day',
         valueType: 'decimal',
         integerValue: null,
         decimalValue: '2.50',
@@ -284,22 +276,21 @@ describe('settings preferences', () => {
     const response = await request(createApp())
       .patch('/v1/tenants/ten_1/modules/warehouse/preferences')
       .set(ADMIN_HEADERS)
-      .send({ storage_fee_per_day: '2.50' })
+      .send({ 'storage-fee-per-day': '2.50' })
 
-    // warehouse storage_fee_per_day is decimal string, 2.50 differs from default 0.00
     expect(response.status).toBe(200)
     expect(response.body.error).toBeNull()
     expect(response.body.data.object).toBe('module_preferences')
     expect(typeof response.body.data.updated_at).toBe('number')
     expect(Number.isInteger(response.body.data.updated_at)).toBe(true)
-    expect(response.body.data.preferences.storage_fee_per_day).toBe('2.50')
+    expect(response.body.data.preferences['storage-fee-per-day']).toBe('2.50')
   })
 
   it('422s on strict body violation (wrong type)', async () => {
     const response = await request(createApp())
       .patch('/v1/tenants/ten_1/modules/packages/preferences')
       .set(ADMIN_HEADERS)
-      .send({ volumetric_divisor: 'not-a-number' })
+      .send({ 'volumetric-divisor': 'not-a-number' })
 
     expect(response.status).toBe(422)
   })
