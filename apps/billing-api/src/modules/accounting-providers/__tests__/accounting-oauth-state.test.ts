@@ -15,7 +15,8 @@ vi.mock('@/config', () => ({
     zohoBooks: {
       clientId: 'zoho-client',
       clientSecret: 'zoho-secret',
-      redirectUri: 'https://billing.example/api/v1/providers/zoho-books/oauth/callback',
+      redirectUri:
+        'https://billing.example/api/v1/providers/zoho-books/oauth/callback',
       accountsDomain: 'https://accounts.zoho.com',
     },
   }),
@@ -164,8 +165,12 @@ describe('Zoho OAuth state', () => {
 
     expect(mocks.consumeState).toHaveBeenCalledTimes(1)
     expect(mocks.exchangeCode).toHaveBeenCalledTimes(1)
-    expect(mocks.consumeState.mock.invocationCallOrder[0]).toBeLessThan(
-      mocks.exchangeCode.mock.invocationCallOrder[0]
-    )
+    // NaN when a call is missing, so an absent invocation still fails the
+    // ordering assertion rather than throwing on an undefined index.
+    const consumeOrder =
+      mocks.consumeState.mock.invocationCallOrder[0] ?? Number.NaN
+    const exchangeOrder =
+      mocks.exchangeCode.mock.invocationCallOrder[0] ?? Number.NaN
+    expect(consumeOrder).toBeLessThan(exchangeOrder)
   })
 })
