@@ -31,6 +31,10 @@ const envSchema = z.object({
   BILLING_DATABASE_URL: optionalString(),
   BILLING_DIRECT_DATABASE_URL: optionalString(),
   BILLING_LEGACY_DATABASE_URL: optionalString(),
+  // Express owns the writer lease (the FastAPI cutover is complete), so the
+  // default is `express`. `none` stays available as a deliberate freeze switch
+  // but is no longer the default: an unset variable used to leave every new
+  // dev environment, CI job, and sibling app silently unable to write.
   BILLING_WRITER: z
     .enum(['legacy', 'fastapi', 'express', 'none'])
     .optional()
@@ -45,6 +49,13 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: optionalString('http://localhost:3004'),
   SENTRY_DSN: optionalString(),
   IDENTITY_API_TIMEOUT_SECONDS: optionalNumber(5),
+  // Efesto is the platform operator workspace. Core customer.ensure events do
+  // not carry a tenant id, so an omitted or accidentally blank environment
+  // variable must still resolve to the canonical operator tenant rather than
+  // failing every customer-sync event at runtime.
+  // Payment-credential sealing. WorkOS Vault in deployed environments; a local
+  // AES-256-GCM key for development and tests. Neither configured means the
+  // provider raises on seal rather than storing a credential in plaintext.
   WORKOS_API_KEY: optionalString(),
   WORKOS_VAULT_ENABLED: booleanish(),
   WORKOS_VAULT_KEY_CONTEXT: optionalString('876-billing'),

@@ -28,7 +28,7 @@ export const roleUpdateParamsSchema = z.strictObject({
 })
 export type RoleUpdateParams = z.input<typeof roleUpdateParamsSchema>
 
-/** Parameters for listing roles. */
+/** Parameters for listing roles. Legacy v1 wire params stay snake_case. */
 export const roleListParamsSchema = z.strictObject({
   limit: z.number().int().optional(),
   starting_after: z.string().optional(),
@@ -58,21 +58,21 @@ export type DeletedRole = z.infer<typeof deletedRoleSchema>
 
 /**
  * Roles that can be assigned via the MC UI.
- * 'user' is the sentinel for no MC access (revokes by deleting the member row).
+ * `user` is the sentinel for no MC access (revokes by deleting the member row).
  */
 export const ASSIGNABLE_ROLES = [
   'user',
   'staff',
   'admin',
   'owner',
-  'super_admin',
+  'super-admin',
 ] as const
 export const assignableRoleSchema = z.enum([
   'user',
   'staff',
   'admin',
   'owner',
-  'super_admin',
+  'super-admin',
 ])
 export type AssignableRole = z.infer<typeof assignableRoleSchema>
 

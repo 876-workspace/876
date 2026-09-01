@@ -16,6 +16,7 @@ import {
 } from './features.repository'
 
 const log = getLogger('seeds:features')
+const FEATURE_SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 export type FeatureSeed = {
   slug: string
@@ -24,32 +25,36 @@ export type FeatureSeed = {
   parentSlug?: string
   defaultEnabled?: boolean
   tags?: string[]
+  /** Explicit historical aliases. Never derive these with `_` -> `-`. */
   legacySlugs?: string[]
+  /** Canonical feature slug whose enabled/grant state initializes a new flag. */
   copyStateFromSlug?: string
 }
 
 export const PLATFORM_FEATURE_SEEDS: readonly FeatureSeed[] = [
   {
-    slug: 'platform_widgets',
+    slug: 'platform-widgets',
     name: 'Shared widgets',
     description: 'Global master switch for widgets shared across 876 apps.',
     tags: ['widget'],
+    legacySlugs: ['platform_widgets'],
   },
   {
-    slug: 'platform_widgets_notepad',
+    slug: 'platform-widgets-notepad',
     name: 'Shared Notepad widget',
     description: 'Global switch for the account-owned Notepad widget.',
-    parentSlug: 'platform_widgets',
+    parentSlug: 'platform-widgets',
     tags: ['widget'],
-    legacySlugs: ['platform_widgets_notes'],
+    legacySlugs: ['platform_widgets_notepad', 'platform_widgets_notes'],
   },
   {
-    slug: 'platform_widgets_chat',
+    slug: 'platform-widgets-chat',
     name: '876 Chat widget',
     description: 'Global switch for the shared 876 Chat rail widget.',
-    parentSlug: 'platform_widgets',
+    parentSlug: 'platform-widgets',
     defaultEnabled: true,
     tags: ['widget'],
+    legacySlugs: ['platform_widgets_chat'],
   },
 ] as const
 
@@ -58,318 +63,368 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
 > = {
   console: [
     {
-      slug: 'console_widgets',
+      slug: 'console-widgets',
       name: 'Widgets',
       description: 'Master switch for the Console widget rail.',
       tags: ['widget'],
+      legacySlugs: ['console_widgets'],
     },
     {
-      slug: 'console_widgets_notepad',
+      slug: 'console-widgets-notepad',
       name: 'Notepad widget',
       description: 'Controls access to the Console Notepad widget.',
-      parentSlug: 'console_widgets',
+      parentSlug: 'console-widgets',
       tags: ['widget'],
-      legacySlugs: ['console_widgets_notes'],
+      legacySlugs: ['console_widgets_notepad', 'console_widgets_notes'],
     },
     {
-      slug: 'console_widgets_live_logs',
+      slug: 'console-widgets-live-logs',
       name: 'Live logs widget',
       description: 'Controls access to the Console Live logs widget.',
-      parentSlug: 'console_widgets',
+      parentSlug: 'console-widgets',
       tags: ['widget'],
+      legacySlugs: ['console_widgets_live_logs'],
     },
     {
-      slug: 'console_widgets_chat',
-      name: '876 Chat widget',
-      description: 'Controls access to the 876 Chat widget in Console.',
-      parentSlug: 'console_widgets',
-      defaultEnabled: true,
-      tags: ['widget'],
-      copyStateFromSlug: 'console_chat',
-    },
-    {
-      slug: 'console_notifications',
-      name: 'Notifications',
-      description: 'Master switch for Console notification channels.',
-    },
-    {
-      slug: 'console_notifications_email_alerts',
-      name: 'Email alerts',
-      description: 'Controls access to Console email notification channels.',
-      parentSlug: 'console_notifications',
-    },
-    {
-      slug: 'console_notifications_slack',
-      name: 'Slack notifications',
-      description: 'Controls access to Console Slack notification channels.',
-      parentSlug: 'console_notifications',
-    },
-    {
-      slug: 'console_notifications_webhooks',
-      name: 'Webhook notifications',
-      description: 'Controls access to Console webhook notification channels.',
-      parentSlug: 'console_notifications',
-    },
-    {
-      slug: 'console_theme_switcher',
-      name: 'Theme switcher',
-      description: 'Controls access to the Console theme switcher.',
-    },
-    {
-      slug: 'console_global_add',
-      name: 'Global add',
-      description: 'Controls access to the Console global add menu.',
-    },
-    {
-      slug: 'console_app_switcher',
-      name: 'App switcher',
-      description: 'Controls access to the Console app switcher.',
-    },
-    {
-      slug: 'console_search_bar',
-      name: 'Search bar',
-      description: 'Controls access to the Console search bar.',
-    },
-    {
-      slug: 'console_chat',
+      slug: 'console-chat',
       name: '876 Chat',
       description: 'Master switch for the 876 Chat rail in Console.',
       defaultEnabled: true,
+      legacySlugs: ['console_chat'],
+    },
+    {
+      slug: 'console-widgets-chat',
+      name: '876 Chat widget',
+      description: 'Controls access to the 876 Chat widget in Console.',
+      parentSlug: 'console-widgets',
+      defaultEnabled: true,
+      tags: ['widget'],
+      legacySlugs: ['console_widgets_chat'],
+      copyStateFromSlug: 'console-chat',
+    },
+    {
+      slug: 'console-notifications',
+      name: 'Notifications',
+      description: 'Master switch for Console notification channels.',
+      legacySlugs: ['console_notifications'],
+    },
+    {
+      slug: 'console-notifications-email-alerts',
+      name: 'Email alerts',
+      description: 'Controls access to Console email notification channels.',
+      parentSlug: 'console-notifications',
+      legacySlugs: ['console_notifications_email_alerts'],
+    },
+    {
+      slug: 'console-notifications-slack',
+      name: 'Slack notifications',
+      description: 'Controls access to Console Slack notification channels.',
+      parentSlug: 'console-notifications',
+      legacySlugs: ['console_notifications_slack'],
+    },
+    {
+      slug: 'console-notifications-webhooks',
+      name: 'Webhook notifications',
+      description: 'Controls access to Console webhook notification channels.',
+      parentSlug: 'console-notifications',
+      legacySlugs: ['console_notifications_webhooks'],
+    },
+    {
+      slug: 'console-theme-switcher',
+      name: 'Theme switcher',
+      description: 'Controls access to the Console theme switcher.',
+      legacySlugs: ['console_theme_switcher'],
+    },
+    {
+      slug: 'console-global-add',
+      name: 'Global add',
+      description: 'Controls access to the Console global add menu.',
+      legacySlugs: ['console_global_add'],
+    },
+    {
+      slug: 'console-app-switcher',
+      name: 'App switcher',
+      description: 'Controls access to the Console app switcher.',
+      legacySlugs: ['console_app_switcher'],
+    },
+    {
+      slug: 'console-search-bar',
+      name: 'Search bar',
+      description: 'Controls access to the Console search bar.',
+      legacySlugs: ['console_search_bar'],
     },
   ],
   '876-couriers': [
     {
-      slug: 'couriers_widgets',
+      slug: 'couriers-widgets',
       name: 'Widgets',
       description: 'Master switch for the Couriers widget rail.',
       tags: ['widget'],
+      legacySlugs: ['couriers_widgets'],
     },
     {
-      slug: 'couriers_widgets_notepad',
+      slug: 'couriers-widgets-notepad',
       name: 'Notepad widget',
       description: 'Controls access to the shared Notepad widget in Couriers.',
-      parentSlug: 'couriers_widgets',
+      parentSlug: 'couriers-widgets',
       tags: ['widget'],
+      legacySlugs: ['couriers_widgets_notepad'],
     },
     {
-      slug: 'couriers_widgets_chat',
-      name: '876 Chat widget',
-      description: 'Controls access to the 876 Chat widget in Couriers.',
-      parentSlug: 'couriers_widgets',
-      defaultEnabled: true,
-      tags: ['widget'],
-      copyStateFromSlug: 'couriers_chat',
-    },
-    {
-      slug: 'couriers_chat',
+      slug: 'couriers-chat',
       name: '876 Chat',
       description: 'Master switch for the 876 Chat rail in Couriers.',
       defaultEnabled: true,
+      legacySlugs: ['couriers_chat'],
     },
     {
-      slug: 'couriers_theme_switcher',
+      slug: 'couriers-widgets-chat',
+      name: '876 Chat widget',
+      description: 'Controls access to the 876 Chat widget in Couriers.',
+      parentSlug: 'couriers-widgets',
+      defaultEnabled: true,
+      tags: ['widget'],
+      legacySlugs: ['couriers_widgets_chat'],
+      copyStateFromSlug: 'couriers-chat',
+    },
+    {
+      slug: 'couriers-theme-switcher',
       name: 'Theme switcher',
       description: 'Light/dark appearance toggle in the account menu.',
+      legacySlugs: ['couriers_theme_switcher'],
     },
     {
-      slug: 'couriers_global_add',
+      slug: 'couriers-global-add',
       name: 'Global add',
       description: 'Universal create button in the top nav.',
+      legacySlugs: ['couriers_global_add'],
     },
     {
-      slug: 'couriers_app_switcher',
+      slug: 'couriers-app-switcher',
       name: 'App switcher',
       description: '876 app launcher in the top nav.',
+      legacySlugs: ['couriers_app_switcher'],
     },
     {
-      slug: 'couriers_search_bar',
+      slug: 'couriers-search-bar',
       name: 'Search bar',
       description: 'Global search bar in the Couriers top nav.',
+      legacySlugs: ['couriers_search_bar'],
     },
     {
-      slug: 'couriers_org_switcher',
+      slug: 'couriers-org-switcher',
       name: 'Org switcher',
       description: 'Organization switcher in the top nav.',
+      legacySlugs: ['couriers_org_switcher'],
     },
     {
-      slug: 'couriers_storage_org_logo_upload',
+      slug: 'couriers-storage-org-logo-upload',
       name: 'Organization logo upload',
       description:
         'Allows organization owners and admins to upload organization logos.',
+      legacySlugs: ['couriers_storage_org_logo_upload'],
     },
     {
-      slug: 'couriers_operations',
+      slug: 'couriers-operations',
       name: 'Operations',
       description: 'Master switch for Couriers operations areas.',
+      legacySlugs: ['couriers_operations'],
     },
     {
-      slug: 'couriers_operations_packages',
+      slug: 'couriers-operations-packages',
       name: 'Packages',
       description: 'Controls access to Couriers packages.',
-      parentSlug: 'couriers_operations',
+      parentSlug: 'couriers-operations',
+      legacySlugs: ['couriers_operations_packages'],
     },
     {
-      slug: 'couriers_operations_customers',
+      slug: 'couriers-operations-customers',
       name: 'Customers',
       description: 'Controls access to Couriers customers.',
-      parentSlug: 'couriers_operations',
+      parentSlug: 'couriers-operations',
+      legacySlugs: ['couriers_operations_customers'],
     },
     {
-      slug: 'couriers_operations_items',
+      slug: 'couriers-operations-items',
       name: 'Items',
       description: 'Controls access to Couriers items.',
-      parentSlug: 'couriers_operations',
+      parentSlug: 'couriers-operations',
+      legacySlugs: ['couriers_operations_items'],
     },
   ],
   '876-crm': [
     {
-      slug: 'crm_theme_switcher',
+      slug: 'crm-theme-switcher',
       name: 'Theme switcher',
       description: 'Light/dark appearance toggle in the account menu.',
+      legacySlugs: ['crm_theme_switcher'],
     },
     {
-      slug: 'crm_global_add',
+      slug: 'crm-global-add',
       name: 'Global add',
       description: 'Universal create button in the top nav.',
+      legacySlugs: ['crm_global_add'],
     },
     {
-      slug: 'crm_app_switcher',
+      slug: 'crm-app-switcher',
       name: 'App switcher',
       description: '876 app launcher in the top nav.',
+      legacySlugs: ['crm_app_switcher'],
     },
     {
-      slug: 'crm_search_bar',
+      slug: 'crm-search-bar',
       name: 'Search bar',
       description: 'Global search bar in the CRM top nav.',
+      legacySlugs: ['crm_search_bar'],
     },
     {
-      slug: 'crm_org_switcher',
+      slug: 'crm-org-switcher',
       name: 'Org switcher',
       description: 'Organization switcher in the top nav.',
+      legacySlugs: ['crm_org_switcher'],
     },
   ],
   '876-billing': [
     {
-      slug: 'billing_widgets',
+      slug: 'billing-widgets',
       name: 'Widgets',
       description: 'Master switch for the Billing widget rail.',
       tags: ['widget'],
+      legacySlugs: ['billing_widgets'],
     },
     {
-      slug: 'billing_widgets_notepad',
+      slug: 'billing-widgets-notepad',
       name: 'Notepad widget',
       description: 'Controls access to the shared Notepad widget in Billing.',
-      parentSlug: 'billing_widgets',
+      parentSlug: 'billing-widgets',
       tags: ['widget'],
-      legacySlugs: ['billing_widgets_notes'],
+      legacySlugs: ['billing_widgets_notepad', 'billing_widgets_notes'],
     },
     {
-      slug: 'billing_widgets_chat',
-      name: '876 Chat widget',
-      description: 'Controls access to the 876 Chat widget in Billing.',
-      parentSlug: 'billing_widgets',
-      defaultEnabled: true,
-      tags: ['widget'],
-      copyStateFromSlug: 'billing_chat',
-    },
-    {
-      slug: 'billing_chat',
+      slug: 'billing-chat',
       name: '876 Chat',
       description: 'Master switch for the 876 Chat rail in Billing.',
       defaultEnabled: true,
+      legacySlugs: ['billing_chat'],
     },
     {
-      slug: 'billing_sales',
+      slug: 'billing-widgets-chat',
+      name: '876 Chat widget',
+      description: 'Controls access to the 876 Chat widget in Billing.',
+      parentSlug: 'billing-widgets',
+      defaultEnabled: true,
+      tags: ['widget'],
+      legacySlugs: ['billing_widgets_chat'],
+      copyStateFromSlug: 'billing-chat',
+    },
+    {
+      slug: 'billing-sales',
       name: 'Sales',
       description: 'Master switch for Billing sales documents.',
+      legacySlugs: ['billing_sales'],
     },
     {
-      slug: 'billing_sales_quotes',
+      slug: 'billing-sales-quotes',
       name: 'Quotes',
       description: 'Controls access to Billing quotes.',
-      parentSlug: 'billing_sales',
+      parentSlug: 'billing-sales',
+      legacySlugs: ['billing_sales_quotes'],
     },
     {
-      slug: 'billing_sales_estimates',
+      slug: 'billing-sales-estimates',
       name: 'Estimates',
       description: 'Controls access to Billing estimates.',
-      parentSlug: 'billing_sales',
+      parentSlug: 'billing-sales',
       defaultEnabled: false,
+      legacySlugs: ['billing_sales_estimates'],
     },
     {
-      slug: 'billing_sales_invoices',
+      slug: 'billing-sales-invoices',
       name: 'Invoices',
       description: 'Controls access to Billing invoices.',
-      parentSlug: 'billing_sales',
+      parentSlug: 'billing-sales',
+      legacySlugs: ['billing_sales_invoices'],
     },
     {
-      slug: 'billing_subscriptions',
+      slug: 'billing-subscriptions',
       name: 'Subscriptions',
       description: 'Controls access to Billing subscription management.',
+      legacySlugs: ['billing_subscriptions'],
     },
     {
-      slug: 'billing_purchases',
+      slug: 'billing-purchases',
       name: 'Purchases',
       description: 'Master switch for Billing purchase management.',
       defaultEnabled: false,
+      legacySlugs: ['billing_purchases'],
     },
     {
-      slug: 'billing_purchases_vendors',
+      slug: 'billing-purchases-vendors',
       name: 'Vendors',
       description: 'Controls access to Billing vendors.',
-      parentSlug: 'billing_purchases',
+      parentSlug: 'billing-purchases',
       defaultEnabled: false,
+      legacySlugs: ['billing_purchases_vendors'],
     },
     {
-      slug: 'billing_purchases_expenses',
+      slug: 'billing-purchases-expenses',
       name: 'Expenses',
       description: 'Controls access to Billing expenses.',
-      parentSlug: 'billing_purchases',
+      parentSlug: 'billing-purchases',
       defaultEnabled: false,
+      legacySlugs: ['billing_purchases_expenses'],
     },
     {
-      slug: 'billing_banking',
+      slug: 'billing-banking',
       name: 'Banking',
       description: 'Controls access to Billing banking.',
       defaultEnabled: false,
+      legacySlugs: ['billing_banking'],
     },
     {
-      slug: 'billing_documents',
+      slug: 'billing-documents',
       name: 'Documents',
       description: 'Controls access to Billing documents.',
       defaultEnabled: false,
+      legacySlugs: ['billing_documents'],
     },
     {
-      slug: 'billing_payroll',
+      slug: 'billing-payroll',
       name: 'Payroll',
       description: 'Controls access to Billing payroll.',
       defaultEnabled: false,
+      legacySlugs: ['billing_payroll'],
     },
     {
-      slug: 'billing_theme_switcher',
+      slug: 'billing-theme-switcher',
       name: 'Theme switcher',
       description: 'Controls access to the Billing theme switcher.',
       defaultEnabled: false,
+      legacySlugs: ['billing_theme_switcher'],
     },
     {
-      slug: 'billing_global_add',
+      slug: 'billing-global-add',
       name: 'Global add',
       description: 'Controls access to the Billing global add menu.',
+      legacySlugs: ['billing_global_add'],
     },
     {
-      slug: 'billing_app_switcher',
+      slug: 'billing-app-switcher',
       name: 'App switcher',
       description: 'Controls access to the Billing app switcher.',
+      legacySlugs: ['billing_app_switcher'],
     },
     {
-      slug: 'billing_search_bar',
+      slug: 'billing-search-bar',
       name: 'Search bar',
       description: 'Controls access to the Billing search bar.',
+      legacySlugs: ['billing_search_bar'],
     },
     {
-      slug: 'billing_org_switcher',
+      slug: 'billing-org-switcher',
       name: 'Org switcher',
       description: 'Organization switcher in the top nav.',
+      legacySlugs: ['billing_org_switcher'],
     },
   ],
 }
@@ -392,13 +447,12 @@ function featurePrefixForAppSlug(appSlug: string): string {
     '876-billing': 'billing',
     '876-crm': 'crm',
   }
-  if (map[appSlug]) return map[appSlug]!
-  return normalizeSlug(appSlug.replace(/^876-/, '')).replace(/-/g, '_')
+  return map[appSlug] ?? normalizeSlug(appSlug.replace(/^876-/, ''))
 }
 
 function featureSlugMatchesApp(featureSlug: string, appSlug: string): boolean {
   const prefix = featurePrefixForAppSlug(appSlug)
-  return Boolean(prefix) && featureSlug.startsWith(`${prefix}_`)
+  return Boolean(prefix) && featureSlug.startsWith(`${prefix}-`)
 }
 
 export function validateFeatureSeeds(
@@ -406,18 +460,25 @@ export function validateFeatureSeeds(
   featureSeeds: readonly FeatureSeed[]
 ): void {
   const seen = new Set<string>()
+  const legacySeen = new Set<string>()
+
   for (const seed of featureSeeds) {
     const slug = seed.slug
+    if (!FEATURE_SLUG.test(slug))
+      throw new Error(`Feature slug ${JSON.stringify(slug)} must be kebab-case.`)
+    if (seen.has(slug))
+      throw new Error(`Duplicate feature slug ${JSON.stringify(slug)}.`)
     if (appSlug && !featureSlugMatchesApp(slug, appSlug)) {
       throw new Error(
         `Feature slug ${JSON.stringify(slug)} is not scoped to app ${JSON.stringify(appSlug)}.`
       )
     }
-    if (appSlug === null && !slug.startsWith('platform_')) {
+    if (appSlug === null && !slug.startsWith('platform-')) {
       throw new Error(
-        `Platform feature slug ${JSON.stringify(slug)} must start with 'platform_'.`
+        `Platform feature slug ${JSON.stringify(slug)} must start with 'platform-'.`
       )
     }
+
     const parentSlug = seed.parentSlug
     if (parentSlug !== undefined) {
       if (!seen.has(parentSlug)) {
@@ -425,12 +486,27 @@ export function validateFeatureSeeds(
           `Feature parent ${JSON.stringify(parentSlug)} must be seeded before ${JSON.stringify(slug)}.`
         )
       }
-      if (!slug.startsWith(`${parentSlug}_`)) {
+      if (!slug.startsWith(`${parentSlug}-`)) {
         throw new Error(
           `Feature child ${JSON.stringify(slug)} must extend parent key ${JSON.stringify(parentSlug)}.`
         )
       }
     }
+
+    if (seed.copyStateFromSlug && !seen.has(seed.copyStateFromSlug)) {
+      throw new Error(
+        `Feature state source ${JSON.stringify(seed.copyStateFromSlug)} must be seeded before ${JSON.stringify(slug)}.`
+      )
+    }
+
+    for (const legacySlug of seed.legacySlugs ?? []) {
+      if (legacySlug === slug)
+        throw new Error(`Feature ${JSON.stringify(slug)} repeats itself as a legacy slug.`)
+      if (legacySeen.has(legacySlug))
+        throw new Error(`Duplicate legacy feature slug ${JSON.stringify(legacySlug)}.`)
+      legacySeen.add(legacySlug)
+    }
+
     seen.add(slug)
   }
 }
@@ -441,6 +517,50 @@ export type FeatureSeedSummary = {
   updated: number
   skipped: boolean
   reason?: string
+}
+
+function providerCandidate(
+  providerFeatures: Record<string, Record<string, unknown>>,
+  seed: FeatureSeed
+): { slug: string; feature: Record<string, unknown> } | null {
+  const matches = [seed.slug, ...(seed.legacySlugs ?? [])]
+    .map((slug) => ({ slug, feature: providerFeatures[slug] }))
+    .filter(
+      (entry): entry is { slug: string; feature: Record<string, unknown> } =>
+        entry.feature !== undefined
+    )
+
+  if (matches.length > 1) {
+    throw new Error(
+      `Feature migration collision for ${JSON.stringify(seed.slug)} in PostHog: ${matches
+        .map((entry) => JSON.stringify(entry.slug))
+        .join(', ')}.`
+    )
+  }
+  return matches[0] ?? null
+}
+
+async function localCandidate(
+  seed: FeatureSeed
+): Promise<{ slug: string; feature: Awaited<ReturnType<typeof findFeatureBySlug>> } | null> {
+  const matches: Array<{
+    slug: string
+    feature: NonNullable<Awaited<ReturnType<typeof findFeatureBySlug>>>
+  }> = []
+
+  for (const slug of [seed.slug, ...(seed.legacySlugs ?? [])]) {
+    const feature = await findFeatureBySlug(slug)
+    if (feature) matches.push({ slug, feature })
+  }
+
+  if (matches.length > 1) {
+    throw new Error(
+      `Feature migration collision for ${JSON.stringify(seed.slug)} in the local catalog: ${matches
+        .map((entry) => JSON.stringify(entry.slug))
+        .join(', ')}.`
+    )
+  }
+  return matches[0] ?? null
 }
 
 async function seedPosthogFeatures(params: {
@@ -514,32 +634,30 @@ async function seedPosthogFeatures(params: {
   let updated = 0
 
   for (const seed of params.featureSeeds) {
-    let providerFeature = providerFeatures[seed.slug] ?? null
-    if (!providerFeature) {
-      for (const legacySlug of seed.legacySlugs ?? []) {
-        const legacyProviderFeature = providerFeatures[legacySlug]
-        if (!legacyProviderFeature) continue
-        providerFeature = await activePosthog.updateFeature(
-          String(legacyProviderFeature['id']),
-          {
-            key: seed.slug,
-            description: seed.description,
-          }
-        )
-        delete providerFeatures[legacySlug]
-        providerFeatures[seed.slug] = providerFeature
-        log.info(
-          {
-            app_slug: scopeLabel,
-            legacy_slug: legacySlug,
-            slug: seed.slug,
-            provider_feature_id: String(providerFeature['id']),
-          },
-          'features.seed.provider_key_migrated'
-        )
-        break
-      }
+    const providerMatch = providerCandidate(providerFeatures, seed)
+    let providerFeature = providerMatch?.feature ?? null
+
+    if (providerMatch && providerMatch.slug !== seed.slug) {
+      providerFeature = await activePosthog.updateFeature(
+        String(providerMatch.feature['id']),
+        {
+          key: seed.slug,
+          description: seed.description,
+        }
+      )
+      delete providerFeatures[providerMatch.slug]
+      providerFeatures[seed.slug] = providerFeature
+      log.info(
+        {
+          app_slug: scopeLabel,
+          legacy_slug: providerMatch.slug,
+          slug: seed.slug,
+          provider_feature_id: String(providerFeature['id']),
+        },
+        'features.seed.provider_key_migrated'
+      )
     }
+
     if (!providerFeature) {
       const copiedProviderFeature = seed.copyStateFromSlug
         ? (providerFeatures[seed.copyStateFromSlug] ?? null)
@@ -560,25 +678,21 @@ async function seedPosthogFeatures(params: {
       ? (featureIdsBySlug.get(parentSlug) ?? null)
       : null
     const providerFeatureId = String(providerFeature['id'])
-    let existing = await findFeatureBySlug(seed.slug)
-    if (!existing) {
-      for (const legacySlug of seed.legacySlugs ?? []) {
-        const legacyLocal = await findFeatureBySlug(legacySlug)
-        if (!legacyLocal) continue
-        // Migrate slug in local catalog
-        await updateFeature(legacyLocal.id, { slug: seed.slug })
-        existing = await findFeatureById(legacyLocal.id)
-        log.info(
-          {
-            app_slug: scopeLabel,
-            feature_id: legacyLocal.id,
-            legacy_slug: legacySlug,
-            slug: seed.slug,
-          },
-          'features.seed.local_key_migrated'
-        )
-        break
-      }
+    const localMatch = await localCandidate(seed)
+    let existing = localMatch?.feature ?? null
+
+    if (localMatch && localMatch.slug !== seed.slug) {
+      await updateFeature(localMatch.feature.id, { slug: seed.slug })
+      existing = await findFeatureById(localMatch.feature.id)
+      log.info(
+        {
+          app_slug: scopeLabel,
+          feature_id: localMatch.feature.id,
+          legacy_slug: localMatch.slug,
+          slug: seed.slug,
+        },
+        'features.seed.local_key_migrated'
+      )
     }
 
     const now = BigInt(nowUnixSeconds())

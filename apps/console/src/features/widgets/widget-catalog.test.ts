@@ -9,18 +9,18 @@ import {
 
 describe('Console widget feature controls', () => {
   it('uses the Console parent as the global widget switch', () => {
-    expect(CONSOLE_WIDGETS_FEATURE_SLUG).toBe('console_widgets')
+    expect(CONSOLE_WIDGETS_FEATURE_SLUG).toBe('console-widgets')
   })
 
   it('resolves the canonical status switch for shared and app-only widgets', () => {
     expect(getConsoleWidgetStatusFeatureSlug(notepadWidgetMetadata)).toBe(
-      'platform_widgets_notepad'
+      'platform-widgets-notepad'
     )
     expect(getConsoleWidgetStatusFeatureSlug(chatWidgetMetadata)).toBe(
-      'platform_widgets_chat'
+      'platform-widgets-chat'
     )
     expect(getConsoleWidgetStatusFeatureSlug(liveLogsWidgetMetadata)).toBe(
-      'console_widgets_live_logs'
+      'console-widgets-live-logs'
     )
   })
 })

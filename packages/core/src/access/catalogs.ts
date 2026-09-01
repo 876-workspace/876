@@ -33,7 +33,7 @@ function modules(drafts: readonly ModuleDraft[]) {
     permissions: draft.actions.map((action, actionIndex) => ({
       action,
       label: `${titleCase(action)} ${draft.label}`,
-      isDangerous: action === 'delete' || action === 'danger_zone',
+      isDangerous: action === 'delete' || action === 'danger-zone',
       position: actionIndex,
     })),
   }))
@@ -66,10 +66,10 @@ function withConsoleKey(permission: AppPermission): AppPermission {
 /**
  * Narrows persisted Console role permissions to usable string keys.
  *
- * Stored role rows are JSON, so a malformed or partially-written value can
- * reach this path at runtime even though the type says `string[]`. Filtering
- * here keeps a bad row from throwing during authorization; the catalog
- * intersection downstream still decides what the keys actually grant.
+ * Stored role rows can contain malformed or partially-written values at
+ * runtime even though the type says `string[]`. Filtering here keeps a bad row
+ * from throwing during authorization; the catalog intersection downstream still
+ * decides what the keys actually grant.
  */
 export function toStoredPermissionKeys(permissions: unknown): string[] {
   if (!Array.isArray(permissions)) return []
@@ -80,15 +80,15 @@ export function toStoredPermissionKeys(permissions: unknown): string[] {
 }
 
 /**
- * Console predates product-app catalogs and already persists colon-delimited
- * permission identifiers (`users:read`, `console:access`). The generic catalog
- * builder deliberately remains dot-delimited for product apps, so Console is
- * adapted after validation instead of changing either persisted vocabulary.
+ * Console predates product-app catalogs and persists colon-delimited permission
+ * identifiers (`users:read`, `console:access`). The generic catalog builder
+ * remains dot-delimited for product apps, so Console is adapted after
+ * validation instead of changing the established delimiter.
  *
  * Console's real app slug is also `console`, while the generic builder validates
- * product slugs as `876-*`. The compatibility adapter keeps that exception here,
- * next to the only catalog that needs it. Its remaining `danger_zone` action is
- * tracked as a legacy operator-plane exception by the naming-contract migration.
+ * product slugs as `876-*`; the adapter keeps that exception beside the only
+ * catalog that needs it. The action segments themselves follow the platform
+ * naming contract, including `danger-zone`.
  */
 function defineConsolePermissionCatalog(): AppPermissionCatalog {
   const catalog = defineAppPermissionCatalog({
@@ -110,7 +110,7 @@ function defineConsolePermissionCatalog(): AppPermissionCatalog {
           'storage',
           'security',
           'reports',
-          'danger_zone',
+          'danger-zone',
         ],
       },
       {

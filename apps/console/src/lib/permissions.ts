@@ -62,12 +62,25 @@ const TEAM_MANAGE = [
 export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 
 /** Permission that gates destructive (danger-zone) operations. */
-export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
+export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger-zone'
+
+/** Exact persisted alias accepted only during the naming migration. */
+const LEGACY_CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
+
+function canonicalPermission(permission: string): string {
+  return permission === LEGACY_CONSOLE_DANGER_ZONE_PERMISSION
+    ? CONSOLE_DANGER_ZONE_PERMISSION
+    : permission
+}
+
+function canonicalPermissions(permissions: readonly string[]): string[] {
+  return [...new Set(permissions.map(canonicalPermission))]
+}
 
 function accessContext(access: Pick<Access, 'permissions'>): AccessContext {
   return {
     subject: { userId: '' },
-    permissions: access.permissions,
+    permissions: canonicalPermissions(access.permissions),
     features: [],
     experiments: {},
   }
@@ -77,7 +90,7 @@ export function hasPermission(
   access: Pick<Access, 'permissions'>,
   permission: string
 ): boolean {
-  return can(accessContext(access), permission)
+  return can(accessContext(access), canonicalPermission(permission))
 }
 
 /**
@@ -136,7 +149,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:storage',
       'console:reports',
       'console:security',
-      'console:danger_zone',
+      'console:danger-zone',
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
@@ -164,7 +177,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:storage',
       'console:reports',
       'console:security',
-      'console:danger_zone',
+      'console:danger-zone',
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
@@ -203,19 +216,20 @@ const FALLBACK: Record<string, string[]> = Object.fromEntries(
 
 /**
  * Permissions for a role name from a supplied catalog (defaults to the system
- * fallback). The live catalog comes from the `roles` table at runtime.
+ * fallback). During the naming cutover an old database row may still contain
+ * `console:danger_zone`; callers always receive the canonical equivalent.
  */
 export function permissionsForRole(
   role: string | null | undefined,
   catalog: Record<string, string[]> = FALLBACK
 ): string[] {
   if (!role) return []
-  return [...(catalog[role] ?? [])]
+  return canonicalPermissions(catalog[role] ?? [])
 }
 
 function actionLabel(action: string): string {
   return action
-    .split('_')
+    .split(/[-_]/)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }

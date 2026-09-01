@@ -10,10 +10,11 @@ import { z } from 'zod'
 export const MODULE_STATUSES = ['active', 'archived'] as const
 
 /**
- * Keys are permanent identifiers — renaming one orphans every plan row and every
- * stored preference that points at it.
+ * Keys are permanent identifiers. New keys use the platform's canonical
+ * kebab-case contract; an existing key is renamed only through a coordinated
+ * data migration so plan rows and stored references move with it.
  */
-const MODULE_KEY = /^[a-z][a-z0-9_]*$/
+const MODULE_KEY = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 export const moduleSchema = z
   .object({
@@ -52,10 +53,7 @@ export const createModuleBodySchema = z.object({
         .string()
         .min(1)
         .max(80)
-        .regex(
-          MODULE_KEY,
-          'Module keys must be lowercase snake_case identifiers.'
-        )
+        .regex(MODULE_KEY, 'Module keys must be lowercase kebab-case identifiers.')
     ),
   name: z.string().min(1).max(120),
   description: z.string().max(1000).nullish(),
