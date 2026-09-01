@@ -1,15 +1,10 @@
+import { requestStatusSchema } from '@876/crm'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 import type { CrmRequestStatus } from '@/types/crm'
 
-const REQUEST_STATUSES = [
-  'OPEN',
-  'IN_PROGRESS',
-  'WAITING',
-  'RESOLVED',
-  'CLOSED',
-  'CANCELLED',
-] as const satisfies readonly CrmRequestStatus[]
+const REQUEST_STATUSES: readonly CrmRequestStatus[] =
+  requestStatusSchema.options
 
 export const REQUEST_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Requests' },
