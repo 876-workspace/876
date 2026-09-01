@@ -34,11 +34,11 @@ describe('getFeatures', () => {
     mocks.evaluate.mockResolvedValue({
       data: {
         data: [
-          { slug: 'crm_search_bar' },
-          { slug: 'crm_theme_switcher' },
-          { slug: 'crm_global_add' },
-          { slug: 'crm_app_switcher' },
-          { slug: 'crm_org_switcher' },
+          { slug: 'crm-search-bar' },
+          { slug: 'crm-theme-switcher' },
+          { slug: 'crm-global-add' },
+          { slug: 'crm-app-switcher' },
+          { slug: 'crm-org-switcher' },
         ],
       },
       error: null,
@@ -83,9 +83,9 @@ describe('getFeatures', () => {
     mocks.evaluate.mockResolvedValue({
       data: {
         data: [
-          { slug: 'billing_search_bar' },
-          { slug: 'couriers_global_add' },
-          { slug: 'crm_org_switcher' },
+          { slug: 'billing-search-bar' },
+          { slug: 'couriers-global-add' },
+          { slug: 'crm-org-switcher' },
         ],
       },
       error: null,
