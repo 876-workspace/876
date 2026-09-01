@@ -30,7 +30,7 @@
  * ## Array order is a stored contract
  *
  * These permission arrays are seeded into `organization_roles.permissions`.
- * Every organization receives the same three system roles: `super_admin`,
+ * Every organization receives the same three system roles: `super-admin`,
  * `admin`, and `staff`.
  */
 
@@ -82,9 +82,34 @@ export interface OrgRoleDefinition {
   readonly permissions: readonly string[]
 }
 
+/** Canonical 876-owned role values. */
+export const SUPER_ADMIN_ROLE_NAME = 'super-admin'
+export const DEFAULT_MEMBER_ROLE_NAME = 'staff'
+
+/**
+ * Read-only aliases kept during the role naming cutover. New writes must use the
+ * canonical values above. `owner`/`member`/`billing_manager` are the pre-three-
+ * role values; `super_admin` is the underscore spelling introduced by the
+ * three-role refactor before the platform naming contract was applied.
+ */
+const LEGACY_ORG_ROLE_ALIASES: Readonly<Record<string, string>> = {
+  owner: SUPER_ADMIN_ROLE_NAME,
+  super_admin: SUPER_ADMIN_ROLE_NAME,
+  member: DEFAULT_MEMBER_ROLE_NAME,
+  billing_manager: DEFAULT_MEMBER_ROLE_NAME,
+}
+
+export function canonicalOrgRoleName(roleName: string): string {
+  return LEGACY_ORG_ROLE_ALIASES[roleName] ?? roleName
+}
+
+export function isSuperAdminRoleName(roleName: string): boolean {
+  return canonicalOrgRoleName(roleName) === SUPER_ADMIN_ROLE_NAME
+}
+
 export const DEFAULT_ORG_ROLES: readonly OrgRoleDefinition[] = [
   {
-    name: 'super_admin',
+    name: SUPER_ADMIN_ROLE_NAME,
     displayName: 'Super Admin',
     description:
       'Full control of the organization, including billing and deletion.',
@@ -98,7 +123,7 @@ export const DEFAULT_ORG_ROLES: readonly OrgRoleDefinition[] = [
     permissions: ADMIN,
   },
   {
-    name: 'staff',
+    name: DEFAULT_MEMBER_ROLE_NAME,
     displayName: 'Staff',
     description: 'Default role. Views the organization directory.',
     permissions: READ_ONLY_STAFF,
@@ -109,26 +134,17 @@ export const DEFAULT_ORG_ROLES_BY_NAME: ReadonlyMap<string, OrgRoleDefinition> =
   new Map(DEFAULT_ORG_ROLES.map((role) => [role.name, role]))
 
 /**
- * The role auto-assigned to new memberships when none is specified
- * (WorkOS-style default membership role).
- */
-export const DEFAULT_MEMBER_ROLE_NAME = 'staff'
-
-/**
- * The role granted to the organization creator.
- */
-export const SUPER_ADMIN_ROLE_NAME = 'super_admin'
-
-/**
  * Fallback permission resolution for legacy memberships without `role_id`.
  *
  * Unknown role names resolve to the default member permissions — the least
  * privileged role in the catalog, so an unrecognised name can only ever
- * withhold access, never widen it.
+ * withhold access, never widen it. Known historical role aliases are
+ * canonicalized first so a rolling deployment does not accidentally demote an
+ * existing super admin while the data migration is still in progress.
  */
 export function defaultPermissionsForRoleName(roleName: string): string[] {
   const definition =
-    DEFAULT_ORG_ROLES_BY_NAME.get(roleName) ??
+    DEFAULT_ORG_ROLES_BY_NAME.get(canonicalOrgRoleName(roleName)) ??
     DEFAULT_ORG_ROLES_BY_NAME.get(DEFAULT_MEMBER_ROLE_NAME)
 
   // The staff role is always present, so this cannot be reached — the
