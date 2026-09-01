@@ -97,6 +97,27 @@ export async function setAccountingOauthState(params: {
   return result.count > 0
 }
 
+/** Atomically consumes one OAuth state so concurrent callback replays fail closed. */
+export async function consumeAccountingOauthState(params: {
+  id: string
+  oauthStateHash: string
+  now: number
+}) {
+  const result = await prisma.accountingProviderConnection.updateMany({
+    where: {
+      id: params.id,
+      oauthStateHash: params.oauthStateHash,
+      oauthStateExpiresAt: { gte: params.now },
+    },
+    data: {
+      oauthStateHash: null,
+      oauthStateExpiresAt: null,
+      updatedAt: params.now,
+    },
+  })
+  return result.count > 0
+}
+
 export function completeAccountingOauth(params: {
   id: string
   accountsDomain: string
