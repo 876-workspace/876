@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   validate: vi.fn(),
   reconcile: vi.fn(),
   disable: vi.fn(),
+  adopt: vi.fn(),
+  release: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/billing-context', () => ({
@@ -41,6 +43,10 @@ beforeEach(() => {
         validate: mocks.validate,
         reconcile: mocks.reconcile,
         delete: mocks.disable,
+        imports: {
+          adopt: mocks.adopt,
+          release: mocks.release,
+        },
       },
     },
   })
@@ -79,6 +85,26 @@ beforeEach(() => {
     data: {
       object: 'accounting-provider-connection',
       id: 'acpc_1',
+      deleted: true,
+    },
+    error: null,
+  })
+  mocks.adopt.mockResolvedValue({
+    data: {
+      object: 'accounting-provider-adoption',
+      connectionId: 'acpc_1',
+      resourceType: 'customer',
+      resourceId: 'cus_1',
+      externalId: 'zho_1',
+    },
+    error: null,
+  })
+  mocks.release.mockResolvedValue({
+    data: {
+      object: 'accounting-provider-adoption',
+      connectionId: 'acpc_1',
+      resourceType: 'customer',
+      resourceId: 'cus_1',
       deleted: true,
     },
     error: null,
@@ -202,6 +228,69 @@ describe('Billing accounting-provider same-origin routes', () => {
     expect(mocks.reconcile).toHaveBeenCalledWith(params)
   })
 
+  it('adopts a provider customer into the active organization only', async () => {
+    const response = await POST(
+      new Request(
+        'http://billing.test/api/accounting-providers/connections/acpc_1/imports/customer/adoptions',
+        {
+          method: 'POST',
+          body: JSON.stringify({ resourceId: 'cus_1', externalId: 'zho_1' }),
+        }
+      ),
+      route(['connections', 'acpc_1', 'imports', 'customer', 'adoptions'])
+    )
+
+    expect(response.status).toBe(201)
+    expect(mocks.adopt).toHaveBeenCalledWith({
+      organizationId: 'org_123',
+      connectionId: 'acpc_1',
+      resourceType: 'customer',
+      resourceId: 'cus_1',
+      externalId: 'zho_1',
+    })
+  })
+
+  it('releases an adoption without deleting either resource', async () => {
+    const response = await DELETE(
+      new Request(
+        'http://billing.test/api/accounting-providers/connections/acpc_1/imports/customer/adoptions/cus_1',
+        { method: 'DELETE' }
+      ),
+      route([
+        'connections',
+        'acpc_1',
+        'imports',
+        'customer',
+        'adoptions',
+        'cus_1',
+      ])
+    )
+
+    expect(response.status).toBe(200)
+    expect(mocks.release).toHaveBeenCalledWith({
+      organizationId: 'org_123',
+      connectionId: 'acpc_1',
+      resourceType: 'customer',
+      resourceId: 'cus_1',
+    })
+  })
+
+  it('rejects unsupported adoption resource types before the operator client', async () => {
+    const response = await POST(
+      new Request(
+        'http://billing.test/api/accounting-providers/connections/acpc_1/imports/invoice/adoptions',
+        {
+          method: 'POST',
+          body: JSON.stringify({ resourceId: 'inv_1', externalId: 'zho_1' }),
+        }
+      ),
+      route(['connections', 'acpc_1', 'imports', 'invoice', 'adoptions'])
+    )
+
+    expect(response.status).toBe(404)
+    expect(mocks.adopt).not.toHaveBeenCalled()
+  })
+
   it('disables through DELETE without exposing internal credentials to the browser', async () => {
     const response = await DELETE(
       new Request(
@@ -223,7 +312,7 @@ describe('Billing accounting-provider same-origin routes', () => {
       data: null,
       error: {
         code: 'billing/provider-authorization-required',
-        message: 'Zoho Books authorization must be renewed.',
+        message: 'The accounting provider authorization must be renewed.',
       },
     })
 
@@ -239,7 +328,7 @@ describe('Billing accounting-provider same-origin routes', () => {
     expect(response.status).toBe(400)
     expect(payload.error).toEqual({
       code: 'billing/provider-authorization-required',
-      message: 'Zoho Books authorization must be renewed.',
+      message: 'The accounting provider authorization must be renewed.',
     })
   })
 })

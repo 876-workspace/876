@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -90,6 +91,16 @@ export function ConnectionActions({
               <Loader2Icon className="size-4 animate-spin" />
             ) : null}
             {status === 'pending' ? 'Connect' : 'Reconnect'}
+          </Button>
+        ) : null}
+
+        {status === 'active' ? (
+          <Button asChild variant="outline" size="sm">
+            <Link
+              href={`/settings/accounting-providers/${encodeURIComponent(connectionId)}/imports`}
+            >
+              Adopt records
+            </Link>
           </Button>
         ) : null}
 

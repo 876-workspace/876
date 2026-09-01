@@ -1,7 +1,11 @@
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import type { AccountingImportResourceType } from '@876/billing/operator'
+import type {
+  AccountingImportResourceType,
+  AccountingProviderImportCandidate,
+} from '@876/billing/operator'
 import { Button } from '@876/ui/button'
 import { CircleStackIcon } from '@876/ui/icons'
 import { Page, PageBreadcrumb } from '@876/ui/page'
@@ -26,6 +30,11 @@ type LocalOption = {
   secondary: string | null
 }
 
+type CandidatePage = {
+  data: AccountingProviderImportCandidate[]
+  has_more: boolean
+}
+
 export const metadata = { title: 'Adopt Accounting Records - Settings' }
 
 export default async function AccountingProviderImportsPage({
@@ -48,9 +57,7 @@ export default async function AccountingProviderImportsPage({
     })
   const connection = connectionResult.data
 
-  let candidates: Awaited<
-    ReturnType<typeof accounting.accountingProviders.connections.imports.list>
-  >['data'] = null
+  let candidates: CandidatePage | null = null
   let candidateError: string | null = null
   let localOptions: LocalOption[] = []
   let localError: string | null = null
@@ -113,32 +120,24 @@ export default async function AccountingProviderImportsPage({
             size="sm"
             variant={resourceType === 'customer' ? 'default' : 'outline'}
           >
-            <Link href={`?type=customer&page=1`}>Customers</Link>
+            <Link href="?type=customer&page=1">Customers</Link>
           </Button>
           <Button
             asChild
             size="sm"
             variant={resourceType === 'item' ? 'default' : 'outline'}
           >
-            <Link href={`?type=item&page=1`}>Items</Link>
+            <Link href="?type=item&page=1">Items</Link>
           </Button>
         </div>
 
         <div className="876-card overflow-hidden">
           {connection?.status !== 'active' ? (
-            <div className="px-5 py-12 text-center">
-              <CircleStackIcon className="text-muted-foreground mx-auto size-6" />
-              <p className="mt-3 font-medium">Provider connection is not active</p>
-            </div>
+            <EmptyMessage title="Provider connection is not active" />
+          ) : candidateError ? (
+            <EmptyMessage title="Provider records are temporarily unavailable" />
           ) : rows.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <CircleStackIcon className="text-muted-foreground mx-auto size-6" />
-              <p className="mt-3 font-medium">No provider records on this page</p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                This is distinct from a load failure; any provider or Billing
-                load error is shown above.
-              </p>
-            </div>
+            <EmptyMessage title="No provider records on this page" />
           ) : (
             <div className="divide-border divide-y">
               {rows.map((candidate) => (
@@ -156,30 +155,33 @@ export default async function AccountingProviderImportsPage({
 
         {connection?.status === 'active' ? (
           <div className="flex items-center justify-between gap-3">
-            <Button asChild variant="outline" size="sm" disabled={pageNumber <= 1}>
-              <Link
-                href={`?type=${resourceType}&page=${Math.max(1, pageNumber - 1)}`}
-                aria-disabled={pageNumber <= 1}
-              >
+            {pageNumber > 1 ? (
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  href={`?type=${resourceType}&page=${Math.max(1, pageNumber - 1)}`}
+                >
+                  Previous
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
                 Previous
-              </Link>
-            </Button>
+              </Button>
+            )}
             <span className="text-muted-foreground text-xs tabular-nums">
               Page {pageNumber}
             </span>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              disabled={!candidates?.has_more}
-            >
-              <Link
-                href={`?type=${resourceType}&page=${pageNumber + 1}`}
-                aria-disabled={!candidates?.has_more}
-              >
+            {candidates?.has_more ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`?type=${resourceType}&page=${pageNumber + 1}`}>
+                  Next
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
                 Next
-              </Link>
-            </Button>
+              </Button>
+            )}
           </div>
         ) : null}
       </div>
@@ -222,10 +224,19 @@ async function loadLocalOptions(
   }
 }
 
-function Notice({ children }: { children: React.ReactNode }) {
+function Notice({ children }: { children: ReactNode }) {
   return (
     <div className="border-warning/30 bg-warning/5 text-warning rounded-lg border px-4 py-3 text-sm">
       {children}
+    </div>
+  )
+}
+
+function EmptyMessage({ title }: { title: string }) {
+  return (
+    <div className="px-5 py-12 text-center">
+      <CircleStackIcon className="text-muted-foreground mx-auto size-6" />
+      <p className="mt-3 font-medium">{title}</p>
     </div>
   )
 }

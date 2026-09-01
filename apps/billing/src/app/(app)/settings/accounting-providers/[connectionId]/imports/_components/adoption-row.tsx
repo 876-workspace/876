@@ -9,7 +9,7 @@ import type {
 } from '@876/billing/operator'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
-import { Loader2Icon, Unlink } from '@876/ui/icons'
+import { Loader2Icon } from '@876/ui/icons'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 
 import { client } from '@/lib/client'
@@ -151,9 +151,7 @@ export function AdoptionRow({
           >
             {pendingAction === 'release' ? (
               <Loader2Icon className="size-4 animate-spin" />
-            ) : (
-              <Unlink className="size-4" />
-            )}
+            ) : null}
             Release
           </Button>
         ) : (
