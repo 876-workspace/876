@@ -59,6 +59,7 @@ pnpm --filter @876/couriers-api dev
 
 ## Required Context
 
+- Read `.agents/rules/ai-code-quality.md` before non-trivial implementation or refactoring work. It is the reuse-first standard: search for the existing owner before adding a helper, type, schema, service, or dependency; never write a third copy of behaviour two apps already share; and review the finished diff for duplicates, compatibility residue, and swallowed errors.
 - Read `.agents/rules/git.md` before creating branches, committing, pushing,
   opening or updating pull requests, reviewing PR feedback, or merging.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
