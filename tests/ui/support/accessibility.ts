@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page } from '@playwright/test'
 
 export async function expectNoAccessibilityViolations(page: Page) {
-  const results = await new AxeBuilder({ page }).analyze()
+  const results = await analyzeWhenStable(page)
 
   expect(
     results.violations,
@@ -13,4 +13,19 @@ export async function expectNoAccessibilityViolations(page: Page) {
       )
       .join('\n')
   ).toEqual([])
+}
+
+async function analyzeWhenStable(page: Page) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await page.waitForLoadState('domcontentloaded')
+      return await new AxeBuilder({ page }).analyze()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
+      if (attempt === 1 || !message.includes('Execution context was destroyed'))
+        throw error
+    }
+  }
+
+  throw new Error('Accessibility scan did not start.')
 }
