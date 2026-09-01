@@ -20,6 +20,7 @@ export const accountingResourceTypeSchema = z.enum([
   'recurring-invoice',
   'payment',
 ])
+export const accountingImportResourceTypeSchema = z.enum(['customer', 'item'])
 
 export const accountingCapabilitiesSchema = z.strictObject({
   customers: z.boolean(),
@@ -101,6 +102,53 @@ export const accountingSyncRunSchema = z.strictObject({
   disabled: z.boolean(),
 })
 
+export const accountingImportParamsSchema = z.strictObject({
+  organizationId: z.string().min(1),
+  connectionId: z.string().min(1),
+  resourceType: accountingImportResourceTypeSchema,
+})
+export const accountingAdoptionParamsSchema = accountingImportParamsSchema.extend({
+  resourceId: z.string().min(1),
+})
+export const accountingImportQuerySchema = z.strictObject({
+  page: z.coerce.number().int().min(1).default(1),
+  perPage: z.coerce.number().int().min(1).max(200).default(100),
+})
+export const accountingAdoptionBodySchema = z.strictObject({
+  resourceId: z.string().min(1),
+  externalId: z.string().min(1),
+})
+export const accountingImportCandidateSchema = z.strictObject({
+  object: z.literal('accounting-provider-import-candidate'),
+  resourceType: accountingImportResourceTypeSchema,
+  externalId: z.string(),
+  name: z.string(),
+  secondary: z.string().nullable(),
+  status: z.string().nullable(),
+  mappedResourceId: z.string().nullable(),
+})
+export const accountingImportCandidateListSchema = z.strictObject({
+  object: z.literal('list'),
+  data: z.array(accountingImportCandidateSchema),
+  has_more: z.boolean(),
+  total_count: z.number().int().nullable(),
+  url: z.string(),
+})
+export const accountingAdoptionSchema = z.strictObject({
+  object: z.literal('accounting-provider-adoption'),
+  connectionId: z.string(),
+  resourceType: accountingImportResourceTypeSchema,
+  resourceId: z.string(),
+  externalId: z.string(),
+})
+export const accountingAdoptionDeletedSchema = z.strictObject({
+  object: z.literal('accounting-provider-adoption'),
+  connectionId: z.string(),
+  resourceType: accountingImportResourceTypeSchema,
+  resourceId: z.string(),
+  deleted: z.literal(true),
+})
+
 export const organizationAccountingParamsSchema = z.object({
   organizationId: z.string().min(1),
 })
@@ -134,4 +182,6 @@ export type AccountingConnectionUpdateBody = z.infer<
 >
 export type AccountingReconcileBody = z.infer<typeof accountingReconcileBodySchema>
 export type AccountingSyncRunBody = z.infer<typeof accountingSyncRunBodySchema>
+export type AccountingImportQuery = z.infer<typeof accountingImportQuerySchema>
+export type AccountingAdoptionBody = z.infer<typeof accountingAdoptionBodySchema>
 export type ZohoOauthCallbackQuery = z.infer<typeof zohoOauthCallbackQuerySchema>
