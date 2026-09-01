@@ -1,3 +1,4 @@
+import { getError } from '@876/core'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -14,6 +15,7 @@ describe('Zoho Books error classification', () => {
 
       expect(error).toMatchObject({
         code: 'billing/provider-authorization-required',
+        message: getError('billing/provider-authorization-required').message,
         httpStatus: status,
         retryable: false,
       })
@@ -25,7 +27,7 @@ describe('Zoho Books error classification', () => {
 
     expect(error).toMatchObject({
       code: 'billing/provider-rate-limited',
-      message: 'Zoho Books rate limited the request.',
+      message: getError('billing/provider-rate-limited').message,
       httpStatus: 429,
       retryable: true,
     })
@@ -39,18 +41,19 @@ describe('Zoho Books error classification', () => {
 
       expect(error).toMatchObject({
         code: 'billing/provider-unavailable',
+        message: getError('billing/provider-unavailable').message,
         httpStatus: status,
         retryable: true,
       })
     }
   )
 
-  it('marks provider-side validation errors as terminal without exposing raw provider detail', () => {
+  it('marks provider-side validation errors as terminal without provider detail', () => {
     const error = classifyZohoHttpError(400, '1001', 'Invalid contact')
 
     expect(error).toMatchObject({
       code: 'billing/provider-invalid-request',
-      message: 'Zoho Books rejected the request.',
+      message: getError('billing/provider-invalid-request').message,
       httpStatus: 400,
       retryable: false,
     })
@@ -61,7 +64,6 @@ describe('Zoho Books error classification', () => {
   it('keeps a classified provider error unchanged', () => {
     const source = new ZohoBooksError({
       code: 'billing/provider-rate-limited',
-      message: 'retry',
       httpStatus: 429,
       retryable: true,
     })
@@ -75,8 +77,8 @@ describe('Zoho Books error classification', () => {
 
     expect(error).toMatchObject({
       code: 'billing/provider-unavailable',
-      message: 'Zoho Books could not be reached.',
-      httpStatus: null,
+      message: getError('billing/provider-unavailable').message,
+      httpStatus: 503,
       retryable: true,
     })
     expect(error.cause).toBe(source)
