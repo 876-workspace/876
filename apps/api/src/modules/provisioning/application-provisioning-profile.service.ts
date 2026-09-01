@@ -14,6 +14,10 @@ import { listObject } from '@/http/envelope'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { validateProvisioningWireDraft } from '@/services/provisioning-catalog'
+import { provisioningDraftForCatalog } from '@/services/provisioning-catalog'
+import { validateAppRoleProvisioningPermissions } from '@/services/app-role-provisioning-catalog'
+import { parseAppRoleProvisioningResources } from '@/services/app-role-provisioning-catalog'
+import { buildStandardAppRoleProvisioningResources } from '@/services/app-role-provisioning-catalog'
 
 import * as repository from './application-provisioning-profile.repository'
 import * as manifestRepository from './provisioning.repository'
@@ -281,8 +285,19 @@ function revisionAsWireDraft(row: {
   }
 }
 
-function validateManifestDraft(appSlug: string, body: ProvisioningDraftReplace) {
-  return validateProvisioningWireDraft('application', appSlug, body)
+async function validateManifestDraft(
+  appId: string,
+  appSlug: string,
+  body: ProvisioningDraftReplace
+) {
+  const issues = validateProvisioningWireDraft('application', appSlug, body)
+  if (issues.length > 0) return issues
+
+  return validateAppRoleProvisioningPermissions({
+    appId,
+    appSlug,
+    resources: provisioningDraftForCatalog(body).resources,
+  })
 }
 
 export async function retrieveApplicationProvisioningProfileManifest(
@@ -342,7 +357,7 @@ export async function validateApplicationProvisioningProfileDraft(
   body: ProvisioningDraftReplace
 ) {
   const { app } = await requireProfile(appKey, profileKey)
-  const issues = validateManifestDraft(app.slug, body)
+  const issues = await validateManifestDraft(app.id, app.slug, body)
   return {
     object: 'provisioning_validation' as const,
     valid: issues.length === 0,
@@ -356,7 +371,7 @@ export async function replaceApplicationProvisioningProfileDraft(
   body: ProvisioningDraftReplace
 ) {
   const { app, profile } = await requireProfile(appKey, profileKey)
-  const issues = validateManifestDraft(app.slug, body)
+  const issues = await validateManifestDraft(app.id, app.slug, body)
   const blocking = issues.filter(
     (issue) => !['resource_minimum', 'unresolved_reference'].includes(issue.code)
   )
@@ -391,7 +406,8 @@ export async function publishApplicationProvisioningProfileDraft(
       httpStatus: 404,
     })
 
-  const issues = validateManifestDraft(
+  const issues = await validateManifestDraft(
+    app.id,
     app.slug,
     revisionAsWireDraft(locked.draft as never)
   )
@@ -462,6 +478,23 @@ export async function createApplicationProvisioningProfile(
       'application',
       created.manifestTargetKey,
       revisionAsRepositoryDraft(copyRevision, now)
+    )
+  else
+    await manifestRepository.replaceDraft(
+      'application',
+      created.manifestTargetKey,
+      {
+        reconciliation: 'create_missing',
+        preserveTenantOverrides: true,
+        financeDependency: 'none',
+        financeScopes: [],
+        resources: await buildStandardAppRoleProvisioningResources(
+          app.id,
+          app.slug
+        ),
+        steps: [],
+        now,
+      }
     )
 
   const profile = await repository.findProfileById(created.id)
@@ -940,12 +973,75 @@ export async function resolveAndPersistApplicationProvisioningProfile(
   }
 }
 
+/** Returns the persisted profile's published app-role resources for provisioning. */
+export async function retrieveSelectedApplicationProvisioningRoles(
+  organizationId: string,
+  appKey: string
+) {
+  const app = await requireApp(appKey)
+  const selection = await repository.findPersistedSelection(
+    organizationId,
+    app.id
+  )
+  if (!selection)
+    throw new AppHttpError({
+      code: 'provisioning/application-profile-selection-missing',
+      message:
+        'The organization has no persisted provisioning profile for this application.',
+      httpStatus: 409,
+    })
+
+  const revision = await repository.findPublishedRevision(
+    selection.profile.manifestTargetKey
+  )
+  if (!revision)
+    throw new AppHttpError({
+      code: 'provisioning/published-revision-not-found',
+      message: 'The selected application profile has no published manifest.',
+      httpStatus: 409,
+    })
+
+  return parseAppRoleProvisioningResources(
+    app.slug,
+    provisioningDraftForCatalog(revisionAsWireDraft(revision)).resources
+  )
+}
+
 export async function resolveDefaultApplicationManifestTarget(appKey: string) {
   const app = await requireApp(appKey)
   const profile = await repository.ensureDefaultProfile(
     app.id,
     BigInt(nowUnixSeconds())
   )
+  const [published, draft] = await Promise.all([
+    manifestRepository.findRevisionByStatus(
+      'application',
+      profile.manifestTargetKey,
+      'published'
+    ),
+    manifestRepository.findRevisionByStatus(
+      'application',
+      profile.manifestTargetKey,
+      'draft'
+    ),
+  ])
+  if (!published && !draft)
+    await manifestRepository.replaceDraft(
+      'application',
+      profile.manifestTargetKey,
+      {
+        reconciliation: 'create_missing',
+        preserveTenantOverrides: true,
+        financeDependency: 'none',
+        financeScopes: [],
+        resources: await buildStandardAppRoleProvisioningResources(
+          app.id,
+          app.slug
+        ),
+        steps: [],
+        now: nowUnixSeconds(),
+      }
+    )
   return { app, profile, manifestTargetKey: profile.manifestTargetKey }
 }
 

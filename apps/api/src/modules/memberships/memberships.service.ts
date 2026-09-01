@@ -38,9 +38,8 @@ async function requireMembership(membershipId: string) {
 function initialLocalRoleFromProvider(role: string): string {
   // WorkOS is deliberately a coarse projection of 876 authorization. A
   // provider event can seed a safe initial role for a provider-originated
-  // membership, but it cannot infer the stronger 876 owner role: provider
-  // `admin` is not a reversible representation of local ownership.
-  return role === 'admin' ? 'admin' : 'member'
+  // membership, but it cannot infer the stronger 876 super-admin role.
+  return role === 'admin' ? 'admin' : 'staff'
 }
 
 export async function listMemberships(
@@ -92,7 +91,7 @@ export async function createMembership(
   }
 
   const now = nowUnixSeconds()
-  const role = body.role ?? 'member'
+  const role = body.role ?? 'staff'
   const status = body.status ?? 'active'
   const orgRole = await repository.findRoleByName(body.organization_id, role)
   if (!orgRole) {
@@ -306,7 +305,7 @@ export async function deleteMembership(
  * provider lifecycle status but preserve the local role. For a provider-created
  * membership with no local row yet, provider admin initializes as local admin
  * and all other provider roles initialize as member. Provider events never
- * manufacture the stronger owner role.
+ * manufacture the stronger super-admin role.
  */
 export async function upsertMembershipFromWorkos(params: {
   workosMembershipId: string

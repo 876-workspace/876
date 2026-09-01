@@ -9,7 +9,7 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 import {
   ORG_PERMISSION_GROUPS,
   isValidOrgPermission,
-  OWNER_ROLE_NAME,
+  SUPER_ADMIN_ROLE_NAME,
 } from '@/platform/permissions'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 
@@ -311,38 +311,25 @@ export async function updateOrgMemberRole(
       message: 'No role exists with the provided name.',
       httpStatus: 400,
     })
-  const ownerInvolved = [membership.role, newRole.name].includes(
-    OWNER_ROLE_NAME
+  const superAdminInvolved = [membership.role, newRole.name].includes(
+    SUPER_ADMIN_ROLE_NAME
   )
-  if (ownerInvolved && !principal.internal) {
+  if (superAdminInvolved && !principal.internal) {
     const caller = await repository.findMembershipForUser(
       orgId,
       principal.userId ?? ''
     )
-    if (!caller || caller.role !== OWNER_ROLE_NAME) {
+    if (!caller || caller.role !== SUPER_ADMIN_ROLE_NAME) {
       throw new AppHttpError({
-        code: 'role/owner-required',
-        message: 'Only an owner can grant or remove the owner role.',
+        code: 'role/super-admin-required',
+        message:
+          'Only a super admin can grant or remove the super admin role.',
         httpStatus: 403,
       })
     }
   }
-  if (membership.role === OWNER_ROLE_NAME && newRole.name !== OWNER_ROLE_NAME) {
-    const otherOwner = await repository.findOtherActiveOwner(
-      orgId,
-      OWNER_ROLE_NAME,
-      membership.id
-    )
-    if (!otherOwner) {
-      throw new AppHttpError({
-        code: 'role/last-owner',
-        message: 'An organization must keep at least one owner.',
-        httpStatus: 400,
-      })
-    }
-  }
 
-  // The organization resource owns authorization and owner invariants, while
+  // The organization resource owns authorization and elevation invariants, while
   // the membership resource owns the actual identity lifecycle. Delegating the
   // write keeps WorkOS role projection, local role linking, and the returned
   // roleId consistent for Console, Enterprise, and product apps.
@@ -389,31 +376,19 @@ export async function deleteOrgMember(
       httpStatus: 400,
     })
   }
-  if (membership.role === OWNER_ROLE_NAME) {
+  if (membership.role === SUPER_ADMIN_ROLE_NAME) {
     if (!principal.internal) {
       const caller = await repository.findMembershipForUser(
         orgId,
         principal.userId ?? ''
       )
-      if (!caller || caller.role !== OWNER_ROLE_NAME) {
+      if (!caller || caller.role !== SUPER_ADMIN_ROLE_NAME) {
         throw new AppHttpError({
-          code: 'role/owner-required',
-          message: 'Only an owner can remove an owner.',
+          code: 'role/super-admin-required',
+          message: 'Only a super admin can remove a super admin.',
           httpStatus: 403,
         })
       }
-    }
-    const otherOwner = await repository.findOtherActiveOwner(
-      orgId,
-      OWNER_ROLE_NAME,
-      membershipId
-    )
-    if (!otherOwner) {
-      throw new AppHttpError({
-        code: 'role/last-owner',
-        message: 'An organization must keep at least one owner.',
-        httpStatus: 400,
-      })
     }
   }
 

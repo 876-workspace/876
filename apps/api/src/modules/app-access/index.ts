@@ -7,6 +7,7 @@ export { ensureAppMembershipForProvisioning } from './app-access-provisioning.se
 export {
   isEntitled,
   materializeRoleTemplatesForApp,
+  materializeProvisionedRolesForApp,
   resolveEffectiveAppPermissions,
 } from './app-access.service'
 export type {

@@ -108,7 +108,7 @@ describe('workos-webhooks dispatch', () => {
         id: 'om_2',
         organization_id: 'org_workos_2',
         user_id: 'user_workos_2',
-        role: 'member',
+        role: 'staff',
         status: 'active',
       })
     )
@@ -118,7 +118,7 @@ describe('workos-webhooks dispatch', () => {
       workosMembershipId: 'om_2',
       organizationId: null,
       userId: null,
-      role: 'member',
+      role: 'staff',
       status: 'active',
     })
   })
@@ -142,7 +142,7 @@ describe('workos-webhooks dispatch', () => {
       workosMembershipId: 'om_3',
       organizationId: 'local_org_1',
       userId: 'local_user_1',
-      role: 'member',
+      role: 'staff',
       status: 'active',
     })
   })
