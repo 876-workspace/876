@@ -212,7 +212,7 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
           slug: 'beta',
           status: 'active',
         },
-        role: 'super_admin',
+        role: 'super-admin',
       },
     ]
     // Mock platform to return two active orgs

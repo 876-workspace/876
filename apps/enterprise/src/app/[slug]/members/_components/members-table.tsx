@@ -117,13 +117,13 @@ export function MembersTable({
   // Super-admin transitions are super-admin-only.
   function canActOn(member: OrgMember): boolean {
     if (!canManage || member.id === callerMembershipId) return false
-    if (member.role === 'super_admin' && !callerIsSuperAdmin) return false
+    if (member.role === 'super-admin' && !callerIsSuperAdmin) return false
 
     return true
   }
 
   const assignableRoles = roles.filter(
-    (role) => callerIsSuperAdmin || role.name !== 'super_admin'
+    (role) => callerIsSuperAdmin || role.name !== 'super-admin'
   )
 
   const columns: ColumnDef<OrgMember, unknown>[] = [

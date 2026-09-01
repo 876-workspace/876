@@ -82,7 +82,7 @@ function membershipRow(
   const slug = overrides.slug ?? 'acme'
   return {
     id: 'mem_1',
-    role: 'super_admin',
+    role: 'super-admin',
     status: overrides.status ?? 'active',
     permissions: ['org:read', 'members:read'],
     organization: {
@@ -1335,7 +1335,7 @@ describe('getEnabledEnterpriseFeatureSlugs — observability & dedup', () => {
       expect.any(String),
       expect.objectContaining({
         level: 'error',
-        tags: expect.objectContaining({ category: 'feature_flags' }),
+        tags: expect.objectContaining({ category: 'feature-flags' }),
       })
     )
   })
