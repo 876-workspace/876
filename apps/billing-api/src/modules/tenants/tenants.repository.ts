@@ -40,12 +40,12 @@ const SUPER_ADMIN_PERMISSIONS = [
  * The system roles every workspace is seeded with.
  *
  * `resolveMemberAccess` maps an 876 organization role onto one of these slugs
- * for an account with no member row, so an organization's admins and members
+ * for an account with no member row, so an organization's admins and staff
  * have no Billing access at all unless `admin` and `staff` exist.
  */
 const SYSTEM_ROLES = [
   {
-    slug: 'super_admin',
+    slug: 'super-admin',
     name: 'Super Admin',
     description:
       'Unrestricted workspace access, including roles and member grants.',
@@ -134,7 +134,7 @@ export type TenantProvisioningInput = {
  * Finance provisioning knows the organization but not the acting user, so it
  * intentionally creates no Member row. A later Billing setup supplies that
  * user and must not return early merely because the shared tenant already
- * exists. The system-role migration normally guarantees `super_admin`, but
+ * exists. The system-role migration normally guarantees `super-admin`, but
  * creating it here as well keeps this path self-healing for legacy bare tenants.
  */
 async function ensureSuperAdminMembership(
@@ -144,7 +144,7 @@ async function ensureSuperAdminMembership(
   now: number
 ) {
   let superAdminRole = await tx.role.findFirst({
-    where: { tenantId, slug: 'super_admin' },
+    where: { tenantId, slug: 'super-admin' },
     select: { id: true },
   })
   if (!superAdminRole) {
@@ -152,7 +152,7 @@ async function ensureSuperAdminMembership(
       data: {
         id: generateId('Role'),
         tenantId,
-        slug: 'super_admin',
+        slug: 'super-admin',
         name: 'Super Admin',
         description:
           'Unrestricted workspace access, including roles and member grants.',
@@ -258,7 +258,7 @@ export async function provisionTenantWorkspace(
   let superAdminRoleId = ''
   for (const role of SYSTEM_ROLES) {
     const id = generateId('Role')
-    if (role.slug === 'super_admin') superAdminRoleId = id
+    if (role.slug === 'super-admin') superAdminRoleId = id
     await tx.role.create({
       data: {
         id,
