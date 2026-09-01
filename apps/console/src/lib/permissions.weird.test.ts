@@ -132,8 +132,16 @@ describe('permissions — weird edge cases', () => {
     expect(CONSOLE_ACCESS_PERMISSION.includes(':')).toBe(true)
     expect(CONSOLE_ACCESS_PERMISSION.includes('.')).toBe(false)
   })
-  it('CONSOLE_DANGER_ZONE_PERMISSION is stable', () => {
-    expect(CONSOLE_DANGER_ZONE_PERMISSION).toBe('console:danger_zone')
+  it('CONSOLE_DANGER_ZONE_PERMISSION is canonical kebab-case', () => {
+    expect(CONSOLE_DANGER_ZONE_PERMISSION).toBe('console:danger-zone')
+  })
+  it('legacy danger-zone permission is accepted during migration', () => {
+    expect(
+      hasPermission(
+        { permissions: ['console:danger_zone'] },
+        'console:danger-zone'
+      )
+    ).toBe(true)
   })
   it('permissionsForRole throws for __proto__ role key (inherited Object.prototype, not iterable)', () => {
     expect(() => permissionsForRole('__proto__')).toThrow(TypeError)
@@ -153,6 +161,11 @@ describe('permissions — weird edge cases', () => {
   it('permissionsForRole is case-sensitive', () => {
     expect(permissionsForRole('Staff')).toEqual([])
     expect(permissionsForRole('staff').length).toBeGreaterThan(0)
+  })
+  it('permissionsForRole handles legacy super_admin role during migration', () => {
+    expect(permissionsForRole('super_admin')).toEqual(
+      permissionsForRole('super-admin')
+    )
   })
   it('permissionsForRole handles 10k role name', () => {
     expect(permissionsForRole('a'.repeat(10000))).toEqual([])
@@ -174,12 +187,12 @@ describe('permissions — weird edge cases', () => {
     // @ts-expect-error deliberate runtime null under test
     expect(() => permissionsForRole('staff', null)).toThrow(TypeError)
   })
-  it('SYSTEM_ROLE_NAMES is in privilege order (staff first, super_admin last)', () => {
+  it('SYSTEM_ROLE_NAMES is in privilege order (staff first, super-admin last)', () => {
     expect(SYSTEM_ROLE_NAMES).toEqual([
       'staff',
       'admin',
       'owner',
-      'super_admin',
+      'super-admin',
     ])
   })
   it('SYSTEM_ROLE_DEFINITIONS contains no unknown permissions (weird check with empty catalog)', () => {
@@ -213,11 +226,12 @@ describe('permissions — weird edge cases', () => {
       }
     }
   })
-  it('PERMISSION_GROUPS does not expose dangerous flag but still has dangerous perms', () => {
+  it('PERMISSION_GROUPS exposes canonical dangerous permissions', () => {
     const all = PERMISSION_GROUPS.flatMap((g) =>
       g.permissions.map((p) => p.value)
     )
-    expect(all.includes('console:danger_zone')).toBe(true)
+    expect(all.includes('console:danger-zone')).toBe(true)
+    expect(all.includes('console:danger_zone')).toBe(false)
     expect(all.includes('users:delete')).toBe(true)
   })
   it('PERMISSION_GROUPS handles RTL override in label (still preserves)', () => {
