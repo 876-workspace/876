@@ -29,10 +29,10 @@ const ALL_KEYS = [
   'packages.edit',
   'packages.delete',
   'packages.export',
-  'pre_alerts.view',
-  'pre_alerts.create',
-  'pre_alerts.edit',
-  'pre_alerts.delete',
+  'pre-alerts.view',
+  'pre-alerts.create',
+  'pre-alerts.edit',
+  'pre-alerts.delete',
   'warehouse.view',
   'warehouse.create',
   'warehouse.edit',
@@ -60,17 +60,13 @@ const ALL_KEYS = [
 
 describe('permission catalog', () => {
   it('builds a permission key from module and action segments', () => {
-    const result = permissionKey('customers', 'export')
-
-    expect(result).toBe('customers.export')
+    expect(permissionKey('customers', 'export')).toBe('customers.export')
   })
 
   it('expands module actions before module-specific extras', () => {
     const customers = PERMISSION_CATALOG[1]
 
-    const result = modulePermissionKeys(customers)
-
-    expect(result).toEqual([
+    expect(modulePermissionKeys(customers)).toEqual([
       'customers.view',
       'customers.create',
       'customers.edit',
@@ -81,19 +77,17 @@ describe('permission catalog', () => {
   })
 
   it('expands the complete catalog in stable matrix order', () => {
-    const result = allPermissionKeys(PERMISSION_CATALOG)
-
-    expect(result).toEqual(ALL_KEYS)
+    expect(allPermissionKeys(PERMISSION_CATALOG)).toEqual(ALL_KEYS)
   })
 
-  it('includes every expected module key exactly once', () => {
+  it('includes every expected canonical module key exactly once', () => {
     const keys = PERMISSION_CATALOG.map((module) => module.key)
 
     expect(keys).toEqual([
       'items',
       'customers',
       'packages',
-      'pre_alerts',
+      'pre-alerts',
       'warehouse',
       'manifests',
       'deliveries',
@@ -134,16 +128,12 @@ describe('permission catalog', () => {
         },
       ]
 
-      const result = isValidPermissionKey(catalog, key)
-
-      expect(result).toBe(valid)
+      expect(isValidPermissionKey(catalog, key)).toBe(valid)
     }
   )
 
   it('gives Admin every catalog permission', () => {
-    const result = defaultRolePermissions(PERMISSION_CATALOG, 'admin')
-
-    expect(result).toEqual(ALL_KEYS)
+    expect(defaultRolePermissions(PERMISSION_CATALOG, 'admin')).toEqual(ALL_KEYS)
   })
 
   it('excludes Reports and Settings from Staff permissions', () => {
@@ -171,12 +161,9 @@ describe('permission catalog', () => {
   it('filters invalid stored keys for custom roles', () => {
     const permissions = ['items.view', 'unknown.manage', 'customers.export']
 
-    const result = resolveRolePermissions({
-      systemKey: null,
-      permissions,
-    })
-
-    expect(result).toEqual(['items.view', 'customers.export'])
+    expect(
+      resolveRolePermissions({ systemKey: null, permissions })
+    ).toEqual(['items.view', 'customers.export'])
     expect(permissions).toEqual([
       'items.view',
       'unknown.manage',
@@ -184,22 +171,31 @@ describe('permission catalog', () => {
     ])
   })
 
-  it('rejects malformed stored custom permission arrays', () => {
-    const result = resolveRolePermissions({
-      systemKey: null,
-      permissions: ['items.view', 42],
-    })
+  it('does not recognize the legacy pre-alert permission', () => {
+    expect(isValidPermissionKey(PERMISSION_CATALOG, 'pre_alerts.view')).toBe(
+      false
+    )
+    expect(isValidPermissionKey(PERMISSION_CATALOG, 'pre-alerts.view')).toBe(
+      true
+    )
+  })
 
-    expect(result).toEqual([])
+  it('rejects malformed stored custom permission arrays', () => {
+    expect(
+      resolveRolePermissions({
+        systemKey: null,
+        permissions: ['items.view', 42],
+      })
+    ).toEqual([])
   })
 
   it('rejects non-array stored custom permissions', () => {
-    const result = resolveRolePermissions({
-      systemKey: null,
-      permissions: { items: true },
-    })
-
-    expect(result).toEqual([])
+    expect(
+      resolveRolePermissions({
+        systemKey: null,
+        permissions: { items: true },
+      })
+    ).toEqual([])
   })
 
   it.each([
@@ -208,21 +204,21 @@ describe('permission catalog', () => {
   ] as const)(
     'resolves %s from the catalog and ignores stored permissions',
     (systemKey, expected) => {
-      const result = resolveRolePermissions({
-        systemKey,
-        permissions: ['invalid.stored'],
-      })
-
-      expect(result).toEqual(expected)
+      expect(
+        resolveRolePermissions({
+          systemKey,
+          permissions: ['invalid.stored'],
+        })
+      ).toEqual(expected)
     }
   )
 
   it('does not mutate the catalog while resolving permissions', () => {
     const snapshot = structuredClone(PERMISSION_CATALOG)
 
-    const result = defaultRolePermissions(PERMISSION_CATALOG, 'staff')
-
-    expect(result).toEqual(ALL_KEYS.slice(0, -3))
+    expect(defaultRolePermissions(PERMISSION_CATALOG, 'staff')).toEqual(
+      ALL_KEYS.slice(0, -3)
+    )
     expect(PERMISSION_CATALOG).toEqual(snapshot)
   })
 

@@ -49,6 +49,8 @@ describe('couriers module catalog', () => {
 
   it.each([
     ['deliveries', true],
+    ['pre-alerts', true],
+    ['pre_alerts', false],
     ['nope', false],
     ['', false],
   ] as const)(
@@ -61,10 +63,10 @@ describe('couriers module catalog', () => {
   it('defines the packages volumetric divisor', () => {
     const preference = COURIERS_MODULE_CATALOG.find(
       (module) => module.key === 'packages'
-    )?.preferences.find((candidate) => candidate.key === 'volumetric_divisor')
+    )?.preferences.find((candidate) => candidate.key === 'volumetric-divisor')
 
     expect(preference).toEqual({
-      key: 'volumetric_divisor',
+      key: 'volumetric-divisor',
       label: 'Volumetric divisor',
       type: 'integer',
       default: 5000,
@@ -77,10 +79,10 @@ describe('couriers module catalog', () => {
   it('defines the invoices GCT rate', () => {
     const preference = COURIERS_MODULE_CATALOG.find(
       (module) => module.key === 'invoices'
-    )?.preferences.find((candidate) => candidate.key === 'gct_rate')
+    )?.preferences.find((candidate) => candidate.key === 'gct-rate')
 
     expect(preference).toEqual({
-      key: 'gct_rate',
+      key: 'gct-rate',
       label: 'GCT rate',
       type: 'decimal',
       default: '15.00',
@@ -94,16 +96,54 @@ describe('couriers module catalog', () => {
     const preference = COURIERS_MODULE_CATALOG.find(
       (module) => module.key === 'customers'
     )?.preferences.find(
-      (candidate) => candidate.key === 'auto_assign_home_branch'
+      (candidate) => candidate.key === 'auto-assign-home-branch'
     )
 
     expect(preference).toEqual({
-      key: 'auto_assign_home_branch',
+      key: 'auto-assign-home-branch',
       label: 'Auto-assign home branch',
       type: 'boolean',
       default: true,
       hint: 'Assign new customers to the default branch.',
     })
+  })
+
+  it('uses canonical values for controlled settings vocabularies', () => {
+    const packages = COURIERS_MODULE_CATALOG.find(
+      (module) => module.key === 'packages'
+    )
+    const deliveries = COURIERS_MODULE_CATALOG.find(
+      (module) => module.key === 'deliveries'
+    )
+    const items = COURIERS_MODULE_CATALOG.find(
+      (module) => module.key === 'items'
+    )
+
+    expect(
+      packages?.preferences.find(
+        (preference) => preference.key === 'chargeable-weight-rule'
+      )
+    ).toMatchObject({
+      default: 'greater-of',
+      options: [
+        { value: 'greater-of' },
+        { value: 'actual-only' },
+        { value: 'volumetric-only' },
+      ],
+    })
+    expect(
+      deliveries?.preferences.find(
+        (preference) => preference.key === 'default-delivery-method'
+      )
+    ).toMatchObject({
+      default: 'branch-pickup',
+      options: [{ value: 'branch-pickup' }, { value: 'home-delivery' }],
+    })
+    expect(
+      items?.preferences.find(
+        (preference) => preference.key === 'default-category'
+      )
+    ).toMatchObject({ namespace: 'package-category' })
   })
 
   it('stores every decimal default as a string', () => {
