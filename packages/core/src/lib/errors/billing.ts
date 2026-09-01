@@ -52,9 +52,17 @@ export const BILLING_ERRORS = {
     message: 'The accounting provider authorization state is invalid or expired.',
     httpStatus: HttpStatus.BAD_REQUEST,
   },
+  'billing/provider-authentication-failed': {
+    message: 'The accounting provider rejected the authorization request.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
   'billing/provider-authorization-required': {
     message: 'The accounting provider authorization must be renewed.',
     httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/provider-invalid-domain': {
+    message: 'The accounting provider data center is not supported.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
   'billing/provider-invalid-request': {
     message: 'The accounting provider rejected the request.',
