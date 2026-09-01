@@ -48,7 +48,7 @@ function createOrganization(
     id: 'org_island_123',
     name: 'Island Commerce',
     slug: 'island-commerce',
-    role: 'super_admin',
+    role: 'super-admin',
     ...overrides,
   }
 }

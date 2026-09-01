@@ -54,7 +54,7 @@ describe('GetStartedPage', () => {
       orgId: 'org_123',
       orgName: 'Island Logistics',
       orgSlug: 'island-logistics',
-      role: 'super_admin',
+      role: 'super-admin',
       tenant: { id: 'tenant_123', name: 'Island Logistics' },
       accessStatus: 'none',
     })

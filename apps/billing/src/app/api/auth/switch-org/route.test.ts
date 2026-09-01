@@ -38,7 +38,7 @@ function createMembership(
 ): MembershipFixture {
   return {
     id: 'membership_island_123',
-    role: 'super_admin',
+    role: 'super-admin',
     status: 'active',
     organization: {
       id: 'org_island_123',

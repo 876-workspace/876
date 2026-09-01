@@ -65,7 +65,7 @@ function createMembership(
   overrides: Partial<MembershipFixture> = {}
 ): MembershipFixture {
   return {
-    role: 'super_admin',
+    role: 'super-admin',
     organization: {
       id,
       name: `Organization ${id}`,
@@ -96,7 +96,7 @@ const access = {
   userId: 'user_123',
   status: 'ACTIVE',
   permissions: ['billing:access', 'sales:read'],
-  role: { id: 'role_123', slug: 'super_admin', name: 'Owner' },
+  role: { id: 'role_123', slug: 'super-admin', name: 'Super Admin' },
 }
 
 const allFeatures = {
@@ -204,13 +204,13 @@ describe('Billing context', () => {
       orgId: 'org_123',
       orgName: 'Organization org_123',
       orgSlug: 'organization-org_123',
-      role: 'super_admin',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'super_admin',
+          role: 'super-admin',
         },
       ],
       accessStatus: 'active',
@@ -228,7 +228,7 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
       'user_123',
-      'super_admin'
+      'super-admin'
     )
   })
 
@@ -265,7 +265,7 @@ describe('Billing context', () => {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'super_admin',
+          role: 'super-admin',
         },
         {
           id: 'org_session',
@@ -326,7 +326,7 @@ describe('Billing context', () => {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'super_admin',
+          role: 'super-admin',
         },
         {
           id: 'org_session',
@@ -411,13 +411,13 @@ describe('Billing context', () => {
         orgId: 'org_123',
         orgName: 'Organization org_123',
         orgSlug: 'organization-org_123',
-        role: 'super_admin',
+        role: 'super-admin',
         organizations: [
           {
             id: 'org_123',
             name: 'Organization org_123',
             slug: 'organization-org_123',
-            role: 'super_admin',
+            role: 'super-admin',
           },
         ],
         accessStatus: 'active',
@@ -465,13 +465,13 @@ describe('Billing context', () => {
       orgId: 'org_owner',
       orgName: 'Organization org_owner',
       orgSlug: 'organization-org_owner',
-      role: 'super_admin',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_owner',
           name: 'Organization org_owner',
           slug: 'organization-org_owner',
-          role: 'super_admin',
+          role: 'super-admin',
         },
         {
           id: 'org_admin',
@@ -519,19 +519,19 @@ describe('Billing context', () => {
       orgId: 'org_123',
       orgName: 'Organization org_123',
       orgSlug: 'organization-org_123',
-      role: 'super_admin',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_without_tenant',
           name: 'Organization org_without_tenant',
           slug: 'organization-org_without_tenant',
-          role: 'super_admin',
+          role: 'super-admin',
         },
         {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'super_admin',
+          role: 'super-admin',
         },
       ],
       accessStatus: 'active',
@@ -545,7 +545,7 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
       'user_123',
-      'super_admin'
+      'super-admin'
     )
   })
 
@@ -570,19 +570,19 @@ describe('Billing context', () => {
       orgId: 'org_first',
       orgName: 'Organization org_first',
       orgSlug: 'organization-org_first',
-      role: 'super_admin',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_first',
           name: 'Organization org_first',
           slug: 'organization-org_first',
-          role: 'super_admin',
+          role: 'super-admin',
         },
         {
           id: 'org_second',
           name: 'Organization org_second',
           slug: 'organization-org_second',
-          role: 'super_admin',
+          role: 'super-admin',
         },
       ],
       accessStatus: 'active',
@@ -663,7 +663,7 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
       'user_123',
-      'super_admin'
+      'super-admin'
     )
     expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
       organizationId: 'org_123',
@@ -684,7 +684,8 @@ describe('Billing context', () => {
   })
 
   it.each([
-    ['super_admin', 'super_admin'],
+    ['super-admin', 'super-admin'],
+    ['super_admin', 'super-admin'],
     ['admin', 'admin'],
     ['staff', 'staff'],
     ['viewer', 'staff'],
@@ -694,7 +695,7 @@ describe('Billing context', () => {
   })
 
   it.each([
-    ['super_admin', true],
+    ['super-admin', true],
     ['admin', true],
     ['staff', false],
   ] as const)('classifies %s management access as %s', (role, expected) => {

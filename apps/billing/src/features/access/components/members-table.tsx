@@ -86,11 +86,11 @@ function MemberRow({
     member.email ||
     member.userId
   const protectedMember =
-    member.organizationRole === 'super_admin' || member.userId === currentUserId
+    member.organizationRole === 'super-admin' || member.userId === currentUserId
   const changed = roleId !== member.roleId || status !== member.status
   const availableRoles = roles.filter(
     (role) =>
-      role.slug !== 'super_admin' || canGrantSuperAdmin || role.id === member.roleId
+      role.slug !== 'super-admin' || canGrantSuperAdmin || role.id === member.roleId
   )
 
   function save() {

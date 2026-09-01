@@ -34,8 +34,8 @@ export const BILLING_SYSTEM_ROLES: Array<
   RoleCreateParams & { isDefault: boolean }
 > = [
   {
-    slug: 'super_admin',
-    name: 'Owner',
+    slug: 'super-admin',
+    name: 'Super Admin',
     description:
       'Unrestricted workspace access, including roles and member grants.',
     permissions: ALL_PERMISSIONS,

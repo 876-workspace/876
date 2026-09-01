@@ -115,7 +115,7 @@ async function resolveOrgParty(
   const memberCount = membersResult.data ? memberships.length : null
 
   const primary =
-    memberships.find((membership) => membership.role === 'super_admin') ??
+    memberships.find((membership) => membership.role === 'super-admin') ??
     memberships[0] ??
     null
 
@@ -133,8 +133,8 @@ async function resolveOrgParty(
       email: owner.email,
       phone: customer.phone,
       avatar: owner.avatar,
-      role: primary.role === 'super_admin' ? 'Super Admin' : primary.role,
-      source: primary.role === 'super_admin' ? 'org-super-admin' : 'org-member',
+      role: primary.role === 'super-admin' ? 'Super Admin' : primary.role,
+      source: primary.role === 'super-admin' ? 'org-super-admin' : 'org-member',
     },
   }
 }

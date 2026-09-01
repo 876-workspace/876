@@ -40,7 +40,7 @@ function makeContext(overrides: Record<string, unknown> = {}) {
     access: { status: 'ACTIVE', permissions: ['billing:access'] },
     permissions: ['billing:access'],
     accessStatus: 'active',
-    role: 'super_admin',
+    role: 'super-admin',
     orgId: 'org_123',
     organizations: [{ id: 'org_123', name: 'Island', slug: 'island' }],
     ...overrides,
@@ -104,7 +104,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When tenant missing and role is owner, then redirects to get-started', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ tenant: null, role: 'super_admin', accessStatus: 'active' })
+      makeContext({ tenant: null, role: 'super-admin', accessStatus: 'active' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/get-started',
@@ -129,7 +129,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When accessStatus is blocked and tenant missing for owner, tenant gate wins (goes to get-started)', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ tenant: null, role: 'super_admin', accessStatus: 'blocked' })
+      makeContext({ tenant: null, role: 'super-admin', accessStatus: 'blocked' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/get-started',
@@ -147,7 +147,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When accessStatus is none and role owner, then redirects to get-started (reactivate)', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ accessStatus: 'none', role: 'super_admin' })
+      makeContext({ accessStatus: 'none', role: 'super-admin' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/get-started',
