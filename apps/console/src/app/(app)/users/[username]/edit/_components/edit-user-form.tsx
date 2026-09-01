@@ -11,7 +11,7 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { client } from '@/lib/client'
 import { useUsernameAvailability } from '@/hooks/use-username-availability'
 
-const ROLES = ['user', 'staff', 'admin', 'super_admin'] as const
+const ROLES = ['user', 'staff', 'admin', 'super-admin'] as const
 const STATUSES = ['active', 'suspended'] as const
 
 type Props = {
@@ -34,7 +34,9 @@ export function EditUserForm({ user, initialRole }: Props) {
   const [lastName, setLastName] = useState(user.last_name)
   const [email, setEmail] = useState(user.email)
   const [username, setUsername] = useState(user.username ?? '')
-  const [role, setRole] = useState(initialRole)
+  const [role, setRole] = useState(
+    initialRole === 'super_admin' ? 'super-admin' : initialRole
+  )
   const [status, setStatus] = useState(user.status)
 
   const overviewHref = `/users/${user.username ?? user.id}`
@@ -71,7 +73,9 @@ export function EditUserForm({ user, initialRole }: Props) {
       // Console role lives in MC's own DB, not the identity profile —
       // apply any change through the access-grant endpoint, which enforces the
       // role-escalation guard. Only call it when the role actually changed.
-      if (role !== initialRole) {
+      const canonicalInitialRole =
+        initialRole === 'super_admin' ? 'super-admin' : initialRole
+      if (role !== canonicalInitialRole) {
         const { error: roleError } = await client.users.setRole(user.id, role)
         if (roleError) {
           setError(roleError.message)
@@ -198,7 +202,7 @@ export function EditUserForm({ user, initialRole }: Props) {
                   value={nextRole}
                   className="capitalize"
                 >
-                  {nextRole.replace('_', ' ')}
+                  {nextRole.replace('-', ' ')}
                 </NativeSelectOption>
               ))}
             </NativeSelect>
