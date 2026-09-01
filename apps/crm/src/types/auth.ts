@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export type SessionUser = {
   id: string
   email: string
@@ -40,3 +42,11 @@ export type CrmContextResult =
   | { status: 'no-organization' }
   | { status: 'signed-out' }
   | { status: 'unavailable' }
+
+export const switchOrganizationInputSchema = z.strictObject({
+  organizationId: z.string().trim().min(1),
+})
+
+export type SwitchOrganizationInput = z.infer<
+  typeof switchOrganizationInputSchema
+>
