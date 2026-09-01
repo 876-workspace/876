@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { APP_ACCESS_SEED_DEFINITIONS } from './app-access'
 
 const KEY = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/
+const ROLE_KEY = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 function app(slug: string) {
   const definition = APP_ACCESS_SEED_DEFINITIONS.find(
@@ -36,6 +37,13 @@ describe('app access seed catalog', () => {
       const keys = definition.permissions.map((permission) => permission.key)
       expect(new Set(keys).size).toBe(keys.length)
       expect(keys.every((key) => KEY.test(key))).toBe(true)
+    }
+  )
+
+  it.each(APP_ACCESS_SEED_DEFINITIONS)(
+    '$appSlug system role keys use canonical kebab-case',
+    (definition) => {
+      expect(definition.roles.every((role) => ROLE_KEY.test(role.key))).toBe(true)
     }
   )
 
@@ -263,11 +271,11 @@ describe('app access seed catalog', () => {
   })
 
   it.each(['876-billing', '876-invoice'])(
-    '%s exposes admin, finance_manager and viewer templates',
+    '%s exposes admin, finance-manager and viewer templates',
     (slug) => {
       expect(app(slug).roles.map((role) => role.key)).toEqual([
         'admin',
-        'finance_manager',
+        'finance-manager',
         'viewer',
       ])
     }

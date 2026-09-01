@@ -249,7 +249,7 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
     permissions: billingPermissions,
     roles: standardRoles(
       billingPermissions,
-      'finance_manager',
+      'finance-manager',
       'Finance Manager'
     ),
   },
@@ -258,7 +258,7 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
     permissions: invoicePermissions,
     roles: standardRoles(
       invoicePermissions,
-      'finance_manager',
+      'finance-manager',
       'Finance Manager'
     ),
   },
