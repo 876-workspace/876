@@ -19,6 +19,7 @@ import { getVaultClient } from '@/providers/workos/vault'
 
 import {
   completeAccountingOauth,
+  consumeAccountingOauthState,
   createAccountingConnectionRow,
   disableAccountingConnectionRow,
   findAccountingConnectionById,
@@ -247,6 +248,17 @@ export async function completeZohoOauth(query: ZohoOauthCallbackQuery) {
   if (row.provider.key !== 'zoho-books')
     throw error('billing/oauth-invalid-state', 'OAuth state is invalid.', 400)
 
+  const oauthStateHash = row.oauthStateHash
+  if (
+    !oauthStateHash ||
+    !(await consumeAccountingOauthState({
+      id: row.id,
+      oauthStateHash,
+      now: nowUnixSeconds(),
+    }))
+  )
+    throw error('billing/oauth-invalid-state', 'OAuth state is invalid.', 400)
+
   const config = requireZohoConfig()
   const accountsDomain = normalizeZohoAccountsDomain(
     query['accounts-server'] ?? row.accountsDomain ?? config.accountsDomain
@@ -370,10 +382,16 @@ export async function validateAccountingConnection(
       apiDomain: ctx.apiDomain,
       accessToken: ctx.accessToken,
     })
-    if (!organizations.some((organization) => organization.organization_id === row.providerOrganizationId))
+    if (
+      !organizations.some(
+        (organization) =>
+          organization.organization_id === row.providerOrganizationId
+      )
+    )
       throw new ZohoBooksError({
         code: 'billing/provider-organization-not-found',
-        message: 'The configured Zoho Books organization is no longer available.',
+        message:
+          'The configured Zoho Books organization is no longer available.',
         retryable: false,
       })
     return serializeAccountingConnection(
