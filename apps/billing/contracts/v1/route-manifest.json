@@ -2108,6 +2108,157 @@
       ],
       "path": "/organizations/{organizationId}/payment-intents/{paymentIntentId}/cancel",
       "source": "apps/billing-api/src/modules/payment-intents/payment-intents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/admin/accounting-providers",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [201],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "PATCH"
+        },
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}/authorize",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}/validate",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}/reconcile",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}/imports/{resourceType}",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [201],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}/imports/{resourceType}/adoptions",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        }
+      ],
+      "path": "/admin/organizations/{organizationId}/accounting-provider-connections/{connectionId}/imports/{resourceType}/adoptions/{resourceId}",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-providers.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "public",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/providers/zoho-books/oauth/callback",
+      "source": "apps/billing-api/src/modules/accounting-providers/accounting-sync.routes.ts"
     }
   ],
   "version": 1
