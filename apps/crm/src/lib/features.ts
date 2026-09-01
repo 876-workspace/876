@@ -11,11 +11,11 @@ import type {
   CrmUiFeatures,
 } from '@/types/features'
 
-const CRM_SEARCH_BAR_SLUG = 'crm_search_bar'
-const CRM_THEME_SWITCHER_SLUG = 'crm_theme_switcher'
-const CRM_GLOBAL_ADD_SLUG = 'crm_global_add'
-const CRM_APP_SWITCHER_SLUG = 'crm_app_switcher'
-const CRM_ORG_SWITCHER_SLUG = 'crm_org_switcher'
+const CRM_SEARCH_BAR_SLUG = 'crm-search-bar'
+const CRM_THEME_SWITCHER_SLUG = 'crm-theme-switcher'
+const CRM_GLOBAL_ADD_SLUG = 'crm-global-add'
+const CRM_APP_SWITCHER_SLUG = 'crm-app-switcher'
+const CRM_ORG_SWITCHER_SLUG = 'crm-org-switcher'
 
 const DEFAULT_UI_FEATURES: CrmUiFeatures = {
   searchBar: false,
