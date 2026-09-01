@@ -18,26 +18,28 @@ model AccountingProvider {
 /// Tenant-owned connection to an accounting system. The refresh token is
 /// encrypted with the shared secure-field abstraction and bound to this row.
 model AccountingProviderConnection {
-  id                       String  @id
-  tenantId                 String  @map("tenant_id")
-  providerId               String  @map("provider_id")
-  name                     String
-  environment              String  @default("live")
-  status                   String  @default("pending")
-  mode                     String  @default("mirror")
-  providerOrganizationId   String? @map("provider_organization_id")
-  accountsDomain           String? @map("accounts_domain")
-  apiDomain                String? @map("api_domain")
-  scopes                   String[] @default([])
-  sealedRefreshToken       String? @map("sealed_refresh_token") @db.Text
-  refreshTokenKeyId        String? @map("refresh_token_key_id")
-  refreshTokenVaultProvider String? @map("refresh_token_vault_provider")
-  settings                 Json?
-  lastSyncedAt             Int?    @map("last_synced_at")
-  lastSuccessfulSyncAt     Int?    @map("last_successful_sync_at")
-  lastErrorCode            String? @map("last_error_code")
-  createdAt                Int     @map("created_at")
-  updatedAt                Int     @map("updated_at")
+  id                        String   @id
+  tenantId                  String   @map("tenant_id")
+  providerId                String   @map("provider_id")
+  name                      String
+  environment               String   @default("live")
+  status                    String   @default("pending")
+  mode                      String   @default("mirror")
+  providerOrganizationId    String?  @map("provider_organization_id")
+  accountsDomain            String?  @map("accounts_domain")
+  apiDomain                 String?  @map("api_domain")
+  scopes                    String[] @default([])
+  sealedRefreshToken        String?  @map("sealed_refresh_token") @db.Text
+  refreshTokenKeyId         String?  @map("refresh_token_key_id")
+  refreshTokenVaultProvider String?  @map("refresh_token_vault_provider")
+  oauthStateHash            String?  @map("oauth_state_hash")
+  oauthStateExpiresAt       Int?     @map("oauth_state_expires_at")
+  settings                  Json?
+  lastSyncedAt              Int?     @map("last_synced_at")
+  lastSuccessfulSyncAt      Int?     @map("last_successful_sync_at")
+  lastErrorCode             String?  @map("last_error_code")
+  createdAt                 Int      @map("created_at")
+  updatedAt                 Int      @map("updated_at")
 
   tenant             Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_accounting_provider_connections_tenant_fkey")
   provider           AccountingProvider          @relation(fields: [providerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_accounting_provider_connections_provider_fkey")
