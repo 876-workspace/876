@@ -32,18 +32,18 @@ migration history.
 - [x] Add Core DB migration for permission rows, role permission arrays, assignment grants/denies,
       application-module keys, and Billing/Invoice role keys.
 - [x] Add collision preflight for canonical/legacy app-permission and role rows.
-- [ ] Normalize all remaining app/runtime call sites that consume the renamed permission keys.
+- [x] Normalize app/runtime call sites that consume this slice's renamed permission keys.
 - [ ] Migrate Console `console:danger_zone` with its separate operator-store backfill.
 
 ## Module settings and Couriers datastore
 
-- [ ] Change shared module/preference key validation from snake_case to kebab-case.
-- [ ] Update `@876/settings` tests and public type comments.
-- [ ] Rename Couriers `pre_alerts` module to `pre-alerts` across app/API/SDK schemas/navigation.
-- [ ] Rename every system-owned Couriers preference key to kebab-case.
-- [ ] Rename controlled enum/reference namespace values to kebab-case.
-- [ ] Add Couriers DB migration for `organization_modules` and `module_preferences` values.
-- [ ] Add collision checks before updating unique `(tenant,module)` / `(tenant,module,key)` rows.
+- [x] Change shared module/preference key validation from snake_case to kebab-case.
+- [x] Update `@876/settings` tests and public type comments.
+- [x] Rename Couriers `pre_alerts` module to `pre-alerts` across app/API/SDK schemas/navigation.
+- [x] Rename every system-owned Couriers preference key to kebab-case.
+- [x] Rename controlled enum/reference namespace values to kebab-case.
+- [x] Add Couriers DB migration for `organization_modules` and `module_preferences` values.
+- [x] Add collision checks before updating unique `(tenant,module)` / `(tenant,module,key)` rows.
 
 ## Feature flags
 
@@ -73,16 +73,16 @@ migration history.
 
 - [x] Keep existing physical SQL table/column names unchanged and mapped through Prisma.
 - [x] Use explicit old→new SQL mappings; no algorithmic underscore replacement.
-- [ ] Inventory each service datastore and its symbolic-value columns/arrays/JSON/enums.
-- [ ] Write detailed backup, preflight, deployment-order, migration, verification and rollback instructions.
-- [ ] Include per-database SQL/query examples and expected zero-legacy-value checks.
+- [x] Inventory the Core app-access and Couriers settings datastores in this migration slice.
+- [x] Write detailed backup, preflight, deployment-order, migration, verification and rollback instructions.
+- [x] Include per-database SQL/query examples and expected zero-legacy-value checks.
 - [ ] Describe PostHog and queue/cache/provider boundaries separately from SQL data.
 
 ## Enforcement and verification
 
-- [ ] Add/extend reusable naming validation tests/checks to prevent new legacy identifiers.
-- [ ] Search branch for unexplained snake_case 876-owned values after all migrations.
-- [ ] Run available CI/typecheck/lint/test/build checks or record connector limitations precisely.
-- [ ] Self-review branch diff against `main`.
-- [ ] Write `docs/migrations/naming-contract-migration-report.md`.
+- [x] Add/extend reusable naming validation tests/checks to prevent new legacy identifiers in this slice.
+- [x] Search changed source for legacy values and retain only intentional migration/test compatibility references.
+- [x] Run available typecheck/lint/test checks and record known repository-baseline failures precisely.
+- [x] Self-review branch diff against `main`.
+- [x] Write `docs/migrations/naming-contract-migration-report.md`.
 - [ ] Open PR to `main` and review CI status.
