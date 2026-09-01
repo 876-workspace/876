@@ -7,7 +7,7 @@ export interface PermissionExtra {
 }
 
 export interface PermissionModule {
-  /** snake_case module key — the prefix of every permission in the module. */
+  /** Kebab-case module key — the prefix of every permission in the module. */
   key: string
   label: string
   /** Standard actions this module supports, in matrix column order. */

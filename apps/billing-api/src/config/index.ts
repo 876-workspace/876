@@ -67,6 +67,12 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => value?.trim() || 'efesto'),
+  ACCOUNTING_PROVIDER_SYNC_ENABLED: booleanish(),
+  ACCOUNTING_PROVIDER_SYNC_BATCH_SIZE: optionalNumber(10),
+  ZOHO_BOOKS_CLIENT_ID: optionalString(),
+  ZOHO_BOOKS_CLIENT_SECRET: optionalString(),
+  ZOHO_BOOKS_REDIRECT_URI: optionalString(),
+  ZOHO_BOOKS_ACCOUNTS_DOMAIN: optionalString('https://accounts.zoho.com'),
 })
 
 function build(env: NodeJS.ProcessEnv) {
@@ -108,6 +114,17 @@ function build(env: NodeJS.ProcessEnv) {
       lateFees: value.BILLING_LATE_FEES_ENABLED,
       dunning: value.BILLING_DUNNING_ENABLED,
       payouts: value.BILLING_PAYOUTS_ENABLED,
+      accountingProviderSync: value.ACCOUNTING_PROVIDER_SYNC_ENABLED,
+    },
+    accountingProviderSyncBatchSize: Math.max(
+      1,
+      Math.min(100, Math.trunc(value.ACCOUNTING_PROVIDER_SYNC_BATCH_SIZE))
+    ),
+    zohoBooks: {
+      clientId: value.ZOHO_BOOKS_CLIENT_ID,
+      clientSecret: value.ZOHO_BOOKS_CLIENT_SECRET,
+      redirectUri: value.ZOHO_BOOKS_REDIRECT_URI,
+      accountsDomain: value.ZOHO_BOOKS_ACCOUNTS_DOMAIN.replace(/\/+$/, ''),
     },
     secureFieldKey: value.SECURE_FIELD_KEY,
     isProduction: value.ENVIRONMENT === 'production',

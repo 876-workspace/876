@@ -34,7 +34,7 @@ function memberDisplayName(member: AdminOrgMember): string {
 
 function roleBadgeClass(role: string): string {
   switch (role) {
-    case 'owner':
+    case 'super-admin':
       return 'border-876-gold/40 text-876-gold-fg bg-876-gold/10'
     case 'admin':
       return 'border-876-accent/40 text-876-accent-fg bg-876-accent/10'

@@ -66,7 +66,7 @@ function makeDeps(
   const provider = makeProvider(overrides.provider as never)
   const setupWorkspace = vi
     .fn()
-    .mockResolvedValue({ owner: { id: 'rol_owner' } })
+    .mockResolvedValue({ 'super-admin': { id: 'rol_owner' } })
   const ensureFinance = vi.fn().mockResolvedValue(undefined)
   const ensureWork = vi.fn().mockResolvedValue(undefined)
   const resolveProvisioning = vi.fn().mockResolvedValue({
@@ -309,7 +309,7 @@ describe('resolveRegistrationSlug', () => {
 // ---------------------------------------------------------------------------
 
 describe('bootstrapExistingUser', () => {
-  it('creates organization and owner membership on happy path', async () => {
+  it('creates organization and super admin membership on happy path', async () => {
     const deps = makeDeps()
     deps.repository.findUserById.mockResolvedValue({
       id: 'user_1',
@@ -346,7 +346,7 @@ describe('bootstrapExistingUser', () => {
     }))
 
     const org = await bootstrapExistingUser(deps, {
-      ownerUserId: 'user_1',
+      creatorUserId: 'user_1',
       name: ' Acme Inc ',
       slug: null,
     })
@@ -378,12 +378,12 @@ describe('bootstrapExistingUser', () => {
     })
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
-        role: 'owner',
+        role: 'super-admin',
         roleId: 'rol_owner',
         workosMembershipId: 'wos_mem_1',
       })
     )
-    // The finance barrier runs only after the durable owner membership exists,
+    // The finance barrier runs only after the durable super admin membership exists,
     // so a finance outage cannot strand an org without a routable membership.
     expect(deps.ensureFinance).toHaveBeenCalledWith({
       organizationId: expect.any(String),
@@ -423,7 +423,7 @@ describe('bootstrapExistingUser', () => {
     deps.repository.createMembership.mockResolvedValue({} as never)
 
     await bootstrapExistingUser(deps, {
-      ownerUserId: 'user_1',
+      creatorUserId: 'user_1',
       name: 'Acme',
       slug: null,
       sourceAppId: 'app_couriers',
@@ -441,7 +441,7 @@ describe('bootstrapExistingUser', () => {
     )
   })
 
-  it('links owner membership without role_id when provisioning has no owner role', async () => {
+  it('links super admin membership without role_id when provisioning has no super admin role', async () => {
     const deps = makeDeps()
     deps.repository.findUserById.mockResolvedValue({
       id: 'user_1',
@@ -476,7 +476,7 @@ describe('bootstrapExistingUser', () => {
     deps.setupWorkspace.mockResolvedValue({})
 
     await bootstrapExistingUser(deps, {
-      ownerUserId: 'user_1',
+      creatorUserId: 'user_1',
       name: 'Acme',
       slug: null,
     })
@@ -486,13 +486,13 @@ describe('bootstrapExistingUser', () => {
     )
   })
 
-  it('throws user/not-found when owner missing', async () => {
+  it('throws user/not-found when super admin missing', async () => {
     const deps = makeDeps()
     deps.repository.findUserById.mockResolvedValue(null)
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'missing',
+        creatorUserId: 'missing',
         name: 'Acme',
         slug: null,
       })
@@ -500,7 +500,7 @@ describe('bootstrapExistingUser', () => {
 
     try {
       await bootstrapExistingUser(deps, {
-        ownerUserId: 'missing',
+        creatorUserId: 'missing',
         name: 'Acme',
         slug: null,
       })
@@ -518,7 +518,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: '   ',
         slug: null,
       })
@@ -526,7 +526,7 @@ describe('bootstrapExistingUser', () => {
 
     try {
       await bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: '   ',
         slug: null,
       })
@@ -545,7 +545,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: 'ab',
       })
@@ -564,7 +564,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: 'taken',
       })
@@ -572,7 +572,7 @@ describe('bootstrapExistingUser', () => {
 
     try {
       await bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: 'taken',
       })
@@ -600,7 +600,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: null,
       })
@@ -622,7 +622,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: null,
       })
@@ -649,7 +649,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: null,
       })
@@ -683,7 +683,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: null,
       })
@@ -715,7 +715,7 @@ describe('bootstrapExistingUser', () => {
     }))
     deps.repository.createMembership.mockResolvedValue({} as never)
     // The finance barrier fails the way a Billing outage does — after the
-    // durable org and owner membership already exist.
+    // durable org and super admin membership already exist.
     deps.ensureFinance.mockRejectedValue(
       new AppHttpError({
         code: 'provisioning/finance-workspace-unavailable',
@@ -726,7 +726,7 @@ describe('bootstrapExistingUser', () => {
 
     await expect(
       bootstrapExistingUser(deps, {
-        ownerUserId: 'user_1',
+        creatorUserId: 'user_1',
         name: 'Acme',
         slug: null,
       })
@@ -734,10 +734,10 @@ describe('bootstrapExistingUser', () => {
       code: 'provisioning/finance-workspace-unavailable',
     })
 
-    // The owner membership was recorded, so a retry finds this org through
+    // The super admin membership was recorded, so a retry finds this org through
     // routing memberships and does not create a second one...
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'owner' })
+      expect.objectContaining({ role: 'super-admin' })
     )
     // ...and the WorkOS org is NOT torn down for a finance outage.
     expect(deps.provider.deleteOrganization).not.toHaveBeenCalled()
@@ -764,11 +764,11 @@ describe('bootstrapExistingUser', () => {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     }))
-    deps.setupWorkspace.mockResolvedValue({ owner: { id: 'rol_1' } })
+    deps.setupWorkspace.mockResolvedValue({ 'super-admin': { id: 'rol_1' } })
     deps.repository.createMembership.mockResolvedValue({} as never)
 
     await bootstrapExistingUser(deps, {
-      ownerUserId: 'user_1',
+      creatorUserId: 'user_1',
       name: 'Acme',
       slug: 'custom-slug',
     })

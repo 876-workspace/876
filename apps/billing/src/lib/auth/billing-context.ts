@@ -35,8 +35,8 @@ async function resolveBillingAccessStatus(
     if (subscription.error) return 'none'
 
     // Only a platform block is restricted access. A canceled or past-due
-    // subscription stays re-activatable by an owner or admin, so it is setup
-    // rather than a blocked state.
+    // subscription stays re-activatable by a super admin or admin, so it is
+    // setup rather than a blocked state.
     return toAccessStatus(subscription.data?.status)
   } catch {
     return 'none'
@@ -152,8 +152,8 @@ export const getSetupContext = getContext
 
 export function canManageBilling(
   role: OrgRole
-): role is Extract<OrgRole, 'owner' | 'admin'> {
-  return role === 'owner' || role === 'admin'
+): role is Extract<OrgRole, 'super-admin' | 'admin'> {
+  return role === 'super-admin' || role === 'admin'
 }
 
 export function hasPermission(
@@ -186,6 +186,7 @@ export async function requireBillingFeature(feature: BillingProductFeature) {
 }
 
 export function normalizeOrgRole(role: string): OrgRole {
-  if (role === 'owner' || role === 'admin') return role
-  return 'member'
+  if (role === 'super-admin' || role === 'super_admin') return 'super-admin'
+  if (role === 'admin') return 'admin'
+  return 'staff'
 }

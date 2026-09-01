@@ -330,10 +330,9 @@ lives in `services/provisioning.py` and belongs to **Batch E**, not here. Do not
 try to port it as a platform primitive; it needs a session.
 
 The permission arrays carry an asymmetry that looks like an inconsistency and is
-not: `owner` and `admin` are sorted, `billing_manager` and `member` are in
-declaration order. They are seeded into `organization_roles.permissions`, so
-sorting all four "for consistency" would change the rows every existing
-organization already has. The test pins all four.
+intentional: `super_admin` and `admin` are catalog-derived, while `staff`
+retains its declared read-only order. They are seeded into
+`organization_roles.permissions`, so the test pins all three.
 
 **Batch A is complete.** Every unit was verified against its Python source
 before being committed; the methods are recorded in §2.

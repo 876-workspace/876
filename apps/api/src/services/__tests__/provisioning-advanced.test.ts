@@ -7,6 +7,7 @@ const { prisma } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
+    appRole: { findFirst: vi.fn() },
     app: { findFirst: vi.fn() },
     subscription: {
       findFirst: vi.fn(),
@@ -85,9 +86,9 @@ function roleRow(
   overrides: Partial<{ id: string; name: string; permissions: string[] }> = {}
 ) {
   return {
-    id: overrides.id ?? `rol_${overrides.name ?? 'owner'}`,
-    name: overrides.name ?? 'owner',
-    displayName: overrides.name ?? 'owner',
+    id: overrides.id ?? `rol_${overrides.name ?? 'super_admin'}`,
+    name: overrides.name ?? 'super_admin',
+    displayName: overrides.name ?? 'super_admin',
     description: null,
     permissions: overrides.permissions ?? ['org:read'],
     isSystem: true,
@@ -227,16 +228,16 @@ describe('seedDefaultRoles — advanced', () => {
 
   it('keeps custom permissions when org has already customised a system role', async () => {
     const custom = roleRow({
-      name: 'owner',
+      name: 'super-admin',
       permissions: ['custom:permission'],
       id: 'rol_custom',
     })
     prisma.organizationRole.findMany.mockResolvedValue([custom])
     const roles = await seedDefaultRoles(ORG, NOW)
-    expect(roles.owner!.permissions).toEqual(['custom:permission'])
+    expect(roles['super-admin']!.permissions).toEqual(['custom:permission'])
     expect(prisma.organizationRole.create).not.toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ name: 'owner' }),
+        data: expect.objectContaining({ name: 'super-admin' }),
       })
     )
   })
@@ -266,9 +267,9 @@ describe('seedDefaultRoles — advanced', () => {
 
   it('copies permissions array by value so caller mutation cannot affect input catalog', async () => {
     const roles = await seedDefaultRoles(ORG, NOW)
-    const ownerPerms = roles.owner!.permissions
-    ownerPerms.push('injected:perm')
-    const definition = DEFAULT_ORG_ROLES.find((r) => r.name === 'owner')!
+    const superAdminPermissions = roles['super-admin']!.permissions
+    superAdminPermissions.push('injected:perm')
+    const definition = DEFAULT_ORG_ROLES.find((r) => r.name === 'super-admin')!
     expect(definition.permissions).not.toContain('injected:perm')
   })
 
@@ -652,7 +653,7 @@ describe('resolveMemberPermissions', () => {
     const perms = await resolveMemberPermissions({
       roleId: 'rol_1',
       organizationId: ORG,
-      role: 'member',
+      role: 'staff',
     })
     expect([...perms].sort()).toEqual(['members:read', 'org:read'].sort())
   })
@@ -661,10 +662,10 @@ describe('resolveMemberPermissions', () => {
     const perms = await resolveMemberPermissions({
       roleId: null,
       organizationId: ORG,
-      role: 'member',
+      role: 'staff',
     })
     expect([...perms].sort()).toEqual(
-      [...defaultPermissionsForRoleName('member')].sort()
+      [...defaultPermissionsForRoleName('staff')].sort()
     )
   })
 
@@ -673,11 +674,11 @@ describe('resolveMemberPermissions', () => {
     const perms = await resolveMemberPermissions({
       roleId: 'rol_gone',
       organizationId: ORG,
-      role: 'owner',
+      role: 'super_admin',
     })
     expect(perms.size).toBeGreaterThan(0)
     expect([...perms].sort()).toEqual(
-      [...defaultPermissionsForRoleName('owner')].sort()
+      [...defaultPermissionsForRoleName('super_admin')].sort()
     )
   })
 
@@ -688,7 +689,7 @@ describe('resolveMemberPermissions', () => {
     await resolveMemberPermissions({
       roleId: 'rol_1',
       organizationId: ORG,
-      role: 'owner',
+      role: 'super_admin',
     })
     expect(prisma.organizationRole.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'rol_1', organizationId: ORG } })
@@ -699,12 +700,12 @@ describe('resolveMemberPermissions', () => {
     const perms = await resolveMemberPermissions({
       roleId: null,
       organizationId: ORG,
-      role: 'member',
+      role: 'staff',
     })
     expect(perms.has('org:delete')).toBe(false)
   })
 
-  it.each(['owner', 'admin', 'member', 'billing_manager'] as const)(
+  it.each(['super_admin', 'admin', 'staff', 'staff'] as const)(
     'role %s fallback contains org:read',
     async (role) => {
       const perms = await resolveMemberPermissions({
@@ -720,9 +721,9 @@ describe('resolveMemberPermissions', () => {
 describe('resolveRoleId', () => {
   it('returns id when role exists', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue(
-      roleRow({ id: 'rol_owner', name: 'owner' })
+      roleRow({ id: 'rol_owner', name: 'super_admin' })
     )
-    await expect(resolveRoleId(ORG, 'owner')).resolves.toBe('rol_owner')
+    await expect(resolveRoleId(ORG, 'super_admin')).resolves.toBe('rol_owner')
   })
 
   it('returns null when not found', async () => {
@@ -731,9 +732,9 @@ describe('resolveRoleId', () => {
   })
 
   it('scopes query to organization', async () => {
-    await resolveRoleId(ORG, 'owner')
+    await resolveRoleId(ORG, 'super_admin')
     expect(prisma.organizationRole.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { organizationId: ORG, name: 'owner' } })
+      expect.objectContaining({ where: { organizationId: ORG, name: 'super_admin' } })
     )
   })
 })
@@ -741,10 +742,10 @@ describe('resolveRoleId', () => {
 describe('linkMembershipRole', () => {
   it('points membership at matching org role', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue(
-      roleRow({ id: 'rol_owner', name: 'owner' })
+      roleRow({ id: 'rol_owner', name: 'super_admin' })
     )
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'owner', roleId: null },
+      { id: 'mem_1', organizationId: ORG, role: 'super_admin', roleId: null },
       NOW
     )
     expect(prisma.membership.update).toHaveBeenCalledWith({
@@ -768,10 +769,10 @@ describe('linkMembershipRole', () => {
 
   it('does not write when already correctly linked', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue(
-      roleRow({ id: 'rol_owner', name: 'owner' })
+      roleRow({ id: 'rol_owner', name: 'super_admin' })
     )
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'owner', roleId: 'rol_owner' },
+      { id: 'mem_1', organizationId: ORG, role: 'super_admin', roleId: 'rol_owner' },
       NOW
     )
     expect(prisma.membership.update).not.toHaveBeenCalled()
@@ -788,10 +789,10 @@ describe('linkMembershipRole', () => {
 
   it('uses BigInt timestamp', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue(
-      roleRow({ id: 'rol_member', name: 'member' })
+      roleRow({ id: 'rol_member', name: 'staff' })
     )
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'member', roleId: null },
+      { id: 'mem_1', organizationId: ORG, role: 'staff', roleId: null },
       NOW
     )
     const data = (

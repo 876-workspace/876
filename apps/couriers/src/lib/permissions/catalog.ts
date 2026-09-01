@@ -27,7 +27,7 @@ export const PERMISSION_CATALOG: PermissionCatalog = [
     extras: [{ key: 'export', label: 'Export packages' }],
   },
   {
-    key: 'pre_alerts',
+    key: 'pre-alerts',
     label: 'Pre-alerts',
     actions: ['view', 'create', 'edit', 'delete'],
     extras: [],

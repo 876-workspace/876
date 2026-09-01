@@ -97,10 +97,10 @@ export const SETTINGS_NAV = defineSettingsNav([
       },
       {
         title: 'Pre-alerts settings',
-        href: '/settings/modules/pre_alerts',
+        href: '/settings/modules/pre-alerts',
         status: 'available',
-        permission: 'pre_alerts.view',
-        module: 'pre_alerts',
+        permission: 'pre-alerts.view',
+        module: 'pre-alerts',
       },
     ],
   },

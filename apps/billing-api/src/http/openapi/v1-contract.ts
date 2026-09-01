@@ -25,15 +25,23 @@ export type V1OpenApiOperation = Record<string, unknown> & {
   responses?: Record<string, unknown>
 }
 
+/**
+ * Frozen documentation metadata for a v1 operation, or `undefined` for an
+ * operation added after the baseline was cut.
+ *
+ * A route that predates the baseline must render the frozen summary/tags so the
+ * published contract cannot drift. A newly added route has no frozen entry yet
+ * and falls back to its own inline spec; `api:contract:check` still fails it as
+ * an extra operation until the regenerated baseline is committed, so this is a
+ * bootstrap path, not an escape from contract parity.
+ */
 export function v1Operation(
   method: V1HttpMethod,
   path: string
-): V1OperationMetadata {
+): V1OperationMetadata | undefined {
   const openApiPath = path.replace(/:([A-Za-z0-9_]+)/g, '{$1}')
   const key = `${method.toUpperCase()} ${openApiPath}` as V1OperationPath
-  const metadata = v1OperationMetadata[key]
-  if (!metadata) throw new Error(`Unknown Billing v1 operation: ${key}`)
-  return metadata as V1OperationMetadata
+  return v1OperationMetadata[key] as V1OperationMetadata | undefined
 }
 
 function operationKey(method: V1HttpMethod, path: string): V1OperationPath {

@@ -25,8 +25,8 @@ describe('BOOTSTRAP_ORG_DESCRIPTION — docs contract', () => {
     expect(BOOTSTRAP_ORG_DESCRIPTION).toMatch(/Admin only/i)
   })
 
-  it('documents owner membership creation', () => {
-    expect(BOOTSTRAP_ORG_DESCRIPTION).toMatch(/owner membership/i)
+  it('documents super-admin membership creation', () => {
+    expect(BOOTSTRAP_ORG_DESCRIPTION).toMatch(/super-admin membership/i)
   })
 
   it('is a non-empty markdown string', () => {

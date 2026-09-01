@@ -13,7 +13,7 @@ function stringOrNull(value: unknown): string | null {
 
 /**
  * A WorkOS membership role arrives as `{ slug }` on most events and occasionally
- * as a bare string; fall back to `member` so an unexpected shape never throws.
+ * as a bare string; fall back to `staff` so an unexpected shape never throws.
  */
 function roleSlug(value: unknown): string {
   if (typeof value === 'string' && value) return value
@@ -21,7 +21,7 @@ function roleSlug(value: unknown): string {
     const slug = (value as { slug?: unknown }).slug
     if (typeof slug === 'string' && slug) return slug
   }
-  return 'member'
+  return 'staff'
 }
 
 /** Apply a WorkOS `user.updated` to the local user. */

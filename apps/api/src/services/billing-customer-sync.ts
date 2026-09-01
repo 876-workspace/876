@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 
 import { generateId } from '@/platform/ids'
+import { SUPER_ADMIN_ROLE_NAME } from '@/platform/permissions'
 
 export const CUSTOMER_EVENT_TYPE = 'customer.ensure'
 
@@ -165,8 +166,10 @@ async function resolveOrgPrimaryContact(
     return a.id.localeCompare(b.id)
   })
 
-  const owner = sorted.find((m) => m.role === 'owner') ?? sorted[0]!
-  return repository.findUserById(owner.userId)
+  const primary =
+    sorted.find((membership) => membership.role === SUPER_ADMIN_ROLE_NAME) ??
+    sorted[0]!
+  return repository.findUserById(primary.userId)
 }
 
 export async function snapshotForOrganization(

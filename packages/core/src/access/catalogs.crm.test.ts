@@ -9,20 +9,17 @@ const permissionKeys = () =>
 
 describe('CRM permission catalog', () => {
   it('declares the complete schema-backed CRM module vocabulary', () => {
-    // Sorted on both sides: the catalog preserves declaration order because
-    // that is the order the modules render in, so asserting membership here
-    // keeps this test about vocabulary completeness rather than about layout.
     expect([...moduleKeys()].sort()).toEqual([
       'calendars',
       'categories',
       'customers',
       'events',
-      'my_work',
+      'my-work',
       'notes',
       'priorities',
       'reminders',
       'reports',
-      'request_forms',
+      'request-forms',
       'requests',
       'settings',
       'tasks',
@@ -80,12 +77,12 @@ describe('CRM permission catalog', () => {
 
   it('gives request forms the exact CRUD capability set', () => {
     expect(
-      permissionKeys().filter((key) => key.startsWith('request_forms.'))
+      permissionKeys().filter((key) => key.startsWith('request-forms.'))
     ).toEqual([
-      'request_forms.create',
-      'request_forms.delete',
-      'request_forms.edit',
-      'request_forms.view',
+      'request-forms.create',
+      'request-forms.delete',
+      'request-forms.edit',
+      'request-forms.view',
     ])
   })
 
@@ -101,10 +98,12 @@ describe('CRM permission catalog', () => {
     ).toEqual(['settings.edit', 'settings.view'])
   })
 
-  it('emits only unique dot-delimited product-app keys', () => {
+  it('emits only unique dot-delimited product-app keys with kebab-case parts', () => {
     const keys = permissionKeys()
     expect(new Set(keys).size).toBe(48)
-    expect(keys.every((key) => /^[a-z_]+\.[a-z_]+$/.test(key))).toBe(true)
+    expect(
+      keys.every((key) => /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/.test(key))
+    ).toBe(true)
     expect(keys.some((key) => key.startsWith('console:'))).toBe(false)
   })
 })

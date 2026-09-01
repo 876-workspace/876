@@ -179,7 +179,7 @@ export function createAuthResource(runtime: SdkRuntime) {
     },
 
     /**
-     * Creates a business owner account and initial organization.
+     * Creates a business organization creator account and initial organization.
      *
      * Country is required because the organization is routed to a provisioning
      * setup before its first app/finance/Work writes.

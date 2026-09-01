@@ -26,11 +26,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     redirect('/get-started')
   }
   if (!context.tenant) {
-    redirect(context.role === 'member' ? '/no-access' : '/get-started')
+    redirect(context.role === 'staff' ? '/no-access' : '/get-started')
   }
   if (context.accessStatus === 'blocked') redirect('/no-access')
   if (context.accessStatus !== 'active')
-    redirect(context.role === 'member' ? '/no-access' : '/get-started')
+    redirect(context.role === 'staff' ? '/no-access' : '/get-started')
   if (
     !context.access ||
     context.access.status !== 'ACTIVE' ||

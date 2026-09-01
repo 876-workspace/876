@@ -32,9 +32,5 @@ export const errors = {
     }),
   notFound: (message = 'Not Found') =>
     appError('error/not-found', { message, httpStatus: 404 }),
-  writerInactive: (writer: string) =>
-    appError('billing/writer-inactive', {
-      message: `The Billing API is not the active writer (BILLING_WRITER=${writer}, expected express).`,
-      httpStatus: 503,
-    }),
+  writerInactive: (_writer: string) => appError('billing/writer-inactive'),
 } as const

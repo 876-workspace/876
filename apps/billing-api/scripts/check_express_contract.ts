@@ -10,8 +10,8 @@ async function main(): Promise<void> {
     'postgresql://contract:contract@127.0.0.1:5432/contract'
 
   const [{ createApp }, { buildOpenApiDocument }] = await Promise.all([
-    import('../src/app.js'),
-    import('../src/http/openapi/registry.js'),
+    import('../src/application.ts'),
+    import('../src/http/openapi/registry.ts'),
   ])
 
   createApp()

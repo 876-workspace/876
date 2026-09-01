@@ -5,7 +5,7 @@ export const moduleKeySchema = z.enum([
   'customers',
   'items',
   'packages',
-  'pre_alerts',
+  'pre-alerts',
   'warehouse',
   'manifests',
   'deliveries',

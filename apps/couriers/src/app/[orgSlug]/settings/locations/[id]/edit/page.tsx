@@ -43,7 +43,7 @@ async function EditBranchData({ orgSlug, id }: EditBranchDataProps) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
 
-  if (ctx.role !== 'owner' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return (
       <div className="876-empty-dashed max-w-2xl">
         You do not have permission to manage locations.

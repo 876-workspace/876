@@ -10,6 +10,7 @@ import type {
   AccessStatus,
   InvoiceContext,
   InvoiceContextResult,
+  OrgRole,
 } from '@/types/auth'
 
 import { isAccountUsable } from './account-validity'
@@ -25,6 +26,18 @@ function isUsable(membership: PlatformRoutingMembership): boolean {
     membership.status === 'active' &&
     membership.organization.status === 'active'
   )
+}
+
+export function normalizeOrgRole(role: string): OrgRole {
+  if (
+    role === 'super-admin' ||
+    role === 'super_admin' ||
+    role === 'superadmin' ||
+    role === 'owner'
+  )
+    return 'super-admin'
+  if (role === 'admin') return 'admin'
+  return 'staff'
 }
 
 /**
@@ -59,9 +72,9 @@ export const getInvoiceContextResult = cache(
       Sentry.captureMessage('Invoice context: routing memberships failed', {
         level: 'error',
         tags: {
-          category: 'platform_client',
-          phase: 'invoice_context',
-          dependency: '876_api',
+          category: 'platform-client',
+          phase: 'invoice-context',
+          dependency: '876-api',
         },
         extra: {
           call: 'memberships.listRouting',
@@ -95,12 +108,12 @@ export const getInvoiceContextResult = cache(
       orgId: selected.organization.id,
       orgName: selected.organization.name ?? 'Organization',
       orgSlug: selected.organization.slug,
-      role: selected.role,
+      role: normalizeOrgRole(selected.role),
       organizations: memberships.map((membership) => ({
         id: membership.organization.id,
         name: membership.organization.name ?? 'Organization',
         slug: membership.organization.slug,
-        role: membership.role,
+        role: normalizeOrgRole(membership.role),
       })),
       accessStatus: toAccessStatus(subscription.data?.status),
     }

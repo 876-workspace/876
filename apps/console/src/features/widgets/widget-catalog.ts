@@ -6,7 +6,7 @@ import {
   type WidgetMetadata,
 } from '@876/widgets'
 
-export const CONSOLE_WIDGETS_FEATURE_SLUG = 'console_widgets'
+export const CONSOLE_WIDGETS_FEATURE_SLUG = 'console-widgets'
 
 export const liveLogsWidgetMetadata = {
   object: 'widget',
@@ -27,7 +27,7 @@ export const liveLogsWidgetMetadata = {
     apps: {
       console: {
         parent: CONSOLE_WIDGETS_FEATURE_SLUG,
-        widget: 'console_widgets_live_logs',
+        widget: 'console-widgets-live-logs',
       },
     },
   },

@@ -37,9 +37,10 @@ export default async function InviteMemberPage({
     )
   }
 
-  // Granting owner via invite is owner-only, same as direct role changes.
   const assignableRoles = rolesResult.data.data
-    .filter((role) => membership.role === 'owner' || role.name !== 'owner')
+    .filter(
+      (role) => membership.role === 'super-admin' || role.name !== 'super-admin'
+    )
     .map((role) => ({ name: role.name, display_name: role.display_name }))
 
   return (

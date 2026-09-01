@@ -19,8 +19,8 @@ export const CRM_INTEGRATION_SCOPES = [
   'crm.categories.write',
   'crm.priorities.read',
   'crm.priorities.write',
-  'crm.request_forms.read',
-  'crm.request_forms.write',
+  'crm.request-forms.read',
+  'crm.request-forms.write',
   'crm.reports.read',
 ] as const
 

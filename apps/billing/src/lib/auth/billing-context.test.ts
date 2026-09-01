@@ -65,7 +65,7 @@ function createMembership(
   overrides: Partial<MembershipFixture> = {}
 ): MembershipFixture {
   return {
-    role: 'owner',
+    role: 'super-admin',
     organization: {
       id,
       name: `Organization ${id}`,
@@ -96,7 +96,7 @@ const access = {
   userId: 'user_123',
   status: 'ACTIVE',
   permissions: ['billing:access', 'sales:read'],
-  role: { id: 'role_123', slug: 'owner', name: 'Owner' },
+  role: { id: 'role_123', slug: 'super-admin', name: 'Super Admin' },
 }
 
 const allFeatures = {
@@ -204,13 +204,13 @@ describe('Billing context', () => {
       orgId: 'org_123',
       orgName: 'Organization org_123',
       orgSlug: 'organization-org_123',
-      role: 'owner',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'owner',
+          role: 'super-admin',
         },
       ],
       accessStatus: 'active',
@@ -228,7 +228,7 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
       'user_123',
-      'owner'
+      'super-admin'
     )
   })
 
@@ -265,13 +265,13 @@ describe('Billing context', () => {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'owner',
+          role: 'super-admin',
         },
         {
           id: 'org_session',
           name: 'Organization org_session',
           slug: 'organization-org_session',
-          role: 'member',
+          role: 'staff',
         },
         {
           id: 'org_cookie',
@@ -326,7 +326,7 @@ describe('Billing context', () => {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'owner',
+          role: 'super-admin',
         },
         {
           id: 'org_session',
@@ -378,13 +378,13 @@ describe('Billing context', () => {
       orgId: 'org_session',
       orgName: 'Organization org_session',
       orgSlug: 'organization-org_session',
-      role: 'member',
+      role: 'staff',
       organizations: [
         {
           id: 'org_session',
           name: 'Organization org_session',
           slug: 'organization-org_session',
-          role: 'member',
+          role: 'staff',
         },
       ],
       accessStatus: 'active',
@@ -411,13 +411,13 @@ describe('Billing context', () => {
         orgId: 'org_123',
         orgName: 'Organization org_123',
         orgSlug: 'organization-org_123',
-        role: 'owner',
+        role: 'super-admin',
         organizations: [
           {
             id: 'org_123',
             name: 'Organization org_123',
             slug: 'organization-org_123',
-            role: 'owner',
+            role: 'super-admin',
           },
         ],
         accessStatus: 'active',
@@ -465,13 +465,13 @@ describe('Billing context', () => {
       orgId: 'org_owner',
       orgName: 'Organization org_owner',
       orgSlug: 'organization-org_owner',
-      role: 'owner',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_owner',
           name: 'Organization org_owner',
           slug: 'organization-org_owner',
-          role: 'owner',
+          role: 'super-admin',
         },
         {
           id: 'org_admin',
@@ -483,7 +483,7 @@ describe('Billing context', () => {
           id: 'org_viewer',
           name: 'Organization org_viewer',
           slug: 'organization-org_viewer',
-          role: 'member',
+          role: 'staff',
         },
       ],
       accessStatus: 'active',
@@ -519,19 +519,19 @@ describe('Billing context', () => {
       orgId: 'org_123',
       orgName: 'Organization org_123',
       orgSlug: 'organization-org_123',
-      role: 'owner',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_without_tenant',
           name: 'Organization org_without_tenant',
           slug: 'organization-org_without_tenant',
-          role: 'owner',
+          role: 'super-admin',
         },
         {
           id: 'org_123',
           name: 'Organization org_123',
           slug: 'organization-org_123',
-          role: 'owner',
+          role: 'super-admin',
         },
       ],
       accessStatus: 'active',
@@ -545,7 +545,7 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
       'user_123',
-      'owner'
+      'super-admin'
     )
   })
 
@@ -570,19 +570,19 @@ describe('Billing context', () => {
       orgId: 'org_first',
       orgName: 'Organization org_first',
       orgSlug: 'organization-org_first',
-      role: 'owner',
+      role: 'super-admin',
       organizations: [
         {
           id: 'org_first',
           name: 'Organization org_first',
           slug: 'organization-org_first',
-          role: 'owner',
+          role: 'super-admin',
         },
         {
           id: 'org_second',
           name: 'Organization org_second',
           slug: 'organization-org_second',
-          role: 'owner',
+          role: 'super-admin',
         },
       ],
       accessStatus: 'active',
@@ -663,7 +663,7 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
       'user_123',
-      'owner'
+      'super-admin'
     )
     expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
       organizationId: 'org_123',
@@ -684,19 +684,20 @@ describe('Billing context', () => {
   })
 
   it.each([
-    ['owner', 'owner'],
+    ['super-admin', 'super-admin'],
+    ['super_admin', 'super-admin'],
     ['admin', 'admin'],
-    ['member', 'member'],
-    ['viewer', 'member'],
-    ['', 'member'],
+    ['staff', 'staff'],
+    ['viewer', 'staff'],
+    ['', 'staff'],
   ] as const)('normalizes organization role %j to %s', (role, expected) => {
     expect(normalizeOrgRole(role)).toBe(expected)
   })
 
   it.each([
-    ['owner', true],
+    ['super-admin', true],
     ['admin', true],
-    ['member', false],
+    ['staff', false],
   ] as const)('classifies %s management access as %s', (role, expected) => {
     expect(canManageBilling(role)).toBe(expected)
   })

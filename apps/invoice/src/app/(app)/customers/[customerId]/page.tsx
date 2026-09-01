@@ -47,7 +47,7 @@ export default async function CustomerDetailPage({ params }: Props) {
       null
     : null
   const currency = customer.defaultCurrency ?? 'JMD'
-  const canManage = invoice.role !== 'member'
+  const canManage = invoice.role !== 'staff'
 
   return (
     <Page>

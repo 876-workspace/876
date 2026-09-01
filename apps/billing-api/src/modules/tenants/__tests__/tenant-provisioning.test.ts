@@ -84,7 +84,7 @@ describe('provisionTenantWorkspace', () => {
   })
 
   describe('happy path', () => {
-    it('creates the tenant, its default currency, and the owner role', async () => {
+    it('creates the tenant, its default currency, and the super admin role', async () => {
       const harness = createTx()
 
       const result = await provisionTenantWorkspace(harness.tx as never, input)
@@ -116,7 +116,7 @@ describe('provisionTenantWorkspace', () => {
       ])
       expect(harness.created.role).toEqual([
         expect.objectContaining({
-          slug: 'owner',
+          slug: 'super-admin',
           isSystem: true,
           permissions: expect.arrayContaining([
             'billing:access',
@@ -125,11 +125,11 @@ describe('provisionTenantWorkspace', () => {
           ]),
         }),
         expect.objectContaining({ slug: 'admin', isSystem: true }),
-        expect.objectContaining({ slug: 'viewer', isSystem: true }),
+        expect.objectContaining({ slug: 'staff', isSystem: true }),
       ])
     })
 
-    it('withholds role editing from admin and every write from viewer', async () => {
+    it('withholds role editing from admin and every write from staff', async () => {
       const harness = createTx()
 
       await provisionTenantWorkspace(harness.tx as never, input)
@@ -139,27 +139,27 @@ describe('provisionTenantWorkspace', () => {
         permissions: string[]
       }[]
       const admin = roles.find((role) => role.slug === 'admin')!
-      const viewer = roles.find((role) => role.slug === 'viewer')!
+      const staff = roles.find((role) => role.slug === 'staff')!
 
       expect(admin.permissions).toContain('members:write')
       expect(admin.permissions).not.toContain('roles:write')
-      expect(viewer.permissions).toContain('billing:access')
-      expect(viewer.permissions).toContain('customers:read')
+      expect(staff.permissions).toContain('billing:access')
+      expect(staff.permissions).toContain('customers:read')
       expect(
-        viewer.permissions.filter((permission) => permission.endsWith(':write'))
+        staff.permissions.filter((permission) => permission.endsWith(':write'))
       ).toEqual([])
     })
 
-    it('seats the owner as a member when an owner account is supplied', async () => {
+    it('seats the super admin as a member when a super-admin account is supplied', async () => {
       const harness = createTx()
 
       await provisionTenantWorkspace(harness.tx as never, {
         ...input,
-        ownerUserId: 'user_4f2a',
+        superAdminUserId: 'user_4f2a',
       })
 
       const role = harness.created.role.find(
-        (candidate) => (candidate as { slug: string }).slug === 'owner'
+        (candidate) => (candidate as { slug: string }).slug === 'super-admin'
       ) as { id: string }
       expect(harness.created.member).toEqual([
         expect.objectContaining({
@@ -228,68 +228,69 @@ describe('provisionTenantWorkspace', () => {
       expect(harness.created.role).toHaveLength(3)
     })
 
-    it('marks all roles as system and non-default', async () => {
+    it('marks all roles as system and staff as default', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, input)
       for (const role of harness.created.role as Array<{
+        slug: string
         isSystem: boolean
         isDefault: boolean
       }>) {
         expect(role.isSystem).toBe(true)
-        expect(role.isDefault).toBe(false)
+        expect(role.isDefault).toBe(role.slug === 'staff')
       }
     })
 
-    it('gives owner the most permissions', async () => {
+    it('gives super admin the most permissions', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, input)
       const roles = harness.created.role as Array<{
         slug: string
         permissions: string[]
       }>
-      const owner = roles.find((r) => r.slug === 'owner')!
+      const superAdmin = roles.find((r) => r.slug === 'super-admin')!
       const admin = roles.find((r) => r.slug === 'admin')!
-      const viewer = roles.find((r) => r.slug === 'viewer')!
-      expect(owner.permissions.length).toBeGreaterThan(admin.permissions.length)
+      const staff = roles.find((r) => r.slug === 'staff')!
+      expect(superAdmin.permissions.length).toBeGreaterThan(admin.permissions.length)
       expect(admin.permissions.length).toBeGreaterThan(
-        viewer.permissions.length
+        staff.permissions.length
       )
     })
 
-    it('admin permissions are owner minus roles:write', async () => {
+    it('admin permissions are super admin minus roles:write', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, input)
       const roles = harness.created.role as Array<{
         slug: string
         permissions: string[]
       }>
-      const owner = roles.find((r) => r.slug === 'owner')!
+      const superAdmin = roles.find((r) => r.slug === 'super-admin')!
       const admin = roles.find((r) => r.slug === 'admin')!
       expect(admin.permissions).not.toContain('roles:write')
-      expect(owner.permissions).toContain('roles:write')
+      expect(superAdmin.permissions).toContain('roles:write')
       expect(
-        admin.permissions.every((p) => owner.permissions.includes(p))
+        admin.permissions.every((p) => superAdmin.permissions.includes(p))
       ).toBe(true)
     })
 
-    it('viewer has only read permissions plus billing:access', async () => {
+    it('staff has only read permissions plus billing:access', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, input)
-      const viewer = (
+      const staff = (
         harness.created.role as Array<{ slug: string; permissions: string[] }>
-      ).find((r) => r.slug === 'viewer')!
-      for (const perm of viewer.permissions) {
+      ).find((r) => r.slug === 'staff')!
+      for (const perm of staff.permissions) {
         expect(perm === 'billing:access' || perm.endsWith(':read')).toBe(true)
       }
     })
 
-    it('viewer retains billing:access even though it is not a read perm', async () => {
+    it('staff retains billing:access even though it is not a read perm', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, input)
-      const viewer = (
+      const staff = (
         harness.created.role as Array<{ slug: string; permissions: string[] }>
-      ).find((r) => r.slug === 'viewer')!
-      expect(viewer.permissions).toContain('billing:access')
+      ).find((r) => r.slug === 'staff')!
+      expect(staff.permissions).toContain('billing:access')
     })
 
     it('creates tenantCurrency with tenantId matching tenant', async () => {
@@ -340,26 +341,26 @@ describe('provisionTenantWorkspace', () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, {
         ...input,
-        ownerUserId: 'user_owner',
+        superAdminUserId: 'user_super_admin',
       })
       expect(harness.created.member[0]!).toMatchObject({ status: 'ACTIVE' })
     })
 
-    it('member roleId matches owner role id', async () => {
+    it('super-admin member roleId matches super admin role id', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, {
         ...input,
-        ownerUserId: 'user_x',
+        superAdminUserId: 'user_x',
       })
       const ownerRole = (
         harness.created.role as Array<{ slug: string; id: string }>
-      ).find((r) => r.slug === 'owner')!
+      ).find((r) => r.slug === 'super-admin')!
       expect(harness.created.member[0]!).toMatchObject({ roleId: ownerRole.id })
     })
   })
 
   describe('finance-provisioning path', () => {
-    it('creates no member when no owner account is known', async () => {
+    it('creates no member when no super admin account is known', async () => {
       const harness = createTx()
 
       await provisionTenantWorkspace(harness.tx as never, input)
@@ -368,20 +369,20 @@ describe('provisionTenantWorkspace', () => {
       expect(harness.created.member).toEqual([])
     })
 
-    it('creates no member when ownerUserId is null', async () => {
+    it('creates no member when superAdminUserId is null', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, {
         ...input,
-        ownerUserId: null,
+        superAdminUserId: null,
       })
       expect(harness.created.member).toEqual([])
     })
 
-    it('creates no member when ownerUserId is undefined', async () => {
+    it('creates no member when superAdminUserId is undefined', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, {
         ...input,
-        ownerUserId: undefined,
+        superAdminUserId: undefined,
       })
       expect(harness.created.member).toEqual([])
     })
@@ -393,14 +394,14 @@ describe('provisionTenantWorkspace', () => {
 
       expect(
         (harness.created.role as { slug: string }[]).map((role) => role.slug)
-      ).toEqual(['owner', 'admin', 'viewer'])
+      ).toEqual(['super-admin', 'admin', 'staff'])
     })
 
-    it('does not create member when ownerUserId is empty string', async () => {
+    it('does not create member when superAdminUserId is empty string', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, {
         ...input,
-        ownerUserId: '',
+        superAdminUserId: '',
       })
       expect(harness.created.member).toEqual([])
     })

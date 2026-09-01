@@ -181,7 +181,7 @@ export function PromoteUserForm() {
                 <SelectItem value="admin">
                   Admin — full management access
                 </SelectItem>
-                <SelectItem value="super_admin">
+                <SelectItem value="super-admin">
                   Super Admin — all permissions
                 </SelectItem>
               </SelectContent>

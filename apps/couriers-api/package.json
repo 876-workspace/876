@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@876/billing": "workspace:*",
+    "@876/couriers": "workspace:*",
     "@876/core": "workspace:*",
     "@876/server": "workspace:*",
     "@876/settings": "workspace:*",

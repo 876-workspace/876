@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   let organizationId = memberships.data.data[0]?.organization.id
   if (!organizationId) {
     const organization = await platform.organizations.create({
-      ownerUserId: session.user.id,
+      creatorUserId: session.user.id,
       name: parsed.data.name,
     })
     if (organization.error) {

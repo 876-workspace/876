@@ -96,7 +96,7 @@ describe('create876Client', () => {
         object: 'user',
         id: 'user_testowner000000000000000000',
         email: 'owner@example.com',
-        username: 'owner',
+        username: 'super_admin',
         accountType: 'enterprise',
         emailVerified: true,
         firstName: 'Owner',

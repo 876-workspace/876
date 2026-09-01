@@ -8,9 +8,13 @@ import { validBody, validParams } from '@/http/middleware/validate'
 import { listMembers, resolveMemberAccess } from './access.service'
 
 const tenantParams = z.strictObject({ tenantId: z.string().min(1) })
-const resolveBody = tenantParams.extend({
+export const accessResolveBodySchema = tenantParams.extend({
   userId: z.string().min(1),
-  organizationRole: z.enum(['owner', 'admin', 'member']),
+  // The canonical value is `super-admin`; the legacy `super_admin` stays
+  // accepted for the naming cutover, matching the dual-read in the service.
+  // Rejecting the canonical value here would fail member-access resolution for
+  // every super admin, since callers already normalize to it.
+  organizationRole: z.enum(['super-admin', 'super_admin', 'admin', 'staff']),
 })
 const role = z
   .object({
@@ -28,7 +32,7 @@ const memberAccess = z.object({
 })
 
 async function resolve(req: Request, res: Response) {
-  const body = validBody<z.infer<typeof resolveBody>>(req)
+  const body = validBody<z.infer<typeof accessResolveBodySchema>>(req)
   res.json(
     await resolveMemberAccess(body.tenantId, body.userId, body.organizationRole)
   )
@@ -49,7 +53,7 @@ export function createInternalAccessRouter(resolveGuards: GuardResolver) {
     path: '/projections/member-access',
     summary: 'Resolve effective Billing member access',
     security: { kind: 'admin' },
-    request: { body: resolveBody },
+    request: { body: accessResolveBodySchema },
     responses: {
       200: {
         description: 'Effective Billing access',

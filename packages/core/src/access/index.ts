@@ -25,13 +25,13 @@ export type { NavEntry, NavGroupDefinition, NavRequirement } from './navigation'
 
 // Bounded on purpose: a permission key is a stable, persisted identifier, so an
 // unbounded one is both a storage hazard and an unusable UI label.
-const KEY_PART = /^[a-z][a-z0-9_]{0,63}$/
+const KEY_PART = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 const APP_SLUG = /^876-[a-z][a-z0-9-]{0,63}$/
 
 function assertKeyPart(value: string, field: string): void {
-  if (!KEY_PART.test(value))
+  if (value.length > 64 || !KEY_PART.test(value))
     throw new TypeError(
-      `${field} must be at most 64 lowercase letters, digits, or underscores.`
+      `${field} must be at most 64 characters in lowercase kebab-case.`
     )
 }
 

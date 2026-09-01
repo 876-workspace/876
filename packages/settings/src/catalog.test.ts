@@ -14,7 +14,7 @@ const deliveries: ModuleDefinition = {
   optional: true,
   enabledByDefault: true,
   preferences: [
-    { key: 'proof_required', label: 'Proof', type: 'boolean', default: true },
+    { key: 'proof-required', label: 'Proof', type: 'boolean', default: true },
   ],
 }
 
@@ -45,26 +45,69 @@ describe('defineModuleCatalog', () => {
           ],
         },
       ])
-    ).toThrow('Duplicate preference key in module deliveries: proof_required')
+    ).toThrow('Duplicate preference key in module deliveries: proof-required')
   })
 
-  it('rejects invalid module keys', () => {
-    expect(() =>
-      defineModuleCatalog([{ ...deliveries, key: 'Deliveries' }])
-    ).toThrow('Invalid module key: Deliveries')
-  })
+  it.each(['Deliveries', 'pre_alerts', '-deliveries', 'deliveries-'])(
+    'rejects invalid module key %s',
+    (key) => {
+      expect(() => defineModuleCatalog([{ ...deliveries, key }])).toThrow(
+        `Invalid module key: ${key}`
+      )
+    }
+  )
 
-  it('rejects invalid preference keys', () => {
+  it('rejects underscore-delimited preference keys', () => {
     expect(() =>
       defineModuleCatalog([
         {
           ...deliveries,
           preferences: [
-            { ...deliveries.preferences[0]!, key: 'proof-required' },
+            { ...deliveries.preferences[0]!, key: 'proof_required' },
           ],
         },
       ])
-    ).toThrow('Invalid preference key in module deliveries: proof-required')
+    ).toThrow('Invalid preference key in module deliveries: proof_required')
+  })
+
+  it('rejects underscore-delimited reference namespaces', () => {
+    expect(() =>
+      defineModuleCatalog([
+        {
+          ...deliveries,
+          preferences: [
+            {
+              key: 'default-category',
+              label: 'Default category',
+              type: 'reference',
+              default: 'general',
+              namespace: 'package_category',
+            },
+          ],
+        },
+      ])
+    ).toThrow(
+      'Invalid reference namespace in deliveries.default-category: package_category'
+    )
+  })
+
+  it('accepts kebab-case reference namespaces', () => {
+    expect(() =>
+      defineModuleCatalog([
+        {
+          ...deliveries,
+          preferences: [
+            {
+              key: 'default-category',
+              label: 'Default category',
+              type: 'reference',
+              default: 'general',
+              namespace: 'package-category',
+            },
+          ],
+        },
+      ])
+    ).not.toThrow()
   })
 
   it('rejects an enum default outside its options', () => {
@@ -122,10 +165,10 @@ describe('catalog lookups', () => {
 
     expect(findModule(catalog, 'deliveries')).toBe(module)
     expect(findModule(catalog, 'missing')).toBeUndefined()
-    expect(findPreference(catalog, 'deliveries', 'proof_required')).toBe(
+    expect(findPreference(catalog, 'deliveries', 'proof-required')).toBe(
       module.preferences[0]
     )
-    expect(findPreference(catalog, 'missing', 'proof_required')).toBeUndefined()
-    expect(moduleDefaults(module)).toEqual({ proof_required: true })
+    expect(findPreference(catalog, 'missing', 'proof-required')).toBeUndefined()
+    expect(moduleDefaults(module)).toEqual({ 'proof-required': true })
   })
 })

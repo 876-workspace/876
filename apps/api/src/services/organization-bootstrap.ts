@@ -7,7 +7,7 @@ import { getSettings } from '@/config'
 import { AppHttpError } from '@/http/errors'
 import { generateId, normalizeSlug } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
-import { OWNER_ROLE_NAME } from '@/platform/permissions'
+import { SUPER_ADMIN_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { getAuthProvider } from '@/providers/workos/adapter'
 
@@ -214,7 +214,7 @@ function isRetryableWorkspaceFailure(error: unknown): boolean {
 export async function bootstrapExistingUser(
   deps: OrganizationBootstrapDeps,
   params: {
-    ownerUserId: string
+    creatorUserId: string
     name: string
     slug?: string | null
     countryCode?: string | null
@@ -227,7 +227,7 @@ export async function bootstrapExistingUser(
     sourceAppId?: string | null
   }
 ): Promise<OrganizationRow> {
-  const user = await deps.repository.findUserById(params.ownerUserId)
+  const user = await deps.repository.findUserById(params.creatorUserId)
   if (!user) {
     throw new AppHttpError({
       code: 'user/not-found',
@@ -309,8 +309,8 @@ export async function bootstrapExistingUser(
       requireProvisioningSelection: true,
       now,
     })
-    const ownerRole = (orgRoles as Record<string, { id: string } | undefined>)[
-      OWNER_ROLE_NAME
+    const superAdminRole = (orgRoles as Record<string, { id: string } | undefined>)[
+      SUPER_ADMIN_ROLE_NAME
     ]
 
     await deps.repository.createMembership({
@@ -318,8 +318,8 @@ export async function bootstrapExistingUser(
       organizationId: organization.id,
       userId: user.id,
       workosMembershipId: workosMembership.id,
-      role: OWNER_ROLE_NAME,
-      roleId: ownerRole?.id ?? null,
+      role: SUPER_ADMIN_ROLE_NAME,
+      roleId: superAdminRole?.id ?? null,
       status: 'active',
       createdAt: nowBigint,
       updatedAt: nowBigint,
@@ -363,7 +363,7 @@ export class OrganizationBootstrapService {
   }
 
   bootstrapExistingUser(params: {
-    ownerUserId: string
+    creatorUserId: string
     name: string
     slug?: string | null
     countryCode?: string | null

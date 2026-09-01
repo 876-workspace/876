@@ -64,7 +64,7 @@ function user(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function membership(role = 'owner', userId = 'user_1', createdAt = 10n) {
+function membership(role = 'super-admin', userId = 'user_1', createdAt = 10n) {
   return {
     id: `mem_${userId}`,
     organizationId: 'org_1',
@@ -81,7 +81,7 @@ beforeEach(() => {
 })
 
 describe('snapshotForOrganization', () => {
-  it('uses owner as primary contact', async () => {
+  it('uses super admin as primary contact', async () => {
     const repo = makeRepository()
     repo.listMembershipsByOrganizationId.mockResolvedValue([
       membership() as never,
@@ -127,7 +127,7 @@ describe('snapshotForOrganization', () => {
     expect(repo.listMembershipsByOrganizationId).not.toHaveBeenCalled()
   })
 
-  it('falls back to earliest member when no owner', async () => {
+  it('falls back to earliest member when no super admin exists', async () => {
     const repo = makeRepository()
     repo.listMembershipsByOrganizationId.mockResolvedValue([
       membership('admin', 'user_1') as never,
@@ -224,9 +224,9 @@ describe('snapshotForOrganization', () => {
     expect(snapshot.contactEmail).toBe('ada@example.com')
   })
 
-  it('prefers owner over earlier admin', async () => {
+  it('prefers super admin over earlier admin', async () => {
     const admin = membership('admin', 'user_admin', 5n)
-    const owner = membership('owner', 'user_owner', 10n)
+    const owner = membership('super-admin', 'user_owner', 10n)
     const repo = makeRepository()
     repo.listMembershipsByOrganizationId.mockResolvedValue([
       admin as never,

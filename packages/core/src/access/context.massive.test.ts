@@ -131,7 +131,7 @@ describe('context massive — can/hasFeature/variantOf triad', () => {
       'console:requests',
       'users:read',
       'users:delete',
-      'console:danger_zone',
+      'console:danger-zone',
     ]
     const grouped = groupByModule(
       consolePermissionCatalog,

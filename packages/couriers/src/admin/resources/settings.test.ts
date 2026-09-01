@@ -39,6 +39,7 @@ function createModuleListFixture(tenantId = 'ten_kgn_7f3a9b2c') {
       is_enabled: false,
     }),
   ]
+
   return {
     object: 'list' as const,
     data: modules,
@@ -52,8 +53,8 @@ const preferencesFixture = {
   object: 'module_preferences' as const,
   module: 'packages' as const,
   preferences: {
-    volumetric_divisor: 6000,
-    chargeable_weight_rule: 'greater_of',
+    'volumetric-divisor': 6000,
+    'chargeable-weight-rule': 'greater-of',
   },
   updated_at: 1_785_240_000,
 }
@@ -271,7 +272,7 @@ describe('admin settings resource', () => {
       )
     })
 
-    it('updates module preferences with the exact body', async () => {
+    it('updates module preferences with the exact canonical-key body', async () => {
       const fetchMock = vi
         .fn<typeof fetch>()
         .mockResolvedValue(
@@ -280,7 +281,7 @@ describe('admin settings resource', () => {
       const resource = createSettingsResource(
         buildAdminRuntime({ baseUrl, apiKey, internalKey, fetch: fetchMock })
       )
-      const body = { volumetric_divisor: 6000 }
+      const body = { 'volumetric-divisor': 6000 }
 
       const result = await resource.preferences.update(
         'ten_kgn_7f3a9b2c',

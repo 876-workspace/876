@@ -82,5 +82,5 @@ jobs:
       - name: Test Invoice Billing configuration
         run: >-
           pnpm --filter @876/invoice-app exec vitest run
-          src/lib/876/billing-config.test.ts
+          src/lib/services/billing-config.test.ts
           --pool=forks --maxWorkers=2

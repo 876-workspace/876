@@ -8,7 +8,7 @@ export function createMyWorkRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.my-work.read',
-      sessionPermissions: ['my_work.view'],
+      sessionPermissions: ['my-work.view'],
     },
     handler: retrieveMyWork,
   })

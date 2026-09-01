@@ -203,7 +203,7 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
           slug: 'acme',
           status: 'active',
         },
-        role: 'member',
+        role: 'staff',
       },
       {
         organization: {
@@ -212,7 +212,7 @@ describe('Shell — topbar OrgSwitcher (goldbergyoni AAA, diff: always visible)'
           slug: 'beta',
           status: 'active',
         },
-        role: 'owner',
+        role: 'super-admin',
       },
     ]
     // Mock platform to return two active orgs

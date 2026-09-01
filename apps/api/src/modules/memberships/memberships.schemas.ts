@@ -47,7 +47,7 @@ export const createMembershipBodySchema = z.strictObject({
     .string()
     .meta({ description: 'Unique identifier for the organization.' }),
   role: z.string().min(1).max(64).optional().nullable().meta({
-    description: "The member's role. Defaults to 'member'.",
+    description: "The member's role. Defaults to 'staff'.",
   }),
   position: z.string().trim().min(1).max(160).optional().nullable().meta({
     description: "The member's free-text job position.",

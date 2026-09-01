@@ -93,7 +93,7 @@ export default async function OrganizationMembersPage({
             }))}
             canManage={canManage}
             callerMembershipId={membership.id}
-            callerIsOwner={membership.role === 'owner'}
+            callerIsSuperAdmin={membership.role === 'super-admin'}
           />
         )}
       </div>

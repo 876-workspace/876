@@ -7,7 +7,10 @@ import { getLogger } from '@/platform/logger'
 import { listObject, type ListObject } from '@/http/envelope'
 import { generateId, normalizeSlug } from '@/platform/ids'
 import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
-import { defaultPermissionsForRoleName } from '@/platform/permissions'
+import {
+  defaultPermissionsForRoleName,
+  SUPER_ADMIN_ROLE_NAME,
+} from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { ensureAppReady } from '@/services/finance-provisioning-readiness'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
@@ -301,7 +304,7 @@ export async function createOrganization(
 }
 
 export async function bootstrapOrganization(body: {
-  ownerUserId: string
+  creatorUserId: string
   name: string
   slug?: string | null
   currencyCode?: string | null
@@ -310,7 +313,7 @@ export async function bootstrapOrganization(body: {
 }): Promise<Organization> {
   const deps = createOrganizationBootstrapDeps()
   const org = await bootstrapExistingUserFn(deps, {
-    ownerUserId: body.ownerUserId,
+    creatorUserId: body.creatorUserId,
     name: body.name,
     slug: body.slug ?? null,
     currencyCode: body.currencyCode ?? null,
@@ -521,7 +524,10 @@ export async function updateOrganizationProfile(
   body: OrgProfileUpdateBody,
   principal: Principal
 ): Promise<Organization> {
-  await requireOrgMembership(organizationId, principal, ['owner', 'admin'])
+  await requireOrgMembership(organizationId, principal, [
+    SUPER_ADMIN_ROLE_NAME,
+    'admin',
+  ])
   const org = await repository.findOrganizationById(organizationId)
   if (!org)
     throw notFound(
@@ -854,7 +860,7 @@ export async function createOrganizationMembership(
   }
   const now = nowUnixSeconds()
   const nowBig = BigInt(now)
-  const role = body.role ?? 'member'
+  const role = body.role ?? 'staff'
   const workosMembershipId = await ensureProviderMembership(
     getAuthProvider(getSettings()) as unknown as Parameters<
       typeof ensureProviderMembership
@@ -955,7 +961,7 @@ export async function createOrganizationInvite(
     id: generateId('invite'),
     organizationId,
     email: body.email.trim().toLowerCase(),
-    role: body.role ?? 'member',
+    role: body.role ?? 'staff',
     sourceAppId,
     token,
     status: 'pending',

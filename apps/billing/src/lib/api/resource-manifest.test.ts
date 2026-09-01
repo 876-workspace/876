@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -13,15 +13,32 @@ const API_ROOT = fileURLToPath(new URL('../../app/api', import.meta.url))
 
 describe('Billing proxied resource manifest', () => {
   it('exactly matches the resource proxy route tree', () => {
+    // Membership is defined by actually delegating to the generic proxy, not by
+    // the `[[...path]]` file shape: a hand-written typed dispatcher (accounting
+    // providers) uses the same shape but must never be listed as proxied.
     const routeResources = readdirSync(API_ROOT, { withFileTypes: true })
-      .filter(
-        (entry) =>
-          entry.isDirectory() &&
-          existsSync(join(API_ROOT, entry.name, '[[...path]]', 'route.ts'))
-      )
+      .filter((entry) => {
+        if (!entry.isDirectory()) return false
+        const routeFile = join(API_ROOT, entry.name, '[[...path]]', 'route.ts')
+        if (!existsSync(routeFile)) return false
+        return readFileSync(routeFile, 'utf8').includes(
+          'createBillingResourceRoute'
+        )
+      })
       .map((entry) => entry.name)
 
     expect(new Set(PROXIED_RESOURCES)).toEqual(new Set(routeResources))
+  })
+
+  it('excludes a typed dispatcher that shares the catch-all route shape', () => {
+    // Regression anchor: accounting providers authorize and call named SDK
+    // operations. Listing it here would claim a generic passthrough exists.
+    expect(isProxiedResource('accounting-providers')).toBe(false)
+    expect(
+      existsSync(
+        join(API_ROOT, 'accounting-providers', '[[...path]]', 'route.ts')
+      )
+    ).toBe(true)
   })
 
   it('is alphabetically sorted', () => {

@@ -144,8 +144,14 @@ async function ensureApplicationProfileSelections(
   appIds: string[],
   now: number
 ): Promise<void> {
-  const { resolveAndPersistApplicationProvisioningProfile } = await import(
+  const {
+    resolveAndPersistApplicationProvisioningProfile,
+    retrieveSelectedApplicationProvisioningRoles,
+  } = await import(
     '@/modules/provisioning/application-provisioning-profile.service'
+  )
+  const { materializeProvisionedRolesForApp } = await import(
+    '@/modules/app-access'
   )
 
   for (const appId of appIds) {
@@ -154,6 +160,15 @@ async function ensureApplicationProfileSelections(
       appId,
       now
     )
+    const roles = await retrieveSelectedApplicationProvisioningRoles(
+      organizationId,
+      appId
+    )
+    await materializeProvisionedRolesForApp({
+      organizationId,
+      appId,
+      roles,
+    })
   }
 }
 
@@ -395,6 +410,7 @@ export async function assignMemberApps(params: {
   now: number
   sourceAppId?: string | null
   assignedBy?: string | null
+  appRoleKey?: 'super-admin' | 'admin' | 'staff'
 }): Promise<void> {
   const now = BigInt(params.now)
   const assignedBy = params.assignedBy ?? null
@@ -412,11 +428,17 @@ export async function assignMemberApps(params: {
   if (sourceAppId && !appIds.includes(sourceAppId)) appIds.push(sourceAppId)
 
   for (const appId of appIds) {
+    const role = await repository.findProvisionedAppRole(
+      params.organizationId,
+      appId,
+      params.appRoleKey
+    )
     await repository.assignApp({
       id: generateId('appAssignment'),
       organizationId: params.organizationId,
       userId: params.userId,
       appId,
+      appRoleId: role?.id ?? null,
       assignedBy,
       now,
     })

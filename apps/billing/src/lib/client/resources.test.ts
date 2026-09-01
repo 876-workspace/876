@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { client } from './index'
+import { accountingProviders } from './accounting-providers'
 import { addons } from './addons'
 import { auth } from './auth'
 import { bankAccounts } from './bank-accounts'
@@ -580,6 +581,7 @@ describe('Billing browser resource clients', () => {
 
   it('exposes every resource facade on the root client', () => {
     expect(client).toEqual({
+      accountingProviders,
       addons,
       auth,
       bankAccounts,

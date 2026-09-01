@@ -23,7 +23,7 @@ export const createTenantBodySchema = z.strictObject({
     .trim()
     .regex(/^[a-z0-9-]+$/),
   name: z.string().trim().min(1).max(120),
-  owner_user_id: z.string().min(1).optional(),
+  creator_user_id: z.string().min(1).optional(),
 })
 export type CreateTenantBody = z.infer<typeof createTenantBodySchema>
 

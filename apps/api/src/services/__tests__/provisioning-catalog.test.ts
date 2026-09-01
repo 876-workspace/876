@@ -130,12 +130,23 @@ function minimalFinanceDraft(
 
 describe('resourceRegistry', () => {
   it('returns the registered catalog for each target family', () => {
+    const billingResources = APPLICATION_RESOURCES['876-billing']
+    if (!billingResources)
+      throw new Error('Expected the Billing application resource catalog.')
+
     expect(resourceRegistry('finance', '')).toBe(FINANCE_RESOURCES)
     expect(resourceRegistry('organization', '')).toBe(ORGANIZATION_RESOURCES)
-    expect(resourceRegistry('application', '876-billing')).toBe(
-      APPLICATION_RESOURCES['876-billing']
+    // application registries include the shared app_role entry merged in
+    expect(resourceRegistry('application', '876-billing')).toMatchObject(
+      billingResources
     )
-    expect(resourceRegistry('application', 'unknown-app')).toEqual({})
+    expect(resourceRegistry('application', '876-billing')).toHaveProperty(
+      'app_role'
+    )
+    // unknown apps still get the standard app_role entry
+    expect(resourceRegistry('application', 'unknown-app')).toHaveProperty(
+      'app_role'
+    )
   })
 })
 
@@ -248,13 +259,18 @@ describe('catalogDefinitions', () => {
 
   it('keeps billing document preferences optional', () => {
     const definitions = catalogDefinitions('application', '876-billing')
-    expect(definitions).toHaveLength(1)
-    expect(definitions[0]).toMatchObject({
+    // billing gets document_preference (app-specific) + app_role (standard for all apps)
+    expect(definitions).toHaveLength(2)
+    const docPref = definitions.find(
+      (d) => d.resourceType === 'document_preference'
+    )
+    expect(docPref).toMatchObject({
       resourceType: 'document_preference',
       multiple: true,
       minimumItems: 0,
       maximumItems: null,
     })
+    expect(definitions.find((d) => d.resourceType === 'app_role')).toBeDefined()
   })
 })
 

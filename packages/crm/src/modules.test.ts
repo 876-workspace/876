@@ -25,7 +25,7 @@ describe('CRM module catalog', () => {
       'notes',
       'teams',
       'categories',
-      'request_forms',
+      'request-forms',
       'reports',
     ])
   })
@@ -57,7 +57,7 @@ describe('CRM module catalog', () => {
     expect([...CRM_EXCLUDED_MODULE_KEYS]).toEqual([
       'calendars',
       'customers',
-      'my_work',
+      'my-work',
       'priorities',
       'settings',
     ])
@@ -117,7 +117,7 @@ describe('CRM module catalog', () => {
       { key: 'notes', optional: true, enabled: true },
       { key: 'teams', optional: true, enabled: true },
       { key: 'categories', optional: true, enabled: true },
-      { key: 'request_forms', optional: true, enabled: true },
+      { key: 'request-forms', optional: true, enabled: true },
       { key: 'reports', optional: true, enabled: true },
     ])
   })
@@ -142,8 +142,8 @@ describe('CRM integration scopes', () => {
       'crm.categories.write',
       'crm.priorities.read',
       'crm.priorities.write',
-      'crm.request_forms.read',
-      'crm.request_forms.write',
+      'crm.request-forms.read',
+      'crm.request-forms.write',
       'crm.reports.read',
     ])
   })

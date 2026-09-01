@@ -15,7 +15,7 @@ const InvitesSchema = z.strictObject({
     .array(
       z.strictObject({
         email: z.string().trim().pipe(z.email()),
-        role: z.enum(['member', 'admin']).optional(),
+        role: z.enum(['staff', 'admin']).optional(),
       })
     )
     .min(1)
@@ -25,7 +25,7 @@ const InvitesSchema = z.strictObject({
 export async function POST(request: NextRequest) {
   const ctx = await getManageContext()
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role === 'member')
+  if (ctx.role === 'staff')
     return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
 
   let body: unknown

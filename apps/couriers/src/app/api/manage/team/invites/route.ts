@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
   const ctx = await getManageContext(parsed.data.orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'owner' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return apiJson(
       { error: 'You do not have permission to invite users.' },
       { status: 403, code: 'auth/forbidden' }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
   const platform = await getPlatformClient()
   const result = await platform.invites.create(ctx.orgId, {
     email: parsed.data.email,
-    role: roleResult.data.system_key === 'admin' ? 'admin' : 'member',
+    role: roleResult.data.system_key === 'admin' ? 'admin' : 'staff',
     sourceAppSlug: COURIERS_APP_SLUG,
   })
   if (result.error)

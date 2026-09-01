@@ -44,7 +44,10 @@ async function resolveOrgPrimaryContact(
     if (rows.length === 0) return null
 
     const owner =
-      rows.find((membership) => membership.role === 'owner') ??
+      rows.find(
+        (membership) =>
+          membership.role === 'super-admin' || membership.role === 'super_admin'
+      ) ??
       rows.reduce((earliest, current) =>
         current.created_at < earliest.created_at ? current : earliest
       )

@@ -12,13 +12,27 @@ import { getWorkspace } from '@/lib/services/workspace'
 import { consumerUrl } from './app-urls'
 import { getAuthSession, isSignedSession } from './session'
 
+export type EnterpriseOrgRole = 'super-admin' | 'admin' | 'staff'
+
+export function normalizeOrgRole(role: string): EnterpriseOrgRole {
+  if (
+    role === 'super-admin' ||
+    role === 'super_admin' ||
+    role === 'superadmin' ||
+    role === 'owner'
+  )
+    return 'super-admin'
+  if (role === 'admin') return 'admin'
+  return 'staff'
+}
+
 export async function requireSession(returnTo: string) {
   const result = await getAuthSession()
   if (!isSignedSession(result)) redirect(createAuthLoginPath(returnTo))
 
   // Realm gate (relocated from the Edge proxy — needs the Node runtime): only
-  // Enterprise accounts may enter this app. Cross-realm accounts (owner +
-  // curated super admins) are exempt and pass.
+  // Enterprise accounts may enter this app. Curated cross-realm super admins
+  // are exempt and pass.
   const { realm, crossRealm } = result.user
   if (realm !== 'enterprise' && !crossRealm) redirect('/access-denied')
 
@@ -35,9 +49,9 @@ type AuthRoutingUser = {
   avatar: string | null
 }
 
-type ActiveMembership = {
+export type ActiveMembership = {
   id: string
-  role: string
+  role: EnterpriseOrgRole
   status: string
   permissions: string[]
   organization: {
@@ -139,7 +153,13 @@ async function findActiveMembershipBySlug(
   // An empty list is the legitimate "no membership"; an error envelope is a real
   // failure and must not be downgraded to a silent access denial.
   const memberships = unwrapResult(result, 'routing memberships').data
-  return memberships.find((m) => m.organization.slug === slug) ?? null
+  const membership = memberships.find((m) => m.organization.slug === slug)
+  if (!membership) return null
+
+  return {
+    ...membership,
+    role: normalizeOrgRole(membership.role),
+  }
 }
 
 export async function resolvePrimaryOrganizationPath(
@@ -180,7 +200,7 @@ export async function getEnabledEnterpriseFeatureSlugs(
   if (result.error)
     Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
       level: 'error',
-      tags: { category: 'feature_flags' },
+      tags: { category: 'feature-flags' },
       extra: {
         call: 'features.evaluate',
         errorCode: result.error.code,

@@ -34,7 +34,7 @@ function createRequest(body: unknown) {
   }) as unknown as Parameters<typeof POST>[0]
 }
 
-function membershipsFor(organizationId: string | null, role = 'owner') {
+function membershipsFor(organizationId: string | null, role = 'super-admin') {
   return {
     data: {
       data: organizationId
@@ -90,7 +90,7 @@ describe('POST /api/onboarding/organization', () => {
         error: null,
       })
       expect(mockPlatform.organizations.create).toHaveBeenCalledWith({
-        ownerUserId: 'user_2kL9mN4q',
+        creatorUserId: 'user_2kL9mN4q',
         name: 'Acme Trading Ltd',
       })
       // Activation is asserted to require embedded finance so a misconfigured
@@ -135,7 +135,7 @@ describe('POST /api/onboarding/organization', () => {
       await POST(createRequest({ name: '  Acme Trading Ltd  ' }))
 
       expect(mockPlatform.organizations.create).toHaveBeenCalledWith({
-        ownerUserId: 'user_2kL9mN4q',
+        creatorUserId: 'user_2kL9mN4q',
         name: 'Acme Trading Ltd',
       })
     })
@@ -233,7 +233,7 @@ describe('POST /api/onboarding/organization', () => {
 
     it('rejects unknown fields so a client cannot smuggle an owner', async () => {
       const response = await POST(
-        createRequest({ name: 'Acme Trading Ltd', ownerUserId: 'user_other' })
+        createRequest({ name: 'Acme Trading Ltd', creatorUserId: 'user_other' })
       )
 
       expect(response.status).toBe(422)
@@ -280,7 +280,7 @@ describe('POST /api/onboarding/organization', () => {
       await POST(createRequest({ name: 'Acme Trading Ltd' }))
 
       expect(mockPlatform.organizations.create).toHaveBeenCalledWith({
-        ownerUserId: 'user_session',
+        creatorUserId: 'user_session',
         name: 'Acme Trading Ltd',
       })
     })

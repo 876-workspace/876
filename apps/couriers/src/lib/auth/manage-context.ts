@@ -10,6 +10,12 @@ import { getPlatformClient } from '@/lib/services/platform'
 import { couriersOperator } from '@/lib/services/couriers'
 import type { AppAccessStatus, ManageContext, OrgRole } from '@/types/auth'
 
+export function normalizeOrgRole(role: string): OrgRole {
+  if (role === 'super-admin' || role === 'super_admin') return 'super-admin'
+  if (role === 'admin') return 'admin'
+  return 'staff'
+}
+
 export const getManageContext = cache(async function getManageContext(
   orgSlug?: string
 ): Promise<ManageContext | null> {
@@ -27,7 +33,7 @@ export const getManageContext = cache(async function getManageContext(
       'Platform outage: auth.getRoutingMemberships failed',
       {
         level: 'error',
-        tags: { category: 'platform_client' },
+        tags: { category: 'platform-client' },
         extra: {
           call: 'auth.getRoutingMemberships',
           errorCode: membershipsResult.error.code ?? null,
@@ -51,7 +57,7 @@ export const getManageContext = cache(async function getManageContext(
       id: membership.organization.id,
       name: membership.organization.name,
       slug: membership.organization.slug,
-      role: membership.role as OrgRole,
+      role: normalizeOrgRole(membership.role),
       logoUrl: membership.organization.logo_url,
     }))
   const orgId = user.orgId ?? null
@@ -60,7 +66,7 @@ export const getManageContext = cache(async function getManageContext(
   let resolvedOrgName: string | null = null
   let resolvedOrgSlug: string | null = null
   let resolvedOrgLogoUrl: string | null = null
-  let resolvedRole: OrgRole = 'member'
+  let resolvedRole: OrgRole = 'staff'
   let resolvedTenant: ManageContext['tenant'] = null
 
   if (orgSlug !== undefined) {
@@ -76,7 +82,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgName = match.organization.name
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
-    resolvedRole = match.role as OrgRole
+    resolvedRole = normalizeOrgRole(match.role)
     const tenant = await couriersOperator.tenants.retrieve({
       organizationId: match.organization.id,
     })
@@ -92,7 +98,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgName = match.organization.name
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
-    resolvedRole = match.role as OrgRole
+    resolvedRole = normalizeOrgRole(match.role)
     const tenant = await couriersOperator.tenants.retrieve({
       organizationId: orgId,
     })
@@ -108,7 +114,7 @@ export const getManageContext = cache(async function getManageContext(
         resolvedOrgName = membership.organization.name
         resolvedOrgSlug = membership.organization.slug
         resolvedOrgLogoUrl = membership.organization.logo_url
-        resolvedRole = membership.role as OrgRole
+        resolvedRole = normalizeOrgRole(membership.role)
         resolvedTenant = toCouriersTenant(tenant.data)
         break
       }
@@ -122,7 +128,7 @@ export const getManageContext = cache(async function getManageContext(
       resolvedOrgName = first.organization.name
       resolvedOrgSlug = first.organization.slug
       resolvedOrgLogoUrl = first.organization.logo_url
-      resolvedRole = first.role as OrgRole
+      resolvedRole = normalizeOrgRole(first.role)
     }
   }
 
@@ -135,7 +141,7 @@ export const getManageContext = cache(async function getManageContext(
   if (accessResult.error) {
     Sentry.captureMessage('Platform outage: subscriptions.retrieve failed', {
       level: 'error',
-      tags: { category: 'platform_client' },
+      tags: { category: 'platform-client' },
       extra: {
         call: 'subscriptions.retrieve',
         errorCode: accessResult.error.code ?? null,

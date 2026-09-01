@@ -7,14 +7,19 @@ export type TokenIntrospection = {
   scopes: ReadonlySet<string>
 }
 
-export type OrganizationRole = 'owner' | 'admin' | 'member'
+/** Canonical organization role values exposed by the Billing identity gateway. */
+export type OrganizationRole = 'super-admin' | 'admin' | 'staff'
 
 export type OrganizationMembership = {
   role: OrganizationRole
 }
 
 export type IdentityFailureReason =
-  'configuration' | 'invalid-response' | 'network' | 'timeout' | 'upstream'
+  | 'configuration'
+  | 'invalid-response'
+  | 'network'
+  | 'timeout'
+  | 'upstream'
 
 export class IdentityUnavailableError extends Error {
   readonly attempts: number

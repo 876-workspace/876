@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function NoAccessPage() {
   const ctx = await getManageContext()
 
-  if (ctx?.accessStatus === 'active' && ctx.role !== 'member') {
+  if (ctx?.accessStatus === 'active' && ctx.role !== 'staff') {
     redirect('/')
   }
 
@@ -67,7 +67,7 @@ function deriveContent(
     }
   }
 
-  // accessStatus === 'active' but role === 'member'
+  // accessStatus === 'active' but role === 'staff'
   return {
     heading: 'You don’t have access to this workspace',
     body: 'Your account doesn’t have permission to use 876 Couriers. Contact your organization admin.',

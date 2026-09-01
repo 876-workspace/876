@@ -15,11 +15,13 @@ vi.mock('@/lib/auth/manage-context', () => ({
 
 vi.mock('@/lib/services/couriers', () => ({
   getCouriers: mocks.getCouriers,
-  billingIntegration: {
-    customers: { retrieve: mocks.billingRetrieve },
-  },
   couriersOperator: {
     customers: { mailboxes: { list: mocks.mailboxesList } },
+  },
+}))
+vi.mock('@/lib/services/billing', () => ({
+  billingIntegration: {
+    customers: { retrieve: mocks.billingRetrieve },
   },
 }))
 

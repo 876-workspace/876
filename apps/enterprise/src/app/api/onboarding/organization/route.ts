@@ -18,7 +18,7 @@ export const runtime = 'nodejs'
  *
  * Social providers create an identity and session, not an organization. This
  * route bridges that intentionally separated provider step to the platform's
- * durable organization bootstrap, which creates the owner membership and
+ * durable organization bootstrap, which creates the super-admin membership and
  * provisions the Enterprise app through the authenticated app credential.
  */
 export async function POST(request: NextRequest): Promise<Response> {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   if (existing) return response(existing.organization.id)
 
   const organization = await platform.organizations.create({
-    ownerUserId: user.id,
+    creatorUserId: user.id,
     name: parsed.data.name,
   })
   if (organization.error) {

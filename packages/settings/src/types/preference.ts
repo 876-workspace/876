@@ -11,7 +11,7 @@ export interface PreferenceOption {
 }
 
 interface PreferenceBase {
-  /** snake_case, unique within its module. */
+  /** Kebab-case system-owned key, unique within its module. */
   key: string
   label: string
   /** One short line of helper text, or omitted. Never a paragraph. */
@@ -47,6 +47,7 @@ export type PreferenceDefinition =
   | (PreferenceBase & {
       type: 'reference'
       default: string
+      /** Kebab-case namespace owned by the app; referenced record keys are not rewritten. */
       namespace: string
     })
 

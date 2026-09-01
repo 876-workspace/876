@@ -126,13 +126,13 @@ describe('catalogs — massive edge coverage', () => {
     expect(hasPermission(eff, 'console:support')).toBe(false)
   })
 
-  it('dangerous flag covers delete and danger_zone only', () => {
+  it('dangerous flag covers delete and danger-zone only', () => {
     const dangerous = consolePermissionCatalog.permissions
       .filter((p) => p.isDangerous)
       .map((p) => p.key)
       .sort()
     const expected = consolePermissionCatalog.permissions
-      .filter((p) => p.action === 'delete' || p.action === 'danger_zone')
+      .filter((p) => p.action === 'delete' || p.action === 'danger-zone')
       .map((p) => p.key)
       .sort()
     expect(dangerous).toEqual(expected)
@@ -156,14 +156,13 @@ describe('catalogs — massive edge coverage', () => {
     'console:storage',
     'console:security',
     'console:reports',
-    'console:danger_zone',
-  ])('catalog contains console:%s', (perm) => {
-    const key = perm
-    expect(catalogKeys).toContain(key)
+    'console:danger-zone',
+  ])('catalog contains %s', (perm) => {
+    expect(catalogKeys).toContain(perm)
   })
 
   it('idempotence: triple adapt equals single', () => {
-    let v: string[] = ['console:support']
+    const v: string[] = ['console:support']
     const once = toStoredPermissionKeys(v)
     const twice = toStoredPermissionKeys(once)
     const thrice = toStoredPermissionKeys(twice)
@@ -184,7 +183,7 @@ describe('catalogs — massive edge coverage', () => {
   })
 
   it('defineAppPermissionCatalog rejects invalid keys fuzz', () => {
-    const bad = ['', ' ', 'A', 'a-b', 'a.b', '1a', 'a'.repeat(65)]
+    const bad = ['', ' ', 'A', 'a.b', '1a', 'a'.repeat(65), 'sales_orders']
     for (const key of bad) {
       expect(() =>
         defineAppPermissionCatalog({
@@ -195,7 +194,7 @@ describe('catalogs — massive edge coverage', () => {
     }
   })
 
-  it('stress: 5000 filter calls consistent', () => {
+  it('stress: repeated filter calls stay consistent', () => {
     for (let i = 0; i < 100; i++) {
       expect(
         toStoredPermissionKeys(['console:requests', 'users:read'])

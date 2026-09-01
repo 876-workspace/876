@@ -25,7 +25,7 @@ export default async function GetStartedPage() {
     redirect('/')
   }
 
-  if (ctx.accessStatus === 'blocked' || ctx.role === 'member') {
+  if (ctx.accessStatus === 'blocked' || ctx.role === 'staff') {
     redirect('/no-access')
   }
 

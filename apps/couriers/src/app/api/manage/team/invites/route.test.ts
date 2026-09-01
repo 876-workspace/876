@@ -36,7 +36,7 @@ function request(body: string | Record<string, unknown>) {
 }
 
 function ctx(
-  role: 'owner' | 'admin' | 'member',
+  role: 'super-admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return {
@@ -122,7 +122,7 @@ describe('Couriers team invite route', () => {
   })
 
   it('forbids a plain organization member from inviting', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('member'))
+    mocks.getManageContext.mockResolvedValue(ctx('staff'))
 
     const response = await POST(request(validBody))
     const body = await response.json()
@@ -198,7 +198,7 @@ describe('Couriers team invite route', () => {
     expect(response.status).toBe(201)
     expect(mocks.createInvite).toHaveBeenCalledWith('org_123', {
       email: 'malik@example.com',
-      role: 'member',
+      role: 'staff',
       sourceAppSlug: '876-couriers',
     })
   })
@@ -219,7 +219,7 @@ describe('Couriers team invite route', () => {
 
     expect(mocks.createInvite).toHaveBeenCalledWith('org_123', {
       email: 'staff@example.com',
-      role: 'member',
+      role: 'staff',
       sourceAppSlug: '876-couriers',
     })
   })
@@ -243,7 +243,7 @@ describe('Couriers team invite route', () => {
   })
 
   it('allows an owner to invite users', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('owner'))
+    mocks.getManageContext.mockResolvedValue(ctx('super-admin'))
 
     const response = await POST(request(validBody))
 

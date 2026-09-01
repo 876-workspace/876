@@ -6,7 +6,7 @@ import type {
   ResolvedModulePreferences,
 } from './types'
 
-const KEY_PATTERN = /^[a-z][a-z0-9_]*$/
+const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 export function defineModuleCatalog(
   modules: ModuleDefinition[]
@@ -64,6 +64,10 @@ function validatePreferences(module: ModuleDefinition): void {
     if (preferenceKeys.has(preference.key))
       throw new Error(
         `Duplicate preference key in module ${module.key}: ${preference.key}`
+      )
+    if (preference.type === 'reference' && !KEY_PATTERN.test(preference.namespace))
+      throw new Error(
+        `Invalid reference namespace in ${module.key}.${preference.key}: ${preference.namespace}`
       )
 
     preferenceKeys.add(preference.key)

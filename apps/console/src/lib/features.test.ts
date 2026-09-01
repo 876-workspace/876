@@ -114,7 +114,7 @@ describe('getConsoleFeatures', () => {
 
   it('returns UI flags while withholding widgets when the master is disabled', async () => {
     mocks.featuresEvaluate.mockResolvedValue(
-      listResult(['console_theme_switcher', 'console_search_bar'])
+      listResult(['console-theme-switcher', 'console-search-bar'])
     )
 
     const result = await getConsoleFeatures({
@@ -136,10 +136,10 @@ describe('getConsoleFeatures', () => {
   it('treats Chat as a widget and excludes it from the panel widget list', async () => {
     mocks.featuresEvaluate.mockResolvedValue(
       listResult([
-        'platform_widgets',
-        'platform_widgets_chat',
-        'console_widgets',
-        'console_widgets_chat',
+        'platform-widgets',
+        'platform-widgets-chat',
+        'console-widgets',
+        'console-widgets-chat',
       ])
     )
 
@@ -152,13 +152,13 @@ describe('getConsoleFeatures', () => {
   it('requires both platform and app flags for shared widgets and keeps private widgets app-scoped', async () => {
     mocks.featuresEvaluate.mockResolvedValue(
       listResult([
-        'console_widgets',
-        'console_widgets_notepad',
-        'console_widgets_live_logs',
-        'platform_widgets',
-        'platform_widgets_notepad',
-        'console_global_add',
-        'console_app_switcher',
+        'console-widgets',
+        'console-widgets-notepad',
+        'console-widgets-live-logs',
+        'platform-widgets',
+        'platform-widgets-notepad',
+        'console-global-add',
+        'console-app-switcher',
       ])
     )
     const result = await getConsoleFeatures({

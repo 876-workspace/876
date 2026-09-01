@@ -10,6 +10,22 @@ import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 import { logger } from '@/lib/logger'
 import type { ConsoleFeatureRequest, ConsoleFeatures } from '@/types/features'
 
+const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
+  'console-theme-switcher': ['console_theme_switcher'],
+  'console-global-add': ['console_global_add'],
+  'console-app-switcher': ['console_app_switcher'],
+  'console-search-bar': ['console_search_bar'],
+}
+
+function hasFeature(enabledSlugs: ReadonlySet<string>, canonicalSlug: string) {
+  return (
+    enabledSlugs.has(canonicalSlug) ||
+    (LEGACY_FEATURE_SLUGS[canonicalSlug] ?? []).some((legacySlug) =>
+      enabledSlugs.has(legacySlug)
+    )
+  )
+}
+
 /**
  * One provider/local-governance feature evaluation per user per request.
  * React.cache compares arguments with Object.is, so this resolver deliberately
@@ -30,7 +46,7 @@ const resolveConsoleFeatureKeys = cache(
       }
       Sentry.captureMessage(message, {
         level: 'error',
-        tags: { category: 'feature_flags' },
+        tags: { category: 'feature-flags' },
         extra: context,
       })
       logger.error(context, message)
@@ -49,7 +65,7 @@ const resolveConsoleFeatureKeys = cache(
       }
       Sentry.captureMessage(message, {
         level: 'error',
-        tags: { category: 'feature_flags' },
+        tags: { category: 'feature-flags' },
         extra: context,
       })
       logger.error(context, message)
@@ -71,7 +87,7 @@ const resolveConsoleFeatureKeys = cache(
       }
       Sentry.captureMessage(message, {
         level: 'error',
-        tags: { category: 'feature_flags' },
+        tags: { category: 'feature-flags' },
         extra: context,
       })
       logger.error(context, message)
@@ -98,10 +114,10 @@ export async function getConsoleFeatures({
 }: ConsoleFeatureRequest): Promise<ConsoleFeatures> {
   const enabledSlugs = new Set(await getConsoleFeatureKeys(userId))
   const uiFeatures = {
-    themeSwitcher: enabledSlugs.has('console_theme_switcher'),
-    globalAdd: enabledSlugs.has('console_global_add'),
-    appSwitcher: enabledSlugs.has('console_app_switcher'),
-    searchBar: enabledSlugs.has('console_search_bar'),
+    themeSwitcher: hasFeature(enabledSlugs, 'console-theme-switcher'),
+    globalAdd: hasFeature(enabledSlugs, 'console-global-add'),
+    appSwitcher: hasFeature(enabledSlugs, 'console-app-switcher'),
+    searchBar: hasFeature(enabledSlugs, 'console-search-bar'),
     chat: isWidgetEnabled(chatWidgetMetadata, 'console', enabledSlugs),
   }
 

@@ -12,12 +12,12 @@ import {
 import { account } from '@/lib/services/account'
 
 /**
- * Business onboarding — new organization creation plus the owner account.
+ * Business onboarding — new organization creation plus the organization creator account.
  *
  * Renders the shared {@link AuthFlow} in `business-onboarding` mode (collect
- * company details, then the owner account) against the FastAPI core through the
+ * company details, then the organization creator account) against the FastAPI core through the
  * org app's own `/api/auth` bridge. On success the API has created the owner
- * account, the organization, and the owner membership; the session cookie is
+ * account, the organization, and the super-admin membership; the session cookie is
  * set on this origin and the new owner lands in their workspace.
  */
 export function BusinessOnboarding() {

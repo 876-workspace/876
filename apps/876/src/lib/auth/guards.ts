@@ -167,7 +167,7 @@ export async function getEnabledConsumerFeatureSlugs(
   if (result.error)
     Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
       level: 'error',
-      tags: { category: 'feature_flags' },
+      tags: { category: 'feature-flags' },
       extra: {
         call: 'features.evaluate',
         errorCode: result.error.code,

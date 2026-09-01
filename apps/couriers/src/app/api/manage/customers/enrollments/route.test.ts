@@ -37,7 +37,7 @@ const tenant = {
   updatedAt: 1_785_427_200,
 }
 
-function context(role: 'owner' | 'admin' | 'member') {
+function context(role: 'super-admin' | 'admin' | 'staff') {
   return { role, tenant, userId: 'usr_ops' }
 }
 
@@ -63,7 +63,7 @@ describe('customer enrollments route', () => {
   })
 
   it('requires an owner or admin', async () => {
-    mocks.getManageContext.mockResolvedValue(context('member'))
+    mocks.getManageContext.mockResolvedValue(context('staff'))
 
     const response = await POST(
       request({

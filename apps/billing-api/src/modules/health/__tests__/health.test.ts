@@ -79,8 +79,9 @@ describe('Billing service health', () => {
       data: null,
       error: {
         code: 'billing/writer-inactive',
-        message:
-          'The Billing API is not the active writer (BILLING_WRITER=none, expected express).',
+        // Sourced from the shared catalog, so the client-safe message no longer
+        // leaks the configured writer value. That detail stays on the header.
+        message: 'The Billing API is not the active writer.',
       },
     })
     expect(response.headers['x-billing-writer']).toBe('none')

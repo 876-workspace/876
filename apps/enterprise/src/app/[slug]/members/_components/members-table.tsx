@@ -49,14 +49,14 @@ export function MembersTable({
   roles,
   canManage,
   callerMembershipId,
-  callerIsOwner,
+  callerIsSuperAdmin,
 }: {
   slug: string
   members: OrgMember[]
   roles: RoleOption[]
   canManage: boolean
   callerMembershipId: string
-  callerIsOwner: boolean
+  callerIsSuperAdmin: boolean
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -114,16 +114,16 @@ export function MembersTable({
     })
   }
 
-  // Owner-role transitions are owner-only; hide those actions from non-owners.
+  // Super-admin transitions are super-admin-only.
   function canActOn(member: OrgMember): boolean {
     if (!canManage || member.id === callerMembershipId) return false
-    if (member.role === 'owner' && !callerIsOwner) return false
+    if (member.role === 'super-admin' && !callerIsSuperAdmin) return false
 
     return true
   }
 
   const assignableRoles = roles.filter(
-    (role) => callerIsOwner || role.name !== 'owner'
+    (role) => callerIsSuperAdmin || role.name !== 'super-admin'
   )
 
   const columns: ColumnDef<OrgMember, unknown>[] = [

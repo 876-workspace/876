@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   if (
     result.context.accessStatus !== 'blocked' &&
-    (result.context.role === 'owner' || result.context.role === 'admin')
+    (result.context.role === 'super-admin' || result.context.role === 'admin')
   )
     redirect('/onboarding')
 

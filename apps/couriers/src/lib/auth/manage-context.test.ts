@@ -93,7 +93,7 @@ function createMembership(
 ): PlatformRoutingMembership {
   return {
     id: 'membership_island_123',
-    role: 'owner',
+    role: 'super-admin',
     status: 'active',
     permissions: [],
     organization: {
@@ -165,7 +165,7 @@ describe('getManageContext', () => {
         data: [
           {
             id: 'membership_island_123',
-            role: 'owner',
+            role: 'super-admin',
             status: 'active',
             organization: {
               id: 'organization_island_123',
@@ -237,7 +237,7 @@ describe('getManageContext', () => {
       'Platform outage: auth.getRoutingMemberships failed',
       expect.objectContaining({
         level: 'error',
-        tags: { category: 'platform_client' },
+        tags: { category: 'platform-client' },
         extra: expect.objectContaining({
           call: 'auth.getRoutingMemberships',
           errorCode: 'provider/unavailable',
@@ -273,7 +273,7 @@ describe('getManageContext', () => {
       'Platform outage: subscriptions.retrieve failed',
       expect.objectContaining({
         level: 'error',
-        tags: { category: 'platform_client' },
+        tags: { category: 'platform-client' },
         extra: expect.objectContaining({
           call: 'subscriptions.retrieve',
           errorCode: 'admin/unauthorized',
@@ -300,12 +300,12 @@ describe('getManageContext', () => {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
-          role: 'owner',
+          role: 'super-admin',
           logoUrl: null,
         },
       ],
       tenant,
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'active',
     })
     expect(mocks.getRoutingMemberships).toHaveBeenCalledTimes(1)
@@ -390,7 +390,7 @@ describe('getManageContext', () => {
     })
     const slugMembership = createMembership({
       id: 'membership_slug_123',
-      role: 'member',
+      role: 'staff',
       organization: {
         id: 'organization_slug_123',
         name: 'Slug Express',
@@ -439,12 +439,12 @@ describe('getManageContext', () => {
           id: 'organization_slug_123',
           name: 'Slug Express',
           slug: 'slug-express',
-          role: 'member',
+          role: 'staff',
           logoUrl: null,
         },
       ],
       tenant,
-      role: 'member',
+      role: 'staff',
       accessStatus: 'active',
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -483,12 +483,12 @@ describe('getManageContext', () => {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
-          role: 'owner',
+          role: 'super-admin',
           logoUrl: null,
         },
       ],
       tenant,
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'active',
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -533,7 +533,7 @@ describe('getManageContext', () => {
     })
     const secondMembership = createMembership({
       id: 'membership_montego_123',
-      role: 'owner',
+      role: 'super-admin',
       organization: {
         id: 'organization_montego_123',
         name: 'Montego Express',
@@ -576,12 +576,12 @@ describe('getManageContext', () => {
           id: 'organization_montego_123',
           name: 'Montego Express',
           slug: 'montego-express',
-          role: 'owner',
+          role: 'super-admin',
           logoUrl: null,
         },
       ],
       tenant,
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'active',
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(2)
@@ -612,7 +612,7 @@ describe('getManageContext', () => {
     })
     const secondMembership = createMembership({
       id: 'membership_montego_123',
-      role: 'member',
+      role: 'staff',
       organization: {
         id: 'organization_montego_123',
         name: 'Montego Express',
@@ -646,7 +646,7 @@ describe('getManageContext', () => {
           id: 'organization_montego_123',
           name: 'Montego Express',
           slug: 'montego-express',
-          role: 'member',
+          role: 'staff',
           logoUrl: null,
         },
       ],
@@ -742,12 +742,12 @@ describe('getManageContext', () => {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
-          role: 'owner',
+          role: 'super-admin',
           logoUrl: null,
         },
       ],
       tenant: null,
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'active',
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -783,12 +783,12 @@ describe('getManageContext', () => {
             id: 'organization_island_123',
             name: 'Island Logistics',
             slug: 'island-logistics',
-            role: 'owner',
+            role: 'super-admin',
             logoUrl: null,
           },
         ],
         tenant: null,
-        role: 'owner',
+        role: 'super-admin',
         accessStatus: expectedStatus,
       })
       expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
@@ -835,12 +835,12 @@ describe('getManageContext', () => {
             id: 'organization_island_123',
             name: 'Island Logistics',
             slug: 'island-logistics',
-            role: 'owner',
+            role: 'super-admin',
             logoUrl,
           },
         ],
         tenant,
-        role: 'owner',
+        role: 'super-admin',
         accessStatus: 'active',
       })
     })
@@ -886,7 +886,7 @@ describe('getManageContext', () => {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
-          role: 'owner',
+          role: 'super-admin',
           logoUrl: islandLogo,
         },
         {

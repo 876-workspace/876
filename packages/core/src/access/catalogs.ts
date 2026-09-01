@@ -10,8 +10,8 @@ import type { AppPermission, AppPermissionCatalog } from './types'
  * Copying a catalog into an app or into the seeds reintroduces the drift this
  * module exists to prevent — import from here instead.
  *
- * A key is a permanent identifier: renaming one orphans every stored role and
- * assignment that references it.
+ * A key is a durable identifier. Rename one only through an explicit coordinated
+ * contract + data migration that updates stored roles and assignments.
  */
 
 type ModuleDraft = {
@@ -33,7 +33,7 @@ function modules(drafts: readonly ModuleDraft[]) {
     permissions: draft.actions.map((action, actionIndex) => ({
       action,
       label: `${titleCase(action)} ${draft.label}`,
-      isDangerous: action === 'delete' || action === 'danger_zone',
+      isDangerous: action === 'delete' || action === 'danger-zone',
       position: actionIndex,
     })),
   }))
@@ -51,7 +51,7 @@ function crud(
 
 function titleCase(value: string): string {
   return value
-    .split('_')
+    .split(/[-_]/)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }
@@ -66,10 +66,10 @@ function withConsoleKey(permission: AppPermission): AppPermission {
 /**
  * Narrows persisted Console role permissions to usable string keys.
  *
- * Stored role rows are JSON, so a malformed or partially-written value can
- * reach this path at runtime even though the type says `string[]`. Filtering
- * here keeps a bad row from throwing during authorization; the catalog
- * intersection downstream still decides what the keys actually grant.
+ * Stored role rows can contain malformed or partially-written values at
+ * runtime even though the type says `string[]`. Filtering here keeps a bad row
+ * from throwing during authorization; the catalog intersection downstream still
+ * decides what the keys actually grant.
  */
 export function toStoredPermissionKeys(permissions: unknown): string[] {
   if (!Array.isArray(permissions)) return []
@@ -80,14 +80,15 @@ export function toStoredPermissionKeys(permissions: unknown): string[] {
 }
 
 /**
- * Console predates product-app catalogs and already persists colon-delimited
- * permission identifiers (`users:read`, `console:access`). The generic catalog
- * builder deliberately remains dot-delimited for product apps, so Console is
- * adapted after validation instead of changing either persisted vocabulary.
+ * Console predates product-app catalogs and persists colon-delimited permission
+ * identifiers (`users:read`, `console:access`). The generic catalog builder
+ * remains dot-delimited for product apps, so Console is adapted after
+ * validation instead of changing the established delimiter.
  *
  * Console's real app slug is also `console`, while the generic builder validates
- * product slugs as `876-*`. The compatibility adapter keeps that exception here,
- * next to the only catalog that needs it.
+ * product slugs as `876-*`; the adapter keeps that exception beside the only
+ * catalog that needs it. The action segments themselves follow the platform
+ * naming contract, including `danger-zone`.
  */
 function defineConsolePermissionCatalog(): AppPermissionCatalog {
   const catalog = defineAppPermissionCatalog({
@@ -109,7 +110,7 @@ function defineConsolePermissionCatalog(): AppPermissionCatalog {
           'storage',
           'security',
           'reports',
-          'danger_zone',
+          'danger-zone',
         ],
       },
       {
@@ -166,7 +167,7 @@ export const couriersPermissionCatalog: AppPermissionCatalog =
       crud('items', 'Items'),
       crud('customers', 'Customers', ['import', 'export']),
       crud('packages', 'Packages', ['export']),
-      crud('pre_alerts', 'Pre-alerts'),
+      crud('pre-alerts', 'Pre-alerts'),
       crud('warehouse', 'Warehouse'),
       crud('manifests', 'Manifests'),
       crud('deliveries', 'Deliveries'),
@@ -187,12 +188,12 @@ export const crmPermissionCatalog: AppPermissionCatalog =
       crud('reminders', 'Reminders'),
       crud('events', 'Events'),
       crud('calendars', 'Calendars'),
-      { key: 'my_work', label: 'My Work', actions: ['view'] },
+      { key: 'my-work', label: 'My Work', actions: ['view'] },
       crud('notes', 'Notes'),
       crud('teams', 'Teams'),
       crud('categories', 'Categories'),
       crud('priorities', 'Priorities'),
-      crud('request_forms', 'Request forms'),
+      crud('request-forms', 'Request forms'),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),

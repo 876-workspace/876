@@ -90,7 +90,7 @@ export default async function GetStartedPage() {
 
   if (context.tenant && context.accessStatus === 'active') redirect('/')
   if (context.accessStatus === 'blocked') redirect('/no-access')
-  if (context.role === 'member') redirect('/no-access')
+  if (context.role === 'staff') redirect('/no-access')
 
   const organizationName = context.orgName ?? 'Your organization'
   const slug = `${context.orgSlug ?? 'billing'}-billing`

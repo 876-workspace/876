@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (ctx.tenant && ctx.accessStatus === 'active') redirect(returnTo)
-  if (ctx.role === 'member') redirect('/no-access')
+  if (ctx.role === 'staff') redirect('/no-access')
 
   redirect('/onboarding')
 }

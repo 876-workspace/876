@@ -1,20 +1,23 @@
-/// Canonical mapping from an 876 resource to a processor identifier, keeping
+/// Canonical mapping from an 876 resource to a provider identifier, keeping
 /// provider IDs out of business records and preserving provider independence.
 model ProviderReference {
-  id                   String                     @id
-  tenantId             String                     @map("tenant_id")
-  provider             String
-  providerConnectionId String?                    @map("provider_connection_id")
-  resourceType         String                     @map("resource_type")
-  resourceId           String                     @map("resource_id")
-  externalType         String                     @map("external_type")
-  externalId           String                     @map("external_id")
-  metadata             Json?
-  createdAt            Int                        @map("created_at")
-  tenant               Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_provider_references_tenant_fkey")
-  providerConnection   PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_provider_references_connection_fkey")
+  id                             String                        @id
+  tenantId                       String                        @map("tenant_id")
+  provider                       String
+  providerConnectionId           String?                       @map("provider_connection_id")
+  accountingProviderConnectionId String?                       @map("accounting_provider_connection_id")
+  resourceType                   String                        @map("resource_type")
+  resourceId                     String                        @map("resource_id")
+  externalType                   String                        @map("external_type")
+  externalId                     String                        @map("external_id")
+  metadata                       Json?
+  createdAt                      Int                           @map("created_at")
+  tenant                         Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_provider_references_tenant_fkey")
+  providerConnection             PaymentProviderConnection?    @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_provider_references_connection_fkey")
+  accountingProviderConnection   AccountingProviderConnection? @relation(fields: [tenantId, accountingProviderConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_provider_references_accounting_connection_fkey")
 
   @@unique([provider, externalType, externalId], map: "billing_provider_references_external_key")
   @@index([tenantId, resourceType, resourceId], map: "billing_provider_references_resource_idx")
+  @@index([tenantId, accountingProviderConnectionId], map: "billing_provider_references_accounting_connection_idx")
   @@map("billing_provider_references")
 }

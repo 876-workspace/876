@@ -40,7 +40,7 @@ function deleteRequest(url: string) {
 }
 
 function ctx(
-  role: 'owner' | 'admin' | 'member',
+  role: 'super-admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return { orgId: 'org_123', orgSlug: 'island-logistics', role, tenant }
@@ -119,7 +119,7 @@ describe('Couriers team member route', () => {
     })
 
     it('forbids a plain member from updating users', async () => {
-      mocks.getManageContext.mockResolvedValue(ctx('member'))
+      mocks.getManageContext.mockResolvedValue(ctx('staff'))
 
       const response = await PATCH(
         patchRequest({ orgSlug: 'island-logistics', status: 'inactive' }),
@@ -219,7 +219,7 @@ describe('Couriers team member route', () => {
     })
 
     it('forbids a plain member from removing users', async () => {
-      mocks.getManageContext.mockResolvedValue(ctx('member'))
+      mocks.getManageContext.mockResolvedValue(ctx('staff'))
 
       const response = await DELETE(
         deleteRequest(
@@ -235,7 +235,7 @@ describe('Couriers team member route', () => {
     })
 
     it('returns 404 when the tenant is missing', async () => {
-      mocks.getManageContext.mockResolvedValue(ctx('owner', null))
+      mocks.getManageContext.mockResolvedValue(ctx('super-admin', null))
 
       const response = await DELETE(
         deleteRequest(

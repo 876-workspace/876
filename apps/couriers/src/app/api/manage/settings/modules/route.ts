@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   const ctx = await getManageContext(orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'owner' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return apiJson(
       { error: 'You do not have permission to view settings.' },
       { status: 403, code: 'auth/forbidden' }
@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest) {
 
   const ctx = await getManageContext(parsed.data.orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'owner' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return apiJson(
       { error: 'You do not have permission to edit settings.' },
       { status: 403, code: 'auth/forbidden' }

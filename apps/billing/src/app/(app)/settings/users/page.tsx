@@ -47,10 +47,10 @@ export default async function UsersPage() {
     const orgRole = normalizeOrgRole(membership.role)
     const storedGrant = grantByUserId.get(membership.user_id)
     const fallbackSlug =
-      orgRole === 'owner' ? 'owner' : orgRole === 'admin' ? 'admin' : 'viewer'
+      orgRole === 'super-admin' ? 'super-admin' : orgRole === 'admin' ? 'admin' : 'viewer'
     const effectiveRole =
-      orgRole === 'owner'
-        ? roleBySlug.get('owner')
+      orgRole === 'super-admin'
+        ? roleBySlug.get('super-admin')
         : (storedGrant?.role ?? roleBySlug.get(fallbackSlug))
     if (!effectiveRole) return []
 
@@ -66,7 +66,7 @@ export default async function UsersPage() {
         roleName: effectiveRole.name,
         roleSlug: effectiveRole.slug,
         status:
-          orgRole === 'owner' ? 'ACTIVE' : (storedGrant?.status ?? 'ACTIVE'),
+          orgRole === 'super-admin' ? 'ACTIVE' : (storedGrant?.status ?? 'ACTIVE'),
         explicitGrant: Boolean(storedGrant),
       },
     ]
@@ -112,7 +112,7 @@ export default async function UsersPage() {
           </p>
           <p className="text-muted-foreground mt-1">
             New organization members receive the Viewer role by default. The
-            organization owner always retains Billing owner access as a recovery
+            organization super admin always retains Billing super admin access as a recovery
             path.
           </p>
         </div>
@@ -123,7 +123,7 @@ export default async function UsersPage() {
         roles={roles}
         currentUserId={context.userId}
         canManage={canManage}
-        canGrantOwner={context.access.role.slug === 'owner'}
+        canGrantSuperAdmin={context.access.role.slug === 'super-admin'}
       />
 
       {invites.length > 0 ? (

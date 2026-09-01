@@ -67,7 +67,7 @@ describe('ensureCoreCustomerRows', () => {
         name: 'Test Org',
         primaryContact: {
           userId: 'user_owner',
-          email: 'owner@example.com',
+          email: 'super admin@example.com',
           phone: '+18765550123',
         },
       },
@@ -171,7 +171,7 @@ describe('ensureCoreCustomerRows', () => {
     )
 
     // Locally-entered people are the workspace's own data — Core promoting its
-    // owner must not delete them.
+    // super admin must not delete them.
     expect(mocks.contactUpdate).toHaveBeenCalledWith({
       where: { id: 'contact_typed' },
       data: { isPrimary: false, updatedAt: 1_787_050_000 },

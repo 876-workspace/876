@@ -17,7 +17,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   const ctx = await getManageContext(orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'owner' && ctx.role !== 'admin')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
     return apiJson(
       { error: 'You do not have permission to revoke invites.' },
       { status: 403, code: 'auth/forbidden' }

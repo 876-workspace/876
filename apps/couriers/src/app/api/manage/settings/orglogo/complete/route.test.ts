@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
 }))
 
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/services/storage', () => ({
   storage: { uploads: { complete: mocks.complete } },
 }))
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -30,7 +30,7 @@ function request(body: string | Record<string, unknown>) {
   ) as never
 }
 
-function context(role: 'owner' | 'admin' | 'member') {
+function context(role: 'super-admin' | 'admin' | 'staff') {
   return {
     userId: 'user_123',
     orgId: 'org_context',
@@ -52,7 +52,7 @@ const readyFile = {
 describe('Couriers organization logo upload completion route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getManageContext.mockResolvedValue(context('owner'))
+    mocks.getManageContext.mockResolvedValue(context('super-admin'))
     mocks.complete.mockResolvedValue({ data: readyFile, error: null })
     mocks.getPlatformClient.mockResolvedValue({
       organizations: { updateProfile: mocks.updateProfile },
@@ -80,7 +80,7 @@ describe('Couriers organization logo upload completion route', () => {
     })
 
     it('refuses an unauthorized member', async () => {
-      mocks.getManageContext.mockResolvedValue(context('member'))
+      mocks.getManageContext.mockResolvedValue(context('staff'))
 
       const response = await POST(request(validBody))
       const body = await response.json()
@@ -91,7 +91,7 @@ describe('Couriers organization logo upload completion route', () => {
       expect(mocks.updateProfile).not.toHaveBeenCalled()
     })
 
-    it.each(['owner', 'admin'] as const)(
+    it.each(['super-admin', 'admin'] as const)(
       'allows a %s to complete an upload for their org',
       async (role) => {
         mocks.getManageContext.mockResolvedValue(context(role))
@@ -224,7 +224,7 @@ describe('Couriers organization logo upload completion route', () => {
 
     it('never uses a client-supplied org id when attaching the logo', async () => {
       mocks.getManageContext.mockResolvedValue({
-        ...context('owner'),
+        ...context('super-admin'),
         orgId: 'org_from_session_cookie',
       })
       mocks.complete.mockResolvedValue({

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import { APP_ACCESS_SEED_DEFINITIONS } from './app-access'
 
-const KEY = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/
+const KEY = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/
+const ROLE_KEY = /^[a-z][a-z0-9-]*$/
 
 function app(slug: string) {
   const definition = APP_ACCESS_SEED_DEFINITIONS.find(
@@ -26,16 +27,23 @@ describe('app access seed catalog', () => {
     (definition) => {
       const defaults = definition.roles.filter((role) => role.isDefault)
       expect(defaults).toHaveLength(1)
-      expect(defaults[0]!.key).not.toBe('admin')
+      expect(defaults[0]!.key).toBe('staff')
     }
   )
 
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
-    '$appSlug permission keys are unique and permanent-format compatible',
+    '$appSlug permission keys are unique and canonical kebab/dot format',
     (definition) => {
       const keys = definition.permissions.map((permission) => permission.key)
       expect(new Set(keys).size).toBe(keys.length)
       expect(keys.every((key) => KEY.test(key))).toBe(true)
+    }
+  )
+
+  it.each(APP_ACCESS_SEED_DEFINITIONS)(
+    '$appSlug system role keys use canonical kebab-case',
+    (definition) => {
+      expect(definition.roles.every((role) => ROLE_KEY.test(role.key))).toBe(true)
     }
   )
 
@@ -71,10 +79,10 @@ describe('app access seed catalog', () => {
       'packages.edit',
       'packages.delete',
       'packages.export',
-      'pre_alerts.view',
-      'pre_alerts.create',
-      'pre_alerts.edit',
-      'pre_alerts.delete',
+      'pre-alerts.view',
+      'pre-alerts.create',
+      'pre-alerts.edit',
+      'pre-alerts.delete',
       'warehouse.view',
       'warehouse.create',
       'warehouse.edit',
@@ -101,141 +109,27 @@ describe('app access seed catalog', () => {
     ])
   })
 
-  it('keeps Couriers staff away from Reports and Settings', () => {
+  it('keeps Couriers staff read-only in Reports and Settings', () => {
     const staff = app('876-couriers').roles.find((role) => role.key === 'staff')
     expect(
-      staff?.permissions.some((permission) => permission.startsWith('reports.'))
-    ).toBe(false)
+      staff?.permissions.filter((permission) => permission.startsWith('reports.'))
+    ).toEqual(['reports.view'])
     expect(
-      staff?.permissions.some((permission) =>
-        permission.startsWith('settings.')
-      )
-    ).toBe(false)
+      staff?.permissions.filter((permission) => permission.startsWith('settings.'))
+    ).toEqual(['settings.view'])
   })
 
-  it('defines the CRM role vocabulary from most to least privileged', () => {
-    expect(app('876-crm').roles.map((role) => role.key)).toEqual([
-      'owner',
-      'admin',
-      'agent',
-      'viewer',
-    ])
-  })
-
-  it('grants the CRM owner the complete catalog', () => {
-    const crm = app('876-crm')
-    expect(crm.roles.find((role) => role.key === 'owner')?.permissions).toEqual(
-      crm.permissions.map((permission) => permission.key)
-    )
-  })
-
-  it('grants the CRM admin the complete catalog', () => {
-    const crm = app('876-crm')
-    expect(crm.roles.find((role) => role.key === 'admin')?.permissions).toEqual(
-      crm.permissions.map((permission) => permission.key)
-    )
-  })
-
-  it('grants the CRM agent the exact operational capability set', () => {
-    expect(
-      app('876-crm').roles.find((role) => role.key === 'agent')?.permissions
-    ).toEqual([
-      'requests.view',
-      'requests.create',
-      'requests.edit',
-      'customers.view',
-      'customers.create',
-      'customers.edit',
-      'tasks.view',
-      'tasks.create',
-      'tasks.edit',
-      'reminders.view',
-      'reminders.create',
-      'reminders.edit',
-      'events.view',
-      'events.create',
-      'events.edit',
-      'calendars.view',
-      'calendars.create',
-      'calendars.edit',
-      'my_work.view',
-      'notes.view',
-      'notes.create',
-      'notes.edit',
-    ])
-  })
-
-  it('keeps CRM agents out of settings and teams', () => {
-    const permissions =
-      app('876-crm').roles.find((role) => role.key === 'agent')?.permissions ??
-      []
-    expect(
-      permissions.filter(
-        (permission) =>
-          permission.startsWith('settings.') || permission.startsWith('teams.')
-      )
-    ).toEqual([])
-  })
-
-  it('keeps CRM agents from deleting operational records', () => {
-    const permissions =
-      app('876-crm').roles.find((role) => role.key === 'agent')?.permissions ??
-      []
-    expect(
-      permissions.filter((permission) => permission.endsWith('.delete'))
-    ).toEqual([])
-  })
-
-  it('grants the CRM viewer the exact read-only capability set', () => {
-    expect(
-      app('876-crm').roles.find((role) => role.key === 'viewer')?.permissions
-    ).toEqual([
-      'requests.view',
-      'customers.view',
-      'tasks.view',
-      'reminders.view',
-      'events.view',
-      'calendars.view',
-      'my_work.view',
-      'notes.view',
-      'teams.view',
-      'categories.view',
-      'priorities.view',
-      'request_forms.view',
-      'reports.view',
-      'settings.view',
-    ])
-  })
-
-  it('uses viewer as the single CRM default role', () => {
-    expect(
-      app('876-crm')
-        .roles.filter((role) => role.isDefault)
-        .map((role) => role.key)
-    ).toEqual(['viewer'])
-  })
-
-  it('marks every CRM role template as system managed', () => {
-    expect(
-      app('876-crm').roles.map((role) => [role.key, role.isSystem])
-    ).toEqual([
-      ['owner', true],
-      ['admin', true],
-      ['agent', true],
-      ['viewer', true],
-    ])
-  })
-
-  it('orders CRM roles from owner to viewer', () => {
-    expect(
-      app('876-crm').roles.map((role) => [role.key, role.position])
-    ).toEqual([
-      ['owner', 0],
-      ['admin', 10],
-      ['agent', 20],
-      ['viewer', 30],
-    ])
-  })
+  it.each(APP_ACCESS_SEED_DEFINITIONS)(
+    '$appSlug uses the shared role vocabulary and order',
+    (definition) => {
+      expect(definition.roles.map((role) => role.key)).toEqual([
+        'super-admin',
+        'admin',
+        'staff',
+      ])
+      expect(definition.roles.map((role) => role.position)).toEqual([0, 10, 20])
+    }
+  )
 
   it('grants every Console CRM mutation requirement to a named system role', () => {
     const surfaceRequirements = [
@@ -262,23 +156,28 @@ describe('app access seed catalog', () => {
     ).toEqual([])
   })
 
-  it.each(['876-billing', '876-invoice'])(
-    '%s exposes admin, finance_manager and viewer templates',
-    (slug) => {
-      expect(app(slug).roles.map((role) => role.key)).toEqual([
-        'admin',
-        'finance_manager',
-        'viewer',
-      ])
+  it.each(APP_ACCESS_SEED_DEFINITIONS)(
+    '$appSlug super admin receives the complete declared catalog',
+    (definition) => {
+      const superAdmin = definition.roles.find(
+        (role) => role.key === 'super-admin'
+      )
+      expect(superAdmin?.permissions).toEqual(
+        definition.permissions.map((permission) => permission.key)
+      )
     }
   )
 
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
-    '$appSlug admin receives the complete declared catalog',
+    '$appSlug admin cannot delete and staff is read-only',
     (definition) => {
       const admin = definition.roles.find((role) => role.key === 'admin')
-      expect(admin?.permissions).toEqual(
-        definition.permissions.map((permission) => permission.key)
+      const staff = definition.roles.find((role) => role.key === 'staff')
+      expect(admin?.permissions.some((key) => key.endsWith('.delete'))).toBe(
+        false
+      )
+      expect(staff?.permissions.every((key) => key.endsWith('.view'))).toBe(
+        true
       )
     }
   )

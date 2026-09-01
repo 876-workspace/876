@@ -73,7 +73,7 @@ function tenant() {
   }
 }
 function ctx(
-  role: 'owner' | 'admin' | 'member',
+  role: 'super-admin' | 'admin' | 'staff',
   currentTenant: ReturnType<typeof tenant> | null = tenant()
 ) {
   return { role, tenant: currentTenant, userId: 'usr_ops' }
@@ -107,7 +107,7 @@ describe('customer [id] route', () => {
       expect(mocks.updateManagedCustomer).not.toHaveBeenCalled()
     })
     it('returns auth/forbidden for a member', async () => {
-      mocks.getManageContext.mockResolvedValue(ctx('member'))
+      mocks.getManageContext.mockResolvedValue(ctx('staff'))
       const response = await PATCH(
         patch({ orgSlug: 'nkr-express', branchId: 'br_mobay' }),
         context
@@ -183,7 +183,7 @@ describe('customer [id] route', () => {
       expect(mocks.client.customers.delete).not.toHaveBeenCalled()
     })
     it('returns auth/forbidden for a member', async () => {
-      mocks.getManageContext.mockResolvedValue(ctx('member'))
+      mocks.getManageContext.mockResolvedValue(ctx('staff'))
       const response = await DELETE(delRequest(), context)
       const body = await response.json()
       expect(response.status).toBe(403)

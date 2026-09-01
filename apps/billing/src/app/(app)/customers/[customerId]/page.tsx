@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 }
 
 const SOURCE_LABEL: Record<PrimaryContact['source'], string> = {
-  'org-owner': 'Organization owner',
+  'org-super-admin': 'Organization super admin',
   'org-member': 'Organization member',
   user: '876 user',
   self: 'Customer',

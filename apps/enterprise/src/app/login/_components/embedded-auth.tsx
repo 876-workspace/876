@@ -27,7 +27,7 @@ const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
  * a central auth app.
  *
  * New businesses self-onboard at `/register` (business-onboarding mode), which
- * creates the owner account, the organization, and the owner membership.
+ * creates the organization creator account, the organization, and the super-admin membership.
  *
  * Social providers return to this app's own `/callback` (the API derives the
  * WorkOS `redirect_uri` from this origin). We seed the return-to cookie on
