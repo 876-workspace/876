@@ -10,6 +10,7 @@ import { CRM_APP_SLUG } from '@/lib/crm-app'
 import type { AccessStatus, CrmContext, CrmContextResult } from '@/types/auth'
 
 import { isAccountUsable } from './account-validity'
+import { normalizeOrgRole } from './roles'
 import { getAuthSession, isSignedSession } from './session'
 
 function toAccessStatus(status: string | null | undefined): AccessStatus {
@@ -40,7 +41,7 @@ export const getCrmContextResult = cache(
     if (membershipsResult.error) {
       Sentry.captureMessage('CRM context: routing memberships failed', {
         level: 'error',
-        tags: { category: 'platform_client', phase: 'crm_context' },
+        tags: { category: 'platform-client', phase: 'crm-context' },
         extra: {
           errorCode: membershipsResult.error.code ?? null,
           userId: session.user.id,
@@ -73,12 +74,12 @@ export const getCrmContextResult = cache(
       orgId: selected.organization.id,
       orgName: selected.organization.name ?? 'Organization',
       orgSlug: selected.organization.slug,
-      role: selected.role,
+      role: normalizeOrgRole(selected.role),
       organizations: memberships.map((membership) => ({
         id: membership.organization.id,
         name: membership.organization.name ?? 'Organization',
         slug: membership.organization.slug,
-        role: membership.role,
+        role: normalizeOrgRole(membership.role),
       })),
       accessStatus: toAccessStatus(subscription.data?.status),
     }
