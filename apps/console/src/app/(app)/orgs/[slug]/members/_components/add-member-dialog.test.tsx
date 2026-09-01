@@ -39,7 +39,7 @@ const roles = [
   },
   {
     id: 'role_owner',
-    name: 'super_admin',
+    name: 'super-admin',
     display_name: 'Owner',
   },
 ] as unknown as AdminOrgRole[]

@@ -13,7 +13,7 @@ const member: AdminOrgMember = {
   object: 'organization_member',
   id: 'mem_1',
   user_id: 'user_1',
-  role: 'super_admin',
+  role: 'super-admin',
   role_id: null,
   status: 'active',
   first_name: 'Alice',
@@ -63,7 +63,7 @@ describe('MemberDetail', () => {
     expect(
       screen.getByRole('heading', { name: 'Alice Smith' })
     ).toBeInTheDocument()
-    expect(screen.getAllByText('super_admin').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('super-admin').length).toBeGreaterThan(0)
     expect(screen.getAllByText('alice@example.com').length).toBeGreaterThan(0)
     expect(screen.getByText('@alicesmith')).toBeInTheDocument()
     expect(screen.getAllByText('mem_1').length).toBeGreaterThan(0)

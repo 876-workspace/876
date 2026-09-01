@@ -83,11 +83,13 @@ function canonicalPermission(permission: string): string {
 }
 
 function canonicalPermissions(permissions: readonly string[]): string[] {
+  if (!Array.isArray(permissions)) return []
+
   return [
     ...new Set(
       permissions
-        .filter((permission): permission is string =>
-          typeof permission === 'string'
+        .filter(
+          (permission): permission is string => typeof permission === 'string'
         )
         .map(canonicalPermission)
     ),

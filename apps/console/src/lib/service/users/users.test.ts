@@ -156,7 +156,7 @@ describe('Console users service', () => {
     expect(mocks.membershipCreate).toHaveBeenCalledWith({
       user_id: 'user_created',
       organization_id: 'org_created',
-      role: 'super_admin',
+      role: 'super-admin',
       status: 'active',
     })
   })
@@ -234,22 +234,22 @@ describe('Console users service', () => {
   it('stops a denied role change before applying it', async () => {
     mocks.assertRoleChangeAllowed.mockResolvedValue({
       ok: false,
-      error: 'Only a super admin can grant the super_admin role.',
+      error: 'Only a super admin can grant the super-admin role.',
       status: 403,
     })
 
-    const result = await setRole('user_target', 'super_admin', caller)
+    const result = await setRole('user_target', 'super-admin', caller)
 
     expect(result).toEqual({
       data: null,
-      error: 'Only a super admin can grant the super_admin role.',
+      error: 'Only a super admin can grant the super-admin role.',
       status: 403,
     })
     expect(mocks.assertRoleChangeAllowed).toHaveBeenCalledTimes(1)
     expect(mocks.assertRoleChangeAllowed).toHaveBeenCalledWith(
       caller,
       'user_target',
-      'super_admin'
+      'super-admin'
     )
     expect(mocks.applyRoleChange).not.toHaveBeenCalled()
   })
@@ -287,7 +287,7 @@ describe('Console users service', () => {
       error: 'Forbidden role change.',
       status: 403,
     })
-    const body = { role: 'super_admin' } as never
+    const body = { role: 'super-admin' } as never
 
     const result = await update('user_target', body, caller)
 

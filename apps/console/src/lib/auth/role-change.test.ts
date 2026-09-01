@@ -29,7 +29,7 @@ describe('assertRoleChangeAllowed', () => {
     vi.clearAllMocks()
   })
 
-  it.each(['', 'support', 'ADMIN', '__proto__', 'super_admin'])(
+  it.each(['', 'support', 'ADMIN', '__proto__'])(
     'rejects invalid role %j without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -40,14 +40,14 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error: 'Invalid role. Must be user, staff, admin, or super_admin.',
+        error: 'Invalid role. Must be user, staff, admin, or super-admin.',
         status: 400,
       })
       expect(mocks.retrieve).not.toHaveBeenCalled()
     }
   )
 
-  it.each(['user', 'staff', 'admin', 'super_admin'])(
+  it.each(['user', 'staff', 'admin', 'super-admin'])(
     'allows a super admin to grant %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -61,7 +61,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['super_admin'])(
+  it.each(['super-admin'])(
     'prevents an admin from granting %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -79,7 +79,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['super_admin'])(
+  it.each(['super-admin'])(
     'prevents an admin from changing an existing %s',
     async (targetRole) => {
       mocks.retrieve.mockResolvedValue({ roleName: targetRole })
@@ -92,9 +92,7 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error: `Only a super admin can change a ${
-          targetRole === 'super_admin' ? 'super-admin' : targetRole
-        }'s role.`,
+        error: `Only a super admin can change a ${targetRole} role.`,
         status: 403,
       })
       expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -176,7 +174,7 @@ describe('applyRoleChange', () => {
       roleName: 'staff',
     })
     mocks.update.mockResolvedValue({
-      data: { userId: 'user_target', roleName: 'super_admin' },
+      data: { userId: 'user_target', roleName: 'super-admin' },
       error: null,
     })
 

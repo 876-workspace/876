@@ -53,13 +53,13 @@ describe('TeamMemberTableRow', () => {
   })
 
   it('renders role badge and shows external badge only for external affiliation', () => {
-    renderRow(row({ affiliation: 'external', role: 'super_admin' }))
+    renderRow(row({ affiliation: 'external', role: 'super-admin' }))
 
     expect(
       screen.getByText('External').closest('[data-slot="badge"]')
     ).not.toBeNull()
     expect(
-      screen.getByText('Super Admin').closest('[data-slot="badge"]')
+      screen.getByText('super-admin').closest('[data-slot="badge"]')
     ).not.toBeNull()
   })
 

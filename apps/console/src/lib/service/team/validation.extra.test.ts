@@ -105,7 +105,7 @@ describe('validateTeamGrant — comprehensive access control', () => {
   })
 
   it('staff-only roles not allowed for contractor/external', () => {
-    for (const role of ['super_admin']) {
+    for (const role of ['super-admin']) {
       expect(
         validateTeamGrant(
           {
@@ -133,7 +133,7 @@ describe('validateTeamGrant — comprehensive access control', () => {
 
   it('staff-only roles allowed for staff', () => {
     expect(
-      validateTeamGrant({ affiliation: 'staff' }, 'super_admin', now).error
+      validateTeamGrant({ affiliation: 'staff' }, 'super-admin', now).error
     ).toBeNull()
   })
 

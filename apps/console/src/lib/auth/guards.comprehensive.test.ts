@@ -78,7 +78,7 @@ describe('guards — permission integration (stored keys)', () => {
 
   it('owner can access security and storage', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
-      (role) => role.name === 'super_admin'
+      (role) => role.name === 'super-admin'
     )
     if (!superAdmin) throw new Error('Missing super admin system role.')
 

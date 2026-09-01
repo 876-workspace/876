@@ -143,11 +143,11 @@ describe('permissions — weird edge cases', () => {
       )
     ).toBe(true)
   })
-  it('permissionsForRole throws for __proto__ role key (inherited Object.prototype, not iterable)', () => {
-    expect(() => permissionsForRole('__proto__')).toThrow(TypeError)
+  it('permissionsForRole rejects inherited __proto__ role keys', () => {
+    expect(permissionsForRole('__proto__')).toEqual([])
   })
-  it('permissionsForRole throws for constructor role key (inherited, not iterable)', () => {
-    expect(() => permissionsForRole('constructor')).toThrow(TypeError)
+  it('permissionsForRole rejects inherited constructor role keys', () => {
+    expect(permissionsForRole('constructor')).toEqual([])
   })
   it('permissionsForRole handles empty string', () => {
     expect(permissionsForRole('')).toEqual([])
@@ -187,8 +187,8 @@ describe('permissions — weird edge cases', () => {
     // @ts-expect-error deliberate runtime null under test
     expect(() => permissionsForRole('staff', null)).toThrow(TypeError)
   })
-  it('SYSTEM_ROLE_NAMES is in privilege order (staff first, super_admin last)', () => {
-    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super_admin'])
+  it('SYSTEM_ROLE_NAMES is in privilege order (staff first, super-admin last)', () => {
+    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super-admin'])
   })
   it('SYSTEM_ROLE_DEFINITIONS contains no unknown permissions (weird check with empty catalog)', () => {
     const keys = new Set(consolePermissionCatalog.permissions.map((p) => p.key))

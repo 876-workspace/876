@@ -32,7 +32,7 @@ export async function create(
     const { error: membershipError } = await workspace.memberships.create({
       user_id: user.id,
       organization_id: org.id,
-      role: 'super_admin',
+      role: 'super-admin',
       status: 'active',
     })
     if (membershipError) {

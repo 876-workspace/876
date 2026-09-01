@@ -60,7 +60,7 @@ describe('navConfig', () => {
   })
 
   it('shows super admin every entry including security', () => {
-    expect(visibleHrefs('super_admin')).toEqual([
+    expect(visibleHrefs('super-admin')).toEqual([
       '/',
       '/users',
       '/orgs',

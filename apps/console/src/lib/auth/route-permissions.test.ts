@@ -163,8 +163,8 @@ describe('ROUTE_PERMISSIONS', () => {
     ])
   })
 
-  it('gives super_admin the complete guarded route set', () => {
-    expect(reachablePaths('super_admin')).toEqual(
+  it('gives super-admin the complete guarded route set', () => {
+    expect(reachablePaths('super-admin')).toEqual(
       Object.keys(ROUTE_PERMISSIONS)
     )
   })
