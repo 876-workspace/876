@@ -284,6 +284,15 @@ export const BILLING_SETTINGS_SECTIONS = [
     permissions: ['payments:read'],
   },
   {
+    title: 'Accounting Providers',
+    description:
+      'Connect Zoho Books and future accounting systems for external financial projection and reconciliation.',
+    href: '/settings/accounting-providers',
+    icon: CircleStackIcon,
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    permissions: ['settings:read'],
+  },
+  {
     title: 'Users',
     description: 'Assign workspace access and manage member status.',
     href: '/settings/users',
