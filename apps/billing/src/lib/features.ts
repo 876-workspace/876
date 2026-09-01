@@ -109,7 +109,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
   if (evaluateError || !evaluateResult) {
     Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
       level: 'error',
-      tags: { category: 'feature_flags' },
+      tags: { category: 'feature-flags' },
       extra: {
         call: 'features.evaluate',
         errorCode: evaluateError?.code ?? null,
