@@ -1,5 +1,4 @@
-import { AppHttpError } from '@/http/errors'
-
+import { AccountingProviderError } from './errors'
 import type { AccountingProviderAdapter, AccountingProviderKey } from './types'
 import { zohoBooksAdapter } from './zoho-books/adapter'
 
@@ -10,10 +9,9 @@ const registry: Record<AccountingProviderKey, AccountingProviderAdapter> = {
 export function accountingProvider(key: string): AccountingProviderAdapter {
   const provider = registry[key as AccountingProviderKey]
   if (!provider)
-    throw new AppHttpError({
+    throw new AccountingProviderError({
       code: 'billing/accounting-provider-unsupported',
-      message: 'This accounting provider is not supported.',
-      httpStatus: 422,
+      retryable: false,
     })
   return provider
 }

@@ -1,7 +1,7 @@
 import { isErrorCode, type BillingErrorCode } from '@876/core'
 
 import { appError, isAppHttpError } from '@/http/errors'
-import { ZohoBooksError } from '@/providers/accounting/zoho-books/errors'
+import { AccountingProviderError } from '@/providers/accounting'
 
 /** Resolve one Billing accounting-provider error through the shared catalog. */
 export function accountingProviderError(
@@ -18,7 +18,7 @@ export function accountingProviderError(
  */
 export function toAccountingProviderHttpError(error: unknown): unknown {
   if (isAppHttpError(error)) return error
-  if (error instanceof ZohoBooksError && isErrorCode(error.code))
+  if (error instanceof AccountingProviderError && isErrorCode(error.code))
     return appError(error.code, { cause: error })
   return error
 }

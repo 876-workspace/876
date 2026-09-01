@@ -1,10 +1,10 @@
-import { getError, isErrorCode } from '@876/core'
+import { AccountingProviderError } from '../errors'
 
-export class ZohoBooksError extends Error {
-  readonly code: string
-  readonly httpStatus: number | null
-  readonly retryable: boolean
-
+/**
+ * Zoho Books' flavour of the provider-layer error. It adds no state of its own;
+ * the subclass exists so a caller can tell which adapter produced the failure.
+ */
+export class ZohoBooksError extends AccountingProviderError {
   constructor(options: {
     code: string
     message?: string
@@ -12,15 +12,8 @@ export class ZohoBooksError extends Error {
     retryable?: boolean
     cause?: unknown
   }) {
-    const registered = isErrorCode(options.code) ? getError(options.code) : null
-    super(
-      options.message ?? registered?.message ?? 'An accounting provider error occurred.',
-      options.cause === undefined ? undefined : { cause: options.cause }
-    )
+    super(options)
     this.name = 'ZohoBooksError'
-    this.code = registered?.code ?? options.code
-    this.httpStatus = options.httpStatus ?? registered?.httpStatus ?? null
-    this.retryable = options.retryable ?? false
   }
 }
 
@@ -33,6 +26,13 @@ export function toZohoBooksError(error: unknown): ZohoBooksError {
   })
 }
 
+/**
+ * Maps a Zoho HTTP failure onto Billing's registered error contract.
+ *
+ * The provider's own code and message are accepted and then deliberately
+ * discarded: raw provider text must never reach a client-safe message. Keeping
+ * them in the signature makes that discard explicit at every call site.
+ */
 export function classifyZohoHttpError(
   status: number,
   _providerCode: string,
