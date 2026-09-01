@@ -105,7 +105,7 @@ describe('validateTeamGrant — comprehensive access control', () => {
   })
 
   it('staff-only roles not allowed for contractor/external', () => {
-    for (const role of ['owner', 'super_admin']) {
+    for (const role of ['owner', 'super-admin', 'super_admin']) {
       expect(
         validateTeamGrant(
           {
@@ -136,7 +136,7 @@ describe('validateTeamGrant — comprehensive access control', () => {
       validateTeamGrant({ affiliation: 'staff' }, 'owner', now).error
     ).toBeNull()
     expect(
-      validateTeamGrant({ affiliation: 'staff' }, 'super_admin', now).error
+      validateTeamGrant({ affiliation: 'staff' }, 'super-admin', now).error
     ).toBeNull()
   })
 
@@ -239,8 +239,7 @@ describe('validateTeamGrant — comprehensive access control', () => {
     expect(r.error).toBeNull()
   })
 
-  it('legacy permissions not part of validation — only affiliation/title/expiry', () => {
-    // Validation is orthogonal to permission catalog; ensure legacy alias not confused
+  it('permission migration aliases do not affect affiliation validation', () => {
     const r = validateTeamGrant({ affiliation: 'staff' }, 'admin', now)
     expect(r.error).toBeNull()
   })
