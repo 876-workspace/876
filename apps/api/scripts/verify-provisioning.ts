@@ -32,8 +32,10 @@ async function main(): Promise<{ exitCode: number; databaseUsed: boolean }> {
   if (hasFlag('help') || hasFlag('h')) {
     console.log(`Usage: pnpm --filter @876/api provisioning:verify [options]
 
-Verifies the database state expected after the one-time Phase 1 provisioning
-import. This command never changes provisioning data.
+Verifies the database state expected after the one-time provisioning bootstrap.
+This includes setup policies/manifests plus each imported application's active
+default provisioning profile and its generic manifest compatibility target.
+This command never changes provisioning data.
 
 Options:
   --file=<path>  Verification specification. Defaults to the Phase 1 handoff file.

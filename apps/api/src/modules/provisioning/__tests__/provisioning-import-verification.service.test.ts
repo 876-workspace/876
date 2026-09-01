@@ -238,6 +238,10 @@ function dependencies(options: {
   fallbackCondition?: boolean
   enterpriseEnabled?: boolean
   omitWorkTasks?: boolean
+  missingApplicationProfile?: boolean
+  inactiveApplicationProfile?: boolean
+  invalidApplicationDefault?: boolean
+  applicationManifestMismatch?: boolean
 } = {}): ProvisioningImportVerificationDependencies {
   return {
     async retrieveSetup(key) {
@@ -249,7 +253,11 @@ function dependencies(options: {
       if (targetType === 'finance' && targetKey === options.missingFinance)
         throw new Error('missing manifest')
       if (targetType === 'application' && targetKey === '876-crm')
-        return manifest(targetType, targetKey, !options.unpublishedApp)
+        return manifest(
+          targetType,
+          options.applicationManifestMismatch ? 'wrong-target' : targetKey,
+          !options.unpublishedApp
+        )
       return manifest(targetType, targetKey)
     },
     async retrievePolicy(key) {
@@ -259,6 +267,17 @@ function dependencies(options: {
         enterpriseEnabled: options.enterpriseEnabled,
         omitWorkTasks: options.omitWorkTasks,
       })
+    },
+    async retrieveDefaultApplicationProfile(appKey) {
+      if (options.missingApplicationProfile)
+        throw new Error('missing application profile')
+      return {
+        id: 'apppr_crm_default',
+        key: 'default',
+        status: options.inactiveApplicationProfile ? 'draft' : 'active',
+        isDefault: !options.invalidApplicationDefault,
+        manifestTargetKey: appKey,
+      }
     },
   }
 }
@@ -271,6 +290,7 @@ describe('verifyProvisioningImport', () => {
     expect(result.issues).toEqual([])
     expect(result.default_setup_key).toBe('global-usd')
     expect(result.manifest_version).toBe(1)
+    expect(result.application_profile_count).toBe(1)
   })
 
   it('reports missing finance and unpublished application manifests', async () => {
@@ -326,6 +346,50 @@ describe('verifyProvisioningImport', () => {
         code: 'entitlement_missing',
         message: expect.stringContaining('service_capability/work.tasks'),
       })
+    )
+  })
+
+  it('reports a missing application default profile without mutating state', async () => {
+    const result = await verifyProvisioningImport(
+      spec(),
+      dependencies({ missingApplicationProfile: true })
+    )
+
+    expect(result.valid).toBe(false)
+    expect(result.application_profile_count).toBe(0)
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: 'application_default_profile_missing' })
+    )
+  })
+
+  it('reports inactive and structurally invalid application defaults', async () => {
+    const result = await verifyProvisioningImport(
+      spec(),
+      dependencies({
+        inactiveApplicationProfile: true,
+        invalidApplicationDefault: true,
+      })
+    )
+
+    expect(result.valid).toBe(false)
+    expect(result.application_profile_count).toBe(1)
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'application_default_profile_inactive' }),
+        expect.objectContaining({ code: 'application_default_profile_invalid' }),
+      ])
+    )
+  })
+
+  it('reports when generic application manifest compatibility points away from the default profile', async () => {
+    const result = await verifyProvisioningImport(
+      spec(),
+      dependencies({ applicationManifestMismatch: true })
+    )
+
+    expect(result.valid).toBe(false)
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: 'application_default_manifest_mismatch' })
     )
   })
 })

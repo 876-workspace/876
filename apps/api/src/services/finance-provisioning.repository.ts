@@ -2,6 +2,7 @@ import { prisma } from '@/db/client'
 
 import type {
   AppRow,
+  ApplicationProfileSelectionRow,
   FinanceProvisioningOutboxRow,
   FinanceProvisioningRepository,
   OrganizationRow,
@@ -20,28 +21,48 @@ function toSubscriptionRow(row: {
   return row
 }
 
-async function provisioningSelectionAudit(organizationId: string) {
-  const organization = await prisma.organization.findUnique({
-    where: { id: organizationId },
-    select: {
-      provisioningSetupKey: true,
-      provisioningSelectionType: true,
-      provisioningMatchGroupKey: true,
-      provisioningMatchPriority: true,
-      provisioningMatchedFields: true,
-    },
-  })
+async function provisioningSelectionAudit(
+  organizationId: string,
+  appId: string
+) {
+  const [organization, application] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        provisioningSetupKey: true,
+        provisioningSelectionType: true,
+        provisioningMatchGroupKey: true,
+        provisioningMatchPriority: true,
+        provisioningMatchedFields: true,
+      },
+    }),
+    prisma.organizationApplicationProvisioning.findUnique({
+      where: { organizationId_appId: { organizationId, appId } },
+      select: {
+        selectionType: true,
+        matchGroupKey: true,
+        matchPriority: true,
+        matchedFields: true,
+        profile: { select: { id: true, key: true } },
+      },
+    }),
+  ])
 
   return {
     provisioningSetupKey: organization?.provisioningSetupKey ?? null,
-    provisioningSelectionType:
-      organization?.provisioningSelectionType ?? null,
+    provisioningSelectionType: organization?.provisioningSelectionType ?? null,
     provisioningMatchGroupKey:
       organization?.provisioningMatchGroupKey ?? null,
     provisioningMatchPriority:
       organization?.provisioningMatchPriority ?? null,
     provisioningMatchedFields:
       organization?.provisioningMatchedFields ?? [],
+    applicationProvisioningProfileId: application?.profile.id ?? null,
+    applicationProvisioningProfileKey: application?.profile.key ?? null,
+    applicationProvisioningSelectionType: application?.selectionType ?? null,
+    applicationProvisioningMatchGroupKey: application?.matchGroupKey ?? null,
+    applicationProvisioningMatchPriority: application?.matchPriority ?? null,
+    applicationProvisioningMatchedFields: application?.matchedFields ?? [],
   }
 }
 
@@ -101,6 +122,23 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
       return rows.map(toSubscriptionRow)
     },
 
+    async resolveApplicationProfileSelection(organizationId, appId) {
+      const row = await prisma.organizationApplicationProvisioning.findUnique({
+        where: { organizationId_appId: { organizationId, appId } },
+        select: {
+          profile: {
+            select: { id: true, key: true, manifestTargetKey: true },
+          },
+        },
+      })
+      if (!row) return null
+      return {
+        profileId: row.profile.id,
+        profileKey: row.profile.key,
+        manifestTargetKey: row.profile.manifestTargetKey,
+      } satisfies ApplicationProfileSelectionRow
+    },
+
     async findPublishedRevision(targetType, targetKey) {
       const row = await prisma.provisioningManifestRevision.findFirst({
         where: {
@@ -112,15 +150,17 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
           revision: true,
           financeDependency: true,
           financeScopes: true,
+          provisioningManifest: { select: { targetKey: true } },
         },
       })
       if (!row) return null
       return {
         id: row.id,
+        targetKey: row.provisioningManifest.targetKey,
         revision: row.revision,
         financeDependency: row.financeDependency,
         financeScopes: [...row.financeScopes],
-      } as ProvisioningManifestRevisionRow
+      } satisfies ProvisioningManifestRevisionRow
     },
 
     async resolveFinanceSetupKey(organizationId) {
@@ -179,16 +219,16 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       })
-
-      if (existing) {
+      if (existing)
         return { run: existing as ProvisioningRunRow, created: false }
-      }
 
       const { generateId } = await import('@/platform/ids')
       const nowBigint = BigInt(params.now)
       const runId = generateId('provisioningRun')
-      const selection = await provisioningSelectionAudit(params.organizationId)
-
+      const selection = await provisioningSelectionAudit(
+        params.organizationId,
+        params.appId
+      )
       const run = await prisma.provisioningRun.create({
         data: {
           id: runId,
@@ -214,24 +254,20 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
         },
       })
 
-      const steps: unknown[] =
-        (params.applicationRevision as unknown as { steps?: unknown[] })
-          .steps ?? []
-      const position = 0
-
-      if (steps.length === 0) {
+      const steps = params.applicationRevision.steps ?? []
+      if (steps.length === 0)
         await prisma.provisioningRunStep.create({
           data: {
             id: generateId('provisioningRunStep'),
             runId: run.id,
             targetType: 'application',
-            targetKey: params.appId,
+            targetKey: params.applicationRevision.targetKey,
             revisionId: params.applicationRevision.id,
             revision: params.applicationRevision.revision,
             stepKey: 'apply_defaults',
             description:
               'Apply application defaults without replacing tenant overrides.',
-            position,
+            position: 0,
             status: 'queued',
             attemptCount: 0,
             startedAt: null,
@@ -241,7 +277,6 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
             updatedAt: nowBigint,
           },
         })
-      }
 
       return { run: run as ProvisioningRunRow, created: true }
     },
@@ -255,8 +290,10 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
       const { generateId } = await import('@/platform/ids')
       const nowBigint = BigInt(params.now)
       const runId = generateId('provisioningRun')
-      const selection = await provisioningSelectionAudit(params.organizationId)
-
+      const selection = await provisioningSelectionAudit(
+        params.organizationId,
+        params.appId
+      )
       const run = await prisma.provisioningRun.create({
         data: {
           id: runId,
@@ -281,7 +318,6 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
           updatedAt: nowBigint,
         },
       })
-
       return run as ProvisioningRunRow
     },
 
@@ -289,13 +325,9 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
       const where: Record<string, unknown> = {}
       if (params.appId) where.appId = params.appId
       if (params.organizationId) where.organizationId = params.organizationId
-      if (params.startingAfter) {
-        where.id = { gt: params.startingAfter }
-      }
+      if (params.startingAfter) where.id = { gt: params.startingAfter }
 
-      const limit = params.limit
-      const take = limit != null ? limit + 1 : undefined
-
+      const take = params.limit == null ? undefined : params.limit + 1
       const rows = await prisma.subscription.findMany({
         where,
         orderBy: { id: 'asc' },
@@ -308,14 +340,11 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
           financeLifecycleVersion: true,
         },
       })
-
-      const hasMore = limit != null && rows.length > limit
-      const sliced = limit != null ? rows.slice(0, limit) : rows
-
-      return {
-        rows: sliced.map(toSubscriptionRow),
-        hasMore,
-      }
+      const hasMore =
+        params.limit != null && rows.length > params.limit
+      const sliced =
+        params.limit == null ? rows : rows.slice(0, params.limit)
+      return { rows: sliced.map(toSubscriptionRow), hasMore }
     },
   }
 }

@@ -28,6 +28,8 @@ model App {
   appPermissions      AppPermission[]
   appRoles            AppRole[]
   applicationModules  ApplicationModule[]
+  applicationProvisioningProfiles ApplicationProvisioningProfile[]
+  organizationApplicationProvisioning OrganizationApplicationProvisioning[]
   organization        Organization?       @relation(fields: [organizationId], references: [id], onUpdate: NoAction)
   auditEvents         AuditEvent[]
   authAttempts        AuthAttempt[]

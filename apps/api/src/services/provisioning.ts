@@ -103,10 +103,15 @@ export async function seedDefaultRoles(
   return seeded
 }
 
-async function provisionedApplicationSlugs(
+type ProvisionedApplicationPolicy = {
+  slugs: string[]
+  hasSetupSelection: boolean
+}
+
+async function resolveProvisionedApplicationPolicy(
   organizationId: string,
   creationTimestamp?: number
-): Promise<string[]> {
+): Promise<ProvisionedApplicationPolicy> {
   let persisted = await retrievePersistedProvisioningPolicy(organizationId)
 
   if (!persisted && creationTimestamp !== undefined) {
@@ -117,14 +122,51 @@ async function provisionedApplicationSlugs(
     if (fresh) persisted = fresh
   }
 
-  return persisted
-    ? enabledProvisioningApplicationSlugs(persisted.policy)
-    : [...DEFAULT_ORG_APP_SLUGS]
+  return {
+    slugs: persisted
+      ? enabledProvisioningApplicationSlugs(persisted.policy)
+      : [...DEFAULT_ORG_APP_SLUGS],
+    hasSetupSelection: persisted !== null,
+  }
+}
+
+async function provisionedApplicationSlugs(
+  organizationId: string,
+  creationTimestamp?: number
+): Promise<string[]> {
+  return (
+    await resolveProvisionedApplicationPolicy(organizationId, creationTimestamp)
+  ).slugs
+}
+
+async function ensureApplicationProfileSelections(
+  organizationId: string,
+  appIds: string[],
+  now: number
+): Promise<void> {
+  const { resolveAndPersistApplicationProvisioningProfile } = await import(
+    '@/modules/provisioning/application-provisioning-profile.service'
+  )
+
+  for (const appId of appIds) {
+    await resolveAndPersistApplicationProvisioningProfile(
+      organizationId,
+      appId,
+      now
+    )
+  }
 }
 
 /**
  * Subscribe an organization to setup-enabled applications plus an explicit
  * source app. Billing/Invoice are never inferred from finance infrastructure.
+ *
+ * Organizations with a persisted Phase 2 setup also receive exactly one
+ * persisted application provisioning profile for every resulting entitlement
+ * before downstream readiness runs. Legacy organizations without a setup remain
+ * on the documented Enterprise-only compatibility path until the explicit
+ * workspace-setup backfill has assigned them a setup; they are never silently
+ * routed into an application profile.
  */
 export async function ensureOrgAppSubscriptions(
   organizationId: string,
@@ -134,11 +176,12 @@ export async function ensureOrgAppSubscriptions(
   } = {}
 ): Promise<{ appIds: string[]; provisioned: string[] }> {
   const appIds: string[] = []
-
-  for (const slug of await provisionedApplicationSlugs(
+  const applicationPolicy = await resolveProvisionedApplicationPolicy(
     organizationId,
     options.selectionTimestamp
-  )) {
+  )
+
+  for (const slug of applicationPolicy.slugs) {
     const app = await repository.findAppBySlug(slug)
     if (!app) {
       log.error(
@@ -150,12 +193,11 @@ export async function ensureOrgAppSubscriptions(
     if (!appIds.includes(app.id)) appIds.push(app.id)
   }
 
-  // The source app comes from the authenticated API-key principal. It is an
-  // explicit product request, not a location-policy inference.
   const sourceAppId = options.sourceAppId ?? null
   if (sourceAppId !== null && !appIds.includes(sourceAppId))
     appIds.push(sourceAppId)
 
+  const now = options.selectionTimestamp ?? Math.floor(Date.now() / 1000)
   const provisioned: string[] = []
   for (const appId of appIds) {
     const existing = await repository.findSubscription(organizationId, appId)
@@ -167,7 +209,7 @@ export async function ensureOrgAppSubscriptions(
             subscriptionId: existing.id,
             itemId: generateId('subscriptionItem'),
             priceId: defaultPrice.id,
-            now: BigInt(Math.floor(Date.now() / 1000)),
+            now: BigInt(now),
           })
       }
       continue
@@ -181,10 +223,13 @@ export async function ensureOrgAppSubscriptions(
       appId,
       priceId: defaultPrice?.id ?? null,
       status: 'active',
-      now: BigInt(Math.floor(Date.now() / 1000)),
+      now: BigInt(now),
     })
     provisioned.push(appId)
   }
+
+  if (applicationPolicy.hasSetupSelection)
+    await ensureApplicationProfileSelections(organizationId, appIds, now)
 
   if (provisioned.length > 0) {
     log.info(

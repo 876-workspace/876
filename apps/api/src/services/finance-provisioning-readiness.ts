@@ -22,10 +22,7 @@ export type FinanceReadinessResult = {
   eventIds: string[]
 }
 
-/**
- * Guarantees that the finance workspace required by an exact organization and
- * app is fully prepared and confirmed delivered.
- */
+/** Guarantees that the exact organization/app finance workspace is delivered. */
 export async function ensureFinanceWorkspaceReady(
   deps: FinanceProvisioningDeps,
   params: EnsureFinanceWorkspaceReadyParams
@@ -56,15 +53,6 @@ export async function ensureFinanceWorkspaceReady(
     })
   }
 
-  log.info(
-    {
-      organization_id: params.organizationId,
-      app_id: params.appId,
-      event_ids: financeResult.eventIds,
-    },
-    'finance_readiness.delivery_started'
-  )
-
   try {
     await ensureFinanceProvisioningDelivered(financeResult.eventIds)
   } catch (error) {
@@ -79,15 +67,6 @@ export async function ensureFinanceWorkspaceReady(
     )
     throw error
   }
-
-  log.info(
-    {
-      organization_id: params.organizationId,
-      app_id: params.appId,
-      event_ids: financeResult.eventIds,
-    },
-    'finance_readiness.ready'
-  )
 
   return {
     organizationId: params.organizationId,
@@ -115,119 +94,105 @@ export type AppReadinessResult = {
 }
 
 /**
- * The single readiness contract for making one org/app pair fully usable.
+ * The single readiness contract for one organization/app pair.
  *
- * Finance-less applications return once their entitlement exists. Embedded
- * finance applications additionally require a persisted organization setup and
- * a published finance manifest for that exact setup. There is no runtime
- * fallback to the platform's current default setup in Phase 2.
+ * The application provisioning profile is selected and persisted before this
+ * function is called. Readiness therefore consumes that exact profile's
+ * published manifest; it never re-routes and never substitutes the app's current
+ * default profile on retry.
  */
 export async function ensureAppReady(
   deps: FinanceProvisioningDeps,
   params: EnsureAppReadyParams
 ): Promise<AppReadinessResult> {
   const expectEmbedded = params.expectedFinanceDependency === 'embedded'
-  const notReady = (
-    organizationId: string,
-    appId: string
-  ): AppReadinessResult => ({
-    organizationId,
-    appId,
+  const financeLess = (): AppReadinessResult => ({
+    organizationId: params.organizationId,
+    appId: params.appId,
     ready: true,
     financeRequired: false,
     eventIds: [],
   })
 
-  const profile = await deps.repository.findPublishedRevision(
-    'application',
+  const selected = await deps.repository.resolveApplicationProfileSelection(
+    params.organizationId,
     params.appId
   )
+  if (!selected) {
+    log.error(
+      { organization_id: params.organizationId, app_id: params.appId },
+      'app_readiness.profile_selection_missing'
+    )
+    throw new AppHttpError({
+      code: 'provisioning/application-profile-selection-missing',
+      message:
+        'The organization has no persisted provisioning profile for this application.',
+      httpStatus: 409,
+    })
+  }
 
+  const profile = await deps.repository.findPublishedRevision(
+    'application',
+    selected.manifestTargetKey
+  )
   if (!profile) {
     if (expectEmbedded) {
-      log.error(
-        { organization_id: params.organizationId, app_id: params.appId },
-        'app_readiness.profile_missing'
-      )
       throw new AppHttpError({
         code: 'provisioning/application-profile-missing',
-        message: `Published provisioning profile is missing for application ${params.appId}.`,
+        message: `Published provisioning profile ${selected.profileKey} is missing for application ${params.appId}.`,
         httpStatus: 503,
       })
     }
     log.warn(
-      { organization_id: params.organizationId, app_id: params.appId },
+      {
+        organization_id: params.organizationId,
+        app_id: params.appId,
+        profile_id: selected.profileId,
+        profile_key: selected.profileKey,
+      },
       'app_readiness.profile_missing_non_strict'
     )
-    return notReady(params.organizationId, params.appId)
+    return financeLess()
   }
 
   if (profile.financeDependency !== 'embedded') {
-    if (expectEmbedded) {
-      log.error(
-        {
-          organization_id: params.organizationId,
-          app_id: params.appId,
-          finance_dependency: profile.financeDependency,
-        },
-        'app_readiness.finance_dependency_missing'
-      )
+    if (expectEmbedded)
       throw new AppHttpError({
         code: 'provisioning/finance-dependency-missing',
-        message: `Application ${params.appId} requires foreground finance provisioning but its published profile declares no finance dependency.`,
+        message: `Application ${params.appId} requires embedded finance but selected profile ${selected.profileKey} declares no finance dependency.`,
         httpStatus: 503,
       })
-    }
-    return notReady(params.organizationId, params.appId)
+    return financeLess()
   }
 
-  if (profile.financeScopes.length === 0) {
-    log.error(
-      { organization_id: params.organizationId, app_id: params.appId },
-      'app_readiness.finance_scopes_missing'
-    )
+  if (profile.financeScopes.length === 0)
     throw new AppHttpError({
       code: 'provisioning/finance-scopes-missing',
-      message: `Application ${params.appId} declares embedded finance without scopes.`,
+      message: `Application profile ${selected.profileKey} declares embedded finance without scopes.`,
       httpStatus: 503,
     })
-  }
 
   const setupKey = await deps.repository.resolveFinanceSetupKey(
     params.organizationId
   )
-  if (!setupKey) {
-    log.error(
-      { organization_id: params.organizationId, app_id: params.appId },
-      'app_readiness.setup_selection_missing'
-    )
+  if (!setupKey)
     throw new AppHttpError({
       code: 'provisioning/setup-selection-missing',
       message:
         'The organization has no persisted provisioning setup. Run the provisioning setup backfill before retrying.',
       httpStatus: 409,
     })
-  }
 
   const financeProfile = await deps.repository.findPublishedRevision(
     'finance',
     setupKey
   )
-  if (!financeProfile) {
-    log.error(
-      {
-        organization_id: params.organizationId,
-        app_id: params.appId,
-        setup_key: setupKey,
-      },
-      'app_readiness.finance_profile_missing'
-    )
+  if (!financeProfile)
     throw new AppHttpError({
       code: 'provisioning/finance-profile-missing',
       message: `Published finance provisioning profile is missing for setup ${setupKey}.`,
       httpStatus: 503,
     })
-  }
 
   const result = await ensureFinanceWorkspaceReady(deps, {
     organizationId: params.organizationId,

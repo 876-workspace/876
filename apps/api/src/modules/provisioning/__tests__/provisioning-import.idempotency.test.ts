@@ -186,6 +186,7 @@ describe('one-time provisioning importer reruns', () => {
       currentSetup = { ...(currentSetup ?? setup()), is_default: true }
       return currentSetup
     })
+    const ensureDefaultApplicationProfile = vi.fn(async () => undefined)
 
     const dependencies: ProvisioningImportDependencies = {
       async preflightEntitlements() {},
@@ -196,6 +197,7 @@ describe('one-time provisioning importer reruns', () => {
         currentSetup = setup(false)
         return currentSetup
       },
+      ensureDefaultApplicationProfile,
       async findManifest(targetType, targetKey) {
         return manifests.get(`${targetType}:${targetKey}`) ?? null
       },
@@ -220,6 +222,7 @@ describe('one-time provisioning importer reruns', () => {
     expect(first).toMatchObject({
       setups_created: 1,
       finance_manifests_published: 1,
+      application_profiles_ensured: 0,
       organization_manifest_published: true,
       default_setup_changed: true,
     })
@@ -230,10 +233,12 @@ describe('one-time provisioning importer reruns', () => {
       policies_unchanged: 1,
       finance_manifests_published: 0,
       finance_manifests_preserved: 1,
+      application_profiles_ensured: 0,
       organization_manifest_published: false,
       organization_manifest_preserved: true,
       default_setup_changed: false,
     })
+    expect(ensureDefaultApplicationProfile).not.toHaveBeenCalled()
     expect(replaceDraft).toHaveBeenCalledTimes(2)
     expect(publishDraft).toHaveBeenCalledTimes(2)
     expect(replacePolicy).toHaveBeenCalledTimes(1)

@@ -1,5 +1,11 @@
 import { toCursorQuery, type CursorPageParams } from '@876/core/client'
 import type {
+  ApplicationProvisioningProfile,
+  ApplicationProvisioningProfileCreateParams,
+  ApplicationProvisioningProfilePolicyReplaceParams,
+  ApplicationProvisioningProfileUpdateParams,
+} from '@876/core/types/application-provisioning-profile'
+import type {
   ProvisioningSetupPolicy,
   ProvisioningSetupPolicyReplaceParams,
 } from '@876/core/types/provisioning-policy'
@@ -30,7 +36,24 @@ const targetPath = (
   targetKey: string
 ) => `${encodeURIComponent(targetType)}/${encodeURIComponent(targetKey)}`
 
-/** `$876.provisioning.*` — generic manifest-v1 administration. */
+const profilePath = (appKey: string, profileKey?: string) => {
+  const base = `/provisioning/apps/${encodeURIComponent(appKey)}/profiles`
+  return profileKey === undefined
+    ? base
+    : `${base}/${encodeURIComponent(profileKey)}`
+}
+
+type ApplicationProvisioningProfilePolicy = {
+  object: 'application_provisioning_profile_policy'
+  app_id: string
+  app_slug: string
+  profile_id: string
+  profile_key: string
+  conditions: ApplicationProvisioningProfile['conditions']
+  updated_at: number
+}
+
+/** `$876.provisioning.*` — generic manifest-v1 and routing administration. */
 export function createAdminProvisioningResource(runtime: AdminRuntime) {
   return {
     retrieve(targetType: AdminProvisioningTargetType, targetKey: string) {
@@ -154,6 +177,109 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
         return adminRequest<AdminDeletedProvisioningSetup>(runtime, {
           method: 'DELETE',
           path: `/provisioning/setups/${encodeURIComponent(setupKey)}/purge`,
+        })
+      },
+    },
+
+    applicationProfiles: {
+      list(appKey: string) {
+        return adminRequest<AdminListResponse<ApplicationProvisioningProfile>>(
+          runtime,
+          {
+            method: 'GET',
+            path: profilePath(appKey),
+          }
+        )
+      },
+
+      retrieve(appKey: string, profileKey: string) {
+        return adminRequest<ApplicationProvisioningProfile>(runtime, {
+          method: 'GET',
+          path: profilePath(appKey, profileKey),
+        })
+      },
+
+      create(appKey: string, body: ApplicationProvisioningProfileCreateParams) {
+        return adminRequest<ApplicationProvisioningProfile>(runtime, {
+          method: 'POST',
+          path: profilePath(appKey),
+          body,
+        })
+      },
+
+      update(
+        appKey: string,
+        profileKey: string,
+        body: ApplicationProvisioningProfileUpdateParams
+      ) {
+        return adminRequest<ApplicationProvisioningProfile>(runtime, {
+          method: 'PATCH',
+          path: profilePath(appKey, profileKey),
+          body,
+        })
+      },
+
+      retrievePolicy(appKey: string, profileKey: string) {
+        return adminRequest<ApplicationProvisioningProfilePolicy>(runtime, {
+          method: 'GET',
+          path: `${profilePath(appKey, profileKey)}/policy`,
+        })
+      },
+
+      replacePolicy(
+        appKey: string,
+        profileKey: string,
+        body: ApplicationProvisioningProfilePolicyReplaceParams
+      ) {
+        return adminRequest<ApplicationProvisioningProfilePolicy>(runtime, {
+          method: 'PUT',
+          path: `${profilePath(appKey, profileKey)}/policy`,
+          body,
+        })
+      },
+
+      retrieveManifest(appKey: string, profileKey: string) {
+        return adminRequest<AdminProvisioningManifest>(runtime, {
+          method: 'GET',
+          path: `${profilePath(appKey, profileKey)}/manifest`,
+        })
+      },
+
+      retrievePublished(appKey: string, profileKey: string) {
+        return adminRequest<AdminProvisioningManifestRevision>(runtime, {
+          method: 'GET',
+          path: `${profilePath(appKey, profileKey)}/published`,
+        })
+      },
+
+      replaceDraft(
+        appKey: string,
+        profileKey: string,
+        body: AdminProvisioningDraftReplaceParams
+      ) {
+        return adminRequest<AdminProvisioningManifestRevision>(runtime, {
+          method: 'PUT',
+          path: `${profilePath(appKey, profileKey)}/draft`,
+          body,
+        })
+      },
+
+      validate(
+        appKey: string,
+        profileKey: string,
+        body: AdminProvisioningDraftReplaceParams
+      ) {
+        return adminRequest<AdminProvisioningValidation>(runtime, {
+          method: 'POST',
+          path: `${profilePath(appKey, profileKey)}/validate`,
+          body,
+        })
+      },
+
+      publish(appKey: string, profileKey: string) {
+        return adminRequest<AdminProvisioningManifestRevision>(runtime, {
+          method: 'POST',
+          path: `${profilePath(appKey, profileKey)}/publish`,
         })
       },
     },

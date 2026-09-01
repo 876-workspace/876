@@ -271,8 +271,6 @@ export const provisioningDraftReplaceSchema = z
     }
   })
 
-// Response schemas
-
 export const provisioningPropertyResponseSchema = z
   .object({
     object: z.literal('provisioning_property'),
@@ -281,8 +279,6 @@ export const provisioningPropertyResponseSchema = z
     value_type: provisioningValueTypeSchema,
     string_value: z.string().nullable(),
     integer_value: z.string().nullable(),
-    // A decimal is a string end-to-end (`.claude/rules/module-settings.md`);
-    // the serializer has already stringified it, so this only describes it.
     decimal_value: z.string().nullable(),
     boolean_value: z.boolean().nullable(),
     reference_namespace: z.string().nullable(),
@@ -459,6 +455,21 @@ export const provisioningRunResponseSchema = z
     trigger: provisioningRunTriggerSchema,
     status: provisioningRunStatusSchema,
     manifest_version: z.literal(1).default(1),
+    provisioning_setup_key: z.string().nullable(),
+    provisioning_selection_type: z
+      .enum(['policy', 'fallback', 'backfill'])
+      .nullable(),
+    provisioning_match_group_key: z.string().nullable(),
+    provisioning_match_priority: z.number().int().nullable(),
+    provisioning_matched_fields: z.array(z.string()),
+    application_provisioning_profile_id: z.string().nullable(),
+    application_provisioning_profile_key: z.string().nullable(),
+    application_provisioning_selection_type: z
+      .enum(['policy', 'default', 'backfill'])
+      .nullable(),
+    application_provisioning_match_group_key: z.string().nullable(),
+    application_provisioning_match_priority: z.number().int().nullable(),
+    application_provisioning_matched_fields: z.array(z.string()),
     finance_revision_id: z.string().nullable(),
     finance_revision: z.number().int().nullable(),
     application_revision_id: z.string().nullable(),
@@ -551,18 +562,8 @@ export type ProvisioningDraftReplace = z.infer<
 >
 export type ProvisioningRunStatus = z.infer<typeof provisioningRunStatusSchema>
 
-// ---------------------------------------------------------------------------
-// Provisioning setups — named day-zero configurations (Jamaica, United States,
-// …). A setup owns the finance manifest stored at `finance/<key>`.
-// ---------------------------------------------------------------------------
-
 export const provisioningSetupStatusSchema = z.enum(['active', 'archived'])
 
-/**
- * Segments Console already routes under `/settings/orgs/provisioning`. A setup
- * keyed with one of these would exist but be unreachable in the UI, so the key
- * is refused at creation rather than discovered later.
- */
 const RESERVED_SETUP_KEYS = new Set(['new', 'runs'])
 
 const setupKeySchema = z
@@ -601,11 +602,6 @@ export const provisioningSetupCreateSchema = z.strictObject({
     .default(null)
     .transform((v) => (v == null ? null : v.toUpperCase())),
   is_default: z.boolean().optional().default(false),
-  /**
-   * Setup key whose published finance manifest seeds the new setup. Omitted,
-   * the platform default is copied — a new setup always starts from a working
-   * configuration rather than an empty manifest that cannot provision.
-   */
   copy_from: setupKeySchema.nullable().optional().default(null),
 })
 

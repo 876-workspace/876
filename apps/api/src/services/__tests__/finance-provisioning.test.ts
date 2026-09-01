@@ -39,6 +39,13 @@ function makeRepository(
     findOrganizationById: vi.fn(),
     findAppById: vi.fn(),
     listSubscriptionsByOrgAndApp: vi.fn(),
+    resolveApplicationProfileSelection: vi.fn().mockImplementation(
+      async (_organizationId: string, appId: string) => ({
+        profileId: `apppr_${appId}`,
+        profileKey: 'default',
+        manifestTargetKey: appId,
+      })
+    ),
     findPublishedRevision: vi.fn(),
     resolveFinanceSetupKey: vi.fn().mockResolvedValue('jamaica'),
     findLatestOutboxEvent: vi.fn(),
@@ -79,6 +86,7 @@ function app(
 function profile(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: 'pmr_app_2',
+    targetKey: 'rap_couriers',
     revision: 2,
     financeDependency: 'embedded',
     financeScopes: ['billing.invoices.write', 'billing.customers.read'],
@@ -238,7 +246,6 @@ describe('enqueueFinanceConnectionEvent', () => {
     expect((event as { id: string }).id.startsWith('fpe_')).toBe(true)
     expect(event.aggregateId).toBe('org_1:rap_couriers')
     expect(event.desiredStatus).toBe('ACTIVE')
-    // Scopes are sorted
     expect(event.scopes).toEqual([
       'billing.customers.read',
       'billing.invoices.write',
@@ -333,6 +340,7 @@ describe('enqueueFinanceConnectionEvent', () => {
       if (t === 'application') return profile() as never
       return {
         id: 'pmr_finance',
+        targetKey: 'jamaica',
         revision: 1,
         financeDependency: 'none',
         financeScopes: [],
@@ -395,7 +403,11 @@ describe('enqueueFinanceConnectionEvent', () => {
 
   it('creates an app-owned run without finance event for direct application', async () => {
     const sub = subscription({ appId: 'rap_billing' })
-    const prof = profile({ financeDependency: 'none', financeScopes: [] })
+    const prof = profile({
+      targetKey: 'rap_billing',
+      financeDependency: 'none',
+      financeScopes: [],
+    })
     const run = { id: 'prn_direct' }
     const repo = makeRepository()
     repo.findSubscriptionById.mockResolvedValue(sub as never)
@@ -426,7 +438,11 @@ describe('enqueueFinanceConnectionEvent', () => {
 
   it('reuses existing direct run without counting change', async () => {
     const sub = subscription({ appId: 'rap_billing' })
-    const prof = profile({ financeDependency: 'none', financeScopes: [] })
+    const prof = profile({
+      targetKey: 'rap_billing',
+      financeDependency: 'none',
+      financeScopes: [],
+    })
     const existing = { id: 'prn_direct' }
     const repo = makeRepository()
     repo.findSubscriptionById.mockResolvedValue(sub as never)
@@ -541,7 +557,6 @@ describe('enqueueFinanceConnectionEvent', () => {
       profile({ financeScopes: ['billing.customers.read'] }) as never
     )
     repo.findLatestOutboxEvent.mockResolvedValue(latest as never)
-    // Already matches? No, because latest entitlement is sub_1 but active is sub_2, so new event needed
     repo.createOutboxEvent.mockImplementation(async (data) => data as never)
     repo.updateSubscriptionsLifecycleVersion.mockResolvedValue(undefined)
     repo.createRunForEvent.mockResolvedValue({ id: 'prn_1' } as never)
@@ -595,6 +610,59 @@ describe('enqueueFinanceConnectionEvent', () => {
     ).rejects.toThrow('references missing app')
   })
 
+  it('fails closed when the persisted application profile selection is missing', async () => {
+    const sub = subscription()
+    const repo = makeRepository()
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app())
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.resolveApplicationProfileSelection.mockResolvedValue(null)
+
+    await expect(
+      enqueueFinanceConnectionEvent({ repository: repo }, sub as never)
+    ).rejects.toMatchObject({
+      code: 'provisioning/application-profile-selection-missing',
+      httpStatus: 409,
+    })
+    expect(repo.findPublishedRevision).not.toHaveBeenCalled()
+  })
+
+  it('loads the published manifest through the persisted profile target', async () => {
+    const sub = subscription()
+    const repo = makeRepository()
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app())
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.resolveApplicationProfileSelection.mockResolvedValue({
+      profileId: 'apppr_jamaica',
+      profileKey: 'jamaica',
+      manifestTargetKey: 'apppr_jamaica',
+    })
+    repo.findPublishedRevision.mockImplementation(async (targetType, targetKey) =>
+      targetType === 'application' && targetKey === 'apppr_jamaica'
+        ? (profile({ targetKey: 'apppr_jamaica' }) as never)
+        : null
+    )
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(async (data) => data as never)
+    repo.updateSubscriptionsLifecycleVersion.mockResolvedValue(undefined)
+    repo.createRunForEvent.mockResolvedValue({ id: 'prn_1' } as never)
+    repo.updateOutboxEventRunId.mockResolvedValue(undefined)
+
+    await enqueueFinanceConnectionEvent({ repository: repo }, sub as never)
+
+    expect(repo.findPublishedRevision).toHaveBeenCalledWith(
+      'application',
+      'apppr_jamaica'
+    )
+    expect(repo.findPublishedRevision).not.toHaveBeenCalledWith(
+      'application',
+      'rap_couriers'
+    )
+  })
+
   it('respects desiredStatus override to REVOKED', async () => {
     const sub = subscription({ financeLifecycleVersion: 1 })
     const latest = {
@@ -634,13 +702,16 @@ describe('reconcileFinanceConnections', () => {
       rows: [sub as never],
       hasMore: false,
     })
-    // Mock enqueue path: make the underlying enqueue return a run
     repo.findSubscriptionById.mockResolvedValue(sub as never)
     repo.findOrganizationById.mockResolvedValue(org())
     repo.findAppById.mockResolvedValue(app({ id: 'rap_billing' }))
     repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
     repo.findPublishedRevision.mockResolvedValue(
-      profile({ financeDependency: 'none', financeScopes: [] }) as never
+      profile({
+        targetKey: 'rap_billing',
+        financeDependency: 'none',
+        financeScopes: [],
+      }) as never
     )
     repo.findLatestOutboxEvent.mockResolvedValue(null)
     repo.createRunForApplication.mockResolvedValue({
@@ -658,9 +729,6 @@ describe('reconcileFinanceConnections', () => {
   })
 
   it('counts an attached run as changed', async () => {
-    // Two subscriptions: second iteration returns attached run via duplicated logic.
-    // Instead mock enqueue indirectly: we drive reconcile by stubbing the underlying repo
-    // to produce the branch where finance event already existed with null runId.
     const sub = subscription({ financeLifecycleVersion: 1 })
     const latest = {
       id: 'fpe_existing',
@@ -686,6 +754,7 @@ describe('reconcileFinanceConnections', () => {
       if (t === 'application') return profile() as never
       return {
         id: 'pmr_fin',
+        targetKey: 'jamaica',
         revision: 1,
         financeDependency: 'none',
         financeScopes: [],
@@ -711,7 +780,6 @@ describe('reconcileFinanceConnections', () => {
       rows: [a as never, b as never],
       hasMore: true,
     })
-    // Make both enqueue no-ops (identical retry)
     repo.findSubscriptionById.mockResolvedValue(a as never)
     repo.findOrganizationById.mockResolvedValue(org())
     repo.findAppById.mockResolvedValue(app())
@@ -726,17 +794,13 @@ describe('reconcileFinanceConnections', () => {
       entitlementReference: 'sub_1',
       runId: 'prn_1',
     } as never)
-
-    // The event the run attaches to is the one just created; without this the
-    // reconcile reads `organizationId` off undefined.
     repo.createOutboxEvent.mockImplementation(async (data) => data as never)
     repo.updateSubscriptionsLifecycleVersion.mockResolvedValue(undefined)
     repo.createRunForEvent.mockResolvedValue({ id: 'prn_1' } as never)
     repo.updateOutboxEventRunId.mockResolvedValue(undefined)
 
-    // Second iteration will re-resolve with b; stub to return b
     let call = 0
-    repo.findSubscriptionById.mockImplementation(async (id: string) => {
+    repo.findSubscriptionById.mockImplementation(async () => {
       call += 1
       return (call === 1 ? a : b) as never
     })
@@ -953,7 +1017,11 @@ describe('ensureAppReady', () => {
   it('returns ready without finance for a non-finance app', async () => {
     const repo = makeRepository()
     repo.findPublishedRevision.mockResolvedValue(
-      profile({ financeDependency: 'none', financeScopes: [] }) as never
+      profile({
+        targetKey: 'rap_enterprise',
+        financeDependency: 'none',
+        financeScopes: [],
+      }) as never
     )
 
     const result = await ensureAppReady(
@@ -968,7 +1036,6 @@ describe('ensureAppReady', () => {
       financeRequired: false,
       eventIds: [],
     })
-    // A finance-less app must never reach the finance delivery barrier.
     expect(mockEnsureFinanceProvisioningDelivered).not.toHaveBeenCalled()
     expect(repo.listSubscriptionsForReconcile).not.toHaveBeenCalled()
   })
@@ -1028,10 +1095,6 @@ describe('ensureAppReady', () => {
   })
 
   it('re-delivers the existing event when nothing changed (self-heal)', async () => {
-    // An org already carrying an active embedded subscription plus a matching,
-    // already-run outbox event — the shape of an org stuck in
-    // `billing/tenant-not-found`. Activating again must still deliver the
-    // existing event rather than treating "no change" as "already ready".
     const sub = subscription({
       appId: 'rap_couriers',
       financeLifecycleVersion: 3,
@@ -1075,7 +1138,6 @@ describe('ensureAppReady', () => {
     expect(mockEnsureFinanceProvisioningDelivered).toHaveBeenCalledWith([
       'fpe_existing',
     ])
-    // Nothing new was enqueued — the existing event is what gets delivered.
     expect(repo.createOutboxEvent).not.toHaveBeenCalled()
   })
 
@@ -1103,7 +1165,11 @@ describe('ensureAppReady', () => {
     it('throws finance-dependency-missing when the profile declares none', async () => {
       const repo = makeRepository()
       repo.findPublishedRevision.mockResolvedValue(
-        profile({ financeDependency: 'none', financeScopes: [] }) as never
+        profile({
+          targetKey: 'rap_invoice',
+          financeDependency: 'none',
+          financeScopes: [],
+        }) as never
       )
 
       await expect(
@@ -1125,7 +1191,11 @@ describe('ensureAppReady', () => {
     it('throws finance-scopes-missing when embedded finance declares no scopes', async () => {
       const repo = makeRepository()
       repo.findPublishedRevision.mockResolvedValue(
-        profile({ financeDependency: 'embedded', financeScopes: [] }) as never
+        profile({
+          targetKey: 'rap_invoice',
+          financeDependency: 'embedded',
+          financeScopes: [],
+        }) as never
       )
 
       await expect(
