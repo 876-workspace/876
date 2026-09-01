@@ -1,7 +1,7 @@
 import type { PreferenceDefinition } from './preference'
 
 export interface ModuleDefinition {
-  /** snake_case module key. MUST match the app's permission-catalog module key
+  /** Kebab-case module key. MUST match the app's permission-catalog module key
    * where one exists, so `<module>.view` gates the module's settings page. */
   key: string
   label: string
