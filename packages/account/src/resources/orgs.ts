@@ -629,7 +629,7 @@ export function createOrgsResource(runtime: SdkRuntime) {
     },
 
     /**
-     * Org roles: default system roles (owner, admin, billing_manager, member)
+     * Org roles: default system roles (super_admin, admin, staff)
      * seeded at org creation, plus the org's custom roles. Reads require
      * membership; mutations require `roles:manage`. System roles are immutable.
      */
@@ -748,7 +748,7 @@ export function createOrgsResource(runtime: SdkRuntime) {
     /**
      * The organization's member directory (memberships joined with user
      * identity fields). Listing requires `members:read`; role changes require
-     * `members:manage` (owner-role transitions are owner-only).
+     * `members:manage` (super-admin transitions are super-admin-only).
      */
     members: {
       /**
