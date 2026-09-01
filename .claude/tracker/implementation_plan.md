@@ -30,8 +30,8 @@ Reduce confirmed repository-level AI-slop patterns without broad rewrites: elimi
 - [x] Add anti-slop/reuse-first repository guidance and mirror it byte-for-byte into `.agents/rules/`.
 - [x] Audit touched code for deprecated compatibility residue; retain only the established request-note compatibility field pending a coordinated migration.
 - [x] Self-review branch diff for duplication, `eslint-disable`, `as any`, dead compatibility aliases, and accidental scope growth. No new suppressions/casts/aliases were introduced.
-- [ ] Write final CLI-style implementation report under `.claude/reports/`.
-- [ ] Open PR to `main` and verify mergeability/check state available from GitHub.
+- [x] Write final CLI-style implementation report under `.claude/reports/`.
+- [x] Open PR #456 to `main` and verify GitHub reports it mergeable.
 
 ## Deferred candidates requiring executable verification
 
@@ -39,4 +39,4 @@ Reduce confirmed repository-level AI-slop patterns without broad rewrites: elimi
 - Broader centralization of organization-routing selection semantics across Billing, CRM, Invoice, Couriers, and Enterprise.
 - Core access helpers that catch unexpected exceptions and return `[]`/`false`; these require behavior/security tests before changing fail-closed semantics.
 
-Current status: IMPLEMENTATION COMPLETE — REPORT/PR PENDING
+Current status: DONE — PR #456 OPEN AND MERGEABLE
