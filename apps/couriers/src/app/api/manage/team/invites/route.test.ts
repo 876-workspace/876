@@ -36,7 +36,7 @@ function request(body: string | Record<string, unknown>) {
 }
 
 function ctx(
-  role: 'super_admin' | 'admin' | 'staff',
+  role: 'super-admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return {
@@ -243,7 +243,7 @@ describe('Couriers team invite route', () => {
   })
 
   it('allows an owner to invite users', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('super_admin'))
+    mocks.getManageContext.mockResolvedValue(ctx('super-admin'))
 
     const response = await POST(request(validBody))
 

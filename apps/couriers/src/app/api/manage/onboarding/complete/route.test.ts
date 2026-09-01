@@ -37,7 +37,7 @@ describe('Couriers onboarding completion route', () => {
     mocks.getManageContext.mockResolvedValue({
       userId: 'user_123',
       orgId: 'organization_123',
-      role: 'super_admin',
+      role: 'super-admin',
       accessStatus: 'active',
       tenant: null,
     })

@@ -42,7 +42,7 @@ function deleteRequest(url: string) {
 }
 
 function ctx(
-  role: 'super_admin' | 'admin' | 'staff',
+  role: 'super-admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return { orgId: 'org_123', orgSlug: 'island-logistics', role, tenant }
@@ -112,7 +112,7 @@ describe('Couriers role route', () => {
     })
 
     it('returns 404 when the tenant is missing', async () => {
-      mocks.getManageContext.mockResolvedValue(ctx('super_admin', null))
+      mocks.getManageContext.mockResolvedValue(ctx('super-admin', null))
 
       const response = await PATCH(
         patchRequest({ orgSlug: 'island-logistics', name: 'Dispatch' }),

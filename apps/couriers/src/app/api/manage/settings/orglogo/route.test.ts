@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
 }))
 
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/services/storage', () => ({
   storage: { uploads: { create: mocks.create } },
 }))
 vi.mock('@/lib/features', () => ({
@@ -26,7 +26,7 @@ function request(body: string | Record<string, unknown>) {
   }) as never
 }
 
-function context(role: 'super_admin' | 'admin' | 'staff' | 'billing') {
+function context(role: 'super-admin' | 'admin' | 'staff' | 'billing') {
   return {
     userId: 'user_123',
     orgId: 'org_context',
@@ -97,7 +97,7 @@ describe('Couriers organization logo upload start route', () => {
       expect(mocks.create).not.toHaveBeenCalled()
     })
 
-    it.each(['super_admin', 'admin'] as const)(
+    it.each(['super-admin', 'admin'] as const)(
       'allows a %s to open a signed upload session',
       async (role) => {
         mocks.getManageContext.mockResolvedValue(context(role))

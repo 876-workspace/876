@@ -54,7 +54,7 @@ function createManageContext(
     orgLogoUrl: null,
     organizations: [],
     tenant: null,
-    role: 'super_admin',
+    role: 'super-admin',
     accessStatus: 'active',
     ...overrides,
   }
@@ -81,7 +81,7 @@ describe('LegacyAppRedirect', () => {
       orgSlug: 'island-logistics',
       organizations: [],
       tenant: null,
-      role: 'super_admin',
+      role: 'super-admin',
       accessStatus: 'active',
     })
   })

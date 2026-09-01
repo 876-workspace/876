@@ -41,7 +41,7 @@ function request(body: string | Record<string, unknown>) {
 }
 
 function ctx(
-  role: 'super_admin' | 'admin' | 'staff',
+  role: 'super-admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return { orgId: 'org_123', orgSlug: 'island-logistics', role, tenant }
@@ -60,7 +60,7 @@ describe('Couriers roles create route', () => {
     mocks.getCouriers.mockImplementation(() => ({
       roles: { create: mocks.create },
     }))
-    mocks.getManageContext.mockResolvedValue(ctx('super_admin'))
+    mocks.getManageContext.mockResolvedValue(ctx('super-admin'))
     mocks.create.mockResolvedValue({
       data: {
         id: 'role_dispatcher',
