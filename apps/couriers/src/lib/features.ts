@@ -18,6 +18,27 @@ const COURIERS_GLOBAL_ADD_SLUG = 'couriers-global-add'
 const COURIERS_APP_SWITCHER_SLUG = 'couriers-app-switcher'
 const COURIERS_ORG_SWITCHER_SLUG = 'couriers-org-switcher'
 const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers-storage-org-logo-upload'
+
+const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
+  [COURIERS_SEARCH_BAR_SLUG]: ['couriers_search_bar'],
+  [COURIERS_THEME_SWITCHER_SLUG]: ['couriers_theme_switcher'],
+  [COURIERS_GLOBAL_ADD_SLUG]: ['couriers_global_add'],
+  [COURIERS_APP_SWITCHER_SLUG]: ['couriers_app_switcher'],
+  [COURIERS_ORG_SWITCHER_SLUG]: ['couriers_org_switcher'],
+  [COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG]: [
+    'couriers_storage_org_logo_upload',
+  ],
+}
+
+function hasFeature(enabledSlugs: ReadonlySet<string>, canonicalSlug: string) {
+  return (
+    enabledSlugs.has(canonicalSlug) ||
+    (LEGACY_FEATURE_SLUGS[canonicalSlug] ?? []).some((legacySlug) =>
+      enabledSlugs.has(legacySlug)
+    )
+  )
+}
+
 const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   searchBar: false,
   themeSwitcher: false,
@@ -73,15 +94,16 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     : []
 
   return {
-    storageOrgLogoUpload: enabledSlugs.has(
+    storageOrgLogoUpload: hasFeature(
+      enabledSlugs,
       COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG
     ),
     uiFeatures: {
-      searchBar: enabledSlugs.has(COURIERS_SEARCH_BAR_SLUG),
-      themeSwitcher: enabledSlugs.has(COURIERS_THEME_SWITCHER_SLUG),
-      globalAdd: enabledSlugs.has(COURIERS_GLOBAL_ADD_SLUG),
-      appSwitcher: enabledSlugs.has(COURIERS_APP_SWITCHER_SLUG),
-      orgSwitcher: enabledSlugs.has(COURIERS_ORG_SWITCHER_SLUG),
+      searchBar: hasFeature(enabledSlugs, COURIERS_SEARCH_BAR_SLUG),
+      themeSwitcher: hasFeature(enabledSlugs, COURIERS_THEME_SWITCHER_SLUG),
+      globalAdd: hasFeature(enabledSlugs, COURIERS_GLOBAL_ADD_SLUG),
+      appSwitcher: hasFeature(enabledSlugs, COURIERS_APP_SWITCHER_SLUG),
+      orgSwitcher: hasFeature(enabledSlugs, COURIERS_ORG_SWITCHER_SLUG),
       chat: isWidgetEnabled(chatWidgetMetadata, 'couriers', enabledSlugs),
     },
     enabledWidgetIds,
