@@ -7,6 +7,7 @@ const { prisma } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
+    appRole: { findFirst: vi.fn() },
     app: { findFirst: vi.fn() },
     subscription: {
       findFirst: vi.fn(),
