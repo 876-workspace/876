@@ -1,16 +1,24 @@
 import type { Request, Response } from 'express'
 
+import { AppHttpError } from '@/http/errors'
 import {
   validBody,
   validParams,
   validQuery,
 } from '@/http/middleware/validate'
 import { tenantAuthorizationByOrganizationId } from '@/modules/tenants'
-import { AppHttpError } from '@/http/errors'
 
+import {
+  adoptAccountingProviderResource,
+  listAccountingImportCandidates,
+  releaseAccountingProviderResource,
+  type AccountingImportResourceType,
+} from './accounting-import.service'
 import type {
+  AccountingAdoptionBody,
   AccountingConnectionCreateBody,
   AccountingConnectionUpdateBody,
+  AccountingImportQuery,
   AccountingReconcileBody,
   ZohoOauthCallbackQuery,
 } from './accounting-providers.schemas'
@@ -114,6 +122,57 @@ export const accountingProvidersController = {
         httpStatus: 404,
       })
     res.json(result)
+  },
+  async listImports(req: Request, res: Response) {
+    const { organizationId, connectionId, resourceType } = validParams<{
+      organizationId: string
+      connectionId: string
+      resourceType: AccountingImportResourceType
+    }>(req)
+    const query = validQuery<AccountingImportQuery>(req)
+    res.json(
+      await listAccountingImportCandidates({
+        organizationId,
+        connectionId,
+        resourceType,
+        page: query.page,
+        perPage: query.perPage,
+      })
+    )
+  },
+  async adoptImport(req: Request, res: Response) {
+    const { organizationId, connectionId, resourceType } = validParams<{
+      organizationId: string
+      connectionId: string
+      resourceType: AccountingImportResourceType
+    }>(req)
+    const body = validBody<AccountingAdoptionBody>(req)
+    res.status(201).json(
+      await adoptAccountingProviderResource({
+        organizationId,
+        connectionId,
+        resourceType,
+        resourceId: body.resourceId,
+        externalId: body.externalId,
+      })
+    )
+  },
+  async releaseImport(req: Request, res: Response) {
+    const { organizationId, connectionId, resourceType, resourceId } =
+      validParams<{
+        organizationId: string
+        connectionId: string
+        resourceType: AccountingImportResourceType
+        resourceId: string
+      }>(req)
+    res.json(
+      await releaseAccountingProviderResource({
+        organizationId,
+        connectionId,
+        resourceType,
+        resourceId,
+      })
+    )
   },
   async zohoCallback(req: Request, res: Response) {
     res.json(await completeZohoOauth(validQuery<ZohoOauthCallbackQuery>(req)))
