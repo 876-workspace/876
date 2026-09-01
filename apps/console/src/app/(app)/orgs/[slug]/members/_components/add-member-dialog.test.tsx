@@ -34,12 +34,12 @@ import { AddMemberDialog } from './add-member-dialog'
 const roles = [
   {
     id: 'role_member',
-    name: 'member',
+    name: 'staff',
     display_name: 'Member',
   },
   {
     id: 'role_owner',
-    name: 'owner',
+    name: 'super_admin',
     display_name: 'Owner',
   },
 ] as unknown as AdminOrgRole[]
@@ -85,7 +85,7 @@ describe('AddMemberDialog', () => {
         id: 'mem_01',
         organization_id: 'org_01',
         user_id: 'user_existing',
-        role: 'member',
+        role: 'staff',
         status: 'active',
       },
       error: null,
@@ -100,7 +100,7 @@ describe('AddMemberDialog', () => {
     expect(mocks.createMember).toHaveBeenCalledTimes(1)
     expect(mocks.createMember).toHaveBeenCalledWith('org_01', {
       userId: 'user_existing',
-      role: 'member',
+      role: 'staff',
     })
     expect(mocks.createInvite).not.toHaveBeenCalled()
     expect(within(dialog).getByText('Member added')).toBeVisible()
@@ -114,7 +114,7 @@ describe('AddMemberDialog', () => {
         id: 'inv_01',
         organization_id: 'org_01',
         email: 'new@example.com',
-        role: 'member',
+        role: 'staff',
         token: 'secret-token',
         status: 'pending',
         expires_at: 1_786_000_000,
@@ -137,7 +137,7 @@ describe('AddMemberDialog', () => {
     expect(mocks.createInvite).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledWith('org_01', {
       email: 'new@example.com',
-      role: 'member',
+      role: 'staff',
     })
     expect(mocks.createMember).not.toHaveBeenCalled()
     expect(within(dialog).getByText('Invitation created')).toBeVisible()
@@ -151,7 +151,7 @@ describe('AddMemberDialog', () => {
         id: 'inv_public_record',
         organization_id: 'org_01',
         email: 'new@example.com',
-        role: 'member',
+        role: 'staff',
         token: null,
         status: 'pending',
         expires_at: 1_786_000_000,

@@ -182,9 +182,9 @@ export class HttpIdentityGateway implements IdentityGateway {
 
       return {
         role:
-          membership.role === 'owner' || membership.role === 'admin'
+          membership.role === 'super_admin' || membership.role === 'admin'
             ? membership.role
-            : 'member',
+            : 'staff',
       }
     }
     return null

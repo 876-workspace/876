@@ -10,7 +10,7 @@ import { listMembers, resolveMemberAccess } from './access.service'
 const tenantParams = z.strictObject({ tenantId: z.string().min(1) })
 const resolveBody = tenantParams.extend({
   userId: z.string().min(1),
-  organizationRole: z.enum(['owner', 'admin', 'member']),
+  organizationRole: z.enum(['super_admin', 'admin', 'staff']),
 })
 const role = z
   .object({

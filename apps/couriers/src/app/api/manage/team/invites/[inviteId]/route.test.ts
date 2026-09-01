@@ -23,7 +23,7 @@ function deleteRequest(url: string) {
 }
 
 function ctx(
-  role: 'owner' | 'admin' | 'member',
+  role: 'super_admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return {
@@ -37,7 +37,7 @@ function ctx(
 describe('Couriers team invite revoke route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getManageContext.mockResolvedValue(ctx('owner'))
+    mocks.getManageContext.mockResolvedValue(ctx('super_admin'))
     mocks.getPlatformClient.mockResolvedValue({
       invites: { revoke: mocks.revokeInvite },
     })
@@ -75,7 +75,7 @@ describe('Couriers team invite revoke route', () => {
   })
 
   it('forbids a plain member from revoking invites', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('member'))
+    mocks.getManageContext.mockResolvedValue(ctx('staff'))
 
     const response = await DELETE(
       deleteRequest(

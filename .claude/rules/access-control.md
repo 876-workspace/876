@@ -33,11 +33,11 @@ A navigation entry's `requires.permission` must equal the permission checked by 
 
 These answer different questions and occupy different slots in `AccessContext`.
 
-| Mechanism | Question | May authorize? |
-| --- | --- | --- |
-| Permission | May this subject do this? | Yes |
-| Feature flag | Does this capability exist for this subject yet? | Only as an AND alongside permission |
-| Experiment | Which presentation variant should an already-permitted subject see? | Never |
+| Mechanism    | Question                                                            | May authorize?                      |
+| ------------ | ------------------------------------------------------------------- | ----------------------------------- |
+| Permission   | May this subject do this?                                           | Yes                                 |
+| Feature flag | Does this capability exist for this subject yet?                    | Only as an AND alongside permission |
+| Experiment   | Which presentation variant should an already-permitted subject see? | Never                               |
 
 When a capability has both a permission and a feature flag, visibility and route access require **permission AND feature**. A feature rollout is not a role permission. Authorization is not a PostHog flag.
 

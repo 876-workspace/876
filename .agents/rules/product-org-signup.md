@@ -74,9 +74,10 @@ quietly collide with an organization slug.
 
 For a signed-in account with **no** membership, the app must let it:
 
-1. **Create its organization** — `platform.organizations.create({ ownerUserId,
+1. **Create its organization** — `platform.organizations.create({ creatorUserId,
 name })` (the `/organizations/bootstrap` transport). This creates the org and
-   the owner membership. Idempotent: an account that already has an org keeps it.
+   the creator's `super_admin` membership. Idempotent: an account that already
+   has an org keeps it.
 2. **Provision the app** for that org (the app's own get-started/onboarding step
    — subscription + workspace/tenant), exactly as it already does for an account
    that arrives with an org.
@@ -90,7 +91,7 @@ An account created by Google, Apple, Microsoft, or SSO does not necessarily
 have an 876 password. After that account has authenticated, route it to the
 session-backed organization-creation step; **never** send it to a
 password-based `register-business` form to complete its workspace. The route
-handler must use the signed-in local user id as `ownerUserId`, so identity
+handler must use the signed-in local user id as `creatorUserId`, so identity
 creation stays with the provider and organization bootstrap stays with the
 platform service.
 
@@ -104,7 +105,7 @@ do not invent a second onboarding pattern.
 - The org-gated layout, on **signed-in + no context**, redirects to the app's
   get-started/onboarding route — not `/no-access`.
 - `/no-access` remains correct for an authenticated account that has an org but
-  is **not permitted** (a `member` who cannot provision, a blocked workspace).
+  is **not permitted** (a `staff` member who cannot provision, a blocked workspace).
   No-access is an authorization answer, not the answer to "no org yet".
 - Org creation and app provisioning run through pure-transport route handlers
   (`app/api/...`) that authorize the session and call the platform client — no
@@ -114,17 +115,17 @@ do not invent a second onboarding pattern.
 
 **An org-gated layout must never answer `/no-access` to an account that could
 fix the problem itself.** "Your organization does not have a subscription" is a
-setup prompt for an `owner` or `admin`, and only a wall for someone who genuinely
+setup prompt for a `super_admin` or `admin`, and only a wall for someone who genuinely
 cannot act.
 
 ```
 accessStatus not active/trialing
-  ├─ owner | admin  → the app's get-started/onboarding route (activate it)
-  └─ member         → /no-access
+  ├─ super_admin | admin  → the app's get-started/onboarding route (activate it)
+  └─ staff                → /no-access
 ```
 
-Telling an organization's **owner** to "contact your admin" is incoherent —
-they are the admin. Route them to setup instead.
+Telling an organization's **super admin** to "contact your admin" is
+incoherent. Route them to setup instead.
 
 Every organization already shares one customer/financial data plane, so
 activating a product app is an entitlement change, not a data migration: an org
@@ -166,7 +167,7 @@ to production, where the escape link sends real users to their own machine.
 - Do not allow a root asset or well-known request to be interpreted as an
   organization slug.
 - Do not redirect a signed-in, org-less account to `/no-access`.
-- Do not answer `/no-access` to an `owner` or `admin` whose organization merely
+- Do not answer `/no-access` to a `super_admin` or `admin` whose organization merely
   lacks the entitlement — that is a setup step they are allowed to complete.
 - Do not duplicate the role/entitlement decision in both the layout and the
   onboarding route; the layout redirects, onboarding decides.

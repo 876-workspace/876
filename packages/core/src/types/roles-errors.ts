@@ -6,9 +6,8 @@ import type { Error } from './errors'
 export const roleErrorCodeValues = [
   'role/duplicate-name',
   'role/in-use',
-  'role/last-owner',
   'role/not-found',
-  'role/owner-required',
+  'role/super-admin-required',
   'role/system-immutable',
   'role/unknown-permission',
 ] as const

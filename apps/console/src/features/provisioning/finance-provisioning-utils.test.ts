@@ -236,5 +236,20 @@ describe('finance provisioning utilities', () => {
     expect(getResourceTypeColor('tax_rate')).toBe(
       'text-violet-500 dark:text-violet-400'
     )
+    expect(getResourceTypeColor('request_priority')).toBe(
+      'text-amber-500 dark:text-amber-400'
+    )
+    expect(getResourceTypeColor('request_category')).toBe(
+      'text-emerald-500 dark:text-emerald-400'
+    )
+    expect(getResourceTypeColor('request_subcategory')).toBe(
+      'text-teal-500 dark:text-teal-400'
+    )
+    expect(getResourceTypeColor('app_role')).toBe(
+      'text-purple-500 dark:text-purple-400'
+    )
+    expect(getResourceTypeColor('unknown_custom_resource')).toMatch(
+      /^text-(blue|emerald|purple|amber|rose|cyan|indigo|teal)-500 dark:text-(blue|emerald|purple|amber|rose|cyan|indigo|teal)-400$/
+    )
   })
 })

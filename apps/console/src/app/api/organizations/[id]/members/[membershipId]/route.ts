@@ -28,7 +28,7 @@ export async function PATCH(
 
   // Keep Console on the organization-scoped access path. Besides preventing a
   // membership ID from another org being mutated through this route, this path
-  // enforces the owner/last-owner invariants in the Core API.
+  // enforces the super-admin elevation invariant in the Core API.
   const { data, error } = await workspace.members.update(
     id,
     membershipId,

@@ -25,9 +25,7 @@ const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
   [COURIERS_GLOBAL_ADD_SLUG]: ['couriers_global_add'],
   [COURIERS_APP_SWITCHER_SLUG]: ['couriers_app_switcher'],
   [COURIERS_ORG_SWITCHER_SLUG]: ['couriers_org_switcher'],
-  [COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG]: [
-    'couriers_storage_org_logo_upload',
-  ],
+  [COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG]: ['couriers_storage_org_logo_upload'],
 }
 
 function hasFeature(enabledSlugs: ReadonlySet<string>, canonicalSlug: string) {

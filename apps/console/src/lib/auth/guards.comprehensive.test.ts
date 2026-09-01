@@ -77,11 +77,13 @@ describe('guards — permission integration (stored keys)', () => {
   })
 
   it('owner can access security and storage', () => {
-    const owner = SYSTEM_ROLE_DEFINITIONS.find((role) => role.name === 'owner')
-    if (!owner) throw new Error('Missing owner system role.')
+    const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
+      (role) => role.name === 'super_admin'
+    )
+    if (!superAdmin) throw new Error('Missing super admin system role.')
 
     const eff = resolveEffectivePermissions({
-      role: { permissions: owner.permissions },
+      role: { permissions: superAdmin.permissions },
       catalog: consolePermissionCatalog,
     })
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/security'])).toBe(true)

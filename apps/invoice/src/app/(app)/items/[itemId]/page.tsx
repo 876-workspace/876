@@ -41,7 +41,7 @@ export default async function ItemDetailPage({ params }: Props) {
 
   const item = result.data
   const currency = item.defaultSellingCurrency ?? 'JMD'
-  const canManage = invoice.role !== 'member'
+  const canManage = invoice.role !== 'staff'
 
   return (
     <Page>

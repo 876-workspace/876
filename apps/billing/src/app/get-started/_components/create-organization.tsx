@@ -19,7 +19,7 @@ type CreatedOrganization = {
 /**
  * Org-creation step for a signed-in account with no organization — the
  * brand-new-signup case Billing previously stranded on `/no-access`. On success
- * it reloads `/get-started`, where the account now has an owner membership and
+ * it reloads `/get-started`, where the account now has an super-admin membership and
  * the existing workspace-provisioning step takes over.
  */
 export function CreateOrganization({

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   const ctx = await getManageContext(parsed.data.orgSlug)
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role !== 'owner' && ctx.role !== 'admin')
+  if (ctx.role !== 'super_admin' && ctx.role !== 'admin')
     return apiJson(
       {
         error: 'You do not have permission to edit the organization profile.',

@@ -258,6 +258,25 @@ async function requireRole(params: {
   return role
 }
 
+async function requireSuperAdminForElevation(
+  organizationId: string,
+  role: AppRoleRow,
+  principal: OrgAccessPrincipal
+): Promise<void> {
+  if (role.key !== 'super_admin' || principal.internal) return
+
+  const caller = principal.userId
+    ? await findMembershipForAccess(organizationId, principal.userId)
+    : null
+  if (caller?.status === 'active' && caller.role === 'super_admin') return
+
+  throw new AppHttpError({
+    code: 'app-membership/super-admin-required',
+    message: 'Only a super admin can assign the super admin application role.',
+    httpStatus: 403,
+  })
+}
+
 async function profileFromLoaded(params: {
   assignment: AppAssignmentRow | null
   membership: AccessMembership
@@ -837,6 +856,7 @@ export async function createAppMembership(
       })
     : await repository.findDefaultRole(app.id, organizationId)
   if (!role) throw appError('app-role/not-found')
+  await requireSuperAdminForElevation(organizationId, role, principal)
 
   const grants = await validateCatalogSubset(app.id, body.permission_grants)
   const denies = await validateCatalogSubset(app.id, body.permission_denies)
@@ -940,8 +960,14 @@ export async function updateAppMembership(
   })
 
   const nextRoleId = body.app_role_id
-  if (typeof nextRoleId === 'string')
-    await requireRole({ appId: app.id, organizationId, roleId: nextRoleId })
+  if (typeof nextRoleId === 'string') {
+    const nextRole = await requireRole({
+      appId: app.id,
+      organizationId,
+      roleId: nextRoleId,
+    })
+    await requireSuperAdminForElevation(organizationId, nextRole, principal)
+  }
   await ensureNotLastAdmin(assignment, {
     ...(nextRoleId !== undefined ? { roleId: nextRoleId } : {}),
     ...(body.status !== undefined ? { status: body.status } : {}),
@@ -1186,6 +1212,59 @@ export async function materializeRoleTemplatesForApp(params: {
     })
     seeded += 1
   }
+  return { seeded, skipped }
+}
+
+/** Materializes the database-backed role resources selected for an organization. */
+export async function materializeProvisionedRolesForApp(params: {
+  organizationId: string
+  appId: string
+  roles: ReadonlyArray<{
+    key: string
+    name: string
+    description: string | null
+    permissions: string[]
+    isSystem: boolean
+    isDefault: boolean
+    position: number
+  }>
+}): Promise<{ seeded: number; skipped: number }> {
+  const app = appOrNotFound(await findAppForAccessById(params.appId))
+  if (app.slug === ENTERPRISE_SLUG) return { seeded: 0, skipped: 0 }
+
+  let seeded = 0
+  let skipped = 0
+  for (const role of params.roles) {
+    if (
+      await repository.findRoleByKey(
+        app.id,
+        params.organizationId,
+        role.key
+      )
+    ) {
+      skipped += 1
+      continue
+    }
+
+    const now = BigInt(nowUnixSeconds())
+    await repository.createRole({
+      id: generateId('role'),
+      appId: app.id,
+      organizationId: params.organizationId,
+      key: role.key,
+      name: role.name,
+      description: role.description,
+      permissions: [...role.permissions],
+      isSystem: role.isSystem,
+      isDefault: role.isDefault,
+      templateKey: role.key,
+      position: role.position,
+      createdAt: now,
+      updatedAt: now,
+    })
+    seeded += 1
+  }
+
   return { seeded, skipped }
 }
 

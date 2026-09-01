@@ -29,7 +29,7 @@ const AFFILIATIONS: readonly TeamAffiliation[] = [
   'external',
 ]
 
-const STAFF_ONLY_ROLES = new Set(['owner', 'super-admin', 'super_admin'])
+const STAFF_ONLY_ROLES = new Set(['super_admin'])
 
 export function validateTeamGrant(
   input: Partial<TeamGrantFields>,

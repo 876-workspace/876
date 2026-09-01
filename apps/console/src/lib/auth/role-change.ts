@@ -5,14 +5,6 @@ import type { TeamServiceResult } from '@/lib/service/team/validation'
 import type { Access, RoleCheckResult, RoleChangeResult } from '@/types/auth'
 import { ASSIGNABLE_ROLES, type AssignableRole } from '@/types/role'
 
-const SUPER_ADMIN_ROLE = 'super-admin'
-const LEGACY_SUPER_ADMIN_ROLE = 'super_admin'
-
-function canonicalRoleName(role: string | null | undefined): string | null {
-  if (!role) return null
-  return role === LEGACY_SUPER_ADMIN_ROLE ? SUPER_ADMIN_ROLE : role
-}
-
 function isAssignableRole(value: string): value is AssignableRole {
   return (ASSIGNABLE_ROLES as readonly string[]).includes(value)
 }
@@ -25,14 +17,14 @@ export async function assertRoleChangeAllowed(
   if (!isAssignableRole(requestedRole)) {
     return {
       ok: false,
-      error: 'Invalid role. Must be user, staff, admin, owner, or super-admin.',
+      error: 'Invalid role. Must be user, staff, admin, or super_admin.',
       status: 400,
     }
   }
 
-  if (canonicalRoleName(caller.role) === SUPER_ADMIN_ROLE) return { ok: true }
+  if (caller.role === 'super_admin') return { ok: true }
 
-  if (requestedRole === SUPER_ADMIN_ROLE || requestedRole === 'owner') {
+  if (requestedRole === 'super_admin') {
     return {
       ok: false,
       error: `Only a super admin can grant the ${requestedRole} role.`,
@@ -41,11 +33,10 @@ export async function assertRoleChangeAllowed(
   }
 
   const target = await team.retrieve(targetUserId)
-  const targetRole = canonicalRoleName(target?.roleName)
-  if (targetRole === SUPER_ADMIN_ROLE || targetRole === 'owner') {
+  if (target?.roleName === 'super_admin') {
     return {
       ok: false,
-      error: `Only a super admin can change a ${targetRole}'s role.`,
+      error: `Only a super admin can change a ${target.roleName}'s role.`,
       status: 403,
     }
   }
@@ -74,7 +65,7 @@ export async function applyRoleChange(
   return {
     data: {
       userId: result.data.userId,
-      role: canonicalRoleName(result.data.roleName) ?? result.data.roleName,
+      role: result.data.roleName,
       revoked: false,
     },
     error: null,

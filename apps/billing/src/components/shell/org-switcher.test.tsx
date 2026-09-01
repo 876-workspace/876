@@ -48,7 +48,7 @@ function createOrganization(
     id: 'org_island_123',
     name: 'Island Commerce',
     slug: 'island-commerce',
-    role: 'owner',
+    role: 'super_admin',
     ...overrides,
   }
 }
@@ -139,7 +139,7 @@ describe('Billing organization switcher', () => {
       id: 'org_archived_789',
       name: 'Archived Commerce',
       slug: 'archived-commerce',
-      role: 'member',
+      role: 'staff',
     })
     const error = {
       code: 'auth/forbidden',

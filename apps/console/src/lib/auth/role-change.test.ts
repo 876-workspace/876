@@ -29,7 +29,7 @@ describe('assertRoleChangeAllowed', () => {
     vi.clearAllMocks()
   })
 
-  it.each(['', 'support', 'ADMIN', '__proto__', 'super_admin']) (
+  it.each(['', 'support', 'ADMIN', '__proto__', 'super_admin'])(
     'rejects invalid role %j without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -40,15 +40,14 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error:
-          'Invalid role. Must be user, staff, admin, owner, or super-admin.',
+        error: 'Invalid role. Must be user, staff, admin, or super_admin.',
         status: 400,
       })
       expect(mocks.retrieve).not.toHaveBeenCalled()
     }
   )
 
-  it.each(['user', 'staff', 'admin', 'owner', 'super-admin'])(
+  it.each(['user', 'staff', 'admin', 'super_admin'])(
     'allows a super admin to grant %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -62,18 +61,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it('recognizes a legacy persisted super_admin caller during migration', async () => {
-    const result = await assertRoleChangeAllowed(
-      createCaller({ role: 'super_admin' }),
-      'user_target',
-      'owner'
-    )
-
-    expect(result).toEqual({ ok: true })
-    expect(mocks.retrieve).not.toHaveBeenCalled()
-  })
-
-  it.each(['owner', 'super-admin'])(
+  it.each(['super_admin'])(
     'prevents an admin from granting %s without loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
@@ -91,7 +79,7 @@ describe('assertRoleChangeAllowed', () => {
     }
   )
 
-  it.each(['owner', 'super-admin', 'super_admin'])(
+  it.each(['super_admin'])(
     'prevents an admin from changing an existing %s',
     async (targetRole) => {
       mocks.retrieve.mockResolvedValue({ roleName: targetRole })
@@ -183,7 +171,10 @@ describe('applyRoleChange', () => {
   })
 
   it('normalizes a legacy persisted role returned by the service', async () => {
-    mocks.retrieve.mockResolvedValue({ userId: 'user_target', roleName: 'staff' })
+    mocks.retrieve.mockResolvedValue({
+      userId: 'user_target',
+      roleName: 'staff',
+    })
     mocks.update.mockResolvedValue({
       data: { userId: 'user_target', roleName: 'super_admin' },
       error: null,

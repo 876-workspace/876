@@ -82,7 +82,7 @@ function membershipRow(
   const slug = overrides.slug ?? 'acme'
   return {
     id: 'mem_1',
-    role: 'owner',
+    role: 'super_admin',
     status: overrides.status ?? 'active',
     permissions: ['org:read', 'members:read'],
     organization: {

@@ -52,7 +52,7 @@ export async function createTenant(options: {
   orgId: string
   slug: string
   name: string
-  ownerUserId?: string
+  creatorUserId?: string
   now: number
 }): Promise<TenantRow> {
   return prisma.$transaction(async (tx) => {
@@ -90,13 +90,13 @@ export async function createTenant(options: {
         })
       )
     )
-    if (options.ownerUserId) {
+    if (options.creatorUserId) {
       const admin = roles.find((role) => role.systemKey === 'admin')
       if (!admin) throw new Error('Admin role provisioning did not complete.')
       await tx.teamMember.create({
         data: {
           tenantId: tenant.id,
-          userId: options.ownerUserId,
+          userId: options.creatorUserId,
           roleId: admin.id,
           status: 'ACTIVE',
           createdAt: options.now,

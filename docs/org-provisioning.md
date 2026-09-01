@@ -16,12 +16,12 @@ await workspace.setup(organizationId, {
   finance: 'defer',
 })
 
-// after the durable owner membership exists
+// after the durable super-admin membership exists
 await workspace.finance.ensure({ organizationId })
 ```
 
 The durable/finance split is deliberate: a finance outage must not interrupt
-bootstrap before the owner membership exists, because the workspace must remain
+bootstrap before the super-admin membership exists, because the workspace must remain
 discoverable and retryable.
 
 ---

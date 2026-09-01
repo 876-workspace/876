@@ -71,7 +71,7 @@ function membershipRow(overrides: Record<string, unknown> = {}) {
     organizationId: 'org_01',
     userId: 'user_01',
     workosMembershipId: null,
-    role: 'member',
+    role: 'staff',
     roleId: null,
     status: 'active',
     createdAt: BigInt(NOW),
@@ -100,7 +100,7 @@ beforeEach(() => {
   })
   organizationRole.findFirst.mockResolvedValue({
     id: 'role_member',
-    name: 'member',
+    name: 'staff',
   })
   user.findUnique.mockResolvedValue({ id: 'user_01', workosUserId: null })
 })
@@ -120,7 +120,7 @@ describe('GET /memberships', () => {
             organization_id: 'org_01',
             user_id: 'user_01',
             workos_membership_id: null,
-            role: 'member',
+            role: 'staff',
             role_id: null,
             status: 'active',
             created_at: NOW,
@@ -163,7 +163,7 @@ describe('POST /memberships', () => {
     })
     expect(organizationRole.findFirst).toHaveBeenCalledTimes(1)
     expect(organizationRole.findFirst).toHaveBeenCalledWith({
-      where: { organizationId: 'org_01', name: 'member' },
+      where: { organizationId: 'org_01', name: 'staff' },
       select: { id: true, name: true },
     })
   })
@@ -226,19 +226,19 @@ describe('POST /organizations/:organization_id/memberships', () => {
     const res = await request(createApp())
       .post('/organizations/org_01/memberships')
       .set(AUTH)
-      .send({ user_id: 'user_01', role: 'member', status: 'active' })
+      .send({ user_id: 'user_01', role: 'staff', status: 'active' })
 
     expect(res.status).toBe(201)
     expect(res.body.data).toMatchObject({
       object: 'membership',
       organization_id: 'org_01',
       user_id: 'user_01',
-      role: 'member',
+      role: 'staff',
       role_id: 'role_member',
       status: 'active',
     })
     expect(organizationRole.findFirst).toHaveBeenCalledWith({
-      where: { organizationId: 'org_01', name: 'member' },
+      where: { organizationId: 'org_01', name: 'staff' },
       select: { id: true, name: true },
     })
   })

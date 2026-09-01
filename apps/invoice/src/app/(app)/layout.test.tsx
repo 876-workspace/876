@@ -35,7 +35,7 @@ vi.mock('@/components/shell/shell', () => ({
 
 const AppLayout = (await import('./layout')).default
 
-function contextWith(accessStatus: string, role = 'owner') {
+function contextWith(accessStatus: string, role = 'super_admin') {
   return {
     status: 'ok' as const,
     context: {
@@ -92,7 +92,7 @@ describe('AppLayout entitlement routing', () => {
     // provisioned with a Billing finance plane. /onboarding owns the decision
     // and can activate the subscription for an owner or admin.
     it('routes an owner to onboarding rather than no-access', async () => {
-      const target = await redirectTargetOf(contextWith('none', 'owner'))
+      const target = await redirectTargetOf(contextWith('none', 'super_admin'))
 
       expect(target).toBe('/onboarding')
       expect(mockRedirect).toHaveBeenCalledTimes(1)
@@ -106,7 +106,7 @@ describe('AppLayout entitlement routing', () => {
     })
 
     it('routes a blocked organization to onboarding, which owns the no-access decision', async () => {
-      const target = await redirectTargetOf(contextWith('blocked', 'owner'))
+      const target = await redirectTargetOf(contextWith('blocked', 'super_admin'))
 
       expect(target).toBe('/onboarding')
       expect(mockRedirect).toHaveBeenCalledTimes(1)

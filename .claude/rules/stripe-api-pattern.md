@@ -22,8 +22,7 @@ When the endpoint family uses a result envelope, keep the stable union:
 
 ```ts
 type ApiResult<TSuccess, TError> =
-  | { data: TSuccess; error: null }
-  | { data: null; error: TError }
+  { data: TSuccess; error: null } | { data: null; error: TError }
 ```
 
 Do not add a synthetic `result` discriminator. Service internals may retain the

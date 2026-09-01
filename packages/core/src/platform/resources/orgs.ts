@@ -15,9 +15,9 @@ import type {
 /** Organization transports composed into resource-first client roots. */
 export function createPlatformOrgsResource(runtime: PlatformRuntime) {
   return {
-    /** Creates an organization owned by an existing user (org bootstrap). */
+    /** Creates an organization created by an existing user (org bootstrap). */
     create(params: {
-      ownerUserId: string
+      creatorUserId: string
       name: string
       slug?: string
       /** The org's single operating currency — every product app inherits it. */
@@ -28,7 +28,7 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
         method: 'POST',
         path: '/organizations/bootstrap',
         body: {
-          owner_user_id: params.ownerUserId,
+          creator_user_id: params.creatorUserId,
           name: params.name,
           slug: params.slug,
           currency_code: params.currencyCode,
@@ -59,7 +59,7 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
 
     /**
      * Updates an organization's identity profile (session-scoped endpoint;
-     * requires owner/admin). Only profile fields are writable — status, slug,
+     * requires super_admin/admin). Only profile fields are writable — status, slug,
      * WorkOS id, and metadata are rejected by the endpoint. Authorization is
      * the calling app's responsibility (this client carries the internal key).
      */

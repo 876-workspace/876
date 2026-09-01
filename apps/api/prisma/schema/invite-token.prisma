@@ -5,7 +5,7 @@ model InviteToken {
   id             String            @id @db.VarChar
   organizationId String            @map("organization_id") @db.VarChar
   email          String            @db.VarChar
-  role           String            @default("member") @db.VarChar
+  role           String            @default("staff") @db.VarChar
   token          String            @unique @db.VarChar
   status         String            @default("pending") @db.VarChar
   expiresAt      BigInt            @map("expires_at")

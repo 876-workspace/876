@@ -42,7 +42,9 @@ describe('feature seed catalog', () => {
       ...PLATFORM_FEATURE_SEEDS,
       ...Object.values(FEATURE_SEEDS_BY_APP).flat(),
     ]
-    expect(seeds.every((seed) => (seed.legacySlugs?.length ?? 0) > 0)).toBe(true)
+    expect(seeds.every((seed) => (seed.legacySlugs?.length ?? 0) > 0)).toBe(
+      true
+    )
   })
 
   it('seeds Estimates as a disabled child of Billing Sales', () => {

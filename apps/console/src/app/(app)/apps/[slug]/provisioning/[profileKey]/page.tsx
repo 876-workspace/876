@@ -67,44 +67,64 @@ export default async function ApplicationProvisioningProfilePage({
     )
 
   const profile = profileResult.data
-  const primaryResourceType = catalogResult.data.resource_types[0]
-  const resourceTabLabel = primaryResourceType?.label ?? 'Documents'
   const manifestRevision =
     manifestResult.data?.draft ?? manifestResult.data?.published ?? null
-  const resourceCount =
-    manifestRevision?.resources.filter(
-      (r) =>
-        r.resource_type ===
-        (primaryResourceType?.resource_type ||
-          (primaryResourceType as { resourceType?: string })?.resourceType)
-    ).length ?? 0
+  const resourceSections = catalogResult.data.resource_types.map(
+    (definition) => {
+      const resourceType =
+        definition.resource_type ||
+        (definition as { resourceType?: string }).resourceType ||
+        ''
+
+      return {
+        key: resourceType,
+        label: shortResourceLabel(resourceType, definition.label),
+        count:
+          manifestRevision?.resources.filter(
+            (resource) => resource.resource_type === resourceType
+          ).length ?? 0,
+        content: (
+          <FinanceProvisioningEditor
+            catalog={catalogResult.data}
+            manifest={manifestResult.data ?? null}
+            target={{
+              type: 'application',
+              key: app.id,
+              profileKey: profile.key,
+            }}
+            initialType={resourceType}
+            currencyOptions={toFinanceCurrencyOptions(currenciesResult.data)}
+            languageOptions={toFinanceLanguageOptions(languagesResult.data)}
+          />
+        ),
+      }
+    }
+  )
 
   return (
     <ProfileCardFrame
       profile={profile}
       slug={app.slug}
       appId={app.id}
-      resourceTabLabel={resourceTabLabel}
-      documentsCount={resourceCount}
-      settingsContent={
+      overviewContent={
         <ProfileSettingsForm appId={app.id} profile={profile} mode="settings" />
       }
       routingContent={
         <ProfileSettingsForm appId={app.id} profile={profile} mode="routing" />
       }
-      documentsContent={
-        <FinanceProvisioningEditor
-          catalog={catalogResult.data}
-          manifest={manifestResult.data ?? null}
-          target={{
-            type: 'application',
-            key: app.id,
-            profileKey: profile.key,
-          }}
-          currencyOptions={toFinanceCurrencyOptions(currenciesResult.data)}
-          languageOptions={toFinanceLanguageOptions(languagesResult.data)}
-        />
-      }
+      resourceSections={resourceSections}
     />
   )
+}
+
+function shortResourceLabel(resourceType: string, fallback: string): string {
+  const labels: Record<string, string> = {
+    app_role: 'Roles',
+    document_preference: 'Documents',
+    request_priority: 'Priorities',
+    request_category: 'Categories',
+    request_subcategory: 'Subcategories',
+  }
+
+  return labels[resourceType] ?? fallback
 }

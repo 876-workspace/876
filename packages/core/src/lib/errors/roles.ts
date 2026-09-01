@@ -14,16 +14,12 @@ export const ROLE_ERRORS = {
     message: 'This role is currently assigned to one or more members.',
     httpStatus: HttpStatus.CONFLICT,
   },
-  'role/last-owner': {
-    message: 'Cannot remove the last owner role from the organization.',
-    httpStatus: HttpStatus.BAD_REQUEST,
-  },
   'role/not-found': {
     message: 'Role not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
-  'role/owner-required': {
-    message: 'This action requires an owner role.',
+  'role/super-admin-required': {
+    message: 'This action requires a super admin role.',
     httpStatus: HttpStatus.FORBIDDEN,
   },
   'role/system-immutable': {

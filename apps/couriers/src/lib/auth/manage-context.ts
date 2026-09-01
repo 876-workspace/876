@@ -60,7 +60,7 @@ export const getManageContext = cache(async function getManageContext(
   let resolvedOrgName: string | null = null
   let resolvedOrgSlug: string | null = null
   let resolvedOrgLogoUrl: string | null = null
-  let resolvedRole: OrgRole = 'member'
+  let resolvedRole: OrgRole = 'staff'
   let resolvedTenant: ManageContext['tenant'] = null
 
   if (orgSlug !== undefined) {

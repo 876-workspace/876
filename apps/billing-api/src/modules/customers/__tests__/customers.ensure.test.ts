@@ -64,14 +64,14 @@ describe('customer.ensure contract', () => {
       name: 'Acme Couriers',
       primaryContact: {
         userId: 'user_owner',
-        email: 'owner@acme.example',
+        email: 'super-admin@acme.example',
         phone: '+18765550123',
       },
     })
 
     expect(parsed.primaryContact).toMatchObject({
       userId: 'user_owner',
-      email: 'owner@acme.example',
+      email: 'super-admin@acme.example',
       phone: '+18765550123',
     })
   })

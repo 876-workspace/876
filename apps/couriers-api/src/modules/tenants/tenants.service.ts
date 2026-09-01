@@ -60,7 +60,7 @@ export async function createTenant(input: CreateTenantBody): Promise<Tenant> {
         orgId: input.org_id,
         slug: input.slug,
         name: input.name,
-        ownerUserId: input.owner_user_id,
+        creatorUserId: input.creator_user_id,
         now: nowUnixSeconds(),
       })
     )

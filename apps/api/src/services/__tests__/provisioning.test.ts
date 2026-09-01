@@ -7,6 +7,7 @@ const { prisma } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
+    appRole: { findFirst: vi.fn() },
     app: { findFirst: vi.fn() },
     subscription: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     subscriptionItem: { create: vi.fn() },
@@ -149,7 +150,7 @@ describe('seedDefaultRoles', () => {
     prisma.organizationRole.findMany.mockResolvedValue([
       {
         id: 'rol_custom',
-        name: 'owner',
+        name: 'super_admin',
         displayName: 'Owner',
         description: null,
         permissions: ['custom:permission'],
@@ -159,7 +160,7 @@ describe('seedDefaultRoles', () => {
 
     const roles = await seedDefaultRoles(ORG, NOW)
 
-    expect(roles.owner?.permissions).toEqual(['custom:permission'])
+    expect(roles.super_admin?.permissions).toEqual(['custom:permission'])
     expect(prisma.organizationRole.create).toHaveBeenCalledTimes(
       DEFAULT_ORG_ROLES.length - 1
     )
@@ -357,7 +358,7 @@ describe('ensureDefaultContact', () => {
     phone: null,
   }
 
-  it('seeds the owner as the primary contact', async () => {
+  it('seeds the super admin as the primary contact', async () => {
     await ensureDefaultContact(ORG, USER, NOW)
 
     const data = prisma.orgContact.create.mock.calls[0]?.[0].data as Record<
@@ -382,7 +383,7 @@ describe('resolveMemberPermissions', () => {
   it('prefers the linked organization role', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue({
       id: 'rol_1',
-      name: 'owner',
+      name: 'super_admin',
       displayName: 'Owner',
       description: null,
       permissions: ['members:read'],
@@ -392,7 +393,7 @@ describe('resolveMemberPermissions', () => {
     const permissions = await resolveMemberPermissions({
       roleId: 'rol_1',
       organizationId: ORG,
-      role: 'owner',
+      role: 'super_admin',
     })
 
     expect([...permissions]).toEqual(['members:read'])
@@ -402,11 +403,11 @@ describe('resolveMemberPermissions', () => {
     const permissions = await resolveMemberPermissions({
       roleId: null,
       organizationId: ORG,
-      role: 'member',
+      role: 'staff',
     })
 
     expect([...permissions].sort()).toEqual(
-      defaultPermissionsForRoleName('member').sort()
+      defaultPermissionsForRoleName('staff').sort()
     )
   })
 
@@ -418,7 +419,7 @@ describe('resolveMemberPermissions', () => {
     const permissions = await resolveMemberPermissions({
       roleId: 'rol_gone',
       organizationId: ORG,
-      role: 'member',
+      role: 'staff',
     })
 
     expect(permissions.size).toBeGreaterThan(0)
@@ -429,7 +430,7 @@ describe('resolveMemberPermissions', () => {
     await resolveMemberPermissions({
       roleId: 'rol_1',
       organizationId: ORG,
-      role: 'member',
+      role: 'staff',
     })
 
     expect(prisma.organizationRole.findFirst).toHaveBeenCalledWith(
@@ -444,7 +445,7 @@ describe('linkMembershipRole', () => {
   it('points the membership at the matching org role', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue({
       id: 'rol_owner',
-      name: 'owner',
+      name: 'super_admin',
       displayName: 'Owner',
       description: null,
       permissions: [],
@@ -452,7 +453,7 @@ describe('linkMembershipRole', () => {
     })
 
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'owner', roleId: null },
+      { id: 'mem_1', organizationId: ORG, role: 'super_admin', roleId: null },
       NOW
     )
 
@@ -465,7 +466,7 @@ describe('linkMembershipRole', () => {
   it('writes nothing when the link is already correct', async () => {
     prisma.organizationRole.findFirst.mockResolvedValue({
       id: 'rol_owner',
-      name: 'owner',
+      name: 'super_admin',
       displayName: 'Owner',
       description: null,
       permissions: [],
@@ -473,7 +474,7 @@ describe('linkMembershipRole', () => {
     })
 
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'owner', roleId: 'rol_owner' },
+      { id: 'mem_1', organizationId: ORG, role: 'super_admin', roleId: 'rol_owner' },
       NOW
     )
 

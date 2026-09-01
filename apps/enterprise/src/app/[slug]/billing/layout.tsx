@@ -20,8 +20,8 @@ export default async function OrganizationBillingLayout({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  // Billing (payment details, bank accounts) is owner/billing-manager
-  // territory — members without `billing:read` never see it.
+  // Billing (payment details, bank accounts) is super-admin territory —
+  // members without `billing:read` never see it.
   const sessionUser = await requireSession(`/${slug}/billing`)
   const { membership } = await requireOrgPermission(
     sessionUser.id,

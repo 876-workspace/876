@@ -17,6 +17,7 @@ const policy = vi.hoisted(() => ({
 
 const profile = vi.hoisted(() => ({
   resolveAndPersistApplicationProvisioningProfile: vi.fn(),
+  retrieveSelectedApplicationProvisioningRoles: vi.fn(),
 }))
 
 vi.mock('../provisioning.repository', () => repository)
@@ -25,6 +26,9 @@ vi.mock(
   '@/modules/provisioning/application-provisioning-profile.service',
   () => profile
 )
+vi.mock('@/modules/app-access', () => ({
+  materializeProvisionedRolesForApp: vi.fn().mockResolvedValue({ seeded: 0, skipped: 0 }),
+}))
 vi.mock('../billing-customer-sync', () => ({
   enqueueCustomerEnsureForOrganization: vi.fn(),
 }))

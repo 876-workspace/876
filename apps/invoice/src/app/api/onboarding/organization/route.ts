@@ -21,7 +21,7 @@ const organizationSchema = z.strictObject({
 })
 
 /** Roles allowed to add an app to an organization. */
-const PROVISIONING_ROLES = new Set(['owner', 'admin'])
+const PROVISIONING_ROLES = new Set(['super_admin', 'admin'])
 
 /** Slug/name collisions the caller can fix by choosing another name. */
 const CONFLICT_CODES = new Set([
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       return apiJson({ error: 'Enter an organization name.' }, { status: 422 })
 
     const organization = await platform.organizations.create({
-      ownerUserId: session.user.id,
+      creatorUserId: session.user.id,
       name: parsed.data.name,
     })
     if (organization.error) {

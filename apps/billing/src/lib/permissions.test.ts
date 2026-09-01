@@ -87,7 +87,7 @@ describe('Billing permissions', () => {
 
   it('defines unique built-in roles with one default viewer role', () => {
     expect(BILLING_SYSTEM_ROLES.map((role) => role.slug)).toEqual([
-      'owner',
+      'super_admin',
       'admin',
       'accountant',
       'viewer',

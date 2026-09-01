@@ -19,7 +19,7 @@ export default async function NoAccessPage() {
         <PageHeader>
           <PageTitle>Billing access is restricted</PageTitle>
           <PageDescription>
-            Ask a Billing owner to grant the required workspace role, or review
+            Ask a Billing super admin to grant the required workspace role, or review
             the organization&apos;s Billing subscription.
           </PageDescription>
         </PageHeader>

@@ -7831,7 +7831,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                     "minLength": 1,
                     "type": "string",
                   },
-                  "owner_user_id": {
+                  "creator_user_id": {
                     "minLength": 1,
                     "type": "string",
                   },

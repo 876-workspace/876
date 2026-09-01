@@ -70,10 +70,12 @@ describe('permissions — console access gate', () => {
     expect(hasPermission(admin, 'console:danger-zone')).toBe(false)
   })
 
-  it('owner can access danger-zone and security', () => {
-    const owner = SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'owner')!
-    expect(hasPermission(owner, 'console:danger-zone')).toBe(true)
-    expect(hasPermission(owner, 'console:security')).toBe(true)
+  it('super admin can access danger_zone and security', () => {
+    const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
+      (role) => role.name === 'super_admin'
+    )!
+    expect(hasPermission(superAdmin, 'console:danger_zone')).toBe(true)
+    expect(hasPermission(superAdmin, 'console:security')).toBe(true)
   })
 
   it('all system roles have permissions subset of catalog', () => {
@@ -141,12 +143,11 @@ describe('permissions — console access gate', () => {
 })
 
 describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
-  it('has 4 roles', () => {
+  it('has 3 roles', () => {
     expect(SYSTEM_ROLE_DEFINITIONS.map((r) => r.name)).toEqual([
       'staff',
       'admin',
-      'owner',
-      'super-admin',
+      'super_admin',
     ])
   })
 
@@ -160,25 +161,15 @@ describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
     for (const p of staffPerms) expect(adminPerms.has(p)).toBe(true)
   })
 
-  it('admin ⊆ owner', () => {
+  it('admin ⊆ super_admin', () => {
     const adminPerms = new Set(
       SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'admin')!.permissions
     )
-    const ownerPerms = new Set(
-      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'owner')!.permissions
+    const superAdminPerms = new Set(
+      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'super_admin')!.permissions
     )
-    for (const p of adminPerms) expect(ownerPerms.has(p)).toBe(true)
-  })
-
-  it('owner ⊆ super-admin', () => {
-    const ownerPerms = new Set(
-      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'owner')!.permissions
-    )
-    const superPerms = new Set(
-      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === SUPER_ADMIN_ROLE)!
-        .permissions
-    )
-    for (const p of ownerPerms) expect(superPerms.has(p)).toBe(true)
+    for (const permission of adminPerms)
+      expect(superAdminPerms.has(permission)).toBe(true)
   })
 
   it('super-admin has all dangerous permissions', () => {

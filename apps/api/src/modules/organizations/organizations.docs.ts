@@ -22,11 +22,11 @@ const _MEMBER_SESSION = {
 export const BOOTSTRAP_ORG_SUMMARY = 'Bootstrap organization for existing user'
 
 export const BOOTSTRAP_ORG_DESCRIPTION = `
-Creates a WorkOS organization and active owner membership for an existing 876 user. **Admin only**.
+Creates a WorkOS organization and active super-admin membership for an existing 876 user. **Admin only**.
 
 * Generates a unique slug from the organization name when omitted.
 * Provisions the default organization roles plus the Enterprise app entitlement.
-* Creates the existing user's owner membership with active status.
+* Creates the existing user's super-admin membership with active status.
 `
 
 export const BOOTSTRAP_ORG_RESPONSES = {
@@ -470,11 +470,11 @@ export const RETRIEVE_ORG_MEMBER_ME_RESPONSES = { ..._MEMBER_SESSION } as const
 export const UPDATE_ORG_MEMBER_ROLE_SUMMARY = `Change a member's role`
 
 export const UPDATE_ORG_MEMBER_ROLE_DESCRIPTION =
-  'Assigns an org role (system or custom) to a member. Requires `members:manage`. Only an owner may grant or remove the owner role, and the last active owner cannot be demoted. **Session tier**.'
+  'Assigns an org role (system or custom) to a member. Requires `members:manage`. Only a super admin may grant or remove the super admin role. **Session tier**.'
 
 export const UPDATE_ORG_MEMBER_ROLE_RESPONSES = {
   ..._MEMBER_SESSION,
-  400: { description: 'Unknown role or last-owner demotion.' },
+  400: { description: 'Unknown role.' },
   404: { description: 'No membership with this ID in the organization.' },
 } as const
 

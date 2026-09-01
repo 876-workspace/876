@@ -212,7 +212,7 @@ function setUpMocks() {
           id: 'mem_1',
           organization_id: 'org_1',
           user_id: 'usr_owner',
-          role: 'owner',
+          role: 'super_admin',
           created_at: 10,
         },
       ],
@@ -726,7 +726,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     })
   })
 
-  it('prefers the owner membership over an earlier admin when resolving contact', async () => {
+  it('prefers the super admin membership over an earlier admin when resolving contact', async () => {
     mocks.membershipsList.mockReturnValue(
       success({
         object: 'list',
@@ -742,7 +742,7 @@ describe('mirrorCoreSubscription edge cases', () => {
             id: 'mem_owner',
             organization_id: 'org_1',
             user_id: 'usr_owner',
-            role: 'owner',
+            role: 'super_admin',
             created_at: 99,
           },
         ],
@@ -762,7 +762,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     )
   })
 
-  it('falls back to the earliest member when no owner role exists', async () => {
+  it('falls back to the earliest member when no super admin role exists', async () => {
     mocks.membershipsList.mockReturnValue(
       success({
         object: 'list',
@@ -778,7 +778,7 @@ describe('mirrorCoreSubscription edge cases', () => {
             id: 'mem_early',
             organization_id: 'org_1',
             user_id: 'usr_early',
-            role: 'member',
+            role: 'staff',
             created_at: 5,
           },
         ],

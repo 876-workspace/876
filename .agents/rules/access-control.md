@@ -33,11 +33,11 @@ A navigation entry's `requires.permission` must equal the permission checked by 
 
 These answer different questions and occupy different slots in `AccessContext`.
 
-| Mechanism | Question | May authorize? |
-| --- | --- | --- |
-| Permission | May this subject do this? | Yes |
-| Feature flag | Does this capability exist for this subject yet? | Only as an AND alongside permission |
-| Experiment | Which presentation variant should an already-permitted subject see? | Never |
+| Mechanism    | Question                                                            | May authorize?                      |
+| ------------ | ------------------------------------------------------------------- | ----------------------------------- |
+| Permission   | May this subject do this?                                           | Yes                                 |
+| Feature flag | Does this capability exist for this subject yet?                    | Only as an AND alongside permission |
+| Experiment   | Which presentation variant should an already-permitted subject see? | Never                               |
 
 When a capability has both a permission and a feature flag, visibility and route access require **permission AND feature**. A feature rollout is not a role permission. Authorization is not a PostHog flag.
 
@@ -83,7 +83,7 @@ Platform account type is irrelevant to affiliation. An external auditor may use 
 
 Employment verification is subtractive and one-directional. An explicit inactive or missing Efesto membership denies a `staff` grant. A provider/infrastructure outage does not: the already-valid Console grant remains usable, the outage is captured, and verification is retried on the next request. This check can only remove access; it can never create or widen access.
 
-Only `staff` may hold `owner` or `super-admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
+Only `staff` may hold `super_admin`. Contractor and external grants are capped at `admin`; create and update validation must evaluate the resulting affiliation/role combination.
 
 ## Subtractive verification and outage direction
 

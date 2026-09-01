@@ -54,7 +54,7 @@ describe('ensureProviderMembership', () => {
     const result = await ensureProviderMembership(provider, {
       workosOrganizationId: 'org_workos',
       workosUserId: 'user_workos',
-      role: 'member',
+      role: 'staff',
     })
 
     expect(result).toBe('om_1')
@@ -65,7 +65,7 @@ describe('ensureProviderMembership', () => {
     })
   })
 
-  it('maps only the owner role to a provider role slug on creation', async () => {
+  it('maps only the super admin role to a provider role slug on creation', async () => {
     // Every other 876 role takes the environment default on create; later role
     // changes use the explicit member/admin projection.
     provider.createOrganizationMembership.mockResolvedValue({ id: 'om_1' })
@@ -73,7 +73,7 @@ describe('ensureProviderMembership', () => {
     await ensureProviderMembership(provider, {
       workosOrganizationId: 'org_workos',
       workosUserId: 'user_workos',
-      role: 'owner',
+      role: 'super_admin',
     })
 
     expect(provider.createOrganizationMembership).toHaveBeenCalledWith(
@@ -88,7 +88,7 @@ describe('ensureProviderMembership', () => {
     const result = await ensureProviderMembership(provider, {
       workosOrganizationId: 'org_workos',
       workosUserId: 'user_workos',
-      role: 'member',
+      role: 'staff',
     })
 
     expect(result).toBe('om_prior')
@@ -102,7 +102,7 @@ describe('ensureProviderMembership', () => {
       ensureProviderMembership(provider, {
         workosOrganizationId: 'org_workos',
         workosUserId: 'user_workos',
-        role: 'member',
+        role: 'staff',
       })
     ).rejects.toThrow('Upstream failed.')
   })
@@ -111,7 +111,7 @@ describe('ensureProviderMembership', () => {
     const result = await ensureProviderMembership(provider, {
       workosOrganizationId: null,
       workosUserId: 'user_workos',
-      role: 'member',
+      role: 'staff',
     })
 
     expect(result).toBeNull()
@@ -122,7 +122,7 @@ describe('ensureProviderMembership', () => {
     const result = await ensureProviderMembership(provider, {
       workosOrganizationId: 'org_workos',
       workosUserId: null,
-      role: 'member',
+      role: 'staff',
     })
 
     expect(result).toBeNull()
@@ -131,13 +131,13 @@ describe('ensureProviderMembership', () => {
 })
 
 describe('updateProviderMembershipRole', () => {
-  it('projects owner to the WorkOS admin role', async () => {
+  it('projects super admin to the WorkOS admin role', async () => {
     provider.updateOrganizationMembership.mockResolvedValue({ id: 'om_1' })
 
     const result = await updateProviderMembershipRole(
       provider,
       'om_1',
-      'owner',
+      'super_admin',
       { localMembershipId: 'mem_1' }
     )
 
@@ -147,7 +147,7 @@ describe('updateProviderMembershipRole', () => {
     })
   })
 
-  it.each(['member', 'admin', 'dispatcher', 'custom-role'])(
+  it.each(['staff', 'admin', 'dispatcher', 'custom-role'])(
     'projects the richer local %s role to provider member',
     async (role) => {
       provider.updateOrganizationMembership.mockResolvedValue({ id: 'om_1' })
@@ -164,7 +164,7 @@ describe('updateProviderMembershipRole', () => {
   )
 
   it('skips the provider call when the local membership has no provider id', async () => {
-    const result = await updateProviderMembershipRole(provider, null, 'owner', {
+    const result = await updateProviderMembershipRole(provider, null, 'super_admin', {
       localMembershipId: 'mem_1',
     })
 
@@ -178,7 +178,7 @@ describe('updateProviderMembershipRole', () => {
     const result = await updateProviderMembershipRole(
       provider,
       'om_missing',
-      'member',
+      'staff',
       { localMembershipId: 'mem_1' }
     )
 
@@ -189,7 +189,7 @@ describe('updateProviderMembershipRole', () => {
     provider.updateOrganizationMembership.mockRejectedValue(providerDown())
 
     await expect(
-      updateProviderMembershipRole(provider, 'om_1', 'member', {
+      updateProviderMembershipRole(provider, 'om_1', 'staff', {
         localMembershipId: 'mem_1',
       })
     ).rejects.toThrow('Upstream failed.')

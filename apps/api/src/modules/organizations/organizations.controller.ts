@@ -42,7 +42,7 @@ export async function bootstrapOrganization(
   res: Response
 ): Promise<void> {
   const body = validBody<{
-    owner_user_id: string
+    creator_user_id: string
     name: string
     slug?: string | null
     currency_code?: string | null
@@ -50,7 +50,7 @@ export async function bootstrapOrganization(
   }>(req)
   res.status(201).json(
     await service.bootstrapOrganization({
-      ownerUserId: body.owner_user_id,
+      creatorUserId: body.creator_user_id,
       name: body.name,
       slug: body.slug,
       currencyCode: body.currency_code,

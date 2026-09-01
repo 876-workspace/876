@@ -24,13 +24,13 @@ export function MembersTable({
   roles,
   currentUserId,
   canManage,
-  canGrantOwner,
+  canGrantSuperAdmin,
 }: {
   members: MemberView[]
   roles: RoleResource[]
   currentUserId: string
   canManage: boolean
-  canGrantOwner: boolean
+  canGrantSuperAdmin: boolean
 }) {
   return (
     <div className="876-card overflow-x-auto">
@@ -54,7 +54,7 @@ export function MembersTable({
               roles={roles}
               currentUserId={currentUserId}
               canManage={canManage}
-              canGrantOwner={canGrantOwner}
+              canGrantSuperAdmin={canGrantSuperAdmin}
             />
           ))}
         </TableBody>
@@ -68,13 +68,13 @@ function MemberRow({
   roles,
   currentUserId,
   canManage,
-  canGrantOwner,
+  canGrantSuperAdmin,
 }: {
   member: MemberView
   roles: RoleResource[]
   currentUserId: string
   canManage: boolean
-  canGrantOwner: boolean
+  canGrantSuperAdmin: boolean
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -86,11 +86,11 @@ function MemberRow({
     member.email ||
     member.userId
   const protectedMember =
-    member.organizationRole === 'owner' || member.userId === currentUserId
+    member.organizationRole === 'super_admin' || member.userId === currentUserId
   const changed = roleId !== member.roleId || status !== member.status
   const availableRoles = roles.filter(
     (role) =>
-      role.slug !== 'owner' || canGrantOwner || role.id === member.roleId
+      role.slug !== 'super_admin' || canGrantSuperAdmin || role.id === member.roleId
   )
 
   function save() {

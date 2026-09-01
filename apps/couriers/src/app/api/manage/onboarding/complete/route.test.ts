@@ -37,7 +37,7 @@ describe('Couriers onboarding completion route', () => {
     mocks.getManageContext.mockResolvedValue({
       userId: 'user_123',
       orgId: 'organization_123',
-      role: 'owner',
+      role: 'super_admin',
       accessStatus: 'active',
       tenant: null,
     })
@@ -100,7 +100,7 @@ describe('Couriers onboarding completion route', () => {
       org_id: 'organization_123',
       name: 'Montego Couriers',
       slug: 'montego-couriers',
-      owner_user_id: 'user_123',
+      creator_user_id: 'user_123',
     })
     expect(mocks.updateTenant).toHaveBeenCalledWith('tenant_123', {
       mailbox_prefix: 'MBJ',

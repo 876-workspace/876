@@ -46,8 +46,7 @@ const RESOURCE_WRITE = [
 /**
  * Team-grant management. Granting Console access is itself privilege
  * escalation, so it sits with admin and above — never with staff.
- * `assertRoleChangeAllowed` still keeps owner/super-admin grants to a
- * super admin.
+ * `assertRoleChangeAllowed` keeps super-admin grants to a super admin.
  */
 const TEAM_MANAGE = [
   'team:read',
@@ -62,30 +61,12 @@ const TEAM_MANAGE = [
 export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 
 /** Permission that gates destructive (danger-zone) operations. */
-export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger-zone'
-
-export const SUPER_ADMIN_ROLE = 'super-admin'
-const LEGACY_CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
-const LEGACY_SUPER_ADMIN_ROLE = 'super_admin'
-
-function canonicalPermission(permission: string): string {
-  return permission === LEGACY_CONSOLE_DANGER_ZONE_PERMISSION
-    ? CONSOLE_DANGER_ZONE_PERMISSION
-    : permission
-}
-
-function canonicalPermissions(permissions: readonly string[]): string[] {
-  return [...new Set(permissions.map(canonicalPermission))]
-}
-
-export function canonicalConsoleRoleName(role: string): string {
-  return role === LEGACY_SUPER_ADMIN_ROLE ? SUPER_ADMIN_ROLE : role
-}
+export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
 
 function accessContext(access: Pick<Access, 'permissions'>): AccessContext {
   return {
     subject: { userId: '' },
-    permissions: canonicalPermissions(access.permissions),
+    permissions: access.permissions,
     features: [],
     experiments: {},
   }
@@ -95,11 +76,11 @@ export function hasPermission(
   access: Pick<Access, 'permissions'>,
   permission: string
 ): boolean {
-  return can(accessContext(access), canonicalPermission(permission))
+  return can(accessContext(access), permission)
 }
 
 /**
- * Seed definitions for the 4 system Console roles. Used to seed `roles` on
+ * Seed definitions for the 3 system Console roles. Used to seed `roles` on
  * first run and as a fallback before the table is populated. Consumers (no
  * team row) have no role and no permissions.
  */
@@ -138,35 +119,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     ],
   },
   {
-    name: 'owner',
-    displayName: 'Owner',
-    description: 'Platform owner with unrestricted Console access.',
-    permissions: [
-      'console:access',
-      'console:requests',
-      'console:settings',
-      'console:billing',
-      'console:users',
-      'console:organizations',
-      'console:apps',
-      'console:features',
-      'console:widgets',
-      'console:storage',
-      'console:reports',
-      'console:security',
-      'console:danger-zone',
-      ...RESOURCE_READ,
-      ...RESOURCE_WRITE,
-      ...TEAM_MANAGE,
-      'roles:delete',
-      'users:delete',
-      'organizations:delete',
-      'memberships:delete',
-      'apps:delete',
-    ],
-  },
-  {
-    name: SUPER_ADMIN_ROLE,
+    name: 'super_admin',
     displayName: 'Super Admin',
     description: 'All permissions including danger zone operations.',
     permissions: [
@@ -209,7 +162,7 @@ for (const role of SYSTEM_ROLE_DEFINITIONS) {
     )
 }
 
-/** The four built-in system role names, in privilege order. */
+/** The three built-in system role names, in privilege order. */
 export const SYSTEM_ROLE_NAMES = SYSTEM_ROLE_DEFINITIONS.map(
   (role) => role.name
 )
@@ -230,14 +183,12 @@ export function permissionsForRole(
   catalog: Record<string, string[]> = FALLBACK
 ): string[] {
   if (!role) return []
-  const canonicalRole = canonicalConsoleRoleName(role)
-  const permissions = catalog[canonicalRole] ?? catalog[role] ?? []
-  return canonicalPermissions(permissions)
+  return [...(catalog[role] ?? [])]
 }
 
 function actionLabel(action: string): string {
   return action
-    .split(/[-_]/)
+    .split('_')
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ')
 }

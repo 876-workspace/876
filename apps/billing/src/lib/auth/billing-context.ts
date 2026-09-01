@@ -152,8 +152,8 @@ export const getSetupContext = getContext
 
 export function canManageBilling(
   role: OrgRole
-): role is Extract<OrgRole, 'owner' | 'admin'> {
-  return role === 'owner' || role === 'admin'
+): role is Extract<OrgRole, 'super_admin' | 'admin'> {
+  return role === 'super_admin' || role === 'admin'
 }
 
 export function hasPermission(
@@ -186,6 +186,6 @@ export async function requireBillingFeature(feature: BillingProductFeature) {
 }
 
 export function normalizeOrgRole(role: string): OrgRole {
-  if (role === 'owner' || role === 'admin') return role
-  return 'member'
+  if (role === 'super_admin' || role === 'admin') return role
+  return 'staff'
 }

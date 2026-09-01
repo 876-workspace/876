@@ -69,7 +69,7 @@ describe('upsertMembershipFromWorkos', () => {
       workosMembershipId: 'om_1',
       organizationId: 'org_1',
       userId: 'user_1',
-      role: 'member',
+      role: 'staff',
       status: 'active',
     })
 
@@ -94,7 +94,7 @@ describe('upsertMembershipFromWorkos', () => {
     expect(repository.createMembership).not.toHaveBeenCalled()
   })
 
-  it('initializes a provider admin membership as local admin, never owner', async () => {
+  it('initializes a provider admin membership as local admin, never super admin', async () => {
     repository.findMembershipByWorkosId.mockResolvedValue(null)
     repository.createMembership.mockResolvedValue(
       membershipRow({
@@ -142,7 +142,7 @@ describe('upsertMembershipFromWorkos', () => {
         organizationId: 'org_2',
         userId: 'user_2',
         workosMembershipId: 'om_2',
-        role: 'member',
+        role: 'staff',
         roleId: null,
         createdAt: BigInt(NOW),
         updatedAt: BigInt(NOW),
@@ -153,13 +153,13 @@ describe('upsertMembershipFromWorkos', () => {
       workosMembershipId: 'om_2',
       organizationId: 'org_2',
       userId: 'user_2',
-      role: 'member',
+      role: 'staff',
       status: 'active',
     })
 
     expect(action).toBe('created')
     expect(repository.createMembership).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'member' })
+      expect.objectContaining({ role: 'staff' })
     )
   })
 
@@ -175,7 +175,7 @@ describe('upsertMembershipFromWorkos', () => {
       workosMembershipId: 'om_1',
       organizationId: 'org_1',
       userId: 'user_1',
-      role: 'member',
+      role: 'staff',
       status: 'pending',
     })
 
@@ -189,7 +189,7 @@ describe('upsertMembershipFromWorkos', () => {
       workosMembershipId: 'om_3',
       organizationId: null,
       userId: 'user_3',
-      role: 'member',
+      role: 'staff',
       status: 'active',
     })
 

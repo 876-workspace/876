@@ -41,7 +41,7 @@ function request(body: string | Record<string, unknown>) {
 }
 
 function ctx(
-  role: 'owner' | 'admin' | 'member',
+  role: 'super_admin' | 'admin' | 'staff',
   tenant: { id: string } | null = { id: 'ten_123' }
 ) {
   return { orgId: 'org_123', orgSlug: 'island-logistics', role, tenant }
@@ -60,7 +60,7 @@ describe('Couriers roles create route', () => {
     mocks.getCouriers.mockImplementation(() => ({
       roles: { create: mocks.create },
     }))
-    mocks.getManageContext.mockResolvedValue(ctx('owner'))
+    mocks.getManageContext.mockResolvedValue(ctx('super_admin'))
     mocks.create.mockResolvedValue({
       data: {
         id: 'role_dispatcher',
@@ -133,7 +133,7 @@ describe('Couriers roles create route', () => {
   })
 
   it('forbids a plain organization member from creating roles', async () => {
-    mocks.getManageContext.mockResolvedValue(ctx('member'))
+    mocks.getManageContext.mockResolvedValue(ctx('staff'))
 
     const response = await POST(request(validBody))
     const body = await response.json()
