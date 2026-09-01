@@ -27,7 +27,7 @@ const SEARCH_DELAY_MS = 300
 function defaultRole(roles: AdminOrgRole[]): string {
   return (
     roles.find((role) => role.name === 'staff')?.name ??
-    roles.find((role) => role.name !== 'super_admin')?.name ??
+    roles.find((role) => role.name !== 'super-admin')?.name ??
     roles[0]?.name ??
     ''
   )
@@ -369,7 +369,7 @@ export function AddMemberDialog({ orgId, orgName, roles }: Props) {
                   </option>
                 ))}
               </select>
-              {role === 'super_admin' && (
+              {role === 'super-admin' && (
                 <p className="text-876-gold-fg mt-1.5 text-xs">
                   Super admins have full organization control and can manage
                   other super admins.
