@@ -28,11 +28,12 @@ RUN corepack enable
 # `pnpm-workspace.yaml` is required for the filter below to resolve.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 COPY apps/api/package.json apps/api/
-# @876/core and @876/server ship raw TypeScript through their `exports` maps,
-# so their manifests must be present for the filtered install and their source
-# for the bundle step.
+# @876/core, @876/server, and @876/work ship raw TypeScript through their
+# `exports` maps, so their manifests must be present for the filtered install
+# and their source for the bundle step.
 COPY packages/core/package.json packages/core/
 COPY packages/server/package.json packages/server/
+COPY packages/work/package.json packages/work/
 
 # Only this package's dependency graph is installed. Without the filter the
 # image pulls every app in the monorepo, including four Next.js builds.
@@ -42,6 +43,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts --filter @876/api...
 # package layout; tsup inlines these packages, so runtime does not need source.
 COPY packages/core/src packages/core/src
 COPY packages/server/src packages/server/src
+COPY packages/work/src packages/work/src
 
 WORKDIR /repo/apps/api
 

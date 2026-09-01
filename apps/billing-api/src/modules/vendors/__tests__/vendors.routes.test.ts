@@ -74,7 +74,7 @@ describe('Vendors routes', () => {
       appId: null,
       scopes: new Set(),
     })
-    mocks.organizationMembership.mockResolvedValue({ role: 'owner' })
+    mocks.organizationMembership.mockResolvedValue({ role: 'super-admin' })
     mocks.enabledCurrencyExists.mockResolvedValue(true)
   })
 
@@ -121,7 +121,7 @@ describe('Vendors routes', () => {
     expect(mocks.effectiveMember).toHaveBeenCalledWith(
       'btenant_123',
       'user_123',
-      'owner'
+      'super-admin'
     )
   })
 

@@ -43,7 +43,7 @@ Rules that fall out of this and MUST hold for every app that manages members:
   org admin managing their own org uses session-tier org-scoped endpoints; 876
   staff use the admin tier. Field visibility differences are an API serializer
   concern, never client-side filtering (`.claude/rules/sdk-conventions.md`).
-- **The role vocabulary is one catalog.** `owner` / `admin` / `member` and the
+- **The role vocabulary is one catalog.** `super_admin` / `admin` / `staff` and the
   permission strings are defined once in `platform/permissions.ts`; an app does
   not invent a parallel role name. A per-app _module_ permission
   (`.claude/rules/module-settings.md`) gates that app's own features and reuses

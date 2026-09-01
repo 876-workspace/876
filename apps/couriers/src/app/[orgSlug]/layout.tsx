@@ -27,11 +27,11 @@ export default async function OrgLayout({
   if (!ctx) redirect('/')
 
   if (ctx.accessStatus !== 'active') {
-    const canActivate = ctx.role === 'owner' || ctx.role === 'admin'
+    const canActivate = ctx.role === 'super-admin' || ctx.role === 'admin'
     redirect(canActivate ? '/onboarding' : '/no-access')
   }
 
-  if (ctx.role === 'member') redirect('/no-access')
+  if (ctx.role === 'staff') redirect('/no-access')
 
   const features = await getFeatures({
     userId: ctx.userId,

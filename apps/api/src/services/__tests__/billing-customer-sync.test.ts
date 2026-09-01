@@ -64,7 +64,7 @@ function user(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function membership(role = 'owner', userId = 'user_1', createdAt = 10n) {
+function membership(role = 'super_admin', userId = 'user_1', createdAt = 10n) {
   return {
     id: `mem_${userId}`,
     organizationId: 'org_1',
@@ -226,7 +226,7 @@ describe('snapshotForOrganization', () => {
 
   it('prefers owner over earlier admin', async () => {
     const admin = membership('admin', 'user_admin', 5n)
-    const owner = membership('owner', 'user_owner', 10n)
+    const owner = membership('super_admin', 'user_owner', 10n)
     const repo = makeRepository()
     repo.listMembershipsByOrganizationId.mockResolvedValue([
       admin as never,

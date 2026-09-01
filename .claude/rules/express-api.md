@@ -11,16 +11,16 @@ boundary.**
 
 ## Stack
 
-| Concern | Standard |
-| --- | --- |
-| HTTP | Express 5 |
-| Language | TypeScript ESM, strict |
-| Runtime | Node 22+ |
-| ORM | Prisma 7 multi-file schema |
-| Validation | Zod 4 |
-| OpenAPI | generated from Zod contracts |
-| Tests | Vitest + supertest |
-| Logging | pino structured JSON |
+| Concern    | Standard                     |
+| ---------- | ---------------------------- |
+| HTTP       | Express 5                    |
+| Language   | TypeScript ESM, strict       |
+| Runtime    | Node 22+                     |
+| ORM        | Prisma 7 multi-file schema   |
+| Validation | Zod 4                        |
+| OpenAPI    | generated from Zod contracts |
+| Tests      | Vitest + supertest           |
+| Logging    | pino structured JSON         |
 
 Express 5 propagates rejected async handlers. Do not add
 `express-async-errors` or wrap every route in boilerplate try/catch.

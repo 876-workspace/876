@@ -31,7 +31,7 @@ describe('Warehouses settings page data', () => {
     vi.clearAllMocks()
     mockGetManageContext.mockResolvedValue({
       tenant: { id: TENANT_ID },
-      role: 'owner',
+      role: 'super_admin',
     })
     mockGet876Client.mockImplementation(() => ({
       warehouses: { list: mockWarehouses },

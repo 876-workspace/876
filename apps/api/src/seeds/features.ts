@@ -465,7 +465,9 @@ export function validateFeatureSeeds(
   for (const seed of featureSeeds) {
     const slug = seed.slug
     if (!FEATURE_SLUG.test(slug))
-      throw new Error(`Feature slug ${JSON.stringify(slug)} must be kebab-case.`)
+      throw new Error(
+        `Feature slug ${JSON.stringify(slug)} must be kebab-case.`
+      )
     if (seen.has(slug))
       throw new Error(`Duplicate feature slug ${JSON.stringify(slug)}.`)
     if (appSlug && !featureSlugMatchesApp(slug, appSlug)) {
@@ -501,9 +503,13 @@ export function validateFeatureSeeds(
 
     for (const legacySlug of seed.legacySlugs ?? []) {
       if (legacySlug === slug)
-        throw new Error(`Feature ${JSON.stringify(slug)} repeats itself as a legacy slug.`)
+        throw new Error(
+          `Feature ${JSON.stringify(slug)} repeats itself as a legacy slug.`
+        )
       if (legacySeen.has(legacySlug))
-        throw new Error(`Duplicate legacy feature slug ${JSON.stringify(legacySlug)}.`)
+        throw new Error(
+          `Duplicate legacy feature slug ${JSON.stringify(legacySlug)}.`
+        )
       legacySeen.add(legacySlug)
     }
 
@@ -540,9 +546,10 @@ function providerCandidate(
   return matches[0] ?? null
 }
 
-async function localCandidate(
-  seed: FeatureSeed
-): Promise<{ slug: string; feature: Awaited<ReturnType<typeof findFeatureBySlug>> } | null> {
+async function localCandidate(seed: FeatureSeed): Promise<{
+  slug: string
+  feature: NonNullable<Awaited<ReturnType<typeof findFeatureBySlug>>>
+} | null> {
   const matches: Array<{
     slug: string
     feature: NonNullable<Awaited<ReturnType<typeof findFeatureBySlug>>>

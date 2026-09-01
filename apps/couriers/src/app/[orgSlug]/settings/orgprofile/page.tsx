@@ -79,7 +79,7 @@ async function ProfileSettingsData({ params }: Props) {
     language: str(profile.language),
   }
 
-  const canEdit = ctx.role === 'owner' || ctx.role === 'admin'
+  const canEdit = ctx.role === 'super_admin' || ctx.role === 'admin'
   const parishes = (regionsResult.data ?? [])
     .map((region) => ({ value: region.id, label: region.name }))
     .sort((a, b) => a.label.localeCompare(b.label))

@@ -9,7 +9,7 @@ const organizationIdSchema = z.string().trim().min(1)
 const userIdSchema = z.string().trim().min(1)
 const workosMembershipIdSchema = z.string().trim().min(1)
 // Role names are open strings: orgs define custom roles beyond the seeded
-// system set (owner, admin, billing_manager, member).
+// system set (super_admin, admin, staff).
 const membershipRoleSchema = z.string().trim().min(1).max(64)
 const membershipStatusSchema = z.enum([
   'active',

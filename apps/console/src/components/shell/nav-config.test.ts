@@ -59,8 +59,8 @@ describe('navConfig', () => {
     ])
   })
 
-  it('shows owner every entry including security', () => {
-    expect(visibleHrefs('owner')).toEqual([
+  it('shows super admin every entry including security', () => {
+    expect(visibleHrefs('super-admin')).toEqual([
       '/',
       '/users',
       '/orgs',
@@ -72,10 +72,6 @@ describe('navConfig', () => {
       '/reports',
       '/settings',
     ])
-  })
-
-  it('shows super_admin the same complete entry set as owner', () => {
-    expect(visibleHrefs('super_admin')).toEqual(visibleHrefs('owner'))
   })
 
   it('hides every permission-gated entry from a context with no permissions', () => {

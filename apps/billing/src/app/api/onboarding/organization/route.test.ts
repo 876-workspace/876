@@ -114,7 +114,7 @@ describe('Billing onboarding organization route', () => {
     })
     expect(mocks.createOrganization).toHaveBeenCalledTimes(1)
     expect(mocks.createOrganization).toHaveBeenCalledWith({
-      ownerUserId: 'user_123',
+      creatorUserId: 'user_123',
       name: 'Kingston Traders',
       currencyCode: 'USD',
       language: 'en',

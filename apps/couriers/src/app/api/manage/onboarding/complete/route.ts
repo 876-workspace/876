@@ -15,7 +15,7 @@ export const runtime = 'nodejs'
 export async function POST() {
   const ctx = await getManageContext()
   if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role === 'member')
+  if (ctx.role === 'staff')
     return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
   if (ctx.accessStatus === 'blocked')
     return apiJson({ error: 'Access is restricted' }, { status: 403 })
@@ -80,7 +80,7 @@ export async function POST() {
       org_id: ctx.orgId,
       name: platformName,
       slug: toSlug(platformName),
-      owner_user_id: ctx.userId,
+      creator_user_id: ctx.userId,
     })
     if (created.error)
       return apiJson(

@@ -53,7 +53,10 @@ export const createModuleBodySchema = z.object({
         .string()
         .min(1)
         .max(80)
-        .regex(MODULE_KEY, 'Module keys must be lowercase kebab-case identifiers.')
+        .regex(
+          MODULE_KEY,
+          'Module keys must be lowercase kebab-case identifiers.'
+        )
     ),
   name: z.string().min(1).max(120),
   description: z.string().max(1000).nullish(),

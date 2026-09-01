@@ -17,7 +17,7 @@ const organizationSchema = z.strictObject({
   name: z.string().trim().min(1).max(120).optional(),
 })
 
-const PROVISIONING_ROLES = new Set(['owner', 'admin'])
+const PROVISIONING_ROLES = new Set(['super_admin', 'admin'])
 const CONFLICT_CODES = new Set([
   'organization/slug-taken',
   'organization/already-exists',
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       return apiJson({ error: 'Enter an organization name.' }, { status: 422 })
 
     const organization = await platform.organizations.create({
-      ownerUserId: session.user.id,
+      creatorUserId: session.user.id,
       name: parsed.data.name,
     })
     if (organization.error) {

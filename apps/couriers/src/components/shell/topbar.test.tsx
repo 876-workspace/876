@@ -61,7 +61,7 @@ function createOrganization(
     id: 'organization_island_123',
     name: 'Island Logistics',
     slug: 'island-logistics',
-    role: 'owner',
+    role: 'super_admin',
     ...overrides,
   }
 }

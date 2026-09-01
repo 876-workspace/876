@@ -26,7 +26,7 @@ const member = (overrides: Record<string, unknown> = {}) => ({
   id: 'mem_target',
   organizationId: 'org_target',
   userId: 'user_target',
-  role: 'member',
+  role: 'staff',
   roleId: 'role_member',
   status: 'active',
   createdAt: 1_785_000_000n,

@@ -6,12 +6,12 @@ import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-const OWNER_ROLE = 'owner'
+const SUPER_ADMIN_ROLE = 'super_admin'
 
 /**
  * Changes a member's org role. Pure transport over `$876.organizationMembers.update`.
  *
- * Owner-role transitions are checked here for a direct UI response and
+ * Super-admin transitions are checked here for a direct UI response and
  * independently enforced by the delegated-session API.
  */
 export async function PATCH(
@@ -41,10 +41,11 @@ export async function PATCH(
     return apiJson({ error: 'Member not found.' }, { status: 404 })
   }
 
-  const ownerInvolved = target.role === OWNER_ROLE || role === OWNER_ROLE
-  if (ownerInvolved && auth.membership.role !== OWNER_ROLE) {
+  const superAdminInvolved =
+    target.role === SUPER_ADMIN_ROLE || role === SUPER_ADMIN_ROLE
+  if (superAdminInvolved && auth.membership.role !== SUPER_ADMIN_ROLE) {
     return apiJson(
-      { error: 'Only an owner can grant or remove the owner role.' },
+      { error: 'Only a super admin can grant or remove super admin.' },
       { status: 403 }
     )
   }
@@ -65,7 +66,7 @@ export async function PATCH(
 /**
  * Removes a member from the organization. Pure transport over
  * `$876.organizationMembers.delete`, with org scoping, self-removal, and
- * owner/last-owner protections enforced again by the delegated-session API.
+ * super-admin protections enforced again by the delegated-session API.
  */
 export async function DELETE(
   _request: Request,
@@ -93,24 +94,11 @@ export async function DELETE(
     return apiJson({ error: 'Member not found.' }, { status: 404 })
   }
 
-  if (target.role === OWNER_ROLE) {
-    if (auth.membership.role !== OWNER_ROLE) {
+  if (target.role === SUPER_ADMIN_ROLE) {
+    if (auth.membership.role !== SUPER_ADMIN_ROLE) {
       return apiJson(
-        { error: 'Only an owner can remove an owner.' },
+        { error: 'Only a super admin can remove a super admin.' },
         { status: 403 }
-      )
-    }
-
-    const otherActiveOwners = members.filter(
-      (member) =>
-        member.id !== membershipId &&
-        member.role === OWNER_ROLE &&
-        member.status === 'active'
-    )
-    if (otherActiveOwners.length === 0) {
-      return apiJson(
-        { error: 'An organization must keep at least one owner.' },
-        { status: 400 }
       )
     }
   }

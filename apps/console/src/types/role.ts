@@ -59,19 +59,19 @@ export type DeletedRole = z.infer<typeof deletedRoleSchema>
 /**
  * Roles that can be assigned via the MC UI.
  * `user` is the sentinel for no MC access (revokes by deleting the member row).
+ * `super_admin` is accepted only by the migration adapter in role-change.ts;
+ * canonical UI/API writes use `super-admin`.
  */
 export const ASSIGNABLE_ROLES = [
   'user',
   'staff',
   'admin',
-  'owner',
   'super-admin',
 ] as const
 export const assignableRoleSchema = z.enum([
   'user',
   'staff',
   'admin',
-  'owner',
   'super-admin',
 ])
 export type AssignableRole = z.infer<typeof assignableRoleSchema>

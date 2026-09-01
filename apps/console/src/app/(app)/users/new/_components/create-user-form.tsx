@@ -193,7 +193,8 @@ export function CreateUserForm() {
                   placeholder="Acme Corp"
                 />
                 <p className="text-muted-foreground mt-1 text-xs">
-                  If provided, creates a new org and adds the user as owner.
+                  If provided, creates a new org and adds the user as super
+                  admin.
                 </p>
               </div>
             </>

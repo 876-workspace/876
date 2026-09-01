@@ -89,7 +89,7 @@ export class HttpIdentityGateway implements IdentityGateway {
     const settings = getSettings()
     if (!settings.identityApiKey) {
       log.error(
-        { reason: 'missing_resource_server_key' },
+        { reason: 'missing-resource-server-key' },
         'identity.introspection.disabled'
       )
       throw unavailable({ path, reason: 'configuration', attempts: 0 })
@@ -182,9 +182,11 @@ export class HttpIdentityGateway implements IdentityGateway {
 
       return {
         role:
-          membership.role === 'owner' || membership.role === 'admin'
-            ? membership.role
-            : 'member',
+          membership.role === 'super-admin' || membership.role === 'super_admin'
+            ? 'super-admin'
+            : membership.role === 'admin'
+              ? 'admin'
+              : 'staff',
       }
     }
     return null
@@ -236,7 +238,7 @@ export class HttpIdentityGateway implements IdentityGateway {
       } catch (error) {
         if (attempt < MAX_ATTEMPTS) {
           log.warn(
-            { attempt, path, reason: 'invalid_response_body' },
+            { attempt, path, reason: 'invalid-response-body' },
             'identity.request.retrying'
           )
           continue

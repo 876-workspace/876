@@ -4,7 +4,6 @@ import { isUniqueConstraintError } from '@/platform/prisma-errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
-  countActiveOwners,
   createRoleRow,
   deleteRoleRow,
   findActiveMemberAuthorization,
@@ -25,6 +24,12 @@ import type {
 import { billingPermissionValues } from './access.schemas'
 import { serializeRole } from './access.serializers'
 
+type OrganizationRole = 'super-admin' | 'super_admin' | 'admin' | 'staff'
+
+function isSuperAdminRole(role: OrganizationRole): boolean {
+  return role === 'super-admin' || role === 'super_admin'
+}
+
 export async function activeMemberAuthorization(
   tenantId: string,
   userId: string
@@ -38,7 +43,7 @@ export async function activeMemberAuthorization(
 export async function effectiveMemberAuthorization(
   tenantId: string,
   userId: string,
-  organizationRole: 'owner' | 'admin' | 'member'
+  organizationRole: OrganizationRole
 ) {
   const member = await resolveMemberAccess(tenantId, userId, organizationRole)
   return member?.status === 'ACTIVE'
@@ -76,18 +81,17 @@ function memberAccess(
 export async function resolveMemberAccess(
   tenantId: string,
   userId: string,
-  organizationRole: 'owner' | 'admin' | 'member'
+  organizationRole: OrganizationRole
 ) {
-  if (organizationRole !== 'owner') {
+  if (!isSuperAdminRole(organizationRole)) {
     const current = await findMemberRow(tenantId, userId)
     if (current) return memberAccess(userId, current.status, current.role)
   }
-  const slug =
-    organizationRole === 'owner'
-      ? 'owner'
-      : organizationRole === 'admin'
-        ? 'admin'
-        : 'viewer'
+  const slug = isSuperAdminRole(organizationRole)
+    ? 'super-admin'
+    : organizationRole === 'admin'
+      ? 'admin'
+      : 'staff'
   return memberAccess(userId, 'ACTIVE', await findRoleBySlug(tenantId, slug))
 }
 
@@ -225,18 +229,6 @@ export async function updateMember(
       'The requested billing member was not found.',
       404
     )
-  if (
-    member.role.slug === 'owner' &&
-    member.status === 'ACTIVE' &&
-    (role.slug !== 'owner' || body.status !== 'ACTIVE') &&
-    (await countActiveOwners(tenantId)) <= 1
-  )
-    throw accessError(
-      'billing_member/owner-required',
-      'A workspace must keep at least one active owner.',
-      409
-    )
-
   const updated = await updateMemberRow(member.id, {
     roleId: role.id,
     status: body.status,

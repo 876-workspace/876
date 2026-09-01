@@ -79,7 +79,7 @@ export const REGISTER_DESCRIPTION = `Creates a new individual account and immedi
 
 No separate login step is needed — a **session envelope** is returned directly (same shape as \`POST /auth/login\`). If the platform requires email verification before a session can be issued, an \`auth_event\` is returned instead. Show the user a code-entry screen and call \`POST /auth/verify-email\` to activate the account and sign them in.
 
-New accounts are enrolled in the platform's default feature set automatically. The \`accountType\` will be \`"consumer"\` for accounts created through this endpoint. To create an organization owner account, use \`POST /auth/register-business\`.
+New accounts are enrolled in the platform's default feature set automatically. The \`accountType\` will be \`"consumer"\` for accounts created through this endpoint. To create an organization organization creator account, use \`POST /auth/register-business\`.
 
 - Password must be at least 8 characters.
 - Disposable and temporary email domains are blocked.
@@ -94,7 +94,7 @@ export const REGISTER_RESPONSES = {
   },
 } as const
 
-export const REGISTER_BUSINESS_DESCRIPTION = `Creates a new organization and an owner account in a single request.
+export const REGISTER_BUSINESS_DESCRIPTION = `Creates a new organization and an organization creator account in a single request.
 
 The caller becomes the **owner** of the organization and is signed in immediately — a session envelope is returned (same shape as \`POST /auth/login\`). If email verification is required first, an \`auth_event\` is returned — complete verification via \`POST /auth/verify-email\`, after which the account and organization are both active. To invite additional members after registration, use the Organizations API.
 

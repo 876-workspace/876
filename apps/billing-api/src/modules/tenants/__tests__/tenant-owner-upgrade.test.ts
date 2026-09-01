@@ -9,7 +9,7 @@ const input = {
   name: 'Test Org',
   slug: 'test-org',
   defaultCurrency: 'JMD',
-  ownerUserId: 'user_owner',
+  superAdminUserId: 'user_super_admin',
   now: 1_786_962_851,
 }
 
@@ -45,7 +45,7 @@ function createExistingWorkspaceTx(options?: {
 describe('finance-created workspace Billing upgrade', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('seats the Billing owner when the shared finance workspace already exists', async () => {
+  it('seats the Billing super admin when the shared finance workspace already exists', async () => {
     const tx = createExistingWorkspaceTx()
 
     const result = await provisionTenantWorkspace(tx as never, input)
@@ -58,14 +58,14 @@ describe('finance-created workspace Billing upgrade', () => {
     expect(tx.member.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         tenantId: 'ten_shared_finance',
-        userId: 'user_owner',
+        userId: 'user_super_admin',
         roleId: 'role_owner',
         status: 'ACTIVE',
       }),
     })
   })
 
-  it('reactivates and restores the owner role for an existing member grant', async () => {
+  it('reactivates and restores the super admin role for an existing member grant', async () => {
     const tx = createExistingWorkspaceTx({
       member: { id: 'mem_owner', roleId: 'role_viewer', status: 'SUSPENDED' },
     })
@@ -83,7 +83,7 @@ describe('finance-created workspace Billing upgrade', () => {
     })
   })
 
-  it('self-heals a missing owner role before seating the owner', async () => {
+  it('self-heals a missing super admin role before seating the super admin', async () => {
     const tx = createExistingWorkspaceTx({ ownerRole: null })
 
     await provisionTenantWorkspace(tx as never, input)
@@ -91,7 +91,7 @@ describe('finance-created workspace Billing upgrade', () => {
     expect(tx.role.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         tenantId: 'ten_shared_finance',
-        slug: 'owner',
+        slug: 'super-admin',
         isSystem: true,
       }),
       select: { id: true },
@@ -99,7 +99,7 @@ describe('finance-created workspace Billing upgrade', () => {
     expect(tx.member.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         tenantId: 'ten_shared_finance',
-        userId: 'user_owner',
+        userId: 'user_super_admin',
         status: 'ACTIVE',
       }),
     })

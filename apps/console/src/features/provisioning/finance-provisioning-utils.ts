@@ -12,11 +12,14 @@ import {
   CreditCard,
   Database,
   DocumentTextIcon,
+  Flag,
   Globe,
   ReceiptPercent,
   ReceiptText,
+  RectangleStackIcon,
   ShieldCheck,
   TableIcon,
+  TagIcon,
 } from '@876/ui/icons'
 
 export type FinanceResourceDefinition =
@@ -101,6 +104,10 @@ export const RESOURCE_TYPE_ICONS: Record<string, IconComponent> = {
   tax_rate: ReceiptPercent,
   document_preference: DocumentTextIcon,
   organization_profile: Building2,
+  request_priority: Flag,
+  request_category: TagIcon,
+  request_subcategory: RectangleStackIcon,
+  app_role: ShieldCheck,
 }
 
 export function getResourceTypeIcon(resourceType: string): IconComponent {
@@ -119,12 +126,35 @@ export const RESOURCE_TYPE_COLORS: Record<string, string> = {
   tax_rate: 'text-violet-500 dark:text-violet-400',
   document_preference: 'text-blue-500 dark:text-blue-400',
   organization_profile: 'text-purple-500 dark:text-purple-400',
+  request_priority: 'text-amber-500 dark:text-amber-400',
+  request_category: 'text-emerald-500 dark:text-emerald-400',
+  request_subcategory: 'text-teal-500 dark:text-teal-400',
+  app_role: 'text-purple-500 dark:text-purple-400',
 }
 
+export const RESOURCE_TYPE_FALLBACK_PALETTE: readonly string[] = [
+  'text-blue-500 dark:text-blue-400',
+  'text-emerald-500 dark:text-emerald-400',
+  'text-purple-500 dark:text-purple-400',
+  'text-amber-500 dark:text-amber-400',
+  'text-rose-500 dark:text-rose-400',
+  'text-cyan-500 dark:text-cyan-400',
+  'text-indigo-500 dark:text-indigo-400',
+  'text-teal-500 dark:text-teal-400',
+]
+
 export function getResourceTypeColor(resourceType: string): string {
-  return (
-    RESOURCE_TYPE_COLORS[resourceType] ?? 'text-blue-600 dark:text-blue-400'
-  )
+  if (RESOURCE_TYPE_COLORS[resourceType]) {
+    return RESOURCE_TYPE_COLORS[resourceType]
+  }
+
+  let hash = 0
+  for (let i = 0; i < resourceType.length; i++) {
+    hash = (hash * 31 + resourceType.charCodeAt(i)) >>> 0
+  }
+  return RESOURCE_TYPE_FALLBACK_PALETTE[
+    hash % RESOURCE_TYPE_FALLBACK_PALETTE.length
+  ]
 }
 
 function propertyValue(

@@ -60,7 +60,7 @@ export function PendingInvites({ orgSlug, invites }: Props) {
         <DataTableColumnHeader column={column} title="Role" />
       ),
       cell: ({ row }) => (
-        <Badge variant="outline">{row.original.role ?? 'member'}</Badge>
+        <Badge variant="outline">{row.original.role ?? 'staff'}</Badge>
       ),
     },
     {

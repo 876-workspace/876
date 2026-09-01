@@ -97,7 +97,7 @@ describe('getInvoiceContextResult', () => {
         data: [
           {
             id: 'mem_1',
-            role: 'owner',
+            role: 'super-admin',
             status: 'active',
             organization: {
               id: 'org_123',
@@ -122,7 +122,7 @@ describe('getInvoiceContextResult', () => {
         orgId: 'org_123',
         orgName: 'Acme Corp',
         accessStatus: 'active',
-        role: 'owner',
+        role: 'super-admin',
       }),
     })
   })

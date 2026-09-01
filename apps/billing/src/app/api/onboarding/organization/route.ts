@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     })
 
   const organization = await platform.organizations.create({
-    ownerUserId: session.user.id,
+    creatorUserId: session.user.id,
     name: parsed.data.name,
     currencyCode: parsed.data.currency_code.toUpperCase(),
     language: parsed.data.language,

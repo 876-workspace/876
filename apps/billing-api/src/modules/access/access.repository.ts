@@ -82,12 +82,6 @@ export function findRoleBySlug(tenantId: string, slug: string) {
   })
 }
 
-export function countActiveOwners(tenantId: string) {
-  return prisma.member.count({
-    where: { tenantId, status: 'ACTIVE', role: { slug: 'owner' } },
-  })
-}
-
 export function updateMemberRow(
   memberId: string,
   data: { roleId: string; status: MemberStatus; updatedAt: number }

@@ -1,12 +1,16 @@
 import 'server-only'
 
+import { canonicalConsoleRole, CONSOLE_SUPER_ADMIN_ROLE } from '@/lib/permissions'
 import { team } from '@/lib/service/team'
 import type { TeamServiceResult } from '@/lib/service/team/validation'
 import type { Access, RoleCheckResult, RoleChangeResult } from '@/types/auth'
 import { ASSIGNABLE_ROLES, type AssignableRole } from '@/types/role'
 
-function isAssignableRole(value: string): value is AssignableRole {
-  return (ASSIGNABLE_ROLES as readonly string[]).includes(value)
+function normalizeAssignableRole(value: string): AssignableRole | null {
+  const normalized = canonicalConsoleRole(value)
+  return (ASSIGNABLE_ROLES as readonly string[]).includes(normalized)
+    ? (normalized as AssignableRole)
+    : null
 }
 
 export async function assertRoleChangeAllowed(
@@ -14,29 +18,34 @@ export async function assertRoleChangeAllowed(
   targetUserId: string,
   requestedRole: string
 ): Promise<RoleCheckResult> {
-  if (!isAssignableRole(requestedRole)) {
+  const normalizedRole = normalizeAssignableRole(requestedRole)
+  if (!normalizedRole) {
     return {
       ok: false,
-      error: 'Invalid role. Must be user, staff, admin, owner, or super_admin.',
+      error: 'Invalid role. Must be user, staff, admin, or super-admin.',
       status: 400,
     }
   }
 
-  if (caller.role === 'super_admin') return { ok: true }
+  if (canonicalConsoleRole(caller.role) === CONSOLE_SUPER_ADMIN_ROLE)
+    return { ok: true }
 
-  if (requestedRole === 'super_admin' || requestedRole === 'owner') {
+  if (normalizedRole === CONSOLE_SUPER_ADMIN_ROLE) {
     return {
       ok: false,
-      error: `Only a super admin can grant the ${requestedRole} role.`,
+      error: `Only a super admin can grant the ${normalizedRole} role.`,
       status: 403,
     }
   }
 
   const target = await team.retrieve(targetUserId)
-  if (target?.roleName === 'super_admin' || target?.roleName === 'owner') {
+  if (
+    target?.roleName &&
+    canonicalConsoleRole(target.roleName) === CONSOLE_SUPER_ADMIN_ROLE
+  ) {
     return {
       ok: false,
-      error: `Only a super admin can change a ${target.roleName}'s role.`,
+      error: 'Only a super admin can change a super-admin role.',
       status: 403,
     }
   }
@@ -65,7 +74,7 @@ export async function applyRoleChange(
   return {
     data: {
       userId: result.data.userId,
-      role: result.data.roleName,
+      role: canonicalConsoleRole(result.data.roleName),
       revoked: false,
     },
     error: null,

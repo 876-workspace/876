@@ -6,7 +6,7 @@ import type { PlatformOrganization } from '@876/core/platform'
 import { getPlatformClient } from '@/lib/services/platform'
 
 /** Where a customer's primary contact details were sourced from. */
-export type PrimaryContactSource = 'org-owner' | 'org-member' | 'user' | 'self'
+export type PrimaryContactSource = 'org-super-admin' | 'org-member' | 'user' | 'self'
 
 /** Resolved contact card for a customer's overview page. */
 export interface PrimaryContact {
@@ -115,7 +115,7 @@ async function resolveOrgParty(
   const memberCount = membersResult.data ? memberships.length : null
 
   const primary =
-    memberships.find((membership) => membership.role === 'owner') ??
+    memberships.find((membership) => membership.role === 'super-admin') ??
     memberships[0] ??
     null
 
@@ -133,8 +133,8 @@ async function resolveOrgParty(
       email: owner.email,
       phone: customer.phone,
       avatar: owner.avatar,
-      role: primary.role === 'owner' ? 'Owner' : primary.role,
-      source: primary.role === 'owner' ? 'org-owner' : 'org-member',
+      role: primary.role === 'super-admin' ? 'Super Admin' : primary.role,
+      source: primary.role === 'super-admin' ? 'org-super-admin' : 'org-member',
     },
   }
 }

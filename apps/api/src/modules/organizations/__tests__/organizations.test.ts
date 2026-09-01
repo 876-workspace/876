@@ -55,7 +55,7 @@ function membershipRow(overrides: Record<string, unknown> = {}) {
     organizationId: 'org_4qR8',
     userId: 'user_2kL9',
     workosMembershipId: 'om_1',
-    role: 'owner',
+    role: 'super_admin',
     roleId: 'role_owner',
     status: 'active',
     deletedAt: null,
@@ -301,7 +301,7 @@ beforeEach(() => {
   organizationRole.findFirst.mockResolvedValue({
     id: 'role_owner',
     organizationId: 'org_4qR8',
-    name: 'owner',
+    name: 'super_admin',
     permissions: ['org:update', 'members:read', 'members:manage'],
     isSystem: true,
     createdAt: BigInt(NOW),
@@ -474,7 +474,7 @@ describe('GET /organizations/:id/members/me', () => {
 
     expect(response.status).toBe(200)
     expect(response.body.data).toMatchObject({
-      role: 'owner',
+      role: 'super_admin',
       status: 'active',
     })
   })
@@ -528,29 +528,6 @@ describe('DELETE /organizations/:orgId/members/:membershipId', () => {
 
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe('membership/self-removal-forbidden')
-    expect(membership.update).not.toHaveBeenCalled()
-  })
-
-  it('refuses to remove the last owner', async () => {
-    // The caller is an owner; no other active owner exists.
-    membership.findFirst
-      .mockResolvedValueOnce(membershipRow() as never) // permission check
-      .mockResolvedValueOnce(
-        membershipRow({
-          id: 'mem_02',
-          userId: 'user_other',
-          role: 'owner',
-        }) as never
-      ) // target membership
-      .mockResolvedValueOnce(membershipRow({ role: 'owner' }) as never) // caller is owner
-      .mockResolvedValueOnce(null) // no other active owner
-
-    const response = await request(createApp())
-      .delete('/organizations/org_4qR8/members/mem_02')
-      .set(await sessionHeaders())
-
-    expect(response.status).toBe(400)
-    expect(response.body.error.code).toBe('role/last-owner')
     expect(membership.update).not.toHaveBeenCalled()
   })
 

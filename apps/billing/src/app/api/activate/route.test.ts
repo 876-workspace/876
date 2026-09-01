@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/auth/billing-context', () => ({
   getContext: mocks.getContext,
-  canManageBilling: (role: string) => role === 'owner' || role === 'admin',
+  canManageBilling: (role: string) => role === 'super-admin' || role === 'admin',
 }))
 vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
@@ -46,7 +46,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   })
 
   it.each([
-    ['member', false],
+    ['staff', false],
     ['viewer', false],
     ['unknown', false],
   ])(
@@ -65,7 +65,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   )
 
   it.each([
-    ['owner', true],
+    ['super-admin', true],
     ['admin', true],
   ])(
     'When role is %s with manage permission and already active, then returns 200 alreadyActive',
@@ -88,7 +88,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   it('When access is blocked, then returns 403 even for owner', async () => {
     mocks.getContext.mockResolvedValue({
       orgId: 'org_123',
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'blocked',
     })
     const res = await POST()
@@ -112,7 +112,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   it('When entitlement is none and caller is owner, then creates subscription with billing slug', async () => {
     mocks.getContext.mockResolvedValue({
       orgId: 'org_123',
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'none',
     })
     const res = await POST()
@@ -140,7 +140,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   it('When platform returns error, then responds with 502', async () => {
     mocks.getContext.mockResolvedValue({
       orgId: 'org_123',
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'none',
     })
     mocks.createSubscription.mockResolvedValue({
@@ -156,7 +156,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   it('When platform throws, then propagates exception (not swallowed)', async () => {
     mocks.getContext.mockResolvedValue({
       orgId: 'org_123',
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'none',
     })
     mocks.createSubscription.mockRejectedValue(new Error('network failure'))
@@ -167,7 +167,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
     // AccessStatus is already mapped before route sees it; active includes trialing.
     mocks.getContext.mockResolvedValue({
       orgId: 'org_123',
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'active',
     })
     const res = await POST()
@@ -179,7 +179,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
     // member fails at canManageBilling, so blocked branch not reached — but still 403
     mocks.getContext.mockResolvedValue({
       orgId: 'org_123',
-      role: 'member',
+      role: 'staff',
       accessStatus: 'blocked',
     })
     const res = await POST()
@@ -191,7 +191,7 @@ describe('POST /api/activate — billing entitlement activation', () => {
   it('Uses correct orgId from context, not session', async () => {
     mocks.getContext.mockResolvedValue({
       orgId: 'org_specific',
-      role: 'owner',
+      role: 'super-admin',
       accessStatus: 'none',
     })
     await POST()

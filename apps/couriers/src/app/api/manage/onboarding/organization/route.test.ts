@@ -154,7 +154,7 @@ describe('Couriers onboarding organization route', () => {
       organization_id: 'organization_123',
     })
     expect(mocks.createOrganization).toHaveBeenCalledWith({
-      ownerUserId: 'user_123',
+      creatorUserId: 'user_123',
       name: 'Montego Couriers',
     })
     expect(mocks.replaceAnswers).toHaveBeenCalledWith(

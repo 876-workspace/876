@@ -6,8 +6,10 @@ import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
 import {
   catalogDefinitions,
+  provisioningDraftForCatalog,
   validateProvisioningWireDraft,
 } from '@/services/provisioning-catalog'
+import { validateAppRoleProvisioningPermissions } from '@/services/app-role-provisioning-catalog'
 
 import { resolveDefaultApplicationManifestTarget } from './application-provisioning-profile.service'
 import * as repository from './provisioning.repository'
@@ -233,6 +235,17 @@ export async function validateDraftRequest(
     catalogKey,
     body
   )
+  if (issues.length === 0 && targetType === 'application') {
+    const app = await repository.findAppByIdOrSlug(targetKey)
+    if (app)
+      issues.push(
+        ...(await validateAppRoleProvisioningPermissions({
+          appId: app.id,
+          appSlug: app.slug,
+          resources: provisioningDraftForCatalog(body).resources,
+        }))
+      )
+  }
   return {
     object: 'provisioning_validation' as const,
     valid: issues.length === 0,
@@ -257,6 +270,17 @@ export async function publishDraft(targetType: string, targetKey: string) {
     catalogKey,
     draftAsInput
   )
+  if (issues.length === 0 && targetType === 'application') {
+    const app = await repository.findAppByIdOrSlug(targetKey)
+    if (app)
+      issues.push(
+        ...(await validateAppRoleProvisioningPermissions({
+          appId: app.id,
+          appSlug: app.slug,
+          resources: provisioningDraftForCatalog(draftAsInput).resources,
+        }))
+      )
+  }
   if (issues.length > 0) {
     throw new AppHttpError({
       code: 'provisioning/invalid-draft',

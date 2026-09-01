@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
+  CONSOLE_SUPER_ADMIN_ROLE,
   hasPermission,
   PERMISSION_GROUPS,
   permissionsForRole,
@@ -14,18 +15,12 @@ import {
 const EXPECTED_ROLE_COUNTS = {
   staff: 15,
   admin: 39,
-  owner: 46,
-  super_admin: 46,
+  'super-admin': 46,
 } as const
 
 describe('Console permission catalog', () => {
   it('publishes the built-in roles in privilege order', () => {
-    expect(SYSTEM_ROLE_NAMES).toEqual([
-      'staff',
-      'admin',
-      'owner',
-      'super_admin',
-    ])
+    expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super-admin'])
   })
 
   it('pins the exact staff permission count', () => {
@@ -40,15 +35,9 @@ describe('Console permission catalog', () => {
     )
   })
 
-  it('pins the exact owner permission count', () => {
-    expect(SYSTEM_ROLE_DEFINITIONS[2]?.permissions.length).toBe(
-      EXPECTED_ROLE_COUNTS.owner
-    )
-  })
-
   it('pins the exact super-admin permission count', () => {
-    expect(SYSTEM_ROLE_DEFINITIONS[3]?.permissions.length).toBe(
-      EXPECTED_ROLE_COUNTS.super_admin
+    expect(SYSTEM_ROLE_DEFINITIONS[2]?.permissions.length).toBe(
+      EXPECTED_ROLE_COUNTS['super-admin']
     )
   })
 
@@ -60,12 +49,12 @@ describe('Console permission catalog', () => {
     ).toEqual([])
   })
 
-  it('reserves danger-zone access for owner and super admin', () => {
+  it('reserves danger-zone access for super admin', () => {
     expect(
       SYSTEM_ROLE_DEFINITIONS.filter((role) =>
         role.permissions.includes(CONSOLE_DANGER_ZONE_PERMISSION)
       ).map((role) => role.name)
-    ).toEqual(['owner', 'super_admin'])
+    ).toEqual(['super-admin'])
   })
 
   it('keeps staff free of delete permissions', () => {
@@ -97,7 +86,7 @@ describe('Console permission catalog', () => {
 
   it('grants super admin every permission the catalog declares', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
-      (role) => role.name === 'super_admin'
+      (role) => role.name === CONSOLE_SUPER_ADMIN_ROLE
     )
     const missing = consolePermissionCatalog.permissions
       .map((permission) => permission.key)
@@ -112,7 +101,7 @@ describe('Console permission catalog', () => {
     expect(staff?.permissions).not.toContain('team:list')
     expect(staff?.permissions).not.toContain('team:revoke')
     expect(staff?.permissions).not.toContain('console:security')
-    expect(staff?.permissions).not.toContain('console:danger_zone')
+    expect(staff?.permissions).not.toContain('console:danger-zone')
   })
 
   it('withholds security and the danger zone from admin', () => {
@@ -120,7 +109,7 @@ describe('Console permission catalog', () => {
 
     expect(admin?.permissions).toContain('team:revoke')
     expect(admin?.permissions).not.toContain('console:security')
-    expect(admin?.permissions).not.toContain('console:danger_zone')
+    expect(admin?.permissions).not.toContain('console:danger-zone')
   })
 
   it('checks a supplied permission list through the core access primitive', () => {
@@ -129,6 +118,26 @@ describe('Console permission catalog', () => {
     const result = hasPermission(access, 'users:update')
 
     expect(result).toBe(true)
+  })
+
+  it('accepts the exact legacy danger-zone permission during the migration', () => {
+    expect(
+      hasPermission(
+        { permissions: ['console:danger_zone'] },
+        CONSOLE_DANGER_ZONE_PERMISSION
+      )
+    ).toBe(true)
+  })
+
+  it('normalizes the exact legacy super-admin role during the migration', () => {
+    const legacyCatalog = {
+      super_admin: ['console:access', 'console:danger_zone'],
+    }
+
+    expect(permissionsForRole('super_admin', legacyCatalog)).toEqual([
+      'console:access',
+      'console:danger-zone',
+    ])
   })
 
   it('returns false when a supplied permission list omits the key', () => {

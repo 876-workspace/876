@@ -222,7 +222,7 @@ export async function findOwnerOrganizationId(
       JOIN users u ON u.id = m.user_id
      WHERE lower(u.email) = lower(${ownerEmail})
        AND m.status = 'active'
-  ORDER BY (m.role = 'owner') DESC, m.created_at ASC
+  ORDER BY (m.role = 'super_admin') DESC, m.created_at ASC
      LIMIT 1`
   if (row.length === 0) return null
   return row[0]!.organization_id

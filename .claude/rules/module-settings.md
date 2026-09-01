@@ -11,11 +11,11 @@ their existing snake_case names.
 An organization's configuration lives on three layers with different owners and
 lifecycles:
 
-| Layer | Question | Owner | Writer |
-| --- | --- | --- | --- |
-| **Provisioning** | What must exist before the app works? | Core provisioning | Platform manifest/materializer |
-| **Modules** | Which functional areas is this org using? | Product app datastore | Org admin |
-| **Preferences** | How should an enabled module behave? | Product app datastore | Org admin |
+| Layer            | Question                                  | Owner                 | Writer                         |
+| ---------------- | ----------------------------------------- | --------------------- | ------------------------------ |
+| **Provisioning** | What must exist before the app works?     | Core provisioning     | Platform manifest/materializer |
+| **Modules**      | Which functional areas is this org using? | Product app datastore | Org admin                      |
+| **Preferences**  | How should an enabled module behave?      | Product app datastore | Org admin                      |
 
 Provisioning is a published/versioned platform contract. Module state and
 preferences are app-local operational configuration. Do not collapse these

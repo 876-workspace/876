@@ -5,6 +5,7 @@ import { PERMISSION_GROUPS } from '@/lib/permissions'
 import { resolveMemberGrant, resolveMemberIdentity } from './_data'
 
 const ROLE_LABELS: Record<string, string> = {
+  'super-admin': 'Super Admin',
   super_admin: 'Super Admin',
   owner: 'Owner',
   admin: 'Admin',

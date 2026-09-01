@@ -14,23 +14,30 @@ export const WIDGET_HOST_APP_SLUGS: Record<WidgetHost, string> = {
  * New definitions and writes use only the canonical key. Remove these aliases
  * after PostHog/local migration verification confirms no legacy flag remains.
  */
-const LEGACY_WIDGET_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
-  'platform-widgets': ['platform_widgets'],
-  'platform-widgets-notepad': [
-    'platform_widgets_notepad',
-    'platform_widgets_notes',
-  ],
-  'platform-widgets-chat': ['platform_widgets_chat'],
-  'console-widgets': ['console_widgets'],
-  'console-widgets-notepad': ['console_widgets_notepad', 'console_widgets_notes'],
-  'console-widgets-chat': ['console_widgets_chat'],
-  'billing-widgets': ['billing_widgets'],
-  'billing-widgets-notepad': ['billing_widgets_notepad', 'billing_widgets_notes'],
-  'billing-widgets-chat': ['billing_widgets_chat'],
-  'couriers-widgets': ['couriers_widgets'],
-  'couriers-widgets-notepad': ['couriers_widgets_notepad'],
-  'couriers-widgets-chat': ['couriers_widgets_chat'],
-}
+const LEGACY_WIDGET_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> =
+  {
+    'platform-widgets': ['platform_widgets'],
+    'platform-widgets-notepad': [
+      'platform_widgets_notepad',
+      'platform_widgets_notes',
+    ],
+    'platform-widgets-chat': ['platform_widgets_chat'],
+    'console-widgets': ['console_widgets'],
+    'console-widgets-notepad': [
+      'console_widgets_notepad',
+      'console_widgets_notes',
+    ],
+    'console-widgets-chat': ['console_widgets_chat'],
+    'billing-widgets': ['billing_widgets'],
+    'billing-widgets-notepad': [
+      'billing_widgets_notepad',
+      'billing_widgets_notes',
+    ],
+    'billing-widgets-chat': ['billing_widgets_chat'],
+    'couriers-widgets': ['couriers_widgets'],
+    'couriers-widgets-notepad': ['couriers_widgets_notepad'],
+    'couriers-widgets-chat': ['couriers_widgets_chat'],
+  }
 
 /**
  * Where the widget may appear (host dock catalog) — independent of data ownership.

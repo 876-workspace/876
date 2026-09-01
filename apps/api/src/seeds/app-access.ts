@@ -118,15 +118,11 @@ function viewerPermissions(
   return keysFor(permissions, (permission) => permission.action === 'view')
 }
 
-function standardRoles(
-  permissions: AppPermissionSeed[],
-  middleKey: string,
-  middleName: string
-): AppRoleSeed[] {
+function standardRoles(permissions: AppPermissionSeed[]): AppRoleSeed[] {
   return [
     {
-      key: 'admin',
-      name: 'Admin',
+      key: 'super-admin',
+      name: 'Super Admin',
       description: 'Full access to this application.',
       permissions: keysFor(permissions),
       isSystem: true,
@@ -134,22 +130,21 @@ function standardRoles(
       position: 0,
     },
     {
-      key: middleKey,
-      name: middleName,
+      key: 'admin',
+      name: 'Admin',
       description:
-        'Operational access without application-administration privileges.',
+        'Administrative and operational access without destructive actions.',
       permissions: keysFor(
         permissions,
-        (permission) =>
-          permission.moduleKey !== 'settings' && permission.action !== 'delete'
+        (permission) => !permission.isDangerous
       ),
       isSystem: true,
       isDefault: false,
       position: 10,
     },
     {
-      key: 'viewer',
-      name: 'Viewer',
+      key: 'staff',
+      name: 'Staff',
       description: 'Read-only access to this application.',
       permissions: viewerPermissions(permissions),
       isSystem: true,
@@ -163,104 +158,22 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
   {
     appSlug: '876-couriers',
     permissions: couriersPermissions,
-    roles: [
-      {
-        key: 'admin',
-        name: 'Admin',
-        description: 'Unrestricted access to every module.',
-        permissions: keysFor(couriersPermissions),
-        isSystem: true,
-        isDefault: false,
-        position: 0,
-      },
-      {
-        key: 'staff',
-        name: 'Staff',
-        description: 'Access to every module except Reports and Settings.',
-        permissions: keysFor(
-          couriersPermissions,
-          (permission) =>
-            !['reports', 'settings'].includes(permission.moduleKey)
-        ),
-        isSystem: true,
-        isDefault: true,
-        position: 10,
-      },
-    ],
+    roles: standardRoles(couriersPermissions),
   },
   {
     appSlug: '876-crm',
     permissions: crmPermissions,
-    roles: [
-      {
-        key: 'owner',
-        name: 'Owner',
-        description: 'Owns CRM access and has every CRM capability.',
-        permissions: keysFor(crmPermissions),
-        isSystem: true,
-        isDefault: false,
-        position: 0,
-      },
-      {
-        key: 'admin',
-        name: 'Admin',
-        description: 'Full access to CRM.',
-        permissions: keysFor(crmPermissions),
-        isSystem: true,
-        isDefault: false,
-        position: 10,
-      },
-      {
-        key: 'agent',
-        name: 'Agent',
-        description:
-          'Works customer requests and related Work items without role administration.',
-        permissions: keysFor(
-          crmPermissions,
-          (permission) =>
-            [
-              'requests',
-              'customers',
-              'tasks',
-              'reminders',
-              'events',
-              'calendars',
-              'my-work',
-              'notes',
-            ].includes(permission.moduleKey) && permission.action !== 'delete'
-        ),
-        isSystem: true,
-        isDefault: false,
-        position: 20,
-      },
-      {
-        key: 'viewer',
-        name: 'Viewer',
-        description: 'Read-only CRM access.',
-        permissions: viewerPermissions(crmPermissions),
-        isSystem: true,
-        isDefault: true,
-        position: 30,
-      },
-    ],
+    roles: standardRoles(crmPermissions),
   },
   {
     appSlug: '876-billing',
     permissions: billingPermissions,
-    roles: standardRoles(
-      billingPermissions,
-      'finance-manager',
-      'Finance Manager'
-    ),
+    roles: standardRoles(billingPermissions),
   },
   {
     appSlug: '876-invoice',
     permissions: invoicePermissions,
-    roles: standardRoles(
-      invoicePermissions,
-      'finance-manager',
-      'Finance Manager'
-    ),
+    roles: standardRoles(invoicePermissions),
   },
 ] as const
 

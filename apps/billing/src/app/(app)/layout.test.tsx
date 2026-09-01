@@ -40,7 +40,7 @@ function makeContext(overrides: Record<string, unknown> = {}) {
     access: { status: 'ACTIVE', permissions: ['billing:access'] },
     permissions: ['billing:access'],
     accessStatus: 'active',
-    role: 'owner',
+    role: 'super-admin',
     orgId: 'org_123',
     organizations: [{ id: 'org_123', name: 'Island', slug: 'island' }],
     ...overrides,
@@ -95,7 +95,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When tenant missing and role is member, then redirects to no-access (no org creation for member)', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ tenant: null, role: 'member', accessStatus: 'active' })
+      makeContext({ tenant: null, role: 'staff', accessStatus: 'active' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/no-access',
@@ -104,7 +104,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When tenant missing and role is owner, then redirects to get-started', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ tenant: null, role: 'owner', accessStatus: 'active' })
+      makeContext({ tenant: null, role: 'super-admin', accessStatus: 'active' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/get-started',
@@ -129,7 +129,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When accessStatus is blocked and tenant missing for owner, tenant gate wins (goes to get-started)', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ tenant: null, role: 'owner', accessStatus: 'blocked' })
+      makeContext({ tenant: null, role: 'super-admin', accessStatus: 'blocked' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/get-started',
@@ -138,7 +138,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When accessStatus is none and role member, then redirects to no-access', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ accessStatus: 'none', role: 'member' })
+      makeContext({ accessStatus: 'none', role: 'staff' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/no-access',
@@ -147,7 +147,7 @@ describe('AppLayout — billing entitlement gates', () => {
 
   it('When accessStatus is none and role owner, then redirects to get-started (reactivate)', async () => {
     mocks.getContext.mockResolvedValue(
-      makeContext({ accessStatus: 'none', role: 'owner' })
+      makeContext({ accessStatus: 'none', role: 'super-admin' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/get-started',
@@ -248,7 +248,7 @@ describe('AppLayout — billing entitlement gates', () => {
     mocks.getContext.mockResolvedValue(
       makeContext({
         accessStatus: undefined as unknown as string,
-        role: 'member',
+        role: 'staff',
       })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
@@ -260,7 +260,7 @@ describe('AppLayout — billing entitlement gates', () => {
     // Both conditions true, but current code checks tenant first, then blocked, then none.
     // Either path gives no-access, but we verify requireValidSession still called once.
     mocks.getContext.mockResolvedValue(
-      makeContext({ tenant: null, role: 'member', accessStatus: 'blocked' })
+      makeContext({ tenant: null, role: 'staff', accessStatus: 'blocked' })
     )
     await expect(AppLayout({ children: null })).rejects.toMatchObject({
       path: '/no-access',

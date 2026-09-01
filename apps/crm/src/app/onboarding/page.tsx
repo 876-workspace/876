@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
     const { accessStatus, orgName, role } = result.context
     if (accessStatus === 'active' || accessStatus === 'trialing') redirect('/')
 
-    if (accessStatus === 'blocked' || (role !== 'owner' && role !== 'admin'))
+    if (accessStatus === 'blocked' || (role !== 'super_admin' && role !== 'admin'))
       redirect('/no-access?reason=subscription')
 
     return <OnboardingForm existingOrgName={orgName} />

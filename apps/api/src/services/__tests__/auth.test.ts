@@ -782,7 +782,7 @@ describe('AuthService.registerBusiness', () => {
         organizationId: 'organization_1',
         userId: 'user_local_1',
         workosMembershipId: 'om_1',
-        role: 'owner',
+        role: 'super_admin',
         roleId: null,
         status: 'active',
       })
@@ -866,7 +866,7 @@ describe('AuthService.registerBusiness', () => {
       organizationId: 'organization_1',
       userId: 'user_local_1',
       workosMembershipId: 'om_1',
-      role: 'owner',
+      role: 'super_admin',
       roleId: 'role_owner',
       status: 'active',
     })
@@ -919,7 +919,7 @@ describe('AuthService.registerBusiness', () => {
       organizationId: 'organization_1',
       userId: 'user_local_1',
       workosMembershipId: 'om_1',
-      role: 'owner',
+      role: 'super_admin',
       roleId: 'role_owner',
       status: 'active',
     })
