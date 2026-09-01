@@ -4,6 +4,7 @@ import {
   hasPermission,
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
+  SUPER_ADMIN_ROLE,
   SYSTEM_ROLE_DEFINITIONS,
 } from './permissions'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
@@ -14,8 +15,8 @@ describe('permissions — console access gate', () => {
     expect(CONSOLE_ACCESS_PERMISSION).toBe('console:access')
   })
 
-  it('CONSOLE_DANGER_ZONE_PERMISSION is console:danger_zone', () => {
-    expect(CONSOLE_DANGER_ZONE_PERMISSION).toBe('console:danger_zone')
+  it('CONSOLE_DANGER_ZONE_PERMISSION is console:danger-zone', () => {
+    expect(CONSOLE_DANGER_ZONE_PERMISSION).toBe('console:danger-zone')
   })
 
   it('hasPermission true when permission held', () => {
@@ -59,19 +60,19 @@ describe('permissions — console access gate', () => {
     expect(hasPermission(staff, 'console:access')).toBe(true)
     expect(hasPermission(staff, 'console:requests')).toBe(true)
     expect(hasPermission(staff, 'console:billing')).toBe(false)
-    expect(hasPermission(staff, 'console:danger_zone')).toBe(false)
+    expect(hasPermission(staff, 'console:danger-zone')).toBe(false)
   })
 
-  it('admin can access billing and team but not danger_zone', () => {
+  it('admin can access billing and team but not danger-zone', () => {
     const admin = SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'admin')!
     expect(hasPermission(admin, 'console:billing')).toBe(true)
     expect(hasPermission(admin, 'team:invite')).toBe(true)
-    expect(hasPermission(admin, 'console:danger_zone')).toBe(false)
+    expect(hasPermission(admin, 'console:danger-zone')).toBe(false)
   })
 
-  it('owner can access danger_zone and security', () => {
+  it('owner can access danger-zone and security', () => {
     const owner = SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'owner')!
-    expect(hasPermission(owner, 'console:danger_zone')).toBe(true)
+    expect(hasPermission(owner, 'console:danger-zone')).toBe(true)
     expect(hasPermission(owner, 'console:security')).toBe(true)
   })
 
@@ -95,17 +96,19 @@ describe('permissions — console access gate', () => {
     }
   })
 
-  it('all roles sorted and deduped', () => {
+  it('all roles are deduped', () => {
     for (const role of SYSTEM_ROLE_DEFINITIONS) {
       expect(new Set(role.permissions).size).toBe(role.permissions.length)
     }
   })
 
-  it('legacy alias does not affect danger_zone check', () => {
-    const adapted = toStoredPermissionKeys(['console:requests'])
-    expect(hasPermission({ permissions: adapted }, 'console:danger_zone')).toBe(
-      false
-    )
+  it('legacy danger-zone alias resolves to the canonical permission', () => {
+    expect(
+      hasPermission(
+        { permissions: ['console:danger_zone'] },
+        'console:danger-zone'
+      )
+    ).toBe(true)
   })
 
   it('hasPermission handles weird permission type without throwing', () => {
@@ -143,7 +146,7 @@ describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
       'staff',
       'admin',
       'owner',
-      'super_admin',
+      'super-admin',
     ])
   })
 
@@ -167,19 +170,20 @@ describe('SYSTEM_ROLE_DEFINITIONS — hierarchy', () => {
     for (const p of adminPerms) expect(ownerPerms.has(p)).toBe(true)
   })
 
-  it('owner ⊆ super_admin', () => {
+  it('owner ⊆ super-admin', () => {
     const ownerPerms = new Set(
       SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'owner')!.permissions
     )
     const superPerms = new Set(
-      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === 'super_admin')!.permissions
+      SYSTEM_ROLE_DEFINITIONS.find((r) => r.name === SUPER_ADMIN_ROLE)!
+        .permissions
     )
     for (const p of ownerPerms) expect(superPerms.has(p)).toBe(true)
   })
 
-  it('super_admin has all dangerous permissions', () => {
+  it('super-admin has all dangerous permissions', () => {
     const superPerms = SYSTEM_ROLE_DEFINITIONS.find(
-      (r) => r.name === 'super_admin'
+      (r) => r.name === SUPER_ADMIN_ROLE
     )!.permissions
     const dangerous = consolePermissionCatalog.permissions
       .filter((p) => p.isDangerous)
