@@ -17,6 +17,23 @@ const CRM_GLOBAL_ADD_SLUG = 'crm-global-add'
 const CRM_APP_SWITCHER_SLUG = 'crm-app-switcher'
 const CRM_ORG_SWITCHER_SLUG = 'crm-org-switcher'
 
+const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
+  [CRM_SEARCH_BAR_SLUG]: ['crm_search_bar'],
+  [CRM_THEME_SWITCHER_SLUG]: ['crm_theme_switcher'],
+  [CRM_GLOBAL_ADD_SLUG]: ['crm_global_add'],
+  [CRM_APP_SWITCHER_SLUG]: ['crm_app_switcher'],
+  [CRM_ORG_SWITCHER_SLUG]: ['crm_org_switcher'],
+}
+
+function hasFeature(enabledSlugs: ReadonlySet<string>, canonicalSlug: string) {
+  return (
+    enabledSlugs.has(canonicalSlug) ||
+    (LEGACY_FEATURE_SLUGS[canonicalSlug] ?? []).some((legacySlug) =>
+      enabledSlugs.has(legacySlug)
+    )
+  )
+}
+
 const DEFAULT_UI_FEATURES: CrmUiFeatures = {
   searchBar: false,
   themeSwitcher: false,
@@ -60,11 +77,11 @@ const getCachedFeatures = cache(async function getCachedFeatures(
 
   return {
     uiFeatures: {
-      searchBar: enabledSlugs.has(CRM_SEARCH_BAR_SLUG),
-      themeSwitcher: enabledSlugs.has(CRM_THEME_SWITCHER_SLUG),
-      globalAdd: enabledSlugs.has(CRM_GLOBAL_ADD_SLUG),
-      appSwitcher: enabledSlugs.has(CRM_APP_SWITCHER_SLUG),
-      orgSwitcher: enabledSlugs.has(CRM_ORG_SWITCHER_SLUG),
+      searchBar: hasFeature(enabledSlugs, CRM_SEARCH_BAR_SLUG),
+      themeSwitcher: hasFeature(enabledSlugs, CRM_THEME_SWITCHER_SLUG),
+      globalAdd: hasFeature(enabledSlugs, CRM_GLOBAL_ADD_SLUG),
+      appSwitcher: hasFeature(enabledSlugs, CRM_APP_SWITCHER_SLUG),
+      orgSwitcher: hasFeature(enabledSlugs, CRM_ORG_SWITCHER_SLUG),
     },
   }
 })
