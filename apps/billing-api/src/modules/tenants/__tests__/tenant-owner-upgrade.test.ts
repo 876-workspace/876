@@ -58,7 +58,7 @@ describe('finance-created workspace Billing upgrade', () => {
     expect(tx.member.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         tenantId: 'ten_shared_finance',
-        userId: 'user_owner',
+        userId: 'user_super_admin',
         roleId: 'role_owner',
         status: 'ACTIVE',
       }),
@@ -99,7 +99,7 @@ describe('finance-created workspace Billing upgrade', () => {
     expect(tx.member.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         tenantId: 'ten_shared_finance',
-        userId: 'user_owner',
+        userId: 'user_super_admin',
         status: 'ACTIVE',
       }),
     })

@@ -228,15 +228,16 @@ describe('provisionTenantWorkspace', () => {
       expect(harness.created.role).toHaveLength(3)
     })
 
-    it('marks all roles as system and non-default', async () => {
+    it('marks all roles as system and staff as default', async () => {
       const harness = createTx()
       await provisionTenantWorkspace(harness.tx as never, input)
       for (const role of harness.created.role as Array<{
+        slug: string
         isSystem: boolean
         isDefault: boolean
       }>) {
         expect(role.isSystem).toBe(true)
-        expect(role.isDefault).toBe(false)
+        expect(role.isDefault).toBe(role.slug === 'staff')
       }
     })
 
