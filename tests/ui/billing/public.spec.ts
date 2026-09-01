@@ -21,7 +21,9 @@ test.describe('Billing public boundary', () => {
       page.getByRole('heading', { name: 'Billing access is restricted' })
     ).toBeVisible()
     await expect(
-      page.getByText(/Ask a Billing owner to grant the required workspace role/)
+      page.getByText(
+        /Ask a Billing super admin to grant the required workspace role/
+      )
     ).toBeVisible()
     await expectNoAccessibilityViolations(page)
     if (browserName === 'chromium')

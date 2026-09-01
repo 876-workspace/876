@@ -89,7 +89,7 @@ describe('Billing authentication guards', () => {
       scopes: new Set(['billing.customers.write']),
     })
     vi.mocked(identity.organizationMembership).mockResolvedValue({
-      role: 'super_admin',
+      role: 'super-admin',
     })
     vi.mocked(identity.appForApiKey).mockResolvedValue({ id: 'app_123' })
   })
@@ -144,7 +144,7 @@ describe('Billing authentication guards', () => {
     expect(repository.effectiveMember).toHaveBeenCalledWith(
       'btenant_123',
       'user_123',
-      'super_admin'
+      'super-admin'
     )
   })
 

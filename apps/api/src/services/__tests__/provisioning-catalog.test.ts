@@ -130,11 +130,15 @@ function minimalFinanceDraft(
 
 describe('resourceRegistry', () => {
   it('returns the registered catalog for each target family', () => {
+    const billingResources = APPLICATION_RESOURCES['876-billing']
+    if (!billingResources)
+      throw new Error('Expected the Billing application resource catalog.')
+
     expect(resourceRegistry('finance', '')).toBe(FINANCE_RESOURCES)
     expect(resourceRegistry('organization', '')).toBe(ORGANIZATION_RESOURCES)
     // application registries include the shared app_role entry merged in
     expect(resourceRegistry('application', '876-billing')).toMatchObject(
-      APPLICATION_RESOURCES['876-billing']
+      billingResources
     )
     expect(resourceRegistry('application', '876-billing')).toHaveProperty(
       'app_role'

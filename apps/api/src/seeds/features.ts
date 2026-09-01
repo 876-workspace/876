@@ -546,11 +546,9 @@ function providerCandidate(
   return matches[0] ?? null
 }
 
-async function localCandidate(
-  seed: FeatureSeed
-): Promise<{
+async function localCandidate(seed: FeatureSeed): Promise<{
   slug: string
-  feature: Awaited<ReturnType<typeof findFeatureBySlug>>
+  feature: NonNullable<Awaited<ReturnType<typeof findFeatureBySlug>>>
 } | null> {
   const matches: Array<{
     slug: string
