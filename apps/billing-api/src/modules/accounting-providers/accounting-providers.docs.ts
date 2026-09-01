@@ -8,5 +8,8 @@ export const accountingProvidersDocs = {
   authorize: { summary: 'Start accounting provider authorization' },
   validate: { summary: 'Validate an accounting provider connection' },
   reconcile: { summary: 'Queue a full accounting provider reconciliation' },
+  listImports: { summary: 'List provider resources available for adoption' },
+  adoptImport: { summary: 'Adopt a provider resource into a Billing mapping' },
+  releaseImport: { summary: 'Release a provider resource adoption' },
   zohoCallback: { summary: 'Complete Zoho Books OAuth authorization' },
 } as const
