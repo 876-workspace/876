@@ -98,10 +98,10 @@ export async function getConsoleFeatures({
 }: ConsoleFeatureRequest): Promise<ConsoleFeatures> {
   const enabledSlugs = new Set(await getConsoleFeatureKeys(userId))
   const uiFeatures = {
-    themeSwitcher: enabledSlugs.has('console_theme_switcher'),
-    globalAdd: enabledSlugs.has('console_global_add'),
-    appSwitcher: enabledSlugs.has('console_app_switcher'),
-    searchBar: enabledSlugs.has('console_search_bar'),
+    themeSwitcher: enabledSlugs.has('console-theme-switcher'),
+    globalAdd: enabledSlugs.has('console-global-add'),
+    appSwitcher: enabledSlugs.has('console-app-switcher'),
+    searchBar: enabledSlugs.has('console-search-bar'),
     chat: isWidgetEnabled(chatWidgetMetadata, 'console', enabledSlugs),
   }
 
