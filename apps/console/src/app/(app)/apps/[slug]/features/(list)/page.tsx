@@ -109,7 +109,11 @@ async function FeaturesTableData({
         firstId={features[0]?.id ?? null}
         lastId={features.at(-1)?.id ?? null}
         toolbarAction={
-          <div className="flex gap-2">
+          // Keyed because this element is created here, in a Server Component,
+          // and rendered among siblings inside the client table. React
+          // re-validates a Flight-deserialized element as an array child and
+          // warns without one; it is a dev-only warning with no runtime effect.
+          <div key="feature-toolbar-actions" className="flex gap-2">
             <Link
               href={`/apps/${slug}/features/diagnostics`}
               className={buttonVariants({ variant: 'outline', size: 'sm' })}
