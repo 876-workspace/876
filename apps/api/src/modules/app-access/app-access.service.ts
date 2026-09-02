@@ -1183,47 +1183,6 @@ export async function retrieveMyAppMembership(
   })
 }
 
-export async function materializeRoleTemplatesForApp(params: {
-  organizationId: string
-  appId: string
-}): Promise<{ seeded: number; skipped: number }> {
-  const app = appOrNotFound(await findAppForAccessById(params.appId))
-  if (app.slug === ENTERPRISE_SLUG) return { seeded: 0, skipped: 0 }
-  const templates = await repository.listRoles(app.id, null)
-  let seeded = 0
-  let skipped = 0
-  for (const template of templates) {
-    if (
-      await repository.findRoleByKey(
-        app.id,
-        params.organizationId,
-        template.key
-      )
-    ) {
-      skipped += 1
-      continue
-    }
-    const now = BigInt(nowUnixSeconds())
-    await repository.createRole({
-      id: generateId('role'),
-      appId: app.id,
-      organizationId: params.organizationId,
-      key: template.key,
-      name: template.name,
-      description: template.description,
-      permissions: [...template.permissions],
-      isSystem: template.isSystem,
-      isDefault: template.isDefault,
-      templateKey: template.key,
-      position: template.position,
-      createdAt: now,
-      updatedAt: now,
-    })
-    seeded += 1
-  }
-  return { seeded, skipped }
-}
-
 /** Materializes the database-backed role resources selected for an organization. */
 export async function materializeProvisionedRolesForApp(params: {
   organizationId: string
@@ -1245,11 +1204,7 @@ export async function materializeProvisionedRolesForApp(params: {
   let skipped = 0
   for (const role of params.roles) {
     if (
-      await repository.findRoleByKey(
-        app.id,
-        params.organizationId,
-        role.key
-      )
+      await repository.findRoleByKey(app.id, params.organizationId, role.key)
     ) {
       skipped += 1
       continue

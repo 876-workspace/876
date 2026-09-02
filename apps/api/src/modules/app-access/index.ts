@@ -4,9 +4,9 @@ export {
   listAppPermissionKeysForProvisioning,
 } from './app-access-lookup.service'
 export { ensureAppMembershipForProvisioning } from './app-access-provisioning.service'
+export { materializeRoleTemplatesForApp } from './app-access-role-templates.service'
 export {
   isEntitled,
-  materializeRoleTemplatesForApp,
   materializeProvisionedRolesForApp,
   resolveEffectiveAppPermissions,
 } from './app-access.service'
