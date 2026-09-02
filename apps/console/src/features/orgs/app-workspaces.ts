@@ -34,6 +34,8 @@ export type WorkspaceIconKey =
   | 'forms'
   | 'payments'
   | 'banking'
+  | 'branches'
+  | 'warehouses'
 
 /** One navigable area inside an app's workspace. */
 export type WorkspaceSection = {
@@ -173,8 +175,11 @@ export const APP_WORKSPACES = [
     iconKey: 'packages',
     sections: [
       { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
-      { label: 'Deliveries', segment: 'deliveries', iconKey: 'packages' },
-      { label: 'Couriers', segment: 'couriers', iconKey: 'customers' },
+      { label: 'Customers', segment: 'customers', iconKey: 'customers' },
+      { label: 'Packages', segment: 'packages', iconKey: 'packages' },
+      { label: 'Branches', segment: 'branches', iconKey: 'branches' },
+      { label: 'Warehouses', segment: 'warehouses', iconKey: 'warehouses' },
+      { label: 'Team', segment: 'team', iconKey: 'teams' },
     ],
   },
 ] as const satisfies readonly AppWorkspace[]

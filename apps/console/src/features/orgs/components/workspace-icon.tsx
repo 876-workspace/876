@@ -5,6 +5,7 @@ import {
   ClipboardList,
   CreditCard,
   DocumentTextIcon,
+  MapPin,
   ReceiptPercent,
   RectangleGroup,
   Settings,
@@ -36,6 +37,8 @@ const ICONS: Record<WorkspaceIconKey, IconComponent> = {
   forms: DocumentTextIcon,
   payments: ReceiptPercent,
   banking: Building2,
+  branches: MapPin,
+  warehouses: Building2,
 }
 
 export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
@@ -51,6 +54,8 @@ export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
   forms: 'text-teal-500 dark:text-teal-400',
   payments: 'text-emerald-500 dark:text-emerald-400',
   banking: 'text-sky-500 dark:text-sky-400',
+  branches: 'text-cyan-500 dark:text-cyan-400',
+  warehouses: 'text-violet-500 dark:text-violet-400',
 }
 
 export function workspaceIcon(key: WorkspaceIconKey): IconComponent {
