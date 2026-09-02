@@ -8,7 +8,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatMoney } from '@/lib/format'
 
-type CouponRow = {
+export type CouponRow = {
   id: string
   name: string
   duration: 'ONCE' | 'REPEATING' | 'FOREVER'

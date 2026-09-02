@@ -14,7 +14,7 @@ type Props = {
   products: ProductRow[]
 }
 
-interface ProductRow {
+export interface ProductRow {
   id: string
   name: string
   slug: string

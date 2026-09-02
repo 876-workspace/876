@@ -8,7 +8,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
-type PriceListRow = {
+export type PriceListRow = {
   id: string
   name: string
   mode: 'PERCENTAGE' | 'CUSTOM'

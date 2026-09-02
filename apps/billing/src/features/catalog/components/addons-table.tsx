@@ -9,7 +9,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { formatPriceCadence } from '@/lib/format'
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
-type AddonRow = {
+export type AddonRow = {
   id: string
   code: string
   name: string
