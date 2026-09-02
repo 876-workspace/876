@@ -15,10 +15,11 @@
     "clean": "rm -rf .next .turbo .open-next .wrangler"
   },
   "dependencies": {
-    "@876/account": "workspace:*",
     "@876/access-ui": "workspace:*",
+    "@876/account": "workspace:*",
     "@876/analytics": "workspace:*",
     "@876/billing": "workspace:*",
+    "@876/billing-ui": "workspace:*",
     "@876/core": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/workspace": "workspace:*",

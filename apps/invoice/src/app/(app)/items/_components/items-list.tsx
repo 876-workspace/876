@@ -13,7 +13,7 @@ import {
 } from '@876/ui/list-pane'
 
 import { formatMoney } from '@/lib/format'
-import { ItemsTable, type ItemRow } from './items-table'
+import { ItemsTable, type ItemRow } from '@876/billing-ui/items-table'
 
 /**
  * The list column for every `/items` route: the full table on its own, and a
@@ -51,6 +51,8 @@ export function ItemsList({
       <ItemsTable
         items={rows}
         defaultCurrency={defaultCurrency}
+        baseHref="/items"
+        formatAmount={formatMoney}
         emptyState={emptyState}
       />
     )

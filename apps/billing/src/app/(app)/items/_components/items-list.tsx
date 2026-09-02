@@ -11,10 +11,12 @@ import {
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
 
-import { ItemsTable } from './items-table'
-import type { ComponentProps } from 'react'
+import { ItemsTable, type ItemRow as ItemsTableRow } from '@876/billing-ui/items-table'
 
-type ItemRow = ComponentProps<typeof ItemsTable>['items'][number]
+import { formatMoney } from '@/lib/format'
+
+/** Billing holds an item's prices as rows; the table only needs how many. */
+type ItemRow = Omit<ItemsTableRow, 'priceCount'> & { prices: unknown[] }
 
 type Props = {
   items: ItemRow[]
@@ -39,8 +41,14 @@ export function ItemsList({ items, defaultCurrency, emptyState }: Props) {
   if (!selectedId)
     return (
       <ItemsTable
-        items={rows}
+        items={rows.map(({ prices, ...item }) => ({
+          ...item,
+          priceCount: prices.length,
+        }))}
         defaultCurrency={defaultCurrency}
+        baseHref="/items"
+        formatAmount={formatMoney}
+        showPriceCount
         emptyState={emptyState}
       />
     )
