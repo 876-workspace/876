@@ -17,6 +17,8 @@ export function create876AccountClient(options: ClientOptions = {}) {
     auditEvents: core.auditEvents,
     users: core.users,
     apps: core.apps,
+    /** Self-scoped app role and effective-permission reads for the actor. */
+    appMemberships: core.appMemberships,
     mobileNumbers: core.mobileNumbers,
     mobileNumberVerifications: core.mobileNumberVerifications,
   }
