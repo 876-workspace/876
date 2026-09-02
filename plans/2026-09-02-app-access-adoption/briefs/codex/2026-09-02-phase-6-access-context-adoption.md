@@ -67,6 +67,34 @@ question and a wider authority than a self read needs.
 Catalogs: `appPermissionCatalogs['876-crm']` and `appPermissionCatalogs['876-invoice']`
 from `@876/core/access/catalogs`.
 
+### The outcome shape — follow it, do not reinvent it
+
+`apps/crm/src/lib/auth/app-access.ts` and its Invoice twin were rewritten on
+2026-09-02 after a live 404. They had returned `null` for both "this member may
+not" and "the platform could not answer", which left every caller with
+`notFound()` — wrong for both, since a denial is not a missing page and an outage
+is not an authorization answer.
+
+They now return a discriminated outcome:
+
+```ts
+export type CrmAccessOutcome =
+  | { status: 'ok'; viewer: CrmAccessViewer }
+  | { status: 'unavailable'; code: string }
+```
+
+**`resolveAccessContext` has exactly the same trap and must avoid it the same
+way.** Returning `null` on a failed membership read would make a page unable to
+tell "you hold nothing" from "we could not check", and both would silently render
+as no access. Model it explicitly — an unresolved context is `unavailable`, a
+resolved one with no permissions is a real, empty grant — and make callers handle
+them differently: an outage keeps chrome with a notice, a denial reaches the
+app's no-access surface. Both still fail closed.
+
+Route handlers follow the same split the guards now use: **503 for an outage, 403
+for a denial**, so nobody is told they lack a permission when nothing could be
+checked.
+
 CRM's existing `apps/crm/src/lib/auth/app-access.ts` resolves the **organization**
 permissions (`apps:assign`, `members:read`) that govern member management. That is a
 different plane and stays exactly as it is — an app permission never grants
