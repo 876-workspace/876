@@ -65,6 +65,7 @@ const nextConfig: NextConfig = {
     '@876/account',
     '@876/billing',
     '@876/core',
+    '@876/workspace',
   ]),
   experimental: {
     optimizePackageImports: ['zod'],
