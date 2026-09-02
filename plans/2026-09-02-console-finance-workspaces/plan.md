@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-02-console-finance-workspaces`
 - **Branch:** `feature/console-finance-workspaces` (cut from `main` @ `fa0ad120`)
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED ✅
 
 ## Overview
 
@@ -76,7 +76,7 @@ already bound to the `customers` entry key and rendered `EmptyWorkspaceView`.
 - [x] Phase 5 — Console Invoice: Customers, Payments pages
 - [x] Phase 6 — registry sections + icons + tests
 - [x] Phase 7 — Console Couriers: Customers, Packages, Branches, Warehouses, Team
-- [ ] Verification, commits, PR
+- [x] Verification, commits, PR
 
 ### Notes taken during the run
 
@@ -124,9 +124,29 @@ five sections with no route. The orchestrator finished it; see
   resource exported its serialized type and packages did not. Added to the
   barrel rather than restating the contract in Console.
 
+## Verified result
+
+Run on the finished branch (20 commits over `origin/main` @ `fa0ad120`), all in
+the foreground:
+
+| Command                                    | Result                             |
+| ------------------------------------------ | ---------------------------------- |
+| `pnpm --filter @876/billing-ui typecheck`  | clean                              |
+| `pnpm --filter @876/billing-ui test`       | 71 passed (6 files)                |
+| `pnpm --filter @876/console typecheck`     | clean                              |
+| `pnpm --filter @876/console test`          | 1389 passed (140 files)            |
+| `pnpm --filter @876/console lint`          | 0 errors, 21 pre-existing warnings |
+| `pnpm --filter @876/billing-app typecheck` | clean                              |
+| `pnpm --filter @876/invoice-app typecheck` | clean                              |
+| `pnpm --filter @876/couriers typecheck`    | clean                              |
+| `pnpm --filter @876/couriers test`         | 135 passed (12 files)              |
+| `node scripts/check-app-structure.mjs`     | OK                                 |
+| `pnpm check:transpile`                     | OK                                 |
+
 ## Handoff state
 
-Phases 1-7 complete and verified. Commits pending.
+Complete. All seven phases landed and verified on
+`feature/console-finance-workspaces`.
 
 The `apps/api/src/seeds/` changes in the working tree (`internal-plan.ts`,
 `internal-plan.test.ts`, `cli.ts`, `index.ts`, `plans.repository.ts`) belong to
