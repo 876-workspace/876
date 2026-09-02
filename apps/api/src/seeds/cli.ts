@@ -17,7 +17,7 @@ async function main(): Promise<void> {
   const help = args.includes('--help') || args.includes('-h')
 
   if (help) {
-    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,features,plans,defaultPrices]
+    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,features,plans,internalPlan,defaultPrices]
 
 Seeds platform-owned catalogs/bootstrap records idempotently. Provisioning
 profiles/manifests are intentionally excluded: they are database configuration
@@ -35,6 +35,7 @@ Options:
     'geo',
     'features',
     'plans',
+    'internalPlan',
     'defaultPrices',
   ])
   if (only && only.some((name) => !valid.has(name))) {

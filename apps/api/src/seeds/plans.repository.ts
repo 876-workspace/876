@@ -227,3 +227,72 @@ export async function findOwnerOrganizationId(
   if (row.length === 0) return null
   return row[0]!.organization_id
 }
+
+/** Every module an app declares, whatever plan carries it. */
+export async function listApplicationModules(
+  appId: string
+): Promise<Array<{ id: string; key: string }>> {
+  return prisma.applicationModule.findMany({
+    where: { appId },
+    select: { id: true, key: true },
+    orderBy: { position: 'asc' },
+  })
+}
+
+/** Resolve an organization by its slug. Used to target the internal plan. */
+export async function findOrganizationBySlug(
+  slug: string
+): Promise<{ id: string; slug: string } | null> {
+  return prisma.organization.findFirst({
+    where: { slug },
+    select: { id: true, slug: true },
+  })
+}
+
+/** Create the $0 recurring price an internal plan is billed at. */
+export async function createInternalProductWithPrice(params: {
+  productId: string
+  priceId: string
+  slug: string
+  name: string
+  appId: string
+  now: bigint
+}): Promise<{ productId: string; priceId: string }> {
+  await prisma.product.create({
+    data: {
+      id: params.productId,
+      slug: params.slug,
+      name: params.name,
+      description:
+        'Internal 876 plan. Carries every module the app declares and is not offered to customers.',
+      appId: params.appId,
+      status: 'active',
+      active: true,
+      // Read by operator surfaces that list purchasable plans, so an internal
+      // plan can be excluded without matching on its slug.
+      metadata: { internal: true },
+      createdAt: params.now,
+      updatedAt: params.now,
+    },
+  })
+
+  await prisma.price.create({
+    data: {
+      id: params.priceId,
+      productId: params.productId,
+      name: params.name,
+      status: 'active',
+      active: true,
+      type: 'recurring',
+      billingInterval: 'month',
+      intervalCount: 1,
+      unitAmount: BigInt(0),
+      currency: 'jmd',
+      billingScheme: 'per_unit',
+      createdAt: params.now,
+      updatedAt: params.now,
+    },
+  })
+
+  return { productId: params.productId, priceId: params.priceId }
+}
