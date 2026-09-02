@@ -145,10 +145,10 @@ the failure this table exists to prevent.
 | 2   | `@876/access-ui` — access panel, effective-permission list, summary              | codex `gpt-5.6-terra` high | done        |
 | 2b  | Three outstanding defects: Billing permission drift, stale phone test, api cycle | codex `gpt-5.6-terra` high | done        |
 | 3   | CRM `/settings/users` split view, route handlers, ERM employment                 | codex `gpt-5.6-terra` high | done        |
-| 4   | `PermissionMatrix` + CRM permissions tab + Invoice `/settings/users`             | codex `gpt-5.6-terra` high | in progress |
-| 5   | Billing migration off `billing_roles`/`billing_members`                          | orchestrator + codex       | not started |
-| 6   | `AccessContext` adoption per app + legacy role backfill                          | proposed, not scoped       | not started |
-| 7   | Console adopts `@876/access-ui` and `PermissionMatrix`                           | codex `gpt-5.6-terra` high | not started |
+| 4   | `PermissionMatrix` + CRM permissions tab + Invoice `/settings/users`             | codex `gpt-5.6-terra` high | done        |
+| 6   | `AccessContext` adoption per app + legacy role backfill                          | codex + orchestrator       | done        |
+| 7   | Console adopts `@876/access-ui`; shared entry builder                            | orchestrator               | done        |
+| 5   | Billing migration off `billing_roles`/`billing_members`                          | orchestrator + codex       | **deferred** |
 
 ### Phase 6 — proposed, awaiting agreement
 
@@ -238,6 +238,44 @@ exists.
 hold their manifest's roles. Only legacy organizations with no setup selection have
 entitlements and no app roles.
 
+## Phase 5 is deferred — what the survey found
+
+Phase 5 ran last by design (D2). It is **not** in this PR, for two reasons
+established while scoping it on 2026-09-02.
+
+**The delegate is unavailable.** Codex exhausted its usage quota mid-run
+(`try again at 4:35 PM`). Authorization code is Fable-tier under
+`.claude/rules/cli.md` and belongs to the primary agent, but the volume below
+is not a single-sitting orchestrator change.
+
+**The migration is not mechanical, and the plan assumed it partly was.** Two
+measurements changed its shape:
+
+| Measurement | Value |
+| --- | --- |
+| `billing_roles` rows | 15 — **all `is_system`, 0 custom** |
+| `billing_members` rows | 1 |
+| Files in `apps/billing/src` carrying a colon permission literal | **128** |
+| Colon permission literals in those files | **~380** |
+
+The *data* migration is therefore near-trivial: every stored role is a system
+template Core already seeds an equivalent of, so the D6 worry about migrating a
+partial custom role without widening access does not arise today.
+
+The *code* migration is the opposite. `<m>:write` maps to **two** canonical keys
+(`.create` + `.edit`), so each of the ~380 call sites needs a judgement about
+what that surface actually does — a create control checks `.create`, an edit
+control checks `.edit`. A blanket substitution would either widen access (every
+`:write` site accepting either key) or narrow it silently. `.claude/rules/naming.md`
+forbids deriving a durable-identifier migration from a pattern substitution, and
+this is exactly why.
+
+A half-applied authorization migration is strictly worse than the duplicate
+plane it replaces, so it is left whole for its own change set. The brief is
+written and dispatch-ready at
+[`briefs/codex/2026-09-02-phase-5-billing-access-migration.md`](./briefs/codex/2026-09-02-phase-5-billing-access-migration.md),
+now carrying the verified data state above.
+
 ## Verification commands
 
 ```bash
@@ -252,9 +290,26 @@ node scripts/check-app-structure.mjs
 
 ## Handoff state
 
-Phases 0, 0b, 1, 2, 2b, and 3 are committed, verified, and pushed to
-`origin/feature/app-access-adoption`. Phase 4 is running under Codex
-`gpt-5.6-terra` at high effort.
+Phases 0, 0b, 1, 2, 2b, 3, 4, 6, and 7 are committed and verified on
+`feature/app-access-adoption`. Phase 5 is deferred with a dispatch-ready brief;
+see the section above.
+
+Gate results at close:
+
+| Workspace | Result |
+| --- | --- |
+| `@876/api` | 109 files / 2210 tests; boundaries 18 (unchanged baseline) |
+| `@876/core` | 36 / 954 |
+| `@876/account` | 7 / 111 |
+| `@876/ui` | 20 / 143 |
+| `@876/access-ui` | 7 / 91 |
+| `@876/crm-app` | 38 / 297 |
+| `@876/invoice-app` | 25 / 213 |
+| `@876/billing-app` | 70 / 742 |
+| `@876/console` | 138 / 1372 |
+
+`node scripts/check-app-structure.mjs` OK. No `eslint-disable`, `@ts-ignore`, or
+`as any` in any path this run touched.
 
 Five Phase 0 commits (`231948cc`..`5c9d68e3`) reached `origin/main` directly by an
 accidental push. The branch upstream was repointed to the feature branch so a bare
@@ -275,3 +330,9 @@ Known state of the gates:
 
 Production migration state is unverified: Actions checks have been failing and prod may lag `main`,
 so `app_permissions` / `app_roles` may not exist in production yet. Confirm before deploy.
+
+The Phase 0 template-fallback defect (see the Phase 6 report) means **every
+organization provisioned through a setup selection currently holds no app
+roles**. The fix is in this branch, but it only runs at provisioning time — a
+backfill for organizations already in that state is still owed, and it is the
+targeted backfill the Phase 6 scope note anticipated.
