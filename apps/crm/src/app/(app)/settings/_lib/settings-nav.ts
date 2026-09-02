@@ -48,9 +48,10 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
     label: 'Organization',
     items: [
       {
-        label: 'Members',
+        label: 'Users',
         icon: 'members',
-        availability: 'planned',
+        availability: 'available',
+        href: '/settings/users',
       },
       {
         label: 'Preferences',

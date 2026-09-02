@@ -42,6 +42,7 @@ describe('settings navigation registry', () => {
       '/settings/teams',
       '/settings/categories',
       '/settings/priorities',
+      '/settings/users',
     ])
   })
 
@@ -51,6 +52,8 @@ describe('settings navigation registry', () => {
     )
 
     expect(icons.every((icon) => typeof icon === 'string')).toBe(true)
-    expect(icons.every((icon) => SETTINGS_HUB_ICON_KEYS.includes(icon))).toBe(true)
+    expect(icons.every((icon) => SETTINGS_HUB_ICON_KEYS.includes(icon))).toBe(
+      true
+    )
   })
 })
