@@ -160,7 +160,19 @@ export function ListDetailShell({
             <div className="@3xl/list-detail:shrink-0">{subnav}</div>
           ) : null}
 
-          <div className="@3xl/list-detail:min-h-0 @3xl/list-detail:flex-1">
+          {/*
+           * Too narrow for the two columns to sit side by side: the record
+           * takes the space and the rows stand down, because leaving the whole
+           * table stacked above the card means scrolling past it to reach the
+           * record that was just opened. The toolbar above stays — it names
+           * the section and carries its actions at every width.
+           */}
+          <div
+            className={cn(
+              '@3xl/list-detail:min-h-0 @3xl/list-detail:flex-1',
+              open && 'hidden @3xl/list-detail:block'
+            )}
+          >
             {list}
           </div>
         </div>

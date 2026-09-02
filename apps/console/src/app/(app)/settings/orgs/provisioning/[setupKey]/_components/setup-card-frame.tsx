@@ -94,7 +94,7 @@ export function SetupCardFrame({
       </div>
 
       {/* Body */}
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
         {children}
       </div>
 

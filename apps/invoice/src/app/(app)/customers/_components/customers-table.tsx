@@ -16,6 +16,7 @@ export interface CustomerRow {
   phone: string | null
   receivables: string
   currency: string
+  status: 'ACTIVE' | 'ARCHIVED'
 }
 
 interface Props {

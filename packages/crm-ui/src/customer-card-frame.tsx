@@ -1,9 +1,18 @@
 'use client'
 
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Badge } from '@876/ui/badge'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+  DetailCardIdBar,
+  DetailCardMeta,
+  DetailCardMetaItem,
+  DetailCardTab,
+  DetailCardTabs,
+} from '@876/ui/detail-card'
 import { Mail, Phone } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
 
@@ -64,32 +73,25 @@ export function CustomerCardFrame({
     (customer.isBusiness ? 'Business' : 'Individual')
 
   return (
-    <section
-      aria-label={`Customer details: ${customer.name}`}
-      className={cn(
-        '876-card flex h-full min-w-0 flex-col overflow-hidden',
-        'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
-      )}
-    >
-      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
-        <CustomerAvatar
-          name={customer.name}
-          src={customer.contactAvatar}
-          size="lg"
-          shape={customer.isBusiness ? 'square' : 'circle'}
-          className={cn(
-            'ring-border/60 size-14 shrink-0 text-lg font-semibold shadow-xs ring-1 sm:size-16 sm:text-xl',
-            customer.isBusiness
-              ? 'rounded-2xl after:rounded-2xl sm:rounded-2xl'
-              : 'rounded-full after:rounded-full'
-          )}
-        />
-
-        <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
-              {customer.name}
-            </h2>
+    <DetailCard aria-label={`Customer details: ${customer.name}`}>
+      <DetailCardHeader
+        icon={
+          <CustomerAvatar
+            name={customer.name}
+            src={customer.contactAvatar}
+            size="lg"
+            shape={customer.isBusiness ? 'square' : 'circle'}
+            className={cn(
+              'ring-border/60 size-14 shrink-0 text-lg font-semibold shadow-xs ring-1 sm:size-16 sm:text-xl',
+              customer.isBusiness
+                ? 'rounded-2xl after:rounded-2xl sm:rounded-2xl'
+                : 'rounded-full after:rounded-full'
+            )}
+          />
+        }
+        title={customer.name}
+        meta={
+          <>
             <Badge
               variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
             >
@@ -98,73 +100,51 @@ export function CustomerCardFrame({
             <Badge variant="outline">
               {customer.isBusiness ? 'Business' : 'Individual'}
             </Badge>
-          </div>
-          <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          </>
+        }
+        subtitle={
+          <DetailCardMeta>
             <span className="text-foreground/80 font-medium">{subtitle}</span>
             {customer.email ? (
-              <span className="inline-flex items-center gap-1">
-                <Mail className="text-muted-foreground/70 size-3.5 shrink-0" />
-                <a
-                  href={`mailto:${customer.email}`}
-                  className="hover:text-foreground hover:underline"
-                >
-                  {customer.email}
-                </a>
-              </span>
+              <DetailCardMetaItem
+                icon={<Mail />}
+                href={`mailto:${customer.email}`}
+              >
+                {customer.email}
+              </DetailCardMetaItem>
             ) : null}
             {customer.phone ? (
-              <span className="inline-flex items-center gap-1">
-                <Phone className="text-muted-foreground/70 size-3.5 shrink-0" />
-                <a
-                  href={`tel:${customer.phone}`}
-                  className="hover:text-foreground hover:underline"
-                >
-                  {customer.phone}
-                </a>
-              </span>
+              <DetailCardMetaItem
+                icon={<Phone />}
+                href={`tel:${customer.phone}`}
+              >
+                {customer.phone}
+              </DetailCardMetaItem>
             ) : null}
-          </div>
-        </div>
-
-        {actions ? (
-          <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
-            {actions}
-          </div>
-        ) : null}
-      </header>
+          </DetailCardMeta>
+        }
+        actions={actions}
+      />
 
       {tabs.length > 0 ? (
-        <div className="border-876-surface-border shrink-0 border-b px-6 pt-3">
-          <div className="876-scroll flex items-center gap-6 overflow-x-auto">
-            {tabs.map((tab) => {
-              const active = activeSegment === tab.segment
-              return (
-                <Link
-                  key={tab.label}
-                  href={tabHref(baseHref, tab.segment, query)}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    'border-b-2 pb-3 text-xs font-medium whitespace-nowrap transition-colors',
-                    active
-                      ? 'border-primary text-foreground font-semibold'
-                      : 'text-muted-foreground hover:text-foreground border-transparent'
-                  )}
-                >
-                  {tab.label}
-                </Link>
-              )
-            })}
-          </div>
-        </div>
+        <DetailCardTabs>
+          {tabs.map((tab) => (
+            <DetailCardTab
+              key={tab.label}
+              href={tabHref(baseHref, tab.segment, query)}
+              active={activeSegment === tab.segment}
+            >
+              {tab.label}
+            </DetailCardTab>
+          ))}
+        </DetailCardTabs>
       ) : null}
 
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
-        {children}
-      </div>
+      <DetailCardBody>{children}</DetailCardBody>
 
-      <footer className="border-876-surface-border bg-muted/30 text-muted-foreground flex shrink-0 items-center justify-between border-t px-6 py-2.5 text-xs">
-        <span className="truncate font-mono">{customer.profileId}</span>
-      </footer>
-    </section>
+      <DetailCardIdBar>
+        <span className="truncate">{customer.profileId}</span>
+      </DetailCardIdBar>
+    </DetailCard>
   )
 }

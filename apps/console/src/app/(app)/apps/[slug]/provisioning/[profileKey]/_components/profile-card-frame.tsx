@@ -197,7 +197,9 @@ export function ProfileCardFrame({
               <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
                 {profile.name}
               </h2>
-              {profile.is_default ? <Badge variant="info">Default</Badge> : null}
+              {profile.is_default ? (
+                <Badge variant="info">Default</Badge>
+              ) : null}
               <Badge
                 variant={
                   profile.status === 'active'
@@ -242,7 +244,7 @@ export function ProfileCardFrame({
           </div>
         </header>
 
-        <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
           {activeSection === 'overview' || activeSection === 'routing' ? (
             <div className="p-6">{activeContent}</div>
           ) : (

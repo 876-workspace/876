@@ -22,7 +22,7 @@ export function NewProfileCard({
   return (
     <section
       aria-label="New provisioning profile"
-      className="876-card flex h-full min-w-0 flex-col overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out"
+      className="876-card motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 flex h-full min-w-0 flex-col overflow-hidden motion-safe:duration-300 motion-safe:ease-out"
     >
       <header className="border-876-surface-border flex shrink-0 items-center justify-between gap-4 border-b px-6 py-4">
         <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
@@ -42,7 +42,7 @@ export function NewProfileCard({
         </Button>
       </header>
 
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+      <div className="876-scroll min-h-0 flex-1 overflow-y-auto p-6">
         <div className="mb-6">
           <p className="text-muted-foreground max-w-2xl text-xs">
             Create an independent {appName} provisioning profile. New variants

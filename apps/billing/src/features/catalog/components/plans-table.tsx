@@ -14,7 +14,7 @@ type Props = {
   plans: PlanRow[]
 }
 
-interface PlanRow {
+export interface PlanRow {
   id: string
   name: string
   code: string

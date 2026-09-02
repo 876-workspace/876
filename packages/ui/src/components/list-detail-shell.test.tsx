@@ -199,3 +199,44 @@ describe('ListDetailShell', () => {
     expect(listColumn.children[2]).toContainElement(screen.getByText('List'))
   })
 })
+
+describe('ListDetailShell layout', () => {
+  it('keeps the toolbar mounted and stands the list down at a narrow width when a record is open', () => {
+    mocks.segments = ['cus_2kL9mN4q']
+
+    render(
+      <ListDetailShell
+        open
+        toolbar={<div data-testid="toolbar">Customers</div>}
+        list={<div data-testid="list">rows</div>}
+        detail={<div data-testid="detail">record</div>}
+      />
+    )
+
+    // The toolbar names the section and carries its actions at every width.
+    expect(screen.getByTestId('toolbar')).toBeInTheDocument()
+
+    // The rows stand down only below the container breakpoint, so the record
+    // is not stacked underneath the whole table on a narrow screen.
+    const listWrapper = screen.getByTestId('list').parentElement
+    expect(listWrapper?.className).toContain('hidden')
+    expect(listWrapper?.className).toContain('@3xl/list-detail:block')
+  })
+
+  it('shows the list and hides the detail column while closed', () => {
+    mocks.segments = []
+
+    render(
+      <ListDetailShell
+        open={false}
+        toolbar={<div data-testid="toolbar">Customers</div>}
+        list={<div data-testid="list">rows</div>}
+        detail={null}
+      />
+    )
+
+    expect(screen.getByTestId('list').parentElement?.className).not.toContain(
+      'hidden'
+    )
+  })
+})

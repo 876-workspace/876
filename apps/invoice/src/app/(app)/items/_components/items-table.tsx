@@ -8,7 +8,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { formatMoney } from '@/lib/format'
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
-interface ItemRow {
+export interface ItemRow {
   id: string
   name: string
   type: string

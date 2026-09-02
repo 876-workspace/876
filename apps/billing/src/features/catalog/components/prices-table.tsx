@@ -14,7 +14,7 @@ type Props = {
   prices: PriceRow[]
 }
 
-interface PriceRow {
+export interface PriceRow {
   id: string
   unitAmount: bigint | null
   currency: string

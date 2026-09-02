@@ -2,18 +2,27 @@ import type { ReactNode } from 'react'
 
 import { Badge } from '@876/ui/badge'
 import { cn } from '@876/core/utils'
-
-import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import {
-  DetailHeader,
-  DetailHeaderTop,
-  DetailHeaderMain,
-  DetailHeaderActions,
-  DetailHeaderTabs,
-} from '@876/ui/detail-header'
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+  DetailCardIdBar,
+  DetailCardMeta,
+  DetailCardRouteTabs,
+} from '@876/ui/detail-card'
+import type { RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 
+/**
+ * The chrome for every Billing record.
+ *
+ * It renders the record as a `DetailCard` so the route opens **beside** its
+ * list in the section's `ListDetailSection` rather than replacing it. That is
+ * also why there is no back link: the list sitting next to the card is the way
+ * back, and `backHref` only supplies the close button's target.
+ */
 export function DetailLayout({
   children,
+  backHref,
   eyebrow,
   title,
   description,
@@ -24,8 +33,10 @@ export function DetailLayout({
   meta,
   actions,
   titleClassName,
+  recordId,
 }: {
   children: ReactNode
+  /** The section index. The card's close button returns here. */
   backHref: string
   backLabel: string
   eyebrow?: string
@@ -41,82 +52,39 @@ export function DetailLayout({
   /** Optional right-aligned actions (detail toolbar). */
   actions?: ReactNode
   titleClassName?: string
+  /** Record identifier, pinned to the bottom of the card when given. */
+  recordId?: string
 }) {
-  // Rich mode: an avatar or a metadata row upgrades the header to the
-  // spacious, logo-led layout. Otherwise fall back to the compact header.
-  const rich = Boolean(avatar || meta)
+  const subtitle = meta ? (
+    <DetailCardMeta>{meta}</DetailCardMeta>
+  ) : eyebrow || description ? (
+    <DetailCardMeta>
+      {eyebrow ? <span className="876-eyebrow">{eyebrow}</span> : null}
+      {description ? <span className="truncate">{description}</span> : null}
+    </DetailCardMeta>
+  ) : null
 
   return (
-    <div>
-      <DetailHeader>
-        {rich ? (
-          <DetailHeaderTop>
-            <DetailHeaderMain>
-              {avatar}
+    <DetailCard aria-label={typeof title === 'string' ? title : undefined}>
+      <DetailCardHeader
+        icon={avatar}
+        title={<span className={cn(titleClassName)}>{title}</span>}
+        meta={<Badge variant={statusVariant}>{status}</Badge>}
+        subtitle={subtitle}
+        actions={actions}
+        closeHref={backHref}
+        closeLabel="Close record"
+      />
 
-              <div className="min-w-0 flex-1">
-                <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <h1
-                    className={cn(
-                      'min-w-0 truncate text-xl font-semibold tracking-tight',
-                      titleClassName
-                    )}
-                  >
-                    {title}
-                  </h1>
-                  <span
-                    aria-hidden="true"
-                    className="text-muted-foreground/40 text-sm"
-                  >
-                    ·
-                  </span>
-                  <Badge variant={statusVariant}>{status}</Badge>
-                </div>
+      {tabs.length > 0 ? <DetailCardRouteTabs tabs={tabs} /> : null}
 
-                {meta ? (
-                  <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4 sm:text-sm">
-                    {meta}
-                  </div>
-                ) : null}
-              </div>
-            </DetailHeaderMain>
+      <DetailCardBody>{children}</DetailCardBody>
 
-            {actions ? (
-              <DetailHeaderActions>{actions}</DetailHeaderActions>
-            ) : null}
-          </DetailHeaderTop>
-        ) : (
-          <div className="px-4 pt-3 pb-2 sm:px-5 sm:pt-4 lg:px-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <h1 className={cn('876-page-title truncate', titleClassName)}>
-                  {title}
-                </h1>
-                <Badge variant={statusVariant}>{status}</Badge>
-              </div>
-              {actions ? <div className="shrink-0">{actions}</div> : null}
-            </div>
-            {eyebrow || description ? (
-              <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
-                {eyebrow ? (
-                  <span className="876-eyebrow shrink-0">{eyebrow}</span>
-                ) : null}
-                {description ? (
-                  <span className="text-muted-foreground truncate text-[0.8125rem]">
-                    {description}
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        )}
-
-        <DetailHeaderTabs>
-          <RouteTabs tabs={tabs} />
-        </DetailHeaderTabs>
-      </DetailHeader>
-
-      <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
-    </div>
+      {recordId ? (
+        <DetailCardIdBar>
+          <span className="truncate">{recordId}</span>
+        </DetailCardIdBar>
+      ) : null}
+    </DetailCard>
   )
 }

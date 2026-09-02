@@ -12,82 +12,75 @@ vi.mock('@/components/providers/permissions-provider', () => ({
   useBillingPermission: () => false,
 }))
 
-import InvoicesLoading from '@/app/(app)/(sales)/invoices/(list)/loading'
-import QuotesLoading from '@/app/(app)/(sales)/quotes/(list)/loading'
-import EstimatesLoading from '@/app/(app)/(sales)/estimates/(list)/loading'
-import PaymentsLoading from '@/app/(app)/(sales)/payments/(list)/loading'
-import CreditNotesLoading from '@/app/(app)/(sales)/credit-notes/(list)/loading'
-import VendorsLoading from '@/app/(app)/purchases/vendors/(list)/loading'
+import OverviewLoading from '@/app/(app)/(overview)/loading'
 import ReportsLoading from '@/app/(app)/reports/loading'
-import BankingLoading from '@/app/(app)/banking/(list)/loading'
+import SettingsLoading from '@/app/(app)/settings/(list)/loading'
 
-describe('list loading parity', () => {
-  it('vendors loading mirrors the resolved table columns', () => {
-    const { container } = render(<VendorsLoading />)
-    const headers = Array.from(container.querySelectorAll('th')).map(
-      (heading) => heading.textContent?.trim()
-    )
-    expect(headers).toEqual(['Vendor', 'Reference', 'Currency', 'Status'])
-    expect(container.querySelectorAll('tbody tr')).toHaveLength(5)
+/**
+ * Route-level fallbacks for the sections that are *not* list/detail splits.
+ *
+ * A split section owns its own Suspense boundary in its layout, around the list
+ * alone — so it must not also carry a `(list)/loading.tsx`. That file wraps the
+ * `(list)` page, which in a split section renders nothing, and its toolbar and
+ * table would paint into the detail column on top of the real toolbar and list
+ * the layout already renders. The sections below have no split, so a
+ * route-level fallback is still theirs to own.
+ */
+describe('route loading fallbacks', () => {
+  it('reports falls back to shape-matched cards, not a table', () => {
+    const { container } = render(<ReportsLoading />)
+
+    expect(container.textContent).toContain('Reports')
+    expect(container.querySelectorAll('[class~="876-card"]')).toHaveLength(2)
+    expect(container.querySelector('table')).toBeNull()
   })
 
-  it('reports and banking use shape-matched card fallbacks', () => {
-    const { container: reports } = render(<ReportsLoading />)
-    const { container: banking } = render(<BankingLoading />)
+  it('settings keeps its real hub heading and skeletons only the cards', () => {
+    const { container } = render(<SettingsLoading />)
 
-    expect(reports.textContent).toContain('Reports')
-    expect(reports.querySelectorAll('[class~="876-card"]')).toHaveLength(2)
-    expect(banking.textContent).toContain('All Bank Accounts')
-    expect(banking.querySelectorAll('[class~="876-card"]')).toHaveLength(9)
-    expect(reports.querySelector('table')).toBeNull()
-    expect(banking.querySelector('table')).toBeNull()
+    expect(container.textContent).toContain('Settings')
+    expect(container.querySelectorAll('[class~="876-card"]')).toHaveLength(6)
+    expect(container.querySelector('table')).toBeNull()
   })
 
-  it('sales loadings mirror each resolved table shape', () => {
-    const cases = [
-      [InvoicesLoading, 4, true],
-      [QuotesLoading, 4, true],
-      [EstimatesLoading, 4, true],
-      [PaymentsLoading, 3, false],
-      [CreditNotesLoading, 5, true],
-    ] as const
+  it('the overview falls back without any interactive control', () => {
+    const { container } = render(<OverviewLoading />)
 
-    for (const [Comp, columnCount, hasStatus] of cases) {
-      const { container, unmount } = render(<Comp />)
-      const headers = Array.from(container.querySelectorAll('th')).map((h) =>
-        h.textContent?.trim()
-      )
-      expect(headers).toHaveLength(columnCount)
-      expect(headers.includes('Status')).toBe(hasStatus)
-      expect(container.querySelectorAll('tbody tr').length).toBe(5)
-      expect(container.querySelector('[data-slot="page"]')).toBeTruthy()
-      unmount()
+    expect(container.querySelectorAll('a')).toHaveLength(0)
+    expect(container.querySelectorAll('button')).toHaveLength(0)
+    expect(
+      container.querySelectorAll('[data-slot="skeleton"]').length
+    ).toBeGreaterThan(0)
+  })
+
+  it('no split-view section carries a route-level list fallback', async () => {
+    const { readdir } = await import('node:fs/promises')
+    const { join } = await import('node:path')
+
+    const appDir = join(process.cwd(), 'src/app/(app)')
+    const found: string[] = []
+
+    async function walk(dir: string) {
+      for (const entry of await readdir(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name)
+        if (entry.isDirectory()) await walk(full)
+        else if (entry.name.endsWith('-section.tsx')) found.push(full)
+      }
     }
-  })
+    await walk(appDir)
 
-  it('invoices and quotes loadings have distinct titles but same column count', () => {
-    const { container: inv } = render(<InvoicesLoading />)
-    const { container: quo } = render(<QuotesLoading />)
-    expect(inv.textContent).toContain('Invoices')
-    expect(quo.textContent).toContain('Quotes')
-    expect(inv.querySelectorAll('th').length).toBe(
-      quo.querySelectorAll('th').length
-    )
-  })
-
-  it('all loadings have no interactive table rows, only skeletons', () => {
-    for (const Comp of [
-      InvoicesLoading,
-      CreditNotesLoading,
-      VendorsLoading,
-    ] as const) {
-      const { container, unmount } = render(<Comp />)
-      // skeletons are aria-hidden, no real data rows with links
-      expect(container.querySelectorAll('a').length).toBeLessThanOrEqual(1) // toolbar primary may be hidden due to mock false
-      expect(
-        container.querySelectorAll('[data-slot="skeleton"]').length
-      ).toBeGreaterThan(5)
-      unmount()
+    // Every `*-section.tsx` marks a split section; its sibling `(list)` must
+    // not own a `loading.tsx`.
+    for (const section of found) {
+      const sectionRoot = section.replace(/\/_components\/[^/]+$/, '')
+      const listDir = join(sectionRoot, '(list)')
+      const entries = await readdir(listDir).catch(() => [])
+      expect({ section: sectionRoot, entries }).toEqual({
+        section: sectionRoot,
+        entries: entries.filter((name) => name !== 'loading.tsx'),
+      })
     }
+
+    expect(found.length).toBeGreaterThan(10)
   })
 })
