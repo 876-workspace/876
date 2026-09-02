@@ -41,11 +41,14 @@ describe('resolveCrmAccessViewer', () => {
     const viewer = await resolveCrmAccessViewer('org_4XmK9wQr')
 
     expect(viewer).toEqual({
-      membershipId: 'mem_8Zx1',
-      userId: 'user_2kL9mN4q',
-      permissions: ['members:read', 'apps:assign'],
-      canReadMembers: true,
-      canManageAppAccess: true,
+      status: 'ok',
+      viewer: {
+        membershipId: 'mem_8Zx1',
+        userId: 'user_2kL9mN4q',
+        permissions: ['members:read', 'apps:assign'],
+        canReadMembers: true,
+        canManageAppAccess: true,
+      },
     })
     expect(retrieveMe).toHaveBeenCalledTimes(1)
     expect(retrieveMe).toHaveBeenCalledWith('org_4XmK9wQr')
@@ -59,8 +62,10 @@ describe('resolveCrmAccessViewer', () => {
 
     const viewer = await resolveCrmAccessViewer('org_no_assign')
 
-    expect(viewer?.canManageAppAccess).toBe(false)
-    expect(viewer?.canReadMembers).toBe(true)
+    expect(viewer.status === 'ok' && viewer.viewer.canManageAppAccess).toBe(
+      false
+    )
+    expect(viewer.status === 'ok' && viewer.viewer.canReadMembers).toBe(true)
   })
 
   it('reports neither permission for a member with an empty permission set', async () => {
@@ -71,23 +76,31 @@ describe('resolveCrmAccessViewer', () => {
 
     const viewer = await resolveCrmAccessViewer('org_empty')
 
-    expect(viewer?.canReadMembers).toBe(false)
-    expect(viewer?.canManageAppAccess).toBe(false)
+    expect(viewer.status === 'ok' && viewer.viewer.canReadMembers).toBe(false)
+    expect(viewer.status === 'ok' && viewer.viewer.canManageAppAccess).toBe(
+      false
+    )
   })
 
-  it('fails closed with null when the platform returns an error', async () => {
+  it('reports unavailable, not a denial, when the platform returns an error', async () => {
     retrieveMe.mockResolvedValue({
       data: null,
       error: { code: 'organization/not-found', message: 'Not found.' },
     })
 
-    await expect(resolveCrmAccessViewer('org_missing')).resolves.toBeNull()
+    await expect(resolveCrmAccessViewer('org_missing')).resolves.toEqual({
+      status: 'unavailable',
+      code: 'organization/not-found',
+    })
   })
 
-  it('fails closed with null when the platform returns no data and no error', async () => {
+  it('reports unavailable when the platform returns no data and no error', async () => {
     retrieveMe.mockResolvedValue({ data: null, error: null })
 
-    await expect(resolveCrmAccessViewer('org_blank')).resolves.toBeNull()
+    await expect(resolveCrmAccessViewer('org_blank')).resolves.toEqual({
+      status: 'unavailable',
+      code: 'platform/unavailable',
+    })
   })
 
   it('does not treat a permission that merely contains the key as a match', async () => {
@@ -98,7 +111,9 @@ describe('resolveCrmAccessViewer', () => {
 
     const viewer = await resolveCrmAccessViewer('org_prefix')
 
-    expect(viewer?.canManageAppAccess).toBe(false)
+    expect(viewer.status === 'ok' && viewer.viewer.canManageAppAccess).toBe(
+      false
+    )
   })
 })
 
@@ -131,7 +146,9 @@ describe('requireAppAccessManager', () => {
     })
   })
 
-  it('denies when the viewer cannot be resolved at all', async () => {
+  it('answers 503, not 403, when access could not be verified at all', async () => {
+    // Telling an operator they lack a permission when the truth is that nothing
+    // could be checked is a false statement about their access.
     retrieveMe.mockResolvedValue({
       data: null,
       error: { code: 'platform/unavailable', message: 'Down.' },
@@ -140,7 +157,23 @@ describe('requireAppAccessManager', () => {
     const result = await requireAppAccessManager('org_unavailable')
 
     expect(result.viewer).toBeNull()
-    expect(result.response?.status).toBe(403)
+    expect(result.response?.status).toBe(503)
+    await expect(result.response?.json()).resolves.toEqual({
+      data: null,
+      error: {
+        code: 'crm/access-unavailable',
+        message: 'Access could not be verified. Try again.',
+      },
+    })
+  })
+
+  it('still refuses to proceed when access could not be verified', async () => {
+    retrieveMe.mockResolvedValue({ data: null, error: null })
+
+    const result = await requireAppAccessManager('org_unknown')
+
+    expect(result.viewer).toBeNull()
+    expect(result.response).not.toBeNull()
   })
 
   it('does not leak the platform error message to the caller', async () => {

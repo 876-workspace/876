@@ -7,9 +7,10 @@ import { getWorkspace } from '@/lib/services/workspace'
 /**
  * The organization permission that authorizes changing a member's app access.
  *
- * This is an **organization** permission, not a CRM app permission: deciding who
- * may use CRM is an organization-governance act, and `.claude/rules/app-access.md`
- * keeps the two planes separate. A CRM app permission never grants it.
+ * This is an **organization** permission, not an app permission: deciding who
+ * may use CRM is an organization-governance act, and
+ * `.claude/rules/app-access.md` keeps the two planes separate. An app
+ * permission never grants it.
  */
 export const APP_ASSIGN_PERMISSION = 'apps:assign'
 
@@ -25,47 +26,76 @@ export type CrmAccessViewer = {
 }
 
 /**
+ * The result of resolving the acting member.
+ *
+ * "You may not" and "we could not tell" are different answers, and a caller
+ * owes the operator different things for each: a denial is a scoped access
+ * state, an outage is a notice beside otherwise intact chrome. Collapsing both
+ * into `null` left every caller with `notFound()`, which is wrong for both —
+ * see `.claude/rules/error-handling.md`.
+ */
+export type CrmAccessOutcome =
+  | { status: 'ok'; viewer: CrmAccessViewer }
+  | { status: 'unavailable'; code: string }
+
+/**
  * Resolves the acting member's effective organization permissions.
  *
- * Memoized per request because the settings shell, the list, and each tab all
- * need it; `React.cache` compares with `Object.is`, so this takes the primitive
+ * Memoized per request because the settings shell, the list, and every tab need
+ * it; `React.cache` compares with `Object.is`, so this takes the primitive
  * organization id rather than an options object, which would never hit.
  *
- * Returns `null` when the caller is not a member of the organization or the
- * platform cannot answer. Callers must treat `null` as "no access": this
- * resolution can only *grant*, so it fails closed, unlike the subtractive
- * employment check described in `.claude/rules/access-control.md`.
+ * Permission resolution fails closed: an `ok` outcome whose viewer holds
+ * nothing grants nothing. An `unavailable` outcome is an infrastructure answer,
+ * not an authorization one — it must never be read as permission to proceed.
  */
 export const resolveCrmAccessViewer = cache(
   async function resolveCrmAccessViewer(
     organizationId: string
-  ): Promise<CrmAccessViewer | null> {
+  ): Promise<CrmAccessOutcome> {
     const workspace = await getWorkspace()
     const result = await workspace.members.retrieveMe(organizationId)
-    if (result.error || !result.data) return null
+
+    if (result.error || !result.data)
+      return {
+        status: 'unavailable',
+        code: result.error?.code ?? 'platform/unavailable',
+      }
 
     const permissions = result.data.permissions
     return {
-      membershipId: result.data.id,
-      userId: result.data.user_id,
-      permissions,
-      canReadMembers: permissions.includes(MEMBERS_READ_PERMISSION),
-      canManageAppAccess: permissions.includes(APP_ASSIGN_PERMISSION),
+      status: 'ok',
+      viewer: {
+        membershipId: result.data.id,
+        userId: result.data.user_id,
+        permissions,
+        canReadMembers: permissions.includes(MEMBERS_READ_PERMISSION),
+        canManageAppAccess: permissions.includes(APP_ASSIGN_PERMISSION),
+      },
     }
   }
 )
 
+/** True when the outcome resolved and the viewer holds the permission. */
+export function holds(
+  outcome: CrmAccessOutcome,
+  select: (viewer: CrmAccessViewer) => boolean
+): boolean {
+  return outcome.status === 'ok' && select(outcome.viewer)
+}
+
 /**
  * Authorizes a route handler that changes app access.
  *
- * Returns a 403 `Response` to return as-is when the caller may not act, and the
+ * Returns a `Response` to return as-is when the caller may not act, and the
  * viewer otherwise. It never redirects: per `.claude/rules/access-control.md` an
  * API authorization failure is a value the client renders in place, not a
- * navigation that throws away the operator's work.
+ * navigation that discards the operator's work.
  *
- * This is the app's own gate. The identity API independently enforces the same
- * permission on every write, so a gap here withholds a control — it cannot widen
- * access.
+ * A resolution outage answers 503 rather than 403, so a caller is not told they
+ * lack a permission when the truth is that nothing could be checked. Either way
+ * nothing proceeds, and the identity API enforces the same permission on every
+ * write independently.
  */
 export async function requireAppAccessManager(
   organizationId: string
@@ -73,8 +103,24 @@ export async function requireAppAccessManager(
   | { viewer: CrmAccessViewer; response: null }
   | { viewer: null; response: Response }
 > {
-  const viewer = await resolveCrmAccessViewer(organizationId)
-  if (!viewer?.canManageAppAccess)
+  const outcome = await resolveCrmAccessViewer(organizationId)
+
+  if (outcome.status === 'unavailable')
+    return {
+      viewer: null,
+      response: Response.json(
+        {
+          data: null,
+          error: {
+            code: 'crm/access-unavailable',
+            message: 'Access could not be verified. Try again.',
+          },
+        },
+        { status: 503 }
+      ),
+    }
+
+  if (!outcome.viewer.canManageAppAccess)
     return {
       viewer: null,
       response: Response.json(
@@ -89,5 +135,5 @@ export async function requireAppAccessManager(
       ),
     }
 
-  return { viewer, response: null }
+  return { viewer: outcome.viewer, response: null }
 }

@@ -28,11 +28,16 @@ export default async function MemberAccessPage({
         })
       : loadRoles(context.orgId, result.memberships)
   )
-  const [viewer, membershipsResult, rolesResult] = await Promise.all([
+  const [accessOutcome, membershipsResult, rolesResult] = await Promise.all([
     resolveCrmAccessViewer(context.orgId),
     membershipsPromise,
     rolesPromise,
   ])
+
+  // A resolution outage is not permission. Read-only is the fail-closed answer
+  // for both a denial and an unavailable check.
+  const canManage =
+    accessOutcome.status === 'ok' && accessOutcome.viewer.canManageAppAccess
   if (membershipsResult.error)
     return (
       <AppError
@@ -58,7 +63,7 @@ export default async function MemberAccessPage({
           rolesResult.rolesByApp
         )}
         membershipId={membershipId}
-        readOnly={!viewer?.canManageAppAccess}
+        readOnly={!canManage}
       />
     </div>
   )
