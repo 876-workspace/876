@@ -60,6 +60,45 @@ vi.mock('@/workers/billing-customer-dispatch', () => ({
   dispatchBillingCustomerSyncOnce,
 }))
 
+const {
+  retrievePersistedProvisioningPolicy,
+  resolveFreshProvisioningPolicy,
+  requirePersistedProvisioningPolicy,
+  enabledProvisioningApplicationSlugs,
+} = vi.hoisted(() => ({
+  retrievePersistedProvisioningPolicy: vi.fn(),
+  resolveFreshProvisioningPolicy: vi.fn(),
+  requirePersistedProvisioningPolicy: vi.fn(),
+  enabledProvisioningApplicationSlugs: vi.fn(() => ['876-enterprise']),
+}))
+vi.mock('../provisioning-policy', () => ({
+  retrievePersistedProvisioningPolicy,
+  resolveFreshProvisioningPolicy,
+  requirePersistedProvisioningPolicy,
+  enabledProvisioningApplicationSlugs,
+}))
+
+const {
+  resolveAndPersistApplicationProvisioningProfile,
+  retrieveSelectedApplicationProvisioningRoles,
+  materializeProvisionedRolesForApp,
+} = vi.hoisted(() => ({
+  resolveAndPersistApplicationProvisioningProfile: vi.fn(),
+  retrieveSelectedApplicationProvisioningRoles: vi.fn(async () => []),
+  materializeProvisionedRolesForApp: vi.fn(async () => ({
+    seeded: 0,
+    skipped: 0,
+  })),
+}))
+vi.mock(
+  '@/modules/provisioning/application-provisioning-profile.service',
+  () => ({
+    resolveAndPersistApplicationProvisioningProfile,
+    retrieveSelectedApplicationProvisioningRoles,
+  })
+)
+vi.mock('@/modules/app-access', () => ({ materializeProvisionedRolesForApp }))
+
 const { materializeRoleTemplatesForApp } = vi.hoisted(() => ({
   materializeRoleTemplatesForApp: vi.fn(),
 }))
@@ -74,6 +113,8 @@ const { materializeEntitledAppRoles } =
 beforeEach(() => {
   vi.clearAllMocks()
   materializeRoleTemplatesForApp.mockResolvedValue({ seeded: 2, skipped: 0 })
+  retrievePersistedProvisioningPolicy.mockResolvedValue(null)
+  resolveFreshProvisioningPolicy.mockResolvedValue(null)
   ensureAppReady.mockResolvedValue(undefined)
 })
 
@@ -193,6 +234,28 @@ describe('provisionOrgApps role materialization', () => {
     await provisionOrgApps('org_2kL9mN4q')
 
     expect(order).toEqual(['materialize', 'finance'])
+  })
+
+  it('seeds templates for an organization with no persisted provisioning setup', async () => {
+    retrievePersistedProvisioningPolicy.mockResolvedValue(null)
+
+    await provisionOrgApps('org_2kL9mN4q')
+
+    expect(materializeRoleTemplatesForApp).toHaveBeenCalled()
+  })
+
+  it('does not seed templates when a provisioning setup already selected roles', async () => {
+    // A published manifest is a curated selection. Seeding platform templates on
+    // top would reintroduce role definitions it deliberately excluded, widening
+    // what an administrator can assign.
+    retrievePersistedProvisioningPolicy.mockResolvedValue({
+      selection: { setup_key: 'standard' },
+      policy: { applications: [] },
+    })
+
+    await provisionOrgApps('org_2kL9mN4q')
+
+    expect(materializeRoleTemplatesForApp).not.toHaveBeenCalled()
   })
 
   it('still provisions the app when role materialization fails', async () => {

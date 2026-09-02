@@ -397,6 +397,7 @@ describe('new organization finance continuity regression', () => {
     expect(result).toEqual({
       appIds: ['app_876-enterprise', 'app_876-billing'],
       provisioned: ['app_876-enterprise', 'app_876-billing'],
+      hasSetupSelection: false,
     })
   })
 
@@ -414,6 +415,7 @@ describe('new organization finance continuity regression', () => {
     expect(result).toEqual({
       appIds: ['app_876-enterprise', 'app_876-billing'],
       provisioned: [],
+      hasSetupSelection: false,
     })
     expect(repo.provisionSubscription).not.toHaveBeenCalled()
   })
