@@ -73,7 +73,7 @@ export function TeamList({ members }: Props) {
       <header className="876-header-row shrink-0 border-b px-4 py-3 text-[0.8125rem] font-semibold">
         Users
       </header>
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
         <Table className="table-fixed">
           <TableBody>
             {rows.length === 0 ? (

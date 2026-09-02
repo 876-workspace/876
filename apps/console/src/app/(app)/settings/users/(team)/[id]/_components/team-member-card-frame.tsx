@@ -123,7 +123,7 @@ export function TeamMemberCardFrame({ member, children }: Props) {
         </div>
       </div>
 
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+      <div className="876-scroll min-h-0 flex-1 overflow-y-auto p-6">
         {children}
       </div>
 
