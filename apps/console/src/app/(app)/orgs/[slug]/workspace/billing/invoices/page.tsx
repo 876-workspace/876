@@ -1,8 +1,8 @@
 import { createWorkspaceInvoicesPage } from '../../_components/finance-workspace-pages'
 
 const { Page, generateMetadata } = createWorkspaceInvoicesPage(
-  'invoice',
-  'Invoice'
+  'billing',
+  'Billing'
 )
 
 export { generateMetadata }
