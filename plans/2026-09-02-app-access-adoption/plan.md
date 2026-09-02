@@ -142,8 +142,8 @@ the failure this table exists to prevent.
 | 0   | Wire `materializeEntitledAppRoles`; add billing + invoice catalogs + drift test              | orchestrator               | done        |
 | 0b  | Session-tier org app-access SDK surface + CRM authorization guard                            | orchestrator               | done        |
 | 1   | Promote settings hub to `@876/ui`; adopt in Billing + Invoice                                | codex `gpt-5.6-terra` high | done        |
-| 2   | `@876/access-ui` — access panel, effective-permission list, summary                          | codex `gpt-5.6-terra` high | in progress |
-| 3   | CRM `/settings/users` split view + route handlers                                            | codex `gpt-5.6-terra` high | briefed     |
+| 2   | `@876/access-ui` — access panel, effective-permission list, summary                          | codex `gpt-5.6-terra` high | done        |
+| 3   | CRM `/settings/users` split view + route handlers                                            | codex `gpt-5.6-terra` high | done        |
 | 4   | Invoice `/settings/users` + hub                                                              | codex `gpt-5.6-terra` high | not started |
 | 5   | Billing migration off `billing_roles`/`billing_members`                                      | orchestrator + codex       | not started |
 | 6   | folded into Phase 3 — the roster already carries position and one call returns every profile | codex `gpt-5.6-terra` high | n/a         |
@@ -159,9 +159,12 @@ the failure this table exists to prevent.
 
 ## Execution reports
 
-| Phase | Tool                       | Report                                                                           |
-| ----- | -------------------------- | -------------------------------------------------------------------------------- |
-| 1     | codex `gpt-5.6-terra` high | [shared settings hub](./reports/codex/2026-09-02-phase-1-shared-settings-hub.md) |
+| Phase | Tool                                              | Report                                                                              |
+| ----- | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 1     | codex `gpt-5.6-terra` high                        | [shared settings hub](./reports/codex/2026-09-02-phase-1-shared-settings-hub.md)    |
+| 2     | codex `gpt-5.6-terra` high + `gpt-5.6-sol` review | [`@876/access-ui` package](./reports/codex/2026-09-02-phase-2-access-ui-package.md) |
+| 2b    | codex `gpt-5.6-terra` high + `gpt-5.6-sol` review | [outstanding defects](./reports/codex/2026-09-02-phase-2b-outstanding-defects.md)   |
+| 3     | codex `gpt-5.6-terra` high + `gpt-5.6-sol` review | [CRM settings users](./reports/codex/2026-09-02-phase-3-crm-settings-users.md)      |
 
 ### Orchestrator review of Phase 1
 
@@ -198,9 +201,9 @@ node scripts/check-app-structure.mjs
 
 ## Handoff state
 
-Phases 0 and 0b are committed and green. Phase 1 is running under Codex
-`gpt-5.6-terra` at high effort; Phase 2 and Phase 3 are briefed and ready to
-dispatch once it lands.
+Phases 0 through 2 are committed. Phase 2b and Phase 3 are implemented in the
+working tree and were reviewed and corrected by `gpt-5.6-sol`; their reports
+contain the final verification evidence. Phases 4, 5, and 7 remain.
 
 **Five Phase 0 commits (`231948cc`..`5c9d68e3`) reached `origin/main` directly**
 rather than through this branch's pull request — an accidental push, not an agent.
@@ -209,11 +212,10 @@ bare `git push` from this tree can no longer target `main`. The commits are gree
 and self-contained; the working decision is to leave them rather than revert and
 re-land.
 
-Known pre-existing failure, **not** from this run: `packages/core/src/lib/phone.test.ts`
-expects 32 dial codes and gets 41. Confirmed on `origin/main` by stashing.
-
-`pnpm --filter @876/api boundaries` reported 25 violations on `origin/main` before
-this run and 25 after — the gate was already red; this run adds none.
+The pre-existing Core phone test failure is fixed in Phase 2b with an exact
+country-code inventory instead of a stale numeric count. Phase 2b also reduced
+API boundary violations from 19 to 18; the remaining cycles are pre-existing and
+out of scope for this adoption phase.
 
 ## Open risk
 

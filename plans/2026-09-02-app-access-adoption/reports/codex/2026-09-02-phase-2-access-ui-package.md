@@ -1,5 +1,17 @@
 # Phase 2 — `@876/access-ui`
 
+## Attribution
+
+- **GPT-5.6 Terra** implemented the original shared package, its 46 test cases,
+  package registration, and the host-facing access contracts described below.
+- **GPT-5.6 Sol** reviewed the implementation against the Phase 2 brief and the
+  Phase 3 host adoption. Sol fixed a mutation race in which controls appeared
+  enabled while another mutation caused their clicks to be silently discarded.
+  Mutations are now serialized per app entry, controls expose their disabled
+  state while a save is pending, and first assignment waits for the server-issued
+  assignment ID before overrides become available. A failed assignment remains
+  selected and retryable. Sol added three regression tests.
+
 ## Files
 
 | File                                                    | Change                                                                                                                                          |
@@ -22,11 +34,11 @@
 
 | Test file                        | `it()` / `it.each()` declarations |                    Generated cases |
 | -------------------------------- | --------------------------------: | ---------------------------------: |
-| `app-access-panel.test.tsx`      |                                20 |                                 20 |
+| `app-access-panel.test.tsx`      |                                23 |                                 23 |
 | `effective-permissions.test.tsx` |                                 6 |                                  6 |
 | `app-access-summary.test.tsx`    |                                 4 |                                  4 |
 | `security-corpus.test.tsx`       |                                 4 | 16 (four corpus values per matrix) |
-| **Total**                        |                            **34** |                             **46** |
+| **Total**                        |                            **37** |                             **49** |
 
 ## Verification
 
@@ -34,7 +46,7 @@
 | ---------------------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
 | `pnpm install`                           | Pass   | `Scope: all 38 workspace projects`<br>`Already up to date`<br>`Done in 596ms using pnpm v11.3.0` |
 | `pnpm --filter @876/access-ui typecheck` | Pass   | `$ tsc --noEmit`                                                                                 |
-| `pnpm --filter @876/access-ui test`      | Pass   | `Test Files  4 passed (4)`<br>`Tests  46 passed (46)`<br>`Duration  4.61s`                       |
+| `pnpm --filter @876/access-ui test`      | Pass   | Sol final verification: `Test Files  4 passed (4)`<br>`Tests  49 passed (49)`                    |
 | `pnpm check:transpile`                   | Pass   | `$ node scripts/check-shared-ui-transpile.mjs`<br>`shared-ui-transpile: OK`                      |
 
 The first `pnpm install` invocation was blocked by the environment's frozen-lockfile setting because the newly created workspace package was not yet in `pnpm-lock.yaml`. I ran `pnpm install --no-frozen-lockfile` to create the required lockfile entry, then reran the requested exact `pnpm install` command successfully above.
@@ -46,6 +58,9 @@ The first `pnpm install` invocation was blocked by the environment's frozen-lock
 - The panel renders only API-returned `effectivePermissions`. It does not call `resolveEffectivePermissions` for an unsaved preview, avoiding a client-side value that could be mistaken for the authoritative saved result.
 - An unassigned app presents a role chooser plus a blue `Assign` action. After the mutation begins, the local optimistic profile shows that role; returned errors render inline and retain the panel and selected values until the host supplies fresh entries.
 - Override edits normalize the selected key out of both arrays before adding/removing it, so callback payloads cannot contain the same key in grants and denies.
+- Per-app mutations are serialized. After a first assignment succeeds, override
+  controls wait for refreshed server props to supply the durable assignment ID;
+  a failed first assignment keeps the chosen role and allows retry.
 - “Dangerous” uses the warning badge. No interactive control adds a green class; the panel suite asserts this.
 
 ## Limitations and contradictions
