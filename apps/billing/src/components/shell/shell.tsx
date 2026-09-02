@@ -14,6 +14,7 @@ import {
   AppShellMain,
 } from '@876/ui/app-shell'
 import { SharedWidgetDock } from '@876/widgets/react'
+import type { NavGroupDefinition } from '@876/core/access'
 
 import { WorkspaceSidebar } from './sidebar'
 import { OrgSwitcher } from './org-switcher'
@@ -30,6 +31,7 @@ export async function Shell({
   user,
   permissions,
   features,
+  navigation,
   currentOrg,
   orgs,
 }: {
@@ -38,6 +40,7 @@ export async function Shell({
   user: SidebarUserMenuUser
   permissions: Permission[]
   features: Features
+  navigation: NavGroupDefinition[]
   currentOrg: OrgSwitcherOrg
   orgs: OrgSwitcherOrg[]
 }) {
@@ -52,11 +55,7 @@ export async function Shell({
       <AppShell defaultOpen={defaultSidebarOpen}>
         <NavProgress />
         <AppShellSidebarArea>
-          <WorkspaceSidebar
-            tenantName={tenantName}
-            permissions={permissions}
-            productFeatures={features.productFeatures}
-          />
+          <WorkspaceSidebar tenantName={tenantName} navigation={navigation} />
         </AppShellSidebarArea>
         <AppShellContent>
           <AppShellHeader>
@@ -64,10 +63,7 @@ export async function Shell({
 
             <div className="hidden min-w-0 flex-1 items-center md:flex">
               {features.uiFeatures.searchBar && (
-                <TopbarSearch
-                  permissions={permissions}
-                  productFeatures={features.productFeatures}
-                />
+                <TopbarSearch navigation={navigation} />
               )}
             </div>
 

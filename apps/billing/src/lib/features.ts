@@ -33,6 +33,25 @@ const BILLING_BANKING_SLUG = 'billing-banking'
 const BILLING_DOCUMENTS_SLUG = 'billing-documents'
 const BILLING_PAYROLL_SLUG = 'billing-payroll'
 
+const BILLING_FEATURE_SLUGS = [
+  BILLING_SEARCH_BAR_SLUG,
+  BILLING_THEME_SWITCHER_SLUG,
+  BILLING_GLOBAL_ADD_SLUG,
+  BILLING_APP_SWITCHER_SLUG,
+  BILLING_ORG_SWITCHER_SLUG,
+  BILLING_SALES_SLUG,
+  BILLING_SALES_QUOTES_SLUG,
+  BILLING_SALES_ESTIMATES_SLUG,
+  BILLING_SALES_INVOICES_SLUG,
+  BILLING_SUBSCRIPTIONS_SLUG,
+  BILLING_PURCHASES_SLUG,
+  BILLING_PURCHASES_VENDORS_SLUG,
+  BILLING_PURCHASES_EXPENSES_SLUG,
+  BILLING_BANKING_SLUG,
+  BILLING_DOCUMENTS_SLUG,
+  BILLING_PAYROLL_SLUG,
+] as const
+
 const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
   [BILLING_SEARCH_BAR_SLUG]: ['billing_search_bar'],
   [BILLING_THEME_SWITCHER_SLUG]: ['billing_theme_switcher'],
@@ -118,6 +137,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       },
     })
     return {
+      featureKeys: [],
       uiFeatures: DEFAULT_UI_FEATURES,
       productFeatures: DEFAULT_PRODUCT_FEATURES,
       widgets: { notepad: false },
@@ -131,6 +151,9 @@ const getCachedFeatures = cache(async function getCachedFeatures(
   const purchases = hasFeature(enabledSlugs, BILLING_PURCHASES_SLUG)
 
   return {
+    featureKeys: BILLING_FEATURE_SLUGS.filter((slug) =>
+      hasFeature(enabledSlugs, slug)
+    ),
     uiFeatures: {
       searchBar: hasFeature(enabledSlugs, BILLING_SEARCH_BAR_SLUG),
       themeSwitcher: hasFeature(enabledSlugs, BILLING_THEME_SWITCHER_SLUG),

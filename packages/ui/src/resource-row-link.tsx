@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight } from '@876/ui/icons'
+import { ArrowRight } from './icons'
 
 export function ResourceRowLink({
   href,

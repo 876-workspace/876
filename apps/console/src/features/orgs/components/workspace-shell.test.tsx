@@ -24,7 +24,7 @@ vi.mock('./workspace-nav', () => ({
   ),
 }))
 
-import { APP_WORKSPACES } from '../app-workspaces'
+import { workspaceSectionLinks, APP_WORKSPACES } from '../app-workspaces'
 import { WorkspaceShell } from './workspace-shell'
 
 const crmWorkspace = APP_WORKSPACES.find(
@@ -42,6 +42,7 @@ describe('WorkspaceShell', () => {
         workspace={crmWorkspace}
         orgSlug="test-org"
         orgName="Test Org"
+        links={workspaceSectionLinks('test-org', crmWorkspace)}
       >
         <div>CRM surface</div>
       </WorkspaceShell>
@@ -62,6 +63,7 @@ describe('WorkspaceShell', () => {
         workspace={crmWorkspace}
         orgSlug="test-org"
         orgName="Test Org"
+        links={workspaceSectionLinks('test-org', crmWorkspace)}
       >
         <div>CRM surface</div>
       </WorkspaceShell>

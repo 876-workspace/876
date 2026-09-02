@@ -14,7 +14,7 @@ packages/<p>-ui     one product's screens — no host knowledge
 apps/<host>         routing, data, authorization, mutations, host chrome
 ```
 
-Existing packages include `@876/crm-ui` and `@876/work-ui`. A domain with one host stays app-local until a second host needs the same product surface.
+Existing packages include `@876/crm-ui`, `@876/work-ui`, `@876/access-ui`, and `@876/billing-ui`. A domain with one host stays app-local until a second host needs the same product surface.
 
 ## Product UI owns presentation, hosts own authority and transport
 

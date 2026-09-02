@@ -24,6 +24,7 @@ export interface BillingProductFeatures {
 export type BillingProductFeature = keyof BillingProductFeatures
 
 export interface BillingFeatures {
+  featureKeys: string[]
   uiFeatures: BillingUiFeatures
   productFeatures: BillingProductFeatures
   widgets: {

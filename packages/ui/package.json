@@ -20,6 +20,10 @@
       "types": "./src/lib/utils.ts",
       "default": "./src/lib/utils.ts"
     },
+    "./resource-row-link": {
+      "types": "./src/resource-row-link.tsx",
+      "default": "./src/resource-row-link.tsx"
+    },
     "./styles.css": "./src/styles.css",
     "./876.css": "./src/876.css",
     "./auth": {

@@ -9,7 +9,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatMoney, formatPriceCadence } from '@/lib/format'
 import { SubscriptionStatusBadge } from './subscription-status-badge'
-import { ResourceRowLink } from '@/components/patterns/resource-row-link'
+import { ResourceRowLink } from '@876/ui/resource-row-link'
 import type { SubscriptionTableRow } from '@/types/subscription'
 
 interface Props {

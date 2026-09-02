@@ -1,37 +1,59 @@
 'use client'
 
-import * as React from 'react'
-
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+import { ResourceRowLink } from '@876/ui/resource-row-link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import { formatMoney } from '@/lib/format'
-import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
-type Props = {
-  emptyState?: React.ReactNode
-  items: ItemRow[]
-  defaultCurrency: string
-}
-
-interface ItemRow {
+/**
+ * A catalog item as the finance plane serves it. `defaultSellingAmount` accepts
+ * both shapes the hosts hold it in — Billing reads Prisma `BigInt` minor units,
+ * Invoice reads the serialized decimal string — because narrowing it here would
+ * force one host to convert on every row.
+ */
+export interface ItemRow {
   id: string
   name: string
   type: string
   sku: string | null
   unit: string | null
-  defaultSellingAmount: bigint | null
+  defaultSellingAmount: bigint | string | null
   defaultSellingCurrency: string | null
   isTaxable: boolean
   isActive: boolean
-  prices: unknown[]
+  priceCount?: number
 }
 
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+export interface ItemsTableProps {
+  items: ItemRow[]
+  defaultCurrency: string
+  /** Row and link destinations are `${baseHref}/${id}`; the host owns routing. */
+  baseHref: string
+  /**
+   * Money formatting is host policy, not presentation: Billing renders a missing
+   * amount as "Custom pricing" and Invoice as an em dash. Passing the formatter
+   * keeps that difference where it belongs instead of adding a third formatter.
+   */
+  formatAmount: (amount: bigint | string | null, currency: string) => string
+  emptyState?: ReactNode
+  /** Billing sells items at several prices; Invoice does not model that yet. */
+  showPriceCount?: boolean
+}
 
-export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
+export function ItemsTable({
+  items,
+  defaultCurrency,
+  baseHref,
+  formatAmount,
+  emptyState,
+  showPriceCount = false,
+}: ItemsTableProps) {
   const router = useRouter()
+  const hrefFor = (id: string) => `${baseHref}/${id}`
+
   const columns: ColumnDef<ItemRow, unknown>[] = [
     {
       id: 'item',
@@ -41,10 +63,11 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
       ),
       cell: ({ row }) => {
         const item = row.original
+
         return (
           <>
             <Link
-              href={`/items/${item.id}`}
+              href={hrefFor(item.id)}
               className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
               onClick={(event) => event.stopPropagation()}
             >
@@ -65,7 +88,8 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
       ),
       cell: ({ row }) => {
         const item = row.original
-        return formatMoney(
+
+        return formatAmount(
           item.defaultSellingAmount,
           item.defaultSellingCurrency ?? defaultCurrency
         )
@@ -83,12 +107,16 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
         </span>
       ),
     },
-    {
-      id: 'prices',
-      enableSorting: false,
-      header: 'Prices',
-      cell: ({ row }) => row.original.prices.length,
-    },
+    ...(showPriceCount
+      ? [
+          {
+            id: 'prices',
+            enableSorting: false,
+            header: 'Prices',
+            cell: ({ row }) => row.original.priceCount ?? 0,
+          } satisfies ColumnDef<ItemRow, unknown>,
+        ]
+      : []),
     {
       id: 'status',
       accessorKey: 'isActive',
@@ -107,7 +135,7 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
       cell: ({ row }) => (
         <div className="flex justify-end">
           <ResourceRowLink
-            href={`/items/${row.original.id}`}
+            href={hrefFor(row.original.id)}
             resourceName={row.original.name}
           />
         </div>
@@ -122,7 +150,7 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
         columns={columns}
         data={items}
         className="text-[0.8125rem]"
-        onRowClick={(item) => router.push(`/items/${item.id}`)}
+        onRowClick={(item) => router.push(hrefFor(item.id))}
       />
     </div>
   )

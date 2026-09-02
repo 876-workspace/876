@@ -12,7 +12,9 @@ vi.mock('@/components/providers/permissions-provider', () => ({
   useBillingPermission: () => true,
 }))
 
-import { ItemsTable } from './items-table'
+import { ItemsTable } from '@876/billing-ui/items-table'
+
+import { formatMoney } from '@/lib/format'
 import { ITEMS_SKELETON_COLUMNS } from './items-skeleton-columns'
 
 /**
@@ -26,6 +28,9 @@ describe('items skeleton column parity', () => {
     const { container } = render(
       <ItemsTable
         defaultCurrency="JMD"
+        baseHref="/items"
+        formatAmount={formatMoney}
+        showPriceCount
         items={[
           {
             id: 'item_1',
@@ -37,8 +42,8 @@ describe('items skeleton column parity', () => {
             defaultSellingCurrency: 'JMD',
             isTaxable: true,
             isActive: true,
-            prices: [],
-          } as unknown as Parameters<typeof ItemsTable>[0]['items'][number],
+            priceCount: 0,
+          },
         ]}
       />
     )

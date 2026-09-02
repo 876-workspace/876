@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 import { createAuthLoginPath } from '@876/core/auth/return-to'
 
+import { resolveBillingNavigation } from '@/components/shell/nav-config'
 import { Shell } from '@/components/shell/shell'
 import { getContext } from '@/lib/auth/billing-context'
 import { requireValidSession } from '@/lib/auth/guards'
@@ -54,6 +55,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   )
   if (!currentOrg) redirect('/no-access')
 
+  const navigation = resolveBillingNavigation({
+    subject: { userId: sessionUser?.id ?? '' },
+    permissions: context.permissions,
+    features: features.featureKeys,
+    experiments: {},
+  })
+
   return (
     <Shell
       tenantName={context.tenant.name}
@@ -64,6 +72,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       }}
       features={features}
       permissions={context.permissions}
+      navigation={navigation}
       currentOrg={currentOrg}
       orgs={context.organizations}
     >

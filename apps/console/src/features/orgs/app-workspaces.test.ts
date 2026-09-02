@@ -1,3 +1,6 @@
+import { existsSync, readdirSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -12,7 +15,80 @@ import { ALWAYS_PRESENT_TABS, APP_OWNED_TABS } from './app-tabs'
 
 const SLUG = 'test-org'
 
+function repositoryRoot(): string {
+  let directory = dirname(fileURLToPath(import.meta.url))
+
+  while (!existsSync(join(directory, 'pnpm-workspace.yaml'))) {
+    const parent = dirname(directory)
+    if (parent === directory)
+      throw new Error(
+        'Could not locate the repository root from this test file.'
+      )
+    directory = parent
+  }
+
+  return directory
+}
+
+function sectionRouteExists(workspaceKey: string, segment: string): boolean {
+  const root = repositoryRoot()
+  const workspaceDirectory = join(
+    root,
+    'apps',
+    'console',
+    'src',
+    'app',
+    '(app)',
+    'orgs',
+    '[slug]',
+    'workspace',
+    workspaceKey
+  )
+  const segmentDirectory = segment
+    ? join(workspaceDirectory, segment)
+    : workspaceDirectory
+  const directRoute = join(segmentDirectory, 'page.tsx')
+  if (existsSync(directRoute)) return true
+  if (!existsSync(segmentDirectory)) return false
+
+  const groupRoutes = readdirSync(segmentDirectory, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && /^\(.+\)$/.test(entry.name))
+    .filter((entry) =>
+      existsSync(join(segmentDirectory, entry.name, 'page.tsx'))
+    )
+
+  return groupRoutes.length === 1
+}
+
 describe('the workspace registry', () => {
+  it('binds every registered section to a route file', () => {
+    const root = repositoryRoot()
+
+    for (const workspace of APP_WORKSPACES) {
+      for (const section of workspace.sections) {
+        const routePath = join(
+          root,
+          'apps',
+          'console',
+          'src',
+          'app',
+          '(app)',
+          'orgs',
+          '[slug]',
+          'workspace',
+          workspace.key,
+          section.segment,
+          'page.tsx'
+        )
+
+        expect(
+          sectionRouteExists(workspace.key, section.segment),
+          `Workspace ${workspace.key}, segment ${section.segment || '(index)'} has no route at ${routePath}`
+        ).toBe(true)
+      }
+    }
+  })
+
   it('carries no icon components or functions across the RSC boundary', () => {
     for (const workspace of APP_WORKSPACES) {
       expect(typeof workspace.iconKey).toBe('string')

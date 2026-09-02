@@ -36,6 +36,15 @@ export type WorkspaceIconKey =
 /** One navigable area inside an app's workspace. */
 export type WorkspaceSection = {
   label: string
+  /**
+   * The product navigation entry this section mirrors.
+   *
+   * Console shows a section only when the organization's own product
+   * navigation would show it, so an organization without a feature flag has no
+   * section for it. Sections without a matching registry entry — apps whose
+   * registry has not moved into a package yet — fall back to always visible.
+   */
+  entryKey?: string
   /** Segment appended to the workspace base; the empty string is the index. */
   segment: string
   iconKey: WorkspaceIconKey
@@ -79,10 +88,26 @@ export const APP_WORKSPACES = [
       'Accounts, subscriptions, payment methods, and financial transactions.',
     iconKey: 'billing',
     sections: [
-      { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
-      { label: 'Subscriptions', segment: 'subscriptions', iconKey: 'requests' },
-      { label: 'Items', segment: 'items', iconKey: 'items' },
-      { label: 'Accounts', segment: 'accounts', iconKey: 'settings' },
+      {
+        label: 'Overview',
+        segment: '',
+        iconKey: 'dashboard',
+        exact: true,
+        entryKey: 'home',
+      },
+      {
+        label: 'Subscriptions',
+        segment: 'subscriptions',
+        iconKey: 'requests',
+        entryKey: 'subscriptions',
+      },
+      { label: 'Items', segment: 'items', iconKey: 'items', entryKey: 'items' },
+      {
+        label: 'Accounts',
+        segment: 'accounts',
+        iconKey: 'settings',
+        entryKey: 'customers',
+      },
     ],
   },
   {
@@ -92,9 +117,20 @@ export const APP_WORKSPACES = [
     summary: 'Invoices, line items, drafts, and customer billing schedules.',
     iconKey: 'billing',
     sections: [
-      { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
-      { label: 'Invoices', segment: 'invoices', iconKey: 'billing' },
-      { label: 'Items', segment: 'items', iconKey: 'items' },
+      {
+        label: 'Overview',
+        segment: '',
+        iconKey: 'dashboard',
+        exact: true,
+        entryKey: 'home',
+      },
+      {
+        label: 'Invoices',
+        segment: 'invoices',
+        iconKey: 'billing',
+        entryKey: 'invoices',
+      },
+      { label: 'Items', segment: 'items', iconKey: 'items', entryKey: 'items' },
     ],
   },
   {

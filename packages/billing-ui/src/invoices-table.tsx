@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
@@ -7,36 +8,51 @@ import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
-import { formatMoney } from '@/lib/format'
-import { documentStatusVariant } from '@/lib/status'
+import { documentStatusVariant } from './document-status'
 
-interface InvoiceRow {
+/**
+ * A sales invoice as the finance plane serves it. `customer` accepts a bare
+ * name because Console reads a denormalized row where the product apps hold the
+ * related record.
+ */
+export interface InvoiceRow {
   id: string
   number: string
   totalAmount: bigint | string
   amountDue?: bigint | string
   currency: string
   status: string
-  customer: { name: string } | string
+  customer: { name: string } | string | null
 }
 
-interface Props {
-  emptyState?: React.ReactNode
+export interface InvoicesTableProps {
   invoices: InvoiceRow[]
+  /** Row and link destinations are `${baseHref}/${id}`; the host owns routing. */
+  baseHref: string
+  /** Host money policy, as in ItemsTable. */
+  formatAmount: (amount: bigint | string, currency: string) => string
+  emptyState?: ReactNode
 }
 
-function getCustomerName(customer: InvoiceRow['customer']): string {
+function customerName(customer: InvoiceRow['customer']): string {
   if (typeof customer === 'string') return customer
   return customer?.name ?? '—'
 }
 
-function getAmountDue(row: InvoiceRow): bigint | string {
-  if (row.amountDue !== undefined) return row.amountDue
-  return row.totalAmount
+/** An unpaid balance is the total until the document says otherwise. */
+function amountDue(row: InvoiceRow): bigint | string {
+  return row.amountDue ?? row.totalAmount
 }
 
-export function InvoicesTable({ invoices, emptyState }: Props) {
+export function InvoicesTable({
+  invoices,
+  baseHref,
+  formatAmount,
+  emptyState,
+}: InvoicesTableProps) {
   const router = useRouter()
+  const hrefFor = (id: string) => `${baseHref}/${id}`
+
   const columns: ColumnDef<InvoiceRow, unknown>[] = [
     {
       id: 'invoice',
@@ -46,7 +62,7 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
       ),
       cell: ({ row }) => (
         <Link
-          href={`/invoices/${row.original.id}`}
+          href={hrefFor(row.original.id)}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
           onClick={(event) => event.stopPropagation()}
         >
@@ -56,11 +72,11 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
     },
     {
       id: 'customer',
-      accessorFn: (row) => getCustomerName(row.customer),
+      accessorFn: (row) => customerName(row.customer),
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Customer" />
       ),
-      cell: ({ row }) => getCustomerName(row.original.customer),
+      cell: ({ row }) => customerName(row.original.customer),
     },
     {
       id: 'total',
@@ -69,16 +85,16 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
         <DataTableColumnHeader column={column} title="Total" />
       ),
       cell: ({ row }) =>
-        formatMoney(row.original.totalAmount, row.original.currency),
+        formatAmount(row.original.totalAmount, row.original.currency),
     },
     {
       id: 'amountDue',
-      accessorFn: getAmountDue,
+      accessorFn: amountDue,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Amount due" />
       ),
       cell: ({ row }) =>
-        formatMoney(getAmountDue(row.original), row.original.currency),
+        formatAmount(amountDue(row.original), row.original.currency),
     },
     {
       id: 'status',
@@ -102,7 +118,7 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
         emptyState={emptyState}
         columns={columns}
         data={invoices}
-        onRowClick={(invoice) => router.push(`/invoices/${invoice.id}`)}
+        onRowClick={(invoice) => router.push(hrefFor(invoice.id))}
       />
     </div>
   )

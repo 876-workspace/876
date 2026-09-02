@@ -6,8 +6,10 @@ import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 
 import {
   findAppWorkspace,
+  workspaceSectionLinks,
   type WorkspaceIconKey,
 } from '@/features/orgs/app-workspaces'
+import { resolveWorkspaceNavigation } from '@/features/orgs/workspace-navigation'
 import { WorkspaceEntitlementNotice } from '@/features/orgs/components/workspace-entitlement-notice'
 import { WorkspaceIcon } from '@/features/orgs/components/workspace-icon'
 import { WorkspaceShell } from '@/features/orgs/components/workspace-shell'
@@ -26,10 +28,22 @@ export function createWorkspaceLayout(workspaceKey: string) {
     const workspace = findAppWorkspace(workspaceKey)
     if (!workspace) notFound()
 
+    // The rail is chrome, but which sections it holds depends on the
+    // organization's feature rollout, so it cannot render before that answer
+    // arrives. Both resolvers are request-cached, and the page beneath reuses
+    // the same organization lookup.
+    const org = await resolveOrg(slug)
+    const links = org
+      ? await resolveWorkspaceNavigation(slug, org.id, workspace)
+      : []
+
     return (
       <WorkspaceShell
         workspace={workspace}
         orgSlug={slug}
+        links={
+          links.length > 0 ? links : workspaceSectionLinks(slug, workspace)
+        }
         appLogo={
           <Suspense
             fallback={

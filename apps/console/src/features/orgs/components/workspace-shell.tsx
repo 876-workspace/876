@@ -4,14 +4,25 @@ import { useSyncExternalStore, type ReactNode } from 'react'
 import { ChevronLeft, ChevronRight } from '@876/ui/icons'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
-import type { AppWorkspace } from '../app-workspaces'
-import { workspaceSectionLinks } from '../app-workspaces'
+import type { AppWorkspace, WorkspaceIconKey } from '../app-workspaces'
 import { WorkspaceIcon } from './workspace-icon'
 import { WorkspaceNav } from './workspace-nav'
 
 type Props = {
   workspace: AppWorkspace
   orgSlug: string
+  /**
+   * The sections this organization actually has, resolved on the server from
+   * the product's own navigation registry against the organization's feature
+   * rollout. An organization without `billing-banking` has no Banking section
+   * here, exactly as its own members see.
+   */
+  links: {
+    label: string
+    href: string
+    iconKey: WorkspaceIconKey
+    exact: boolean
+  }[]
   /**
    * The organization's display name for the "whose workspace is this" line.
    *
@@ -67,6 +78,7 @@ function writeCollapsed(next: boolean) {
 export function WorkspaceShell({
   workspace,
   orgSlug,
+  links,
   appLogo,
   notice,
   children,
@@ -81,8 +93,6 @@ export function WorkspaceShell({
   )
 
   const handleToggle = writeCollapsed
-
-  const links = workspaceSectionLinks(orgSlug, workspace)
 
   return (
     <div className="-mx-4 -my-6 flex min-h-[calc(100vh-theme(spacing.28))] flex-col sm:-mx-6 lg:-mx-8 lg:flex-row lg:items-stretch">

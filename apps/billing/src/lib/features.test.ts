@@ -72,6 +72,21 @@ describe('getFeatures', () => {
       documents: true,
       payroll: true,
     })
+    expect(result.featureKeys).toEqual([
+      'billing-search-bar',
+      'billing-theme-switcher',
+      'billing-org-switcher',
+      'billing-sales',
+      'billing-sales-quotes',
+      'billing-sales-estimates',
+      'billing-sales-invoices',
+      'billing-subscriptions',
+      'billing-purchases',
+      'billing-purchases-vendors',
+      'billing-banking',
+      'billing-documents',
+      'billing-payroll',
+    ])
     expect(result.widgets).toEqual({ notepad: true })
   })
 
@@ -117,7 +132,33 @@ describe('getFeatures', () => {
       documents: false,
       payroll: false,
     })
+    expect(result.featureKeys).toEqual([
+      'billing-sales-quotes',
+      'billing-sales-invoices',
+      'billing-purchases-vendors',
+      'billing-purchases-expenses',
+    ])
     expect(result.widgets).toEqual({ notepad: false })
+  })
+
+  it('canonicalizes enabled legacy feature aliases', async () => {
+    mocks.evaluate.mockResolvedValue({
+      data: {
+        data: [{ slug: 'billing_sales' }, { slug: 'billing_sales_quotes' }],
+      },
+      error: null,
+    })
+
+    const result = await getFeatures({ userId: 'user_legacy_features' })
+
+    expect(result.featureKeys).toEqual([
+      'billing-sales',
+      'billing-sales-quotes',
+    ])
+    expect({
+      sales: result.productFeatures.sales,
+      quotes: result.productFeatures.quotes,
+    }).toEqual({ sales: true, quotes: true })
   })
 
   it('does not render Chat when either widget master is unavailable', async () => {
@@ -177,6 +218,7 @@ describe('getFeatures', () => {
       documents: false,
       payroll: false,
     })
+    expect(result.featureKeys).toEqual(['billing-search-bar'])
     expect(result.widgets).toEqual({ notepad: false })
   })
 
@@ -212,6 +254,7 @@ describe('getFeatures', () => {
       documents: false,
       payroll: false,
     })
+    expect(result.featureKeys).toEqual([])
     expect(result.widgets).toEqual({ notepad: false })
   })
 })

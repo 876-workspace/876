@@ -8,7 +8,7 @@ import {
   resetNavigationTestState,
 } from '@/test/next-navigation-stub'
 import { ItemsList } from './items-list'
-import type { ItemRow } from './items-table'
+import type { ItemRow } from '@876/billing-ui/items-table'
 
 function createItem(overrides: Partial<ItemRow> = {}): ItemRow {
   return {
