@@ -8,7 +8,8 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
 import { BILLING_ITEMS_SKELETON_COLUMNS } from '@/features/billing/components/items-skeleton-columns'
-import { formatItemAmount, toItemRow } from '@/features/billing/item-rows'
+import { toItemRow } from '@/features/billing/item-rows'
+import { formatBillingAmount } from '@/features/billing/money'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
 import { billing } from '@/lib/services/billing'
 
@@ -73,7 +74,7 @@ async function ItemsData({ slug }: { slug: string }) {
       items={(result.data?.data ?? []).map(toItemRow)}
       defaultCurrency={tenant.data?.defaultCurrency ?? 'JMD'}
       baseHref={`${workspaceBase(slug, 'billing')}/items`}
-      formatAmount={formatItemAmount}
+      formatAmount={formatBillingAmount}
       emptyState={
         <p className="text-muted-foreground py-10 text-center text-sm">
           No catalog items exist in this workspace yet.
