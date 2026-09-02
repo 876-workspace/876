@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { NavProgress } from '@876/ui/nav-progress'
 import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
+import type { NavGroupDefinition } from '@876/core/access'
 import { SidebarTrigger } from '@876/ui/sidebar'
 import {
   AppShell,
@@ -26,12 +27,14 @@ export async function InvoiceShell({
   user,
   currentOrg,
   orgs,
+  navigation,
 }: {
   children: ReactNode
   orgName: string
   user: SidebarUserMenuUser
   currentOrg: OrgSwitcherOrg
   orgs: OrgSwitcherOrg[]
+  navigation: NavGroupDefinition[]
 }) {
   const cookieStore = await cookies()
   const sidebarCookie = cookieStore.get('sidebar_state')
@@ -43,14 +46,18 @@ export async function InvoiceShell({
     <AppShell defaultOpen={defaultSidebarOpen}>
       <NavProgress />
       <AppShellSidebarArea>
-        <InvoiceSidebar orgName={orgName} />
+        <InvoiceSidebar orgName={orgName} navigation={navigation} />
       </AppShellSidebarArea>
       <AppShellContent>
         <AppShellHeader>
           <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
-            <TopbarSearch />
+            <TopbarSearch
+              navigation={navigation.flatMap((group) =>
+                group.entries.map(({ title, href }) => ({ title, href }))
+              )}
+            />
           </div>
 
           <div className="ml-auto flex items-center gap-2">

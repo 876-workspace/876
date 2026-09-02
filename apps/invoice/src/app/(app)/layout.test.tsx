@@ -5,6 +5,7 @@ const {
   mockGetInvoiceContextResult,
   mockRedirect,
   mockRequireValidSession,
+  mockResolveAccessContext,
 } = vi.hoisted(() => ({
   mockGetAuthSession: vi.fn(),
   mockGetInvoiceContextResult: vi.fn(),
@@ -12,12 +13,17 @@ const {
     throw new Error(`REDIRECT:${target}`)
   }),
   mockRequireValidSession: vi.fn(async () => {}),
+  mockResolveAccessContext: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({ redirect: mockRedirect }))
 
 vi.mock('@/lib/auth/context', () => ({
   getInvoiceContextResult: mockGetInvoiceContextResult,
+}))
+
+vi.mock('@/lib/auth/access-context', () => ({
+  resolveAccessContext: mockResolveAccessContext,
 }))
 
 vi.mock('@/lib/auth/guards', () => ({
@@ -84,6 +90,15 @@ describe('AppLayout entitlement routing', () => {
         avatar: null,
       },
     })
+    mockResolveAccessContext.mockResolvedValue({
+      status: 'ok',
+      context: {
+        subject: { userId: 'user_2kL9mN4q' },
+        permissions: ['invoices.view'],
+        features: [],
+        experiments: {},
+      },
+    })
   })
 
   describe('organization without an Invoice subscription', () => {
@@ -106,7 +121,9 @@ describe('AppLayout entitlement routing', () => {
     })
 
     it('routes a blocked organization to onboarding, which owns the no-access decision', async () => {
-      const target = await redirectTargetOf(contextWith('blocked', 'super-admin'))
+      const target = await redirectTargetOf(
+        contextWith('blocked', 'super-admin')
+      )
 
       expect(target).toBe('/onboarding')
       expect(mockRedirect).toHaveBeenCalledTimes(1)
@@ -152,6 +169,39 @@ describe('AppLayout entitlement routing', () => {
 
       expect(target).toBe('/login?returnTo=%2F')
       expect(mockRedirect).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('app access', () => {
+    it('routes a member holding no in-app permission to no-access', async () => {
+      mockResolveAccessContext.mockResolvedValue({
+        status: 'ok',
+        context: {
+          subject: { userId: 'user_2kL9mN4q' },
+          permissions: [],
+          features: [],
+          experiments: {},
+        },
+      })
+
+      const target = await redirectTargetOf(contextWith('active'))
+
+      expect(target).toBe('/no-access')
+      expect(mockRedirect).toHaveBeenCalledTimes(1)
+    })
+
+    // An outage is not an authorization answer. Redirecting here would tell a
+    // member they lack access when nothing could be checked.
+    it('keeps the viewer in the app when access could not be resolved', async () => {
+      mockResolveAccessContext.mockResolvedValue({
+        status: 'unavailable',
+        code: 'platform/app-unresolved',
+      })
+
+      const target = await redirectTargetOf(contextWith('active'))
+
+      expect(target).toBeNull()
+      expect(mockRedirect).not.toHaveBeenCalled()
     })
   })
 })

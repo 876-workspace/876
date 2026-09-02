@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 import { CustomersListData } from './_components/customers-list-data'
 import { CustomersSection } from './_components/customers-section'
 
@@ -20,7 +22,13 @@ const CUSTOMERS_SKELETON_COLUMNS = [
  * beside the list instead of replacing it, and what keeps the list column a
  * single element across open and close so its width can animate.
  */
-export default function CustomersLayout({ children }: { children: ReactNode }) {
+export default async function CustomersLayout({
+  children,
+}: {
+  children: ReactNode
+}) {
+  await requireAppPermission('customers.view')
+
   return (
     <CustomersSection
       list={

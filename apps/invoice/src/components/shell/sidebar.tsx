@@ -2,7 +2,20 @@
 
 import Link from 'next/link'
 
+import type { NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
+import {
+  BarChart3,
+  Building2,
+  CircleStackIcon,
+  ClipboardList,
+  Clock,
+  CreditCard,
+  ReceiptPercent,
+  Settings,
+  StickyNote,
+  Users,
+} from '@876/ui/icons'
 import {
   Sidebar as BaseSidebar,
   SidebarContent,
@@ -10,11 +23,29 @@ import {
   SidebarHeader,
 } from '@876/ui/sidebar'
 
-import { navConfig } from './nav-config'
-import { NavDropdown } from './nav-dropdown'
 import { NavLink } from './nav-link'
 
-export function InvoiceSidebar({ orgName }: { orgName: string }) {
+const icons = {
+  dashboard: BarChart3,
+  customers: Users,
+  items: CircleStackIcon,
+  quotes: StickyNote,
+  invoices: ClipboardList,
+  'sales-receipts': ReceiptPercent,
+  payments: CreditCard,
+  expenses: Building2,
+  'time-tracking': Clock,
+  reports: CreditCard,
+  settings: Settings,
+}
+
+export function InvoiceSidebar({
+  orgName,
+  navigation,
+}: {
+  orgName: string
+  navigation: NavGroupDefinition[]
+}) {
   return (
     <BaseSidebar collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
@@ -41,25 +72,24 @@ export function InvoiceSidebar({ orgName }: { orgName: string }) {
           aria-label="Invoice sections"
           className="flex flex-1 flex-col gap-4"
         >
-          {navConfig.map((group, idx) => (
+          {navigation.map((group, idx) => (
             <SidebarGroup
-              key={group.label ?? `group-${idx}`}
-              className={cn('gap-1.5 p-0', group.className)}
+              key={group.key ?? `group-${idx}`}
+              className={cn(
+                'gap-1.5 p-0',
+                group.key === 'secondary' && 'mt-auto'
+              )}
             >
               <div className="flex flex-col gap-1">
-                {group.items.map((item) =>
-                  item.children?.length ? (
-                    <NavDropdown key={item.title} item={item} />
-                  ) : (
-                    <NavLink
-                      key={item.title}
-                      href={item.href}
-                      title={item.title}
-                      icon={item.icon}
-                      color={item.color}
-                    />
-                  )
-                )}
+                {group.entries.map((item) => (
+                  <NavLink
+                    key={item.key}
+                    href={item.href}
+                    title={item.title}
+                    icon={icons[item.icon as keyof typeof icons] ?? Settings}
+                    colorClassName={item.colorClassName}
+                  />
+                ))}
               </div>
             </SidebarGroup>
           ))}

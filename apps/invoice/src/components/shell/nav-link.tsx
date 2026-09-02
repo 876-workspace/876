@@ -20,11 +20,13 @@ export function NavLink({
   title,
   icon: Icon,
   color,
+  colorClassName,
 }: {
   href: string
   title: string
   icon: IconComponent
   color?: string
+  colorClassName?: string
 }) {
   const pathname = usePathname()
   const { isMobile, state } = useSidebar()
@@ -43,7 +45,7 @@ export function NavLink({
     >
       <Icon
         aria-hidden="true"
-        className="size-[1.125rem] shrink-0"
+        className={cn('size-[1.125rem] shrink-0', colorClassName)}
         style={color ? { color } : undefined}
       />
       <span className="truncate group-data-[collapsible=icon]:hidden">

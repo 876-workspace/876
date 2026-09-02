@@ -15,6 +15,8 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 import { ExpensesTable } from './_components/expenses-table'
 
 export const metadata = {
@@ -27,6 +29,8 @@ const EXPENSE_STATUS_OPTIONS: StatusFilterOption[] = [
 ]
 
 export default async function ExpensesPage() {
+  await requireAppPermission('settings.view')
+
   return (
     <Page>
       <ResourceToolbar

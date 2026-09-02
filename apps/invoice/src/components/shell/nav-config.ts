@@ -1,132 +1,113 @@
-import {
-  BarChart3,
-  Building2,
-  CircleStackIcon,
-  ClipboardList,
-  Clock,
-  CreditCard,
-  ReceiptPercent,
-  Settings,
-  StickyNote,
-  Users,
-} from '@876/ui/icons'
-import type { IconComponent } from '@876/ui/icons'
+import { defineNavigation } from '@876/core/access'
 
-export type NavChild = {
-  title: string
-  href: string
-}
-
-export type NavItem = {
-  title: string
-  href: string
-  icon: IconComponent
-  color?: string
-  children?: NavChild[]
-}
-
-export type NavGroup = {
-  label?: string
-  className?: string
-  items: NavItem[]
-}
-
-/**
- * 876 Invoice — scaled-down Billing parity nav.
- * Icons + colors mirror `apps/billing/src/components/shell/nav-config.ts`
- * so the two products feel identical:
- *  - Home: BarChart3 + var(--876-blue)  → billing Home
- *  - Customers: Users + var(--876-gold) → billing Customers
- *  - Items: CircleStackIcon + var(--876-blue) → billing Items
- *  - Quotes/Invoices/Sales Receipt: purple sales family (billing Sales)
- *  - Payments Received: CreditCard green (billing Banking/Payments)
- *  - Expenses: Building2 gold (billing Purchases)
- *  - Time Tracking: Clock blue
- *  - Reports: CreditCard green (billing Reports)
- *  - Settings: Settings blue (billing Settings)
- */
-export const navConfig: NavGroup[] = [
+/** Invoice navigation is resolved on the server before it crosses into the shell. */
+export const navConfig = defineNavigation([
   {
-    items: [
+    key: 'workspace',
+    entries: [
       {
+        key: 'home',
         title: 'Home',
         href: '/',
-        icon: BarChart3,
-        color: 'var(--876-blue)',
+        icon: 'dashboard',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'dashboard.view' },
       },
       {
+        key: 'customers',
         title: 'Customers',
         href: '/customers',
-        icon: Users,
-        color: 'var(--876-gold)',
+        icon: 'customers',
+        colorClassName: 'text-[var(--876-gold)]',
+        requires: { permission: 'customers.view' },
       },
       {
+        key: 'items',
         title: 'Items',
         href: '/items',
-        icon: CircleStackIcon,
-        color: 'var(--876-blue)',
+        icon: 'items',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'items.view' },
       },
     ],
   },
   {
-    items: [
+    key: 'sales',
+    entries: [
       {
+        key: 'quotes',
         title: 'Quotes',
         href: '/quotes',
-        icon: StickyNote,
-        color: 'var(--876-purple)',
+        icon: 'quotes',
+        colorClassName: 'text-[var(--876-purple)]',
+        requires: { permission: 'estimates.view' },
       },
       {
+        key: 'invoices',
         title: 'Invoices',
         href: '/invoices',
-        icon: ClipboardList,
-        color: 'var(--876-purple)',
+        icon: 'invoices',
+        colorClassName: 'text-[var(--876-purple)]',
+        requires: { permission: 'invoices.view' },
       },
       {
+        key: 'sales-receipts',
         title: 'Sales Receipt',
         href: '/sales-receipts',
-        icon: ReceiptPercent,
-        color: 'var(--876-purple)',
+        icon: 'sales-receipts',
+        colorClassName: 'text-[var(--876-purple)]',
+        requires: { permission: 'invoices.view' },
       },
       {
+        key: 'payments',
         title: 'Payments Received',
         href: '/payments',
-        icon: CreditCard,
-        color: 'var(--876-green)',
+        icon: 'payments',
+        colorClassName: 'text-[var(--876-green)]',
+        requires: { permission: 'payments.view' },
       },
     ],
   },
   {
-    items: [
+    key: 'expenses',
+    entries: [
       {
+        key: 'expenses',
         title: 'Expenses',
         href: '/expenses',
-        icon: Building2,
-        color: 'var(--876-gold)',
+        icon: 'expenses',
+        colorClassName: 'text-[var(--876-gold)]',
+        requires: { permission: 'settings.view' },
       },
     ],
   },
   {
-    className: 'mt-auto',
-    items: [
+    key: 'secondary',
+    entries: [
       {
+        key: 'time-tracking',
         title: 'Time Tracking',
         href: '/time-tracking',
-        icon: Clock,
-        color: 'var(--876-blue)',
+        icon: 'time-tracking',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'settings.view' },
       },
       {
+        key: 'reports',
         title: 'Reports',
         href: '/reports',
-        icon: CreditCard,
-        color: 'var(--876-green)',
+        icon: 'reports',
+        colorClassName: 'text-[var(--876-green)]',
+        requires: { permission: 'reports.view' },
       },
       {
+        key: 'settings',
         title: 'Settings',
         href: '/settings',
-        icon: Settings,
-        color: 'var(--876-blue)',
+        icon: 'settings',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'settings.view' },
       },
     ],
   },
-]
+])
