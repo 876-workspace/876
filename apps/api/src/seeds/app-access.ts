@@ -1,7 +1,9 @@
 import type { AppPermissionCatalog } from '@876/core/access'
 import {
+  billingPermissionCatalog,
   couriersPermissionCatalog,
   crmPermissionCatalog,
+  invoicePermissionCatalog,
 } from '@876/core/access/catalogs'
 
 import { generateId } from '@/platform/ids'
@@ -35,30 +37,6 @@ type AppAccessSeedDefinition = {
   roles: AppRoleSeed[]
 }
 
-function title(value: string): string {
-  return value
-    .split('-')
-    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
-    .join(' ')
-}
-
-function catalog(
-  modules: Array<{ key: string; actions: string[] }>
-): AppPermissionSeed[] {
-  let position = 0
-  return modules.flatMap((module) =>
-    module.actions.map((action) => ({
-      key: `${module.key}.${action}`,
-      moduleKey: module.key,
-      action,
-      label: `${title(action)} ${title(module.key)}`,
-      description: null,
-      isDangerous: action === 'delete',
-      position: position++,
-    }))
-  )
-}
-
 /** Adapts a canonical `@876/core/access` catalog to the seed row shape. */
 function fromCatalog(source: AppPermissionCatalog): AppPermissionSeed[] {
   let position = 0
@@ -85,32 +63,8 @@ function keysFor(
 const couriersPermissions = fromCatalog(couriersPermissionCatalog)
 const crmPermissions = fromCatalog(crmPermissionCatalog)
 
-const billingPermissions = catalog([
-  { key: 'dashboard', actions: ['view'] },
-  { key: 'customers', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'catalog', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'sales', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'subscriptions', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'reports', actions: ['view'] },
-  { key: 'currencies', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'taxes', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'vendors', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'purchases', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'banking', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'payments', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'settings', actions: ['view', 'edit'] },
-])
-
-const invoicePermissions = catalog([
-  { key: 'dashboard', actions: ['view'] },
-  { key: 'customers', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'items', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'invoices', actions: ['view', 'create', 'edit', 'delete', 'export'] },
-  { key: 'estimates', actions: ['view', 'create', 'edit', 'delete', 'export'] },
-  { key: 'payments', actions: ['view', 'create', 'edit', 'delete'] },
-  { key: 'reports', actions: ['view'] },
-  { key: 'settings', actions: ['view', 'edit'] },
-])
+const billingPermissions = fromCatalog(billingPermissionCatalog)
+const invoicePermissions = fromCatalog(invoicePermissionCatalog)
 
 function viewerPermissions(
   permissions: readonly AppPermissionSeed[]
