@@ -186,6 +186,48 @@ describe('AppAccessPanel', () => {
     ).toHaveTextContent('Editor')
   })
 
+  it('keeps a failed first assignment selected and retryable', async () => {
+    const onRoleChange = vi.fn().mockResolvedValue('Assignment failed')
+    render(
+      <AppAccessPanel
+        entries={[entry({ assigned: false, assignmentId: null, role: null })]}
+        onRoleChange={onRoleChange}
+      />
+    )
+
+    await chooseRole('Billing role', 'Editor')
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Assign' }))
+
+    expect(await screen.findByText('Assignment failed')).toBeVisible()
+    expect(
+      screen.getByRole('combobox', { name: 'Billing role' })
+    ).toHaveTextContent('Editor')
+    expect(screen.getByRole('button', { name: 'Assign' })).toBeEnabled()
+  })
+
+  it('waits for the server assignment id before enabling overrides', async () => {
+    render(
+      <AppAccessPanel
+        entries={[entry({ assigned: false, assignmentId: null, role: null })]}
+        onRoleChange={vi.fn().mockResolvedValue(null)}
+        onOverrideChange={vi.fn().mockResolvedValue(null)}
+      />
+    )
+
+    await chooseRole('Billing role', 'Editor')
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Assign' }))
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('checkbox', { name: 'Edit settings' })
+      ).toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
   it('adds a missing role permission to grants only', async () => {
     const value = entry()
     const onOverrideChange = vi.fn().mockResolvedValue(null)
@@ -272,6 +314,35 @@ describe('AppAccessPanel', () => {
       screen.getByRole('checkbox', { name: 'View reports' })
     ).toHaveAttribute('aria-disabled', 'true')
     expect(onOverrideChange).not.toHaveBeenCalled()
+  })
+
+  it('disables the app mutation controls while an override is in flight', async () => {
+    let resolveChange: (value: string | null) => void = () => undefined
+    const onOverrideChange = vi.fn(
+      () =>
+        new Promise<string | null>((resolve) => {
+          resolveChange = resolve
+        })
+    )
+    render(
+      <AppAccessPanel
+        entries={[entry()]}
+        onRoleChange={vi.fn().mockResolvedValue(null)}
+        onOverrideChange={onOverrideChange}
+      />
+    )
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole('checkbox', { name: 'Edit settings' }))
+
+    expect(
+      screen.getByRole('combobox', { name: 'Billing role' })
+    ).toBeDisabled()
+    expect(
+      screen.getByRole('checkbox', { name: 'View reports' })
+    ).toHaveAttribute('aria-disabled', 'true')
+    resolveChange(null)
   })
 
   it('groups permissions by module in catalog module order', () => {

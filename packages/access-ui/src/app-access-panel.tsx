@@ -117,9 +117,12 @@ function AppAccessEntryPanel({
   }, [entry])
 
   const selectedRole = current.roles.find((role) => role.id === roleId) ?? null
+  const mutationPending = roleSaving || overrideSaving !== null
+  const awaitingAssignmentRefresh = current.assigned && !current.assignmentId
+  const controlsDisabled = mutationPending || awaitingAssignmentRefresh
 
   async function changeRole(nextRoleId: string) {
-    if (readOnly || roleSaving || !onRoleChange) return
+    if (readOnly || controlsDisabled || !onRoleChange) return
 
     setRoleId(nextRoleId)
     setCurrent((value) => ({
@@ -131,11 +134,19 @@ function AppAccessEntryPanel({
     setRoleError(null)
     const error = await onRoleChange(entry, nextRoleId)
     setRoleSaving(false)
-    if (error) setRoleError(error)
+    if (error) {
+      if (!entry.assigned)
+        setCurrent((value) => ({
+          ...value,
+          assigned: false,
+          role: entry.role,
+        }))
+      setRoleError(error)
+    }
   }
 
   async function changeOverride(permission: AccessPermission) {
-    if (readOnly || overrideSaving || !onOverrideChange) return
+    if (readOnly || controlsDisabled || !onOverrideChange) return
 
     const next = nextOverride(current, permission)
 
@@ -184,7 +195,7 @@ function AppAccessEntryPanel({
             <Select
               value={roleId || undefined}
               onValueChange={(value) => setRoleId(value ?? '')}
-              disabled={readOnly || roleSaving}
+              disabled={readOnly || controlsDisabled}
             >
               <SelectTrigger
                 id={`${current.appId}-assign-role`}
@@ -209,7 +220,7 @@ function AppAccessEntryPanel({
               type="button"
               variant="info"
               size="sm"
-              disabled={!roleId || roleSaving || !onRoleChange}
+              disabled={!roleId || controlsDisabled || !onRoleChange}
               onClick={() => void changeRole(roleId)}
             >
               Assign
@@ -230,7 +241,7 @@ function AppAccessEntryPanel({
           <Select
             value={roleId || undefined}
             onValueChange={(value) => value && void changeRole(value)}
-            disabled={readOnly || roleSaving || !onRoleChange}
+            disabled={readOnly || controlsDisabled || !onRoleChange}
           >
             <SelectTrigger
               id={`${current.appId}-role`}
@@ -279,9 +290,7 @@ function AppAccessEntryPanel({
                   const state = permissionState(current, permission)
                   const error = overrideErrors[permission.key]
                   const disabled =
-                    readOnly ||
-                    overrideSaving === permission.key ||
-                    !onOverrideChange
+                    readOnly || controlsDisabled || !onOverrideChange
 
                   return (
                     <li
