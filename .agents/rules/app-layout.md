@@ -278,9 +278,39 @@ record beside the list rather than replacing it — Console Users, Console Roles
 Console Provisioning, and CRM Customers today, and every future section like
 them.
 
-**The component is shared: `ListDetailShell` from `@876/ui/list-detail-shell`.**
-Do not copy the grid into an app. Three per-app copies had already drifted
-before it was extracted.
+**The components are shared. Do not copy any of them into an app** — three
+per-app copies of the grid had already drifted before it was extracted, and the
+same was true of the record card and the condensed list.
+
+| Import                                                                                                                                                                                                                                | What it is                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `@876/ui/list-detail-section` → `ListDetailSection`                                                                                                                                                                                   | The whole section, page container down. Render it from the section's `layout.tsx`.          |
+| `@876/ui/list-detail-shell` → `ListDetailShell`, `useListDetailRoute`, `useDetailSegments`                                                                                                                                            | The animating two-column grid, and the hooks that read open/closed from the URL.            |
+| `@876/ui/list-pane` → `ListPane`, `ListPaneHeader`, `ListPaneBody`, `ListPaneEmpty`, `ListPaneItem`                                                                                                                                   | The condensed sidebar list the table collapses into.                                        |
+| `@876/ui/detail-card` → `DetailCard`, `DetailCardHeader`, `DetailCardIcon`, `DetailCardMeta`, `DetailCardMetaItem`, `DetailCardTabs`, `DetailCardTab`, `DetailCardRouteTabs`, `DetailCardBody`, `DetailCardFooter`, `DetailCardIdBar` | The record card that fills the detail column.                                               |
+| `@876/ui/detail-card` → `DetailCardHeadline`, `DetailCardSection`, `DetailCardSectionTitle`, `DetailCardFacts`, `DetailCardFact`                                                                                                      | What goes **inside** the body: the one number the record is about, then titled fact groups. |
+
+**Do not nest a `876-card` inside a card body.** The card is already the
+surface; a section is a quiet title and its content. A record built from
+bordered boxes inside a bordered box reads as a pile, and gives the eye nowhere
+to land — which is what `DetailCardHeadline` is for.
+
+`DetailCardHeader` takes `closeHref` as well as `onClose`, so a **server**
+layout can offer the close affordance without a client boundary, and
+`DetailCardRouteTabs` takes the same `RouteTabItem[]` as the page-level
+`RouteTabs`, so a record's tabs stay declared once, as data.
+
+**A layout receives no `searchParams`.** A section whose toolbar carries a
+status filter therefore reads it with `useSearchParams()` in the client section
+component, and applies it to the rows in the client list component. Fetching
+filtered in the layout is not available; see
+`apps/billing/src/app/(app)/customers/_components/customers-list.tsx` for the
+comment that must accompany it.
+
+The five-file shape of a section — `layout.tsx`, `_components/<x>-section.tsx`,
+`_components/<x>-list.tsx`, `_components/<x>-list-data.tsx`, and a null
+`(list)/page.tsx` — is worked through in
+`apps/billing/src/app/(app)/customers/`.
 
 ### The shape
 
@@ -401,6 +431,19 @@ not shrink below its content unless told to.
   `<div className="space-y-4">` — a breadcrumb wrapper, typically — reintroduces
   flow height and collapses the card. If the record layout needs a breadcrumb,
   it does not belong in a split view: the list beside it _is_ the way back.
+
+#### Scrolling — never `overscroll-contain` on an in-page pane
+
+The card body and the list pane scroll independently, and both sit **in** the
+page rather than over it. `overscroll-behavior: contain` stops the wheel from
+reaching the page once a pane is at its bounds — and in Chrome it stops it even
+when the pane has nothing to scroll at all. The symptom is that the whole screen
+freezes whenever the cursor happens to be over the card, and only moves again
+once the pointer is outside it.
+
+So: `overscroll-contain` belongs to overlays — popouts, comboboxes, dialogs, the
+widget dock — and to nothing that is part of the page. `DetailCardBody` and
+`ListPaneBody` already omit it; do not add it back locally.
 
 #### Checklist before shipping a split view
 
