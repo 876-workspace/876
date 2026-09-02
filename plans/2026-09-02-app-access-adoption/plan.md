@@ -123,17 +123,17 @@ migrated partial role gains a `.delete` key.
 
 ## Phases
 
-| #   | Phase                                                                           | Delegate                   | Status      |
-| --- | ------------------------------------------------------------------------------- | -------------------------- | ----------- |
-| 0   | Wire `materializeEntitledAppRoles`; add billing + invoice catalogs + drift test | orchestrator               | done        |
-| 0b  | Session-tier org app-access SDK surface + CRM authorization guard               | orchestrator               | done        |
-| 1   | Promote settings hub to `@876/ui`; adopt in Billing + Invoice                   | codex `gpt-5.6-terra` high | done        |
-| 2   | `@876/access-ui` — access panel, effective-permission list, summary             | codex `gpt-5.6-terra` high | in progress |
-| 3   | CRM `/settings/users` split view + route handlers                               | codex `gpt-5.6-terra` high | briefed     |
-| 4   | Invoice `/settings/users` + hub                                                 | codex `gpt-5.6-terra` high | not started |
-| 5   | Billing migration off `billing_roles`/`billing_members`                         | orchestrator + codex       | not started |
-| 6   | ERM employment section                                                          | codex `gpt-5.6-terra` high | not started |
-| 7   | Console adopts `@876/access-ui`, retires `member-apps.tsx`                      | codex `gpt-5.6-terra` high | not started |
+| #   | Phase                                                                                        | Delegate                   | Status      |
+| --- | -------------------------------------------------------------------------------------------- | -------------------------- | ----------- |
+| 0   | Wire `materializeEntitledAppRoles`; add billing + invoice catalogs + drift test              | orchestrator               | done        |
+| 0b  | Session-tier org app-access SDK surface + CRM authorization guard                            | orchestrator               | done        |
+| 1   | Promote settings hub to `@876/ui`; adopt in Billing + Invoice                                | codex `gpt-5.6-terra` high | done        |
+| 2   | `@876/access-ui` — access panel, effective-permission list, summary                          | codex `gpt-5.6-terra` high | in progress |
+| 3   | CRM `/settings/users` split view + route handlers                                            | codex `gpt-5.6-terra` high | briefed     |
+| 4   | Invoice `/settings/users` + hub                                                              | codex `gpt-5.6-terra` high | not started |
+| 5   | Billing migration off `billing_roles`/`billing_members`                                      | orchestrator + codex       | not started |
+| 6   | folded into Phase 3 — the roster already carries position and one call returns every profile | codex `gpt-5.6-terra` high | n/a         |
+| 7   | Console adopts `@876/access-ui`, retires `member-apps.tsx`                                   | codex `gpt-5.6-terra` high | not started |
 
 ## Dispatched briefs
 

@@ -61,7 +61,10 @@ response. A `Promise.all(rows.map(retrieve))` is still an N+1 and is a defect he
 **One call returns a member's access across every entitled app:**
 
 ```ts
-const { data } = await workspace.appMemberships.listForMember(orgId, membershipId)
+const { data } = await workspace.appMemberships.listForMember(
+  orgId,
+  membershipId
+)
 // one AdminAppMembership-shaped row per entitled app
 ```
 
@@ -135,13 +138,13 @@ Do not swap components; that would remount on every open and let the two drift.
 
 Full table columns, following `app-layout.md` §12:
 
-| Column | Tier |
-| --- | --- |
-| Member (avatar + name, email or `@username` beneath) | 1 — `font-medium`, the row link |
-| Email | 3 — muted |
-| Position | 3 — muted, em dash when null |
-| Organization role | badge |
-| Status | `<Badge>`, never bare coloured text |
+| Column                                               | Tier                                |
+| ---------------------------------------------------- | ----------------------------------- |
+| Member (avatar + name, email or `@username` beneath) | 1 — `font-medium`, the row link     |
+| Email                                                | 3 — muted                           |
+| Position                                             | 3 — muted, em dash when null        |
+| Organization role                                    | badge                               |
+| Status                                               | `<Badge>`, never bare coloured text |
 
 The condensed row keeps everything the full row encodes: name, position (or role as
 fallback), and a status badge when status is not `active`.
@@ -158,10 +161,41 @@ and call `notFound()` there when the membership does not exist.
 
 Tabs: **Overview**, **App access**.
 
-`page.tsx` (Overview): profile facts (name, email, position, organization role,
-status, member since, membership id) using `DetailCardSection` / `DetailCardFacts` /
-`DetailCardFact` from `@876/ui/detail-card`. Do **not** nest an `876-card` inside the
-card body. Below the facts, render `AppAccessSummary` from `@876/access-ui`.
+`page.tsx` (Overview), in two sections:
+
+**Profile** — name, email, organization role, status, member since, membership id,
+using `DetailCardSection` / `DetailCardFacts` / `DetailCardFact` from
+`@876/ui/detail-card`. Do **not** nest an `876-card` inside the card body.
+
+**Employment** — the ERM half. Resolve it with **one** call:
+
+```ts
+const { data, error } = await workspace.employees.list(orgId)
+// data.data: AdminEmployeeProfile[] — one per membership that has a profile
+```
+
+Index that list by `membership_id` and pick this member's. Render, omitting any
+field that is null rather than printing a row of em dashes: employee number, job
+title, department, location, manager, employment type, employment status, start
+date. `department_id`, `location_id`, and `manager_membership_id` are opaque ids —
+resolve the manager's name from the roster you already have, and render department
+and location by id only if you cannot resolve a name without another round trip.
+
+Rules for this section:
+
+- **Do not fetch one profile per member.** `workspace.employees.list(orgId)`
+  returns the whole organization; a per-row retrieve is the N+1 this brief exists
+  to prevent.
+- A member with **no** employee profile is normal, not an error. Render the
+  Profile section alone and omit Employment entirely — do not render an empty
+  card, and do not invent placeholder values.
+- If the employees call **fails**, keep the Profile section and show a compact
+  `AppError` notice in place of Employment, per `.claude/rules/error-handling.md`.
+  A failed enrichment must never blank the page or be mistaken for "no profile".
+- Fetch the employee list and the app memberships in parallel with `Promise.all`;
+  neither depends on the other.
+
+Below both sections, render `AppAccessSummary` from `@876/access-ui`.
 
 `access/page.tsx`: render `AppAccessPanel` from `@876/access-ui`, fed by a server
 component that resolves, in parallel with `Promise.all`:
@@ -195,9 +229,10 @@ In `apps/crm/src/app/(app)/settings/_lib/settings-nav.ts`, flip the **Members** 
 to `availability: 'available'` with `href: '/settings/users'`. Rename its label to
 `Users` so it matches the page it opens. Update `settings-nav.test.ts` accordingly.
 
-## Tests — at least 26 `it()` cases
+## Tests — at least 32 `it()` cases
 
 - **List** (≥8): both forms render; the condensed row keeps position and status; the selected row is marked; an empty roster renders an empty state; the status filter narrows rows; `all` shows every row; a member with no position renders an em dash; a member with no email renders without throwing.
+- **Employment section** (≥6): renders every present field; omits a null field rather than printing an em dash; a member with no profile renders Profile alone and no Employment card; a failed employees call renders an error notice **and keeps Profile mounted**; the manager is resolved to a name from the roster; the employees endpoint is called **once** for the page, never once per member.
 - **Detail layout** (≥4): tabs render before the member resolves; `notFound()` on a missing membership; tab hrefs carry the membership id; the card is the column's only child.
 - **Access page mapping** (≥6): entries are built from memberships + roles + catalog; an app with no catalog entry still renders; `readOnly` is true without `apps:assign`; the role list comes from `orgAppRoles`; a failed `listForMember` renders an error notice **and keeps the page chrome**; a failed `orgAppRoles` degrades that app's picker without hiding the others.
 - **Route handlers** (≥8): unauthenticated → 401 and the workspace client is **not** called; authenticated without `apps:assign` → 403 and the workspace client is **not** called; valid create → 201 and `create` called with exact args; valid update → 200 and exact args; delete → 200; invalid JSON body → 400; a workspace error is returned as a value with a non-2xx status; unknown body fields do not reach the client.
