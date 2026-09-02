@@ -344,6 +344,6 @@ Rules:
 
 ## Antigravity Rules
 
-- Always create and maintain the implementation plan (`implementation_plan.md`) in the root project directory.
+- Always create and maintain the implementation plan in `plans/<date>-<feature-slug>/plan.md`.
 - For the `agy` delegation model, exact invocation, and briefing format, see the `sub-agent-delegation` skill.
 - Scope parallel `agy`/Codex tasks to non-overlapping files.

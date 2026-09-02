@@ -5,8 +5,8 @@ takes a credential or base URL, and before deploying an app whose config
 changed. It exists because env gaps are the most expensive recurring failure
 on this platform and the least like their symptom.
 
-Companion to `.claude/rules/new-app-guide.md` §6–7 (per-app deployment config)
-and `.claude/rules/access-tiers.md` (which credential a caller should hold).
+Companion to `.agents/rules/new-app-guide.md` §6–7 (per-app deployment config)
+and `.agents/rules/access-tiers.md` (which credential a caller should hold).
 
 ## Why this needs a rule
 

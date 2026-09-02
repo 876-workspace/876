@@ -8,7 +8,7 @@ Read this file before writing, modifying, reviewing, or generating tests. This f
 - Inspect local package types in `node_modules/vitest/dist/*.d.ts` and the installed version in `package.json` when an API detail is unclear.
 - Consult official Vitest, Testing Library, or Next.js docs only when an API or behavior is unfamiliar and not covered by local project context.
 - For Next.js-specific tests that mock or exercise App Router behavior, route handlers, Server Actions, redirects, cookies, headers, metadata, instrumentation, or build behavior, read the relevant Next.js 16 guide in `node_modules/next/dist/docs/` first.
-- If writing tests requires changing application code, also read `.claude/rules/performance.md` and `.claude/rules/types.md` before editing that code.
+- If writing tests requires changing application code, also read `.agents/rules/performance.md` and `.agents/rules/types.md` before editing that code.
 
 ## Project Testing Context
 

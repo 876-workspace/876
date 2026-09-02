@@ -21,7 +21,7 @@ them — decide which before writing code.
 
 **Concrete instance: org → platform-app provisioning.** `subscriptions` (the `Subscription` model — the table was renamed from `organization_app_access` by migration) is the entitlement table controlling which orgs can access which 876 platform apps. It lives in the core identity API — not any single app's datastore — because it is cross-cutting: the couriers app reads it to gate dashboard access, Console reads and writes it to provision/block orgs, and future apps follow the same pattern. The API owns the table and its organization routes; session callers use the Workspace session client, while Console uses the Workspace operator client. Console provides provision/block controls through its own route handlers. Product access is independent of any app-local tenant row.
 
-**Concrete instance: app permissions and app roles.** `app_permissions`, `app_roles`, and the role/grant/deny columns on `app_assignments` live in the **core identity API**, not in a separate bounded-context service and not in the product app's own datastore. This is a deliberate, recorded exception to decision step #3 above, for two reasons. First, the effective-permission decision is `entitlement → assignment → role → grants → denies → catalog`, and the first two links (`subscriptions`, `app_assignments`) are already core rows; splitting the last three into another database turns every authorization check into a cross-service call, which `.claude/rules/navigation-performance.md` Rule 3 exists to prevent — a guard must block, so it must be cheap. Second, an app role is scoped by `(app, organization)` and administered from Console alongside the entitlement that gates it; the two are edited in the same breath and cannot usefully diverge. **The permission _vocabulary_ is still owned by the product**, as code in `@876/core/access/catalogs`; the identity API only seeds and stores it. An app that needs permissions no other surface can see still keeps those in its own datastore — this exception covers cross-app _access_, not app-internal authorization detail.
+**Concrete instance: app permissions and app roles.** `app_permissions`, `app_roles`, and the role/grant/deny columns on `app_assignments` live in the **core identity API**, not in a separate bounded-context service and not in the product app's own datastore. This is a deliberate, recorded exception to decision step #3 above, for two reasons. First, the effective-permission decision is `entitlement → assignment → role → grants → denies → catalog`, and the first two links (`subscriptions`, `app_assignments`) are already core rows; splitting the last three into another database turns every authorization check into a cross-service call, which `.agents/rules/navigation-performance.md` Rule 3 exists to prevent — a guard must block, so it must be cheap. Second, an app role is scoped by `(app, organization)` and administered from Console alongside the entitlement that gates it; the two are edited in the same breath and cannot usefully diverge. **The permission _vocabulary_ is still owned by the product**, as code in `@876/core/access/catalogs`; the identity API only seeds and stores it. An app that needs permissions no other surface can see still keeps those in its own datastore — this exception covers cross-app _access_, not app-internal authorization detail.
 
 New-org provisioning runs through `provisionOrganization` in `apps/api/src/services/provisioning.ts`. Every org receives `DEFAULT_ORG_APP_SLUGS` = `876-enterprise`, the directory where it manages itself. The app the signup came through is also provisioned; its identity comes from the validated API key, never a client-supplied field. `876-billing` is an explicit app entitlement, while the shared financial data plane remains automatic. Provisioning is idempotent: an existing subscription is left in place and a missing app row logs `provisioning.default_app_missing` and is skipped rather than failing the signup. See `docs/org-provisioning.md` for operational details.
 
@@ -77,7 +77,7 @@ Workspace, or Platform client.
   vocabulary as the bounded SDKs, in two layers: the `prisma` singleton
   (`@/lib/db`) and the `service.<resource>.<verb>()` layer (`@/lib/service`, the
   only caller allowed to query `prisma`) — see "App-local datastore layering"
-  in `.claude/rules/sdk-conventions.md`.
+  in `.agents/rules/sdk-conventions.md`.
 - This is what lets a service be extracted, replaced, or scaled independently —
   and what keeps the identity API from accreting every app's concerns.
 
@@ -136,7 +136,7 @@ Console-local. The pattern it would follow:
   - org member (org-scoped): list/respond to tickets **for their org**;
   - Console (`operator`): list/search/moderate **all** tickets.
 - **Field visibility is an API serializer concern**, never client-side filtering —
-  the same rule as `.claude/rules/sdk-conventions.md`.
+  the same rule as `.agents/rules/sdk-conventions.md`.
 - **Identity stays resolved through Account, Workspace, or Platform** — the
   ticket service never reads the users/orgs tables directly.
 

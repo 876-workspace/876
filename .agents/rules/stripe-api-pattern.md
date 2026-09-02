@@ -4,7 +4,7 @@ Read this before creating/changing API resources, service/SDK results, provider
 mappers, DTOs, route JSON, Zod schemas, or database-backed app objects.
 
 This platform borrows Stripe's **resource ergonomics**, not Stripe's exact
-spelling. `.claude/rules/naming.md` is authoritative: new 876-owned JSON fields
+spelling. `.agents/rules/naming.md` is authoritative: new 876-owned JSON fields
 are camelCase and new multiword 876-owned symbolic values/discriminators are
 kebab-case. Existing public v1 snake_case contracts stay compatible until an
 explicit migration is implemented.

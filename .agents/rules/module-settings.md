@@ -2,7 +2,7 @@
 
 Read this before adding, storing, reading, or rendering **any organization-level
 setting or preference** in any 876 SaaS app. This rule is subordinate to
-`.claude/rules/naming.md`: 876-owned machine-readable identifiers use kebab-case;
+`.agents/rules/naming.md`: 876-owned machine-readable identifiers use kebab-case;
 TypeScript/876-owned JSON properties use camelCase; physical SQL identifiers keep
 their existing snake_case names.
 

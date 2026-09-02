@@ -272,7 +272,7 @@ directly — it resolves user/org details through `workspace` and `platform`.
 ## 9. Org-workspace apps
 
 If the app gates access on an organization, a signed-in account with **no**
-organization must reach onboarding, never `/no-access`, and an `owner`/`admin`
+organization must reach onboarding, never `/no-access`, and a `super_admin`/`admin`
 whose org merely lacks the entitlement must be routed to setup rather than a
 wall. Sign-up and onboarding ship together, or neither ships. See
 `.claude/rules/product-org-signup.md`.

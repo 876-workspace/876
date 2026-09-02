@@ -9,7 +9,7 @@ Gemini and Antigravity inherit all configurations, architecture details, and bou
 ## Gemini / Antigravity Specific Rules
 
 1. **Implementation Plan Maintenance**:
-   - Always create, update, and maintain the implementation plan ([implementation_plan.md](file:///workspaces/876/implementation_plan.md)) in the root project directory before writing code or making major modifications. Do not mark this project file as a system artifact.
+   - Always create, update, and maintain the implementation plan ([plan.md](file:///workspaces/876/plans/)) in the dedicated `plans/<date>-<feature-slug>/plan.md` directory before writing code or making major modifications. Do not mark this project file as a system artifact.
 
 2. **Codebase & Documentation Integrity**:
    - Preserve all existing comments and docstrings that are unrelated to your code changes, unless the user specifies otherwise.

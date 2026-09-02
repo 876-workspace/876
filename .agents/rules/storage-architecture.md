@@ -5,9 +5,9 @@ file** in any 876 app — organization logos, avatars, payment evidence, pre-ale
 documents, chat media, contracts, exports, generated invoices. It fixes the
 naming, the placement, and the classification model that decides whether a file
 can ever surface in a browsable UI. Companion to
-`.claude/rules/platform-services.md` (three-bucket placement),
-`.claude/rules/sdk-conventions.md` (client surface), and
-`.claude/rules/deletions.md` (tombstones).
+`.agents/rules/platform-services.md` (three-bucket placement),
+`.agents/rules/sdk-conventions.md` (client surface), and
+`.agents/rules/deletions.md` (tombstones).
 
 ## Fixed terminology
 
@@ -391,5 +391,5 @@ immediately.
 Overrides and plan values live in `apps/api` and are delivered to Storage
 through the `storage_entitlement_outbox` and its asyncio worker. Storage is a
 **pure follower with a single writer** — the outbox. See
-`.claude/rules/platform-services.md` for the key tiers and hardening. See
+`.agents/rules/platform-services.md` for the key tiers and hardening. See
 `docs/storage-quotas.md` for the operational runbook.

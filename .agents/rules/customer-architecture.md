@@ -5,8 +5,8 @@ about a **customer**, a **consumer account**, or a **per-app customer profile**
 in any 876 app. It fixes the platform terminology and the three-layer placement
 model so every current and future app (billing, couriers, events/ticketing,
 commerce, …) models customers the same way. Companion to
-`.claude/rules/platform-services.md` (three-bucket placement) and
-`.claude/rules/sdk-conventions.md` (client surface).
+`.agents/rules/platform-services.md` (three-bucket placement) and
+`.agents/rules/sdk-conventions.md` (client surface).
 
 ## Fixed terminology
 
@@ -107,7 +107,7 @@ Layer 3  App profiles    each app's own datastore, opaque-ID references
   data**: they belong to the person, not to any org's relationship with them.
   They are stored once, on the account, in `user_identifications` — typed rows
   (`type`, normalized `value`, `country_code`, verification state), soft-deleted
-  per `.claude/rules/deletions.md`, unique per `(user_id, type)`.
+  per `.agents/rules/deletions.md`, unique per `(user_id, type)`.
 - **Disclosure is entitlement-gated.** List/read endpoints return **masked**
   values only. The full value is returned solely by the dedicated disclosure
   endpoint, which requires: (a) an active org→app subscription

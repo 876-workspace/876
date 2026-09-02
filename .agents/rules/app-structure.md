@@ -7,9 +7,9 @@ file lives so that "where does this go?" has exactly one answer, and so a
 directory listing tells you what an app does rather than what its authors
 happened to name things.
 
-Companion to `.claude/rules/app-layout.md` (what a page _looks_ like),
-`.claude/rules/sdk-conventions.md` (`src/lib/` layering), and
-`.claude/rules/types.md` (where types live).
+Companion to `.agents/rules/app-layout.md` (what a page _looks_ like),
+`.agents/rules/sdk-conventions.md` (`src/lib/` layering), and
+`.agents/rules/types.md` (where types live).
 
 ## The problem this fixes
 
@@ -164,7 +164,7 @@ Rules:
 
 ## Types
 
-Follow `.claude/rules/types.md`. Within this structure:
+Follow `.agents/rules/types.md`. Within this structure:
 
 - A component's own props interface stays **beside the component**, exported
   from the same file. Do not relocate props to a shared types file.
@@ -182,7 +182,7 @@ module (`@/features/access/components/flag-targeting-sheet`), not
 `@/features/access`. Barrels hide ownership, defeat
 `optimizePackageImports`-style analysis, and make it impossible to tell from a
 diff which module a route actually depends on. See
-`.claude/rules/performance-bundle-size.md` §2.1.
+`.agents/rules/performance-bundle-size.md` §2.1.
 
 The one sanctioned exception is a package's declared public entry point
 (`packages/ui`'s subpath exports, `src/lib/service/index.ts`) — a boundary that
@@ -246,7 +246,7 @@ that landed in the wrong bucket.
 
 Scaffold the five buckets empty, copy `components/shell/` from Console or
 Couriers, and place the first component by the placement rule rather than
-"somewhere in components for now". See `.claude/rules/new-app-guide.md` for the
+"somewhere in components for now". See `.agents/rules/new-app-guide.md` for the
 platform-integration side.
 
 ## Do not
