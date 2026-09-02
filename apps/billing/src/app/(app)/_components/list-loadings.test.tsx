@@ -35,11 +35,11 @@ describe('route loading fallbacks', () => {
     expect(container.querySelector('table')).toBeNull()
   })
 
-  it('settings keeps its real hub heading and skeletons only the cards', () => {
+  it('settings keeps its real hub heading and skeletons no cards', () => {
     const { container } = render(<SettingsLoading />)
 
     expect(container.textContent).toContain('Settings')
-    expect(container.querySelectorAll('[class~="876-card"]')).toHaveLength(6)
+    expect(container.querySelectorAll('[class~="876-card"]')).toHaveLength(0)
     expect(container.querySelector('table')).toBeNull()
   })
 
