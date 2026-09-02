@@ -1,10 +1,20 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronRightIcon } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardFact,
+  DetailCardFacts,
+  DetailCardHeader,
+  DetailCardHeadline,
+  DetailCardIdBar,
+  DetailCardMeta,
+  DetailCardMetaItem,
+  DetailCardSection,
+} from '@876/ui/detail-card'
+import { Mail, Phone } from '@876/ui/icons'
 
 import { getInvoice } from '@/lib/invoice'
 import { formatMoney } from '@/lib/format'
@@ -29,14 +39,16 @@ export default async function CustomerDetailPage({ params }: Props) {
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
     return (
-      <Page>
-        <div className="rounded-lg border border-dashed p-10 text-center">
-          <p className="text-sm font-medium">Customer unavailable</p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Please try again shortly.
-          </p>
-        </div>
-      </Page>
+      <DetailCard aria-label="Customer unavailable">
+        <DetailCardBody>
+          <div className="rounded-lg border border-dashed p-10 text-center">
+            <p className="text-sm font-medium">Customer unavailable</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Please try again shortly.
+            </p>
+          </div>
+        </DetailCardBody>
+      </DetailCard>
     )
   }
 
@@ -50,116 +62,110 @@ export default async function CustomerDetailPage({ params }: Props) {
   const canManage = invoice.role !== 'staff'
 
   return (
-    <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-sm">
-        <Link
-          href="/customers"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Customers
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">{customer.name}</span>
-      </nav>
-
-      <PageHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <CustomerAvatar name={customer.name} size="lg" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <PageTitle>{customer.name}</PageTitle>
-                <Badge
-                  variant={
-                    customer.status === 'ACTIVE' ? 'success' : 'secondary'
-                  }
-                >
-                  {customer.status === 'ACTIVE' ? 'Active' : 'Archived'}
-                </Badge>
-              </div>
-            </div>
-          </div>
+    <DetailCard aria-label={`Customer details: ${customer.name}`}>
+      <DetailCardHeader
+        icon={<CustomerAvatar name={customer.name} size="lg" />}
+        title={customer.name}
+        meta={
+          <Badge
+            variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
+          >
+            {customer.status === 'ACTIVE' ? 'Active' : 'Archived'}
+          </Badge>
+        }
+        subtitle={
+          <DetailCardMeta>
+            {customer.companyName ? (
+              <span className="text-foreground/80 font-medium">
+                {customer.companyName}
+              </span>
+            ) : null}
+            {customer.email ? (
+              <DetailCardMetaItem
+                icon={<Mail />}
+                href={`mailto:${customer.email}`}
+              >
+                {customer.email}
+              </DetailCardMetaItem>
+            ) : null}
+            {customer.phone ? (
+              <DetailCardMetaItem
+                icon={<Phone />}
+                href={`tel:${customer.phone}`}
+              >
+                {customer.phone}
+              </DetailCardMetaItem>
+            ) : null}
+          </DetailCardMeta>
+        }
+        actions={
           <CustomerActions
             customerId={customer.id}
             customerName={customer.name}
             canManage={canManage}
           />
-        </div>
-      </PageHeader>
+        }
+        closeHref="/customers"
+        closeLabel="Close customer details"
+      />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="876-card divide-y">
-          <div className="px-5 py-3">
-            <span className="876-eyebrow">Contact</span>
-          </div>
-          <dl className="divide-y">
-            <FactRow label="Email" value={customer.email ?? '—'} />
-            <FactRow label="Phone" value={customer.phone ?? '—'} />
-            <FactRow label="Work phone" value={customer.workPhone ?? '—'} />
-            <FactRow label="Company" value={customer.companyName ?? '—'} />
-          </dl>
-        </div>
+      <DetailCardBody className="space-y-8">
+        <DetailCardHeadline
+          value={formatMoney(customer.outstandingReceivable, currency)}
+          caption={`Outstanding receivable · ${formatMoney(
+            customer.unusedCredits,
+            currency
+          )} unused credits`}
+        />
 
-        <div className="space-y-6">
-          {primary ? (
-            <div className="876-card divide-y">
-              <div className="px-5 py-3">
-                <span className="876-eyebrow">Primary contact</span>
-              </div>
-              <dl className="divide-y">
-                <FactRow label="Name" value={contactName ?? '—'} />
-                <FactRow label="Email" value={primary.email ?? '—'} />
-                <FactRow
-                  label="Phone"
-                  value={primary.workPhone ?? primary.mobilePhone ?? '—'}
-                />
-              </dl>
-            </div>
-          ) : null}
+        <DetailCardSection title="Contact">
+          <DetailCardFacts>
+            <DetailCardFact label="Email" value={customer.email ?? '—'} />
+            <DetailCardFact label="Phone" value={customer.phone ?? '—'} />
+            <DetailCardFact
+              label="Work phone"
+              value={customer.workPhone ?? '—'}
+            />
+            <DetailCardFact
+              label="Company"
+              value={customer.companyName ?? '—'}
+            />
+          </DetailCardFacts>
+        </DetailCardSection>
 
-          <div className="876-card divide-y">
-            <div className="px-5 py-3">
-              <span className="876-eyebrow">Financials</span>
-            </div>
-            <dl className="divide-y">
-              <FactRow
-                label="Outstanding receivable"
-                value={formatMoney(customer.outstandingReceivable, currency)}
-                mono
+        {primary ? (
+          <DetailCardSection title="Primary contact">
+            <DetailCardFacts>
+              <DetailCardFact label="Name" value={contactName ?? '—'} />
+              <DetailCardFact label="Email" value={primary.email ?? '—'} />
+              <DetailCardFact
+                label="Phone"
+                value={primary.workPhone ?? primary.mobilePhone ?? '—'}
               />
-              <FactRow
-                label="Unused credits"
-                value={formatMoney(customer.unusedCredits, currency)}
-                mono
-              />
-              <FactRow label="Currency" value={currency} mono />
-            </dl>
-          </div>
-        </div>
-      </div>
-    </Page>
-  )
-}
+            </DetailCardFacts>
+          </DetailCardSection>
+        ) : null}
 
-function FactRow({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string
-  value: string
-  mono?: boolean
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-5 py-2.5">
-      <dt className="text-muted-foreground text-sm">{label}</dt>
-      <dd
-        className={['text-sm font-medium', mono ? 'tabular-nums' : ''].join(
-          ' '
-        )}
-      >
-        {value}
-      </dd>
-    </div>
+        <DetailCardSection title="Billing">
+          <DetailCardFacts>
+            <DetailCardFact label="Currency" value={currency} mono />
+            <DetailCardFact
+              label="Outstanding receivable"
+              value={formatMoney(customer.outstandingReceivable, currency)}
+              mono
+            />
+            <DetailCardFact
+              label="Unused credits"
+              value={formatMoney(customer.unusedCredits, currency)}
+              mono
+            />
+          </DetailCardFacts>
+        </DetailCardSection>
+      </DetailCardBody>
+
+      <DetailCardIdBar>
+        <span className="truncate">{customer.id}</span>
+      </DetailCardIdBar>
+    </DetailCard>
   )
 }

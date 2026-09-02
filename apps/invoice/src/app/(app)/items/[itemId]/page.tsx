@@ -1,9 +1,18 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronRightIcon } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardFact,
+  DetailCardFacts,
+  DetailCardHeader,
+  DetailCardHeadline,
+  DetailCardIcon,
+  DetailCardIdBar,
+  DetailCardSection,
+} from '@876/ui/detail-card'
+import { CircleStackIcon, WrenchScrewdriverIcon } from '@876/ui/icons'
 
 import { getInvoice } from '@/lib/invoice'
 import { formatMoney } from '@/lib/format'
@@ -28,116 +37,102 @@ export default async function ItemDetailPage({ params }: Props) {
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
     return (
-      <Page>
-        <div className="rounded-lg border border-dashed p-10 text-center">
-          <p className="text-sm font-medium">Item unavailable</p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Please try again shortly.
-          </p>
-        </div>
-      </Page>
+      <DetailCard aria-label="Item unavailable">
+        <DetailCardBody>
+          <div className="rounded-lg border border-dashed p-10 text-center">
+            <p className="text-sm font-medium">Item unavailable</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Please try again shortly.
+            </p>
+          </div>
+        </DetailCardBody>
+      </DetailCard>
     )
   }
 
   const item = result.data
   const currency = item.defaultSellingCurrency ?? 'JMD'
   const canManage = invoice.role !== 'staff'
+  const isService = item.type === 'SERVICE'
+  const typeLabel = isService ? 'Service' : 'Good'
 
   return (
-    <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-sm">
-        <Link
-          href="/items"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Items
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">{item.name}</span>
-      </nav>
-
-      <PageHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <PageTitle>{item.name}</PageTitle>
-              <Badge variant={item.isActive ? 'success' : 'secondary'}>
-                {item.isActive ? 'Active' : 'Archived'}
-              </Badge>
-            </div>
-            {item.description ? (
-              <p className="text-muted-foreground mt-1 text-sm">
-                {item.description}
-              </p>
-            ) : null}
-          </div>
+    <DetailCard aria-label={`Item details: ${item.name}`}>
+      <DetailCardHeader
+        icon={
+          <DetailCardIcon>
+            {isService ? (
+              <WrenchScrewdriverIcon className="size-5" />
+            ) : (
+              <CircleStackIcon className="size-5" />
+            )}
+          </DetailCardIcon>
+        }
+        title={item.name}
+        meta={
+          <>
+            <Badge variant={item.isActive ? 'success' : 'secondary'}>
+              {item.isActive ? 'Active' : 'Archived'}
+            </Badge>
+            <Badge variant="outline">{typeLabel}</Badge>
+          </>
+        }
+        subtitle={item.sku ? `SKU ${item.sku}` : undefined}
+        actions={
           <ItemActions
             itemId={item.id}
             itemName={item.name}
             isActive={item.isActive}
             canManage={canManage}
           />
-        </div>
-      </PageHeader>
+        }
+        closeHref="/items"
+        closeLabel="Close item details"
+      />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="876-card divide-y">
-          <div className="px-5 py-3">
-            <span className="876-eyebrow">Item</span>
-          </div>
-          <dl className="divide-y">
-            <FactRow
-              label="Type"
-              value={item.type === 'GOOD' ? 'Good' : 'Service'}
-            />
-            <FactRow label="SKU" value={item.sku ?? '—'} mono />
-            <FactRow label="Unit" value={item.unit ?? '—'} />
-            <FactRow label="Item ID" value={item.id} mono />
-          </dl>
-        </div>
+      <DetailCardBody className="space-y-8">
+        <DetailCardHeadline
+          value={formatMoney(item.defaultSellingAmount, currency)}
+          caption={[
+            'Default selling price',
+            item.unit ? `per ${item.unit}` : null,
+            item.isTaxable ? 'taxable' : 'non-taxable',
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        />
 
-        <div className="876-card divide-y">
-          <div className="px-5 py-3">
-            <span className="876-eyebrow">Billing</span>
-          </div>
-          <dl className="divide-y">
-            <FactRow
-              label="Default price"
-              value={formatMoney(item.defaultSellingAmount, currency)}
-              mono
-            />
-            <FactRow label="Currency" value={currency} mono />
-            <FactRow
+        {item.description ? (
+          <DetailCardSection title="Description">
+            <p className="text-foreground text-sm leading-6">
+              {item.description}
+            </p>
+          </DetailCardSection>
+        ) : null}
+
+        <DetailCardSection title="Item">
+          <DetailCardFacts>
+            <DetailCardFact label="Type" value={typeLabel} />
+            <DetailCardFact label="SKU" value={item.sku ?? '—'} mono />
+            <DetailCardFact label="Unit" value={item.unit ?? '—'} />
+          </DetailCardFacts>
+        </DetailCardSection>
+
+        <DetailCardSection title="Billing">
+          <DetailCardFacts>
+            <DetailCardFact label="Currency" value={currency} mono />
+            <DetailCardFact
               label="Tax"
               value={item.isTaxable ? 'Taxable' : 'Non-taxable'}
             />
-            <FactRow label="Tax code" value={item.taxCode ?? '—'} mono />
-          </dl>
-        </div>
-      </div>
-    </Page>
-  )
-}
+            <DetailCardFact label="Tax code" value={item.taxCode ?? '—'} mono />
+          </DetailCardFacts>
+        </DetailCardSection>
+      </DetailCardBody>
 
-function FactRow({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string
-  value: string
-  mono?: boolean
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-5 py-2.5">
-      <dt className="text-muted-foreground text-sm">{label}</dt>
-      <dd
-        className={['text-sm font-medium', mono ? 'tabular-nums' : ''].join(
-          ' '
-        )}
-      >
-        {value}
-      </dd>
-    </div>
+      <DetailCardIdBar>
+        <span className="truncate">{item.id}</span>
+      </DetailCardIdBar>
+    </DetailCard>
   )
 }

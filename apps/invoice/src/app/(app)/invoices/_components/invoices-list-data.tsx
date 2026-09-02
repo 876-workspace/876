@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
+import { redirect } from 'next/navigation'
 import { CreditCardIcon } from '@876/ui/icons'
-import { Suspense } from 'react'
 import {
   Empty,
   EmptyDescription,
@@ -8,88 +8,19 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Page } from '@876/ui/page'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
-import { redirect } from 'next/navigation'
 
-import { getBilling } from '@/lib/services/billing'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { listInvoices } from '@/app/(app)/_lib/list-data'
 import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
-import { InvoicesTable } from './_components/invoices-table'
-
-export const metadata = {
-  title: 'Invoices',
-  description: 'Commercial invoice drafts.',
-}
-
-const INVOICE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Invoices' },
-  { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
-  { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },
-  { value: 'overdue', label: 'Overdue', headingLabel: 'Overdue Invoices' },
-  { value: 'paid', label: 'Paid', headingLabel: 'Paid Invoices' },
-  { value: 'void', label: 'Void', headingLabel: 'Void Invoices' },
-]
+import { InvoicesList } from './invoices-list'
 
 const TENANT_NOT_FOUND = 'billing/tenant-not-found'
 const BILLING_UNREACHABLE = 'billing/unreachable'
 
-type Props = { searchParams: Promise<{ status?: string }> }
-
-export default async function InvoicesPage({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus = ['draft', 'sent', 'overdue', 'paid', 'void'].includes(
-    status ?? ''
-  )
-    ? status!
-    : 'all'
-  return (
-    <Page>
-      <ResourceToolbar
-        title="Invoices"
-        titleFilter={
-          <StatusFilterHeading
-            label="Invoices"
-            value={selectedStatus}
-            options={INVOICE_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="New"
-        primaryHref="/invoices/new"
-        primaryVariant="info"
-        refresh
-      />
-      <Suspense
-        fallback={
-          <DataTableSkeleton
-            columns={[
-              { label: 'Invoice', cell: 'avatar' as const },
-              { label: 'Customer' },
-              { label: 'Amount' },
-              { label: 'Status', cell: 'badge' as const },
-            ]}
-            rows={5}
-          />
-        }
-      >
-        <InvoicesTableData searchParams={searchParams} />
-      </Suspense>
-    </Page>
-  )
-}
-
-async function InvoicesTableData({ searchParams }: Props) {
-  const { status } = await searchParams
-  void status
+export async function InvoicesListData() {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const billing = await getBilling(context.orgId)
-  const result = await billing.invoices.list()
+  const result = await listInvoices(context.orgId)
   if (result.error) {
     redirectIfSignedOut(result.error.code, '/invoices')
 
@@ -165,6 +96,7 @@ async function InvoicesTableData({ searchParams }: Props) {
       </div>
     )
   }
+
   const invoices = result.data.data.map((invoice) => {
     const inv = invoice as unknown as Record<string, unknown>
     return {
@@ -184,23 +116,26 @@ async function InvoicesTableData({ searchParams }: Props) {
       },
     }
   })
+
   return (
-    <InvoicesTable
-      invoices={invoices}
-      emptyState={
-        <Empty className="py-14">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <CreditCardIcon />
-            </EmptyMedia>
-            <EmptyTitle>No invoices yet</EmptyTitle>
-            <EmptyDescription>
-              Create a draft invoice from a customer and item. It will not send
-              or collect payment automatically.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      }
-    />
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <InvoicesList
+        invoices={invoices}
+        emptyState={
+          <Empty className="py-14">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <CreditCardIcon />
+              </EmptyMedia>
+              <EmptyTitle>No invoices yet</EmptyTitle>
+              <EmptyDescription>
+                Create a draft invoice from a customer and item. It will not
+                send or collect payment automatically.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        }
+      />
+    </div>
   )
 }
