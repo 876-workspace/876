@@ -2,6 +2,8 @@ import Link from 'next/link'
 
 import { Page } from '@876/ui/page'
 
+import { requireAppPermission } from '@/lib/auth/require-crm-context'
+
 const SECTIONS = [
   {
     href: '/customers',
@@ -17,7 +19,9 @@ const SECTIONS = [
   },
 ]
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  await requireAppPermission('requests.view')
+
   return (
     <Page>
       <div className="mb-6">

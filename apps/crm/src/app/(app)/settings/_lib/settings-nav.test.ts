@@ -1,4 +1,4 @@
-import { SETTINGS_ICON_RESOLVER } from '../_components/settings-group-card'
+import { SETTINGS_HUB_ICON_KEYS } from '@876/ui/settings-hub'
 import { SETTINGS_GROUPS } from './settings-nav'
 
 describe('settings navigation registry', () => {
@@ -42,18 +42,18 @@ describe('settings navigation registry', () => {
       '/settings/teams',
       '/settings/categories',
       '/settings/priorities',
+      '/settings/users',
     ])
   })
 
-  it('uses only string icon keys present in the resolver map', () => {
+  it('uses only string icon keys supported by the shared settings hub', () => {
     const icons = SETTINGS_GROUPS.flatMap((group) =>
       group.items.map((item) => item.icon)
     )
 
     expect(icons.every((icon) => typeof icon === 'string')).toBe(true)
-    expect(icons.every((icon) => icon in SETTINGS_ICON_RESOLVER)).toBe(true)
-    expect(Object.keys(SETTINGS_ICON_RESOLVER).sort()).toEqual(
-      [...new Set(icons)].sort()
+    expect(icons.every((icon) => SETTINGS_HUB_ICON_KEYS.includes(icon))).toBe(
+      true
     )
   })
 })

@@ -15,6 +15,8 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 import { TimeEntriesTable } from './_components/time-entries-table'
 
 export const metadata = {
@@ -29,6 +31,8 @@ const TIME_STATUS_OPTIONS: StatusFilterOption[] = [
 ]
 
 export default async function TimeTrackingPage() {
+  await requireAppPermission('settings.view')
+
   return (
     <Page>
       <ResourceToolbar

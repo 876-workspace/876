@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 import { ItemsListData } from './_components/items-list-data'
 import { ItemsSection } from './_components/items-section'
 
@@ -19,7 +21,9 @@ const ITEMS_SKELETON_COLUMNS = [
  * beside the list instead of replacing it, and what keeps the list column a
  * single element across open and close so its width can animate.
  */
-export default function ItemsLayout({ children }: { children: ReactNode }) {
+export default async function ItemsLayout({ children }: { children: ReactNode }) {
+  await requireAppPermission('items.view')
+
   return (
     <ItemsSection
       list={

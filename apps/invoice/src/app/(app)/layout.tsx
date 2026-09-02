@@ -1,7 +1,11 @@
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
+import { resolveNavigation } from '@876/core/access'
+import { AppError } from '@876/ui/app-error'
 import { redirect } from 'next/navigation'
 
 import { InvoiceShell } from '@/components/shell/shell'
+import { navConfig } from '@/components/shell/nav-config'
+import { resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { requireValidSession } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
@@ -36,6 +40,10 @@ export default async function AppLayout({
   if (context.accessStatus !== 'active' && context.accessStatus !== 'trialing')
     redirect('/onboarding')
 
+  const access = await resolveAccessContext(context.userId, context.orgId)
+  if (access.status === 'ok' && access.context.permissions.length === 0)
+    redirect('/no-access')
+
   const session = await getAuthSession()
   const user = isSignedSession(session) ? session.user : null
   const email = user?.email ?? ''
@@ -66,8 +74,22 @@ export default async function AppLayout({
       }}
       currentOrg={currentOrg}
       orgs={orgs}
+      navigation={
+        access.status === 'ok' ? resolveNavigation(navConfig, access.context) : []
+      }
     >
-      {children}
+      {access.status === 'unavailable' ? (
+        <AppError
+          title="Access could not be verified"
+          error={{
+            code: access.code,
+            message: 'App access is temporarily unavailable. Try again shortly.',
+          }}
+          variant="banner"
+        />
+      ) : (
+        children
+      )}
     </InvoiceShell>
   )
 }

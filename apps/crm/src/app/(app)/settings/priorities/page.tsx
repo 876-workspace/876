@@ -8,7 +8,10 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import {
+  requireAppPermission,
+  requireCrmContext,
+} from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
 
 import { PRIORITIES_SKELETON_COLUMNS } from './_components/priorities-skeleton-columns'
@@ -29,6 +32,8 @@ function isPriorityStatus(
 type Props = { searchParams: Promise<{ status?: string; priority?: string }> }
 
 export default async function PrioritiesPage({ searchParams }: Props) {
+  await requireAppPermission('priorities.view')
+
   const { status, priority } = await searchParams
   const selectedStatus = isPriorityStatus(status) ? status : 'all'
   const selectedPriorityId = priority

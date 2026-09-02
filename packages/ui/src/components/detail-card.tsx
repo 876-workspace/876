@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 
 import { XIcon } from '../icons'
 import { cn } from '../lib/utils'
-import { Button } from './button'
+import { Button, buttonVariants } from './button'
 import { isRouteTabActive, type RouteTabItem } from './route-tabs'
 
 /**
@@ -134,15 +134,16 @@ function DetailCardHeader({
               {closeIcon}
             </Button>
           ) : closeHref ? (
-            <Button
-              variant="ghost"
-              size="icon-sm"
+            <Link
+              href={closeHref}
               aria-label={closeLabel}
-              className={closeClassName}
-              render={<Link href={closeHref} />}
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                closeClassName
+              )}
             >
               {closeIcon}
-            </Button>
+            </Link>
           ) : null}
         </div>
       ) : null}

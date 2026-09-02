@@ -14,7 +14,12 @@
  * `@876/crm-ui` and `@876/work-ui` broke Console's CRM workspace on
  * 2026-08-30. `pnpm check:transpile` exists so that cannot recur.
  */
-export const SHARED_UI_PACKAGES = ['@876/ui', '@876/work-ui', '@876/crm-ui']
+export const SHARED_UI_PACKAGES = [
+  '@876/ui',
+  '@876/work-ui',
+  '@876/crm-ui',
+  '@876/access-ui',
+]
 
 /**
  * Build a Next `transpilePackages` list: every shared UI package, plus the

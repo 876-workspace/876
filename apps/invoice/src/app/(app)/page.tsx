@@ -1,8 +1,11 @@
 import { BarChart3, ClipboardList, CreditCard, Users } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { requireAppPermission } from '@/lib/auth/guards'
 
 export default async function OverviewPage() {
+  await requireAppPermission('dashboard.view')
+
   const context = await getInvoiceContext()
   return (
     <Page>

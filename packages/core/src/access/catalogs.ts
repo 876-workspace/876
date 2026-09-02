@@ -215,6 +215,11 @@ export const billingPermissionCatalog: AppPermissionCatalog =
       crud('purchases', 'Purchases'),
       crud('banking', 'Banking'),
       crud('payments', 'Payments'),
+      // Handling a stored instrument is a different sensitivity from recording a
+      // receipt: a bookkeeper can reconcile payments without being able to
+      // attach or detach a customer's card. Billing's own plane separates these
+      // as `payment_methods:*`; the canonical key is kebab-case per naming.md.
+      crud('payment-methods', 'Payment methods'),
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),
   })

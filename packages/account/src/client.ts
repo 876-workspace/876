@@ -2,6 +2,7 @@ import { resolve876ApiBaseUrl } from '@876/core/client'
 
 import { createOAuthMethods } from './oauth.ts'
 import { createAppMembershipsResource } from './resources/app-memberships.ts'
+import { createOrgAppAccessResources } from './resources/org-app-access.ts'
 import { createAppsResource } from './resources/apps.ts'
 import { createAuditEventsResource } from './resources/audit-events.ts'
 import { createAuthResource } from './resources/auth.ts'
@@ -62,6 +63,8 @@ export function create876Client(options: ClientOptions = {}) {
     configured: Boolean(oauthConfig) && Boolean(runtime.baseUrl),
   })
   const { memberships, ...users } = createUsersResource(runtime)
+  const { orgAppRoles, appMemberships: orgAppMemberships } =
+    createOrgAppAccessResources(runtime)
   const {
     locations,
     contacts,
@@ -96,6 +99,13 @@ export function create876Client(options: ClientOptions = {}) {
     appAssignments,
     /** Self-scoped app role and effective-permission reads. */
     appMemberships: createAppMembershipsResource(runtime),
+    /**
+     * Organization-scoped app access. Kept distinct from `appMemberships`,
+     * which is the Account root's self-scoped surface — the two answer
+     * different questions and must not be confused for one another.
+     */
+    orgAppRoles,
+    orgAppMemberships,
     invites,
     subscriptions,
     products: createProductsResource(runtime),

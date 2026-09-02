@@ -13,6 +13,8 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 const REPORT_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Reports' },
 ]
@@ -22,7 +24,9 @@ export const metadata = {
   description: 'Commercial performance reports grouped by currency.',
 }
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  await requireAppPermission('reports.view')
+
   return (
     <Page>
       <ResourceToolbar

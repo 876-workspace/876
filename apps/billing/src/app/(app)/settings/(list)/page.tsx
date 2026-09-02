@@ -1,8 +1,10 @@
-import Link from 'next/link'
 import { Page } from '@876/ui/page'
+import { SettingsHub } from '@876/ui/settings-hub'
 
 import { getVisibleSettingsSections } from '@/components/shell/nav-config'
 import { requirePagePermission } from '@/lib/auth/billing-context'
+
+import { toSettingsHubGroups } from './_lib/settings-hub-groups'
 
 export const metadata = {
   title: 'Settings',
@@ -12,39 +14,14 @@ export const metadata = {
 export default async function SettingsPage() {
   const context = await requirePagePermission('settings:read')
   const sections = getVisibleSettingsSections(context.permissions)
+  const groups = toSettingsHubGroups(sections)
 
   return (
     <Page hub>
-      <div className="mb-8">
-        <h1 className="text-lg font-medium">Settings</h1>
-        <p className="text-muted-foreground mt-0.5 text-sm">
-          Configure money, access, and workspace behaviour for{' '}
-          {context.tenant.name}.
-        </p>
+      <div className="mb-6">
+        <h1 className="876-page-title">Settings</h1>
       </div>
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {sections.map((section) => {
-          const Icon = section.icon
-          return (
-            <Link
-              key={section.href}
-              href={section.href}
-              className="876-card 876-card-interactive group p-5 transition-colors"
-            >
-              <div className="mb-3 flex items-center gap-3">
-                <span className="876-icon-tile">
-                  <Icon className={`${section.iconColor} size-4`} />
-                </span>
-                <span className="font-medium">{section.title}</span>
-              </div>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {section.description}
-              </p>
-            </Link>
-          )
-        })}
-      </div>
+      <SettingsHub groups={groups} />
     </Page>
   )
 }

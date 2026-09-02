@@ -1,10 +1,10 @@
-import { listAppPermissionKeysForProvisioning } from '@/modules/app-access'
+import { listAppPermissionKeysForProvisioning } from '@/modules/app-access/app-access-lookup.service'
 
 import type {
   ProvisioningResourceDefinition,
   ProvisioningResourceInput,
   ProvisioningValidationIssue,
-} from './provisioning-catalog'
+} from './provisioning-catalog.types'
 
 export const APP_ROLE_PROVISIONING_RESOURCE_TYPE = 'app-role'
 const LEGACY_APP_ROLE_PROVISIONING_RESOURCE_TYPE = 'app_role'

@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 import { InvoicesListData } from './_components/invoices-list-data'
 import { InvoicesSection } from './_components/invoices-section'
 
@@ -12,7 +14,9 @@ const INVOICES_SKELETON_COLUMNS = [
   { label: 'Status', cell: 'badge' as const },
 ]
 
-export default function InvoicesLayout({ children }: { children: ReactNode }) {
+export default async function InvoicesLayout({ children }: { children: ReactNode }) {
+  await requireAppPermission('invoices.view')
+
   return (
     <InvoicesSection
       list={

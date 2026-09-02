@@ -1,3 +1,4 @@
+import { appMemberships } from './app-memberships'
 import { customers } from './customers'
 import { onboarding } from './onboarding'
 import { requestCategories } from './request-categories'
@@ -10,8 +11,9 @@ import { support } from './support'
 import { teams } from './teams'
 
 export const client = {
-  onboarding,
+  appMemberships,
   customers,
+  onboarding,
   requests,
   requestNotes,
   requestTasks,
@@ -23,6 +25,7 @@ export const client = {
   support,
 }
 export { customers } from './customers'
+export { appMemberships } from './app-memberships'
 export { onboarding } from './onboarding'
 export { requestCategories } from './request-categories'
 export { requestEvents } from './request-events'

@@ -3,7 +3,10 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Suspense } from 'react'
 
-import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import {
+  requireAppPermission,
+  requireCrmContext,
+} from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
 
 import {
@@ -14,7 +17,9 @@ import {
 
 export const metadata = { title: 'Forms' }
 
-export default function FormsPage() {
+export default async function FormsPage() {
+  await requireAppPermission('request-forms.view')
+
   return (
     <Page>
       <ResourceToolbar

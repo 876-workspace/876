@@ -21,6 +21,7 @@
     "db:backfill": "tsx prisma/backfill.ts"
   },
   "dependencies": {
+    "@876/access-ui": "workspace:*",
     "@876/account": "workspace:*",
     "@876/analytics": "workspace:*",
     "@876/billing": "workspace:*",

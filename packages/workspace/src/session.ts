@@ -17,7 +17,14 @@ export type WorkspaceSessionClient = {
   roles: CoreSession['roles']
   members: CoreSession['organizationMembers']
   appAssignments: CoreSession['appAssignments']
-  appMemberships: CoreSession['appMemberships']
+  /**
+   * Organization-scoped app memberships, matching the operator projection's
+   * shape so the same call reads identically at either authority. A member's
+   * own access stays on the Account root as `$876.appMemberships.me`.
+   */
+  appMemberships: CoreSession['orgAppMemberships']
+  /** App roles assignable in this organization, for the role picker. */
+  orgAppRoles: CoreSession['orgAppRoles']
   apps: CoreSession['apps']
   invites: CoreSession['invites']
   entitlements: CoreSession['subscriptions']
@@ -42,7 +49,8 @@ export function create876WorkspaceSessionClient(
     roles: core.roles,
     members: core.organizationMembers,
     appAssignments: core.appAssignments,
-    appMemberships: core.appMemberships,
+    appMemberships: core.orgAppMemberships,
+    orgAppRoles: core.orgAppRoles,
     apps: core.apps,
     invites: core.invites,
     entitlements: core.subscriptions,

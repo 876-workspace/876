@@ -16,10 +16,18 @@ export const appMemberships = {
       { method: 'POST', body: JSON.stringify(input) }
     )
   },
-  update(organizationId: string, assignmentId: string, appRoleId: string) {
+  update(
+    organizationId: string,
+    assignmentId: string,
+    input: {
+      appRoleId?: string
+      permissionGrants?: string[]
+      permissionDenies?: string[]
+    }
+  ) {
     return request<AppMembershipMutation>(
       `/api/organizations/${organizationId}/app-memberships/${assignmentId}`,
-      { method: 'PATCH', body: JSON.stringify({ appRoleId }) }
+      { method: 'PATCH', body: JSON.stringify(input) }
     )
   },
   revoke(organizationId: string, assignmentId: string) {

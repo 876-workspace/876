@@ -1,27 +1,20 @@
 import { Page } from '@876/ui/page'
+import { SettingsHub } from '@876/ui/settings-hub'
 
-import { SettingsGroupCard } from './_components/settings-group-card'
+import { requireAppPermission } from '@/lib/auth/require-crm-context'
 import { SETTINGS_GROUPS } from './_lib/settings-nav'
 
 export const metadata = { title: 'Settings' }
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requireAppPermission('settings.view')
+
   return (
     <Page hub>
       <div className="mb-6">
-        <h1 className="text-foreground text-lg font-semibold tracking-tight">
-          Settings
-        </h1>
-        <p className="text-muted-foreground mt-0.5 text-[0.8125rem]">
-          Configure teams, routing categories, request priorities, and workspace
-          workflows.
-        </p>
+        <h1 className="876-page-title">Settings</h1>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {SETTINGS_GROUPS.map((group) => (
-          <SettingsGroupCard key={group.label} group={group} />
-        ))}
-      </div>
+      <SettingsHub groups={SETTINGS_GROUPS} />
     </Page>
   )
 }

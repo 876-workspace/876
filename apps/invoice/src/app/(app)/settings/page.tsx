@@ -1,13 +1,20 @@
-export default function SettingsPage() {
+import { Page } from '@876/ui/page'
+import { SettingsHub } from '@876/ui/settings-hub'
+
+import { requireAppPermission } from '@/lib/auth/guards'
+import { SETTINGS_GROUPS } from './_lib/settings-nav'
+
+export const metadata = { title: 'Settings' }
+
+export default async function SettingsPage() {
+  await requireAppPermission('settings.view')
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Settings</h1>
-      <p className="text-muted-foreground text-sm">
-        Invoice settings placeholder.
-      </p>
-      <div className="text-muted-foreground rounded-lg border border-dashed p-10 text-center text-sm">
-        Coming soon
+    <Page hub>
+      <div className="mb-6">
+        <h1 className="876-page-title">Settings</h1>
       </div>
-    </div>
+      <SettingsHub groups={SETTINGS_GROUPS} />
+    </Page>
   )
 }

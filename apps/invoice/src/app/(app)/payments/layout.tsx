@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
+import { requireAppPermission } from '@/lib/auth/guards'
+
 import { PaymentsListData } from './_components/payments-list-data'
 import { PaymentsSection } from './_components/payments-section'
 
@@ -12,7 +14,9 @@ const PAYMENTS_SKELETON_COLUMNS = [
   { label: 'Amount' },
 ]
 
-export default function PaymentsLayout({ children }: { children: ReactNode }) {
+export default async function PaymentsLayout({ children }: { children: ReactNode }) {
+  await requireAppPermission('payments.view')
+
   return (
     <PaymentsSection
       list={

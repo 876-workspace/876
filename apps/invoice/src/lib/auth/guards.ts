@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import { cache } from 'react'
 
 import { isAccountUsable } from './account-validity'
+import { canAccess, resolveAccessContext } from './access-context'
+import { getInvoiceContextResult } from './context'
 import { getAuthSession, isSignedSession } from './session'
 
 /**
@@ -26,3 +28,20 @@ export const requireValidSession = cache(async function requireValidSession(
 
   return session.user
 })
+
+/** Requires an in-app capability after the organization context is established. */
+export async function requireAppPermission(permission: string) {
+  const result = await getInvoiceContextResult()
+  if (result.status === 'signed-out') redirect(createAuthLoginPath('/'))
+  if (result.status === 'no-organization') redirect('/onboarding')
+  if (result.status === 'unavailable') redirect('/unavailable')
+
+  const outcome = await resolveAccessContext(
+    result.context.userId,
+    result.context.orgId
+  )
+  if (outcome.status === 'unavailable') redirect('/unavailable')
+  if (!canAccess(outcome.context, permission)) redirect('/no-access')
+
+  return outcome.context
+}

@@ -17,7 +17,9 @@ const policy = vi.hoisted(() => ({
 
 const profile = vi.hoisted(() => ({
   resolveAndPersistApplicationProvisioningProfile: vi.fn(),
-  retrieveSelectedApplicationProvisioningRoles: vi.fn(),
+  // The real function always returns an array; the mock must honour that
+  // contract or it tests a shape the service can never receive.
+  retrieveSelectedApplicationProvisioningRoles: vi.fn(async () => []),
 }))
 
 vi.mock('../provisioning.repository', () => repository)
@@ -27,7 +29,9 @@ vi.mock(
   () => profile
 )
 vi.mock('@/modules/app-access', () => ({
-  materializeProvisionedRolesForApp: vi.fn().mockResolvedValue({ seeded: 0, skipped: 0 }),
+  materializeProvisionedRolesForApp: vi
+    .fn()
+    .mockResolvedValue({ seeded: 0, skipped: 0 }),
 }))
 vi.mock('../billing-customer-sync', () => ({
   enqueueCustomerEnsureForOrganization: vi.fn(),
@@ -57,7 +61,9 @@ beforeEach(() => {
     '876-enterprise',
     '876-crm',
   ])
-  policy.retrievePersistedProvisioningPolicy.mockResolvedValue(persistedPolicy())
+  policy.retrievePersistedProvisioningPolicy.mockResolvedValue(
+    persistedPolicy()
+  )
   policy.resolveFreshProvisioningPolicy.mockResolvedValue(null)
 
   repository.findAppBySlug.mockImplementation((slug: string) =>

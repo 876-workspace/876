@@ -148,13 +148,57 @@ describe('parsePhone', () => {
 describe('listDialCodes', () => {
   it('includes flag and name for every country', () => {
     const codes = listDialCodes()
-    expect(codes.length).toBe(32)
+    expect(codes).not.toHaveLength(0)
     for (const entry of codes) {
       expect(entry.flag).toMatch(/./u)
       expect(entry.name.length).toBeGreaterThan(1)
       expect(entry.countryCode).toMatch(/^[A-Z]{2}$/)
       expect(entry.dialCode).toMatch(/^\+\d+$/)
     }
+
+    expect(codes.map((entry) => entry.countryCode)).toEqual([
+      'AG',
+      'AI',
+      'AW',
+      'BB',
+      'BL',
+      'BM',
+      'BQ',
+      'BS',
+      'BZ',
+      'CA',
+      'CU',
+      'CW',
+      'DE',
+      'DM',
+      'DO',
+      'FR',
+      'GB',
+      'GD',
+      'GF',
+      'GP',
+      'GY',
+      'HT',
+      'IT',
+      'JM',
+      'JP',
+      'KN',
+      'KY',
+      'LC',
+      'MF',
+      'MQ',
+      'MS',
+      'MX',
+      'PR',
+      'SR',
+      'SX',
+      'TC',
+      'TT',
+      'US',
+      'VC',
+      'VG',
+      'VI',
+    ])
   })
 
   it('is sorted alphabetically by countryCode and de-duplicated', () => {
