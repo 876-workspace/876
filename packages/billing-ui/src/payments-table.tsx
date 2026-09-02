@@ -1,33 +1,56 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
-import { formatMoney, formatDate } from '@/lib/format'
-
-interface PaymentRow {
+/**
+ * A received payment as the finance plane serves it.
+ *
+ * `amount` accepts both shapes the hosts hold it in — Invoice reads Prisma
+ * `BigInt` minor units, Console reads the serialized decimal string — because
+ * narrowing it here would force one host to convert on every row.
+ */
+export interface PaymentRow {
   id: string
   number: string
-  customer: { name: string }
+  customerName: string
   amount: bigint | string
   currency: string
+  /** Unix seconds, or null when the payment carries no recorded date. */
   paymentDate: number | null
   status: string
-  depositAccount: string
+  depositAccountName: string
 }
 
-interface Props {
-  emptyState?: React.ReactNode
+export interface PaymentsTableProps {
   payments: PaymentRow[]
+  /** Row and link destinations are `${baseHref}/${id}`; the host owns routing. */
+  baseHref: string
+  /**
+   * Money and date formatting are host policy, not presentation: each host
+   * already owns a locale and a currency convention, and passing them keeps
+   * this table from becoming a second place those decisions are made.
+   */
+  formatAmount: (amount: bigint | string, currency: string) => string
+  formatDate: (date: number | null) => string
+  emptyState?: ReactNode
 }
 
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
-
-export function PaymentsTable({ payments, emptyState }: Props) {
+export function PaymentsTable({
+  payments,
+  baseHref,
+  formatAmount,
+  formatDate,
+  emptyState,
+}: PaymentsTableProps) {
   const router = useRouter()
+  const hrefFor = (id: string) => `${baseHref}/${id}`
+
   const columns: ColumnDef<PaymentRow, unknown>[] = [
     {
       id: 'payment',
@@ -37,7 +60,7 @@ export function PaymentsTable({ payments, emptyState }: Props) {
       ),
       cell: ({ row }) => (
         <Link
-          href={`/payments/${row.original.id}`}
+          href={hrefFor(row.original.id)}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
           onClick={(event) => event.stopPropagation()}
         >
@@ -47,20 +70,20 @@ export function PaymentsTable({ payments, emptyState }: Props) {
     },
     {
       id: 'customer',
-      accessorFn: (row) => row.customer.name,
+      accessorKey: 'customerName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Customer" />
       ),
-      cell: ({ row }) => row.original.customer.name,
+      cell: ({ row }) => row.original.customerName,
     },
     {
       id: 'account',
-      accessorKey: 'depositAccount',
+      accessorKey: 'depositAccountName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Deposit account" />
       ),
       cell: ({ row }) => (
-        <span className="text-xs">{row.original.depositAccount}</span>
+        <span className="text-xs">{row.original.depositAccountName}</span>
       ),
     },
     {
@@ -69,8 +92,11 @@ export function PaymentsTable({ payments, emptyState }: Props) {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Amount" />
       ),
-      cell: ({ row }) =>
-        formatMoney(row.original.amount, row.original.currency),
+      cell: ({ row }) => (
+        <span className="tabular-nums">
+          {formatAmount(row.original.amount, row.original.currency)}
+        </span>
+      ),
     },
     {
       id: 'date',
@@ -102,7 +128,8 @@ export function PaymentsTable({ payments, emptyState }: Props) {
         emptyState={emptyState}
         columns={columns}
         data={payments}
-        onRowClick={(p) => router.push(`/payments/${p.id}`)}
+        className="text-[0.8125rem]"
+        onRowClick={(payment) => router.push(hrefFor(payment.id))}
       />
     </div>
   )

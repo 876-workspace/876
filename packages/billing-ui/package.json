@@ -18,6 +18,22 @@
     "./items-table": {
       "types": "./src/items-table.tsx",
       "default": "./src/items-table.tsx"
+    },
+    "./customers-table": {
+      "types": "./src/customers-table.tsx",
+      "default": "./src/customers-table.tsx"
+    },
+    "./customers-list": {
+      "types": "./src/customers-list.tsx",
+      "default": "./src/customers-list.tsx"
+    },
+    "./payments-table": {
+      "types": "./src/payments-table.tsx",
+      "default": "./src/payments-table.tsx"
+    },
+    "./bank-accounts-grid": {
+      "types": "./src/bank-accounts-grid.tsx",
+      "default": "./src/bank-accounts-grid.tsx"
     }
   },
   "scripts": {

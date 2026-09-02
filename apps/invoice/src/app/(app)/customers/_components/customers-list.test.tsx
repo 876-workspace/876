@@ -8,7 +8,7 @@ import {
   resetNavigationTestState,
 } from '@/test/next-navigation-stub'
 import { CustomersList } from './customers-list'
-import type { CustomerRow } from './customers-table'
+import type { CustomerRow } from '@876/billing-ui/customers-table'
 
 function createCustomer(overrides: Partial<CustomerRow> = {}): CustomerRow {
   return {

@@ -101,23 +101,30 @@ export async function resolveWorkspaceNavigation(
   )
 
   return resolved.flatMap((group) =>
-    group.entries.flatMap((entry) => {
-      const section = implemented.get(entry.key)
-      // A registry entry Console has no screen for is omitted rather than
-      // linked: the workspace route binding test guarantees every section it
-      // does render resolves to a page, and a dead rail link is worse than a
-      // missing one.
-      if (!section) return []
+    group.entries.flatMap((entry) =>
+      // A parent and its children are both candidates. Billing files Invoices
+      // and Payments under a `sales` group entry, and Console's rail is flat,
+      // so binding only top-level keys would put those two permanently out of
+      // reach. `resolveNavigation` has already dropped a subtree whose parent
+      // the organization cannot see, so walking children never widens the rail.
+      [entry, ...(entry.children ?? [])].flatMap((candidate) => {
+        const section = implemented.get(candidate.key)
+        // A registry entry Console has no screen for is omitted rather than
+        // linked: the workspace route binding test guarantees every section it
+        // does render resolves to a page, and a dead rail link is worse than a
+        // missing one.
+        if (!section) return []
 
-      return [
-        {
-          key: entry.key,
-          label: section.label,
-          href: section.segment ? `${base}/${section.segment}` : base,
-          iconKey: section.iconKey,
-          exact: section.exact ?? false,
-        },
-      ]
-    })
+        return [
+          {
+            key: candidate.key,
+            label: section.label,
+            href: section.segment ? `${base}/${section.segment}` : base,
+            iconKey: section.iconKey,
+            exact: section.exact ?? false,
+          },
+        ]
+      })
+    )
   )
 }

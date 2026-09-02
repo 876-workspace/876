@@ -81,6 +81,20 @@ export {
   updateCustomerAddressBodySchema,
 } from './types/customer-address.schema'
 export type {
+  CreatePackageBody,
+  ListPackagesParams,
+  Package,
+  PackageList,
+  PackageStatus,
+  UpdatePackageBody,
+} from './types/package.schema'
+export {
+  createPackageBodySchema,
+  packageListSchema,
+  packageSchema,
+  updatePackageBodySchema,
+} from './types/package.schema'
+export type {
   Warehouse,
   WarehouseList,
   CreateWarehouseBody,

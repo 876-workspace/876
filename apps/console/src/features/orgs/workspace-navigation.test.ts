@@ -44,7 +44,7 @@ describe('resolveWorkspaceNavigation', () => {
   it('shows the sections that need no feature flag, in registry order', async () => {
     mocks.evaluate.mockResolvedValue(enabled())
 
-    expect(await labels()).toEqual(['Overview', 'Accounts', 'Items'])
+    expect(await labels()).toEqual(['Overview', 'Customers', 'Items'])
   })
 
   it('hides Subscriptions from an org without the subscriptions flag', async () => {
@@ -66,7 +66,7 @@ describe('resolveWorkspaceNavigation', () => {
     // Registry order, so the operator rail reads like the product's own sidebar.
     expect(links.map((link) => link.href)).toEqual([
       '/orgs/acme/workspace/billing',
-      '/orgs/acme/workspace/billing/accounts',
+      '/orgs/acme/workspace/billing/customers',
       '/orgs/acme/workspace/billing/items',
     ])
   })
@@ -94,7 +94,51 @@ describe('resolveWorkspaceNavigation', () => {
 
     // Invoice's registry lists Items in its workspace group, before the sales
     // group that holds Invoices, so the rail follows the app.
-    expect(await labels(INVOICE)).toEqual(['Overview', 'Items', 'Invoices'])
+    expect(await labels(INVOICE)).toEqual([
+      'Overview',
+      'Customers',
+      'Items',
+      'Invoices',
+      'Payments',
+    ])
+  })
+
+  it('hides Billing invoices and payments without the sales feature', async () => {
+    mocks.evaluate.mockResolvedValue(enabled())
+
+    const shown = await labels()
+    expect(shown).not.toContain('Invoices')
+    expect(shown).not.toContain('Payments')
+  })
+
+  it('shows the sales children the organization has, under the parent flag', async () => {
+    // Invoices and Payments are children of the `sales` group entry, so the
+    // rail can only reach them by walking children — the regression this
+    // guards is a flat top-level-only walk putting them permanently out of
+    // reach.
+    mocks.evaluate.mockResolvedValue(
+      enabled('billing-sales', 'billing-sales-invoices')
+    )
+
+    expect(await labels()).toEqual([
+      'Overview',
+      'Customers',
+      'Items',
+      'Invoices',
+      'Payments',
+    ])
+  })
+
+  it('hides Banking from an org without the banking flag', async () => {
+    mocks.evaluate.mockResolvedValue(enabled())
+
+    expect(await labels()).not.toContain('Banking')
+  })
+
+  it('shows Banking once the org has the flag', async () => {
+    mocks.evaluate.mockResolvedValue(enabled('billing-banking'))
+
+    expect(await labels()).toContain('Banking')
   })
 
   it('fails closed to no sections when flag evaluation is unavailable', async () => {
@@ -103,7 +147,7 @@ describe('resolveWorkspaceNavigation', () => {
       error: { code: 'platform/unavailable', message: 'down' },
     })
 
-    expect(await labels()).toEqual(['Overview', 'Accounts', 'Items'])
+    expect(await labels()).toEqual(['Overview', 'Customers', 'Items'])
   })
 
   it('returns nothing for a workspace whose registry has not moved yet', async () => {
