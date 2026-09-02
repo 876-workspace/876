@@ -7,6 +7,14 @@
   "private": true,
   "sideEffects": false,
   "exports": {
+    "./document-status": {
+      "types": "./src/document-status.ts",
+      "default": "./src/document-status.ts"
+    },
+    "./invoices-table": {
+      "types": "./src/invoices-table.tsx",
+      "default": "./src/invoices-table.tsx"
+    },
     "./items-table": {
       "types": "./src/items-table.tsx",
       "default": "./src/items-table.tsx"
