@@ -85,6 +85,53 @@ describe('Billing permissions', () => {
     expect(result).toEqual(new Set(['billing:access', 'catalog:read']))
   })
 
+  it('declares both stored payment method permissions', () => {
+    expect(BILLING_PERMISSION_VALUES).toEqual(
+      expect.arrayContaining(['payment_methods:read', 'payment_methods:write'])
+    )
+  })
+
+  it('adds stored payment method read access when write access is enabled', () => {
+    const current = new Set<Permission>(['billing:access'])
+
+    const result = togglePermission(current, 'payment_methods:write')
+
+    expect(result).toEqual(
+      new Set([
+        'billing:access',
+        'payment_methods:read',
+        'payment_methods:write',
+      ])
+    )
+  })
+
+  it('removes stored payment method write access when read access is revoked', () => {
+    const current = new Set<Permission>([
+      'billing:access',
+      'payment_methods:read',
+      'payment_methods:write',
+    ])
+
+    const result = togglePermission(current, 'payment_methods:read')
+
+    expect(result).toEqual(new Set(['billing:access']))
+  })
+
+  it('lists both stored payment method permissions with payments in the role editor', () => {
+    const paymentsGroup = BILLING_PERMISSION_GROUPS.find(
+      (group) => group.label === 'Payments'
+    )
+
+    expect(
+      paymentsGroup?.permissions.map((permission) => permission.value)
+    ).toEqual([
+      'payments:read',
+      'payments:write',
+      'payment_methods:read',
+      'payment_methods:write',
+    ])
+  })
+
   it('defines unique built-in roles with one default viewer role', () => {
     expect(BILLING_SYSTEM_ROLES.map((role) => role.slug)).toEqual([
       'super-admin',

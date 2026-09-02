@@ -143,7 +143,22 @@ export const BILLING_PERMISSION_GROUPS: PermissionGroup[] = [
   resourceGroup('Vendors', 'vendors'),
   resourceGroup('Purchases', 'purchases'),
   resourceGroup('Banking', 'banking'),
-  resourceGroup('Payments', 'payments'),
+  {
+    label: 'Payments',
+    permissions: [
+      ...resourceGroup('Payments', 'payments').permissions,
+      {
+        value: 'payment_methods:read',
+        label: 'View payment methods',
+        description: 'View stored customer payment methods.',
+      },
+      {
+        value: 'payment_methods:write',
+        label: 'Manage payment methods',
+        description: 'Attach and detach stored customer payment methods.',
+      },
+    ],
+  },
   resourceGroup('Members', 'members'),
   resourceGroup('Roles', 'roles'),
 ]

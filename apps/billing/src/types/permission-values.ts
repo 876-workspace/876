@@ -27,4 +27,8 @@ export const BILLING_PERMISSION_VALUES = [
   'banking:write',
   'payments:read',
   'payments:write',
+  // billing-api is authoritative until Billing moves onto the platform
+  // app-access plane, where this duplicated catalog will be removed.
+  'payment_methods:read',
+  'payment_methods:write',
 ] as const
