@@ -22,6 +22,10 @@
     "./app-access-summary": {
       "types": "./src/app-access-summary.tsx",
       "default": "./src/app-access-summary.tsx"
+    },
+    "./permission-matrix": {
+      "types": "./src/permission-matrix.tsx",
+      "default": "./src/permission-matrix.tsx"
     }
   },
   "scripts": {
