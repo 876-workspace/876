@@ -5,9 +5,9 @@ any 876 Next.js app, and before deciding how a client component talks to a
 backend. It fixes the browser-facing contract and its relationship to the
 server-side bounded clients.
 
-Companion to `.claude/rules/access-tiers.md` (on whose authority the server half
-calls), `.claude/rules/product-api-boundary.md` (product vocabulary), and
-`.claude/rules/api-access.md` (Console specifics).
+Companion to `.agents/rules/access-tiers.md` (on whose authority the server half
+calls), `.agents/rules/product-api-boundary.md` (product vocabulary), and
+`.agents/rules/api-access.md` (Console specifics).
 
 ## The invariant
 
@@ -136,7 +136,7 @@ never `fetch` with a hand-written URL, and never a service origin. The typed
 client covers **mutations and client-driven reads only** — it is not a second
 mirror of the server SDKs. Initial page data is server-rendered through the
 appropriate bounded client behind a Suspense boundary
-(`.claude/rules/data-loading.md`).
+(`.agents/rules/data-loading.md`).
 
 **No server actions.** Client-initiated mutations go through a route handler.
 

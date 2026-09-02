@@ -14,7 +14,7 @@ Instead, they must be run **only as part of the git workflow**, before committin
 - Git diffs remain clean and focused on logic changes.
 - Development is not slowed down by frequent formatting/linting overhead.
 
-See `.claude/rules/git.md` for the specific pre-commit workflow.
+See `.agents/rules/git.md` for the specific pre-commit workflow.
 
 ## Thermo-Nuclear Quality Review
 

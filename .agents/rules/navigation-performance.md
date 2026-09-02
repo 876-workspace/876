@@ -6,7 +6,7 @@ what was measured on 2026-08-06 while fixing Console and Couriers, so the same
 defects are not rebuilt from first principles.
 
 Companion to the root `CLAUDE.md` → "Loading States & Suspense Placement"
-(which owns the _skeleton shape_ rules) and `.claude/rules/performance.md`.
+(which owns the _skeleton shape_ rules) and `.agents/rules/performance.md`.
 
 ## The two facts everything here follows from
 

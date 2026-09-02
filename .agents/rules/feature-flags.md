@@ -5,7 +5,7 @@ and before adding flag-gated UI or API behavior. It defines the platform-wide
 flag key standard so a flag's owner app and group are readable from the key
 alone—in PostHog, in the local `features` catalog, and in code.
 
-This rule is subordinate to `.claude/rules/naming.md`: 876-owned machine-readable
+This rule is subordinate to `.agents/rules/naming.md`: 876-owned machine-readable
 string values use kebab-case. Feature flags are durable 876-owned identifiers.
 
 ## Where flags live

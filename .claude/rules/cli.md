@@ -179,7 +179,7 @@ agy --model=gemini-3.1-pro-high \
     --print-timeout 50m \
     --output-format stream-json \
     --dangerously-skip-permissions \
-    --print "$(cat .claude/briefs/agy/<brief>.md)"
+    --print "$(cat plans/<run>/briefs/agy/<brief>.md)"
 ```
 
 **`--print-timeout` defaults to `5m0s`. Always set it.** Anything longer than a
@@ -232,7 +232,7 @@ Muse is a genuine option for a **well-specified module port**: a bounded chunk
 of implementation with an existing reference module to copy, a written contract
 to follow, and a mechanical way to check the result. Evaluated 2026-08-07 on the
 `mobile-numbers` port (8 routes, ~2,000 lines including tests) against the brief
-at `.claude/briefs/muse/2026-08-07-mobile-numbers-module-port.md`. It finished
+at `plans/2026-08-07-express-modules-migration/briefs/muse/2026-08-07-mobile-numbers-module-port.md`. It finished
 in about five minutes.
 
 **What it got right, unprompted:** the module/layer split, `AppHttpError` with
@@ -273,7 +273,7 @@ draft that has never been executed, and read them as carefully as the module.
 cd apps/api && muse exec \
   --trust-workspace \
   --reasoning-effort high \
-  --prompt-file /workspaces/876/.claude/briefs/muse/<brief>.md
+  --prompt-file /workspaces/876/plans/<run>/briefs/muse/<brief>.md
 ```
 
 - **`--trust-workspace` is required.** Without it Muse reports
@@ -305,7 +305,7 @@ anything needing a database, a migration, a live service, or a fast loop.
 ### The loop
 
 ```
-you: write .claude/briefs/gpt-web/<date>-<slug>.md, commit it, push the branch
+you: write plans/<run>/briefs/gpt-web/<date>-<slug>.md, commit it, push the branch
 user: pastes the brief into ChatGPT web
 gpt web: edits files → commits to the SAME branch → writes its report
 you: pull → verify → fix what it could not → commit → write the next brief
@@ -381,7 +381,7 @@ Beyond the normal briefing format, a GPT web brief needs:
 
 ### Its report is the deliverable you actually read
 
-Require a report at `.claude/reports/gpt-web/<date>-<slug>.md`, committed with
+Require a report at `plans/<run>/reports/gpt-web/<date>-<slug>.md`, committed with
 the work, containing: a per-phase status table with the **counted** number of
 `it()` cases added in that pass; every file changed with a reason; any migration
 in full; decisions the brief did not settle; **things it could not verify**;
@@ -536,29 +536,36 @@ exec`), for CI polling, and for a long-lived dev server — things that are not
   (`pnpm --filter <pkg> typecheck/test`) and an explicit file scope — never
   a vague "go improve X."
 
-## Briefs live in `.claude/briefs/`, tracked in git
+## Implementation runs live in `plans/<run>/`, tracked in git
 
-Every written brief for a delegated CLI or sub-agent (Codex, `agy`,
-`opencode`, Command Code, or a Claude `Agent` sub-agent) **must be saved as a
-file under `.claude/briefs/`** — never composed only inline in a shell
-command or left to exist solely in conversation history.
+Every implementation run, feature pass, PR, or delegated multi-agent orchestration
+**must be saved under its own dedicated directory in `plans/<date>-<feature-slug>/`**
+— never dumped flat across disparate tool silos, never composed only inline in a shell
+command, and never left solely in conversation history.
 
-- **Organize by tool and task, not dumped flat.** Use a subdirectory per
-  delegated tool (`.claude/briefs/codex/`, `.claude/briefs/agy/`,
-  `.claude/briefs/opencode/`, `.claude/briefs/command-code/`,
-  `.claude/briefs/sub-agent/`), and name each file for the task it briefs,
-  e.g. `.claude/briefs/codex/2026-07-18-couriers-org-bootstrap.md`. Do not
-  let briefs accumulate as an unsorted pile of `brief1.md`, `brief2.md`.
-- **Do not gitignore `.claude/briefs/`.** Unlike `.claude/tracker/` (local,
-  ephemeral, gitignored per `.claude/rules/implementation-tracker.md`),
-  briefs are committed and versioned — they are the durable record of what
-  was asked of a delegated tool and why, and later work (or another agent)
-  may need to see exactly what a prior brief specified.
-- Write the brief file first, then pass its content (or path, if the tool
-  accepts a file argument) into the `codex exec` / `opencode run` /
-  `command-code -p` / `Agent` invocation — do not skip the file and only
-  paste the prompt inline.
-- Commit brief files in the same logical commit as the work they produced,
-  or their own `chore(briefs): ...` commit if the delegated work spans
-  multiple commits — never leave a brief uncommitted alongside committed
-  output.
+```text
+plans/<date>-<feature-slug>/
+├── plan.md                 # Primary implementation plan, architecture decisions, task checklist, handoff state
+├── briefs/                 # Dispatched briefs (subdirectories per tool: codex/, agy/, muse/, gpt-web/, sub-agent/)
+└── reports/                # Returned reports (subdirectories per tool: codex/, agy/, muse/, gpt-web/, orchestrator/)
+```
+
+- **Per-implementation folder:** Name each folder using ISO date and kebab-case descriptor,
+  e.g. `plans/2026-09-02-billing-and-invoice-list-detail-split/` or
+  `plans/2026-08-30-bounded-service-clients/`.
+- **Standard `plan.md` in every run:** Maintain a single source of truth for the
+  feature's scope, decisions, task checklist (`[ ]` / `[x]`), verification commands,
+  and multi-session handoff state. See `.claude/rules/implementation-tracker.md`.
+- **Subdirectories per delegated tool:** Under `briefs/` and `reports/`, organize files by
+  the tool/delegate (`briefs/codex/`, `briefs/agy/`, `briefs/muse/`, `briefs/gpt-web/`,
+  `briefs/sub-agent/`, `briefs/opencode/`, `briefs/command-code/`). Name each file for the specific
+  task it briefs, e.g. `briefs/codex/2026-09-02-billing-remaining-list-detail-split.md`.
+- **Durable multi-session continuity:** When an orchestration run is long or spans multiple
+  sessions/agents, the folder preserves the complete state. An incoming agent (Claude, Gemini,
+  Codex, Cursor) can read `plan.md`, review prior briefs and reports, verify progress, and
+  author the PR description seamlessly.
+- **Always committed in git — never gitignore `plans/`:** Unlike transient scratch
+  files, implementation runs are the durable audit trail of architectural intent, delegated tasks,
+  and verification reports. Commit the implementation folder alongside the code changes it produced.
+- **Write briefs to disk before invoking:** Write the brief file first, then pass its path
+  or content into the CLI or sub-agent invocation (`cat plans/<run>/briefs/...`).

@@ -1,29 +1,44 @@
-# Implementation Tracker Rule
+# Implementation Tracker & Orchestration Plans
 
-For any task that spans multiple files or involves multiple features, maintain a persistent tracker at `.claude/tracker/implementation_plan.md`.
+For any feature, non-trivial task, or multi-file implementation run, maintain a committed implementation plan and tracker at `plans/<date>-<feature-slug>/plan.md`.
 
-## What to track
+## Directory Structure
 
-- Features requested (summarized)
-- Model/design decisions made and why
-- Task checklist with completion status (`[ ]` / `[x]`)
-- Current status line at the bottom
+Every implementation run is self-contained under `plans/`:
+
+```text
+plans/<date>-<feature-slug>/
+├── plan.md                 # Primary implementation plan, architecture decisions, task checklist, handoff state
+├── briefs/                 # Dispatched briefs (subdirectories per tool: codex/, agy/, muse/, gpt-web/, sub-agent/)
+│   └── <tool>/<date>-<task-name>.md
+└── reports/                # Returned reports (subdirectories per tool: codex/, agy/, muse/, gpt-web/, orchestrator/)
+    └── <tool>/<date>-<task-name>.md
+```
+
+## What `plan.md` Contains
+
+A standard `plan.md` must include:
+
+1. **Header & Run Identifier:** `# Implementation Plan: <Feature Title>`, Run ID (`<date>-<feature-slug>`), Branch name, and live Status (`IN_PROGRESS` / `COMPLETED` / `PAUSED`).
+2. **Overview & Objectives:** Clear, concise statement of what is being built or refactored.
+3. **Architectural Scope:** Target packages/apps (`apps/*`, `packages/*`), key boundaries, and invariants.
+4. **Key Design Decisions:** Architectural decisions, tradeoffs, and rationale recorded before or during the work.
+5. **Dispatched Briefs Table:** Index of all delegation briefs with delegate tool name (`agy`, `codex`, `muse`, `gpt-web`, `sub-agent`) and markdown links to `./briefs/<tool>/<file>.md`.
+6. **Execution Reports Table:** Index of all reports received back from delegates with links to `./reports/<tool>/<file>.md`.
+7. **Task / Phase Checklist:** Explicit checklist with completion status (`[ ]` / `[x]`), updated as work proceeds.
+8. **Verification & Testing Commands:** Exact commands to verify the work (e.g. `pnpm --filter <pkg> typecheck`, `pnpm --filter <pkg> test`, boundaries check).
+9. **Multi-Session Continuity & Handoff State:** Explicit notes on what is finished, what is currently running, and exact next steps so any fresh agent session can resume work immediately without re-probing or re-deriving state.
+10. **PR Preparation Summary:** Completed summary of changes, commit hashes, and verification evidence for authoring the pull request.
 
 ## Process
 
-1. At the start of a long-running task, create or update `.claude/tracker/implementation_plan.md` with the plan the main model produced.
-2. After each significant chunk of work, use a `claude-haiku-4-5-20251001` subagent (via the Agent tool) to:
-   - Read `.claude/tracker/implementation_plan.md`
-   - Check the files actually changed (via `git diff --name-only`)
-   - Mark completed items `[x]` and note anything unimplemented
-   - Update the status line
-3. When the task is complete, update the status to `DONE` and note the commit SHA.
+1. **Start of Run:** Create `plans/<date>-<feature-slug>/plan.md` before making code edits or delegating work.
+2. **Delegating Work:** Write each brief file to `plans/<date>-<feature-slug>/briefs/<tool>/<brief-name>.md` and link it in `plan.md` before invoking the tool/CLI.
+3. **Receiving Results:** Save the delegate's report under `plans/<date>-<feature-slug>/reports/<tool>/<report-name>.md`, update `plan.md` checklist items `[x]`, and record verification results.
+4. **Resuming or Stopping a Session:** Ensure `plan.md` status, handoff notes, and checklist accurately reflect the live state.
+5. **Completion:** Mark the status as `COMPLETED ✅`, note the commit SHA(s) or PR number, and commit `plans/<date>-<feature-slug>/` alongside the implementation code.
 
-## File location
+## Storage & Git Tracking
 
-`.claude/tracker/` is in `.gitignore` and is local-only. The rules file itself (this file) IS committed.
+- **`plans/` is committed to git.** It is NOT gitignored. It provides the durable record of architectural rationale, delegation briefs, and verification evidence across sessions, PR reviews, and team members.
 
-## Notes
-
-- Keep the tracker up to date so future sessions can resume work without re-deriving state.
-- If something in the plan was changed during implementation, update the decision note.

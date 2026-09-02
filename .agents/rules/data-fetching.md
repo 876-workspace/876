@@ -1,7 +1,7 @@
 # Data Fetching Boundaries
 
-Read `.claude/rules/data-loading.md` before adding or changing any page that
-renders live data. Read `.claude/rules/error-handling.md` before handling a
+Read `.agents/rules/data-loading.md` before adding or changing any page that
+renders live data. Read `.agents/rules/error-handling.md` before handling a
 failed service/SDK result. Data ownership and data loading are separate concerns:
 this file defines **where data comes from**; `data-loading.md` defines **how pages
 wait for it without blocking the UI**.
@@ -123,4 +123,4 @@ if (result.error) throw new Error(result.error.message)
 5. For page-sized enrichment, add a **batch/purpose-built operation** rather than
    issuing one HTTP request per row.
 6. Preserve expected errors as values and render them at the smallest useful UI
-   scope per `.claude/rules/error-handling.md`.
+   scope per `.agents/rules/error-handling.md`.

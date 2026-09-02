@@ -83,8 +83,6 @@ next-env.d.ts
 # Claude Code workflow scratch worktrees (transient, auto-cleaned)
 .claude/worktrees/
 .claude/sessions/
-# Local implementation tracker — not committed to git
-.claude/tracker/
 session-ses_*.md
 
 # Local SQLite database (dev scratch; canonical DB is Postgres/Neon)
@@ -101,8 +99,6 @@ claude-token.txt
 # OS/process core dumps (root-level file only — never ignore source dirs named "core")
 /core
 
-# Top-level implementation plan (local planning artifact)
-implementation_plan.md
 apps/api/data.db
 
 
