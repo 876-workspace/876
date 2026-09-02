@@ -20,6 +20,7 @@ import { seedAppAccess } from './app-access'
 import { seedBootstrap } from './bootstrap'
 import { seedDefaultAppPrices } from './default-prices'
 import { seedGeoCatalog } from './geo'
+import { seedInternalPlans } from './internal-plan'
 import { seedAllFeatures } from './features'
 import { seedPlans } from './plans'
 
@@ -35,6 +36,7 @@ export type RunSeedsSummary = {
   geo: Awaited<ReturnType<typeof seedGeoCatalog>> | null
   features: Awaited<ReturnType<typeof seedAllFeatures>> | null
   plans: Awaited<ReturnType<typeof seedPlans>> | null
+  internalPlan: Awaited<ReturnType<typeof seedInternalPlans>> | null
   defaultPrices: Awaited<ReturnType<typeof seedDefaultAppPrices>> | null
 }
 
@@ -50,6 +52,7 @@ export async function runSeeds(
     geo: null,
     features: null,
     plans: null,
+    internalPlan: null,
     defaultPrices: null,
   }
 
@@ -84,6 +87,14 @@ export async function runSeeds(
     log.info('seeds.plans.started')
     summary.plans = await seedPlans()
     log.info({ summary: summary.plans }, 'seeds.plans.completed')
+  }
+
+  // After plans: the internal plan grants every module the platform module seed
+  // has just created, so it must not run first or it grants an empty set.
+  if (shouldRun('internalPlan')) {
+    log.info('seeds.internal_plan.started')
+    summary.internalPlan = await seedInternalPlans()
+    log.info({ summary: summary.internalPlan }, 'seeds.internal_plan.completed')
   }
 
   if (shouldRun('defaultPrices')) {
