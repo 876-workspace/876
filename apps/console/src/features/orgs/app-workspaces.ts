@@ -32,6 +32,8 @@ export type WorkspaceIconKey =
   | 'teams'
   | 'categories'
   | 'forms'
+  | 'payments'
+  | 'banking'
 
 /** One navigable area inside an app's workspace. */
 export type WorkspaceSection = {
@@ -85,7 +87,7 @@ export const APP_WORKSPACES = [
     key: 'billing',
     label: '876 Billing',
     summary:
-      'Accounts, subscriptions, payment methods, and financial transactions.',
+      'Customers, catalog items, invoices, payments, subscriptions, and banking.',
     iconKey: 'billing',
     sections: [
       {
@@ -96,17 +98,35 @@ export const APP_WORKSPACES = [
         entryKey: 'home',
       },
       {
+        label: 'Customers',
+        segment: 'customers',
+        iconKey: 'customers',
+        entryKey: 'customers',
+      },
+      { label: 'Items', segment: 'items', iconKey: 'items', entryKey: 'items' },
+      {
+        label: 'Invoices',
+        segment: 'invoices',
+        iconKey: 'billing',
+        entryKey: 'sales-invoices',
+      },
+      {
+        label: 'Payments',
+        segment: 'payments',
+        iconKey: 'payments',
+        entryKey: 'sales-payments',
+      },
+      {
         label: 'Subscriptions',
         segment: 'subscriptions',
         iconKey: 'requests',
         entryKey: 'subscriptions',
       },
-      { label: 'Items', segment: 'items', iconKey: 'items', entryKey: 'items' },
       {
-        label: 'Accounts',
-        segment: 'accounts',
-        iconKey: 'settings',
-        entryKey: 'customers',
+        label: 'Banking',
+        segment: 'banking',
+        iconKey: 'banking',
+        entryKey: 'banking',
       },
     ],
   },
@@ -125,12 +145,24 @@ export const APP_WORKSPACES = [
         entryKey: 'home',
       },
       {
+        label: 'Customers',
+        segment: 'customers',
+        iconKey: 'customers',
+        entryKey: 'customers',
+      },
+      { label: 'Items', segment: 'items', iconKey: 'items', entryKey: 'items' },
+      {
         label: 'Invoices',
         segment: 'invoices',
         iconKey: 'billing',
         entryKey: 'invoices',
       },
-      { label: 'Items', segment: 'items', iconKey: 'items', entryKey: 'items' },
+      {
+        label: 'Payments',
+        segment: 'payments',
+        iconKey: 'payments',
+        entryKey: 'payments',
+      },
     ],
   },
   {
