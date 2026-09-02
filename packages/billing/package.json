@@ -32,6 +32,10 @@
     "./admin": {
       "types": "./src/admin/index.ts",
       "default": "./src/admin/index.ts"
+    },
+    "./navigation": {
+      "types": "./src/navigation.ts",
+      "default": "./src/navigation.ts"
     }
   },
   "scripts": {
