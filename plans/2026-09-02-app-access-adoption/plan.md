@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-02-app-access-adoption`
 - **Integration branch:** `feature/app-access-adoption` (cut from `origin/main` @ `0db66bc0`)
-- **Status:** IN_PROGRESS
+- **Status:** Phases 0–4, 6, 7 COMPLETE ✅ — Phase 5 deferred (see below)
 
 ## Overview
 
