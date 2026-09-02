@@ -27,12 +27,17 @@
 
 | Package          | Path                 | Description                                                                                                                                                             |
 | ---------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@876/sdk`       | `packages/sdk`       | Consumer/first-party typed client (`$876`); API-key + session tier. Auth, OAuth, apps, and self-scoped resources. Request-only — does not own cookies or session state. |
-| `@876/admin`     | `packages/admin`     | Privileged platform-admin client (`$876`); internal-key tier, **server-only**. All `AdminDep` CRUD/list/search across users, orgs, memberships, roles, features, apps.  |
-| `@876/billing`   | `packages/billing`   | Versioned client for standalone 876 Billing; tenant-scoped root export plus server-only `/admin` projection tier.                                                       |
-| `@876/storage`   | `packages/storage`   | Typed client (`$storage`) for the 876 Storage service; service-key tier, **server-only**. Upload sessions and file metadata — never imported into client components.    |
+| `@876/platform`  | `packages/platform`  | Privileged platform/identity client (`$876`); internal-key tier, server-only. Core users, orgs, memberships, features, apps.                                           |
+| `@876/account`   | `packages/account`   | Consumer/first-party typed client; session + app-key tier. Auth flows, profile, sessions, OAuth grants.                                                                 |
+| `@876/billing`   | `packages/billing`   | Versioned client for 876 Billing; tenant-scoped root export plus server-only `/admin` projection tier and `/integration` partner tier.                                    |
+| `@876/couriers`  | `packages/couriers`  | Typed client for Couriers API; tenant-scoped client plus server-only `/admin` tier.                                                                                     |
+| `@876/crm`       | `packages/crm`       | Bounded CRM client and canonical wire contracts (`@876/crm/contracts`).                                                                                                 |
 | `@876/work`      | `packages/work`      | Typed client for the 876 Work service. Root export is contracts + integration scopes; `/integration` is the app-key tier and `/operator` is the internal-key tier.      |
-| `@876/core`      | `packages/core`      | Shared errors, ID generation, timestamps, contracts, and the shared client runtime (`@876/core/client`) both tier packages build on.                                    |
+| `@876/storage`   | `packages/storage`   | Typed client (`$storage`) for the 876 Storage service; service-key tier, server-only. Upload sessions and file metadata.                                                 |
+| `@876/workspace` | `packages/workspace` | Server-only workspace control plane client for cross-service provisioning and app materialization.                                                                      |
+| `@876/admin`     | `packages/admin`     | Platform-admin facade client (`$876`); internal-key tier, **server-only**.                                                                                              |
+| `@876/sdk`       | `packages/sdk`       | Consumer/first-party facade client (`$876`); API-key + session tier.                                                                                                    |
+| `@876/core`      | `packages/core`      | Shared errors, ID generation, timestamps, contracts, and the shared client runtime (`@876/core/client`).                                                                |
 | `@876/ui`        | `packages/ui`        | shadcn/ui primitives (Base UI + Tailwind v4), chart components, embeddable auth UI (`@876/ui/auth`), and shared design tokens.                                          |
 | `@876/analytics` | `packages/analytics` | PostHog analytics provider and shared tracking utilities.                                                                                                               |
 
@@ -52,7 +57,7 @@ CRM stores only CRM-owned tenant and profile fields. Financial customer records 
 | ------- | -------------------------------------- |
 | Node.js | 20+                                    |
 | pnpm    | 11.3.0 (enforced via `packageManager`) |
-| Python  | 3.12+ (for `apps/api`)                 |
+| Python  | 3.12+ (for `apps/storage-api`)         |
 
 ---
 
@@ -128,7 +133,7 @@ pnpm --filter @876/storage typecheck
 pnpm --filter @876/api test          # vitest
 pnpm --filter @876/sdk test          # vitest
 pnpm --filter @876/storage test      # vitest
-pnpm --filter @876/billing-api test  # pytest
+pnpm --filter @876/billing-api test  # vitest
 pnpm --filter @876/storage-api test  # pytest
 
 # Core API schema (Prisma). The service applies no DDL at startup — migrations
@@ -163,14 +168,14 @@ pnpm --filter @876/couriers-api deploy
 ```
 Browser / Next.js Apps (876, Enterprise, Console, Couriers, Billing, Invoice, CRM)
        │
-       │  @876/sdk (consumer/first-party, API-key + session tier)
-       │  @876/admin (server-only, internal-key tier)
+       │  @876/platform, @876/account, @876/billing, @876/couriers, @876/crm, @876/work
+       │  @876/sdk (consumer/first-party), @876/admin (internal-key platform admin)
        │
        ▼
   apps/api  (Express — identity/platform source of truth)
        │
        ▼
-  PostgreSQL (identity/platform DB, SQLAlchemy)
+  PostgreSQL (identity/platform DB, Prisma 7)
   WorkOS     (auth provider)
   Stripe     (billing)
   PostHog    (analytics)
@@ -203,11 +208,15 @@ All calls follow `$876.<resource>.<verb>(params)` — see the package READMEs an
 
 ---
 
-## Documentation
+## Documentation & Planning
 
 Package-specific guidance lives in each package's `README.md`. Repository-wide
 agent rules live in `.claude/rules/` and are mirrored in `.agents/rules/` and
 `.grok/rules/` (Grok omits `cli.md`).
+
+All feature implementation plans, delegation briefs, execution reports, and multi-session
+trackers live in dedicated implementation directories under `plans/<date>-<feature-slug>/`
+(e.g. `plans/2026-09-02-billing-and-invoice-list-detail-split/`). See `.claude/rules/implementation-tracker.md`.
 
 ---
 
