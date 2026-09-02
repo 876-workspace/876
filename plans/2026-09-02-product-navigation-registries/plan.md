@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-02-product-navigation-registries`
 - **Branch:** `feature/product-navigation-registries` (cut from `origin/main` @ `d655a060`)
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED ✅
 
 ## Overview
 
@@ -80,19 +80,19 @@ registry and the route tree must agree.
 
 ## Execution reports
 
-| Phase | Tool  | Report    |
-| ----- | ----- | --------- |
-| 1 + 2 | codex | _pending_ |
+| Phase | Tool  | Report                                                                                                                                                     |
+| ----- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 + 2 | codex | [reports/codex/2026-09-02-billing-nav-registry-and-console-route-binding.md](./reports/codex/2026-09-02-billing-nav-registry-and-console-route-binding.md) |
 
 ## Checklist
 
-- [ ] Phase 1 — Billing navigation registry on `defineNavigation`
-- [ ] Phase 1 — `getVisibleNav` deleted, no remaining callers
-- [ ] Phase 1 — `nav-config.test.ts` rewritten against `resolveBillingNavigation`
-- [ ] Phase 2 — `billing/items`, `invoice/items`, `crm/forms` routes added
-- [ ] Phase 2 — section↔route binding test added and passing
-- [ ] Verification green (below)
-- [ ] Committed per `.claude/rules/git.md` granularity
+- [x] Phase 1 — Billing navigation registry on `defineNavigation`
+- [x] Phase 1 — `getVisibleNav` deleted, no remaining callers
+- [x] Phase 1 — `nav-config.test.ts` rewritten against `resolveBillingNavigation` (7 → 14 cases)
+- [x] Phase 2 — `billing/items`, `invoice/items`, `crm/forms` routes added
+- [x] Phase 2 — section↔route binding test added and passing
+- [x] Verification green (below)
+- [x] Committed per `.claude/rules/git.md` granularity
 
 ## Verification commands
 
@@ -112,14 +112,38 @@ All verification runs in the FOREGROUND (`.claude/rules/cli.md`).
 
 ## Handoff state
 
-Nothing implemented yet. Branch cut from `origin/main` at `d655a060`; plan and
-brief committed at `c5a62039`.
+**Run complete.** Commits on `feature/product-navigation-registries`:
 
-**Blocked on Codex auth.** The first dispatch
-(`codex exec -m gpt-5.6-terra -c model_reasoning_effort=high`) reached the model
-selection stage and then failed every request with
-`401 token_expired` — `codex login status` still reports "Logged in using
-ChatGPT", but the stored refresh token is rejected by
-`https://chatgpt.com/backend-api/codex/models`. No files were written; `git
-status` was clean afterwards. Re-authenticate with `codex login` (interactive,
-needs a browser) and re-dispatch the brief unchanged.
+| Commit     | What                                          |
+| ---------- | --------------------------------------------- |
+| `c5a62039` | plan + brief                                  |
+| `3e4bf739` | recorded the Codex startup-auth noise         |
+| `13d30c91` | `featureKeys` on the Billing feature contract |
+| `79ca963d` | Billing navigation onto the shared registry   |
+| `35e23965` | Console workspace routes + binding test       |
+
+Verified by the orchestrator in the foreground, not taken from the delegate's
+report: billing typecheck/lint (0 errors) and 750 tests across 70 files; console
+typecheck/lint (0 errors) and 1373 tests across 138 files;
+`check-app-structure` and `check:transpile` OK. `grep` for
+`eslint-disable`/`@ts-ignore`/`as any` over the touched paths returns only one
+pre-existing disable in `apps/billing/src/lib/service/index.ts`, untouched by
+this run. Test counts confirmed to have moved per file (7→14, 5→6, 12→13). The
+binding test was proved able to fail by temporarily removing
+`workspace/billing/items/`; it failed naming the workspace, segment and path,
+and the directory was restored.
+
+### Correction to the brief
+
+The brief asserted `apps/console/src/features/orgs/app-workspaces.test.ts` was a
+new file. It already existed with 12 cases. Codex integrated rather than
+replaced — a pure `+76/-0` insertion — which is the right call, and the reason
+the "at least 6 cases" floor in the brief is met by one added case rather than
+six.
+
+### Next run
+
+Not started, deliberately out of scope here: `@876/billing-ui` plus its
+`SHARED_UI_PACKAGES` entry, the operator permission projection, and real data in
+the Console workspace pages. The projection has nothing to gate until a real
+product screen renders in Console, so it belongs with the first extracted screen.
