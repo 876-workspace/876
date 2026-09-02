@@ -9,7 +9,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
-import { CustomersTable } from './customers-table'
+import { CustomersTable } from '@876/billing-ui/customers-table'
 import { CUSTOMERS_SKELETON_COLUMNS } from './customers-skeleton-columns'
 
 /**
@@ -32,13 +32,13 @@ describe('customers skeleton column parity', () => {
             companyName: 'Reyes Logistics',
             contactName: 'Alejandra Reyes',
             phone: '+18761234567',
-            receivablesAmount: 125000n,
-            receivablesCurrency: 'JMD',
+            receivables: 125000n,
+            currency: 'JMD',
             status: 'ACTIVE',
-          } as unknown as Parameters<
-            typeof CustomersTable
-          >[0]['customers'][number],
+          },
         ]}
+        baseHref="/customers"
+        formatAmount={(amount, currency) => `${currency} ${amount}`}
       />
     )
 
