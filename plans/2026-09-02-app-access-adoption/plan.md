@@ -76,20 +76,32 @@ authority a resource is exposed at is an access-tier decision
 
 ### D6 — Billing's permission keys do not map mechanically, and the gap must not widen access
 
-Billing's own plane (`apps/billing/src/types/permission-values.ts`) uses 26
-colon-delimited `<module>:read|write` keys. The canonical `876-billing` catalog uses
+Billing declares its permission vocabulary **twice, and the two disagree**:
+`apps/billing-api/src/modules/access/access.schemas.ts` has 30 colon-delimited
+`<module>:read|write` keys, while `apps/billing/src/types/permission-values.ts`
+has 28 — the app is missing `payment_methods:read` and `payment_methods:write`, so
+its role editor cannot grant two permissions the API enforces. The **API list is
+the source of truth** for the migration, because it is what stored role rows were
+validated against.
+
+`payment_methods` is also the one snake_case module key in either list. The
+canonical catalog spells it `payment-methods` per `.claude/rules/naming.md`; this is
+a **new** canonical key rather than a rename of a persisted one, so no data
+migration is involved in introducing it. The canonical `876-billing` catalog uses
 dot-delimited CRUD (`customers.view|create|edit|delete`). The module sets agree; the
 action vocabularies do not, and `.claude/rules/naming.md` forbids deriving a
 migration from a pattern substitution.
 
 The explicit old-to-new map for Phase 5:
 
-| Old                    | New                        | Why                                                                                                                                      |
-| ---------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `<m>:read`             | `<m>.view`                 | one to one                                                                                                                               |
-| `<m>:write`            | `<m>.create` + `<m>.edit`  | **not** `.delete` — a `:write` holder never had delete as a separable capability, so inferring it would widen access during a migration  |
-| `billing:access`       | dropped                    | app entry is the entitlement, which Core already models as the subscription                                                              |
-| `members:*`, `roles:*` | dropped from the app plane | these are organization-governance permissions; the canonical catalog correctly omits them and the organization role already carries them |
+| Old                     | New                                               | Why                                                                                                                                      |
+| ----------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `<m>:read`              | `<m>.view`                                        | one to one                                                                                                                               |
+| `<m>:write`             | `<m>.create` + `<m>.edit`                         | **not** `.delete` — a `:write` holder never had delete as a separable capability, so inferring it would widen access during a migration  |
+| `billing:access`        | dropped                                           | app entry is the entitlement, which Core already models as the subscription                                                              |
+| `payment_methods:read`  | `payment-methods.view`                            | the canonical key is kebab-case; the module was added to the catalog for exactly this                                                    |
+| `payment_methods:write` | `payment-methods.create` + `payment-methods.edit` | same rule as every other `:write`                                                                                                        |
+| `members:*`, `roles:*`  | dropped from the app plane                        | these are organization-governance permissions; the canonical catalog correctly omits them and the organization role already carries them |
 
 A role that held **every** billing permission (`super-admin`, `admin`) receives the
 full catalog including `.delete`. A partial role receives view/create/edit and no
@@ -98,7 +110,9 @@ partial role into delete rights is an access-widening write, which
 `.claude/rules/access-control.md` requires to fail closed.
 
 Phase 5 must ship a migration test asserting this map exactly, including that no
-migrated partial role gains a `.delete` key.
+migrated partial role gains a `.delete` key, and that every one of billing-api's 30
+keys has a destination — a key with no mapping is a dropped capability, which is
+the failure this table exists to prevent.
 
 ## Verified premises (checked on `origin/main`, 2026-09-02)
 

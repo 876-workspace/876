@@ -30,6 +30,10 @@ const BILLING_KEYS = [
   'customers.edit',
   'customers.view',
   'dashboard.view',
+  'payment-methods.create',
+  'payment-methods.delete',
+  'payment-methods.edit',
+  'payment-methods.view',
   'payments.create',
   'payments.delete',
   'payments.edit',
@@ -121,6 +125,7 @@ describe('billingPermissionCatalog', () => {
       'purchases',
       'banking',
       'payments',
+      'payment-methods',
       'settings',
     ])
   })
