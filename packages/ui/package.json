@@ -8,40 +8,44 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./icons": {
-      "types": "./src/icons.ts",
-      "default": "./src/icons.ts"
+    "./*": {
+      "types": "./src/components/*.tsx",
+      "default": "./src/components/*.tsx"
     },
-    "./category-icons": {
-      "types": "./src/category-icons.tsx",
-      "default": "./src/category-icons.tsx"
-    },
-    "./lib/utils": {
-      "types": "./src/lib/utils.ts",
-      "default": "./src/lib/utils.ts"
-    },
-    "./styles.css": "./src/styles.css",
     "./876.css": "./src/876.css",
     "./auth": {
       "types": "./src/auth/index.ts",
       "default": "./src/auth/index.ts"
     },
-    "./onboarding": {
-      "types": "./src/onboarding/index.ts",
-      "default": "./src/onboarding/index.ts"
-    },
     "./auth/provider-icons": {
       "types": "./src/auth/provider-icons.tsx",
       "default": "./src/auth/provider-icons.tsx"
+    },
+    "./category-icons": {
+      "types": "./src/category-icons.tsx",
+      "default": "./src/category-icons.tsx"
+    },
+    "./icons": {
+      "types": "./src/icons.ts",
+      "default": "./src/icons.ts"
+    },
+    "./lib/utils": {
+      "types": "./src/lib/utils.ts",
+      "default": "./src/lib/utils.ts"
     },
     "./logos/*": {
       "types": "./src/logos/*.tsx",
       "default": "./src/logos/*.tsx"
     },
-    "./*": {
-      "types": "./src/components/*.tsx",
-      "default": "./src/components/*.tsx"
-    }
+    "./onboarding": {
+      "types": "./src/onboarding/index.ts",
+      "default": "./src/onboarding/index.ts"
+    },
+    "./resource-row-link": {
+      "types": "./src/resource-row-link.tsx",
+      "default": "./src/resource-row-link.tsx"
+    },
+    "./styles.css": "./src/styles.css"
   },
   "scripts": {
     "test": "vitest run",

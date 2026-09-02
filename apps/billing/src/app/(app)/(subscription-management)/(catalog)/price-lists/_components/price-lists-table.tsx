@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
-import { ResourceRowLink } from '@/components/patterns/resource-row-link'
+import { ResourceRowLink } from '@876/ui/resource-row-link'
 
 export type PriceListRow = {
   id: string
