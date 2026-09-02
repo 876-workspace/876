@@ -36,7 +36,7 @@ describe('MemberCard', () => {
     )
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
   })
-  it('renders overview and app access tabs immediately', () => {
+  it('renders overview, app access, and permissions tabs immediately', () => {
     render(
       <MemberCard membershipId={member.id} header={<p>Identity loading</p>}>
         <p>Body</p>
@@ -44,6 +44,7 @@ describe('MemberCard', () => {
     )
     expect(screen.getByText('Overview')).toBeInTheDocument()
     expect(screen.getByText('App access')).toBeInTheDocument()
+    expect(screen.getByText('Permissions')).toBeInTheDocument()
   })
   it('carries the membership id in the overview tab href', () => {
     render(
@@ -65,6 +66,17 @@ describe('MemberCard', () => {
     expect(screen.getByText('App access')).toHaveAttribute(
       'href',
       '/settings/users/mem_1/access'
+    )
+  })
+  it('carries the membership id in the permissions tab href', () => {
+    render(
+      <MemberCard membershipId={member.id} header={null}>
+        <p>Body</p>
+      </MemberCard>
+    )
+    expect(screen.getByText('Permissions')).toHaveAttribute(
+      'href',
+      '/settings/users/mem_1/permissions'
     )
   })
   it('renders the detail card as the column root', () => {

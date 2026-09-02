@@ -24,6 +24,7 @@ export function MemberCard({
   const tabs = [
     { label: 'Overview', href: base },
     { label: 'App access', href: `${base}/access` },
+    { label: 'Permissions', href: `${base}/permissions` },
   ]
   return (
     <DetailCard aria-label="User details">
