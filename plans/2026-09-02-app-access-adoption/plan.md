@@ -117,7 +117,16 @@ node scripts/check-app-structure.mjs
 
 ## Handoff state
 
-Branch cut, plan written. Phase 0 in progress by the orchestrator.
+Phases 0 and 0b are committed and green (`231948cc`, `5d91ea92`, `eed32cc8`,
+`20414b58`, `75f697e6`, `e3442fe7`). Phase 1 is running under Codex
+`gpt-5.6-terra` at high effort. Phase 2's brief is written and ready to dispatch.
+
+Known pre-existing failure, **not** from this run: `packages/core/src/lib/phone.test.ts`
+expects 32 dial codes and gets 41. Confirmed on `origin/main` by stashing. Out of
+scope here.
+
+`pnpm --filter @876/api boundaries` reports 25 violations on `origin/main` before
+this run and 25 after it — the gate was already red; this run adds none.
 
 ## Open risk
 
