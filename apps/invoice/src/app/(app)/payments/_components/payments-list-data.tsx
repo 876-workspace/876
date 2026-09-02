@@ -42,13 +42,11 @@ export async function PaymentsListData() {
       : (result.data.data as Record<string, unknown>[]).map((payment) => ({
           id: String(payment.id),
           number: String(payment.number ?? payment.id),
-          customer: {
-            name: String(
-              (payment.customer as Record<string, unknown>)?.name ??
-                payment.customerName ??
-                '—'
-            ),
-          },
+          customerName: String(
+            (payment.customer as Record<string, unknown>)?.name ??
+              payment.customerName ??
+              '—'
+          ),
           amount: (payment.amount as string) ?? '0',
           currency: String(payment.currency ?? 'JMD'),
           paymentDate:
@@ -58,7 +56,7 @@ export async function PaymentsListData() {
                 ? payment.createdAt
                 : null,
           status: String(payment.status ?? 'RECEIVED'),
-          depositAccount: String(
+          depositAccountName: String(
             (payment.depositAccount as Record<string, unknown>)?.name ??
               payment.accountName ??
               'Undeposited'

@@ -1,6 +1,6 @@
 'use client'
 
-import type { ComponentProps, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
@@ -12,10 +12,9 @@ import {
   ListPaneItem,
 } from '@876/ui/list-pane'
 
-import { formatMoney } from '@/lib/format'
-import { PaymentsTable } from './payments-table'
+import { PaymentsTable, type PaymentRow } from '@876/billing-ui/payments-table'
 
-type PaymentRow = ComponentProps<typeof PaymentsTable>['payments'][number]
+import { formatDate, formatMoney } from '@/lib/format'
 
 export function PaymentsList({
   payments,
@@ -37,7 +36,15 @@ export function PaymentsList({
   const rows = payments
 
   if (!selectedId)
-    return <PaymentsTable payments={rows} emptyState={emptyState} />
+    return (
+      <PaymentsTable
+        payments={rows}
+        baseHref="/payments"
+        formatAmount={formatMoney}
+        formatDate={formatDate}
+        emptyState={emptyState}
+      />
+    )
 
   return (
     <ListPane>
@@ -57,7 +64,7 @@ export function PaymentsList({
               selected={payment.id === selectedId}
               label={`View payment ${payment.number}`}
               title={payment.number}
-              subtitle={payment.customer.name}
+              subtitle={payment.customerName}
               trailing={
                 <span className="flex items-center gap-2">
                   <span className="tabular-nums">
