@@ -1,230 +1,251 @@
 import {
-  BarChart3,
-  Building2,
+  defineNavigation,
+  resolveNavigation,
+  type AccessContext,
+  type NavGroupDefinition,
+} from '@876/core/access'
+import {
   CircleStackIcon,
   ClipboardList,
   CreditCard,
   Globe2,
   KeyRound,
   RefreshCw,
-  Settings,
   StickyNote,
   Users,
   type IconComponent,
 } from '@876/ui/icons'
 import type { Permission } from '@/types/access'
-import type {
-  BillingProductFeature as ProductFeature,
-  BillingProductFeatures as ProductFeatures,
-} from '@/types/features'
 
-export type NavChild = {
-  title: string
-  href: string
-  feature?: ProductFeature
-  permission?: Permission
-}
-
-export type NavItem = {
-  title: string
-  href: string
-  icon: IconComponent
-  color?: string
-  children?: NavChild[]
-  permission: Permission
-  feature?: ProductFeature
-}
-
-export type NavGroup = {
-  label: string
-  className?: string
-  items: NavItem[]
-}
-
-/**
- * Billing navigation separates invoicing, purchases, and subscription
- * management. Product flags are evaluated on the server and passed into the
- * sidebar as booleans; the browser never evaluates PostHog keys.
- */
-export const Nav: NavGroup[] = [
+export const billingNavigation = defineNavigation([
   {
-    label: '',
-    items: [
+    key: 'workspace',
+    entries: [
       {
+        key: 'home',
         title: 'Home',
         href: '/',
-        icon: BarChart3,
-        color: 'var(--876-blue)',
-        permission: 'dashboard:read',
+        icon: 'dashboard',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'dashboard:read' },
       },
       {
+        key: 'customers',
         title: 'Customers',
         href: '/customers',
-        icon: Users,
-        color: 'var(--876-gold)',
-        permission: 'customers:read',
+        icon: 'customers',
+        colorClassName: 'text-[var(--876-gold)]',
+        requires: { permission: 'customers:read' },
       },
       {
+        key: 'items',
         title: 'Items',
         href: '/items',
-        icon: CircleStackIcon,
-        color: 'var(--876-blue)',
-        permission: 'catalog:read',
+        icon: 'items',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'catalog:read' },
       },
       {
+        key: 'sales',
         title: 'Sales',
         href: '/quotes',
-        icon: ClipboardList,
-        color: 'var(--876-purple)',
-        permission: 'sales:read',
-        feature: 'sales',
+        icon: 'sales',
+        colorClassName: 'text-[var(--876-purple)]',
+        requires: { permission: 'sales:read', feature: 'billing-sales' },
         children: [
           {
+            key: 'sales-quotes',
             title: 'Quotes',
             href: '/quotes',
-            feature: 'quotes',
+            icon: 'sales',
+            requires: { feature: 'billing-sales-quotes' },
           },
           {
+            key: 'sales-estimates',
             title: 'Estimates',
             href: '/estimates',
-            feature: 'estimates',
+            icon: 'sales',
+            requires: { feature: 'billing-sales-estimates' },
           },
           {
+            key: 'sales-invoices',
             title: 'Invoices',
             href: '/invoices',
-            feature: 'invoices',
+            icon: 'sales',
+            requires: { feature: 'billing-sales-invoices' },
           },
           {
+            key: 'sales-credit-notes',
             title: 'Credit Notes',
             href: '/credit-notes',
-            feature: 'invoices',
+            icon: 'sales',
+            requires: { feature: 'billing-sales-invoices' },
           },
           {
+            key: 'sales-payments',
             title: 'Payments Received',
             href: '/payments',
-            permission: 'payments:read',
+            icon: 'sales',
+            requires: { permission: 'payments:read' },
           },
         ],
       },
       {
+        key: 'subscriptions',
         title: 'Subscriptions',
         href: '/subscriptions',
-        icon: RefreshCw,
-        color: 'var(--876-orange)',
-        permission: 'subscriptions:read',
-        feature: 'subscriptions',
+        icon: 'subscriptions',
+        colorClassName: 'text-[var(--876-orange)]',
+        requires: {
+          permission: 'subscriptions:read',
+          feature: 'billing-subscriptions',
+        },
         children: [
-          { title: 'Products', href: '/products' },
-          { title: 'Plans', href: '/plans' },
-          { title: 'Add-ons', href: '/addons' },
-          { title: 'Prices', href: '/prices' },
-          { title: 'Coupons', href: '/coupons' },
-          { title: 'Price Lists', href: '/price-lists' },
+          {
+            key: 'subscriptions-products',
+            title: 'Products',
+            href: '/products',
+            icon: 'subscriptions',
+          },
+          {
+            key: 'subscriptions-plans',
+            title: 'Plans',
+            href: '/plans',
+            icon: 'subscriptions',
+          },
+          {
+            key: 'subscriptions-addons',
+            title: 'Add-ons',
+            href: '/addons',
+            icon: 'subscriptions',
+          },
+          {
+            key: 'subscriptions-prices',
+            title: 'Prices',
+            href: '/prices',
+            icon: 'subscriptions',
+          },
+          {
+            key: 'subscriptions-coupons',
+            title: 'Coupons',
+            href: '/coupons',
+            icon: 'subscriptions',
+          },
+          {
+            key: 'subscriptions-price-lists',
+            title: 'Price Lists',
+            href: '/price-lists',
+            icon: 'subscriptions',
+          },
         ],
       },
     ],
   },
   {
-    label: '',
-    items: [
+    key: 'purchases',
+    entries: [
       {
+        key: 'purchases',
         title: 'Purchases',
         href: '/purchases/vendors',
-        icon: Building2,
-        color: 'var(--876-gold)',
-        permission: 'billing:access',
-        feature: 'purchases',
+        icon: 'purchases',
+        colorClassName: 'text-[var(--876-gold)]',
+        requires: {
+          permission: 'billing:access',
+          feature: 'billing-purchases',
+        },
         children: [
           {
+            key: 'purchases-vendors',
             title: 'Vendors',
             href: '/purchases/vendors',
-            feature: 'vendors',
+            icon: 'purchases',
+            requires: { feature: 'billing-purchases-vendors' },
           },
           {
+            key: 'purchases-expenses',
             title: 'Expenses',
             href: '/purchases/expenses',
-            feature: 'expenses',
+            icon: 'purchases',
+            requires: { feature: 'billing-purchases-expenses' },
           },
         ],
       },
     ],
   },
   {
-    label: '',
-    items: [
+    key: 'operations',
+    entries: [
       {
+        key: 'banking',
         title: 'Banking',
         href: '/banking',
-        icon: CreditCard,
-        color: 'var(--876-green)',
-        permission: 'banking:read',
-        feature: 'banking',
+        icon: 'banking',
+        colorClassName: 'text-[var(--876-green)]',
+        requires: {
+          permission: 'banking:read',
+          feature: 'billing-banking',
+        },
       },
       {
+        key: 'payroll',
         title: 'Payroll',
         href: '/payroll',
-        icon: Users,
-        color: 'var(--876-blue)',
-        permission: 'billing:access',
-        feature: 'payroll',
+        icon: 'payroll',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: {
+          permission: 'billing:access',
+          feature: 'billing-payroll',
+        },
       },
     ],
   },
   {
-    label: '',
-    className: 'mt-auto',
-    items: [
+    key: 'secondary',
+    entries: [
       {
+        key: 'reports',
         title: 'Reports',
         href: '/reports',
-        icon: CreditCard,
-        color: 'var(--876-green)',
-        permission: 'reports:read',
+        icon: 'reports',
+        colorClassName: 'text-[var(--876-green)]',
+        requires: { permission: 'reports:read' },
       },
       {
+        key: 'settings',
         title: 'Settings',
         href: '/settings',
-        icon: Settings,
-        color: 'var(--876-blue)',
-        permission: 'settings:read',
+        icon: 'settings',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: { permission: 'settings:read' },
       },
     ],
   },
-]
+])
 
-export function getVisibleNav(
-  permissions: Permission[],
-  productFeatures: ProductFeatures
-): NavGroup[] {
-  const allowed = new Set(permissions)
+export function resolveBillingNavigation(
+  context: AccessContext
+): NavGroupDefinition[] {
+  const resolved = resolveNavigation(billingNavigation, context)
+  const declaredEntries = new Map(
+    billingNavigation.flatMap((group) =>
+      group.entries.map((entry) => [entry.key, entry])
+    )
+  )
 
-  return Nav.map((group) => ({
+  return resolved.map((group) => ({
     ...group,
-    items: group.items.flatMap((item) => {
-      if (!allowed.has(item.permission)) return []
-      if (item.feature && !productFeatures[item.feature]) return []
-      if (!item.children) return [item]
-
-      const children = item.children.filter(
-        (child) =>
-          (!child.feature || productFeatures[child.feature]) &&
-          (!child.permission || allowed.has(child.permission))
-      )
-      if (children.length === 0) return []
-
-      const hrefTargetsChild = item.children.some(
-        (child) => child.href === item.href
+    entries: group.entries.map((entry) => {
+      const declared = declaredEntries.get(entry.key)
+      const hrefTargetsDeclaredChild = declared?.children?.some(
+        (child) => child.href === declared.href
       )
 
-      return [
-        {
-          ...item,
-          href: hrefTargetsChild ? children[0].href : item.href,
-          children,
-        },
-      ]
+      if (!hrefTargetsDeclaredChild || !entry.children?.[0]) return entry
+
+      return { ...entry, href: entry.children[0].href }
     }),
-  })).filter((group) => group.items.length > 0)
+  }))
 }
 
 /** Console-style settings cards, filtered with Billing-local permissions. */

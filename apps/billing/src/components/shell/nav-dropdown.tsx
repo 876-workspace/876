@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { cn } from '@876/core/utils'
-import { ChevronRight } from '@876/ui/icons'
+import { ChevronRight, type IconComponent } from '@876/ui/icons'
 import {
   Collapsible,
   CollapsibleContent,
@@ -13,7 +13,7 @@ import {
 } from '@876/ui/collapsible'
 import { useSidebar } from '@876/ui/sidebar'
 
-import type { NavItem } from './nav-config'
+import type { NavEntry } from '@876/core/access'
 import {
   NavLink,
   NavSubLink,
@@ -23,8 +23,14 @@ import {
   isActivePath,
 } from './nav-link'
 
-export function NavDropdown({ item }: { item: NavItem }) {
-  const { title, href, icon: Icon, color, children = [] } = item
+export function NavDropdown({
+  item,
+  icon: Icon,
+}: {
+  item: NavEntry
+  icon: IconComponent
+}) {
+  const { title, href, colorClassName, children = [] } = item
   const pathname = usePathname()
   const { state } = useSidebar()
   const hasActiveChild = children.some((child) =>
@@ -38,7 +44,7 @@ export function NavDropdown({ item }: { item: NavItem }) {
         href={href !== '#' ? href : (children[0]?.href ?? href)}
         title={title}
         icon={Icon}
-        color={color}
+        colorClassName={colorClassName}
       />
     )
   }
@@ -60,8 +66,7 @@ export function NavDropdown({ item }: { item: NavItem }) {
         >
           <Icon
             aria-hidden="true"
-            className="size-[1.125rem] shrink-0"
-            style={color ? { color } : undefined}
+            className={cn('size-[1.125rem] shrink-0', colorClassName)}
           />
           <span className="flex-1 truncate">{title}</span>
         </Link>

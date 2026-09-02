@@ -7,19 +7,15 @@ import {
   type TopbarSearchItem,
 } from '@876/ui/topbar-search'
 
-import { getVisibleNav } from './nav-config'
-import type { Permission } from '@/types/access'
-import type { BillingProductFeatures as ProductFeatures } from '@/types/features'
+import type { NavGroupDefinition } from '@876/core/access'
 
 export function TopbarSearch({
-  permissions,
-  productFeatures,
+  navigation,
 }: {
-  permissions: Permission[]
-  productFeatures: ProductFeatures
+  navigation: NavGroupDefinition[]
 }) {
   const router = useRouter()
-  const items = getSearchItems(permissions, productFeatures)
+  const items = getSearchItems(navigation)
 
   return (
     <SharedTopbarSearch
@@ -29,20 +25,16 @@ export function TopbarSearch({
   )
 }
 
-function getSearchItems(
-  permissions: Permission[],
-  productFeatures: ProductFeatures
-): TopbarSearchItem[] {
-  const visibleNav = getVisibleNav(permissions, productFeatures)
-  const navigationItems = visibleNav.flatMap((group) =>
-    group.items.map((item) => ({
+function getSearchItems(navigation: NavGroupDefinition[]): TopbarSearchItem[] {
+  const navigationItems = navigation.flatMap((group) =>
+    group.entries.map((item) => ({
       group: 'Navigation',
       title: item.title,
       href: item.href,
     }))
   )
-  const childItems = visibleNav.flatMap((group) =>
-    group.items.flatMap((item) =>
+  const childItems = navigation.flatMap((group) =>
+    group.entries.flatMap((item) =>
       (item.children ?? []).map((child) => ({
         group: item.title,
         title: child.title,

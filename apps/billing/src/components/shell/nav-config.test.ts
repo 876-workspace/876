@@ -1,128 +1,250 @@
+import type {
+  AccessContext,
+  NavEntry,
+  NavGroupDefinition,
+} from '@876/core/access'
 import { describe, expect, it } from 'vitest'
 
-import { getVisibleNav, getVisibleSettingsSections } from './nav-config'
-import type { Permission } from '@/types/access'
-import type { BillingProductFeatures as ProductFeatures } from '@/types/features'
+import {
+  billingNavigation,
+  getVisibleSettingsSections,
+  resolveBillingNavigation,
+} from './nav-config'
+import { BILLING_PERMISSION_VALUES } from '@/types/permission-values'
 
-const permissions: Permission[] = [
-  'billing:access',
-  'dashboard:read',
-  'customers:read',
-  'catalog:read',
-  'sales:read',
-  'subscriptions:read',
-  'reports:read',
-]
-
-const disabledFeatures: ProductFeatures = {
-  sales: false,
-  quotes: false,
-  estimates: false,
-  invoices: false,
-  subscriptions: false,
-  purchases: false,
-  vendors: false,
-  expenses: false,
-  banking: false,
-  documents: false,
-  payroll: false,
+function context(
+  permissions: string[],
+  features: string[] = []
+): AccessContext {
+  return {
+    subject: { userId: 'user_1' },
+    permissions,
+    features,
+    experiments: {},
+  }
 }
 
-function visibleItems(features: ProductFeatures) {
-  return getVisibleNav(permissions, features).flatMap((group) => group.items)
+function entries(groups: readonly NavGroupDefinition[]): NavEntry[] {
+  return groups.flatMap((group) => group.entries)
 }
 
-describe('getVisibleNav', () => {
-  it('hides all feature-gated navigation when product flags are disabled', () => {
-    const items = visibleItems(disabledFeatures)
+function allEntries(groups: readonly NavGroupDefinition[]): NavEntry[] {
+  return entries(groups).flatMap((entry) => [
+    entry,
+    ...(entry.children
+      ? allEntries([{ key: entry.key, entries: entry.children }])
+      : []),
+  ])
+}
 
-    expect(items.map((item) => item.title)).toEqual([
-      'Home',
-      'Customers',
-      'Items',
-      'Reports',
+function resolvedEntry(
+  permissions: string[],
+  features: string[],
+  key: string
+): NavEntry | undefined {
+  return entries(resolveBillingNavigation(context(permissions, features))).find(
+    (entry) => entry.key === key
+  )
+}
+
+describe('resolveBillingNavigation', () => {
+  it('shows the exact non-feature navigation for a fully-permitted member', () => {
+    expect(
+      entries(
+        resolveBillingNavigation(context([...BILLING_PERMISSION_VALUES]))
+      ).map((entry) => entry.title)
+    ).toEqual(['Home', 'Customers', 'Items', 'Reports', 'Settings'])
+  })
+
+  it('returns no navigation without permissions', () => {
+    expect(
+      resolveBillingNavigation(
+        context(
+          [],
+          ['billing-sales', 'billing-sales-quotes', 'billing-subscriptions']
+        )
+      )
+    ).toEqual([])
+  })
+
+  it('re-points Sales to its first visible declared child', () => {
+    const sales = resolvedEntry(
+      ['sales:read'],
+      ['billing-sales', 'billing-sales-invoices'],
+      'sales'
+    )
+
+    expect({
+      href: sales?.href,
+      children: sales?.children?.map((child) => child.title),
+    }).toEqual({
+      href: '/invoices',
+      children: ['Invoices', 'Credit Notes'],
+    })
+  })
+
+  it('does not leak Sales children when the master feature is disabled', () => {
+    expect(
+      entries(
+        resolveBillingNavigation(
+          context(['sales:read'], ['billing-sales-quotes'])
+        )
+      ).map((entry) => entry.title)
+    ).toEqual([])
+  })
+
+  it('keeps Subscriptions at its declared href and child order', () => {
+    const subscriptions = resolvedEntry(
+      ['subscriptions:read'],
+      ['billing-subscriptions'],
+      'subscriptions'
+    )
+
+    expect({
+      href: subscriptions?.href,
+      children: subscriptions?.children?.map((child) => child.title),
+    }).toEqual({
+      href: '/subscriptions',
+      children: [
+        'Products',
+        'Plans',
+        'Add-ons',
+        'Prices',
+        'Coupons',
+        'Price Lists',
+      ],
+    })
+  })
+
+  it('re-points Purchases to Expenses when Vendors is disabled', () => {
+    const purchases = resolvedEntry(
+      ['billing:access'],
+      ['billing-purchases', 'billing-purchases-expenses'],
+      'purchases'
+    )
+
+    expect({
+      href: purchases?.href,
+      children: purchases?.children?.map((child) => child.title),
+    }).toEqual({ href: '/purchases/expenses', children: ['Expenses'] })
+  })
+
+  it('shows Payments Received only with its permission', () => {
+    const withoutPayments = resolvedEntry(
+      ['sales:read'],
+      ['billing-sales', 'billing-sales-quotes'],
+      'sales'
+    )
+    const withPayments = resolvedEntry(
+      ['sales:read', 'payments:read'],
+      ['billing-sales', 'billing-sales-quotes'],
+      'sales'
+    )
+
+    expect(withoutPayments?.children?.map((child) => child.title)).toEqual([
+      'Quotes',
+    ])
+    expect(withPayments?.children?.map((child) => child.title)).toEqual([
+      'Quotes',
+      'Payments Received',
     ])
   })
 
-  it('filters sales children and links the parent to the first visible child', () => {
-    const items = visibleItems({
-      ...disabledFeatures,
-      sales: true,
-      invoices: true,
-    })
-    const sales = items.find((item) => item.title === 'Sales')
-
-    expect(sales?.href).toBe('/invoices')
-    expect(sales?.children?.map((child) => child.title)).toEqual([
-      'Invoices',
-      'Credit Notes',
-    ])
+  it('hides Banking without its permission', () => {
+    expect(
+      entries(resolveBillingNavigation(context([], ['billing-banking']))).map(
+        (entry) => entry.title
+      )
+    ).toEqual([])
   })
 
-  it('shows subscriptions as one flag with its complete navigation', () => {
-    const items = visibleItems({
-      ...disabledFeatures,
-      subscriptions: true,
-    })
-    const subscriptions = items.find((item) => item.title === 'Subscriptions')
-
-    expect(subscriptions?.href).toBe('/subscriptions')
-    expect(subscriptions?.children?.map((child) => child.title)).toEqual([
-      'Products',
-      'Plans',
-      'Add-ons',
-      'Prices',
-      'Coupons',
-      'Price Lists',
-    ])
+  it('hides Banking without its feature', () => {
+    expect(
+      entries(resolveBillingNavigation(context(['banking:read']))).map(
+        (entry) => entry.title
+      )
+    ).toEqual([])
   })
 
-  it('shows purchase children only when their master and child flags are on', () => {
-    const items = visibleItems({
-      ...disabledFeatures,
-      purchases: true,
-      expenses: true,
-    })
-    const purchases = items.find((item) => item.title === 'Purchases')
-
-    expect(purchases?.href).toBe('/purchases/expenses')
-    expect(purchases?.children?.map((child) => child.title)).toEqual([
-      'Expenses',
-    ])
-  })
-
-  it('does not advertise an unimplemented Documents route', () => {
-    const items = visibleItems({
-      ...disabledFeatures,
-      documents: true,
-    })
-
-    expect(items.some((item) => item.title === 'Documents')).toBe(false)
-  })
-
-  it('shows payments and banking only with their resource permissions', () => {
-    const visible = getVisibleNav(
-      [...permissions, 'payments:read', 'banking:read'],
-      { ...disabledFeatures, sales: true, banking: true }
-    ).flatMap((group) => group.items)
+  it('places Settings in the secondary group', () => {
+    const navigation = resolveBillingNavigation(context(['settings:read']))
 
     expect(
-      visible
-        .find((item) => item.title === 'Sales')
-        ?.children?.map((child) => child.title)
-    ).toEqual(['Payments Received'])
-    expect(visible.some((item) => item.title === 'Banking')).toBe(true)
+      navigation.map((group) => ({
+        key: group.key,
+        titles: group.entries.map((entry) => entry.title),
+      }))
+    ).toEqual([{ key: 'secondary', titles: ['Settings'] }])
   })
 
-  it('filters Console-style settings cards by Billing permissions', () => {
-    const sections = getVisibleSettingsSections([
-      'billing:access',
-      'settings:read',
-      'payments:read',
-      'roles:read',
-    ])
+  it('returns string icons and JSON-serializable navigation', () => {
+    const resolved = resolveBillingNavigation(
+      context(
+        [...BILLING_PERMISSION_VALUES],
+        [
+          'billing-sales',
+          'billing-sales-quotes',
+          'billing-subscriptions',
+          'billing-purchases',
+          'billing-purchases-vendors',
+          'billing-banking',
+          'billing-payroll',
+        ]
+      )
+    )
 
-    expect(sections.map((section) => section.title)).toEqual([
+    expect(allEntries(resolved).map((entry) => typeof entry.icon)).toEqual(
+      allEntries(resolved).map(() => 'string')
+    )
+    expect(JSON.parse(JSON.stringify(resolved))).toEqual(resolved)
+  })
+
+  it('does not mutate the declared navigation registry', () => {
+    const before = structuredClone(billingNavigation)
+
+    resolveBillingNavigation(
+      context(['sales:read'], ['billing-sales', 'billing-sales-invoices'])
+    )
+
+    expect(billingNavigation).toEqual(before)
+  })
+
+  it('uses only permissions in the Billing permission catalog', () => {
+    const permissions = allEntries(billingNavigation).flatMap((entry) =>
+      entry.requires?.permission ? [entry.requires.permission] : []
+    )
+
+    expect(permissions).toEqual([
+      'dashboard:read',
+      'customers:read',
+      'catalog:read',
+      'sales:read',
+      'payments:read',
+      'subscriptions:read',
+      'billing:access',
+      'banking:read',
+      'billing:access',
+      'reports:read',
+      'settings:read',
+    ])
+    expect(
+      permissions.every((permission) =>
+        new Set<string>(BILLING_PERMISSION_VALUES).has(permission)
+      )
+    ).toBe(true)
+  })
+})
+
+describe('getVisibleSettingsSections', () => {
+  it('filters Console-style settings cards by Billing permissions', () => {
+    expect(
+      getVisibleSettingsSections([
+        'billing:access',
+        'settings:read',
+        'payments:read',
+        'roles:read',
+      ]).map((section) => section.title)
+    ).toEqual([
       'Payment Modes',
       'Payment Providers',
       'Accounting Providers',

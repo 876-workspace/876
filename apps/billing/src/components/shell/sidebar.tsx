@@ -2,7 +2,18 @@
 
 import Link from 'next/link'
 
+import type { NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
+import {
+  BarChart3,
+  Building2,
+  CircleStackIcon,
+  ClipboardList,
+  CreditCard,
+  RefreshCw,
+  Settings,
+  Users,
+} from '@876/ui/icons'
 import {
   Sidebar as BaseSidebar,
   SidebarContent,
@@ -10,23 +21,29 @@ import {
   SidebarHeader,
 } from '@876/ui/sidebar'
 
-import { getVisibleNav } from './nav-config'
 import { NavDropdown } from './nav-dropdown'
 import { NavLink } from './nav-link'
-import type { Permission } from '@/types/access'
-import type { BillingProductFeatures as ProductFeatures } from '@/types/features'
+
+const icons = {
+  dashboard: BarChart3,
+  customers: Users,
+  items: CircleStackIcon,
+  sales: ClipboardList,
+  subscriptions: RefreshCw,
+  purchases: Building2,
+  banking: CreditCard,
+  payroll: Users,
+  reports: CreditCard,
+  settings: Settings,
+}
 
 export function WorkspaceSidebar({
   tenantName,
-  permissions,
-  productFeatures,
+  navigation,
 }: {
   tenantName: string
-  permissions: Permission[]
-  productFeatures: ProductFeatures
+  navigation: NavGroupDefinition[]
 }) {
-  const visibleNav = getVisibleNav(permissions, productFeatures)
-
   return (
     <BaseSidebar collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
@@ -50,25 +67,31 @@ export function WorkspaceSidebar({
           aria-label="Billing sections"
           className="flex flex-1 flex-col gap-4"
         >
-          {visibleNav.map((group) => (
+          {navigation.map((group) => (
             <SidebarGroup
-              key={group.label || group.items[0]?.title}
-              className={cn('gap-1.5 p-0', group.className)}
+              key={group.key}
+              className={cn(
+                'gap-1.5 p-0',
+                group.key === 'secondary' && 'mt-auto'
+              )}
             >
               <div className="flex flex-col gap-1">
-                {group.items.map((item) =>
-                  item.children?.length ? (
-                    <NavDropdown key={item.title} item={item} />
+                {group.entries.map((item) => {
+                  const Icon =
+                    icons[item.icon as keyof typeof icons] ?? Settings
+
+                  return item.children?.length ? (
+                    <NavDropdown key={item.key} item={item} icon={Icon} />
                   ) : (
                     <NavLink
-                      key={item.title}
+                      key={item.key}
                       href={item.href}
                       title={item.title}
-                      icon={item.icon}
-                      color={item.color}
+                      icon={Icon}
+                      colorClassName={item.colorClassName}
                     />
                   )
-                )}
+                })}
               </div>
             </SidebarGroup>
           ))}
