@@ -90,16 +90,39 @@ All run in the foreground by the orchestrator.
 Commits: `581d6e3f` (ResourceRowLink), `03f74a71` (package), `092757a5` (host
 adoption), `4205c433` (docs). Branch not pushed; no PR opened.
 
-### Not done, deliberately
+### Correction: Console could read finance data all along
 
-**Console does not render the shared table yet, because it cannot fetch items.**
-The operator client (`packages/billing/src/admin/client.ts`) exposes `products`,
-`plans`, `prices`, `customers`, `subscriptions`, `stats`, `paymentMethods`,
-`paymentIntents` and `accountingProviders` — there is no `items` resource. Wiring
-Console means a billing-api operator route, an admin resource in
-`packages/billing`, a Console service module, and only then the page. That chain
-is the next run; the three Console workspace pages stay `EmptyWorkspaceView`
-placeholders until it exists.
+An earlier version of this section claimed Console could not fetch items and
+needed a new billing-api operator route, an admin resource, and a Console
+module. **That was wrong**, and it was wrong because only
+`packages/billing/src/admin/client.ts` was checked.
 
-The operator permission projection is still unbuilt for the same reason: it has
-nothing to gate until a real product screen renders in Console.
+What is actually true, verified in `apps/billing-api/src/http/auth/guards.ts`:
+an `integration`-kind route has an explicit internal-credential branch that
+resolves the tenant from the `:organizationId` path and returns
+`platformAdmin: true` **without** requiring an app finance connection or its
+scopes — which is correct, because 876 acting as operator is not a third-party
+app. `catalog.controller.ts` then drops its source-app filter for that
+principal, so a platform admin sees the whole tenant catalog.
+
+Console's `billing` export is `create876BillingServiceClient`, which aliases the
+integration client, already configured with `BILLING_INTERNAL_KEY`. So
+`billing.items.list(orgId)`, `billing.invoices.list(orgId)` and
+`billing.customers.list(orgId)` worked before this run began. No billing-api
+change and no new client resource were needed.
+
+### Console workspace: what now renders real data
+
+| Route                        | Source                                              |
+| ---------------------------- | --------------------------------------------------- |
+| `workspace/billing/items`    | `billing.items.list` + tenant currency              |
+| `workspace/invoice/items`    | same tenant catalog — one finance plane, two views  |
+| `workspace/invoice/invoices` | `billing.invoices.list` + one batched customer page |
+
+Still placeholders: both workspace overviews, `billing/subscriptions`, and
+`billing/accounts`. `billing.subscriptions` and `billing.customers` are
+available on the same client, so these are page work rather than plumbing.
+
+The operator permission projection remains unbuilt. It is now genuinely the
+next thing worth doing, since real product screens render in Console and the
+operator currently sees them on Console permissions alone.
