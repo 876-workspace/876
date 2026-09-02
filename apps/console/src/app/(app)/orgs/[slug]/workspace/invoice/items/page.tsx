@@ -1,6 +1,17 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { EmptyWorkspaceView } from '@/features/orgs/components/empty-workspace-view'
+import { Suspense } from 'react'
+
+import { ItemsTable } from '@876/billing-ui/items-table'
+import { AppError } from '@876/ui/app-error'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+
+import { BILLING_ITEMS_SKELETON_COLUMNS } from '@/features/billing/components/items-skeleton-columns'
+import { formatItemAmount, toItemRow } from '@/features/billing/item-rows'
+import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { billing } from '@/lib/services/billing'
+
 import { resolveOrg } from '../../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -13,16 +24,61 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Items - Invoice` }
 }
 
+/**
+ * The toolbar is static chrome and renders before the list resolves; only the
+ * table waits (`CLAUDE.md` → Loading States & Suspense Placement).
+ */
 export default async function InvoiceWorkspaceItemsPage({ params }: Props) {
   const { slug } = await params
+
+  return (
+    <div className="space-y-4">
+      <ResourceToolbar title="Items" refresh />
+      <Suspense
+        fallback={
+          <DataTableSkeleton
+            columns={BILLING_ITEMS_SKELETON_COLUMNS}
+            rows={5}
+          />
+        }
+      >
+        <ItemsData slug={slug} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function ItemsData({ slug }: { slug: string }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
+  // The tenant is read for its default currency only, so it starts alongside
+  // the items rather than behind them.
+  const [result, tenant] = await Promise.all([
+    billing.items.list(org.id),
+    billing.organizations.retrieve(org.id),
+  ])
+  if (result.error)
+    return (
+      <AppError
+        title="Items are temporarily unavailable"
+        error={result.error}
+        variant="banner"
+        showCode
+      />
+    )
+
   return (
-    <EmptyWorkspaceView
-      title="Items"
-      description="No billable items exist in this workspace yet."
-      iconKey="items"
+    <ItemsTable
+      items={(result.data?.data ?? []).map(toItemRow)}
+      defaultCurrency={tenant.data?.defaultCurrency ?? 'JMD'}
+      baseHref={`${workspaceBase(slug, 'invoice')}/items`}
+      formatAmount={formatItemAmount}
+      emptyState={
+        <p className="text-muted-foreground py-10 text-center text-sm">
+          No billable items exist in this workspace yet.
+        </p>
+      }
     />
   )
 }
