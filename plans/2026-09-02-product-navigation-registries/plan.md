@@ -112,5 +112,14 @@ All verification runs in the FOREGROUND (`.claude/rules/cli.md`).
 
 ## Handoff state
 
-Nothing merged yet. Branch cut from `origin/main` at `d655a060`; working tree was
-clean at cut.
+Nothing implemented yet. Branch cut from `origin/main` at `d655a060`; plan and
+brief committed at `c5a62039`.
+
+**Blocked on Codex auth.** The first dispatch
+(`codex exec -m gpt-5.6-terra -c model_reasoning_effort=high`) reached the model
+selection stage and then failed every request with
+`401 token_expired` — `codex login status` still reports "Logged in using
+ChatGPT", but the stored refresh token is rejected by
+`https://chatgpt.com/backend-api/codex/models`. No files were written; `git
+status` was clean afterwards. Re-authenticate with `codex login` (interactive,
+needs a browser) and re-dispatch the brief unchanged.
