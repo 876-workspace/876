@@ -16,7 +16,7 @@ builds it in Console at the same time.
 Two concrete gaps today:
 
 1. **The Billing/Invoice rails are short.** `resolveWorkspaceNavigation` walks
-   only the registries' *top-level* entries, and omits any entry Console has no
+   only the registries' _top-level_ entries, and omits any entry Console has no
    page for. Billing therefore shows 4 of its 10 sections; Invoice shows 3 of 11.
 2. **Customers and Payments tables are duplicated** between `apps/billing` and
    `apps/invoice` (near byte-identical), so Console cannot render either without
@@ -39,15 +39,15 @@ They stay omitted from the rail until the owning service exposes them.
 
 ### Target rails
 
-| Billing                   | entry key        | Invoice                   | entry key    |
-| ------------------------- | ---------------- | ------------------------- | ------------ |
-| Overview                  | `home`           | Overview                  | `home`       |
-| Customers **(new)**       | `customers`      | Customers **(new)**       | `customers`  |
-| Items                     | `items`          | Items                     | `items`      |
-| Invoices **(new)**        | `sales-invoices` | Invoices                  | `invoices`   |
-| Payments **(new)**        | `sales-payments` | Payments **(new)**        | `payments`   |
-| Subscriptions             | `subscriptions`  |                           |              |
-| Banking **(new)**         | `banking`        |                           |              |
+| Billing             | entry key        | Invoice             | entry key   |
+| ------------------- | ---------------- | ------------------- | ----------- |
+| Overview            | `home`           | Overview            | `home`      |
+| Customers **(new)** | `customers`      | Customers **(new)** | `customers` |
+| Items               | `items`          | Items               | `items`     |
+| Invoices **(new)**  | `sales-invoices` | Invoices            | `invoices`  |
+| Payments **(new)**  | `sales-payments` | Payments **(new)**  | `payments`  |
+| Subscriptions       | `subscriptions`  |                     |             |
+| Banking **(new)**   | `banking`        |                     |             |
 
 Billing's `Accounts` placeholder is replaced by the real `Customers` screen; it
 already bound to the `customers` entry key and rendered `EmptyWorkspaceView`.
@@ -75,6 +75,7 @@ already bound to the `customers` entry key and rendered `EmptyWorkspaceView`.
 - [x] Phase 4 — Console Billing: Customers, Invoices, Payments, Banking pages
 - [x] Phase 5 — Console Invoice: Customers, Payments pages
 - [x] Phase 6 — registry sections + icons + tests
+- [x] Phase 7 — Console Couriers: Customers, Packages, Branches, Warehouses, Team
 - [ ] Verification, commits, PR
 
 ### Notes taken during the run
@@ -104,6 +105,30 @@ pnpm --filter @876/invoice-app typecheck
 node scripts/check-app-structure.mjs
 ```
 
+### Phase 7 — 876 Couriers workspace
+
+The `agy` run for this phase (`gemini-3.1-pro-high`) stopped without a report,
+having produced only the registry/icon edits and one row projection while
+deleting both placeholder routes — leaving `app-workspaces.test.ts` failing on
+five sections with no route. The orchestrator finished it; see
+`reports/agy/2026-09-02-couriers-workspace-pages.md`.
+
+- **Couriers is keyed by tenant, not organization**, so every screen resolves
+  `couriers.tenants.retrieve({ organizationId })` first. `tenant/not-found` is a
+  normal state (the org has never used Couriers) and renders an empty view; any
+  other failure renders `AppError`.
+- **Couriers rows carry no names.** A customer profile points at the registry
+  party, a package points at a profile, and a team member points at a directory
+  user. Each name is resolved by one page-wide list, never a retrieve per row.
+- **`@876/couriers/admin` was missing its `Package` exports** — every sibling
+  resource exported its serialized type and packages did not. Added to the
+  barrel rather than restating the contract in Console.
+
 ## Handoff state
 
-Branch cut; nothing committed yet.
+Phases 1-7 complete and verified. Commits pending.
+
+The `apps/api/src/seeds/` changes in the working tree (`internal-plan.ts`,
+`internal-plan.test.ts`, `cli.ts`, `index.ts`, `plans.repository.ts`) belong to
+a **different** work stream and are not part of this run — do not commit them
+with it.
