@@ -19,6 +19,23 @@ export type RouteTabItem = {
   excludePrefixes?: string[]
 }
 
+/**
+ * Whether a route tab matches the current pathname.
+ *
+ * Exported so every tab presentation — the page-level strip and the
+ * `DetailCardRouteTabs` strip inside a record card — resolves "active" the
+ * same way.
+ */
+export function isRouteTabActive(tab: RouteTabItem, pathname: string): boolean {
+  const excluded =
+    tab.excludePrefixes?.some((prefix) => pathname.startsWith(prefix)) ?? false
+  if (excluded) return false
+
+  return tab.exact
+    ? pathname === tab.href
+    : pathname === tab.href || pathname.startsWith(`${tab.href}/`)
+}
+
 export interface RouteTabsProps extends React.HTMLAttributes<HTMLElement> {
   tabs: RouteTabItem[]
   variant?: 'line' | 'pill'
@@ -42,13 +59,7 @@ export const RouteTabs = React.forwardRef<HTMLElement, RouteTabsProps>(
         {...props}
       >
         {tabs.map((tab) => {
-          const excluded =
-            tab.excludePrefixes?.some((p) => pathname.startsWith(p)) ?? false
-          const isActive =
-            !excluded &&
-            (tab.exact
-              ? pathname === tab.href
-              : pathname === tab.href || pathname.startsWith(`${tab.href}/`))
+          const isActive = isRouteTabActive(tab, pathname)
 
           if (tab.hideUnlessActive && !isActive) return null
 
