@@ -4,7 +4,12 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
   {
     label: 'Workspace',
     items: [
-      { label: 'Users', icon: 'members', availability: 'planned' },
+      {
+        label: 'Users',
+        icon: 'members',
+        availability: 'available',
+        href: '/settings/users',
+      },
       { label: 'Preferences', icon: 'preferences', availability: 'planned' },
     ],
   },
