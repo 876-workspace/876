@@ -1,0 +1,107 @@
+import { notFound, redirect } from 'next/navigation'
+import { Badge } from '@876/ui/badge'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardFact,
+  DetailCardFacts,
+  DetailCardHeader,
+  DetailCardHeadline,
+  DetailCardIcon,
+  DetailCardIdBar,
+  DetailCardSection,
+} from '@876/ui/detail-card'
+import { CreditCardIcon } from '@876/ui/icons'
+
+import { getInvoiceContext } from '@/lib/auth/context'
+import { listInvoices } from '@/app/(app)/_lib/list-data'
+import { formatDate, formatMoney } from '@/lib/format'
+import { documentStatusVariant } from '@/lib/status'
+
+type Props = { params: Promise<{ invoiceId: string }> }
+
+export const metadata = {
+  title: 'Invoice',
+  description: 'Invoice details.',
+}
+
+export default async function InvoiceDetailPage({ params }: Props) {
+  const { invoiceId } = await params
+  const context = await getInvoiceContext()
+  if (!context) redirect('/no-access')
+  const result = await listInvoices(context.orgId)
+  if (result.error) {
+    return (
+      <DetailCard aria-label="Invoice unavailable">
+        <DetailCardBody>
+          <p className="text-muted-foreground text-sm">
+            Invoice details are unavailable right now.
+          </p>
+        </DetailCardBody>
+      </DetailCard>
+    )
+  }
+
+  const invoice = result.data.data.find((row) => row.id === invoiceId)
+  if (!invoice) notFound()
+
+  const customer =
+    invoice.customer &&
+    typeof invoice.customer === 'object' &&
+    'name' in invoice.customer
+      ? String(invoice.customer.name ?? '—')
+      : String(invoice.customerName ?? '—')
+  const number = String(invoice.number ?? invoice.id)
+  const totalAmount = String(invoice.totalAmount ?? '0')
+  const amountDue = String(invoice.amountDue ?? invoice.totalAmount ?? '0')
+  const currency = String(invoice.currency ?? 'JMD')
+  const status = String(invoice.status ?? 'DRAFT')
+  const date =
+    typeof invoice.issueAt === 'number'
+      ? invoice.issueAt
+      : typeof invoice.createdAt === 'number'
+        ? invoice.createdAt
+        : null
+
+  return (
+    <DetailCard aria-label={`Invoice details: ${number}`}>
+      <DetailCardHeader
+        icon={
+          <DetailCardIcon>
+            <CreditCardIcon className="size-5" />
+          </DetailCardIcon>
+        }
+        title={number}
+        meta={
+          <Badge variant={documentStatusVariant(status)}>
+            {status.toLowerCase().replace(/_/g, ' ')}
+          </Badge>
+        }
+        subtitle={customer}
+        closeHref="/invoices"
+        closeLabel="Close invoice details"
+      />
+      <DetailCardBody className="space-y-8">
+        <DetailCardHeadline
+          value={formatMoney(totalAmount, currency)}
+          caption="Invoice total"
+        />
+        <DetailCardSection title="Invoice">
+          <DetailCardFacts>
+            <DetailCardFact label="Customer" value={customer} />
+            <DetailCardFact label="Date" value={formatDate(date)} />
+            <DetailCardFact
+              label="Amount due"
+              value={formatMoney(amountDue, currency)}
+              mono
+            />
+            <DetailCardFact label="Currency" value={currency} mono />
+          </DetailCardFacts>
+        </DetailCardSection>
+      </DetailCardBody>
+      <DetailCardIdBar>
+        <span className="truncate">{invoice.id}</span>
+      </DetailCardIdBar>
+    </DetailCard>
+  )
+}
