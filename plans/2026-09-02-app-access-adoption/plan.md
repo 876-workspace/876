@@ -127,8 +127,8 @@ migrated partial role gains a `.delete` key.
 | --- | ------------------------------------------------------------------------------- | -------------------------- | ----------- |
 | 0   | Wire `materializeEntitledAppRoles`; add billing + invoice catalogs + drift test | orchestrator               | done        |
 | 0b  | Session-tier org app-access SDK surface + CRM authorization guard               | orchestrator               | done        |
-| 1   | Promote settings hub to `@876/ui`; adopt in Billing + Invoice                   | codex `gpt-5.6-terra` high | in progress |
-| 2   | `@876/access-ui` — access panel, effective-permission list, summary             | codex `gpt-5.6-terra` high | briefed     |
+| 1   | Promote settings hub to `@876/ui`; adopt in Billing + Invoice                   | codex `gpt-5.6-terra` high | done        |
+| 2   | `@876/access-ui` — access panel, effective-permission list, summary             | codex `gpt-5.6-terra` high | in progress |
 | 3   | CRM `/settings/users` split view + route handlers                               | codex `gpt-5.6-terra` high | briefed     |
 | 4   | Invoice `/settings/users` + hub                                                 | codex `gpt-5.6-terra` high | not started |
 | 5   | Billing migration off `billing_roles`/`billing_members`                         | orchestrator + codex       | not started |
@@ -145,8 +145,30 @@ migrated partial role gains a `.delete` key.
 
 ## Execution reports
 
-| Phase | Tool | Report |
-| ----- | ---- | ------ |
+| Phase | Tool                       | Report                                                                           |
+| ----- | -------------------------- | -------------------------------------------------------------------------------- |
+| 1     | codex `gpt-5.6-terra` high | [shared settings hub](./reports/codex/2026-09-02-phase-1-shared-settings-hub.md) |
+
+### Orchestrator review of Phase 1
+
+Verified independently rather than from the report: no `eslint-disable`, `as any`,
+or `@ts-ignore` in any touched path; `packages/ui/package.json` untouched (the
+`"./*"` export resolves the new file); `@876/ui` 143 tests, `@876/crm-app` 224,
+`@876/billing-app` 720, `@876/invoice-app` 155, all typechecks clean, app-structure
+OK. Test counts moved: `settings-hub.test.tsx` 14 `it()`, invoice
+`settings-nav.test.ts` 4.
+
+**One change was rejected and rewritten.** Codex reduced Billing's settings
+`loading.tsx` to `return null` and deleted two assertions with it. Its premise was
+right — the six-card skeleton was a guess, since how many sections appear depends
+on the viewer's permissions — but the conclusion was not: the heading is static
+chrome, and `CLAUDE.md` requires a `loading.tsx` to render the chrome the page does
+rather than flash a blank screen. The fallback now renders the real heading and no
+cards, with a test for each half.
+
+Its removal of CRM's exact-resolver-inventory assertion was accepted: the shared
+resolver deliberately holds Billing's and Invoice's keys too, so that assertion no
+longer described anything true, and the replacement invariant is the right one.
 
 ## Verification commands
 
