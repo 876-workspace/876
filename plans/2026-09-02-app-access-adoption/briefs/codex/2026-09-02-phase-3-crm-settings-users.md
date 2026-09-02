@@ -77,6 +77,18 @@ const { data } = await workspace.orgAppRoles.list(orgId, appId)
 **The catalog** for an app slug is `appPermissionCatalogs[slug]` from
 `@876/core/access/catalogs`.
 
+`@876/access-ui` is built and its API is fixed — read
+`packages/access-ui/src/types.ts` before mapping. One detail that will bite
+otherwise: `AccessPermission` requires `moduleLabel`, and core's `AppPermission`
+carries only `moduleKey`. The human label lives on `catalog.modules[].label`, so
+build a `moduleKey → label` map from `catalog.modules` and join it — do **not**
+fall back to the key, which would render "pre-alerts" where "Pre-alerts" belongs.
+
+The exported surface is `AppAccessPanel` (`@876/access-ui/app-access-panel`),
+`EffectivePermissionList` (`@876/access-ui/effective-permissions`),
+`AppAccessSummary` (`@876/access-ui/app-access-summary`), and the types
+(`@876/access-ui/types`). There is no barrel — import each from its own subpath.
+
 **The guard already exists — use it, do not write another:**
 `apps/crm/src/lib/auth/app-access.ts` exports `resolveCrmAccessViewer(orgId)`
 (memoized, returns `{ membershipId, userId, permissions, canReadMembers,
