@@ -6,6 +6,7 @@ import {
 } from '@/platform/permissions'
 import { dispatchBillingCustomerSyncOnce } from '@/workers/billing-customer-dispatch'
 
+import { materializeEntitledAppRoles } from './app-access-provisioning'
 import * as repository from './provisioning.repository'
 import type { OrgRoleRow } from './provisioning.repository'
 import { enqueueCustomerEnsureForOrganization } from './billing-customer-sync'
@@ -147,12 +148,10 @@ async function ensureApplicationProfileSelections(
   const {
     resolveAndPersistApplicationProvisioningProfile,
     retrieveSelectedApplicationProvisioningRoles,
-  } = await import(
-    '@/modules/provisioning/application-provisioning-profile.service'
-  )
-  const { materializeProvisionedRolesForApp } = await import(
-    '@/modules/app-access'
-  )
+  } =
+    await import('@/modules/provisioning/application-provisioning-profile.service')
+  const { materializeProvisionedRolesForApp } =
+    await import('@/modules/app-access')
 
   for (const appId of appIds) {
     await resolveAndPersistApplicationProvisioningProfile(
@@ -280,6 +279,7 @@ export async function provisionOrgApps(
       selectionTimestamp: options.now,
     }
   )
+  await materializeEntitledAppRoles({ organizationId, appIds })
   await ensureOrgAppsFinanceReady(organizationId, { appIds })
   return provisioned
 }
@@ -314,6 +314,8 @@ export async function provisionOrganization(
     sourceAppId: options.sourceAppId ?? null,
     selectionTimestamp: now,
   })
+
+  await materializeEntitledAppRoles({ organizationId, appIds })
 
   const organization = await repository.findOrganization(organizationId)
   if (organization)
