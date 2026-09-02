@@ -199,9 +199,46 @@ export const crmPermissionCatalog: AppPermissionCatalog =
     ]),
   })
 
+export const billingPermissionCatalog: AppPermissionCatalog =
+  defineAppPermissionCatalog({
+    app: '876-billing',
+    modules: modules([
+      { key: 'dashboard', label: 'Dashboard', actions: ['view'] },
+      crud('customers', 'Customers'),
+      crud('catalog', 'Catalog'),
+      crud('sales', 'Sales'),
+      crud('subscriptions', 'Subscriptions'),
+      { key: 'reports', label: 'Reports', actions: ['view'] },
+      crud('currencies', 'Currencies'),
+      crud('taxes', 'Taxes'),
+      crud('vendors', 'Vendors'),
+      crud('purchases', 'Purchases'),
+      crud('banking', 'Banking'),
+      crud('payments', 'Payments'),
+      { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
+    ]),
+  })
+
+export const invoicePermissionCatalog: AppPermissionCatalog =
+  defineAppPermissionCatalog({
+    app: '876-invoice',
+    modules: modules([
+      { key: 'dashboard', label: 'Dashboard', actions: ['view'] },
+      crud('customers', 'Customers'),
+      crud('items', 'Items'),
+      crud('invoices', 'Invoices', ['export']),
+      crud('estimates', 'Estimates', ['export']),
+      crud('payments', 'Payments'),
+      { key: 'reports', label: 'Reports', actions: ['view'] },
+      { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
+    ]),
+  })
+
 /** Every canonical catalog, keyed by the app slug that owns it. */
 export const appPermissionCatalogs: Record<string, AppPermissionCatalog> = {
   console: consolePermissionCatalog,
+  '876-billing': billingPermissionCatalog,
   '876-couriers': couriersPermissionCatalog,
   '876-crm': crmPermissionCatalog,
+  '876-invoice': invoicePermissionCatalog,
 }
