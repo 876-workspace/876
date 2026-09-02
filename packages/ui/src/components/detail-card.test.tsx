@@ -43,6 +43,8 @@ describe('DetailCardHeader', () => {
   })
 
   it('renders closeHref as a link so a server layout needs no client boundary', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
     render(
       <DetailCardHeader
         title="Alejandra Reyes"
@@ -55,6 +57,9 @@ describe('DetailCardHeader', () => {
       screen.getByRole('link', { name: 'Close customer details' })
     ).toHaveAttribute('href', '/customers')
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    expect(consoleError).not.toHaveBeenCalled()
+
+    consoleError.mockRestore()
   })
 
   it('prefers onClose over closeHref when both are given', async () => {
