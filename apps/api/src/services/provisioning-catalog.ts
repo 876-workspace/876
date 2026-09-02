@@ -1,6 +1,29 @@
 import type { ProvisioningDraftReplaceParams as ProvisioningWireDraftReplace } from '@876/core/types/provisioning'
 
 import { validateAppRoleProvisioningResources } from './app-role-provisioning-catalog'
+import type {
+  FinanceDependency,
+  ProvisioningDraftReplace,
+  ProvisioningFieldDefinition,
+  ProvisioningPropertyInput,
+  ProvisioningResourceDefinition,
+  ProvisioningResourceInput,
+  ProvisioningTargetType,
+  ProvisioningValidationIssue,
+  ProvisioningValueType,
+} from './provisioning-catalog.types'
+
+export type {
+  FinanceDependency,
+  ProvisioningDraftReplace,
+  ProvisioningFieldDefinition,
+  ProvisioningPropertyInput,
+  ProvisioningResourceDefinition,
+  ProvisioningResourceInput,
+  ProvisioningTargetType,
+  ProvisioningValidationIssue,
+  ProvisioningValueType,
+} from './provisioning-catalog.types'
 
 export const BILLING_APP_SLUG = '876-billing'
 const CRM_APP_SLUG = '876-crm'
@@ -11,64 +34,6 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 // target may declare, and the validation that keeps a manifest-v1 draft
 // consistent. The catalog describes allowed configuration; operational values
 // live in database-backed provisioning manifests.
-
-export type ProvisioningTargetType = 'organization' | 'finance' | 'application'
-export type ProvisioningValueType =
-  'string' | 'integer' | 'decimal' | 'boolean' | 'reference'
-export type FinanceDependency = 'none' | 'embedded'
-
-export type ProvisioningFieldDefinition = {
-  key: string
-  label: string
-  valueType: ProvisioningValueType
-  required: boolean
-  referenceNamespace: string | null
-  allowedValues: string[] | null
-}
-
-export type ProvisioningResourceDefinition = {
-  resourceType: string
-  label: string
-  description: string
-  multiple: boolean
-  minimumItems: number
-  maximumItems: number | null
-  fields: ProvisioningFieldDefinition[]
-}
-
-export type ProvisioningValidationIssue = {
-  path: string
-  code: string
-  message: string
-}
-
-export type ProvisioningPropertyInput = {
-  key: string
-  valueType: ProvisioningValueType
-  stringValue: string | null
-  integerValue: number | null
-  decimalValue: string | null
-  booleanValue: boolean | null
-  referenceNamespace: string | null
-  referenceKey: string | null
-}
-
-export type ProvisioningResourceInput = {
-  resourceType: string
-  key: string
-  position: number
-  properties: ProvisioningPropertyInput[]
-}
-
-export type ProvisioningDraftReplace = {
-  manifestVersion?: 1
-  reconciliation?: 'create_missing'
-  preserveTenantOverrides?: true
-  financeDependency: FinanceDependency
-  financeScopes?: string[]
-  resources: ProvisioningResourceInput[]
-  steps?: unknown[]
-}
 
 /**
  * Convert the public manifest-v1 wire contract into the catalog's internal
