@@ -188,7 +188,11 @@ export async function ensureOrgAppSubscriptions(
     sourceAppId?: string | null
     selectionTimestamp?: number
   } = {}
-): Promise<{ appIds: string[]; provisioned: string[] }> {
+): Promise<{
+  appIds: string[]
+  provisioned: string[]
+  hasSetupSelection: boolean
+}> {
   const appIds: string[] = []
   const applicationPolicy = await resolveProvisionedApplicationPolicy(
     organizationId,
@@ -252,7 +256,11 @@ export async function ensureOrgAppSubscriptions(
     )
   }
 
-  return { appIds, provisioned }
+  return {
+    appIds,
+    provisioned,
+    hasSetupSelection: applicationPolicy.hasSetupSelection,
+  }
 }
 
 export async function ensureOrgAppsFinanceReady(
@@ -272,14 +280,13 @@ export async function provisionOrgApps(
   organizationId: string,
   options: { sourceAppId?: string | null; now?: number } = {}
 ): Promise<string[]> {
-  const { appIds, provisioned } = await ensureOrgAppSubscriptions(
-    organizationId,
-    {
+  const { appIds, provisioned, hasSetupSelection } =
+    await ensureOrgAppSubscriptions(organizationId, {
       sourceAppId: options.sourceAppId ?? null,
       selectionTimestamp: options.now,
-    }
-  )
-  await materializeEntitledAppRoles({ organizationId, appIds })
+    })
+  if (!hasSetupSelection)
+    await materializeEntitledAppRoles({ organizationId, appIds })
   await ensureOrgAppsFinanceReady(organizationId, { appIds })
   return provisioned
 }
@@ -310,12 +317,21 @@ export async function provisionOrganization(
   }
 
   const roles = await seedDefaultRoles(organizationId, now)
-  const { appIds } = await ensureOrgAppSubscriptions(organizationId, {
-    sourceAppId: options.sourceAppId ?? null,
-    selectionTimestamp: now,
-  })
+  const { appIds, hasSetupSelection } = await ensureOrgAppSubscriptions(
+    organizationId,
+    {
+      sourceAppId: options.sourceAppId ?? null,
+      selectionTimestamp: now,
+    }
+  )
 
-  await materializeEntitledAppRoles({ organizationId, appIds })
+  // Templates are the fallback, not an addition. An organization with a
+  // persisted provisioning setup already received the roles its published
+  // manifest selected; seeding platform templates on top would reintroduce role
+  // definitions that manifest deliberately excluded, widening what an admin can
+  // assign. Only an organization with no setup selection needs the templates.
+  if (!hasSetupSelection)
+    await materializeEntitledAppRoles({ organizationId, appIds })
 
   const organization = await repository.findOrganization(organizationId)
   if (organization)
