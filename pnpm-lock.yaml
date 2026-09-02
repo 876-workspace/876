@@ -626,6 +626,9 @@ importers:
 
   apps/console:
     dependencies:
+      '@876/access-ui':
+        specifier: workspace:*
+        version: link:../../packages/access-ui
       '@876/account':
         specifier: workspace:*
         version: link:../../packages/account

@@ -15,11 +15,8 @@ import {
 } from '../_data'
 import { PendingInvitesTable } from './_components/members-table'
 import { MembersSplit } from './_components/members-split'
-import {
-  MemberApps,
-  MemberAppsFallback,
-  type MemberAppAccessEntry,
-} from './_components/member-apps'
+import { buildAccessEntries } from '@876/access-ui/entries'
+import { MemberApps, MemberAppsFallback } from './_components/member-apps'
 import { MemberActivity } from './_components/member-activity'
 import { AddMemberDialog } from './_components/add-member-dialog'
 import { MEMBERS_SKELETON_COLUMNS } from './_components/members-skeleton-columns'
@@ -139,42 +136,28 @@ async function MemberAppsData({
       />
     )
 
-  const entries = await Promise.all(
-    (result.data?.data ?? []).map(async (membership) => {
-      const [rolesResult, permissionsResult] = await Promise.all([
-        workspace.orgAppRoles.list(organizationId, membership.app_id),
-        workspace.appPermissions.list(membership.app_id),
-      ])
-      if (rolesResult.error || permissionsResult.error) return null
-
-      return {
-        assignmentId: membership.id,
-        assigned: membership.assigned,
-        appId: membership.app_id,
-        appSlug: membership.app_slug,
-        appName: membership.app_name,
-        membershipId: membership.membership_id,
-        roleId: membership.app_role?.id ?? null,
-        roleName: membership.app_role?.name ?? null,
-        effectivePermissions: membership.effective_permissions,
-        catalog: (permissionsResult.data?.data ?? []).map(
-          (permission) => permission.key
-        ),
-        roles: (rolesResult.data?.data ?? []).map((role) => ({
-          id: role.id,
-          key: role.key,
-          name: role.name,
-          permissions: role.permissions,
-        })),
-      } satisfies MemberAppAccessEntry
-    })
+  const memberships = result.data?.data ?? []
+  const roleResults = await Promise.all(
+    [...new Set(memberships.map((membership) => membership.app_id))].map(
+      async (appId) => ({
+        appId,
+        result: await workspace.orgAppRoles.list(organizationId, appId),
+      })
+    )
   )
 
   return (
     <MemberApps
       organizationId={organizationId}
-      entries={entries.filter(
-        (entry): entry is MemberAppAccessEntry => entry !== null
+      membershipId={membershipId}
+      entries={buildAccessEntries(
+        memberships,
+        new Map(
+          roleResults.map(({ appId, result: roles }) => [
+            appId,
+            roles.data?.data ?? [],
+          ])
+        )
       )}
     />
   )
