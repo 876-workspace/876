@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import type { ReactNode } from 'react'
 
+import { requireAppPermission } from '@/lib/auth/require-crm-context'
+
 import { CustomerListData } from './_components/customer-list-data'
 import { CustomerListSkeleton } from './_components/customer-list-skeleton'
 import { CustomersShell } from './_components/customers-shell'
@@ -12,7 +14,13 @@ import { CustomersShell } from './_components/customers-shell'
  * navigation re-render only the tab body, and what keeps the list column a
  * single element across open/close so its width can animate.
  */
-export default function CustomersLayout({ children }: { children: ReactNode }) {
+export default async function CustomersLayout({
+  children,
+}: {
+  children: ReactNode
+}) {
+  await requireAppPermission('customers.view')
+
   return (
     <CustomersShell
       list={

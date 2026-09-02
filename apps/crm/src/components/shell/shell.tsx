@@ -15,6 +15,7 @@ import {
 } from '@876/ui/app-shell'
 
 import type { CrmUiFeatures } from '@/types/features'
+import type { NavGroupDefinition } from '@876/core/access'
 
 import { Sidebar } from './sidebar'
 import { GlobalAdd } from './global-add'
@@ -33,6 +34,7 @@ export function Shell({
   apps,
   uiFeatures,
   supportCategories,
+  navigation,
 }: {
   children: ReactNode
   orgName: string
@@ -42,6 +44,7 @@ export function Shell({
   apps: AppSwitcherApp[]
   uiFeatures: CrmUiFeatures
   supportCategories: SupportCategory[]
+  navigation: NavGroupDefinition[]
 }) {
   return (
     <AppShell defaultOpen={false}>
@@ -62,7 +65,13 @@ export function Shell({
           </Link>
 
           <div className="flex min-w-0 flex-1 items-center">
-            {uiFeatures.searchBar && <TopbarSearch />}
+            {uiFeatures.searchBar && (
+              <TopbarSearch
+                navigation={navigation.flatMap((group) =>
+                  group.entries.map(({ title, href }) => ({ title, href }))
+                )}
+              />
+            )}
           </div>
 
           {/*
@@ -109,7 +118,7 @@ export function Shell({
           </div>
         </AppShellHeader>
         <AppShellBody className="flex-col sm:flex-row">
-          <Sidebar />
+          <Sidebar navigation={navigation} />
           <AppShellMain>{children}</AppShellMain>
         </AppShellBody>
       </AppShellContent>

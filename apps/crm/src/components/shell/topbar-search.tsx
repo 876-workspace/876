@@ -7,8 +7,6 @@ import {
   type TopbarSearchItem,
 } from '@876/ui/topbar-search'
 
-import { navConfig } from './nav-config'
-
 const QUICK_ACTIONS: TopbarSearchItem[] = [
   {
     group: 'Actions',
@@ -24,9 +22,13 @@ const QUICK_ACTIONS: TopbarSearchItem[] = [
   },
 ]
 
-export function TopbarSearch() {
+export function TopbarSearch({
+  navigation,
+}: {
+  navigation: Array<{ title: string; href: string }>
+}) {
   const router = useRouter()
-  const items = getSearchItems()
+  const items = getSearchItems(navigation)
 
   return (
     <SharedTopbarSearch
@@ -37,15 +39,15 @@ export function TopbarSearch() {
   )
 }
 
-function getSearchItems(): TopbarSearchItem[] {
-  const navigationItems = navConfig.flatMap((group) =>
-    group.items.map((item) => ({
-      group: 'Navigation',
-      title: item.title,
-      href: item.href,
-      keywords: [item.title.toLowerCase()],
-    }))
-  )
+function getSearchItems(
+  navigation: Array<{ title: string; href: string }>
+): TopbarSearchItem[] {
+  const navigationItems = navigation.map((item) => ({
+    group: 'Navigation',
+    title: item.title,
+    href: item.href,
+    keywords: [item.title.toLowerCase()],
+  }))
 
   return [...navigationItems, ...QUICK_ACTIONS]
 }

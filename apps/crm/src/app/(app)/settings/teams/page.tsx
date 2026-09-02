@@ -9,7 +9,10 @@ import {
 } from '@876/ui/status-filter-heading'
 
 import type { DirectoryMember } from '@/features/directory/types'
-import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import {
+  requireAppPermission,
+  requireCrmContext,
+} from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
 import { getWorkspace } from '@/lib/services/workspace'
 import type { CrmTeamStatus } from '@/types/crm'
@@ -31,6 +34,8 @@ function isTeamStatus(value: string | undefined): value is CrmTeamStatus {
 type Props = { searchParams: Promise<{ status?: string; team?: string }> }
 
 export default async function TeamsPage({ searchParams }: Props) {
+  await requireAppPermission('teams.view')
+
   const { status, team } = await searchParams
   const selectedStatus = isTeamStatus(status) ? status : 'all'
   const selectedTeamId = team

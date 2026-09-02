@@ -1,11 +1,14 @@
 import { Page } from '@876/ui/page'
 import { SettingsHub } from '@876/ui/settings-hub'
 
+import { requireAppPermission } from '@/lib/auth/require-crm-context'
 import { SETTINGS_GROUPS } from './_lib/settings-nav'
 
 export const metadata = { title: 'Settings' }
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requireAppPermission('settings.view')
+
   return (
     <Page hub>
       <div className="mb-6">

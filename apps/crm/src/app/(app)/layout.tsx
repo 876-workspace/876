@@ -1,9 +1,14 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
+import { resolveNavigation } from '@876/core/access'
+import { AppError } from '@876/ui/app-error'
+
 import { Shell } from '@/components/shell/shell'
 import { getAppsDirectory } from '@/lib/apps-directory'
+import { resolveAccessContext } from '@/lib/auth/access-context'
 import { getCrmContextResult } from '@/lib/auth/context'
+import { navConfig } from '@/components/shell/nav-config'
 import { getFeatures } from '@/lib/features'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { crm } from '@/lib/services/crm'
@@ -22,6 +27,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     if (role === 'super-admin' || role === 'admin') redirect('/onboarding')
     redirect('/no-access')
   }
+
+  const access = await resolveAccessContext(userId, orgId)
+  if (access.status === 'ok' && access.context.permissions.length === 0)
+    redirect('/no-access')
 
   const session = await getAuthSession()
   const user = isSignedSession(session) ? session.user : null
@@ -60,8 +69,22 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       apps={getAppsDirectory()}
       uiFeatures={uiFeatures}
       supportCategories={supportCategories}
+      navigation={
+        access.status === 'ok' ? resolveNavigation(navConfig, access.context) : []
+      }
     >
-      {children}
+      {access.status === 'unavailable' ? (
+        <AppError
+          title="Access could not be verified"
+          error={{
+            code: access.code,
+            message: 'App access is temporarily unavailable. Try again shortly.',
+          }}
+          variant="banner"
+        />
+      ) : (
+        children
+      )}
     </Shell>
   )
 }

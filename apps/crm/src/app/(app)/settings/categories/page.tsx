@@ -8,7 +8,10 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { requireCrmContext } from '@/lib/auth/require-crm-context'
+import {
+  requireAppPermission,
+  requireCrmContext,
+} from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
 
 import { CATEGORIES_SKELETON_COLUMNS } from './_components/categories-skeleton-columns'
@@ -29,6 +32,8 @@ function isCategoryStatus(
 type Props = { searchParams: Promise<{ status?: string; category?: string }> }
 
 export default async function CategoriesPage({ searchParams }: Props) {
+  await requireAppPermission('categories.view')
+
   const { status, category } = await searchParams
   const selectedStatus = isCategoryStatus(status) ? status : 'all'
   const selectedCategoryId = category
