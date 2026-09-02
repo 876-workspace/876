@@ -78,13 +78,26 @@ vi.mock('../provisioning-policy', () => ({
   enabledProvisioningApplicationSlugs,
 }))
 
+/** The role shape the provisioning profile hands to app-access materialization. */
+type SelectedProvisioningRole = {
+  key: string
+  name: string
+  description: string | null
+  permissions: string[]
+  isSystem: boolean
+  isDefault: boolean
+  position: number
+}
+
 const {
   resolveAndPersistApplicationProvisioningProfile,
   retrieveSelectedApplicationProvisioningRoles,
   materializeProvisionedRolesForApp,
 } = vi.hoisted(() => ({
   resolveAndPersistApplicationProvisioningProfile: vi.fn(),
-  retrieveSelectedApplicationProvisioningRoles: vi.fn(async () => []),
+  retrieveSelectedApplicationProvisioningRoles: vi.fn(
+    async (): Promise<SelectedProvisioningRole[]> => []
+  ),
   materializeProvisionedRolesForApp: vi.fn(async () => ({
     seeded: 0,
     skipped: 0,
@@ -244,7 +257,7 @@ describe('provisionOrgApps role materialization', () => {
     expect(materializeRoleTemplatesForApp).toHaveBeenCalled()
   })
 
-  it('does not seed templates when a provisioning setup already selected roles', async () => {
+  it('does not seed templates for an app whose manifest selected roles', async () => {
     // A published manifest is a curated selection. Seeding platform templates on
     // top would reintroduce role definitions it deliberately excluded, widening
     // what an administrator can assign.
@@ -252,10 +265,40 @@ describe('provisionOrgApps role materialization', () => {
       selection: { setup_key: 'standard' },
       policy: { applications: [] },
     })
+    retrieveSelectedApplicationProvisioningRoles.mockResolvedValue([
+      {
+        key: 'admin',
+        name: 'Admin',
+        description: null,
+        permissions: ['requests.view'],
+        isSystem: true,
+        isDefault: false,
+        position: 0,
+      },
+    ])
 
     await provisionOrgApps('org_2kL9mN4q')
 
     expect(materializeRoleTemplatesForApp).not.toHaveBeenCalled()
+  })
+
+  it('seeds templates when a setup selected no roles for the app', async () => {
+    // Regression: keying the fallback on "a setup exists" rather than on "that
+    // setup actually curated roles" left every organization on a manifest that
+    // names none with no assignable app role at all — so no member could hold
+    // an in-app permission and every app reported no access.
+    retrievePersistedProvisioningPolicy.mockResolvedValue({
+      selection: { setup_key: 'standard' },
+      policy: { applications: [] },
+    })
+    retrieveSelectedApplicationProvisioningRoles.mockResolvedValue([])
+
+    await provisionOrgApps('org_2kL9mN4q')
+
+    expect(materializeRoleTemplatesForApp).toHaveBeenCalledWith({
+      organizationId: 'org_2kL9mN4q',
+      appId: 'app_876-enterprise',
+    })
   })
 
   it('still provisions the app when role materialization fails', async () => {

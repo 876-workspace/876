@@ -140,11 +140,20 @@ async function provisionedApplicationSlugs(
   ).slugs
 }
 
+/**
+ * Materializes each entitled app's provisioning profile and the roles its
+ * published manifest selects.
+ *
+ * Returns the apps that actually received at least one role, so the caller can
+ * tell "this manifest curated the roles" from "this manifest names none". A
+ * manifest that supplies no roles must not leave the organization with none —
+ * see the template fallback in `provisionOrgApps`.
+ */
 async function ensureApplicationProfileSelections(
   organizationId: string,
   appIds: string[],
   now: number
-): Promise<void> {
+): Promise<Set<string>> {
   const {
     resolveAndPersistApplicationProvisioningProfile,
     retrieveSelectedApplicationProvisioningRoles,
@@ -152,6 +161,8 @@ async function ensureApplicationProfileSelections(
     await import('@/modules/provisioning/application-provisioning-profile.service')
   const { materializeProvisionedRolesForApp } =
     await import('@/modules/app-access')
+
+  const provisionedRoleApps = new Set<string>()
 
   for (const appId of appIds) {
     await resolveAndPersistApplicationProvisioningProfile(
@@ -168,7 +179,13 @@ async function ensureApplicationProfileSelections(
       appId,
       roles,
     })
+
+    // The manifest curating roles is the signal, not how many rows were written:
+    // a re-run legitimately writes none because the roles already exist.
+    if (roles.length > 0) provisionedRoleApps.add(appId)
   }
+
+  return provisionedRoleApps
 }
 
 /**
@@ -192,6 +209,8 @@ export async function ensureOrgAppSubscriptions(
   appIds: string[]
   provisioned: string[]
   hasSetupSelection: boolean
+  /** Apps whose published manifest actually selected roles. */
+  appsWithProvisionedRoles: Set<string>
 }> {
   const appIds: string[] = []
   const applicationPolicy = await resolveProvisionedApplicationPolicy(
@@ -246,8 +265,13 @@ export async function ensureOrgAppSubscriptions(
     provisioned.push(appId)
   }
 
+  let appsWithProvisionedRoles = new Set<string>()
   if (applicationPolicy.hasSetupSelection)
-    await ensureApplicationProfileSelections(organizationId, appIds, now)
+    appsWithProvisionedRoles = await ensureApplicationProfileSelections(
+      organizationId,
+      appIds,
+      now
+    )
 
   if (provisioned.length > 0) {
     log.info(
@@ -260,6 +284,7 @@ export async function ensureOrgAppSubscriptions(
     appIds,
     provisioned,
     hasSetupSelection: applicationPolicy.hasSetupSelection,
+    appsWithProvisionedRoles,
   }
 }
 
@@ -280,13 +305,15 @@ export async function provisionOrgApps(
   organizationId: string,
   options: { sourceAppId?: string | null; now?: number } = {}
 ): Promise<string[]> {
-  const { appIds, provisioned, hasSetupSelection } =
+  const { appIds, provisioned, appsWithProvisionedRoles } =
     await ensureOrgAppSubscriptions(organizationId, {
       sourceAppId: options.sourceAppId ?? null,
       selectionTimestamp: options.now,
     })
-  if (!hasSetupSelection)
-    await materializeEntitledAppRoles({ organizationId, appIds })
+  await materializeEntitledAppRoles({
+    organizationId,
+    appIds: appIds.filter((appId) => !appsWithProvisionedRoles.has(appId)),
+  })
   await ensureOrgAppsFinanceReady(organizationId, { appIds })
   return provisioned
 }
@@ -317,7 +344,7 @@ export async function provisionOrganization(
   }
 
   const roles = await seedDefaultRoles(organizationId, now)
-  const { appIds, hasSetupSelection } = await ensureOrgAppSubscriptions(
+  const { appIds, appsWithProvisionedRoles } = await ensureOrgAppSubscriptions(
     organizationId,
     {
       sourceAppId: options.sourceAppId ?? null,
@@ -325,13 +352,17 @@ export async function provisionOrganization(
     }
   )
 
-  // Templates are the fallback, not an addition. An organization with a
-  // persisted provisioning setup already received the roles its published
-  // manifest selected; seeding platform templates on top would reintroduce role
-  // definitions that manifest deliberately excluded, widening what an admin can
-  // assign. Only an organization with no setup selection needs the templates.
-  if (!hasSetupSelection)
-    await materializeEntitledAppRoles({ organizationId, appIds })
+  // Templates are the fallback, not an addition. Where a published manifest
+  // curated an app's roles, seeding platform templates on top would reintroduce
+  // definitions it deliberately excluded, widening what an administrator can
+  // assign. Where a manifest names no roles at all — which is every manifest
+  // today — falling back is the only thing that leaves the organization with
+  // any assignable role, so the fallback keys on what was actually provisioned
+  // rather than on whether a setup was merely selected.
+  await materializeEntitledAppRoles({
+    organizationId,
+    appIds: appIds.filter((appId) => !appsWithProvisionedRoles.has(appId)),
+  })
 
   const organization = await repository.findOrganization(organizationId)
   if (organization)
