@@ -13,12 +13,15 @@ import {
 } from '@876/ui/list-pane'
 
 import { documentStatusVariant } from '@/lib/status'
-import { InvoicesTable } from './invoices-table'
+import { InvoicesTable } from '@876/billing-ui/invoices-table'
+
+import { formatMoney } from '@/lib/format'
 
 type InvoiceRow = ComponentProps<typeof InvoicesTable>['invoices'][number]
 
 function customerName(customer: InvoiceRow['customer']) {
-  return typeof customer === 'string' ? customer : customer.name
+  if (typeof customer === 'string') return customer
+  return customer?.name ?? '—'
 }
 
 export function InvoicesList({
@@ -47,7 +50,14 @@ export function InvoicesList({
       : invoices
 
   if (!selectedId)
-    return <InvoicesTable invoices={rows} emptyState={emptyState} />
+    return (
+      <InvoicesTable
+        invoices={rows}
+        baseHref="/invoices"
+        formatAmount={formatMoney}
+        emptyState={emptyState}
+      />
+    )
 
   return (
     <ListPane>
