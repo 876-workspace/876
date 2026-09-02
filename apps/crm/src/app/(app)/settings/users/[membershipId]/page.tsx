@@ -4,7 +4,7 @@ import { AppError } from '@876/ui/app-error'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import { getWorkspace } from '@/lib/services/workspace'
 
-import { buildAccessEntries } from '../_lib/access-entries'
+import { buildAccessEntries } from '@876/access-ui/entries'
 import { loadMember, loadMemberAppMemberships, loadUsers } from '../_data'
 import { MemberOverview } from './_components/member-overview'
 

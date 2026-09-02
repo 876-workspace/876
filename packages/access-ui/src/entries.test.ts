@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import type { AppMembership, AppRole } from './types'
-import { buildAccessEntries } from './access-entries'
+import {
+  buildAccessEntries,
+  type AccessMembershipInput,
+  type AccessRoleInput,
+} from './entries'
 
-function membership(overrides: Partial<AppMembership> = {}): AppMembership {
+function membership(
+  overrides: Partial<AccessMembershipInput> = {}
+): AccessMembershipInput {
   return {
-    object: 'app_membership',
     id: 'assign_1',
-    organization_id: 'org_1',
-    user_id: 'usr_1',
-    membership_id: 'mem_1',
     app_id: 'app_crm',
     app_slug: '876-crm',
     app_name: 'CRM',
@@ -20,34 +21,18 @@ function membership(overrides: Partial<AppMembership> = {}): AppMembership {
     permission_grants: [],
     permission_denies: [],
     effective_permissions: ['requests:view'],
-    title: null,
-    attributes: null,
-    assigned_by: null,
-    assigned_at: null,
-    last_access_at: null,
-    revoked_at: null,
-    created_at: null,
-    updated_at: null,
     ...overrides,
   }
 }
-function role(overrides: Partial<AppRole> = {}): AppRole {
+function role(overrides: Partial<AccessRoleInput> = {}): AccessRoleInput {
   return {
-    object: 'app_role',
     id: 'role_1',
-    app_id: 'app_crm',
-    organization_id: 'org_1',
     key: 'agent',
     name: 'Agent',
     description: null,
     permissions: ['requests:view'],
     is_system: true,
     is_default: false,
-    template_key: null,
-    position: 1,
-    members_count: null,
-    created_at: 1,
-    updated_at: 1,
     ...overrides,
   }
 }

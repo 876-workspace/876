@@ -4,7 +4,7 @@ import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import { resolveCrmAccessViewer } from '@/lib/auth/app-access'
 import { getWorkspace } from '@/lib/services/workspace'
 
-import { buildAccessEntries } from '../../_lib/access-entries'
+import { buildAccessEntries } from '@876/access-ui/entries'
 import type { AppMembership, AppRole } from '../../_lib/types'
 import { loadMemberAppMemberships } from '../../_data'
 import { MemberAccessPanel } from '../_components/member-access-panel'

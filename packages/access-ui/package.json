@@ -26,6 +26,10 @@
     "./permission-matrix": {
       "types": "./src/permission-matrix.tsx",
       "default": "./src/permission-matrix.tsx"
+    },
+    "./entries": {
+      "types": "./src/entries.ts",
+      "default": "./src/entries.ts"
     }
   },
   "scripts": {
