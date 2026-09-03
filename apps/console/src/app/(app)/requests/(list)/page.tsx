@@ -5,7 +5,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
-import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-organization-unavailable'
 import {
   RequestsList,
   RequestsListSkeleton,
