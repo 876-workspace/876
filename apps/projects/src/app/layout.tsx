@@ -1,0 +1,51 @@
+import type { Metadata, Viewport } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import type { ReactNode } from 'react'
+
+import { Toaster } from '@876/ui/sonner'
+
+import { ThemeProvider } from '@876/ui/theme'
+import { ThemeScript } from '@876/ui/theme-script'
+import './globals.css'
+
+const PROJECTS_URL =
+  process.env.NEXT_PUBLIC_PROJECTS_URL?.trim() || 'http://localhost:3008'
+
+const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
+
+export const metadata: Metadata = {
+  metadataBase: new URL(PROJECTS_URL),
+  applicationName: '876 Projects',
+  title: { default: '876 Projects', template: '%s | 876 Projects' },
+  description:
+    'Simple customer relationship and ticket management for 876 organizations.',
+  robots: { index: false, follow: false },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#0a0a0a',
+}
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="antialiased" suppressHydrationWarning>
+        <ThemeProvider>{children}</ThemeProvider>
+        <Toaster />
+      </body>
+    </html>
+  )
+}
