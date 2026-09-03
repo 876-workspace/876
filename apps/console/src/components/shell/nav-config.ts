@@ -1,6 +1,14 @@
 import { defineNavigation } from '@876/core/access'
 
-/** Unlabelled Console navigation groups rendered in sidebar order. */
+/**
+ * Unlabelled Console navigation groups rendered in sidebar order.
+ *
+ * An entry with `children` is a **drill-down section**: the rail replaces
+ * itself with that section's items. Only entries that genuinely own a subtree
+ * declare children, so a rail click never opens a panel holding a single link.
+ * Every child is permission-gated by the same key its route guard checks;
+ * `route-permissions.test.ts` binds the two.
+ */
 export const navConfig = defineNavigation([
   {
     key: 'primary',
@@ -32,6 +40,52 @@ export const navConfig = defineNavigation([
         requires: { permission: 'console:organizations' },
       },
       {
+        key: 'projects',
+        title: 'Projects',
+        href: '/projects',
+        icon: 'projects',
+        colorClassName: 'text-indigo-500 dark:text-indigo-400',
+        activeClassName: 'bg-indigo-500/12 ring-indigo-500/30',
+        requires: { permission: 'console:projects' },
+        children: [
+          {
+            key: 'projects-overview',
+            title: 'Overview',
+            href: '/projects',
+            icon: 'dashboard',
+            requires: { permission: 'console:projects' },
+          },
+          {
+            key: 'projects-projects',
+            title: 'Projects',
+            href: '/projects/projects',
+            icon: 'folder',
+            requires: { permission: 'console:projects' },
+          },
+          {
+            key: 'projects-issues',
+            title: 'Issues',
+            href: '/projects/issues',
+            icon: 'issues',
+            requires: { permission: 'console:projects' },
+          },
+          {
+            key: 'projects-board',
+            title: 'Board',
+            href: '/projects/board',
+            icon: 'board',
+            requires: { permission: 'console:projects' },
+          },
+          {
+            key: 'projects-labels',
+            title: 'Labels',
+            href: '/projects/labels',
+            icon: 'labels',
+            requires: { permission: 'console:projects' },
+          },
+        ],
+      },
+      {
         key: 'requests',
         title: 'Requests',
         href: '/requests',
@@ -39,6 +93,29 @@ export const navConfig = defineNavigation([
         colorClassName: 'text-cyan-500 dark:text-cyan-400',
         activeClassName: 'bg-cyan-500/12 ring-cyan-500/30',
         requires: { permission: 'console:requests' },
+        children: [
+          {
+            key: 'requests-list',
+            title: 'Requests',
+            href: '/requests',
+            icon: 'support',
+            requires: { permission: 'console:requests' },
+          },
+          {
+            key: 'requests-customers',
+            title: 'Customers',
+            href: '/requests/customers',
+            icon: 'customers',
+            requires: { permission: 'console:requests' },
+          },
+          {
+            key: 'requests-forms',
+            title: 'Forms',
+            href: '/requests/forms',
+            icon: 'forms',
+            requires: { permission: 'console:requests' },
+          },
+        ],
       },
       {
         key: 'security',
