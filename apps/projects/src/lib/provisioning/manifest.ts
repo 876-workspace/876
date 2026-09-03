@@ -107,7 +107,9 @@ export async function loadProjectsProvisioningManifest(): Promise<ProjectsProvis
     })
 
   const projectTemplates = profile.resources
-    .filter((resource) => resource.resource_type === 'projects_project_template')
+    .filter(
+      (resource) => resource.resource_type === 'projects_project_template'
+    )
     .map((resource) => {
       const values = propertyMap(resource.properties)
       return {
