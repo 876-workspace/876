@@ -20,7 +20,6 @@ import { NavIcon } from '@/components/shell/nav-icons'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 import {
   resolveActiveChildKey,
-  resolveSidebarContext,
   resolveSidebarContextStack,
   type SidebarContext,
 } from '@/components/shell/sidebar-sections'
@@ -34,6 +33,11 @@ const mobileNavItemActive =
 const mobileNavIconBase =
   'flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f4] transition-colors dark:bg-white/8'
 
+type DismissedContext = {
+  key: string
+  pathname: string
+}
+
 export function MobileNav({
   navigation,
   contexts = [],
@@ -43,17 +47,18 @@ export function MobileNav({
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [dismissedContextKey, setDismissedContextKey] = useState<string | null>(
+  const [dismissedContext, setDismissedContext] = useState<DismissedContext | null>(
     null
   )
   const stack = resolveSidebarContextStack(pathname, navigation, contexts)
-  const context = resolveSidebarContext(pathname, navigation, contexts)
-  const visibleContext =
-    context && dismissedContextKey !== context.key ? context : stack[0]!
-
-  const handleBack = () => {
-    if (context) setDismissedContextKey(context.key)
-  }
+  const derivedIndex = stack.length - 1
+  const dismissedIndex =
+    dismissedContext?.pathname === pathname
+      ? stack.findIndex((item) => item.key === dismissedContext.key)
+      : -1
+  const visibleIndex =
+    dismissedIndex > 0 ? dismissedIndex - 1 : derivedIndex
+  const visibleContext = stack[visibleIndex] ?? stack[0]!
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -74,9 +79,7 @@ export function MobileNav({
               <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
             </span>
             <SheetTitle className="text-sidebar-foreground text-base leading-6">
-              {visibleContext.kind === 'platform'
-                ? 'Console'
-                : visibleContext.title}
+              {visibleContext.kind === 'platform' ? 'Console' : visibleContext.title}
             </SheetTitle>
           </div>
           <SheetDescription className="sr-only">
@@ -92,14 +95,14 @@ export function MobileNav({
             <PlatformMobileContext
               context={visibleContext}
               pathname={pathname}
-              onOpenContext={() => setDismissedContextKey(null)}
+              onOpenContext={() => setDismissedContext(null)}
               onNavigate={() => setOpen(false)}
             />
           ) : (
             <NestedMobileContext
               context={visibleContext}
               pathname={pathname}
-              onBack={handleBack}
+              onBack={() => setDismissedContext({ key: visibleContext.key, pathname })}
               onNavigate={() => setOpen(false)}
             />
           )}
@@ -127,7 +130,7 @@ function PlatformMobileContext({
           key={item.key}
           item={item}
           pathname={pathname}
-          onOpenContext={onOpenContext}
+          onOpenContext={item.children?.length ? onOpenContext : undefined}
           onNavigate={onNavigate}
         />
       ))}
@@ -164,7 +167,6 @@ function NestedMobileContext({
           item={child}
           pathname={pathname}
           isActive={child.key === activeChildKey}
-          onOpenContext={undefined}
           onNavigate={onNavigate}
         />
       ))}
@@ -189,7 +191,7 @@ function MobileNavLink({
     <Link
       href={item.href}
       onClick={() => {
-        if (item.children?.length) onOpenContext?.()
+        onOpenContext?.()
         onNavigate()
       }}
       aria-current={isActive ? 'page' : undefined}
