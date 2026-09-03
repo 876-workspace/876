@@ -47,7 +47,8 @@ const mockIssue: Issue = {
   number: 99,
   identifier: 'APO-99',
   title: 'Oxygen pressure fluctuating in Module B',
-  description: 'Pressure drops below nominal thresholds during orbital sunrise.',
+  description:
+    'Pressure drops below nominal thresholds during orbital sunrise.',
   status: 'in-progress',
   priority: 'urgent',
   assigneeUserId: 'user_flight_dir',
@@ -118,7 +119,12 @@ describe('OrganizationIssueDetailPage', () => {
       error: null,
     })
     mocks.listComments.mockResolvedValue({
-      data: { object: 'list', data: mockComments, hasMore: false, totalCount: 1 },
+      data: {
+        object: 'list',
+        data: mockComments,
+        hasMore: false,
+        totalCount: 1,
+      },
       error: null,
     })
     mocks.listEvents.mockResolvedValue({
@@ -129,7 +135,8 @@ describe('OrganizationIssueDetailPage', () => {
 
   it('renders issue detail keyed by identifier with description, comments, and activity', async () => {
     const element = await IssueDetailData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       issueRef: 'APO-99',
     })
 
@@ -146,7 +153,9 @@ describe('OrganizationIssueDetailPage', () => {
       })
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Pressure drops below nominal thresholds during orbital sunrise.')
+      screen.getByText(
+        'Pressure drops below nominal thresholds during orbital sunrise.'
+      )
     ).toBeInTheDocument()
     expect(screen.getByText('life-support')).toBeInTheDocument()
     expect(screen.getAllByText('user_flight_dir')).toHaveLength(2)
@@ -155,7 +164,9 @@ describe('OrganizationIssueDetailPage', () => {
 
     // Comments & activity
     expect(
-      screen.getByText('Re-routing secondary valving to stabilize manifold pressure.')
+      screen.getByText(
+        'Re-routing secondary valving to stabilize manifold pressure.'
+      )
     ).toBeInTheDocument()
     expect(screen.getByText('status_changed')).toBeInTheDocument()
   })
@@ -163,19 +174,21 @@ describe('OrganizationIssueDetailPage', () => {
   it('renders AppError notice when issue retrieve fails', async () => {
     mocks.retrieveIssue.mockResolvedValue({
       data: null,
-      error: { code: 'projects/unavailable', message: 'Failed to retrieve issue' },
+      error: {
+        code: 'projects/unavailable',
+        message: 'Failed to retrieve issue',
+      },
     })
 
     const element = await IssueDetailData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       issueRef: 'APO-99',
     })
 
     render(element)
 
-    expect(
-      screen.getByText('Issue could not be loaded')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Issue could not be loaded')).toBeInTheDocument()
     expect(screen.getByText('Failed to retrieve issue')).toBeInTheDocument()
   })
 })

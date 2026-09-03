@@ -58,6 +58,7 @@ const SORTED_CONSOLE_KEYS = [
   'console:danger-zone',
   'console:features',
   'console:organizations',
+  'console:projects',
   'console:reports',
   'console:requests',
   'console:security',
@@ -235,7 +236,7 @@ describe('consolePermissionCatalog', () => {
   it('contains no duplicate permission keys', () => {
     const keys = consolePermissionCatalog.permissions.map((row) => row.key)
 
-    expect(new Set(keys).size).toBe(46)
+    expect(new Set(keys).size).toBe(47)
   })
 
   it('assigns module positions from declaration order', () => {

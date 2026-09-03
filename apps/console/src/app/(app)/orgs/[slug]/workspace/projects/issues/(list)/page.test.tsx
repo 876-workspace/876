@@ -87,7 +87,9 @@ describe('OrganizationIssuesPage', () => {
     const { container } = render(page)
 
     // Toolbar must be rendered
-    expect(screen.getByRole('button', { name: /Filter issues by status/ })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Filter issues by status/ })
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
       'href',
       '/orgs/test-org/workspace/projects/issues/new'
@@ -111,7 +113,8 @@ describe('OrganizationIssuesPage', () => {
     const status = isIssueStatus(statusParam) ? statusParam : 'all'
 
     const element = await IssuesData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       status,
     })
 
@@ -131,7 +134,8 @@ describe('OrganizationIssuesPage', () => {
     expect(status).toBe('all')
 
     const element = await IssuesData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       status,
     })
 
@@ -146,7 +150,10 @@ describe('OrganizationIssuesPage', () => {
   it('keeps toolbar mounted and renders an AppError notice when listing fails', async () => {
     mocks.listIssues.mockResolvedValue({
       data: null,
-      error: { code: 'projects/unavailable', message: 'Issue database unavailable' },
+      error: {
+        code: 'projects/unavailable',
+        message: 'Issue database unavailable',
+      },
     })
 
     const page = await OrganizationIssuesPage({
@@ -162,7 +169,8 @@ describe('OrganizationIssuesPage', () => {
     )
 
     const dataElement = await IssuesData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       status: 'all',
     })
 
@@ -170,8 +178,6 @@ describe('OrganizationIssuesPage', () => {
     expect(
       screen.getByText('Some issue data could not be loaded')
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('Issue database unavailable')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Issue database unavailable')).toBeInTheDocument()
   })
 })

@@ -14,8 +14,8 @@ import {
 
 const EXPECTED_ROLE_COUNTS = {
   staff: 15,
-  admin: 39,
-  'super-admin': 46,
+  admin: 40,
+  'super-admin': 47,
 } as const
 
 describe('Console permission catalog', () => {
@@ -230,7 +230,7 @@ describe('Console permission catalog', () => {
       group.permissions.map((permission) => permission.value)
     )
 
-    expect(new Set(values).size).toBe(46)
+    expect(new Set(values).size).toBe(47)
   })
 
   it('renders action-only labels inside an already-labelled module group', () => {

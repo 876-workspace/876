@@ -79,6 +79,7 @@ describe('ROUTE_PERMISSIONS', () => {
     expect(ROUTE_PERMISSIONS).toEqual({
       '/users': 'console:users',
       '/orgs': 'console:organizations',
+      '/projects': 'console:projects',
       '/apps': 'console:apps',
       '/widgets': 'console:widgets',
       '/features': 'console:features',
@@ -151,6 +152,7 @@ describe('ROUTE_PERMISSIONS', () => {
     expect(reachablePaths('admin')).toEqual([
       '/users',
       '/orgs',
+      '/projects',
       '/apps',
       '/widgets',
       '/features',

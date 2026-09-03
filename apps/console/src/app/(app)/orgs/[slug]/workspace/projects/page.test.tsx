@@ -100,7 +100,12 @@ describe('ProjectsWorkspaceOverviewPage', () => {
       name: 'Test Org',
     })
     mocks.listProjects.mockResolvedValue({
-      data: { object: 'list', data: mockProjects, hasMore: false, totalCount: 1 },
+      data: {
+        object: 'list',
+        data: mockProjects,
+        hasMore: false,
+        totalCount: 1,
+      },
       error: null,
     })
     mocks.listIssues.mockResolvedValue({
@@ -115,11 +120,16 @@ describe('ProjectsWorkspaceOverviewPage', () => {
     })
 
     render(page)
-    expect(screen.getByRole('heading', { name: 'Overview' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Overview' })
+    ).toBeInTheDocument()
   })
 
   it('renders overview stat tiles and recent issues list', async () => {
-    const element = await OverviewData({ slug: 'test-org' })
+    const element = await OverviewData({
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
+    })
     render(element)
 
     expect(mocks.listProjects).toHaveBeenCalledWith('org_123')
@@ -140,7 +150,10 @@ describe('ProjectsWorkspaceOverviewPage', () => {
       error: { code: 'projects/unavailable', message: 'Project cluster down' },
     })
 
-    const element = await OverviewData({ slug: 'test-org' })
+    const element = await OverviewData({
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
+    })
     render(element)
 
     expect(

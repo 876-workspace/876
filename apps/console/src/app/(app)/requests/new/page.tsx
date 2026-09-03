@@ -3,7 +3,7 @@ import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { Suspense } from 'react'
 
-import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-organization-unavailable'
 import { RequestCreateForm } from '@/features/crm/components/request-create-form'
 import {
   loadOrgPriorities,

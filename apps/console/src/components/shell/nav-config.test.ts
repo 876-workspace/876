@@ -29,7 +29,14 @@ describe('navConfig', () => {
     expect(
       navConfig.map((group) => group.entries.map((entry) => entry.title))
     ).toEqual([
-      ['Dashboards', 'Users', 'Organizations', 'Requests', 'Security'],
+      [
+        'Dashboards',
+        'Users',
+        'Organizations',
+        'Projects',
+        'Requests',
+        'Security',
+      ],
       ['Apps', 'Widgets', 'Storage'],
       ['Reports', 'Settings'],
     ])
@@ -50,6 +57,7 @@ describe('navConfig', () => {
       '/',
       '/users',
       '/orgs',
+      '/projects',
       '/requests',
       '/apps',
       '/widgets',
@@ -64,6 +72,7 @@ describe('navConfig', () => {
       '/',
       '/users',
       '/orgs',
+      '/projects',
       '/requests',
       '/security',
       '/apps',

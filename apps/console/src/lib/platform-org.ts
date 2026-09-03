@@ -1,4 +1,5 @@
 import { crm } from '@/lib/services/crm'
+import { projects } from '@/lib/services/projects'
 import { platform } from '@/lib/services/platform'
 import 'server-only'
 import { workspace } from '@/lib/services/workspace'
@@ -16,6 +17,20 @@ export const getPlatformOrganization = cache(async () => {
   if (result.error) return null
 
   return result.data
+})
+
+/**
+ * Prepares 876's own Projects tenant. Same shape and same reasoning as the CRM
+ * workspace below: Console operates the platform organization's own instance of
+ * the product, and preparing it is service infrastructure — it does not grant
+ * the 876 Projects product to anyone.
+ */
+export const ensurePlatformProjectsWorkspace = cache(async () => {
+  const organization = await getPlatformOrganization()
+  if (!organization) return null
+
+  const result = await projects.tenants.ensure(organization.id)
+  return result.error ? null : result.data
 })
 
 /**

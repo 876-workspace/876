@@ -1,11 +1,13 @@
 import { Skeleton } from '@876/ui/skeleton'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { IssueDetailData } from '@/features/projects/components/issue-detail-data'
 import { projects } from '@/lib/services/projects'
 
 import { resolveOrg } from '../../../../_data'
+import { workspaceProjectsBase } from '../../_lib/base'
 
 type Props = {
   params: Promise<{ slug: string; issueRef: string }>
@@ -26,10 +28,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function OrganizationIssueDetailPage({ params }: Props) {
   const { slug, issueRef } = await params
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
 
   return (
     <Suspense fallback={<IssueDetailFallback />}>
-      <IssueDetailData slug={slug} issueRef={issueRef} />
+      <IssueDetailData
+        organizationId={org.id}
+        base={workspaceProjectsBase(slug)}
+        issueRef={issueRef}
+      />
     </Suspense>
   )
 }

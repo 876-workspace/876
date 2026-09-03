@@ -1,11 +1,13 @@
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Skeleton } from '@876/ui/skeleton'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { BoardData } from '@/features/projects/components/board-data'
 
 import { resolveOrg } from '../../../_data'
+import { workspaceProjectsBase } from '../_lib/base'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -21,12 +23,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function OrganizationIssueBoardPage({ params }: Props) {
   const { slug } = await params
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
 
   return (
     <div>
       <ResourceToolbar title="Board" refresh />
       <Suspense fallback={<BoardFallback />}>
-        <BoardData slug={slug} />
+        <BoardData organizationId={org.id} base={workspaceProjectsBase(slug)} />
       </Suspense>
     </div>
   )
