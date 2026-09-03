@@ -21,7 +21,7 @@ import { resolveAccessContext } from '@/lib/auth/access-context'
  * The slot keeps that server-resolved and URL-derived; a client provider written
  * to by a nested layout would flash the platform rail first.
  */
-export async function ConsoleSidebar({
+export async function ServerSidebar({
   userId,
   contexts = [],
 }: {

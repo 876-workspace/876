@@ -1,4 +1,4 @@
-import { ConsoleSidebar } from '@/components/shell/console-sidebar'
+import { ServerSidebar } from '@/components/shell/server-sidebar'
 import { requireSession } from '@/lib/auth/guards'
 
 /**
@@ -10,5 +10,5 @@ import { requireSession } from '@/lib/auth/guards'
 export default async function SidebarSlot() {
   const sessionUser = await requireSession('/')
 
-  return <ConsoleSidebar userId={sessionUser.id} />
+  return <ServerSidebar userId={sessionUser.id} />
 }

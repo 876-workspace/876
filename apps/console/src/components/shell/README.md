@@ -70,7 +70,7 @@ src/app/(app)/
     apps/[slug]/[[...section]]/page.tsx  the product rail, kind-resolved
 ```
 
-`ConsoleSidebar` resolves the access context, navigation, and slots, so a slot
+`ServerSidebar` resolves the access context, navigation, and slots, so a slot
 page only supplies the extra contexts its segment owns. The optional catch-all
 is what keeps the rail in place below the record — `/apps/876-crm/plans/pro`
 must not drop back to the platform rail.

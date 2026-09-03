@@ -1,4 +1,4 @@
-import { ConsoleSidebar } from '@/components/shell/console-sidebar'
+import { ServerSidebar } from '@/components/shell/server-sidebar'
 import { appSidebarContext } from '@/features/apps/app-detail-nav'
 import { requireSession } from '@/lib/auth/guards'
 import { resolveApp } from '@/app/(app)/apps/[slug]/_data'
@@ -22,7 +22,7 @@ export default async function AppSidebarSlot({
   const app = await resolveApp(slug)
 
   return (
-    <ConsoleSidebar
+    <ServerSidebar
       userId={sessionUser.id}
       contexts={app ? [appSidebarContext(app.app_kind, slug, app.name)] : []}
     />
