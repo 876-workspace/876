@@ -298,15 +298,18 @@ the next starts. All phases land on `feat/876-projects`; **one** PR opens agains
 branch rather than separate PRs into it — this is a single-author internal run
 and per-phase PR ceremony would cost more than the review value it returns.)
 
-| # | Phase | Delegate | Depends on |
-| --- | --- | --- | --- |
-| 1 | `apps/projects-api` — scaffold, schema, migration, tenants + projects modules | agy | — |
-| 2 | `apps/projects-api` — issues, labels, comments, events modules + tests | agy | 1 |
-| 3 | `packages/projects` — contracts, client, session/service/operator entrypoints | agy | 2 |
-| 4 | Platform registration — bootstrap, access catalog, roles, plan, prices, features | agy | 3 |
-| 5 | `apps/projects-mcp` — MCP server + `.mcp.json` | agy | 3 |
-| 6 | `packages/projects-ui` + Console workspace integration | agy | 3, 4 |
-| 7 | `apps/projects` standalone app shell (port 3008) | agy | 3, 6 |
+| # | Phase | Delegate | Depends on | Status |
+| --- | --- | --- | --- | --- |
+| 1 | `apps/projects-api` — scaffold, schema, migration, tenants + projects modules | agy | — | **done** — verified, `4e9c7603` |
+| 2 | `apps/projects-api` — issues, labels, comments, events modules + tests | agy | 1 | dispatched |
+| 3 | `packages/projects` — contracts, client, session/service/operator entrypoints | agy | 2 | briefed |
+| 4 | Platform registration — bootstrap, access catalog, roles, plan, prices, features | agy | 3 | **done** — verified, `e8a7f670` |
+| 5 | `apps/projects-mcp` — MCP server + `.mcp.json` | agy | 3 | briefed |
+| 6 | `packages/projects-ui` + Console workspace integration | agy | 3, 4 | briefed |
+| 7 | `apps/projects` standalone app shell (port 3008) | agy | 3, 6 | briefed |
+
+Phase 4 in practice had no dependency on phase 3 and ran in parallel with
+phase 1 on non-overlapping files.
 
 Phases 4 and 5 are independent of each other and can run in parallel on
 non-overlapping file sets.
