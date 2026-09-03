@@ -301,8 +301,8 @@ and per-phase PR ceremony would cost more than the review value it returns.)
 | # | Phase | Delegate | Depends on | Status |
 | --- | --- | --- | --- | --- |
 | 1 | `apps/projects-api` — scaffold, schema, migration, tenants + projects modules | agy | — | **done** — verified, `4e9c7603` |
-| 2 | `apps/projects-api` — issues, labels, comments, events modules + tests | agy | 1 | dispatched |
-| 3 | `packages/projects` — contracts, client, session/service/operator entrypoints | agy | 2 | briefed |
+| 2 | `apps/projects-api` — issues, labels, comments, events modules + tests | agy | 1 | **done** — verified, `6ef534ea` |
+| 3 | `packages/projects` — contracts, client, session/service/operator entrypoints | agy | 2 | dispatched |
 | 4 | Platform registration — bootstrap, access catalog, roles, plan, prices, features | agy | 3 | **done** — verified, `e8a7f670` |
 | 5 | `apps/projects-mcp` — MCP server + `.mcp.json` | agy | 3 | briefed |
 | 6 | `packages/projects-ui` + Console workspace integration | agy | 3, 4 | briefed |
