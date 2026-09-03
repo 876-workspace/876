@@ -65,9 +65,9 @@ describe('resolveWorkspaceNavigation', () => {
 
     // Registry order, so the operator rail reads like the product's own sidebar.
     expect(links.map((link) => link.href)).toEqual([
-      '/orgs/acme/workspace/billing',
-      '/orgs/acme/workspace/billing/customers',
-      '/orgs/acme/workspace/billing/items',
+      '/workspace/acme/billing',
+      '/workspace/acme/billing/customers',
+      '/workspace/acme/billing/items',
     ])
   })
 

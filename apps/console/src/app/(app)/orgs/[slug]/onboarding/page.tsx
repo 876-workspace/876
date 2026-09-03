@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { resolveOrg } from '../_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 import { OnboardingEditor } from './_components/onboarding-editor'
 
 type Props = { params: Promise<{ slug: string }> }

@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { resolveOrg } from './_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 
 type Props = { params: Promise<{ slug: string }> }
 

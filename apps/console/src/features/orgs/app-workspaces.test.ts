@@ -39,9 +39,8 @@ function sectionRouteExists(workspaceKey: string, segment: string): boolean {
     'src',
     'app',
     '(app)',
-    'orgs',
-    '[slug]',
     'workspace',
+    '[orgSlug]',
     workspaceKey
   )
   const segmentDirectory = segment
@@ -73,9 +72,8 @@ describe('the workspace registry', () => {
           'src',
           'app',
           '(app)',
-          'orgs',
-          '[slug]',
           'workspace',
+          '[orgSlug]',
           workspace.key,
           section.segment,
           'page.tsx'
@@ -161,8 +159,8 @@ describe('entitledWorkspaces', () => {
 
 describe('workspace paths', () => {
   it('builds the index and base under the organization', () => {
-    expect(workspaceIndex(SLUG)).toBe('/orgs/test-org/workspace')
-    expect(workspaceBase(SLUG, 'crm')).toBe('/orgs/test-org/workspace/crm')
+    expect(workspaceIndex(SLUG)).toBe('/workspace/test-org')
+    expect(workspaceBase(SLUG, 'crm')).toBe('/workspace/test-org/crm')
   })
 
   it('links the index at the base and every other section beneath it', () => {
@@ -170,26 +168,30 @@ describe('workspace paths', () => {
 
     expect(workspaceSectionLinks(SLUG, crm)).toEqual([
       {
+        key: 'index',
         label: 'Overview',
-        href: '/orgs/test-org/workspace/crm',
+        href: '/workspace/test-org/crm',
         iconKey: 'dashboard',
         exact: true,
       },
       {
+        key: 'customers',
         label: 'Customers',
-        href: '/orgs/test-org/workspace/crm/customers',
+        href: '/workspace/test-org/crm/customers',
         iconKey: 'customers',
         exact: false,
       },
       {
+        key: 'requests',
         label: 'Requests',
-        href: '/orgs/test-org/workspace/crm/requests',
+        href: '/workspace/test-org/crm/requests',
         iconKey: 'requests',
         exact: false,
       },
       {
+        key: 'forms',
         label: 'Forms',
-        href: '/orgs/test-org/workspace/crm/forms',
+        href: '/workspace/test-org/crm/forms',
         iconKey: 'forms',
         exact: false,
       },

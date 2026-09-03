@@ -2,10 +2,7 @@ import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import {
-  findAppWorkspace,
-  type WorkspaceIconKey,
-} from './app-workspaces'
+import { findAppWorkspace, type WorkspaceIconKey } from './app-workspaces'
 
 const VALID_ICON_KEYS = new Set<WorkspaceIconKey>([
   'dashboard',
@@ -91,10 +88,15 @@ describe('876 Projects workspace registry', () => {
 
   it('ensures every section segment has a matching route file on disk', () => {
     const workspace = findAppWorkspace('projects')!
-    const rootDir = resolve(process.cwd(), 'src/app/(app)/orgs/[slug]/workspace/projects')
+    const rootDir = resolve(
+      process.cwd(),
+      'src/app/(app)/workspace/[orgSlug]/projects'
+    )
 
     for (const section of workspace.sections) {
-      const segmentDir = section.segment ? join(rootDir, section.segment) : rootDir
+      const segmentDir = section.segment
+        ? join(rootDir, section.segment)
+        : rootDir
       const directRoute = join(segmentDir, 'page.tsx')
       const groupedRoute = join(segmentDir, '(list)', 'page.tsx')
 

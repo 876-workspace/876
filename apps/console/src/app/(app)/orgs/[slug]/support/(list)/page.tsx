@@ -26,7 +26,7 @@ import {
   resolveOrg,
   resolveOrgCustomerWithUs,
   resolveOrgResult,
-} from '../../_data'
+} from '@/features/orgs/org-data'
 
 type Props = {
   params: Promise<{ slug: string }>

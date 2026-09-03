@@ -35,6 +35,25 @@ const nextConfig: NextConfig = {
   // the function bundle can reach the pnpm store.
   outputFileTracingRoot: path.join(__dirname, '../../'),
   allowedDevOrigins: ['127.0.0.1', ...previewDevOrigins],
+  async redirects() {
+    return [
+      // A workspace used to be a tab inside the organization record. It is now
+      // a top-level context (`/workspace/<org>/<app>`), so links, bookmarks,
+      // and open tabs pointing at the old shape still land. Temporary rather
+      // than permanent: a 308 is cached by the browser indefinitely, and
+      // `/orgs/[slug]/workspace` is a segment we may want back.
+      {
+        source: '/orgs/:orgSlug/workspace',
+        destination: '/workspace/:orgSlug',
+        permanent: false,
+      },
+      {
+        source: '/orgs/:orgSlug/workspace/:path*',
+        destination: '/workspace/:orgSlug/:path*',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },

@@ -7,7 +7,7 @@ import { buttonVariants } from '@876/ui/button'
 import { ArrowRight, CreditCard, Users } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { resolveOrg } from '../../_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -68,8 +68,7 @@ async function OrganizationBillingData({ slug }: { slug: string }) {
 }
 
 async function BillingWorkspace({ orgId }: { orgId: string }) {
-  const billingWorkspace =
-    await billing.organizations.retrieve(orgId)
+  const billingWorkspace = await billing.organizations.retrieve(orgId)
   if (!billingWorkspace.data) return null
   return (
     <div className="876-card grid gap-4 p-4 text-[0.8125rem] sm:grid-cols-3">

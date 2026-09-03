@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { ActivityView } from '@/components/patterns/detail/detail-views'
-import { resolveOrg } from '../_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 
 type Props = { params: Promise<{ slug: string }> }
 

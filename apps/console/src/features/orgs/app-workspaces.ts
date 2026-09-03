@@ -60,7 +60,7 @@ export type WorkspaceSection = {
 export type AppWorkspace = {
   /** Platform app slug that gates this workspace, e.g. `'876-crm'`. */
   appSlug: string
-  /** URL segment under `/orgs/[slug]/workspace`, e.g. `'crm'`. */
+  /** URL segment under `/workspace/[orgSlug]`, e.g. `'crm'`. */
   key: string
   /** Product name as an operator would say it. */
   label: string
@@ -198,7 +198,7 @@ export const APP_WORKSPACES = [
   },
 ] as const satisfies readonly AppWorkspace[]
 
-/** The organization-detail segment every workspace lives under. */
+/** The top-level segment every workspace lives under. */
 export const WORKSPACE_SEGMENT = 'workspace'
 
 /** The base path of one app's workspace for an organization. */
@@ -206,9 +206,16 @@ export function workspaceBase(orgSlug: string, workspaceKey: string): string {
   return `${workspaceIndex(orgSlug)}/${workspaceKey}`
 }
 
-/** The workspace index for an organization. */
+/**
+ * The workspace index for an organization.
+ *
+ * A workspace is a top-level Console context, not a tab inside the
+ * organization record: entering one swaps the whole rail for that product's
+ * navigation, so it lives at `/workspace/<org>` rather than nested under
+ * `/orgs/<org>`. The organization record links into it; it does not own it.
+ */
 export function workspaceIndex(orgSlug: string): string {
-  return `/orgs/${orgSlug}/${WORKSPACE_SEGMENT}`
+  return `/${WORKSPACE_SEGMENT}/${encodeURIComponent(orgSlug)}`
 }
 
 /** Look a workspace up by its URL segment. Unknown segments are a 404. */
@@ -239,6 +246,7 @@ export function workspaceSectionLinks(
   orgSlug: string,
   workspace: AppWorkspace
 ): {
+  key: string
   label: string
   href: string
   iconKey: WorkspaceIconKey
@@ -247,6 +255,11 @@ export function workspaceSectionLinks(
   const base = workspaceBase(orgSlug, workspace.key)
 
   return workspace.sections.map((section) => ({
+    // Structurally a `WorkspaceNavLink`, so the resolved and the fallback rail
+    // are the same shape. Keyed off the registry entry where there is one, so a
+    // fallback rail and a resolved rail agree on a section's identity.
+    // `||`, not `??`: the index section's segment is the empty string.
+    key: section.entryKey || section.segment || 'index',
     label: section.label,
     href: section.segment ? `${base}/${section.segment}` : base,
     iconKey: section.iconKey,
