@@ -4,6 +4,7 @@ import type { RouteTabItem } from '@876/ui/route-tabs'
 
 import { ALWAYS_PRESENT_TABS, APP_OWNED_TABS, orgTabs } from './app-tabs'
 
+const ORG_SLUG = 'test-org'
 const BASE = '/orgs/test-org'
 
 /** The five tabs every organization has, in their fixed visual order. */
@@ -29,29 +30,31 @@ function getTabLabelText(tab: RouteTabItem): string {
 
 describe('orgTabs', () => {
   it('renders exactly the always-present tabs when nothing is entitled', () => {
-    expect(orgTabs(BASE, []).map(getTabLabelText)).toEqual(ALWAYS_PRESENT)
+    expect(orgTabs(ORG_SLUG, []).map(getTabLabelText)).toEqual(ALWAYS_PRESENT)
   })
 
   it('shows dynamic CRM app tab for a CRM-only organization', () => {
-    const labels = orgTabs(BASE, ['876-crm']).map(getTabLabelText)
+    const labels = orgTabs(ORG_SLUG, ['876-crm']).map(getTabLabelText)
 
     expect(labels).toContain('876 CRM')
     expect(labels).not.toContain('Workspaces')
   })
 
   it('links dynamic app tabs to their corresponding workspace surfaces', () => {
-    const tabs = orgTabs(BASE, ['876-crm', '876-billing'])
+    const tabs = orgTabs(ORG_SLUG, ['876-crm', '876-billing'])
     const crmTab = tabs.find((tab) => getTabLabelText(tab) === '876 CRM')
     const billingTab = tabs.find(
       (tab) => getTabLabelText(tab) === '876 Billing'
     )
 
-    expect(crmTab?.href).toBe('/orgs/test-org/workspace/crm')
-    expect(billingTab?.href).toBe('/orgs/test-org/workspace/billing')
+    expect(crmTab?.href).toBe('/workspace/test-org/crm?from=%2Forgs%2Ftest-org')
+    expect(billingTab?.href).toBe(
+      '/workspace/test-org/billing?from=%2Forgs%2Ftest-org'
+    )
   })
 
   it('renders dynamic app tabs in between Customers and Requests', () => {
-    const tabs = orgTabs(BASE, [
+    const tabs = orgTabs(ORG_SLUG, [
       {
         slug: '876-crm',
         name: '876 CRM',
@@ -73,14 +76,14 @@ describe('orgTabs', () => {
   })
 
   it('is unaffected by duplicate entitlements', () => {
-    const tabs = orgTabs(BASE, ['876-crm', '876-crm'])
+    const tabs = orgTabs(ORG_SLUG, ['876-crm', '876-crm'])
     const crmTabs = tabs.filter((tab) => getTabLabelText(tab) === '876 CRM')
 
     expect(crmTabs).toHaveLength(1)
   })
 
   it('builds the Profile href from the base alone and marks it exact', () => {
-    const profile = orgTabs(BASE, []).find(
+    const profile = orgTabs(ORG_SLUG, []).find(
       (tab) => getTabLabelText(tab) === 'Profile'
     )
 
@@ -89,7 +92,7 @@ describe('orgTabs', () => {
   })
 
   it('marks no tab but Profile as exact', () => {
-    const exact = orgTabs(BASE, ['876-crm', '876-billing'])
+    const exact = orgTabs(ORG_SLUG, ['876-crm', '876-billing'])
       .filter((tab) => tab.exact)
       .map(getTabLabelText)
 

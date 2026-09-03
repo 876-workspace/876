@@ -5,7 +5,11 @@ import type { AdminSubscription } from '@876/platform/compat'
 import { cn } from '@876/core/utils'
 import { appColor } from '@/lib/app-color'
 
-import { APP_WORKSPACES, findAppWorkspace } from './app-workspaces'
+import {
+  APP_WORKSPACES,
+  findAppWorkspace,
+  workspaceBase,
+} from './app-workspaces'
 
 /**
  * A tab on the organization detail page that belongs to a product app rather
@@ -109,15 +113,20 @@ function formatDefaultAppName(slug: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-export function entitledAppHref(base: string, appSlug: string): string {
+/**
+ * Where an entitled app's tab points.
+ *
+ * A workspace is a top-level context rather than a segment of the organization
+ * record, so this is built from the org slug through `workspaceBase` and not by
+ * appending to the org base — the two paths no longer share a prefix.
+ */
+export function entitledAppHref(orgSlug: string, appSlug: string): string {
   const workspaceKey = appSlug.replace(/^876-/, '')
   const workspace =
     findAppWorkspace(workspaceKey) ??
     APP_WORKSPACES.find((w) => w.appSlug === appSlug)
-  if (workspace) {
-    return `${base}/workspace/${workspace.key}`
-  }
-  return `${base}/workspace/${workspaceKey}`
+
+  return workspaceBase(orgSlug, workspace?.key ?? workspaceKey)
 }
 
 export function AppTabLabel({
@@ -156,6 +165,11 @@ export function AppTabLabel({
   )
 }
 
+/** The organization record's base path. */
+export function orgBase(orgSlug: string): string {
+  return `/orgs/${orgSlug}`
+}
+
 /**
  * The organization detail tab set.
  *
@@ -164,9 +178,11 @@ export function AppTabLabel({
  * between Customers and Requests.
  */
 export function orgTabs(
-  base: string,
+  orgSlug: string,
   entitledAppsInput: readonly EntitledAppInput[] = []
 ): RouteTabItem[] {
+  const base = orgBase(orgSlug)
+
   const normalized: EntitledApp[] = []
   const seen = new Set<string>()
   for (const item of entitledAppsInput) {
@@ -182,6 +198,8 @@ export function orgTabs(
     entitledAppSlugs.includes(tab.appSlug)
   )
 
+  // A workspace is a top-level route outside the organization record, so the
+  // tab supplies where the operator entered from so the return link resolves.
   const dynamicAppTabs: RouteTabItem[] = normalized.map((app) => ({
     label: (
       <AppTabLabel
@@ -190,7 +208,7 @@ export function orgTabs(
         logoUrl={app.logoUrl}
       />
     ),
-    href: entitledAppHref(base, app.slug),
+    href: `${entitledAppHref(orgSlug, app.slug)}?from=${encodeURIComponent(base)}`,
   }))
 
   return ALWAYS_PRESENT_TABS.flatMap((tab) => {
