@@ -20,7 +20,6 @@ import { sidebarContextDefinitions } from '@/components/shell/sidebar-context-co
 import {
   isNavSection,
   resolveActiveChildKey,
-  resolveSidebarContext,
   resolveSidebarContextStack,
   type SidebarContext,
 } from '@/components/shell/sidebar-sections'
@@ -51,15 +50,19 @@ type Props = {
   slots?: readonly SidebarSlot[]
 }
 
+type DismissedContext = {
+  key: string
+  pathname: string
+}
+
 export function Sidebar({
   navigation,
   contexts = sidebarContextDefinitions,
   slots = [],
 }: Props) {
   const pathname = usePathname()
-  const context = resolveSidebarContext(pathname, navigation, contexts)
   const stack = resolveSidebarContextStack(pathname, navigation, contexts)
-  const [dismissedContextKey, setDismissedContextKey] = useState<string | null>(
+  const [dismissedContext, setDismissedContext] = useState<DismissedContext | null>(
     null
   )
   const expanded = useSyncExternalStore(
@@ -67,16 +70,23 @@ export function Sidebar({
     readSidebarExpanded,
     readServerSidebarExpanded
   )
-  const openContext =
-    context && dismissedContextKey !== context.key ? context : null
-  const currentContext = openContext ?? stack[0]!
+
+  const derivedIndex = stack.length - 1
+  const dismissedIndex =
+    dismissedContext?.pathname === pathname
+      ? stack.findIndex((item) => item.key === dismissedContext.key)
+      : -1
+  const visibleIndex =
+    dismissedIndex > 0 ? dismissedIndex - 1 : derivedIndex
+  const currentContext = stack[visibleIndex] ?? stack[0]!
+  const isNested = currentContext.kind !== 'platform'
 
   return (
     <aside
       className={cn(
         'hidden min-h-0 shrink-0 flex-col items-center justify-center md:flex [interpolate-size:allow-keywords]',
         INSET_MOTION,
-        openContext && expanded ? INSET_PANEL : INSET_RAIL
+        isNested && expanded ? INSET_PANEL : INSET_RAIL
       )}
     >
       <nav
@@ -85,7 +95,7 @@ export function Sidebar({
         className={cn(
           'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl [interpolate-size:allow-keywords] dark:shadow-black/25 dark:ring-white/[0.06]',
           CARD_MOTION,
-          openContext && expanded ? PANEL_WIDTH : RAIL_WIDTH
+          isNested && expanded ? PANEL_WIDTH : RAIL_WIDTH
         )}
       >
         {currentContext.kind === 'platform' ? (
@@ -95,7 +105,7 @@ export function Sidebar({
             expanded={expanded}
             slots={slots}
             onExpandChange={writeSidebarExpanded}
-            onOpenContext={() => setDismissedContextKey(null)}
+            onOpenContext={() => setDismissedContext(null)}
           />
         ) : (
           <ContextPanel
@@ -103,7 +113,9 @@ export function Sidebar({
             pathname={pathname}
             expanded={expanded}
             slots={slots}
-            onBack={() => setDismissedContextKey(currentContext.key)}
+            onBack={() => {
+              setDismissedContext({ key: currentContext.key, pathname })
+            }}
             onExpandChange={writeSidebarExpanded}
           />
         )}
@@ -128,22 +140,12 @@ function PlatformContext({
   onOpenContext: () => void
 }) {
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-1',
-        expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH
-      )}
-    >
+    <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH)}>
       <SidebarExpandControl expanded={expanded} onChange={onExpandChange} />
       <SidebarSlotRegion slots={slots} region="top" expanded={expanded} />
       <SidebarSlotRegion slots={slots} region="above-nav" expanded={expanded} />
       <div className="bg-border/60 my-0.5 h-px w-full" />
-      <div
-        className={cn(
-          'flex flex-col gap-1',
-          expanded ? 'min-w-0' : 'items-center'
-        )}
-      >
+      <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
         {context.entries.map((entry) => (
           <ContextEntry
             key={entry.key}
@@ -178,18 +180,8 @@ function ContextPanel({
   const activeChildKey = resolveActiveChildKey(pathname, context)
 
   return (
-    <div
-      className={cn(
-        'animate-in fade-in-0 flex flex-col gap-1 duration-300 motion-reduce:animate-none',
-        expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH
-      )}
-    >
-      <div
-        className={cn(
-          'flex items-center gap-1',
-          expanded ? 'justify-between' : 'flex-col'
-        )}
-      >
+    <div className={cn('animate-in fade-in-0 flex flex-col gap-1 duration-300 motion-reduce:animate-none', expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH)}>
+      <div className={cn('flex items-center gap-1', expanded ? 'justify-between' : 'flex-col')}>
         <Tooltip>
           <TooltipTrigger
             render={
@@ -228,12 +220,7 @@ function ContextPanel({
       <SidebarSlotRegion slots={slots} region="top" expanded={expanded} />
       <SidebarSlotRegion slots={slots} region="above-nav" expanded={expanded} />
 
-      <div
-        className={cn(
-          'flex flex-col gap-1',
-          expanded ? 'min-w-0' : 'items-center'
-        )}
-      >
+      <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
         {context.entries.map((entry) => (
           <ContextEntry
             key={entry.key}
@@ -274,10 +261,7 @@ function SidebarExpandControl({
           >
             <PanelLeftIcon
               aria-hidden="true"
-              className={cn(
-                'size-4 transition-transform duration-200',
-                expanded && 'rotate-180'
-              )}
+              className={cn('size-4 transition-transform duration-200', expanded && 'rotate-180')}
             />
           </button>
         }
@@ -339,9 +323,7 @@ function ContextEntry({
                 entry.colorClassName
               )}
             />
-            {expanded && (
-              <span className="min-w-0 flex-1 truncate">{entry.title}</span>
-            )}
+            {expanded && <span className="min-w-0 flex-1 truncate">{entry.title}</span>}
           </Link>
         }
       />
@@ -371,12 +353,7 @@ function SidebarSlotRegion({
   if (regionSlots.length === 0) return null
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-1',
-        expanded ? 'min-w-0' : 'items-center'
-      )}
-    >
+    <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
       {regionSlots.map((slot) => (
         <SidebarSlotView key={slot.key} slot={slot} expanded={expanded} />
       ))}
