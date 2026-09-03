@@ -1,13 +1,19 @@
 'use client'
 
-import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 
+import { navContexts } from '@/components/shell/nav-contexts'
 import { NavIcon } from '@/components/shell/nav-icons'
 import {
   isActiveConsolePath,
@@ -16,78 +22,128 @@ import {
   navLinkBase,
   navLinkRest,
 } from '@/components/shell/nav-link'
-import { sidebarContextDefinitions } from '@/components/shell/sidebar-context-config'
 import {
-  isNavSection,
-  resolveActiveChildKey,
+  entryOpensContext,
+  resolveActiveEntryKey,
   resolveSidebarBackContext,
   resolveSidebarContextStack,
+  sidebarContexts,
   type SidebarContext,
-} from '@/components/shell/sidebar-sections'
+  type SidebarContextDefinition,
+} from '@/components/shell/sidebar-context'
+import { SIDEBAR_SPRING_RAIL } from '@/components/shell/sidebar-motion'
 import {
   readServerSidebarExpanded,
   readSidebarExpanded,
   subscribeSidebarExpanded,
   writeSidebarExpanded,
 } from '@/components/shell/sidebar-preferences'
-import { SIDEBAR_SPRING_RAIL } from '@/components/shell/sidebar-motion'
-import type { SidebarSlot } from '@/components/shell/sidebar-slots'
+import type {
+  SidebarSlot,
+  SidebarSlotRegion,
+} from '@/components/shell/sidebar-slots'
 
 const RAIL_WIDTH = 'w-[3.75rem]'
 const PANEL_WIDTH = 'w-56'
+
+/**
+ * The rail column fills the card's content box exactly — the rail width less
+ * its `p-2` on both sides — so the icons are centred at rest and do not drift
+ * sideways while the card resizes around them.
+ */
 const RAIL_COLUMN_WIDTH = 'w-11'
-const INSET_RAIL = 'pr-1 pl-3'
-const INSET_PANEL = 'pr-2 pl-5'
+
+/**
+ * How far the card sits from the window edge and from the main region. Both
+ * grow with the panel: a rail floating in 4px of gutter reads as deliberate,
+ * but the panel is nearly four times as wide and its labels run much closer to
+ * the card's edge, so the same 4px reads as the panel touching the content.
+ */
+const RAIL_INSET = 'pr-1 pl-3'
+const PANEL_INSET = 'pr-2 pl-5'
+
+/**
+ * The card resizes in both axes: it widens when expanded, and its height
+ * follows the row count, which changes every time the context does.
+ *
+ * `height` only interpolates from `auto` where `interpolate-size` is supported
+ * (set on the column and the card below). Everywhere else the height snaps and
+ * the width still animates.
+ *
+ * The duration must stay equal to the spring's settle time in
+ * `sidebar-motion.ts` — the generated `linear()` stops describe that whole
+ * window, so a shorter transition truncates the settle and a longer one
+ * stretches the overshoot.
+ */
 const CARD_MOTION =
   'transition-[width,height] duration-500 [transition-timing-function:var(--876-spring-rail)] motion-reduce:transition-none'
 const INSET_MOTION =
   'transition-[padding] duration-500 [transition-timing-function:var(--876-spring-rail)] motion-reduce:transition-none'
 
-const REGION_ORDER = ['top', 'above-nav', 'below-nav', 'footer'] as const
-
 type Props = {
   navigation: readonly NavGroupDefinition[]
-  contexts?: readonly SidebarContext[]
+  contexts?: readonly SidebarContextDefinition[]
   slots?: readonly SidebarSlot[]
 }
 
+/** Which context the operator backed out of, and from where. */
 type DismissedContext = {
   key: string
   pathname: string
 }
 
+/**
+ * Console's contextual sidebar.
+ *
+ * The rail is a **stack of navigation contexts**: the platform root, then a
+ * section, a product, or an organization's workspace. Exactly one level is
+ * mounted at a time, so the card's height always matches what is showing, and
+ * entering a context swaps the rail's contents rather than widening it — labels
+ * arrive only when the operator asks for them.
+ *
+ * The open context is derived from the pathname (see `sidebar-context.ts`). The
+ * only local state is the deliberate back-out, held as the dismissed context's
+ * key **and** the path it was dismissed from, so navigating anywhere reinstates
+ * the derived level with no effect needed to clear the flag.
+ */
 export function Sidebar({
   navigation,
-  contexts = sidebarContextDefinitions,
+  contexts = navContexts,
   slots = [],
 }: Props) {
   const pathname = usePathname()
   const stack = resolveSidebarContextStack(pathname, navigation, contexts)
-  const [dismissedContext, setDismissedContext] = useState<DismissedContext | null>(
-    null
-  )
+  const allContexts = sidebarContexts(navigation, contexts)
+  const [dismissed, setDismissed] = useState<DismissedContext | null>(null)
+
   const expanded = useSyncExternalStore(
     subscribeSidebarExpanded,
     readSidebarExpanded,
     readServerSidebarExpanded
   )
 
-  const derivedContext = stack.at(-1) ?? stack[0]!
-  const dismissedIndex =
-    dismissedContext?.pathname === pathname
-      ? stack.findIndex((item) => item.key === dismissedContext.key)
-      : -1
-  const visibleContext =
-    dismissedIndex > 0 ? resolveSidebarBackContext(stack, dismissedContext!.key) ?? derivedContext : derivedContext
-  const isNested = visibleContext.kind !== 'platform'
+  const derived = stack[stack.length - 1] ?? stack[0]
+  const dismissedBack =
+    dismissed && dismissed.pathname === pathname
+      ? resolveSidebarBackContext(stack, dismissed.key)
+      : null
+  const context = dismissedBack ?? derived
+  if (!context) return null
+
+  const parent = resolveSidebarBackContext(stack, context.key)
+  const isPanelWidth = expanded && context.kind !== 'platform'
 
   return (
     <aside
       className={cn(
-        'hidden min-h-0 shrink-0 flex-col items-center justify-center md:flex [interpolate-size:allow-keywords]',
+        'hidden min-h-0 shrink-0 flex-col items-center justify-center py-4 [interpolate-size:allow-keywords] md:flex',
         INSET_MOTION,
-        isNested && expanded ? INSET_PANEL : INSET_RAIL
+        isPanelWidth ? PANEL_INSET : RAIL_INSET
       )}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && parent)
+          setDismissed({ key: context.key, pathname })
+      }}
     >
       <nav
         aria-label="Console navigation"
@@ -95,197 +151,245 @@ export function Sidebar({
         className={cn(
           'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl [interpolate-size:allow-keywords] dark:shadow-black/25 dark:ring-white/[0.06]',
           CARD_MOTION,
-          isNested && expanded ? PANEL_WIDTH : RAIL_WIDTH
+          isPanelWidth ? PANEL_WIDTH : RAIL_WIDTH
         )}
       >
-        {visibleContext.kind === 'platform' ? (
-          <PlatformContext
-            context={visibleContext}
+        <div
+          // Keyed by context so entering one replays the entrance rather than
+          // cross-fading two levels that share nothing.
+          key={context.key}
+          className={cn(
+            'animate-in fade-in-0 flex flex-col gap-1 duration-200 motion-reduce:animate-none',
+            expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH
+          )}
+        >
+          <ContextHeader
+            context={context}
+            parent={parent}
+            expanded={expanded}
+            onBack={() => setDismissed({ key: context.key, pathname })}
+          />
+
+          <SlotRegion slots={slots} region="top" expanded={expanded} />
+          <SlotRegion slots={slots} region="above-nav" expanded={expanded} />
+
+          <ContextBody
+            context={context}
+            contexts={allContexts}
             pathname={pathname}
             expanded={expanded}
-            slots={slots}
-            onExpandChange={writeSidebarExpanded}
-            onOpenContext={() => setDismissedContext(null)}
+            onOpenContext={() => setDismissed(null)}
           />
-        ) : (
-          <ContextPanel
-            context={visibleContext}
-            pathname={pathname}
-            expanded={expanded}
-            slots={slots}
-            onBack={() => setDismissedContext({ key: visibleContext.key, pathname })}
-            onExpandChange={writeSidebarExpanded}
-          />
-        )}
+
+          <SlotRegion slots={slots} region="below-nav" expanded={expanded} />
+          <SlotRegion slots={slots} region="footer" expanded={expanded} />
+        </div>
       </nav>
     </aside>
   )
 }
 
-function PlatformContext({
+/**
+ * The back control and the expand control — deliberately two affordances.
+ *
+ * Back pops one level of the stack; expand reveals labels at whatever level is
+ * open. Folding them into one button was the first thing tried and it makes
+ * neither action discoverable.
+ */
+function ContextHeader({
   context,
-  pathname,
+  parent,
   expanded,
-  slots,
-  onExpandChange,
-  onOpenContext,
-}: {
-  context: SidebarContext
-  pathname: string
-  expanded: boolean
-  slots: readonly SidebarSlot[]
-  onExpandChange: (next: boolean) => void
-  onOpenContext: () => void
-}) {
-  return (
-    <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH)}>
-      <SidebarExpandControl expanded={expanded} onChange={onExpandChange} />
-      <SidebarSlotRegion slots={slots} region="top" expanded={expanded} />
-      <SidebarSlotRegion slots={slots} region="above-nav" expanded={expanded} />
-      <div className="bg-border/60 my-0.5 h-px w-full" />
-      <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
-        {context.entries.map((entry) => (
-          <ContextEntry
-            key={entry.key}
-            entry={entry}
-            pathname={pathname}
-            expanded={expanded}
-            onOpenContext={isNavSection(entry) ? onOpenContext : undefined}
-          />
-        ))}
-      </div>
-      <SidebarSlotRegion slots={slots} region="below-nav" expanded={expanded} />
-      <SidebarSlotRegion slots={slots} region="footer" expanded={expanded} />
-    </div>
-  )
-}
-
-function ContextPanel({
-  context,
-  pathname,
-  expanded,
-  slots,
   onBack,
-  onExpandChange,
 }: {
   context: SidebarContext
-  pathname: string
+  parent: SidebarContext | null
   expanded: boolean
-  slots: readonly SidebarSlot[]
   onBack: () => void
-  onExpandChange: (next: boolean) => void
 }) {
-  const activeChildKey = resolveActiveChildKey(pathname, context)
-
   return (
-    <div className={cn('animate-in fade-in-0 flex flex-col gap-1 duration-300 motion-reduce:animate-none', expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH)}>
-      <div className={cn('flex items-center gap-1', expanded ? 'justify-between' : 'flex-col')}>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                onClick={onBack}
-                aria-label="Back to Console"
-                className={cn(
-                  'text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring group flex items-center rounded-lg focus-visible:ring-2 focus-visible:outline-hidden',
-                  expanded
-                    ? 'gap-2 px-2 py-1.5 text-[0.8125rem] font-semibold'
-                    : 'size-9 justify-center'
-                )}
-              >
-                <ArrowLeft
-                  aria-hidden="true"
-                  className={cn(
-                    'size-3.5 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5',
-                    contextColor(context)
-                  )}
-                />
-                {expanded && context.title}
-              </button>
-            }
-          />
-          {!expanded && (
-            <TooltipContent side="right" sideOffset={8}>
-              Back to Console
-            </TooltipContent>
-          )}
-        </Tooltip>
-        <SidebarExpandControl expanded={expanded} onChange={onExpandChange} />
-      </div>
-
-      <div className="bg-border/60 mb-1 h-px w-full" />
-      <SidebarSlotRegion slots={slots} region="top" expanded={expanded} />
-      <SidebarSlotRegion slots={slots} region="above-nav" expanded={expanded} />
-
-      <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
-        {context.entries.map((entry) => (
-          <ContextEntry
-            key={entry.key}
-            entry={entry}
-            pathname={pathname}
+    <>
+      <div
+        className={cn(
+          'flex items-center gap-1',
+          expanded ? 'justify-between' : 'flex-col'
+        )}
+      >
+        {parent ? (
+          <BackControl
+            context={context}
+            parent={parent}
             expanded={expanded}
-            active={entry.key === activeChildKey}
+            onBack={onBack}
           />
-        ))}
+        ) : null}
+        <ExpandControl expanded={expanded} />
       </div>
-
-      <SidebarSlotRegion slots={slots} region="below-nav" expanded={expanded} />
-      <SidebarSlotRegion slots={slots} region="footer" expanded={expanded} />
-    </div>
+      <div className="bg-border/60 my-0.5 h-px w-full" />
+    </>
   )
 }
 
-function SidebarExpandControl({
+function BackControl({
+  context,
+  parent,
   expanded,
-  onChange,
+  onBack,
 }: {
+  context: SidebarContext
+  parent: SidebarContext
   expanded: boolean
-  onChange: (next: boolean) => void
+  onBack: () => void
 }) {
+  // Names the level actually returned to, which is not always the root once
+  // a workspace sits beneath a product.
+  const label = `Back to ${parent.title}`
+
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <button
             type="button"
-            onClick={() => onChange(!expanded)}
-            aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
-            aria-expanded={expanded}
+            onClick={onBack}
+            aria-label={label}
             className={cn(
-              'text-muted-foreground hover:text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring flex items-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
-              expanded ? 'size-7 justify-center' : 'size-9 justify-center'
+              'text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring group flex min-w-0 items-center rounded-lg focus-visible:ring-2 focus-visible:outline-hidden',
+              expanded
+                ? 'gap-2 px-2 py-1.5 text-[0.8125rem] font-semibold'
+                : 'size-9 justify-center'
             )}
           >
-            <PanelLeftIcon
+            <ArrowLeft
               aria-hidden="true"
-              className={cn('size-4 transition-transform duration-200', expanded && 'rotate-180')}
+              className={cn(
+                'size-3.5 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5',
+                context.colorClassName ?? 'text-muted-foreground'
+              )}
             />
+            {expanded ? (
+              <span className="min-w-0 truncate">{context.title}</span>
+            ) : null}
           </button>
         }
       />
       <TooltipContent side="right" sideOffset={8}>
-        {expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+        {label}
       </TooltipContent>
     </Tooltip>
   )
 }
 
-function ContextEntry({
-  entry,
+function ExpandControl({ expanded }: { expanded: boolean }) {
+  const label = expanded ? 'Collapse sidebar' : 'Expand sidebar'
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={() => writeSidebarExpanded(!expanded)}
+            aria-label={label}
+            aria-expanded={expanded}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+          >
+            <PanelLeftIcon
+              aria-hidden="true"
+              className={cn(
+                'size-4 transition-transform duration-200',
+                expanded && 'rotate-180'
+              )}
+            />
+          </button>
+        }
+      />
+      <TooltipContent side="right" sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+/**
+ * The context's own entries, grouped exactly as its registry declares.
+ *
+ * Keeping the groups is what preserves the platform rail's dividers; a context
+ * that declares one group simply renders none.
+ */
+function ContextBody({
+  context,
+  contexts,
   pathname,
   expanded,
-  active = isActiveConsolePath(pathname, entry.href),
+  onOpenContext,
+}: {
+  context: SidebarContext
+  contexts: readonly SidebarContext[]
+  pathname: string
+  expanded: boolean
+  onOpenContext: () => void
+}) {
+  const activeKey = resolveActiveEntryKey(pathname, context)
+
+  return (
+    <div
+      className={cn(
+        'flex flex-col gap-1',
+        expanded ? 'min-w-0' : 'items-center'
+      )}
+    >
+      {context.groups.map((group, index) => (
+        <div
+          key={group.key}
+          className={cn(
+            'flex flex-col gap-1',
+            expanded ? 'min-w-0 self-stretch' : 'items-center'
+          )}
+        >
+          {index > 0 ? (
+            <div
+              className={cn(
+                'bg-border/60 my-0.5 h-px',
+                expanded ? 'w-full' : 'w-5 self-center'
+              )}
+            />
+          ) : null}
+          {group.entries.map((entry) => (
+            <ContextEntry
+              key={entry.key}
+              entry={entry}
+              expanded={expanded}
+              active={
+                activeKey === null
+                  ? isActiveConsolePath(pathname, entry.href)
+                  : entry.key === activeKey
+              }
+              // Navigating is what opens a context. This only clears a previous
+              // back-out, so following the entry you just left brings its
+              // context back instead of doing nothing.
+              onOpenContext={
+                entryOpensContext(entry, contexts) ? onOpenContext : undefined
+              }
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ContextEntry({
+  entry,
+  expanded,
+  active,
   onOpenContext,
 }: {
   entry: NavEntry
-  pathname: string
   expanded: boolean
-  active?: boolean
+  active: boolean
   onOpenContext?: () => void
 }) {
-  const drills = isNavSection(entry)
-
   return (
     <Tooltip>
       <TooltipTrigger
@@ -294,7 +398,7 @@ function ContextEntry({
             href={entry.href}
             aria-label={entry.title}
             aria-current={active ? 'page' : undefined}
-            onClick={drills ? onOpenContext : undefined}
+            onClick={onOpenContext}
             className={cn(
               expanded
                 ? 'group flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.8125rem] whitespace-nowrap transition-colors'
@@ -321,11 +425,13 @@ function ContextEntry({
                 entry.colorClassName
               )}
             />
-            {expanded && <span className="min-w-0 flex-1 truncate">{entry.title}</span>}
+            {expanded ? (
+              <span className="min-w-0 flex-1 truncate">{entry.title}</span>
+            ) : null}
           </Link>
         }
       />
-      {!expanded && (
+      {expanded ? null : (
         <TooltipContent side="right" sideOffset={8}>
           {entry.title}
         </TooltipContent>
@@ -334,45 +440,50 @@ function ContextEntry({
   )
 }
 
-function contextColor(context: SidebarContext): string {
-  return context.entries[0]?.colorClassName ?? 'text-muted-foreground'
-}
-
-function SidebarSlotRegion({
+/**
+ * A declared region of the rail that is not navigation — a card, a standalone
+ * button, an announcement, a live indicator.
+ *
+ * The mechanism ships with no slots declared (`sidebar-slots.ts`), so every
+ * region renders nothing today. What it fixes in advance is the shape: a slot
+ * has a collapsed form as well as an expanded one, because the rail is
+ * collapsed by default at every level.
+ */
+function SlotRegion({
   slots,
   region,
   expanded,
 }: {
   slots: readonly SidebarSlot[]
-  region: (typeof REGION_ORDER)[number]
+  region: SidebarSlotRegion
   expanded: boolean
 }) {
   const regionSlots = slots.filter((slot) => slot.region === region)
   if (regionSlots.length === 0) return null
 
   return (
-    <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
-      {regionSlots.map((slot) => (
-        <SidebarSlotView key={slot.key} slot={slot} expanded={expanded} />
-      ))}
+    <div
+      className={cn(
+        'flex flex-col gap-1',
+        expanded ? 'min-w-0' : 'items-center'
+      )}
+    >
+      {regionSlots.map((slot) => {
+        const render = SIDEBAR_SLOT_RENDERERS[slot.componentKey]
+        return render ? (
+          <div key={slot.key}>{render(slot, expanded)}</div>
+        ) : null
+      })}
     </div>
   )
 }
 
-function SidebarSlotView({
-  slot,
-  expanded,
-}: {
-  slot: SidebarSlot
-  expanded: boolean
-}) {
-  const renderer = SIDEBAR_SLOT_RENDERERS[slot.componentKey]
-  if (!renderer) return null
-
-  return renderer(slot, expanded)
-}
-
 type SidebarSlotRenderer = (slot: SidebarSlot, expanded: boolean) => ReactNode
 
-/** Component-key registry. Real slots are intentionally empty in Phase 1. */
+/**
+ * Component-key registry for slots, resolved on the client exactly as icon keys
+ * are, so the declarations themselves stay RSC-serializable plain data.
+ *
+ * Deliberately empty: Phase 1 ships the mechanism, not the first card.
+ */
 const SIDEBAR_SLOT_RENDERERS: Record<string, SidebarSlotRenderer> = {}
