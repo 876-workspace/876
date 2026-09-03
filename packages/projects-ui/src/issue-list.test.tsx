@@ -1,9 +1,23 @@
+// @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Issue } from '@876/projects/contracts'
 
-import { IssuesTable } from './issue-list'
+const mocks = vi.hoisted(() => ({
+  segments: [] as string[],
+  searchParams: new URLSearchParams(),
+}))
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => mocks.searchParams,
+}))
+
+vi.mock('@876/ui/list-detail-shell', () => ({
+  useDetailSegments: () => mocks.segments,
+}))
+
+import { IssuesList } from './issue-list'
 
 const mockIssues: Issue[] = [
   {
@@ -44,48 +58,164 @@ const mockIssues: Issue[] = [
     createdAt: 1700000000,
     updatedAt: 1700050000,
   },
+  {
+    object: 'projects.issue',
+    id: 'issue_2',
+    tenantId: 'tenant_1',
+    projectId: 'proj_1',
+    projectKey: 'ALP',
+    number: 13,
+    identifier: 'ALP-13',
+    title: 'Add dark mode support',
+    description: 'Dark mode styles',
+    status: 'done',
+    priority: 'low',
+    assigneeUserId: 'user_43',
+    creatorUserId: 'user_1',
+    parentIssueId: null,
+    estimate: 1,
+    dueDate: 1720000000,
+    position: 2,
+    labels: [],
+    commentCount: 0,
+    subIssueCount: 0,
+    startedAt: 1700000000,
+    completedAt: 1700050000,
+    canceledAt: null,
+    createdAt: 1700000000,
+    updatedAt: 1700050000,
+  },
 ]
 
-describe('IssuesTable', () => {
-  it('renders table columns and issue rows with identifier links', () => {
+describe('IssuesList', () => {
+  beforeEach(() => {
+    mocks.segments = []
+    mocks.searchParams = new URLSearchParams()
+  })
+
+  afterEach(cleanup)
+
+  it('renders the full table when no record is open', () => {
     render(
-      <IssuesTable
+      <IssuesList
         issues={mockIssues}
-        issuesHref="/orgs/test-org/workspace/projects/issues"
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
       />
     )
 
-    expect(screen.getByText('Identifier')).toBeInTheDocument()
-    expect(screen.getByText('Title')).toBeInTheDocument()
-    expect(screen.getByText('Status')).toBeInTheDocument()
-    expect(screen.getByText('Priority')).toBeInTheDocument()
+    expect(screen.getByRole('table')).toBeInTheDocument()
     expect(screen.getByText('ALP-12')).toBeInTheDocument()
     expect(screen.getByText('Fix the auth race condition')).toBeInTheDocument()
+    expect(screen.getByText('ALP-13')).toBeInTheDocument()
+    expect(screen.getByText('Add dark mode support')).toBeInTheDocument()
+    expect(screen.queryByText('Issues')).not.toBeInTheDocument()
+    const link = screen.getByRole('link', { name: 'View issue ALP-12' })
+    expect(link).toHaveAttribute('href', '/issues/ALP-12')
+  })
+
+  it('renders the condensed pane when one is open', () => {
+    mocks.segments = ['ALP-12']
+
+    render(
+      <IssuesList
+        issues={mockIssues}
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
+      />
+    )
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.getByText('Issues')).toBeInTheDocument()
+    expect(screen.getByText('ALP-12')).toBeInTheDocument()
+    expect(screen.getByText('Fix the auth race condition')).toBeInTheDocument()
+    expect(screen.getByText('ALP-13')).toBeInTheDocument()
+    expect(screen.getByText('Add dark mode support')).toBeInTheDocument()
+  })
+
+  it('marks the open row selected by identifier and not id', () => {
+    // When selected segment is the internal id 'issue_1', it should NOT mark row selected
+    mocks.segments = ['issue_1']
+
+    const { unmount } = render(
+      <IssuesList
+        issues={mockIssues}
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
+      />
+    )
+
+    const linkById = screen.getByRole('link', { name: 'View issue ALP-12' })
+    expect(linkById).not.toHaveAttribute('aria-current')
+    expect(linkById).not.toHaveAttribute('data-state')
+
+    unmount()
+
+    // When selected segment is the identifier 'ALP-12', it SHOULD mark row selected
+    mocks.segments = ['ALP-12']
+
+    render(
+      <IssuesList
+        issues={mockIssues}
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
+      />
+    )
+
+    const selectedLink = screen.getByRole('link', {
+      name: 'View issue ALP-12',
+    })
+    const unselectedLink = screen.getByRole('link', {
+      name: 'View issue ALP-13',
+    })
+
+    expect(selectedLink).toHaveAttribute('aria-current', 'true')
+    expect(selectedLink).toHaveAttribute('data-state', 'selected')
+    expect(unselectedLink).not.toHaveAttribute('aria-current')
+    expect(unselectedLink).not.toHaveAttribute('data-state')
+  })
+
+  it('keeps the status badge in the condensed row', () => {
+    mocks.segments = ['ALP-12']
+
+    render(
+      <IssuesList
+        issues={mockIssues}
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
+      />
+    )
+
     expect(screen.getByText('In Progress')).toBeInTheDocument()
-    expect(screen.getByText('High')).toBeInTheDocument()
-    expect(screen.getByText('bug')).toBeInTheDocument()
+    expect(screen.getByText('Done')).toBeInTheDocument()
+  })
+
+  it('preserves the query string on condensed hrefs', () => {
+    mocks.segments = ['ALP-12']
+    mocks.searchParams = new URLSearchParams('sort=priority&tab=details')
+
+    render(
+      <IssuesList
+        issues={mockIssues}
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
+      />
+    )
 
     const link = screen.getByRole('link', { name: 'View issue ALP-12' })
     expect(link).toHaveAttribute(
       'href',
-      '/orgs/test-org/workspace/projects/issues/ALP-12'
+      '/issues/ALP-12?sort=priority&tab=details'
     )
   })
 
-  it('renders empty state when there are no issues', () => {
+  it('renders the empty text with no rows', () => {
+    mocks.segments = ['ALP-12']
+
     render(
-      <IssuesTable
-        issues={[]}
-        issuesHref="/orgs/test-org/workspace/projects/issues"
-        newIssueHref="/orgs/test-org/workspace/projects/issues/new"
-      />
+      <IssuesList issues={[]} issuesHref="/issues" newIssueHref="/issues/new" />
     )
 
     expect(screen.getByText('No issues yet')).toBeInTheDocument()
-    const addLink = screen.getByRole('link', { name: /Add/ })
-    expect(addLink).toHaveAttribute(
-      'href',
-      '/orgs/test-org/workspace/projects/issues/new'
-    )
   })
 })

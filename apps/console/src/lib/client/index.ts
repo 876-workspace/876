@@ -17,6 +17,7 @@ import { onboarding } from './onboarding'
 import { modules } from './modules'
 import { prices } from './prices'
 import { products } from './products'
+import { issues, projects } from './projects'
 import { provisioning } from './provisioning'
 import { provisioningSetups } from './provisioning-setups'
 import { provisioningRuns } from './provisioning-runs'
@@ -53,6 +54,8 @@ export const client = {
   modules,
   prices,
   products,
+  issues,
+  projects,
   provisioning,
   provisioningSetups,
   provisioningRuns,
@@ -88,6 +91,7 @@ export { onboarding } from './onboarding'
 export { modules } from './modules'
 export { prices } from './prices'
 export { products } from './products'
+export { issues, projects } from './projects'
 export { provisioning } from './provisioning'
 export { provisioningSetups } from './provisioning-setups'
 export { provisioningRuns } from './provisioning-runs'

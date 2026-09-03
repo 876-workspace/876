@@ -1,7 +1,18 @@
-import Link from 'next/link'
+import { AppError } from '@876/ui/app-error'
 import { buttonVariants } from '@876/ui/button'
 import { ArrowLeft } from '@876/ui/icons'
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+
+import { CreateFormSkeleton } from '@/features/projects/components/create-form-skeleton'
+import { IssueCreateForm } from '@/features/projects/components/issue-create-form'
+import { requireSession } from '@/lib/auth/guards'
+import { projects } from '@/lib/services/projects'
+
+import { resolveOrg } from '../../../../_data'
+import { workspaceProjectsBase } from '../../_lib/base'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -13,12 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function NewIssuePage({ params }: Props) {
   const { slug } = await params
-  const base = `/orgs/${slug}/workspace/projects/issues`
+  const base = workspaceProjectsBase(slug)
 
   return (
     <div className="space-y-6">
       <Link
-        href={base}
+        href={`${base}/issues`}
         className={buttonVariants({
           variant: 'outline',
           size: 'sm',
@@ -29,20 +40,43 @@ export default async function NewIssuePage({ params }: Props) {
         Back to issues
       </Link>
 
-      <div className="876-card max-w-xl p-6">
-        <h1 className="text-lg font-semibold">Create a new issue</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Issues belong to a project and track features, bugs, and tasks.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <Link
-            href={base}
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-          >
-            Cancel
-          </Link>
-        </div>
-      </div>
+      <Suspense fallback={<CreateFormSkeleton rows={5} />}>
+        <IssueCreateFormData slug={slug} />
+      </Suspense>
     </div>
+  )
+}
+
+async function IssueCreateFormData({ slug }: { slug: string }) {
+  const base = workspaceProjectsBase(slug)
+  const [org, sessionUser] = await Promise.all([
+    resolveOrg(slug),
+    requireSession(`${base}/issues/new`),
+  ])
+  if (!org) notFound()
+
+  const result = await projects.projects.list(org.id, {})
+  // A failed list is not an empty one — see the platform route.
+  if (result.error)
+    return (
+      <AppError
+        title="Projects could not be loaded"
+        error={result.error}
+        variant="banner"
+        showCode
+      />
+    )
+
+  return (
+    <IssueCreateForm
+      organizationId={org.id}
+      base={base}
+      projects={(result.data?.data ?? []).map((project) => ({
+        id: project.id,
+        name: project.name,
+        key: project.key,
+      }))}
+      currentUserId={sessionUser.id}
+    />
   )
 }

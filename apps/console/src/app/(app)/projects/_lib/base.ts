@@ -4,9 +4,6 @@ import { notFound } from 'next/navigation'
 
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-/** Console's own Projects root. Every href in this section hangs off it. */
-export const PLATFORM_PROJECTS_BASE = '/projects'
-
 /**
  * The organization whose Projects tenant this section operates.
  *

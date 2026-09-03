@@ -6,7 +6,7 @@ import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-
 import { OverviewData } from '@/features/projects/components/overview-data'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-import { PLATFORM_PROJECTS_BASE } from './_lib/base'
+import { PLATFORM_PROJECTS_BASE } from './_lib/paths'
 
 export const metadata = { title: 'Projects' }
 

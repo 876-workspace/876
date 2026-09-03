@@ -1,4 +1,3 @@
-import { Page } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -6,10 +5,8 @@ import { Suspense } from 'react'
 import { IssueDetailData } from '@/features/projects/components/issue-detail-data'
 import { projects } from '@/lib/services/projects'
 
-import {
-  PLATFORM_PROJECTS_BASE,
-  requirePlatformProjectsOrgId,
-} from '../../_lib/base'
+import { requirePlatformProjectsOrgId } from '../../_lib/base'
+import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
 
 type Props = { params: Promise<{ issueRef: string }> }
 
@@ -27,11 +24,9 @@ export default async function PlatformIssueDetailPage({ params }: Props) {
   const { issueRef } = await params
 
   return (
-    <Page>
-      <Suspense fallback={<IssueDetailFallback />}>
-        <IssueDetailSection issueRef={issueRef} />
-      </Suspense>
-    </Page>
+    <Suspense fallback={<IssueDetailFallback />}>
+      <IssueDetailSection issueRef={issueRef} />
+    </Suspense>
   )
 }
 
