@@ -544,27 +544,34 @@ phase, is the unit of completion** (`.claude/rules/execution-autonomy.md`).
 - [ ] §5 bounce amplitude — build it adjustable and look at it, don't specify it.
 - [ ] §5 expand persistence — recommend global; confirm when it is built.
 
-### Phase 1 — the sidebar (start here; it is the least coupled)
-- [ ] Vertically centre the card; shrink from the centre.
-- [ ] Keep the rail collapsed when a section opens; swap contents, not width.
-- [ ] Add the expand/collapse control, persisted.
-- [ ] Separate the back control from expand; make back pop the context stack.
-- [ ] Replace the height ease with a spring curve; reduced-motion fallback.
-- [ ] Generalize `sidebar-sections.ts` from "sections" to a **context stack**
-      resolver that can also return a product or workspace context.
-- [ ] Mirror the stack in `mobile-nav.tsx`.
-- [ ] Spring: express the curve as generated `linear()` easing from named spring
-      tokens, tunable without editing components.
-- [ ] Slot regions (§5.1) — declared as data, collapsed + expanded forms,
-      permission/feature gated. Ship the mechanism with zero real slots.
-- [ ] A declared context may be **empty** (§5.3). Storage is the test case.
-- [ ] Keep the primitives free of Console knowledge (§5.2); no package yet.
-- [ ] `README.md` beside the shell components: context stack, declaring a
-      context, declaring a slot, spring tokens.
-- [ ] Tests: context resolution per path, back target per entry point,
-      expand persistence, reduced-motion, empty-context rendering, slot gating,
-      and the existing registry↔route permission binding test extended to new
-      contexts.
+### Phase 1 — the sidebar ✅ COMPLETE (branch `feat/console-contextual-sidebar`)
+- [x] Vertically centre the card; shrink from the centre.
+- [x] Keep the rail collapsed when a context opens; swap contents, not width.
+- [x] Add the expand/collapse control, persisted globally under a versioned key.
+- [x] Separate the back control from expand; back pops the context stack and
+      names the level it returns to.
+- [x] Replace the height ease with a spring; reduced-motion fallback.
+- [x] Generalize `sidebar-sections.ts` into `sidebar-context.ts` — a context
+      stack that can also carry a product or workspace level.
+- [x] Mirror the stack in `mobile-nav.tsx`.
+- [x] Spring expressed as generated `linear()` easing from named tokens.
+- [x] Slot regions declared as data, gated by the shared nav predicate, zero
+      real slots shipped.
+- [x] A declared context may be empty; Storage is the standing test case.
+- [x] Primitives free of Console knowledge; no package extracted.
+- [x] `README.md` beside the shell components.
+- [x] Tests: context resolution, back target, entry-opens-context, active entry,
+      expand persistence, spring properties, empty context, slot gating, and the
+      registry↔route permission binding test still passing.
+
+Verified in the foreground: `typecheck` clean, `lint` 0 errors, `test`
+158 files / 1512 tests passing, `check-app-structure` OK, plus
+`packages/core` 713 tests passing.
+
+Two things the GPT-web draft had that were corrected rather than kept: the
+platform rail had lost its group dividers (contexts now carry groups, not a flat
+entry list), and an entry-less context could not be reopened after a back-out
+because "does this open a context" was asked of `children` rather than the href.
 
 ### Phase 2 — the product context under `/apps/[slug]`
 - [ ] Declare a product nav context so `/apps/[slug]/*` swaps the rail.
