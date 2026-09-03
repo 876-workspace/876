@@ -14,6 +14,8 @@ import type { ReactNode } from 'react'
 import { MobileNav } from '@/components/shell/mobile-nav'
 import { navConfig } from '@/components/shell/nav-config'
 import { Sidebar } from '@/components/shell/sidebar'
+import { sidebarContextDefinitions } from '@/components/shell/sidebar-context-config'
+import { resolveSidebarSlots, sidebarSlotDefinitions } from '@/components/shell/sidebar-slots'
 import { resolveSettingsOptions } from '@/components/shell/settings-options'
 import { TopbarActions } from '@/components/shell/topbar-actions'
 import { TopbarSearch } from '@/components/shell/topbar-search'
@@ -60,11 +62,11 @@ export async function Shell({
 }) {
   const context = await resolveAccessContext(userId)
   const navigation = context ? resolveNavigation(navConfig, context) : []
+  const sidebarSlots = context
+    ? resolveSidebarSlots(sidebarSlotDefinitions, context)
+    : []
   const settings = context ? resolveSettingsOptions(context) : []
   const searchItems = [
-    // Children are searchable too, titled by their section, so “Labels” and
-    // “Forms” are reachable from the command bar without first knowing which
-    // rail icon hides them.
     ...navigation.flatMap((group) =>
       group.entries.flatMap((item) => [
         { group: 'Navigation', title: item.title, href: item.href },
@@ -91,7 +93,10 @@ export async function Shell({
       <AppShellContent>
         <AppShellHeader>
           <div className="flex items-center gap-2 md:hidden">
-            <MobileNav navigation={navigation} />
+            <MobileNav
+              navigation={navigation}
+              contexts={sidebarContextDefinitions}
+            />
             <Link
               href="/"
               aria-label="Console home"
@@ -133,7 +138,11 @@ export async function Shell({
         </AppShellHeader>
 
         <AppShellBody className="flex-col md:flex-row">
-          <Sidebar navigation={navigation} />
+          <Sidebar
+            navigation={navigation}
+            contexts={sidebarContextDefinitions}
+            slots={sidebarSlots}
+          />
           <AppShellMain>{children}</AppShellMain>
           {widgetRail}
         </AppShellBody>

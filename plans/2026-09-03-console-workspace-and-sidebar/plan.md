@@ -635,7 +635,22 @@ pnpm --filter @876/console test
 node scripts/check-app-structure.mjs
 ```
 
-## 11. Handoff state
+## 11. Prior attempt on this phase
+
+A GPT-web pass produced `feat/console-workspace-sidebar-phase-1` (PR #470,
+draft). It is merged into `feat/console-contextual-sidebar` as the starting
+point for Phase 1 rather than discarded, but **it was never executed** — its own
+report says the session could not run typecheck, lint, or tests, and claims no
+passing result. Per `.claude/rules/cli.md`, treat its tests as drafts that have
+never run and verify every file. What it added:
+
+```
+README.md · sidebar-context-config.ts · sidebar-motion.ts · sidebar-slots.ts
+sidebar-preferences.ts · sidebar-sections.ts (rewritten) · sidebar.tsx (rewritten)
+mobile-nav.tsx · shell.tsx    + four test files
+```
+
+## 12. Handoff state
 
 Nothing implemented. This file is the entire artifact of the session of
 2026-09-03.
