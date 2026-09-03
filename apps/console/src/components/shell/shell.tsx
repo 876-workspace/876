@@ -62,12 +62,20 @@ export async function Shell({
   const navigation = context ? resolveNavigation(navConfig, context) : []
   const settings = context ? resolveSettingsOptions(context) : []
   const searchItems = [
+    // Children are searchable too, titled by their section, so “Labels” and
+    // “Forms” are reachable from the command bar without first knowing which
+    // rail icon hides them.
     ...navigation.flatMap((group) =>
-      group.entries.map((item) => ({
-        group: 'Navigation',
-        title: item.title,
-        href: item.href,
-      }))
+      group.entries.flatMap((item) => [
+        { group: 'Navigation', title: item.title, href: item.href },
+        ...(item.children ?? [])
+          .filter((child) => child.href !== item.href)
+          .map((child) => ({
+            group: 'Navigation',
+            title: `${item.title} › ${child.title}`,
+            href: child.href,
+          })),
+      ])
     ),
     ...settings.map((item) => ({
       group: 'Settings',

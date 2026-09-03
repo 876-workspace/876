@@ -1,6 +1,6 @@
 import { AppError } from '@876/ui/app-error'
 
-import { PlatformOrganizationUnavailable } from '@/features/crm/components/platform-organization-unavailable'
+import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-organization-unavailable'
 import {
   RequestNotesSection,
   type NoteAuthor,

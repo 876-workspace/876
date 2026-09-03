@@ -4,26 +4,21 @@ import { notFound } from 'next/navigation'
 import { projects } from '@/lib/services/projects'
 import { ProjectDetail } from '@876/projects-ui/project-detail'
 
-import { resolveOrg } from '../../../app/(app)/orgs/[slug]/_data'
-
 export async function ProjectDetailData({
-  slug,
+  organizationId,
+  base,
   projectId,
 }: {
-  slug: string
+  organizationId: string
+  base: string
   projectId: string
 }) {
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
   const [projectResult, issuesResult] = await Promise.all([
-    projects.projects.retrieve(org.id, projectId),
-    projects.issues.list(org.id, { project: projectId }),
+    projects.projects.retrieve(organizationId, projectId),
+    projects.issues.list(organizationId, { project: projectId }),
   ])
 
-  if (projectResult.error?.code === 'projects/project-not-found') {
-    notFound()
-  }
+  if (projectResult.error?.code === 'projects/project-not-found') notFound()
 
   if (projectResult.error || !projectResult.data) {
     return (
@@ -40,8 +35,8 @@ export async function ProjectDetailData({
     <ProjectDetail
       project={projectResult.data}
       issues={issuesResult.data?.data ?? []}
-      issuesHref={`/orgs/${slug}/workspace/projects/issues`}
-      projectsHref={`/orgs/${slug}/workspace/projects/projects`}
+      issuesHref={`${base}/issues`}
+      projectsHref={`${base}/projects`}
     />
   )
 }

@@ -1,27 +1,30 @@
 import { AppError } from '@876/ui/app-error'
 import { CheckCircleIcon, ClipboardList, Folder } from '@876/ui/icons'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import { StatTile } from '@/components/patterns/detail/stat-tile'
 import { projects } from '@/lib/services/projects'
 import { IssuesTable } from '@876/projects-ui/issue-list'
 
-import { resolveOrg } from '../../../app/(app)/orgs/[slug]/_data'
-
-const OPEN_ISSUE_STATUSES = new Set(['backlog', 'todo', 'in-progress', 'in-review'])
+const OPEN_ISSUE_STATUSES = new Set([
+  'backlog',
+  'todo',
+  'in-progress',
+  'in-review',
+])
 const RECENT_LIMIT = 5
 
-export async function OverviewData({ slug }: { slug: string }) {
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
+export async function OverviewData({
+  organizationId,
+  base,
+}: {
+  organizationId: string
+  base: string
+}) {
   const [projectsResult, issuesResult] = await Promise.all([
-    projects.projects.list(org.id),
-    projects.issues.list(org.id),
+    projects.projects.list(organizationId),
+    projects.issues.list(organizationId),
   ])
-
-  const base = `/orgs/${slug}/workspace/projects`
   const projectList = projectsResult.data?.data ?? []
   const issueList = issuesResult.data?.data ?? []
 
@@ -80,7 +83,9 @@ export async function OverviewData({ slug }: { slug: string }) {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[0.9375rem] font-semibold">Recently updated issues</h2>
+          <h2 className="text-[0.9375rem] font-semibold">
+            Recently updated issues
+          </h2>
           <Link
             href={`${base}/issues`}
             className="text-876-accent-fg text-[0.8125rem] font-medium hover:underline"

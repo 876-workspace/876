@@ -7,7 +7,7 @@ import { Building2, Clock, User, Users } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 import { formatDateTime } from '@876/core/timestamps'
 
-import { PlatformOrganizationUnavailable } from './platform-organization-unavailable'
+import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-organization-unavailable'
 import { RequestHeaderActions } from './request-header-actions'
 import { formatAge } from '../request-format'
 import { resolveCustomerIdentity } from '../customer-identity'

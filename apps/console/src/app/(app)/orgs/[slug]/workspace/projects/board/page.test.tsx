@@ -114,7 +114,10 @@ describe('OrganizationIssueBoardPage', () => {
   })
 
   it('renders all six status columns and categorizes board issues', async () => {
-    const element = await BoardData({ slug: 'test-org' })
+    const element = await BoardData({
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
+    })
     render(element)
 
     expect(mocks.listIssues).toHaveBeenCalledWith('org_123')
@@ -137,7 +140,10 @@ describe('OrganizationIssueBoardPage', () => {
       error: { code: 'projects/unavailable', message: 'Board data offline' },
     })
 
-    const element = await BoardData({ slug: 'test-org' })
+    const element = await BoardData({
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
+    })
     render(element)
 
     expect(

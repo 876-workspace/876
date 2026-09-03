@@ -137,6 +137,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'Full management access — create, update, and manage all resources.',
     permissions: [
       'console:access',
+      'console:projects',
       'console:requests',
       'console:settings',
       'console:billing',
@@ -158,6 +159,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
     description: 'All permissions including danger zone operations.',
     permissions: [
       'console:access',
+      'console:projects',
       'console:requests',
       'console:settings',
       'console:billing',

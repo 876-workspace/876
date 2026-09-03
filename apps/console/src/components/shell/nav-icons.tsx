@@ -5,11 +5,16 @@ import {
   Building2,
   ChatBubbleLeftIcon,
   ChartPieIcon,
+  ClipboardList,
   Database,
+  DocumentTextIcon,
+  Folder,
   KeyRound,
+  LayoutGrid,
   RectangleGroup,
   Settings,
   SquaresPlusIcon,
+  TagIcon,
   Users,
   Waves,
 } from '@876/ui/icons'
@@ -27,6 +32,13 @@ export const NAV_ICONS: Record<string, IconComponent> = {
   settings: Settings,
   roles: KeyRound,
   notifications: Waves,
+  projects: Folder,
+  folder: Folder,
+  issues: ClipboardList,
+  board: LayoutGrid,
+  labels: TagIcon,
+  forms: DocumentTextIcon,
+  customers: Users,
 }
 
 export function resolveNavIcon(key: string): IconComponent {
