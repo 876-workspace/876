@@ -3,6 +3,17 @@
     "sentry": {
       "type": "http",
       "url": "https://mcp.sentry.dev/mcp"
+    },
+    "876-projects": {
+      "type": "stdio",
+      "command": "pnpm",
+      "args": ["--filter", "@876/projects-mcp", "--silent", "dev"],
+      "env": {
+        "PROJECTS_API_URL": "${PROJECTS_API_URL}",
+        "PROJECTS_INTERNAL_KEY": "${PROJECTS_INTERNAL_KEY}",
+        "PROJECTS_ORGANIZATION_ID": "${PROJECTS_ORGANIZATION_ID}",
+        "PROJECTS_DEFAULT_USER_ID": "${PROJECTS_DEFAULT_USER_ID}"
+      }
     }
   }
 }
