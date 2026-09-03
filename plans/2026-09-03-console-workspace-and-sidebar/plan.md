@@ -25,7 +25,7 @@ Two changes that the briefing treats as one, because each constrains the other:
 2. **The sidebar.** Console already has a drill-down rail
    (`apps/console/src/components/shell/sidebar.tsx` — level 0 icon rail, level 1
    labelled panel, open level derived from the pathname). The briefing wants it
-   to become the mechanism by which Console *changes context* — so that entering
+   to become the mechanism by which Console _changes context_ — so that entering
    `/apps` or a workspace makes Console feel like a different application, with a
    way back up.
 
@@ -88,18 +88,18 @@ because that route is scoped to one organization by construction.
 
 ## 2. What exists today (verified 2026-09-03)
 
-| Thing | Where |
-| --- | --- |
-| Console root nav registry (drill-down capable) | `apps/console/src/components/shell/nav-config.ts` |
-| Rail + panel component | `apps/console/src/components/shell/sidebar.tsx` |
-| Open-level resolver (derived from pathname) | `apps/console/src/components/shell/sidebar-sections.ts` |
-| Org-mounted workspaces | `apps/console/src/app/(app)/orgs/[slug]/workspace/{billing,couriers,crm,invoice,projects}` |
-| Workspace layout factory | `.../workspace/_components/app-workspace-layout.tsx` |
-| Workspace product rail (second shell) | `apps/console/src/features/orgs/components/workspace-shell.tsx` |
-| Workspace nav resolution (entitlement + feature gated) | `apps/console/src/features/orgs/workspace-navigation.ts` |
-| Product registry (which apps have a workspace) | `apps/console/src/features/orgs/app-workspaces.ts` |
-| App administration | `apps/console/src/app/(app)/apps/[slug]/{(overview),features,plans,modules,widgets,api-keys,provisioning,settings,subscribers,audit}` |
-| Console's own CRM + Projects | `apps/console/src/app/(app)/requests`, `apps/console/src/app/(app)/projects` |
+| Thing                                                  | Where                                                                                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Console root nav registry (drill-down capable)         | `apps/console/src/components/shell/nav-config.ts`                                                                                     |
+| Rail + panel component                                 | `apps/console/src/components/shell/sidebar.tsx`                                                                                       |
+| Open-level resolver (derived from pathname)            | `apps/console/src/components/shell/sidebar-sections.ts`                                                                               |
+| Org-mounted workspaces                                 | `apps/console/src/app/(app)/orgs/[slug]/workspace/{billing,couriers,crm,invoice,projects}`                                            |
+| Workspace layout factory                               | `.../workspace/_components/app-workspace-layout.tsx`                                                                                  |
+| Workspace product rail (second shell)                  | `apps/console/src/features/orgs/components/workspace-shell.tsx`                                                                       |
+| Workspace nav resolution (entitlement + feature gated) | `apps/console/src/features/orgs/workspace-navigation.ts`                                                                              |
+| Product registry (which apps have a workspace)         | `apps/console/src/features/orgs/app-workspaces.ts`                                                                                    |
+| App administration                                     | `apps/console/src/app/(app)/apps/[slug]/{(overview),features,plans,modules,widgets,api-keys,provisioning,settings,subscribers,audit}` |
+| Console's own CRM + Projects                           | `apps/console/src/app/(app)/requests`, `apps/console/src/app/(app)/projects`                                                          |
 
 Two sidebars already exist in Console: the platform rail (`Sidebar`) and the
 product rail inside a workspace (`WorkspaceShell`). The briefing's "switching
@@ -108,7 +108,7 @@ two are unrelated components with no shared stack model, and there is no third
 context (the `/apps` product context).
 
 Existing drill-down sections in `nav-config.ts`: `projects` and `requests`. Their
-panel is a *wide labelled panel* (`w-56`) that replaces the `3.75rem` rail. The
+panel is a _wide labelled panel_ (`w-56`) that replaces the `3.75rem` rail. The
 briefing wants that to change (see §5).
 
 ---
@@ -117,10 +117,10 @@ briefing wants that to change (see §5).
 
 ### 3.1 The two axes are different questions
 
-| Axis | Question it answers | Scope |
-| --- | --- | --- |
+| Axis                              | Question it answers           | Scope              |
+| --------------------------------- | ----------------------------- | ------------------ |
 | **Organization** (`/orgs/[slug]`) | "What is going on with Acme?" | one org, every app |
-| **Product** (`/apps/[slug]`) | "How is CRM doing?" | one app, every org |
+| **Product** (`/apps/[slug]`)      | "How is CRM doing?"           | one app, every org |
 
 Neither subsumes the other. Support work is org-first; product operations and
 reporting are app-first. Moving the workspace from one to the other trades one
@@ -157,8 +157,8 @@ stop making the workspace a leaf of either tree.**
   a redirect is exactly the extra click the briefing objects to.
 - It makes "Console acts as many applications in one" literally true in the URL:
   `/workspace/*` is the region where the whole shell swaps. The sidebar rule
-  becomes trivial to state and to test — *the platform rail is shown everywhere
-  except `/workspace/*`.*
+  becomes trivial to state and to test — _the platform rail is shown everywhere
+  except `/workspace/*`._
 - Switching org while staying in CRM, or switching app while staying on Acme, is
   a single path segment change. Under `/orgs/[slug]/workspace/crm` the first is
   natural and the second is a climb; under `/apps/crm/workspace/[org]` it is the
@@ -188,8 +188,8 @@ New sections under the product record, all cross-org, all operator-tier:
 - **Overview / reporting** — counts and simple rollups (open requests, total
   customers, average requests per org, uncollected package count).
   **Not in scope for this run** beyond leaving the route and the empty shell in
-  place. The briefing is explicit: *"I'm not saying you should build all of this
-  statistics… that's not what I'm going for, at least not yet."*
+  place. The briefing is explicit: _"I'm not saying you should build all of this
+  statistics… that's not what I'm going for, at least not yet."_
 
 Both need cross-org operator capabilities in the owning services. Per
 `.claude/rules/access-tiers.md`, a capability is implemented once by the owning
@@ -200,8 +200,8 @@ that is backend work, not a reason to filter in Console.
 
 ### 3.4 Integrations
 
-The briefing opens with *"reimagine the workspace Integrations into Console, as
-well as our own custom integration of CRM and Projects."* Reading: the way
+The briefing opens with _"reimagine the workspace Integrations into Console, as
+well as our own custom integration of CRM and Projects."_ Reading: the way
 Console integrates each product (CRM, Projects, Invoice, Billing, Couriers) is
 currently one-off per product — `_components/finance-workspace-pages.tsx`,
 `couriers-workspace-pages.tsx`, a `REGISTRIES` map in `workspace-navigation.ts`
@@ -217,7 +217,7 @@ what `docs/architecture/017-console-app-data-management.md` already sets out
 surface). Phase 2 should extend that document rather than invent a parallel one.
 
 - [ ] Confirm this reading of "Integrations" with the user. If it instead means
-      *third-party* integrations (an org's connected external systems, per the
+      _third-party_ integrations (an org's connected external systems, per the
       `integration` tier in `access-tiers.md`), this whole subsection is wrong and
       needs rewriting.
 
@@ -291,7 +291,7 @@ Rules that must hold:
    mid-height. As the row count shrinks, it should shrink **from both ends**
    toward its centre rather than collapsing upward.
 2. **Collapsed is the default at every level.** Entering a section swaps the
-   *contents* of the rail, keeping the `3.75rem` icon rail. Today it widens to a
+   _contents_ of the rail, keeping the `3.75rem` icon rail. Today it widens to a
    `w-56` labelled panel automatically — that is the behaviour being replaced.
    Labels come from tooltips until the operator expands.
 3. **Expand is explicit and sticky.** A dedicated expand/collapse control widens
@@ -345,8 +345,8 @@ Two consequences:
    components.
 2. **The sidebar is no longer only links.** It must accept **slots** — a card, a
    standalone button, a promotional/announcement card, a live-status indicator —
-   alongside nav entries. Design the rail as *a container with a nav region plus
-   declared slot regions* (top, above-nav, below-nav, footer), not as "a list of
+   alongside nav entries. Design the rail as _a container with a nav region plus
+   declared slot regions_ (top, above-nav, below-nav, footer), not as "a list of
    links with extras bolted on". Every slot needs a **collapsed form**
    (icon-sized, tooltip-labelled) as well as an expanded one, because the rail is
    collapsed by default at every level.
@@ -442,11 +442,11 @@ catalog format** the products already use (`.claude/rules/access-control.md`,
 `.claude/rules/app-access.md`). But three things stay separate, and conflating
 any two of them is the failure mode:
 
-| Who | Vocabulary | Storage plane | Granted to |
-| --- | --- | --- | --- |
-| **Org member** in CRM | the product's `AppPermissionCatalog` | platform app-access plane (`app_roles`, `app_assignments`) | that org's members |
-| **Console operator** acting inside CRM | **the same catalog, projected** | **Console's own datastore** | Console operators |
-| **Console operator** doing what only 876 can do | **Console-owned operator keys** — never in the product catalog | Console's own datastore | Console operators |
+| Who                                             | Vocabulary                                                     | Storage plane                                              | Granted to         |
+| ----------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | ------------------ |
+| **Org member** in CRM                           | the product's `AppPermissionCatalog`                           | platform app-access plane (`app_roles`, `app_assignments`) | that org's members |
+| **Console operator** acting inside CRM          | **the same catalog, projected**                                | **Console's own datastore**                                | Console operators  |
+| **Console operator** doing what only 876 can do | **Console-owned operator keys** — never in the product catalog | Console's own datastore                                    | Console operators  |
 
 - **Share the vocabulary, never the store.** The product declares its catalog
   once, as code (`@876/core/access/catalogs`). Console's role editor renders that
@@ -465,7 +465,7 @@ any two of them is the failure mode:
   product's catalog, because a vendor's own admin must not be able to grant
   themselves platform intervention. They are Console keys: `console:crm.purge`,
   `console:crm.intervene`, `console:couriers.purge`. This is exactly the
-  PayPal-dispute shape — the vendor acts on the dispute as a *party*; only 876
+  PayPal-dispute shape — the vendor acts on the dispute as a _party_; only 876
   adjudicates it.
 - **The CSR case falls straight out.** A customer-service role holds the read tail
   of several product catalogs (`crm/requests.view`, `crm/customers.view`) and
@@ -538,6 +538,7 @@ per `.claude/rules/git.md` § Feature Integration Branches. **The plan, not the
 phase, is the unit of completion** (`.claude/rules/execution-autonomy.md`).
 
 ### Phase 0 — decisions
+
 - [x] §3.2 routing — **`/workspace/[orgSlug]/[appSlug]`**, flat and top-level.
 - [x] §5 rail swap — **full replacement**, no persistent platform strip.
 - [ ] Confirm the §3.4 reading of "Integrations" (blocks Phase 2 only).
@@ -545,6 +546,7 @@ phase, is the unit of completion** (`.claude/rules/execution-autonomy.md`).
 - [ ] §5 expand persistence — recommend global; confirm when it is built.
 
 ### Phase 1 — the sidebar ✅ COMPLETE (branch `feat/console-contextual-sidebar`)
+
 - [x] Vertically centre the card; shrink from the centre.
 - [x] Keep the rail collapsed when a context opens; swap contents, not width.
 - [x] Add the expand/collapse control, persisted globally under a versioned key.
@@ -575,38 +577,32 @@ because "does this open a context" was asked of `children` rather than the href.
 
 ### Phase 2 — the product context under `/apps/[slug]`
 
-**Blocked on one structural decision (raised 2026-09-03).** A product context is
-*dynamic*: its href carries `:slug`, and which sections it holds depends on the
-app's `app_kind`, which is server data. `apps/[slug]/_lib/app-detail-tabs.ts`
-already resolves that — a product app has nine tabs, an internal app four.
+**DECIDED 2026-09-03 — the `@sidebar` parallel route slot.** A route segment
+renders its own sidebar into a slot on `(app)/layout.tsx`, so a context can be
+built from data only that segment has, still server-resolved and still derived
+from the URL.
 
-The sidebar lives in `(app)/layout.tsx`, above `/apps/[slug]`, so it cannot see
-the app kind, and an RSC layout cannot read the pathname without opting the whole
-shell into dynamic rendering. Three ways out:
-
-1. **A `@sidebar` parallel route slot on `(app)/layout.tsx`.** `/apps/[slug]`
-   server-renders its own context into the slot, kind-resolved, still derived
-   from the URL. Correct and supported; the largest structural change, and every
-   segment that wants a context gains a slot file.
-2. **A static dynamic-context declaration** matching `/apps/:slug`, holding only
-   the sections every app kind has, with kind-specific sections left on the tab
-   strip. Small, but splits one navigation across two mechanisms — the failure
-   mode this whole plan exists to avoid.
-3. **A client provider a nested layout writes into.** Cheapest, and wrong: it
-   reintroduces the click-state the resolver deliberately does not have, and
-   flashes the platform rail before the product rail arrives.
-
-Recommend (1). Decide before starting.
-
-
-- [ ] Declare a product nav context so `/apps/[slug]/*` swaps the rail.
+- [x] `@sidebar` slot on `(app)`, with `default.tsx` for every unmatched route.
+- [x] `ConsoleSidebar` resolves access context, navigation, and slots once, so a
+      slot page supplies only the contexts its segment owns.
+- [x] `/apps/[slug]/[[...section]]` contributes the product context, kind-resolved
+      through the existing app lookup. The optional catch-all keeps the rail in
+      place below the record.
+- [x] The tab strip and the product rail render from **one** section list
+      (`features/apps/app-detail-nav.ts`), with a test asserting their hrefs
+      match, so a section cannot exist on one and not the other.
 - [ ] Add the (empty-for-now) **Operations** and **Overview** sections.
 - [ ] Extract the one product-integration registry (§3.4) and fold
       `REGISTRIES`, `app-workspaces.ts`, and the per-product `_components`
-      page factories into it.
+      page factories into it. **Blocked on the §3.4 reading of "Integrations".**
 - [ ] Update `docs/architecture/017-console-app-data-management.md`.
+- [ ] **Known gap:** `MobileNav` renders in the header, above the slot, so it
+      still sees only the static contexts — mobile shows the platform rail
+      inside an app record. Closing it means a second `@mobilenav` slot; do it
+      when Phase 3's workspace rail forces the question.
 
 ### Phase 3 — relocate the workspace
+
 - [ ] Move the workspace routes to the location decided in Phase 0.
 - [ ] Keep **one** implementation; both the org record and the product record
       link into it.
@@ -616,6 +612,7 @@ Recommend (1). Decide before starting.
 - [ ] Redirects (or deletion) for the old URLs, per Phase 0.
 
 ### Phase 3.5 — the operator permission model (§6)
+
 - [ ] Project each product catalog into Console-namespaced keys
       (`crm/requests.view`), with a drift test against the product catalog.
 - [ ] Add the Console-owned operator-exclusive keys (`console:crm.purge`,
@@ -630,6 +627,7 @@ Recommend (1). Decide before starting.
       route, and an assertion that an operator-exclusive key implies nothing.
 
 ### Phase 4 — cross-org operations (thin)
+
 - [ ] For **one** product only (recommend CRM requests) wire a real cross-org
       operator list end to end: owning-service operator route + guard +
       serializer → operator client entrypoint → Console module → page.
