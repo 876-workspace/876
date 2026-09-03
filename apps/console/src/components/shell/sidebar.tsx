@@ -20,6 +20,7 @@ import { sidebarContextDefinitions } from '@/components/shell/sidebar-context-co
 import {
   isNavSection,
   resolveActiveChildKey,
+  resolveSidebarBackContext,
   resolveSidebarContextStack,
   type SidebarContext,
 } from '@/components/shell/sidebar-sections'
@@ -71,15 +72,14 @@ export function Sidebar({
     readServerSidebarExpanded
   )
 
-  const derivedIndex = stack.length - 1
+  const derivedContext = stack.at(-1) ?? stack[0]!
   const dismissedIndex =
     dismissedContext?.pathname === pathname
       ? stack.findIndex((item) => item.key === dismissedContext.key)
       : -1
-  const visibleIndex =
-    dismissedIndex > 0 ? dismissedIndex - 1 : derivedIndex
-  const currentContext = stack[visibleIndex] ?? stack[0]!
-  const isNested = currentContext.kind !== 'platform'
+  const visibleContext =
+    dismissedIndex > 0 ? resolveSidebarBackContext(stack, dismissedContext!.key) ?? derivedContext : derivedContext
+  const isNested = visibleContext.kind !== 'platform'
 
   return (
     <aside
@@ -98,9 +98,9 @@ export function Sidebar({
           isNested && expanded ? PANEL_WIDTH : RAIL_WIDTH
         )}
       >
-        {currentContext.kind === 'platform' ? (
+        {visibleContext.kind === 'platform' ? (
           <PlatformContext
-            context={currentContext}
+            context={visibleContext}
             pathname={pathname}
             expanded={expanded}
             slots={slots}
@@ -109,13 +109,11 @@ export function Sidebar({
           />
         ) : (
           <ContextPanel
-            context={currentContext}
+            context={visibleContext}
             pathname={pathname}
             expanded={expanded}
             slots={slots}
-            onBack={() => {
-              setDismissedContext({ key: currentContext.key, pathname })
-            }}
+            onBack={() => setDismissedContext({ key: visibleContext.key, pathname })}
             onExpandChange={writeSidebarExpanded}
           />
         )}
