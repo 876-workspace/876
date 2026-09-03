@@ -50,6 +50,8 @@ CRM stores only CRM-owned tenant and profile fields. Financial customer records 
 
 876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it.
 
+876 Projects is a bounded context of the same shape: `apps/projects-api` owns projects, issues, labels and comments in its own datastore and references the 876 organization by opaque ID. Console administers it at the **operator** tier and the standalone app calls it at the **service** tier, resolving the organization from the signed-in session. See `docs/architecture/022-876-projects.md` and `docs/876-projects.md`.
+
 876 Work is a **shared platform service**, the same shape as Billing's financial data plane but for productivity records: CRM's Tasks and Reminders modules are stored in Work, not in CRM. An organization's Work workspace is prepared at the **operator** tier by `apps/api` (`workspace.work.ensure`), which also mints that app's scoped connection; the product app then reaches Work at the **integration** tier with its own app API key and the four `work.{tasks,reminders}.{read,write}` scopes. No product app holds `WORK_INTERNAL_KEY`. See `docs/architecture/019-work-service-and-productivity-plane.md`.
 
 ---

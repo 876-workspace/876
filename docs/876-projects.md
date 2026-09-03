@@ -1,0 +1,123 @@
+# 876 Projects — running and operating it
+
+Companion to `docs/architecture/022-876-projects.md`, which covers why the
+service is shaped the way it is.
+
+## Workspaces
+
+| Workspace           | Path                   | Port           |
+| ------------------- | ---------------------- | -------------- |
+| `@876/projects-app` | `apps/projects`        | 3008           |
+| `@876/projects-api` | `apps/projects-api`    | 4030           |
+| `@876/projects`     | `packages/projects`    | typed client   |
+| `@876/projects-ui`  | `packages/projects-ui` | shared screens |
+| `@876/projects-mcp` | `apps/projects-mcp`    | MCP server     |
+
+Platform app slug: **`876-projects`**.
+
+## Running it
+
+```bash
+pnpm dev:projects        # the app, its API, and the core API
+pnpm dev:projects:api    # the data service alone
+```
+
+`projects-api` also starts with every Console dev script, because Console renders
+the Projects operator workspace.
+
+## Environment
+
+`apps/projects-api`:
+
+| Variable                                            | Required    | Purpose                                                                            |
+| --------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------- |
+| `PROJECTS_DATABASE_URL`                             | yes         | Neon **pooled** connection                                                         |
+| `PROJECTS_DIRECT_DATABASE_URL`                      | yes         | Neon **direct** endpoint, migrations only                                          |
+| `PROJECTS_INTERNAL_KEY`                             | yes, secret | every `/v1` route requires it as `x-internal-key`; empty means every route rejects |
+| `PORT`, `ENVIRONMENT`, `LOG_LEVEL`, `DELETION_MODE` | no          | defaults in code                                                                   |
+
+`apps/projects`:
+
+| Variable                      | Required    | Purpose                                                      |
+| ----------------------------- | ----------- | ------------------------------------------------------------ |
+| `SESSION_COOKIE_SECRET`       | yes, secret | **must equal `apps/api`'s value byte for byte**              |
+| `PROJECTS_API_876_KEY`        | yes, secret | this app's platform key, presented as `X-876-API-Key`        |
+| `PROJECTS_INTERNAL_KEY`       | yes, secret | server-to-server calls to the data service                   |
+| `API_INTERNAL_KEY`            | yes, secret | privileged platform reads, server-only                       |
+| `API_URL`, `PROJECTS_API_URL` | yes         | service origins                                              |
+| `NEXT_PUBLIC_APP_URL`         | yes         | the consumer app origin, for the "go to my 876 account" link |
+
+A wrong `SESSION_COOKIE_SECRET` does not error. Every visitor is treated as
+signed out and bounced to `/login` forever, silently. `pnpm check:session-secret`
+compares the app against the API and is run by every `dev:*` script.
+
+## Migrations
+
+Migrations use the **direct** endpoint: Neon's pooler is transaction-mode
+PgBouncer and cannot hold the advisory locks `prisma migrate` takes.
+
+```bash
+pnpm --filter @876/projects-api db:deploy    # apply committed migrations
+pnpm --filter @876/projects-api db:generate  # regenerate the client, no database needed
+```
+
+## API surface
+
+Every route requires `x-internal-key`. Guards attach per route, so an unknown
+path returns 404 rather than 401.
+
+| Method                 | Path                                                                     |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `POST`                 | `/v1/tenants/ensure`                                                     |
+| `GET`                  | `/v1/tenants/:organizationId`                                            |
+| `GET` `POST`           | `/v1/organizations/:organizationId/projects`                             |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/projects/:projectId`                  |
+| `GET` `POST`           | `/v1/organizations/:organizationId/projects/:projectId/members`          |
+| `DELETE`               | `/v1/organizations/:organizationId/projects/:projectId/members/:userId`  |
+| `GET` `POST`           | `/v1/organizations/:organizationId/issues`                               |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/issues/:issueRef`                     |
+| `GET`                  | `/v1/organizations/:organizationId/issues/:issueRef/events`              |
+| `GET` `POST`           | `/v1/organizations/:organizationId/issues/:issueRef/comments`            |
+| `PATCH` `DELETE`       | `/v1/organizations/:organizationId/issues/:issueRef/comments/:commentId` |
+| `GET` `POST`           | `/v1/organizations/:organizationId/labels`                               |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/labels/:labelId`                      |
+
+`:issueRef` accepts either an `iss_` id or an identifier such as `CONSOLE-12`.
+
+`POST /v1/tenants/ensure` is idempotent and creates the Triage project with the
+tenant.
+
+## Permissions
+
+Declared once in `packages/core/src/access/catalogs.ts` as
+`projectsPermissionCatalog` and seeded into the identity core by
+`pnpm --filter @876/api seed --only=bootstrap,appAccess`.
+
+| Module      | Actions                             |
+| ----------- | ----------------------------------- |
+| `dashboard` | view                                |
+| `projects`  | view, create, edit, delete, archive |
+| `issues`    | view, create, edit, delete          |
+| `comments`  | view, create, edit, delete          |
+| `labels`    | view, create, edit, delete          |
+| `members`   | view, create, edit, delete          |
+| `reports`   | view                                |
+| `settings`  | view, edit                          |
+
+Console's own workspace routes authorize on `console:organizations`, like every
+other org-scoped Console route — not on these keys, which belong to the product
+app and no Console role grants.
+
+## Not built yet
+
+From `apps/projects/src/lib/modules/catalog.ts`, the modules still marked
+`available: false`:
+
+- **comments** — the API and the client support them and an issue renders them,
+  but there is no comment composer in the app;
+- **reports** — no surface at all.
+
+Also absent by decision: feature flags (none in v1, so nothing is seeded into
+PostHog), stored module state and preference overrides, and any published
+provisioning profile. `apps/projects/src/lib/provisioning/manifest.ts` defines
+and validates the profile contract; no profile data ships.
