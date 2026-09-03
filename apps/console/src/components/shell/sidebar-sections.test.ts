@@ -7,15 +7,12 @@ import {
   navSections,
   resolveActiveChildKey,
   resolveOpenSectionKey,
+  resolveSidebarContext,
+  resolveSidebarContextStack,
   type NavSection,
+  type SidebarContextDefinition,
 } from '@/components/shell/sidebar-sections'
 
-/**
- * A registry that exercises two shapes: a section whose index child shares the
- * section root, which the real registry has, and a child living outside its
- * section's URL prefix, which it does not — that one pins the resolver's
- * contract over the data shape so an out-of-prefix child cannot regress.
- */
 const REGISTRY: readonly NavGroupDefinition[] = [
   {
     key: 'primary',
@@ -167,6 +164,93 @@ describe('resolveActiveChildKey', () => {
   })
 })
 
+describe('resolveSidebarContextStack', () => {
+  const emptyStorage: SidebarContextDefinition = {
+    key: 'storage',
+    kind: 'product',
+    title: 'Storage',
+    href: '/storage',
+    parentKey: 'platform',
+    entries: [],
+  }
+
+  const product: SidebarContextDefinition = {
+    key: 'product-crm',
+    kind: 'product',
+    title: 'CRM',
+    href: '/apps/crm',
+    parentKey: 'platform',
+    entries: [
+      {
+        key: 'crm-overview',
+        title: 'Overview',
+        href: '/apps/crm',
+        icon: 'dashboard',
+      },
+    ],
+  }
+
+  const nestedWorkspace: SidebarContextDefinition = {
+    key: 'workspace-crm',
+    kind: 'workspace',
+    title: 'Acme CRM',
+    href: '/apps/crm/workspace/acme',
+    parentKey: 'product-crm',
+    entries: [
+      {
+        key: 'workspace-home',
+        title: 'Home',
+        href: '/apps/crm/workspace/acme',
+        icon: 'dashboard',
+      },
+    ],
+  }
+
+  it('always starts with the platform context', () => {
+    expect(
+      resolveSidebarContextStack('/users', REGISTRY).map((item) => item.kind)
+    ).toEqual(['platform'])
+  })
+
+  it('preserves a declared empty context instead of falling back to platform', () => {
+    const stack = resolveSidebarContextStack('/storage', REGISTRY, [emptyStorage])
+    expect(stack.at(-1)).toEqual(emptyStorage)
+    expect(stack.at(-1)?.entries).toEqual([])
+  })
+
+  it('supports nested product and workspace contexts', () => {
+    const stack = resolveSidebarContextStack(
+      '/apps/crm/workspace/acme',
+      REGISTRY,
+      [product, nestedWorkspace]
+    )
+
+    expect(stack.map((item) => item.key)).toEqual([
+      'platform',
+      'product-crm',
+      'workspace-crm',
+    ])
+  })
+
+  it('does not mount a nested context when its parent does not match the path', () => {
+    const stack = resolveSidebarContextStack('/apps/other/workspace/acme', REGISTRY, [
+      product,
+      nestedWorkspace,
+    ])
+
+    expect(stack.map((item) => item.key)).toEqual(['platform'])
+  })
+
+  it('returns the deepest matching context', () => {
+    expect(
+      resolveSidebarContext('/apps/crm/workspace/acme', REGISTRY, [
+        product,
+        nestedWorkspace,
+      ])?.key
+    ).toBe('workspace-crm')
+  })
+})
+
 describe('the real Console registry', () => {
   it('declares drill-down sections only for Projects and Requests', () => {
     expect(navSections(navConfig).map((section) => section.key)).toEqual([
@@ -175,11 +259,11 @@ describe('the real Console registry', () => {
     ])
   })
 
-  it('gives every section child a string icon key so the registry stays serializable', () => {
+  it('keeps every child serializable', () => {
     for (const section of navSections(navConfig))
       for (const child of section.children) {
-        expect(typeof child.icon).toBe('string')
-        expect(typeof child.href).toBe('string')
+        expect(typeof child.icon, child.href).toBe('string')
+        expect(typeof child.href, child.key).toBe('string')
       }
   })
 
