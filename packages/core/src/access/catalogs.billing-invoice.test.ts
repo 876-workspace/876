@@ -205,6 +205,7 @@ describe('appPermissionCatalogs registry', () => {
       '876-couriers',
       '876-crm',
       '876-invoice',
+      '876-projects',
       'console',
     ])
   })
