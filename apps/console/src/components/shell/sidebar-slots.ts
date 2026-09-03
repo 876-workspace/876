@@ -1,14 +1,33 @@
-import { can, hasFeature, type AccessContext, type NavRequirement } from '@876/core/access'
-
-export type SidebarSlotRegion =
-  | 'top'
-  | 'above-nav'
-  | 'below-nav'
-  | 'footer'
+import {
+  navRequirementPasses,
+  type AccessContext,
+  type NavRequirement,
+} from '@876/core/access'
 
 /**
- * A serializable declaration for future rich shell content. The client shell
- * receives only resolved entries; `componentKey` is looked up by the shell.
+ * Where a slot sits relative to the context's navigation.
+ *
+ * Ordered as they render, top to bottom, so the rail's composition is readable
+ * from this one declaration rather than from the order of JSX in the shell.
+ */
+export const SIDEBAR_SLOT_REGIONS = [
+  'top',
+  'above-nav',
+  'below-nav',
+  'footer',
+] as const
+
+export type SidebarSlotRegion = (typeof SIDEBAR_SLOT_REGIONS)[number]
+
+/**
+ * A non-navigation element of the rail — a card, a standalone button, an
+ * announcement, a live indicator.
+ *
+ * Declared as plain data so it crosses the RSC boundary with the navigation it
+ * sits beside: `componentKey` is resolved by the client shell exactly as an
+ * icon key is, and never a component. `title` and `icon` are what the collapsed
+ * rail shows, because the rail is collapsed by default at every level — a slot
+ * that can only render expanded has nothing to show for most of its life.
  */
 export type SidebarSlotDefinition = {
   key: string
@@ -19,32 +38,28 @@ export type SidebarSlotDefinition = {
   requires?: NavRequirement
 }
 
+/** A slot after gating, with its requirement stripped. */
 export type SidebarSlot = Omit<SidebarSlotDefinition, 'requires'>
 
-export const sidebarSlotDefinitions = [] as const satisfies readonly SidebarSlotDefinition[]
+/**
+ * Console's declared slots.
+ *
+ * Deliberately empty: Phase 1 ships the mechanism, not the first card. The
+ * regions above and `resolveSidebarSlots` are what a later card plugs into.
+ */
+export const sidebarSlotDefinitions: readonly SidebarSlotDefinition[] = []
 
-function requirementPasses(
-  requirement: NavRequirement | undefined,
-  context: AccessContext
-): boolean {
-  if (!requirement) return true
-  if (requirement.permission && !can(context, requirement.permission)) return false
-  if (requirement.feature && !hasFeature(context, requirement.feature)) return false
-  if (
-    requirement.anyPermission &&
-    (requirement.anyPermission.length === 0 ||
-      !requirement.anyPermission.some((permission) => can(context, permission)))
-  )
-    return false
-  return true
-}
-
-/** Resolves slot declarations before they cross the RSC boundary. */
+/**
+ * Resolves slot declarations before they cross the RSC boundary.
+ *
+ * Gated by the same predicate as nav entries, so a slot cannot become the one
+ * place on the rail where a permission is not checked.
+ */
 export function resolveSidebarSlots(
   definitions: readonly SidebarSlotDefinition[],
   context: AccessContext
 ): SidebarSlot[] {
   return definitions
-    .filter((slot) => requirementPasses(slot.requires, context))
+    .filter((slot) => navRequirementPasses(slot.requires, context))
     .map(({ requires: _requires, ...slot }) => slot)
 }

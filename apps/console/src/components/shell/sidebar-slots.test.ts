@@ -1,7 +1,12 @@
 import type { AccessContext } from '@876/core/access'
 import { describe, expect, it } from 'vitest'
 
-import { resolveSidebarSlots, type SidebarSlotDefinition } from '@/components/shell/sidebar-slots'
+import {
+  resolveSidebarSlots,
+  SIDEBAR_SLOT_REGIONS,
+  sidebarSlotDefinitions,
+  type SidebarSlotDefinition,
+} from '@/components/shell/sidebar-slots'
 
 const context: AccessContext = {
   subject: { userId: 'user_1' },
@@ -54,11 +59,9 @@ const definitions: readonly SidebarSlotDefinition[] = [
 
 describe('resolveSidebarSlots', () => {
   it('keeps only slots whose permission and feature requirements pass', () => {
-    expect(resolveSidebarSlots(definitions, context).map((slot) => slot.key)).toEqual([
-      'always',
-      'permissioned',
-      'featured',
-    ])
+    expect(
+      resolveSidebarSlots(definitions, context).map((slot) => slot.key)
+    ).toEqual(['always', 'permissioned', 'featured'])
   })
 
   it('keeps resolved slots RSC-safe by stripping requirements', () => {
@@ -89,5 +92,24 @@ describe('resolveSidebarSlots', () => {
     )
 
     expect(slot).toBeUndefined()
+  })
+})
+
+describe('the shipped slot registry', () => {
+  it('declares no slots, so the mechanism ships before the first card', () => {
+    expect(sidebarSlotDefinitions).toEqual([])
+  })
+
+  it('declares the rail regions in the order they render', () => {
+    expect(SIDEBAR_SLOT_REGIONS).toEqual([
+      'top',
+      'above-nav',
+      'below-nav',
+      'footer',
+    ])
+  })
+
+  it('resolves an empty registry to an empty list rather than throwing', () => {
+    expect(resolveSidebarSlots(sidebarSlotDefinitions, context)).toEqual([])
   })
 })
