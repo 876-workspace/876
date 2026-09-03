@@ -574,6 +574,31 @@ entry list), and an entry-less context could not be reopened after a back-out
 because "does this open a context" was asked of `children` rather than the href.
 
 ### Phase 2 — the product context under `/apps/[slug]`
+
+**Blocked on one structural decision (raised 2026-09-03).** A product context is
+*dynamic*: its href carries `:slug`, and which sections it holds depends on the
+app's `app_kind`, which is server data. `apps/[slug]/_lib/app-detail-tabs.ts`
+already resolves that — a product app has nine tabs, an internal app four.
+
+The sidebar lives in `(app)/layout.tsx`, above `/apps/[slug]`, so it cannot see
+the app kind, and an RSC layout cannot read the pathname without opting the whole
+shell into dynamic rendering. Three ways out:
+
+1. **A `@sidebar` parallel route slot on `(app)/layout.tsx`.** `/apps/[slug]`
+   server-renders its own context into the slot, kind-resolved, still derived
+   from the URL. Correct and supported; the largest structural change, and every
+   segment that wants a context gains a slot file.
+2. **A static dynamic-context declaration** matching `/apps/:slug`, holding only
+   the sections every app kind has, with kind-specific sections left on the tab
+   strip. Small, but splits one navigation across two mechanisms — the failure
+   mode this whole plan exists to avoid.
+3. **A client provider a nested layout writes into.** Cheapest, and wrong: it
+   reintroduces the click-state the resolver deliberately does not have, and
+   flashes the platform rail before the product rail arrives.
+
+Recommend (1). Decide before starting.
+
+
 - [ ] Declare a product nav context so `/apps/[slug]/*` swaps the rail.
 - [ ] Add the (empty-for-now) **Operations** and **Overview** sections.
 - [ ] Extract the one product-integration registry (§3.4) and fold
