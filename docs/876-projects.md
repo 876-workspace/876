@@ -108,6 +108,30 @@ Console's own workspace routes authorize on `console:organizations`, like every
 other org-scoped Console route — not on these keys, which belong to the product
 app and no Console role grants.
 
+## MCP server
+
+`apps/projects-mcp` exposes the workspace to an agent over stdio and is
+registered in `.mcp.json` as `876-projects`. It needs its own
+`apps/projects-mcp/.env`:
+
+| Variable                   | Purpose                                           |
+| -------------------------- | ------------------------------------------------- |
+| `PROJECTS_API_URL`         | the data service, e.g. `http://localhost:4030`    |
+| `PROJECTS_INTERNAL_KEY`    | the same operator credential the service requires |
+| `PROJECTS_ORGANIZATION_ID` | the organization every tool call acts for         |
+| `PROJECTS_DEFAULT_USER_ID` | optional; the author used when a tool omits one   |
+
+All three required values are validated at startup and the process **exits 1**
+if any is missing, so a server that silently fails to appear in a client is
+almost always a missing variable rather than a protocol problem. The
+organization must already have a Projects tenant — `POST /v1/tenants/ensure`
+creates it, and the server does not create one implicitly.
+
+Tools are declared as plain JSON Schema rather than through the SDK's zod
+helpers, because MCP SDK 1.30 pins zod 3 while this repository is on zod 4. The
+server runs under the `react-server` condition so `@876/projects/operator` can
+import `server-only`.
+
 ## Not built yet
 
 From `apps/projects/src/lib/modules/catalog.ts`, the modules still marked
