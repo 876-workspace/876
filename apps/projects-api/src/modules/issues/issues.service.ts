@@ -1,0 +1,609 @@
+import { getError, type ProjectsError } from '../../http/errors.js'
+import { generateId } from '../../platform/ids.js'
+import {
+  nowUnixSeconds,
+  nullableToDbUnixSeconds,
+  toDbUnixSeconds,
+} from '../../platform/timestamps.js'
+import * as labelsRepository from '../labels/labels.repository.js'
+import * as projectsRepository from '../projects/projects.repository.js'
+import type { ProjectRow } from '../projects/projects.serializers.js'
+import * as tenantsRepository from '../tenants/tenants.repository.js'
+import * as repository from './issues.repository.js'
+import type {
+  CreateIssueBody,
+  ListIssuesQuery,
+  UpdateIssueBody,
+} from './issues.schemas.js'
+import {
+  serializeIssue,
+  serializeIssueEvent,
+  type SerializedIssue,
+  type SerializedIssueEvent,
+  type SerializedIssueTombstone,
+} from './issues.serializers.js'
+
+export type ServiceResult<T> =
+  { data: T; error: null } | { data: null; error: ProjectsError }
+
+export type PaginatedIssues = {
+  items: SerializedIssue[]
+  hasMore: boolean
+  totalCount: number | null
+}
+
+async function resolveTenant(organizationId: string) {
+  const tenant = await tenantsRepository.retrieveByOrganization(organizationId)
+  if (!tenant) {
+    return { tenant: null, error: getError('projects/tenant-not-found') }
+  }
+  return { tenant, error: null }
+}
+
+async function resolveProject(
+  tenant: { id: string; triageProjectId: string | null },
+  projectIdOrKey?: string
+) {
+  let project: ProjectRow | null = null
+
+  if (projectIdOrKey) {
+    if (projectIdOrKey.startsWith('prj_')) {
+      project = await projectsRepository.retrieve(tenant.id, projectIdOrKey)
+    }
+    if (!project) {
+      project = await projectsRepository.retrieveByKey(
+        tenant.id,
+        projectIdOrKey.toUpperCase()
+      )
+    }
+  } else if (tenant.triageProjectId) {
+    project = await projectsRepository.retrieve(
+      tenant.id,
+      tenant.triageProjectId
+    )
+  }
+
+  if (!project) {
+    return { project: null, error: getError('projects/project-not-found') }
+  }
+
+  return { project, error: null }
+}
+
+async function resolveLabels(
+  tenantId: string,
+  labelInputs: string[]
+): Promise<string[]> {
+  const resolvedIds: string[] = []
+  const seen = new Set<string>()
+
+  for (const input of labelInputs) {
+    let labelId: string | null = null
+    if (input.startsWith('lbl_')) {
+      const byId = await labelsRepository.retrieve(tenantId, input)
+      if (byId) labelId = byId.id
+    }
+
+    if (!labelId) {
+      const byName = await labelsRepository.retrieveByName(tenantId, input)
+      if (byName) {
+        labelId = byName.id
+      } else {
+        const now = toDbUnixSeconds(nowUnixSeconds())
+        const created = await labelsRepository.create({
+          id: generateId('label'),
+          tenantId,
+          name: input,
+          color: '#6b7280',
+          description: null,
+          createdAt: now,
+          updatedAt: now,
+        })
+        labelId = created.id
+      }
+    }
+
+    if (labelId && !seen.has(labelId)) {
+      seen.add(labelId)
+      resolvedIds.push(labelId)
+    }
+  }
+
+  return resolvedIds
+}
+
+export async function list(
+  organizationId: string,
+  query: ListIssuesQuery
+): Promise<ServiceResult<PaginatedIssues>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null) {
+    return { data: null, error: tenantResolution.error }
+  }
+  const tenant = tenantResolution.tenant
+
+  const limit = Math.min(Math.max(query.limit ?? 25, 1), 100)
+  const order = query.order ?? 'updated'
+  const includeDeleted = query.include_deleted === 'true'
+
+  const status = query.status
+    ? query.status
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : undefined
+
+  const priority = query.priority
+    ? query.priority
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+    : undefined
+
+  const label = query.label
+    ? (Array.isArray(query.label) ? query.label : [query.label])
+        .flatMap((l) => l.split(','))
+        .map((l) => l.trim())
+        .filter(Boolean)
+    : undefined
+
+  const options: repository.ListIssuesOptions = {
+    project: query.project,
+    status,
+    priority,
+    assignee: query.assignee,
+    label,
+    parent: query.parent,
+    q: query.q,
+    updatedSince: query.updated_since,
+    includeDeleted,
+    order,
+    limit,
+    startingAfter: query.starting_after,
+    endingBefore: query.ending_before,
+  }
+
+  const rows = await repository.list(tenant.id, options)
+  const hasMore = rows.length > limit
+  const pagedRows = hasMore ? rows.slice(0, limit) : rows
+
+  const countOptions: repository.CountIssuesOptions = {
+    project: query.project,
+    status,
+    priority,
+    assignee: query.assignee,
+    label,
+    parent: query.parent,
+    q: query.q,
+    updatedSince: query.updated_since,
+    includeDeleted,
+  }
+  const totalCount = await repository.count(tenant.id, countOptions)
+
+  const issueIds = pagedRows.map((r) => r.id)
+  const enrichmentMap = await repository.getBatchEnrichment(issueIds)
+
+  const items = pagedRows.map((row) => {
+    const details = enrichmentMap.get(row.id)
+    return serializeIssue(row, {
+      projectKey: row.project?.key,
+      labels: details?.labels,
+      commentCount: details?.commentCount ?? 0,
+      subIssueCount: details?.subIssueCount ?? 0,
+    })
+  })
+
+  return {
+    data: {
+      items,
+      hasMore,
+      totalCount,
+    },
+    error: null,
+  }
+}
+
+export async function create(
+  organizationId: string,
+  body: CreateIssueBody
+): Promise<ServiceResult<SerializedIssue>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null) {
+    return { data: null, error: tenantResolution.error }
+  }
+  const tenant = tenantResolution.tenant
+
+  const projectResolution = await resolveProject(tenant, body.projectId)
+  if (projectResolution.error !== null) {
+    return { data: null, error: projectResolution.error }
+  }
+  const targetProject = projectResolution.project
+
+  let resolvedLabelIds: string[] = []
+  if (body.labelIds && body.labelIds.length > 0) {
+    resolvedLabelIds = await resolveLabels(tenant.id, body.labelIds)
+  }
+
+  const status = body.status ?? 'todo'
+  const priority = body.priority ?? 'none'
+  const now = toDbUnixSeconds(nowUnixSeconds())
+
+  let startedAt: bigint | null = null
+  let completedAt: bigint | null = null
+  let canceledAt: bigint | null = null
+
+  if (status === 'in-progress') {
+    startedAt = now
+  } else if (status === 'done') {
+    completedAt = now
+  } else if (status === 'canceled') {
+    canceledAt = now
+  }
+
+  const issueId = generateId('issue')
+
+  const createdRow = await repository.transaction(async (tx) => {
+    const allocation = await tx.allocateIssueNumber(targetProject.id)
+    const number = allocation.number
+    const identifier = `${allocation.key}-${number}`
+
+    const issue = await tx.createIssue({
+      id: issueId,
+      tenantId: tenant.id,
+      projectId: allocation.projectId,
+      number,
+      identifier,
+      title: body.title,
+      description: body.description ?? null,
+      status,
+      priority,
+      assigneeUserId: body.assigneeUserId ?? null,
+      creatorUserId: body.creatorUserId ?? null,
+      parentIssueId: body.parentIssueId ?? null,
+      estimate: body.estimate ?? null,
+      dueDate: nullableToDbUnixSeconds(body.dueDate),
+      position: body.position ?? 0,
+      startedAt,
+      completedAt,
+      canceledAt,
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    await tx.createEvent({
+      id: generateId('issueEvent'),
+      tenantId: tenant.id,
+      issueId: issue.id,
+      actorUserId: body.creatorUserId ?? null,
+      type: 'created',
+      fromValue: null,
+      toValue: identifier,
+      createdAt: now,
+    })
+
+    if (resolvedLabelIds.length > 0) {
+      await tx.setLabels(issue.id, resolvedLabelIds)
+    }
+
+    return issue
+  })
+
+  const enrichment = await repository.getBatchEnrichment([createdRow.id])
+  const details = enrichment.get(createdRow.id)
+
+  return {
+    data: serializeIssue(createdRow, {
+      projectKey: targetProject.key,
+      labels: details?.labels,
+      commentCount: details?.commentCount ?? 0,
+      subIssueCount: details?.subIssueCount ?? 0,
+    }),
+    error: null,
+  }
+}
+
+export async function retrieve(
+  organizationId: string,
+  issueRef: string
+): Promise<ServiceResult<SerializedIssue>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null) {
+    return { data: null, error: tenantResolution.error }
+  }
+  const tenant = tenantResolution.tenant
+
+  const row = issueRef.startsWith('iss_')
+    ? await repository.retrieve(tenant.id, issueRef)
+    : await repository.retrieveByIdentifier(tenant.id, issueRef.toUpperCase())
+
+  if (!row || row.deletedAt !== null) {
+    return { data: null, error: getError('projects/issue-not-found') }
+  }
+
+  const enrichment = await repository.getBatchEnrichment([row.id])
+  const details = enrichment.get(row.id)
+
+  return {
+    data: serializeIssue(row, {
+      projectKey: row.project?.key,
+      labels: details?.labels,
+      commentCount: details?.commentCount ?? 0,
+      subIssueCount: details?.subIssueCount ?? 0,
+    }),
+    error: null,
+  }
+}
+
+export async function update(
+  organizationId: string,
+  issueRef: string,
+  body: UpdateIssueBody
+): Promise<ServiceResult<SerializedIssue>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null) {
+    return { data: null, error: tenantResolution.error }
+  }
+  const tenant = tenantResolution.tenant
+
+  const existing = issueRef.startsWith('iss_')
+    ? await repository.retrieve(tenant.id, issueRef)
+    : await repository.retrieveByIdentifier(tenant.id, issueRef.toUpperCase())
+
+  if (!existing || existing.deletedAt !== null) {
+    return { data: null, error: getError('projects/issue-not-found') }
+  }
+
+  let newProjectId: string | undefined = undefined
+  let targetProjectKey = existing.project?.key ?? ''
+  if (body.projectId !== undefined) {
+    const projectRes = await resolveProject(tenant, body.projectId)
+    if (projectRes.error !== null) {
+      return { data: null, error: projectRes.error }
+    }
+    newProjectId = projectRes.project.id
+    targetProjectKey = projectRes.project.key
+  }
+
+  let resolvedLabelIds: string[] | undefined = undefined
+  if (body.labelIds !== undefined) {
+    resolvedLabelIds = await resolveLabels(tenant.id, body.labelIds)
+  }
+
+  const now = toDbUnixSeconds(nowUnixSeconds())
+
+  let startedAt: bigint | null | undefined = undefined
+  let completedAt: bigint | null | undefined = undefined
+  let canceledAt: bigint | null | undefined = undefined
+
+  if (body.status !== undefined && body.status !== existing.status) {
+    if (body.status === 'in-progress') {
+      if (existing.startedAt === null || existing.startedAt === undefined) {
+        startedAt = now
+      }
+    } else if (body.status === 'done') {
+      completedAt = now
+      canceledAt = null
+    } else if (body.status === 'canceled') {
+      canceledAt = now
+      completedAt = null
+    } else if (existing.status === 'done' || existing.status === 'canceled') {
+      completedAt = null
+      canceledAt = null
+    }
+  }
+
+  const eventsToWrite: Array<{
+    type: string
+    fromValue: string | null
+    toValue: string | null
+  }> = []
+
+  if (body.status !== undefined && body.status !== existing.status) {
+    eventsToWrite.push({
+      type: 'status-changed',
+      fromValue: existing.status,
+      toValue: body.status,
+    })
+    if (body.status === 'done' && existing.status !== 'done') {
+      eventsToWrite.push({
+        type: 'closed',
+        fromValue: existing.status,
+        toValue: 'done',
+      })
+    }
+    if (
+      (existing.status === 'done' || existing.status === 'canceled') &&
+      body.status !== 'done' &&
+      body.status !== 'canceled'
+    ) {
+      eventsToWrite.push({
+        type: 'reopened',
+        fromValue: existing.status,
+        toValue: body.status,
+      })
+    }
+  }
+
+  if (body.priority !== undefined && body.priority !== existing.priority) {
+    eventsToWrite.push({
+      type: 'priority-changed',
+      fromValue: existing.priority,
+      toValue: body.priority,
+    })
+  }
+
+  if (
+    body.assigneeUserId !== undefined &&
+    body.assigneeUserId !== existing.assigneeUserId
+  ) {
+    if (body.assigneeUserId !== null) {
+      eventsToWrite.push({
+        type: 'assigned',
+        fromValue: existing.assigneeUserId ?? null,
+        toValue: body.assigneeUserId,
+      })
+    } else {
+      eventsToWrite.push({
+        type: 'unassigned',
+        fromValue: existing.assigneeUserId ?? null,
+        toValue: null,
+      })
+    }
+  }
+
+  if (newProjectId !== undefined && newProjectId !== existing.projectId) {
+    eventsToWrite.push({
+      type: 'project-changed',
+      fromValue: existing.projectId,
+      toValue: newProjectId,
+    })
+  }
+
+  if (resolvedLabelIds !== undefined) {
+    const existingLabelIds = existing.labels
+      ? existing.labels.map((il) => il.label.id)
+      : []
+    const currentSet = new Set(existingLabelIds)
+    const nextSet = new Set(resolvedLabelIds)
+
+    for (const id of resolvedLabelIds) {
+      if (!currentSet.has(id)) {
+        eventsToWrite.push({
+          type: 'labeled',
+          fromValue: null,
+          toValue: id,
+        })
+      }
+    }
+
+    for (const id of existingLabelIds) {
+      if (!nextSet.has(id)) {
+        eventsToWrite.push({
+          type: 'unlabeled',
+          fromValue: id,
+          toValue: null,
+        })
+      }
+    }
+  }
+
+  const updateParams: repository.UpdateIssueParams = {
+    updatedAt: now,
+  }
+  if (newProjectId !== undefined) updateParams.projectId = newProjectId
+  if (body.title !== undefined) updateParams.title = body.title
+  if (body.description !== undefined)
+    updateParams.description = body.description
+  if (body.status !== undefined) updateParams.status = body.status
+  if (body.priority !== undefined) updateParams.priority = body.priority
+  if (body.assigneeUserId !== undefined)
+    updateParams.assigneeUserId = body.assigneeUserId
+  if (body.creatorUserId !== undefined)
+    updateParams.creatorUserId = body.creatorUserId
+  if (body.parentIssueId !== undefined)
+    updateParams.parentIssueId = body.parentIssueId
+  if (body.estimate !== undefined) updateParams.estimate = body.estimate
+  if (body.dueDate !== undefined)
+    updateParams.dueDate = nullableToDbUnixSeconds(body.dueDate)
+  if (body.position !== undefined) updateParams.position = body.position
+  if (startedAt !== undefined) updateParams.startedAt = startedAt
+  if (completedAt !== undefined) updateParams.completedAt = completedAt
+  if (canceledAt !== undefined) updateParams.canceledAt = canceledAt
+
+  const updatedRow = await repository.transaction(async (tx) => {
+    const issue = await tx.updateIssue(existing.id, updateParams)
+
+    if (resolvedLabelIds !== undefined) {
+      await tx.setLabels(existing.id, resolvedLabelIds)
+    }
+
+    for (const event of eventsToWrite) {
+      await tx.createEvent({
+        id: generateId('issueEvent'),
+        tenantId: tenant.id,
+        issueId: existing.id,
+        actorUserId: body.actorUserId ?? null,
+        type: event.type,
+        fromValue: event.fromValue,
+        toValue: event.toValue,
+        createdAt: now,
+      })
+    }
+
+    return issue
+  })
+
+  const enrichment = await repository.getBatchEnrichment([updatedRow.id])
+  const details = enrichment.get(updatedRow.id)
+
+  return {
+    data: serializeIssue(updatedRow, {
+      projectKey: targetProjectKey,
+      labels: details?.labels,
+      commentCount: details?.commentCount ?? 0,
+      subIssueCount: details?.subIssueCount ?? 0,
+    }),
+    error: null,
+  }
+}
+
+export async function remove(
+  organizationId: string,
+  issueRef: string
+): Promise<ServiceResult<SerializedIssueTombstone>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null) {
+    return { data: null, error: tenantResolution.error }
+  }
+  const tenant = tenantResolution.tenant
+
+  const existing = issueRef.startsWith('iss_')
+    ? await repository.retrieve(tenant.id, issueRef)
+    : await repository.retrieveByIdentifier(tenant.id, issueRef.toUpperCase())
+
+  if (!existing || existing.deletedAt !== null) {
+    return { data: null, error: getError('projects/issue-not-found') }
+  }
+
+  const hardDelete = process.env.DELETION_MODE === 'hard'
+  if (hardDelete) {
+    await repository.hardDelete(tenant.id, existing.id)
+  } else {
+    const now = toDbUnixSeconds(nowUnixSeconds())
+    await repository.softDelete(tenant.id, existing.id, now)
+  }
+
+  return {
+    data: {
+      object: 'projects.issue',
+      id: existing.id,
+      deleted: true,
+    },
+    error: null,
+  }
+}
+
+export async function listEvents(
+  organizationId: string,
+  issueRef: string
+): Promise<ServiceResult<SerializedIssueEvent[]>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null) {
+    return { data: null, error: tenantResolution.error }
+  }
+  const tenant = tenantResolution.tenant
+
+  const existing = issueRef.startsWith('iss_')
+    ? await repository.retrieve(tenant.id, issueRef)
+    : await repository.retrieveByIdentifier(tenant.id, issueRef.toUpperCase())
+
+  if (!existing || existing.deletedAt !== null) {
+    return { data: null, error: getError('projects/issue-not-found') }
+  }
+
+  const rows = await repository.listEvents(tenant.id, existing.id)
+  return {
+    data: rows.map(serializeIssueEvent),
+    error: null,
+  }
+}
