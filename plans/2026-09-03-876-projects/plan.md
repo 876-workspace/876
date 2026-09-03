@@ -304,9 +304,13 @@ and per-phase PR ceremony would cost more than the review value it returns.)
 | 2 | `apps/projects-api` — issues, labels, comments, events modules + tests | agy | 1 | **done** — verified, `6ef534ea` |
 | 3 | `packages/projects` — contracts, client, session/service/operator entrypoints | agy | 2 | **done** — verified, `0300a6f3` |
 | 4 | Platform registration — bootstrap, access catalog, roles, plan, prices, features | agy | 3 | **done** — verified, `e8a7f670` |
-| 5 | `apps/projects-mcp` — MCP server + `.mcp.json` | agy | 3 | dispatched |
+| 5 | `apps/projects-mcp` — MCP server + `.mcp.json` | agy | 3 | **done** — verified, `0a2063c7` |
 | 6 | `packages/projects-ui` + Console workspace integration | agy | 3, 4 | **done** — verified, `099b5212` |
 | 7 | `apps/projects` standalone app shell (port 3008) | primary agent | 3 | **done** — verified live, `b2e16a83` |
+
+| 8 | `apps/projects` — Projects/Issues/Board/Labels surfaces | agy | 3, 6 | **briefed, not run** — agy quota exhausted |
+| 9 | `apps/projects-api` — cross-module boundary refactor | agy | 2 | **done** — verified, `44378d51` |
+| 10 | `docs/` — architecture record + operator guide | agy | all | **briefed, not run** — agy quota exhausted |
 
 Phase 4 in practice had no dependency on phase 3 and ran in parallel with
 phase 1 on non-overlapping files.
