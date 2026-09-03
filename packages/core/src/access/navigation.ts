@@ -39,7 +39,14 @@ export function defineNavigation(
   return groups
 }
 
-function requirementPasses(
+/**
+ * Whether a subject satisfies a nav requirement.
+ *
+ * Exported because the sidebar's slot registry gates its declarations exactly
+ * as entries are gated; a second copy of this predicate would be free to drift
+ * from the AND semantics `resolveNavigation` relies on.
+ */
+export function navRequirementPasses(
   requirement: NavRequirement | undefined,
   context: AccessContext
 ): boolean {
@@ -81,7 +88,7 @@ function resolveEntries(
       : undefined
 
     if (hasDeclaredChildren && children?.length === 0) continue
-    if (!requirementPasses(entry.requires, context)) continue
+    if (!navRequirementPasses(entry.requires, context)) continue
 
     result.push({
       key: entry.key,
