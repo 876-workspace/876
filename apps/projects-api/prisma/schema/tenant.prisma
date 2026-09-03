@@ -1,0 +1,15 @@
+model Tenant {
+  id              String   @id
+  organizationId  String   @unique @map("organization_id")
+  triageProjectId String?  @map("triage_project_id")
+  createdAt       BigInt   @map("created_at")
+  updatedAt       BigInt   @map("updated_at")
+
+  projects Project[]
+  issues   Issue[]
+  labels   Label[]
+  comments Comment[]
+  events   IssueEvent[]
+
+  @@map("projects_tenants")
+}
