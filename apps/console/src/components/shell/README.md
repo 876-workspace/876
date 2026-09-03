@@ -1,78 +1,157 @@
-# Console sidebar shell
+# Console shell — the contextual sidebar
 
-The Console sidebar is a pathname-derived context stack. The platform rail is
-level 0; a declared section, product, or workspace replaces it with that
-context's entries. Only one context is rendered at a time.
+Console's sidebar is a **stack of navigation contexts**, not one rail with
+optional panels. The platform root is one context; a drill-down section is
+another; a product and an organization's workspace will be others. Exactly one
+level is mounted at a time, so the card's height always matches what is showing.
 
-## Contexts
+This exists because Console is becoming several applications in one: entering a
+product should feel like entering that product, with a way back up. See
+`plans/2026-09-03-console-workspace-and-sidebar/plan.md` for the whole design.
 
-Contexts are plain serializable data:
+## Files
+
+| File                     | Owns                                                        |
+| ------------------------ | ----------------------------------------------------------- |
+| `sidebar-context.ts`     | The context model and every resolver. No Console knowledge. |
+| `nav-config.ts`          | Console's platform registry — the root context's entries.   |
+| `nav-contexts.ts`        | Console's separately declared contexts.                     |
+| `sidebar.tsx`            | The desktop rail.                                           |
+| `mobile-nav.tsx`         | The same stack as a sheet.                                  |
+| `sidebar-motion.ts`      | The spring, and the `linear()` easing generated from it.    |
+| `sidebar-preferences.ts` | The expand/collapse preference.                             |
+| `sidebar-slots.ts`       | Non-navigation rail content, declared as data.              |
+
+## Declaring a context
+
+Two ways, and the difference matters.
+
+**As children of a platform entry** (`nav-config.ts`) — the ordinary case. The
+entry keeps its own href and tint, and its children become the context's
+entries:
 
 ```ts
 {
-  key: 'crm',
-  kind: 'product',
-  title: 'CRM',
-  href: '/apps/crm',
-  parentKey: 'platform',
-  entries: [...]
+  key: 'projects', title: 'Projects', href: '/projects', icon: 'projects',
+  requires: { permission: 'console:projects' },
+  children: [ /* … */ ],
 }
 ```
 
-`NavEntry.children` supplies section contexts already owned by the Console
-navigation registry. `sidebar-context-config.ts` is for contexts that need a
-standalone declaration before their complete navigation exists. Empty contexts
-are valid; Storage is the current example and intentionally has no screens.
+**As a standalone declaration** (`nav-contexts.ts`) — when the context needs to
+exist before its navigation does, or when it is not a child of the platform
+tree at all:
 
-`resolveSidebarContextStack()` owns pathname matching and parent ordering. The
-sidebar does not keep the current context in a store. A refresh or deep link
-therefore reconstructs the same context directly from the URL.
+```ts
+{
+  key: 'storage', kind: 'product', title: 'Storage', href: '/storage',
+  icon: 'storage', parentKey: PLATFORM_CONTEXT_KEY, groups: [],
+}
+```
 
-## Expand and back
+**An empty context is a supported state.** `resolveNavigation` drops an entry
+whose declared children all resolve away — right for a group inside a context,
+wrong for a context itself — which is exactly why a standalone declaration
+exists. Storage is the standing proof: the rail swaps and the back control
+works before that product has a single screen. Do not delete it as cleanup.
 
-The rail is collapsed by default. Expansion is an explicit, global preference
-stored under the versioned key `876_console_sidebar_expanded:v1` and synchronized
-through `useSyncExternalStore`.
+`groups` is kept rather than a flat entry list so a context renders the
+registry's own dividers; the platform rail's three groups are the reason.
 
-Back is a separate control from expansion. It dismisses the active nested
-context and exposes the platform rail without changing browser history.
+## Resolution
 
-The current implementation has a single nested level in the visible Console
-registry, while the context resolver already models parent relationships for
-future product → workspace stacks.
+**The open context is derived from the pathname, never from click state.** A
+deep link, a refresh, and the browser's back button all land on the right level
+with nothing to keep in sync.
 
-## Slots
+- `resolveSidebarContextStack(pathname, navigation, declared)` — the stack, root
+  first, deepest last. A context claims a path by its own href or any entry's.
+  Claiming contexts order by href length, which is depth for prefix-nested
+  paths; one whose declared parent is not on the stack is dropped rather than
+  grafted onto the root.
+- `resolveSidebarBackContext(stack, key)` — one level up. This is what the back
+  control names, so a workspace beneath a product says "Back to CRM", not "Back
+  to Console".
+- `entryOpensContext(entry, contexts)` — asked of the entry's **href**, not its
+  children, because a standalone context has no children to read. Getting this
+  wrong leaves an entry-less context unable to reopen after a back-out.
+- `resolveActiveEntryKey(pathname, context)` — longest match wins, so a context
+  index and a record page are both attributed correctly.
 
-Sidebar slots are declared as serializable data with a region, icon key and
-client renderer key. Supported regions are `top`, `above-nav`, `below-nav`, and
-`footer`.
+The single piece of local state is the deliberate back-out, held as the
+dismissed context's key **and** the path it was dismissed from, so navigating
+anywhere reinstates the derived level with no effect needed to clear it.
 
-The server resolves permission/feature requirements before the data crosses the
-RSC boundary. Every slot therefore has a collapsed (icon + tooltip) and
-expanded (full content) rendering contract once a renderer is registered.
+## Back and expand are two controls
 
-Phase 1 ships the slot mechanism with zero real slots.
+Back pops one level. Expand reveals labels at whatever level is open. Folding
+them into one button makes neither discoverable.
+
+The rail is **collapsed by default at every level** — entering a context swaps
+the rail's contents, it does not widen it. Labels arrive only when asked for.
+The preference is global, not per context, and persists under the versioned key
+`876_console_sidebar_expanded:v1` through `useSyncExternalStore`, with every
+read and write wrapped so a browser that blocks site data still renders.
 
 ## Spring motion
 
-`sidebar-motion.ts` exposes the named spring parameters and generates the CSS
-`linear()` timing function consumed by the rail. The current values are:
+`sidebar-motion.ts` samples a real spring — stiffness, damping, mass — into a
+CSS `linear()` easing. That indirection is what lets a spring drive a _height_:
+the height is content-derived via `interpolate-size: allow-keywords`, so it
+cannot be driven by a JS loop without measuring first, and a declarative timing
+function keeps `prefers-reduced-motion` in CSS where it belongs.
 
-- stiffness: `320`
-- damping: `24`
-- mass: `1`
+Tune amplitude in `SIDEBAR_SPRING` — lower `damping` for more bounce. At
+320/24/1 the damping ratio is ~0.67 and the rail overshoots ~6%. The endpoints
+are pinned to exactly 0 and 1, because a spring never fully settles and a final
+stop of 0.9969 would leave the rail fractionally short and then snap.
 
-The resulting curve intentionally overshoots by roughly 5–6% before settling.
-`motion-reduce:transition-none` disables the transition for reduced-motion
-users.
+**`SIDEBAR_SPRING_SETTLE_MS` and the transition duration in `sidebar.tsx` must
+stay equal.** The stops describe that whole window; a shorter transition
+truncates the settle, a longer one stretches the overshoot.
 
-The card uses `interpolate-size: allow-keywords` so content-driven height can
-animate where the browser supports it. The aside uses `justify-center`, keeping
-row-count changes centred rather than collapsing toward the top.
+## Slots
 
-## Testing
+A slot is non-navigation rail content — a card, a standalone button, an
+announcement, a live indicator. Declared as plain data beside the navigation it
+sits with:
 
-Focused shell tests cover pathname resolution, nested context ordering, empty
-contexts, permission/feature-gated slots, localStorage failure handling, and the
-spring output. Run the Console typecheck, lint, test suite, and the repository
-app-structure check before submitting a change.
+```ts
+{ key, region, title, icon, componentKey, requires? }
+```
+
+Regions render top to bottom: `top`, `above-nav`, `below-nav`, `footer`.
+`componentKey` is resolved by the client shell exactly as an icon key is, so
+declarations stay RSC-serializable. `title` and `icon` are what the collapsed
+rail shows — a slot that can only render expanded has nothing to show for most
+of its life.
+
+Slots are gated by `navRequirementPasses` from `@876/core/access`, the same
+predicate as nav entries, so a slot cannot become the one place on the rail
+where a permission is not checked.
+
+`sidebarSlotDefinitions` is deliberately empty: the mechanism ships before the
+first card.
+
+## Extraction
+
+These primitives are written to leave. Nothing in `sidebar-context.ts`,
+`sidebar-motion.ts`, `sidebar-preferences.ts`, or `sidebar-slots.ts` imports a
+Console route, a Console permission, or `@/lib/services/*` — Console's specifics
+arrive as data through `navConfig`, `navContexts`, and props.
+
+**Do not extract to a package yet.** Per `.claude/rules/app-structure.md` a
+component moves to `packages/ui` when a _second app_ needs it, and Console is
+the first. When Couriers or Billing adopts this, the move is mechanical.
+
+Naming follows the same rule: kebab-case files, PascalCase exports, and no
+`Console` prefix inside Console — the path already says `apps/console`.
+
+## Verification
+
+```bash
+pnpm --filter @876/console typecheck
+pnpm --filter @876/console lint
+pnpm --filter @876/console test
+node scripts/check-app-structure.mjs
+```
