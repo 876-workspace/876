@@ -251,7 +251,7 @@ This is deliberate — do not re-derive it on move.
 
 { object: 'projects.label',   id, tenantId, name, color, description, createdAt, updatedAt }
 { object: 'projects.comment', id, tenantId, issueId, authorUserId, body, createdAt, updatedAt }
-{ object: 'projects.issue_event', id, issueId, actorUserId, type, fromValue, toValue, createdAt }
+{ object: 'projects.issue-event', id, issueId, actorUserId, type, fromValue, toValue, createdAt }
 ```
 
 Every `BigInt` becomes a JSON `number`. `deletedAt` is **not** serialized.

@@ -444,7 +444,7 @@ Slug: kebab-case of the name, uniquified the same way.
 List responses use the platform list envelope:
 `{ object: 'list', data: [...], has_more: boolean, url: string, total_count: number | null }`.
 
-Member shape: `{ object: 'projects.project_member', id, projectId, userId, role, createdAt }`.
+Member shape: `{ object: 'projects.project-member', id, projectId, userId, role, createdAt }`.
 
 ---
 
