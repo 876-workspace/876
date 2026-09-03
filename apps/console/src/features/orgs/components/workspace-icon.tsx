@@ -1,46 +1,16 @@
-import {
-  BarChart3,
-  Building2,
-  CircleStackIcon,
-  ClipboardList,
-  CreditCard,
-  DocumentTextIcon,
-  MapPin,
-  ReceiptPercent,
-  RectangleGroup,
-  Settings,
-  TruckIcon,
-  Users,
-} from '@876/ui/icons'
-import type { IconComponent } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
 
+import { NavIcon } from '@/components/shell/nav-icons'
 import type { WorkspaceIconKey } from '../app-workspaces'
 
 /**
- * Resolves a registry icon key to a component.
+ * Accent colour per workspace section.
  *
- * The registry is plain data so it can cross the RSC boundary, which means the
- * mapping from key to component has to live somewhere that already imports
- * components. This is the same technique `ResourceToolbar`'s dropdown icons use.
+ * The key→component mapping deliberately lives in `NAV_ICONS` and not here: a
+ * workspace's sections render in the main sidebar as well as on these cards,
+ * and two registries for the same keys drift. Colour is this file's own
+ * concern — the rail does not tint section icons.
  */
-const ICONS: Record<WorkspaceIconKey, IconComponent> = {
-  dashboard: BarChart3,
-  customers: Users,
-  requests: ClipboardList,
-  settings: Settings,
-  billing: CreditCard,
-  packages: TruckIcon,
-  items: CircleStackIcon,
-  teams: Users,
-  categories: RectangleGroup,
-  forms: DocumentTextIcon,
-  payments: ReceiptPercent,
-  banking: Building2,
-  branches: MapPin,
-  warehouses: Building2,
-}
-
 export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
   dashboard: 'text-blue-500 dark:text-blue-400',
   customers: 'text-amber-500 dark:text-amber-400',
@@ -58,10 +28,6 @@ export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
   warehouses: 'text-violet-500 dark:text-violet-400',
 }
 
-export function workspaceIcon(key: WorkspaceIconKey): IconComponent {
-  return ICONS[key]
-}
-
 export function WorkspaceIcon({
   iconKey,
   colored = false,
@@ -71,14 +37,10 @@ export function WorkspaceIcon({
   colored?: boolean
   className?: string
 }) {
-  // Indexed straight off the module constant rather than through
-  // `workspaceIcon()`: a component read from a function call cannot be shown to
-  // be stable across renders, and the React lint rule rejects it.
-  const Icon = ICONS[iconKey]
   return (
-    <Icon
+    <NavIcon
+      icon={iconKey}
       className={cn(className, colored && WORKSPACE_ICON_COLORS[iconKey])}
-      aria-hidden="true"
     />
   )
 }

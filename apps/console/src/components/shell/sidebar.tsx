@@ -268,7 +268,14 @@ function BackControl({
               )}
             />
             {expanded ? (
-              <span className="min-w-0 truncate">{context.title}</span>
+              <span className="flex min-w-0 flex-col text-left">
+                <span className="min-w-0 truncate">{context.title}</span>
+                {context.subtitle ? (
+                  <span className="text-muted-foreground min-w-0 truncate text-[0.6875rem] leading-tight font-normal">
+                    {context.subtitle}
+                  </span>
+                ) : null}
+              </span>
             ) : null}
           </button>
         }

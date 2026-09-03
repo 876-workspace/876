@@ -25,6 +25,14 @@ export type SidebarContext = {
   key: string
   kind: SidebarContextKind
   title: string
+  /**
+   * A second line under the title, for a context that names two things.
+   *
+   * A workspace does: it is one product's navigation *for one organization*,
+   * and the rail is the only chrome that says which organization. An app
+   * record names one thing and leaves this unset.
+   */
+  subtitle?: string
   /** The path that opens this context, and the target of its own rail entry. */
   href: string
   /** Icon key for the back control. A string, like every registry icon. */
