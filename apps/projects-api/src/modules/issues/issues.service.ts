@@ -8,7 +8,7 @@ import {
 import * as labelsRepository from '../labels/labels.repository.js'
 import * as projectsRepository from '../projects/projects.repository.js'
 import type { ProjectRow } from '../projects/projects.serializers.js'
-import * as tenantsRepository from '../tenants/tenants.repository.js'
+import * as tenants from '../tenants/index.js'
 import * as repository from './issues.repository.js'
 import type {
   CreateIssueBody,
@@ -33,7 +33,7 @@ export type PaginatedIssues = {
 }
 
 async function resolveTenant(organizationId: string) {
-  const tenant = await tenantsRepository.retrieveByOrganization(organizationId)
+  const tenant = await tenants.resolveTenant(organizationId)
   if (!tenant) {
     return { tenant: null, error: getError('projects/tenant-not-found') }
   }

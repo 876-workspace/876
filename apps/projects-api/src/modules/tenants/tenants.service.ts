@@ -2,11 +2,26 @@ import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
 import * as repository from './tenants.repository.js'
+import type { TenantRow } from './tenants.serializers.js'
 import { serializeTenant } from './tenants.serializers.js'
 import type { TenantSerialized } from './tenants.schemas.js'
 
 export type ServiceResult<T> =
   { data: T; error: null } | { data: null; error: ProjectsError }
+
+/**
+ * Resolves an organization's tenant row for another module.
+ *
+ * Sibling modules scope every query by `tenantId`, so they need the row rather
+ * than the serialized resource. This is the tenants module's public way to hand
+ * it over: a module owns its own tables, so nothing outside this directory may
+ * reach for `tenants.repository`.
+ */
+export async function resolveTenant(
+  organizationId: string
+): Promise<TenantRow | null> {
+  return repository.retrieveByOrganization(organizationId)
+}
 
 export async function retrieveByOrganization(
   organizationId: string

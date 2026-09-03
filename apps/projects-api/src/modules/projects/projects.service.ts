@@ -5,7 +5,7 @@ import {
   nullableToDbUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
-import * as tenantsRepository from '../tenants/tenants.repository.js'
+import * as tenants from '../tenants/index.js'
 import * as repository from './projects.repository.js'
 import type {
   CreateProjectBody,
@@ -85,13 +85,13 @@ export async function deriveUniqueSlug(
 async function resolveTenant(organizationId: string): Promise<
   | {
       tenant: NonNullable<
-        Awaited<ReturnType<typeof tenantsRepository.retrieveByOrganization>>
+        Awaited<ReturnType<typeof tenants.resolveTenant>>
       >
       error: null
     }
   | { tenant: null; error: ProjectsError }
 > {
-  const tenant = await tenantsRepository.retrieveByOrganization(organizationId)
+  const tenant = await tenants.resolveTenant(organizationId)
   if (!tenant) {
     return { tenant: null, error: getError('projects/tenant-not-found') }
   }

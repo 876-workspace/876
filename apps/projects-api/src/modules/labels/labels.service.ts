@@ -1,7 +1,7 @@
 import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
-import * as tenantsRepository from '../tenants/tenants.repository.js'
+import * as tenants from '../tenants/index.js'
 import * as repository from './labels.repository.js'
 import type { CreateLabelBody, UpdateLabelBody } from './labels.schemas.js'
 import {
@@ -16,7 +16,7 @@ export type ServiceResult<T> =
 const DEFAULT_LABEL_COLOR = '#6b7280'
 
 async function resolveTenant(organizationId: string) {
-  const tenant = await tenantsRepository.retrieveByOrganization(organizationId)
+  const tenant = await tenants.resolveTenant(organizationId)
   if (!tenant) {
     return { tenant: null, error: getError('projects/tenant-not-found') }
   }

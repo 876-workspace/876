@@ -2,7 +2,7 @@ import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
 import * as issuesRepository from '../issues/issues.repository.js'
-import * as tenantsRepository from '../tenants/tenants.repository.js'
+import * as tenants from '../tenants/index.js'
 import * as repository from './comments.repository.js'
 import type {
   CreateCommentBody,
@@ -25,7 +25,7 @@ export type PaginatedComments = {
 }
 
 async function resolveTenant(organizationId: string) {
-  const tenant = await tenantsRepository.retrieveByOrganization(organizationId)
+  const tenant = await tenants.resolveTenant(organizationId)
   if (!tenant) {
     return { tenant: null, error: getError('projects/tenant-not-found') }
   }
