@@ -38,6 +38,14 @@
     "./labels-list": {
       "types": "./src/labels-list.tsx",
       "default": "./src/labels-list.tsx"
+    },
+    "./status-options": {
+      "types": "./src/status-options.ts",
+      "default": "./src/status-options.ts"
+    },
+    "./skeleton-columns": {
+      "types": "./src/skeleton-columns.ts",
+      "default": "./src/skeleton-columns.ts"
     }
   },
   "scripts": {
