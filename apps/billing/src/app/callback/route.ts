@@ -12,7 +12,9 @@ import { requestUrl } from '@/lib/auth/request-origin'
 
 export const runtime = 'nodejs'
 
-const API_KEY = process.env.API_876_KEY
+// Billing issues its own app key. `API_876_KEY` is the consumer app's name
+// and is unset here, which left the exchange below unauthenticated.
+const API_KEY = process.env.BILLING_API_876_KEY
 const DEFAULT_DESTINATION = '/'
 
 /**
