@@ -1,13 +1,12 @@
 'use client'
 
-import type { CSSProperties, ReactNode } from 'react'
+import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSyncExternalStore, useState } from 'react'
 
 import { NavIcon } from '@/components/shell/nav-icons'
 import {
@@ -20,7 +19,6 @@ import {
 import { sidebarContextDefinitions } from '@/components/shell/sidebar-context-config'
 import {
   isNavSection,
-  navSections,
   resolveActiveChildKey,
   resolveSidebarContext,
   resolveSidebarContextStack,
@@ -56,11 +54,6 @@ type Props = {
   slots?: readonly SidebarSlot[]
 }
 
-/**
- * Console's contextual sidebar. Pathname-derived contexts replace one another;
- * the only client state is the intentional expand preference and the explicit
- * back action that returns to the platform context without changing history.
- */
 export function Sidebar({
   navigation,
   contexts = sidebarContextDefinitions,
@@ -79,12 +72,7 @@ export function Sidebar({
   )
   const openContext =
     context && dismissedContextKey !== context.key ? context : null
-
-  const handleBack = () => {
-    if (openContext) setDismissedContextKey(openContext.key)
-  }
-
-  const currentContext = openContext ?? stack[0]
+  const currentContext = openContext ?? stack[0]!
 
   return (
     <aside
@@ -114,6 +102,7 @@ export function Sidebar({
             expanded={expanded}
             slots={slots}
             onExpandChange={writeSidebarExpanded}
+            onOpenContext={() => setDismissedContextKey(null)}
           />
         ) : (
           <ContextPanel
@@ -121,7 +110,7 @@ export function Sidebar({
             pathname={pathname}
             expanded={expanded}
             slots={slots}
-            onBack={handleBack}
+            onBack={() => setDismissedContextKey(currentContext.key)}
             onExpandChange={writeSidebarExpanded}
           />
         )}
@@ -136,12 +125,14 @@ function PlatformContext({
   expanded,
   slots,
   onExpandChange,
+  onOpenContext,
 }: {
   context: SidebarContext
   pathname: string
   expanded: boolean
   slots: readonly SidebarSlot[]
   onExpandChange: (next: boolean) => void
+  onOpenContext: () => void
 }) {
   return (
     <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH)}>
@@ -156,7 +147,7 @@ function PlatformContext({
             entry={entry}
             pathname={pathname}
             expanded={expanded}
-            onOpenContext={undefined}
+            onOpenContext={isNavSection(entry) ? onOpenContext : undefined}
           />
         ))}
       </div>
@@ -190,14 +181,19 @@ function ContextPanel({
         expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH
       )}
     >
-      <div className={cn('flex items-center gap-1', expanded ? 'justify-between' : 'flex-col')}>
+      <div
+        className={cn(
+          'flex items-center gap-1',
+          expanded ? 'justify-between' : 'flex-col'
+        )}
+      >
         <Tooltip>
           <TooltipTrigger
             render={
               <button
                 type="button"
                 onClick={onBack}
-                aria-label={`Back to Console`}
+                aria-label="Back to Console"
                 className={cn(
                   'text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring group flex items-center rounded-lg focus-visible:ring-2 focus-visible:outline-hidden',
                   expanded
@@ -216,7 +212,11 @@ function ContextPanel({
               </button>
             }
           />
-          {!expanded && <TooltipContent side="right" sideOffset={8}>Back to Console</TooltipContent>}
+          {!expanded && (
+            <TooltipContent side="right" sideOffset={8}>
+              Back to Console
+            </TooltipContent>
+          )}
         </Tooltip>
         <SidebarExpandControl expanded={expanded} onChange={onExpandChange} />
       </div>
@@ -225,7 +225,12 @@ function ContextPanel({
       <SidebarSlotRegion slots={slots} region="top" expanded={expanded} />
       <SidebarSlotRegion slots={slots} region="above-nav" expanded={expanded} />
 
-      <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
+      <div
+        className={cn(
+          'flex flex-col gap-1',
+          expanded ? 'min-w-0' : 'items-center'
+        )}
+      >
         {context.entries.map((entry) => (
           <ContextEntry
             key={entry.key}
@@ -233,7 +238,6 @@ function ContextPanel({
             pathname={pathname}
             expanded={expanded}
             active={entry.key === activeChildKey}
-            onOpenContext={undefined}
           />
         ))}
       </div>
@@ -267,7 +271,10 @@ function SidebarExpandControl({
           >
             <PanelLeftIcon
               aria-hidden="true"
-              className={cn('size-4 transition-transform duration-200', expanded && 'rotate-180')}
+              className={cn(
+                'size-4 transition-transform duration-200',
+                expanded && 'rotate-180'
+              )}
             />
           </button>
         }
@@ -311,7 +318,7 @@ function ContextEntry({
                 ? expanded
                   ? cn(
                       'text-sidebar-accent-foreground font-medium shadow-2xs',
-                      undefined
+                      entry.activeClassName ?? 'bg-sidebar-accent'
                     )
                   : cn(
                       navLinkActive,
@@ -320,7 +327,7 @@ function ContextEntry({
                 : expanded
                   ? 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
                   : navLinkRest
-            )
+            )}
           >
             <NavIcon
               icon={entry.icon}
@@ -329,11 +336,17 @@ function ContextEntry({
                 entry.colorClassName
               )}
             />
-            {expanded && <span className="min-w-0 flex-1 truncate">{entry.title}</span>}
+            {expanded && (
+              <span className="min-w-0 flex-1 truncate">{entry.title}</span>
+            )}
           </Link>
         }
       />
-      {!expanded && <TooltipContent side="right" sideOffset={8}>{entry.title}</TooltipContent>}
+      {!expanded && (
+        <TooltipContent side="right" sideOffset={8}>
+          {entry.title}
+        </TooltipContent>
+      )}
     </Tooltip>
   )
 }
@@ -355,7 +368,12 @@ function SidebarSlotRegion({
   if (regionSlots.length === 0) return null
 
   return (
-    <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
+    <div
+      className={cn(
+        'flex flex-col gap-1',
+        expanded ? 'min-w-0' : 'items-center'
+      )}
+    >
       {regionSlots.map((slot) => (
         <SidebarSlotView key={slot.key} slot={slot} expanded={expanded} />
       ))}
@@ -380,6 +398,3 @@ type SidebarSlotRenderer = (slot: SidebarSlot, expanded: boolean) => ReactNode
 
 /** Component-key registry. Real slots are intentionally empty in Phase 1. */
 const SIDEBAR_SLOT_RENDERERS: Record<string, SidebarSlotRenderer> = {}
-
-void REGION_ORDER
-void navSections
