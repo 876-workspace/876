@@ -353,9 +353,18 @@ None of these block phases 1–7.
 
 ## 10. Dispatched briefs
 
+All briefs are written for phases 1–5. Phases 6 and 7 are briefed by the next
+session. See [HANDOFF.md](./HANDOFF.md) for live state.
+
 | # | Brief | Delegate | Status |
 | --- | --- | --- | --- |
-| 1 | [projects-api foundation](./briefs/agy/2026-09-03-phase1-projects-api-foundation.md) | gemini-3.8-flash-high | — |
+| 1 | [projects-api foundation](./briefs/agy/2026-09-03-phase1-projects-api-foundation.md) | gemini-3.8-flash-high | dispatched — **partial, unverified** |
+| 2 | [issues, labels, comments](./briefs/agy/2026-09-03-phase2-issues-labels-comments.md) | gemini-3.8-flash-high | written, not dispatched |
+| 3 | [`@876/projects` client](./briefs/agy/2026-09-03-phase3-projects-client-package.md) | gemini-3.8-flash-high | written, not dispatched |
+| 4 | [platform registration](./briefs/agy/2026-09-03-phase4-platform-registration.md) | gemini-3.8-flash-high | dispatched — **files written, unverified** |
+| 5 | [MCP server](./briefs/agy/2026-09-03-phase5-mcp-server.md) | gemini-3.8-flash-high | written, not dispatched |
+| 6 | projects-ui + Console | — | not written |
+| 7 | standalone app | — | not written |
 
 ## 11. Reports
 
@@ -366,11 +375,14 @@ None of these block phases 1–7.
 
 - [x] Integration branch `feat/876-projects` cut from `main`
 - [x] Plan written (this file)
-- [ ] Phase 1 — projects-api foundation
+- [~] Phase 1 — projects-api foundation (dispatched, partial, **unverified**)
 - [ ] Phase 2 — issues/labels/comments
 - [ ] Phase 3 — `@876/projects` client
-- [ ] Phase 4 — platform registration
+- [~] Phase 4 — platform registration (dispatched, files written, **unverified**)
 - [ ] Phase 5 — MCP server
 - [ ] Phase 6 — projects-ui + Console
 - [ ] Phase 7 — standalone app
 - [ ] PR → `main`
+
+**Session 1 ended here on user request (context budget). Read
+[HANDOFF.md](./HANDOFF.md) before doing anything else.**
