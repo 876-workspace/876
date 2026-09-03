@@ -2,67 +2,124 @@ import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 
-/** A resolved nav entry that owns a drill-down panel. */
-export type NavSection = NavEntry & { children: readonly NavEntry[] }
+export type SidebarContextKind = 'platform' | 'section' | 'product' | 'workspace'
 
-/** True when this entry drills down instead of navigating straight through. */
-export function isNavSection(entry: NavEntry): entry is NavSection {
-  return Array.isArray(entry.children) && entry.children.length > 0
+export type SidebarContext = {
+  key: string
+  kind: SidebarContextKind
+  title: string
+  href: string
+  parentKey: string | null
+  entries: readonly NavEntry[]
 }
 
-/** Every drill-down section in the resolved registry, in sidebar order. */
-export function navSections(
+/** A context declared independently of the platform navigation tree. */
+export type SidebarContextDefinition = SidebarContext
+
+function navigationSections(
   navigation: readonly NavGroupDefinition[]
-): NavSection[] {
-  return navigation.flatMap((group) => group.entries.filter(isNavSection))
+): SidebarContext[] {
+  return navigation.flatMap((group) =>
+    group.entries.flatMap((entry) =>
+      entry.children && entry.children.length > 0
+        ? [
+            {
+              key: entry.key,
+              kind: 'section' as const,
+              title: entry.title,
+              href: entry.href,
+              parentKey: 'platform',
+              entries: entry.children,
+            },
+          ]
+        : []
+    )
+  )
 }
 
 /**
- * The section the current path belongs to, or `null` for the rail.
+ * Builds the pathname-derived sidebar stack from the resolved registry.
  *
- * A section claims a path when the path matches the section root **or any of
- * its children**. Every child today lives under its section's own prefix, so
- * the root check alone would suffice; the child check keeps the resolver
- * correct over the registry's data shape rather than over that coincidence, so
- * a child adopted from outside the prefix still opens its panel.
- *
- * Deriving the open panel from the path rather than from click state is the
- * whole design: a deep link, a refresh, and the browser's back button all land
- * on the correct panel without any state to keep in sync.
+ * The platform context is always the root. Sections declared by navigation or
+ * supplied explicitly can sit above it, while product and workspace contexts
+ * use the same representation once those routes are introduced.
  */
+export function resolveSidebarContextStack(
+  pathname: string,
+  navigation: readonly NavGroupDefinition[],
+  declared: readonly SidebarContextDefinition[] = []
+): SidebarContext[] {
+  const platform: SidebarContext = {
+    key: 'platform',
+    kind: 'platform',
+    title: 'Console',
+    href: '/',
+    parentKey: null,
+    entries: navigation.flatMap((group) => group.entries),
+  }
+
+  const contexts = [...navigationSections(navigation), ...declared]
+  const matches = contexts.filter(
+    (context) =>
+      isActiveConsolePath(pathname, context.href) ||
+      context.entries.some((entry) =>
+        isActiveConsolePath(pathname, entry.href)
+      )
+  )
+
+  matches.sort((a, b) => a.href.length - b.href.length)
+
+  const stack = [platform]
+  for (const context of matches) {
+    const parent = context.parentKey
+    if (parent === null || stack.some((item) => item.key === parent))
+      stack.push(context)
+  }
+
+  return stack
+}
+
+export function resolveSidebarContext(
+  pathname: string,
+  navigation: readonly NavGroupDefinition[],
+  declared: readonly SidebarContextDefinition[] = []
+): SidebarContext | null {
+  const stack = resolveSidebarContextStack(pathname, navigation, declared)
+  return stack.length > 1 ? (stack.at(-1) ?? null) : null
+}
+
+/** Kept as a narrow compatibility helper for existing Console callers/tests. */
 export function resolveOpenSectionKey(
   pathname: string,
   navigation: readonly NavGroupDefinition[]
 ): string | null {
-  for (const section of navSections(navigation)) {
-    if (isActiveConsolePath(pathname, section.href)) return section.key
-    if (
-      section.children.some((child) =>
-        isActiveConsolePath(pathname, child.href)
-      )
-    )
-      return section.key
-  }
-
-  return null
+  const context = resolveSidebarContext(pathname, navigation)
+  return context?.kind === 'section' ? context.key : null
 }
 
-/**
- * The key of the panel item that owns the current path, or `null`.
- *
- * Longest match wins. A section's index item and its siblings share a prefix —
- * Projects' Overview is `/projects`, its Issues list is `/projects/issues` — so
- * prefix matching alone would light up Overview everywhere in the section.
- * Exact matching would instead leave a record page such as `/requests/req_1`
- * with nothing highlighted. Taking the longest matching href gets both right.
- */
+export type NavSection = SidebarContext & {
+  kind: 'section'
+}
+
+export function isNavSection(entry: NavEntry): entry is NavEntry & {
+  children: readonly NavEntry[]
+} {
+  return Array.isArray(entry.children) && entry.children.length > 0
+}
+
+export function navSections(
+  navigation: readonly NavGroupDefinition[]
+): NavSection[] {
+  return navigationSections(navigation) as NavSection[]
+}
+
 export function resolveActiveChildKey(
   pathname: string,
-  section: NavSection
+  context: Pick<SidebarContext, 'entries'>
 ): string | null {
   let matched: NavEntry | null = null
 
-  for (const child of section.children) {
+  for (const child of context.entries) {
     if (!isActiveConsolePath(pathname, child.href)) continue
     if (matched === null || child.href.length > matched.href.length)
       matched = child
