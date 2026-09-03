@@ -24,15 +24,45 @@ import {
   type NavSection,
 } from '@/components/shell/sidebar-sections'
 
-/** The card's width is the only thing that moves between the two levels. */
+/**
+ * The card resizes in both axes between the two levels: it widens for the
+ * panel's labels, and its height follows the row count — today a section holds
+ * far fewer rows than the rail has icons, so the shrink is the larger of the
+ * two movements.
+ *
+ * `height` only interpolates from `auto` where `interpolate-size` is supported
+ * (set on the column below). Everywhere else the height snaps and the width
+ * still animates, which is the behaviour this replaced.
+ */
 const CARD_MOTION =
-  'transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
+  'transition-[width,height] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
 
 const RAIL_WIDTH = 'w-[3.75rem]'
 const PANEL_WIDTH = 'w-56'
 
-/** The rail's column keeps its own width so it stays put while the card resizes. */
-const RAIL_COLUMN_WIDTH = 'w-[2.25rem]'
+/**
+ * How far the card sits from the window edge and from the main region. Both
+ * grow with the panel: a rail floating in 4px of gutter reads as deliberate,
+ * but the panel is nearly four times as wide and its labels run much closer to
+ * the card's edge, so the same 4px reads as the panel touching the content.
+ *
+ * The page container inside the main region adds its own `px-4`, so the gutter
+ * here is the smaller half of the visible gap — 20px at the rail, 24px at the
+ * panel. 16px of gutter was tried and overshot; the panel read as detached.
+ *
+ * Insets move on the card's own curve so the whole assembly resizes as a piece.
+ */
+const INSET_MOTION =
+  'transition-[padding] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
+const RAIL_INSET = 'pr-1 pl-3'
+const PANEL_INSET = 'pr-2 pl-5'
+
+/**
+ * The rail column fills the card's content box exactly — the rail width less
+ * its `p-2` on both sides — so the icons are centred at rest and still do not
+ * drift sideways while the card resizes around them.
+ */
+const RAIL_COLUMN_WIDTH = 'w-11'
 
 /**
  * Console's drill-down sidebar.
@@ -67,7 +97,11 @@ export function Sidebar({
 
   return (
     <aside
-      className="hidden shrink-0 flex-col py-4 pr-1 pl-3 md:flex"
+      className={cn(
+        'hidden shrink-0 flex-col items-center py-4 [interpolate-size:allow-keywords] md:flex',
+        INSET_MOTION,
+        section ? PANEL_INSET : RAIL_INSET
+      )}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && section) setCollapsedKey(section.key)
       }}
