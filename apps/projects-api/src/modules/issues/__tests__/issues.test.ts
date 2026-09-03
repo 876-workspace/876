@@ -1,0 +1,879 @@
+import express from 'express'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const {
+  tenantsRepo,
+  projectsRepo,
+  labelsRepo,
+  commentsRepo,
+  repository,
+  txMock,
+} = vi.hoisted(() => {
+  const tx = {
+    allocateIssueNumber: vi.fn(),
+    createIssue: vi.fn(),
+    createEvent: vi.fn(),
+    setLabels: vi.fn(),
+    updateIssue: vi.fn(),
+  }
+  return {
+    tenantsRepo: {
+      retrieveByOrganization: vi.fn(),
+    },
+    projectsRepo: {
+      retrieve: vi.fn(),
+      retrieveByKey: vi.fn(),
+    },
+    labelsRepo: {
+      retrieve: vi.fn(),
+      retrieveByName: vi.fn(),
+      create: vi.fn(),
+    },
+    commentsRepo: {
+      list: vi.fn(),
+      count: vi.fn(),
+      retrieve: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      softDelete: vi.fn(),
+      hardDelete: vi.fn(),
+    },
+    repository: {
+      list: vi.fn(),
+      count: vi.fn(),
+      retrieve: vi.fn(),
+      retrieveByIdentifier: vi.fn(),
+      retrieveByRef: vi.fn(),
+      listEvents: vi.fn(),
+      softDelete: vi.fn(),
+      hardDelete: vi.fn(),
+      getBatchEnrichment: vi.fn(),
+      transaction: vi.fn(),
+    },
+    txMock: tx,
+  }
+})
+
+vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
+vi.mock('../../projects/projects.repository.js', () => projectsRepo)
+vi.mock('../../labels/labels.repository.js', () => labelsRepo)
+vi.mock('../../comments/comments.repository.js', () => commentsRepo)
+vi.mock('../issues.repository.js', () => repository)
+
+const service = await import('../issues.service.js')
+const { createIssuesRouter } = await import('../issues.routes.js')
+
+const tenant = {
+  id: 'prjten_test_1',
+  organizationId: 'org_test_1',
+  triageProjectId: 'prj_triage_1',
+  createdAt: 1787767200n,
+  updatedAt: 1787767200n,
+}
+
+const mockProjectRow = {
+  id: 'prj_alpha_1',
+  tenantId: tenant.id,
+  name: 'Console Platform',
+  key: 'CONSOLE',
+  slug: 'console-platform',
+  description: 'Main console UI project',
+  leadUserId: 'usr_lead_1',
+  status: 'planned',
+  health: 'on-track',
+  startDate: 1787767200n,
+  targetDate: 1788767200n,
+  nextIssueNumber: 1,
+  customerId: null,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1787767200n,
+  updatedAt: 1787767200n,
+}
+
+const mockTriageProject = {
+  id: 'prj_triage_1',
+  tenantId: tenant.id,
+  name: 'Triage',
+  key: 'TRI',
+  slug: 'triage',
+  description: null,
+  leadUserId: null,
+  status: 'active',
+  health: 'on-track',
+  startDate: null,
+  targetDate: null,
+  nextIssueNumber: 5,
+  customerId: null,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1787767200n,
+  updatedAt: 1787767200n,
+}
+
+const mockIssueRow = {
+  id: 'iss_test_1',
+  tenantId: tenant.id,
+  projectId: mockProjectRow.id,
+  number: 1,
+  identifier: 'CONSOLE-1',
+  title: 'Test issue title',
+  description: 'Test issue description',
+  status: 'todo',
+  priority: 'none',
+  assigneeUserId: null,
+  creatorUserId: 'usr_creator_1',
+  parentIssueId: null,
+  estimate: null,
+  dueDate: null,
+  position: 0,
+  startedAt: null,
+  completedAt: null,
+  canceledAt: null,
+  deletedAt: null,
+  createdAt: 1787767200n,
+  updatedAt: 1787767200n,
+  project: {
+    key: 'CONSOLE',
+  },
+  labels: [],
+}
+
+const mockIssueEventRow = {
+  id: 'isev_test_1',
+  tenantId: tenant.id,
+  issueId: mockIssueRow.id,
+  actorUserId: 'usr_creator_1',
+  type: 'created',
+  fromValue: null,
+  toValue: 'CONSOLE-1',
+  createdAt: 1787767200n,
+}
+
+async function requestJson(
+  method: string,
+  path: string,
+  body?: unknown,
+  headers: Record<string, string> = {}
+) {
+  const app = express()
+  app.use(express.json())
+  app.use('/v1/organizations/:organizationId/issues', createIssuesRouter())
+  const server = app.listen(0)
+  await new Promise<void>((resolve) => server.once('listening', resolve))
+  const address = server.address()
+  if (!address || typeof address === 'string') throw new Error('No port')
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
+      method,
+      headers: {
+        'content-type': 'application/json',
+        'x-internal-key': 'test-internal-key',
+        ...headers,
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+
+    return {
+      status: response.status,
+      body: await response.json(),
+    }
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()))
+  }
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  delete process.env.DELETION_MODE
+  process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
+  tenantsRepo.retrieveByOrganization.mockResolvedValue(tenant)
+  projectsRepo.retrieve.mockImplementation(
+    async (_tenantId: string, id: string) => {
+      if (id === mockProjectRow.id) return mockProjectRow
+      if (id === mockTriageProject.id) return mockTriageProject
+      return null
+    }
+  )
+  projectsRepo.retrieveByKey.mockImplementation(
+    async (_tenantId: string, key: string) => {
+      if (key === 'CONSOLE') return mockProjectRow
+      if (key === 'TRI') return mockTriageProject
+      return null
+    }
+  )
+  repository.getBatchEnrichment.mockImplementation(
+    async (issueIds: string[]) => {
+      const map = new Map()
+      for (const id of issueIds) {
+        map.set(id, { labels: [], commentCount: 0, subIssueCount: 0 })
+      }
+      return map
+    }
+  )
+  repository.transaction.mockImplementation(
+    async (cb: (tx: typeof txMock) => unknown) => cb(txMock)
+  )
+  txMock.allocateIssueNumber.mockResolvedValue({
+    projectId: mockProjectRow.id,
+    key: mockProjectRow.key,
+    number: mockProjectRow.nextIssueNumber,
+  })
+  txMock.createIssue.mockImplementation(
+    async (params: typeof mockIssueRow) => ({
+      ...mockIssueRow,
+      ...params,
+    })
+  )
+  txMock.createEvent.mockResolvedValue(mockIssueEventRow)
+  txMock.setLabels.mockResolvedValue(undefined)
+  txMock.updateIssue.mockImplementation(
+    async (_id: string, params: Partial<typeof mockIssueRow>) => ({
+      ...mockIssueRow,
+      ...params,
+    })
+  )
+})
+
+describe('issues module', () => {
+  it('create allocates identifier as KEY-N from the projects nextIssueNumber', async () => {
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'First issue identifier test',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.identifier).toBe('CONSOLE-1')
+    expect(result.data?.number).toBe(1)
+    expect(result.data?.projectKey).toBe('CONSOLE')
+  })
+
+  it('create increments nextIssueNumber and does both inside one transaction (assert the transaction callback was used, not two loose calls)', async () => {
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Transaction callback test',
+    })
+
+    expect(result.error).toBeNull()
+    expect(repository.transaction).toHaveBeenCalledWith(expect.any(Function))
+    expect(repository.transaction).toHaveBeenCalledTimes(1)
+    expect(txMock.allocateIssueNumber).toHaveBeenCalledWith(mockProjectRow.id)
+    expect(txMock.allocateIssueNumber).toHaveBeenCalledTimes(1)
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: mockProjectRow.id,
+        number: 1,
+        identifier: 'CONSOLE-1',
+      })
+    )
+  })
+
+  it('takes the issue number from the allocation, never from a project row read outside the transaction', async () => {
+    // Regression: the identifier was built from a separately-read project row.
+    // That read raced with concurrent creates, and when it went through raw SQL
+    // the mapped `next_issue_number` column did not deserialize to
+    // `nextIssueNumber` at all, yielding `CONSOLE-undefined`. The allocation
+    // returned by the atomic increment is the only source of the number.
+    txMock.allocateIssueNumber.mockResolvedValueOnce({
+      projectId: mockProjectRow.id,
+      key: mockProjectRow.key,
+      number: 7,
+    })
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Allocation is the source of truth',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.identifier).toBe('CONSOLE-7')
+    expect(result.data?.number).toBe(7)
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ number: 7, identifier: 'CONSOLE-7' })
+    )
+  })
+
+  it('create falls back to the tenants Triage project when projectId is absent', async () => {
+    txMock.allocateIssueNumber.mockResolvedValueOnce({
+      projectId: mockTriageProject.id,
+      key: mockTriageProject.key,
+      number: mockTriageProject.nextIssueNumber,
+    })
+    const result = await service.create('org_test_1', {
+      title: 'Triage fallback test',
+    })
+
+    expect(result.error).toBeNull()
+    expect(projectsRepo.retrieve).toHaveBeenCalledWith(
+      tenant.id,
+      tenant.triageProjectId
+    )
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: tenant.triageProjectId,
+        identifier: 'TRI-5',
+        number: 5,
+      })
+    )
+  })
+
+  it('create accepts a project key as well as a project id', async () => {
+    const result = await service.create('org_test_1', {
+      projectId: 'console',
+      title: 'Project key test',
+    })
+
+    expect(result.error).toBeNull()
+    expect(projectsRepo.retrieveByKey).toHaveBeenCalledWith(
+      tenant.id,
+      'CONSOLE'
+    )
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: mockProjectRow.id,
+        identifier: 'CONSOLE-1',
+      })
+    )
+  })
+
+  it('create writes a created IssueEvent', async () => {
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Issue event test',
+      creatorUserId: 'usr_creator_1',
+    })
+
+    expect(result.error).toBeNull()
+    expect(txMock.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: tenant.id,
+        actorUserId: 'usr_creator_1',
+        type: 'created',
+        fromValue: null,
+        toValue: 'CONSOLE-1',
+        createdAt: expect.any(BigInt),
+      })
+    )
+  })
+
+  it('create defaults status to todo and priority to none', async () => {
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Default fields test',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.status).toBe('todo')
+    expect(result.data?.priority).toBe('none')
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'todo',
+        priority: 'none',
+      })
+    )
+  })
+
+  it('create returns projects/project-not-found for an unknown project', async () => {
+    projectsRepo.retrieve.mockResolvedValue(null)
+    projectsRepo.retrieveByKey.mockResolvedValue(null)
+
+    const result = await service.create('org_test_1', {
+      projectId: 'prj_nonexistent',
+      title: 'Missing project issue',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/project-not-found',
+      message: 'The project could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('retrieve resolves an iss_-prefixed ref by id', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+
+    const result = await service.retrieve('org_test_1', 'iss_test_1')
+
+    expect(result.error).toBeNull()
+    expect(result.data?.id).toBe('iss_test_1')
+    expect(repository.retrieve).toHaveBeenCalledWith(tenant.id, 'iss_test_1')
+    expect(repository.retrieveByIdentifier).not.toHaveBeenCalled()
+  })
+
+  it('retrieve resolves CONSOLE-12 by identifier, case-insensitively', async () => {
+    repository.retrieveByIdentifier.mockResolvedValue({
+      ...mockIssueRow,
+      identifier: 'CONSOLE-12',
+    })
+
+    const result = await service.retrieve('org_test_1', 'console-12')
+
+    expect(result.error).toBeNull()
+    expect(result.data?.identifier).toBe('CONSOLE-12')
+    expect(repository.retrieveByIdentifier).toHaveBeenCalledWith(
+      tenant.id,
+      'CONSOLE-12'
+    )
+    expect(repository.retrieve).not.toHaveBeenCalled()
+  })
+
+  it('retrieve returns projects/issue-not-found for an issue in another tenant (assert the complete error object)', async () => {
+    repository.retrieve.mockResolvedValue(null)
+
+    const result = await service.retrieve('org_test_1', 'iss_other_tenant')
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/issue-not-found',
+      message: 'The issue could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.retrieve).toHaveBeenCalledWith(
+      tenant.id,
+      'iss_other_tenant'
+    )
+  })
+
+  it('list defaults order to updated and limit to 25', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', {})
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        order: 'updated',
+        limit: 25,
+      })
+    )
+  })
+
+  it('list caps limit at 100', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', { limit: 500 })
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        limit: 100,
+      })
+    )
+  })
+
+  it('list applies updated_since as updatedAt >= value', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', {
+      updated_since: 1787767200,
+    })
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        updatedSince: 1787767200,
+      })
+    )
+  })
+
+  it('list parses a comma-separated status into an in filter', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', {
+      status: 'todo,in-progress',
+    })
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        status: ['todo', 'in-progress'],
+      })
+    )
+  })
+
+  it('list treats assignee=none as "no assignee"', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', {
+      assignee: 'none',
+    })
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        assignee: 'none',
+      })
+    )
+  })
+
+  it('list treats parent=none as "top level only"', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', {
+      parent: 'none',
+    })
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        parent: 'none',
+      })
+    )
+  })
+
+  it('list excludes soft-deleted issues by default', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', {})
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(
+      tenant.id,
+      expect.objectContaining({
+        includeDeleted: false,
+      })
+    )
+  })
+
+  it('list scopes by tenantId (assert the exact repository call arguments)', async () => {
+    repository.list.mockResolvedValue([mockIssueRow])
+    repository.count.mockResolvedValue(1)
+
+    const result = await service.list('org_test_1', {})
+
+    expect(result.error).toBeNull()
+    expect(repository.list).toHaveBeenCalledWith(tenant.id, {
+      project: undefined,
+      status: undefined,
+      priority: undefined,
+      assignee: undefined,
+      label: undefined,
+      parent: undefined,
+      q: undefined,
+      updatedSince: undefined,
+      includeDeleted: false,
+      order: 'updated',
+      limit: 25,
+      startingAfter: undefined,
+      endingBefore: undefined,
+    })
+  })
+
+  it('update to in-progress sets startedAt only when it was null', async () => {
+    repository.retrieve.mockResolvedValue({
+      ...mockIssueRow,
+      status: 'todo',
+      startedAt: null,
+    })
+
+    const resultNull = await service.update('org_test_1', mockIssueRow.id, {
+      status: 'in-progress',
+    })
+
+    expect(resultNull.error).toBeNull()
+    expect(txMock.updateIssue).toHaveBeenCalledWith(
+      mockIssueRow.id,
+      expect.objectContaining({
+        status: 'in-progress',
+        startedAt: expect.any(BigInt),
+      })
+    )
+
+    txMock.updateIssue.mockClear()
+    repository.retrieve.mockResolvedValue({
+      ...mockIssueRow,
+      status: 'todo',
+      startedAt: 1787767200n,
+    })
+
+    const resultNotNull = await service.update('org_test_1', mockIssueRow.id, {
+      status: 'in-progress',
+    })
+
+    expect(resultNotNull.error).toBeNull()
+    const updateArgs = txMock.updateIssue.mock.calls[0][1]
+    expect(updateArgs.startedAt).toBeUndefined()
+  })
+
+  it('update to done sets completedAt and clears canceledAt', async () => {
+    repository.retrieve.mockResolvedValue({
+      ...mockIssueRow,
+      status: 'in-progress',
+      canceledAt: 1787767200n,
+      completedAt: null,
+    })
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      status: 'done',
+    })
+
+    expect(result.error).toBeNull()
+    expect(txMock.updateIssue).toHaveBeenCalledWith(
+      mockIssueRow.id,
+      expect.objectContaining({
+        status: 'done',
+        completedAt: expect.any(BigInt),
+        canceledAt: null,
+      })
+    )
+  })
+
+  it('update writes one event per changed field and no events when nothing changed', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+
+    const resultWithChanges = await service.update(
+      'org_test_1',
+      mockIssueRow.id,
+      {
+        status: 'in-review',
+        priority: 'high',
+      }
+    )
+
+    expect(resultWithChanges.error).toBeNull()
+    expect(txMock.createEvent).toHaveBeenCalledTimes(2)
+    expect(txMock.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'status-changed',
+        fromValue: 'todo',
+        toValue: 'in-review',
+      })
+    )
+    expect(txMock.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'priority-changed',
+        fromValue: 'none',
+        toValue: 'high',
+      })
+    )
+
+    txMock.createEvent.mockClear()
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+
+    const resultNoChanges = await service.update(
+      'org_test_1',
+      mockIssueRow.id,
+      {
+        status: 'todo',
+        title: 'Same status new title',
+      }
+    )
+
+    expect(resultNoChanges.error).toBeNull()
+    expect(txMock.createEvent).not.toHaveBeenCalled()
+  })
+
+  it('moving an issue to another project leaves identifier unchanged', async () => {
+    const targetProject2 = {
+      ...mockProjectRow,
+      id: 'prj_beta_2',
+      key: 'BETA',
+      name: 'Beta Project',
+    }
+    projectsRepo.retrieve.mockImplementation(
+      async (_tenantId: string, id: string) => {
+        if (id === targetProject2.id) return targetProject2
+        return mockProjectRow
+      }
+    )
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      projectId: targetProject2.id,
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.identifier).toBe('CONSOLE-1')
+    expect(txMock.updateIssue).toHaveBeenCalledWith(
+      mockIssueRow.id,
+      expect.objectContaining({
+        projectId: targetProject2.id,
+      })
+    )
+    const updateCallArgs = txMock.updateIssue.mock.calls[0][1]
+    expect(updateCallArgs.identifier).toBeUndefined()
+    expect(updateCallArgs.number).toBeUndefined()
+  })
+
+  it('delete soft-deletes by default and hard-deletes when DELETION_MODE === "hard"', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+
+    const resultSoft = await service.remove('org_test_1', mockIssueRow.id)
+
+    expect(resultSoft.error).toBeNull()
+    expect(resultSoft.data).toEqual({
+      object: 'projects.issue',
+      id: mockIssueRow.id,
+      deleted: true,
+    })
+    expect(repository.softDelete).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id,
+      expect.any(BigInt)
+    )
+    expect(repository.hardDelete).not.toHaveBeenCalled()
+
+    process.env.DELETION_MODE = 'hard'
+    repository.softDelete.mockClear()
+    repository.hardDelete.mockClear()
+
+    const resultHard = await service.remove('org_test_1', mockIssueRow.id)
+
+    expect(resultHard.error).toBeNull()
+    expect(resultHard.data).toEqual({
+      object: 'projects.issue',
+      id: mockIssueRow.id,
+      deleted: true,
+    })
+    expect(repository.hardDelete).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id
+    )
+    expect(repository.softDelete).not.toHaveBeenCalled()
+  })
+
+  it('update of an unknown issue returns projects/issue-not-found', async () => {
+    repository.retrieve.mockResolvedValue(null)
+
+    const result = await service.update('org_test_1', 'iss_missing', {
+      title: 'New title',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/issue-not-found',
+      message: 'The issue could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('list events returns issue events newest first', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+    repository.listEvents.mockResolvedValue([mockIssueEventRow])
+
+    const result = await service.listEvents('org_test_1', mockIssueRow.id)
+
+    expect(result.error).toBeNull()
+    expect(result.data).toEqual([
+      {
+        object: 'projects.issue-event',
+        id: mockIssueEventRow.id,
+        issueId: mockIssueRow.id,
+        actorUserId: 'usr_creator_1',
+        type: 'created',
+        fromValue: null,
+        toValue: 'CONSOLE-1',
+        createdAt: 1787767200,
+      },
+    ])
+    expect(repository.listEvents).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id
+    )
+  })
+
+  it('GET /v1/organizations/:organizationId/issues returns platform list envelope', async () => {
+    repository.list.mockResolvedValue([mockIssueRow])
+    repository.count.mockResolvedValue(1)
+
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_test_1/issues'
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [
+          {
+            object: 'projects.issue',
+            id: mockIssueRow.id,
+            tenantId: tenant.id,
+            projectId: mockProjectRow.id,
+            projectKey: 'CONSOLE',
+            number: 1,
+            identifier: 'CONSOLE-1',
+            title: 'Test issue title',
+            description: 'Test issue description',
+            status: 'todo',
+            priority: 'none',
+            assigneeUserId: null,
+            creatorUserId: 'usr_creator_1',
+            parentIssueId: null,
+            estimate: null,
+            dueDate: null,
+            position: 0,
+            labels: [],
+            commentCount: 0,
+            subIssueCount: 0,
+            startedAt: null,
+            completedAt: null,
+            canceledAt: null,
+            createdAt: 1787767200,
+            updatedAt: 1787767200,
+          },
+        ],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org_test_1/issues',
+      },
+      error: null,
+    })
+  })
+
+  it('DELETE /v1/organizations/:organizationId/issues/:issueRef soft deletes and returns tombstone via HTTP', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+
+    const response = await requestJson(
+      'DELETE',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}`
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'projects.issue',
+        id: mockIssueRow.id,
+        deleted: true,
+      },
+      error: null,
+    })
+  })
+
+  it('rejects unauthorized HTTP requests when x-internal-key is missing or invalid', async () => {
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_test_1/issues',
+      undefined,
+      { 'x-internal-key': 'invalid-key' }
+    )
+
+    expect(response.status).toBe(401)
+    expect(response.body).toEqual({
+      data: null,
+      error: {
+        code: 'projects/unauthorized',
+        message: 'This request is missing valid credentials.',
+      },
+    })
+    expect(repository.list).not.toHaveBeenCalled()
+  })
+})

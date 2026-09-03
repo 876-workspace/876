@@ -662,6 +662,12 @@ importers:
       '@876/platform':
         specifier: workspace:*
         version: link:../../packages/platform
+      '@876/projects':
+        specifier: workspace:*
+        version: link:../../packages/projects
+      '@876/projects-ui':
+        specifier: workspace:*
+        version: link:../../packages/projects-ui
       '@876/storage':
         specifier: workspace:*
         version: link:../../packages/storage
@@ -1375,6 +1381,207 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
 
+  apps/projects:
+    dependencies:
+      '@876/access-ui':
+        specifier: workspace:*
+        version: link:../../packages/access-ui
+      '@876/account':
+        specifier: workspace:*
+        version: link:../../packages/account
+      '@876/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@876/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
+      '@876/projects':
+        specifier: workspace:*
+        version: link:../../packages/projects
+      '@876/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@876/workspace':
+        specifier: workspace:*
+        version: link:../../packages/workspace
+      '@sentry/nextjs':
+        specifier: 10.56.0
+        version: 10.56.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.1(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.107.1(esbuild@0.28.2))
+      '@tanstack/react-table':
+        specifier: ^9.1.2
+        version: 9.1.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next:
+        specifier: 16.3.1
+        version: 16.3.1(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
+      server-only:
+        specifier: 0.0.1
+        version: 0.0.1
+      sonner:
+        specifier: 2.0.8
+        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: 4.3.3
+        version: 4.3.3
+      '@testing-library/jest-dom':
+        specifier: 7.0.1
+        version: 7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11)
+      '@testing-library/react':
+        specifier: 16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@testing-library/user-event':
+        specifier: 14.6.5
+        version: 14.6.5(@testing-library/dom@10.4.1)
+      '@types/node':
+        specifier: 26.2.0
+        version: 26.2.0
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 19.2.4
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: 5.1.1
+        version: 5.1.1(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+      eslint:
+        specifier: 9.39.4
+        version: 9.39.4(jiti@2.7.0)
+      eslint-config-next:
+        specifier: 16.3.1
+        version: 16.3.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+      jsdom:
+        specifier: 30.0.1
+        version: 30.0.1(@noble/hashes@1.8.0)
+      tailwindcss:
+        specifier: 4.3.3
+        version: 4.3.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+
+  apps/projects-api:
+    dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@prisma/adapter-pg':
+        specifier: 7.9.1
+        version: 7.9.1
+      '@prisma/client':
+        specifier: 7.9.1
+        version: 7.9.1(prisma@7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@5.9.3))(typescript@5.9.3)
+      compression:
+        specifier: 1.8.1
+        version: 1.8.1
+      cors:
+        specifier: 2.8.6
+        version: 2.8.6
+      express:
+        specifier: 5.2.1
+        version: 5.2.1
+      helmet:
+        specifier: 8.3.0
+        version: 8.3.0
+      pg:
+        specifier: 8.23.0
+        version: 8.23.0
+      pino:
+        specifier: 10.3.1
+        version: 10.3.1
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/compression':
+        specifier: 1.8.1
+        version: 1.8.1
+      '@types/cors':
+        specifier: 2.8.19
+        version: 2.8.19
+      '@types/express':
+        specifier: 5.0.6
+        version: 5.0.6
+      '@types/node':
+        specifier: 26.2.0
+        version: 26.2.0
+      '@types/pg':
+        specifier: 8.23.1
+        version: 8.23.1
+      '@types/supertest':
+        specifier: 7.2.1
+        version: 7.2.1
+      dotenv:
+        specifier: 17.4.2
+        version: 17.4.2
+      eslint:
+        specifier: 9.39.4
+        version: 9.39.4(jiti@2.7.0)
+      pino-pretty:
+        specifier: 13.1.3
+        version: 13.1.3
+      prisma:
+        specifier: 7.9.1
+        version: 7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@5.9.3)
+      supertest:
+        specifier: 7.2.2
+        version: 7.2.2
+      tsup:
+        specifier: 8.5.1
+        version: 8.5.1(@swc/core@1.15.46(@swc/helpers@0.5.23))(jiti@2.7.0)(postcss@8.5.10)(tsx@4.23.12)(typescript@5.9.3)
+      tsx:
+        specifier: 4.23.12
+        version: 4.23.12
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+
+  apps/projects-mcp:
+    dependencies:
+      '@876/projects':
+        specifier: workspace:*
+        version: link:../../packages/projects
+      '@modelcontextprotocol/sdk':
+        specifier: 1.30.0
+        version: 1.30.0(zod@4.4.3)
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: 26.2.0
+        version: 26.2.0
+      eslint:
+        specifier: 9.39.4
+        version: 9.39.4(jiti@2.7.0)
+      tsup:
+        specifier: 8.5.1
+        version: 8.5.1(@swc/core@1.15.46(@swc/helpers@0.5.23))(jiti@2.7.0)(postcss@8.5.10)(tsx@4.23.12)(typescript@5.9.3)
+      tsx:
+        specifier: 4.23.12
+        version: 4.23.12
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+
   apps/storage-api:
     devDependencies:
       '@types/node':
@@ -1956,6 +2163,71 @@ importers:
       '@types/node':
         specifier: 26.2.0
         version: 26.2.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+
+  packages/projects:
+    dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../core
+      server-only:
+        specifier: 0.0.1
+        version: 0.0.1
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: 26.2.0
+        version: 26.2.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+
+  packages/projects-ui:
+    dependencies:
+      '@876/projects':
+        specifier: workspace:*
+        version: link:../projects
+      '@876/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@testing-library/jest-dom':
+        specifier: 7.0.1
+        version: 7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11)
+      '@testing-library/react':
+        specifier: 16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 19.2.4
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: 6.0.5
+        version: 6.0.5(babel-plugin-react-compiler@1.0.0)(vite@8.0.14(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12))
+      jsdom:
+        specifier: 30.0.1
+        version: 30.0.1(@noble/hashes@1.8.0)
+      next:
+        specifier: 16.3.1
+        version: 16.3.1(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -6894,12 +7166,6 @@ packages:
     peerDependencies:
       express: '>= 4.11'
 
-  express-rate-limit@8.7.0:
-    resolution: {integrity: sha512-hOwV7WOxXfjRpAM1DSJWZDXx3GhplwD8IfwuwvogD8i1Qnkgosw/H45s4ZnFAUHDAhPjlY9hLBvJhKmGMyY26g==}
-    engines: {node: '>= 16'}
-    peerDependencies:
-      express: '>= 4.11'
-
   express@5.2.1:
     resolution: {integrity: sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==}
     engines: {node: '>= 18'}
@@ -7561,9 +7827,6 @@ packages:
 
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
-
-  jose@6.2.10:
-    resolution: {integrity: sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g==}
 
   jose@6.2.9:
     resolution: {integrity: sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA==}
@@ -10814,14 +11077,36 @@ snapshots:
       eventsource: 3.0.7
       eventsource-parser: 3.1.1
       express: 5.2.1
-      express-rate-limit: 8.7.0(express@5.2.1)
+      express-rate-limit: 8.6.2(express@5.2.1)
       hono: 4.13.5
-      jose: 6.2.10
+      jose: 6.2.9
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
       zod: 3.25.76
       zod-to-json-schema: 3.25.2(zod@3.25.76)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@modelcontextprotocol/sdk@1.30.0(zod@4.4.3)':
+    dependencies:
+      '@hono/node-server': 1.19.13(hono@4.13.5)
+      ajv: 8.20.0
+      ajv-formats: 3.0.1(ajv@8.20.0)
+      content-type: 1.0.5
+      cors: 2.8.6
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.1.1
+      express: 5.2.1
+      express-rate-limit: 8.6.2(express@5.2.1)
+      hono: 4.13.5
+      jose: 6.2.9
+      json-schema-typed: 8.0.2
+      pkce-challenge: 5.0.1
+      raw-body: 3.0.2
+      zod: 4.4.3
+      zod-to-json-schema: 3.25.2(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -14689,14 +14974,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  express-rate-limit@8.7.0(express@5.2.1):
-    dependencies:
-      debug: 4.4.3
-      express: 5.2.1
-      ip-address: 10.7.0
-    transitivePeerDependencies:
-      - supports-color
-
   express@5.2.1:
     dependencies:
       accepts: 2.0.0
@@ -15344,8 +15621,6 @@ snapshots:
   jiti@2.7.0: {}
 
   jose@5.10.0: {}
-
-  jose@6.2.10: {}
 
   jose@6.2.9: {}
 
@@ -17846,6 +18121,10 @@ snapshots:
   zod-to-json-schema@3.25.2(zod@3.25.76):
     dependencies:
       zod: 3.25.76
+
+  zod-to-json-schema@3.25.2(zod@4.4.3):
+    dependencies:
+      zod: 4.4.3
 
   zod-validation-error@4.0.2(zod@4.4.3):
     dependencies:

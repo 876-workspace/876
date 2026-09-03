@@ -78,6 +78,12 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('scripts:',json.dumps\\(d.get\\('scripts',{}\\),indent=1\\)\\); print\\('deps:',list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\")"
     ]
   },
+  "enabledMcpjsonServers": [
+    "876-projects"
+  ],
+  "disabledMcpjsonServers": [
+    "sentry"
+  ],
   "outputStyle": "default",
-  "disabledMcpjsonServers": ["sentry"]
+  "enableAllProjectMcpServers": true
 }

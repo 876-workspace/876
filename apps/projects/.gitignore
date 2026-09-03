@@ -1,0 +1,5 @@
+.vercel
+.env*
+# Committed: non-secret loopback defaults for local development.
+!.env.development
+!.env.example

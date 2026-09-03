@@ -85,6 +85,20 @@ export const APP_WORKSPACES = [
     ],
   },
   {
+    appSlug: '876-projects',
+    key: 'projects',
+    label: '876 Projects',
+    summary: 'Projects, issues, and the board this organization plans on.',
+    iconKey: 'requests',
+    sections: [
+      { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
+      { label: 'Projects', segment: 'projects', iconKey: 'requests' },
+      { label: 'Issues', segment: 'issues', iconKey: 'requests' },
+      { label: 'Board', segment: 'board', iconKey: 'items' },
+      { label: 'Labels', segment: 'labels', iconKey: 'categories' },
+    ],
+  },
+  {
     appSlug: '876-billing',
     key: 'billing',
     label: '876 Billing',

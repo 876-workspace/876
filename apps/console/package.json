@@ -32,6 +32,8 @@
     "@876/crm-ui": "workspace:*",
     "@876/editor": "workspace:*",
     "@876/platform": "workspace:*",
+    "@876/projects": "workspace:*",
+    "@876/projects-ui": "workspace:*",
     "@876/storage": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/widgets": "workspace:*",

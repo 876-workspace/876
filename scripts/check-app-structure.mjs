@@ -25,7 +25,7 @@ import { join, relative, dirname, sep } from 'node:path'
 
 const APPS = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['console', 'billing', 'couriers', '876', 'enterprise', 'invoice', 'crm']
+  : ['console', 'billing', 'couriers', '876', 'enterprise', 'invoice', 'crm', 'projects']
 
 /** Next.js special files that legitimately live in a route directory. */
 const ROUTE_FILES = new Set([

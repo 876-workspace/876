@@ -1,0 +1,42 @@
+model Project {
+  id              String  @id
+  tenantId        String  @map("tenant_id")
+  name            String
+  key             String                       // issue prefix, e.g. "CONSOLE"
+  slug            String
+  description     String?
+  leadUserId      String? @map("lead_user_id")
+  status          String  @default("planned")  // planned|active|paused|completed|canceled
+  health          String  @default("on-track") // on-track|at-risk|off-track
+  startDate       BigInt? @map("start_date")
+  targetDate      BigInt? @map("target_date")
+  nextIssueNumber Int     @default(1) @map("next_issue_number")
+  customerId      String? @map("customer_id")  // opaque billing customer registry id
+  position        Int     @default(0)
+  archivedAt      BigInt? @map("archived_at")
+  createdAt       BigInt  @map("created_at")
+  updatedAt       BigInt  @map("updated_at")
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members ProjectMember[]
+  issues  Issue[]
+
+  @@unique([tenantId, key])
+  @@unique([tenantId, slug])
+  @@index([tenantId, status])
+  @@map("projects_projects")
+}
+
+model ProjectMember {
+  id        String @id
+  projectId String @map("project_id")
+  userId    String @map("user_id")
+  role      String @default("member")  // lead|member|viewer
+  createdAt BigInt @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@map("projects_project_members")
+}

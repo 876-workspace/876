@@ -1,0 +1,27 @@
+model Label {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  name        String
+  color       String  @default("#6b7280")
+  description String?
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issues IssueLabel[]
+
+  @@unique([tenantId, name])
+  @@map("projects_labels")
+}
+
+model IssueLabel {
+  issueId String @map("issue_id")
+  labelId String @map("label_id")
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([issueId, labelId])
+  @@index([labelId])
+  @@map("projects_issue_labels")
+}

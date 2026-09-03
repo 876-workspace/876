@@ -1,0 +1,132 @@
+'use client'
+
+import Link from 'next/link'
+import { ISSUE_STATUSES, type Issue, type IssueStatus } from '@876/projects/contracts'
+import { Badge } from '@876/ui/badge'
+
+import { IssuePriorityBadge } from './priority-badges'
+import { formatIssueStatus } from './status-badges'
+
+export type IssueBoardProps = {
+  issues: readonly Issue[]
+  issuesHref: string
+}
+
+export function IssueBoardCard({
+  issue,
+  issuesHref,
+}: {
+  issue: Issue
+  issuesHref: string
+}) {
+  return (
+    <div className="876-card hover:border-border/80 group relative flex flex-col gap-2 p-3 transition-colors">
+      <div className="flex items-center justify-between gap-2">
+        <Link
+          href={`${issuesHref}/${issue.identifier}`}
+          className="text-info hover:underline focus-visible:ring-ring rounded-xs font-mono text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+        >
+          {issue.identifier}
+        </Link>
+        <IssuePriorityBadge priority={issue.priority} />
+      </div>
+
+      <Link
+        href={`${issuesHref}/${issue.identifier}`}
+        className="text-[0.8125rem] font-medium leading-snug group-hover:text-sky-600 dark:group-hover:text-sky-400"
+      >
+        {issue.title}
+      </Link>
+
+      <div className="mt-1 flex flex-wrap items-center gap-1.5 pt-1 text-xs text-muted-foreground">
+        <Badge variant="outline" className="px-1.5 py-0 text-[0.6875rem]">
+          {issue.projectKey}
+        </Badge>
+        {issue.labels.map((label) => (
+          <Badge
+            key={label.id}
+            variant="secondary"
+            className="px-1.5 py-0 text-[0.6875rem]"
+            style={label.color ? { borderLeft: `3px solid ${label.color}` } : undefined}
+          >
+            {label.name}
+          </Badge>
+        ))}
+        {issue.assigneeUserId ? (
+          <span className="ml-auto font-mono text-[0.6875rem]">
+            {issue.assigneeUserId}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+export function IssueBoardColumn({
+  status,
+  issues,
+  issuesHref,
+}: {
+  status: IssueStatus
+  issues: readonly Issue[]
+  issuesHref: string
+}) {
+  return (
+    <div className="bg-muted/30 border-border/60 flex min-w-[280px] flex-1 flex-col rounded-xl border p-3">
+      <div className="mb-3 flex items-center justify-between px-1">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {formatIssueStatus(status)}
+        </h2>
+        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+          {issues.length}
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto">
+        {issues.length === 0 ? (
+          <div className="border-border/40 text-muted-foreground/60 flex flex-1 items-center justify-center rounded-lg border border-dashed py-8 text-xs">
+            No issues
+          </div>
+        ) : (
+          issues.map((issue) => (
+            <IssueBoardCard
+              key={issue.id}
+              issue={issue}
+              issuesHref={issuesHref}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function IssueBoard({ issues, issuesHref }: IssueBoardProps) {
+  const byStatus: Record<IssueStatus, Issue[]> = {
+    backlog: [],
+    todo: [],
+    'in-progress': [],
+    'in-review': [],
+    done: [],
+    canceled: [],
+  }
+
+  for (const issue of issues) {
+    if (byStatus[issue.status]) {
+      byStatus[issue.status].push(issue)
+    }
+  }
+
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-4">
+      {ISSUE_STATUSES.map((status) => (
+        <IssueBoardColumn
+          key={status}
+          status={status}
+          issues={byStatus[status]}
+          issuesHref={issuesHref}
+        />
+      ))}
+    </div>
+  )
+}

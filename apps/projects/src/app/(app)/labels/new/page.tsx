@@ -1,0 +1,20 @@
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import type { Metadata } from 'next'
+
+import { NewLabelForm } from '@/features/projects/components/new-label-form'
+import { PageBreadcrumb } from '@/components/page-breadcrumb'
+import { requireAppPermission } from '@/lib/auth/require-projects-context'
+
+export const metadata: Metadata = { title: 'New label' }
+
+export default async function NewLabelPage() {
+  await requireAppPermission('labels.create')
+
+  return (
+    <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
+      <PageBreadcrumb href="/labels" label="Labels" className="mb-4" />
+      <ResourceToolbar title="New label" />
+      <NewLabelForm />
+    </div>
+  )
+}
