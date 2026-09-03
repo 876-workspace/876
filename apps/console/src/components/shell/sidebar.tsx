@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useSyncExternalStore, type ReactNode } from 'react'
+import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
@@ -81,7 +81,7 @@ export function Sidebar({
     >
       <nav
         aria-label="Console navigation"
-        style={{ '--876-spring-rail': SIDEBAR_SPRING_RAIL } as React.CSSProperties}
+        style={{ '--876-spring-rail': SIDEBAR_SPRING_RAIL } as CSSProperties}
         className={cn(
           'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl [interpolate-size:allow-keywords] dark:shadow-black/25 dark:ring-white/[0.06]',
           CARD_MOTION,
