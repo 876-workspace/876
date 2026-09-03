@@ -15,8 +15,11 @@ import {
   Settings,
   SquaresPlusIcon,
   TagIcon,
+  CreditCard,
+  Flag,
   Users,
   Waves,
+  WrenchScrewdriverIcon,
 } from '@876/ui/icons'
 
 export const NAV_ICONS: Record<string, IconComponent> = {
@@ -39,6 +42,14 @@ export const NAV_ICONS: Record<string, IconComponent> = {
   labels: TagIcon,
   forms: DocumentTextIcon,
   customers: Users,
+  modules: LayoutGrid,
+  plans: CreditCard,
+  subscribers: Users,
+  features: Flag,
+  audit: ClipboardList,
+  provisioning: WrenchScrewdriverIcon,
+  keys: KeyRound,
+  overview: BarChart3,
 }
 
 export function resolveNavIcon(key: string): IconComponent {

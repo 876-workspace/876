@@ -12,8 +12,10 @@ import { getConsoleFeatures } from '@/lib/features'
 
 export default async function ConsoleRootLayout({
   children,
+  sidebar,
 }: {
   children: ReactNode
+  sidebar: ReactNode
 }) {
   const sessionUser = await requireSession('/')
   const [user, { enabledWidgetIds, uiFeatures }] = await Promise.all([
@@ -52,6 +54,7 @@ export default async function ConsoleRootLayout({
         }}
       >
         <Shell
+          sidebar={sidebar}
           userId={user.id}
           user={{ name: displayName, email: user.email, avatar: user.avatar }}
           uiFeatures={uiFeatures}

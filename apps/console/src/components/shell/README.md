@@ -55,6 +55,26 @@ wrong for a context itself — which is exactly why a standalone declaration
 exists. Storage is the standing proof: the rail swaps and the back control
 works before that product has a single screen. Do not delete it as cleanup.
 
+**From a route segment, through the `@sidebar` slot** — when the context needs
+data only that segment has. `/apps/[slug]` knows the app's `app_kind`, and the
+shell above it does not; an RSC layout cannot read the pathname without making
+the whole shell dynamic, and a client provider written to by a nested layout
+would flash the platform rail before the product rail arrived. So the segment
+renders its own sidebar into a parallel slot:
+
+```
+src/app/(app)/
+  layout.tsx                             receives `sidebar`, passes it to Shell
+  @sidebar/
+    default.tsx                          every unmatched route
+    apps/[slug]/[[...section]]/page.tsx  the product rail, kind-resolved
+```
+
+`ConsoleSidebar` resolves the access context, navigation, and slots, so a slot
+page only supplies the extra contexts its segment owns. The optional catch-all
+is what keeps the rail in place below the record — `/apps/876-crm/plans/pro`
+must not drop back to the platform rail.
+
 `groups` is kept rather than a flat entry list so a context renders the
 registry's own dividers; the platform rail's three groups are the reason.
 
@@ -146,6 +166,17 @@ the first. When Couriers or Billing adopts this, the move is mechanical.
 
 Naming follows the same rule: kebab-case files, PascalCase exports, and no
 `Console` prefix inside Console — the path already says `apps/console`.
+
+## Known gap: dynamic contexts on mobile
+
+`MobileNav` renders in the header, above the `@sidebar` slot, so it still
+receives only the statically declared `navContexts`. A section context and
+Storage work there; a per-app product context does not, and mobile shows the
+platform rail inside an app record.
+
+Closing it means a second slot (`@mobilenav`) rendering the sheet with the same
+resolved contexts. Do that when the first dynamic context has to reach mobile —
+the workspace rail in Phase 3 is the likely forcing move.
 
 ## Verification
 

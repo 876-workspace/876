@@ -13,12 +13,7 @@ import type { ReactNode } from 'react'
 
 import { MobileNav } from '@/components/shell/mobile-nav'
 import { navConfig } from '@/components/shell/nav-config'
-import { Sidebar } from '@/components/shell/sidebar'
 import { navContexts } from '@/components/shell/nav-contexts'
-import {
-  resolveSidebarSlots,
-  sidebarSlotDefinitions,
-} from '@/components/shell/sidebar-slots'
 import { resolveSettingsOptions } from '@/components/shell/settings-options'
 import { TopbarActions } from '@/components/shell/topbar-actions'
 import { TopbarSearch } from '@/components/shell/topbar-search'
@@ -35,6 +30,7 @@ export type ShellUser = {
 
 export async function Shell({
   children,
+  sidebar,
   widgetRail,
   userId,
   user,
@@ -47,6 +43,13 @@ export async function Shell({
   },
 }: {
   children: ReactNode
+  /**
+   * The left rail, composed by the caller from the `@sidebar` parallel route
+   * slot. It arrives as a node rather than being rendered here because a route
+   * segment contributes its own context with data only that segment has — an
+   * app record knows its `app_kind`; the shell above it does not.
+   */
+  sidebar: ReactNode
   /**
    * Optional right-hand rail, composed by the caller. The shell places it but
    * knows nothing about what is in it — that is what keeps the shell free of
@@ -65,9 +68,6 @@ export async function Shell({
 }) {
   const context = await resolveAccessContext(userId)
   const navigation = context ? resolveNavigation(navConfig, context) : []
-  const sidebarSlots = context
-    ? resolveSidebarSlots(sidebarSlotDefinitions, context)
-    : []
   const settings = context ? resolveSettingsOptions(context) : []
   const searchItems = [
     // Children are searchable too, titled by their section, so “Labels” and
@@ -141,11 +141,7 @@ export async function Shell({
         </AppShellHeader>
 
         <AppShellBody className="flex-col md:flex-row">
-          <Sidebar
-            navigation={navigation}
-            contexts={navContexts}
-            slots={sidebarSlots}
-          />
+          {sidebar}
           <AppShellMain>{children}</AppShellMain>
           {widgetRail}
         </AppShellBody>
