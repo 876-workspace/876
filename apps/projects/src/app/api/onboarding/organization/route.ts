@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { getPlatformClient } from '@/lib/services/platform'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import { createProjects } from '@/lib/services/projects'
+import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
 
@@ -91,22 +91,26 @@ export async function POST(request: NextRequest) {
     appSlug: PROJECTS_APP_SLUG,
   })
   if (subscription.error) {
-    Sentry.captureMessage('Projects onboarding: subscription activation failed', {
-      level: 'error',
-      tags: { category: 'platform_client', phase: 'crm_onboarding' },
-      extra: {
-        errorCode: subscription.error.code,
-        organizationId,
-        userId: session.user.id,
-      },
-    })
+    Sentry.captureMessage(
+      'Projects onboarding: subscription activation failed',
+      {
+        level: 'error',
+        tags: { category: 'platform_client', phase: 'crm_onboarding' },
+        extra: {
+          errorCode: subscription.error.code,
+          organizationId,
+          userId: session.user.id,
+        },
+      }
+    )
     return apiJson(
-      { error: subscription.error.message || 'Failed to activate 876 Projects.' },
+      {
+        error: subscription.error.message || 'Failed to activate 876 Projects.',
+      },
       { status: 502, code: subscription.error.code }
     )
   }
 
-  const projects = createProjects()
   const tenant = await projects.tenants.ensure(organizationId)
 
   if (tenant.error) {

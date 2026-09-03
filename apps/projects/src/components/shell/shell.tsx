@@ -20,13 +20,11 @@ import type { NavGroupDefinition } from '@876/core/access'
 import { Sidebar } from './sidebar'
 import { GlobalAdd } from './global-add'
 import { OrgSwitcher } from './org-switcher'
-import type { SupportCategory } from './support-categories'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
 
 export function Shell({
   children,
-  orgName,
   user,
   currentOrg,
   orgs,
@@ -35,7 +33,6 @@ export function Shell({
   navigation,
 }: {
   children: ReactNode
-  orgName: string
   user: SidebarUserMenuUser
   currentOrg: OrgSwitcherOrg
   orgs: OrgSwitcherOrg[]

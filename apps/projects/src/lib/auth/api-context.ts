@@ -2,7 +2,7 @@ import 'server-only'
 
 import { getProjectsContextResult } from './context'
 
-export async function getCrmApiContext() {
+export async function getProjectsApiContext() {
   const result = await getProjectsContextResult()
   if (result.status !== 'ok') return null
   if (

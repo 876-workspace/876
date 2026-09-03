@@ -9,4 +9,3 @@ export interface ProjectsUiFeatures {
 export interface ProjectsFeatures {
   uiFeatures: ProjectsUiFeatures
 }
-

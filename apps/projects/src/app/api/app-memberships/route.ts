@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getCrmApiContext } from '@/lib/auth/api-context'
+import { getProjectsApiContext } from '@/lib/auth/api-context'
 import { requireAppAccessManager } from '@/lib/auth/app-access'
 import { getWorkspace } from '@/lib/services/workspace'
 
@@ -39,7 +39,7 @@ function invalidBody() {
 }
 
 export async function POST(request: NextRequest) {
-  const context = await getCrmApiContext()
+  const context = await getProjectsApiContext()
   if (!context) return unauthorized()
   const manager = await requireAppAccessManager(context.orgId)
   if (manager.response) return manager.response

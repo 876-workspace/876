@@ -52,14 +52,15 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <Shell
-      orgName={orgName}
       user={{ name: displayName, email, avatar: user?.avatar ?? null }}
       currentOrg={currentOrg}
       orgs={orgs}
       apps={getAppsDirectory()}
       uiFeatures={uiFeatures}
       navigation={
-        access.status === 'ok' ? resolveNavigation(navConfig, access.context) : []
+        access.status === 'ok'
+          ? resolveNavigation(navConfig, access.context)
+          : []
       }
     >
       {access.status === 'unavailable' ? (
@@ -67,7 +68,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           title="Access could not be verified"
           error={{
             code: access.code,
-            message: 'App access is temporarily unavailable. Try again shortly.',
+            message:
+              'App access is temporarily unavailable. Try again shortly.',
           }}
           variant="banner"
         />

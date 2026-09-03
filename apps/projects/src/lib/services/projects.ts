@@ -1,25 +1,53 @@
 import 'server-only'
 
-import { create876ProjectsOperatorClient } from '@876/projects/operator'
+import {
+  create876ProjectsServiceClient,
+  type ProjectsServiceClient,
+} from '@876/projects/service'
 
-/**
- * The 876 Projects service client for this host.
- *
- * Built lazily: OpenNext and `next build` import route modules while the
- * runtime secrets are deliberately absent, so constructing at module scope
- * would throw during the build rather than on the first real request.
- */
-let cached: ReturnType<typeof create876ProjectsOperatorClient> | null = null
+let serviceClient: ProjectsServiceClient | undefined
 
-export function createProjects(requestId?: string) {
-  return create876ProjectsOperatorClient({
-    baseUrl: process.env.PROJECTS_API_URL,
-    internalKey: process.env.PROJECTS_INTERNAL_KEY!,
-    requestId,
-  })
+function getServiceClient() {
+  if (serviceClient) return serviceClient
+
+  const internalKey = process.env.PROJECTS_INTERNAL_KEY?.trim()
+  if (!internalKey) throw new Error('PROJECTS_INTERNAL_KEY is required')
+
+  const baseUrl =
+    process.env.PROJECTS_API_URL?.trim() ||
+    process.env.NEXT_PUBLIC_PROJECTS_API_URL?.trim() ||
+    'http://localhost:4030'
+  serviceClient = create876ProjectsServiceClient({ baseUrl, internalKey })
+
+  return serviceClient
 }
 
-export function getProjects() {
-  cached ??= createProjects()
-  return cached
+/**
+ * The app's server-only Projects client.
+ *
+ * This is the `service` tier — a first-party 876 app calling the service that
+ * owns the domain — not `session`: `apps/projects-api` exposes only
+ * internal-key routes today, so the app resolves the organization from the
+ * signed-in session itself and scopes every call by it. The same shape as
+ * `apps/crm/src/lib/services/crm.ts`.
+ *
+ * Initialization is deferred to first use because the build imports route
+ * modules before runtime secrets exist.
+ */
+export const projects = {
+  get tenants() {
+    return getServiceClient().tenants
+  },
+  get projects() {
+    return getServiceClient().projects
+  },
+  get issues() {
+    return getServiceClient().issues
+  },
+  get labels() {
+    return getServiceClient().labels
+  },
+  get comments() {
+    return getServiceClient().comments
+  },
 }

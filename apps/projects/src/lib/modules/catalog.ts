@@ -34,13 +34,13 @@ export const PROJECTS_MODULES: readonly ProjectsModule[] = [
     key: 'projects',
     label: 'Projects',
     description: 'Projects and their issue key prefixes.',
-    available: false,
+    available: true,
   },
   {
     key: 'issues',
     label: 'Issues',
     description: 'Issue tracking, status and priority.',
-    available: false,
+    available: true,
   },
   {
     key: 'comments',
@@ -52,7 +52,7 @@ export const PROJECTS_MODULES: readonly ProjectsModule[] = [
     key: 'labels',
     label: 'Labels',
     description: 'Labels shared across the workspace.',
-    available: false,
+    available: true,
   },
   {
     key: 'members',

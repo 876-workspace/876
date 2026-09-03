@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   remove: vi.fn(),
 }))
 vi.mock('@/lib/auth/api-context', () => ({
-  getCrmApiContext: mocks.getContext,
+  getProjectsApiContext: mocks.getContext,
 }))
 vi.mock('@/lib/auth/app-access', () => ({
   requireAppAccessManager: mocks.requireManager,

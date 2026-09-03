@@ -27,9 +27,13 @@ function context(
  */
 function guardedPermissionOf(href: string): string {
   const segment = href === '/' ? '' : href
+  // A list page usually sits in a `(list)` route group so a detail route can
+  // share the section's layout, and a route group is not part of the URL — so
+  // the guard for `/projects` may live in `projects/(list)/page.tsx`.
   const candidates = [
     `src/app/(app)${segment}/layout.tsx`,
     `src/app/(app)${segment}/page.tsx`,
+    `src/app/(app)${segment}/(list)/page.tsx`,
   ]
 
   for (const candidate of candidates) {
@@ -52,7 +56,15 @@ describe('Projects navigation access binding', () => {
         navConfig,
         context(projectsPermissionCatalog.permissions.map(({ key }) => key))
       ).flatMap((group) => group.entries.map(({ href }) => href))
-    ).toEqual(['/', '/settings/users', '/settings'])
+    ).toEqual([
+      '/',
+      '/projects',
+      '/issues',
+      '/board',
+      '/labels',
+      '/settings/users',
+      '/settings',
+    ])
   })
   it('shows only the dashboard to a dashboard-only member', () => {
     expect(
@@ -66,7 +78,7 @@ describe('Projects navigation access binding', () => {
       resolveNavigation(navConfig, context(['dashboard.view'])).flatMap(
         (group) => group.entries.map(({ href }) => href)
       )
-    ).not.toContain('/settings/users')
+    ).not.toContain('/projects')
   })
   it('returns structurally cloneable server output without mutating the registry', () => {
     const before = structuredClone(navConfig)

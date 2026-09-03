@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getCrmApiContext } from '@/lib/auth/api-context'
+import { getProjectsApiContext } from '@/lib/auth/api-context'
 import { requireAppAccessManager } from '@/lib/auth/app-access'
 import { getWorkspace } from '@/lib/services/workspace'
 
@@ -37,7 +37,7 @@ function invalidBody() {
 }
 
 export async function PATCH(request: NextRequest, route: RouteContext) {
-  const context = await getCrmApiContext()
+  const context = await getProjectsApiContext()
   if (!context) return unauthorized()
   const manager = await requireAppAccessManager(context.orgId)
   if (manager.response) return manager.response
@@ -55,7 +55,7 @@ export async function PATCH(request: NextRequest, route: RouteContext) {
 }
 
 export async function DELETE(_request: NextRequest, route: RouteContext) {
-  const context = await getCrmApiContext()
+  const context = await getProjectsApiContext()
   if (!context) return unauthorized()
   const manager = await requireAppAccessManager(context.orgId)
   if (manager.response) return manager.response

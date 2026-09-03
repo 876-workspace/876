@@ -7,7 +7,11 @@ import { cache } from 'react'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import type { AccessStatus, ProjectsContext, CrmContextResult } from '@/types/auth'
+import type {
+  AccessStatus,
+  ProjectsContext,
+  CrmContextResult,
+} from '@/types/auth'
 
 import { isAccountUsable } from './account-validity'
 import { normalizeOrgRole } from './roles'
