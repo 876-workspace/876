@@ -37,13 +37,7 @@ function navigationSections(
   )
 }
 
-/**
- * Builds the pathname-derived sidebar stack from the resolved registry.
- *
- * The platform context is always the root. Sections declared by navigation or
- * supplied explicitly can sit above it, while product and workspace contexts
- * use the same representation once those routes are introduced.
- */
+/** Builds the pathname-derived context stack from resolved navigation data. */
 export function resolveSidebarContextStack(
   pathname: string,
   navigation: readonly NavGroupDefinition[],
@@ -86,6 +80,15 @@ export function resolveSidebarContext(
 ): SidebarContext | null {
   const stack = resolveSidebarContextStack(pathname, navigation, declared)
   return stack.length > 1 ? (stack.at(-1) ?? null) : null
+}
+
+/** Returns the immediate parent context for an explicit back action. */
+export function resolveSidebarBackContext(
+  stack: readonly SidebarContext[],
+  currentKey: string
+): SidebarContext | null {
+  const index = stack.findIndex((context) => context.key === currentKey)
+  return index > 0 ? (stack[index - 1] ?? null) : null
 }
 
 /** Kept as a narrow compatibility helper for existing Console callers/tests. */
