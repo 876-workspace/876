@@ -69,6 +69,12 @@ export const PLATFORM_APPS: readonly PlatformAppDefinition[] = [
     appKind: 'product',
     homepageUrl: 'https://crm.876.app',
   },
+  {
+    name: '876 Projects',
+    slug: '876-projects',
+    appKind: 'product',
+    homepageUrl: 'https://projects.876.app',
+  },
 ] as const
 
 export const EFESTO_ORG_SLUG = 'efesto'

@@ -51,6 +51,7 @@ export const INTERNAL_PLAN_APP_SLUGS = [
   '876-billing',
   '876-invoice',
   '876-crm',
+  '876-projects',
 ] as const
 
 /** 876's own organization, the only one this seed subscribes. */

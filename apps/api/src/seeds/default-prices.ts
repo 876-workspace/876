@@ -24,6 +24,7 @@ export const FREE_PRICE_APP_SLUGS = [
   '876-billing',
   '876-invoice',
   '876-crm',
+  '876-projects',
 ] as const
 
 export type DefaultPriceSeedSummary = {
