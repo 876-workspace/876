@@ -6,6 +6,7 @@ import * as repository from './labels.repository.js'
 import type { CreateLabelBody, UpdateLabelBody } from './labels.schemas.js'
 import {
   serializeLabel,
+  type LabelRow,
   type SerializedLabel,
   type SerializedLabelTombstone,
 } from './labels.serializers.js'
@@ -14,6 +15,40 @@ export type ServiceResult<T> =
   { data: T; error: null } | { data: null; error: ProjectsError }
 
 const DEFAULT_LABEL_COLOR = '#6b7280'
+
+/**
+ * Resolves or creates a label row for another module by id or name.
+ *
+ * Sibling modules (such as issues) need label rows for tenant-scoped work
+ * rather than serialized resources. This is the labels module's public way
+ * to hand them over: a module owns its own tables, so nothing outside this
+ * directory may reach for `labels.repository`.
+ */
+export async function resolveLabel(
+  tenantId: string,
+  labelIdOrName: string
+): Promise<LabelRow> {
+  if (labelIdOrName.startsWith('lbl_')) {
+    const byId = await repository.retrieve(tenantId, labelIdOrName)
+    if (byId) return byId
+  }
+
+  const byName = await repository.retrieveByName(tenantId, labelIdOrName)
+  if (byName) return byName
+
+  const now = toDbUnixSeconds(nowUnixSeconds())
+  return repository.create({
+    id: generateId('label'),
+    tenantId,
+    name: labelIdOrName,
+    color: DEFAULT_LABEL_COLOR,
+    description: null,
+    createdAt: now,
+    updatedAt: now,
+  })
+}
+
+export const ensureLabel = resolveLabel
 
 async function resolveTenant(organizationId: string) {
   const tenant = await tenants.resolveTenant(organizationId)

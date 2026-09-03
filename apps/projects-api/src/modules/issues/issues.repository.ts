@@ -1,6 +1,5 @@
 import { prisma } from '../../db/index.js'
-import type { LabelRow, SerializedLabel } from '../labels/labels.serializers.js'
-import { serializeLabel } from '../labels/labels.serializers.js'
+import type { LabelRow } from '../labels/labels.serializers.js'
 import type { IssueEventRow, IssueRow } from './issues.serializers.js'
 
 export type ListIssuesOptions = {
@@ -335,7 +334,7 @@ export async function getBatchEnrichment(issueIds: string[]): Promise<
   Map<
     string,
     {
-      labels: SerializedLabel[]
+      labels: LabelRow[]
       commentCount: number
       subIssueCount: number
     }
@@ -344,7 +343,7 @@ export async function getBatchEnrichment(issueIds: string[]): Promise<
   const map = new Map<
     string,
     {
-      labels: SerializedLabel[]
+      labels: LabelRow[]
       commentCount: number
       subIssueCount: number
     }
@@ -405,7 +404,7 @@ export async function getBatchEnrichment(issueIds: string[]): Promise<
   for (const il of issueLabels) {
     const entry = map.get(il.issueId)
     if (entry) {
-      entry.labels.push(serializeLabel(il.label as LabelRow))
+      entry.labels.push(il.label as LabelRow)
     }
   }
 

@@ -15,6 +15,7 @@ import type {
 import {
   serializeMember,
   serializeProject,
+  type ProjectRow,
   type SerializedProject,
   type SerializedProjectMember,
   type SerializedProjectMemberTombstone,
@@ -84,9 +85,7 @@ export async function deriveUniqueSlug(
 
 async function resolveTenant(organizationId: string): Promise<
   | {
-      tenant: NonNullable<
-        Awaited<ReturnType<typeof tenants.resolveTenant>>
-      >
+      tenant: NonNullable<Awaited<ReturnType<typeof tenants.resolveTenant>>>
       error: null
     }
   | { tenant: null; error: ProjectsError }
@@ -96,6 +95,28 @@ async function resolveTenant(organizationId: string): Promise<
     return { tenant: null, error: getError('projects/tenant-not-found') }
   }
   return { tenant, error: null }
+}
+
+/**
+ * Resolves a project row for another module by id or key.
+ *
+ * Sibling modules scope work to a project and need the row rather than the
+ * serialized resource. This is the projects module's public way to hand it
+ * over: a module owns its own tables, so nothing outside this directory may
+ * reach for `projects.repository`.
+ */
+export async function resolveProject(
+  tenantId: string,
+  projectIdOrKey: string
+): Promise<ProjectRow | null> {
+  if (projectIdOrKey.startsWith('prj_')) {
+    const project = await repository.retrieve(tenantId, projectIdOrKey)
+    if (project) {
+      return project
+    }
+  }
+
+  return repository.retrieveByKey(tenantId, projectIdOrKey.toUpperCase())
 }
 
 export async function list(

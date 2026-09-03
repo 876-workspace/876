@@ -5,9 +5,8 @@ import {
   nullableToDbUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
-import * as labelsRepository from '../labels/labels.repository.js'
-import * as projectsRepository from '../projects/projects.repository.js'
-import type { ProjectRow } from '../projects/projects.serializers.js'
+import * as labels from '../labels/index.js'
+import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './issues.repository.js'
 import type {
@@ -18,6 +17,7 @@ import type {
 import {
   serializeIssue,
   serializeIssueEvent,
+  type IssueRow,
   type SerializedIssue,
   type SerializedIssueEvent,
   type SerializedIssueTombstone,
@@ -32,6 +32,24 @@ export type PaginatedIssues = {
   totalCount: number | null
 }
 
+/**
+ * Resolves an issue row for another module by id or identifier.
+ *
+ * Sibling modules (such as comments) scope work to an issue and need the row
+ * rather than the serialized resource. This is the issues module's public way
+ * to hand it over: a module owns its own tables, so nothing outside this
+ * directory may reach for `issues.repository`.
+ */
+export async function resolveIssue(
+  tenantId: string,
+  issueRef: string
+): Promise<IssueRow | null> {
+  if (issueRef.startsWith('iss_')) {
+    return repository.retrieve(tenantId, issueRef)
+  }
+  return repository.retrieveByIdentifier(tenantId, issueRef.toUpperCase())
+}
+
 async function resolveTenant(organizationId: string) {
   const tenant = await tenants.resolveTenant(organizationId)
   if (!tenant) {
@@ -44,25 +62,12 @@ async function resolveProject(
   tenant: { id: string; triageProjectId: string | null },
   projectIdOrKey?: string
 ) {
-  let project: ProjectRow | null = null
-
-  if (projectIdOrKey) {
-    if (projectIdOrKey.startsWith('prj_')) {
-      project = await projectsRepository.retrieve(tenant.id, projectIdOrKey)
-    }
-    if (!project) {
-      project = await projectsRepository.retrieveByKey(
-        tenant.id,
-        projectIdOrKey.toUpperCase()
-      )
-    }
-  } else if (tenant.triageProjectId) {
-    project = await projectsRepository.retrieve(
-      tenant.id,
-      tenant.triageProjectId
-    )
+  const target = projectIdOrKey ?? tenant.triageProjectId
+  if (!target) {
+    return { project: null, error: getError('projects/project-not-found') }
   }
 
+  const project = await projects.resolveProject(tenant.id, target)
   if (!project) {
     return { project: null, error: getError('projects/project-not-found') }
   }
@@ -78,34 +83,10 @@ async function resolveLabels(
   const seen = new Set<string>()
 
   for (const input of labelInputs) {
-    let labelId: string | null = null
-    if (input.startsWith('lbl_')) {
-      const byId = await labelsRepository.retrieve(tenantId, input)
-      if (byId) labelId = byId.id
-    }
-
-    if (!labelId) {
-      const byName = await labelsRepository.retrieveByName(tenantId, input)
-      if (byName) {
-        labelId = byName.id
-      } else {
-        const now = toDbUnixSeconds(nowUnixSeconds())
-        const created = await labelsRepository.create({
-          id: generateId('label'),
-          tenantId,
-          name: input,
-          color: '#6b7280',
-          description: null,
-          createdAt: now,
-          updatedAt: now,
-        })
-        labelId = created.id
-      }
-    }
-
-    if (labelId && !seen.has(labelId)) {
-      seen.add(labelId)
-      resolvedIds.push(labelId)
+    const label = await labels.resolveLabel(tenantId, input)
+    if (label && !seen.has(label.id)) {
+      seen.add(label.id)
+      resolvedIds.push(label.id)
     }
   }
 

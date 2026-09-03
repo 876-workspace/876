@@ -99,14 +99,15 @@ export function serializeIssue(
   row: IssueRow,
   options?: {
     projectKey?: string
-    labels?: SerializedLabel[]
+    labels?: LabelRow[] | SerializedLabel[]
     commentCount?: number
     subIssueCount?: number
   }
 ): SerializedIssue {
   const projectKey = options?.projectKey ?? row.project?.key ?? ''
-  const labels =
-    options?.labels ?? row.labels?.map((il) => serializeLabel(il.label)) ?? []
+  const labels = options?.labels
+    ? options.labels.map((l) => ('object' in l ? l : serializeLabel(l)))
+    : (row.labels?.map((il) => serializeLabel(il.label)) ?? [])
   const commentCount =
     options?.commentCount !== undefined
       ? options.commentCount

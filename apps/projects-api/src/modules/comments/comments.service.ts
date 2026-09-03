@@ -1,7 +1,7 @@
 import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
-import * as issuesRepository from '../issues/issues.repository.js'
+import * as issues from '../issues/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './comments.repository.js'
 import type {
@@ -33,12 +33,7 @@ async function resolveTenant(organizationId: string) {
 }
 
 async function resolveIssue(tenantId: string, issueRef: string) {
-  const issue = issueRef.startsWith('iss_')
-    ? await issuesRepository.retrieve(tenantId, issueRef)
-    : await issuesRepository.retrieveByIdentifier(
-        tenantId,
-        issueRef.toUpperCase()
-      )
+  const issue = await issues.resolveIssue(tenantId, issueRef)
 
   if (!issue || issue.deletedAt !== null) {
     return { issue: null, error: getError('projects/issue-not-found') }

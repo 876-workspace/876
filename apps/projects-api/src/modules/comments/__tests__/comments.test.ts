@@ -3,11 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
   tenantsRepo: {
-    retrieveByOrganization: vi.fn(),
+    resolveTenant: vi.fn(),
   },
   issuesRepo: {
-    retrieve: vi.fn(),
-    retrieveByIdentifier: vi.fn(),
+    resolveIssue: vi.fn(),
   },
   repository: {
     list: vi.fn(),
@@ -20,8 +19,8 @@ const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
-vi.mock('../../issues/issues.repository.js', () => issuesRepo)
+vi.mock('../../tenants/index.js', () => tenantsRepo)
+vi.mock('../../issues/index.js', () => issuesRepo)
 vi.mock('../comments.repository.js', () => repository)
 
 const service = await import('../comments.service.js')
@@ -110,9 +109,8 @@ async function requestJson(
 beforeEach(() => {
   vi.clearAllMocks()
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
-  tenantsRepo.retrieveByOrganization.mockResolvedValue(tenant)
-  issuesRepo.retrieve.mockResolvedValue(mockIssueRow)
-  issuesRepo.retrieveByIdentifier.mockResolvedValue(mockIssueRow)
+  tenantsRepo.resolveTenant.mockResolvedValue(tenant)
+  issuesRepo.resolveIssue.mockResolvedValue(mockIssueRow)
 })
 
 describe('comments module', () => {
@@ -135,7 +133,10 @@ describe('comments module', () => {
       createdAt: 1787767200,
       updatedAt: 1787767200,
     })
-    expect(issuesRepo.retrieve).toHaveBeenCalledWith(tenant.id, mockIssueRow.id)
+    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id
+    )
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: tenant.id,
@@ -149,7 +150,7 @@ describe('comments module', () => {
   })
 
   it('create against an unknown issue returns projects/issue-not-found and does not call the comment repository (not.toHaveBeenCalled())', async () => {
-    issuesRepo.retrieve.mockResolvedValue(null)
+    issuesRepo.resolveIssue.mockResolvedValue(null)
 
     const result = await service.create('org_test_1', 'iss_missing', {
       body: 'Comment on nonexistent issue',
@@ -161,7 +162,10 @@ describe('comments module', () => {
       message: 'The issue could not be found.',
       httpStatus: 404,
     })
-    expect(issuesRepo.retrieve).toHaveBeenCalledWith(tenant.id, 'iss_missing')
+    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
+      tenant.id,
+      'iss_missing'
+    )
     expect(repository.create).not.toHaveBeenCalled()
   })
 
@@ -184,7 +188,10 @@ describe('comments module', () => {
         updatedAt: 1787767200,
       },
     ])
-    expect(issuesRepo.retrieve).toHaveBeenCalledWith(tenant.id, mockIssueRow.id)
+    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id
+    )
     expect(repository.list).toHaveBeenCalledWith(mockIssueRow.id, {
       limit: 25,
       startingAfter: undefined,
@@ -211,7 +218,10 @@ describe('comments module', () => {
       message: 'The comment could not be found.',
       httpStatus: 404,
     })
-    expect(issuesRepo.retrieve).toHaveBeenCalledWith(tenant.id, mockIssueRow.id)
+    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id
+    )
     expect(repository.retrieve).toHaveBeenCalledWith(
       mockIssueRow.id,
       'cmt_missing'
@@ -238,7 +248,10 @@ describe('comments module', () => {
       id: mockCommentRow.id,
       deleted: true,
     })
-    expect(issuesRepo.retrieve).toHaveBeenCalledWith(tenant.id, mockIssueRow.id)
+    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
+      tenant.id,
+      mockIssueRow.id
+    )
     expect(repository.retrieve).toHaveBeenCalledWith(
       mockIssueRow.id,
       mockCommentRow.id
