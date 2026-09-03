@@ -99,6 +99,7 @@ function defineConsolePermissionCatalog(): AppPermissionCatalog {
         label: 'Console',
         actions: [
           'access',
+          'projects',
           'requests',
           'settings',
           'billing',

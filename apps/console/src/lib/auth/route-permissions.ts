@@ -9,6 +9,7 @@ import 'server-only'
 export const ROUTE_PERMISSIONS = {
   '/users': 'console:users',
   '/orgs': 'console:organizations',
+  '/projects': 'console:projects',
   '/apps': 'console:apps',
   '/widgets': 'console:widgets',
   '/features': 'console:features',
