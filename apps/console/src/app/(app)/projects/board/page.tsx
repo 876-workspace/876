@@ -7,7 +7,7 @@ import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-
 import { BoardData } from '@/features/projects/components/board-data'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-import { PLATFORM_PROJECTS_BASE } from '../_lib/base'
+import { PLATFORM_PROJECTS_BASE } from '../_lib/paths'
 
 export const metadata = { title: 'Board' }
 
