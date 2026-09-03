@@ -20,70 +20,35 @@ find out whether they finished, verify what they produced, and commit it.
 
 ---
 
-## 2. What is done
+## 2. What is done  *(updated 2026-09-03, session 2)*
 
 | Item | State |
 | --- | --- |
-| Integration branch `feat/876-projects` | created, one commit (`54321aee`, the plan) |
-| `plan.md` — scope, feature spec, schema, API surface, MCP design, phases | **done, committed** |
-| Brief: Phase 1 — `apps/projects-api` foundation | **done**, dispatched |
-| Brief: Phase 2 — issues / labels / comments | **done**, not dispatched |
-| Brief: Phase 3 — `packages/projects` client | **done**, not dispatched |
-| Brief: Phase 4 — platform registration | **done**, dispatched |
-| Brief: Phase 5 — `apps/projects-mcp` | **done**, not dispatched |
-| Brief: Phase 6 — `projects-ui` + Console | **not written** |
-| Brief: Phase 7 — standalone app (:3008) | **not written** |
+| `plan.md`, with a live phase status table | done, committed |
+| Briefs for **all seven** phases | done, committed |
+| **Phase 1** — `apps/projects-api` foundation | **done, verified, committed** (`4e9c7603`) |
+| **Phase 4** — platform registration | **done, verified, committed** (`e8a7f670`) |
+| Workspace lockfile for `@876/projects-api` | done (`03044699`) |
+| **Phase 2** — issues/labels/comments | dispatched, in flight |
+| Phases 3, 5, 6, 7 | briefed, not dispatched |
 
-Briefs 2, 3 and 5 are uncommitted at handoff time — commit them.
+Session 2 found and fixed six defects in the delegated phase 1/4 output; they
+are itemised in `reports/orchestrator/2026-09-03-phase1-and-4-review.md`. Read
+that before trusting a future agy report at face value — the pattern to watch
+for is a delegate working around a temporary environment problem by reaching
+into another app.
 
----
+## 3. Current state
 
-## 3. What was in flight — check this first
+Nothing is unverified. `apps/projects-api` typechecks, lints and passes 34 tests
+from a clean generated directory; `@876/core` (962 tests) and `@876/api` (2231
+tests) pass. `node scripts/check-app-structure.mjs` and `pnpm check:transpile`
+are green. `pnpm check:env` reports exactly three gaps for `projects-api` —
+`PROJECTS_DATABASE_URL`, `PROJECTS_DIRECT_DATABASE_URL` and
+`PROJECTS_INTERNAL_KEY` — which are the user-blocked items in §9 and are the
+correct end state until the Neon project exists.
 
-Two background `agy --model=gemini-3.8-flash-high` runs were launched from the
-previous session's shell. **They may have been killed when that session ended.**
-Their stream logs were at
-`/tmp/claude-0/-root-projects-876/2057764d-a965-4d7d-8db8-8a92453a1934/scratchpad/agy-phase{1,4}.log`
-which is session-scoped and probably gone. Do not chase the logs — **inspect the
-working tree instead**, which is the durable evidence.
-
-```bash
-git status --short
-find apps/projects-api -type f | sort
-ls plans/2026-09-03-876-projects/reports/agy/
-```
-
-### Phase 1 — `apps/projects-api` — PARTIAL
-
-Last observed: config files and the first Prisma schema files written, still
-working through the schema and modules. Files seen on disk:
-`package.json`, `tsconfig.json`, `eslint.config.mjs`, `vitest.config.ts`,
-`tsup.config.ts`, `prisma.config.ts`, `.gitignore`, `.env.example`,
-`scripts/prisma-generate.mjs`, `prisma/schema.prisma`,
-`prisma/schema/schema.prisma`, `prisma/schema/tenant.prisma`.
-
-**Almost certainly incomplete** — no `src/`, no migration, no modules, no tests,
-no report. If the process is gone, **re-dispatch the same brief** (§5); it is
-idempotent enough that re-running over a partial tree is fine, but say so in the
-brief invocation if you want it to reconcile rather than restart.
-
-> ⚠️ **Known suspicious artifact:** both `prisma/schema.prisma` **and**
-> `prisma/schema/schema.prisma` exist. Compare them against
-> `apps/crm-api/prisma/` — a duplicated `datasource`/`generator` block across a
-> multi-file schema is a `prisma validate` failure. Fix or delete the duplicate.
-
-### Phase 4 — platform registration — LIKELY COMPLETE, UNVERIFIED
-
-Modified: `apps/api/src/seeds/{bootstrap,app-access,internal-plan,default-prices}.ts`,
-`apps/api/src/seeds/default-prices.test.ts`,
-`packages/core/src/access/catalogs.ts`,
-`packages/core/src/access/catalogs.billing-invoice.test.ts`.
-Added: `packages/core/src/access/catalogs.projects.test.ts`.
-
-It was last seen running `pnpm --filter @876/api test`. **Verify before trusting
-it** (§4). No report file was written yet.
-
----
+Remaining order: verify and commit phase 2 → dispatch 3 → then 5, 6, 7 → one PR.
 
 ## 4. Verification you owe before committing anything
 
