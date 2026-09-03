@@ -15,7 +15,7 @@ import {
   DetailHeaderTabs,
 } from '@876/ui/detail-header'
 import { resolveApp } from './_data'
-import { getAppTabs } from './_lib/app-detail-tabs'
+import { getAppTabs } from '@/features/apps/app-detail-nav'
 
 type Props = {
   children: ReactNode

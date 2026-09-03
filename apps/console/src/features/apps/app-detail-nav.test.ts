@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getAppTabs } from './app-detail-tabs'
+import { getAppTabs } from './app-detail-nav'
 
 const base = '/apps/876-console'
 
