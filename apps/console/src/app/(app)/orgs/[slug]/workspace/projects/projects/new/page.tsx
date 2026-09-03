@@ -1,7 +1,15 @@
-import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { ArrowLeft } from '@876/ui/icons'
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+
+import { CreateFormSkeleton } from '@/features/projects/components/create-form-skeleton'
+import { ProjectCreateForm } from '@/features/projects/components/project-create-form'
+
+import { resolveOrg } from '../../../../_data'
+import { workspaceProjectsBase } from '../../_lib/base'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -12,13 +20,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function NewProjectPage({ params }: Props) {
+  // `params` carries no I/O, so awaiting it here keeps the chrome immediate.
   const { slug } = await params
-  const base = `/orgs/${slug}/workspace/projects/projects`
+  const base = workspaceProjectsBase(slug)
 
   return (
     <div className="space-y-6">
       <Link
-        href={base}
+        href={`${base}/projects`}
         className={buttonVariants({
           variant: 'outline',
           size: 'sm',
@@ -29,20 +38,21 @@ export default async function NewProjectPage({ params }: Props) {
         Back to projects
       </Link>
 
-      <div className="876-card max-w-xl p-6">
-        <h1 className="text-lg font-semibold">Create a new project</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Projects own issue keys (e.g. CONSOLE-12) and group roadmap work for this organization.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <Link
-            href={base}
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-          >
-            Cancel
-          </Link>
-        </div>
-      </div>
+      <Suspense fallback={<CreateFormSkeleton />}>
+        <ProjectCreateFormData slug={slug} />
+      </Suspense>
     </div>
+  )
+}
+
+async function ProjectCreateFormData({ slug }: { slug: string }) {
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
+
+  return (
+    <ProjectCreateForm
+      organizationId={org.id}
+      base={workspaceProjectsBase(slug)}
+    />
   )
 }

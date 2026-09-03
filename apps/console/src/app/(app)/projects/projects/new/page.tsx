@@ -2,18 +2,21 @@ import { buttonVariants } from '@876/ui/button'
 import { ArrowLeft } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
-import { PLATFORM_PROJECTS_BASE } from '../../_lib/base'
+import { CreateFormSkeleton } from '@/features/projects/components/create-form-skeleton'
+import { ProjectCreateForm } from '@/features/projects/components/project-create-form'
+
+import { requirePlatformProjectsOrgId } from '../../_lib/base'
+import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
 
 export const metadata = { title: 'New Project • Projects' }
 
 export default function PlatformNewProjectPage() {
-  const base = `${PLATFORM_PROJECTS_BASE}/projects`
-
   return (
     <Page className="space-y-6">
       <Link
-        href={base}
+        href={`${PLATFORM_PROJECTS_BASE}/projects`}
         className={buttonVariants({
           variant: 'outline',
           size: 'sm',
@@ -24,20 +27,20 @@ export default function PlatformNewProjectPage() {
         Back to projects
       </Link>
 
-      <div className="876-card max-w-xl p-6">
-        <h1 className="text-lg font-semibold">Create a new project</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Projects own issue keys (e.g. CONSOLE-12) and group roadmap work.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <Link
-            href={base}
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-          >
-            Cancel
-          </Link>
-        </div>
-      </div>
+      <Suspense fallback={<CreateFormSkeleton />}>
+        <ProjectCreateFormData />
+      </Suspense>
     </Page>
+  )
+}
+
+async function ProjectCreateFormData() {
+  const organizationId = await requirePlatformProjectsOrgId()
+
+  return (
+    <ProjectCreateForm
+      organizationId={organizationId}
+      base={PLATFORM_PROJECTS_BASE}
+    />
   )
 }
