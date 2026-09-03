@@ -88,6 +88,23 @@ node scripts/check-app-structure.mjs
 | `pnpm --filter @876/core test`         | 37 files, 962 tests, all pass                          |
 | `node scripts/check-app-structure.mjs` | OK                                                     |
 
+## Pull request
+
+[#467](https://github.com/876-workspace/876/pull/467) — targets `feat/876-projects`,
+the integration branch this phase belongs to, not `main`.
+
+Twelve commits, `3bb0f105..e80bc579`. The last one, `e80bc579`, fixes three
+geometry defects found by running the app rather than by any test: the rail
+column was narrower than the card's content box so the icons sat 4px left of
+centre, the card animated only its width so its height snapped when a section's
+few rows replaced the rail's many icons, and the 4px gutter that reads as
+deliberate behind a 60px rail read as the panel touching the content once it
+was 224px wide.
+
+CI on the PR is red, as it is on `main` — every Actions check fails in 2-3s and
+the Cloudflare Workers Builds are orphaned from the move to Vercel. Both are
+pre-existing and repo-wide; the verification above was run locally.
+
 ## Handoff state
 
 Implemented and green; **not committed** — `.claude/rules/git.md` requires
