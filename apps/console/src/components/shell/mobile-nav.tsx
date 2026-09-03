@@ -18,6 +18,10 @@ import { useState } from 'react'
 
 import { NavIcon } from '@/components/shell/nav-icons'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
+import {
+  isNavSection,
+  resolveActiveChildKey,
+} from '@/components/shell/sidebar-sections'
 
 const mobileNavItemBase =
   'focus-visible:ring-sidebar-ring flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[0.9375rem] leading-5 transition-colors focus-visible:ring-2 focus-visible:outline-hidden'
@@ -71,7 +75,7 @@ export function MobileNav({
             {navigation.map((group) => (
               <div key={group.key} className="flex flex-col gap-1">
                 {group.entries.map((item) => (
-                  <MobileNavLink
+                  <MobileNavEntry
                     key={item.key}
                     item={item}
                     pathname={pathname}
@@ -87,7 +91,12 @@ export function MobileNav({
   )
 }
 
-function MobileNavLink({
+/**
+ * The sheet flattens rather than drills. A drill-down costs a tap and hides the
+ * rest of the app behind it; the sheet already scrolls, so a section's items
+ * sit indented under it and everything stays one tap away.
+ */
+function MobileNavEntry({
   item,
   pathname,
   onNavigate,
@@ -96,8 +105,57 @@ function MobileNavLink({
   pathname: string
   onNavigate: () => void
 }) {
-  const isActive = isActiveConsolePath(pathname, item.href)
+  if (!isNavSection(item))
+    return (
+      <MobileNavLink item={item} pathname={pathname} onNavigate={onNavigate} />
+    )
 
+  const activeChildKey = resolveActiveChildKey(pathname, item)
+
+  return (
+    <div className="flex flex-col gap-1">
+      <MobileNavLink
+        item={item}
+        pathname={pathname}
+        onNavigate={onNavigate}
+        isActive={
+          activeChildKey === null && isActiveConsolePath(pathname, item.href)
+        }
+      />
+      <div className="border-876-surface-border ml-5 flex flex-col gap-0.5 border-l pl-3">
+        {item.children.map((child) => (
+          <Link
+            key={child.key}
+            href={child.href}
+            onClick={onNavigate}
+            aria-current={child.key === activeChildKey ? 'page' : undefined}
+            className={cn(
+              'focus-visible:ring-sidebar-ring flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 text-[0.875rem] transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
+              child.key === activeChildKey
+                ? 'bg-[var(--876-nav-active-bg)] font-medium text-[var(--876-nav-active-fg)]'
+                : mobileNavItemRest
+            )}
+          >
+            <NavIcon icon={child.icon} className="size-4 shrink-0" />
+            <span className="min-w-0 flex-1 truncate">{child.title}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MobileNavLink({
+  item,
+  pathname,
+  onNavigate,
+  isActive = isActiveConsolePath(pathname, item.href),
+}: {
+  item: NavEntry
+  pathname: string
+  onNavigate: () => void
+  isActive?: boolean
+}) {
   return (
     <Link
       href={item.href}
