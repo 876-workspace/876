@@ -34,6 +34,7 @@ const PORTS = {
   billing: 3004,
   invoice: 3006,
   crm: 3007,
+  projects: 3008,
   api: 4000,
 }
 
@@ -178,6 +179,11 @@ function envPlanFor(origins) {
       NEXT_PUBLIC_APP_URL: origins.app,
       NEXT_PUBLIC_API_URL: origins.api,
     },
+    projects: {
+      NEXT_PUBLIC_PROJECTS_URL: origins.projects,
+      NEXT_PUBLIC_APP_URL: origins.app,
+      NEXT_PUBLIC_API_URL: origins.api,
+    },
     api: {
       CORS_ALLOWED_ORIGINS: [
         'http://localhost:3000',
@@ -187,6 +193,7 @@ function envPlanFor(origins) {
         'http://localhost:3004',
         'http://localhost:3006',
         'http://localhost:3007',
+        'http://localhost:3008',
         origins.app,
         origins.enterprise,
         origins.console,
@@ -194,6 +201,7 @@ function envPlanFor(origins) {
         origins.billing,
         origins.invoice,
         origins.crm,
+        origins.projects,
       ].join(','),
     },
     'billing-api': {

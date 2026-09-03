@@ -79,6 +79,11 @@ const APPS = {
     direct: 'CRM_DIRECT_DATABASE_URL',
     envFiles: ['.env', '.env.development', '.env.development.local'],
   },
+  'projects-api': {
+    runtime: 'PROJECTS_DATABASE_URL',
+    direct: 'PROJECTS_DIRECT_DATABASE_URL',
+    envFiles: ['.env', '.env.development', '.env.development.local'],
+  },
   'work-api': {
     runtime: 'WORK_DATABASE_URL',
     direct: 'WORK_DIRECT_DATABASE_URL',
