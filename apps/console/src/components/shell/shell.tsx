@@ -11,9 +11,7 @@ import { NavProgress } from '@876/ui/nav-progress'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { MobileNav } from '@/components/shell/mobile-nav'
 import { navConfig } from '@/components/shell/nav-config'
-import { navContexts } from '@/components/shell/nav-contexts'
 import { resolveSettingsOptions } from '@/components/shell/settings-options'
 import { TopbarActions } from '@/components/shell/topbar-actions'
 import { TopbarSearch } from '@/components/shell/topbar-search'
@@ -31,6 +29,7 @@ export type ShellUser = {
 export async function Shell({
   children,
   sidebar,
+  mobileNav,
   widgetRail,
   userId,
   user,
@@ -50,6 +49,14 @@ export async function Shell({
    * app record knows its `app_kind`; the shell above it does not.
    */
   sidebar: ReactNode
+  /**
+   * The mobile navigation sheet, composed by the caller from the `@mobilenav`
+   * parallel route slot. It is a separate slot from `sidebar` because it
+   * renders in the header, above the body — it cannot read the sidebar's node,
+   * and hard-coding the platform contexts here is what left a phone showing the
+   * platform rail inside an app record.
+   */
+  mobileNav: ReactNode
   /**
    * Optional right-hand rail, composed by the caller. The shell places it but
    * knows nothing about what is in it — that is what keeps the shell free of
@@ -99,7 +106,7 @@ export async function Shell({
       <AppShellContent>
         <AppShellHeader>
           <div className="flex items-center gap-2 md:hidden">
-            <MobileNav navigation={navigation} contexts={navContexts} />
+            {mobileNav}
             <Link
               href="/"
               aria-label="Console home"
