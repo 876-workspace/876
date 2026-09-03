@@ -1,8 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
-import { PanelLeftIcon } from '@876/ui/icons'
+import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
 import { Logo } from '@876/ui/logo'
 import {
   Sheet,
@@ -14,13 +15,14 @@ import {
 } from '@876/ui/sheet'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
 
 import { NavIcon } from '@/components/shell/nav-icons'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 import {
-  isNavSection,
   resolveActiveChildKey,
+  resolveSidebarContext,
+  resolveSidebarContextStack,
+  type SidebarContext,
 } from '@/components/shell/sidebar-sections'
 
 const mobileNavItemBase =
@@ -34,11 +36,24 @@ const mobileNavIconBase =
 
 export function MobileNav({
   navigation,
+  contexts = [],
 }: {
   navigation: readonly NavGroupDefinition[]
+  contexts?: readonly SidebarContext[]
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [dismissedContextKey, setDismissedContextKey] = useState<string | null>(
+    null
+  )
+  const stack = resolveSidebarContextStack(pathname, navigation, contexts)
+  const context = resolveSidebarContext(pathname, navigation, contexts)
+  const visibleContext =
+    context && dismissedContextKey !== context.key ? context : stack[0]!
+
+  const handleBack = () => {
+    if (context) setDismissedContextKey(context.key)
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -59,7 +74,9 @@ export function MobileNav({
               <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
             </span>
             <SheetTitle className="text-sidebar-foreground text-base leading-6">
-              Console
+              {visibleContext.kind === 'platform'
+                ? 'Console'
+                : visibleContext.title}
             </SheetTitle>
           </div>
           <SheetDescription className="sr-only">
@@ -68,79 +85,89 @@ export function MobileNav({
         </SheetHeader>
 
         <nav
-          aria-label="Console sections"
+          aria-label="Console navigation"
           className="min-h-0 flex-1 overflow-y-auto px-3 py-4"
         >
-          <div className="flex flex-col gap-5">
-            {navigation.map((group) => (
-              <div key={group.key} className="flex flex-col gap-1">
-                {group.entries.map((item) => (
-                  <MobileNavEntry
-                    key={item.key}
-                    item={item}
-                    pathname={pathname}
-                    onNavigate={() => setOpen(false)}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
+          {visibleContext.kind === 'platform' ? (
+            <PlatformMobileContext
+              context={visibleContext}
+              pathname={pathname}
+              onOpenContext={() => setDismissedContextKey(null)}
+              onNavigate={() => setOpen(false)}
+            />
+          ) : (
+            <NestedMobileContext
+              context={visibleContext}
+              pathname={pathname}
+              onBack={handleBack}
+              onNavigate={() => setOpen(false)}
+            />
+          )}
         </nav>
       </SheetContent>
     </Sheet>
   )
 }
 
-/**
- * The sheet flattens rather than drills. A drill-down costs a tap and hides the
- * rest of the app behind it; the sheet already scrolls, so a section's items
- * sit indented under it and everything stays one tap away.
- */
-function MobileNavEntry({
-  item,
+function PlatformMobileContext({
+  context,
   pathname,
+  onOpenContext,
   onNavigate,
 }: {
-  item: NavEntry
+  context: SidebarContext
   pathname: string
+  onOpenContext: () => void
   onNavigate: () => void
 }) {
-  if (!isNavSection(item))
-    return (
-      <MobileNavLink item={item} pathname={pathname} onNavigate={onNavigate} />
-    )
+  return (
+    <div className="flex flex-col gap-1">
+      {context.entries.map((item) => (
+        <MobileNavLink
+          key={item.key}
+          item={item}
+          pathname={pathname}
+          onOpenContext={onOpenContext}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </div>
+  )
+}
 
-  const activeChildKey = resolveActiveChildKey(pathname, item)
+function NestedMobileContext({
+  context,
+  pathname,
+  onBack,
+  onNavigate,
+}: {
+  context: SidebarContext
+  pathname: string
+  onBack: () => void
+  onNavigate: () => void
+}) {
+  const activeChildKey = resolveActiveChildKey(pathname, context)
 
   return (
     <div className="flex flex-col gap-1">
-      <MobileNavLink
-        item={item}
-        pathname={pathname}
-        onNavigate={onNavigate}
-        isActive={
-          activeChildKey === null && isActiveConsolePath(pathname, item.href)
-        }
-      />
-      <div className="border-876-surface-border ml-5 flex flex-col gap-0.5 border-l pl-3">
-        {item.children.map((child) => (
-          <Link
-            key={child.key}
-            href={child.href}
-            onClick={onNavigate}
-            aria-current={child.key === activeChildKey ? 'page' : undefined}
-            className={cn(
-              'focus-visible:ring-sidebar-ring flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 text-[0.875rem] transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
-              child.key === activeChildKey
-                ? 'bg-[var(--876-nav-active-bg)] font-medium text-[var(--876-nav-active-fg)]'
-                : mobileNavItemRest
-            )}
-          >
-            <NavIcon icon={child.icon} className="size-4 shrink-0" />
-            <span className="min-w-0 flex-1 truncate">{child.title}</span>
-          </Link>
-        ))}
-      </div>
+      <button
+        type="button"
+        onClick={onBack}
+        className="text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring mb-2 flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-hidden"
+      >
+        <ArrowLeft aria-hidden="true" className="size-4" />
+        Back to Console
+      </button>
+      {context.entries.map((child) => (
+        <MobileNavLink
+          key={child.key}
+          item={child}
+          pathname={pathname}
+          isActive={child.key === activeChildKey}
+          onOpenContext={undefined}
+          onNavigate={onNavigate}
+        />
+      ))}
     </div>
   )
 }
@@ -148,18 +175,23 @@ function MobileNavEntry({
 function MobileNavLink({
   item,
   pathname,
+  onOpenContext,
   onNavigate,
   isActive = isActiveConsolePath(pathname, item.href),
 }: {
   item: NavEntry
   pathname: string
+  onOpenContext?: () => void
   onNavigate: () => void
   isActive?: boolean
 }) {
   return (
     <Link
       href={item.href}
-      onClick={onNavigate}
+      onClick={() => {
+        if (item.children?.length) onOpenContext?.()
+        onNavigate()
+      }}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
         mobileNavItemBase,
