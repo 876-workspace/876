@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
+import { useState, useSyncExternalStore, type ReactNode } from 'react'
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
@@ -30,6 +30,7 @@ import {
   subscribeSidebarExpanded,
   writeSidebarExpanded,
 } from '@/components/shell/sidebar-preferences'
+import { SIDEBAR_SPRING_RAIL } from '@/components/shell/sidebar-motion'
 import type { SidebarSlot } from '@/components/shell/sidebar-slots'
 
 const RAIL_WIDTH = 'w-[3.75rem]'
@@ -41,10 +42,6 @@ const CARD_MOTION =
   'transition-[width,height] duration-500 [transition-timing-function:var(--876-spring-rail)] motion-reduce:transition-none'
 const INSET_MOTION =
   'transition-[padding] duration-500 [transition-timing-function:var(--876-spring-rail)] motion-reduce:transition-none'
-const SPRING_STYLE = {
-  '--876-spring-rail':
-    'linear(0, 0.08 7%, 0.34 20%, 0.72 38%, 1.02 53%, 1.055 61%, 1.005 70%, 0.99 82%, 1 100%)',
-} as CSSProperties
 
 const REGION_ORDER = ['top', 'above-nav', 'below-nav', 'footer'] as const
 
@@ -76,21 +73,17 @@ export function Sidebar({
 
   return (
     <aside
-      style={SPRING_STYLE}
       className={cn(
         'hidden min-h-0 shrink-0 flex-col items-center justify-center md:flex [interpolate-size:allow-keywords]',
         INSET_MOTION,
         openContext && expanded ? INSET_PANEL : INSET_RAIL
       )}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && openContext)
-          setDismissedContextKey(openContext.key)
-      }}
     >
       <nav
         aria-label="Console navigation"
+        style={{ '--876-spring-rail': SIDEBAR_SPRING_RAIL } as React.CSSProperties}
         className={cn(
-          'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl dark:shadow-black/25 dark:ring-white/[0.06]',
+          'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl [interpolate-size:allow-keywords] dark:shadow-black/25 dark:ring-white/[0.06]',
           CARD_MOTION,
           openContext && expanded ? PANEL_WIDTH : RAIL_WIDTH
         )}
@@ -135,12 +128,22 @@ function PlatformContext({
   onOpenContext: () => void
 }) {
   return (
-    <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH)}>
+    <div
+      className={cn(
+        'flex flex-col gap-1',
+        expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH
+      )}
+    >
       <SidebarExpandControl expanded={expanded} onChange={onExpandChange} />
       <SidebarSlotRegion slots={slots} region="top" expanded={expanded} />
       <SidebarSlotRegion slots={slots} region="above-nav" expanded={expanded} />
       <div className="bg-border/60 my-0.5 h-px w-full" />
-      <div className={cn('flex flex-col gap-1', expanded ? 'min-w-0' : 'items-center')}>
+      <div
+        className={cn(
+          'flex flex-col gap-1',
+          expanded ? 'min-w-0' : 'items-center'
+        )}
+      >
         {context.entries.map((entry) => (
           <ContextEntry
             key={entry.key}
