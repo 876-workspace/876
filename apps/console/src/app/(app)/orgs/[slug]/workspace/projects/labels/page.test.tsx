@@ -76,7 +76,7 @@ describe('OrganizationLabelsPage', () => {
   })
 
   it('loads and renders labels data', async () => {
-    const element = await LabelsData({ slug: 'test-org' })
+    const element = await LabelsData({ organizationId: 'org_123' })
     render(element)
 
     expect(mocks.listLabels).toHaveBeenCalledWith('org_123')
@@ -88,10 +88,13 @@ describe('OrganizationLabelsPage', () => {
   it('renders AppError notice when labels fail to load', async () => {
     mocks.listLabels.mockResolvedValue({
       data: null,
-      error: { code: 'projects/unavailable', message: 'Label store unavailable' },
+      error: {
+        code: 'projects/unavailable',
+        message: 'Label store unavailable',
+      },
     })
 
-    const element = await LabelsData({ slug: 'test-org' })
+    const element = await LabelsData({ organizationId: 'org_123' })
     render(element)
 
     expect(

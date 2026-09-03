@@ -1,6 +1,7 @@
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { LABELS_SKELETON_COLUMNS } from '@/features/projects/components/labels-skeleton-columns'
@@ -22,6 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function OrganizationLabelsPage({ params }: Props) {
   const { slug } = await params
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
 
   return (
     <div>
@@ -31,7 +34,7 @@ export default async function OrganizationLabelsPage({ params }: Props) {
           <DataTableSkeleton columns={LABELS_SKELETON_COLUMNS} rows={5} />
         }
       >
-        <LabelsData slug={slug} />
+        <LabelsData organizationId={org.id} />
       </Suspense>
     </div>
   )

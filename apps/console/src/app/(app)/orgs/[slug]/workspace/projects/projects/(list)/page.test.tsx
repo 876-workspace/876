@@ -67,7 +67,12 @@ describe('OrganizationProjectsPage', () => {
       name: 'Test Org',
     })
     mocks.listProjects.mockResolvedValue({
-      data: { object: 'list', data: mockProjects, hasMore: false, totalCount: 1 },
+      data: {
+        object: 'list',
+        data: mockProjects,
+        hasMore: false,
+        totalCount: 1,
+      },
       error: null,
     })
   })
@@ -81,7 +86,9 @@ describe('OrganizationProjectsPage', () => {
     const { container } = render(page)
 
     // Toolbar must be rendered
-    expect(screen.getByRole('button', { name: /Filter projects by status/ })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Filter projects by status/ })
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
       'href',
       '/orgs/test-org/workspace/projects/projects/new'
@@ -104,7 +111,8 @@ describe('OrganizationProjectsPage', () => {
     const status = isProjectStatus(statusParam) ? statusParam : 'all'
 
     const element = await ProjectsData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       status,
     })
 
@@ -123,7 +131,8 @@ describe('OrganizationProjectsPage', () => {
     expect(status).toBe('all')
 
     const element = await ProjectsData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       status,
     })
 
@@ -138,7 +147,10 @@ describe('OrganizationProjectsPage', () => {
   it('keeps toolbar mounted and renders an AppError notice when listing fails', async () => {
     mocks.listProjects.mockResolvedValue({
       data: null,
-      error: { code: 'projects/unavailable', message: 'Service temporarily down' },
+      error: {
+        code: 'projects/unavailable',
+        message: 'Service temporarily down',
+      },
     })
 
     const page = await OrganizationProjectsPage({
@@ -156,7 +168,8 @@ describe('OrganizationProjectsPage', () => {
 
     // And ProjectsData renders AppError notice
     const dataElement = await ProjectsData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       status: 'all',
     })
 
@@ -164,8 +177,6 @@ describe('OrganizationProjectsPage', () => {
     expect(
       screen.getByText('Some project data could not be loaded')
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('Service temporarily down')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Service temporarily down')).toBeInTheDocument()
   })
 })

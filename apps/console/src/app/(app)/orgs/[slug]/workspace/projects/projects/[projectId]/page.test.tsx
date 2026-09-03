@@ -78,7 +78,8 @@ describe('OrganizationProjectDetailPage', () => {
 
   it('renders project detail with name, key, lead, and status', async () => {
     const element = await ProjectDetailData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       projectId: 'proj_test',
     })
 
@@ -89,7 +90,9 @@ describe('OrganizationProjectDetailPage', () => {
       project: 'proj_test',
     })
 
-    expect(screen.getByRole('heading', { name: 'Falcon Heavy' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Falcon Heavy' })
+    ).toBeInTheDocument()
     expect(screen.getByText('(FAL)')).toBeInTheDocument()
     expect(screen.getByText('Heavy lift launch vehicle')).toBeInTheDocument()
     expect(screen.getByText('user_lead')).toBeInTheDocument()
@@ -99,19 +102,21 @@ describe('OrganizationProjectDetailPage', () => {
   it('renders AppError notice when project retrieve fails', async () => {
     mocks.retrieveProject.mockResolvedValue({
       data: null,
-      error: { code: 'projects/unavailable', message: 'Project retrieval error' },
+      error: {
+        code: 'projects/unavailable',
+        message: 'Project retrieval error',
+      },
     })
 
     const element = await ProjectDetailData({
-      slug: 'test-org',
+      organizationId: 'org_123',
+      base: '/orgs/test-org/workspace/projects',
       projectId: 'proj_test',
     })
 
     render(element)
 
-    expect(
-      screen.getByText('Project could not be loaded')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Project could not be loaded')).toBeInTheDocument()
     expect(screen.getByText('Project retrieval error')).toBeInTheDocument()
   })
 })

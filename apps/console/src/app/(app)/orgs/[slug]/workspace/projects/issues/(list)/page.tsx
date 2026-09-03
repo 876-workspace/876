@@ -2,6 +2,7 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { ISSUES_SKELETON_COLUMNS } from '@/features/projects/components/issues-skeleton-columns'
@@ -13,6 +14,7 @@ import {
 } from '@/features/projects/issue-status'
 
 import { resolveOrg } from '../../../../_data'
+import { workspaceProjectsBase } from '../../_lib/base'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -32,6 +34,9 @@ export default async function OrganizationIssuesPage({
   searchParams,
 }: Props) {
   const { slug } = await params
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
+
   const { status } = await searchParams
   const selectedStatus: IssueFilterStatus = isIssueStatus(status)
     ? status
@@ -58,7 +63,11 @@ export default async function OrganizationIssuesPage({
           <DataTableSkeleton columns={ISSUES_SKELETON_COLUMNS} rows={5} />
         }
       >
-        <IssuesData slug={slug} status={selectedStatus} />
+        <IssuesData
+          organizationId={org.id}
+          base={workspaceProjectsBase(slug)}
+          status={selectedStatus}
+        />
       </Suspense>
     </div>
   )

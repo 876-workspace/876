@@ -1,23 +1,19 @@
 import { AppError } from '@876/ui/app-error'
-import { notFound } from 'next/navigation'
 
 import type { IssueFilterStatus } from '../issue-status'
 import { projects } from '@/lib/services/projects'
 import { IssuesTable } from '@876/projects-ui/issue-list'
 
-import { resolveOrg } from '../../../app/(app)/orgs/[slug]/_data'
-
 export async function IssuesData({
-  slug,
+  organizationId,
+  base,
   status,
 }: {
-  slug: string
+  organizationId: string
+  base: string
   status: IssueFilterStatus
 }) {
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
-  const result = await projects.issues.list(org.id, {
+  const result = await projects.issues.list(organizationId, {
     status: status === 'all' ? undefined : status,
   })
 
@@ -33,8 +29,8 @@ export async function IssuesData({
       ) : null}
       <IssuesTable
         issues={result.data?.data ?? []}
-        issuesHref={`/orgs/${slug}/workspace/projects/issues`}
-        newIssueHref={`/orgs/${slug}/workspace/projects/issues/new`}
+        issuesHref={`${base}/issues`}
+        newIssueHref={`${base}/issues/new`}
       />
     </div>
   )
