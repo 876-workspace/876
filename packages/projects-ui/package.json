@@ -1,0 +1,70 @@
+{
+  "name": "@876/projects-ui",
+  "version": "0.1.0",
+  "description": "Reusable React surfaces for the 876 Projects product domain.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    "./status-badges": {
+      "types": "./src/status-badges.tsx",
+      "default": "./src/status-badges.tsx"
+    },
+    "./priority-badges": {
+      "types": "./src/priority-badges.tsx",
+      "default": "./src/priority-badges.tsx"
+    },
+    "./project-list": {
+      "types": "./src/project-list.tsx",
+      "default": "./src/project-list.tsx"
+    },
+    "./project-detail": {
+      "types": "./src/project-detail.tsx",
+      "default": "./src/project-detail.tsx"
+    },
+    "./issue-list": {
+      "types": "./src/issue-list.tsx",
+      "default": "./src/issue-list.tsx"
+    },
+    "./issue-detail": {
+      "types": "./src/issue-detail.tsx",
+      "default": "./src/issue-detail.tsx"
+    },
+    "./issue-board": {
+      "types": "./src/issue-board.tsx",
+      "default": "./src/issue-board.tsx"
+    },
+    "./labels-list": {
+      "types": "./src/labels-list.tsx",
+      "default": "./src/labels-list.tsx"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@876/projects": "workspace:*",
+    "@876/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^16.3.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.0.5",
+    "jsdom": "30.0.1",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}
