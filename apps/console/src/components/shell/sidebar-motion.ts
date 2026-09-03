@@ -13,9 +13,9 @@ function springStep(time: number): number {
   const dampingRatio = damping / (2 * Math.sqrt(stiffness * mass))
 
   if (dampingRatio >= 1) {
-    const r = naturalFrequency * Math.sqrt(dampingRatio ** 2 - 1)
-    const s1 = -naturalFrequency * (dampingRatio - Math.sqrt(dampingRatio ** 2 - 1))
-    const s2 = -naturalFrequency * (dampingRatio + Math.sqrt(dampingRatio ** 2 - 1))
+    const root = Math.sqrt(dampingRatio ** 2 - 1)
+    const s1 = -naturalFrequency * (dampingRatio - root)
+    const s2 = -naturalFrequency * (dampingRatio + root)
     const a = s2 / (s2 - s1)
     const b = -s1 / (s2 - s1)
     return 1 - a * Math.exp(s1 * time) - b * Math.exp(s2 * time)
