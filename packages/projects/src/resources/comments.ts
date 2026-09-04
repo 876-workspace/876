@@ -41,6 +41,22 @@ export function createCommentsResource(runtime: Runtime) {
         commentListSchema
       )
     },
+    retrieve(
+      organizationId: string,
+      issueRef: string,
+      commentId: string,
+      options: RequestOptions = {}
+    ) {
+      return request(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId, issueRef)}/${encodeURIComponent(commentId)}`,
+          signal: options.signal,
+        },
+        commentSchema
+      )
+    },
     create(
       organizationId: string,
       issueRef: string,
@@ -62,7 +78,7 @@ export function createCommentsResource(runtime: Runtime) {
       organizationId: string,
       issueRef: string,
       commentId: string,
-      input: UpdateCommentInput & { actorUserId: string },
+      input: UpdateCommentInput,
       options: RequestOptions = {}
     ) {
       return request(
@@ -80,15 +96,13 @@ export function createCommentsResource(runtime: Runtime) {
       organizationId: string,
       issueRef: string,
       commentId: string,
-      actorUserId: string,
       options: RequestOptions = {}
     ) {
-      const search = new URLSearchParams({ actorUserId })
       return request(
         runtime,
         {
           method: 'DELETE',
-          path: `${root(organizationId, issueRef)}/${encodeURIComponent(commentId)}?${search.toString()}`,
+          path: `${root(organizationId, issueRef)}/${encodeURIComponent(commentId)}`,
           signal: options.signal,
         },
         deletedSchema
