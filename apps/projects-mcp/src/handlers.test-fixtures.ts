@@ -19,6 +19,7 @@ export const config: Config = {
   apiUrl: 'http://localhost:4030',
   internalKey: 'test-internal-key',
   organizationId: 'org_test_123',
+  defaultUserId: 'usr_author',
 }
 
 export function createClient() {
@@ -48,6 +49,39 @@ export const mockTenant: Tenant = {
   updatedAt: 1788400000,
 }
 
+export const mockWorkItemType: WorkItemType = {
+  object: 'projects.work-item-type',
+  id: 'wit_task',
+  tenantId: 'tnt_123',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'check-square',
+  color: '#2563eb',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1788400000,
+  updatedAt: 1788400000,
+}
+
+export const mockWorkflowState: WorkflowState = {
+  object: 'projects.workflow-state',
+  id: 'wfs_todo',
+  tenantId: 'tnt_123',
+  key: 'todo',
+  name: 'To do',
+  category: 'unstarted',
+  color: '#64748b',
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1788400000,
+  updatedAt: 1788400000,
+}
+
 export const mockProject: Project = {
   object: 'projects.project',
   id: 'prj_console',
@@ -63,6 +97,7 @@ export const mockProject: Project = {
   targetDate: 1788500000,
   nextIssueNumber: 2,
   customerId: null,
+  defaultWorkItemTypeId: mockWorkItemType.id,
   position: 0,
   archivedAt: null,
   createdAt: 1788400000,
@@ -81,6 +116,18 @@ export const mockIssue: Issue = {
   title: 'Fix workspace detail 404s',
   description: 'Test description',
   status: 'in-progress',
+  typeKey: 'task',
+  type: mockWorkItemType,
+  state: {
+    ...mockWorkflowState,
+    id: 'wfs_in_progress',
+    key: 'in-progress',
+    name: 'In progress',
+    category: 'started',
+    isDefault: false,
+  },
+  milestone: null,
+  customFields: [],
   priority: 'high',
   assigneeUserId: 'usr_assignee',
   creatorUserId: 'usr_creator',
@@ -116,39 +163,6 @@ export const mockLabel: Label = {
   name: 'bug',
   color: '#e11d48',
   description: 'Bug report',
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-}
-
-export const mockWorkItemType: WorkItemType = {
-  object: 'projects.work-item-type',
-  id: 'wit_task',
-  tenantId: 'tnt_123',
-  key: 'task',
-  name: 'Task',
-  iconKey: 'check-square',
-  color: '#2563eb',
-  hierarchyLevel: 1,
-  description: null,
-  isDefault: true,
-  position: 0,
-  archivedAt: null,
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-}
-
-export const mockWorkflowState: WorkflowState = {
-  object: 'projects.workflow-state',
-  id: 'wfs_todo',
-  tenantId: 'tnt_123',
-  key: 'todo',
-  name: 'To do',
-  category: 'unstarted',
-  color: '#64748b',
-  description: null,
-  isDefault: true,
-  position: 0,
-  archivedAt: null,
   createdAt: 1788400000,
   updatedAt: 1788400000,
 }
