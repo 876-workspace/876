@@ -6,6 +6,23 @@ import type { Issue, IssueEvent } from '@876/projects/contracts'
 
 import { IssueDetail } from './issue-detail'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
+
 function makeIssue(overrides?: Partial<Issue>): Issue {
   return {
     object: 'projects.issue',
@@ -19,6 +36,11 @@ function makeIssue(overrides?: Partial<Issue>): Issue {
     description:
       '## Repro steps\n\n- Open the editor below 640px\n- Toggle the sidebar\n\nThe layout breaks in `SidebarShell`.',
     status: 'in-progress',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'high',
     assigneeUserId: 'user_ana',
     creatorUserId: 'user_ben',

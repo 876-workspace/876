@@ -1,7 +1,7 @@
 import { Badge } from '@876/ui/badge'
-import type { IssueStatus, ProjectHealth, ProjectStatus } from '@876/projects/contracts'
+import type { ProjectHealth, ProjectStatus } from '@876/projects/contracts'
 
-export function formatIssueStatus(status: IssueStatus): string {
+export function formatIssueStatus(status: string): string {
   switch (status) {
     case 'backlog':
       return 'Backlog'
@@ -24,7 +24,7 @@ export function IssueStatusBadge({
   status,
   className,
 }: {
-  status: IssueStatus
+  status: string
   className?: string
 }) {
   switch (status) {

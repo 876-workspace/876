@@ -2,11 +2,28 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { Issue, IssueStatus } from '@876/projects/contracts'
+import type { Issue } from '@876/projects/contracts'
 
 import { IssueBoard } from './issue-board'
 
 const ISSUES_HREF = '/projects/CONSOLE/issues'
+
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
 
 function makeIssue(overrides?: Partial<Issue>): Issue {
   return {
@@ -20,6 +37,11 @@ function makeIssue(overrides?: Partial<Issue>): Issue {
     title: 'Triage incoming support tickets',
     description: null,
     status: 'backlog',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'low',
     assigneeUserId: null,
     creatorUserId: 'user_ben',
@@ -109,7 +131,7 @@ function columnFor(statusName: string): HTMLElement {
   return column
 }
 
-function statusOf(issue: Issue): IssueStatus {
+function statusOf(issue: Issue): string {
   return issue.status
 }
 

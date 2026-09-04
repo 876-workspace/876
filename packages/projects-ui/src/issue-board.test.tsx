@@ -5,6 +5,23 @@ import type { Issue } from '@876/projects/contracts'
 
 import { IssueBoard } from './issue-board'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
+
 const mockIssues: Issue[] = [
   {
     object: 'projects.issue',
@@ -17,6 +34,11 @@ const mockIssues: Issue[] = [
     title: 'Backlog item',
     description: null,
     status: 'backlog',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'low',
     assigneeUserId: null,
     creatorUserId: 'user_1',
@@ -44,6 +66,11 @@ const mockIssues: Issue[] = [
     title: 'In progress item',
     description: null,
     status: 'in-progress',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'urgent',
     assigneeUserId: 'user_dev',
     creatorUserId: 'user_1',

@@ -110,19 +110,16 @@ export function IssueBoardColumn({
 }
 
 export function IssueBoard({ issues, issuesHref }: IssueBoardProps) {
-  const byStatus: Record<IssueStatus, Issue[]> = {
-    backlog: [],
-    todo: [],
-    'in-progress': [],
-    'in-review': [],
-    done: [],
-    canceled: [],
-  }
+  // `status` is a tenant-defined workflow-state key at the wire boundary, so
+  // this board (which only renders the legacy six-status layout) buckets by
+  // string key and silently drops issues in a tenant-defined state it does
+  // not have a column for.
+  const byStatus: Record<string, Issue[]> = {}
+  for (const status of ISSUE_STATUSES) byStatus[status] = []
 
   for (const issue of issues) {
-    if (byStatus[issue.status]) {
-      byStatus[issue.status].push(issue)
-    }
+    const bucket = byStatus[issue.status]
+    if (bucket) bucket.push(issue)
   }
 
   return (
@@ -131,7 +128,7 @@ export function IssueBoard({ issues, issuesHref }: IssueBoardProps) {
         <IssueBoardColumn
           key={status}
           status={status}
-          issues={byStatus[status]}
+          issues={byStatus[status] ?? []}
           issuesHref={issuesHref}
         />
       ))}

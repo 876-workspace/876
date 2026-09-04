@@ -19,6 +19,23 @@ vi.mock('@876/ui/list-detail-shell', () => ({
 
 import { IssuesList } from './issue-list'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
+
 const mockIssues: Issue[] = [
   {
     object: 'projects.issue',
@@ -31,6 +48,11 @@ const mockIssues: Issue[] = [
     title: 'Fix the auth race condition',
     description: 'Detailed description here',
     status: 'in-progress',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'high',
     assigneeUserId: 'user_42',
     creatorUserId: 'user_1',
@@ -69,6 +91,11 @@ const mockIssues: Issue[] = [
     title: 'Add dark mode support',
     description: 'Dark mode styles',
     status: 'done',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'low',
     assigneeUserId: 'user_43',
     creatorUserId: 'user_1',
