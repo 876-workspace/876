@@ -9,6 +9,7 @@ import * as issues from '../issues/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import { getWorkStructurePreset, workStructurePresets } from './presets.js'
+import * as defaultsRepository from './work-structure-defaults.repository.js'
 import * as repository from './work-structure.repository.js'
 import type {
   CreateCustomFieldBody,
@@ -88,9 +89,11 @@ export async function createWorkItemType(
     return { data: null, error: getError('projects/work-item-type-key-taken') }
 
   const timestamp = now()
-  if (body.isDefault)
-    await repository.clearDefaultWorkItemType(resolved.tenant.id, timestamp)
-  const row = await repository.createWorkItemType({
+  const existingDefault = await repository.retrieveDefaultWorkItemType(
+    resolved.tenant.id
+  )
+  const isDefault = body.isDefault === true || existingDefault === null
+  const data = {
     id: generateId('workItemType'),
     tenantId: resolved.tenant.id,
     key: body.key,
@@ -99,11 +102,18 @@ export async function createWorkItemType(
     color: body.color,
     hierarchyLevel: body.hierarchyLevel,
     description: body.description ?? null,
-    isDefault: body.isDefault ?? false,
+    isDefault,
     position: body.position ?? 0,
     createdAt: timestamp,
     updatedAt: timestamp,
-  })
+  }
+  const row = isDefault
+    ? await defaultsRepository.createDefaultWorkItemType(
+        resolved.tenant.id,
+        data,
+        timestamp
+      )
+    : await repository.createWorkItemType(data)
   return { data: serializeWorkItemType(row), error: null }
 }
 
@@ -129,13 +139,23 @@ export async function updateWorkItemType(
   const existing = await repository.retrieveWorkItemType(resolved.tenant.id, id)
   if (!existing)
     return { data: null, error: getError('projects/work-item-type-not-found') }
+  if (existing.isDefault && body.isDefault === false)
+    return {
+      data: null,
+      error: getError('projects/default-work-item-type-required'),
+    }
+
   const timestamp = now()
-  if (body.isDefault)
-    await repository.clearDefaultWorkItemType(resolved.tenant.id, timestamp)
-  const row = await repository.updateWorkItemType(resolved.tenant.id, id, {
-    ...body,
-    updatedAt: timestamp,
-  })
+  const patch = { ...body, updatedAt: timestamp }
+  const row =
+    body.isDefault === true && !existing.isDefault
+      ? await defaultsRepository.updateDefaultWorkItemType(
+          resolved.tenant.id,
+          id,
+          patch,
+          timestamp
+        )
+      : await repository.updateWorkItemType(resolved.tenant.id, id, patch)
   return { data: serializeWorkItemType(row), error: null }
 }
 
@@ -154,6 +174,11 @@ export async function removeWorkItemType(
   const existing = await repository.retrieveWorkItemType(resolved.tenant.id, id)
   if (!existing)
     return { data: null, error: getError('projects/work-item-type-not-found') }
+  if (existing.isDefault)
+    return {
+      data: null,
+      error: getError('projects/default-work-item-type-required'),
+    }
   if (await repository.countIssuesForWorkItemType(resolved.tenant.id, id))
     return { data: null, error: getError('projects/work-item-type-in-use') }
   await repository.archiveWorkItemType(resolved.tenant.id, id, now())
@@ -210,10 +235,13 @@ export async function createWorkflowState(
     return { data: null, error: getError('projects/invalid-request') }
   if (await repository.retrieveWorkflowStateByKey(resolved.tenant.id, body.key))
     return { data: null, error: getError('projects/workflow-state-key-taken') }
+
   const timestamp = now()
-  if (body.isDefault)
-    await repository.clearDefaultWorkflowState(resolved.tenant.id, timestamp)
-  const row = await repository.createWorkflowState({
+  const existingDefault = await repository.retrieveDefaultWorkflowState(
+    resolved.tenant.id
+  )
+  const isDefault = body.isDefault === true || existingDefault === null
+  const data = {
     id: generateId('workflowState'),
     tenantId: resolved.tenant.id,
     key: body.key,
@@ -221,11 +249,18 @@ export async function createWorkflowState(
     category: body.category,
     color: body.color,
     description: body.description ?? null,
-    isDefault: body.isDefault ?? false,
+    isDefault,
     position: body.position ?? 0,
     createdAt: timestamp,
     updatedAt: timestamp,
-  })
+  }
+  const row = isDefault
+    ? await defaultsRepository.createDefaultWorkflowState(
+        resolved.tenant.id,
+        data,
+        timestamp
+      )
+    : await repository.createWorkflowState(data)
   return { data: serializeWorkflowState(row), error: null }
 }
 
@@ -256,13 +291,23 @@ export async function updateWorkflowState(
     return { data: null, error: getError('projects/workflow-state-not-found') }
   if (body.category !== undefined && !isWorkflowCategory(body.category))
     return { data: null, error: getError('projects/invalid-request') }
+  if (existing.isDefault && body.isDefault === false)
+    return {
+      data: null,
+      error: getError('projects/default-workflow-state-required'),
+    }
+
   const timestamp = now()
-  if (body.isDefault)
-    await repository.clearDefaultWorkflowState(resolved.tenant.id, timestamp)
-  const row = await repository.updateWorkflowState(resolved.tenant.id, id, {
-    ...body,
-    updatedAt: timestamp,
-  })
+  const patch = { ...body, updatedAt: timestamp }
+  const row =
+    body.isDefault === true && !existing.isDefault
+      ? await defaultsRepository.updateDefaultWorkflowState(
+          resolved.tenant.id,
+          id,
+          patch,
+          timestamp
+        )
+      : await repository.updateWorkflowState(resolved.tenant.id, id, patch)
   return { data: serializeWorkflowState(row), error: null }
 }
 
