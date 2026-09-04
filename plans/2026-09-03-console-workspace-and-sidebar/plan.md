@@ -618,18 +618,19 @@ from the URL.
       cross-package work, out of scope here).
 
       **Scoped down from the plan's literal ask.** "Fold the per-product
-      `_components` page factories into it" was not done: `finance-workspace-
-      pages.tsx` (Billing/Invoice, already shared) and
-      `couriers-workspace-pages.tsx` are real React components with Suspense
-      boundaries and data fetching, not data a registry can hold, and were
-      already correctly factored (one factory per plane, parameterized by
-      `workspaceKey`/`appLabel`) — merging them further had no duplication to
-      remove and only risk to add. The `navigationGroups`/`permission prefix`/
-      `cross-org ops surface`/`Console data module` fields from the plan's
-      full spec were **not** added speculatively: `permission prefix` and
-      `cross-org ops surface` have no consumer until Phase 3.5/4 exist, and
-      adding unused fields now is exactly what `ai-code-quality.md`'s
-      abstraction budget forbids. Add them when Phase 3.5/4 need them.
+          `_components` page factories into it" was not done: `finance-workspace-
+          pages.tsx` (Billing/Invoice, already shared) and
+          `couriers-workspace-pages.tsx` are real React components with Suspense
+          boundaries and data fetching, not data a registry can hold, and were
+          already correctly factored (one factory per plane, parameterized by
+          `workspaceKey`/`appLabel`) — merging them further had no duplication to
+          remove and only risk to add. The `navigationGroups`/`permission prefix`/
+          `cross-org ops surface`/`Console data module` fields from the plan's
+          full spec were **not** added speculatively: `permission prefix` and
+          `cross-org ops surface` have no consumer until Phase 3.5/4 exist, and
+          adding unused fields now is exactly what `ai-code-quality.md`'s
+          abstraction budget forbids. Add them when Phase 3.5/4 need them.
+
 - [x] Updated `docs/architecture/017-console-app-data-management.md`
       (2026-09-04): added a "Registering a product's workspace surface"
       section naming `APP_WORKSPACES` as the concrete registration point, and
@@ -780,40 +781,104 @@ mobile-nav.tsx · shell.tsx    + four test files
 
 ## 12. Handoff state
 
-**Phase 1 and Phase 3 are both fully complete**, including the org/app
-switchers, `?from=` entry-point tracking, the second-rail absorption, and the
-`@mobilenav` gap closure — all items in their checklists above are checked and
-were verified in the foreground, not from a delegate's report. This section
-previously understated that; corrected 2026-09-04.
+**Updated 2026-09-04 02:55 UTC.** Written for a fresh session picking this up
+cold. Read this section first, then §8 Phases.
 
-**Phase 2 is now fully complete** (2026-09-04): the Operations placeholder
-section, the §3.4 confirmation (product-integration registry reading), the
-registry consolidation (`navigationGroups` folded onto `APP_WORKSPACES`,
-`REGISTRIES` deleted), and the `docs/architecture/017` update are all done —
-see the checklist above for what was scoped down from the plan's literal
-wording and why.
+### Where the work is
 
-Verified in the foreground on the working tree (2026-09-04, after the registry
-consolidation — `.next/` was stale from a prior session and regenerated,
-unrelated to this change):
+| Phase                                    | State                                                |
+| ---------------------------------------- | ---------------------------------------------------- |
+| 1 — the sidebar                          | ✅ complete                                          |
+| 2 — product context under `/apps/[slug]` | ✅ except the integration registry (blocked on §3.4) |
+| 3 — relocate the workspace               | ✅ complete                                          |
+| 3.5 — operator permission model          | 🔄 **another session, uncommitted, see below**       |
+| 4 — cross-org operator list              | 🔄 **Codex running, see below**                      |
+
+**PR [#471](https://github.com/876-workspace/876/pull/471)** is open against
+`main` — "feat(console): make the sidebar contextual and move org workspaces to
+a top-level route". Its red checks are **pre-existing repo state, not this
+branch**: `verify` and `structure` also fail on `main`, and all 11 Cloudflare
+Workers Builds are red repo-wide. Confirm that before spending time on them.
+
+### Two other agents are in this working tree
+
+This branch is being written by more than one agent at once. Check
+`git status` and `git log` before assuming anything is yours.
+
+**1. Another Claude session — Phase 3.5, uncommitted.** It is projecting product
+permission catalogs into Console-namespaced operator keys. Its in-flight files:
 
 ```
-typecheck            clean
-lint                 0 errors, 21 warnings (all pre-existing)
-test                 163 files / 1573 tests passing
-check-app-structure  OK
+apps/console/src/lib/operator-permissions.ts        (new)
+apps/console/src/lib/permissions.ts
+apps/console/src/lib/auth/access-context.ts
+apps/console/src/features/orgs/workspace-contexts.ts
+apps/console/src/app/(app)/@sidebar/workspace/[orgSlug]/[...section]/page.tsx
+apps/console/src/app/(app)/@mobilenav/workspace/[orgSlug]/[...section]/page.tsx
 ```
 
-`next dev` boot was **not** re-run this session — no route-tree/layout/slot
-files changed in either the Operations addition or the registry consolidation,
-only leaf pages and data-only modules. Re-run it before merging if anything
-route-shaped changes.
+> **`pnpm --filter @876/console typecheck` currently FAILS**, on
+> `src/features/orgs/workspace-contexts.test.ts` — "Expected 3 arguments, but
+> got 2", at 7 call sites. That session added a third `operatorPermissions`
+> parameter to `resolveWorkspaceContexts` and has not updated the test yet.
+> **The committed HEAD is self-consistent**; only the working tree is broken.
+> Do not "fix" it — you will collide with an agent mid-edit.
 
-Next session should pick from, in rough priority order:
+**2. Codex (`gpt-5.6-terra`, medium) — Phase 4, running as of 02:55.**
 
-1. Phase 3.5 — the operator permission model (§6). Has several open questions
-   (§6.4) that need the user before implementation: generated vs hand-declared
-   key projection, whether an operator-exclusive key implies its read key
-   (plan recommends no), and where the role editor lives.
-2. Phase 4 — one thin cross-org operator list end to end (recommend CRM
-   requests), proving the pattern and stopping there.
+- Brief: `briefs/codex/2026-09-04-crm-cross-org-requests.md`
+- Report (expected): `reports/codex/2026-09-04-crm-cross-org-requests.md`
+- Check it with `pgrep -f "bin/cod[e]x"` — **note the bracket**, a plain
+  `pgrep -f "bin/codex"` matches its own command line and never reports exit.
+
+Done when last checked: the `apps/crm-api` cross-organization route
+(repository/service/controller/routes/schemas + three test files) and the
+`packages/crm` operator resource. **Not yet done: the Console page** at
+`apps/console/src/app/(app)/requests/all/page.tsx`.
+
+It was told explicitly **not** to add a navigation entry or permission key for
+that page — both live in files the other session owns. Wiring it into the rail
+is a deliberate follow-up once Phase 3.5 lands.
+
+### Verifying Codex's work when it finishes
+
+Do not trust its report. Per `cli.md`:
+
+```bash
+grep -rn "eslint-disable\|as any\|@ts-ignore" apps/crm-api packages/crm
+pnpm --filter @876/crm-api typecheck && pnpm --filter @876/crm-api lint
+pnpm --filter @876/crm-api test          # check the COUNT moved, not just green
+pnpm --filter @876/crm typecheck && pnpm --filter @876/crm test
+```
+
+Check specifically that the cross-org list excludes soft-deleted rows, enforces
+`requireInternal`, and did not copy the org-scoped filter logic into a second
+implementation.
+
+### What is genuinely left
+
+1. Land Codex's Phase 4 slice; add the nav entry + permission key **after**
+   Phase 3.5 lands.
+2. Phase 2's integration registry — still blocked on the §3.4 reading of
+   "Integrations". This is the one open question that needs the user.
+3. `/projects` and `/workspace/<org>/projects` mirror each other file-for-file
+   and correctly share `features/projects/components` — but `/projects` keeps
+   path helpers in `_lib/{base,paths}.ts` while the workspace tree builds paths
+   from `workspaceBase()`. Two mechanisms for one job; worth consolidating.
+
+### Lessons this run paid for — do not relearn them
+
+- **A route-shape error is invisible to every static gate.** An optional
+  catch-all in a parallel slot collides with a real page at the same node, and
+  `typecheck`, `next typegen`, `lint`, 1500+ tests and `check-app-structure` all
+  passed on a tree that could not boot. Only `pnpm dev` catches it. §10 now
+  includes it.
+- **`agy` cannot be backgrounded here.** It initialises, runs a few steps, then
+  dies with no error event and exit 0 — twice, including with
+  `setsid`/`nohup`/`disown`. Quota was 90%. Run it in the **foreground**, which
+  is what `cli.md`'s routing table prescribes for docs work anyway. Foreground
+  succeeded first time.
+- **Verify a delegate's premises, not its confidence.** `agy` documented a
+  `navigationGroups` registry field that looked invented; it was real, added by
+  the other session in `66d7591f`. The check was cheap and the delegate was
+  right.
