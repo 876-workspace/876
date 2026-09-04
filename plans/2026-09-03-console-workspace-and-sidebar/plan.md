@@ -1,8 +1,8 @@
 # Implementation Plan: Console workspace relocation + contextual drill-down sidebar
 
 - **Run ID:** `2026-09-03-console-workspace-and-sidebar`
-- **Branch:** _not cut yet_
-- **Status:** `PLANNING` — design discussion, no code written yet
+- **Branch:** `feat/console-contextual-sidebar`
+- **Status:** `IN_PROGRESS` — Phases 1–2 done, Phase 3 routes relocated
 - **Owner:** raheemdevs
 
 > This file is written from a long spoken briefing. It deliberately records the
@@ -601,15 +601,69 @@ from the URL.
       inside an app record. Closing it means a second `@mobilenav` slot; do it
       when Phase 3's workspace rail forces the question.
 
-### Phase 3 — relocate the workspace
+### Phase 3 — relocate the workspace ✅ COMPLETE
 
-- [ ] Move the workspace routes to the location decided in Phase 0.
-- [ ] Keep **one** implementation; both the org record and the product record
-      link into it.
-- [ ] Workspace header gains an org switcher and an app switcher.
-- [ ] `?from=` entry-point tracking so back returns where the operator came from.
-- [ ] Org detail keeps a launcher listing that org's entitled apps.
-- [ ] Redirects (or deletion) for the old URLs, per Phase 0.
+- [x] Move the workspace routes to `/workspace/[orgSlug]/[appSlug]`.
+- [x] Keep **one** implementation; the org record links into it through
+      `entitledAppHref`, and `/workspace/[orgSlug]` is the launcher index.
+- [x] Old URLs **redirected**, in `apps/console/next.config.ts`:
+      `/orgs/:orgSlug/workspace` and `/orgs/:orgSlug/workspace/:path*` point at
+      the new shape. Temporary (307), not permanent — a 308 is cached by the
+      browser indefinitely, and the old segment may be wanted back.
+- [x] Every hand-built workspace href now goes through `workspaceBase()`.
+      Eleven sites in CRM and Projects still emitted `/orgs/<org>/workspace/...`
+      after the move and were only caught by two failing toolbar tests.
+- [x] `WorkspaceShell` renders the organization name. `orgName` was declared,
+      streamed by the layout, and never destructured, so the rail named the
+      product but never the organization — survivable while the workspace was a
+      tab of the org record, wrong once it became a top-level context.
+- [x] Dropped `WorkspaceShell`'s `orgSlug` prop; nothing read it.
+- [x] `docs/architecture/017` and `018` updated to the new path.
+- [x] The sidebar slot uses a **required** catch-all
+      (`workspace/[orgSlug]/[...section]`). An optional one collides with the
+      `/workspace/[orgSlug]` launcher page: _"You cannot define a route with the
+      same specificity as a optional catch-all route"_. **This is a dev-server
+      error only** — `typecheck`, `next typegen`, `lint`, `test`, and
+      `check-app-structure` all passed with the broken tree, and it was found by
+      the user starting the dev server. Any future `@sidebar` slot for a segment
+      that is also a real page needs the same shape.
+- [x] **The second rail is absorbed into the main sidebar** (decided with the
+      user, 2026-09-03). `@sidebar/workspace/[orgSlug]/[[...section]]`
+      contributes a `workspace` context, exactly as the app record does, so
+      entering a workspace swaps the whole rail to that product's navigation
+      and the back control returns. `WorkspaceShell` and `WorkspaceNav` are
+      **deleted** rather than left beside it — two renderings of the same
+      navigation is the drift this phase exists to remove. The layout keeps
+      only the entitlement notice, which is frame-level and streams.
+- [x] `SidebarContext` gains an optional `subtitle`. A workspace names two
+      things — one product, for one organization — and the rail is now the only
+      chrome that says which organization. An app record leaves it unset.
+- [x] One icon registry. `WorkspaceIcon` resolved keys through its own private
+      map while the rail resolved the same keys through `NAV_ICONS`; the ten
+      workspace keys `NAV_ICONS` lacked would have silently fallen back to a
+      generic square. `NAV_ICONS` now owns the mapping, `workspace-icon.tsx`
+      owns only the accent colours, and a test asserts every workspace key is
+      declared.
+- [x] `workspaceSectionLinks()` returns a `key`, so the resolved rail and the
+      registry fallback rail are the same shape.
+- [x] Workspace header with an **organization switcher** and an **app
+      switcher**, rendered by the workspace layout above every section. The org
+      switcher keeps the operator in the same product across organizations —
+      that is the cross-organization axis §1 says is missing — and the app
+      switcher moves between the products one organization is entitled to.
+- [x] **`?from=` entry-point tracking.** The organization record appends
+      `?from=/orgs/<slug>` to its app tabs, and the workspace header resolves it
+      through `resolveWorkspaceReturn`, which **derives the label rather than
+      accepting one** and rejects any destination that leaves the origin. Kept
+      out of the delegated brief and written directly, per `cli.md`: `from` is
+      attacker-controlled. 28 tests, including a hostile-input corpus.
+- [x] **Mobile gap closed.** A second `@mobilenav` parallel slot mirrors
+      `@sidebar`, so a phone shows the product's navigation inside both an app
+      record and a workspace. The two slots share one context resolver per
+      segment (`resolveWorkspaceContexts`, `resolveAppContexts`), so the rail and
+      the sheet cannot drift.
+- [x] `Shell` no longer renders `MobileNav` itself; it takes the node, exactly
+      as it already took `sidebar`.
 
 ### Phase 3.5 — the operator permission model (§6)
 
@@ -663,6 +717,10 @@ pnpm --filter @876/console typecheck
 pnpm --filter @876/console lint
 pnpm --filter @876/console test
 node scripts/check-app-structure.mjs
+
+# Route-shape errors are invisible to every gate above. Boot the app whenever a
+# route tree, a parallel slot, or a layout changes.
+pnpm --filter @876/console dev
 ```
 
 ## 11. Prior attempt on this phase
@@ -682,10 +740,29 @@ mobile-nav.tsx · shell.tsx    + four test files
 
 ## 12. Handoff state
 
-Nothing implemented. This file is the entire artifact of the session of
-2026-09-03.
+Phase 1 complete. Phase 2 complete except the Operations/Overview sections, the
+product-integration registry (blocked on the §3.4 reading of "Integrations"),
+and the known `MobileNav` gap. **Phase 3's route relocation is complete and
+verified**; what remains of Phase 3 is the two switchers, `?from=`, and the
+open second-rail decision recorded above.
 
-Two of the three Phase 0 decisions are made and recorded above. **Phase 1 (the
-sidebar) is unblocked and is where the next session starts** — it depends on
-neither of the remaining questions. The one still open, the §3.4 reading of
-"Integrations", blocks only Phase 2.
+Verified in the foreground on the working tree, not from a delegate's report:
+
+```
+typecheck            clean
+lint                 0 errors, 21 warnings (all pre-existing)
+test                 163 files / 1573 tests passing
+check-app-structure  OK
+next dev             boots clean; /workspace/<org>, /workspace/<org>/crm,
+                     /workspace/<org>/crm/requests and /apps/<slug> all compile
+```
+
+**Add `next dev` to §10.** The static gates cannot see a parallel-route
+specificity collision, so a rail change that passes every one of them can still
+fail to boot.
+
+The second-rail decision is made and implemented, so the switchers now have a
+settled place to live: they belong in the workspace context's rail header, not
+in a page-level shell. The next session starts with the org/app switchers and
+`?from=`, and should close the `@mobilenav` gap for both the app and workspace
+contexts in one change rather than twice.
