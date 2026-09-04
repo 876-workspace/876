@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
 const kebabKeySchema = z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
+const hierarchyLevelSchema = z.number().int().min(0).max(2)
+const nonEmptyUpdate = (data: Record<string, unknown>) =>
+  Object.keys(data).length > 0
+
 export const workflowCategorySchema = z.enum([
   'backlog',
   'unstarted',
@@ -34,20 +38,38 @@ export const customFieldValueParamsSchema = issueParamsSchema.extend({
   id: z.string().trim().min(1),
 })
 
-export const createWorkItemTypeBodySchema = z.strictObject({
-  key: kebabKeySchema,
+const workItemTypeMutableFields = {
   name: z.string().trim().min(1).max(100),
   iconKey: z.string().trim().min(1).max(100),
   color: z.string().trim().min(1).max(32),
-  hierarchyLevel: z.number().int().min(0).max(2).default(1),
-  description: z.string().trim().nullable().optional(),
-  isDefault: z.boolean().optional(),
-  position: z.number().int().optional(),
+  hierarchyLevel: hierarchyLevelSchema,
+  description: z.string().trim().nullable(),
+  isDefault: z.boolean(),
+  position: z.number().int(),
+}
+
+export const createWorkItemTypeBodySchema = z.strictObject({
+  key: kebabKeySchema,
+  name: workItemTypeMutableFields.name,
+  iconKey: workItemTypeMutableFields.iconKey,
+  color: workItemTypeMutableFields.color,
+  hierarchyLevel: hierarchyLevelSchema.default(1),
+  description: workItemTypeMutableFields.description.optional(),
+  isDefault: workItemTypeMutableFields.isDefault.optional(),
+  position: workItemTypeMutableFields.position.optional(),
 })
-export const updateWorkItemTypeBodySchema = createWorkItemTypeBodySchema
-  .omit({ key: true })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0)
+export const updateWorkItemTypeBodySchema = z
+  .strictObject({
+    name: workItemTypeMutableFields.name.optional(),
+    iconKey: workItemTypeMutableFields.iconKey.optional(),
+    color: workItemTypeMutableFields.color.optional(),
+    hierarchyLevel: hierarchyLevelSchema.optional(),
+    description: workItemTypeMutableFields.description.optional(),
+    isDefault: workItemTypeMutableFields.isDefault.optional(),
+    position: workItemTypeMutableFields.position.optional(),
+  })
+  .refine(nonEmptyUpdate)
+
 export const createWorkflowStateBodySchema = z.strictObject({
   key: kebabKeySchema,
   name: z.string().trim().min(1).max(100),
@@ -60,7 +82,7 @@ export const createWorkflowStateBodySchema = z.strictObject({
 export const updateWorkflowStateBodySchema = createWorkflowStateBodySchema
   .omit({ key: true })
   .partial()
-  .refine((data) => Object.keys(data).length > 0)
+  .refine(nonEmptyUpdate)
 export const milestoneListQuerySchema = z.strictObject({
   projectId: z.string().trim().min(1),
   status: milestoneStatusSchema.optional(),
@@ -78,25 +100,81 @@ export const createMilestoneBodySchema = z.strictObject({
 export const updateMilestoneBodySchema = createMilestoneBodySchema
   .omit({ projectId: true, key: true })
   .partial()
-  .refine((data) => Object.keys(data).length > 0)
+  .refine(nonEmptyUpdate)
 export const customFieldOptionSchema = z.strictObject({
   key: kebabKeySchema,
   label: z.string().trim().min(1).max(100),
 })
-export const createCustomFieldBodySchema = z.strictObject({
-  key: kebabKeySchema,
+
+const customFieldMutableFields = {
   label: z.string().trim().min(1).max(100),
   fieldType: customFieldTypeSchema,
-  options: z.array(customFieldOptionSchema).optional(),
-  required: z.boolean().optional(),
-  description: z.string().trim().nullable().optional(),
-  position: z.number().int().optional(),
-  typeIds: z.array(z.string().trim().min(1)).optional(),
-})
-export const updateCustomFieldBodySchema = createCustomFieldBodySchema
-  .omit({ key: true })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0)
+  options: z.array(customFieldOptionSchema),
+  required: z.boolean(),
+  description: z.string().trim().nullable(),
+  position: z.number().int(),
+  typeIds: z.array(z.string().trim().min(1)),
+}
+
+function validateOptionKeys(
+  options: Array<{ key: string; label: string }> | undefined,
+  ctx: z.RefinementCtx
+) {
+  if (!options) return
+  const keys = options.map((option) => option.key)
+  if (new Set(keys).size !== keys.length) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['options'],
+      message: 'Custom field option keys must be unique.',
+    })
+  }
+}
+
+export const createCustomFieldBodySchema = z
+  .strictObject({
+    key: kebabKeySchema,
+    label: customFieldMutableFields.label,
+    fieldType: customFieldMutableFields.fieldType,
+    options: customFieldMutableFields.options.optional(),
+    required: customFieldMutableFields.required.optional(),
+    description: customFieldMutableFields.description.optional(),
+    position: customFieldMutableFields.position.optional(),
+    typeIds: customFieldMutableFields.typeIds.optional(),
+  })
+  .superRefine((data, ctx) => {
+    const optionField =
+      data.fieldType === 'select' || data.fieldType === 'multi-select'
+    if (optionField && (!data.options || data.options.length === 0)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: 'Select fields require at least one option.',
+      })
+    }
+    if (!optionField && data.options !== undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: 'Options are only valid for select fields.',
+      })
+    }
+    validateOptionKeys(data.options, ctx)
+  })
+
+export const updateCustomFieldBodySchema = z
+  .strictObject({
+    label: customFieldMutableFields.label.optional(),
+    fieldType: customFieldMutableFields.fieldType.optional(),
+    options: customFieldMutableFields.options.optional(),
+    required: customFieldMutableFields.required.optional(),
+    description: customFieldMutableFields.description.optional(),
+    position: customFieldMutableFields.position.optional(),
+    typeIds: customFieldMutableFields.typeIds.optional(),
+  })
+  .refine(nonEmptyUpdate)
+  .superRefine((data, ctx) => validateOptionKeys(data.options, ctx))
+
 export const customFieldValueInputSchema = z.strictObject({
   fieldId: z.string().trim().min(1),
   value: z.union([
