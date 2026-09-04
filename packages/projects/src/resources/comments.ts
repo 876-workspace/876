@@ -17,13 +17,11 @@ function root(organizationId: string, issueRef: string) {
 function toQueryString(params?: ListCommentsQuery): string {
   if (!params) return ''
   const search = new URLSearchParams()
-  if (typeof params.limit === 'number') {
-    search.set('limit', String(params.limit))
-  }
+  if (typeof params.limit === 'number') search.set('limit', String(params.limit))
   if (params.startingAfter) search.set('starting_after', params.startingAfter)
   if (params.endingBefore) search.set('ending_before', params.endingBefore)
-  const qs = search.toString()
-  return qs ? `?${qs}` : ''
+  const query = search.toString()
+  return query ? `?${query}` : ''
 }
 
 export function createCommentsResource(runtime: Runtime) {
@@ -64,7 +62,7 @@ export function createCommentsResource(runtime: Runtime) {
       organizationId: string,
       issueRef: string,
       commentId: string,
-      input: UpdateCommentInput,
+      input: UpdateCommentInput & { actorUserId: string },
       options: RequestOptions = {}
     ) {
       return request(
@@ -82,13 +80,15 @@ export function createCommentsResource(runtime: Runtime) {
       organizationId: string,
       issueRef: string,
       commentId: string,
+      actorUserId: string,
       options: RequestOptions = {}
     ) {
+      const search = new URLSearchParams({ actorUserId })
       return request(
         runtime,
         {
           method: 'DELETE',
-          path: `${root(organizationId, issueRef)}/${encodeURIComponent(commentId)}`,
+          path: `${root(organizationId, issueRef)}/${encodeURIComponent(commentId)}?${search.toString()}`,
           signal: options.signal,
         },
         deletedSchema
