@@ -34,6 +34,12 @@ const SECTIONS = {
     segment: '/modules',
     icon: 'modules',
   },
+  operations: {
+    key: 'operations',
+    label: 'Operations',
+    segment: '/operations',
+    icon: 'operations',
+  },
   plans: { key: 'plans', label: 'Plans', segment: '/plans', icon: 'plans' },
   subscribers: {
     key: 'subscribers',
@@ -81,6 +87,7 @@ export function appDetailSections(
   if (appKind === 'product')
     return [
       SECTIONS.overview,
+      SECTIONS.operations,
       SECTIONS.modules,
       SECTIONS.plans,
       SECTIONS.subscribers,

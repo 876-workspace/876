@@ -17,6 +17,7 @@ describe('getAppTabs', () => {
   it('returns the product application tabs in order', () => {
     expect(getAppTabs('product', base).map((tab) => tab.label)).toEqual([
       'Overview',
+      'Operations',
       'Modules',
       'Plans',
       'Subscribers',

@@ -47,6 +47,7 @@ export const NAV_ICONS: Record<string, IconComponent> = {
   forms: DocumentTextIcon,
   customers: Users,
   modules: LayoutGrid,
+  operations: Waves,
   plans: CreditCard,
   subscribers: Users,
   features: Flag,
