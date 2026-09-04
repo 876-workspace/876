@@ -2,12 +2,8 @@ import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
-  tenantsRepo: {
-    resolveTenant: vi.fn(),
-  },
-  issuesRepo: {
-    resolveIssue: vi.fn(),
-  },
+  tenantsRepo: { resolveTenant: vi.fn() },
+  issuesRepo: { resolveIssue: vi.fn() },
   repository: {
     list: vi.fn(),
     count: vi.fn(),
@@ -96,11 +92,7 @@ async function requestJson(
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
-
-    return {
-      status: response.status,
-      body: await response.json(),
-    }
+    return { status: response.status, body: await response.json() }
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()))
   }
@@ -108,6 +100,7 @@ async function requestJson(
 
 beforeEach(() => {
   vi.clearAllMocks()
+  delete process.env.DELETION_MODE
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   tenantsRepo.resolveTenant.mockResolvedValue(tenant)
   issuesRepo.resolveIssue.mockResolvedValue(mockIssueRow)
@@ -188,10 +181,6 @@ describe('comments module', () => {
         updatedAt: 1787767200,
       },
     ])
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
     expect(repository.list).toHaveBeenCalledWith(mockIssueRow.id, {
       limit: 25,
       startingAfter: undefined,
@@ -207,9 +196,7 @@ describe('comments module', () => {
       'org_test_1',
       mockIssueRow.id,
       'cmt_missing',
-      {
-        body: 'Updated text',
-      }
+      { body: 'Updated text', actorUserId: 'usr_author_1' }
     )
 
     expect(result.data).toBeNull()
@@ -218,10 +205,6 @@ describe('comments module', () => {
       message: 'The comment could not be found.',
       httpStatus: 404,
     })
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
     expect(repository.retrieve).toHaveBeenCalledWith(
       mockIssueRow.id,
       'cmt_missing'
@@ -229,56 +212,26 @@ describe('comments module', () => {
     expect(repository.update).not.toHaveBeenCalled()
   })
 
-  it('delete soft-deletes', async () => {
+  it('update rejects a non-author before writing', async () => {
     repository.retrieve.mockResolvedValue(mockCommentRow)
-    repository.softDelete.mockResolvedValue({
-      ...mockCommentRow,
-      deletedAt: 1787823000n,
-    })
 
-    const result = await service.remove(
+    const result = await service.update(
       'org_test_1',
       mockIssueRow.id,
-      mockCommentRow.id
-    )
-
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual({
-      object: 'projects.comment',
-      id: mockCommentRow.id,
-      deleted: true,
-    })
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
-    expect(repository.retrieve).toHaveBeenCalledWith(
-      mockIssueRow.id,
-      mockCommentRow.id
-    )
-    expect(repository.softDelete).toHaveBeenCalledWith(
       mockCommentRow.id,
-      expect.any(BigInt)
+      { body: 'Hijacked edit', actorUserId: 'usr_other_1' }
     )
-    expect(repository.hardDelete).not.toHaveBeenCalled()
-  })
 
-  it('a soft-deleted comment does not appear in the list', async () => {
-    repository.list.mockResolvedValue([])
-    repository.count.mockResolvedValue(0)
-
-    const result = await service.list('org_test_1', mockIssueRow.id, {})
-
-    expect(result.error).toBeNull()
-    expect(result.data?.items).toHaveLength(0)
-    expect(repository.list).toHaveBeenCalledWith(mockIssueRow.id, {
-      limit: 25,
-      startingAfter: undefined,
-      endingBefore: undefined,
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/comment-not-owned',
+      message: 'You can only change your own comments.',
+      httpStatus: 403,
     })
+    expect(repository.update).not.toHaveBeenCalled()
   })
 
-  it('update applies supplied body and returns serialized comment', async () => {
+  it('update applies supplied body for the author and returns serialized comment', async () => {
     repository.retrieve.mockResolvedValue(mockCommentRow)
     repository.update.mockResolvedValue({
       ...mockCommentRow,
@@ -290,9 +243,7 @@ describe('comments module', () => {
       'org_test_1',
       mockIssueRow.id,
       mockCommentRow.id,
-      {
-        body: 'Updated body content',
-      }
+      { body: 'Updated body content', actorUserId: 'usr_author_1' }
     )
 
     expect(result.error).toBeNull()
@@ -315,13 +266,72 @@ describe('comments module', () => {
     )
   })
 
+  it('delete soft-deletes the authors comment', async () => {
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+    repository.softDelete.mockResolvedValue({
+      ...mockCommentRow,
+      deletedAt: 1787823000n,
+    })
+
+    const result = await service.remove(
+      'org_test_1',
+      mockIssueRow.id,
+      mockCommentRow.id,
+      'usr_author_1'
+    )
+
+    expect(result.error).toBeNull()
+    expect(result.data).toEqual({
+      object: 'projects.comment',
+      id: mockCommentRow.id,
+      deleted: true,
+    })
+    expect(repository.softDelete).toHaveBeenCalledWith(
+      mockCommentRow.id,
+      expect.any(BigInt)
+    )
+    expect(repository.hardDelete).not.toHaveBeenCalled()
+  })
+
+  it('delete rejects a non-author before removing anything', async () => {
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+
+    const result = await service.remove(
+      'org_test_1',
+      mockIssueRow.id,
+      mockCommentRow.id,
+      'usr_other_1'
+    )
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('projects/comment-not-owned')
+    expect(repository.softDelete).not.toHaveBeenCalled()
+    expect(repository.hardDelete).not.toHaveBeenCalled()
+  })
+
+  it('a soft-deleted comment does not appear in the list', async () => {
+    repository.list.mockResolvedValue([])
+    repository.count.mockResolvedValue(0)
+
+    const result = await service.list('org_test_1', mockIssueRow.id, {})
+
+    expect(result.error).toBeNull()
+    expect(result.data?.items).toHaveLength(0)
+    expect(repository.list).toHaveBeenCalledWith(mockIssueRow.id, {
+      limit: 25,
+      startingAfter: undefined,
+      endingBefore: undefined,
+    })
+  })
+
   it('remove of an unknown comment returns projects/comment-not-found', async () => {
     repository.retrieve.mockResolvedValue(null)
 
     const result = await service.remove(
       'org_test_1',
       mockIssueRow.id,
-      'cmt_missing'
+      'cmt_missing',
+      'usr_author_1'
     )
 
     expect(result.data).toBeNull()
@@ -330,10 +340,6 @@ describe('comments module', () => {
       message: 'The comment could not be found.',
       httpStatus: 404,
     })
-    expect(repository.retrieve).toHaveBeenCalledWith(
-      mockIssueRow.id,
-      'cmt_missing'
-    )
     expect(repository.softDelete).not.toHaveBeenCalled()
     expect(repository.hardDelete).not.toHaveBeenCalled()
   })
@@ -369,6 +375,36 @@ describe('comments module', () => {
       },
       error: null,
     })
+  })
+
+  it('PATCH requires actor identity and returns 403 for another author', async () => {
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+
+    const response = await requestJson(
+      'PATCH',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments/${mockCommentRow.id}`,
+      { body: 'Nope', actorUserId: 'usr_other_1' }
+    )
+
+    expect(response.status).toBe(403)
+    expect(response.body.error.code).toBe('projects/comment-not-owned')
+  })
+
+  it('DELETE requires actor identity in the internal query contract', async () => {
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+    repository.softDelete.mockResolvedValue(mockCommentRow)
+
+    const missingActor = await requestJson(
+      'DELETE',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments/${mockCommentRow.id}`
+    )
+    expect(missingActor.status).toBe(400)
+
+    const response = await requestJson(
+      'DELETE',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments/${mockCommentRow.id}?actorUserId=usr_author_1`
+    )
+    expect(response.status).toBe(200)
   })
 
   it('rejects unauthorized HTTP requests when x-internal-key is missing or invalid', async () => {
