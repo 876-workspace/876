@@ -12,7 +12,7 @@ import { requireSession } from '@/lib/auth/guards'
 import { projects } from '@/lib/services/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function NewIssuePage({ params }: Props) {
   const { orgSlug } = await params
-  const base = workspaceBase(orgSlug, 'projects')
+  const base = projectsBase(orgSlug)
 
   return (
     <div className="space-y-6">
@@ -48,7 +48,7 @@ export default async function NewIssuePage({ params }: Props) {
 }
 
 async function IssueCreateFormData({ orgSlug }: { orgSlug: string }) {
-  const base = workspaceBase(orgSlug, 'projects')
+  const base = projectsBase(orgSlug)
   const [org, sessionUser] = await Promise.all([
     resolveOrg(orgSlug),
     requireSession(`${base}/issues/new`),

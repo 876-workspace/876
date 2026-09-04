@@ -6,7 +6,7 @@ import { ProjectsData } from '@/features/projects/components/projects-data'
 import { PROJECTS_SKELETON_COLUMNS } from '@/features/projects/components/projects-skeleton-columns'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 import { ProjectsSection } from './_components/projects-section'
 
 type Props = {
@@ -37,7 +37,7 @@ export default async function OrganizationProjectsLayout({
           >
             <ProjectsData
               organizationId={org.id}
-              base={workspaceBase(orgSlug, 'projects')}
+              base={projectsBase(orgSlug)}
             />
           </Suspense>
         }

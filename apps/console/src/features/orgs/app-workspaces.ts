@@ -227,6 +227,11 @@ export function workspaceBase(orgSlug: string, workspaceKey: string): string {
   return `${workspaceIndex(orgSlug)}/${workspaceKey}`
 }
 
+/** The base path for Projects in either an organization or platform context. */
+export function projectsBase(orgSlug: string | null): string {
+  return orgSlug ? workspaceBase(orgSlug, 'projects') : '/projects'
+}
+
 /**
  * The workspace index for an organization.
  *

@@ -7,7 +7,7 @@ import { ProjectDetailData } from '@/features/projects/components/project-detail
 import { projects } from '@/lib/services/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = {
   params: Promise<{ orgSlug: string; projectId: string }>
@@ -35,7 +35,7 @@ export default async function OrganizationProjectDetailPage({ params }: Props) {
     <Suspense fallback={<ProjectDetailFallback />}>
       <ProjectDetailData
         organizationId={org.id}
-        base={workspaceBase(orgSlug, 'projects')}
+        base={projectsBase(orgSlug)}
         projectId={projectId}
       />
     </Suspense>

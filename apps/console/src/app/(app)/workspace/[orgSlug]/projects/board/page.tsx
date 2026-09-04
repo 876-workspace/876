@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 import { BoardData } from '@/features/projects/components/board-data'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -30,10 +30,7 @@ export default async function OrganizationIssueBoardPage({ params }: Props) {
     <div>
       <ResourceToolbar title="Board" refresh />
       <Suspense fallback={<BoardFallback />}>
-        <BoardData
-          organizationId={org.id}
-          base={workspaceBase(orgSlug, 'projects')}
-        />
+        <BoardData organizationId={org.id} base={projectsBase(orgSlug)} />
       </Suspense>
     </div>
   )

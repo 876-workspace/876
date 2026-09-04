@@ -9,7 +9,7 @@ import { CreateFormSkeleton } from '@/features/projects/components/create-form-s
 import { ProjectCreateForm } from '@/features/projects/components/project-create-form'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function NewProjectPage({ params }: Props) {
   // `params` carries no I/O, so awaiting it here keeps the chrome immediate.
   const { orgSlug } = await params
-  const base = workspaceBase(orgSlug, 'projects')
+  const base = projectsBase(orgSlug)
 
   return (
     <div className="space-y-6">
@@ -50,9 +50,6 @@ async function ProjectCreateFormData({ orgSlug }: { orgSlug: string }) {
   if (!org) notFound()
 
   return (
-    <ProjectCreateForm
-      organizationId={org.id}
-      base={workspaceBase(orgSlug, 'projects')}
-    />
+    <ProjectCreateForm organizationId={org.id} base={projectsBase(orgSlug)} />
   )
 }

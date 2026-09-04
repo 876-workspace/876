@@ -8,7 +8,7 @@ import {
   PROJECT_STATUS_OPTIONS,
   type ProjectFilterStatus,
 } from '@/features/projects/project-status'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export function ProjectsToolbar({
   orgSlug,
@@ -32,7 +32,7 @@ export function ProjectsToolbar({
         />
       }
       primaryLabel="Add"
-      primaryHref={`${workspaceBase(orgSlug, 'projects')}/projects/new`}
+      primaryHref={`${projectsBase(orgSlug)}/projects/new`}
       primaryVariant="info"
       refresh
     />

@@ -6,7 +6,7 @@ import { IssuesData } from '@/features/projects/components/issues-data'
 import { ISSUES_SKELETON_COLUMNS } from '@/features/projects/components/issues-skeleton-columns'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 import { IssuesSection } from './_components/issues-section'
 
 type Props = {
@@ -35,10 +35,7 @@ export default async function OrganizationIssuesLayout({
               <DataTableSkeleton columns={ISSUES_SKELETON_COLUMNS} rows={5} />
             }
           >
-            <IssuesData
-              organizationId={org.id}
-              base={workspaceBase(orgSlug, 'projects')}
-            />
+            <IssuesData organizationId={org.id} base={projectsBase(orgSlug)} />
           </Suspense>
         }
       >

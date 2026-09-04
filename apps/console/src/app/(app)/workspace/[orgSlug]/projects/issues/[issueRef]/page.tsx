@@ -7,7 +7,7 @@ import { IssueDetailData } from '@/features/projects/components/issue-detail-dat
 import { projects } from '@/lib/services/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = {
   params: Promise<{ orgSlug: string; issueRef: string }>
@@ -35,7 +35,7 @@ export default async function OrganizationIssueDetailPage({ params }: Props) {
     <Suspense fallback={<IssueDetailFallback />}>
       <IssueDetailData
         organizationId={org.id}
-        base={workspaceBase(orgSlug, 'projects')}
+        base={projectsBase(orgSlug)}
         issueRef={issueRef}
       />
     </Suspense>

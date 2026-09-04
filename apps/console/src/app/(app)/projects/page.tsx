@@ -6,7 +6,7 @@ import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-
 import { OverviewData } from '@/features/projects/components/overview-data'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-import { PLATFORM_PROJECTS_BASE } from './_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export const metadata = { title: 'Projects' }
 
@@ -25,7 +25,7 @@ async function OverviewSection() {
   const org = await getPlatformOrganization()
   if (!org) return <PlatformOrganizationUnavailable />
 
-  return <OverviewData organizationId={org.id} base={PLATFORM_PROJECTS_BASE} />
+  return <OverviewData organizationId={org.id} base={projectsBase(null)} />
 }
 
 function OverviewFallback() {

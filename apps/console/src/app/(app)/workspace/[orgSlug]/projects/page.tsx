@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import { OverviewData } from '@/features/projects/components/overview-data'
 
 import { resolveOrg } from '@/features/orgs/org-data'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = { params: Promise<{ orgSlug: string }> }
 
@@ -27,10 +27,7 @@ export default async function ProjectsWorkspaceOverviewPage({ params }: Props) {
     <div className="space-y-5">
       <h1 className="876-page-title">Overview</h1>
       <Suspense fallback={<OverviewFallback />}>
-        <OverviewData
-          organizationId={org.id}
-          base={workspaceBase(orgSlug, 'projects')}
-        />
+        <OverviewData organizationId={org.id} base={projectsBase(orgSlug)} />
       </Suspense>
     </div>
   )

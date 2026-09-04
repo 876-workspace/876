@@ -8,7 +8,7 @@ import {
   ISSUE_STATUS_OPTIONS,
   type IssueFilterStatus,
 } from '@/features/projects/issue-status'
-import { workspaceBase } from '@/features/orgs/app-workspaces'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export function IssuesToolbar({
   orgSlug,
@@ -32,7 +32,7 @@ export function IssuesToolbar({
         />
       }
       primaryLabel="Add"
-      primaryHref={`${workspaceBase(orgSlug, 'projects')}/issues/new`}
+      primaryHref={`${projectsBase(orgSlug)}/issues/new`}
       primaryVariant="info"
       refresh
     />
