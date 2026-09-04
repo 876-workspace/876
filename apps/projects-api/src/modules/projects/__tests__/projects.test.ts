@@ -1,29 +1,65 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { tenantsRepo, repository, workStructureRepo, typeAccess } = vi.hoisted(
-  () => ({
-    tenantsRepo: {
-      retrieveByOrganization: vi.fn(),
-    },
-    repository: {
-      list: vi.fn(),
-      count: vi.fn(),
-      retrieve: vi.fn(),
-      retrieveByKey: vi.fn(),
-      retrieveBySlug: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      archive: vi.fn(),
-      hardDelete: vi.fn(),
-      listMembers: vi.fn(),
-      retrieveMember: vi.fn(),
-      createMember: vi.fn(),
-      removeMember: vi.fn(),
-    },
-    workStructureRepo: { seedPreset: vi.fn() },
-    typeAccess: { resolveOwnedWorkItemType: vi.fn() },
-  })
-)
+const {
+  tenantsRepo,
+  repository,
+  workStructureRepo,
+  typeAccess,
+  issuesRepo,
+  labelsRepo,
+  commentsRepo,
+} = vi.hoisted(() => ({
+  tenantsRepo: {
+    retrieveByOrganization: vi.fn(),
+  },
+  repository: {
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    retrieveByKey: vi.fn(),
+    retrieveBySlug: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    archive: vi.fn(),
+    hardDelete: vi.fn(),
+    listMembers: vi.fn(),
+    retrieveMember: vi.fn(),
+    createMember: vi.fn(),
+    removeMember: vi.fn(),
+  },
+  workStructureRepo: { seedPreset: vi.fn() },
+  typeAccess: { resolveOwnedWorkItemType: vi.fn() },
+  issuesRepo: {
+    buildWhereClause: vi.fn(),
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    retrieveByIdentifier: vi.fn(),
+    retrieveByRef: vi.fn(),
+    listEvents: vi.fn(),
+    softDelete: vi.fn(),
+    hardDelete: vi.fn(),
+    getBatchEnrichment: vi.fn(),
+    transaction: vi.fn(),
+  },
+  labelsRepo: {
+    list: vi.fn(),
+    retrieve: vi.fn(),
+    retrieveByName: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    hardDelete: vi.fn(),
+  },
+  commentsRepo: {
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    softDelete: vi.fn(),
+    hardDelete: vi.fn(),
+  },
+}))
 
 vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
 vi.mock('../projects.repository.js', () => repository)
@@ -32,6 +68,9 @@ vi.mock(
   () => workStructureRepo
 )
 vi.mock('../../work-structure/work-item-type-access.js', () => typeAccess)
+vi.mock('../../issues/issues.repository.js', () => issuesRepo)
+vi.mock('../../labels/labels.repository.js', () => labelsRepo)
+vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 
 const service = await import('../projects.service.js')
 const schemas = await import('../projects.schemas.js')
@@ -250,7 +289,6 @@ describe('projects service', () => {
       mockProjectRow
     )
 
-    repository.retrieve.mockResolvedValueOnce(null)
     repository.retrieveByKey.mockResolvedValueOnce(mockProjectRow)
     expect(await service.resolveProject(tenant.id, 'console')).toEqual(
       mockProjectRow

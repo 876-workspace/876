@@ -1,52 +1,50 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository, tenants, projects, issues } = vi.hoisted(
-  () => ({
-    repository: {
-      listWorkItemTypes: vi.fn(),
-      retrieveWorkItemType: vi.fn(),
-      retrieveWorkItemTypeByKey: vi.fn(),
-      retrieveDefaultWorkItemType: vi.fn(),
-      createWorkItemType: vi.fn(),
-      createDefaultWorkItemType: vi.fn(),
-      updateWorkItemType: vi.fn(),
-      updateDefaultWorkItemType: vi.fn(),
-      archiveWorkItemType: vi.fn(),
-      countIssuesForWorkItemType: vi.fn(),
-      listWorkflowStates: vi.fn(),
-      retrieveWorkflowState: vi.fn(),
-      retrieveWorkflowStateByKey: vi.fn(),
-      retrieveDefaultWorkflowState: vi.fn(),
-      createWorkflowState: vi.fn(),
-      createDefaultWorkflowState: vi.fn(),
-      updateWorkflowState: vi.fn(),
-      updateDefaultWorkflowState: vi.fn(),
-      archiveWorkflowState: vi.fn(),
-      countActiveWorkflowStates: vi.fn(),
-      countIssuesForWorkflowState: vi.fn(),
-      listMilestones: vi.fn(),
-      retrieveMilestone: vi.fn(),
-      retrieveMilestoneByKey: vi.fn(),
-      createMilestone: vi.fn(),
-      updateMilestone: vi.fn(),
-      deleteMilestone: vi.fn(),
-      listCustomFields: vi.fn(),
-      retrieveCustomField: vi.fn(),
-      retrieveCustomFieldByKey: vi.fn(),
-      createCustomField: vi.fn(),
-      updateCustomField: vi.fn(),
-      archiveCustomField: vi.fn(),
-      listCustomFieldValues: vi.fn(),
-      upsertCustomFieldValue: vi.fn(),
-      clearCustomFieldValue: vi.fn(),
-      seedMissing: vi.fn(),
-      seedPreset: vi.fn(),
-    },
-    tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
-    projects: { resolveProject: vi.fn() },
-    issues: { resolveIssue: vi.fn() },
-  })
-)
+const { repository, tenants, projects, issues } = vi.hoisted(() => ({
+  repository: {
+    listWorkItemTypes: vi.fn(),
+    retrieveWorkItemType: vi.fn(),
+    retrieveWorkItemTypeByKey: vi.fn(),
+    retrieveDefaultWorkItemType: vi.fn(),
+    createWorkItemType: vi.fn(),
+    createDefaultWorkItemType: vi.fn(),
+    updateWorkItemType: vi.fn(),
+    updateDefaultWorkItemType: vi.fn(),
+    archiveWorkItemType: vi.fn(),
+    countIssuesForWorkItemType: vi.fn(),
+    listWorkflowStates: vi.fn(),
+    retrieveWorkflowState: vi.fn(),
+    retrieveWorkflowStateByKey: vi.fn(),
+    retrieveDefaultWorkflowState: vi.fn(),
+    createWorkflowState: vi.fn(),
+    createDefaultWorkflowState: vi.fn(),
+    updateWorkflowState: vi.fn(),
+    updateDefaultWorkflowState: vi.fn(),
+    archiveWorkflowState: vi.fn(),
+    countActiveWorkflowStates: vi.fn(),
+    countIssuesForWorkflowState: vi.fn(),
+    listMilestones: vi.fn(),
+    retrieveMilestone: vi.fn(),
+    retrieveMilestoneByKey: vi.fn(),
+    createMilestone: vi.fn(),
+    updateMilestone: vi.fn(),
+    deleteMilestone: vi.fn(),
+    listCustomFields: vi.fn(),
+    retrieveCustomField: vi.fn(),
+    retrieveCustomFieldByKey: vi.fn(),
+    createCustomField: vi.fn(),
+    updateCustomField: vi.fn(),
+    archiveCustomField: vi.fn(),
+    listCustomFieldValues: vi.fn(),
+    upsertCustomFieldValue: vi.fn(),
+    clearCustomFieldValue: vi.fn(),
+    seedMissing: vi.fn(),
+    seedPreset: vi.fn(),
+  },
+  tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
+  projects: { resolveProject: vi.fn() },
+  issues: { resolveIssue: vi.fn() },
+}))
 
 vi.mock('../work-structure.repository.js', () => repository)
 vi.mock('../../tenants/index.js', () => tenants)
@@ -173,7 +171,11 @@ function resetRepositoryDefaults() {
     async (_tenantId, data) => ({ ...stateRow, ...data, isDefault: true })
   )
   repository.updateDefaultWorkflowState.mockImplementation(
-    async (_tenantId, _id, patch) => ({ ...stateRow, ...patch, isDefault: true })
+    async (_tenantId, _id, patch) => ({
+      ...stateRow,
+      ...patch,
+      isDefault: true,
+    })
   )
   repository.countActiveWorkflowStates.mockResolvedValue(3)
   repository.countIssuesForWorkflowState.mockResolvedValue(0)
@@ -636,8 +638,7 @@ describe('milestones', () => {
     await service.updateMilestone('org_1', 'ms_1', { status: 'completed' })
 
     const patch = repository.updateMilestone.mock.calls[0]?.[2] as
-      | Record<string, unknown>
-      | undefined
+      Record<string, unknown> | undefined
     expect(typeof patch?.completedAt).toBe('bigint')
   })
 
@@ -650,8 +651,7 @@ describe('milestones', () => {
     await service.updateMilestone('org_1', 'ms_1', { status: 'open' })
 
     const patch = repository.updateMilestone.mock.calls[0]?.[2] as
-      | Record<string, unknown>
-      | undefined
+      Record<string, unknown> | undefined
     expect(patch?.completedAt).toBeNull()
   })
 
@@ -715,6 +715,20 @@ describe('custom fields', () => {
 })
 
 describe('setCustomFieldValue', () => {
+  beforeEach(() => {
+    issues.resolveIssue.mockResolvedValue({
+      id: 'iss_1',
+      deletedAt: null,
+      workItemTypeId: typeRow.id,
+      typeKey: typeRow.key,
+    })
+    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+    repository.listCustomFields.mockImplementation(async () => {
+      const field = await repository.retrieveCustomField('_', '_')
+      return field ? [field] : []
+    })
+  })
+
   it('reports custom-field-not-found for an unknown field', async () => {
     const result = await service.setCustomFieldValue('org_1', 'CONSOLE-12', {
       fieldId: 'cf_missing',

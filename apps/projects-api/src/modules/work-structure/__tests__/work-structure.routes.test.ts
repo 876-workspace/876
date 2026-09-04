@@ -661,6 +661,20 @@ describe('preset routes', () => {
 describe('custom-field-value routes', () => {
   const VALUES = `${ORG}/issues/CONSOLE-12/custom-field-values`
 
+  beforeEach(() => {
+    issues.resolveIssue.mockResolvedValue({
+      id: 'iss_1',
+      deletedAt: null,
+      workItemTypeId: typeRow.id,
+      typeKey: typeRow.key,
+    })
+    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+    repository.listCustomFields.mockImplementation(async () => {
+      const field = await repository.retrieveCustomField('_', '_')
+      return field ? [field] : []
+    })
+  })
+
   it('lists the values stored on an issue', async () => {
     repository.listCustomFieldValues.mockResolvedValue([])
 
