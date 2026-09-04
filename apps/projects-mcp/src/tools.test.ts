@@ -42,18 +42,13 @@ describe('tools', () => {
     }
   })
 
-  it("issues_list's status enum is exactly the six kebab-case values", () => {
+  it('issues_list accepts configured workflow-state keys instead of publishing a fixed enum', () => {
     const tool = TOOLS.find((t) => t.name === 'issues_list')
     expect(tool).toBeDefined()
     const statusProp = tool?.inputSchema.properties.status
-    expect(statusProp?.enum).toEqual([
-      'backlog',
-      'todo',
-      'in-progress',
-      'in-review',
-      'done',
-      'canceled',
-    ])
+    expect(statusProp?.enum).toBeUndefined()
+    expect(statusProp?.description).toContain('configured workflow-state key')
+    expect(statusProp?.description).toContain('workflow_states_list')
   })
 
   it("issue_create's priority enum is exactly the five values", () => {
@@ -67,6 +62,33 @@ describe('tools', () => {
       'high',
       'urgent',
     ])
+  })
+
+  it('issue mutations expose configurable work structure fields', () => {
+    for (const name of ['issue_create', 'issue_update']) {
+      const tool = TOOLS.find((t) => t.name === name)
+      expect(tool).toBeDefined()
+      expect(tool?.inputSchema.properties.status?.enum).toBeUndefined()
+      expect(tool?.inputSchema.properties.typeKey?.type).toBe('string')
+      expect(tool?.inputSchema.properties.milestoneId?.type).toBe('string')
+      expect(tool?.inputSchema.properties.customFields?.type).toBe('array')
+      expect(
+        tool?.inputSchema.properties.customFields?.items?.properties?.fieldId
+          ?.type
+      ).toBe('string')
+    }
+  })
+
+  it('project mutations expose the project-level default work item type', () => {
+    for (const name of ['project_create', 'project_update']) {
+      const tool = TOOLS.find((t) => t.name === name)
+      expect(tool?.inputSchema.properties.defaultWorkItemTypeId?.type).toBe(
+        'string'
+      )
+      expect(
+        tool?.inputSchema.properties.defaultWorkItemTypeId?.description
+      ).toContain('work_item_types_list')
+    }
   })
 
   it('tool names are unique', () => {
@@ -116,9 +138,10 @@ describe('tools', () => {
     expect(tool?.inputSchema.properties.includeComments?.type).toBe('boolean')
   })
 
-  it('issue_get documents that comments carry the requester specification', () => {
+  it('issue_get documents enriched work structure', () => {
     const tool = TOOLS.find((t) => t.name === 'issue_get')
-    expect(tool?.description).toContain('Comments carry')
+    expect(tool?.description).toContain('configured workflow state')
+    expect(tool?.description).toContain('custom-field values')
   })
 
   it('every comment-reading tool shares the same issue parameter description shape', () => {
