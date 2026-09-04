@@ -133,6 +133,7 @@ CREATE UNIQUE INDEX "projects_custom_fields_tenant_id_key_key" ON "projects_cust
 CREATE UNIQUE INDEX "projects_custom_field_values_issue_id_field_id_key" ON "projects_custom_field_values"("issue_id", "field_id");
 CREATE INDEX "projects_custom_field_values_tenant_id_field_id_idx" ON "projects_custom_field_values"("tenant_id", "field_id");
 CREATE INDEX "projects_issues_tenant_id_milestone_id_idx" ON "projects_issues"("tenant_id", "milestone_id");
+CREATE INDEX "projects_projects_default_work_item_type_id_idx" ON "projects_projects"("default_work_item_type_id");
 
 -- AddForeignKey
 ALTER TABLE "projects_work_item_types" ADD CONSTRAINT "projects_work_item_types_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "projects_tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -146,6 +147,7 @@ ALTER TABLE "projects_custom_fields_on_types" ADD CONSTRAINT "projects_custom_fi
 ALTER TABLE "projects_custom_field_values" ADD CONSTRAINT "projects_custom_field_values_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "projects_tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "projects_custom_field_values" ADD CONSTRAINT "projects_custom_field_values_issue_id_fkey" FOREIGN KEY ("issue_id") REFERENCES "projects_issues"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "projects_custom_field_values" ADD CONSTRAINT "projects_custom_field_values_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "projects_custom_fields"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "projects_projects" ADD CONSTRAINT "projects_projects_default_work_item_type_id_fkey" FOREIGN KEY ("default_work_item_type_id") REFERENCES "projects_work_item_types"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "projects_issues" ADD CONSTRAINT "projects_issues_workflow_state_id_fkey" FOREIGN KEY ("workflow_state_id") REFERENCES "projects_workflow_states"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "projects_issues" ADD CONSTRAINT "projects_issues_work_item_type_id_fkey" FOREIGN KEY ("work_item_type_id") REFERENCES "projects_work_item_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "projects_issues" ADD CONSTRAINT "projects_issues_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "projects_milestones"("id") ON DELETE SET NULL ON UPDATE CASCADE;
