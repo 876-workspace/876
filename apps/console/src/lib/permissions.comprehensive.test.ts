@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  operatorExclusiveCatalog,
+  operatorProductCatalogs,
+} from './operator-permissions'
+import {
   hasPermission,
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
@@ -79,9 +83,16 @@ describe('permissions — console access gate', () => {
   })
 
   it('all system roles have permissions subset of catalog', () => {
-    const catalogKeys = new Set(
-      consolePermissionCatalog.permissions.map((p) => p.key)
-    )
+    // §6.1: a role may also hold a product's projected key (`crm/requests.view`)
+    // or a Console-only operator-exclusive key (`console:crm.purge`), neither
+    // of which `consolePermissionCatalog` alone declares.
+    const catalogKeys = new Set([
+      ...consolePermissionCatalog.permissions.map((p) => p.key),
+      ...operatorProductCatalogs().flatMap((catalog) =>
+        catalog.permissions.map((p) => p.key)
+      ),
+      ...operatorExclusiveCatalog().permissions.map((p) => p.key),
+    ])
     for (const role of SYSTEM_ROLE_DEFINITIONS) {
       for (const perm of role.permissions) {
         expect(
