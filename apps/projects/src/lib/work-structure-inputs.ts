@@ -62,24 +62,61 @@ const customFieldTypeSchema = z.enum([
   'user',
   'url',
 ])
+const customFieldOptionsSchema = z.array(
+  z.strictObject({
+    key: keySchema,
+    label: z.string().trim().min(1).max(100),
+  })
+)
 
-export const customFieldInputSchema = z.strictObject({
-  key: keySchema,
-  label: z.string().trim().min(1).max(100),
-  fieldType: customFieldTypeSchema,
-  options: z
-    .array(
-      z.strictObject({
-        key: keySchema,
-        label: z.string().trim().min(1).max(100),
+function validateOptions(
+  data: { fieldType?: string; options?: Array<{ key: string; label: string }> },
+  ctx: z.RefinementCtx
+) {
+  const optionField =
+    data.fieldType === 'select' || data.fieldType === 'multi-select'
+  if (optionField && (!data.options || data.options.length === 0)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['options'],
+      message: 'Select fields require at least one option.',
+    })
+  }
+  if (data.options) {
+    const keys = data.options.map((option) => option.key)
+    if (new Set(keys).size !== keys.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: 'Custom field option keys must be unique.',
       })
-    )
-    .optional(),
-  required: z.boolean().optional(),
-  description: nullableDescriptionSchema,
-  position: positionSchema,
-  typeIds: z.array(z.string().trim().min(1)).optional(),
-})
+    }
+  }
+}
+
+export const customFieldInputSchema = z
+  .strictObject({
+    key: keySchema,
+    label: z.string().trim().min(1).max(100),
+    fieldType: customFieldTypeSchema,
+    options: customFieldOptionsSchema.optional(),
+    required: z.boolean().optional(),
+    description: nullableDescriptionSchema,
+    position: positionSchema,
+    typeIds: z.array(z.string().trim().min(1)).optional(),
+  })
+  .superRefine((data, ctx) => {
+    validateOptions(data, ctx)
+    const optionField =
+      data.fieldType === 'select' || data.fieldType === 'multi-select'
+    if (!optionField && data.options !== undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: 'Options are only valid for select fields.',
+      })
+    }
+  })
 
 export const updateWorkItemTypeInputSchema = workItemTypeInputSchema
   .omit({ key: true })
@@ -93,7 +130,15 @@ export const updateMilestoneInputSchema = milestoneInputSchema
   .omit({ projectId: true, key: true })
   .partial()
   .refine((input) => Object.keys(input).length > 0)
-export const updateCustomFieldInputSchema = customFieldInputSchema
-  .omit({ key: true })
-  .partial()
+export const updateCustomFieldInputSchema = z
+  .strictObject({
+    label: z.string().trim().min(1).max(100).optional(),
+    fieldType: customFieldTypeSchema.optional(),
+    options: customFieldOptionsSchema.optional(),
+    required: z.boolean().optional(),
+    description: nullableDescriptionSchema,
+    position: positionSchema,
+    typeIds: z.array(z.string().trim().min(1)).optional(),
+  })
   .refine((input) => Object.keys(input).length > 0)
+  .superRefine((data, ctx) => validateOptions(data, ctx))
