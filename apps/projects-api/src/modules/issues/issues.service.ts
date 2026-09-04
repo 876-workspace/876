@@ -8,6 +8,7 @@ import {
 import * as labels from '../labels/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
+import * as workStructure from '../work-structure/index.js'
 import * as repository from './issues.repository.js'
 import type {
   CreateIssueBody,
@@ -93,6 +94,21 @@ async function resolveLabels(
   return resolvedIds
 }
 
+async function hasValidParentHierarchy(
+  tenantId: string,
+  parentIssueId: string | null,
+  childHierarchyLevel: number
+): Promise<boolean> {
+  if (parentIssueId === null) return true
+  const parent = await repository.retrieve(tenantId, parentIssueId)
+  if (!parent || parent.deletedAt !== null) return false
+  const parentType = await workStructure.resolveWorkItemTypeByKey(
+    tenantId,
+    parent.typeKey
+  )
+  return parentType !== null && childHierarchyLevel < parentType.hierarchyLevel
+}
+
 export async function list(
   organizationId: string,
   query: ListIssuesQuery
@@ -130,6 +146,8 @@ export async function list(
 
   const options: repository.ListIssuesOptions = {
     project: query.project,
+    milestoneId: query.milestoneId,
+    typeKey: query.typeKey,
     status,
     priority,
     assignee: query.assignee,
@@ -150,6 +168,8 @@ export async function list(
 
   const countOptions: repository.CountIssuesOptions = {
     project: query.project,
+    milestoneId: query.milestoneId,
+    typeKey: query.typeKey,
     status,
     priority,
     assignee: query.assignee,
@@ -164,13 +184,18 @@ export async function list(
   const issueIds = pagedRows.map((r) => r.id)
   const enrichmentMap = await repository.getBatchEnrichment(issueIds)
 
-  const items = pagedRows.map((row) => {
+  const structures = await Promise.all(
+    pagedRows.map((row) => workStructure.getIssueStructure(tenant.id, row))
+  )
+  const items = pagedRows.map((row, index) => {
     const details = enrichmentMap.get(row.id)
+    const structure = structures[index]
     return serializeIssue(row, {
       projectKey: row.project?.key,
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      ...structure,
     })
   })
 
@@ -206,6 +231,39 @@ export async function create(
   }
 
   const status = body.status ?? 'todo'
+  const state = await workStructure.resolveWorkflowStateByKey(tenant.id, status)
+  if (!state)
+    return { data: null, error: getError('projects/workflow-state-not-found') }
+  const typeKey = body.typeKey ?? 'task'
+  const workItemType = await workStructure.resolveWorkItemTypeByKey(
+    tenant.id,
+    typeKey
+  )
+  if (!workItemType)
+    return { data: null, error: getError('projects/work-item-type-not-found') }
+  if (
+    !(await hasValidParentHierarchy(
+      tenant.id,
+      body.parentIssueId ?? null,
+      workItemType.hierarchyLevel
+    ))
+  )
+    return { data: null, error: getError('projects/invalid-request') }
+  const milestone = body.milestoneId
+    ? await workStructure.resolveMilestoneById(tenant.id, body.milestoneId)
+    : null
+  if (
+    body.milestoneId &&
+    (!milestone || milestone.projectId !== targetProject.id)
+  )
+    return { data: null, error: getError('projects/milestone-not-found') }
+  if (body.customFields) {
+    const validation = await workStructure.validateCustomFieldValues(
+      tenant.id,
+      body.customFields
+    )
+    if (validation.error) return { data: null, error: validation.error }
+  }
   const priority = body.priority ?? 'none'
   const now = toDbUnixSeconds(nowUnixSeconds())
 
@@ -213,11 +271,11 @@ export async function create(
   let completedAt: bigint | null = null
   let canceledAt: bigint | null = null
 
-  if (status === 'in-progress') {
+  if (state.category === 'started') {
     startedAt = now
-  } else if (status === 'done') {
+  } else if (state.category === 'completed') {
     completedAt = now
-  } else if (status === 'canceled') {
+  } else if (state.category === 'canceled') {
     canceledAt = now
   }
 
@@ -237,6 +295,10 @@ export async function create(
       title: body.title,
       description: body.description ?? null,
       status,
+      workflowStateId: state.id,
+      typeKey,
+      workItemTypeId: workItemType.id,
+      milestoneId: milestone?.id ?? null,
       priority,
       assigneeUserId: body.assigneeUserId ?? null,
       creatorUserId: body.creatorUserId ?? null,
@@ -271,6 +333,14 @@ export async function create(
 
   const enrichment = await repository.getBatchEnrichment([createdRow.id])
   const details = enrichment.get(createdRow.id)
+  if (body.customFields)
+    await workStructure.setCustomFieldValuesForTenant(
+      tenant.id,
+      createdRow.id,
+      body.customFields,
+      body.creatorUserId
+    )
+  const structure = await workStructure.getIssueStructure(tenant.id, createdRow)
 
   return {
     data: serializeIssue(createdRow, {
@@ -278,6 +348,7 @@ export async function create(
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      ...structure,
     }),
     error: null,
   }
@@ -303,6 +374,7 @@ export async function retrieve(
 
   const enrichment = await repository.getBatchEnrichment([row.id])
   const details = enrichment.get(row.id)
+  const structure = await workStructure.getIssueStructure(tenant.id, row)
 
   return {
     data: serializeIssue(row, {
@@ -310,6 +382,7 @@ export async function retrieve(
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      ...structure,
     }),
     error: null,
   }
@@ -350,24 +423,78 @@ export async function update(
     resolvedLabelIds = await resolveLabels(tenant.id, body.labelIds)
   }
 
+  const targetProjectId = newProjectId ?? existing.projectId
+  const targetStatus =
+    body.status === undefined
+      ? null
+      : await workStructure.resolveWorkflowStateByKey(tenant.id, body.status)
+  if (body.status !== undefined && !targetStatus)
+    return { data: null, error: getError('projects/workflow-state-not-found') }
+  const targetType =
+    body.typeKey === undefined
+      ? null
+      : await workStructure.resolveWorkItemTypeByKey(tenant.id, body.typeKey)
+  if (body.typeKey !== undefined && !targetType)
+    return { data: null, error: getError('projects/work-item-type-not-found') }
+  if (body.parentIssueId !== undefined || body.typeKey !== undefined) {
+    const currentType =
+      targetType ??
+      (await workStructure.resolveWorkItemTypeByKey(
+        tenant.id,
+        existing.typeKey
+      ))
+    if (
+      !currentType ||
+      !(await hasValidParentHierarchy(
+        tenant.id,
+        body.parentIssueId === undefined
+          ? existing.parentIssueId
+          : body.parentIssueId,
+        currentType.hierarchyLevel
+      ))
+    )
+      return { data: null, error: getError('projects/invalid-request') }
+  }
+  const targetMilestone =
+    body.milestoneId === undefined || body.milestoneId === null
+      ? null
+      : await workStructure.resolveMilestoneById(tenant.id, body.milestoneId)
+  if (
+    body.milestoneId !== undefined &&
+    body.milestoneId !== null &&
+    (!targetMilestone || targetMilestone.projectId !== targetProjectId)
+  )
+    return { data: null, error: getError('projects/milestone-not-found') }
+  if (body.customFields) {
+    const validation = await workStructure.validateCustomFieldValues(
+      tenant.id,
+      body.customFields
+    )
+    if (validation.error) return { data: null, error: validation.error }
+  }
+
   const now = toDbUnixSeconds(nowUnixSeconds())
 
   let startedAt: bigint | null | undefined = undefined
   let completedAt: bigint | null | undefined = undefined
   let canceledAt: bigint | null | undefined = undefined
 
-  if (body.status !== undefined && body.status !== existing.status) {
-    if (body.status === 'in-progress') {
+  if (
+    body.status !== undefined &&
+    body.status !== existing.status &&
+    targetStatus
+  ) {
+    if (targetStatus.category === 'started') {
       if (existing.startedAt === null || existing.startedAt === undefined) {
         startedAt = now
       }
-    } else if (body.status === 'done') {
+    } else if (targetStatus.category === 'completed') {
       completedAt = now
       canceledAt = null
-    } else if (body.status === 'canceled') {
+    } else if (targetStatus.category === 'canceled') {
       canceledAt = now
       completedAt = null
-    } else if (existing.status === 'done' || existing.status === 'canceled') {
+    } else {
       completedAt = null
       canceledAt = null
     }
@@ -385,17 +512,22 @@ export async function update(
       fromValue: existing.status,
       toValue: body.status,
     })
-    if (body.status === 'done' && existing.status !== 'done') {
+    if (targetStatus?.category === 'completed') {
       eventsToWrite.push({
         type: 'closed',
         fromValue: existing.status,
-        toValue: 'done',
+        toValue: body.status,
       })
     }
+    const existingState = await workStructure.resolveWorkflowStateByKey(
+      tenant.id,
+      existing.status
+    )
     if (
-      (existing.status === 'done' || existing.status === 'canceled') &&
-      body.status !== 'done' &&
-      body.status !== 'canceled'
+      (existingState?.category === 'completed' ||
+        existingState?.category === 'canceled') &&
+      targetStatus?.category !== 'completed' &&
+      targetStatus?.category !== 'canceled'
     ) {
       eventsToWrite.push({
         type: 'reopened',
@@ -476,6 +608,13 @@ export async function update(
   if (body.description !== undefined)
     updateParams.description = body.description
   if (body.status !== undefined) updateParams.status = body.status
+  if (targetStatus) updateParams.workflowStateId = targetStatus.id
+  if (body.typeKey !== undefined) {
+    updateParams.typeKey = body.typeKey
+    updateParams.workItemTypeId = targetType?.id ?? null
+  }
+  if (body.milestoneId !== undefined)
+    updateParams.milestoneId = targetMilestone?.id ?? null
   if (body.priority !== undefined) updateParams.priority = body.priority
   if (body.assigneeUserId !== undefined)
     updateParams.assigneeUserId = body.assigneeUserId
@@ -516,6 +655,14 @@ export async function update(
 
   const enrichment = await repository.getBatchEnrichment([updatedRow.id])
   const details = enrichment.get(updatedRow.id)
+  if (body.customFields)
+    await workStructure.setCustomFieldValuesForTenant(
+      tenant.id,
+      updatedRow.id,
+      body.customFields,
+      body.actorUserId
+    )
+  const structure = await workStructure.getIssueStructure(tenant.id, updatedRow)
 
   return {
     data: serializeIssue(updatedRow, {
@@ -523,6 +670,7 @@ export async function update(
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      ...structure,
     }),
     error: null,
   }

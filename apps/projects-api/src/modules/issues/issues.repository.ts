@@ -4,6 +4,8 @@ import type { IssueEventRow, IssueRow } from './issues.serializers.js'
 
 export type ListIssuesOptions = {
   project?: string
+  milestoneId?: string
+  typeKey?: string
   status?: string[]
   priority?: string[]
   assignee?: string
@@ -20,6 +22,8 @@ export type ListIssuesOptions = {
 
 export type CountIssuesOptions = {
   project?: string
+  milestoneId?: string
+  typeKey?: string
   status?: string[]
   priority?: string[]
   assignee?: string
@@ -39,6 +43,10 @@ export type CreateIssueParams = {
   title: string
   description?: string | null
   status: string
+  workflowStateId?: string | null
+  typeKey: string
+  workItemTypeId?: string | null
+  milestoneId?: string | null
   priority: string
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -69,6 +77,10 @@ export type UpdateIssueParams = {
   title?: string
   description?: string | null
   status?: string
+  workflowStateId?: string | null
+  typeKey?: string
+  workItemTypeId?: string | null
+  milestoneId?: string | null
   priority?: string
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -100,6 +112,8 @@ export function buildWhereClause(
   tenantId: string,
   options: {
     project?: string
+    milestoneId?: string
+    typeKey?: string
     status?: string[]
     priority?: string[]
     assignee?: string
@@ -134,6 +148,9 @@ export function buildWhereClause(
   if (options.status && options.status.length > 0) {
     where.status = { in: options.status }
   }
+
+  if (options.milestoneId) where.milestoneId = options.milestoneId
+  if (options.typeKey) where.typeKey = options.typeKey
 
   if (options.priority && options.priority.length > 0) {
     where.priority = { in: options.priority }

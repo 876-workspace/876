@@ -1,7 +1,14 @@
 import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { tenantsRepo, repository } = vi.hoisted(() => ({
+const {
+  tenantsRepo,
+  repository,
+  workStructureRepo,
+  projectsRepo,
+  commentsRepo,
+  issuesRepo,
+} = vi.hoisted(() => ({
   tenantsRepo: {
     retrieveByOrganization: vi.fn(),
   },
@@ -13,10 +20,45 @@ const { tenantsRepo, repository } = vi.hoisted(() => ({
     update: vi.fn(),
     hardDelete: vi.fn(),
   },
+  // `labels.service.ts` reaches `tenants/index.js`, whose service now calls
+  // `work-structure.service.ts` to backfill a pre-Phase-2 tenant on
+  // `ensure()`. That file also imports the projects and issues modules for
+  // unrelated resources, and every one of those repositories connects to
+  // the DB pool at module-eval time — so each must be mocked here too.
+  workStructureRepo: { seedPreset: vi.fn() },
+  projectsRepo: { retrieve: vi.fn(), retrieveByKey: vi.fn() },
+  commentsRepo: {
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    softDelete: vi.fn(),
+    hardDelete: vi.fn(),
+  },
+  issuesRepo: {
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    retrieveByIdentifier: vi.fn(),
+    retrieveByRef: vi.fn(),
+    listEvents: vi.fn(),
+    softDelete: vi.fn(),
+    hardDelete: vi.fn(),
+    getBatchEnrichment: vi.fn(),
+    transaction: vi.fn(),
+  },
 }))
 
 vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
 vi.mock('../labels.repository.js', () => repository)
+vi.mock(
+  '../../work-structure/work-structure.repository.js',
+  () => workStructureRepo
+)
+vi.mock('../../projects/projects.repository.js', () => projectsRepo)
+vi.mock('../../comments/comments.repository.js', () => commentsRepo)
+vi.mock('../../issues/issues.repository.js', () => issuesRepo)
 
 const service = await import('../labels.service.js')
 const { createLabelsRouter } = await import('../labels.routes.js')

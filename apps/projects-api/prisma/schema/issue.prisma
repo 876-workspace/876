@@ -7,6 +7,11 @@ model Issue {
   title          String
   description    String?
   status         String  @default("todo")      // backlog|todo|in-progress|in-review|done|canceled
+  workflowStateId String? @map("workflow_state_id")
+  typeKey        String  @default("task") @map("type_key")
+  workItemTypeId String? @map("work_item_type_id")
+  milestoneId    String? @map("milestone_id")
+  cycleId        String? @map("cycle_id")
   priority       String  @default("none")      // none|low|medium|high|urgent
   assigneeUserId String? @map("assignee_user_id")
   creatorUserId  String? @map("creator_user_id")
@@ -28,6 +33,11 @@ model Issue {
   labels   IssueLabel[]
   comments Comment[]
   events   IssueEvent[]
+  workflowState WorkflowState? @relation(fields: [workflowStateId], references: [id], onDelete: Restrict)
+  workItemType WorkItemType? @relation(fields: [workItemTypeId], references: [id], onDelete: Restrict)
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  cycle Cycle? @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  customFieldValues CustomFieldValue[]
 
   @@unique([tenantId, identifier])
   @@unique([projectId, number])
@@ -35,6 +45,7 @@ model Issue {
   @@index([tenantId, assigneeUserId])
   @@index([tenantId, updatedAt])
   @@index([projectId, status])
+  @@index([tenantId, milestoneId])
   @@map("projects_issues")
 }
 

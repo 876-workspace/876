@@ -33,6 +33,66 @@ export const PROJECTS_ERRORS = {
     message: 'Another label already uses that name.',
     httpStatus: 409 as HttpStatusCode,
   },
+  'projects/work-item-type-not-found': {
+    message: 'The work item type could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/work-item-type-key-taken': {
+    message: 'Another work item type already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/work-item-type-in-use': {
+    message: 'This work item type is still used by an issue.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/workflow-state-not-found': {
+    message: 'The workflow state could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/workflow-state-key-taken': {
+    message: 'Another workflow state already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/workflow-state-in-use': {
+    message: 'This workflow state is still used by an issue.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/default-workflow-state-required': {
+    message: 'The default workflow state cannot be deleted.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/workflow-state-required': {
+    message: 'At least one workflow state must remain active.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/milestone-not-found': {
+    message: 'The milestone could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/milestone-key-taken': {
+    message: 'Another milestone in this project already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/custom-field-not-found': {
+    message: 'The custom field could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/custom-field-key-taken': {
+    message: 'Another custom field already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/custom-field-value-invalid': {
+    message: 'The custom field value does not match the field type.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/custom-field-option-invalid': {
+    message: 'The selected option is not declared for this custom field.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/preset-not-found': {
+    message: 'The requested work structure preset could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
   'projects/comment-not-found': {
     message: 'The comment could not be found.',
     httpStatus: 404 as HttpStatusCode,

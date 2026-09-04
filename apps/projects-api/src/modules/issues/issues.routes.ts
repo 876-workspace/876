@@ -2,12 +2,14 @@ import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
 import { createCommentsRouter } from '../comments/comments.routes.js'
+import { createCustomFieldValuesRouter } from '../work-structure/work-structure.routes.js'
 import * as controller from './issues.controller.js'
 
 export function createIssuesRouter(): Router {
   const router = Router({ mergeParams: true })
 
   router.use('/:issueRef/comments', createCommentsRouter())
+  router.use('/:issueRef/custom-field-values', createCustomFieldValuesRouter())
 
   router.get('/', requireInternalKey, controller.list)
   router.post('/', requireInternalKey, controller.create)

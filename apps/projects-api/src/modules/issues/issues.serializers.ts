@@ -4,6 +4,12 @@ import {
 } from '../../platform/timestamps.js'
 import type { LabelRow, SerializedLabel } from '../labels/labels.serializers.js'
 import { serializeLabel } from '../labels/labels.serializers.js'
+import type {
+  SerializedCustomFieldValue,
+  SerializedMilestone,
+  SerializedWorkItemType,
+  SerializedWorkflowState,
+} from '../work-structure/index.js'
 
 export type IssueRow = {
   id: string
@@ -14,6 +20,10 @@ export type IssueRow = {
   title: string
   description: string | null
   status: string
+  workflowStateId: string | null
+  typeKey: string
+  workItemTypeId: string | null
+  milestoneId: string | null
   priority: string
   assigneeUserId: string | null
   creatorUserId: string | null
@@ -61,6 +71,11 @@ export type SerializedIssue = {
   title: string
   description: string | null
   status: string
+  typeKey: string
+  type: SerializedWorkItemType | null
+  state: SerializedWorkflowState | null
+  milestone: SerializedMilestone | null
+  customFields: SerializedCustomFieldValue[]
   priority: string
   assigneeUserId: string | null
   creatorUserId: string | null
@@ -102,6 +117,10 @@ export function serializeIssue(
     labels?: LabelRow[] | SerializedLabel[]
     commentCount?: number
     subIssueCount?: number
+    type?: SerializedWorkItemType | null
+    state?: SerializedWorkflowState | null
+    milestone?: SerializedMilestone | null
+    customFields?: SerializedCustomFieldValue[]
   }
 ): SerializedIssue {
   const projectKey = options?.projectKey ?? row.project?.key ?? ''
@@ -128,6 +147,11 @@ export function serializeIssue(
     title: row.title,
     description: row.description,
     status: row.status,
+    typeKey: row.typeKey,
+    type: options?.type ?? null,
+    state: options?.state ?? null,
+    milestone: options?.milestone ?? null,
+    customFields: options?.customFields ?? [],
     priority: row.priority,
     assigneeUserId: row.assigneeUserId,
     creatorUserId: row.creatorUserId,

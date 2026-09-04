@@ -1,6 +1,8 @@
 import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
+import { getWorkStructurePreset } from '../work-structure/presets.js'
+import { seedPreset as seedWorkStructurePreset } from '../work-structure/work-structure.service.js'
 import * as repository from './tenants.repository.js'
 import type { TenantRow } from './tenants.serializers.js'
 import { serializeTenant } from './tenants.serializers.js'
@@ -21,6 +23,17 @@ export async function resolveTenant(
   organizationId: string
 ): Promise<TenantRow | null> {
   return repository.retrieveByOrganization(organizationId)
+}
+
+export async function setPresetKey(
+  tenantId: string,
+  presetKey: string
+): Promise<void> {
+  await repository.updatePresetKey(
+    tenantId,
+    presetKey,
+    toDbUnixSeconds(nowUnixSeconds())
+  )
 }
 
 export async function retrieveByOrganization(
@@ -47,6 +60,16 @@ export type EnsureResult =
 export async function ensure(organizationId: string): Promise<EnsureResult> {
   const existing = await repository.retrieveByOrganization(organizationId)
   if (existing) {
+    // Tenants provisioned before the work-structure migration have no
+    // WorkflowState/WorkItemType rows yet, and `presetKey` defaults to
+    // `software-development` at the column level even for those — it is not
+    // a reliable "already seeded" flag. `seedMissing` upserts (never
+    // clobbers an edit), so re-running it on every `ensure` is a cheap,
+    // idempotent backfill rather than a conditional migration step.
+    await seedWorkStructurePreset(
+      existing.id,
+      existing.presetKey ?? 'software-development'
+    )
     return {
       data: serializeTenant(existing),
       isNew: false,
@@ -57,6 +80,8 @@ export async function ensure(organizationId: string): Promise<EnsureResult> {
   const now = toDbUnixSeconds(nowUnixSeconds())
   const tenantId = generateId('tenant')
   const triageProjectId = generateId('project')
+  const preset = getWorkStructurePreset('software-development')
+  if (!preset) throw new Error('The default work structure preset is missing.')
 
   try {
     const created = await repository.createWithTriageProject({
@@ -66,6 +91,7 @@ export async function ensure(organizationId: string): Promise<EnsureResult> {
       triageProjectKey: 'TRI',
       triageProjectSlug: 'triage',
       now,
+      preset,
     })
 
     return {

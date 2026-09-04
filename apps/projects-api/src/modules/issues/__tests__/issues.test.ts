@@ -6,6 +6,7 @@ const {
   projectsRepo,
   labelsRepo,
   commentsRepo,
+  workStructureRepo,
   repository,
   txMock,
 } = vi.hoisted(() => {
@@ -38,6 +39,17 @@ const {
       softDelete: vi.fn(),
       hardDelete: vi.fn(),
     },
+    workStructureRepo: {
+      retrieveWorkflowState: vi.fn(),
+      retrieveWorkflowStateByKey: vi.fn(),
+      retrieveWorkItemType: vi.fn(),
+      retrieveWorkItemTypeByKey: vi.fn(),
+      retrieveMilestone: vi.fn(),
+      listCustomFieldValues: vi.fn(),
+      retrieveCustomField: vi.fn(),
+      upsertCustomFieldValue: vi.fn(),
+      clearCustomFieldValue: vi.fn(),
+    },
     repository: {
       list: vi.fn(),
       count: vi.fn(),
@@ -58,6 +70,10 @@ vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
 vi.mock('../../projects/projects.repository.js', () => projectsRepo)
 vi.mock('../../labels/labels.repository.js', () => labelsRepo)
 vi.mock('../../comments/comments.repository.js', () => commentsRepo)
+vi.mock(
+  '../../work-structure/work-structure.repository.js',
+  () => workStructureRepo
+)
 vi.mock('../issues.repository.js', () => repository)
 
 const service = await import('../issues.service.js')
@@ -120,6 +136,10 @@ const mockIssueRow = {
   title: 'Test issue title',
   description: 'Test issue description',
   status: 'todo',
+  workflowStateId: 'wfs_todo_1',
+  typeKey: 'task',
+  workItemTypeId: 'wit_task_1',
+  milestoneId: null,
   priority: 'none',
   assigneeUserId: null,
   creatorUserId: 'usr_creator_1',
@@ -212,6 +232,59 @@ beforeEach(() => {
       return map
     }
   )
+  const taskType = {
+    id: 'wit_task_1',
+    tenantId: tenant.id,
+    key: 'task',
+    name: 'Task',
+    iconKey: 'check-square',
+    color: '#2563eb',
+    hierarchyLevel: 1,
+    description: null,
+    isDefault: true,
+    position: 0,
+    archivedAt: null,
+    createdAt: 1787767200n,
+    updatedAt: 1787767200n,
+  }
+  const todoState = {
+    id: 'wfs_todo_1',
+    tenantId: tenant.id,
+    key: 'todo',
+    name: 'To do',
+    category: 'unstarted',
+    color: '#64748b',
+    description: null,
+    isDefault: true,
+    position: 0,
+    archivedAt: null,
+    createdAt: 1787767200n,
+    updatedAt: 1787767200n,
+  }
+  workStructureRepo.retrieveWorkflowState.mockResolvedValue(todoState)
+  workStructureRepo.retrieveWorkflowStateByKey.mockImplementation(
+    async (_tenantId: string, key: string) =>
+      key === 'todo'
+        ? todoState
+        : {
+            ...todoState,
+            key,
+            category:
+              key === 'done'
+                ? 'completed'
+                : key === 'canceled'
+                  ? 'canceled'
+                  : key === 'in-progress' || key === 'in-review'
+                    ? 'started'
+                    : 'unstarted',
+          }
+  )
+  workStructureRepo.retrieveWorkItemType.mockResolvedValue(taskType)
+  workStructureRepo.retrieveWorkItemTypeByKey.mockImplementation(
+    async (_tenantId: string, key: string) => ({ ...taskType, key })
+  )
+  workStructureRepo.retrieveMilestone.mockResolvedValue(null)
+  workStructureRepo.listCustomFieldValues.mockResolvedValue([])
   repository.transaction.mockImplementation(
     async (cb: (tx: typeof txMock) => unknown) => cb(txMock)
   )
@@ -814,6 +887,40 @@ describe('issues module', () => {
             title: 'Test issue title',
             description: 'Test issue description',
             status: 'todo',
+            typeKey: 'task',
+            type: {
+              object: 'projects.work-item-type',
+              id: 'wit_task_1',
+              tenantId: tenant.id,
+              key: 'task',
+              name: 'Task',
+              iconKey: 'check-square',
+              color: '#2563eb',
+              hierarchyLevel: 1,
+              description: null,
+              isDefault: true,
+              position: 0,
+              archivedAt: null,
+              createdAt: 1787767200,
+              updatedAt: 1787767200,
+            },
+            state: {
+              object: 'projects.workflow-state',
+              id: 'wfs_todo_1',
+              tenantId: tenant.id,
+              key: 'todo',
+              name: 'To do',
+              category: 'unstarted',
+              color: '#64748b',
+              description: null,
+              isDefault: true,
+              position: 0,
+              archivedAt: null,
+              createdAt: 1787767200,
+              updatedAt: 1787767200,
+            },
+            milestone: null,
+            customFields: [],
             priority: 'none',
             assigneeUserId: null,
             creatorUserId: 'usr_creator_1',
