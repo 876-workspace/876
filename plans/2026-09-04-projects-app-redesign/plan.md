@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-04-projects-app-redesign`
 - **Branch:** `feat/projects-comments-and-mobile-redesign`
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED ✅
 
 ## Overview
 
@@ -401,3 +401,46 @@ typed browser clients, four settings destinations, and issue-create support for
 work-item types, workflow states, milestones, and custom-field values. The
 follow-up adds focused route, browser-client, settings, and issue-form tests;
 see [the implementation report](./reports/agy/2026-09-04-work-structure-settings-and-issue-form.md).
+
+**2026-09-04, final local-verification session.** Codex's follow-up
+remediation (`4ecc81cb`) and GPT Web's closeout (`8c6317c7`) both landed real
+contract changes without ever running the repo's own commands — both reports
+say so explicitly. This session pulled the branch head and ran the full
+verification matrix from both reports' §11/checklists, fixing every failure it
+found rather than weakening an assertion:
+
+- `99b2c608` — the `setCustomFieldValue` describe blocks in
+  `work-structure.service.test.ts`/`work-structure.routes.test.ts` mocked
+  `issues.resolveIssue` without a `workItemTypeId`/`typeKey`, so the new
+  work-item-type resolution step (follow-up item 4) always failed before
+  reaching the behavior under test. Also fixed a real test-order bug in
+  `projects.test.ts`: an unconsumed `mockResolvedValueOnce(null)` on
+  `repository.retrieve` leaked into the next test because the branch that
+  queued it never actually calls `repository.retrieve`.
+- `672af4a1` — `types.test.ts` fixtures and one assertion (`status` rejects an
+  arbitrary string) predated the `workflowStateKeySchema` widening.
+- `0b73e728` — `packages/projects-ui`'s `IssueBoard`/`IssueStatusBadge`/
+  `formatIssueStatus` still typed `status` as the closed `IssueStatus` union;
+  widened to `string` (both already had a runtime default branch, so this is a
+  type-only fix, not a behavior change) and updated every affected fixture.
+- `9f19dbf0` — the `[commentId]/route.test.ts` file was the one comment test
+  file the follow-up's SDK/route rewrite missed: it still asserted the removed
+  `actorUserId` transport contract and a 403-passthrough that the new
+  authenticated-boundary ownership check (retrieve → compare `authorUserId` →
+  call update/delete with no actor) can no longer produce.
+- `b1d4aab1` — four Console Projects-workspace page tests needed the same
+  fixture enrichment as the SDK package tests.
+
+**Full verification matrix, this session, all green:**
+`@876/ui` typecheck; `@876/projects-ui` typecheck + 108 tests; `@876/projects`
+typecheck + lint + 61 tests; `@876/projects-app` typecheck + lint + 227 tests;
+`@876/projects-mcp` typecheck + lint + 54 tests; `@876/projects-api` typecheck
++ lint + 277 tests; `@876/console` typecheck + lint + 1630 tests (including
+the previously-flaky billing snapshot test — green this run);
+`node scripts/check-app-structure.mjs` clean; `grep eslint-disable\|as any`
+over every touched path — none found.
+
+No production/source defect was found beyond the `IssueStatus` typing gap in
+`packages/projects-ui` (§`0b73e728`) — everything else was test staleness left
+behind by delegated passes that could not execute the suite. PR opened against
+`main` after this pass.
