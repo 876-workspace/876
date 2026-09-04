@@ -19,7 +19,6 @@ export const config: Config = {
   apiUrl: 'http://localhost:4030',
   internalKey: 'test-internal-key',
   organizationId: 'org_test_123',
-  defaultUserId: 'usr_author',
 }
 
 export function createClient() {
