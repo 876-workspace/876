@@ -50,6 +50,17 @@ function serialize(
   }
 }
 
+type CrossOrganizationRequest = Awaited<
+  ReturnType<typeof repository.listAcrossOrganizations>
+>[number]
+
+function serializeAcrossOrganizations(request: CrossOrganizationRequest) {
+  return {
+    ...serialize(request),
+    organizationId: request.tenant.organizationId,
+  }
+}
+
 export async function list(
   organizationId: string,
   filters?: ListRequestsFilter
@@ -58,6 +69,16 @@ export async function list(
   if (isError(tenant)) return tenant
   const requests = await repository.list(tenant.id, filters)
   return requests.map(serialize)
+}
+
+export async function listAcrossOrganizations(
+  filters: ListRequestsFilter & { limit: number; startingAfter?: string }
+) {
+  const rows = await repository.listAcrossOrganizations(filters)
+  const hasMore = rows.length > filters.limit
+  const requests = hasMore ? rows.slice(0, filters.limit) : rows
+
+  return { data: requests.map(serializeAcrossOrganizations), hasMore }
 }
 
 export async function retrieve(organizationId: string, id: string) {

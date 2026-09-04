@@ -23,3 +23,9 @@ export function createRequestsRouter() {
 
   return router
 }
+
+export function createOperatorRequestsRouter() {
+  const router = Router()
+  router.get('/', requireInternal, controller.listAcrossOrganizationsRequests)
+  return router
+}

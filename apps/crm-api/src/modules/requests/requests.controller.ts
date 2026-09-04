@@ -6,10 +6,25 @@ import {
   createRequestBodySchema,
   deleteRequestBodySchema,
   listRequestsQuerySchema,
+  listAcrossOrganizationsRequestsQuerySchema,
   organizationParamsSchema,
   requestParamsSchema,
   updateRequestBodySchema,
 } from './requests.schemas.js'
+
+export async function listAcrossOrganizationsRequests(
+  req: Request,
+  res: Response
+) {
+  const query = listAcrossOrganizationsRequestsQuerySchema.parse(req.query)
+  const result = await service.listAcrossOrganizations({
+    status: query.status,
+    limit: query.limit,
+    startingAfter: query.starting_after,
+  })
+
+  return sendCrmList(res, result, '/v1/requests')
+}
 
 export async function listRequests(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)

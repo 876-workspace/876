@@ -1,9 +1,6 @@
 import { z } from 'zod'
 
-import {
-  requestChannelSchema,
-  requestStatusSchema,
-} from '@876/crm/contracts'
+import { requestChannelSchema, requestStatusSchema } from '@876/crm/contracts'
 import { optionalRichContentSchema } from '../../types/rich-content.js'
 
 export { requestStatusSchema } from '@876/crm/contracts'
@@ -26,6 +23,12 @@ export const listRequestsQuerySchema = z.strictObject({
   ownerId: z.string().trim().optional(),
   requesterUserId: z.string().trim().optional(),
   priorityId: z.string().trim().optional(),
+})
+
+export const listAcrossOrganizationsRequestsQuerySchema = z.strictObject({
+  status: requestStatusSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  starting_after: z.string().trim().min(1).optional(),
 })
 
 export const createRequestBodySchema = z.strictObject({
