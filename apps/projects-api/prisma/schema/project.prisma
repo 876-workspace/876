@@ -19,6 +19,7 @@ model Project {
   updatedAt       BigInt  @map("updated_at")
 
   tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  defaultWorkItemType WorkItemType? @relation("ProjectDefaultWorkItemType", fields: [defaultWorkItemTypeId], references: [id], onDelete: SetNull)
   members ProjectMember[]
   issues  Issue[]
   milestones Milestone[]
@@ -26,6 +27,7 @@ model Project {
   @@unique([tenantId, key])
   @@unique([tenantId, slug])
   @@index([tenantId, status])
+  @@index([defaultWorkItemTypeId])
   @@map("projects_projects")
 }
 
