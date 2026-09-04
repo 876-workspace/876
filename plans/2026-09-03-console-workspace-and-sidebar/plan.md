@@ -2,7 +2,9 @@
 
 - **Run ID:** `2026-09-03-console-workspace-and-sidebar`
 - **Branch:** `feat/console-contextual-sidebar`
-- **Status:** `IN_PROGRESS` — Phases 1–2 done, Phase 3 routes relocated
+- **Status:** `IN_PROGRESS` — Phases 1 and 3 complete; Phase 2 mostly complete
+  (Operations section added, registry consolidation + docs update remain);
+  Phase 3.5 and Phase 4 not started
 - **Owner:** raheemdevs
 
 > This file is written from a long spoken briefing. It deliberately records the
@@ -591,15 +593,22 @@ from the URL.
 - [x] The tab strip and the product rail render from **one** section list
       (`features/apps/app-detail-nav.ts`), with a test asserting their hrefs
       match, so a section cannot exist on one and not the other.
-- [ ] Add the (empty-for-now) **Operations** and **Overview** sections.
+- [x] Add the (empty-for-now) **Operations** section (2026-09-04): a new
+      product-only `SECTIONS.operations` entry in `app-detail-nav.ts`, an empty
+      `apps/[slug]/operations/page.tsx` placeholder (same shape as `audit`), and
+      an `operations` icon key. The tab strip and product sidebar context both
+      derive from `appDetailSections`, so no separate wiring was needed — the
+      existing binding test (`app-detail-nav.sidebar.test.ts`) already proves
+      the tab and the rail entry cannot drift. **Overview** already existed and
+      already serves as the reporting/rollup surface described in §3.3 (billing
+      stats today) — no separate item was needed for it.
 - [ ] Extract the one product-integration registry (§3.4) and fold
       `REGISTRIES`, `app-workspaces.ts`, and the per-product `_components`
       page factories into it. **Blocked on the §3.4 reading of "Integrations".**
 - [ ] Update `docs/architecture/017-console-app-data-management.md`.
-- [ ] **Known gap:** `MobileNav` renders in the header, above the slot, so it
-      still sees only the static contexts — mobile shows the platform rail
-      inside an app record. Closing it means a second `@mobilenav` slot; do it
-      when Phase 3's workspace rail forces the question.
+- [x] **Known gap closed in Phase 3**, not here: a second `@mobilenav` slot
+      mirrors `@sidebar` (see Phase 3), so mobile now sees the product/workspace
+      context in both places. The line above is stale; left for the record.
 
 ### Phase 3 — relocate the workspace ✅ COMPLETE
 
@@ -740,29 +749,41 @@ mobile-nav.tsx · shell.tsx    + four test files
 
 ## 12. Handoff state
 
-Phase 1 complete. Phase 2 complete except the Operations/Overview sections, the
-product-integration registry (blocked on the §3.4 reading of "Integrations"),
-and the known `MobileNav` gap. **Phase 3's route relocation is complete and
-verified**; what remains of Phase 3 is the two switchers, `?from=`, and the
-open second-rail decision recorded above.
+**Phase 1 and Phase 3 are both fully complete**, including the org/app
+switchers, `?from=` entry-point tracking, the second-rail absorption, and the
+`@mobilenav` gap closure — all items in their checklists above are checked and
+were verified in the foreground, not from a delegate's report. This section
+previously understated that; corrected 2026-09-04.
 
-Verified in the foreground on the working tree, not from a delegate's report:
+**Phase 2 gained its Operations placeholder section** (2026-09-04, see above).
+What remains of Phase 2 is the product-integration registry consolidation and
+the `docs/architecture/017` update, both blocked on confirming the §3.4 reading
+of "Integrations" with the user (recommend proceeding with the
+product-integration-registry reading already argued in §3.4 — it is the
+reading consistent with the rest of the plan's Phase 2/3 work; only revisit if
+the user means third-party integrations instead).
+
+Verified in the foreground on the working tree (2026-09-04):
 
 ```
 typecheck            clean
 lint                 0 errors, 21 warnings (all pre-existing)
 test                 163 files / 1573 tests passing
 check-app-structure  OK
-next dev             boots clean; /workspace/<org>, /workspace/<org>/crm,
-                     /workspace/<org>/crm/requests and /apps/<slug> all compile
 ```
 
 **Add `next dev` to §10.** The static gates cannot see a parallel-route
 specificity collision, so a rail change that passes every one of them can still
-fail to boot.
+fail to boot. (Not re-run this session — no route-tree/layout/slot files
+changed, only a leaf page + two data files.)
 
-The second-rail decision is made and implemented, so the switchers now have a
-settled place to live: they belong in the workspace context's rail header, not
-in a page-level shell. The next session starts with the org/app switchers and
-`?from=`, and should close the `@mobilenav` gap for both the app and workspace
-contexts in one change rather than twice.
+Next session should pick from, in rough priority order:
+
+1. §3.4 confirmation, then the product-integration registry consolidation and
+   the `docs/architecture/017` update (finishes Phase 2).
+2. Phase 3.5 — the operator permission model (§6). Has several open questions
+   (§6.4) that likely need the user before implementation: generated vs
+   hand-declared key projection, whether an operator-exclusive key implies its
+   read key (plan recommends no), and where the role editor lives.
+3. Phase 4 — one thin cross-org operator list end to end (recommend CRM
+   requests), proving the pattern and stopping there.
