@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
+  retrieve: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
 }))
@@ -11,7 +12,13 @@ vi.mock('@/lib/auth/api-permission', () => ({
   requireApiPermission: mocks.requirePermission,
 }))
 vi.mock('@/lib/services/projects', () => ({
-  projects: { comments: { update: mocks.update, delete: mocks.delete } },
+  projects: {
+    comments: {
+      retrieve: mocks.retrieve,
+      update: mocks.update,
+      delete: mocks.delete,
+    },
+  },
 }))
 
 const { DELETE, PATCH } = await import('./route')
@@ -35,6 +42,14 @@ beforeEach(() => {
     orgId: 'org_1',
     userId: 'usr_1',
   })
+  mocks.retrieve.mockResolvedValue({
+    data: {
+      object: 'projects.comment',
+      id: 'cmt_1',
+      authorUserId: 'usr_1',
+    },
+    error: null,
+  })
   mocks.update.mockResolvedValue({
     data: { object: 'projects.comment', id: 'cmt_1' },
     error: null,
@@ -55,7 +70,6 @@ describe('/api/comments/[commentId]', () => {
     expect(mocks.requirePermission).toHaveBeenCalledWith('comments.edit')
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1', {
       body: 'Updated',
-      actorUserId: 'usr_1',
     })
     expect(response.status).toBe(200)
   })
@@ -74,12 +88,7 @@ describe('/api/comments/[commentId]', () => {
     const response = await DELETE(request('DELETE'), context)
 
     expect(mocks.requirePermission).toHaveBeenCalledWith('comments.delete')
-    expect(mocks.delete).toHaveBeenCalledWith(
-      'org_1',
-      'CONSOLE-12',
-      'cmt_1',
-      'usr_1'
-    )
+    expect(mocks.delete).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1')
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
       data: { object: 'projects.comment', id: 'cmt_1', deleted: true },
@@ -178,7 +187,6 @@ describe('/api/comments/[commentId]', () => {
     expect(response.status).toBe(200)
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1', {
       body: 'Revised plan',
-      actorUserId: 'usr_1',
     })
   })
 
@@ -193,17 +201,16 @@ describe('/api/comments/[commentId]', () => {
     expect(response.status).toBe(200)
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_99', {
       body: 'Updated',
-      actorUserId: 'usr_1',
     })
   })
 
-  it('preserves a service status for a failed update', async () => {
+  it('maps a non-not-found update error to a generic 400 rather than trusting the internal httpStatus', async () => {
     mocks.update.mockResolvedValue({
       data: null,
       error: {
-        code: 'projects/comment-not-owned',
-        message: 'You can only change your own comments.',
-        httpStatus: 403,
+        code: 'projects/issue-not-found',
+        message: 'The issue no longer exists.',
+        httpStatus: 404,
       },
     })
 
@@ -212,7 +219,26 @@ describe('/api/comments/[commentId]', () => {
       context
     )
 
-    expect(response.status).toBe(403)
+    expect(response.status).toBe(400)
+    expect((await response.json()).data).toBeNull()
+  })
+
+  it('maps a comment-not-found update error to 404', async () => {
+    mocks.update.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'projects/comment-not-found',
+        message: 'The comment no longer exists.',
+        httpStatus: 404,
+      },
+    })
+
+    const response = await PATCH(
+      request('PATCH', { issueRef: 'CONSOLE-12', body: 'Updated' }),
+      context
+    )
+
+    expect(response.status).toBe(404)
     expect((await response.json()).data).toBeNull()
   })
 
@@ -272,12 +298,7 @@ describe('/api/comments/[commentId]', () => {
     const response = await DELETE(withBody, context)
 
     expect(response.status).toBe(200)
-    expect(mocks.delete).toHaveBeenCalledWith(
-      'org_1',
-      'CONSOLE-12',
-      'cmt_1',
-      'usr_1'
-    )
+    expect(mocks.delete).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1')
   })
 
   it('passes the comment id from the route params to the delete client', async () => {
@@ -286,27 +307,38 @@ describe('/api/comments/[commentId]', () => {
     const response = await DELETE(request('DELETE'), other)
 
     expect(response.status).toBe(200)
-    expect(mocks.delete).toHaveBeenCalledWith(
-      'org_1',
-      'CONSOLE-12',
-      'cmt_42',
-      'usr_1'
-    )
+    expect(mocks.delete).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_42')
   })
 
-  it('preserves a service status for a failed delete', async () => {
+  it('maps a non-not-found delete error to a generic 400 rather than trusting the internal httpStatus', async () => {
     mocks.delete.mockResolvedValue({
       data: null,
       error: {
-        code: 'projects/comment-not-owned',
-        message: 'You can only change your own comments.',
-        httpStatus: 403,
+        code: 'projects/issue-not-found',
+        message: 'The issue no longer exists.',
+        httpStatus: 404,
       },
     })
 
     const response = await DELETE(request('DELETE'), context)
 
-    expect(response.status).toBe(403)
+    expect(response.status).toBe(400)
+    expect((await response.json()).data).toBeNull()
+  })
+
+  it('maps a comment-not-found delete error to 404', async () => {
+    mocks.delete.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'projects/comment-not-found',
+        message: 'The comment no longer exists.',
+        httpStatus: 404,
+      },
+    })
+
+    const response = await DELETE(request('DELETE'), context)
+
+    expect(response.status).toBe(404)
     expect((await response.json()).data).toBeNull()
   })
 })
