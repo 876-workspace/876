@@ -26,7 +26,7 @@ Every product/service capability reaches Console through the same joints:
 1. capability      owning service function                     write once
 2. operator route  /v1/organizations/:organizationId/resource  route again
 3. tier client     owning package's operator/admin client
-4. facade          compose onto Console's server $876
+4. domain module   compose onto owning module in src/lib/services/
 5. surface         Console route over that capability
 ```
 
@@ -115,6 +115,66 @@ See `docs/service-workspace-integration-guide.md`.
 If this requires duplicating business logic in Console, the capability is in the
 wrong layer.
 
+## Cross-organization operator lists
+
+In addition to organization-scoped operations (`/v1/organizations/:organizationId/...`),
+Console operators need cross-tenant operational views that span all organizations
+(for example, all open requests across every customer, uncollected packages, or open
+issues across all workspaces).
+
+### Shape of the capability
+
+A cross-organization operator list follows the standard operator pathway with four
+essential rules:
+
+1. **Unscoped route path:** The product's owning service adds an ADMIN/internal-tier
+   route with **no organization scoping in the path** (for example, `GET /v1/requests`
+   rather than `GET /v1/organizations/:organizationId/requests`).
+2. **Attribution and workspace deep-linking on every row:** The query returns rows
+   across every tenant, with each row carrying its owning `organizationId` (typically
+   selected via a tenant join). Console surfaces require this id so operator tables
+   can attribute records and point at `/workspace/[orgSlug]/<product>` for that row's
+   organization.
+3. **Shared query and safety logic:** The repository layer must reuse the same
+   soft-delete-safe filter builder and query constraints as the organization-scoped
+   list (e.g. `deletedAt: null`). Cross-organization queries are not a parallel,
+   less-safe query path. They must enforce bounded cursor pagination (`limit`,
+   `starting_after`).
+4. **Existing operator auth:** The route is protected by the **same**
+   `requireInternal`/admin guard Console already uses elsewhere in that service — not a
+   new auth mechanism or parallel auth tier.
+
+### Reference implementation: CRM requests
+
+The canonical reference implementation is `GET /v1/requests` in `apps/crm-api`:
+
+- `apps/crm-api/src/modules/requests/requests.repository.ts` — implements
+  `listAcrossOrganizations()` using the shared `buildListWhere()` filter helper to
+  guarantee `deletedAt: null` filtering, enforces bounded cursor pagination (`take:
+  filters.limit + 1`, `startingAfter` cursor), and selects the owning `organizationId`
+  on each row via `tenant: { select: { organizationId: true } }`.
+- `apps/crm-api/src/modules/requests/requests.routes.ts` and
+  `apps/crm-api/src/modules/requests/requests.controller.ts` — defines
+  `createOperatorRequestsRouter()` mounting `GET /v1/requests` protected by the
+  existing `requireInternal` middleware, returning the standard `sendCrmList`
+  envelope.
+- `packages/crm/src/operator.ts` and
+  `packages/crm/src/resources/operator-requests.ts` — exposes the operator-only typed
+  client method `requests.listAcrossOrganizations()` on `create876CrmOperatorClient`.
+- `apps/console/src/lib/services/crm.ts` — provides the Console-side
+  `listRequestsAcrossOrganizations()` wrapper delegating directly to the CRM
+  domain module.
+- `apps/console/src/app/(app)/requests/all/page.tsx` and
+  `apps/console/src/app/(app)/requests/all/_components/all-requests-table-data.tsx` —
+  implements the Console page at `/requests/all`. Following
+  `.claude/rules/data-loading.md`, page chrome renders synchronously while the table
+  streams behind a `Suspense` boundary with `DataTableSkeleton`. Following
+  `.claude/rules/app-layout.md` §5, status filtering uses `StatusFilterHeading` and
+  reuses the existing `isRequestStatus`/`REQUEST_STATUS_OPTIONS` helpers from
+  `apps/console/src/features/crm/request-status.ts` as-is. Each row's `organizationId`
+  is rendered so operator actions can point at `/workspace/[orgSlug]/crm` for that
+  row's organization.
+
 ## Registering a product's workspace surface
 
 Every product Console can open as an organization's workspace
@@ -170,3 +230,5 @@ workspace header all resolve from this one registry.
 - Do not infer service-workspace existence from a product tab.
 - Do not collapse `/requests`, `/orgs/[slug]/support`, and an org CRM workspace
   into one tenant direction.
+- Do not build a cross-org list endpoint that skips the soft-delete filter or
+  omits the owning organization id from each row.

@@ -721,13 +721,24 @@ from the URL.
       registry↔route binding for every new key, guard-coverage for every mutating
       route, and an assertion that an operator-exclusive key implies nothing.
 
-### Phase 4 — cross-org operations (thin)
+### Phase 4 — cross-org operations (thin) ✅ COMPLETE
 
-- [ ] For **one** product only (recommend CRM requests) wire a real cross-org
+- [x] For **one** product only (recommend CRM requests) wire a real cross-org
       operator list end to end: owning-service operator route + guard +
       serializer → operator client entrypoint → Console module → page.
-- [ ] Prove the pattern, document it, and stop. Remaining products follow later.
-- [ ] **No analytics/statistics work in this run.**
+      Landed across commits `1ecd8aef`, `2435e13d`, and `abcaeb3c`:
+      - `apps/crm-api/src/modules/requests/requests.repository.ts`
+      - `apps/crm-api/src/modules/requests/requests.routes.ts`
+      - `apps/crm-api/src/modules/requests/requests.controller.ts`
+      - `packages/crm/src/operator.ts`
+      - `packages/crm/src/resources/operator-requests.ts`
+      - `apps/console/src/lib/services/crm.ts`
+      - `apps/console/src/app/(app)/requests/all/page.tsx`
+      - `apps/console/src/app/(app)/requests/all/_components/all-requests-table-data.tsx`
+- [x] Prove the pattern, document it, and stop. Documented in
+      `docs/architecture/017-console-app-data-management.md`
+      ("Cross-organization operator lists"). Remaining products follow later.
+- **No analytics/statistics work in this run.** (Standing constraint note.)
 
 ---
 
@@ -792,7 +803,7 @@ cold. Read this section first, then §8 Phases.
 | 2 — product context under `/apps/[slug]` | ✅ except the integration registry (blocked on §3.4) |
 | 3 — relocate the workspace               | ✅ complete                                          |
 | 3.5 — operator permission model          | 🔄 **another session, uncommitted, see below**       |
-| 4 — cross-org operator list              | 🔄 **Codex running, see below**                      |
+| 4 — cross-org operator list              | ✅ complete                                          |
 
 **PR [#471](https://github.com/876-workspace/876/pull/471)** is open against
 `main` — "feat(console): make the sidebar contextual and move org workspaces to
@@ -824,41 +835,19 @@ apps/console/src/app/(app)/@mobilenav/workspace/[orgSlug]/[...section]/page.tsx
 > **The committed HEAD is self-consistent**; only the working tree is broken.
 > Do not "fix" it — you will collide with an agent mid-edit.
 
-**2. Codex (`gpt-5.6-terra`, medium) — Phase 4, running as of 02:55.**
-
-- Brief: `briefs/codex/2026-09-04-crm-cross-org-requests.md`
-- Report (expected): `reports/codex/2026-09-04-crm-cross-org-requests.md`
-- Check it with `pgrep -f "bin/cod[e]x"` — **note the bracket**, a plain
-  `pgrep -f "bin/codex"` matches its own command line and never reports exit.
-
-Done when last checked: the `apps/crm-api` cross-organization route
-(repository/service/controller/routes/schemas + three test files) and the
-`packages/crm` operator resource. **Not yet done: the Console page** at
-`apps/console/src/app/(app)/requests/all/page.tsx`.
-
-It was told explicitly **not** to add a navigation entry or permission key for
-that page — both live in files the other session owns. Wiring it into the rail
-is a deliberate follow-up once Phase 3.5 lands.
-
-### Verifying Codex's work when it finishes
-
-Do not trust its report. Per `cli.md`:
-
-```bash
-grep -rn "eslint-disable\|as any\|@ts-ignore" apps/crm-api packages/crm
-pnpm --filter @876/crm-api typecheck && pnpm --filter @876/crm-api lint
-pnpm --filter @876/crm-api test          # check the COUNT moved, not just green
-pnpm --filter @876/crm typecheck && pnpm --filter @876/crm test
-```
-
-Check specifically that the cross-org list excludes soft-deleted rows, enforces
-`requireInternal`, and did not copy the org-scoped filter logic into a second
-implementation.
+**2. Codex (`gpt-5.6-terra`, medium) — Phase 4 (DONE).** The Phase 4 slice landed
+in commits `1ecd8aef` (CRM API cross-org endpoint & query), `2435e13d` (CRM operator
+client method), and `abcaeb3c` (Console page and table component); report in
+`reports/codex/2026-09-04-crm-cross-org-requests.md` (`435193d2`). Documented in
+`docs/architecture/017-console-app-data-management.md` ("Cross-organization
+operator lists"). Wiring the nav entry and permission key remains deferred until
+Phase 3.5 lands.
 
 ### What is genuinely left
 
-1. Land Codex's Phase 4 slice; add the nav entry + permission key **after**
-   Phase 3.5 lands.
+1. Add the `/requests/all` nav entry + permission key **after** Phase 3.5 lands
+   (the Phase 4 slice itself has landed; see commits `1ecd8aef`, `2435e13d`, and
+   `abcaeb3c`).
 2. Phase 2's integration registry — still blocked on the §3.4 reading of
    "Integrations". This is the one open question that needs the user.
 3. `/projects` and `/workspace/<org>/projects` mirror each other file-for-file
