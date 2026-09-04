@@ -5,8 +5,8 @@ import {
   nullableToDbUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
-import * as projects from '../projects/index.js'
 import * as issues from '../issues/index.js'
+import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import { getWorkStructurePreset, workStructurePresets } from './presets.js'
 import * as repository from './work-structure.repository.js'
@@ -180,8 +180,20 @@ export async function resolveWorkflowStateByKey(tenantId: string, key: string) {
   return repository.retrieveWorkflowStateByKey(tenantId, key)
 }
 
+export async function resolveDefaultWorkflowState(tenantId: string) {
+  return repository.retrieveDefaultWorkflowState(tenantId)
+}
+
 export async function resolveWorkItemTypeByKey(tenantId: string, key: string) {
   return repository.retrieveWorkItemTypeByKey(tenantId, key)
+}
+
+export async function resolveWorkItemTypeById(tenantId: string, id: string) {
+  return repository.retrieveWorkItemType(tenantId, id)
+}
+
+export async function resolveDefaultWorkItemType(tenantId: string) {
+  return repository.retrieveDefaultWorkItemType(tenantId)
 }
 
 export async function resolveMilestoneById(tenantId: string, id: string) {
@@ -595,32 +607,99 @@ function valueData(
   return { data: null, error: getError('projects/custom-field-value-invalid') }
 }
 
+function appliesToWorkItemType(
+  field: { types?: Array<{ typeId: string }> },
+  workItemTypeId: string
+) {
+  const typeIds = field.types?.map((type) => type.typeId) ?? []
+  return typeIds.length === 0 || typeIds.includes(workItemTypeId)
+}
+
+export async function validateIssueCustomFieldValues(
+  tenantId: string,
+  workItemTypeId: string,
+  inputs: CustomFieldValueInput[],
+  issueId?: string
+): Promise<ServiceResult<null>> {
+  const fields = await repository.listCustomFields(tenantId)
+  const fieldsById = new Map(fields.map((field) => [field.id, field]))
+  const inputByFieldId = new Map<string, CustomFieldValueInput>()
+
+  for (const input of inputs) {
+    const field = fieldsById.get(input.fieldId)
+    if (!field)
+      return { data: null, error: getError('projects/custom-field-not-found') }
+    if (!appliesToWorkItemType(field, workItemTypeId))
+      return { data: null, error: getError('projects/invalid-request') }
+    const parsed = valueData(field, input.value)
+    if (parsed.error) return { data: null, error: parsed.error }
+    inputByFieldId.set(input.fieldId, input)
+  }
+
+  const existingFieldIds = new Set<string>()
+  if (issueId) {
+    const existingValues = await repository.listCustomFieldValues(
+      tenantId,
+      issueId
+    )
+    for (const value of existingValues) existingFieldIds.add(value.fieldId)
+  }
+
+  for (const field of fields) {
+    if (!field.required || !appliesToWorkItemType(field, workItemTypeId)) continue
+    const input = inputByFieldId.get(field.id)
+    const hasValue = input ? !isEmpty(input.value) : existingFieldIds.has(field.id)
+    if (!hasValue)
+      return {
+        data: null,
+        error: getError('projects/required-custom-field-missing', {
+          param: field.key,
+        }),
+      }
+  }
+
+  return { data: null, error: null }
+}
+
 export async function setCustomFieldValueForTenant(
   tenantId: string,
   issueId: string,
   input: CustomFieldValueInput,
-  updatedBy?: string | null
+  updatedBy?: string | null,
+  transaction?: repository.WorkStructureTransaction
 ): Promise<ServiceResult<SerializedCustomFieldValue | null>> {
-  const field = await repository.retrieveCustomField(tenantId, input.fieldId)
+  const field = await repository.retrieveCustomField(
+    tenantId,
+    input.fieldId,
+    transaction
+  )
   if (!field)
     return { data: null, error: getError('projects/custom-field-not-found') }
   const parsed = valueData(field, input.value)
   if (parsed.error) return { data: null, error: parsed.error }
   if (!parsed.data) {
-    await repository.clearCustomFieldValue(tenantId, issueId, field.id)
+    await repository.clearCustomFieldValue(
+      tenantId,
+      issueId,
+      field.id,
+      transaction
+    )
     return { data: null, error: null }
   }
   const timestamp = now()
-  const row = await repository.upsertCustomFieldValue({
-    id: generateId('customFieldValue'),
-    tenantId,
-    issueId,
-    fieldId: field.id,
-    ...parsed.data,
-    updatedBy: updatedBy ?? null,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  })
+  const row = await repository.upsertCustomFieldValue(
+    {
+      id: generateId('customFieldValue'),
+      tenantId,
+      issueId,
+      fieldId: field.id,
+      ...parsed.data,
+      updatedBy: updatedBy ?? null,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    },
+    transaction
+  )
   return {
     data: serializeCustomFieldValue(row as CustomFieldValueRow),
     error: null,
@@ -629,11 +708,12 @@ export async function setCustomFieldValueForTenant(
 
 export async function listCustomFieldValuesForTenant(
   tenantId: string,
-  issueId: string
+  issueId: string,
+  transaction?: repository.WorkStructureTransaction
 ) {
-  return (await repository.listCustomFieldValues(tenantId, issueId)).map(
-    (row) => serializeCustomFieldValue(row as CustomFieldValueRow)
-  )
+  return (
+    await repository.listCustomFieldValues(tenantId, issueId, transaction)
+  ).map((row) => serializeCustomFieldValue(row as CustomFieldValueRow))
 }
 
 export async function getIssueStructure(
@@ -671,7 +751,8 @@ export async function setCustomFieldValuesForTenant(
   tenantId: string,
   issueId: string,
   inputs: CustomFieldValueInput[],
-  updatedBy?: string | null
+  updatedBy?: string | null,
+  transaction?: repository.WorkStructureTransaction
 ): Promise<ServiceResult<SerializedCustomFieldValue[]>> {
   const values: SerializedCustomFieldValue[] = []
   for (const input of inputs) {
@@ -679,7 +760,8 @@ export async function setCustomFieldValuesForTenant(
       tenantId,
       issueId,
       input,
-      updatedBy
+      updatedBy,
+      transaction
     )
     if (result.error) return { data: null, error: result.error }
     if (result.data) values.push(result.data)
