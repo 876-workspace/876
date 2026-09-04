@@ -87,7 +87,9 @@ describe('resources — projects', () => {
       })
     )
 
-    const result = await client.projects.list('org_1', { includeArchived: true })
+    const result = await client.projects.list('org_1', {
+      includeArchived: true,
+    })
     expect(result.data).toEqual({
       object: 'list',
       data: [sampleProject],
@@ -315,7 +317,7 @@ describe('resources — projects', () => {
     expect(deleteResult.error).toBeNull()
   })
 
-  it('comments resource performs operations against issue comments endpoints', async () => {
+  it('comments resource performs actor-bound operations against issue comment endpoints', async () => {
     fetch.mockResolvedValueOnce(
       jsonResponse({
         object: 'list',
@@ -326,7 +328,9 @@ describe('resources — projects', () => {
       })
     )
 
-    const listResult = await client.comments.list('org_1', 'CONSOLE-12', { limit: 10 })
+    const listResult = await client.comments.list('org_1', 'CONSOLE-12', {
+      limit: 10,
+    })
     expect(listResult.data?.data).toEqual([sampleComment])
     expect(listResult.error).toBeNull()
 
@@ -348,11 +352,47 @@ describe('resources — projects', () => {
     expect(createResult.data).toEqual(sampleComment)
     expect(createResult.error).toBeNull()
 
+    const updatedComment = { ...sampleComment, body: 'Updated body' }
+    fetch.mockResolvedValueOnce(jsonResponse(updatedComment))
+    const updateResult = await client.comments.update(
+      'org_1',
+      'CONSOLE-12',
+      'cmt_1',
+      { body: 'Updated body', actorUserId: 'usr_1' }
+    )
+    expect(updateResult.data).toEqual(updatedComment)
+    expect(fetch).toHaveBeenLastCalledWith(
+      'http://projects.test/v1/organizations/org_1/issues/CONSOLE-12/comments/cmt_1',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'test-key',
+        },
+        body: JSON.stringify({ body: 'Updated body', actorUserId: 'usr_1' }),
+      }
+    )
+
     fetch.mockResolvedValueOnce(
       jsonResponse({ object: 'projects.comment', id: 'cmt_1', deleted: true })
     )
-    const deleteResult = await client.comments.delete('org_1', 'CONSOLE-12', 'cmt_1')
+    const deleteResult = await client.comments.delete(
+      'org_1',
+      'CONSOLE-12',
+      'cmt_1',
+      'usr_1'
+    )
     expect(deleteResult.data?.deleted).toBe(true)
     expect(deleteResult.error).toBeNull()
+    expect(fetch).toHaveBeenLastCalledWith(
+      'http://projects.test/v1/organizations/org_1/issues/CONSOLE-12/comments/cmt_1?actorUserId=usr_1',
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'test-key',
+        },
+      }
+    )
   })
 })
