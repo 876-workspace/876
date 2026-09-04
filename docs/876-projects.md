@@ -132,6 +132,8 @@ helpers, because MCP SDK 1.30 pins zod 3 while this repository is on zod 4. The
 server runs under the `react-server` condition so `@876/projects/operator` can
 import `server-only`.
 
+For instructions on how an AI agent should read and update issues through this server, see the [MCP Agent Guide](projects/mcp-agent-guide.md).
+
 ## Not built yet
 
 From `apps/projects/src/lib/modules/catalog.ts`, the modules still marked
