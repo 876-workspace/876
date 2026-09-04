@@ -30,7 +30,7 @@ WHERE duplicate."name" IN ('super_admin', 'staff')
   AND membership."role_id" = duplicate."id";
 
 UPDATE "invite_tokens" invite
-SET "role_id" = canonical."id"
+SET "org_role_id" = canonical."id"
 FROM "organization_roles" duplicate
 JOIN "organization_roles" canonical
   ON canonical."organization_id" = duplicate."organization_id"
@@ -39,7 +39,7 @@ JOIN "organization_roles" canonical
    WHEN duplicate."name" = 'staff' THEN 'member'
  END
 WHERE duplicate."name" IN ('super_admin', 'staff')
-  AND invite."role_id" = duplicate."id";
+  AND invite."org_role_id" = duplicate."id";
 
 DELETE FROM "organization_roles"
 WHERE "name" IN ('super_admin', 'staff');
@@ -87,13 +87,13 @@ WHERE obsolete."name" = 'billing_manager'
   AND membership."role_id" = obsolete."id";
 
 UPDATE "invite_tokens" invite
-SET "role_id" = staff."id"
+SET "org_role_id" = staff."id"
 FROM "organization_roles" obsolete
 JOIN "organization_roles" staff
   ON staff."organization_id" = obsolete."organization_id"
  AND staff."name" = 'staff'
 WHERE obsolete."name" = 'billing_manager'
-  AND invite."role_id" = obsolete."id";
+  AND invite."org_role_id" = obsolete."id";
 
 DELETE FROM "organization_roles" WHERE "name" = 'billing_manager';
 
