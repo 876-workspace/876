@@ -47,6 +47,31 @@ type Props =
       initialError?: AppErrorValue | null
     }
 
+type CustomFieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'decimal'
+  | 'boolean'
+  | 'date'
+  | 'select'
+  | 'multi-select'
+  | 'user'
+  | 'url'
+
+const CUSTOM_FIELD_TYPES: readonly CustomFieldType[] = [
+  'text',
+  'textarea',
+  'number',
+  'decimal',
+  'boolean',
+  'date',
+  'select',
+  'multi-select',
+  'user',
+  'url',
+]
+
 function keyFromName(value: string) {
   return value
     .trim()
@@ -61,12 +86,27 @@ function SettingsError({ error }: { error: AppErrorValue | null }) {
   ) : null
 }
 
+function optionInput(value: string) {
+  const options = value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((label) => ({ key: keyFromName(label), label }))
+  const keys = options.map((option) => option.key)
+  const valid =
+    options.length > 0 &&
+    options.every((option) => option.key.length > 0) &&
+    new Set(keys).size === keys.length
+  return { options, valid }
+}
+
 export function WorkStructureSettings(props: Props) {
   const router = useRouter()
   const [name, setName] = useState('')
   const [key, setKey] = useState('')
   const [color, setColor] = useState('#6b7280')
-  const [extra, setExtra] = useState('')
+  const [milestoneProjectId, setMilestoneProjectId] = useState('')
+  const [fieldType, setFieldType] = useState<CustomFieldType>('text')
   const [optionsText, setOptionsText] = useState('')
   const [required, setRequired] = useState(false)
   const [typeIds, setTypeIds] = useState<string[]>([])
@@ -85,9 +125,20 @@ export function WorkStructureSettings(props: Props) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!name.trim() || !keyFromName(key || name) || pending) return
+
+    const resourceKey = keyFromName(key || name)
+    const isOptionField = fieldType === 'select' || fieldType === 'multi-select'
+    const parsedOptions = optionInput(optionsText)
+    if (props.kind === 'custom-fields' && isOptionField && !parsedOptions.valid) {
+      setError({
+        code: 'projects/custom-field-options-invalid',
+        message: 'Add at least one option and make every option unique.',
+      })
+      return
+    }
+
     setPending(true)
     setError(null)
-    const resourceKey = keyFromName(key || name)
     let result
     if (props.kind === 'work-item-types') {
       result = await workItemTypesClient.create({
@@ -107,32 +158,14 @@ export function WorkStructureSettings(props: Props) {
       result = await milestonesClient.create({
         key: resourceKey,
         name: name.trim(),
-        projectId: extra,
+        projectId: milestoneProjectId,
       })
     } else {
-      const fieldType = extra as
-        | 'text'
-        | 'textarea'
-        | 'number'
-        | 'decimal'
-        | 'boolean'
-        | 'date'
-        | 'select'
-        | 'multi-select'
-        | 'user'
-        | 'url'
-      const options = optionsText
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => ({ key: keyFromName(line), label: line }))
       result = await customFieldsClient.create({
         key: resourceKey,
         label: name.trim(),
-        fieldType: fieldType || 'text',
-        ...(fieldType === 'select' || fieldType === 'multi-select'
-          ? { options }
-          : {}),
+        fieldType,
+        ...(isOptionField ? { options: parsedOptions.options } : {}),
         required,
         typeIds,
       })
@@ -144,6 +177,8 @@ export function WorkStructureSettings(props: Props) {
     }
     setName('')
     setKey('')
+    setMilestoneProjectId('')
+    setFieldType('text')
     setOptionsText('')
     setRequired(false)
     setTypeIds([])
@@ -166,6 +201,8 @@ export function WorkStructureSettings(props: Props) {
     if (result.error) setError(result.error)
     else router.refresh()
   }
+
+  const optionField = fieldType === 'select' || fieldType === 'multi-select'
 
   return (
     <div className="space-y-6">
@@ -196,8 +233,8 @@ export function WorkStructureSettings(props: Props) {
           <FormRow label="Project" htmlFor="project" required>
             <NativeSelect
               id="project"
-              value={extra}
-              onChange={(event) => setExtra(event.target.value)}
+              value={milestoneProjectId}
+              onChange={(event) => setMilestoneProjectId(event.target.value)}
               className="w-full"
             >
               <option value="">Select a project…</option>
@@ -213,29 +250,20 @@ export function WorkStructureSettings(props: Props) {
             <FormRow label="Field type" htmlFor="field-type" required>
               <NativeSelect
                 id="field-type"
-                value={extra || 'text'}
-                onChange={(event) => setExtra(event.target.value)}
+                value={fieldType}
+                onChange={(event) =>
+                  setFieldType(event.target.value as CustomFieldType)
+                }
                 className="w-full"
               >
-                {[
-                  'text',
-                  'textarea',
-                  'number',
-                  'decimal',
-                  'boolean',
-                  'date',
-                  'select',
-                  'multi-select',
-                  'user',
-                  'url',
-                ].map((type) => (
+                {CUSTOM_FIELD_TYPES.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
                 ))}
               </NativeSelect>
             </FormRow>
-            {extra === 'select' || extra === 'multi-select' ? (
+            {optionField ? (
               <FormRow label="Options" htmlFor="options" required>
                 <Textarea
                   id="options"
@@ -296,9 +324,9 @@ export function WorkStructureSettings(props: Props) {
             disabled={
               !name.trim() ||
               pending ||
-              (props.kind === 'milestones' && !extra) ||
+              (props.kind === 'milestones' && !milestoneProjectId) ||
               (props.kind === 'custom-fields' &&
-                (extra === 'select' || extra === 'multi-select') &&
+                optionField &&
                 !optionsText.trim())
             }
           >
