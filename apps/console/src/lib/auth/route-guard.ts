@@ -114,5 +114,5 @@ export async function requireConsoleCrmPermission(
   _organizationId: string,
   _crmOperation: string
 ): Promise<Authorized | Rejected> {
-  return requireConsolePermission('console:requests')
+  return requireConsolePermission('crm/requests.view')
 }

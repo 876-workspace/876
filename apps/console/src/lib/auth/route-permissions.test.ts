@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
 import { navConfig } from '@/components/shell/nav-config'
 import { SETTINGS_NAVIGATION } from '@/components/shell/settings-options'
+import { operatorProductCatalogs } from '@/lib/operator-permissions'
 import { SYSTEM_ROLE_DEFINITIONS } from '@/lib/permissions'
 import { ROUTE_PERMISSIONS } from './route-permissions'
 
@@ -79,11 +80,11 @@ describe('ROUTE_PERMISSIONS', () => {
     expect(ROUTE_PERMISSIONS).toEqual({
       '/users': 'console:users',
       '/orgs': 'console:organizations',
-      '/projects': 'console:projects',
+      '/projects': 'projects/dashboard.view',
       '/apps': 'console:apps',
       '/widgets': 'console:widgets',
       '/features': 'console:features',
-      '/requests': 'console:requests',
+      '/requests': 'crm/requests.view',
       '/security': 'console:security',
       '/storage': 'console:storage',
       '/reports': 'console:reports',
@@ -113,10 +114,15 @@ describe('ROUTE_PERMISSIONS', () => {
     }
   })
 
-  it('uses only permissions present in the canonical Console catalog', () => {
-    const catalog = new Set(
-      consolePermissionCatalog.permissions.map((permission) => permission.key)
-    )
+  it('uses only permissions present in the Console operator catalog', () => {
+    const catalog = new Set([
+      ...consolePermissionCatalog.permissions.map(
+        (permission) => permission.key
+      ),
+      ...operatorProductCatalogs().flatMap((catalog) =>
+        catalog.permissions.map((permission) => permission.key)
+      ),
+    ])
     expect(
       Object.values(ROUTE_PERMISSIONS).filter(
         (permission) => !catalog.has(permission)
@@ -145,7 +151,11 @@ describe('ROUTE_PERMISSIONS', () => {
   })
 
   it('gives staff the exact guarded route set their cumulative permissions allow', () => {
-    expect(reachablePaths('staff')).toEqual(['/requests', '/reports'])
+    expect(reachablePaths('staff')).toEqual([
+      '/projects',
+      '/requests',
+      '/reports',
+    ])
   })
 
   it('gives admin the exact guarded route set their cumulative permissions allow', () => {

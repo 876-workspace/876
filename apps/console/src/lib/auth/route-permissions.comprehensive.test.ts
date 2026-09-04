@@ -5,10 +5,11 @@ import {
   toStoredPermissionKeys,
 } from '@876/core/access/catalogs'
 import { can, resolveEffectivePermissions } from '@876/core/access'
+import { operatorProductCatalogs } from '@/lib/operator-permissions'
 
 describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
-  it('maps /requests to console:requests (not support)', () => {
-    expect(ROUTE_PERMISSIONS['/requests']).toBe('console:requests')
+  it('maps /requests to crm/requests.view (not support)', () => {
+    expect(ROUTE_PERMISSIONS['/requests']).toBe('crm/requests.view')
   })
 
   it('does not contain legacy /support', () => {
@@ -19,7 +20,14 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
   })
 
   it('every route permission exists in catalog', () => {
-    const keys = new Set(consolePermissionCatalog.permissions.map((p) => p.key))
+    const keys = new Set([
+      ...consolePermissionCatalog.permissions.map(
+        (permission) => permission.key
+      ),
+      ...operatorProductCatalogs().flatMap((catalog) =>
+        catalog.permissions.map((permission) => permission.key)
+      ),
+    ])
     for (const [route, perm] of Object.entries(ROUTE_PERMISSIONS)) {
       expect(keys.has(perm), `route ${route} perm ${perm} missing`).toBe(true)
     }
@@ -35,9 +43,9 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
     expect(ROUTE_PERMISSIONS['/settings/users/roles']).toBe('roles:list')
   })
 
-  it('legacy adaptation grants route access', () => {
+  it('legacy adaptation preserves a valid Console permission', () => {
     const adapted = toStoredPermissionKeys(['console:requests'])
-    const perm = ROUTE_PERMISSIONS['/requests']
+    const perm = 'console:requests'
     expect(
       can(
         {
@@ -48,8 +56,8 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
         },
         perm
       )
-    ).toBe(true) // adapted raw already contains requests
-    // After effective filter, legacy should grant
+    ).toBe(true)
+
     const eff = resolveEffectivePermissions({
       role: { permissions: adapted },
       catalog: consolePermissionCatalog,
@@ -97,8 +105,8 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
     expect(copy).toEqual(ROUTE_PERMISSIONS)
   })
 
-  it('each permission is colon-delimited (console tier)', () => {
+  it('each permission uses a Console or projected-product delimiter', () => {
     for (const perm of Object.values(ROUTE_PERMISSIONS))
-      expect(perm.includes(':')).toBe(true)
+      expect(perm.includes(':') || perm.includes('/')).toBe(true)
   })
 })

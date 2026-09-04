@@ -9,11 +9,11 @@ import 'server-only'
 export const ROUTE_PERMISSIONS = {
   '/users': 'console:users',
   '/orgs': 'console:organizations',
-  '/projects': 'console:projects',
+  '/projects': 'projects/dashboard.view',
   '/apps': 'console:apps',
   '/widgets': 'console:widgets',
   '/features': 'console:features',
-  '/requests': 'console:requests',
+  '/requests': 'crm/requests.view',
   '/security': 'console:security',
   '/storage': 'console:storage',
   '/reports': 'console:reports',
