@@ -16,6 +16,7 @@ model WorkItemType {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   issues Issue[]
   customFieldTypes CustomFieldOnType[]
+  defaultForProjects Project[] @relation("ProjectDefaultWorkItemType")
 
   @@unique([tenantId, key])
   @@map("projects_work_item_types")
