@@ -1,5 +1,6 @@
 import { ServerMobileNav } from '@/components/shell/server-mobile-nav'
 import { resolveWorkspaceContexts } from '@/features/orgs/workspace-contexts'
+import { resolveAccessContext } from '@/lib/auth/access-context'
 import { requireSession } from '@/lib/auth/guards'
 
 /**
@@ -16,11 +17,16 @@ export default async function WorkspaceMobileNavSlot({
     params,
     requireSession('/'),
   ])
+  const access = await resolveAccessContext(sessionUser.id)
 
   return (
     <ServerMobileNav
       userId={sessionUser.id}
-      contexts={await resolveWorkspaceContexts(orgSlug, section)}
+      contexts={await resolveWorkspaceContexts(
+        orgSlug,
+        section,
+        access?.permissions ?? []
+      )}
     />
   )
 }

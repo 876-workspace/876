@@ -1,5 +1,6 @@
 import { ServerSidebar } from '@/components/shell/server-sidebar'
 import { resolveWorkspaceContexts } from '@/features/orgs/workspace-contexts'
+import { resolveAccessContext } from '@/lib/auth/access-context'
 import { requireSession } from '@/lib/auth/guards'
 
 /**
@@ -25,11 +26,16 @@ export default async function WorkspaceSidebarSlot({
     params,
     requireSession('/'),
   ])
+  const access = await resolveAccessContext(sessionUser.id)
 
   return (
     <ServerSidebar
       userId={sessionUser.id}
-      contexts={await resolveWorkspaceContexts(orgSlug, section)}
+      contexts={await resolveWorkspaceContexts(
+        orgSlug,
+        section,
+        access?.permissions ?? []
+      )}
     />
   )
 }

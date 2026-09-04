@@ -1,6 +1,12 @@
 import { can, groupByModule, type AccessContext } from '@876/core/access'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
 
+import {
+  operatorExclusiveCatalog,
+  operatorExclusivePermissionKeys,
+  operatorProductCatalogs,
+  projectedPermissionKeys,
+} from '@/lib/operator-permissions'
 import type { Access } from '@/types/auth'
 import type { PermissionGroup } from '@/types/permission'
 import type { SystemRole } from '@/types/role'
@@ -56,6 +62,31 @@ const TEAM_MANAGE = [
   'team:suspend',
   'team:revoke',
 ] as const
+
+/**
+ * Every product's read-only projected permission — `crm/requests.view`,
+ * `billing/customers.view`, … — granted to staff. Generated, not hand-listed,
+ * so a new product module is read-visible to staff the moment its catalog
+ * exists, with nothing here to update.
+ */
+const PRODUCT_VIEW = projectedPermissionKeys((action) => action === 'view')
+
+/**
+ * Every product's full projected permission set, granted to admin and above.
+ * This is what keeps a workspace's rail fully populated for admin/super-admin
+ * exactly as it was before §6.2's AND — the difference is the grant is now an
+ * explicit, auditable permission on the role rather than an unconditional
+ * "operators see everything" bypass.
+ */
+const PRODUCT_ALL = projectedPermissionKeys()
+
+/**
+ * Purge, per product. Console-only; never appears in a product's own catalog.
+ * Reserved for super-admin — `.claude/rules/access-tiers.md` §6.1's PayPal-
+ * dispute shape: a vendor's own admin (or a Console admin acting as one) must
+ * not be able to grant themselves platform intervention on their own data.
+ */
+const OPERATOR_EXCLUSIVE_ALL = operatorExclusivePermissionKeys()
 
 /** Permission that gates entry to Console itself. */
 export const CONSOLE_ACCESS_PERMISSION = 'console:access'
@@ -128,6 +159,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'console:requests',
       'console:reports',
       ...RESOURCE_READ,
+      ...PRODUCT_VIEW,
     ],
   },
   {
@@ -151,6 +183,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       ...RESOURCE_READ,
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
+      ...PRODUCT_ALL,
     ],
   },
   {
@@ -180,13 +213,17 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       'organizations:delete',
       'memberships:delete',
       'apps:delete',
+      ...PRODUCT_ALL,
+      ...OPERATOR_EXCLUSIVE_ALL,
     ],
   },
 ]
 
-const CATALOG_KEYS = new Set(
-  consolePermissionCatalog.permissions.map((permission) => permission.key)
-)
+const CATALOG_KEYS = new Set([
+  ...consolePermissionCatalog.permissions.map((permission) => permission.key),
+  ...PRODUCT_ALL,
+  ...OPERATOR_EXCLUSIVE_ALL,
+])
 
 for (const role of SYSTEM_ROLE_DEFINITIONS) {
   const unknown = role.permissions.filter(
@@ -236,8 +273,21 @@ function actionLabel(action: string): string {
     .join(' ')
 }
 
-/** Grouped permission catalog rendered by the role permission editor. */
-export const PERMISSION_GROUPS: PermissionGroup[] = groupByModule(
+/** Friendly product name for a permission-group heading. Display only. */
+const PRODUCT_LABELS: Record<string, string> = {
+  crm: 'CRM',
+  couriers: 'Couriers',
+  billing: 'Billing',
+  invoice: 'Invoice',
+  projects: 'Projects',
+}
+
+function productLabel(shortSlug: string): string {
+  return PRODUCT_LABELS[shortSlug] ?? shortSlug
+}
+
+/** Console's own vocabulary, grouped by module. */
+const CONSOLE_GROUPS: PermissionGroup[] = groupByModule(
   consolePermissionCatalog,
   []
 ).map((group) => ({
@@ -247,3 +297,45 @@ export const PERMISSION_GROUPS: PermissionGroup[] = groupByModule(
     label: actionLabel(permission.action),
   })),
 }))
+
+/**
+ * Every product's projected permissions, one group per product module —
+ * "CRM · Requests", "Billing · Invoices" — so a role editor answers "what can
+ * this role do anywhere" from one screen (`.claude/rules/access-control.md`,
+ * plan §6.4). `groupByModule` already produces this shape; only the label
+ * needs the product name prepended.
+ */
+const PRODUCT_GROUPS: PermissionGroup[] = operatorProductCatalogs().flatMap(
+  (catalog) =>
+    groupByModule(catalog, []).map((group) => ({
+      label: `${productLabel(catalog.app)} · ${group.label}`,
+      permissions: group.permissions.map((permission) => ({
+        value: permission.key,
+        label: actionLabel(permission.action),
+      })),
+    }))
+)
+
+/**
+ * The Console-only actions — purge today — one group per product. Kept last
+ * and separately labelled so an editor never mistakes "Purge CRM records" for
+ * a permission the CRM catalog itself grants; per §6.1, only Console can hold
+ * this vocabulary.
+ */
+const OPERATOR_EXCLUSIVE_GROUPS: PermissionGroup[] = groupByModule(
+  operatorExclusiveCatalog(),
+  []
+).map((group) => ({
+  label: `${productLabel(group.key)} · Operator actions`,
+  permissions: group.permissions.map((permission) => ({
+    value: permission.key,
+    label: permission.label,
+  })),
+}))
+
+/** Grouped permission catalog rendered by the role permission editor. */
+export const PERMISSION_GROUPS: PermissionGroup[] = [
+  ...CONSOLE_GROUPS,
+  ...PRODUCT_GROUPS,
+  ...OPERATOR_EXCLUSIVE_GROUPS,
+]

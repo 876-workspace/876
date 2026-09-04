@@ -11,7 +11,17 @@ import {
 import { cache } from 'react'
 
 import { getConsoleFeatureKeys } from '@/lib/features'
+import { operatorPermissions } from '@/lib/operator-permissions'
 import { service } from '@/lib/service'
+
+/**
+ * Console's own vocabulary plus every product's projected keys and the
+ * operator-exclusive keys — the full universe `resolveEffectivePermissions`
+ * intersects a role's stored permissions against. Computed once per module
+ * load: `operatorPermissions` derives from the live catalogs, not a stored
+ * copy, so there is nothing here to keep in sync as a product's catalog grows.
+ */
+const OPERATOR_PERMISSIONS = operatorPermissions(consolePermissionCatalog)
 
 /**
  * Console's persisted access-grant lookup, shared by the AccessContext resolver
@@ -49,7 +59,7 @@ export const resolveAccessContext = cache(async function resolveAccessContext(
                 permissions: toStoredPermissionKeys(member.role.permissions),
               }
             : null,
-          catalog: consolePermissionCatalog,
+          catalog: OPERATOR_PERMISSIONS,
         })
       : []
 
