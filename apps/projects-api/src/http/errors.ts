@@ -46,7 +46,7 @@ export const PROJECTS_ERRORS = {
     httpStatus: 409 as HttpStatusCode,
   },
   'projects/default-work-item-type-required': {
-    message: 'The default work item type cannot be deleted.',
+    message: 'A default work item type must remain configured.',
     httpStatus: 409 as HttpStatusCode,
   },
   'projects/workflow-state-not-found': {
@@ -62,7 +62,7 @@ export const PROJECTS_ERRORS = {
     httpStatus: 409 as HttpStatusCode,
   },
   'projects/default-workflow-state-required': {
-    message: 'The default workflow state cannot be deleted.',
+    message: 'A default workflow state must remain configured.',
     httpStatus: 409 as HttpStatusCode,
   },
   'projects/workflow-state-required': {
