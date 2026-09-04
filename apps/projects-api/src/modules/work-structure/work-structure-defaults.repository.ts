@@ -1,12 +1,13 @@
 import { prisma } from '../../db/index.js'
 
 export async function createDefaultWorkItemType(
+  tenantId: string,
   data: Parameters<typeof prisma.workItemType.create>[0]['data'],
   updatedAt: bigint
 ) {
   return prisma.$transaction(async (tx) => {
     await tx.workItemType.updateMany({
-      where: { tenantId: data.tenantId as string, archivedAt: null },
+      where: { tenantId, archivedAt: null },
       data: { isDefault: false, updatedAt },
     })
     return tx.workItemType.create({ data: { ...data, isDefault: true } })
@@ -32,12 +33,13 @@ export async function updateDefaultWorkItemType(
 }
 
 export async function createDefaultWorkflowState(
+  tenantId: string,
   data: Parameters<typeof prisma.workflowState.create>[0]['data'],
   updatedAt: bigint
 ) {
   return prisma.$transaction(async (tx) => {
     await tx.workflowState.updateMany({
-      where: { tenantId: data.tenantId as string, archivedAt: null },
+      where: { tenantId, archivedAt: null },
       data: { isDefault: false, updatedAt },
     })
     return tx.workflowState.create({ data: { ...data, isDefault: true } })
