@@ -27,8 +27,15 @@ export const ISSUE_STATUSES = [
   'done',
   'canceled',
 ] as const
+/**
+ * Legacy software-development preset values. Workflow-state keys themselves
+ * are tenant-extensible and must not be parsed with this enum at API/client
+ * boundaries.
+ */
 export const issueStatusSchema = z.enum(ISSUE_STATUSES)
 export type IssueStatus = z.infer<typeof issueStatusSchema>
+export const workflowStateKeySchema = z.string().trim().min(1)
+export type WorkflowStateKey = z.infer<typeof workflowStateKeySchema>
 
 export const ISSUE_PRIORITIES = [
   'none',
@@ -98,82 +105,6 @@ export const projectMemberSchema = z.object({
   createdAt: z.number(),
 })
 export type ProjectMember = z.infer<typeof projectMemberSchema>
-
-export const projectSchema = z.object({
-  object: z.literal('projects.project'),
-  id: z.string(),
-  tenantId: z.string(),
-  name: z.string(),
-  key: z.string(),
-  slug: z.string(),
-  description: z.string().nullable(),
-  leadUserId: z.string().nullable(),
-  status: projectStatusSchema,
-  health: projectHealthSchema,
-  startDate: z.number().nullable(),
-  targetDate: z.number().nullable(),
-  nextIssueNumber: z.number(),
-  customerId: z.string().nullable(),
-  position: z.number(),
-  archivedAt: z.number().nullable(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  memberCount: z.number(),
-})
-export type Project = z.infer<typeof projectSchema>
-
-export const issueSchema = z.object({
-  object: z.literal('projects.issue'),
-  id: z.string(),
-  tenantId: z.string(),
-  projectId: z.string(),
-  projectKey: z.string(),
-  number: z.number(),
-  identifier: z.string(),
-  title: z.string(),
-  description: z.string().nullable(),
-  status: issueStatusSchema,
-  priority: issuePrioritySchema,
-  assigneeUserId: z.string().nullable(),
-  creatorUserId: z.string().nullable(),
-  parentIssueId: z.string().nullable(),
-  estimate: z.number().nullable(),
-  dueDate: z.number().nullable(),
-  position: z.number(),
-  labels: z.array(labelSchema),
-  commentCount: z.number(),
-  subIssueCount: z.number(),
-  startedAt: z.number().nullable(),
-  completedAt: z.number().nullable(),
-  canceledAt: z.number().nullable(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-})
-export type Issue = z.infer<typeof issueSchema>
-
-export const issueEventSchema = z.object({
-  object: z.literal('projects.issue-event'),
-  id: z.string(),
-  issueId: z.string(),
-  actorUserId: z.string().nullable(),
-  type: z.string(),
-  fromValue: z.string().nullable(),
-  toValue: z.string().nullable(),
-  createdAt: z.number(),
-})
-export type IssueEvent = z.infer<typeof issueEventSchema>
-
-export const commentSchema = z.object({
-  object: z.literal('projects.comment'),
-  id: z.string(),
-  tenantId: z.string(),
-  issueId: z.string(),
-  authorUserId: z.string().nullable(),
-  body: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-})
-export type Comment = z.infer<typeof commentSchema>
 
 export const workItemTypeSchema = z.object({
   object: z.literal('projects.work-item-type'),
@@ -266,6 +197,88 @@ export const customFieldValueSchema = z.object({
   updatedAt: z.number(),
 })
 export type CustomFieldValue = z.infer<typeof customFieldValueSchema>
+
+export const projectSchema = z.object({
+  object: z.literal('projects.project'),
+  id: z.string(),
+  tenantId: z.string(),
+  name: z.string(),
+  key: z.string(),
+  slug: z.string(),
+  description: z.string().nullable(),
+  leadUserId: z.string().nullable(),
+  status: projectStatusSchema,
+  health: projectHealthSchema,
+  startDate: z.number().nullable(),
+  targetDate: z.number().nullable(),
+  nextIssueNumber: z.number(),
+  customerId: z.string().nullable(),
+  defaultWorkItemTypeId: z.string().nullable(),
+  position: z.number(),
+  archivedAt: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  memberCount: z.number(),
+})
+export type Project = z.infer<typeof projectSchema>
+
+export const issueSchema = z.object({
+  object: z.literal('projects.issue'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  projectKey: z.string(),
+  number: z.number(),
+  identifier: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  status: workflowStateKeySchema,
+  typeKey: z.string(),
+  type: workItemTypeSchema.nullable(),
+  state: workflowStateSchema.nullable(),
+  milestone: milestoneSchema.nullable(),
+  customFields: z.array(customFieldValueSchema),
+  priority: issuePrioritySchema,
+  assigneeUserId: z.string().nullable(),
+  creatorUserId: z.string().nullable(),
+  parentIssueId: z.string().nullable(),
+  estimate: z.number().nullable(),
+  dueDate: z.number().nullable(),
+  position: z.number(),
+  labels: z.array(labelSchema),
+  commentCount: z.number(),
+  subIssueCount: z.number(),
+  startedAt: z.number().nullable(),
+  completedAt: z.number().nullable(),
+  canceledAt: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Issue = z.infer<typeof issueSchema>
+
+export const issueEventSchema = z.object({
+  object: z.literal('projects.issue-event'),
+  id: z.string(),
+  issueId: z.string(),
+  actorUserId: z.string().nullable(),
+  type: z.string(),
+  fromValue: z.string().nullable(),
+  toValue: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type IssueEvent = z.infer<typeof issueEventSchema>
+
+export const commentSchema = z.object({
+  object: z.literal('projects.comment'),
+  id: z.string(),
+  tenantId: z.string(),
+  issueId: z.string(),
+  authorUserId: z.string().nullable(),
+  body: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Comment = z.infer<typeof commentSchema>
 
 export const presetSchema = z.object({
   key: z.enum(['software-development', 'business-operations', 'general']),
@@ -392,6 +405,7 @@ export interface CreateProjectInput {
   startDate?: number | null
   targetDate?: number | null
   customerId?: string | null
+  defaultWorkItemTypeId?: string | null
   position?: number
 }
 
@@ -405,6 +419,7 @@ export interface UpdateProjectInput {
   startDate?: number | null
   targetDate?: number | null
   customerId?: string | null
+  defaultWorkItemTypeId?: string | null
   position?: number
 }
 
@@ -415,7 +430,7 @@ export interface AddProjectMemberInput {
 
 export interface ListIssuesQuery {
   project?: string
-  status?: IssueStatus | IssueStatus[] | string | string[]
+  status?: WorkflowStateKey | WorkflowStateKey[]
   priority?: IssuePriority | IssuePriority[] | string | string[]
   assignee?: string
   label?: string | string[]
@@ -433,7 +448,7 @@ export interface CreateIssueInput {
   projectId?: string
   title: string
   description?: string | null
-  status?: string
+  status?: WorkflowStateKey
   typeKey?: string
   milestoneId?: string | null
   priority?: IssuePriority
@@ -451,7 +466,7 @@ export interface UpdateIssueInput {
   projectId?: string
   title?: string
   description?: string | null
-  status?: string
+  status?: WorkflowStateKey
   typeKey?: string
   milestoneId?: string | null
   priority?: IssuePriority
