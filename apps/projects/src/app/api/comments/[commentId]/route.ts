@@ -23,6 +23,12 @@ const deleteCommentSchema = z.strictObject({
 
 type Context = { params: Promise<{ commentId: string }> }
 
+function commentErrorStatus(code: string): 400 | 403 | 404 {
+  if (code === 'projects/comment-not-owned') return 403
+  if (code === 'projects/comment-not-found') return 404
+  return 400
+}
+
 export async function PATCH(request: NextRequest, { params }: Context) {
   const auth: ApiContext = await requireApiPermission('comments.edit')
   if (auth.response) return auth.response
@@ -42,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: result.error.httpStatus }
+      { status: commentErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })
@@ -71,7 +77,7 @@ export async function DELETE(request: NextRequest, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: result.error.httpStatus }
+      { status: commentErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })
