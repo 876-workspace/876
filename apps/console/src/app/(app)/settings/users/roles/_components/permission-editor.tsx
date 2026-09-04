@@ -10,6 +10,7 @@ import { track } from '@/lib/analytics/track'
 import { useConsoleUser } from '@/stores/user'
 import { client } from '@/lib/client'
 import { PERMISSION_GROUPS } from '@/lib/permissions'
+import { PermissionGroupPicker } from './permission-group-picker'
 
 type Props = {
   roleName: string
@@ -158,41 +159,11 @@ export function PermissionEditor({
             {selected.size} selected
           </span>
         </div>
-        <div className="border-border bg-card/60 overflow-hidden rounded-lg border">
-          {PERMISSION_GROUPS.map((group, gi) => (
-            <div
-              key={group.label}
-              className={gi < PERMISSION_GROUPS.length - 1 ? 'border-b' : ''}
-            >
-              <div className="bg-muted/40 dark:bg-muted/20 px-4 py-2">
-                <span className="876-eyebrow font-semibold">{group.label}</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5 px-4 py-2.5">
-                {group.permissions.map((perm) => {
-                  const checked = selected.has(perm.value)
-                  return (
-                    <button
-                      key={perm.value}
-                      type="button"
-                      onClick={() => toggle(perm.value)}
-                      aria-pressed={checked}
-                      className={`focus-visible:ring-ring inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none ${
-                        checked
-                          ? 'border-blue-500/50 bg-blue-500/10 text-blue-700 dark:border-blue-500/40 dark:bg-blue-900/30 dark:text-blue-300'
-                          : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50'
-                      }`}
-                    >
-                      <span
-                        className={`size-1.5 shrink-0 rounded-full transition-colors ${checked ? 'bg-blue-600 dark:bg-blue-400' : 'bg-muted-foreground/50'}`}
-                      />
-                      {perm.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+        <PermissionGroupPicker
+          groups={PERMISSION_GROUPS}
+          selected={selected}
+          onToggle={toggle}
+        />
       </div>
 
       {/* Actions */}
