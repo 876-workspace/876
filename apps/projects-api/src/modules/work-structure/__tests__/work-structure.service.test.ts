@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository, defaultsRepository, tenants, projects, issues } = vi.hoisted(
+const { repository, tenants, projects, issues } = vi.hoisted(
   () => ({
     repository: {
       listWorkItemTypes: vi.fn(),
@@ -8,8 +8,9 @@ const { repository, defaultsRepository, tenants, projects, issues } = vi.hoisted
       retrieveWorkItemTypeByKey: vi.fn(),
       retrieveDefaultWorkItemType: vi.fn(),
       createWorkItemType: vi.fn(),
+      createDefaultWorkItemType: vi.fn(),
       updateWorkItemType: vi.fn(),
-      clearDefaultWorkItemType: vi.fn(),
+      updateDefaultWorkItemType: vi.fn(),
       archiveWorkItemType: vi.fn(),
       countIssuesForWorkItemType: vi.fn(),
       listWorkflowStates: vi.fn(),
@@ -17,8 +18,9 @@ const { repository, defaultsRepository, tenants, projects, issues } = vi.hoisted
       retrieveWorkflowStateByKey: vi.fn(),
       retrieveDefaultWorkflowState: vi.fn(),
       createWorkflowState: vi.fn(),
+      createDefaultWorkflowState: vi.fn(),
       updateWorkflowState: vi.fn(),
-      clearDefaultWorkflowState: vi.fn(),
+      updateDefaultWorkflowState: vi.fn(),
       archiveWorkflowState: vi.fn(),
       countActiveWorkflowStates: vi.fn(),
       countIssuesForWorkflowState: vi.fn(),
@@ -40,12 +42,6 @@ const { repository, defaultsRepository, tenants, projects, issues } = vi.hoisted
       seedMissing: vi.fn(),
       seedPreset: vi.fn(),
     },
-    defaultsRepository: {
-      createDefaultWorkItemType: vi.fn(),
-      updateDefaultWorkItemType: vi.fn(),
-      createDefaultWorkflowState: vi.fn(),
-      updateDefaultWorkflowState: vi.fn(),
-    },
     tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
     projects: { resolveProject: vi.fn() },
     issues: { resolveIssue: vi.fn() },
@@ -53,7 +49,6 @@ const { repository, defaultsRepository, tenants, projects, issues } = vi.hoisted
 )
 
 vi.mock('../work-structure.repository.js', () => repository)
-vi.mock('../work-structure-defaults.repository.js', () => defaultsRepository)
 vi.mock('../../tenants/index.js', () => tenants)
 vi.mock('../../projects/index.js', () => projects)
 vi.mock('../../issues/index.js', () => issues)
@@ -153,10 +148,10 @@ function resetRepositoryDefaults() {
   repository.updateWorkItemType.mockImplementation(
     async (_tenantId, _id, patch) => ({ ...typeRow, ...patch })
   )
-  defaultsRepository.createDefaultWorkItemType.mockImplementation(
+  repository.createDefaultWorkItemType.mockImplementation(
     async (_tenantId, data) => ({ ...typeRow, ...data, isDefault: true })
   )
-  defaultsRepository.updateDefaultWorkItemType.mockImplementation(
+  repository.updateDefaultWorkItemType.mockImplementation(
     async (_tenantId, _id, patch) => ({ ...typeRow, ...patch, isDefault: true })
   )
   repository.countIssuesForWorkItemType.mockResolvedValue(0)
@@ -174,10 +169,10 @@ function resetRepositoryDefaults() {
   repository.updateWorkflowState.mockImplementation(
     async (_tenantId, _id, patch) => ({ ...stateRow, ...patch })
   )
-  defaultsRepository.createDefaultWorkflowState.mockImplementation(
+  repository.createDefaultWorkflowState.mockImplementation(
     async (_tenantId, data) => ({ ...stateRow, ...data, isDefault: true })
   )
-  defaultsRepository.updateDefaultWorkflowState.mockImplementation(
+  repository.updateDefaultWorkflowState.mockImplementation(
     async (_tenantId, _id, patch) => ({ ...stateRow, ...patch, isDefault: true })
   )
   repository.countActiveWorkflowStates.mockResolvedValue(3)
@@ -294,7 +289,7 @@ describe('createWorkItemType', () => {
       isDefault: true,
     })
 
-    expect(defaultsRepository.createDefaultWorkItemType).toHaveBeenCalledWith(
+    expect(repository.createDefaultWorkItemType).toHaveBeenCalledWith(
       tenant.id,
       expect.objectContaining({ key: 'bug', isDefault: true }),
       expect.any(BigInt)
@@ -314,7 +309,7 @@ describe('createWorkItemType', () => {
     })
 
     expect(result.data?.isDefault).toBe(true)
-    expect(defaultsRepository.createDefaultWorkItemType).toHaveBeenCalled()
+    expect(repository.createDefaultWorkItemType).toHaveBeenCalled()
   })
 
   it('leaves the configured default alone for a non-default type', async () => {
@@ -326,7 +321,7 @@ describe('createWorkItemType', () => {
       hierarchyLevel: 1,
     })
 
-    expect(defaultsRepository.createDefaultWorkItemType).not.toHaveBeenCalled()
+    expect(repository.createDefaultWorkItemType).not.toHaveBeenCalled()
     expect(repository.createWorkItemType).toHaveBeenCalled()
   })
 })
@@ -372,7 +367,7 @@ describe('updateWorkItemType', () => {
     })
 
     expect(result.error).toBeNull()
-    expect(defaultsRepository.updateDefaultWorkItemType).toHaveBeenCalledWith(
+    expect(repository.updateDefaultWorkItemType).toHaveBeenCalledWith(
       tenant.id,
       'wit_bug_1',
       expect.objectContaining({ isDefault: true }),
@@ -487,7 +482,7 @@ describe('workflow states', () => {
     })
 
     expect(result.data?.isDefault).toBe(true)
-    expect(defaultsRepository.createDefaultWorkflowState).toHaveBeenCalled()
+    expect(repository.createDefaultWorkflowState).toHaveBeenCalled()
   })
 
   it('promotes a replacement workflow default atomically', async () => {
@@ -503,7 +498,7 @@ describe('workflow states', () => {
     })
 
     expect(result.error).toBeNull()
-    expect(defaultsRepository.updateDefaultWorkflowState).toHaveBeenCalledWith(
+    expect(repository.updateDefaultWorkflowState).toHaveBeenCalledWith(
       tenant.id,
       'wfs_review_1',
       expect.objectContaining({ isDefault: true }),

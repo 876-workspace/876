@@ -9,7 +9,6 @@ import * as issues from '../issues/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import { getWorkStructurePreset, workStructurePresets } from './presets.js'
-import * as defaultsRepository from './work-structure-defaults.repository.js'
 import * as repository from './work-structure.repository.js'
 import type {
   CreateCustomFieldBody,
@@ -108,7 +107,7 @@ export async function createWorkItemType(
     updatedAt: timestamp,
   }
   const row = isDefault
-    ? await defaultsRepository.createDefaultWorkItemType(
+    ? await repository.createDefaultWorkItemType(
         resolved.tenant.id,
         data,
         timestamp
@@ -149,7 +148,7 @@ export async function updateWorkItemType(
   const patch = { ...body, updatedAt: timestamp }
   const row =
     body.isDefault === true && !existing.isDefault
-      ? await defaultsRepository.updateDefaultWorkItemType(
+      ? await repository.updateDefaultWorkItemType(
           resolved.tenant.id,
           id,
           patch,
@@ -255,7 +254,7 @@ export async function createWorkflowState(
     updatedAt: timestamp,
   }
   const row = isDefault
-    ? await defaultsRepository.createDefaultWorkflowState(
+    ? await repository.createDefaultWorkflowState(
         resolved.tenant.id,
         data,
         timestamp
@@ -301,7 +300,7 @@ export async function updateWorkflowState(
   const patch = { ...body, updatedAt: timestamp }
   const row =
     body.isDefault === true && !existing.isDefault
-      ? await defaultsRepository.updateDefaultWorkflowState(
+      ? await repository.updateDefaultWorkflowState(
           resolved.tenant.id,
           id,
           patch,

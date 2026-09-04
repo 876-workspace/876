@@ -9,16 +9,18 @@ const { tenants, projects, issues, repository } = vi.hoisted(() => ({
     retrieveWorkItemType: vi.fn(),
     retrieveWorkItemTypeByKey: vi.fn(),
     createWorkItemType: vi.fn(),
+    createDefaultWorkItemType: vi.fn(),
     updateWorkItemType: vi.fn(),
-    clearDefaultWorkItemType: vi.fn(),
+    updateDefaultWorkItemType: vi.fn(),
     archiveWorkItemType: vi.fn(),
     countIssuesForWorkItemType: vi.fn(),
     listWorkflowStates: vi.fn(),
     retrieveWorkflowState: vi.fn(),
     retrieveWorkflowStateByKey: vi.fn(),
     createWorkflowState: vi.fn(),
+    createDefaultWorkflowState: vi.fn(),
     updateWorkflowState: vi.fn(),
-    clearDefaultWorkflowState: vi.fn(),
+    updateDefaultWorkflowState: vi.fn(),
     archiveWorkflowState: vi.fn(),
     countActiveWorkflowStates: vi.fn(),
     countIssuesForWorkflowState: vi.fn(),
@@ -183,6 +185,10 @@ describe('work structure service', () => {
   })
 
   it('rejects deleting a work item type referenced by a live issue', async () => {
+    repository.retrieveWorkItemType.mockResolvedValue({
+      ...workItemType,
+      isDefault: false,
+    })
     repository.countIssuesForWorkItemType.mockResolvedValue(1)
     const result = await service.removeWorkItemType('org_a', workItemType.id)
     expect(result.error?.code).toBe('projects/work-item-type-in-use')
@@ -229,7 +235,8 @@ describe('work structure service', () => {
     )
     expect(result.data?.value).toBe('12.340000')
     expect(repository.upsertCustomFieldValue).toHaveBeenCalledWith(
-      expect.objectContaining({ decimalValue: '12.340000' })
+      expect.objectContaining({ decimalValue: '12.340000' }),
+      undefined
     )
   })
 
@@ -243,7 +250,8 @@ describe('work structure service', () => {
     expect(repository.clearCustomFieldValue).toHaveBeenCalledWith(
       tenant.id,
       'iss_a',
-      customField.id
+      customField.id,
+      undefined
     )
     expect(repository.upsertCustomFieldValue).not.toHaveBeenCalled()
   })

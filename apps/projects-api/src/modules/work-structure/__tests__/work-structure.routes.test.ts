@@ -1,22 +1,28 @@
 import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { errorHandler } from '../../../http/error-handler.js'
+
 const { repository, tenants, projects, issues } = vi.hoisted(() => ({
   repository: {
     listWorkItemTypes: vi.fn(),
     retrieveWorkItemType: vi.fn(),
     retrieveWorkItemTypeByKey: vi.fn(),
+    retrieveDefaultWorkItemType: vi.fn(),
     createWorkItemType: vi.fn(),
+    createDefaultWorkItemType: vi.fn(),
     updateWorkItemType: vi.fn(),
-    clearDefaultWorkItemType: vi.fn(),
+    updateDefaultWorkItemType: vi.fn(),
     archiveWorkItemType: vi.fn(),
     countIssuesForWorkItemType: vi.fn(),
     listWorkflowStates: vi.fn(),
     retrieveWorkflowState: vi.fn(),
     retrieveWorkflowStateByKey: vi.fn(),
+    retrieveDefaultWorkflowState: vi.fn(),
     createWorkflowState: vi.fn(),
+    createDefaultWorkflowState: vi.fn(),
     updateWorkflowState: vi.fn(),
-    clearDefaultWorkflowState: vi.fn(),
+    updateDefaultWorkflowState: vi.fn(),
     archiveWorkflowState: vi.fn(),
     countActiveWorkflowStates: vi.fn(),
     countIssuesForWorkflowState: vi.fn(),
@@ -133,6 +139,7 @@ async function requestJson(
     '/v1/organizations/:organizationId/issues/:issueRef/custom-field-values',
     createCustomFieldValuesRouter()
   )
+  app.use(errorHandler)
   const server = app.listen(0)
   await new Promise<void>((resolve) => server.once('listening', resolve))
   const address = server.address()
@@ -166,6 +173,7 @@ beforeEach(() => {
   repository.listWorkItemTypes.mockResolvedValue([])
   repository.retrieveWorkItemType.mockResolvedValue(null)
   repository.retrieveWorkItemTypeByKey.mockResolvedValue(null)
+  repository.retrieveDefaultWorkItemType.mockResolvedValue(typeRow)
   repository.createWorkItemType.mockImplementation(async (data) => ({
     description: null,
     archivedAt: null,
@@ -174,6 +182,9 @@ beforeEach(() => {
     hierarchyLevel: 1,
     ...data,
   }))
+  repository.createDefaultWorkItemType.mockImplementation(
+    async (_tenantId, data) => ({ ...typeRow, ...data, isDefault: true })
+  )
   repository.updateWorkItemType.mockImplementation(async (_t, _id, patch) => ({
     ...typeRow,
     ...patch,
@@ -182,6 +193,7 @@ beforeEach(() => {
   repository.listWorkflowStates.mockResolvedValue([])
   repository.retrieveWorkflowState.mockResolvedValue(null)
   repository.retrieveWorkflowStateByKey.mockResolvedValue(null)
+  repository.retrieveDefaultWorkflowState.mockResolvedValue(stateRow)
   repository.createWorkflowState.mockImplementation(async (data) => ({
     description: null,
     archivedAt: null,
@@ -189,6 +201,9 @@ beforeEach(() => {
     isDefault: false,
     ...data,
   }))
+  repository.createDefaultWorkflowState.mockImplementation(
+    async (_tenantId, data) => ({ ...stateRow, ...data, isDefault: true })
+  )
   repository.updateWorkflowState.mockImplementation(async (_t, _id, patch) => ({
     ...stateRow,
     ...patch,
@@ -360,7 +375,10 @@ describe('work-item-type routes', () => {
   })
 
   it('deletes an unused type', async () => {
-    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+    repository.retrieveWorkItemType.mockResolvedValue({
+      ...typeRow,
+      isDefault: false,
+    })
 
     const { status, body } = await requestJson(
       'DELETE',
@@ -376,7 +394,10 @@ describe('work-item-type routes', () => {
   })
 
   it('maps an in-use type delete to a 409 conflict', async () => {
-    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+    repository.retrieveWorkItemType.mockResolvedValue({
+      ...typeRow,
+      isDefault: false,
+    })
     repository.countIssuesForWorkItemType.mockResolvedValue(1)
 
     const { status, body } = await requestJson(
@@ -583,6 +604,7 @@ describe('custom-field routes', () => {
       key: 'severity',
       label: 'Severity',
       fieldType: 'select',
+      options: [{ key: 'high', label: 'High' }],
     })
 
     expect(status).toBe(409)
