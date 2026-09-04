@@ -2,8 +2,11 @@
 
 - **Run ID:** `2026-09-03-console-workspace-and-sidebar`
 - **Branch:** `feat/console-contextual-sidebar`
-- **Status:** `IN_PROGRESS` — Phases 1, 2, and 3 complete; Phase 3.5 (operator
-  permission model) and Phase 4 (cross-org operations) not started
+- **Status:** `IN_PROGRESS` — Phases 1, 2, 3, 3.5, and 4 complete. Remaining:
+  wire the `/requests/all` nav entry + permission key (deliberately deferred
+  until Phase 3.5 landed, which it now has), confirm §5's two open questions
+  (bounce amplitude, expand-persistence scope), and open the `main` PR once
+  the branch is otherwise ready.
 - **Owner:** raheemdevs
 
 > This file is written from a long spoken briefing. It deliberately records the
@@ -706,20 +709,44 @@ from the URL.
 - [x] `Shell` no longer renders `MobileNav` itself; it takes the node, exactly
       as it already took `sidebar`.
 
-### Phase 3.5 — the operator permission model (§6)
+### Phase 3.5 — the operator permission model (§6) ✅ COMPLETE
 
-- [ ] Project each product catalog into Console-namespaced keys
-      (`crm/requests.view`), with a drift test against the product catalog.
-- [ ] Add the Console-owned operator-exclusive keys (`console:crm.purge`,
-      `console:crm.intervene`), separate from the projected set, with Purge
-      distinct from Delete.
-- [ ] AND the operator's projected key into `workspace-navigation.ts` alongside
-      entitlement and feature (§6.2), with distinct empty-state messages.
-- [ ] Break `/requests` and `/projects` out of their coarse single keys (§6.3).
-- [ ] Role editor renders the catalog grouped by product.
-- [ ] Tests: exact visible-href sets per role (CSR vs platform admin),
-      registry↔route binding for every new key, guard-coverage for every mutating
-      route, and an assertion that an operator-exclusive key implies nothing.
+- [x] Project each product catalog into Console-namespaced keys
+      (`crm/requests.view`). `apps/console/src/lib/operator-permissions.ts`
+      derives the projection from the live catalogs at call time (drift is
+      structurally impossible, not merely tested-for) — see
+      `operator-permissions.test.ts`.
+- [x] Add the Console-owned operator-exclusive keys (`console:crm.purge`, one
+      per product). Purge is a separate, generated catalog
+      (`operatorExclusiveCatalog()`) that never appears in a product's own
+      `AppPermissionCatalog`, distinct from any product's `*.delete`.
+      Intervene/dispute-style actions are left to a later product feature that
+      doesn't exist yet, per the plan's own instruction not to build it now.
+- [x] AND the operator's projected key into workspace navigation (§6.2):
+      `resolveWorkspaceContexts` in `features/orgs/workspace-contexts.ts` now
+      takes the operator's permissions and returns a named-but-empty context
+      when the operator holds none of the open workspace's product keys,
+      rather than the registry's unfiltered fallback. Distinct per-reason
+      empty-state *messages* (entitlement vs. feature vs. permission) were
+      scoped down — today all three collapse to one empty rail; the comment
+      in `workspace-contexts.ts` records why (no reliable 1:1 mapping from a
+      workspace section's `entryKey` onto the `<module>.<action>` catalog).
+- [x] Break `/requests` and `/projects` out of their coarse single keys
+      (§6.3). Both now gate on the projected product key
+      (`crm/requests.view`, `projects/dashboard.view`) instead of Console's
+      own disconnected `console:requests`/`console:projects` flags.
+- [x] Role editor renders the catalog grouped by product. `PERMISSION_GROUPS`
+      groups Console's own catalog, then one group per product module, then
+      one operator-actions group per product (241 permissions across 65
+      groups) — and the picker itself (`PermissionGroupPicker`) was made
+      collapsible so that's actually usable, not just structurally correct.
+- [x] Tests: exact visible-href sets per role (`nav-config.test.ts`,
+      `route-permissions.test.ts`'s `reachablePaths` per role), registry↔route
+      binding extended for the new keys, guard-coverage for
+      `requireConsoleCrmPermission`'s mutating routes
+      (`guard-coverage.test.ts`), and an explicit assertion that an
+      operator-exclusive key implies no product read key
+      (`permissions.test.ts`).
 
 ### Phase 4 — cross-org operations (thin) ✅ COMPLETE
 
@@ -792,69 +819,83 @@ mobile-nav.tsx · shell.tsx    + four test files
 
 ## 12. Handoff state
 
-**Updated 2026-09-04 02:55 UTC.** Written for a fresh session picking this up
+**Updated 2026-09-04 12:12 UTC.** Written for a fresh session picking this up
 cold. Read this section first, then §8 Phases.
 
 ### Where the work is
 
 | Phase                                    | State                                                |
 | ---------------------------------------- | ---------------------------------------------------- |
-| 1 — the sidebar                          | ✅ complete                                          |
-| 2 — product context under `/apps/[slug]` | ✅ except the integration registry (blocked on §3.4) |
-| 3 — relocate the workspace               | ✅ complete                                          |
-| 3.5 — operator permission model          | 🔄 **another session, uncommitted, see below**       |
-| 4 — cross-org operator list              | ✅ complete                                          |
+| 1 — the sidebar                          | ✅ complete |
+| 2 — product context under `/apps/[slug]` | ✅ complete |
+| 3 — relocate the workspace               | ✅ complete |
+| 3.5 — operator permission model          | ✅ complete |
+| 4 — cross-org operator list              | ✅ complete |
+
+Every phase in this plan is now landed and committed on
+`feat/console-contextual-sidebar`. Nothing is mid-edit and no other agent is
+known to be active in this tree as of this update.
 
 **PR [#471](https://github.com/876-workspace/876/pull/471)** is open against
 `main` — "feat(console): make the sidebar contextual and move org workspaces to
-a top-level route". Its red checks are **pre-existing repo state, not this
-branch**: `verify` and `structure` also fail on `main`, and all 11 Cloudflare
-Workers Builds are red repo-wide. Confirm that before spending time on them.
+a top-level route". Its red checks were **pre-existing repo state, not this
+branch**, as of the last check: `verify` and `structure` also failed on `main`,
+and all 11 Cloudflare Workers Builds were red repo-wide. Re-confirm this is
+still true before spending time on them, and before updating the PR
+description to reflect everything landed since it was opened.
 
-### Two other agents are in this working tree
+### What Phase 3.5 turned into once it landed
 
-This branch is being written by more than one agent at once. Check
-`git status` and `git log` before assuming anything is yours.
+The prior handoff described Phase 3.5 as "another session, uncommitted,"
+mid-edit with a broken typecheck. That session's design was sound and is now
+finished, verified, and committed:
 
-**1. Another Claude session — Phase 3.5, uncommitted.** It is projecting product
-permission catalogs into Console-namespaced operator keys. Its in-flight files:
-
-```
-apps/console/src/lib/operator-permissions.ts        (new)
-apps/console/src/lib/permissions.ts
-apps/console/src/lib/auth/access-context.ts
-apps/console/src/features/orgs/workspace-contexts.ts
-apps/console/src/app/(app)/@sidebar/workspace/[orgSlug]/[...section]/page.tsx
-apps/console/src/app/(app)/@mobilenav/workspace/[orgSlug]/[...section]/page.tsx
-```
-
-> **`pnpm --filter @876/console typecheck` currently FAILS**, on
-> `src/features/orgs/workspace-contexts.test.ts` — "Expected 3 arguments, but
-> got 2", at 7 call sites. That session added a third `operatorPermissions`
-> parameter to `resolveWorkspaceContexts` and has not updated the test yet.
-> **The committed HEAD is self-consistent**; only the working tree is broken.
-> Do not "fix" it — you will collide with an agent mid-edit.
-
-**2. Codex (`gpt-5.6-terra`, medium) — Phase 4 (DONE).** The Phase 4 slice landed
-in commits `1ecd8aef` (CRM API cross-org endpoint & query), `2435e13d` (CRM operator
-client method), and `abcaeb3c` (Console page and table component); report in
-`reports/codex/2026-09-04-crm-cross-org-requests.md` (`435193d2`). Documented in
-`docs/architecture/017-console-app-data-management.md` ("Cross-organization
-operator lists"). Wiring the nav entry and permission key remains deferred until
-Phase 3.5 lands.
+- `apps/console/src/lib/operator-permissions.ts` — projects every product's
+  own `AppPermissionCatalog` into a Console namespace (`crm/requests.view`),
+  plus a generated Console-only purge action per product. Commit `5ed2a5c3`.
+- `resolveWorkspaceContexts` (§6.2's AND) and `resolveAccessContext` (resolving
+  against the full operator universe, not the Console catalog alone) — same
+  commit.
+- `permission-editor.tsx`/`create-role-form.tsx` — extracted into a shared,
+  collapsible `PermissionGroupPicker` (`@876/ui/accordion`), since
+  `PERMISSION_GROUPS` grew from 47 to 241 permissions once product catalogs
+  were projected into it. Commit `6433a6eb`, delegated to agy
+  (`gemini-3.8-flash-high`), independently verified.
+- §6.3 — `/requests` and `/projects` moved off Console's own disconnected
+  `console:requests`/`console:projects` flags onto the projected product keys
+  (`crm/requests.view`, `projects/dashboard.view`). Commit `ef870569`,
+  delegated to Codex (`gpt-5.6-terra`, high), independently verified — Codex's
+  own verification run used a narrower test command than its brief's full
+  requirement and missed four failures across `nav-config.weird.test.ts`
+  (stale colon-only assumption), `nav-config.test.ts` (staff-reachability
+  array), `guards.comprehensive.test.ts` (resolving against the wrong
+  catalog), and `route-guard.test.ts` (stale mock permission) — fixed
+  directly, commit `06fa7a5c`. **Lesson**: always run the full test
+  directory yourself, independent of what a delegate's own verification
+  command covered.
+- A real, separately-reported sidebar bug was fixed in the same session
+  (`611a366e`): the expand control never actually widened the rail on the
+  platform-level context (`context.kind === 'platform'` was excluded from
+  the panel-width class), so clicking it only changed a tooltip — the label
+  text was in the DOM but clipped by `overflow-hidden` on a still-rail-width
+  card, which is why no existing test had caught it. Also dropped
+  `font-medium`/`font-semibold` from expanded sidebar labels per direct user
+  feedback.
 
 ### What is genuinely left
 
-1. Add the `/requests/all` nav entry + permission key **after** Phase 3.5 lands
-   (the Phase 4 slice itself has landed; see commits `1ecd8aef`, `2435e13d`, and
-   `abcaeb3c`).
-2. ~~Phase 2's integration registry~~ — **done.** §3.4 was confirmed with the
-   user 2026-09-04 (registry consolidation, not third-party integrations) and
-   the registry was folded into `app-workspaces.ts` in `66d7591f`. This item
-   was stale; Phase 2 §8 already shows it checked off.
-3. ~~`/projects` and `/workspace/<org>/projects` path helpers~~ — **done.**
-   Consolidated onto `projectsBase()` in `app-workspaces.ts`, commit
-   `b0892196`.
+1. **Wire the `/requests/all` nav entry + permission key.** This was
+   deliberately deferred in Phase 4 until Phase 3.5 landed (it now has). No
+   design decision needed — follow the exact pattern already used for every
+   other CRM-gated entry in `nav-config.ts`'s `requests` section
+   (`requires: { permission: 'crm/requests.view' }`, or a narrower key if a
+   cross-org list should require something more privileged than a single
+   org's view — that's the one open call to make, not "how does this work").
+2. §5's two open questions from Phase 1 remain genuinely open, not blocking:
+   bounce amplitude (build adjustable, look at it) and whether expand
+   persistence should be per-context or global (currently global).
+3. Re-verify PR #471's check state and update its description once the branch
+   is otherwise ready, per the note above.
 
 ### Lessons this run paid for — do not relearn them
 
