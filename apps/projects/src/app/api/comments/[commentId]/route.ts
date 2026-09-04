@@ -23,10 +23,31 @@ const deleteCommentSchema = z.strictObject({
 
 type Context = { params: Promise<{ commentId: string }> }
 
-function commentErrorStatus(code: string): 400 | 403 | 404 {
-  if (code === 'projects/comment-not-owned') return 403
-  if (code === 'projects/comment-not-found') return 404
-  return 400
+function commentErrorStatus(code: string): 400 | 404 {
+  return code === 'projects/comment-not-found' ? 404 : 400
+}
+
+async function requireOwnedComment(
+  auth: Extract<ApiContext, { response: null }>,
+  issueRef: string,
+  commentId: string
+): Promise<Response | null> {
+  const result = await projects.comments.retrieve(
+    auth.orgId,
+    issueRef,
+    commentId
+  )
+  if (result.error)
+    return apiJson(
+      { error: result.error.message },
+      { status: commentErrorStatus(result.error.code) }
+    )
+  if (result.data.authorUserId !== auth.userId)
+    return apiJson(
+      { error: 'You can only modify your own comments.' },
+      { status: 403 }
+    )
+  return null
 }
 
 export async function PATCH(request: NextRequest, { params }: Context) {
@@ -39,11 +60,18 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     return apiJson({ error: 'Enter a comment.' }, { status: 422 })
 
   const { commentId } = await params
+  const ownershipError = await requireOwnedComment(
+    auth,
+    parsed.data.issueRef,
+    commentId
+  )
+  if (ownershipError) return ownershipError
+
   const result = await projects.comments.update(
     auth.orgId,
     parsed.data.issueRef,
     commentId,
-    { body: parsed.data.body, actorUserId: auth.userId }
+    { body: parsed.data.body }
   )
   if (result.error)
     return apiJson(
@@ -68,11 +96,17 @@ export async function DELETE(request: NextRequest, { params }: Context) {
     )
 
   const { commentId } = await params
+  const ownershipError = await requireOwnedComment(
+    auth,
+    parsed.data.issueRef,
+    commentId
+  )
+  if (ownershipError) return ownershipError
+
   const result = await projects.comments.delete(
     auth.orgId,
     parsed.data.issueRef,
-    commentId,
-    auth.userId
+    commentId
   )
   if (result.error)
     return apiJson(
