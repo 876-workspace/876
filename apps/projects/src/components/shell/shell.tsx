@@ -41,6 +41,10 @@ export function Shell({
   uiFeatures: ProjectsUiFeatures
   navigation: NavGroupDefinition[]
 }) {
+  const searchNavigation = navigation.flatMap((group) =>
+    group.entries.map(({ title, href }) => ({ title, href }))
+  )
+
   return (
     <AppShell defaultOpen={false}>
       <NavProgress />
@@ -69,23 +73,15 @@ export function Shell({
             />
           </div>
 
-          <div className="flex min-w-0 flex-1 items-center">
-            {uiFeatures.searchBar && (
-              <TopbarSearch
-                navigation={navigation.flatMap((group) =>
-                  group.entries.map(({ title, href }) => ({ title, href }))
-                )}
-              />
-            )}
+          <div className="hidden min-w-0 flex-1 items-center sm:flex">
+            {uiFeatures.searchBar ? (
+              <TopbarSearch navigation={searchNavigation} />
+            ) : null}
           </div>
 
           {uiFeatures.searchBar ? (
-            <div className="[&>button>svg]:text-muted-foreground sm:hidden [&>button]:!flex [&>button]:!size-9 [&>button]:!w-9 [&>button]:!justify-center [&>button]:!p-0 [&>button]:text-transparent [&>button>kbd]:hidden [&>button>svg]:!mr-0">
-              <TopbarSearch
-                navigation={navigation.flatMap((group) =>
-                  group.entries.map(({ title, href }) => ({ title, href }))
-                )}
-              />
+            <div className="[&>button>svg]:text-muted-foreground ml-auto sm:hidden [&>button]:!flex [&>button]:!size-9 [&>button]:!w-9 [&>button]:!justify-center [&>button]:!p-0 [&>button]:text-transparent [&>button>kbd]:hidden [&>button>svg]:!mr-0">
+              <TopbarSearch navigation={searchNavigation} />
             </div>
           ) : null}
 
