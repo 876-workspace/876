@@ -37,10 +37,13 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     auth.orgId,
     parsed.data.issueRef,
     commentId,
-    { body: parsed.data.body }
+    { body: parsed.data.body, actorUserId: auth.userId }
   )
   if (result.error)
-    return apiJson({ error: result.error.message }, { status: 400 })
+    return apiJson(
+      { error: result.error.message },
+      { status: result.error.httpStatus }
+    )
 
   return apiJson({ data: result.data })
 }
@@ -62,10 +65,14 @@ export async function DELETE(request: NextRequest, { params }: Context) {
   const result = await projects.comments.delete(
     auth.orgId,
     parsed.data.issueRef,
-    commentId
+    commentId,
+    auth.userId
   )
   if (result.error)
-    return apiJson({ error: result.error.message }, { status: 400 })
+    return apiJson(
+      { error: result.error.message },
+      { status: result.error.httpStatus }
+    )
 
   return apiJson({ data: result.data })
 }
