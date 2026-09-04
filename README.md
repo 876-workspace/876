@@ -46,9 +46,9 @@
 
 Console, the Couriers API, the CRM API, the Work API, and the Projects API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`, `apps/crm-api/prisma/`, `apps/work-api/prisma/`, `apps/projects-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
 
-CRM stores only CRM-owned tenant and profile fields. Financial customer records remain in Billing and are reached server-to-server through `@876/billing/integration`; the CRM Next.js app never accesses either database directly.
+CRM stores only CRM-owned tenant and profile fields. Financial customer records remain in Billing and are reached server-to-server through `@876/billing/integration`; the CRM Next.js app never accesses either database directly. See `docs/architecture/023-876-crm.md` and `docs/876-crm.md`.
 
-876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it.
+876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it. See `docs/876-invoice.md`.
 
 876 Projects is a bounded context of the same shape: `apps/projects-api` owns projects, issues, labels and comments in its own datastore and references the 876 organization by opaque ID. Console administers it at the **operator** tier and the standalone app calls it at the **service** tier, resolving the organization from the signed-in session. See `docs/architecture/022-876-projects.md` and `docs/876-projects.md`.
 
