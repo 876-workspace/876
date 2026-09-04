@@ -135,6 +135,7 @@ export async function create(params: {
   targetDate?: bigint | null
   nextIssueNumber: number
   customerId?: string | null
+  defaultWorkItemTypeId?: string | null
   position: number
   createdAt: bigint
   updatedAt: bigint
@@ -165,6 +166,7 @@ export async function update(
     startDate?: bigint | null
     targetDate?: bigint | null
     customerId?: string | null
+    defaultWorkItemTypeId?: string | null
     position?: number
     updatedAt: bigint
   }
@@ -244,13 +246,8 @@ export async function createMember(params: {
   return row as ProjectMemberRow
 }
 
-export async function removeMember(
-  projectId: string,
-  userId: string
-): Promise<void> {
-  await prisma.projectMember.delete({
-    where: {
-      projectId_userId: { projectId, userId },
-    },
+export async function removeMember(projectId: string, userId: string) {
+  return prisma.projectMember.delete({
+    where: { projectId_userId: { projectId, userId } },
   })
 }
