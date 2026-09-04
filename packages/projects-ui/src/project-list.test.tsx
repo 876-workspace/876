@@ -35,6 +35,7 @@ const mockProjects: Project[] = [
     targetDate: 1710000000,
     nextIssueNumber: 1,
     customerId: null,
+    defaultWorkItemTypeId: null,
     position: 1,
     archivedAt: null,
     createdAt: 1700000000,
@@ -56,6 +57,7 @@ const mockProjects: Project[] = [
     targetDate: 1710000000,
     nextIssueNumber: 1,
     customerId: null,
+    defaultWorkItemTypeId: null,
     position: 2,
     archivedAt: null,
     createdAt: 1700000000,
@@ -82,8 +84,8 @@ describe('ProjectsList', () => {
     )
 
     expect(screen.getByRole('table')).toBeInTheDocument()
-    expect(screen.getByText('Alpha Project')).toBeInTheDocument()
-    expect(screen.getByText('Beta Project')).toBeInTheDocument()
+    expect(screen.getAllByText('Alpha Project')).toHaveLength(2)
+    expect(screen.getAllByText('Beta Project')).toHaveLength(2)
     expect(screen.getByText('ALP')).toBeInTheDocument()
     expect(screen.getByText('BET')).toBeInTheDocument()
     expect(screen.queryByText('Projects')).not.toBeInTheDocument()

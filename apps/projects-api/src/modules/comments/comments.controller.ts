@@ -25,6 +25,18 @@ export async function list(req: Request, res: Response) {
   )
 }
 
+export async function retrieve(req: Request, res: Response) {
+  const params = commentParamsSchema.parse(req.params)
+  return sendProjectsResult(
+    res,
+    await service.retrieve(
+      params.organizationId,
+      params.issueRef,
+      params.commentId
+    )
+  )
+}
+
 export async function create(req: Request, res: Response) {
   const params = issueParamsSchema.parse(req.params)
   const body = createCommentBodySchema.parse(req.body)

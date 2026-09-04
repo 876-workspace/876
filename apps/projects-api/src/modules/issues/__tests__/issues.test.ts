@@ -6,10 +6,13 @@ const {
   projectsRepo,
   labelsRepo,
   commentsRepo,
+  workStructureRepo,
   repository,
   txMock,
 } = vi.hoisted(() => {
+  const transactionClient = { transaction: 'projects-test-transaction' }
   const tx = {
+    transactionClient,
     allocateIssueNumber: vi.fn(),
     createIssue: vi.fn(),
     createEvent: vi.fn(),
@@ -38,6 +41,20 @@ const {
       softDelete: vi.fn(),
       hardDelete: vi.fn(),
     },
+    workStructureRepo: {
+      retrieveWorkflowState: vi.fn(),
+      retrieveWorkflowStateByKey: vi.fn(),
+      retrieveDefaultWorkflowState: vi.fn(),
+      retrieveWorkItemType: vi.fn(),
+      retrieveWorkItemTypeByKey: vi.fn(),
+      retrieveDefaultWorkItemType: vi.fn(),
+      retrieveMilestone: vi.fn(),
+      listCustomFields: vi.fn(),
+      listCustomFieldValues: vi.fn(),
+      retrieveCustomField: vi.fn(),
+      upsertCustomFieldValue: vi.fn(),
+      clearCustomFieldValue: vi.fn(),
+    },
     repository: {
       list: vi.fn(),
       count: vi.fn(),
@@ -58,6 +75,10 @@ vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
 vi.mock('../../projects/projects.repository.js', () => projectsRepo)
 vi.mock('../../labels/labels.repository.js', () => labelsRepo)
 vi.mock('../../comments/comments.repository.js', () => commentsRepo)
+vi.mock(
+  '../../work-structure/work-structure.repository.js',
+  () => workStructureRepo
+)
 vi.mock('../issues.repository.js', () => repository)
 
 const service = await import('../issues.service.js')
@@ -85,6 +106,7 @@ const mockProjectRow = {
   targetDate: 1788767200n,
   nextIssueNumber: 1,
   customerId: null,
+  defaultWorkItemTypeId: null,
   position: 0,
   archivedAt: null,
   createdAt: 1787767200n,
@@ -92,23 +114,17 @@ const mockProjectRow = {
 }
 
 const mockTriageProject = {
+  ...mockProjectRow,
   id: 'prj_triage_1',
-  tenantId: tenant.id,
   name: 'Triage',
   key: 'TRI',
   slug: 'triage',
   description: null,
   leadUserId: null,
   status: 'active',
-  health: 'on-track',
   startDate: null,
   targetDate: null,
   nextIssueNumber: 5,
-  customerId: null,
-  position: 0,
-  archivedAt: null,
-  createdAt: 1787767200n,
-  updatedAt: 1787767200n,
 }
 
 const mockIssueRow = {
@@ -120,6 +136,10 @@ const mockIssueRow = {
   title: 'Test issue title',
   description: 'Test issue description',
   status: 'todo',
+  workflowStateId: 'wfs_todo_1',
+  typeKey: 'task',
+  workItemTypeId: 'wit_task_1',
+  milestoneId: null,
   priority: 'none',
   assigneeUserId: null,
   creatorUserId: 'usr_creator_1',
@@ -133,9 +153,7 @@ const mockIssueRow = {
   deletedAt: null,
   createdAt: 1787767200n,
   updatedAt: 1787767200n,
-  project: {
-    key: 'CONSOLE',
-  },
+  project: { key: 'CONSOLE' },
   labels: [],
 }
 
@@ -148,6 +166,37 @@ const mockIssueEventRow = {
   fromValue: null,
   toValue: 'CONSOLE-1',
   createdAt: 1787767200n,
+}
+
+const taskType = {
+  id: 'wit_task_1',
+  tenantId: tenant.id,
+  key: 'task',
+  name: 'Task',
+  iconKey: 'check-square',
+  color: '#2563eb',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1787767200n,
+  updatedAt: 1787767200n,
+}
+
+const todoState = {
+  id: 'wfs_todo_1',
+  tenantId: tenant.id,
+  key: 'todo',
+  name: 'To do',
+  category: 'unstarted',
+  color: '#64748b',
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1787767200n,
+  updatedAt: 1787767200n,
 }
 
 async function requestJson(
@@ -206,14 +255,40 @@ beforeEach(() => {
   repository.getBatchEnrichment.mockImplementation(
     async (issueIds: string[]) => {
       const map = new Map()
-      for (const id of issueIds) {
+      for (const id of issueIds)
         map.set(id, { labels: [], commentCount: 0, subIssueCount: 0 })
-      }
       return map
     }
   )
+  workStructureRepo.retrieveWorkflowState.mockResolvedValue(todoState)
+  workStructureRepo.retrieveWorkflowStateByKey.mockImplementation(
+    async (_tenantId: string, key: string) =>
+      key === 'todo'
+        ? todoState
+        : {
+            ...todoState,
+            key,
+            category:
+              key === 'done'
+                ? 'completed'
+                : key === 'canceled'
+                  ? 'canceled'
+                  : key === 'in-progress' || key === 'in-review'
+                    ? 'started'
+                    : 'unstarted',
+          }
+  )
+  workStructureRepo.retrieveDefaultWorkflowState.mockResolvedValue(todoState)
+  workStructureRepo.retrieveWorkItemType.mockResolvedValue(taskType)
+  workStructureRepo.retrieveWorkItemTypeByKey.mockImplementation(
+    async (_tenantId: string, key: string) => ({ ...taskType, key })
+  )
+  workStructureRepo.retrieveDefaultWorkItemType.mockResolvedValue(taskType)
+  workStructureRepo.retrieveMilestone.mockResolvedValue(null)
+  workStructureRepo.listCustomFields.mockResolvedValue([])
+  workStructureRepo.listCustomFieldValues.mockResolvedValue([])
   repository.transaction.mockImplementation(
-    async (cb: (tx: typeof txMock) => unknown) => cb(txMock)
+    async (callback: (tx: typeof txMock) => unknown) => callback(txMock)
   )
   txMock.allocateIssueNumber.mockResolvedValue({
     projectId: mockProjectRow.id,
@@ -221,10 +296,7 @@ beforeEach(() => {
     number: mockProjectRow.nextIssueNumber,
   })
   txMock.createIssue.mockImplementation(
-    async (params: typeof mockIssueRow) => ({
-      ...mockIssueRow,
-      ...params,
-    })
+    async (params: typeof mockIssueRow) => ({ ...mockIssueRow, ...params })
   )
   txMock.createEvent.mockResolvedValue(mockIssueEventRow)
   txMock.setLabels.mockResolvedValue(undefined)
@@ -270,11 +342,6 @@ describe('issues module', () => {
   })
 
   it('takes the issue number from the allocation, never from a project row read outside the transaction', async () => {
-    // Regression: the identifier was built from a separately-read project row.
-    // That read raced with concurrent creates, and when it went through raw SQL
-    // the mapped `next_issue_number` column did not deserialize to
-    // `nextIssueNumber` at all, yielding `CONSOLE-undefined`. The allocation
-    // returned by the atomic increment is the only source of the number.
     txMock.allocateIssueNumber.mockResolvedValueOnce({
       projectId: mockProjectRow.id,
       key: mockProjectRow.key,
@@ -300,6 +367,7 @@ describe('issues module', () => {
       key: mockTriageProject.key,
       number: mockTriageProject.nextIssueNumber,
     })
+
     const result = await service.create('org_test_1', {
       title: 'Triage fallback test',
     })
@@ -325,10 +393,7 @@ describe('issues module', () => {
     })
 
     expect(result.error).toBeNull()
-    expect(projectsRepo.retrieveByKey).toHaveBeenCalledWith(
-      tenant.id,
-      'CONSOLE'
-    )
+    expect(projectsRepo.retrieveByKey).toHaveBeenCalledWith(tenant.id, 'CONSOLE')
     expect(txMock.createIssue).toHaveBeenCalledWith(
       expect.objectContaining({
         projectId: mockProjectRow.id,
@@ -357,20 +422,153 @@ describe('issues module', () => {
     )
   })
 
-  it('create defaults status to todo and priority to none', async () => {
+  it('create uses configured tenant defaults and priority none', async () => {
+    const triageState = { ...todoState, id: 'wfs_triage', key: 'triage' }
+    const bugType = { ...taskType, id: 'wit_bug', key: 'bug', name: 'Bug' }
+    workStructureRepo.retrieveDefaultWorkflowState.mockResolvedValueOnce(
+      triageState
+    )
+    workStructureRepo.retrieveDefaultWorkItemType.mockResolvedValueOnce(bugType)
+
     const result = await service.create('org_test_1', {
       projectId: mockProjectRow.id,
-      title: 'Default fields test',
+      title: 'Configured defaults test',
     })
 
     expect(result.error).toBeNull()
-    expect(result.data?.status).toBe('todo')
-    expect(result.data?.priority).toBe('none')
     expect(txMock.createIssue).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: 'todo',
+        status: 'triage',
+        workflowStateId: 'wfs_triage',
+        typeKey: 'bug',
+        workItemTypeId: 'wit_bug',
         priority: 'none',
       })
+    )
+  })
+
+  it('create prefers a project default work item type over the tenant default', async () => {
+    const projectDefault = {
+      ...taskType,
+      id: 'wit_project_bug',
+      key: 'bug',
+      name: 'Bug',
+    }
+    projectsRepo.retrieve.mockResolvedValueOnce({
+      ...mockProjectRow,
+      defaultWorkItemTypeId: projectDefault.id,
+    })
+    workStructureRepo.retrieveWorkItemType.mockResolvedValueOnce(projectDefault)
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Project type default',
+    })
+
+    expect(result.error).toBeNull()
+    expect(workStructureRepo.retrieveWorkItemType).toHaveBeenCalledWith(
+      tenant.id,
+      projectDefault.id
+    )
+    expect(workStructureRepo.retrieveDefaultWorkItemType).not.toHaveBeenCalled()
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        typeKey: 'bug',
+        workItemTypeId: projectDefault.id,
+      })
+    )
+  })
+
+  it('create enforces required applicable custom fields before opening a transaction', async () => {
+    workStructureRepo.listCustomFields.mockResolvedValueOnce([
+      {
+        id: 'cf_environment',
+        tenantId: tenant.id,
+        key: 'environment',
+        label: 'Environment',
+        fieldType: 'text',
+        options: null,
+        required: true,
+        description: null,
+        position: 0,
+        archivedAt: null,
+        createdAt: 1787767200n,
+        updatedAt: 1787767200n,
+        types: [{ typeId: taskType.id }],
+      },
+    ])
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Missing required field',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/required-custom-field-missing',
+      message: 'Complete all required custom fields.',
+      httpStatus: 400,
+      param: 'environment',
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('create persists custom field values through the same issue transaction', async () => {
+    const field = {
+      id: 'cf_environment',
+      tenantId: tenant.id,
+      key: 'environment',
+      label: 'Environment',
+      fieldType: 'text',
+      options: null,
+      required: false,
+      description: null,
+      position: 0,
+      archivedAt: null,
+      createdAt: 1787767200n,
+      updatedAt: 1787767200n,
+      types: [{ typeId: taskType.id }],
+    }
+    workStructureRepo.listCustomFields.mockResolvedValue([field])
+    workStructureRepo.retrieveCustomField.mockResolvedValue(field)
+    workStructureRepo.upsertCustomFieldValue.mockResolvedValue({
+      id: 'cfv_environment',
+      tenantId: tenant.id,
+      issueId: mockIssueRow.id,
+      fieldId: field.id,
+      stringValue: 'Production',
+      integerValue: null,
+      decimalValue: null,
+      booleanValue: null,
+      dateValue: null,
+      selectKey: null,
+      selectKeys: [],
+      updatedBy: 'usr_creator_1',
+      createdAt: 1787767200n,
+      updatedAt: 1787767200n,
+      field,
+    })
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Atomic field write',
+      creatorUserId: 'usr_creator_1',
+      customFields: [{ fieldId: field.id, value: 'Production' }],
+    })
+
+    expect(result.error).toBeNull()
+    expect(workStructureRepo.retrieveCustomField).toHaveBeenCalledWith(
+      tenant.id,
+      field.id,
+      txMock.transactionClient
+    )
+    expect(workStructureRepo.upsertCustomFieldValue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: tenant.id,
+        fieldId: field.id,
+        stringValue: 'Production',
+      }),
+      txMock.transactionClient
     )
   })
 
@@ -446,10 +644,7 @@ describe('issues module', () => {
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        order: 'updated',
-        limit: 25,
-      })
+      expect.objectContaining({ order: 'updated', limit: 25 })
     )
   })
 
@@ -462,9 +657,7 @@ describe('issues module', () => {
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        limit: 100,
-      })
+      expect.objectContaining({ limit: 100 })
     )
   })
 
@@ -479,9 +672,7 @@ describe('issues module', () => {
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        updatedSince: 1787767200,
-      })
+      expect.objectContaining({ updatedSince: 1787767200 })
     )
   })
 
@@ -496,9 +687,7 @@ describe('issues module', () => {
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        status: ['todo', 'in-progress'],
-      })
+      expect.objectContaining({ status: ['todo', 'in-progress'] })
     )
   })
 
@@ -506,16 +695,12 @@ describe('issues module', () => {
     repository.list.mockResolvedValue([])
     repository.count.mockResolvedValue(0)
 
-    const result = await service.list('org_test_1', {
-      assignee: 'none',
-    })
+    const result = await service.list('org_test_1', { assignee: 'none' })
 
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        assignee: 'none',
-      })
+      expect.objectContaining({ assignee: 'none' })
     )
   })
 
@@ -523,16 +708,12 @@ describe('issues module', () => {
     repository.list.mockResolvedValue([])
     repository.count.mockResolvedValue(0)
 
-    const result = await service.list('org_test_1', {
-      parent: 'none',
-    })
+    const result = await service.list('org_test_1', { parent: 'none' })
 
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        parent: 'none',
-      })
+      expect.objectContaining({ parent: 'none' })
     )
   })
 
@@ -545,9 +726,7 @@ describe('issues module', () => {
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(
       tenant.id,
-      expect.objectContaining({
-        includeDeleted: false,
-      })
+      expect.objectContaining({ includeDeleted: false })
     )
   })
 
@@ -560,6 +739,8 @@ describe('issues module', () => {
     expect(result.error).toBeNull()
     expect(repository.list).toHaveBeenCalledWith(tenant.id, {
       project: undefined,
+      milestoneId: undefined,
+      typeKey: undefined,
       status: undefined,
       priority: undefined,
       assignee: undefined,
@@ -607,8 +788,7 @@ describe('issues module', () => {
     })
 
     expect(resultNotNull.error).toBeNull()
-    const updateArgs = txMock.updateIssue.mock.calls[0][1]
-    expect(updateArgs.startedAt).toBeUndefined()
+    expect(txMock.updateIssue.mock.calls[0][1].startedAt).toBeUndefined()
   })
 
   it('update to done sets completedAt and clears canceledAt', async () => {
@@ -640,10 +820,7 @@ describe('issues module', () => {
     const resultWithChanges = await service.update(
       'org_test_1',
       mockIssueRow.id,
-      {
-        status: 'in-review',
-        priority: 'high',
-      }
+      { status: 'in-review', priority: 'high' }
     )
 
     expect(resultWithChanges.error).toBeNull()
@@ -669,14 +846,63 @@ describe('issues module', () => {
     const resultNoChanges = await service.update(
       'org_test_1',
       mockIssueRow.id,
-      {
-        status: 'todo',
-        title: 'Same status new title',
-      }
+      { status: 'todo', title: 'Same status new title' }
     )
 
     expect(resultNoChanges.error).toBeNull()
     expect(txMock.createEvent).not.toHaveBeenCalled()
+  })
+
+  it('update persists custom field values through the same transaction', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+    const field = {
+      id: 'cf_environment',
+      tenantId: tenant.id,
+      key: 'environment',
+      label: 'Environment',
+      fieldType: 'text',
+      options: null,
+      required: false,
+      description: null,
+      position: 0,
+      archivedAt: null,
+      createdAt: 1787767200n,
+      updatedAt: 1787767200n,
+      types: [{ typeId: taskType.id }],
+    }
+    workStructureRepo.listCustomFields.mockResolvedValue([field])
+    workStructureRepo.retrieveCustomField.mockResolvedValue(field)
+    workStructureRepo.upsertCustomFieldValue.mockResolvedValue({
+      id: 'cfv_environment',
+      tenantId: tenant.id,
+      issueId: mockIssueRow.id,
+      fieldId: field.id,
+      stringValue: 'Staging',
+      integerValue: null,
+      decimalValue: null,
+      booleanValue: null,
+      dateValue: null,
+      selectKey: null,
+      selectKeys: [],
+      updatedBy: 'usr_editor',
+      createdAt: 1787767200n,
+      updatedAt: 1787767200n,
+      field,
+    })
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      actorUserId: 'usr_editor',
+      customFields: [{ fieldId: field.id, value: 'Staging' }],
+    })
+
+    expect(result.error).toBeNull()
+    expect(workStructureRepo.upsertCustomFieldValue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        issueId: mockIssueRow.id,
+        stringValue: 'Staging',
+      }),
+      txMock.transactionClient
+    )
   })
 
   it('moving an issue to another project leaves identifier unchanged', async () => {
@@ -687,10 +913,8 @@ describe('issues module', () => {
       name: 'Beta Project',
     }
     projectsRepo.retrieve.mockImplementation(
-      async (_tenantId: string, id: string) => {
-        if (id === targetProject2.id) return targetProject2
-        return mockProjectRow
-      }
+      async (_tenantId: string, id: string) =>
+        id === targetProject2.id ? targetProject2 : mockProjectRow
     )
     repository.retrieve.mockResolvedValue(mockIssueRow)
 
@@ -702,9 +926,7 @@ describe('issues module', () => {
     expect(result.data?.identifier).toBe('CONSOLE-1')
     expect(txMock.updateIssue).toHaveBeenCalledWith(
       mockIssueRow.id,
-      expect.objectContaining({
-        projectId: targetProject2.id,
-      })
+      expect.objectContaining({ projectId: targetProject2.id })
     )
     const updateCallArgs = txMock.updateIssue.mock.calls[0][1]
     expect(updateCallArgs.identifier).toBeUndefined()
@@ -814,6 +1036,40 @@ describe('issues module', () => {
             title: 'Test issue title',
             description: 'Test issue description',
             status: 'todo',
+            typeKey: 'task',
+            type: {
+              object: 'projects.work-item-type',
+              id: 'wit_task_1',
+              tenantId: tenant.id,
+              key: 'task',
+              name: 'Task',
+              iconKey: 'check-square',
+              color: '#2563eb',
+              hierarchyLevel: 1,
+              description: null,
+              isDefault: true,
+              position: 0,
+              archivedAt: null,
+              createdAt: 1787767200,
+              updatedAt: 1787767200,
+            },
+            state: {
+              object: 'projects.workflow-state',
+              id: 'wfs_todo_1',
+              tenantId: tenant.id,
+              key: 'todo',
+              name: 'To do',
+              category: 'unstarted',
+              color: '#64748b',
+              description: null,
+              isDefault: true,
+              position: 0,
+              archivedAt: null,
+              createdAt: 1787767200,
+              updatedAt: 1787767200,
+            },
+            milestone: null,
+            customFields: [],
             priority: 'none',
             assigneeUserId: null,
             creatorUserId: 'usr_creator_1',

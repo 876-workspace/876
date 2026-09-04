@@ -26,19 +26,15 @@ export type PaginatedComments = {
 
 async function resolveTenant(organizationId: string) {
   const tenant = await tenants.resolveTenant(organizationId)
-  if (!tenant) {
+  if (!tenant)
     return { tenant: null, error: getError('projects/tenant-not-found') }
-  }
   return { tenant, error: null }
 }
 
 async function resolveIssue(tenantId: string, issueRef: string) {
   const issue = await issues.resolveIssue(tenantId, issueRef)
-
-  if (!issue || issue.deletedAt !== null) {
+  if (!issue || issue.deletedAt !== null)
     return { issue: null, error: getError('projects/issue-not-found') }
-  }
-
   return { issue, error: null }
 }
 
@@ -48,25 +44,21 @@ export async function list(
   query: ListCommentsQuery
 ): Promise<ServiceResult<PaginatedComments>> {
   const tenantResolution = await resolveTenant(organizationId)
-  if (tenantResolution.error !== null) {
+  if (tenantResolution.error !== null)
     return { data: null, error: tenantResolution.error }
-  }
   const tenant = tenantResolution.tenant
 
   const issueResolution = await resolveIssue(tenant.id, issueRef)
-  if (issueResolution.error !== null) {
+  if (issueResolution.error !== null)
     return { data: null, error: issueResolution.error }
-  }
   const issue = issueResolution.issue
 
   const limit = Math.min(Math.max(query.limit ?? 25, 1), 100)
-  const options: repository.ListCommentsOptions = {
+  const rows = await repository.list(issue.id, {
     limit,
     startingAfter: query.starting_after,
     endingBefore: query.ending_before,
-  }
-
-  const rows = await repository.list(issue.id, options)
+  })
   const hasMore = rows.length > limit
   const pagedRows = hasMore ? rows.slice(0, limit) : rows
   const totalCount = await repository.count(issue.id)
@@ -81,38 +73,51 @@ export async function list(
   }
 }
 
+export async function retrieve(
+  organizationId: string,
+  issueRef: string,
+  commentId: string
+): Promise<ServiceResult<SerializedComment>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (issueResolution.error !== null)
+    return { data: null, error: issueResolution.error }
+
+  const row = await repository.retrieve(issueResolution.issue.id, commentId)
+  return row
+    ? { data: serializeComment(row), error: null }
+    : { data: null, error: getError('projects/comment-not-found') }
+}
+
 export async function create(
   organizationId: string,
   issueRef: string,
   body: CreateCommentBody
 ): Promise<ServiceResult<SerializedComment>> {
   const tenantResolution = await resolveTenant(organizationId)
-  if (tenantResolution.error !== null) {
+  if (tenantResolution.error !== null)
     return { data: null, error: tenantResolution.error }
-  }
   const tenant = tenantResolution.tenant
 
   const issueResolution = await resolveIssue(tenant.id, issueRef)
-  if (issueResolution.error !== null) {
+  if (issueResolution.error !== null)
     return { data: null, error: issueResolution.error }
-  }
   const issue = issueResolution.issue
 
-  const now = toDbUnixSeconds(nowUnixSeconds())
+  const timestamp = toDbUnixSeconds(nowUnixSeconds())
   const created = await repository.create({
     id: generateId('comment'),
     tenantId: tenant.id,
     issueId: issue.id,
     authorUserId: body.authorUserId ?? null,
     body: body.body,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: timestamp,
+    updatedAt: timestamp,
   })
 
-  return {
-    data: serializeComment(created),
-    error: null,
-  }
+  return { data: serializeComment(created), error: null }
 }
 
 export async function update(
@@ -122,32 +127,22 @@ export async function update(
   body: UpdateCommentBody
 ): Promise<ServiceResult<SerializedComment>> {
   const tenantResolution = await resolveTenant(organizationId)
-  if (tenantResolution.error !== null) {
+  if (tenantResolution.error !== null)
     return { data: null, error: tenantResolution.error }
-  }
-  const tenant = tenantResolution.tenant
-
-  const issueResolution = await resolveIssue(tenant.id, issueRef)
-  if (issueResolution.error !== null) {
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (issueResolution.error !== null)
     return { data: null, error: issueResolution.error }
-  }
-  const issue = issueResolution.issue
 
-  const existing = await repository.retrieve(issue.id, commentId)
-  if (!existing) {
+  const existing = await repository.retrieve(issueResolution.issue.id, commentId)
+  if (!existing)
     return { data: null, error: getError('projects/comment-not-found') }
-  }
 
-  const now = toDbUnixSeconds(nowUnixSeconds())
   const updated = await repository.update(commentId, {
     body: body.body,
-    updatedAt: now,
+    updatedAt: toDbUnixSeconds(nowUnixSeconds()),
   })
 
-  return {
-    data: serializeComment(updated),
-    error: null,
-  }
+  return { data: serializeComment(updated), error: null }
 }
 
 export async function remove(
@@ -156,29 +151,22 @@ export async function remove(
   commentId: string
 ): Promise<ServiceResult<SerializedCommentTombstone>> {
   const tenantResolution = await resolveTenant(organizationId)
-  if (tenantResolution.error !== null) {
+  if (tenantResolution.error !== null)
     return { data: null, error: tenantResolution.error }
-  }
-  const tenant = tenantResolution.tenant
-
-  const issueResolution = await resolveIssue(tenant.id, issueRef)
-  if (issueResolution.error !== null) {
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (issueResolution.error !== null)
     return { data: null, error: issueResolution.error }
-  }
-  const issue = issueResolution.issue
 
-  const existing = await repository.retrieve(issue.id, commentId)
-  if (!existing) {
+  const existing = await repository.retrieve(issueResolution.issue.id, commentId)
+  if (!existing)
     return { data: null, error: getError('projects/comment-not-found') }
-  }
 
-  const hardDelete = process.env.DELETION_MODE === 'hard'
-  if (hardDelete) {
-    await repository.hardDelete(commentId)
-  } else {
-    const now = toDbUnixSeconds(nowUnixSeconds())
-    await repository.softDelete(commentId, now)
-  }
+  if (process.env.DELETION_MODE === 'hard') await repository.hardDelete(commentId)
+  else
+    await repository.softDelete(
+      commentId,
+      toDbUnixSeconds(nowUnixSeconds())
+    )
 
   return {
     data: {

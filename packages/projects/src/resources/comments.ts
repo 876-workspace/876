@@ -17,13 +17,11 @@ function root(organizationId: string, issueRef: string) {
 function toQueryString(params?: ListCommentsQuery): string {
   if (!params) return ''
   const search = new URLSearchParams()
-  if (typeof params.limit === 'number') {
-    search.set('limit', String(params.limit))
-  }
+  if (typeof params.limit === 'number') search.set('limit', String(params.limit))
   if (params.startingAfter) search.set('starting_after', params.startingAfter)
   if (params.endingBefore) search.set('ending_before', params.endingBefore)
-  const qs = search.toString()
-  return qs ? `?${qs}` : ''
+  const query = search.toString()
+  return query ? `?${query}` : ''
 }
 
 export function createCommentsResource(runtime: Runtime) {
@@ -41,6 +39,22 @@ export function createCommentsResource(runtime: Runtime) {
           signal: query.signal,
         },
         commentListSchema
+      )
+    },
+    retrieve(
+      organizationId: string,
+      issueRef: string,
+      commentId: string,
+      options: RequestOptions = {}
+    ) {
+      return request(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId, issueRef)}/${encodeURIComponent(commentId)}`,
+          signal: options.signal,
+        },
+        commentSchema
       )
     },
     create(

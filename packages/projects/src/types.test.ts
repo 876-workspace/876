@@ -19,6 +19,39 @@ import {
   type Issue,
 } from './types'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'ten_abc',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1680000000,
+  updatedAt: 1680000000,
+}
+
+const sampleState = {
+  object: 'projects.workflow-state' as const,
+  id: 'wfs_in_progress_1',
+  tenantId: 'ten_abc',
+  key: 'in-progress',
+  name: 'In progress',
+  category: 'started' as const,
+  color: '#64748b',
+  description: null,
+  isDefault: false,
+  position: 1,
+  archivedAt: null,
+  createdAt: 1680000000,
+  updatedAt: 1680000000,
+}
+
 const validIssue: Issue = {
   object: 'projects.issue',
   id: 'iss_123',
@@ -30,6 +63,11 @@ const validIssue: Issue = {
   title: 'Fix the bug',
   description: 'Detailed description',
   status: 'in-progress',
+  typeKey: 'task',
+  type: sampleType,
+  state: sampleState,
+  milestone: null,
+  customFields: [],
   priority: 'high',
   assigneeUserId: 'usr_1',
   creatorUserId: 'usr_2',
@@ -79,8 +117,14 @@ describe('issueSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('issueSchema rejects an unknown status value', () => {
-    const invalid = { ...validIssue, status: 'unknown-status' }
+  it('issueSchema accepts a tenant-defined workflow-state key as status', () => {
+    const tenantDefined = { ...validIssue, status: 'awaiting-sign-off' }
+    const result = issueSchema.safeParse(tenantDefined)
+    expect(result.success).toBe(true)
+  })
+
+  it('issueSchema rejects an empty status value', () => {
+    const invalid = { ...validIssue, status: '' }
     const result = issueSchema.safeParse(invalid)
     expect(result.success).toBe(false)
   })
@@ -254,6 +298,7 @@ describe('other schemas', () => {
       targetDate: 1700000000,
       nextIssueNumber: 15,
       customerId: null,
+      defaultWorkItemTypeId: null,
       position: 1,
       archivedAt: null,
       createdAt: 1680000000,

@@ -8,6 +8,12 @@ export const ENTITY_PREFIXES = {
   label: 'lbl_',
   comment: 'cmt_',
   issueEvent: 'isev_',
+  workItemType: 'wit_',
+  workflowState: 'wfs_',
+  milestone: 'ms_',
+  cycle: 'cyc_',
+  customField: 'cf_',
+  customFieldValue: 'cfv_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES

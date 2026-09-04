@@ -39,6 +39,10 @@ describe('settings navigation registry', () => {
     ).map((item) => item.href)
 
     expect(available).toEqual([
+      '/settings/work-item-types',
+      '/settings/workflow-states',
+      '/settings/milestones',
+      '/settings/custom-fields',
       '/settings/teams',
       '/settings/categories',
       '/settings/priorities',

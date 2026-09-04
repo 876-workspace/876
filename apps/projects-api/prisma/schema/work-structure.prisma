@@ -1,0 +1,148 @@
+model WorkItemType {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  key            String
+  name           String
+  iconKey        String  @map("icon_key")
+  color          String
+  hierarchyLevel Int     @default(1) @map("hierarchy_level")
+  description    String?
+  isDefault      Boolean @default(false) @map("is_default")
+  position       Int     @default(0)
+  archivedAt     BigInt? @map("archived_at")
+  createdAt      BigInt  @map("created_at")
+  updatedAt      BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issues Issue[]
+  customFieldTypes CustomFieldOnType[]
+  defaultForProjects Project[] @relation("ProjectDefaultWorkItemType")
+
+  @@unique([tenantId, key])
+  @@map("projects_work_item_types")
+}
+
+model WorkflowState {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  key         String
+  name        String
+  category    String
+  color       String
+  description String?
+  isDefault   Boolean @default(false) @map("is_default")
+  position    Int     @default(0)
+  archivedAt  BigInt? @map("archived_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issues Issue[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, category])
+  @@map("projects_workflow_states")
+}
+
+model Milestone {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  projectId   String  @map("project_id")
+  key         String
+  name        String
+  description String?
+  status      String  @default("open")
+  startDate   BigInt? @map("start_date")
+  targetDate  BigInt? @map("target_date")
+  completedAt BigInt? @map("completed_at")
+  position    Int     @default(0)
+  deletedAt   BigInt? @map("deleted_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues Issue[]
+
+  @@unique([projectId, key])
+  @@index([tenantId, status])
+  @@map("projects_milestones")
+}
+
+model Cycle {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  projectId   String? @map("project_id")
+  number      Int
+  name        String
+  startsAt    BigInt  @map("starts_at")
+  endsAt      BigInt  @map("ends_at")
+  completedAt BigInt? @map("completed_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issues Issue[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, startsAt])
+  @@map("projects_cycles")
+}
+
+model CustomField {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  key         String
+  label       String
+  fieldType   String  @map("field_type")
+  options     Json?
+  required    Boolean @default(false)
+  description String?
+  position    Int     @default(0)
+  archivedAt  BigInt? @map("archived_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  types CustomFieldOnType[]
+  values CustomFieldValue[]
+
+  @@unique([tenantId, key])
+  @@map("projects_custom_fields")
+}
+
+model CustomFieldOnType {
+  fieldId String @map("field_id")
+  typeId String @map("type_id")
+
+  field CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  type WorkItemType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@id([fieldId, typeId])
+  @@map("projects_custom_fields_on_types")
+}
+
+model CustomFieldValue {
+  id           String   @id
+  tenantId     String   @map("tenant_id")
+  issueId      String   @map("issue_id")
+  fieldId      String   @map("field_id")
+  stringValue  String?  @map("string_value")
+  integerValue Int?     @map("integer_value")
+  decimalValue Decimal? @db.Decimal(20, 6) @map("decimal_value")
+  booleanValue Boolean? @map("boolean_value")
+  dateValue    BigInt?  @map("date_value")
+  selectKey    String?  @map("select_key")
+  selectKeys   String[] @map("select_keys")
+  updatedBy    String?  @map("updated_by")
+  createdAt    BigInt   @map("created_at")
+  updatedAt    BigInt   @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  field CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, fieldId])
+  @@index([tenantId, fieldId])
+  @@map("projects_custom_field_values")
+}

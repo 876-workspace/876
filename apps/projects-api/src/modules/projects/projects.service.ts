@@ -6,6 +6,7 @@ import {
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
 import * as tenants from '../tenants/index.js'
+import { resolveOwnedWorkItemType } from '../work-structure/work-item-type-access.js'
 import * as repository from './projects.repository.js'
 import type {
   CreateProjectBody,
@@ -97,6 +98,16 @@ async function resolveTenant(organizationId: string): Promise<
   return { tenant, error: null }
 }
 
+async function validateDefaultWorkItemType(
+  tenantId: string,
+  id: string | null | undefined
+): Promise<ProjectsError | null> {
+  if (id === undefined || id === null) return null
+  return (await resolveOwnedWorkItemType(tenantId, id))
+    ? null
+    : getError('projects/work-item-type-not-found')
+}
+
 /**
  * Resolves a project row for another module by id or key.
  *
@@ -111,9 +122,7 @@ export async function resolveProject(
 ): Promise<ProjectRow | null> {
   if (projectIdOrKey.startsWith('prj_')) {
     const project = await repository.retrieve(tenantId, projectIdOrKey)
-    if (project) {
-      return project
-    }
+    if (project) return project
   }
 
   return repository.retrieveByKey(tenantId, projectIdOrKey.toUpperCase())
@@ -143,14 +152,12 @@ export async function list(
   const rows = await repository.list(tenant.id, options)
   const hasMore = rows.length > limit
   const pagedRows = hasMore ? rows.slice(0, limit) : rows
-
-  const countOptions: repository.CountProjectsOptions = {
+  const totalCount = await repository.count(tenant.id, {
     status: query.status,
     lead: query.lead,
     q: query.q,
     includeArchived,
-  }
-  const totalCount = await repository.count(tenant.id, countOptions)
+  })
 
   return {
     data: {
@@ -170,15 +177,19 @@ export async function create(
   if (resolved.error !== null) return { data: null, error: resolved.error }
   const tenant = resolved.tenant
 
+  const defaultTypeError = await validateDefaultWorkItemType(
+    tenant.id,
+    body.defaultWorkItemTypeId
+  )
+  if (defaultTypeError) return { data: null, error: defaultTypeError }
+
   let key: string
   if (body.key !== undefined) {
-    if (!KEY_REGEX.test(body.key)) {
+    if (!KEY_REGEX.test(body.key))
       return { data: null, error: getError('projects/invalid-project-key') }
-    }
     const existingKey = await repository.retrieveByKey(tenant.id, body.key)
-    if (existingKey) {
+    if (existingKey)
       return { data: null, error: getError('projects/project-key-taken') }
-    }
     key = body.key
   } else {
     key = await deriveUniqueKey(tenant.id, body.name)
@@ -201,15 +212,13 @@ export async function create(
     targetDate: nullableToDbUnixSeconds(body.targetDate),
     nextIssueNumber: 1,
     customerId: body.customerId ?? null,
+    defaultWorkItemTypeId: body.defaultWorkItemTypeId ?? null,
     position: body.position ?? 0,
     createdAt: now,
     updatedAt: now,
   })
 
-  return {
-    data: serializeProject(created, 0),
-    error: null,
-  }
+  return { data: serializeProject(created, 0), error: null }
 }
 
 export async function retrieve(
@@ -218,17 +227,10 @@ export async function retrieve(
 ): Promise<ServiceResult<SerializedProject>> {
   const resolved = await resolveTenant(organizationId)
   if (resolved.error !== null) return { data: null, error: resolved.error }
-  const tenant = resolved.tenant
-
-  const row = await repository.retrieve(tenant.id, projectId)
-  if (!row) {
-    return { data: null, error: getError('projects/project-not-found') }
-  }
-
-  return {
-    data: serializeProject(row),
-    error: null,
-  }
+  const row = await repository.retrieve(resolved.tenant.id, projectId)
+  return row
+    ? { data: serializeProject(row), error: null }
+    : { data: null, error: getError('projects/project-not-found') }
 }
 
 export async function update(
@@ -241,24 +243,25 @@ export async function update(
   const tenant = resolved.tenant
 
   const existing = await repository.retrieve(tenant.id, projectId)
-  if (!existing) {
+  if (!existing)
     return { data: null, error: getError('projects/project-not-found') }
-  }
+
+  const defaultTypeError = await validateDefaultWorkItemType(
+    tenant.id,
+    body.defaultWorkItemTypeId
+  )
+  if (defaultTypeError) return { data: null, error: defaultTypeError }
 
   if (body.key !== undefined) {
-    if (!KEY_REGEX.test(body.key)) {
+    if (!KEY_REGEX.test(body.key))
       return { data: null, error: getError('projects/invalid-project-key') }
-    }
     const colliding = await repository.retrieveByKey(tenant.id, body.key)
-    if (colliding && colliding.id !== projectId) {
+    if (colliding && colliding.id !== projectId)
       return { data: null, error: getError('projects/project-key-taken') }
-    }
   }
 
-  const now = toDbUnixSeconds(nowUnixSeconds())
-
   const updatedParams: Parameters<typeof repository.update>[2] = {
-    updatedAt: now,
+    updatedAt: toDbUnixSeconds(nowUnixSeconds()),
   }
   if (body.name !== undefined) updatedParams.name = body.name
   if (body.key !== undefined) updatedParams.key = body.key
@@ -272,13 +275,12 @@ export async function update(
   if (body.targetDate !== undefined)
     updatedParams.targetDate = nullableToDbUnixSeconds(body.targetDate)
   if (body.customerId !== undefined) updatedParams.customerId = body.customerId
+  if (body.defaultWorkItemTypeId !== undefined)
+    updatedParams.defaultWorkItemTypeId = body.defaultWorkItemTypeId
   if (body.position !== undefined) updatedParams.position = body.position
 
   const updated = await repository.update(tenant.id, projectId, updatedParams)
-  return {
-    data: serializeProject(updated),
-    error: null,
-  }
+  return { data: serializeProject(updated), error: null }
 }
 
 export async function remove(
@@ -290,24 +292,20 @@ export async function remove(
   const tenant = resolved.tenant
 
   const existing = await repository.retrieve(tenant.id, projectId)
-  if (!existing) {
+  if (!existing)
     return { data: null, error: getError('projects/project-not-found') }
-  }
 
-  const hardDelete = process.env.DELETION_MODE === 'hard'
-  if (hardDelete) {
+  if (process.env.DELETION_MODE === 'hard')
     await repository.hardDelete(tenant.id, projectId)
-  } else {
-    const now = toDbUnixSeconds(nowUnixSeconds())
-    await repository.archive(tenant.id, projectId, now)
-  }
+  else
+    await repository.archive(
+      tenant.id,
+      projectId,
+      toDbUnixSeconds(nowUnixSeconds())
+    )
 
   return {
-    data: {
-      object: 'projects.project',
-      id: projectId,
-      deleted: true,
-    },
+    data: { object: 'projects.project', id: projectId, deleted: true },
     error: null,
   }
 }
@@ -321,13 +319,11 @@ export async function listMembers(
   const tenant = resolved.tenant
 
   const project = await repository.retrieve(tenant.id, projectId)
-  if (!project) {
+  if (!project)
     return { data: null, error: getError('projects/project-not-found') }
-  }
 
-  const members = await repository.listMembers(projectId)
   return {
-    data: members.map(serializeMember),
+    data: (await repository.listMembers(projectId)).map(serializeMember),
     error: null,
   }
 }
@@ -342,31 +338,25 @@ export async function addMember(
   const tenant = resolved.tenant
 
   const project = await repository.retrieve(tenant.id, projectId)
-  if (!project) {
+  if (!project)
     return { data: null, error: getError('projects/project-not-found') }
-  }
 
   const existingMember = await repository.retrieveMember(
     projectId,
     input.userId
   )
-  if (existingMember) {
+  if (existingMember)
     return { data: null, error: getError('projects/member-exists') }
-  }
 
-  const now = toDbUnixSeconds(nowUnixSeconds())
   const member = await repository.createMember({
     id: generateId('projectMember'),
     projectId,
     userId: input.userId,
     role: input.role ?? 'member',
-    createdAt: now,
+    createdAt: toDbUnixSeconds(nowUnixSeconds()),
   })
 
-  return {
-    data: serializeMember(member),
-    error: null,
-  }
+  return { data: serializeMember(member), error: null }
 }
 
 export async function removeMember(
@@ -379,14 +369,12 @@ export async function removeMember(
   const tenant = resolved.tenant
 
   const project = await repository.retrieve(tenant.id, projectId)
-  if (!project) {
+  if (!project)
     return { data: null, error: getError('projects/project-not-found') }
-  }
 
   const existingMember = await repository.retrieveMember(projectId, userId)
-  if (!existingMember) {
+  if (!existingMember)
     return { data: null, error: getError('projects/member-not-found') }
-  }
 
   await repository.removeMember(projectId, userId)
   return {

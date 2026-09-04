@@ -7,9 +7,12 @@ import type {
   IssueList,
   Label,
   LabelList,
+  MilestoneList,
   Project,
   ProjectList,
   Tenant,
+  WorkflowStateList,
+  WorkItemTypeList,
 } from '@876/projects/contracts'
 
 /**
@@ -195,6 +198,11 @@ export function formatComment(comment: Comment): string {
   return `Comment on ${comment.issueId} (${dateStr}${authorStr}):\n${comment.body}`
 }
 
+export function formatComments(comments: readonly Comment[]): string {
+  if (comments.length === 0) return '0 comments recorded.'
+  return ['Comments:', ...comments.map(formatComment)].join('\n\n')
+}
+
 export function formatIssueEventList(list: IssueEventList): string {
   if (list.data.length === 0) {
     return '0 events recorded.'
@@ -229,6 +237,39 @@ export function formatLabelList(list: LabelList): string {
 export function formatLabel(label: Label): string {
   const desc = label.description ? `\nDescription: ${label.description}` : ''
   return `Label: ${label.name} (${label.color})${desc}`
+}
+
+export function formatWorkItemTypeList(list: WorkItemTypeList): string {
+  if (list.data.length === 0) return '0 work item types configured.'
+  const count = list.data.length
+  const header = `${count} work item type${count === 1 ? '' : 's'}:`
+  const lines = list.data.map(
+    (type) =>
+      `${type.key.padEnd(20)} ${type.name}${type.isDefault ? ' (default)' : ''}`
+  )
+  return [header, ...lines].join('\n')
+}
+
+export function formatWorkflowStateList(list: WorkflowStateList): string {
+  if (list.data.length === 0) return '0 workflow states configured.'
+  const count = list.data.length
+  const header = `${count} workflow state${count === 1 ? '' : 's'}:`
+  const lines = list.data.map(
+    (state) =>
+      `${state.key.padEnd(20)} ${state.name} (${state.category})${state.isDefault ? ' (default)' : ''}`
+  )
+  return [header, ...lines].join('\n')
+}
+
+export function formatMilestoneList(list: MilestoneList): string {
+  if (list.data.length === 0) return '0 milestones found.'
+  const count = list.data.length
+  const header = `${count} milestone${count === 1 ? '' : 's'}:`
+  const lines = list.data.map((milestone) => {
+    const targetDate = formatDate(milestone.targetDate)
+    return `${milestone.key.padEnd(20)} ${milestone.status.padEnd(10)} ${milestone.name}${targetDate ? `  target:${targetDate}` : ''}`
+  })
+  return [header, ...lines].join('\n')
 }
 
 export function formatError(error: {

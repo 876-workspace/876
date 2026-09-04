@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { customFieldValueInputSchema } from '../work-structure/work-structure.schemas.js'
+
 export const organizationParamsSchema = z.strictObject({
   organizationId: z.string().trim().min(1),
 })
@@ -9,14 +11,9 @@ export const issueParamsSchema = z.strictObject({
   issueRef: z.string().trim().min(1),
 })
 
-export const issueStatusSchema = z.enum([
-  'backlog',
-  'todo',
-  'in-progress',
-  'in-review',
-  'done',
-  'canceled',
-])
+export const issueStatusSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
 
 export const issuePrioritySchema = z.enum([
   'none',
@@ -36,6 +33,8 @@ export const issueOrderSchema = z.enum([
 export const listIssuesQuerySchema = z
   .strictObject({
     project: z.string().trim().min(1).optional(),
+    milestoneId: z.string().trim().min(1).optional(),
+    typeKey: z.string().trim().min(1).optional(),
     status: z.string().trim().min(1).optional(),
     priority: z.string().trim().min(1).optional(),
     assignee: z.string().trim().min(1).optional(),
@@ -58,6 +57,8 @@ export const createIssueBodySchema = z.strictObject({
   title: z.string().trim().min(1).max(300),
   description: z.string().trim().nullable().optional(),
   status: issueStatusSchema.optional(),
+  typeKey: z.string().trim().min(1).optional(),
+  milestoneId: z.string().trim().nullable().optional(),
   priority: issuePrioritySchema.optional(),
   assigneeUserId: z.string().trim().nullable().optional(),
   creatorUserId: z.string().trim().nullable().optional(),
@@ -65,6 +66,7 @@ export const createIssueBodySchema = z.strictObject({
   estimate: z.number().int().min(0).max(100).nullable().optional(),
   dueDate: z.number().int().nullable().optional(),
   labelIds: z.array(z.string().trim().min(1)).optional(),
+  customFields: z.array(customFieldValueInputSchema).optional(),
   position: z.number().int().optional(),
 })
 
@@ -74,6 +76,8 @@ export const updateIssueBodySchema = z
     title: z.string().trim().min(1).max(300).optional(),
     description: z.string().trim().nullable().optional(),
     status: issueStatusSchema.optional(),
+    typeKey: z.string().trim().min(1).optional(),
+    milestoneId: z.string().trim().nullable().optional(),
     priority: issuePrioritySchema.optional(),
     assigneeUserId: z.string().trim().nullable().optional(),
     creatorUserId: z.string().trim().nullable().optional(),
@@ -81,6 +85,7 @@ export const updateIssueBodySchema = z
     estimate: z.number().int().min(0).max(100).nullable().optional(),
     dueDate: z.number().int().nullable().optional(),
     labelIds: z.array(z.string().trim().min(1)).optional(),
+    customFields: z.array(customFieldValueInputSchema).optional(),
     position: z.number().int().optional(),
     actorUserId: z.string().trim().nullable().optional(),
   })

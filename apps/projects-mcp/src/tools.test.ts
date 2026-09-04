@@ -5,7 +5,7 @@ import { TOOLS } from './tools'
 
 describe('tools', () => {
   it('every tool has a non-empty description longer than 40 characters', () => {
-    expect(TOOLS.length).toBe(13)
+    expect(TOOLS.length).toBe(17)
     for (const tool of TOOLS) {
       expect(tool.description.trim().length).toBeGreaterThan(40)
     }
@@ -42,18 +42,13 @@ describe('tools', () => {
     }
   })
 
-  it("issues_list's status enum is exactly the six kebab-case values", () => {
+  it('issues_list accepts configured workflow-state keys instead of publishing a fixed enum', () => {
     const tool = TOOLS.find((t) => t.name === 'issues_list')
     expect(tool).toBeDefined()
     const statusProp = tool?.inputSchema.properties.status
-    expect(statusProp?.enum).toEqual([
-      'backlog',
-      'todo',
-      'in-progress',
-      'in-review',
-      'done',
-      'canceled',
-    ])
+    expect(statusProp?.enum).toBeUndefined()
+    expect(statusProp?.description).toContain('configured workflow-state key')
+    expect(statusProp?.description).toContain('workflow_states_list')
   })
 
   it("issue_create's priority enum is exactly the five values", () => {
@@ -69,10 +64,104 @@ describe('tools', () => {
     ])
   })
 
+  it('issue mutations expose configurable work structure fields', () => {
+    for (const name of ['issue_create', 'issue_update']) {
+      const tool = TOOLS.find((t) => t.name === name)
+      expect(tool).toBeDefined()
+      expect(tool?.inputSchema.properties.status?.enum).toBeUndefined()
+      expect(tool?.inputSchema.properties.typeKey?.type).toBe('string')
+      expect(tool?.inputSchema.properties.milestoneId?.type).toBe('string')
+      expect(tool?.inputSchema.properties.customFields?.type).toBe('array')
+      expect(
+        tool?.inputSchema.properties.customFields?.items?.properties?.fieldId
+          ?.type
+      ).toBe('string')
+    }
+  })
+
+  it('project mutations expose the project-level default work item type', () => {
+    for (const name of ['project_create', 'project_update']) {
+      const tool = TOOLS.find((t) => t.name === name)
+      expect(tool?.inputSchema.properties.defaultWorkItemTypeId?.type).toBe(
+        'string'
+      )
+      expect(
+        tool?.inputSchema.properties.defaultWorkItemTypeId?.description
+      ).toContain('work_item_types_list')
+    }
+  })
+
   it('tool names are unique', () => {
     const names = TOOLS.map((t) => t.name)
     const uniqueNames = new Set(names)
     expect(names.length).toBe(uniqueNames.size)
+  })
+
+  it('work structure list tools exist with workspace-scoped inputs', () => {
+    const workItemTypes = TOOLS.find(
+      (tool) => tool.name === 'work_item_types_list'
+    )
+    const workflowStates = TOOLS.find(
+      (tool) => tool.name === 'workflow_states_list'
+    )
+    const milestones = TOOLS.find((tool) => tool.name === 'milestones_list')
+
+    expect(workItemTypes?.inputSchema.properties).toEqual({})
+    expect(workflowStates?.inputSchema.properties).toEqual({})
+    expect(milestones?.inputSchema.required).toEqual(['projectId'])
+    expect(milestones?.inputSchema.properties.status?.enum).toEqual([
+      'open',
+      'completed',
+      'canceled',
+    ])
+  })
+
+  it('issue_comments requires only the issue reference', () => {
+    const tool = TOOLS.find((t) => t.name === 'issue_comments')
+    expect(tool).toBeDefined()
+    expect(tool?.inputSchema.required).toEqual(['issue'])
+    expect(Object.keys(tool?.inputSchema.properties ?? {}).sort()).toEqual([
+      'issue',
+      'limit',
+    ])
+  })
+
+  it('issue_comments documents the oldest-first thread order', () => {
+    const tool = TOOLS.find((t) => t.name === 'issue_comments')
+    expect(tool?.description).toContain('oldest first')
+  })
+
+  it('issue_get exposes includeComments as an optional boolean', () => {
+    const tool = TOOLS.find((t) => t.name === 'issue_get')
+    expect(tool).toBeDefined()
+    expect(tool?.inputSchema.required).toEqual(['issue'])
+    expect(tool?.inputSchema.properties.includeComments?.type).toBe('boolean')
+  })
+
+  it('issue_get documents enriched work structure', () => {
+    const tool = TOOLS.find((t) => t.name === 'issue_get')
+    expect(tool?.description).toContain('configured workflow state')
+    expect(tool?.description).toContain('custom-field values')
+  })
+
+  it('every comment-reading tool shares the same issue parameter description shape', () => {
+    const readers = ['issue_get', 'issue_comments', 'issue_comment'].map(
+      (name) => TOOLS.find((t) => t.name === name)
+    )
+    for (const tool of readers) {
+      expect(tool).toBeDefined()
+      expect(
+        tool?.inputSchema.properties.issue?.description.length
+      ).toBeGreaterThan(10)
+    }
+  })
+
+  it('every tool required list only names declared properties', () => {
+    for (const tool of TOOLS) {
+      const declared = new Set(Object.keys(tool.inputSchema.properties))
+      for (const required of tool.inputSchema.required ?? [])
+        expect(declared.has(required)).toBe(true)
+    }
   })
 })
 

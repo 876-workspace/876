@@ -50,4 +50,22 @@ export const projects = {
   get comments() {
     return getServiceClient().comments
   },
+  get workItemTypes() {
+    return getServiceClient().workItemTypes
+  },
+  get workflowStates() {
+    return getServiceClient().workflowStates
+  },
+  get milestones() {
+    return getServiceClient().milestones
+  },
+  get customFields() {
+    return getServiceClient().customFields
+  },
+  get customFieldValues() {
+    return getServiceClient().customFieldValues
+  },
+  get presets() {
+    return getServiceClient().presets
+  },
 }

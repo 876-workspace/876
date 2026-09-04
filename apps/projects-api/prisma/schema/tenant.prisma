@@ -2,6 +2,7 @@ model Tenant {
   id              String   @id
   organizationId  String   @unique @map("organization_id")
   triageProjectId String?  @map("triage_project_id")
+  presetKey       String   @default("software-development") @map("preset_key")
   createdAt       BigInt   @map("created_at")
   updatedAt       BigInt   @map("updated_at")
 
@@ -10,6 +11,12 @@ model Tenant {
   labels   Label[]
   comments Comment[]
   events   IssueEvent[]
+  workItemTypes WorkItemType[]
+  workflowStates WorkflowState[]
+  milestones Milestone[]
+  cycles Cycle[]
+  customFields CustomField[]
+  customFieldValues CustomFieldValue[]
 
   @@map("projects_tenants")
 }

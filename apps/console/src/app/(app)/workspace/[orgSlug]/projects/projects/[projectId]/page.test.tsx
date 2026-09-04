@@ -49,6 +49,7 @@ const mockProject: Project = {
   targetDate: 1720000000,
   nextIssueNumber: 1,
   customerId: null,
+  defaultWorkItemTypeId: null,
   position: 1,
   archivedAt: null,
   createdAt: 1700000000,

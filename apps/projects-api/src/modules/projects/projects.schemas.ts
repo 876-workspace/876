@@ -51,6 +51,7 @@ export const createProjectBodySchema = z.strictObject({
   startDate: z.number().int().nullable().optional(),
   targetDate: z.number().int().nullable().optional(),
   customerId: z.string().trim().nullable().optional(),
+  defaultWorkItemTypeId: z.string().trim().min(1).nullable().optional(),
   position: z.number().int().optional(),
 })
 
@@ -65,6 +66,7 @@ export const updateProjectBodySchema = z
     startDate: z.number().int().nullable().optional(),
     targetDate: z.number().int().nullable().optional(),
     customerId: z.string().trim().nullable().optional(),
+    defaultWorkItemTypeId: z.string().trim().min(1).nullable().optional(),
     position: z.number().int().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {

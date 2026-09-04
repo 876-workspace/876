@@ -30,7 +30,7 @@ export function NavLink({
   side?: 'right' | 'bottom' | 'top' | 'left'
 }) {
   const pathname = usePathname()
-  const isActive = isActiveCrmPath(pathname, href)
+  const isActive = isActiveProjectsPath(pathname, href)
 
   return (
     <Tooltip>
@@ -60,7 +60,7 @@ export function NavLink({
   )
 }
 
-export function isActiveCrmPath(pathname: string, href: string): boolean {
+export function isActiveProjectsPath(pathname: string, href: string): boolean {
   if (href === '/') return pathname === '/'
 
   return pathname === href || pathname.startsWith(`${href}/`)

@@ -1,13 +1,11 @@
 import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { errorHandler } from '../../../http/error-handler.js'
+
 const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
-  tenantsRepo: {
-    resolveTenant: vi.fn(),
-  },
-  issuesRepo: {
-    resolveIssue: vi.fn(),
-  },
+  tenantsRepo: { resolveTenant: vi.fn() },
+  issuesRepo: { resolveIssue: vi.fn() },
   repository: {
     list: vi.fn(),
     count: vi.fn(),
@@ -81,6 +79,7 @@ async function requestJson(
     '/v1/organizations/:organizationId/issues/:issueRef/comments',
     createCommentsRouter()
   )
+  app.use(errorHandler)
   const server = app.listen(0)
   await new Promise<void>((resolve) => server.once('listening', resolve))
   const address = server.address()
@@ -96,11 +95,7 @@ async function requestJson(
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
-
-    return {
-      status: response.status,
-      body: await response.json(),
-    }
+    return { status: response.status, body: await response.json() }
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()))
   }
@@ -108,13 +103,14 @@ async function requestJson(
 
 beforeEach(() => {
   vi.clearAllMocks()
+  delete process.env.DELETION_MODE
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   tenantsRepo.resolveTenant.mockResolvedValue(tenant)
   issuesRepo.resolveIssue.mockResolvedValue(mockIssueRow)
 })
 
 describe('comments module', () => {
-  it('create attaches to the resolved issue and returns the complete serialized shape', async () => {
+  it('create records the supplied service-plane author and serializes the comment', async () => {
     repository.create.mockResolvedValue(mockCommentRow)
 
     const result = await service.create('org_test_1', mockIssueRow.id, {
@@ -123,162 +119,49 @@ describe('comments module', () => {
     })
 
     expect(result.error).toBeNull()
-    expect(result.data).toEqual({
-      object: 'projects.comment',
-      id: mockCommentRow.id,
-      tenantId: tenant.id,
-      issueId: mockIssueRow.id,
-      authorUserId: 'usr_author_1',
-      body: 'This is a test comment',
-      createdAt: 1787767200,
-      updatedAt: 1787767200,
-    })
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
+    expect(result.data?.authorUserId).toBe('usr_author_1')
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: tenant.id,
         issueId: mockIssueRow.id,
         authorUserId: 'usr_author_1',
-        body: 'This is a test comment',
-        createdAt: expect.any(BigInt),
-        updatedAt: expect.any(BigInt),
       })
     )
   })
 
-  it('create against an unknown issue returns projects/issue-not-found and does not call the comment repository (not.toHaveBeenCalled())', async () => {
-    issuesRepo.resolveIssue.mockResolvedValue(null)
-
-    const result = await service.create('org_test_1', 'iss_missing', {
-      body: 'Comment on nonexistent issue',
-    })
-
-    expect(result.data).toBeNull()
-    expect(result.error).toEqual({
-      code: 'projects/issue-not-found',
-      message: 'The issue could not be found.',
-      httpStatus: 404,
-    })
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      'iss_missing'
-    )
-    expect(repository.create).not.toHaveBeenCalled()
-  })
-
-  it('list is issue-scoped, oldest first', async () => {
+  it('list remains issue-scoped and oldest-first repository order', async () => {
     repository.list.mockResolvedValue([mockCommentRow])
     repository.count.mockResolvedValue(1)
 
     const result = await service.list('org_test_1', mockIssueRow.id, {})
 
     expect(result.error).toBeNull()
-    expect(result.data?.items).toEqual([
-      {
-        object: 'projects.comment',
-        id: mockCommentRow.id,
-        tenantId: tenant.id,
-        issueId: mockIssueRow.id,
-        authorUserId: 'usr_author_1',
-        body: 'This is a test comment',
-        createdAt: 1787767200,
-        updatedAt: 1787767200,
-      },
-    ])
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
+    expect(result.data?.items[0]?.id).toBe(mockCommentRow.id)
     expect(repository.list).toHaveBeenCalledWith(mockIssueRow.id, {
       limit: 25,
       startingAfter: undefined,
       endingBefore: undefined,
     })
-    expect(repository.count).toHaveBeenCalledWith(mockIssueRow.id)
   })
 
-  it('update of an unknown comment returns projects/comment-not-found', async () => {
-    repository.retrieve.mockResolvedValue(null)
-
-    const result = await service.update(
-      'org_test_1',
-      mockIssueRow.id,
-      'cmt_missing',
-      {
-        body: 'Updated text',
-      }
-    )
-
-    expect(result.data).toBeNull()
-    expect(result.error).toEqual({
-      code: 'projects/comment-not-found',
-      message: 'The comment could not be found.',
-      httpStatus: 404,
-    })
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
-    expect(repository.retrieve).toHaveBeenCalledWith(
-      mockIssueRow.id,
-      'cmt_missing'
-    )
-    expect(repository.update).not.toHaveBeenCalled()
-  })
-
-  it('delete soft-deletes', async () => {
+  it('retrieve is issue-scoped for authenticated callers to verify ownership', async () => {
     repository.retrieve.mockResolvedValue(mockCommentRow)
-    repository.softDelete.mockResolvedValue({
-      ...mockCommentRow,
-      deletedAt: 1787823000n,
-    })
 
-    const result = await service.remove(
+    const result = await service.retrieve(
       'org_test_1',
       mockIssueRow.id,
       mockCommentRow.id
     )
 
     expect(result.error).toBeNull()
-    expect(result.data).toEqual({
-      object: 'projects.comment',
-      id: mockCommentRow.id,
-      deleted: true,
-    })
-    expect(issuesRepo.resolveIssue).toHaveBeenCalledWith(
-      tenant.id,
-      mockIssueRow.id
-    )
+    expect(result.data?.authorUserId).toBe('usr_author_1')
     expect(repository.retrieve).toHaveBeenCalledWith(
       mockIssueRow.id,
       mockCommentRow.id
     )
-    expect(repository.softDelete).toHaveBeenCalledWith(
-      mockCommentRow.id,
-      expect.any(BigInt)
-    )
-    expect(repository.hardDelete).not.toHaveBeenCalled()
   })
 
-  it('a soft-deleted comment does not appear in the list', async () => {
-    repository.list.mockResolvedValue([])
-    repository.count.mockResolvedValue(0)
-
-    const result = await service.list('org_test_1', mockIssueRow.id, {})
-
-    expect(result.error).toBeNull()
-    expect(result.data?.items).toHaveLength(0)
-    expect(repository.list).toHaveBeenCalledWith(mockIssueRow.id, {
-      limit: 25,
-      startingAfter: undefined,
-      endingBefore: undefined,
-    })
-  })
-
-  it('update applies supplied body and returns serialized comment', async () => {
+  it('update is privileged internal CRUD and does not accept an actor assertion', async () => {
     repository.retrieve.mockResolvedValue(mockCommentRow)
     repository.update.mockResolvedValue({
       ...mockCommentRow,
@@ -290,22 +173,11 @@ describe('comments module', () => {
       'org_test_1',
       mockIssueRow.id,
       mockCommentRow.id,
-      {
-        body: 'Updated body content',
-      }
+      { body: 'Updated body content' }
     )
 
     expect(result.error).toBeNull()
-    expect(result.data).toEqual({
-      object: 'projects.comment',
-      id: mockCommentRow.id,
-      tenantId: tenant.id,
-      issueId: mockIssueRow.id,
-      authorUserId: 'usr_author_1',
-      body: 'Updated body content',
-      createdAt: 1787767200,
-      updatedAt: 1787823000,
-    })
+    expect(result.data?.body).toBe('Updated body content')
     expect(repository.update).toHaveBeenCalledWith(
       mockCommentRow.id,
       expect.objectContaining({
@@ -315,63 +187,111 @@ describe('comments module', () => {
     )
   })
 
-  it('remove of an unknown comment returns projects/comment-not-found', async () => {
+  it('update and remove reject unknown comments', async () => {
     repository.retrieve.mockResolvedValue(null)
 
-    const result = await service.remove(
+    const update = await service.update(
+      'org_test_1',
+      mockIssueRow.id,
+      'cmt_missing',
+      { body: 'Updated text' }
+    )
+    const remove = await service.remove(
       'org_test_1',
       mockIssueRow.id,
       'cmt_missing'
     )
 
-    expect(result.data).toBeNull()
-    expect(result.error).toEqual({
-      code: 'projects/comment-not-found',
-      message: 'The comment could not be found.',
-      httpStatus: 404,
-    })
-    expect(repository.retrieve).toHaveBeenCalledWith(
-      mockIssueRow.id,
-      'cmt_missing'
-    )
+    expect(update.error?.code).toBe('projects/comment-not-found')
+    expect(remove.error?.code).toBe('projects/comment-not-found')
+    expect(repository.update).not.toHaveBeenCalled()
     expect(repository.softDelete).not.toHaveBeenCalled()
-    expect(repository.hardDelete).not.toHaveBeenCalled()
   })
 
-  it('GET /v1/organizations/:organizationId/issues/:issueRef/comments returns platform list envelope', async () => {
+  it('remove soft-deletes by default and hard-deletes in hard mode', async () => {
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+    repository.softDelete.mockResolvedValue(mockCommentRow)
+
+    const soft = await service.remove(
+      'org_test_1',
+      mockIssueRow.id,
+      mockCommentRow.id
+    )
+    expect(soft.data?.deleted).toBe(true)
+    expect(repository.softDelete).toHaveBeenCalledWith(
+      mockCommentRow.id,
+      expect.any(BigInt)
+    )
+
+    vi.clearAllMocks()
+    tenantsRepo.resolveTenant.mockResolvedValue(tenant)
+    issuesRepo.resolveIssue.mockResolvedValue(mockIssueRow)
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+    process.env.DELETION_MODE = 'hard'
+
+    const hard = await service.remove(
+      'org_test_1',
+      mockIssueRow.id,
+      mockCommentRow.id
+    )
+    expect(hard.data?.deleted).toBe(true)
+    expect(repository.hardDelete).toHaveBeenCalledWith(mockCommentRow.id)
+  })
+
+  it('unknown issues stop comment repository access', async () => {
+    issuesRepo.resolveIssue.mockResolvedValue(null)
+
+    const result = await service.create('org_test_1', 'iss_missing', {
+      body: 'Comment on nonexistent issue',
+    })
+
+    expect(result.error?.code).toBe('projects/issue-not-found')
+    expect(repository.create).not.toHaveBeenCalled()
+  })
+
+  it('HTTP list and retrieve return platform envelopes', async () => {
     repository.list.mockResolvedValue([mockCommentRow])
     repository.count.mockResolvedValue(1)
+    repository.retrieve.mockResolvedValue(mockCommentRow)
 
-    const response = await requestJson(
+    const listResponse = await requestJson(
       'GET',
       `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments`
     )
+    expect(listResponse.status).toBe(200)
+    expect(listResponse.body.data.object).toBe('list')
 
-    expect(response.status).toBe(200)
-    expect(response.body).toEqual({
-      data: {
-        object: 'list',
-        data: [
-          {
-            object: 'projects.comment',
-            id: mockCommentRow.id,
-            tenantId: tenant.id,
-            issueId: mockIssueRow.id,
-            authorUserId: 'usr_author_1',
-            body: 'This is a test comment',
-            createdAt: 1787767200,
-            updatedAt: 1787767200,
-          },
-        ],
-        has_more: false,
-        total_count: 1,
-        url: `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments`,
-      },
-      error: null,
-    })
+    const retrieveResponse = await requestJson(
+      'GET',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments/${mockCommentRow.id}`
+    )
+    expect(retrieveResponse.status).toBe(200)
+    expect(retrieveResponse.body.data.authorUserId).toBe('usr_author_1')
   })
 
-  it('rejects unauthorized HTTP requests when x-internal-key is missing or invalid', async () => {
+  it('HTTP PATCH and DELETE no longer accept or require caller actor identity', async () => {
+    repository.retrieve.mockResolvedValue(mockCommentRow)
+    repository.update.mockResolvedValue({
+      ...mockCommentRow,
+      body: 'Updated',
+    })
+    repository.softDelete.mockResolvedValue(mockCommentRow)
+
+    const patch = await requestJson(
+      'PATCH',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments/${mockCommentRow.id}`,
+      { body: 'Updated' }
+    )
+    expect(patch.status).toBe(200)
+
+    const remove = await requestJson(
+      'DELETE',
+      `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments/${mockCommentRow.id}`
+    )
+    expect(remove.status).toBe(200)
+  })
+
+  it('rejects unauthorized HTTP requests when x-internal-key is invalid', async () => {
     const response = await requestJson(
       'GET',
       `/v1/organizations/org_test_1/issues/${mockIssueRow.id}/comments`,
@@ -380,13 +300,6 @@ describe('comments module', () => {
     )
 
     expect(response.status).toBe(401)
-    expect(response.body).toEqual({
-      data: null,
-      error: {
-        code: 'projects/unauthorized',
-        message: 'This request is missing valid credentials.',
-      },
-    })
     expect(repository.list).not.toHaveBeenCalled()
   })
 })

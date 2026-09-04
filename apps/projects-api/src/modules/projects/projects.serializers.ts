@@ -17,6 +17,7 @@ export type ProjectRow = {
   targetDate: bigint | number | null
   nextIssueNumber: number
   customerId: string | null
+  defaultWorkItemTypeId: string | null
   position: number
   archivedAt: bigint | number | null
   createdAt: bigint | number
@@ -49,6 +50,7 @@ export type SerializedProject = {
   targetDate: number | null
   nextIssueNumber: number
   customerId: string | null
+  defaultWorkItemTypeId: string | null
   position: number
   archivedAt: number | null
   createdAt: number
@@ -99,6 +101,7 @@ export function serializeProject(
     targetDate: nullableFromDbUnixSeconds(row.targetDate),
     nextIssueNumber: row.nextIssueNumber,
     customerId: row.customerId,
+    defaultWorkItemTypeId: row.defaultWorkItemTypeId,
     position: row.position,
     archivedAt: nullableFromDbUnixSeconds(row.archivedAt),
     createdAt: fromDbUnixSeconds(row.createdAt),

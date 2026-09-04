@@ -1,4 +1,3 @@
-import type { ToolResult } from './format'
 import type { Issue, IssueList, Project } from '@876/projects/contracts'
 import { describe, expect, it } from 'vitest'
 
@@ -9,6 +8,7 @@ import {
   formatIssueLine,
   formatIssueList,
   formatProject,
+  type ToolResult,
 } from './format'
 
 /** Narrows the SDK's content union to the text block these tools always emit. */
@@ -17,6 +17,39 @@ function textOf(result: ToolResult, index = 0): string {
   if (!block || block.type !== 'text')
     throw new Error(`expected a text content block at ${index}`)
   return block.text
+}
+
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task',
+  tenantId: 'tnt_123',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1788400000,
+  updatedAt: 1788400000,
+}
+
+const sampleState = {
+  object: 'projects.workflow-state' as const,
+  id: 'wfs_progress',
+  tenantId: 'tnt_123',
+  key: 'in-progress',
+  name: 'In Progress',
+  category: 'started',
+  color: '#3b82f6',
+  description: null,
+  isDefault: false,
+  position: 2,
+  archivedAt: null,
+  createdAt: 1788400000,
+  updatedAt: 1788400000,
 }
 
 const sampleIssue: Issue = {
@@ -30,6 +63,11 @@ const sampleIssue: Issue = {
   title: 'Fix workspace detail 404s',
   description: 'Detailed description here',
   status: 'in-progress',
+  typeKey: 'task',
+  type: sampleType,
+  state: sampleState,
+  milestone: null,
+  customFields: [],
   priority: 'high',
   assigneeUserId: 'user_2kL9',
   creatorUserId: 'user_creator',
@@ -95,7 +133,17 @@ describe('format', () => {
       identifier: 'CONSOLE-1',
       title: 'Minimal issue',
       description: null,
-      status: 'todo',
+      status: 'ready-for-qa',
+      typeKey: 'task',
+      type: sampleType,
+      state: {
+        ...sampleState,
+        id: 'wfs_ready',
+        key: 'ready-for-qa',
+        name: 'Ready for QA',
+      },
+      milestone: null,
+      customFields: [],
       priority: 'none',
       assigneeUserId: null,
       creatorUserId: null,
@@ -122,7 +170,7 @@ describe('format', () => {
     expect(output).not.toContain('Due Date:')
     expect(output).not.toContain('Description:')
     expect(output).toContain('CONSOLE-1: Minimal issue')
-    expect(output).toContain('Status: todo')
+    expect(output).toContain('Status: ready-for-qa')
     expect(output).toContain('Priority: none')
     expect(output).toContain('Comments: 0')
   })
@@ -165,6 +213,7 @@ describe('format', () => {
       targetDate: 1788480000,
       nextIssueNumber: 13,
       customerId: null,
+      defaultWorkItemTypeId: 'wit_task',
       position: 0,
       archivedAt: null,
       createdAt: 1788400000,

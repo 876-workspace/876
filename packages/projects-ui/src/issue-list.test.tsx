@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Issue } from '@876/projects/contracts'
 
@@ -19,6 +19,23 @@ vi.mock('@876/ui/list-detail-shell', () => ({
 
 import { IssuesList } from './issue-list'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
+
 const mockIssues: Issue[] = [
   {
     object: 'projects.issue',
@@ -31,6 +48,11 @@ const mockIssues: Issue[] = [
     title: 'Fix the auth race condition',
     description: 'Detailed description here',
     status: 'in-progress',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'high',
     assigneeUserId: 'user_42',
     creatorUserId: 'user_1',
@@ -69,6 +91,11 @@ const mockIssues: Issue[] = [
     title: 'Add dark mode support',
     description: 'Dark mode styles',
     status: 'done',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'low',
     assigneeUserId: 'user_43',
     creatorUserId: 'user_1',
@@ -106,12 +133,38 @@ describe('IssuesList', () => {
 
     expect(screen.getByRole('table')).toBeInTheDocument()
     expect(screen.getByText('ALP-12')).toBeInTheDocument()
-    expect(screen.getByText('Fix the auth race condition')).toBeInTheDocument()
+    expect(screen.getAllByText('Fix the auth race condition')).toHaveLength(2)
     expect(screen.getByText('ALP-13')).toBeInTheDocument()
-    expect(screen.getByText('Add dark mode support')).toBeInTheDocument()
+    expect(screen.getAllByText('Add dark mode support')).toHaveLength(2)
     expect(screen.queryByText('Issues')).not.toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'View issue ALP-12' })
     expect(link).toHaveAttribute('href', '/issues/ALP-12')
+  })
+
+  it('renders the desktop table and mobile rows together with one accessible issue link per table row', () => {
+    const { container } = render(
+      <IssuesList
+        issues={mockIssues}
+        issuesHref="/issues"
+        newIssueHref="/issues/new"
+      />
+    )
+
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-slot="list-row"]')).toHaveLength(2)
+
+    const issueRow = screen.getByRole('row', {
+      name: /ALP-12.*Fix the auth race condition/,
+    })
+    const titleCell = within(issueRow).getAllByRole('cell')[1]
+    const titleLink = within(titleCell).getByRole('link', {
+      name: 'View issue ALP-12',
+    })
+
+    expect(titleLink).toHaveAttribute('href', '/issues/ALP-12')
+    expect(
+      within(issueRow).getAllByRole('link', { name: 'View issue ALP-12' })
+    ).toHaveLength(1)
   })
 
   it('renders the condensed pane when one is open', () => {

@@ -327,4 +327,41 @@ describe('Sidebar', () => {
       expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
     })
   })
+
+  describe('orchestrator icon refresh', () => {
+    it('never rotates the expand control icon, collapsed or expanded', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      const expand = screen.getByRole('button', { name: 'Expand sidebar' })
+      expect(expand.querySelector('svg')?.className.baseVal ?? '').not.toMatch(
+        /rotate-180/
+      )
+
+      await user.click(expand)
+
+      const collapse = screen.getByRole('button', { name: 'Collapse sidebar' })
+      expect(
+        collapse.querySelector('svg')?.className.baseVal ?? ''
+      ).not.toMatch(/rotate-180/)
+    })
+
+    it('colors a context entry from its icon when the entry declares none', () => {
+      renderSidebar('/projects/issues')
+
+      const board = screen.getByRole('link', { name: 'Board' })
+      const icon = board.querySelector('svg')
+
+      expect(icon?.className.baseVal ?? '').toMatch(/text-violet-500/)
+    })
+
+    it('keeps an entry-declared color ahead of the contextual fallback', () => {
+      renderSidebar('/users')
+
+      const users = screen.getByRole('link', { name: 'Users' })
+      const icon = users.querySelector('svg')
+
+      expect(icon?.className.baseVal ?? '').toMatch(/text-amber-500/)
+    })
+  })
 })

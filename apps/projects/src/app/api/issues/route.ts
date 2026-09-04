@@ -16,7 +16,28 @@ const createIssueSchema = z.strictObject({
   title: z.string().trim().min(1).max(200),
   projectId: z.string().trim().min(1).optional(),
   description: z.string().trim().max(10000).nullable().optional(),
+  status: z
+    .string()
+    .trim()
+    .regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
+    .optional(),
+  typeKey: z.string().trim().min(1).max(100).optional(),
+  milestoneId: z.string().trim().min(1).nullable().optional(),
   priority: z.enum(['none', 'low', 'medium', 'high', 'urgent']).optional(),
+  customFields: z
+    .array(
+      z.strictObject({
+        fieldId: z.string().trim().min(1),
+        value: z.union([
+          z.string(),
+          z.number().int(),
+          z.boolean(),
+          z.array(z.string().trim().min(1)),
+          z.null(),
+        ]),
+      })
+    )
+    .optional(),
 })
 
 export async function POST(request: NextRequest) {

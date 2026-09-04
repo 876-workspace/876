@@ -5,6 +5,7 @@ export type TenantRow = {
   id: string
   organizationId: string
   triageProjectId: string | null
+  presetKey?: string
   createdAt: bigint | number
   updatedAt: bigint | number
 }

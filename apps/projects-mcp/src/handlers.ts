@@ -1,7 +1,6 @@
 import type {
   CreateIssueInput,
   CreateProjectInput,
-  IssueStatus,
   ListIssuesQuery,
   ListProjectsQuery,
   UpdateIssueInput,
@@ -10,9 +9,9 @@ import type {
 import {
   issueOrderSchema,
   issuePrioritySchema,
-  issueStatusSchema,
   projectHealthSchema,
   projectStatusSchema,
+  workflowStateKeySchema,
 } from '@876/projects/contracts'
 import type { ProjectsOperatorClient } from '@876/projects/operator'
 import { z } from 'zod'
@@ -20,15 +19,19 @@ import { z } from 'zod'
 import type { Config } from './config'
 import {
   formatComment,
+  formatComments,
   formatError,
   formatIssue,
   formatIssueEventList,
   formatIssueList,
   formatLabel,
   formatLabelList,
+  formatMilestoneList,
   formatProject,
   formatProjectList,
   formatSuccess,
+  formatWorkflowStateList,
+  formatWorkItemTypeList,
   formatWorkspace,
   type ToolResult,
 } from './format'
@@ -39,9 +42,7 @@ const timestampSchema = z
   .transform((val, ctx) => {
     if (val === undefined) return undefined
     if (typeof val === 'number') return val
-    if (/^\d+$/.test(val)) {
-      return parseInt(val, 10)
-    }
+    if (/^\d+$/.test(val)) return parseInt(val, 10)
     const parsed = Date.parse(val)
     if (isNaN(parsed)) {
       ctx.addIssue({
@@ -52,6 +53,19 @@ const timestampSchema = z
     }
     return Math.floor(parsed / 1000)
   })
+
+const customFieldValueArgsSchema = z
+  .object({
+    fieldId: z.string().trim().min(1),
+    value: z.union([
+      z.string(),
+      z.number().int(),
+      z.boolean(),
+      z.array(z.string().trim().min(1)),
+      z.null(),
+    ]),
+  })
+  .strict()
 
 const workspaceGetArgsSchema = z.object({}).strict()
 
@@ -80,6 +94,7 @@ const projectCreateArgsSchema = z
     status: projectStatusSchema.optional(),
     health: projectHealthSchema.optional(),
     targetDate: timestampSchema,
+    defaultWorkItemTypeId: z.string().trim().min(1).nullable().optional(),
   })
   .strict()
 
@@ -93,13 +108,16 @@ const projectUpdateArgsSchema = z
     status: projectStatusSchema.optional(),
     health: projectHealthSchema.optional(),
     targetDate: timestampSchema.nullable(),
+    defaultWorkItemTypeId: z.string().trim().min(1).nullable().optional(),
   })
   .strict()
 
 const issuesListArgsSchema = z
   .object({
     project: z.string().trim().min(1).optional(),
-    status: z.union([issueStatusSchema, z.array(issueStatusSchema)]).optional(),
+    status: z
+      .union([workflowStateKeySchema, z.array(workflowStateKeySchema)])
+      .optional(),
     priority: z
       .union([issuePrioritySchema, z.array(issuePrioritySchema)])
       .optional(),
@@ -118,6 +136,7 @@ const issuesListArgsSchema = z
 const issueGetArgsSchema = z
   .object({
     issue: z.string().trim().min(1),
+    includeComments: z.boolean().optional(),
   })
   .strict()
 
@@ -126,7 +145,10 @@ const issueCreateArgsSchema = z
     title: z.string().trim().min(1),
     project: z.string().trim().min(1).optional(),
     description: z.string().trim().optional(),
-    status: issueStatusSchema.optional(),
+    status: workflowStateKeySchema.optional(),
+    typeKey: z.string().trim().min(1).optional(),
+    milestoneId: z.string().trim().min(1).optional(),
+    customFields: z.array(customFieldValueArgsSchema).optional(),
     priority: issuePrioritySchema.optional(),
     assigneeUserId: z.string().trim().min(1).optional(),
     parentIssue: z.string().trim().min(1).optional(),
@@ -142,7 +164,10 @@ const issueUpdateArgsSchema = z
     title: z.string().trim().min(1).optional(),
     project: z.string().trim().min(1).optional(),
     description: z.string().trim().nullable().optional(),
-    status: issueStatusSchema.optional(),
+    status: workflowStateKeySchema.optional(),
+    typeKey: z.string().trim().min(1).optional(),
+    milestoneId: z.string().trim().min(1).nullable().optional(),
+    customFields: z.array(customFieldValueArgsSchema).optional(),
     priority: issuePrioritySchema.optional(),
     assigneeUserId: z.string().trim().min(1).nullable().optional(),
     parentIssue: z.string().trim().min(1).nullable().optional(),
@@ -159,6 +184,13 @@ const issueCommentArgsSchema = z
   })
   .strict()
 
+const issueCommentsArgsSchema = z
+  .object({
+    issue: z.string().trim().min(1),
+    limit: z.number().int().min(1).max(100).optional(),
+  })
+  .strict()
+
 const issueEventsArgsSchema = z
   .object({
     issue: z.string().trim().min(1),
@@ -166,6 +198,15 @@ const issueEventsArgsSchema = z
   .strict()
 
 const labelsListArgsSchema = z.object({}).strict()
+const workItemTypesListArgsSchema = z.object({}).strict()
+const workflowStatesListArgsSchema = z.object({}).strict()
+
+const milestonesListArgsSchema = z
+  .object({
+    projectId: z.string().trim().min(1),
+    status: z.enum(['open', 'completed', 'canceled']).optional(),
+  })
+  .strict()
 
 const labelCreateArgsSchema = z
   .object({
@@ -183,23 +224,19 @@ async function resolveProjectId(
   | { id: string; error: null }
   | { id: null; error: { code: string; message: string } }
 > {
-  if (projectOrKey.startsWith('prj_')) {
-    return { id: projectOrKey, error: null }
-  }
+  if (projectOrKey.startsWith('prj_')) return { id: projectOrKey, error: null }
 
   const listRes = await client.projects.list(organizationId, {
     limit: 100,
     includeArchived: true,
   })
-  if (listRes.error !== null) {
-    return { id: null, error: listRes.error }
-  }
+  if (listRes.error !== null) return { id: null, error: listRes.error }
 
   const upper = projectOrKey.toUpperCase()
   const found = listRes.data.data.find(
     (p) => p.key.toUpperCase() === upper || p.id === projectOrKey
   )
-  if (!found) {
+  if (!found)
     return {
       id: null,
       error: {
@@ -207,7 +244,6 @@ async function resolveProjectId(
         message: `Project not found for key: ${projectOrKey}`,
       },
     }
-  }
 
   return { id: found.id, error: null }
 }
@@ -218,38 +254,38 @@ export async function handleWorkspaceGet(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = workspaceGetArgsSchema.safeParse(args ?? {})
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const tenantRes = await client.tenants.retrieve(config.organizationId)
-  if (tenantRes.error !== null) {
-    return formatError(tenantRes.error)
-  }
+  if (tenantRes.error !== null) return formatError(tenantRes.error)
 
-  const projectsRes = await client.projects.list(config.organizationId, {
-    limit: 100,
-  })
-  if (projectsRes.error !== null) {
-    return formatError(projectsRes.error)
-  }
+  const [projectsRes, workflowRes] = await Promise.all([
+    client.projects.list(config.organizationId, { limit: 100 }),
+    client.workflowStates.list(config.organizationId),
+  ])
+  if (projectsRes.error !== null) return formatError(projectsRes.error)
+  if (workflowRes.error !== null) return formatError(workflowRes.error)
 
-  const openStatuses: IssueStatus[] = [
-    'backlog',
-    'todo',
-    'in-progress',
-    'in-review',
-  ]
+  const openStatuses = workflowRes.data.data
+    .filter(
+      (state) =>
+        state.archivedAt === null &&
+        state.category !== 'completed' &&
+        state.category !== 'canceled'
+    )
+    .map((state) => state.key)
+
   const projectEntries = await Promise.all(
     projectsRes.data.data.map(async (project) => {
       const issueRes = await client.issues.list(config.organizationId, {
         project: project.id,
-        status: openStatuses,
+        ...(openStatuses.length > 0 ? { status: openStatuses } : {}),
         limit: 1,
       })
       const openIssueCount = issueRes.data?.total_count ?? 0
@@ -266,29 +302,26 @@ export async function handleProjectsList(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = projectsListArgsSchema.safeParse(args ?? {})
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const query: ListProjectsQuery = {}
   if (parsed.data.status !== undefined) query.status = parsed.data.status
   if (parsed.data.lead !== undefined) query.lead = parsed.data.lead
   if (parsed.data.q !== undefined) query.q = parsed.data.q
-  if (parsed.data.includeArchived !== undefined) {
+  if (parsed.data.includeArchived !== undefined)
     query.includeArchived = parsed.data.includeArchived
-  }
   if (parsed.data.limit !== undefined) query.limit = parsed.data.limit
 
   const result = await client.projects.list(config.organizationId, query)
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatProjectList(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatProjectList(result.data))
 }
 
 export async function handleProjectGet(
@@ -297,32 +330,25 @@ export async function handleProjectGet(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = projectGetArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const resolved = await resolveProjectId(
     client,
     config.organizationId,
     parsed.data.project
   )
-  if (resolved.error !== null) {
-    return formatError(resolved.error)
-  }
+  if (resolved.error !== null) return formatError(resolved.error)
 
-  const result = await client.projects.retrieve(
-    config.organizationId,
-    resolved.id
-  )
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatProject(result.data))
+  const result = await client.projects.retrieve(config.organizationId, resolved.id)
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatProject(result.data))
 }
 
 export async function handleProjectCreate(
@@ -331,14 +357,13 @@ export async function handleProjectCreate(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = projectCreateArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const input: CreateProjectInput = {
     name: parsed.data.name,
@@ -354,13 +379,15 @@ export async function handleProjectCreate(
     ...(parsed.data.targetDate !== undefined
       ? { targetDate: parsed.data.targetDate }
       : {}),
+    ...(parsed.data.defaultWorkItemTypeId !== undefined
+      ? { defaultWorkItemTypeId: parsed.data.defaultWorkItemTypeId }
+      : {}),
   }
 
   const result = await client.projects.create(config.organizationId, input)
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatProject(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatProject(result.data))
 }
 
 export async function handleProjectUpdate(
@@ -369,48 +396,43 @@ export async function handleProjectUpdate(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = projectUpdateArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const resolved = await resolveProjectId(
     client,
     config.organizationId,
     parsed.data.project
   )
-  if (resolved.error !== null) {
-    return formatError(resolved.error)
-  }
+  if (resolved.error !== null) return formatError(resolved.error)
 
   const input: UpdateProjectInput = {}
   if (parsed.data.name !== undefined) input.name = parsed.data.name
   if (parsed.data.key !== undefined) input.key = parsed.data.key
-  if (parsed.data.description !== undefined) {
+  if (parsed.data.description !== undefined)
     input.description = parsed.data.description
-  }
-  if (parsed.data.leadUserId !== undefined) {
+  if (parsed.data.leadUserId !== undefined)
     input.leadUserId = parsed.data.leadUserId
-  }
   if (parsed.data.status !== undefined) input.status = parsed.data.status
   if (parsed.data.health !== undefined) input.health = parsed.data.health
-  if (parsed.data.targetDate !== undefined) {
+  if (parsed.data.targetDate !== undefined)
     input.targetDate = parsed.data.targetDate
-  }
+  if (parsed.data.defaultWorkItemTypeId !== undefined)
+    input.defaultWorkItemTypeId = parsed.data.defaultWorkItemTypeId
 
   const result = await client.projects.update(
     config.organizationId,
     resolved.id,
     input
   )
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatProject(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatProject(result.data))
 }
 
 export async function handleIssuesList(
@@ -419,14 +441,13 @@ export async function handleIssuesList(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = issuesListArgsSchema.safeParse(args ?? {})
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const query: ListIssuesQuery = {}
   if (parsed.data.project !== undefined) query.project = parsed.data.project
@@ -436,17 +457,15 @@ export async function handleIssuesList(
   if (parsed.data.label !== undefined) query.label = parsed.data.label
   if (parsed.data.parent !== undefined) query.parent = parsed.data.parent
   if (parsed.data.q !== undefined) query.q = parsed.data.q
-  if (parsed.data.updatedSince !== undefined) {
+  if (parsed.data.updatedSince !== undefined)
     query.updatedSince = parsed.data.updatedSince
-  }
   if (parsed.data.order !== undefined) query.order = parsed.data.order
   if (parsed.data.limit !== undefined) query.limit = parsed.data.limit
 
   const result = await client.issues.list(config.organizationId, query)
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatIssueList(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatIssueList(result.data))
 }
 
 export async function handleIssueGet(
@@ -455,23 +474,31 @@ export async function handleIssueGet(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = issueGetArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const result = await client.issues.retrieve(
     config.organizationId,
     parsed.data.issue
   )
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatIssue(result.data))
+  if (result.error !== null) return formatError(result.error)
+  if (parsed.data.includeComments === false)
+    return formatSuccess(formatIssue(result.data))
+
+  const comments = await client.comments.list(
+    config.organizationId,
+    parsed.data.issue
+  )
+  if (comments.error !== null) return formatError(comments.error)
+
+  return formatSuccess(
+    `${formatIssue(result.data)}\n\n${formatComments(comments.data.data)}`
+  )
 }
 
 export async function handleIssueCreate(
@@ -480,14 +507,13 @@ export async function handleIssueCreate(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = issueCreateArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const input: CreateIssueInput = {
     title: parsed.data.title,
@@ -498,6 +524,13 @@ export async function handleIssueCreate(
       ? { description: parsed.data.description }
       : {}),
     ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
+    ...(parsed.data.typeKey !== undefined ? { typeKey: parsed.data.typeKey } : {}),
+    ...(parsed.data.milestoneId !== undefined
+      ? { milestoneId: parsed.data.milestoneId }
+      : {}),
+    ...(parsed.data.customFields !== undefined
+      ? { customFields: parsed.data.customFields }
+      : {}),
     ...(parsed.data.priority !== undefined
       ? { priority: parsed.data.priority }
       : {}),
@@ -520,10 +553,9 @@ export async function handleIssueCreate(
   }
 
   const result = await client.issues.create(config.organizationId, input)
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatIssue(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatIssue(result.data))
 }
 
 export async function handleIssueUpdate(
@@ -532,29 +564,30 @@ export async function handleIssueUpdate(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = issueUpdateArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const input: UpdateIssueInput = {}
   if (parsed.data.title !== undefined) input.title = parsed.data.title
   if (parsed.data.project !== undefined) input.projectId = parsed.data.project
-  if (parsed.data.description !== undefined) {
+  if (parsed.data.description !== undefined)
     input.description = parsed.data.description
-  }
   if (parsed.data.status !== undefined) input.status = parsed.data.status
+  if (parsed.data.typeKey !== undefined) input.typeKey = parsed.data.typeKey
+  if (parsed.data.milestoneId !== undefined)
+    input.milestoneId = parsed.data.milestoneId
+  if (parsed.data.customFields !== undefined)
+    input.customFields = parsed.data.customFields
   if (parsed.data.priority !== undefined) input.priority = parsed.data.priority
-  if (parsed.data.assigneeUserId !== undefined) {
+  if (parsed.data.assigneeUserId !== undefined)
     input.assigneeUserId = parsed.data.assigneeUserId
-  }
-  if (parsed.data.parentIssue !== undefined) {
+  if (parsed.data.parentIssue !== undefined)
     input.parentIssueId = parsed.data.parentIssue
-  }
   if (parsed.data.estimate !== undefined) input.estimate = parsed.data.estimate
   if (parsed.data.dueDate !== undefined) input.dueDate = parsed.data.dueDate
   if (parsed.data.labels !== undefined) input.labelIds = parsed.data.labels
@@ -565,10 +598,9 @@ export async function handleIssueUpdate(
     parsed.data.issue,
     input
   )
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatIssue(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatIssue(result.data))
 }
 
 export async function handleIssueComment(
@@ -577,27 +609,51 @@ export async function handleIssueComment(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = issueCommentArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
+
+  if (!config.defaultUserId)
+    return formatError({
+      code: 'projects/comment-author-required',
+      message:
+        'A default user ID is required to create comments so ownership remains enforceable.',
+    })
 
   const result = await client.comments.create(
     config.organizationId,
     parsed.data.issue,
-    {
-      body: parsed.data.body,
-      ...(config.defaultUserId ? { authorUserId: config.defaultUserId } : {}),
-    }
+    { body: parsed.data.body, authorUserId: config.defaultUserId }
   )
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatComment(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatComment(result.data))
+}
+
+export async function handleIssueComments(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = issueCommentsArgsSchema.safeParse(args)
+  if (!parsed.success)
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+
+  const result = await client.comments.list(config.organizationId, parsed.data.issue, {
+    ...(parsed.data.limit !== undefined ? { limit: parsed.data.limit } : {}),
+  })
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatComments(result.data.data))
 }
 
 export async function handleIssueEvents(
@@ -606,23 +662,21 @@ export async function handleIssueEvents(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = issueEventsArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const result = await client.issues.events.list(
     config.organizationId,
     parsed.data.issue
   )
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatIssueEventList(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatIssueEventList(result.data))
 }
 
 export async function handleLabelsList(
@@ -631,20 +685,90 @@ export async function handleLabelsList(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = labelsListArgsSchema.safeParse(args ?? {})
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const result = await client.labels.list(config.organizationId)
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatLabelList(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatLabelList(result.data))
+}
+
+export async function handleWorkItemTypesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = workItemTypesListArgsSchema.safeParse(args ?? {})
+  if (!parsed.success)
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+
+  const result = await client.workItemTypes.list(config.organizationId)
+  if (result.error !== null) return formatError(result.error)
+  return formatSuccess(
+    formatWorkItemTypeList({
+      ...result.data,
+      data: result.data.data.filter((type) => type.archivedAt === null),
+    })
+  )
+}
+
+export async function handleWorkflowStatesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = workflowStatesListArgsSchema.safeParse(args ?? {})
+  if (!parsed.success)
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+
+  const result = await client.workflowStates.list(config.organizationId)
+  if (result.error !== null) return formatError(result.error)
+  return formatSuccess(
+    formatWorkflowStateList({
+      ...result.data,
+      data: result.data.data.filter((state) => state.archivedAt === null),
+    })
+  )
+}
+
+export async function handleMilestonesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = milestonesListArgsSchema.safeParse(args)
+  if (!parsed.success)
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+
+  const result = await client.milestones.list(
+    config.organizationId,
+    parsed.data.projectId,
+    parsed.data.status !== undefined ? { status: parsed.data.status } : {}
+  )
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatMilestoneList(result.data))
 }
 
 export async function handleLabelCreate(
@@ -653,14 +777,13 @@ export async function handleLabelCreate(
   args: unknown
 ): Promise<ToolResult> {
   const parsed = labelCreateArgsSchema.safeParse(args)
-  if (!parsed.success) {
+  if (!parsed.success)
     return formatError({
       code: 'validation/invalid-arguments',
       message: parsed.error.issues
         .map((i) => `${i.path.join('.')}: ${i.message}`)
         .join(', '),
     })
-  }
 
   const result = await client.labels.create(config.organizationId, {
     name: parsed.data.name,
@@ -669,10 +792,9 @@ export async function handleLabelCreate(
       ? { description: parsed.data.description }
       : {}),
   })
-  if (result.error !== null) {
-    return formatError(result.error)
-  }
-  return formatSuccess(formatLabel(result.data))
+  return result.error !== null
+    ? formatError(result.error)
+    : formatSuccess(formatLabel(result.data))
 }
 
 export const HANDLERS: Record<
@@ -693,7 +815,11 @@ export const HANDLERS: Record<
   issue_create: handleIssueCreate,
   issue_update: handleIssueUpdate,
   issue_comment: handleIssueComment,
+  issue_comments: handleIssueComments,
   issue_events: handleIssueEvents,
   labels_list: handleLabelsList,
+  work_item_types_list: handleWorkItemTypesList,
+  workflow_states_list: handleWorkflowStatesList,
+  milestones_list: handleMilestonesList,
   label_create: handleLabelCreate,
 }

@@ -22,6 +22,7 @@ import {
   ListPaneItem,
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
+import { ResponsiveList, type ListRowMapping } from '@876/ui/responsive-list'
 import {
   Table,
   TableBody,
@@ -58,11 +59,87 @@ function formatDate(timestamp: number | null): string {
   })
 }
 
-function RowLink({ href, label }: { href: string; label: string }) {
+function relativeTime(timestamp: number): string {
+  const seconds = Math.max(
+    0,
+    Math.floor((Date.now() - timestamp * 1000) / 1000)
+  )
+  if (seconds < 60) return 'now'
+
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m`
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h`
+
+  return `${Math.floor(hours / 24)}d`
+}
+
+function IssuePriorityDot({ priority }: Pick<Issue, 'priority'>) {
+  const colorClassName = {
+    urgent: 'bg-destructive',
+    high: 'bg-warning',
+    medium: 'bg-info',
+    low: 'bg-muted-foreground',
+    none: 'bg-muted-foreground/40',
+  }[priority]
+
+  return (
+    <span
+      aria-hidden="true"
+      className={`size-2.5 rounded-full ${colorClassName}`}
+    />
+  )
+}
+
+function createIssueRow(issuesHref: string): ListRowMapping<Issue> {
+  return {
+    key: (issue) => issue.id,
+    href: (issue) => `${issuesHref}/${issue.identifier}`,
+    leading: (issue) => <IssuePriorityDot priority={issue.priority} />,
+    title: (issue) => issue.title,
+    subtitle: (issue) => (
+      <span className="flex flex-wrap items-center gap-1 whitespace-normal">
+        <span className="font-mono whitespace-nowrap">
+          {`${issue.identifier} · ${issue.projectKey}`}
+        </span>
+        {issue.labels.slice(0, 2).map((label) => (
+          <Badge
+            key={label.id}
+            variant="outline"
+            className="h-4 px-1 text-[0.625rem]"
+            style={label.color ? { borderColor: label.color } : undefined}
+          >
+            {label.name}
+          </Badge>
+        ))}
+        {issue.labels.length > 2 ? (
+          <Badge variant="outline" className="h-4 px-1 text-[0.625rem]">
+            {`+${issue.labels.length - 2}`}
+          </Badge>
+        ) : null}
+      </span>
+    ),
+    meta: (issue) => relativeTime(issue.updatedAt),
+    trailing: (issue) => <IssueStatusBadge status={issue.status} />,
+  }
+}
+
+function RowLink({
+  href,
+  label,
+  hidden = false,
+}: {
+  href: string
+  label: string
+  hidden?: boolean
+}) {
   return (
     <Link
       href={href}
       aria-label={label}
+      aria-hidden={hidden || undefined}
+      tabIndex={hidden ? -1 : undefined}
       className="focus-visible:ring-ring absolute inset-0 z-10 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
     />
   )
@@ -81,10 +158,15 @@ export function IssueTableRow({
         <RowLink
           href={`${issuesHref}/${issue.identifier}`}
           label={`View issue ${issue.identifier}`}
+          hidden
         />
         <span className="text-info">{issue.identifier}</span>
       </TableCell>
       <TableCell className="relative px-5 py-4">
+        <RowLink
+          href={`${issuesHref}/${issue.identifier}`}
+          label={`View issue ${issue.identifier}`}
+        />
         <div className="min-w-0">
           <span className="text-[0.8125rem] font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
             {issue.title}
@@ -135,75 +217,86 @@ export function IssuesTable({
   emptyState,
 }: IssuesTableProps) {
   return (
-    <div className="876-card overflow-hidden">
-      <Table>
-        <TableHeader className="876-header-row">
-          <TableRow>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Identifier
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Title
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Status
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Priority
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Project
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Assignee
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-              Updated
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {issues.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="p-0">
-                {emptyState ?? (
-                  <Empty className="py-14">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <ClipboardList className="size-6" />
-                      </EmptyMedia>
-                      <EmptyTitle>No issues yet</EmptyTitle>
-                    </EmptyHeader>
-                    {newIssueHref ? (
-                      <EmptyContent>
-                        <Link
-                          href={newIssueHref}
-                          className={buttonVariants({
-                            variant: 'info',
-                            size: 'sm',
-                          })}
-                        >
-                          <Plus className="size-4" strokeWidth={2.25} />
-                          Add
-                        </Link>
-                      </EmptyContent>
-                    ) : null}
-                  </Empty>
-                )}
-              </TableCell>
-            </TableRow>
-          ) : (
-            issues.map((issue) => (
-              <IssueTableRow
-                key={issue.id}
-                issue={issue}
-                issuesHref={issuesHref}
-              />
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <ResponsiveList
+      rows={issues}
+      mapping={createIssueRow(issuesHref)}
+      empty={
+        <li className="text-muted-foreground px-4 py-10 text-center text-sm">
+          No issues yet
+        </li>
+      }
+      table={
+        <div className="876-card overflow-hidden">
+          <Table>
+            <TableHeader className="876-header-row">
+              <TableRow>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Identifier
+                </TableHead>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Title
+                </TableHead>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Status
+                </TableHead>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Priority
+                </TableHead>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Project
+                </TableHead>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Assignee
+                </TableHead>
+                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                  Updated
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {issues.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="p-0">
+                    {emptyState ?? (
+                      <Empty className="py-14">
+                        <EmptyHeader>
+                          <EmptyMedia variant="icon">
+                            <ClipboardList className="size-6" />
+                          </EmptyMedia>
+                          <EmptyTitle>No issues yet</EmptyTitle>
+                        </EmptyHeader>
+                        {newIssueHref ? (
+                          <EmptyContent>
+                            <Link
+                              href={newIssueHref}
+                              className={buttonVariants({
+                                variant: 'info',
+                                size: 'sm',
+                              })}
+                            >
+                              <Plus className="size-4" strokeWidth={2.25} />
+                              Add
+                            </Link>
+                          </EmptyContent>
+                        ) : null}
+                      </Empty>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                issues.map((issue) => (
+                  <IssueTableRow
+                    key={issue.id}
+                    issue={issue}
+                    issuesHref={issuesHref}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      }
+    />
   )
 }
 

@@ -4,6 +4,8 @@ import type { IssueEventRow, IssueRow } from './issues.serializers.js'
 
 export type ListIssuesOptions = {
   project?: string
+  milestoneId?: string
+  typeKey?: string
   status?: string[]
   priority?: string[]
   assignee?: string
@@ -20,6 +22,8 @@ export type ListIssuesOptions = {
 
 export type CountIssuesOptions = {
   project?: string
+  milestoneId?: string
+  typeKey?: string
   status?: string[]
   priority?: string[]
   assignee?: string
@@ -39,6 +43,10 @@ export type CreateIssueParams = {
   title: string
   description?: string | null
   status: string
+  workflowStateId?: string | null
+  typeKey: string
+  workItemTypeId?: string | null
+  milestoneId?: string | null
   priority: string
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -69,6 +77,10 @@ export type UpdateIssueParams = {
   title?: string
   description?: string | null
   status?: string
+  workflowStateId?: string | null
+  typeKey?: string
+  workItemTypeId?: string | null
+  milestoneId?: string | null
   priority?: string
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -88,7 +100,13 @@ export type IssueNumberAllocation = {
   number: number
 }
 
+export type IssueTransactionClient = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$extends' | '$on' | '$transaction' | '$use'
+>
+
 export type TransactionRepo = {
+  transactionClient: IssueTransactionClient
   allocateIssueNumber: (projectId: string) => Promise<IssueNumberAllocation>
   createIssue: (params: CreateIssueParams) => Promise<IssueRow>
   createEvent: (params: CreateEventParams) => Promise<IssueEventRow>
@@ -100,6 +118,8 @@ export function buildWhereClause(
   tenantId: string,
   options: {
     project?: string
+    milestoneId?: string
+    typeKey?: string
     status?: string[]
     priority?: string[]
     assignee?: string
@@ -110,13 +130,9 @@ export function buildWhereClause(
     includeDeleted?: boolean
   }
 ) {
-  const where: Record<string, unknown> = {
-    tenantId,
-  }
+  const where: Record<string, unknown> = { tenantId }
 
-  if (!options.includeDeleted) {
-    where.deletedAt = null
-  }
+  if (!options.includeDeleted) where.deletedAt = null
 
   if (options.project) {
     if (options.project.startsWith('prj_')) {
@@ -131,25 +147,19 @@ export function buildWhereClause(
     }
   }
 
-  if (options.status && options.status.length > 0) {
+  if (options.status && options.status.length > 0)
     where.status = { in: options.status }
-  }
-
-  if (options.priority && options.priority.length > 0) {
+  if (options.milestoneId) where.milestoneId = options.milestoneId
+  if (options.typeKey) where.typeKey = options.typeKey
+  if (options.priority && options.priority.length > 0)
     where.priority = { in: options.priority }
-  }
 
-  if (options.assignee !== undefined) {
+  if (options.assignee !== undefined)
     where.assigneeUserId = options.assignee === 'none' ? null : options.assignee
-  }
-
-  if (options.parent !== undefined) {
+  if (options.parent !== undefined)
     where.parentIssueId = options.parent === 'none' ? null : options.parent
-  }
-
-  if (options.updatedSince !== undefined) {
+  if (options.updatedSince !== undefined)
     where.updatedAt = { gte: BigInt(options.updatedSince) }
-  }
 
   const andConditions: Array<Record<string, unknown>> = []
 
@@ -178,10 +188,7 @@ export function buildWhereClause(
     })
   }
 
-  if (andConditions.length > 0) {
-    where.AND = andConditions
-  }
-
+  if (andConditions.length > 0) where.AND = andConditions
   return where
 }
 
@@ -245,8 +252,7 @@ export async function count(
   tenantId: string,
   options: CountIssuesOptions
 ): Promise<number> {
-  const where = buildWhereClause(tenantId, options)
-  return prisma.issue.count({ where })
+  return prisma.issue.count({ where: buildWhereClause(tenantId, options) })
 }
 
 export async function retrieve(
@@ -256,16 +262,13 @@ export async function retrieve(
   const row = await prisma.issue.findFirst({
     where: { tenantId, id },
     include: {
-      project: {
-        select: { key: true },
-      },
+      project: { select: { key: true } },
       labels: {
         include: { label: true },
         orderBy: { label: { name: 'asc' } },
       },
     },
   })
-
   return row as unknown as IssueRow | null
 }
 
@@ -274,20 +277,15 @@ export async function retrieveByIdentifier(
   identifier: string
 ): Promise<IssueRow | null> {
   const row = await prisma.issue.findUnique({
-    where: {
-      tenantId_identifier: { tenantId, identifier },
-    },
+    where: { tenantId_identifier: { tenantId, identifier } },
     include: {
-      project: {
-        select: { key: true },
-      },
+      project: { select: { key: true } },
       labels: {
         include: { label: true },
         orderBy: { label: { name: 'asc' } },
       },
     },
   })
-
   return row as unknown as IssueRow | null
 }
 
@@ -295,10 +293,9 @@ export async function retrieveByRef(
   tenantId: string,
   ref: string
 ): Promise<IssueRow | null> {
-  if (ref.startsWith('iss_')) {
-    return retrieve(tenantId, ref)
-  }
-  return retrieveByIdentifier(tenantId, ref.toUpperCase())
+  return ref.startsWith('iss_')
+    ? retrieve(tenantId, ref)
+    : retrieveByIdentifier(tenantId, ref.toUpperCase())
 }
 
 export async function listEvents(
@@ -309,7 +306,6 @@ export async function listEvents(
     where: { tenantId, issueId },
     orderBy: { createdAt: 'desc' },
   })
-
   return rows as unknown as IssueEventRow[]
 }
 
@@ -325,9 +321,7 @@ export async function softDelete(
 }
 
 export async function hardDelete(tenantId: string, id: string): Promise<void> {
-  await prisma.issue.delete({
-    where: { id },
-  })
+  await prisma.issue.delete({ where: { id } })
 }
 
 export async function getBatchEnrichment(issueIds: string[]): Promise<
@@ -351,61 +345,38 @@ export async function getBatchEnrichment(issueIds: string[]): Promise<
 
   if (issueIds.length === 0) return map
 
-  for (const id of issueIds) {
+  for (const id of issueIds)
     map.set(id, { labels: [], commentCount: 0, subIssueCount: 0 })
-  }
 
   const commentCounts = await prisma.comment.groupBy({
     by: ['issueId'],
-    where: {
-      issueId: { in: issueIds },
-      deletedAt: null,
-    },
+    where: { issueId: { in: issueIds }, deletedAt: null },
     _count: { id: true },
   })
-
-  for (const cc of commentCounts) {
-    const entry = map.get(cc.issueId)
-    if (entry) {
-      entry.commentCount = cc._count.id
-    }
+  for (const countRow of commentCounts) {
+    const entry = map.get(countRow.issueId)
+    if (entry) entry.commentCount = countRow._count.id
   }
 
   const subIssueCounts = await prisma.issue.groupBy({
     by: ['parentIssueId'],
-    where: {
-      parentIssueId: { in: issueIds },
-      deletedAt: null,
-    },
+    where: { parentIssueId: { in: issueIds }, deletedAt: null },
     _count: { id: true },
   })
-
-  for (const sic of subIssueCounts) {
-    if (sic.parentIssueId) {
-      const entry = map.get(sic.parentIssueId)
-      if (entry) {
-        entry.subIssueCount = sic._count.id
-      }
-    }
+  for (const countRow of subIssueCounts) {
+    if (!countRow.parentIssueId) continue
+    const entry = map.get(countRow.parentIssueId)
+    if (entry) entry.subIssueCount = countRow._count.id
   }
 
   const issueLabels = await prisma.issueLabel.findMany({
-    where: {
-      issueId: { in: issueIds },
-    },
-    include: {
-      label: true,
-    },
-    orderBy: {
-      label: { name: 'asc' },
-    },
+    where: { issueId: { in: issueIds } },
+    include: { label: true },
+    orderBy: { label: { name: 'asc' } },
   })
-
-  for (const il of issueLabels) {
-    const entry = map.get(il.issueId)
-    if (entry) {
-      entry.labels.push(il.label as LabelRow)
-    }
+  for (const issueLabel of issueLabels) {
+    const entry = map.get(issueLabel.issueId)
+    if (entry) entry.labels.push(issueLabel.label as LabelRow)
   }
 
   return map
@@ -415,18 +386,15 @@ export async function transaction<T>(
   callback: (tx: TransactionRepo) => Promise<T>
 ): Promise<T> {
   return prisma.$transaction(async (txPrisma) => {
+    const transactionClient = txPrisma as IssueTransactionClient
     const txRepo: TransactionRepo = {
-      // The increment is the allocation: a single UPDATE ... RETURNING takes the
-      // row lock and hands back the post-increment value, so two concurrent
-      // creates in the same project can never be given the same number. Reading
-      // the counter first and incrementing it afterwards would be a race.
+      transactionClient,
       allocateIssueNumber: async (projectId: string) => {
         const updated = await txPrisma.project.update({
           where: { id: projectId },
           data: { nextIssueNumber: { increment: 1 } },
           select: { id: true, key: true, nextIssueNumber: true },
         })
-
         return {
           projectId: updated.id,
           key: updated.key,
@@ -436,22 +404,16 @@ export async function transaction<T>(
       createIssue: async (params: CreateIssueParams) => {
         const row = await txPrisma.issue.create({
           data: params,
-          include: {
-            project: { select: { key: true } },
-          },
+          include: { project: { select: { key: true } } },
         })
         return row as unknown as IssueRow
       },
       createEvent: async (params: CreateEventParams) => {
-        const row = await txPrisma.issueEvent.create({
-          data: params,
-        })
+        const row = await txPrisma.issueEvent.create({ data: params })
         return row as unknown as IssueEventRow
       },
       setLabels: async (issueId: string, labelIds: string[]) => {
-        await txPrisma.issueLabel.deleteMany({
-          where: { issueId },
-        })
+        await txPrisma.issueLabel.deleteMany({ where: { issueId } })
         if (labelIds.length > 0) {
           await txPrisma.issueLabel.createMany({
             data: labelIds.map((labelId) => ({ issueId, labelId })),
@@ -462,9 +424,7 @@ export async function transaction<T>(
         const row = await txPrisma.issue.update({
           where: { id: issueId },
           data: params,
-          include: {
-            project: { select: { key: true } },
-          },
+          include: { project: { select: { key: true } } },
         })
         return row as unknown as IssueRow
       },

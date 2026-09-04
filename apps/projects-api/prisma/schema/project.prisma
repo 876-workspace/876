@@ -12,18 +12,22 @@ model Project {
   targetDate      BigInt? @map("target_date")
   nextIssueNumber Int     @default(1) @map("next_issue_number")
   customerId      String? @map("customer_id")  // opaque billing customer registry id
+  defaultWorkItemTypeId String? @map("default_work_item_type_id")
   position        Int     @default(0)
   archivedAt      BigInt? @map("archived_at")
   createdAt       BigInt  @map("created_at")
   updatedAt       BigInt  @map("updated_at")
 
   tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  defaultWorkItemType WorkItemType? @relation("ProjectDefaultWorkItemType", fields: [defaultWorkItemTypeId], references: [id], onDelete: SetNull)
   members ProjectMember[]
   issues  Issue[]
+  milestones Milestone[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])
   @@index([tenantId, status])
+  @@index([defaultWorkItemTypeId])
   @@map("projects_projects")
 }
 

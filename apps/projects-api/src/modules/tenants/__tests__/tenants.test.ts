@@ -1,15 +1,60 @@
 import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository } = vi.hoisted(() => ({
+const {
+  repository,
+  workStructureRepo,
+  projectsRepo,
+  labelsRepo,
+  commentsRepo,
+  issuesRepo,
+} = vi.hoisted(() => ({
   repository: {
     retrieveByOrganization: vi.fn(),
     retrieveById: vi.fn(),
     createWithTriageProject: vi.fn(),
   },
+  // `tenants.service.ts` calls `work-structure.service.ts`'s `seedPreset` to
+  // backfill a pre-Phase-2 tenant on `ensure()`. That file also imports the
+  // projects and issues modules for unrelated resources, and every one of
+  // those repositories connects to the DB pool at module-eval time — so each
+  // must be mocked here too, or importing `tenants.service.js` throws
+  // `PROJECTS_DATABASE_URL is not configured` before a single test runs.
+  workStructureRepo: { seedPreset: vi.fn() },
+  projectsRepo: { retrieve: vi.fn(), retrieveByKey: vi.fn() },
+  labelsRepo: { retrieve: vi.fn(), retrieveByName: vi.fn(), create: vi.fn() },
+  commentsRepo: {
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    softDelete: vi.fn(),
+    hardDelete: vi.fn(),
+  },
+  issuesRepo: {
+    list: vi.fn(),
+    count: vi.fn(),
+    retrieve: vi.fn(),
+    retrieveByIdentifier: vi.fn(),
+    retrieveByRef: vi.fn(),
+    listEvents: vi.fn(),
+    softDelete: vi.fn(),
+    hardDelete: vi.fn(),
+    getBatchEnrichment: vi.fn(),
+    transaction: vi.fn(),
+  },
 }))
 
 vi.mock('../tenants.repository.js', () => repository)
+vi.mock(
+  '../../work-structure/work-structure.repository.js',
+  () => workStructureRepo
+)
+vi.mock('../../projects/projects.repository.js', () => projectsRepo)
+vi.mock('../../labels/labels.repository.js', () => labelsRepo)
+vi.mock('../../comments/comments.repository.js', () => commentsRepo)
+vi.mock('../../issues/issues.repository.js', () => issuesRepo)
 
 const service = await import('../tenants.service.js')
 const { serializeTenant } = await import('../tenants.serializers.js')
@@ -115,6 +160,18 @@ describe('tenants module', () => {
     })
     expect(repository.retrieveByOrganization).toHaveBeenCalledWith('org_1')
     expect(repository.createWithTriageProject).not.toHaveBeenCalled()
+  })
+
+  it('ensure backfills the work-structure preset for a tenant provisioned before it existed', async () => {
+    repository.retrieveByOrganization.mockResolvedValue(existingTenantRow)
+
+    await service.ensure('org_1')
+
+    expect(workStructureRepo.seedPreset).toHaveBeenCalledTimes(1)
+    expect(workStructureRepo.seedPreset).toHaveBeenCalledWith(
+      existingTenantRow.id,
+      expect.objectContaining({ key: 'software-development' })
+    )
   })
 
   it("ensure sets triageProjectId to the created Triage project's id", async () => {
