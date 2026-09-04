@@ -188,7 +188,7 @@ describe('requireConsoleCrmPermission route guard', () => {
     mocks.isSignedSession.mockReturnValue(true)
     mocks.findConsoleAccess.mockResolvedValue(caller)
     mocks.resolveAccessContext.mockResolvedValue(
-      context(['console:access', 'console:requests'])
+      context(['console:access', 'crm/requests.view'])
     )
   })
 
