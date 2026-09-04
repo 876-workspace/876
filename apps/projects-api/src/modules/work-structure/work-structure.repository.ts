@@ -3,6 +3,15 @@ import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
 import type { WorkStructurePreset } from './presets.js'
 
+export type WorkStructureTransaction = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$extends' | '$on' | '$transaction' | '$use'
+>
+
+function db(transaction?: WorkStructureTransaction) {
+  return transaction ?? prisma
+}
+
 export async function listWorkItemTypes(tenantId: string) {
   return prisma.workItemType.findMany({
     where: { tenantId, archivedAt: null },
@@ -19,6 +28,13 @@ export async function retrieveWorkItemType(tenantId: string, id: string) {
 export async function retrieveWorkItemTypeByKey(tenantId: string, key: string) {
   return prisma.workItemType.findFirst({
     where: { tenantId, key, archivedAt: null },
+  })
+}
+
+export async function retrieveDefaultWorkItemType(tenantId: string) {
+  return prisma.workItemType.findFirst({
+    where: { tenantId, archivedAt: null, isDefault: true },
+    orderBy: [{ position: 'asc' }, { key: 'asc' }],
   })
 }
 
@@ -82,6 +98,13 @@ export async function retrieveWorkflowStateByKey(
 ) {
   return prisma.workflowState.findFirst({
     where: { tenantId, key, archivedAt: null },
+  })
+}
+
+export async function retrieveDefaultWorkflowState(tenantId: string) {
+  return prisma.workflowState.findFirst({
+    where: { tenantId, archivedAt: null, isDefault: true },
+    orderBy: [{ position: 'asc' }, { key: 'asc' }],
   })
 }
 
@@ -201,16 +224,23 @@ export async function retrieveCycle(tenantId: string, id: string) {
   return prisma.cycle.findFirst({ where: { tenantId, id } })
 }
 
-export async function listCustomFields(tenantId: string) {
-  return prisma.customField.findMany({
+export async function listCustomFields(
+  tenantId: string,
+  transaction?: WorkStructureTransaction
+) {
+  return db(transaction).customField.findMany({
     where: { tenantId, archivedAt: null },
     include: { types: true },
     orderBy: [{ position: 'asc' }, { key: 'asc' }],
   })
 }
 
-export async function retrieveCustomField(tenantId: string, id: string) {
-  return prisma.customField.findFirst({
+export async function retrieveCustomField(
+  tenantId: string,
+  id: string,
+  transaction?: WorkStructureTransaction
+) {
+  return db(transaction).customField.findFirst({
     where: { tenantId, id, archivedAt: null },
     include: { types: true },
   })
@@ -270,31 +300,38 @@ export async function archiveCustomField(
   })
 }
 
-export async function listCustomFieldValues(tenantId: string, issueId: string) {
-  return prisma.customFieldValue.findMany({
+export async function listCustomFieldValues(
+  tenantId: string,
+  issueId: string,
+  transaction?: WorkStructureTransaction
+) {
+  return db(transaction).customFieldValue.findMany({
     where: { tenantId, issueId },
     include: { field: { include: { types: true } } },
     orderBy: { field: { position: 'asc' } },
   })
 }
 
-export async function upsertCustomFieldValue(data: {
-  id: string
-  tenantId: string
-  issueId: string
-  fieldId: string
-  stringValue: string | null
-  integerValue: number | null
-  decimalValue: string | null
-  booleanValue: boolean | null
-  dateValue: bigint | null
-  selectKey: string | null
-  selectKeys: string[]
-  updatedBy: string | null
-  createdAt: bigint
-  updatedAt: bigint
-}) {
-  return prisma.customFieldValue.upsert({
+export async function upsertCustomFieldValue(
+  data: {
+    id: string
+    tenantId: string
+    issueId: string
+    fieldId: string
+    stringValue: string | null
+    integerValue: number | null
+    decimalValue: string | null
+    booleanValue: boolean | null
+    dateValue: bigint | null
+    selectKey: string | null
+    selectKeys: string[]
+    updatedBy: string | null
+    createdAt: bigint
+    updatedAt: bigint
+  },
+  transaction?: WorkStructureTransaction
+) {
+  return db(transaction).customFieldValue.upsert({
     where: {
       issueId_fieldId: { issueId: data.issueId, fieldId: data.fieldId },
     },
@@ -317,9 +354,10 @@ export async function upsertCustomFieldValue(data: {
 export async function clearCustomFieldValue(
   tenantId: string,
   issueId: string,
-  fieldId: string
+  fieldId: string,
+  transaction?: WorkStructureTransaction
 ) {
-  await prisma.customFieldValue.deleteMany({
+  await db(transaction).customFieldValue.deleteMany({
     where: { tenantId, issueId, fieldId },
   })
 }
