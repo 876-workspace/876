@@ -32,11 +32,6 @@ export const createCommentBodySchema = z.strictObject({
 
 export const updateCommentBodySchema = z.strictObject({
   body: z.string().trim().min(1).max(10000),
-  actorUserId: z.string().trim().min(1),
-})
-
-export const deleteCommentQuerySchema = z.strictObject({
-  actorUserId: z.string().trim().min(1),
 })
 
 export type ListCommentsQuery = z.infer<typeof listCommentsQuerySchema>
