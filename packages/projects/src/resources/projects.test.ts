@@ -19,6 +19,7 @@ const sampleProject: Project = {
   targetDate: 1700000000,
   nextIssueNumber: 13,
   customerId: null,
+  defaultWorkItemTypeId: 'wit_task_1',
   position: 0,
   archivedAt: null,
   createdAt: 1680000000,
@@ -184,7 +185,7 @@ describe('resources — projects', () => {
     )
   })
 
-  it('create sends POST /v1/organizations/:org/projects with input body', async () => {
+  it('create forwards a project-level default work item type', async () => {
     fetch.mockResolvedValueOnce(jsonResponse(sampleProject, 201))
 
     const input = {
@@ -193,6 +194,7 @@ describe('resources — projects', () => {
       description: 'Console application project',
       status: 'active' as const,
       health: 'on-track' as const,
+      defaultWorkItemTypeId: 'wit_task_1',
     }
 
     const result = await client.projects.create('org_1', input)
@@ -212,11 +214,12 @@ describe('resources — projects', () => {
     )
   })
 
-  it('retrieve sends GET /v1/organizations/:org/projects/:id with encoded id', async () => {
+  it('retrieve preserves the project-level default work item type', async () => {
     fetch.mockResolvedValueOnce(jsonResponse(sampleProject))
 
     const result = await client.projects.retrieve('org_1', 'prj 1')
     expect(result.data).toEqual(sampleProject)
+    expect(result.data?.defaultWorkItemTypeId).toBe('wit_task_1')
     expect(result.error).toBeNull()
 
     expect(fetch).toHaveBeenCalledWith(
@@ -231,11 +234,18 @@ describe('resources — projects', () => {
     )
   })
 
-  it('update sends PATCH /v1/organizations/:org/projects/:id with partial input', async () => {
-    const updated = { ...sampleProject, status: 'paused' as const }
+  it('update can clear a project-level default work item type', async () => {
+    const updated = {
+      ...sampleProject,
+      status: 'paused' as const,
+      defaultWorkItemTypeId: null,
+    }
     fetch.mockResolvedValueOnce(jsonResponse(updated))
 
-    const input = { status: 'paused' as const }
+    const input = {
+      status: 'paused' as const,
+      defaultWorkItemTypeId: null,
+    }
     const result = await client.projects.update('org_1', 'prj_1', input)
     expect(result.data).toEqual(updated)
     expect(result.error).toBeNull()
@@ -317,7 +327,7 @@ describe('resources — projects', () => {
     expect(deleteResult.error).toBeNull()
   })
 
-  it('comments resource performs actor-bound operations against issue comment endpoints', async () => {
+  it('comments resource uses privileged internal comment endpoints without actor identity parameters', async () => {
     fetch.mockResolvedValueOnce(
       jsonResponse({
         object: 'list',
@@ -334,20 +344,18 @@ describe('resources — projects', () => {
     expect(listResult.data?.data).toEqual([sampleComment])
     expect(listResult.error).toBeNull()
 
-    expect(fetch).toHaveBeenCalledWith(
-      'http://projects.test/v1/organizations/org_1/issues/CONSOLE-12/comments?limit=10',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'test-key',
-        },
-      }
+    fetch.mockResolvedValueOnce(jsonResponse(sampleComment))
+    const retrieveResult = await client.comments.retrieve(
+      'org_1',
+      'CONSOLE-12',
+      'cmt_1'
     )
+    expect(retrieveResult.data).toEqual(sampleComment)
 
     fetch.mockResolvedValueOnce(jsonResponse(sampleComment, 201))
     const createResult = await client.comments.create('org_1', 'CONSOLE-12', {
       body: 'Sample comment body',
+      authorUserId: 'usr_1',
     })
     expect(createResult.data).toEqual(sampleComment)
     expect(createResult.error).toBeNull()
@@ -358,7 +366,7 @@ describe('resources — projects', () => {
       'org_1',
       'CONSOLE-12',
       'cmt_1',
-      { body: 'Updated body', actorUserId: 'usr_1' }
+      { body: 'Updated body' }
     )
     expect(updateResult.data).toEqual(updatedComment)
     expect(fetch).toHaveBeenLastCalledWith(
@@ -369,7 +377,7 @@ describe('resources — projects', () => {
           'Content-Type': 'application/json',
           'x-internal-key': 'test-key',
         },
-        body: JSON.stringify({ body: 'Updated body', actorUserId: 'usr_1' }),
+        body: JSON.stringify({ body: 'Updated body' }),
       }
     )
 
@@ -379,13 +387,12 @@ describe('resources — projects', () => {
     const deleteResult = await client.comments.delete(
       'org_1',
       'CONSOLE-12',
-      'cmt_1',
-      'usr_1'
+      'cmt_1'
     )
     expect(deleteResult.data?.deleted).toBe(true)
     expect(deleteResult.error).toBeNull()
     expect(fetch).toHaveBeenLastCalledWith(
-      'http://projects.test/v1/organizations/org_1/issues/CONSOLE-12/comments/cmt_1?actorUserId=usr_1',
+      'http://projects.test/v1/organizations/org_1/issues/CONSOLE-12/comments/cmt_1',
       {
         method: 'DELETE',
         headers: {
