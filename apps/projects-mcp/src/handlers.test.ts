@@ -1,18 +1,20 @@
-import type { ToolResult } from './format'
-import type {
-  Comment,
-  Issue,
-  IssueEvent,
-  Label,
-  Project,
-  Tenant,
-} from '@876/projects/contracts'
-import { create876ProjectsOperatorClient } from '@876/projects/operator'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Config } from './config'
 import {
+  config,
+  createClient,
+  mockComment,
+  mockEvent,
+  mockIssue,
+  mockLabel,
+  mockProject,
+  mockTenant,
+  textOf,
+} from './handlers.test-fixtures'
+import {
   handleIssueComment,
+  handleIssueComments,
   handleIssueCreate,
   handleIssueEvents,
   handleIssueGet,
@@ -27,119 +29,8 @@ import {
   handleWorkspaceGet,
 } from './handlers'
 
-/** Narrows the SDK's content union to the text block these tools always emit. */
-function textOf(result: ToolResult, index = 0): string {
-  const block = result.content[index]
-  if (!block || block.type !== 'text')
-    throw new Error(`expected a text content block at ${index}`)
-  return block.text
-}
-
-const config: Config = {
-  apiUrl: 'http://localhost:4030',
-  internalKey: 'test-internal-key',
-  organizationId: 'org_test_123',
-}
-
-const mockTenant: Tenant = {
-  object: 'projects.tenant',
-  id: 'tnt_123',
-  organizationId: 'org_test_123',
-  triageProjectId: 'prj_triage',
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-}
-
-const mockProject: Project = {
-  object: 'projects.project',
-  id: 'prj_console',
-  tenantId: 'tnt_123',
-  name: 'Console',
-  key: 'CONSOLE',
-  slug: 'console',
-  description: 'Console product',
-  leadUserId: 'usr_lead',
-  status: 'active',
-  health: 'on-track',
-  startDate: 1788400000,
-  targetDate: 1788500000,
-  nextIssueNumber: 2,
-  customerId: null,
-  position: 0,
-  archivedAt: null,
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-  memberCount: 3,
-}
-
-const mockIssue: Issue = {
-  object: 'projects.issue',
-  id: 'iss_123',
-  tenantId: 'tnt_123',
-  projectId: 'prj_console',
-  projectKey: 'CONSOLE',
-  number: 12,
-  identifier: 'CONSOLE-12',
-  title: 'Fix workspace detail 404s',
-  description: 'Test description',
-  status: 'in-progress',
-  priority: 'high',
-  assigneeUserId: 'usr_assignee',
-  creatorUserId: 'usr_creator',
-  parentIssueId: null,
-  estimate: 2,
-  dueDate: 1788500000,
-  position: 0,
-  labels: [],
-  commentCount: 1,
-  subIssueCount: 0,
-  startedAt: 1788400000,
-  completedAt: null,
-  canceledAt: null,
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-}
-
-const mockComment: Comment = {
-  object: 'projects.comment',
-  id: 'cmt_123',
-  tenantId: 'tnt_123',
-  issueId: 'iss_123',
-  authorUserId: 'usr_author',
-  body: 'This is a test comment',
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-}
-
-const mockLabel: Label = {
-  object: 'projects.label',
-  id: 'lbl_123',
-  tenantId: 'tnt_123',
-  name: 'bug',
-  color: '#e11d48',
-  description: 'Bug report',
-  createdAt: 1788400000,
-  updatedAt: 1788400000,
-}
-
-const mockEvent: IssueEvent = {
-  object: 'projects.issue-event',
-  id: 'evt_123',
-  issueId: 'iss_123',
-  actorUserId: 'usr_actor',
-  type: 'status-changed',
-  fromValue: 'todo',
-  toValue: 'in-progress',
-  createdAt: 1788400000,
-}
-
 describe('handlers', () => {
-  const fetchMock = vi.fn<typeof globalThis.fetch>()
-  const client = create876ProjectsOperatorClient({
-    baseUrl: 'http://localhost:4030',
-    internalKey: 'test-internal-key',
-    fetch: fetchMock,
-  })
+  const { client, fetchMock } = createClient()
 
   beforeEach(() => {
     fetchMock.mockReset()
@@ -239,12 +130,247 @@ describe('handlers', () => {
 
     const result = await handleIssueGet(client, config, {
       issue: 'CONSOLE-12',
+      includeComments: false,
     })
 
     expect(retrieveSpy).toHaveBeenCalledTimes(1)
     expect(retrieveSpy).toHaveBeenCalledWith('org_test_123', 'CONSOLE-12')
     expect(result.isError).toBeUndefined()
     expect(textOf(result)).toContain('CONSOLE-12: Fix workspace detail 404s')
+  })
+
+  it('issue_get includes the comment thread by default', async () => {
+    vi.spyOn(client.issues, 'retrieve').mockResolvedValueOnce({
+      data: mockIssue,
+      error: null,
+    })
+    const listSpy = vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: {
+        object: 'list',
+        data: [mockComment],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org_test_123/issues/CONSOLE-12/comments',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueGet(client, config, {
+      issue: 'CONSOLE-12',
+    })
+
+    expect(listSpy).toHaveBeenCalledWith('org_test_123', 'CONSOLE-12')
+    expect(result.isError).toBeUndefined()
+    expect(textOf(result)).toContain('CONSOLE-12: Fix workspace detail 404s')
+    expect(textOf(result)).toContain('This is a test comment')
+  })
+
+  it('issue_get with includeComments skips the comments client entirely', async () => {
+    vi.spyOn(client.issues, 'retrieve').mockResolvedValueOnce({
+      data: mockIssue,
+      error: null,
+    })
+    const listSpy = vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/v1/organizations/org_test_123/issues/CONSOLE-12/comments',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueGet(client, config, {
+      issue: 'CONSOLE-12',
+      includeComments: false,
+    })
+
+    expect(listSpy).not.toHaveBeenCalled()
+    expect(result.isError).toBeUndefined()
+    expect(textOf(result)).toContain('Comments: 1')
+    expect(textOf(result)).not.toContain('This is a test comment')
+  })
+
+  it('issue_get surfaces a comments failure instead of partial issue text', async () => {
+    vi.spyOn(client.issues, 'retrieve').mockResolvedValueOnce({
+      data: mockIssue,
+      error: null,
+    })
+    vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: null,
+      error: { code: 'projects/issue-not-found', message: 'Gone.' },
+    })
+
+    const result = await handleIssueGet(client, config, {
+      issue: 'CONSOLE-12',
+    })
+
+    expect(result.isError).toBe(true)
+    expect(textOf(result)).toContain('projects/issue-not-found')
+  })
+
+  it('issue_get still reports the issue error before touching comments', async () => {
+    const retrieveSpy = vi
+      .spyOn(client.issues, 'retrieve')
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'projects/issue-not-found', message: 'Gone.' },
+      })
+    const listSpy = vi.spyOn(client.comments, 'list')
+
+    const result = await handleIssueGet(client, config, {
+      issue: 'CONSOLE-12',
+    })
+
+    expect(retrieveSpy).toHaveBeenCalledTimes(1)
+    expect(listSpy).not.toHaveBeenCalled()
+    expect(result.isError).toBe(true)
+  })
+
+  it('issue_comments rejects a missing issue without calling the client', async () => {
+    const listSpy = vi.spyOn(client.comments, 'list')
+
+    const result = await handleIssueComments(client, config, {})
+
+    expect(listSpy).not.toHaveBeenCalled()
+    expect(result.isError).toBe(true)
+    expect(textOf(result)).toContain('validation/invalid-arguments')
+  })
+
+  it('issue_comments rejects a limit of zero without calling the client', async () => {
+    const listSpy = vi.spyOn(client.comments, 'list')
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+      limit: 0,
+    })
+
+    expect(listSpy).not.toHaveBeenCalled()
+    expect(result.isError).toBe(true)
+  })
+
+  it('issue_comments rejects a limit above 100 without calling the client', async () => {
+    const listSpy = vi.spyOn(client.comments, 'list')
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+      limit: 101,
+    })
+
+    expect(listSpy).not.toHaveBeenCalled()
+    expect(result.isError).toBe(true)
+  })
+
+  it('issue_comments rejects unknown keys without calling the client', async () => {
+    const listSpy = vi.spyOn(client.comments, 'list')
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+      since: '2026-01-01',
+    })
+
+    expect(listSpy).not.toHaveBeenCalled()
+    expect(result.isError).toBe(true)
+  })
+
+  it('issue_comments renders an empty thread as zero comments', async () => {
+    vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/v1/organizations/org_test_123/issues/CONSOLE-12/comments',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+    })
+
+    expect(result.isError).toBeUndefined()
+    expect(textOf(result)).toContain('0 comments recorded.')
+  })
+
+  it('issue_comments preserves oldest-first order across the thread', async () => {
+    const older = { ...mockComment, id: 'cmt_old', body: 'First thought' }
+    const newer = { ...mockComment, id: 'cmt_new', body: 'Second thought' }
+    vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: {
+        object: 'list',
+        data: [older, newer],
+        has_more: false,
+        total_count: 2,
+        url: '/v1/organizations/org_test_123/issues/CONSOLE-12/comments',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+    })
+
+    const text = textOf(result)
+    expect(text.indexOf('First thought')).toBeLessThan(
+      text.indexOf('Second thought')
+    )
+  })
+
+  it('issue_comments omits the limit param when the caller passes none', async () => {
+    const listSpy = vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: {
+        object: 'list',
+        data: [mockComment],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org_test_123/issues/CONSOLE-12/comments',
+      },
+      error: null,
+    })
+
+    await handleIssueComments(client, config, { issue: 'CONSOLE-12' })
+
+    expect(listSpy).toHaveBeenCalledWith('org_test_123', 'CONSOLE-12', {})
+  })
+
+  it('issue_comments passes an explicit limit through to the client', async () => {
+    const listSpy = vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: {
+        object: 'list',
+        data: [mockComment],
+        has_more: false,
+        total_count: 1,
+        url: '/v1/organizations/org_test_123/issues/CONSOLE-12/comments',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+      limit: 20,
+    })
+
+    expect(listSpy).toHaveBeenCalledWith('org_test_123', 'CONSOLE-12', {
+      limit: 20,
+    })
+    expect(result.isError).toBeUndefined()
+    expect(textOf(result)).toContain('This is a test comment')
+  })
+
+  it('issue_comments surfaces a client error with its code', async () => {
+    vi.spyOn(client.comments, 'list').mockResolvedValueOnce({
+      data: null,
+      error: { code: 'projects/issue-not-found', message: 'Gone.' },
+    })
+
+    const result = await handleIssueComments(client, config, {
+      issue: 'CONSOLE-12',
+    })
+
+    expect(result.isError).toBe(true)
+    expect(textOf(result)).toContain('projects/issue-not-found')
   })
 
   it("a client error result becomes isError: true carrying the error's code and message", async () => {

@@ -20,15 +20,19 @@ import { z } from 'zod'
 import type { Config } from './config'
 import {
   formatComment,
+  formatComments,
   formatError,
   formatIssue,
   formatIssueEventList,
   formatIssueList,
   formatLabel,
   formatLabelList,
+  formatMilestoneList,
   formatProject,
   formatProjectList,
   formatSuccess,
+  formatWorkflowStateList,
+  formatWorkItemTypeList,
   formatWorkspace,
   type ToolResult,
 } from './format'
@@ -118,6 +122,7 @@ const issuesListArgsSchema = z
 const issueGetArgsSchema = z
   .object({
     issue: z.string().trim().min(1),
+    includeComments: z.boolean().optional(),
   })
   .strict()
 
@@ -159,6 +164,13 @@ const issueCommentArgsSchema = z
   })
   .strict()
 
+const issueCommentsArgsSchema = z
+  .object({
+    issue: z.string().trim().min(1),
+    limit: z.number().int().min(1).max(100).optional(),
+  })
+  .strict()
+
 const issueEventsArgsSchema = z
   .object({
     issue: z.string().trim().min(1),
@@ -166,6 +178,17 @@ const issueEventsArgsSchema = z
   .strict()
 
 const labelsListArgsSchema = z.object({}).strict()
+
+const workItemTypesListArgsSchema = z.object({}).strict()
+
+const workflowStatesListArgsSchema = z.object({}).strict()
+
+const milestonesListArgsSchema = z
+  .object({
+    projectId: z.string().trim().min(1),
+    status: z.enum(['open', 'completed', 'canceled']).optional(),
+  })
+  .strict()
 
 const labelCreateArgsSchema = z
   .object({
@@ -471,7 +494,18 @@ export async function handleIssueGet(
   if (result.error !== null) {
     return formatError(result.error)
   }
-  return formatSuccess(formatIssue(result.data))
+  if (parsed.data.includeComments === false)
+    return formatSuccess(formatIssue(result.data))
+
+  const comments = await client.comments.list(
+    config.organizationId,
+    parsed.data.issue
+  )
+  if (comments.error !== null) return formatError(comments.error)
+
+  return formatSuccess(
+    `${formatIssue(result.data)}\n\n${formatComments(comments.data.data)}`
+  )
 }
 
 export async function handleIssueCreate(
@@ -600,6 +634,33 @@ export async function handleIssueComment(
   return formatSuccess(formatComment(result.data))
 }
 
+export async function handleIssueComments(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = issueCommentsArgsSchema.safeParse(args)
+  if (!parsed.success) {
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+  }
+
+  const result = await client.comments.list(
+    config.organizationId,
+    parsed.data.issue,
+    {
+      ...(parsed.data.limit !== undefined ? { limit: parsed.data.limit } : {}),
+    }
+  )
+  if (result.error !== null) return formatError(result.error)
+
+  return formatSuccess(formatComments(result.data.data))
+}
+
 export async function handleIssueEvents(
   client: ProjectsOperatorClient,
   config: Config,
@@ -645,6 +706,80 @@ export async function handleLabelsList(
     return formatError(result.error)
   }
   return formatSuccess(formatLabelList(result.data))
+}
+
+export async function handleWorkItemTypesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = workItemTypesListArgsSchema.safeParse(args ?? {})
+  if (!parsed.success) {
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+  }
+
+  const result = await client.workItemTypes.list(config.organizationId)
+  if (result.error !== null) return formatError(result.error)
+  return formatSuccess(
+    formatWorkItemTypeList({
+      ...result.data,
+      data: result.data.data.filter((type) => type.archivedAt === null),
+    })
+  )
+}
+
+export async function handleWorkflowStatesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = workflowStatesListArgsSchema.safeParse(args ?? {})
+  if (!parsed.success) {
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+  }
+
+  const result = await client.workflowStates.list(config.organizationId)
+  if (result.error !== null) return formatError(result.error)
+  return formatSuccess(
+    formatWorkflowStateList({
+      ...result.data,
+      data: result.data.data.filter((state) => state.archivedAt === null),
+    })
+  )
+}
+
+export async function handleMilestonesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = milestonesListArgsSchema.safeParse(args)
+  if (!parsed.success) {
+    return formatError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', '),
+    })
+  }
+
+  const result = await client.milestones.list(
+    config.organizationId,
+    parsed.data.projectId,
+    parsed.data.status !== undefined ? { status: parsed.data.status } : {}
+  )
+  if (result.error !== null) return formatError(result.error)
+  return formatSuccess(formatMilestoneList(result.data))
 }
 
 export async function handleLabelCreate(
@@ -693,7 +828,11 @@ export const HANDLERS: Record<
   issue_create: handleIssueCreate,
   issue_update: handleIssueUpdate,
   issue_comment: handleIssueComment,
+  issue_comments: handleIssueComments,
   issue_events: handleIssueEvents,
   labels_list: handleLabelsList,
+  work_item_types_list: handleWorkItemTypesList,
+  workflow_states_list: handleWorkflowStatesList,
+  milestones_list: handleMilestonesList,
   label_create: handleLabelCreate,
 }

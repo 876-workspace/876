@@ -176,7 +176,7 @@ export const TOOLS: readonly ToolDefinition[] = [
   {
     name: 'issues_list',
     description:
-      'List issues in the 876 Projects workspace. Filter by project (id or key such as CONSOLE), status, priority, assignee, label, or free text. Use updatedSince to fetch only what changed since a given time — that is the cheap way to catch up. Returns at most 100 issues, most recently updated first.',
+      'List issues in the 876 Projects workspace. Comments often carry the requester’s specification, so retrieve an issue before implementing. Filter by project (id or key such as CONSOLE), status, priority, assignee, label, or free text. Use updatedSince to fetch only what changed since a given time — that is the cheap way to catch up. Returns at most 100 issues, most recently updated first.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -242,7 +242,7 @@ export const TOOLS: readonly ToolDefinition[] = [
   {
     name: 'issue_get',
     description:
-      'Retrieve a single issue in the 876 Projects workspace by its unique ID or identifier (such as CONSOLE-12). Returns full issue details including status, priority, labels, timestamps, and comment count.',
+      'Retrieve a single issue in the 876 Projects workspace by its unique ID or identifier (such as CONSOLE-12). Comments carry the requester’s own specification and must be read before implementing; they are included by default. Returns full issue details including status, priority, labels, timestamps, and comment count.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -250,6 +250,10 @@ export const TOOLS: readonly ToolDefinition[] = [
           type: 'string',
           description:
             'The unique issue ID (iss_...) or human-readable identifier (such as CONSOLE-12).',
+        },
+        includeComments: {
+          type: 'boolean',
+          description: 'Include the full comment thread (default: true).',
         },
       },
       required: ['issue'],
@@ -410,6 +414,25 @@ export const TOOLS: readonly ToolDefinition[] = [
     },
   },
   {
+    name: 'issue_comments',
+    description:
+      'Read an issue comment thread oldest first. Comments carry the requester’s specification and must be read before implementing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        issue: {
+          type: 'string',
+          description: 'The issue ID or identifier (such as CONSOLE-12).',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum comments to return (1 to 100).',
+        },
+      },
+      required: ['issue'],
+    },
+  },
+  {
     name: 'issue_events',
     description:
       'Retrieve the audit history and activity events for an issue in the 876 Projects workspace by its ID or identifier (such as CONSOLE-12). Returns chronological lifecycle events including status and priority changes.',
@@ -432,6 +455,46 @@ export const TOOLS: readonly ToolDefinition[] = [
     inputSchema: {
       type: 'object',
       properties: {},
+    },
+  },
+  {
+    name: 'work_item_types_list',
+    description:
+      'List active work item types configured for the 876 Projects workspace. Use the returned keys before creating or updating an issue so its type is valid.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'workflow_states_list',
+    description:
+      'List active workflow states configured for the 876 Projects workspace. Use the returned keys before creating or updating an issue so its state is valid.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'milestones_list',
+    description:
+      'List milestones for one project in the 876 Projects workspace. Use the returned milestone keys and status before assigning work to a project milestone.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description:
+            'The unique project ID (prj_...) whose milestones to list.',
+        },
+        status: {
+          type: 'string',
+          description:
+            'Optional milestone status filter (open, completed, canceled).',
+          enum: ['open', 'completed', 'canceled'],
+        },
+      },
+      required: ['projectId'],
     },
   },
   {

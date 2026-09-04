@@ -22,17 +22,23 @@ describe('client / runtime', () => {
     process.env = originalEnv
   })
 
-  it('create876ProjectsClient exposes exactly the five resource namespaces', () => {
+  it('create876ProjectsClient exposes all resource namespaces', () => {
     const client = create876ProjectsClient({
       baseUrl: 'http://test.api',
       internalKey: 'key_1',
     })
     expect(Object.keys(client).sort()).toEqual([
       'comments',
+      'customFieldValues',
+      'customFields',
       'issues',
       'labels',
+      'milestones',
+      'presets',
       'projects',
       'tenants',
+      'workItemTypes',
+      'workflowStates',
     ])
   })
 
@@ -120,17 +126,29 @@ describe('client / runtime', () => {
 
     expect(Object.keys(operatorClient).sort()).toEqual([
       'comments',
+      'customFieldValues',
+      'customFields',
       'issues',
       'labels',
+      'milestones',
+      'presets',
       'projects',
       'tenants',
+      'workItemTypes',
+      'workflowStates',
     ])
     expect(Object.keys(serviceClient).sort()).toEqual([
       'comments',
+      'customFieldValues',
+      'customFields',
       'issues',
       'labels',
+      'milestones',
+      'presets',
       'projects',
       'tenants',
+      'workItemTypes',
+      'workflowStates',
     ])
   })
 
