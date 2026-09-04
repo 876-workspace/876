@@ -38,6 +38,23 @@ vi.mock('@/features/orgs/org-data', () => ({
 
 import { IssueDetailData } from '@/features/projects/components/issue-detail-data'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
+
 const mockIssue: Issue = {
   object: 'projects.issue',
   id: 'issue_99',
@@ -50,6 +67,11 @@ const mockIssue: Issue = {
   description:
     'Pressure drops below nominal thresholds during orbital sunrise.',
   status: 'in-progress',
+  typeKey: 'task',
+  type: sampleType,
+  state: null,
+  milestone: null,
+  customFields: [],
   priority: 'urgent',
   assigneeUserId: 'user_flight_dir',
   creatorUserId: 'user_sensor_bot',

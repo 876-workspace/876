@@ -35,6 +35,23 @@ vi.mock('@/features/orgs/org-data', () => ({
 import ProjectsWorkspaceOverviewPage from './page'
 import { OverviewData } from '@/features/projects/components/overview-data'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'tenant_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1700000000,
+  updatedAt: 1700000000,
+}
+
 const mockProjects: Project[] = [
   {
     object: 'projects.project',
@@ -51,6 +68,7 @@ const mockProjects: Project[] = [
     targetDate: null,
     nextIssueNumber: 10,
     customerId: null,
+    defaultWorkItemTypeId: null,
     position: 1,
     archivedAt: null,
     createdAt: 1700000000,
@@ -71,6 +89,11 @@ const mockIssues: Issue[] = [
     title: 'Wheel motor calibration',
     description: null,
     status: 'in-progress',
+    typeKey: 'task',
+    type: sampleType,
+    state: null,
+    milestone: null,
+    customFields: [],
     priority: 'high',
     assigneeUserId: 'user_eng',
     creatorUserId: 'user_1',
