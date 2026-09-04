@@ -2,9 +2,8 @@
 
 - **Run ID:** `2026-09-03-console-workspace-and-sidebar`
 - **Branch:** `feat/console-contextual-sidebar`
-- **Status:** `IN_PROGRESS` — Phases 1 and 3 complete; Phase 2 mostly complete
-  (Operations section added, registry consolidation + docs update remain);
-  Phase 3.5 and Phase 4 not started
+- **Status:** `IN_PROGRESS` — Phases 1, 2, and 3 complete; Phase 3.5 (operator
+  permission model) and Phase 4 (cross-org operations) not started
 - **Owner:** raheemdevs
 
 > This file is written from a long spoken briefing. It deliberately records the
@@ -602,10 +601,42 @@ from the URL.
       the tab and the rail entry cannot drift. **Overview** already existed and
       already serves as the reporting/rollup surface described in §3.3 (billing
       stats today) — no separate item was needed for it.
-- [ ] Extract the one product-integration registry (§3.4) and fold
-      `REGISTRIES`, `app-workspaces.ts`, and the per-product `_components`
-      page factories into it. **Blocked on the §3.4 reading of "Integrations".**
-- [ ] Update `docs/architecture/017-console-app-data-management.md`.
+- [x] **§3.4 confirmed with the user (2026-09-04): the product-integration
+      registry reading, not third-party integrations.** Proceeded with the
+      registry consolidation below.
+- [x] Folded the duplicate identity out of the two registries (2026-09-04).
+      `workspace-navigation.ts`'s `REGISTRIES` map (appSlug + Billing/Invoice
+      `NavGroupDefinition[]`, keyed by workspace segment) restated the same
+      `appSlug` `app-workspaces.ts`'s `APP_WORKSPACES` already declared, so the
+      two could in principle disagree. `AppWorkspace` gained an optional
+      `navigationGroups` field; Billing and Invoice's groups moved onto their
+      entry; `resolveWorkspaceNavigation` now reads
+      `workspaceDefinition.navigationGroups`/`appSlug` directly, and
+      `REGISTRIES` is gone. CRM/Projects/Couriers are unaffected — they still
+      fall back to `sections` unfiltered, because those products' navigation
+      has not moved into a shared contract package yet (that is real
+      cross-package work, out of scope here).
+
+      **Scoped down from the plan's literal ask.** "Fold the per-product
+      `_components` page factories into it" was not done: `finance-workspace-
+      pages.tsx` (Billing/Invoice, already shared) and
+      `couriers-workspace-pages.tsx` are real React components with Suspense
+      boundaries and data fetching, not data a registry can hold, and were
+      already correctly factored (one factory per plane, parameterized by
+      `workspaceKey`/`appLabel`) — merging them further had no duplication to
+      remove and only risk to add. The `navigationGroups`/`permission prefix`/
+      `cross-org ops surface`/`Console data module` fields from the plan's
+      full spec were **not** added speculatively: `permission prefix` and
+      `cross-org ops surface` have no consumer until Phase 3.5/4 exist, and
+      adding unused fields now is exactly what `ai-code-quality.md`'s
+      abstraction budget forbids. Add them when Phase 3.5/4 need them.
+- [x] Updated `docs/architecture/017-console-app-data-management.md`
+      (2026-09-04): added a "Registering a product's workspace surface"
+      section naming `APP_WORKSPACES` as the concrete registration point, and
+      fixed a stale reference to composing onto a "canonical `$876` server
+      facade" — that aggregator does not exist and current rules
+      (`sdk-conventions.md`, `workspace-control-plane.md`) forbid it; Console
+      composes explicit bounded roots under `src/lib/services/`.
 - [x] **Known gap closed in Phase 3**, not here: a second `@mobilenav` slot
       mirrors `@sidebar` (see Phase 3), so mobile now sees the product/workspace
       context in both places. The line above is stale; left for the record.
@@ -755,15 +786,16 @@ switchers, `?from=` entry-point tracking, the second-rail absorption, and the
 were verified in the foreground, not from a delegate's report. This section
 previously understated that; corrected 2026-09-04.
 
-**Phase 2 gained its Operations placeholder section** (2026-09-04, see above).
-What remains of Phase 2 is the product-integration registry consolidation and
-the `docs/architecture/017` update, both blocked on confirming the §3.4 reading
-of "Integrations" with the user (recommend proceeding with the
-product-integration-registry reading already argued in §3.4 — it is the
-reading consistent with the rest of the plan's Phase 2/3 work; only revisit if
-the user means third-party integrations instead).
+**Phase 2 is now fully complete** (2026-09-04): the Operations placeholder
+section, the §3.4 confirmation (product-integration registry reading), the
+registry consolidation (`navigationGroups` folded onto `APP_WORKSPACES`,
+`REGISTRIES` deleted), and the `docs/architecture/017` update are all done —
+see the checklist above for what was scoped down from the plan's literal
+wording and why.
 
-Verified in the foreground on the working tree (2026-09-04):
+Verified in the foreground on the working tree (2026-09-04, after the registry
+consolidation — `.next/` was stale from a prior session and regenerated,
+unrelated to this change):
 
 ```
 typecheck            clean
@@ -772,18 +804,16 @@ test                 163 files / 1573 tests passing
 check-app-structure  OK
 ```
 
-**Add `next dev` to §10.** The static gates cannot see a parallel-route
-specificity collision, so a rail change that passes every one of them can still
-fail to boot. (Not re-run this session — no route-tree/layout/slot files
-changed, only a leaf page + two data files.)
+`next dev` boot was **not** re-run this session — no route-tree/layout/slot
+files changed in either the Operations addition or the registry consolidation,
+only leaf pages and data-only modules. Re-run it before merging if anything
+route-shaped changes.
 
 Next session should pick from, in rough priority order:
 
-1. §3.4 confirmation, then the product-integration registry consolidation and
-   the `docs/architecture/017` update (finishes Phase 2).
-2. Phase 3.5 — the operator permission model (§6). Has several open questions
-   (§6.4) that likely need the user before implementation: generated vs
-   hand-declared key projection, whether an operator-exclusive key implies its
-   read key (plan recommends no), and where the role editor lives.
-3. Phase 4 — one thin cross-org operator list end to end (recommend CRM
+1. Phase 3.5 — the operator permission model (§6). Has several open questions
+   (§6.4) that need the user before implementation: generated vs hand-declared
+   key projection, whether an operator-exclusive key implies its read key
+   (plan recommends no), and where the role editor lives.
+2. Phase 4 — one thin cross-org operator list end to end (recommend CRM
    requests), proving the pattern and stopping there.
