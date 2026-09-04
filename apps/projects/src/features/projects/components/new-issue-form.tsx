@@ -66,9 +66,7 @@ export function NewIssueForm({
   const [description, setDescription] = useState('')
   const [projectId, setProjectId] = useState('')
   const [typeKey, setTypeKey] = useState(
-    workItemTypes.find((type) => type.isDefault)?.key ??
-      workItemTypes[0]?.key ??
-      'task'
+    workItemTypes.find((type) => type.isDefault)?.key ?? ''
   )
   const [status, setStatus] = useState(
     workflowStates.find((state) => state.isDefault)?.key ?? ''
@@ -81,6 +79,10 @@ export function NewIssueForm({
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
 
+  const selectedWorkItemType = useMemo(
+    () => workItemTypes.find((type) => type.key === typeKey) ?? null,
+    [workItemTypes, typeKey]
+  )
   const availableMilestones = useMemo(
     () => milestones.filter((milestone) => milestone.projectId === projectId),
     [milestones, projectId]
@@ -88,9 +90,12 @@ export function NewIssueForm({
   const applicableFields = useMemo(
     () =>
       customFields.filter(
-        (field) => field.typeIds.length === 0 || field.typeIds.includes(typeKey)
+        (field) =>
+          field.typeIds.length === 0 ||
+          (selectedWorkItemType !== null &&
+            field.typeIds.includes(selectedWorkItemType.id))
       ),
-    [customFields, typeKey]
+    [customFields, selectedWorkItemType]
   )
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -200,6 +205,7 @@ export function NewIssueForm({
           onChange={(event) => setTypeKey(event.target.value)}
           className="w-full"
         >
+          <option value="">Default work item type</option>
           {workItemTypes.map((type) => (
             <option key={type.id} value={type.key}>
               {type.name}
