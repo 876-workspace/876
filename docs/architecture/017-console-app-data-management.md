@@ -1,6 +1,6 @@
 # 017 — Managing an organization's app data from Console
 
-**Status:** accepted, updated 2026-08-29.
+**Status:** accepted, updated 2026-09-04.
 **Builds on:** ADR-016, ADR-018, `.claude/rules/access-tiers.md`, and
 `.claude/rules/platform-services.md`.
 
@@ -102,14 +102,63 @@ See `docs/service-workspace-integration-guide.md`.
 1. Confirm the capability exists in its owning service.
 2. Add/verify an operator route pointing at that same service function.
 3. Add the typed operator method to the owning package.
-4. Compose it into Console's canonical `$876` server facade.
+4. Add or update the matching domain module under Console's
+   `src/lib/services/` (`platform`, `workspace`, `billing`, `crm`, …) — never a
+   `$876` aggregator; see `.claude/rules/sdk-conventions.md` and
+   `.claude/rules/workspace-control-plane.md`. Call that root directly from the
+   surface that needs it.
 5. Add the Console route/surface using Console resource vocabulary.
 6. Authorize client mutations in a thin same-origin route handler before calling
-   the facade.
+   the domain module.
 7. Add audit and tenant-direction regression coverage.
 
 If this requires duplicating business logic in Console, the capability is in the
 wrong layer.
+
+## Registering a product's workspace surface
+
+Every product Console can open as an organization's workspace
+(`/workspace/[orgSlug]/[appSlug]`) is declared once, as plain data, in
+`apps/console/src/features/orgs/app-workspaces.ts`'s `APP_WORKSPACES`. This is
+the concrete Console-side registration point the sections above describe in the
+general case; adding a product's workspace is editing this one array plus its
+route folder, not touching the shell, the layout factory, or the sidebar/mobile
+navigation resolvers.
+
+One `AppWorkspace` entry declares:
+
+- `appSlug` — the platform app slug that gates entitlement.
+- `key` — the URL segment under `/workspace/[orgSlug]`.
+- `label`, `summary`, `iconKey` — how the product presents itself in the
+  launcher and the app/org switchers.
+- `sections` — the workspace's own screens, each with a segment, label, and
+  icon, and an optional `entryKey` binding it to a permission-catalog entry.
+- `navigationGroups` (optional) — the product's own `NavGroupDefinition[]`,
+  imported from that product's contract package (`@876/billing/navigation`
+  today), when one exists. `resolveWorkspaceNavigation` uses it to filter
+  `sections` by the organization's actual entitlement/feature state, exactly as
+  that product's own members see it. A workspace without one falls back to
+  `sections` unfiltered — this is the state CRM, Projects, and Couriers are in
+  today, because their navigation registries have not moved into a shared
+  contract package yet.
+
+Registering a new workspace:
+
+1. Add the `AppWorkspace` entry to `APP_WORKSPACES`.
+2. Add the route folder under `app/(app)/workspace/[orgSlug]/<key>/`, with
+   `layout.tsx` exporting `createWorkspaceLayout('<key>')`.
+3. Implement each section's `page.tsx`. Reuse a shared page factory
+   (`finance-workspace-pages.tsx` for the Billing/Invoice finance plane,
+   `couriers-workspace-pages.tsx` for Couriers) when the screen is generic
+   CRUD-over-a-list; write the page directly when it renders shared product UI
+   (`@876/<product>-ui`), as CRM and Projects do.
+4. If the product's navigation has moved into a shared contract package, wire
+   `navigationGroups` so the rail reflects the organization's real
+   entitlement/feature state rather than the static section list.
+
+Nothing else needs to change: the sidebar (`@sidebar/workspace/...`), the
+mobile sheet (`@mobilenav/workspace/...`), the org/app switchers, and the
+workspace header all resolve from this one registry.
 
 ## Do not
 
