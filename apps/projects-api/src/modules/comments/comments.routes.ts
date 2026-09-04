@@ -8,6 +8,7 @@ export function createCommentsRouter(): Router {
 
   router.get('/', requireInternalKey, controller.list)
   router.post('/', requireInternalKey, controller.create)
+  router.get('/:commentId', requireInternalKey, controller.retrieve)
   router.patch('/:commentId', requireInternalKey, controller.update)
   router.delete('/:commentId', requireInternalKey, controller.remove)
 
