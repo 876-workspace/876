@@ -72,15 +72,44 @@ export function operatorProductCatalogs(): AppPermissionCatalog[] {
   )
 }
 
-/** The Console-only action(s) that exist outside any product's own catalog. */
-const OPERATOR_EXCLUSIVE_ACTIONS = ['purge'] as const
+/**
+ * The Console-only action(s) that exist outside any product's own catalog,
+ * each with its own label template and danger flag.
+ *
+ * `view-all` is the §3.3 cross-organization operator list — "all open
+ * requests from every organization" — as opposed to a product's own `view`,
+ * which is scoped to one organization by construction (the CRM API's
+ * `GET /v1/requests` cross-org route is itself gated by a shared internal
+ * service credential, not a per-operator one; the *only* per-operator
+ * authorization boundary for who among Console's staff may see every
+ * organization's data at once is this key). Not dangerous — it discloses
+ * data, it doesn't destroy it — so it is withheld from `isDangerous`.
+ *
+ * `.claude/rules/access-control.md` and §6.4 of the plan deliberately leave
+ * room for more (an intervention/dispute action, for instance) without
+ * pre-declaring keys no feature grants meaning to yet — add an entry here
+ * only when a real capability needs it.
+ */
+const OPERATOR_EXCLUSIVE_ACTIONS: readonly {
+  action: string
+  label: (appLabel: string) => string
+  isDangerous: boolean
+}[] = [
+  {
+    action: 'purge',
+    label: (appLabel) => `Purge ${appLabel} records`,
+    isDangerous: true,
+  },
+  {
+    action: 'view-all',
+    label: (appLabel) => `View ${appLabel} records across every organization`,
+    isDangerous: false,
+  },
+]
 
 /**
- * The Console-only catalog: one `purge` permission per product, and nothing
- * else yet. `.claude/rules/access-control.md` and §6.4 of the plan deliberately
- * leave room for more (an intervention/dispute action, for instance) without
- * pre-declaring keys no feature grants meaning to yet — add the action to
- * `OPERATOR_EXCLUSIVE_ACTIONS` when a real capability needs it.
+ * The Console-only catalog: one `purge` and one `view-all` permission per
+ * product today. See `OPERATOR_EXCLUSIVE_ACTIONS` for what each means.
  */
 export function operatorExclusiveCatalog(): AppPermissionCatalog {
   const modules = productAppSlugs().map((appSlug, position) => {
@@ -91,12 +120,12 @@ export function operatorExclusiveCatalog(): AppPermissionCatalog {
       label: catalog.app,
       position,
       permissions: OPERATOR_EXCLUSIVE_ACTIONS.map(
-        (action, actionIndex): AppPermission => ({
+        ({ action, label, isDangerous }, actionIndex): AppPermission => ({
           key: `console:${namespace}.${action}`,
           moduleKey: namespace,
           action,
-          label: `Purge ${catalog.app} records`,
-          isDangerous: true,
+          label: label(catalog.app),
+          isDangerous,
           position: actionIndex,
         })
       ),
@@ -151,9 +180,17 @@ export function projectedPermissionKeys(
     .map((permission) => permission.key)
 }
 
-/** Every Console-only operator-exclusive key (purge, today). */
-export function operatorExclusivePermissionKeys(): string[] {
-  return operatorExclusiveCatalog().permissions.map(
-    (permission) => permission.key
-  )
+/**
+ * Every Console-only operator-exclusive key, optionally narrowed by action
+ * (e.g. `'view-all'` for the cross-organization read grant, without also
+ * pulling in `'purge'`).
+ */
+export function operatorExclusivePermissionKeys(
+  actionFilter?: (action: string) => boolean
+): string[] {
+  return operatorExclusiveCatalog()
+    .permissions.filter(
+      (permission) => !actionFilter || actionFilter(permission.action)
+    )
+    .map((permission) => permission.key)
 }

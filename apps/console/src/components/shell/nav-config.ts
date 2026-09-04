@@ -115,6 +115,13 @@ export const navConfig = defineNavigation([
             icon: 'forms',
             requires: { permission: 'crm/requests.view' },
           },
+          {
+            key: 'requests-all',
+            title: 'All Organizations',
+            href: '/requests/all',
+            icon: 'reports',
+            requires: { permission: 'console:crm.view-all' },
+          },
         ],
       },
       {

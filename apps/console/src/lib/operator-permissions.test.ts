@@ -76,16 +76,21 @@ describe('operatorProductCatalogs', () => {
 })
 
 describe('operatorExclusiveCatalog', () => {
-  it('declares exactly one purge permission per non-console product', () => {
+  it('declares exactly one purge and one view-all permission per non-console product', () => {
     const catalog = operatorExclusiveCatalog()
-    const expectedCount = Object.keys(appPermissionCatalogs).filter(
+    const productCount = Object.keys(appPermissionCatalogs).filter(
       (slug) => slug !== 'console'
     ).length
 
-    expect(catalog.permissions).toHaveLength(expectedCount)
+    expect(catalog.permissions).toHaveLength(productCount * 2)
     expect(
-      catalog.permissions.every((permission) => permission.action === 'purge')
-    ).toBe(true)
+      catalog.permissions.filter((permission) => permission.action === 'purge')
+    ).toHaveLength(productCount)
+    expect(
+      catalog.permissions.filter(
+        (permission) => permission.action === 'view-all'
+      )
+    ).toHaveLength(productCount)
   })
 
   it('namespaces every operator-exclusive key under console:, never a product namespace', () => {
@@ -97,11 +102,18 @@ describe('operatorExclusiveCatalog', () => {
     }
   })
 
-  it('marks every operator-exclusive permission as dangerous', () => {
+  it('marks purge as dangerous and view-all as not', () => {
     const catalog = operatorExclusiveCatalog()
 
     expect(
-      catalog.permissions.every((permission) => permission.isDangerous)
+      catalog.permissions
+        .filter((permission) => permission.action === 'purge')
+        .every((permission) => permission.isDangerous)
+    ).toBe(true)
+    expect(
+      catalog.permissions
+        .filter((permission) => permission.action === 'view-all')
+        .every((permission) => !permission.isDangerous)
     ).toBe(true)
   })
 

@@ -32,8 +32,8 @@ const OPERATOR_UNIVERSE_KEYS = new Set([
 
 const EXPECTED_ROLE_COUNTS = {
   staff: 70,
-  admin: 229,
-  'super-admin': 241,
+  admin: 234,
+  'super-admin': 246,
 } as const
 
 describe('Console permission catalog', () => {
@@ -112,19 +112,36 @@ describe('Console permission catalog', () => {
     expect(missing).toEqual([])
   })
 
-  it('reserves every operator-exclusive (purge) key for super admin alone', () => {
-    const exclusiveKeys = operatorExclusivePermissionKeys()
+  it('reserves every purge key for super admin alone', () => {
+    const purgeKeys = operatorExclusivePermissionKeys(
+      (action) => action === 'purge'
+    )
 
     for (const role of SYSTEM_ROLE_DEFINITIONS) {
       const held = role.permissions.filter((permission) =>
-        exclusiveKeys.includes(permission)
+        purgeKeys.includes(permission)
       )
 
       if (role.name === CONSOLE_SUPER_ADMIN_ROLE) {
-        expect(held.sort()).toEqual([...exclusiveKeys].sort())
+        expect(held.sort()).toEqual([...purgeKeys].sort())
       } else {
         expect(held).toEqual([])
       }
+    }
+  })
+
+  it('grants the cross-organization view-all key to admin and super admin, never staff', () => {
+    const viewAllKeys = operatorExclusivePermissionKeys(
+      (action) => action === 'view-all'
+    )
+
+    for (const role of SYSTEM_ROLE_DEFINITIONS) {
+      const held = role.permissions.filter((permission) =>
+        viewAllKeys.includes(permission)
+      )
+
+      if (role.name === 'staff') expect(held).toEqual([])
+      else expect(held.sort()).toEqual([...viewAllKeys].sort())
     }
   })
 

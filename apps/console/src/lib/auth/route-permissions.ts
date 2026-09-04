@@ -14,6 +14,7 @@ export const ROUTE_PERMISSIONS = {
   '/widgets': 'console:widgets',
   '/features': 'console:features',
   '/requests': 'crm/requests.view',
+  '/requests/all': 'console:crm.view-all',
   '/security': 'console:security',
   '/storage': 'console:storage',
   '/reports': 'console:reports',

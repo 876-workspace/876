@@ -5,7 +5,10 @@ import {
   toStoredPermissionKeys,
 } from '@876/core/access/catalogs'
 import { can, resolveEffectivePermissions } from '@876/core/access'
-import { operatorProductCatalogs } from '@/lib/operator-permissions'
+import {
+  operatorExclusiveCatalog,
+  operatorProductCatalogs,
+} from '@/lib/operator-permissions'
 
 describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
   it('maps /requests to crm/requests.view (not support)', () => {
@@ -26,6 +29,9 @@ describe('ROUTE_PERMISSIONS — route to permission mapping', () => {
       ),
       ...operatorProductCatalogs().flatMap((catalog) =>
         catalog.permissions.map((permission) => permission.key)
+      ),
+      ...operatorExclusiveCatalog().permissions.map(
+        (permission) => permission.key
       ),
     ])
     for (const [route, perm] of Object.entries(ROUTE_PERMISSIONS)) {

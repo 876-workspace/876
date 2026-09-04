@@ -5,7 +5,10 @@ import { describe, expect, it } from 'vitest'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
 import { navConfig } from '@/components/shell/nav-config'
 import { SETTINGS_NAVIGATION } from '@/components/shell/settings-options'
-import { operatorProductCatalogs } from '@/lib/operator-permissions'
+import {
+  operatorExclusiveCatalog,
+  operatorProductCatalogs,
+} from '@/lib/operator-permissions'
 import { SYSTEM_ROLE_DEFINITIONS } from '@/lib/permissions'
 import { ROUTE_PERMISSIONS } from './route-permissions'
 
@@ -85,6 +88,7 @@ describe('ROUTE_PERMISSIONS', () => {
       '/widgets': 'console:widgets',
       '/features': 'console:features',
       '/requests': 'crm/requests.view',
+      '/requests/all': 'console:crm.view-all',
       '/security': 'console:security',
       '/storage': 'console:storage',
       '/reports': 'console:reports',
@@ -121,6 +125,9 @@ describe('ROUTE_PERMISSIONS', () => {
       ),
       ...operatorProductCatalogs().flatMap((catalog) =>
         catalog.permissions.map((permission) => permission.key)
+      ),
+      ...operatorExclusiveCatalog().permissions.map(
+        (permission) => permission.key
       ),
     ])
     expect(
@@ -167,6 +174,7 @@ describe('ROUTE_PERMISSIONS', () => {
       '/widgets',
       '/features',
       '/requests',
+      '/requests/all',
       '/storage',
       '/reports',
       '/settings',

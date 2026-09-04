@@ -88,6 +88,16 @@ const PRODUCT_ALL = projectedPermissionKeys()
  */
 const OPERATOR_EXCLUSIVE_ALL = operatorExclusivePermissionKeys()
 
+/**
+ * The cross-organization read grant, per product — "all open requests from
+ * every organization" (plan §3.3). Unlike purge this discloses rather than
+ * destroys, so it is granted to admin as well as super-admin, not reserved
+ * to the top role alone.
+ */
+const OPERATOR_CROSS_ORG_VIEW = operatorExclusivePermissionKeys(
+  (action) => action === 'view-all'
+)
+
 /** Permission that gates entry to Console itself. */
 export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 
@@ -184,6 +194,7 @@ export const SYSTEM_ROLE_DEFINITIONS: SystemRole[] = [
       ...RESOURCE_WRITE,
       ...TEAM_MANAGE,
       ...PRODUCT_ALL,
+      ...OPERATOR_CROSS_ORG_VIEW,
     ],
   },
   {
