@@ -230,7 +230,7 @@ function CommentItem({
               <DropdownMenuContent align="end" className="w-36">
                 {canEdit ? (
                   <DropdownMenuItem
-                    onSelect={() => {
+                    onClick={() => {
                       setDraft(comment.body)
                       setEditing(true)
                     }}
@@ -242,7 +242,7 @@ function CommentItem({
                 {canDelete ? (
                   <DropdownMenuItem
                     variant="destructive"
-                    onSelect={() => {
+                    onClick={() => {
                       setDeleteError(null)
                       setConfirmingDelete(true)
                     }}
