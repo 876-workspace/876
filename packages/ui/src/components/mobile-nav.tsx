@@ -3,7 +3,7 @@
 import { createElement, type ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
-import { PanelLeftIcon } from '../icons'
+import { MenuIcon } from '../icons'
 import { cn } from '../lib/utils'
 import {
   DropdownMenu,
@@ -71,7 +71,7 @@ export function MobileNavDropdown({
         )}
         aria-label="Open navigation"
       >
-        <PanelLeftIcon className="size-5 text-[#3c4043] dark:text-white/75" />
+        <MenuIcon className="size-5 text-[#3c4043] dark:text-white/75" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start" className="w-52">

@@ -21,6 +21,7 @@ import {
   ChatBubbleLeftIcon,
   CheckCircleIcon,
   CheckIcon,
+  ChevronDoubleLeftIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -171,6 +172,7 @@ export {
   UserIcon,
   UserPlusIcon,
   UsersIcon,
+  ChevronDoubleLeftIcon,
   WindowIcon,
   XCircleIcon,
   XMarkIcon,
@@ -237,7 +239,9 @@ export const Monitor = ComputerDesktopIcon
 export const Moon = MoonIcon
 export const MoreHorizontalIcon = EllipsisHorizontalIcon
 export const OctagonXIcon = XCircleIcon
-export const PanelLeftIcon = Bars3BottomLeftIcon
+export const MenuIcon = Bars3BottomLeftIcon
+/** Returns one level up a drill-down stack; a single arrow means "previous". */
+export const ChevronsLeft = ChevronDoubleLeftIcon
 export const Pencil = PencilSquareIcon
 export const Plus = PlusIcon
 export const RefreshCw = ArrowPathIcon
@@ -296,3 +300,10 @@ export const SidebarPanelIcon = (
     }),
     React.createElement('path', { d: 'M9 3v18' })
   )
+
+/**
+ * The sidebar toggle. A rounded panel, not three stacked lines: this control
+ * shows and hides a docked rail, while a hamburger is the icon for a menu that
+ * opens over the page — which is what `MenuIcon` stays for.
+ */
+export const PanelLeftIcon = SidebarPanelIcon

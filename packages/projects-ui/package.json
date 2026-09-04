@@ -31,6 +31,10 @@
       "types": "./src/issue-detail.tsx",
       "default": "./src/issue-detail.tsx"
     },
+    "./issue-comments": {
+      "types": "./src/issue-comments.tsx",
+      "default": "./src/issue-comments.tsx"
+    },
     "./issue-board": {
       "types": "./src/issue-board.tsx",
       "default": "./src/issue-board.tsx"

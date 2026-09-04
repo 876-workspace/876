@@ -54,21 +54,33 @@ describe('SettingsHub', () => {
   it('renders a planned item without a link and with its badge', () => {
     render(<SettingsHub groups={groups} />)
 
-    expect(screen.queryByRole('link', { name: 'Members' })).not.toBeInTheDocument()
-    expect(screen.getByText('Members').parentElement).toHaveTextContent('Planned')
+    expect(
+      screen.queryByRole('link', { name: 'Members' })
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Members').parentElement).toHaveTextContent(
+      'Planned'
+    )
   })
 
   it('treats an available item without an href as planned', () => {
     const missingHref: SettingsHubGroup[] = [
       {
         label: 'Guard',
-        items: [{ label: 'No destination', icon: 'access', availability: 'available' }],
+        items: [
+          {
+            label: 'No destination',
+            icon: 'access',
+            availability: 'available',
+          },
+        ],
       },
     ]
 
     render(<SettingsHub groups={missingHref} />)
 
-    expect(screen.queryByRole('link', { name: 'No destination' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'No destination' })
+    ).not.toBeInTheDocument()
     expect(screen.getByText('No destination').parentElement).toHaveTextContent(
       'Planned'
     )
@@ -85,7 +97,9 @@ describe('SettingsHub', () => {
 
     render(<SettingsHub groups={emptyGroup} />)
 
-    const section = screen.getByRole('heading', { name: 'Empty' }).closest('section')
+    const section = screen
+      .getByRole('heading', { name: 'Empty' })
+      .closest('section')
     expect(section?.querySelector('ul')?.children).toHaveLength(0)
   })
 
@@ -137,7 +151,9 @@ describe('SettingsHub', () => {
     render(<SettingsHub groups={groups} />)
 
     expect(
-      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)
+      screen
+        .getAllByRole('heading', { level: 2 })
+        .map((heading) => heading.textContent)
     ).toEqual(['Workspace', 'Requests'])
   })
 
@@ -158,7 +174,9 @@ describe('SettingsHub', () => {
 
     render(<SettingsHub groups={duplicateGroups} />)
 
-    expect(screen.getAllByRole('heading', { name: 'Duplicate' })).toHaveLength(2)
+    expect(screen.getAllByRole('heading', { name: 'Duplicate' })).toHaveLength(
+      2
+    )
   })
 
   it('renders markup-like group text as text', () => {
@@ -166,9 +184,9 @@ describe('SettingsHub', () => {
 
     render(<SettingsHub groups={[{ label: markupLabel, items: [] }]} />)
 
-    expect(screen.getByRole('heading', { name: markupLabel })).toHaveTextContent(
-      markupLabel
-    )
+    expect(
+      screen.getByRole('heading', { name: markupLabel })
+    ).toHaveTextContent(markupLabel)
     expect(document.querySelector('script')).toBeNull()
   })
 })
