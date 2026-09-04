@@ -121,11 +121,12 @@ describe('updateWorkItemTypeBodySchema', () => {
     expect(parsed.success).toBe(true)
   })
 
-  it('fills hierarchyLevel from its default on an empty update', () => {
-    // hierarchyLevel carries .default(1) through .partial(), so an empty
-    // update parses rather than tripping the non-empty refine. Locked in as
-    // observed behavior; flagged as a production question in the test report.
-    const parsed = updateWorkItemTypeBodySchema.safeParse({})
+  it('rejects an empty update without applying create-time defaults', () => {
+    expect(updateWorkItemTypeBodySchema.safeParse({}).success).toBe(false)
+  })
+
+  it('accepts an explicit hierarchy level update', () => {
+    const parsed = updateWorkItemTypeBodySchema.safeParse({ hierarchyLevel: 1 })
 
     expect(parsed.success).toBe(true)
     if (parsed.success) expect(parsed.data).toEqual({ hierarchyLevel: 1 })
@@ -299,7 +300,7 @@ describe('updateMilestoneBodySchema', () => {
 })
 
 describe('createCustomFieldBodySchema', () => {
-  it('accepts each of the ten typed field kinds', () => {
+  it('accepts each non-option typed field kind', () => {
     for (const fieldType of [
       'text',
       'textarea',
@@ -307,8 +308,6 @@ describe('createCustomFieldBodySchema', () => {
       'decimal',
       'boolean',
       'date',
-      'select',
-      'multi-select',
       'user',
       'url',
     ]) {
@@ -319,6 +318,37 @@ describe('createCustomFieldBodySchema', () => {
       })
       expect(parsed.success).toBe(true)
     }
+  })
+
+  it('requires options for select and multi-select fields', () => {
+    for (const fieldType of ['select', 'multi-select']) {
+      expect(
+        createCustomFieldBodySchema.safeParse({
+          key: 'severity',
+          label: 'Severity',
+          fieldType,
+        }).success
+      ).toBe(false)
+      expect(
+        createCustomFieldBodySchema.safeParse({
+          key: 'severity',
+          label: 'Severity',
+          fieldType,
+          options: [{ key: 'high', label: 'High' }],
+        }).success
+      ).toBe(true)
+    }
+  })
+
+  it('rejects options on non-select fields', () => {
+    expect(
+      createCustomFieldBodySchema.safeParse({
+        key: 'severity',
+        label: 'Severity',
+        fieldType: 'text',
+        options: [{ key: 'high', label: 'High' }],
+      }).success
+    ).toBe(false)
   })
 
   it('rejects an unknown field kind', () => {
@@ -345,6 +375,20 @@ describe('createCustomFieldBodySchema', () => {
     expect(parsed.success).toBe(true)
   })
 
+  it('rejects duplicate select option keys', () => {
+    const parsed = createCustomFieldBodySchema.safeParse({
+      key: 'severity',
+      label: 'Severity',
+      fieldType: 'select',
+      options: [
+        { key: 'high', label: 'High' },
+        { key: 'high', label: 'Very high' },
+      ],
+    })
+
+    expect(parsed.success).toBe(false)
+  })
+
   it('rejects select options with non-kebab keys', () => {
     const parsed = createCustomFieldBodySchema.safeParse({
       key: 'severity',
@@ -366,6 +410,17 @@ describe('updateCustomFieldBodySchema', () => {
 
   it('rejects an empty update with no fields', () => {
     expect(updateCustomFieldBodySchema.safeParse({}).success).toBe(false)
+  })
+
+  it('rejects duplicate option keys', () => {
+    expect(
+      updateCustomFieldBodySchema.safeParse({
+        options: [
+          { key: 'high', label: 'High' },
+          { key: 'high', label: 'Very high' },
+        ],
+      }).success
+    ).toBe(false)
   })
 
   it('rejects a key change through the update schema', () => {
