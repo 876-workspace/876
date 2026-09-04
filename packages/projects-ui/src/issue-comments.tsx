@@ -20,10 +20,9 @@ import {
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
 import { MoreHorizontalIcon, Pencil, Trash } from '@876/ui/icons'
-import { MarkdownEditor } from '@876/ui/markdown-editor'
-import { useState } from 'react'
-
 import { Markdown } from '@876/ui/markdown'
+import { MarkdownEditor } from '@876/ui/markdown-editor'
+import { useEffect, useState } from 'react'
 
 type CommentResult = {
   data: Comment | null
@@ -64,6 +63,10 @@ export function IssueComments({
   const [body, setBody] = useState('')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
+
+  useEffect(() => {
+    setItems([...comments])
+  }, [comments])
 
   async function submit() {
     const trimmed = body.trim()
@@ -166,6 +169,7 @@ function CommentItem({
   const [draft, setDraft] = useState(comment.body)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
+  const [deleteError, setDeleteError] = useState<AppErrorValue | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const canEdit = canModify && Boolean(onUpdateComment)
@@ -195,12 +199,18 @@ function CommentItem({
   async function confirmDelete() {
     if (pending || !onDeleteComment) return
     setPending(true)
+    setDeleteError(null)
     const result = await onDeleteComment(comment.id)
     setPending(false)
-    if (result.data?.deleted) {
-      setConfirmingDelete(false)
-      onDeleted(comment.id)
+    if (!result.data?.deleted || result.error) {
+      setDeleteError({
+        code: result.error?.code ?? 'projects/comment-delete-failed',
+        message: result.error?.message ?? 'Comment could not be deleted.',
+      })
+      return
     }
+    setConfirmingDelete(false)
+    onDeleted(comment.id)
   }
 
   return (
@@ -232,7 +242,10 @@ function CommentItem({
                 {canDelete ? (
                   <DropdownMenuItem
                     variant="destructive"
-                    onSelect={() => setConfirmingDelete(true)}
+                    onSelect={() => {
+                      setDeleteError(null)
+                      setConfirmingDelete(true)
+                    }}
                   >
                     <Trash aria-hidden="true" className="size-4" />
                     Delete
@@ -244,7 +257,10 @@ function CommentItem({
           {canDelete ? (
             <AlertDialog
               open={confirmingDelete}
-              onOpenChange={setConfirmingDelete}
+              onOpenChange={(open) => {
+                setConfirmingDelete(open)
+                if (!open) setDeleteError(null)
+              }}
             >
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -253,6 +269,13 @@ function CommentItem({
                     This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                {deleteError ? (
+                  <AppError
+                    title="Comment not deleted"
+                    error={deleteError}
+                    variant="banner"
+                  />
+                ) : null}
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
