@@ -64,11 +64,59 @@ renders its own sidebar into a parallel slot:
 
 ```
 src/app/(app)/
-  layout.tsx                             receives `sidebar`, passes it to Shell
+  layout.tsx                                  receives `sidebar`, passes to Shell
   @sidebar/
-    default.tsx                          every unmatched route
-    apps/[slug]/[[...section]]/page.tsx  the product rail, kind-resolved
+    default.tsx                               every unmatched route
+    apps/[slug]/page.tsx                       the product rail at the record
+    apps/[slug]/[...section]/page.tsx          and below it
+    workspace/[orgSlug]/[...section]/page.tsx  one org's product workspace
+  @mobilenav/                                the same tree, for the sheet
+    default.tsx
+    apps/[slug]/page.tsx
+    apps/[slug]/[...section]/page.tsx
+    workspace/[orgSlug]/[...section]/page.tsx
 ```
+
+**`@mobilenav` is a second slot, not a duplicate.** `MobileNav` renders in the
+header, above the body where `@sidebar` renders, so it cannot read the sidebar's
+node — and hard-coding the platform contexts there is what left a phone showing
+the platform rail while the desktop rail showed the product. The two slots stay
+in step because each segment's contexts are resolved **once**, by a shared
+function the two slot pages both call: `resolveWorkspaceContexts` in
+`features/orgs/` and `resolveAppContexts` beside the app record's `_data`. Add a
+context to one slot and not the other and the rail and the sheet will disagree;
+add it to the shared resolver and both get it.
+
+`resolveAppContexts` lives under `app/` rather than `features/` because it reads
+the app record's route loader, and `features/` may not import route code.
+
+**Catch-alls here are required, never optional.** Next.js refuses a route tree
+where a concrete route and an optional catch-all share a node — "You cannot
+define a route with the same specificity as a optional catch-all route" — and
+both `/apps/[slug]` and `/workspace/[orgSlug]` are real pages. It surfaces only
+when the dev server boots: `typecheck` and `next typegen` both pass, so this is
+a case where running the app is the only check that works. The apps slot pairs a
+base `page.tsx` with a required `[...section]`; the workspace slot needs no base
+page, because `/workspace/<org>` is the launcher index and should keep the
+platform rail.
+
+The workspace slot is why a workspace has no rail of its own. It is a top-level
+route, so entering it swaps _this_ rail to that product's navigation rather than
+opening a second one inside the page — one rendering of the navigation, not two
+free to drift. Its first segment is the workspace key; `/workspace/<org>` alone
+is the launcher index and contributes no context, because it belongs to no one
+product.
+
+A workspace context sets `subtitle` to the organization's name. It names two
+things — one product, for one organization — and once the workspace left the
+organization record, the rail became the only chrome saying which organization.
+An app record names one thing and leaves `subtitle` unset.
+
+Section icons resolve through `NAV_ICONS` like every other entry, so the
+workspace keys are declared there and `workspace-icon.tsx` keeps only the accent
+colours its cards use. `resolveNavIcon` falls back to a generic square, so a key
+missing from that registry degrades silently — `workspace-icon.test.tsx` is what
+catches it.
 
 `ServerSidebar` resolves the access context, navigation, and slots, so a slot
 page only supplies the extra contexts its segment owns. The optional catch-all
