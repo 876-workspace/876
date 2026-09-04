@@ -45,6 +45,10 @@ export const PROJECTS_ERRORS = {
     message: 'This work item type is still used by an issue.',
     httpStatus: 409 as HttpStatusCode,
   },
+  'projects/default-work-item-type-required': {
+    message: 'The default work item type cannot be deleted.',
+    httpStatus: 409 as HttpStatusCode,
+  },
   'projects/workflow-state-not-found': {
     message: 'The workflow state could not be found.',
     httpStatus: 404 as HttpStatusCode,
