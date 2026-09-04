@@ -1,6 +1,6 @@
 'use client'
 
-import type { Issue, Label, Project } from '@876/projects/contracts'
+import type { Comment, Issue, Label, Project } from '@876/projects/contracts'
 
 import { request } from './request'
 
@@ -39,5 +39,28 @@ export const labelsClient = {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(params),
     })
+  },
+}
+
+export const commentsClient = {
+  create(params: { issueRef: string; body: string }) {
+    return request<Comment>('/api/comments', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  update(commentId: string, params: { issueRef: string; body: string }) {
+    return request<Comment>(`/api/comments/${encodeURIComponent(commentId)}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  delete(commentId: string, issueRef: string) {
+    return request<{ object: string; id: string; deleted: true }>(
+      `/api/comments/${encodeURIComponent(commentId)}?issueRef=${encodeURIComponent(issueRef)}`,
+      { method: 'DELETE' }
+    )
   },
 }

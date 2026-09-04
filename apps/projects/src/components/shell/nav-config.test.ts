@@ -2,9 +2,16 @@ import { can, resolveNavigation, type AccessContext } from '@876/core/access'
 import { projectsPermissionCatalog } from '@876/core/access/catalogs'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { createElement } from 'react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 
 import { navConfig } from './nav-config'
+import { MobileNav } from './mobile-nav'
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/issues',
+}))
 
 function context(
   permissions: string[],
@@ -101,5 +108,40 @@ describe('Projects navigation access binding', () => {
     expect(can(context([], ['projects-search-bar']), 'dashboard.view')).toBe(
       false
     )
+  })
+
+  it('lists every navigation entry by label in the mobile navigation sheet', async () => {
+    const navigation = resolveNavigation(
+      navConfig,
+      context(projectsPermissionCatalog.permissions.map(({ key }) => key))
+    )
+
+    render(
+      createElement(MobileNav, {
+        apps: [],
+        currentOrg: { id: 'org_1', name: 'Acme', slug: 'acme' },
+        navigation,
+        orgs: [],
+        uiFeatures: {
+          searchBar: false,
+          themeSwitcher: false,
+          globalAdd: false,
+          appSwitcher: false,
+          orgSwitcher: false,
+        },
+      })
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation' }))
+
+    const navigationSheet = await screen.findByRole('navigation', {
+      name: 'Projects navigation',
+    })
+    for (const entry of navigation.flatMap((group) => group.entries))
+      expect(
+        screen.getByRole('link', { name: entry.title })
+      ).toBeInTheDocument()
+
+    expect(navigationSheet).toBeInTheDocument()
   })
 })
