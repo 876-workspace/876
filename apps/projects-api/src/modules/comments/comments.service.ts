@@ -73,6 +73,24 @@ export async function list(
   }
 }
 
+export async function retrieve(
+  organizationId: string,
+  issueRef: string,
+  commentId: string
+): Promise<ServiceResult<SerializedComment>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (issueResolution.error !== null)
+    return { data: null, error: issueResolution.error }
+
+  const row = await repository.retrieve(issueResolution.issue.id, commentId)
+  return row
+    ? { data: serializeComment(row), error: null }
+    : { data: null, error: getError('projects/comment-not-found') }
+}
+
 export async function create(
   organizationId: string,
   issueRef: string,
@@ -111,26 +129,17 @@ export async function update(
   const tenantResolution = await resolveTenant(organizationId)
   if (tenantResolution.error !== null)
     return { data: null, error: tenantResolution.error }
-  const tenant = tenantResolution.tenant
-
-  const issueResolution = await resolveIssue(tenant.id, issueRef)
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
   if (issueResolution.error !== null)
     return { data: null, error: issueResolution.error }
-  const issue = issueResolution.issue
 
-  const existing = await repository.retrieve(issue.id, commentId)
+  const existing = await repository.retrieve(issueResolution.issue.id, commentId)
   if (!existing)
     return { data: null, error: getError('projects/comment-not-found') }
-  if (
-    existing.authorUserId === null ||
-    existing.authorUserId !== body.actorUserId
-  )
-    return { data: null, error: getError('projects/comment-not-owned') }
 
-  const timestamp = toDbUnixSeconds(nowUnixSeconds())
   const updated = await repository.update(commentId, {
     body: body.body,
-    updatedAt: timestamp,
+    updatedAt: toDbUnixSeconds(nowUnixSeconds()),
   })
 
   return { data: serializeComment(updated), error: null }
@@ -139,34 +148,25 @@ export async function update(
 export async function remove(
   organizationId: string,
   issueRef: string,
-  commentId: string,
-  actorUserId: string
+  commentId: string
 ): Promise<ServiceResult<SerializedCommentTombstone>> {
   const tenantResolution = await resolveTenant(organizationId)
   if (tenantResolution.error !== null)
     return { data: null, error: tenantResolution.error }
-  const tenant = tenantResolution.tenant
-
-  const issueResolution = await resolveIssue(tenant.id, issueRef)
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
   if (issueResolution.error !== null)
     return { data: null, error: issueResolution.error }
-  const issue = issueResolution.issue
 
-  const existing = await repository.retrieve(issue.id, commentId)
+  const existing = await repository.retrieve(issueResolution.issue.id, commentId)
   if (!existing)
     return { data: null, error: getError('projects/comment-not-found') }
-  if (
-    existing.authorUserId === null ||
-    existing.authorUserId !== actorUserId
-  )
-    return { data: null, error: getError('projects/comment-not-owned') }
 
-  const hardDelete = process.env.DELETION_MODE === 'hard'
-  if (hardDelete) await repository.hardDelete(commentId)
-  else {
-    const timestamp = toDbUnixSeconds(nowUnixSeconds())
-    await repository.softDelete(commentId, timestamp)
-  }
+  if (process.env.DELETION_MODE === 'hard') await repository.hardDelete(commentId)
+  else
+    await repository.softDelete(
+      commentId,
+      toDbUnixSeconds(nowUnixSeconds())
+    )
 
   return {
     data: {
