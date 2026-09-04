@@ -101,6 +101,10 @@ export const PROJECTS_ERRORS = {
     message: 'The comment could not be found.',
     httpStatus: 404 as HttpStatusCode,
   },
+  'projects/comment-not-owned': {
+    message: 'You can only change your own comments.',
+    httpStatus: 403 as HttpStatusCode,
+  },
   'projects/member-not-found': {
     message: 'That person is not a member of this project.',
     httpStatus: 404 as HttpStatusCode,
