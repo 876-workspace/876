@@ -24,7 +24,7 @@ import type { ProjectsUiFeatures } from '@/types/features'
 
 import { GlobalAdd } from './global-add'
 import { OrgSwitcher } from './org-switcher'
-import { isActiveCrmPath } from './nav-link'
+import { isActiveProjectsPath } from './nav-link'
 import { sidebarIcons } from './sidebar'
 
 const mobileNavItemBase =
@@ -91,7 +91,7 @@ export function MobileNav({
                   const Icon =
                     sidebarIcons[item.icon as keyof typeof sidebarIcons] ??
                     Settings
-                  const active = isActiveCrmPath(pathname, item.href)
+                  const active = isActiveProjectsPath(pathname, item.href)
 
                   return (
                     <Link
