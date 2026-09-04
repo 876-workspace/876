@@ -12,7 +12,7 @@ import {
   resolveOrg,
   resolveOrgBillingAccounts,
   resolveOrgSubscriptions,
-} from '../../../_data'
+} from '@/features/orgs/org-data'
 import { SubscriptionsManager } from '@/app/(app)/orgs/[slug]/billing/_components/subscriptions-manager'
 
 type Props = { params: Promise<{ slug: string }> }

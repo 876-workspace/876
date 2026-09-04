@@ -35,13 +35,21 @@ describe('navConfig — weird', () => {
       }
     }
   })
-  it('every protected entry uses colon-delimited permission (not dot)', () => {
+  it('every protected entry uses a Console colon-key or a namespaced product key', () => {
+    // Console's own vocabulary stays `module:action` (no dot). A projected
+    // product key is `product/module.action` (a slash, then a dot, no
+    // colon) — see .claude/rules/access-control.md §6.1.
     for (const g of navConfig) {
       for (const e of g.entries) {
-        if (e.requires?.permission) {
-          expect(e.requires.permission.includes(':')).toBe(true)
-          expect(e.requires.permission.includes('.')).toBe(false)
-        }
+        if (!e.requires?.permission) continue
+        const permission = e.requires.permission
+        const isConsoleKey =
+          permission.includes(':') && !permission.includes('.')
+        const isProductKey =
+          permission.includes('/') &&
+          permission.includes('.') &&
+          !permission.includes(':')
+        expect(isConsoleKey || isProductKey, permission).toBe(true)
       }
     }
   })
@@ -169,11 +177,14 @@ describe('navConfig — weird', () => {
       }
     }
   })
-  it('no entry uses dot-delimited permission (prevent drift)', () => {
+  it('no Console-vocabulary entry uses a dot (prevent drift into the product-key shape)', () => {
+    // A Console key (module:action, no slash) must never carry a dot. A
+    // namespaced product key (module/action.tail) legitimately does.
     for (const g of navConfig) {
       for (const e of g.entries) {
-        if (e.requires?.permission)
-          expect(e.requires.permission).not.toContain('.')
+        const permission = e.requires?.permission
+        if (permission && !permission.includes('/'))
+          expect(permission).not.toContain('.')
       }
     }
   })

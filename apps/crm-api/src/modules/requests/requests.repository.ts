@@ -27,11 +27,17 @@ type CreateParams = {
 
 const requestInclude = { priority: true } as const
 
-export function list(tenantId: string, filters?: ListRequestsFilter) {
+const crossOrganizationRequestInclude = {
+  ...requestInclude,
+  tenant: { select: { organizationId: true } },
+} as const
+
+function buildListWhere(tenantId?: string, filters?: ListRequestsFilter) {
   const where: NonNullable<
     Parameters<typeof prisma.request.findMany>[0]
-  >['where'] = { tenantId, deletedAt: null }
+  >['where'] = { deletedAt: null }
 
+  if (tenantId) where.tenantId = tenantId
   if (filters?.status) where.status = filters.status
   if (filters?.teamId !== undefined)
     where.teamId =
@@ -60,10 +66,28 @@ export function list(tenantId: string, filters?: ListRequestsFilter) {
         : filters.requesterUserId
   if (filters?.priorityId) where.priorityId = filters.priorityId
 
+  return where
+}
+
+export function list(tenantId: string, filters?: ListRequestsFilter) {
   return prisma.request.findMany({
-    where,
+    where: buildListWhere(tenantId, filters),
     include: requestInclude,
     orderBy: { createdAt: 'desc' },
+  })
+}
+
+export function listAcrossOrganizations(
+  filters: ListRequestsFilter & { limit: number; startingAfter?: string }
+) {
+  return prisma.request.findMany({
+    where: buildListWhere(undefined, filters),
+    include: crossOrganizationRequestInclude,
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: filters.limit + 1,
+    ...(filters.startingAfter
+      ? { cursor: { id: filters.startingAfter }, skip: 1 }
+      : {}),
   })
 }
 

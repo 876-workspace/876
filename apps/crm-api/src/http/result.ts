@@ -42,7 +42,7 @@ export function sendCrmResult<T>(
  */
 export function sendCrmList<T>(
   res: Response,
-  result: T[] | AppErrorValue,
+  result: T[] | { data: T[]; hasMore: boolean } | AppErrorValue,
   url: string
 ) {
   if (isError(result))
@@ -50,12 +50,15 @@ export function sendCrmList<T>(
       .status(result.httpStatus)
       .json({ data: null, error: toAppError(result) })
 
+  const list = Array.isArray(result) ? result : result.data
+  const hasMore = Array.isArray(result) ? false : result.hasMore
+
   return res.json({
     data: {
       object: 'list',
-      data: result,
-      has_more: false,
-      total_count: result.length,
+      data: list,
+      has_more: hasMore,
+      total_count: hasMore ? null : list.length,
       url,
     },
     error: null,

@@ -16,7 +16,7 @@ type ErrorValue = { code: string; message: string }
 
 type Props = {
   organizationId: string
-  /** The host's Projects root, e.g. `/projects` or `/orgs/acme/workspace/projects`. */
+  /** The host's Projects root, e.g. `/projects` or `/workspace/acme/projects`. */
   base: string
 }
 

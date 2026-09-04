@@ -1,11 +1,7 @@
 import 'server-only'
 
-import { resolveNavigation, type NavGroupDefinition } from '@876/core/access'
-import {
-  billingNavigation,
-  invoiceNavigation,
-  navigationPermissionKeys,
-} from '@876/billing/navigation'
+import { resolveNavigation } from '@876/core/access'
+import { navigationPermissionKeys } from '@876/billing/navigation'
 import * as Sentry from '@sentry/nextjs'
 import { cache } from 'react'
 
@@ -16,15 +12,6 @@ import {
   type AppWorkspace,
   type WorkspaceIconKey,
 } from './app-workspaces'
-
-/** A workspace's product registry, keyed by its URL segment. */
-const REGISTRIES: Record<
-  string,
-  { appSlug: string; groups: readonly NavGroupDefinition[] } | undefined
-> = {
-  billing: { appSlug: '876-billing', groups: billingNavigation },
-  invoice: { appSlug: '876-invoice', groups: invoiceNavigation },
-}
 
 /**
  * The organization's enabled feature slugs for one product app.
@@ -83,14 +70,17 @@ export async function resolveWorkspaceNavigation(
   organizationId: string,
   workspaceDefinition: AppWorkspace
 ): Promise<WorkspaceNavLink[]> {
-  const registry = REGISTRIES[workspaceDefinition.key]
-  if (!registry) return []
+  const groups = workspaceDefinition.navigationGroups
+  if (!groups) return []
 
-  const features = await resolveOrgFeatureKeys(organizationId, registry.appSlug)
+  const features = await resolveOrgFeatureKeys(
+    organizationId,
+    workspaceDefinition.appSlug
+  )
 
-  const resolved = resolveNavigation(registry.groups, {
+  const resolved = resolveNavigation(groups, {
     subject: { userId: '' },
-    permissions: navigationPermissionKeys(registry.groups),
+    permissions: navigationPermissionKeys(groups),
     features,
     experiments: {},
   })

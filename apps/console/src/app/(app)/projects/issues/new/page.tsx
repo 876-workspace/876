@@ -11,7 +11,7 @@ import { requireSession } from '@/lib/auth/guards'
 import { projects } from '@/lib/services/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
-import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export const metadata = { title: 'New Issue • Issues' }
 
@@ -19,7 +19,7 @@ export default function PlatformNewIssuePage() {
   return (
     <Page className="space-y-6">
       <Link
-        href={`${PLATFORM_PROJECTS_BASE}/issues`}
+        href={`${projectsBase(null)}/issues`}
         className={buttonVariants({
           variant: 'outline',
           size: 'sm',
@@ -42,7 +42,7 @@ async function IssueCreateFormData() {
   // start together rather than one after the other.
   const [organizationId, sessionUser] = await Promise.all([
     requirePlatformProjectsOrgId(),
-    requireSession(`${PLATFORM_PROJECTS_BASE}/issues/new`),
+    requireSession(`${projectsBase(null)}/issues/new`),
   ])
 
   const result = await projects.projects.list(organizationId, {})
@@ -61,7 +61,7 @@ async function IssueCreateFormData() {
   return (
     <IssueCreateForm
       organizationId={organizationId}
-      base={PLATFORM_PROJECTS_BASE}
+      base={projectsBase(null)}
       projects={(result.data?.data ?? []).map((project) => ({
         id: project.id,
         name: project.name,

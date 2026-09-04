@@ -6,7 +6,7 @@ import { IssuesData } from '@/features/projects/components/issues-data'
 import { ISSUES_SKELETON_COLUMNS } from '@/features/projects/components/issues-skeleton-columns'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-import { PLATFORM_PROJECTS_BASE } from '../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 import { IssuesSection } from './_components/issues-section'
 
@@ -26,7 +26,7 @@ export default async function PlatformIssuesLayout({
             <DataTableSkeleton columns={ISSUES_SKELETON_COLUMNS} rows={5} />
           }
         >
-          <IssuesData organizationId={org.id} base={PLATFORM_PROJECTS_BASE} />
+          <IssuesData organizationId={org.id} base={projectsBase(null)} />
         </Suspense>
       }
     >

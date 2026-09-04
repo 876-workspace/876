@@ -10,7 +10,7 @@ import {
 } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
-import { resolveOrg } from '../../_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 import { CUSTOMERS_SKELETON_COLUMNS } from '../_components/customers-skeleton-columns'
 import { CustomersTable } from '../_components/customers-table'
 

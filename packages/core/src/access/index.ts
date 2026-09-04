@@ -20,7 +20,11 @@ export type {
 } from './types'
 export { can, hasFeature, variantOf } from './context'
 export type { AccessContext } from './context'
-export { defineNavigation, resolveNavigation } from './navigation'
+export {
+  defineNavigation,
+  navRequirementPasses,
+  resolveNavigation,
+} from './navigation'
 export type { NavEntry, NavGroupDefinition, NavRequirement } from './navigation'
 
 // Bounded on purpose: a permission key is a stable, persisted identifier, so an

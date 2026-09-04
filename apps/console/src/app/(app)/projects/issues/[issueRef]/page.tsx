@@ -6,7 +6,7 @@ import { IssueDetailData } from '@/features/projects/components/issue-detail-dat
 import { projects } from '@/lib/services/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
-import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = { params: Promise<{ issueRef: string }> }
 
@@ -36,7 +36,7 @@ async function IssueDetailSection({ issueRef }: { issueRef: string }) {
   return (
     <IssueDetailData
       organizationId={organizationId}
-      base={PLATFORM_PROJECTS_BASE}
+      base={projectsBase(null)}
       issueRef={issueRef}
     />
   )

@@ -12,7 +12,7 @@ import {
   resolveOrgMembers,
   resolveOrgResult,
   resolveOrgRoles,
-} from '../_data'
+} from '@/features/orgs/org-data'
 import { PendingInvitesTable } from './_components/members-table'
 import { MembersSplit } from './_components/members-split'
 import { buildAccessEntries } from '@876/access-ui/entries'

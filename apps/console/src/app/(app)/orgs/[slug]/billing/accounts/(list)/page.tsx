@@ -7,7 +7,7 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { AppError } from '@876/ui/app-error'
 import { ACCOUNTS_SKELETON_COLUMNS } from '../_components/accounts-skeleton-columns'
 
-import { resolveOrg, resolveOrgBillingAccounts } from '../../../_data'
+import { resolveOrg, resolveOrgBillingAccounts } from '@/features/orgs/org-data'
 import {
   AccountsManager,
   type AccountsView,

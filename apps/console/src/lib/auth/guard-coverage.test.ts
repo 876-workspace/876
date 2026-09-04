@@ -20,7 +20,7 @@ const PUBLIC_PAGES = {
 const ROUTE_GUARDS = [
   'requireConsolePermission',
   // Strictly stronger than requireConsolePermission: it checks
-  // console:requests first and then the caller's CRM effective permission,
+  // crm/requests.view first and then the caller's CRM effective permission,
   // failing closed when the app-access lookup errors.
   'requireConsoleCrmPermission',
   'requireConsoleCapability',
@@ -175,7 +175,7 @@ describe('Console guard coverage', () => {
       'utf8'
     )
 
-    expect(source).toContain("requireConsolePermission('console:requests')")
+    expect(source).toContain("requireConsolePermission('crm/requests.view')")
 
     // Console acts on 876's authority across every organization. Reaching into
     // the target organization's app-access plane would make support depend on a
@@ -183,6 +183,6 @@ describe('Console guard coverage', () => {
     // (`.claude/rules/access-tiers.md`).
     expect(source).not.toContain("appSlug: '876-crm'")
     expect(source).not.toContain('memberships.list')
-    expect(source).not.toContain("'console:requests': 'requests")
+    expect(source).not.toContain("'crm/requests.view': 'requests")
   })
 })

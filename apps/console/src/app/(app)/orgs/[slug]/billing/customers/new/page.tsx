@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { resolveOrg } from '../../../_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 import { CustomerCreateForm } from './_components/customer-create-form'
 
 type Props = { params: Promise<{ slug: string }> }

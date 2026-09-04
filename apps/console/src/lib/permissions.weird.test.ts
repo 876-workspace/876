@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { consolePermissionCatalog } from '@876/core/access/catalogs'
 import {
+  operatorExclusiveCatalog,
+  operatorProductCatalogs,
+} from './operator-permissions'
+import {
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
   PERMISSION_GROUPS,
@@ -191,7 +195,16 @@ describe('permissions — weird edge cases', () => {
     expect(SYSTEM_ROLE_NAMES).toEqual(['staff', 'admin', 'super-admin'])
   })
   it('SYSTEM_ROLE_DEFINITIONS contains no unknown permissions (weird check with empty catalog)', () => {
-    const keys = new Set(consolePermissionCatalog.permissions.map((p) => p.key))
+    // §6.1: a role may also hold a product's projected key (`crm/requests.view`)
+    // or a Console-only operator-exclusive key (`console:crm.purge`), neither
+    // of which `consolePermissionCatalog` alone declares.
+    const keys = new Set([
+      ...consolePermissionCatalog.permissions.map((p) => p.key),
+      ...operatorProductCatalogs().flatMap((catalog) =>
+        catalog.permissions.map((p) => p.key)
+      ),
+      ...operatorExclusiveCatalog().permissions.map((p) => p.key),
+    ])
     for (const role of SYSTEM_ROLE_DEFINITIONS) {
       for (const p of role.permissions) {
         expect(keys.has(p)).toBe(true)
@@ -208,15 +221,21 @@ describe('permissions — weird edge cases', () => {
     expect(labels.every((l) => l.trim().length > 0)).toBe(true)
     expect(new Set(labels).size).toBe(labels.length)
   })
-  it('PERMISSION_GROUPS values are colon-delimited and match catalog', () => {
-    const catalogKeys = new Set(
-      consolePermissionCatalog.permissions.map((p) => p.key)
-    )
+  it('PERMISSION_GROUPS values are either Console colon-keys or product/operator-exclusive keys, and match the operator universe', () => {
+    // Console's own vocabulary stays `module:action`. A projected product key
+    // is `product/module.action` (no colon), and an operator-exclusive key is
+    // `console:product.action` (both a colon and a dot) — §6.1's three planes.
+    const universeKeys = new Set([
+      ...consolePermissionCatalog.permissions.map((p) => p.key),
+      ...operatorProductCatalogs().flatMap((catalog) =>
+        catalog.permissions.map((p) => p.key)
+      ),
+      ...operatorExclusiveCatalog().permissions.map((p) => p.key),
+    ])
     for (const g of PERMISSION_GROUPS) {
       for (const p of g.permissions) {
-        expect(p.value.includes(':')).toBe(true)
-        expect(p.value.includes('.')).toBe(false)
-        expect(catalogKeys.has(p.value)).toBe(true)
+        expect(p.value.includes(':') || p.value.includes('/')).toBe(true)
+        expect(universeKeys.has(p.value)).toBe(true)
         expect(p.label.trim().length).toBeGreaterThan(0)
       }
     }

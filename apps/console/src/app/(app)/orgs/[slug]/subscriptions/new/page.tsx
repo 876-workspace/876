@@ -2,7 +2,7 @@ import { platform } from '@/lib/services/platform'
 import type { Metadata } from 'next'
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { resolveOrg, resolveOrgBillingAccounts } from '../../_data'
+import { resolveOrg, resolveOrgBillingAccounts } from '@/features/orgs/org-data'
 import {
   SubscriptionCreate,
   type SubscriptionCreateSetup,

@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { resolveOrg } from '../../../../_data'
+import { resolveOrg } from '@/features/orgs/org-data'
 import { BillingAccountEdit } from './_components/account-edit'
 
 type Props = { params: Promise<{ slug: string; accountId: string }> }

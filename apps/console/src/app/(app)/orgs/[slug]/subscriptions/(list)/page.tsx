@@ -1,7 +1,10 @@
 import { billing } from '@/lib/services/billing'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization, AdminSubscriptionStatus } from '@876/platform/compat'
+import type {
+  AdminOrganization,
+  AdminSubscriptionStatus,
+} from '@876/platform/compat'
 import type { AdminSubscription } from '@876/platform/compat'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
@@ -11,7 +14,7 @@ import {
   resolveOrg,
   resolveOrgBillingAccounts,
   resolveOrgSubscriptions,
-} from '../../_data'
+} from '@/features/orgs/org-data'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
 import {

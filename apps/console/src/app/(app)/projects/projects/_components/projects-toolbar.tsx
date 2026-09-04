@@ -9,7 +9,7 @@ import {
   type ProjectFilterStatus,
 } from '@/features/projects/project-status'
 
-import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export function ProjectsToolbar({ status }: { status: string }) {
   const selectedStatus: ProjectFilterStatus = isProjectStatus(status)
@@ -27,7 +27,7 @@ export function ProjectsToolbar({ status }: { status: string }) {
         />
       }
       primaryLabel="Add"
-      primaryHref={`${PLATFORM_PROJECTS_BASE}/projects/new`}
+      primaryHref={`${projectsBase(null)}/projects/new`}
       primaryVariant="info"
       refresh
     />

@@ -162,7 +162,7 @@ These three Console surfaces intentionally answer different questions:
   requests that customer organization has raised with 876
   (still stored in 876's CRM workspace, filtered to that customer)
 
-/orgs/[slug]/workspace/crm/...
+/workspace/[orgSlug]/crm/...
   records inside that customer organization's own CRM workspace
 ```
 

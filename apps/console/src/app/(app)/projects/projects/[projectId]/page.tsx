@@ -6,7 +6,7 @@ import { ProjectDetailData } from '@/features/projects/components/project-detail
 import { projects } from '@/lib/services/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
-import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 type Props = { params: Promise<{ projectId: string }> }
 
@@ -36,7 +36,7 @@ async function ProjectDetailSection({ projectId }: { projectId: string }) {
   return (
     <ProjectDetailData
       organizationId={organizationId}
-      base={PLATFORM_PROJECTS_BASE}
+      base={projectsBase(null)}
       projectId={projectId}
     />
   )

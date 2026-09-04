@@ -1,10 +1,14 @@
 // @vitest-environment node
 
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const pageSource = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
-const dataSource = readFileSync(new URL('../_data.ts', import.meta.url), 'utf8')
+const dataSource = readFileSync(
+  join(process.cwd(), 'src/features/orgs/org-data.ts'),
+  'utf8'
+)
 
 describe('organization members loading strategy', () => {
   it('keeps the route chrome synchronous', () => {

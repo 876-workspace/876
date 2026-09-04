@@ -17,8 +17,15 @@
  *
  * This file is **plain data**. It carries no icon components and no functions,
  * because it crosses the RSC → client boundary — icons are string keys the nav
- * resolves itself (`.claude/rules/app-layout.md`).
+ * resolves itself (`.claude/rules/app-layout.md`). `navigationGroups` is the
+ * one exception in shape only, not in kind: it is the product's own
+ * `NavGroupDefinition[]`, itself plain data for the same reason, imported
+ * rather than restated so this file and the product's contract package cannot
+ * disagree about what that product's navigation is.
  */
+
+import type { NavGroupDefinition } from '@876/core/access'
+import { billingNavigation, invoiceNavigation } from '@876/billing/navigation'
 
 /** Icon key a client component resolves to a component. */
 export type WorkspaceIconKey =
@@ -60,7 +67,7 @@ export type WorkspaceSection = {
 export type AppWorkspace = {
   /** Platform app slug that gates this workspace, e.g. `'876-crm'`. */
   appSlug: string
-  /** URL segment under `/orgs/[slug]/workspace`, e.g. `'crm'`. */
+  /** URL segment under `/workspace/[orgSlug]`, e.g. `'crm'`. */
   key: string
   /** Product name as an operator would say it. */
   label: string
@@ -68,6 +75,18 @@ export type AppWorkspace = {
   summary: string
   iconKey: WorkspaceIconKey
   sections: readonly WorkspaceSection[]
+  /**
+   * The product's own permission-catalog navigation, when it has moved into a
+   * shared contract package (`@876/billing/navigation` today). Its entries'
+   * `key`s are matched against `sections[].entryKey` to build the operator
+   * rail, so an organization's entitlement/feature state filters the rail the
+   * same way it filters that product's own navigation — see
+   * `resolveWorkspaceNavigation`.
+   *
+   * A workspace without one (CRM, Projects, Couriers today) falls back to
+   * `sections` unfiltered; their registries have not moved into a package yet.
+   */
+  navigationGroups?: readonly NavGroupDefinition[]
 }
 
 export const APP_WORKSPACES = [
@@ -145,6 +164,7 @@ export const APP_WORKSPACES = [
         entryKey: 'banking',
       },
     ],
+    navigationGroups: billingNavigation,
   },
   {
     appSlug: '876-invoice',
@@ -180,6 +200,7 @@ export const APP_WORKSPACES = [
         entryKey: 'payments',
       },
     ],
+    navigationGroups: invoiceNavigation,
   },
   {
     appSlug: '876-couriers',
@@ -198,7 +219,7 @@ export const APP_WORKSPACES = [
   },
 ] as const satisfies readonly AppWorkspace[]
 
-/** The organization-detail segment every workspace lives under. */
+/** The top-level segment every workspace lives under. */
 export const WORKSPACE_SEGMENT = 'workspace'
 
 /** The base path of one app's workspace for an organization. */
@@ -206,9 +227,21 @@ export function workspaceBase(orgSlug: string, workspaceKey: string): string {
   return `${workspaceIndex(orgSlug)}/${workspaceKey}`
 }
 
-/** The workspace index for an organization. */
+/** The base path for Projects in either an organization or platform context. */
+export function projectsBase(orgSlug: string | null): string {
+  return orgSlug ? workspaceBase(orgSlug, 'projects') : '/projects'
+}
+
+/**
+ * The workspace index for an organization.
+ *
+ * A workspace is a top-level Console context, not a tab inside the
+ * organization record: entering one swaps the whole rail for that product's
+ * navigation, so it lives at `/workspace/<org>` rather than nested under
+ * `/orgs/<org>`. The organization record links into it; it does not own it.
+ */
 export function workspaceIndex(orgSlug: string): string {
-  return `/orgs/${orgSlug}/${WORKSPACE_SEGMENT}`
+  return `/${WORKSPACE_SEGMENT}/${encodeURIComponent(orgSlug)}`
 }
 
 /** Look a workspace up by its URL segment. Unknown segments are a 404. */
@@ -239,6 +272,7 @@ export function workspaceSectionLinks(
   orgSlug: string,
   workspace: AppWorkspace
 ): {
+  key: string
   label: string
   href: string
   iconKey: WorkspaceIconKey
@@ -247,6 +281,11 @@ export function workspaceSectionLinks(
   const base = workspaceBase(orgSlug, workspace.key)
 
   return workspace.sections.map((section) => ({
+    // Structurally a `WorkspaceNavLink`, so the resolved and the fallback rail
+    // are the same shape. Keyed off the registry entry where there is one, so a
+    // fallback rail and a resolved rail agree on a section's identity.
+    // `||`, not `??`: the index section's segment is the empty string.
+    key: section.entryKey || section.segment || 'index',
     label: section.label,
     href: section.segment ? `${base}/${section.segment}` : base,
     iconKey: section.iconKey,

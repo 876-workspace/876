@@ -7,7 +7,7 @@ import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-
 import { BoardData } from '@/features/projects/components/board-data'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-import { PLATFORM_PROJECTS_BASE } from '../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export const metadata = { title: 'Board' }
 
@@ -26,7 +26,7 @@ async function BoardSection() {
   const org = await getPlatformOrganization()
   if (!org) return <PlatformOrganizationUnavailable />
 
-  return <BoardData organizationId={org.id} base={PLATFORM_PROJECTS_BASE} />
+  return <BoardData organizationId={org.id} base={projectsBase(null)} />
 }
 
 function BoardFallback() {

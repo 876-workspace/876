@@ -49,7 +49,15 @@ describe('navConfig', () => {
   })
 
   it('shows staff only the entries whose routes their role may reach', () => {
-    expect(visibleHrefs('staff')).toEqual(['/', '/requests', '/reports'])
+    // Staff holds every product's projected view keys (PRODUCT_VIEW in
+    // permissions.ts), which now includes projects/dashboard.view — so
+    // staff reaches /projects in addition to /requests and /reports.
+    expect(visibleHrefs('staff')).toEqual([
+      '/',
+      '/projects',
+      '/requests',
+      '/reports',
+    ])
   })
 
   it('shows admin the management entries but not security', () => {

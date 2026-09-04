@@ -23,7 +23,7 @@ import {
   resolveOrgMembers,
   resolveOrgResult,
   resolveOrgSubscriptions,
-} from './_data'
+} from '@/features/orgs/org-data'
 import { orgTabs } from '@/features/orgs/app-tabs'
 import { OrgActions } from './_components/org-actions'
 
@@ -44,7 +44,6 @@ export default async function OrganizationDetailLayout({
   params,
 }: Props) {
   const { slug } = await params
-  const base = `/orgs/${slug}`
 
   return (
     <div>
@@ -75,8 +74,8 @@ export default async function OrganizationDetailLayout({
           </DetailHeaderTop>
 
           <DetailHeaderTabs>
-            <Suspense fallback={<RouteTabs tabs={orgTabs(base, [])} />}>
-              <EntitledTabs base={base} slug={slug} />
+            <Suspense fallback={<RouteTabs tabs={orgTabs(slug, [])} />}>
+              <EntitledTabs slug={slug} />
             </Suspense>
           </DetailHeaderTabs>
         </DetailHeader>
@@ -295,9 +294,9 @@ async function MemberCountValue({ orgId }: { orgId: string }) {
   )
 }
 
-async function EntitledTabs({ base, slug }: { base: string; slug: string }) {
+async function EntitledTabs({ slug }: { slug: string }) {
   const org = await resolveOrg(slug)
-  if (!org) return <RouteTabs tabs={orgTabs(base, [])} />
+  if (!org) return <RouteTabs tabs={orgTabs(slug, [])} />
 
   const subscriptions = await resolveOrgSubscriptions(org.id)
   const activeSubscriptions = subscriptions.data.filter(
@@ -307,7 +306,7 @@ async function EntitledTabs({ base, slug }: { base: string; slug: string }) {
 
   return (
     <div className="space-y-2">
-      <RouteTabs tabs={orgTabs(base, activeSubscriptions)} />
+      <RouteTabs tabs={orgTabs(slug, activeSubscriptions)} />
       {subscriptions.error ? (
         <AppError
           title="App entitlement data is temporarily unavailable"

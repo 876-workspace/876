@@ -13,9 +13,9 @@ describe('request paths', () => {
   it('preserves an organization CRM collection when shared record actions run', () => {
     expect(
       requestCollectionHref(
-        '/orgs/acme/workspace/crm/requests/crm_req_1',
+        '/workspace/acme/crm/requests/crm_req_1',
         'crm_req_1'
       )
-    ).toBe('/orgs/acme/workspace/crm/requests')
+    ).toBe('/workspace/acme/crm/requests')
   })
 })

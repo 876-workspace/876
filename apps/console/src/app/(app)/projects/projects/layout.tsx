@@ -6,7 +6,7 @@ import { ProjectsData } from '@/features/projects/components/projects-data'
 import { PROJECTS_SKELETON_COLUMNS } from '@/features/projects/components/projects-skeleton-columns'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
-import { PLATFORM_PROJECTS_BASE } from '../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 import { ProjectsSection } from './_components/projects-section'
 
@@ -26,7 +26,7 @@ export default async function PlatformProjectsLayout({
             <DataTableSkeleton columns={PROJECTS_SKELETON_COLUMNS} rows={5} />
           }
         >
-          <ProjectsData organizationId={org.id} base={PLATFORM_PROJECTS_BASE} />
+          <ProjectsData organizationId={org.id} base={projectsBase(null)} />
         </Suspense>
       }
     >

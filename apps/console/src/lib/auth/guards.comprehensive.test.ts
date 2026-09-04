@@ -33,8 +33,15 @@ import {
   toStoredPermissionKeys,
 } from '@876/core/access/catalogs'
 import { resolveEffectivePermissions } from '@876/core/access'
+import { operatorPermissions } from '@/lib/operator-permissions'
 import { SYSTEM_ROLE_DEFINITIONS } from '@/lib/permissions'
 import { ROUTE_PERMISSIONS } from './route-permissions'
+
+// /requests and /projects are now gated by a projected product key
+// (crm/requests.view, projects/dashboard.view), not a Console-only flag —
+// resolving against consolePermissionCatalog alone would strip that key out
+// of every role that holds it. See apps/console/src/lib/operator-permissions.ts.
+const OPERATOR_CATALOG = operatorPermissions(consolePermissionCatalog)
 
 describe('guards — permission integration (stored keys)', () => {
   function ctx(perms: string[]) {
@@ -46,11 +53,22 @@ describe('guards — permission integration (stored keys)', () => {
     }
   }
 
-  it('adapted legacy grants /requests route', () => {
+  it('the old console:requests flag no longer grants /requests (moved to the projected CRM key)', () => {
+    // §6.3: /requests moved off Console's own disconnected flag onto CRM's
+    // real projected vocabulary. A role holding only the retired flag must
+    // not reach the route through it any more.
     const adapted = toStoredPermissionKeys(['console:requests'])
     const eff = resolveEffectivePermissions({
       role: { permissions: adapted },
-      catalog: consolePermissionCatalog,
+      catalog: OPERATOR_CATALOG,
+    })
+    expect(can(ctx(eff), ROUTE_PERMISSIONS['/requests'])).toBe(false)
+  })
+
+  it('the projected CRM key grants /requests', () => {
+    const eff = resolveEffectivePermissions({
+      role: { permissions: ['crm/requests.view'] },
+      catalog: OPERATOR_CATALOG,
     })
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/requests'])).toBe(true)
   })
@@ -58,7 +76,7 @@ describe('guards — permission integration (stored keys)', () => {
   it('a retired support key does NOT grant /requests', () => {
     const eff = resolveEffectivePermissions({
       role: { permissions: ['console:support'] },
-      catalog: consolePermissionCatalog,
+      catalog: OPERATOR_CATALOG,
     })
 
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/requests'])).toBe(false)
@@ -70,7 +88,7 @@ describe('guards — permission integration (stored keys)', () => {
 
     const eff = resolveEffectivePermissions({
       role: { permissions: staff.permissions },
-      catalog: consolePermissionCatalog,
+      catalog: OPERATOR_CATALOG,
     })
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/requests'])).toBe(true)
     expect(can(ctx(eff), ROUTE_PERMISSIONS['/security'])).toBe(false)

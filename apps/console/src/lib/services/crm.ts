@@ -22,3 +22,10 @@ export function createCrm(requestId?: string) {
 }
 
 export const crm = createCrm()
+
+export function listRequestsAcrossOrganizations(
+  requestId?: string,
+  options?: Parameters<typeof crm.requests.listAcrossOrganizations>[0]
+) {
+  return createCrm(requestId).requests.listAcrossOrganizations(options)
+}

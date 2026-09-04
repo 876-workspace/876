@@ -9,7 +9,7 @@ import {
   type IssueFilterStatus,
 } from '@/features/projects/issue-status'
 
-import { PLATFORM_PROJECTS_BASE } from '../../_lib/paths'
+import { projectsBase } from '@/features/orgs/app-workspaces'
 
 export function IssuesToolbar({ status }: { status: string }) {
   const selectedStatus: IssueFilterStatus = isIssueStatus(status)
@@ -27,7 +27,7 @@ export function IssuesToolbar({ status }: { status: string }) {
         />
       }
       primaryLabel="Add"
-      primaryHref={`${PLATFORM_PROJECTS_BASE}/issues/new`}
+      primaryHref={`${projectsBase(null)}/issues/new`}
       primaryVariant="info"
       refresh
     />

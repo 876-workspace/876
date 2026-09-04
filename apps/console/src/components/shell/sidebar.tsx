@@ -2,12 +2,18 @@
 
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
-import { ArrowLeft } from '@876/ui/icons'
+import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import {
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 
+import { navContexts } from '@/components/shell/nav-contexts'
 import { NavIcon } from '@/components/shell/nav-icons'
 import {
   isActiveConsolePath,
@@ -17,148 +23,360 @@ import {
   navLinkRest,
 } from '@/components/shell/nav-link'
 import {
-  isNavSection,
-  navSections,
-  resolveActiveChildKey,
-  resolveOpenSectionKey,
-  type NavSection,
-} from '@/components/shell/sidebar-sections'
-
-/**
- * The card resizes in both axes between the two levels: it widens for the
- * panel's labels, and its height follows the row count — today a section holds
- * far fewer rows than the rail has icons, so the shrink is the larger of the
- * two movements.
- *
- * `height` only interpolates from `auto` where `interpolate-size` is supported
- * (set on the column below). Everywhere else the height snaps and the width
- * still animates, which is the behaviour this replaced.
- */
-const CARD_MOTION =
-  'transition-[width,height] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
+  entryOpensContext,
+  resolveActiveEntryKey,
+  resolveSidebarBackContext,
+  resolveSidebarContextStack,
+  sidebarContexts,
+  type SidebarContext,
+  type SidebarContextDefinition,
+} from '@/components/shell/sidebar-context'
+import { SIDEBAR_SPRING_RAIL } from '@/components/shell/sidebar-motion'
+import {
+  readServerSidebarExpanded,
+  readSidebarExpanded,
+  subscribeSidebarExpanded,
+  writeSidebarExpanded,
+} from '@/components/shell/sidebar-preferences'
+import type {
+  SidebarSlot,
+  SidebarSlotRegion,
+} from '@/components/shell/sidebar-slots'
 
 const RAIL_WIDTH = 'w-[3.75rem]'
 const PANEL_WIDTH = 'w-56'
+
+/**
+ * The rail column fills the card's content box exactly — the rail width less
+ * its `p-2` on both sides — so the icons are centred at rest and do not drift
+ * sideways while the card resizes around them.
+ */
+const RAIL_COLUMN_WIDTH = 'w-11'
 
 /**
  * How far the card sits from the window edge and from the main region. Both
  * grow with the panel: a rail floating in 4px of gutter reads as deliberate,
  * but the panel is nearly four times as wide and its labels run much closer to
  * the card's edge, so the same 4px reads as the panel touching the content.
- *
- * The page container inside the main region adds its own `px-4`, so the gutter
- * here is the smaller half of the visible gap — 20px at the rail, 24px at the
- * panel. 16px of gutter was tried and overshot; the panel read as detached.
- *
- * Insets move on the card's own curve so the whole assembly resizes as a piece.
  */
-const INSET_MOTION =
-  'transition-[padding] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
 const RAIL_INSET = 'pr-1 pl-3'
 const PANEL_INSET = 'pr-2 pl-5'
 
 /**
- * The rail column fills the card's content box exactly — the rail width less
- * its `p-2` on both sides — so the icons are centred at rest and still do not
- * drift sideways while the card resizes around them.
+ * The card resizes in both axes: it widens when expanded, and its height
+ * follows the row count, which changes every time the context does.
+ *
+ * `height` only interpolates from `auto` where `interpolate-size` is supported
+ * (set on the column and the card below). Everywhere else the height snaps and
+ * the width still animates.
+ *
+ * The duration must stay equal to the spring's settle time in
+ * `sidebar-motion.ts` — the generated `linear()` stops describe that whole
+ * window, so a shorter transition truncates the settle and a longer one
+ * stretches the overshoot.
  */
-const RAIL_COLUMN_WIDTH = 'w-11'
+const CARD_MOTION =
+  'transition-[width,height] duration-500 [transition-timing-function:var(--876-spring-rail)] motion-reduce:transition-none'
+const INSET_MOTION =
+  'transition-[padding] duration-500 [transition-timing-function:var(--876-spring-rail)] motion-reduce:transition-none'
+
+type Props = {
+  navigation: readonly NavGroupDefinition[]
+  contexts?: readonly SidebarContextDefinition[]
+  slots?: readonly SidebarSlot[]
+}
+
+/** Which context the operator backed out of, and from where. */
+type DismissedContext = {
+  key: string
+  pathname: string
+}
 
 /**
- * Console's drill-down sidebar.
+ * Console's contextual sidebar.
  *
- * Level 0 is the icon rail. An entry that owns a subtree navigates as usual and
- * the rail is replaced by that section's labelled items, sliding in from the
- * right; a back row returns to the rail. Only one level is mounted at a time,
- * so the card's height always matches what is actually showing.
+ * The rail is a **stack of navigation contexts**: the platform root, then a
+ * section, a product, or an organization's workspace. Exactly one level is
+ * mounted at a time, so the card's height always matches what is showing, and
+ * entering a context swaps the rail's contents rather than widening it — labels
+ * arrive only when the operator asks for them.
  *
- * The open panel is **derived from the pathname**, not from click state, so a
- * deep link, a refresh, and the browser's back button all land on the right
- * level with nothing to keep in sync. The one piece of state here is the
- * deliberate collapse — pressing back to see the rail without leaving the page.
+ * The open context is derived from the pathname (see `sidebar-context.ts`). The
+ * only local state is the deliberate back-out, held as the dismissed context's
+ * key **and** the path it was dismissed from, so navigating anywhere reinstates
+ * the derived level with no effect needed to clear the flag.
  */
 export function Sidebar({
   navigation,
-}: {
-  navigation: readonly NavGroupDefinition[]
-}) {
+  contexts = navContexts,
+  slots = [],
+}: Props) {
   const pathname = usePathname()
-  const derivedKey = resolveOpenSectionKey(pathname, navigation)
+  const stack = resolveSidebarContextStack(pathname, navigation, contexts)
+  const allContexts = sidebarContexts(navigation, contexts)
+  const [dismissed, setDismissed] = useState<DismissedContext | null>(null)
 
-  // Which section the operator collapsed away from. Held as that section's key
-  // rather than a boolean so navigating into a *different* section reopens the
-  // panel on its own, with no effect needed to clear the flag.
-  const [collapsedKey, setCollapsedKey] = useState<string | null>(null)
-  const openKey = collapsedKey === derivedKey ? null : derivedKey
+  const expanded = useSyncExternalStore(
+    subscribeSidebarExpanded,
+    readSidebarExpanded,
+    readServerSidebarExpanded
+  )
 
-  const section = openKey
-    ? (navSections(navigation).find((entry) => entry.key === openKey) ?? null)
-    : null
+  const derived = stack[stack.length - 1] ?? stack[0]
+  const dismissedBack =
+    dismissed && dismissed.pathname === pathname
+      ? resolveSidebarBackContext(stack, dismissed.key)
+      : null
+  const context = dismissedBack ?? derived
+  if (!context) return null
+
+  const parent = resolveSidebarBackContext(stack, context.key)
 
   return (
     <aside
       className={cn(
-        'hidden shrink-0 flex-col items-center py-4 [interpolate-size:allow-keywords] md:flex',
+        'hidden min-h-0 shrink-0 flex-col items-center justify-center py-4 [interpolate-size:allow-keywords] md:flex',
         INSET_MOTION,
-        section ? PANEL_INSET : RAIL_INSET
+        expanded ? PANEL_INSET : RAIL_INSET
       )}
       onKeyDown={(event) => {
-        if (event.key === 'Escape' && section) setCollapsedKey(section.key)
+        if (event.key === 'Escape' && parent)
+          setDismissed({ key: context.key, pathname })
       }}
     >
       <nav
-        aria-label="Console sections"
+        aria-label="Console navigation"
+        style={{ '--876-spring-rail': SIDEBAR_SPRING_RAIL } as CSSProperties}
         className={cn(
-          'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl dark:shadow-black/25 dark:ring-white/[0.06]',
+          'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl [interpolate-size:allow-keywords] dark:shadow-black/25 dark:ring-white/[0.06]',
           CARD_MOTION,
-          section ? PANEL_WIDTH : RAIL_WIDTH
+          expanded ? PANEL_WIDTH : RAIL_WIDTH
         )}
       >
-        {section ? (
-          <SectionPanel
-            key={section.key}
-            section={section}
-            pathname={pathname}
-            onBack={() => setCollapsedKey(section.key)}
+        <div
+          // Keyed by context so entering one replays the entrance rather than
+          // cross-fading two levels that share nothing.
+          key={context.key}
+          className={cn(
+            'animate-in fade-in-0 flex flex-col gap-1 duration-200 motion-reduce:animate-none',
+            expanded ? 'min-w-0' : RAIL_COLUMN_WIDTH
+          )}
+        >
+          <ContextHeader
+            context={context}
+            parent={parent}
+            expanded={expanded}
+            onBack={() => setDismissed({ key: context.key, pathname })}
           />
-        ) : (
-          <Rail
-            navigation={navigation}
+
+          <SlotRegion slots={slots} region="top" expanded={expanded} />
+          <SlotRegion slots={slots} region="above-nav" expanded={expanded} />
+
+          <ContextBody
+            context={context}
+            contexts={allContexts}
             pathname={pathname}
-            onOpenSection={() => setCollapsedKey(null)}
+            expanded={expanded}
+            onOpenContext={() => setDismissed(null)}
           />
-        )}
+
+          <SlotRegion slots={slots} region="below-nav" expanded={expanded} />
+          <SlotRegion slots={slots} region="footer" expanded={expanded} />
+        </div>
       </nav>
     </aside>
   )
 }
 
-/** Level 0 — the icon rail, grouped exactly as the registry declares. */
-function Rail({
-  navigation,
-  pathname,
-  onOpenSection,
+/**
+ * The back control and the expand control — deliberately two affordances.
+ *
+ * Back pops one level of the stack; expand reveals labels at whatever level is
+ * open. Folding them into one button was the first thing tried and it makes
+ * neither action discoverable.
+ */
+function ContextHeader({
+  context,
+  parent,
+  expanded,
+  onBack,
 }: {
-  navigation: readonly NavGroupDefinition[]
-  pathname: string
-  onOpenSection: () => void
+  context: SidebarContext
+  parent: SidebarContext | null
+  expanded: boolean
+  onBack: () => void
 }) {
+  return (
+    <>
+      <div
+        className={cn(
+          'flex items-center gap-1',
+          expanded ? 'justify-between' : 'flex-col'
+        )}
+      >
+        {parent ? (
+          <BackControl
+            context={context}
+            parent={parent}
+            expanded={expanded}
+            onBack={onBack}
+          />
+        ) : null}
+        <ExpandControl expanded={expanded} />
+      </div>
+      <div className="bg-border/60 my-0.5 h-px w-full" />
+    </>
+  )
+}
+
+function BackControl({
+  context,
+  parent,
+  expanded,
+  onBack,
+}: {
+  context: SidebarContext
+  parent: SidebarContext
+  expanded: boolean
+  onBack: () => void
+}) {
+  // Names the level actually returned to, which is not always the root once
+  // a workspace sits beneath a product.
+  const label = `Back to ${parent.title}`
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label={label}
+            className={cn(
+              'text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring group flex min-w-0 items-center rounded-lg focus-visible:ring-2 focus-visible:outline-hidden',
+              expanded
+                ? 'gap-2 px-2 py-1.5 text-[0.8125rem]'
+                : 'size-9 justify-center'
+            )}
+          >
+            <ArrowLeft
+              aria-hidden="true"
+              className={cn(
+                'size-3.5 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5',
+                context.colorClassName ?? 'text-muted-foreground'
+              )}
+            />
+            {expanded ? (
+              <span className="flex min-w-0 flex-col text-left">
+                <span className="min-w-0 truncate">{context.title}</span>
+                {context.subtitle ? (
+                  <span className="text-muted-foreground min-w-0 truncate text-[0.6875rem] leading-tight font-normal">
+                    {context.subtitle}
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
+          </button>
+        }
+      />
+      <TooltipContent side="right" sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function ExpandControl({ expanded }: { expanded: boolean }) {
+  const label = expanded ? 'Collapse sidebar' : 'Expand sidebar'
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={() => writeSidebarExpanded(!expanded)}
+            aria-label={label}
+            aria-expanded={expanded}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+          >
+            <PanelLeftIcon
+              aria-hidden="true"
+              className={cn(
+                'size-4 transition-transform duration-200',
+                expanded && 'rotate-180'
+              )}
+            />
+          </button>
+        }
+      />
+      <TooltipContent side="right" sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+/**
+ * The context's own entries, grouped exactly as its registry declares.
+ *
+ * Keeping the groups is what preserves the platform rail's dividers; a context
+ * that declares one group simply renders none.
+ */
+function ContextBody({
+  context,
+  contexts,
+  pathname,
+  expanded,
+  onOpenContext,
+}: {
+  context: SidebarContext
+  contexts: readonly SidebarContext[]
+  pathname: string
+  expanded: boolean
+  onOpenContext: () => void
+}) {
+  const activeKey = resolveActiveEntryKey(pathname, context)
+
   return (
     <div
       className={cn(
-        'animate-in fade-in-0 flex flex-col items-center gap-1.5 duration-200 motion-reduce:animate-none',
-        RAIL_COLUMN_WIDTH
+        'flex flex-col gap-1',
+        expanded ? 'min-w-0' : 'items-center'
       )}
     >
-      {navigation.map((group, groupIndex) => (
-        <div key={group.key} className="flex flex-col items-center gap-1.5">
-          {groupIndex > 0 && <div className="bg-border/60 my-0.5 h-px w-5" />}
+      {context.groups.map((group, index) => (
+        <div
+          key={group.key}
+          className={cn(
+            'flex flex-col gap-1',
+            expanded ? 'min-w-0 self-stretch' : 'items-center'
+          )}
+        >
+          {index > 0 ? (
+            <div
+              className={cn(
+                'bg-border/60 my-0.5 h-px',
+                expanded ? 'w-full' : 'w-5 self-center'
+              )}
+            />
+          ) : null}
           {group.entries.map((entry) => (
-            <RailLink
+            <ContextEntry
               key={entry.key}
               entry={entry}
-              pathname={pathname}
-              onOpenSection={onOpenSection}
+              expanded={expanded}
+              active={
+                activeKey === null
+                  ? isActiveConsolePath(pathname, entry.href)
+                  : entry.key === activeKey
+              }
+              // Navigating is what opens a context. This only clears a previous
+              // back-out, so following the entry you just left brings its
+              // context back instead of doing nothing.
+              onOpenContext={
+                entryOpensContext(entry, contexts) ? onOpenContext : undefined
+              }
             />
           ))}
         </div>
@@ -167,18 +385,17 @@ function Rail({
   )
 }
 
-function RailLink({
+function ContextEntry({
   entry,
-  pathname,
-  onOpenSection,
+  expanded,
+  active,
+  onOpenContext,
 }: {
   entry: NavEntry
-  pathname: string
-  onOpenSection: () => void
+  expanded: boolean
+  active: boolean
+  onOpenContext?: () => void
 }) {
-  const isActive = isActiveConsolePath(pathname, entry.href)
-  const drills = isNavSection(entry)
-
   return (
     <Tooltip>
       <TooltipTrigger
@@ -186,19 +403,25 @@ function RailLink({
           <Link
             href={entry.href}
             aria-label={entry.title}
-            aria-current={isActive ? 'page' : undefined}
-            // Navigating is what opens the panel. This only clears a previous
-            // collapse, so clicking the section you just backed out of brings
-            // its panel back instead of doing nothing.
-            onClick={drills ? onOpenSection : undefined}
+            aria-current={active ? 'page' : undefined}
+            onClick={onOpenContext}
             className={cn(
-              navLinkBase,
-              isActive
-                ? cn(
-                    navLinkActive,
-                    entry.activeClassName ?? navLinkActiveFallback
-                  )
-                : navLinkRest
+              expanded
+                ? 'group flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.8125rem] whitespace-nowrap transition-colors'
+                : navLinkBase,
+              active
+                ? expanded
+                  ? cn(
+                      'text-sidebar-accent-foreground shadow-2xs',
+                      entry.activeClassName ?? 'bg-sidebar-accent'
+                    )
+                  : cn(
+                      navLinkActive,
+                      entry.activeClassName ?? navLinkActiveFallback
+                    )
+                : expanded
+                  ? 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
+                  : navLinkRest
             )}
           >
             <NavIcon
@@ -208,79 +431,65 @@ function RailLink({
                 entry.colorClassName
               )}
             />
+            {expanded ? (
+              <span className="min-w-0 flex-1 truncate">{entry.title}</span>
+            ) : null}
           </Link>
         }
       />
-      <TooltipContent side="right" sideOffset={8}>
-        {entry.title}
-      </TooltipContent>
+      {expanded ? null : (
+        <TooltipContent side="right" sideOffset={8}>
+          {entry.title}
+        </TooltipContent>
+      )}
     </Tooltip>
   )
 }
 
-/** Level 1 — the open section's labelled items. */
-function SectionPanel({
-  section,
-  pathname,
-  onBack,
+/**
+ * A declared region of the rail that is not navigation — a card, a standalone
+ * button, an announcement, a live indicator.
+ *
+ * The mechanism ships with no slots declared (`sidebar-slots.ts`), so every
+ * region renders nothing today. What it fixes in advance is the shape: a slot
+ * has a collapsed form as well as an expanded one, because the rail is
+ * collapsed by default at every level.
+ */
+function SlotRegion({
+  slots,
+  region,
+  expanded,
 }: {
-  section: NavSection
-  pathname: string
-  onBack: () => void
+  slots: readonly SidebarSlot[]
+  region: SidebarSlotRegion
+  expanded: boolean
 }) {
-  const activeChildKey = resolveActiveChildKey(pathname, section)
+  const regionSlots = slots.filter((slot) => slot.region === region)
+  if (regionSlots.length === 0) return null
 
   return (
-    <div className="animate-in slide-in-from-right-3 fade-in-0 flex flex-col gap-0.5 duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:animate-none">
-      <button
-        type="button"
-        onClick={onBack}
-        aria-label={`Leave ${section.title} and show all sections`}
-        className="text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring group mb-1 flex items-center gap-2 rounded-lg px-2 py-1.5 text-[0.8125rem] font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
-      >
-        <ArrowLeft
-          aria-hidden="true"
-          className={cn(
-            'size-3.5 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5',
-            section.colorClassName ?? 'text-muted-foreground'
-          )}
-        />
-        {section.title}
-      </button>
-
-      <div className="bg-border/60 mb-1 h-px w-full" />
-
-      {section.children.map((child) => {
-        const isActive = child.key === activeChildKey
-
-        return (
-          <Link
-            key={child.key}
-            href={child.href}
-            aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.8125rem] whitespace-nowrap transition-colors',
-              isActive
-                ? cn(
-                    'text-sidebar-accent-foreground font-medium shadow-2xs',
-                    section.activeClassName ?? 'bg-sidebar-accent'
-                  )
-                : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
-            )}
-          >
-            <NavIcon
-              icon={child.icon}
-              className={cn(
-                'size-4 shrink-0 transition-transform duration-150 group-hover:scale-110',
-                // A child carries its section's tint, so the open panel reads
-                // as one section rather than a rainbow of unrelated rows.
-                child.colorClassName ?? section.colorClassName
-              )}
-            />
-            {child.title}
-          </Link>
-        )
+    <div
+      className={cn(
+        'flex flex-col gap-1',
+        expanded ? 'min-w-0' : 'items-center'
+      )}
+    >
+      {regionSlots.map((slot) => {
+        const render = SIDEBAR_SLOT_RENDERERS[slot.componentKey]
+        return render ? (
+          <div key={slot.key}>{render(slot, expanded)}</div>
+        ) : null
       })}
     </div>
   )
 }
+
+type SidebarSlotRenderer = (slot: SidebarSlot, expanded: boolean) => ReactNode
+
+/**
+ * Component-key registry for slots, resolved on the client exactly as icon keys
+ * are, so the declarations themselves stay RSC-serializable plain data.
+ *
+ * Deliberately empty: Phase 1 ships the mechanism, not the first card.
+ */
+const SIDEBAR_SLOT_RENDERERS: Record<string, SidebarSlotRenderer> = {}

@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const ORG_ROOT = join(process.cwd(), 'src/app/(app)/orgs/[slug]')
+const APP_ROOT = join(process.cwd(), 'src/app/(app)')
 
-const SUPPORT = readFileSync(join(ORG_ROOT, 'support/(list)/page.tsx'), 'utf8')
+const SUPPORT = readFileSync(
+  join(APP_ROOT, 'orgs/[slug]/support/(list)/page.tsx'),
+  'utf8'
+)
 const WORKSPACE_REQUESTS = readFileSync(
-  join(ORG_ROOT, 'workspace/crm/requests/(list)/page.tsx'),
+  join(APP_ROOT, 'workspace/[orgSlug]/crm/requests/(list)/page.tsx'),
   'utf8'
 )
 
@@ -16,7 +19,7 @@ const WORKSPACE_REQUESTS = readFileSync(
  *
  * - `/orgs/[slug]/support` — what has this org raised **with us**? That lives in
  *   876's own tenant, filtered to the customer record representing the org.
- * - `/orgs/[slug]/workspace/crm` — what is this org doing **in CRM**? That lives
+ * - `/workspace/[orgSlug]/crm` — what is this org doing **in CRM**? That lives
  *   in the organization's own tenant.
  *
  * Nothing else catches a swap: both call the same verb with an org id and both

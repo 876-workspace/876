@@ -2,6 +2,11 @@ import { consolePermissionCatalog } from '@876/core/access/catalogs'
 import { describe, expect, it } from 'vitest'
 
 import {
+  operatorExclusiveCatalog,
+  operatorExclusivePermissionKeys,
+  operatorProductCatalogs,
+} from './operator-permissions'
+import {
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
   CONSOLE_SUPER_ADMIN_ROLE,
@@ -12,10 +17,23 @@ import {
   SYSTEM_ROLE_NAMES,
 } from './permissions'
 
+// Every role/editor test below is checked against this full universe, not
+// just `consolePermissionCatalog` — since §6.1, a role may also hold a
+// product's projected keys (`crm/requests.view`) and the Console-only
+// operator-exclusive keys (`console:crm.purge`), neither of which the plain
+// Console catalog declares.
+const OPERATOR_UNIVERSE_KEYS = new Set([
+  ...consolePermissionCatalog.permissions.map((permission) => permission.key),
+  ...operatorProductCatalogs().flatMap((catalog) =>
+    catalog.permissions.map((permission) => permission.key)
+  ),
+  ...operatorExclusiveCatalog().permissions.map((permission) => permission.key),
+])
+
 const EXPECTED_ROLE_COUNTS = {
-  staff: 15,
-  admin: 40,
-  'super-admin': 47,
+  staff: 70,
+  admin: 234,
+  'super-admin': 246,
 } as const
 
 describe('Console permission catalog', () => {
@@ -73,26 +91,78 @@ describe('Console permission catalog', () => {
     )
   })
 
-  it('keeps every system-role permission inside the canonical catalog', () => {
-    const catalogKeys = new Set(
-      consolePermissionCatalog.permissions.map((permission) => permission.key)
-    )
+  it('keeps every system-role permission inside the operator permission universe', () => {
     const unknown = SYSTEM_ROLE_DEFINITIONS.flatMap((role) =>
-      role.permissions.filter((permission) => !catalogKeys.has(permission))
+      role.permissions.filter(
+        (permission) => !OPERATOR_UNIVERSE_KEYS.has(permission)
+      )
     )
 
     expect(unknown).toEqual([])
   })
 
-  it('grants super admin every permission the catalog declares', () => {
+  it('grants super admin every permission the operator universe declares', () => {
     const superAdmin = SYSTEM_ROLE_DEFINITIONS.find(
       (role) => role.name === CONSOLE_SUPER_ADMIN_ROLE
     )
-    const missing = consolePermissionCatalog.permissions
-      .map((permission) => permission.key)
-      .filter((permission) => !superAdmin?.permissions.includes(permission))
+    const missing = [...OPERATOR_UNIVERSE_KEYS].filter(
+      (permission) => !superAdmin?.permissions.includes(permission)
+    )
 
     expect(missing).toEqual([])
+  })
+
+  it('reserves every purge key for super admin alone', () => {
+    const purgeKeys = operatorExclusivePermissionKeys(
+      (action) => action === 'purge'
+    )
+
+    for (const role of SYSTEM_ROLE_DEFINITIONS) {
+      const held = role.permissions.filter((permission) =>
+        purgeKeys.includes(permission)
+      )
+
+      if (role.name === CONSOLE_SUPER_ADMIN_ROLE) {
+        expect(held.sort()).toEqual([...purgeKeys].sort())
+      } else {
+        expect(held).toEqual([])
+      }
+    }
+  })
+
+  it('grants the cross-organization view-all key to admin and super admin, never staff', () => {
+    const viewAllKeys = operatorExclusivePermissionKeys(
+      (action) => action === 'view-all'
+    )
+
+    for (const role of SYSTEM_ROLE_DEFINITIONS) {
+      const held = role.permissions.filter((permission) =>
+        viewAllKeys.includes(permission)
+      )
+
+      if (role.name === 'staff') expect(held).toEqual([])
+      else expect(held.sort()).toEqual([...viewAllKeys].sort())
+    }
+  })
+
+  it('does not let an operator-exclusive key imply any projected read key', () => {
+    // §6.4: implication is how privilege quietly widens. Holding
+    // `console:crm.purge` must not, by itself, grant `crm/requests.view` —
+    // super admin holds both only because PRODUCT_ALL is granted
+    // independently, not because purge implies read.
+    const exclusiveOnlyRole = {
+      name: 'exclusive-only-probe',
+      permissions: operatorExclusivePermissionKeys(),
+    }
+    const productReadKeys = operatorProductCatalogs().flatMap((catalog) =>
+      catalog.permissions.map((permission) => permission.key)
+    )
+
+    const impliedReads = productReadKeys.filter((key) =>
+      exclusiveOnlyRole.permissions.includes(key)
+    )
+
+    expect(impliedReads).toEqual([])
   })
 
   it('withholds team management and security from staff', () => {
@@ -189,7 +259,7 @@ describe('Console permission catalog', () => {
     expect(result).not.toBe(catalog.auditor)
   })
 
-  it('derives editor groups in the same module order as the catalog', () => {
+  it('derives Console editor groups in the same module order as the catalog, followed by each product then operator-exclusive actions', () => {
     expect(PERMISSION_GROUPS.map((group) => group.label)).toEqual([
       'Console',
       'Users',
@@ -198,28 +268,83 @@ describe('Console permission catalog', () => {
       'Apps',
       'Roles',
       'Team',
+      'Billing · Dashboard',
+      'Billing · Customers',
+      'Billing · Catalog',
+      'Billing · Sales',
+      'Billing · Subscriptions',
+      'Billing · Reports',
+      'Billing · Currencies',
+      'Billing · Taxes',
+      'Billing · Vendors',
+      'Billing · Purchases',
+      'Billing · Banking',
+      'Billing · Payments',
+      'Billing · Payment methods',
+      'Billing · Settings',
+      'Couriers · Items',
+      'Couriers · Customers',
+      'Couriers · Packages',
+      'Couriers · Pre-alerts',
+      'Couriers · Warehouse',
+      'Couriers · Manifests',
+      'Couriers · Deliveries',
+      'Couriers · Invoices',
+      'Couriers · Payments',
+      'Couriers · Reports',
+      'Couriers · Settings',
+      'CRM · Requests',
+      'CRM · Customers',
+      'CRM · Tasks',
+      'CRM · Reminders',
+      'CRM · Events',
+      'CRM · Calendars',
+      'CRM · My Work',
+      'CRM · Notes',
+      'CRM · Teams',
+      'CRM · Categories',
+      'CRM · Priorities',
+      'CRM · Request forms',
+      'CRM · Reports',
+      'CRM · Settings',
+      'Invoice · Dashboard',
+      'Invoice · Customers',
+      'Invoice · Items',
+      'Invoice · Invoices',
+      'Invoice · Estimates',
+      'Invoice · Payments',
+      'Invoice · Reports',
+      'Invoice · Settings',
+      'Projects · Dashboard',
+      'Projects · Projects',
+      'Projects · Issues',
+      'Projects · Comments',
+      'Projects · Labels',
+      'Projects · Members',
+      'Projects · Reports',
+      'Projects · Settings',
+      'Billing · Operator actions',
+      'Couriers · Operator actions',
+      'CRM · Operator actions',
+      'Invoice · Operator actions',
+      'Projects · Operator actions',
     ])
   })
 
-  it('derives every editor permission from the canonical catalog', () => {
+  it('derives every editor permission from the operator permission universe', () => {
     const editorValues = PERMISSION_GROUPS.flatMap((group) =>
       group.permissions.map((permission) => permission.value)
     ).sort()
-    const catalogValues = consolePermissionCatalog.permissions
-      .map((permission) => permission.key)
-      .sort()
+    const universeValues = [...OPERATOR_UNIVERSE_KEYS].sort()
 
-    expect(editorValues).toEqual(catalogValues)
+    expect(editorValues).toEqual(universeValues)
   })
 
-  it('contains no editor permission outside the canonical catalog', () => {
-    const catalogKeys = new Set(
-      consolePermissionCatalog.permissions.map((permission) => permission.key)
-    )
+  it('contains no editor permission outside the operator permission universe', () => {
     const extra = PERMISSION_GROUPS.flatMap((group) =>
       group.permissions
         .map((permission) => permission.value)
-        .filter((permission) => !catalogKeys.has(permission))
+        .filter((permission) => !OPERATOR_UNIVERSE_KEYS.has(permission))
     )
 
     expect(extra).toEqual([])
@@ -230,7 +355,7 @@ describe('Console permission catalog', () => {
       group.permissions.map((permission) => permission.value)
     )
 
-    expect(new Set(values).size).toBe(47)
+    expect(new Set(values).size).toBe(OPERATOR_UNIVERSE_KEYS.size)
   })
 
   it('renders action-only labels inside an already-labelled module group', () => {

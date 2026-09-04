@@ -12,34 +12,41 @@ const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }))
 vi.mock('next/navigation', () => ({ usePathname }))
 
 import { navConfig } from '@/components/shell/nav-config'
+import { navContexts } from '@/components/shell/nav-contexts'
 import { Sidebar } from '@/components/shell/sidebar'
+import type { SidebarSlot } from '@/components/shell/sidebar-slots'
 
-function renderSidebar(pathname: string) {
+function renderSidebar(pathname: string, slots: SidebarSlot[] = []) {
   usePathname.mockReturnValue(pathname)
   return render(
     <TooltipProvider>
-      <Sidebar navigation={navConfig} />
+      <Sidebar navigation={navConfig} contexts={navContexts} slots={slots} />
     </TooltipProvider>
   )
 }
 
 function linkNames(): string[] {
   return screen
-    .getAllByRole('link')
+    .queryAllByRole('link')
     .map((link) => link.getAttribute('aria-label') ?? link.textContent ?? '')
+}
+
+function backControl(name: string) {
+  return screen.getByRole('button', { name })
 }
 
 describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
-  describe('level 0 — the icon rail', () => {
-    it('renders every top-level entry on a path that belongs to no section', () => {
+  describe('the platform context', () => {
+    it('renders every top-level entry on a path no context claims', () => {
       renderSidebar('/users')
 
       expect(
-        screen.getByRole('navigation', { name: 'Console sections' })
+        screen.getByRole('navigation', { name: 'Console navigation' })
       ).toBeVisible()
       expect(linkNames()).toEqual([
         'Dashboards',
@@ -68,26 +75,26 @@ describe('Sidebar', () => {
       )
     })
 
-    it('offers no back control while the rail is showing', () => {
+    it('offers no back control at the root', () => {
       renderSidebar('/users')
 
-      expect(screen.queryByRole('button')).toBeNull()
+      expect(screen.queryByRole('button', { name: /^Back to/ })).toBeNull()
     })
 
-    it('keeps Settings a plain rail link that navigates straight through', async () => {
+    it('keeps Settings a plain rail link that navigates straight through', () => {
       renderSidebar('/settings')
 
       expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
         'href',
         '/settings'
       )
-      // A section would have replaced the rail; Settings must not.
+      // A context would have replaced the rail; Settings must not.
       expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
     })
   })
 
-  describe('level 1 — an open section', () => {
-    it('replaces the rail with the section items on a section route', () => {
+  describe('an open context', () => {
+    it('replaces the rail with the context items on a context route', () => {
       renderSidebar('/projects')
 
       expect(linkNames()).toEqual([
@@ -100,13 +107,24 @@ describe('Sidebar', () => {
       expect(screen.queryByRole('link', { name: 'Storage' })).toBeNull()
     })
 
-    it('opens from a nested route inside the section', () => {
+    it('stays collapsed rather than widening to show labels', () => {
+      renderSidebar('/projects')
+
+      // Collapsed means icons plus tooltips: the label is the accessible name,
+      // never rendered text beside the icon.
+      expect(screen.getByRole('link', { name: 'Issues' })).toHaveTextContent('')
+      expect(
+        screen.getByRole('button', { name: 'Expand sidebar' })
+      ).toBeVisible()
+    })
+
+    it('opens from a nested route inside the context', () => {
       renderSidebar('/projects/issues/ISS-1')
 
       expect(screen.getByRole('link', { name: 'Issues' })).toBeInTheDocument()
     })
 
-    it('marks the longest-matching item rather than the section index', () => {
+    it('marks the longest-matching item rather than the context index', () => {
       renderSidebar('/projects/issues')
 
       expect(screen.getByRole('link', { name: 'Issues' })).toHaveAttribute(
@@ -130,52 +148,67 @@ describe('Sidebar', () => {
       ).not.toHaveAttribute('aria-current')
     })
 
-    it('names the open section on its back control', () => {
+    it('names the level the back control actually returns to', () => {
       renderSidebar('/requests')
 
-      expect(
-        screen.getByRole('button', {
-          name: 'Leave Requests and show all sections',
-        })
-      ).toBeVisible()
+      expect(backControl('Back to Console')).toBeVisible()
     })
   })
 
-  describe('returning to the rail', () => {
-    it('restores the rail when the back control is pressed, without navigating', async () => {
+  describe('a context with nothing in it yet', () => {
+    it('swaps the rail for Storage even though it has no entries', () => {
+      renderSidebar('/storage')
+
+      expect(linkNames()).toEqual([])
+      expect(screen.queryByRole('link', { name: 'Users' })).toBeNull()
+    })
+
+    it('still offers the way back out', () => {
+      renderSidebar('/storage')
+
+      expect(backControl('Back to Console')).toBeVisible()
+    })
+  })
+
+  describe('returning to the previous context', () => {
+    it('restores the parent when back is pressed, without navigating', async () => {
       const user = userEvent.setup()
       renderSidebar('/projects/issues')
 
-      await user.click(
-        screen.getByRole('button', {
-          name: 'Leave Projects and show all sections',
-        })
-      )
+      await user.click(backControl('Back to Console'))
 
       expect(screen.getByRole('link', { name: 'Storage' })).toBeInTheDocument()
       expect(screen.queryByRole('link', { name: 'Board' })).toBeNull()
-      // The rail entry still points at the section the operator is standing in.
+      // The rail entry still points at the context the operator stands in.
       expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute(
         'aria-current',
         'page'
       )
     })
 
-    it('reopens the section when its rail entry is clicked again', async () => {
+    it('reopens the context when its rail entry is followed again', async () => {
       const user = userEvent.setup()
       renderSidebar('/projects/issues')
 
-      await user.click(
-        screen.getByRole('button', {
-          name: 'Leave Projects and show all sections',
-        })
-      )
+      await user.click(backControl('Back to Console'))
       await user.click(screen.getByRole('link', { name: 'Projects' }))
 
       expect(screen.getByRole('link', { name: 'Board' })).toBeInTheDocument()
     })
 
-    it('collapses on Escape', async () => {
+    it('reopens an entry-less context, which has no children to read', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/storage')
+
+      await user.click(backControl('Back to Console'))
+      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
+
+      await user.click(screen.getByRole('link', { name: 'Storage' }))
+      expect(screen.queryByRole('link', { name: 'Users' })).toBeNull()
+      expect(backControl('Back to Console')).toBeVisible()
+    })
+
+    it('returns to the parent on Escape', async () => {
       const user = userEvent.setup()
       renderSidebar('/projects')
 
@@ -183,6 +216,115 @@ describe('Sidebar', () => {
       await user.keyboard('{Escape}')
 
       expect(screen.getByRole('link', { name: 'Storage' })).toBeInTheDocument()
+    })
+  })
+
+  describe('expanding to show labels', () => {
+    it('is collapsed until the operator asks otherwise', () => {
+      renderSidebar('/users')
+
+      expect(
+        screen.getByRole('button', { name: 'Expand sidebar' })
+      ).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    it('reveals the entry titles beside their icons', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent(
+        'Users'
+      )
+      expect(
+        screen.getByRole('button', { name: 'Collapse sidebar' })
+      ).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    it('persists the choice so it survives the next navigation', async () => {
+      const user = userEvent.setup()
+      const view = renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+      view.unmount()
+      renderSidebar('/projects')
+
+      expect(screen.getByRole('link', { name: 'Issues' })).toHaveTextContent(
+        'Issues'
+      )
+    })
+
+    it('collapses again on a second press', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+      await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
+
+      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent('')
+    })
+
+    it('is a separate control from back, at every level', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/projects')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      expect(backControl('Back to Console')).toBeVisible()
+      expect(
+        screen.getByRole('button', { name: 'Collapse sidebar' })
+      ).toBeVisible()
+    })
+
+    // Regression: the card's own width class stayed at the rail width on the
+    // platform context even after expanding, so the label span rendered into
+    // the DOM (passing a text-content assertion) while `overflow-hidden`
+    // clipped it out of view. Assert the card itself actually widens, not
+    // just that the label text exists somewhere in the tree.
+    it('widens the card itself when expanded, including on the platform context', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      const nav = screen.getByRole('navigation', { name: 'Console navigation' })
+      expect(nav.className).toMatch(/(?:^|\s)w-\[3\.75rem\](?:\s|$)/)
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      expect(nav.className).toMatch(/(?:^|\s)w-56(?:\s|$)/)
+      expect(nav.className).not.toMatch(/(?:^|\s)w-\[3\.75rem\](?:\s|$)/)
+    })
+
+    it('never bolds an expanded entry label, active or not', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      const usersLink = screen.getByRole('link', { name: 'Users' })
+      expect(usersLink.className).not.toMatch(/font-(?:medium|semibold|bold)/)
+    })
+  })
+
+  describe('slots', () => {
+    const slot: SidebarSlot = {
+      key: 'announcement',
+      region: 'footer',
+      title: 'What is new',
+      icon: 'reports',
+      componentKey: 'not-registered',
+    }
+
+    it('renders nothing for a component key the shell does not know', () => {
+      renderSidebar('/users', [slot])
+
+      expect(screen.queryByText('What is new')).toBeNull()
+    })
+
+    it('leaves the navigation intact when a slot cannot render', () => {
+      renderSidebar('/users', [slot])
+
+      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
     })
   })
 })

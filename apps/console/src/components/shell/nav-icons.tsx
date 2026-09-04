@@ -5,18 +5,25 @@ import {
   Building2,
   ChatBubbleLeftIcon,
   ChartPieIcon,
+  CircleStackIcon,
   ClipboardList,
   Database,
   DocumentTextIcon,
   Folder,
   KeyRound,
   LayoutGrid,
+  MapPin,
+  ReceiptPercent,
   RectangleGroup,
   Settings,
   SquaresPlusIcon,
   TagIcon,
+  TruckIcon,
+  CreditCard,
+  Flag,
   Users,
   Waves,
+  WrenchScrewdriverIcon,
 } from '@876/ui/icons'
 
 export const NAV_ICONS: Record<string, IconComponent> = {
@@ -39,6 +46,31 @@ export const NAV_ICONS: Record<string, IconComponent> = {
   labels: TagIcon,
   forms: DocumentTextIcon,
   customers: Users,
+  modules: LayoutGrid,
+  operations: Waves,
+  plans: CreditCard,
+  subscribers: Users,
+  features: Flag,
+  audit: ClipboardList,
+  provisioning: WrenchScrewdriverIcon,
+  keys: KeyRound,
+  overview: BarChart3,
+
+  // Workspace section icons. A workspace context renders in this same rail, so
+  // its keys resolve here; `resolveNavIcon` falls back to a generic square, so
+  // a missing key would degrade silently rather than fail. `nav-icons.test.ts`
+  // asserts every `WorkspaceIconKey` is present, and the components match
+  // `WorkspaceIcon`'s so a section looks identical wherever it is rendered.
+  requests: ClipboardList,
+  billing: CreditCard,
+  packages: TruckIcon,
+  items: CircleStackIcon,
+  teams: Users,
+  categories: RectangleGroup,
+  payments: ReceiptPercent,
+  banking: Building2,
+  branches: MapPin,
+  warehouses: Building2,
 }
 
 export function resolveNavIcon(key: string): IconComponent {
