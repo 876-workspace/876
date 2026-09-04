@@ -1,6 +1,8 @@
 import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { errorHandler } from '../../../http/error-handler.js'
+
 const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
   tenantsRepo: { resolveTenant: vi.fn() },
   issuesRepo: { resolveIssue: vi.fn() },
@@ -77,6 +79,7 @@ async function requestJson(
     '/v1/organizations/:organizationId/issues/:issueRef/comments',
     createCommentsRouter()
   )
+  app.use(errorHandler)
   const server = app.listen(0)
   await new Promise<void>((resolve) => server.once('listening', resolve))
   const address = server.address()

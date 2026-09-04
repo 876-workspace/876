@@ -254,7 +254,7 @@ describe('PATCH /api/comments/[commentId] — boundary matrix', () => {
           'org_1',
           'CONSOLE-12',
           'cmt_1',
-          { body: trimmed }
+          { body: trimmed, actorUserId: 'usr_1' }
         )
       }
     }
@@ -274,6 +274,7 @@ describe('PATCH /api/comments/[commentId] — boundary matrix', () => {
     expect(response.status).toBe(200)
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1', {
       body: body.trim(),
+      actorUserId: 'usr_1',
     })
   })
 })
@@ -298,7 +299,12 @@ describe('DELETE /api/comments/[commentId] — query matrix', () => {
         expect(mocks.remove).not.toHaveBeenCalled()
       } else {
         expect(response.status).toBe(200)
-        expect(mocks.remove).toHaveBeenCalledWith('org_1', trimmed, 'cmt_1')
+        expect(mocks.remove).toHaveBeenCalledWith(
+          'org_1',
+          trimmed,
+          'cmt_1',
+          'usr_1'
+        )
       }
     }
   })
@@ -316,6 +322,11 @@ describe('DELETE /api/comments/[commentId] — query matrix', () => {
 
     // Assert
     expect(response.status).toBe(200)
-    expect(mocks.remove).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1')
+    expect(mocks.remove).toHaveBeenCalledWith(
+      'org_1',
+      'CONSOLE-12',
+      'cmt_1',
+      'usr_1'
+    )
   })
 })
