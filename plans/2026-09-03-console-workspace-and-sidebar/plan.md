@@ -884,13 +884,15 @@ finished, verified, and committed:
 
 ### What is genuinely left
 
-1. **Wire the `/requests/all` nav entry + permission key.** This was
-   deliberately deferred in Phase 4 until Phase 3.5 landed (it now has). No
-   design decision needed — follow the exact pattern already used for every
-   other CRM-gated entry in `nav-config.ts`'s `requests` section
-   (`requires: { permission: 'crm/requests.view' }`, or a narrower key if a
-   cross-org list should require something more privileged than a single
-   org's view — that's the one open call to make, not "how does this work").
+1. ~~Wire the `/requests/all` nav entry + permission key~~ — **done**, commit
+   `eafea694`. Went with a genuinely narrower key rather than reusing
+   `crm/requests.view`: added `console:crm.view-all` (and one per other
+   product) as a second Console-only operator-exclusive action alongside
+   `purge`, granted to admin and super-admin (not staff, and not implied by
+   holding a product's ordinary view key) — a cross-organization list is
+   real "advanced stuff" per §6, not the same grant as reading one org's own
+   CRM data. Its own route guard lives at
+   `apps/console/src/app/(app)/requests/all/layout.tsx`.
 2. §5's two open questions from Phase 1 remain genuinely open, not blocking:
    bounce amplitude (build adjustable, look at it) and whether expand
    persistence should be per-context or global (currently global).
