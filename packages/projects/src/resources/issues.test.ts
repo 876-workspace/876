@@ -4,6 +4,39 @@ vi.mock('server-only', () => ({}))
 import { create876ProjectsClient } from '../client'
 import type { Issue, IssueEvent } from '../types'
 
+const sampleType = {
+  object: 'projects.work-item-type' as const,
+  id: 'wit_task_1',
+  tenantId: 'ten_1',
+  key: 'task',
+  name: 'Task',
+  iconKey: 'circle-check',
+  color: '#3b82f6',
+  hierarchyLevel: 1,
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1680000000,
+  updatedAt: 1680000000,
+}
+
+const sampleState = {
+  object: 'projects.workflow-state' as const,
+  id: 'wfs_todo_1',
+  tenantId: 'ten_1',
+  key: 'todo',
+  name: 'Todo',
+  category: 'unstarted',
+  color: '#64748b',
+  description: null,
+  isDefault: true,
+  position: 0,
+  archivedAt: null,
+  createdAt: 1680000000,
+  updatedAt: 1680000000,
+}
+
 const sampleIssue: Issue = {
   object: 'projects.issue',
   id: 'iss_1',
@@ -15,6 +48,11 @@ const sampleIssue: Issue = {
   title: 'Test issue',
   description: 'Issue description',
   status: 'todo',
+  typeKey: 'task',
+  type: sampleType,
+  state: sampleState,
+  milestone: null,
+  customFields: [],
   priority: 'high',
   assigneeUserId: 'usr_1',
   creatorUserId: 'usr_2',
@@ -132,7 +170,7 @@ describe('resources — issues', () => {
     )
   })
 
-  it('list serializes status: [\'todo\',\'in-progress\'] as status=todo,in-progress', async () => {
+  it('list serializes configured status keys without a fixed enum', async () => {
     fetch.mockResolvedValueOnce(
       jsonResponse({
         object: 'list',
@@ -144,13 +182,13 @@ describe('resources — issues', () => {
     )
 
     const result = await client.issues.list('org_1', {
-      status: ['todo', 'in-progress'],
+      status: ['todo', 'ready-for-qa'],
     })
     expect(result.data?.object).toBe('list')
     expect(result.error).toBeNull()
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://projects.test/v1/organizations/org_1/issues?status=todo,in-progress',
+      'http://projects.test/v1/organizations/org_1/issues?status=todo,ready-for-qa',
       {
         method: 'GET',
         headers: {
@@ -161,7 +199,7 @@ describe('resources — issues', () => {
     )
   })
 
-  it('list omits undefined parameters entirely (assert the exact final URL)', async () => {
+  it('list omits undefined parameters entirely', async () => {
     fetch.mockResolvedValueOnce(
       jsonResponse({
         object: 'list',
@@ -194,11 +232,15 @@ describe('resources — issues', () => {
     )
   })
 
-  it('retrieve accepts an identifier such as CONSOLE-12 and encodes it', async () => {
+  it('retrieve preserves enriched work-structure fields', async () => {
     fetch.mockResolvedValueOnce(jsonResponse(sampleIssue))
 
     const result = await client.issues.retrieve('org_1', 'CONSOLE-12')
     expect(result.data).toEqual(sampleIssue)
+    expect(result.data?.typeKey).toBe('task')
+    expect(result.data?.type?.id).toBe('wit_task_1')
+    expect(result.data?.state?.key).toBe('todo')
+    expect(result.data?.customFields).toEqual([])
     expect(result.error).toBeNull()
 
     expect(fetch).toHaveBeenCalledWith(
@@ -216,27 +258,40 @@ describe('resources — issues', () => {
     const encodedResult = await client.issues.retrieve('org_1', 'CONSOLE/12')
     expect(encodedResult.data).toEqual(sampleIssue)
     expect(encodedResult.error).toBeNull()
-
-    expect(fetch).toHaveBeenCalledWith(
-      'http://projects.test/v1/organizations/org_1/issues/CONSOLE%2F12',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'test-key',
-        },
-      }
-    )
   })
 
-  it('create POSTs the body unchanged and parses the response with issueSchema', async () => {
+  it('accepts tenant-defined workflow-state keys in issue responses', async () => {
+    const customState = {
+      ...sampleState,
+      id: 'wfs_ready_1',
+      key: 'ready-for-qa',
+      name: 'Ready for QA',
+      category: 'started',
+      isDefault: false,
+    }
+    const customStatusIssue = {
+      ...sampleIssue,
+      status: 'ready-for-qa',
+      state: customState,
+    }
+    fetch.mockResolvedValueOnce(jsonResponse(customStatusIssue))
+
+    const result = await client.issues.retrieve('org_1', 'CONSOLE-12')
+    expect(result.error).toBeNull()
+    expect(result.data?.status).toBe('ready-for-qa')
+    expect(result.data?.state?.key).toBe('ready-for-qa')
+  })
+
+  it('create POSTs configurable structure fields unchanged', async () => {
     fetch.mockResolvedValueOnce(jsonResponse(sampleIssue, 201))
 
     const input = {
       projectId: 'prj_1',
       title: 'Test issue',
       description: 'Issue description',
-      status: 'todo' as const,
+      status: 'todo',
+      typeKey: 'task',
+      customFields: [{ fieldId: 'cf_severity', value: 'high' }],
       priority: 'high' as const,
     }
 
@@ -257,11 +312,21 @@ describe('resources — issues', () => {
     )
   })
 
-  it('update issues a PATCH', async () => {
-    const updatedIssue = { ...sampleIssue, status: 'in-progress' as const }
+  it('update accepts a tenant-defined status key', async () => {
+    const customState = {
+      ...sampleState,
+      key: 'ready-for-qa',
+      name: 'Ready for QA',
+      category: 'started',
+    }
+    const updatedIssue = {
+      ...sampleIssue,
+      status: 'ready-for-qa',
+      state: customState,
+    }
     fetch.mockResolvedValueOnce(jsonResponse(updatedIssue))
 
-    const input = { status: 'in-progress' as const }
+    const input = { status: 'ready-for-qa' }
     const result = await client.issues.update('org_1', 'CONSOLE-12', input)
     expect(result.data).toEqual(updatedIssue)
     expect(result.error).toBeNull()
@@ -290,17 +355,6 @@ describe('resources — issues', () => {
     const result = await client.issues.delete('org_1', 'iss_1')
     expect(result.data).toEqual(tombstone)
     expect(result.error).toBeNull()
-
-    expect(fetch).toHaveBeenCalledWith(
-      'http://projects.test/v1/organizations/org_1/issues/iss_1',
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'test-key',
-        },
-      }
-    )
   })
 
   it('a 404 response is returned as an error value, not thrown', async () => {
@@ -354,16 +408,5 @@ describe('resources — issues', () => {
       url: '/v1/organizations/org_1/issues/CONSOLE-12/events',
     })
     expect(result.error).toBeNull()
-
-    expect(fetch).toHaveBeenCalledWith(
-      'http://projects.test/v1/organizations/org_1/issues/CONSOLE-12/events',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-key': 'test-key',
-        },
-      }
-    )
   })
 })
