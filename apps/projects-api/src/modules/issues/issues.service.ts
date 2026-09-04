@@ -648,6 +648,14 @@ export async function update(
         if (customFields.error) throw new IssueMutationError(customFields.error)
       }
 
+      if (body.typeKey !== undefined)
+        await workStructure.pruneCustomFieldValuesForWorkItemType(
+          tenant.id,
+          issue.id,
+          effectiveType.id,
+          tx.transactionClient
+        )
+
       return issue
     })
   } catch (error) {
