@@ -1,48 +1,59 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository, tenants, projects, issues } = vi.hoisted(() => ({
-  repository: {
-    listWorkItemTypes: vi.fn(),
-    retrieveWorkItemType: vi.fn(),
-    retrieveWorkItemTypeByKey: vi.fn(),
-    createWorkItemType: vi.fn(),
-    updateWorkItemType: vi.fn(),
-    clearDefaultWorkItemType: vi.fn(),
-    archiveWorkItemType: vi.fn(),
-    countIssuesForWorkItemType: vi.fn(),
-    listWorkflowStates: vi.fn(),
-    retrieveWorkflowState: vi.fn(),
-    retrieveWorkflowStateByKey: vi.fn(),
-    createWorkflowState: vi.fn(),
-    updateWorkflowState: vi.fn(),
-    clearDefaultWorkflowState: vi.fn(),
-    archiveWorkflowState: vi.fn(),
-    countActiveWorkflowStates: vi.fn(),
-    countIssuesForWorkflowState: vi.fn(),
-    listMilestones: vi.fn(),
-    retrieveMilestone: vi.fn(),
-    retrieveMilestoneByKey: vi.fn(),
-    createMilestone: vi.fn(),
-    updateMilestone: vi.fn(),
-    deleteMilestone: vi.fn(),
-    listCustomFields: vi.fn(),
-    retrieveCustomField: vi.fn(),
-    retrieveCustomFieldByKey: vi.fn(),
-    createCustomField: vi.fn(),
-    updateCustomField: vi.fn(),
-    archiveCustomField: vi.fn(),
-    listCustomFieldValues: vi.fn(),
-    upsertCustomFieldValue: vi.fn(),
-    clearCustomFieldValue: vi.fn(),
-    seedMissing: vi.fn(),
-    seedPreset: vi.fn(),
-  },
-  tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
-  projects: { resolveProject: vi.fn() },
-  issues: { resolveIssue: vi.fn() },
-}))
+const { repository, defaultsRepository, tenants, projects, issues } = vi.hoisted(
+  () => ({
+    repository: {
+      listWorkItemTypes: vi.fn(),
+      retrieveWorkItemType: vi.fn(),
+      retrieveWorkItemTypeByKey: vi.fn(),
+      retrieveDefaultWorkItemType: vi.fn(),
+      createWorkItemType: vi.fn(),
+      updateWorkItemType: vi.fn(),
+      clearDefaultWorkItemType: vi.fn(),
+      archiveWorkItemType: vi.fn(),
+      countIssuesForWorkItemType: vi.fn(),
+      listWorkflowStates: vi.fn(),
+      retrieveWorkflowState: vi.fn(),
+      retrieveWorkflowStateByKey: vi.fn(),
+      retrieveDefaultWorkflowState: vi.fn(),
+      createWorkflowState: vi.fn(),
+      updateWorkflowState: vi.fn(),
+      clearDefaultWorkflowState: vi.fn(),
+      archiveWorkflowState: vi.fn(),
+      countActiveWorkflowStates: vi.fn(),
+      countIssuesForWorkflowState: vi.fn(),
+      listMilestones: vi.fn(),
+      retrieveMilestone: vi.fn(),
+      retrieveMilestoneByKey: vi.fn(),
+      createMilestone: vi.fn(),
+      updateMilestone: vi.fn(),
+      deleteMilestone: vi.fn(),
+      listCustomFields: vi.fn(),
+      retrieveCustomField: vi.fn(),
+      retrieveCustomFieldByKey: vi.fn(),
+      createCustomField: vi.fn(),
+      updateCustomField: vi.fn(),
+      archiveCustomField: vi.fn(),
+      listCustomFieldValues: vi.fn(),
+      upsertCustomFieldValue: vi.fn(),
+      clearCustomFieldValue: vi.fn(),
+      seedMissing: vi.fn(),
+      seedPreset: vi.fn(),
+    },
+    defaultsRepository: {
+      createDefaultWorkItemType: vi.fn(),
+      updateDefaultWorkItemType: vi.fn(),
+      createDefaultWorkflowState: vi.fn(),
+      updateDefaultWorkflowState: vi.fn(),
+    },
+    tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
+    projects: { resolveProject: vi.fn() },
+    issues: { resolveIssue: vi.fn() },
+  })
+)
 
 vi.mock('../work-structure.repository.js', () => repository)
+vi.mock('../work-structure-defaults.repository.js', () => defaultsRepository)
 vi.mock('../../tenants/index.js', () => tenants)
 vi.mock('../../projects/index.js', () => projects)
 vi.mock('../../issues/index.js', () => issues)
@@ -130,6 +141,7 @@ function resetRepositoryDefaults() {
   repository.listWorkItemTypes.mockResolvedValue([])
   repository.retrieveWorkItemType.mockResolvedValue(null)
   repository.retrieveWorkItemTypeByKey.mockResolvedValue(null)
+  repository.retrieveDefaultWorkItemType.mockResolvedValue(typeRow)
   repository.createWorkItemType.mockImplementation(async (data) => ({
     description: null,
     archivedAt: null,
@@ -141,10 +153,17 @@ function resetRepositoryDefaults() {
   repository.updateWorkItemType.mockImplementation(
     async (_tenantId, _id, patch) => ({ ...typeRow, ...patch })
   )
+  defaultsRepository.createDefaultWorkItemType.mockImplementation(
+    async (_tenantId, data) => ({ ...typeRow, ...data, isDefault: true })
+  )
+  defaultsRepository.updateDefaultWorkItemType.mockImplementation(
+    async (_tenantId, _id, patch) => ({ ...typeRow, ...patch, isDefault: true })
+  )
   repository.countIssuesForWorkItemType.mockResolvedValue(0)
   repository.listWorkflowStates.mockResolvedValue([])
   repository.retrieveWorkflowState.mockResolvedValue(null)
   repository.retrieveWorkflowStateByKey.mockResolvedValue(null)
+  repository.retrieveDefaultWorkflowState.mockResolvedValue(stateRow)
   repository.createWorkflowState.mockImplementation(async (data) => ({
     description: null,
     archivedAt: null,
@@ -154,6 +173,12 @@ function resetRepositoryDefaults() {
   }))
   repository.updateWorkflowState.mockImplementation(
     async (_tenantId, _id, patch) => ({ ...stateRow, ...patch })
+  )
+  defaultsRepository.createDefaultWorkflowState.mockImplementation(
+    async (_tenantId, data) => ({ ...stateRow, ...data, isDefault: true })
+  )
+  defaultsRepository.updateDefaultWorkflowState.mockImplementation(
+    async (_tenantId, _id, patch) => ({ ...stateRow, ...patch, isDefault: true })
   )
   repository.countActiveWorkflowStates.mockResolvedValue(3)
   repository.countIssuesForWorkflowState.mockResolvedValue(0)
@@ -191,8 +216,6 @@ function resetRepositoryDefaults() {
   repository.listCustomFieldValues.mockResolvedValue([])
   repository.upsertCustomFieldValue.mockImplementation(async (data) => ({
     ...data,
-    // Production returns the row with its field relation included; the mock
-    // mirrors that by reusing the same mocked field the service validated.
     field: await repository.retrieveCustomField(data.tenantId, data.fieldId),
   }))
   repository.seedMissing.mockResolvedValue(undefined)
@@ -261,7 +284,7 @@ describe('createWorkItemType', () => {
     expect(result.error?.code).toBe('projects/work-item-type-key-taken')
   })
 
-  it('clears the previous default when the new type becomes default', async () => {
+  it('promotes a requested default through the atomic repository', async () => {
     await service.createWorkItemType('org_1', {
       key: 'bug',
       name: 'Bug',
@@ -271,13 +294,30 @@ describe('createWorkItemType', () => {
       isDefault: true,
     })
 
-    expect(repository.clearDefaultWorkItemType).toHaveBeenCalledWith(
+    expect(defaultsRepository.createDefaultWorkItemType).toHaveBeenCalledWith(
       tenant.id,
+      expect.objectContaining({ key: 'bug', isDefault: true }),
       expect.any(BigInt)
     )
+    expect(repository.createWorkItemType).not.toHaveBeenCalled()
   })
 
-  it('leaves the default alone for a non-default type', async () => {
+  it('automatically makes the first work item type the default', async () => {
+    repository.retrieveDefaultWorkItemType.mockResolvedValue(null)
+
+    const result = await service.createWorkItemType('org_1', {
+      key: 'task',
+      name: 'Task',
+      iconKey: 'check-square',
+      color: '#2563eb',
+      hierarchyLevel: 1,
+    })
+
+    expect(result.data?.isDefault).toBe(true)
+    expect(defaultsRepository.createDefaultWorkItemType).toHaveBeenCalled()
+  })
+
+  it('leaves the configured default alone for a non-default type', async () => {
     await service.createWorkItemType('org_1', {
       key: 'bug',
       name: 'Bug',
@@ -286,7 +326,8 @@ describe('createWorkItemType', () => {
       hierarchyLevel: 1,
     })
 
-    expect(repository.clearDefaultWorkItemType).not.toHaveBeenCalled()
+    expect(defaultsRepository.createDefaultWorkItemType).not.toHaveBeenCalled()
+    expect(repository.createWorkItemType).toHaveBeenCalled()
   })
 })
 
@@ -318,6 +359,39 @@ describe('updateWorkItemType', () => {
     expect(result.data?.name).toBe('Chore')
   })
 
+  it('promotes a replacement default atomically', async () => {
+    repository.retrieveWorkItemType.mockResolvedValue({
+      ...typeRow,
+      id: 'wit_bug_1',
+      key: 'bug',
+      isDefault: false,
+    })
+
+    const result = await service.updateWorkItemType('org_1', 'wit_bug_1', {
+      isDefault: true,
+    })
+
+    expect(result.error).toBeNull()
+    expect(defaultsRepository.updateDefaultWorkItemType).toHaveBeenCalledWith(
+      tenant.id,
+      'wit_bug_1',
+      expect.objectContaining({ isDefault: true }),
+      expect.any(BigInt)
+    )
+  })
+
+  it('refuses to unset the current default work item type', async () => {
+    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+
+    const result = await service.updateWorkItemType('org_1', 'wit_task_1', {
+      isDefault: false,
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('projects/default-work-item-type-required')
+    expect(repository.updateWorkItemType).not.toHaveBeenCalled()
+  })
+
   it('reports work-item-type-not-found for an unknown id', async () => {
     const result = await service.updateWorkItemType('org_1', 'wit_missing', {
       name: 'Chore',
@@ -328,8 +402,11 @@ describe('updateWorkItemType', () => {
 })
 
 describe('removeWorkItemType', () => {
-  it('archives the type and reports the deletion envelope', async () => {
-    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+  it('archives a replaceable type and reports the deletion envelope', async () => {
+    repository.retrieveWorkItemType.mockResolvedValue({
+      ...typeRow,
+      isDefault: false,
+    })
 
     const result = await service.removeWorkItemType('org_1', 'wit_task_1')
 
@@ -345,6 +422,16 @@ describe('removeWorkItemType', () => {
     })
   })
 
+  it('refuses to archive the default work item type', async () => {
+    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+
+    const result = await service.removeWorkItemType('org_1', 'wit_task_1')
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('projects/default-work-item-type-required')
+    expect(repository.archiveWorkItemType).not.toHaveBeenCalled()
+  })
+
   it('reports work-item-type-not-found for an unknown id', async () => {
     const result = await service.removeWorkItemType('org_1', 'wit_missing')
 
@@ -352,7 +439,10 @@ describe('removeWorkItemType', () => {
   })
 
   it('refuses to remove a type still used by an issue', async () => {
-    repository.retrieveWorkItemType.mockResolvedValue(typeRow)
+    repository.retrieveWorkItemType.mockResolvedValue({
+      ...typeRow,
+      isDefault: false,
+    })
     repository.countIssuesForWorkItemType.mockResolvedValue(2)
 
     const result = await service.removeWorkItemType('org_1', 'wit_task_1')
@@ -384,6 +474,53 @@ describe('workflow states', () => {
     })
 
     expect(result.data?.id.startsWith('wfs_')).toBe(true)
+  })
+
+  it('automatically makes the first workflow state the default', async () => {
+    repository.retrieveDefaultWorkflowState.mockResolvedValue(null)
+
+    const result = await service.createWorkflowState('org_1', {
+      key: 'todo',
+      name: 'To do',
+      category: 'unstarted',
+      color: '#64748b',
+    })
+
+    expect(result.data?.isDefault).toBe(true)
+    expect(defaultsRepository.createDefaultWorkflowState).toHaveBeenCalled()
+  })
+
+  it('promotes a replacement workflow default atomically', async () => {
+    repository.retrieveWorkflowState.mockResolvedValue({
+      ...stateRow,
+      id: 'wfs_review_1',
+      key: 'in-review',
+      isDefault: false,
+    })
+
+    const result = await service.updateWorkflowState('org_1', 'wfs_review_1', {
+      isDefault: true,
+    })
+
+    expect(result.error).toBeNull()
+    expect(defaultsRepository.updateDefaultWorkflowState).toHaveBeenCalledWith(
+      tenant.id,
+      'wfs_review_1',
+      expect.objectContaining({ isDefault: true }),
+      expect.any(BigInt)
+    )
+  })
+
+  it('refuses to unset the current default workflow state', async () => {
+    repository.retrieveWorkflowState.mockResolvedValue(stateRow)
+
+    const result = await service.updateWorkflowState('org_1', 'wfs_todo_1', {
+      isDefault: false,
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('projects/default-workflow-state-required')
+    expect(repository.updateWorkflowState).not.toHaveBeenCalled()
   })
 
   it('rejects a duplicate state key', async () => {
@@ -504,7 +641,8 @@ describe('milestones', () => {
     await service.updateMilestone('org_1', 'ms_1', { status: 'completed' })
 
     const patch = repository.updateMilestone.mock.calls[0]?.[2] as
-      Record<string, unknown> | undefined
+      | Record<string, unknown>
+      | undefined
     expect(typeof patch?.completedAt).toBe('bigint')
   })
 
@@ -517,7 +655,8 @@ describe('milestones', () => {
     await service.updateMilestone('org_1', 'ms_1', { status: 'open' })
 
     const patch = repository.updateMilestone.mock.calls[0]?.[2] as
-      Record<string, unknown> | undefined
+      | Record<string, unknown>
+      | undefined
     expect(patch?.completedAt).toBeNull()
   })
 
@@ -599,7 +738,8 @@ describe('setCustomFieldValue', () => {
     })
 
     expect(repository.upsertCustomFieldValue).toHaveBeenCalledWith(
-      expect.objectContaining({ selectKey: 'high' })
+      expect.objectContaining({ selectKey: 'high' }),
+      undefined
     )
     expect(result.error).toBeNull()
   })
@@ -629,7 +769,8 @@ describe('setCustomFieldValue', () => {
     })
 
     expect(repository.upsertCustomFieldValue).toHaveBeenCalledWith(
-      expect.objectContaining({ integerValue: 3 })
+      expect.objectContaining({ integerValue: 3 }),
+      undefined
     )
     expect(result.error).toBeNull()
   })
@@ -647,7 +788,8 @@ describe('setCustomFieldValue', () => {
     })
 
     expect(repository.upsertCustomFieldValue).toHaveBeenCalledWith(
-      expect.objectContaining({ decimalValue: '3.14' })
+      expect.objectContaining({ decimalValue: '3.14' }),
+      undefined
     )
   })
 
@@ -679,7 +821,8 @@ describe('setCustomFieldValue', () => {
     })
 
     expect(repository.upsertCustomFieldValue).toHaveBeenCalledWith(
-      expect.objectContaining({ booleanValue: true })
+      expect.objectContaining({ booleanValue: true }),
+      undefined
     )
   })
 
@@ -696,7 +839,8 @@ describe('setCustomFieldValue', () => {
     })
 
     expect(repository.upsertCustomFieldValue).toHaveBeenCalledWith(
-      expect.objectContaining({ dateValue: 1787767200n })
+      expect.objectContaining({ dateValue: 1787767200n }),
+      undefined
     )
   })
 
@@ -715,7 +859,8 @@ describe('setCustomFieldValue', () => {
     expect(repository.clearCustomFieldValue).toHaveBeenCalledWith(
       tenant.id,
       'iss_1',
-      'cf_1'
+      'cf_1',
+      undefined
     )
     expect(repository.upsertCustomFieldValue).not.toHaveBeenCalled()
     expect(result.data).toBeNull()
@@ -773,6 +918,59 @@ describe('validateCustomFieldValues', () => {
     ])
 
     expect(result.error?.code).toBe('projects/custom-field-not-found')
+  })
+})
+
+describe('validateIssueCustomFieldValues', () => {
+  it('rejects creation when an applicable required field is missing', async () => {
+    repository.listCustomFields.mockResolvedValue([
+      { ...fieldRow, required: true, fieldType: 'text', options: null },
+    ])
+
+    const result = await service.validateIssueCustomFieldValues(
+      tenant.id,
+      typeRow.id,
+      []
+    )
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('projects/required-custom-field-missing')
+    expect(result.error?.param).toBe(fieldRow.key)
+  })
+
+  it('rejects a value for a field scoped to a different work item type', async () => {
+    repository.listCustomFields.mockResolvedValue([
+      {
+        ...fieldRow,
+        types: [{ typeId: 'wit_bug_1' }],
+      },
+    ])
+
+    const result = await service.validateIssueCustomFieldValues(
+      tenant.id,
+      typeRow.id,
+      [{ fieldId: fieldRow.id, value: 'high' }]
+    )
+
+    expect(result.error?.code).toBe('projects/invalid-request')
+  })
+
+  it('keeps an existing required value valid when an update omits it', async () => {
+    repository.listCustomFields.mockResolvedValue([
+      { ...fieldRow, required: true, fieldType: 'text', options: null },
+    ])
+    repository.listCustomFieldValues.mockResolvedValue([
+      { fieldId: fieldRow.id },
+    ])
+
+    const result = await service.validateIssueCustomFieldValues(
+      tenant.id,
+      typeRow.id,
+      [],
+      'iss_1'
+    )
+
+    expect(result.error).toBeNull()
   })
 })
 
