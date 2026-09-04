@@ -4,6 +4,7 @@ import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
 import {
   commentParamsSchema,
   createCommentBodySchema,
+  deleteCommentQuerySchema,
   issueParamsSchema,
   listCommentsQuerySchema,
   updateCommentBodySchema,
@@ -50,10 +51,12 @@ export async function update(req: Request, res: Response) {
 
 export async function remove(req: Request, res: Response) {
   const params = commentParamsSchema.parse(req.params)
+  const query = deleteCommentQuerySchema.parse(req.query)
   const result = await service.remove(
     params.organizationId,
     params.issueRef,
-    params.commentId
+    params.commentId,
+    query.actorUserId
   )
   return sendProjectsResult(res, result)
 }
