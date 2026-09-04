@@ -89,6 +89,10 @@ export const PROJECTS_ERRORS = {
     message: 'The selected option is not declared for this custom field.',
     httpStatus: 400 as HttpStatusCode,
   },
+  'projects/required-custom-field-missing': {
+    message: 'Complete all required custom fields.',
+    httpStatus: 400 as HttpStatusCode,
+  },
   'projects/preset-not-found': {
     message: 'The requested work structure preset could not be found.',
     httpStatus: 404 as HttpStatusCode,
