@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import type { Issue, Project } from '@876/projects/contracts'
 
@@ -140,8 +140,12 @@ describe('ProjectsWorkspaceOverviewPage', () => {
     expect(screen.getByText('Total issues')).toBeInTheDocument()
 
     expect(screen.getByText('Recently updated issues')).toBeInTheDocument()
-    expect(screen.getByText('ROV-1')).toBeInTheDocument()
-    expect(screen.getByText('Wheel motor calibration')).toBeInTheDocument()
+    // The list renders a desktop table and a mobile ListRow group at once
+    // (CSS media queries pick one — jsdom applies neither), so scope every
+    // query to the table to avoid matching the row twice.
+    const table = within(screen.getByRole('table'))
+    expect(table.getByText('ROV-1')).toBeInTheDocument()
+    expect(table.getByText('Wheel motor calibration')).toBeInTheDocument()
   })
 
   it('renders AppError banner when overview data fails to load', async () => {

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
-import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
+import { ChevronsLeft, MenuIcon } from '@876/ui/icons'
 import { Logo } from '@876/ui/logo'
 import {
   Sheet,
@@ -16,7 +16,7 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { NavIcon } from '@/components/shell/nav-icons'
+import { NavIcon, resolveNavIconColor } from '@/components/shell/nav-icons'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 import { navContexts } from '@/components/shell/nav-contexts'
 import {
@@ -80,7 +80,7 @@ export function MobileNav({
         aria-label="Open navigation"
         className="focus-visible:ring-sidebar-ring flex size-11 shrink-0 items-center justify-center rounded-xl border border-transparent text-[#3c4043] transition-colors hover:bg-[#f1f3f4] focus-visible:ring-2 focus-visible:outline-hidden dark:text-white/75 dark:hover:bg-white/8"
       >
-        <PanelLeftIcon aria-hidden="true" className="size-5" />
+        <MenuIcon aria-hidden="true" className="size-5" />
       </SheetTrigger>
 
       <SheetContent
@@ -147,7 +147,7 @@ function MobileContextBody({
           onClick={onBack}
           className="text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring mb-2 flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-hidden"
         >
-          <ArrowLeft aria-hidden="true" className="size-4" />
+          <ChevronsLeft aria-hidden="true" className="size-4" />
           {`Back to ${parent.title}`}
         </button>
       ) : null}
@@ -214,7 +214,10 @@ function MobileNavLink({
       >
         <NavIcon
           icon={item.icon}
-          className={cn('size-[1.125rem]', item.colorClassName)}
+          className={cn(
+            'size-[1.125rem]',
+            item.colorClassName ?? resolveNavIconColor(item.icon)
+          )}
         />
       </span>
       <span className="min-w-0 flex-1 truncate">{item.title}</span>

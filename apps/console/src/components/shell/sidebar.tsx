@@ -2,7 +2,7 @@
 
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
-import { ArrowLeft, PanelLeftIcon } from '@876/ui/icons'
+import { ChevronsLeft, PanelLeftIcon } from '@876/ui/icons'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@876/ui/tooltip'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -14,7 +14,7 @@ import {
 } from 'react'
 
 import { navContexts } from '@/components/shell/nav-contexts'
-import { NavIcon } from '@/components/shell/nav-icons'
+import { NavIcon, resolveNavIconColor } from '@/components/shell/nav-icons'
 import {
   isActiveConsolePath,
   navLinkActive,
@@ -259,7 +259,7 @@ function BackControl({
                 : 'size-9 justify-center'
             )}
           >
-            <ArrowLeft
+            <ChevronsLeft
               aria-hidden="true"
               className={cn(
                 'size-3.5 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5',
@@ -302,10 +302,8 @@ function ExpandControl({ expanded }: { expanded: boolean }) {
           >
             <PanelLeftIcon
               aria-hidden="true"
-              className={cn(
-                'size-4 transition-transform duration-200',
-                expanded && 'rotate-180'
-              )}
+              strokeWidth={1.6}
+              className="size-4"
             />
           </button>
         }
@@ -428,7 +426,7 @@ function ContextEntry({
               icon={entry.icon}
               className={cn(
                 'size-4 shrink-0 transition-transform duration-150 group-hover:scale-110',
-                entry.colorClassName
+                entry.colorClassName ?? resolveNavIconColor(entry.icon)
               )}
             />
             {expanded ? (

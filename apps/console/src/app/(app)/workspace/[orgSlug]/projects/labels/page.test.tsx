@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import type { Label } from '@876/projects/contracts'
 
@@ -80,9 +80,13 @@ describe('OrganizationLabelsPage', () => {
     render(element)
 
     expect(mocks.listLabels).toHaveBeenCalledWith('org_123')
-    expect(screen.getByText('security')).toBeInTheDocument()
-    expect(screen.getByText('#e11d48')).toBeInTheDocument()
-    expect(screen.getByText('Security vulnerabilities')).toBeInTheDocument()
+    // The list renders a desktop table and a mobile ListRow group at once
+    // (CSS media queries pick one — jsdom applies neither), so scope every
+    // query to the table to avoid matching the row twice.
+    const table = within(screen.getByRole('table'))
+    expect(table.getByText('security')).toBeInTheDocument()
+    expect(table.getByText('#e11d48')).toBeInTheDocument()
+    expect(table.getByText('Security vulnerabilities')).toBeInTheDocument()
   })
 
   it('renders AppError notice when labels fail to load', async () => {
