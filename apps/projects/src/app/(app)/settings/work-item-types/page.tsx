@@ -16,9 +16,13 @@ export default async function WorkItemTypesPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-6">Work item types</h1>
+      <p className="text-muted-foreground mb-6 text-sm">
+        Define the work your workspace can track.
+      </p>
       <WorkStructureSettings
         kind="work-item-types"
         items={result.data?.data ?? []}
+        initialError={result.error}
       />
     </div>
   )

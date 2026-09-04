@@ -19,10 +19,18 @@ export default async function MilestonesPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-6">Milestones</h1>
+      <p className="text-muted-foreground mb-6 text-sm">
+        Group project work around important delivery dates.
+      </p>
       <WorkStructureSettings
         kind="milestones"
         items={milestoneResults.flatMap((result) => result.data?.data ?? [])}
         projects={projectItems}
+        initialError={
+          projectResult.error ??
+          milestoneResults.find((result) => result.error)?.error ??
+          null
+        }
       />
     </div>
   )

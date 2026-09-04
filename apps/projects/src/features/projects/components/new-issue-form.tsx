@@ -13,6 +13,7 @@ import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { MarkdownEditor } from '@876/ui/markdown-editor'
 import { NativeSelect } from '@876/ui/native-select'
+import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, type FormEvent } from 'react'
 
@@ -115,24 +116,27 @@ export function NewIssueForm({
 
     setPending(true)
     setError(null)
+    const customFieldValues = applicableFields.flatMap((field) => {
+      const value = values[field.id]
+      if (
+        value === undefined ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0)
+      )
+        return []
+      return [{ fieldId: field.id, value }]
+    })
     const result = await issuesClient.create({
       title: title.trim(),
       projectId: projectId || undefined,
       description: description.trim() || null,
       typeKey: typeKey || undefined,
       status: status || undefined,
-      milestoneId: milestoneId || null,
-      priority,
-      customFields: applicableFields.flatMap((field) => {
-        const value = values[field.id]
-        if (
-          value === undefined ||
-          value === '' ||
-          (Array.isArray(value) && value.length === 0)
-        )
-          return []
-        return [{ fieldId: field.id, value }]
-      }),
+      ...(milestoneId ? { milestoneId } : {}),
+      ...(priority !== 'none' ? { priority } : {}),
+      ...(customFieldValues.length > 0
+        ? { customFields: customFieldValues }
+        : {}),
     })
     setPending(false)
 
@@ -347,6 +351,18 @@ function CustomFieldControl({
       : field.fieldType === 'number' || field.fieldType === 'decimal'
         ? 'number'
         : 'text'
+  if (field.fieldType === 'textarea') {
+    return (
+      <FormRow label={field.label} htmlFor={inputId} required={field.required}>
+        <Textarea
+          id={inputId}
+          value={typeof value === 'string' ? value : ''}
+          onChange={(event) => onChange(event.target.value)}
+          rows={4}
+        />
+      </FormRow>
+    )
+  }
   return (
     <FormRow label={field.label} htmlFor={inputId} required={field.required}>
       <Input

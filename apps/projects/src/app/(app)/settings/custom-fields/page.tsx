@@ -19,10 +19,14 @@ export default async function CustomFieldsPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-6">Custom fields</h1>
+      <p className="text-muted-foreground mb-6 text-sm">
+        Capture the details that matter to your workspace.
+      </p>
       <WorkStructureSettings
         kind="custom-fields"
         items={fields.data?.data ?? []}
         workItemTypes={types.data?.data ?? []}
+        initialError={fields.error ?? types.error}
       />
     </div>
   )

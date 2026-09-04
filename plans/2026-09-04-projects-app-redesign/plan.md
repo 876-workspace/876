@@ -168,9 +168,9 @@ and time tracking. Sub-issues already exist and are kept.
 - [x] C2 `@876/projects` client resources for the new families
 - [x] C2 MCP exposure of types/states/milestones/custom fields _(read-only
   list tools; writes stay settings-UI/human)_
-- [~] C3 settings UI + issue form wiring _(agy `gemini-3.8-flash-high` brief E
-  dispatched after checkpoints 2914f250, af08032f, 28ecc1df, 787450d6, and
-  48333127; issue edit stays deliberately out of scope)_
+- [x] C3 settings UI + issue form wiring _(host routes, browser clients,
+  settings pages, and the typed issue-create form landed in `729d5df2`; issue
+  edit stays deliberately out of scope)_
 
 ## Task checklist
 
@@ -395,3 +395,9 @@ the previous handoff records clean UI/Projects typechecks and the documented
 unrelated Console billing snapshot infrastructure failure. Brief E is now the
 only implementation in flight. `more.txt` is an untracked user-source note and
 is intentionally excluded from commits.
+
+**C3 completion follow-up**: `729d5df2` adds the strict settings host routes,
+typed browser clients, four settings destinations, and issue-create support for
+work-item types, workflow states, milestones, and custom-field values. The
+follow-up adds focused route, browser-client, settings, and issue-form tests;
+see [the implementation report](./reports/agy/2026-09-04-work-structure-settings-and-issue-form.md).

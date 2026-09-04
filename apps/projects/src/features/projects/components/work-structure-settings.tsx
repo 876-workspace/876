@@ -12,6 +12,7 @@ import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { NativeSelect } from '@876/ui/native-select'
+import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
@@ -23,13 +24,27 @@ import {
 } from '@/lib/client'
 
 type Props =
-  | { kind: 'work-item-types'; items: WorkItemType[] }
-  | { kind: 'workflow-states'; items: WorkflowState[] }
-  | { kind: 'milestones'; items: Milestone[]; projects: Project[] }
+  | {
+      kind: 'work-item-types'
+      items: WorkItemType[]
+      initialError?: AppErrorValue | null
+    }
+  | {
+      kind: 'workflow-states'
+      items: WorkflowState[]
+      initialError?: AppErrorValue | null
+    }
+  | {
+      kind: 'milestones'
+      items: Milestone[]
+      projects: Project[]
+      initialError?: AppErrorValue | null
+    }
   | {
       kind: 'custom-fields'
       items: CustomField[]
       workItemTypes: WorkItemType[]
+      initialError?: AppErrorValue | null
     }
 
 function keyFromName(value: string) {
@@ -52,8 +67,13 @@ export function WorkStructureSettings(props: Props) {
   const [key, setKey] = useState('')
   const [color, setColor] = useState('#6b7280')
   const [extra, setExtra] = useState('')
+  const [optionsText, setOptionsText] = useState('')
+  const [required, setRequired] = useState(false)
+  const [typeIds, setTypeIds] = useState<string[]>([])
   const [pending, setPending] = useState(false)
-  const [error, setError] = useState<AppErrorValue | null>(null)
+  const [error, setError] = useState<AppErrorValue | null>(
+    props.initialError ?? null
+  )
 
   const title = {
     'work-item-types': 'Work item types',
@@ -101,10 +121,20 @@ export function WorkStructureSettings(props: Props) {
         | 'multi-select'
         | 'user'
         | 'url'
+      const options = optionsText
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => ({ key: keyFromName(line), label: line }))
       result = await customFieldsClient.create({
         key: resourceKey,
         label: name.trim(),
-        fieldType,
+        fieldType: fieldType || 'text',
+        ...(fieldType === 'select' || fieldType === 'multi-select'
+          ? { options }
+          : {}),
+        required,
+        typeIds,
       })
     }
     setPending(false)
@@ -114,6 +144,9 @@ export function WorkStructureSettings(props: Props) {
     }
     setName('')
     setKey('')
+    setOptionsText('')
+    setRequired(false)
+    setTypeIds([])
     router.refresh()
   }
 
@@ -176,31 +209,75 @@ export function WorkStructureSettings(props: Props) {
             </NativeSelect>
           </FormRow>
         ) : props.kind === 'custom-fields' ? (
-          <FormRow label="Field type" htmlFor="field-type" required>
-            <NativeSelect
-              id="field-type"
-              value={extra || 'text'}
-              onChange={(event) => setExtra(event.target.value)}
-              className="w-full"
-            >
-              {[
-                'text',
-                'textarea',
-                'number',
-                'decimal',
-                'boolean',
-                'date',
-                'select',
-                'multi-select',
-                'user',
-                'url',
-              ].map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </NativeSelect>
-          </FormRow>
+          <>
+            <FormRow label="Field type" htmlFor="field-type" required>
+              <NativeSelect
+                id="field-type"
+                value={extra || 'text'}
+                onChange={(event) => setExtra(event.target.value)}
+                className="w-full"
+              >
+                {[
+                  'text',
+                  'textarea',
+                  'number',
+                  'decimal',
+                  'boolean',
+                  'date',
+                  'select',
+                  'multi-select',
+                  'user',
+                  'url',
+                ].map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </NativeSelect>
+            </FormRow>
+            {extra === 'select' || extra === 'multi-select' ? (
+              <FormRow label="Options" htmlFor="options" required>
+                <Textarea
+                  id="options"
+                  value={optionsText}
+                  onChange={(event) => setOptionsText(event.target.value)}
+                  placeholder="One option per line"
+                  rows={3}
+                />
+              </FormRow>
+            ) : null}
+            <FormRow label="Required" htmlFor="required">
+              <input
+                id="required"
+                type="checkbox"
+                checked={required}
+                onChange={(event) => setRequired(event.target.checked)}
+              />
+            </FormRow>
+            <FormRow label="Applies to">
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {props.workItemTypes.map((type) => (
+                  <label
+                    key={type.id}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={typeIds.includes(type.id)}
+                      onChange={(event) =>
+                        setTypeIds((current) =>
+                          event.target.checked
+                            ? [...current, type.id]
+                            : current.filter((id) => id !== type.id)
+                        )
+                      }
+                    />
+                    {type.name}
+                  </label>
+                ))}
+              </div>
+            </FormRow>
+          </>
         ) : (
           <FormRow label="Color" htmlFor="color">
             <Input
@@ -217,7 +294,12 @@ export function WorkStructureSettings(props: Props) {
             type="submit"
             variant="info"
             disabled={
-              !name.trim() || pending || (props.kind === 'milestones' && !extra)
+              !name.trim() ||
+              pending ||
+              (props.kind === 'milestones' && !extra) ||
+              (props.kind === 'custom-fields' &&
+                (extra === 'select' || extra === 'multi-select') &&
+                !optionsText.trim())
             }
           >
             {pending ? 'Saving…' : 'Add'}
@@ -240,6 +322,19 @@ export function WorkStructureSettings(props: Props) {
                   {'label' in item ? item.label : item.name}
                 </p>
                 <p className="text-muted-foreground text-xs">{item.key}</p>
+                {'fieldType' in item ? (
+                  <p className="text-muted-foreground text-xs">
+                    {item.fieldType}
+                  </p>
+                ) : null}
+                {'category' in item ? (
+                  <p className="text-muted-foreground text-xs">
+                    {item.category}
+                  </p>
+                ) : null}
+                {'status' in item ? (
+                  <p className="text-muted-foreground text-xs">{item.status}</p>
+                ) : null}
               </div>
               <Button
                 type="button"
