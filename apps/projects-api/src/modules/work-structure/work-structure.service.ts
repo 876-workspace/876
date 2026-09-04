@@ -55,6 +55,10 @@ function isWorkflowCategory(value: string): boolean {
   )
 }
 
+function isOptionFieldType(value: string): boolean {
+  return value === 'select' || value === 'multi-select'
+}
+
 async function hasOwnedTypes(
   tenantId: string,
   typeIds: string[]
@@ -529,13 +533,27 @@ export async function updateCustomField(
 ): Promise<ServiceResult<SerializedCustomField>> {
   const resolved = await resolveTenant(organizationId)
   if (resolved.error) return { data: null, error: resolved.error }
-  if (!(await repository.retrieveCustomField(resolved.tenant.id, id)))
+  const existing = await repository.retrieveCustomField(resolved.tenant.id, id)
+  if (!existing)
     return { data: null, error: getError('projects/custom-field-not-found') }
   if (
     body.typeIds !== undefined &&
     !(await hasOwnedTypes(resolved.tenant.id, body.typeIds))
   )
     return { data: null, error: getError('projects/invalid-request') }
+
+  const nextFieldType = body.fieldType ?? existing.fieldType
+  const wasOptionField = isOptionFieldType(existing.fieldType)
+  const willBeOptionField = isOptionFieldType(nextFieldType)
+  const nextOptions = body.options ?? existing.options
+
+  if (wasOptionField && !willBeOptionField)
+    return { data: null, error: getError('projects/invalid-request') }
+  if (willBeOptionField && optionKeys(nextOptions).length === 0)
+    return { data: null, error: getError('projects/invalid-request') }
+  if (!willBeOptionField && body.options !== undefined)
+    return { data: null, error: getError('projects/invalid-request') }
+
   const row = await repository.updateCustomField(
     resolved.tenant.id,
     id,
@@ -670,6 +688,8 @@ export async function validateIssueCustomFieldValues(
   const inputByFieldId = new Map<string, CustomFieldValueInput>()
 
   for (const input of inputs) {
+    if (inputByFieldId.has(input.fieldId))
+      return { data: null, error: getError('projects/invalid-request') }
     const field = fieldsById.get(input.fieldId)
     if (!field)
       return { data: null, error: getError('projects/custom-field-not-found') }
@@ -771,7 +791,7 @@ export async function getIssueStructure(
     id: string
   }
 ) {
-  const [state, type, milestone, customFields] = await Promise.all([
+  const [state, type, milestone, customFieldRows] = await Promise.all([
     issue.workflowStateId
       ? repository.retrieveWorkflowState(tenantId, issue.workflowStateId)
       : repository.retrieveWorkflowStateByKey(tenantId, issue.status),
@@ -781,8 +801,13 @@ export async function getIssueStructure(
     issue.milestoneId
       ? repository.retrieveMilestone(tenantId, issue.milestoneId)
       : null,
-    listCustomFieldValuesForTenant(tenantId, issue.id),
+    repository.listCustomFieldValues(tenantId, issue.id),
   ])
+  const customFields = customFieldRows
+    .filter(
+      (row) => !type || appliesToWorkItemType(row.field, type.id)
+    )
+    .map((row) => serializeCustomFieldValue(row as CustomFieldValueRow))
   return {
     state: state ? serializeWorkflowState(state) : null,
     type: type ? serializeWorkItemType(type) : null,
@@ -813,6 +838,29 @@ export async function setCustomFieldValuesForTenant(
   return { data: values, error: null }
 }
 
+export async function pruneCustomFieldValuesForWorkItemType(
+  tenantId: string,
+  issueId: string,
+  workItemTypeId: string,
+  transaction?: repository.WorkStructureTransaction
+): Promise<void> {
+  const [fields, values] = await Promise.all([
+    repository.listCustomFields(tenantId, transaction),
+    repository.listCustomFieldValues(tenantId, issueId, transaction),
+  ])
+  const fieldsById = new Map(fields.map((field) => [field.id, field]))
+  for (const value of values) {
+    const field = fieldsById.get(value.fieldId)
+    if (field && !appliesToWorkItemType(field, workItemTypeId))
+      await repository.clearCustomFieldValue(
+        tenantId,
+        issueId,
+        value.fieldId,
+        transaction
+      )
+  }
+}
+
 export async function validateCustomFieldValues(
   tenantId: string,
   inputs: CustomFieldValueInput[]
@@ -836,10 +884,17 @@ export async function resolveIssueForCustomFields(
   const issue = await issues.resolveIssue(resolved.tenant.id, issueRef)
   if (!issue || issue.deletedAt !== null)
     return { data: null, error: getError('projects/issue-not-found') }
-  return {
-    data: await listCustomFieldValuesForTenant(resolved.tenant.id, issue.id),
-    error: null,
-  }
+  const structure = await getIssueStructure(resolved.tenant.id, issue)
+  return { data: structure.customFields, error: null }
+}
+
+async function resolveIssueWorkItemType(
+  tenantId: string,
+  issue: { workItemTypeId: string | null; typeKey: string }
+) {
+  return issue.workItemTypeId
+    ? repository.retrieveWorkItemType(tenantId, issue.workItemTypeId)
+    : repository.retrieveWorkItemTypeByKey(tenantId, issue.typeKey)
 }
 
 export async function setCustomFieldValue(
@@ -852,6 +907,16 @@ export async function setCustomFieldValue(
   const issue = await issues.resolveIssue(resolved.tenant.id, issueRef)
   if (!issue || issue.deletedAt !== null)
     return { data: null, error: getError('projects/issue-not-found') }
+  const type = await resolveIssueWorkItemType(resolved.tenant.id, issue)
+  if (!type)
+    return { data: null, error: getError('projects/work-item-type-not-found') }
+  const validation = await validateIssueCustomFieldValues(
+    resolved.tenant.id,
+    type.id,
+    [input],
+    issue.id
+  )
+  if (validation.error) return { data: null, error: validation.error }
   return setCustomFieldValueForTenant(
     resolved.tenant.id,
     issue.id,
@@ -876,8 +941,16 @@ export async function clearCustomFieldValue(
   const issue = await issues.resolveIssue(resolved.tenant.id, issueRef)
   if (!issue || issue.deletedAt !== null)
     return { data: null, error: getError('projects/issue-not-found') }
-  if (!(await repository.retrieveCustomField(resolved.tenant.id, fieldId)))
-    return { data: null, error: getError('projects/custom-field-not-found') }
+  const type = await resolveIssueWorkItemType(resolved.tenant.id, issue)
+  if (!type)
+    return { data: null, error: getError('projects/work-item-type-not-found') }
+  const validation = await validateIssueCustomFieldValues(
+    resolved.tenant.id,
+    type.id,
+    [{ fieldId, value: null }],
+    issue.id
+  )
+  if (validation.error) return { data: null, error: validation.error }
   await repository.clearCustomFieldValue(resolved.tenant.id, issue.id, fieldId)
   return {
     data: { object: 'projects.custom-field-value', id: fieldId, deleted: true },
