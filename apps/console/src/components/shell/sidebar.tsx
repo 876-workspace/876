@@ -131,14 +131,13 @@ export function Sidebar({
   if (!context) return null
 
   const parent = resolveSidebarBackContext(stack, context.key)
-  const isPanelWidth = expanded && context.kind !== 'platform'
 
   return (
     <aside
       className={cn(
         'hidden min-h-0 shrink-0 flex-col items-center justify-center py-4 [interpolate-size:allow-keywords] md:flex',
         INSET_MOTION,
-        isPanelWidth ? PANEL_INSET : RAIL_INSET
+        expanded ? PANEL_INSET : RAIL_INSET
       )}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && parent)
@@ -151,7 +150,7 @@ export function Sidebar({
         className={cn(
           'border-border/80 bg-background/90 dark:bg-sidebar/90 overflow-hidden rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl [interpolate-size:allow-keywords] dark:shadow-black/25 dark:ring-white/[0.06]',
           CARD_MOTION,
-          isPanelWidth ? PANEL_WIDTH : RAIL_WIDTH
+          expanded ? PANEL_WIDTH : RAIL_WIDTH
         )}
       >
         <div
@@ -256,7 +255,7 @@ function BackControl({
             className={cn(
               'text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring group flex min-w-0 items-center rounded-lg focus-visible:ring-2 focus-visible:outline-hidden',
               expanded
-                ? 'gap-2 px-2 py-1.5 text-[0.8125rem] font-semibold'
+                ? 'gap-2 px-2 py-1.5 text-[0.8125rem]'
                 : 'size-9 justify-center'
             )}
           >
@@ -413,7 +412,7 @@ function ContextEntry({
               active
                 ? expanded
                   ? cn(
-                      'text-sidebar-accent-foreground font-medium shadow-2xs',
+                      'text-sidebar-accent-foreground shadow-2xs',
                       entry.activeClassName ?? 'bg-sidebar-accent'
                     )
                   : cn(

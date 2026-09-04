@@ -276,6 +276,34 @@ describe('Sidebar', () => {
         screen.getByRole('button', { name: 'Collapse sidebar' })
       ).toBeVisible()
     })
+
+    // Regression: the card's own width class stayed at the rail width on the
+    // platform context even after expanding, so the label span rendered into
+    // the DOM (passing a text-content assertion) while `overflow-hidden`
+    // clipped it out of view. Assert the card itself actually widens, not
+    // just that the label text exists somewhere in the tree.
+    it('widens the card itself when expanded, including on the platform context', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      const nav = screen.getByRole('navigation', { name: 'Console navigation' })
+      expect(nav.className).toMatch(/(?:^|\s)w-\[3\.75rem\](?:\s|$)/)
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      expect(nav.className).toMatch(/(?:^|\s)w-56(?:\s|$)/)
+      expect(nav.className).not.toMatch(/(?:^|\s)w-\[3\.75rem\](?:\s|$)/)
+    })
+
+    it('never bolds an expanded entry label, active or not', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      const usersLink = screen.getByRole('link', { name: 'Users' })
+      expect(usersLink.className).not.toMatch(/font-(?:medium|semibold|bold)/)
+    })
   })
 
   describe('slots', () => {
