@@ -80,7 +80,7 @@ This is intentionally different from:
 which asks what that customer organization has raised **with 876**, and from:
 
 ```text
-/orgs/[slug]/workspace/crm/...
+/workspace/[orgSlug]/crm/...
 ```
 
 which opens records in that organization's **own CRM workspace**.
