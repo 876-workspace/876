@@ -848,12 +848,13 @@ Phase 3.5 lands.
 1. Add the `/requests/all` nav entry + permission key **after** Phase 3.5 lands
    (the Phase 4 slice itself has landed; see commits `1ecd8aef`, `2435e13d`, and
    `abcaeb3c`).
-2. Phase 2's integration registry — still blocked on the §3.4 reading of
-   "Integrations". This is the one open question that needs the user.
-3. `/projects` and `/workspace/<org>/projects` mirror each other file-for-file
-   and correctly share `features/projects/components` — but `/projects` keeps
-   path helpers in `_lib/{base,paths}.ts` while the workspace tree builds paths
-   from `workspaceBase()`. Two mechanisms for one job; worth consolidating.
+2. ~~Phase 2's integration registry~~ — **done.** §3.4 was confirmed with the
+   user 2026-09-04 (registry consolidation, not third-party integrations) and
+   the registry was folded into `app-workspaces.ts` in `66d7591f`. This item
+   was stale; Phase 2 §8 already shows it checked off.
+3. ~~`/projects` and `/workspace/<org>/projects` path helpers~~ — **done.**
+   Consolidated onto `projectsBase()` in `app-workspaces.ts`, commit
+   `b0892196`.
 
 ### Lessons this run paid for — do not relearn them
 
