@@ -17,8 +17,15 @@
  *
  * This file is **plain data**. It carries no icon components and no functions,
  * because it crosses the RSC → client boundary — icons are string keys the nav
- * resolves itself (`.claude/rules/app-layout.md`).
+ * resolves itself (`.claude/rules/app-layout.md`). `navigationGroups` is the
+ * one exception in shape only, not in kind: it is the product's own
+ * `NavGroupDefinition[]`, itself plain data for the same reason, imported
+ * rather than restated so this file and the product's contract package cannot
+ * disagree about what that product's navigation is.
  */
+
+import type { NavGroupDefinition } from '@876/core/access'
+import { billingNavigation, invoiceNavigation } from '@876/billing/navigation'
 
 /** Icon key a client component resolves to a component. */
 export type WorkspaceIconKey =
@@ -68,6 +75,18 @@ export type AppWorkspace = {
   summary: string
   iconKey: WorkspaceIconKey
   sections: readonly WorkspaceSection[]
+  /**
+   * The product's own permission-catalog navigation, when it has moved into a
+   * shared contract package (`@876/billing/navigation` today). Its entries'
+   * `key`s are matched against `sections[].entryKey` to build the operator
+   * rail, so an organization's entitlement/feature state filters the rail the
+   * same way it filters that product's own navigation — see
+   * `resolveWorkspaceNavigation`.
+   *
+   * A workspace without one (CRM, Projects, Couriers today) falls back to
+   * `sections` unfiltered; their registries have not moved into a package yet.
+   */
+  navigationGroups?: readonly NavGroupDefinition[]
 }
 
 export const APP_WORKSPACES = [
@@ -145,6 +164,7 @@ export const APP_WORKSPACES = [
         entryKey: 'banking',
       },
     ],
+    navigationGroups: billingNavigation,
   },
   {
     appSlug: '876-invoice',
@@ -180,6 +200,7 @@ export const APP_WORKSPACES = [
         entryKey: 'payments',
       },
     ],
+    navigationGroups: invoiceNavigation,
   },
   {
     appSlug: '876-couriers',
