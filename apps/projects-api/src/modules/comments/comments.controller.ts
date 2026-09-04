@@ -4,7 +4,6 @@ import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
 import {
   commentParamsSchema,
   createCommentBodySchema,
-  deleteCommentQuerySchema,
   issueParamsSchema,
   listCommentsQuerySchema,
   updateCommentBodySchema,
@@ -23,6 +22,18 @@ export async function list(req: Request, res: Response) {
     res,
     result,
     `/v1/organizations/${params.organizationId}/issues/${params.issueRef}/comments`
+  )
+}
+
+export async function retrieve(req: Request, res: Response) {
+  const params = commentParamsSchema.parse(req.params)
+  return sendProjectsResult(
+    res,
+    await service.retrieve(
+      params.organizationId,
+      params.issueRef,
+      params.commentId
+    )
   )
 }
 
@@ -51,12 +62,10 @@ export async function update(req: Request, res: Response) {
 
 export async function remove(req: Request, res: Response) {
   const params = commentParamsSchema.parse(req.params)
-  const query = deleteCommentQuerySchema.parse(req.query)
   const result = await service.remove(
     params.organizationId,
     params.issueRef,
-    params.commentId,
-    query.actorUserId
+    params.commentId
   )
   return sendProjectsResult(res, result)
 }
