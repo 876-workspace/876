@@ -433,7 +433,9 @@ export interface CreateIssueInput {
   projectId?: string
   title: string
   description?: string | null
-  status?: IssueStatus
+  status?: string
+  typeKey?: string
+  milestoneId?: string | null
   priority?: IssuePriority
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -441,6 +443,7 @@ export interface CreateIssueInput {
   estimate?: number | null
   dueDate?: number | null
   labelIds?: string[]
+  customFields?: SetCustomFieldValueInput[]
   position?: number
 }
 
@@ -448,7 +451,9 @@ export interface UpdateIssueInput {
   projectId?: string
   title?: string
   description?: string | null
-  status?: IssueStatus
+  status?: string
+  typeKey?: string
+  milestoneId?: string | null
   priority?: IssuePriority
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -456,6 +461,7 @@ export interface UpdateIssueInput {
   estimate?: number | null
   dueDate?: number | null
   labelIds?: string[]
+  customFields?: SetCustomFieldValueInput[]
   position?: number
   actorUserId?: string | null
 }

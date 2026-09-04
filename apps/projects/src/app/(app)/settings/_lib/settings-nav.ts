@@ -5,6 +5,30 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
     label: 'Workspace',
     items: [
       {
+        label: 'Work item types',
+        icon: 'categories',
+        availability: 'available',
+        href: '/settings/work-item-types',
+      },
+      {
+        label: 'Workflow states',
+        icon: 'statuses',
+        availability: 'available',
+        href: '/settings/workflow-states',
+      },
+      {
+        label: 'Milestones',
+        icon: 'priorities',
+        availability: 'available',
+        href: '/settings/milestones',
+      },
+      {
+        label: 'Custom fields',
+        icon: 'preferences',
+        availability: 'available',
+        href: '/settings/custom-fields',
+      },
+      {
         label: 'Teams',
         icon: 'teams',
         availability: 'available',

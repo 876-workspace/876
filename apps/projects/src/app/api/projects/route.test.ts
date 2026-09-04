@@ -154,6 +154,27 @@ describe('POST /api/issues', () => {
     })
   })
 
+  it('forwards configured work-structure fields without accepting extras', async () => {
+    const response = await createIssueRoute(
+      request('/api/issues', {
+        title: 'Fix login',
+        typeKey: 'bug',
+        status: 'todo',
+        milestoneId: 'milestone_1',
+        customFields: [{ fieldId: 'field_1', value: 'customer' }],
+      })
+    )
+
+    expect(response.status).toBe(201)
+    expect(mocks.createIssue).toHaveBeenCalledWith('org_1', {
+      title: 'Fix login',
+      typeKey: 'bug',
+      status: 'todo',
+      milestoneId: 'milestone_1',
+      customFields: [{ fieldId: 'field_1', value: 'customer' }],
+    })
+  })
+
   it('rejects a missing title with 422', async () => {
     const response = await createIssueRoute(request('/api/issues', {}))
 
