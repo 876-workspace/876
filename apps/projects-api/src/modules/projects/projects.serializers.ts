@@ -17,6 +17,7 @@ export type ProjectRow = {
   targetDate: bigint | number | null
   nextIssueNumber: number
   customerId: string | null
+  defaultWorkItemTypeId?: string | null
   position: number
   archivedAt: bigint | number | null
   createdAt: bigint | number
