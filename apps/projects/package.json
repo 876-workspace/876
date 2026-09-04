@@ -18,6 +18,7 @@
     "@876/account": "workspace:*",
     "@876/core": "workspace:*",
     "@876/editor": "workspace:*",
+    "@876/projects-ui": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/workspace": "workspace:*",
     "@sentry/nextjs": "10.56.0",
