@@ -121,7 +121,9 @@ ALTER TABLE "projects_issues" ADD COLUMN "cycle_id" TEXT;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "projects_work_item_types_tenant_id_key_key" ON "projects_work_item_types"("tenant_id", "key");
+CREATE UNIQUE INDEX "projects_work_item_types_active_default_key" ON "projects_work_item_types"("tenant_id") WHERE "is_default" = true AND "archived_at" IS NULL;
 CREATE UNIQUE INDEX "projects_workflow_states_tenant_id_key_key" ON "projects_workflow_states"("tenant_id", "key");
+CREATE UNIQUE INDEX "projects_workflow_states_active_default_key" ON "projects_workflow_states"("tenant_id") WHERE "is_default" = true AND "archived_at" IS NULL;
 CREATE INDEX "projects_workflow_states_tenant_id_category_idx" ON "projects_workflow_states"("tenant_id", "category");
 CREATE UNIQUE INDEX "projects_milestones_project_id_key_key" ON "projects_milestones"("project_id", "key");
 CREATE INDEX "projects_milestones_tenant_id_status_idx" ON "projects_milestones"("tenant_id", "status");
