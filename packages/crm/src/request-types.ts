@@ -54,10 +54,28 @@ export const requestListSchema = z.object({
   url: z.string(),
 })
 
+export const crossOrganizationRequestSchema = crmRequestSchema.extend({
+  organizationId: z.string(),
+})
+
+export const crossOrganizationRequestListSchema = z.object({
+  object: z.literal('list'),
+  data: z.array(crossOrganizationRequestSchema),
+  has_more: z.boolean(),
+  total_count: z.number().int().nullable(),
+  url: z.string(),
+})
+
 export type RequestStatus = z.infer<typeof requestStatusSchema>
 export type RequestChannel = z.infer<typeof requestChannelSchema>
 export type CrmRequest = z.infer<typeof crmRequestSchema>
 export type RequestList = z.infer<typeof requestListSchema>
+export type CrossOrganizationRequest = z.infer<
+  typeof crossOrganizationRequestSchema
+>
+export type CrossOrganizationRequestList = z.infer<
+  typeof crossOrganizationRequestListSchema
+>
 
 export interface ListRequestsQuery {
   status?: RequestStatus
@@ -70,6 +88,12 @@ export interface ListRequestsQuery {
   /** `'unassigned'` selects requests raised for the organization as a whole. */
   requesterUserId?: string
   priorityId?: string
+}
+
+export interface ListCrossOrganizationRequestsQuery {
+  status?: RequestStatus
+  limit?: number
+  startingAfter?: string
 }
 
 export interface CreateRequestInput {

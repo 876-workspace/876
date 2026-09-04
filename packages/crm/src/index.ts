@@ -13,6 +13,8 @@ export {
 export type { CrmModuleKey } from './modules'
 export {
   crmRequestSchema,
+  crossOrganizationRequestListSchema,
+  crossOrganizationRequestSchema,
   requestChannelSchema,
   requestListSchema,
   requestStatusSchema,
@@ -20,6 +22,9 @@ export {
 export type {
   CreateRequestInput,
   CrmRequest,
+  CrossOrganizationRequest,
+  CrossOrganizationRequestList,
+  ListCrossOrganizationRequestsQuery,
   ListRequestsQuery,
   RequestChannel,
   RequestList,
