@@ -1,8 +1,14 @@
 import { notFound } from 'next/navigation'
 
 import { formatDate } from '@/lib/format'
-import { PERMISSION_GROUPS } from '@/lib/permissions'
+import { findConsoleAccess, requireSession } from '@/lib/auth/guards'
+import {
+  canonicalConsoleRole,
+  hasPermission,
+  PERMISSION_GROUPS,
+} from '@/lib/permissions'
 import { resolveMemberGrant, resolveMemberIdentity } from './_data'
+import { GrantEditor } from './_components/grant-editor'
 
 const ROLE_LABELS: Record<string, string> = {
   'super-admin': 'Super Admin',
@@ -26,9 +32,11 @@ type Props = { params: Promise<{ id: string }> }
 
 export default async function TeamMemberOverviewPage({ params }: Props) {
   const { id } = await params
-  const [grant, identity] = await Promise.all([
+  const session = await requireSession(`/settings/users/${id}`)
+  const [grant, identity, viewer] = await Promise.all([
     resolveMemberGrant(id),
     resolveMemberIdentity(id),
+    findConsoleAccess(session.id),
   ])
   if (!grant) notFound()
 
@@ -90,6 +98,21 @@ export default async function TeamMemberOverviewPage({ params }: Props) {
           )}
         </dl>
       </div>
+
+      <GrantEditor
+        memberId={id}
+        canUpdate={viewer ? hasPermission(viewer, 'team:update') : false}
+        canSuspend={viewer ? hasPermission(viewer, 'team:suspend') : false}
+        viewerRole={viewer ? canonicalConsoleRole(viewer.role) : null}
+        initial={{
+          roleName: grant.roleName,
+          status: grant.status as 'active' | 'suspended',
+          affiliation: grant.affiliation as 'staff' | 'contractor' | 'external',
+          title: grant.title,
+          expiresAt: grant.expiresAt === null ? null : Number(grant.expiresAt),
+          justification: grant.justification,
+        }}
+      />
 
       {/* Console Access */}
       <div className="border-876-surface-border bg-muted/20 space-y-3 rounded-xl border p-4">
