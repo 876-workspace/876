@@ -1,5 +1,4 @@
 import { Skeleton } from '@876/ui/skeleton'
-import { Page } from '@876/ui/page'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -33,15 +32,13 @@ export default async function OrganizationProjectDetailPage({ params }: Props) {
   if (!org) notFound()
 
   return (
-    <Page>
-      <Suspense fallback={<ProjectDetailFallback />}>
-        <ProjectDetailData
-          organizationId={org.id}
-          base={projectsBase(orgSlug)}
-          projectId={projectId}
-        />
-      </Suspense>
-    </Page>
+    <Suspense fallback={<ProjectDetailFallback />}>
+      <ProjectDetailData
+        organizationId={org.id}
+        base={projectsBase(orgSlug)}
+        projectId={projectId}
+      />
+    </Suspense>
   )
 }
 

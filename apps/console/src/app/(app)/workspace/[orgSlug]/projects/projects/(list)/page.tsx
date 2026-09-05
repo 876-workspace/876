@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { projectsBase } from '@/features/orgs/app-workspaces'
@@ -34,20 +33,18 @@ export default async function OrganizationProjectsPage({
   if (!org) notFound()
 
   return (
-    <Page>
-      <ProjectsSection orgSlug={orgSlug}>
-        <Suspense
-          fallback={
-            <DataTableSkeleton columns={PROJECTS_SKELETON_COLUMNS} rows={5} />
-          }
-        >
-          <ProjectsData
-            organizationId={org.id}
-            base={projectsBase(orgSlug)}
-            status={isProjectStatus(status) ? status : undefined}
-          />
-        </Suspense>
-      </ProjectsSection>
-    </Page>
+    <ProjectsSection orgSlug={orgSlug}>
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={PROJECTS_SKELETON_COLUMNS} rows={5} />
+        }
+      >
+        <ProjectsData
+          organizationId={org.id}
+          base={projectsBase(orgSlug)}
+          status={isProjectStatus(status) ? status : undefined}
+        />
+      </Suspense>
+    </ProjectsSection>
   )
 }

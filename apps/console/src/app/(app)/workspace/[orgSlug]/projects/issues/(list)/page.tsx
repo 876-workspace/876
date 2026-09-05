@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { projectsBase } from '@/features/orgs/app-workspaces'
@@ -34,20 +33,18 @@ export default async function OrganizationIssuesPage({
   if (!org) notFound()
 
   return (
-    <Page>
-      <IssuesSection orgSlug={orgSlug}>
-        <Suspense
-          fallback={
-            <DataTableSkeleton columns={ISSUES_SKELETON_COLUMNS} rows={5} />
-          }
-        >
-          <IssuesData
-            organizationId={org.id}
-            base={projectsBase(orgSlug)}
-            status={isIssueStatus(status) ? status : undefined}
-          />
-        </Suspense>
-      </IssuesSection>
-    </Page>
+    <IssuesSection orgSlug={orgSlug}>
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={ISSUES_SKELETON_COLUMNS} rows={5} />
+        }
+      >
+        <IssuesData
+          organizationId={org.id}
+          base={projectsBase(orgSlug)}
+          status={isIssueStatus(status) ? status : undefined}
+        />
+      </Suspense>
+    </IssuesSection>
   )
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppError } from '@876/ui/app-error'
 import { ChevronRight, Squares2X2Icon } from '@876/ui/icons'
+import { Page } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import {
   Empty,
@@ -38,14 +39,14 @@ export default async function OrganizationWorkspacePage({ params }: Props) {
   const { orgSlug } = await params
 
   return (
-    <div className="space-y-5">
+    <Page className="space-y-5">
       <div>
         <h1 className="876-page-title">Workspaces</h1>
       </div>
       <Suspense fallback={<WorkspaceCardsSkeleton />}>
         <WorkspaceCards orgSlug={orgSlug} />
       </Suspense>
-    </div>
+    </Page>
   )
 }
 
