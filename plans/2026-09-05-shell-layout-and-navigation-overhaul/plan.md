@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-05-shell-layout-and-navigation-overhaul`
 - **Branch:** `feat/shell-layout-navigation-overhaul` (integration branch)
-- **Status:** `CLOSEOUT_BLOCKED_ON_RUNTIME` — all planned repository implementation is landed; production data repair, final command verification, authenticated browser acceptance, issue cleanup, and the final PR remain.
+- **Status:** `CLOSEOUT_BLOCKED_ON_RUNTIME_AND_ACTIONS` — all planned repository implementation is landed and draft PR #478 is open; production data repair, executable verification, authenticated browser acceptance, and external issue cleanup remain before the PR can be marked ready.
 - **Owner:** orchestrating Claude session
 - **Delegates:** Codex (`gpt-5.6-terra`, medium) for the bulk of the code; `agy`
   (`gemini-3.8-flash-high`, falling back to `gemini-3.1-pro-high` if that model
@@ -271,12 +271,15 @@ Completed:
   surfaces use the nested contract.
 - Product/module grant rollups and shared module styling are covered by tests.
 
-### Phase 8 — App assignment role mapping — DURABLE FIX COMPLETE
+### Phase 8 — App assignment role mapping — DURABLE FIX COMPLETE IN CODE
 
 - Automatic assignment paths use `resolveAppAssignmentRole` from `@876/core/access`.
 - Organization `super_admin` / `super-admin` maps to app `super-admin`, `admin`
   maps to app `admin`, and ordinary members fall back to the live default role.
 - Existing assignments are not overwritten during provisioning replay.
+- Provisioning replay now genuinely reactivates a revoked assignment by clearing
+  revocation/deletion metadata while deliberately preserving its existing
+  `appRoleId`; focused regression coverage was added for both invariants.
 - The explicit super-admin elevation guard remains intact for requested roles.
 - Core/API regression coverage exercises provisioning, app membership creation,
   invite routing, fail-closed behavior, and non-super-admin elevation.
@@ -302,7 +305,7 @@ Still outside the durable code fix:
 | 5 | Codex | `gpt-5.6-terra` medium |
 | 6 | Codex | `gpt-5.6-terra` medium |
 | 7 | Codex | `gpt-5.6-terra` medium |
-| 8 | Codex | `gpt-5.6-terra` medium |
+| 8 | Codex + closeout hardening | `gpt-5.6-terra` / current session |
 
 Briefs live in `./briefs/<tool>/`; reports live in `./reports/<tool>/`.
 The operational closeout checklist is `./todo.md`.
@@ -312,15 +315,25 @@ The operational closeout checklist is `./todo.md`.
 ## 7. Final integration verification — STILL REQUIRED
 
 The phase reports contain focused passing checks, but the integration branch as
-one unit has not passed one final verification run. GitHub has no Actions runs
-or commit-status entries for the closeout head, so absence of failures is not a
-green CI signal.
+one unit has not completed one executable final verification run.
 
-Required matrix:
+Draft PR #478 now triggers the repository's existing `pull_request` workflows.
+Across multiple separate branch heads, however, the relevant jobs fail **before
+step 1**: their job records contain empty step lists and no logs. The same result
+was reproduced after retrying GitHub reads and after later commits triggered
+fresh workflow run/job ids. This is therefore a reproducible Actions/runner
+execution block, not a GitHub connector timeout and not evidence that the code
+failed a test or compile step.
+
+The local container cannot substitute for CI because it has no repository
+checkout or installed pnpm, and its shell network path cannot obtain GitHub/npm
+content. `todo.md` C4 contains the detailed execution-state evidence.
+
+Required matrix once an executable environment is available:
 
 ```bash
 pnpm --filter @876/console typecheck && pnpm --filter @876/console lint && pnpm --filter @876/console test
-pnpm --filter @876/projects typecheck && pnpm --filter @876/projects lint && pnpm --filter @876/projects test
+pnpm --filter @876/projects-app typecheck && pnpm --filter @876/projects-app lint && pnpm --filter @876/projects-app test
 pnpm --filter @876/projects-ui typecheck && pnpm --filter @876/projects-ui test
 pnpm --filter @876/ui typecheck && pnpm --filter @876/ui test
 pnpm --filter @876/api typecheck && pnpm --filter @876/api lint && pnpm --filter @876/api test
@@ -339,7 +352,9 @@ surfaces in light and dark themes at 1280/1440/1920.
 
 ---
 
-## 8. Task checklist — current source of truth
+## 8. Task checklist — summary only
+
+`todo.md` is the operational source of truth; this checklist summarizes the run.
 
 - [x] Diagnose the 876 Projects comment `Forbidden.` against production
 - [x] Pull Vercel logs for `876-projects`
@@ -359,12 +374,21 @@ surfaces in light and dark themes at 1280/1440/1920.
 - [x] Phase 7 — permissions UI grouped by product → module → permission
 - [x] Phase 8 — durable assignment-role mapping + API/core regression coverage
 - [x] Add dry-run-by-default assignment-role backfill script
+- [x] Harden provisioning replay to clear revoked/deleted metadata without overwriting app role
+- [x] Add focused replay-reactivation regression coverage
+- [x] Open the single integration PR as **draft #478**
+- [x] Confirm PR #478 is mergeable with no base conflict
+- [x] Trigger and inspect existing pull-request workflows
+- [x] Retry GitHub reads and reproduce the Actions pre-step infrastructure failure on fresh runs
+- [x] Complete PR-wide committed-diff escape/security scan
 - [ ] **PRODUCTION DATA:** repoint/backfill the existing Efesto 876-Projects assignment to `super-admin`
 - [ ] Close or rewrite PROJ-10 in its actual tracker
-- [ ] Run the final integration verification matrix
+- [ ] Run the final integration verification matrix in an environment that can execute it
+- [ ] Complete local formatter/working-tree/lockfile checks
+- [ ] Complete production builds
 - [ ] Complete browser visual acceptance in light/dark at required widths
 - [ ] Complete production comment create/edit/delete acceptance
-- [ ] Open the single final PR from `feat/shell-layout-navigation-overhaul` → `main`
+- [ ] Update PR #478 with final verification evidence and mark it ready for review
 
 ---
 
@@ -372,7 +396,8 @@ surfaces in light and dark themes at 1280/1440/1920.
 
 ### Repository implementation is complete
 
-The integration branch contains the original phase commits plus closeout commits:
+The integration branch contains the original phase commits plus closeout/hardening
+commits, including:
 
 - `f005294d` — product sidebar insets aligned with shell gutter
 - `1d94b272` — distinct navigation icons + collapsible Projects sidebar
@@ -384,28 +409,47 @@ The integration branch contains the original phase commits plus closeout commits
 - `0ed9cb34` — shared Markdown/comment editor closeout
 - `242702ef` — remove obsolete `ProjectDetail.projectsHref`
 - `4de19178` — reconcile spacing/Projects reports
-- `76bac55e` — record repository-side closeout progress/audit
+- `6db88a11` — correct Projects app runtime/build verification filters
+- `f9a8af2b` — save GitHub connector retry semantics and exact retry references
+- `11b70128` — fully reactivate provisioned app assignments without overwriting app role
+- `55a72c9e` — focused replay-reactivation regression coverage
+- `9cae5384` — advance the operational closeout tracker after static audit
+- `a7aba9f9` — update the orchestrator closeout report after PR/replay audit
 
-Earlier commits contain Phase 1 and the durable Phase 8 role-mapping/backfill implementation.
+Earlier commits contain Phase 1 and the original durable Phase 8 role-mapping/backfill implementation.
 
-### Branch state at closeout review
+### Branch and PR state at latest closeout review
 
-GitHub comparison reported the branch ahead of `main` and **0 commits behind** at
-the time of review. Re-check immediately before the final PR because `main` can
-advance.
+Immediately before this plan reconciliation, GitHub comparison reported the
+branch **40 commits ahead of `main` and 0 behind**, with merge base
+`1419aaee85264ed4c278d952af6e4687383df157`. This plan commit itself advances
+the branch again, so exact ahead/head values must always be re-read before the
+PR is marked ready.
+
+Draft PR **#478** already targets `main` and was reported mergeable. It is the
+single integration PR and must remain draft until C3-C5 are genuinely accepted.
 
 ### Runtime blocks
 
 This session could not finish C3-C5 because:
 
-1. there are no GitHub Actions runs for the branch;
-2. the available execution container could not resolve `github.com`, so it could
-   not clone and run pnpm;
-3. no production DB/internal API credentials are available here;
+1. GitHub Actions runs do exist now, but their jobs reproducibly fail before
+   step 1 with empty step lists/no logs across multiple fresh runs;
+2. the available local execution container has no checkout/pnpm and its shell
+   network path cannot obtain the repository/toolchain;
+3. no connected production database/internal API credential is available here;
 4. no authenticated 876 Console/Projects browser session is available here.
 
-These are genuine runtime blocks, not reasons to infer success. `todo.md` records
-the exact remaining commands and acceptance matrix.
+These are runtime/infrastructure blocks, not reasons to infer either success or
+code failure. `todo.md` records the exact remaining commands and acceptance
+matrix.
+
+### GitHub retry behavior
+
+Per the user's instruction, GitHub timeouts and temporary rate limits are never
+treated as exhaustion. Required calls retain their exact repository/PR/SHA/run/
+job/path references and are retried after a short gap. The run-specific note is
+`notes/github-tool-retry.md`.
 
 ### Production role repair remains outstanding
 
@@ -416,18 +460,26 @@ pnpm --filter @876/api app-access:backfill-roles
 pnpm --filter @876/api app-access:backfill-roles --apply
 ```
 
-Do not use `--apply` until the dry-run candidate list is reviewed.
+Do not use `--apply` until the dry-run candidate list is reviewed. A Neon
+integration has been surfaced as a possible route to the production Postgres
+environment if it is connected to the account that owns the relevant database.
 
 ### PROJ-10 remains external
 
 The repository's GitHub Issues search did not contain `PROJ-10`. Resolve the
 item in the tracker that actually owns that key; do not create a duplicate
-GitHub issue merely to close the checklist.
+GitHub issue merely to close the checklist. A Linear integration has been
+surfaced for that lookup if connected.
 
-### Final PR
+### Draft PR #478
 
-Do **not** open the `main` PR yet. Per `.claude/rules/git.md`, `main` should
-receive the whole accepted feature. Once C3-C5 are genuinely green, update the
-plan/TODO to `COMPLETED`, write the final acceptance report, re-check branch
-sync/attribution/security state, and open one PR from
-`feat/shell-layout-navigation-overhaul` to `main`.
+PR #478 already exists and is mergeable, but **do not mark it ready or merge it
+yet**. Once C3-C5 are genuinely green:
+
+1. update `todo.md`, this plan, and the final acceptance report with exact
+   runtime evidence;
+2. refresh the PR body with final verification/build/browser/backfill results;
+3. re-check `main` divergence, mergeability, attribution, security, comments,
+   reviews, and status checks;
+4. resolve every actionable automated-review finding;
+5. only then mark the single integration PR ready for review.
