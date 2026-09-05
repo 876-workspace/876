@@ -1,4 +1,5 @@
 import { Skeleton } from '@876/ui/skeleton'
+import { Page } from '@876/ui/page'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
@@ -24,9 +25,11 @@ export default async function PlatformIssueDetailPage({ params }: Props) {
   const { issueRef } = await params
 
   return (
-    <Suspense fallback={<IssueDetailFallback />}>
-      <IssueDetailSection issueRef={issueRef} />
-    </Suspense>
+    <Page>
+      <Suspense fallback={<IssueDetailFallback />}>
+        <IssueDetailSection issueRef={issueRef} />
+      </Suspense>
+    </Page>
   )
 }
 

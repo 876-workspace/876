@@ -2,30 +2,22 @@
 
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ListDetailSection } from '@876/ui/list-detail-section'
 
 import { IssuesToolbar } from './issues-toolbar'
 
-const TAKEOVER_SEGMENTS = ['new'] as const
-
 export function IssuesSection({
   orgSlug,
-  list,
   children,
 }: {
   orgSlug: string
-  list: ReactNode
   children: ReactNode
 }) {
   const status = useSearchParams().get('status') ?? 'all'
 
   return (
-    <ListDetailSection
-      toolbar={<IssuesToolbar orgSlug={orgSlug} status={status} />}
-      list={list}
-      takeoverSegments={TAKEOVER_SEGMENTS}
-    >
+    <div className="space-y-5">
+      <IssuesToolbar orgSlug={orgSlug} status={status} />
       {children}
-    </ListDetailSection>
+    </div>
   )
 }

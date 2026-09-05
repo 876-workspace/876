@@ -4,19 +4,19 @@ import { IssuesList } from '@876/projects-ui/issue-list'
 import { projects } from '@/lib/services/projects'
 
 /**
- * The data half of the Issues list column, shared by every host. See
- * `ProjectsData` for why the status filter is applied in the list component
- * rather than in this call.
+ * The data half of the Issues list, shared by every host.
  */
 export async function IssuesData({
   organizationId,
   base,
+  status,
 }: {
   organizationId: string
   /** The host's Projects root, e.g. `/projects` or `/workspace/acme/projects`. */
   base: string
+  status?: string
 }) {
-  const result = await projects.issues.list(organizationId)
+  const result = await projects.issues.list(organizationId, { status })
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">

@@ -68,27 +68,28 @@ describe('OrganizationIssuesLayout', () => {
 
   afterEach(cleanup)
 
-  it('renders the toolbar and child content in layout', async () => {
-    const layout = await OrganizationIssuesLayout({
+  it('renders only child content so record routes are full pages', () => {
+    const layout = OrganizationIssuesLayout({
       children: <div>Workspace Issue Detail Content</div>,
-      params: Promise.resolve({ orgSlug: 'efesto' }),
     })
 
     render(layout)
 
     expect(
-      screen.getByRole('heading', { name: 'All Issues' })
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
-      'href',
-      '/workspace/efesto/projects/issues/new'
-    )
-    expect(
       screen.getByText('Workspace Issue Detail Content')
     ).toBeInTheDocument()
+    expect(screen.queryByTestId('list-detail-shell')).not.toBeInTheDocument()
   })
 
-  it('returns null from (list)/page.tsx', () => {
-    expect(OrganizationIssuesPage()).toBeNull()
+  it('renders the list page as a page instead of a detail shell', async () => {
+    mocks.listIssues.mockResolvedValue({ data: { data: [] }, error: null })
+    const page = await OrganizationIssuesPage({
+      params: Promise.resolve({ orgSlug: 'efesto' }),
+      searchParams: Promise.resolve({}),
+    })
+    render(page)
+
+    expect(screen.getByTestId('page')).toBeInTheDocument()
+    expect(screen.queryByTestId('list-detail-shell')).not.toBeInTheDocument()
   })
 })

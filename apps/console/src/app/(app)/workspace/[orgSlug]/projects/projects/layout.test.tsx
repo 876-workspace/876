@@ -68,27 +68,28 @@ describe('OrganizationProjectsLayout', () => {
 
   afterEach(cleanup)
 
-  it('renders the toolbar and child content in layout', async () => {
-    const layout = await OrganizationProjectsLayout({
+  it('renders only child content so record routes are full pages', () => {
+    const layout = OrganizationProjectsLayout({
       children: <div>Workspace Project Detail Content</div>,
-      params: Promise.resolve({ orgSlug: 'efesto' }),
     })
 
     render(layout)
 
     expect(
-      screen.getByRole('heading', { name: 'All Projects' })
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
-      'href',
-      '/workspace/efesto/projects/projects/new'
-    )
-    expect(
       screen.getByText('Workspace Project Detail Content')
     ).toBeInTheDocument()
+    expect(screen.queryByTestId('list-detail-shell')).not.toBeInTheDocument()
   })
 
-  it('returns null from (list)/page.tsx', () => {
-    expect(OrganizationProjectsPage()).toBeNull()
+  it('renders the list page as a page instead of a detail shell', async () => {
+    mocks.listProjects.mockResolvedValue({ data: { data: [] }, error: null })
+    const page = await OrganizationProjectsPage({
+      params: Promise.resolve({ orgSlug: 'efesto' }),
+      searchParams: Promise.resolve({}),
+    })
+    render(page)
+
+    expect(screen.getByTestId('page')).toBeInTheDocument()
+    expect(screen.queryByTestId('list-detail-shell')).not.toBeInTheDocument()
   })
 })
