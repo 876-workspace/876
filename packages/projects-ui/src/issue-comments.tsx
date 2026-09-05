@@ -100,7 +100,7 @@ export function IssueComments({
   }
 
   return (
-    <section className="space-y-4" aria-label="Comments">
+    <section className="space-y-5" aria-label="Comments">
       <h2 className="text-sm font-semibold">Comments ({items.length})</h2>
       {items.length === 0 ? (
         <div className="border-border/60 text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
@@ -123,19 +123,29 @@ export function IssueComments({
           ))}
         </div>
       )}
-      {error ? (
-        <AppError title="Comment not added" error={error} variant="banner" />
-      ) : null}
-      <div className="space-y-2">
+      <section
+        aria-label="Add a comment"
+        className="border-border/60 bg-muted/20 rounded-xl border p-3 sm:p-4"
+      >
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">Add a comment</h3>
+          <span className="text-muted-foreground text-xs">Markdown supported</span>
+        </div>
         <MarkdownEditor
           value={body}
           onValueChange={setBody}
           placeholder="Add a comment in Markdown…"
           disabled={pending}
+          minRows={4}
           id="comment-body"
           name="body"
         />
-        <div className="flex justify-end">
+        {error ? (
+          <div className="mt-3">
+            <AppError title="Comment not added" error={error} variant="banner" />
+          </div>
+        ) : null}
+        <div className="mt-3 flex justify-end">
           <Button
             type="button"
             variant="info"
@@ -145,7 +155,7 @@ export function IssueComments({
             {pending ? 'Commenting…' : 'Comment'}
           </Button>
         </div>
-      </div>
+      </section>
     </section>
   )
 }
@@ -291,11 +301,15 @@ function CommentItem({
         </div>
       </div>
       {editing ? (
-        <div className="mt-2 space-y-2">
+        <section
+          aria-label="Edit comment"
+          className="border-border/60 bg-muted/20 mt-3 space-y-3 rounded-lg border p-3"
+        >
           <MarkdownEditor
             value={draft}
             onValueChange={setDraft}
             disabled={pending}
+            minRows={4}
             id={`comment-edit-${comment.id}`}
             name="body"
           />
@@ -327,7 +341,7 @@ function CommentItem({
               {pending ? 'Saving…' : 'Save'}
             </Button>
           </div>
-        </div>
+        </section>
       ) : (
         <Markdown content={comment.body} className="mt-2" />
       )}

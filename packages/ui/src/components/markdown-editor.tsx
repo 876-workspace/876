@@ -3,6 +3,16 @@
 import { useRef, useState } from 'react'
 
 import { Button } from './button'
+import {
+  ChatBubbleLeftIcon,
+  CheckCircleIcon,
+  ClipboardDocumentListIcon,
+  CodeBracketIcon,
+  CommandLineIcon,
+  LinkIcon,
+  QueueListIcon,
+  type IconComponent,
+} from '../icons'
 import { Markdown } from './markdown'
 import { Textarea } from './textarea'
 
@@ -16,18 +26,27 @@ type MarkdownEditorProps = {
   name?: string
 }
 
-const tools = [
-  ['Bold', '**', '**'],
-  ['Italic', '*', '*'],
-  ['Strike', '~~', '~~'],
-  ['Code', '`', '`'],
-  ['Link', '[', '](https://)'],
-  ['Bullets', '- ', ''],
-  ['Numbered', '1. ', ''],
-  ['Task', '- [ ] ', ''],
-  ['Quote', '> ', ''],
-  ['Block code', '```\n', '\n```'],
-] as const
+type MarkdownTool = {
+  label: string
+  prefix: string
+  suffix: string
+  icon?: IconComponent
+  mark?: string
+  markClassName?: string
+}
+
+const tools: readonly MarkdownTool[] = [
+  { label: 'Bold', prefix: '**', suffix: '**', mark: 'B', markClassName: 'font-bold' },
+  { label: 'Italic', prefix: '*', suffix: '*', mark: 'I', markClassName: 'font-serif italic' },
+  { label: 'Strike', prefix: '~~', suffix: '~~', mark: 'S', markClassName: 'line-through' },
+  { label: 'Code', prefix: '`', suffix: '`', icon: CodeBracketIcon },
+  { label: 'Link', prefix: '[', suffix: '](https://)', icon: LinkIcon },
+  { label: 'Bullets', prefix: '- ', suffix: '', icon: QueueListIcon },
+  { label: 'Numbered', prefix: '1. ', suffix: '', icon: ClipboardDocumentListIcon },
+  { label: 'Task', prefix: '- [ ] ', suffix: '', icon: CheckCircleIcon },
+  { label: 'Quote', prefix: '> ', suffix: '', icon: ChatBubbleLeftIcon },
+  { label: 'Block code', prefix: '```\n', suffix: '\n```', icon: CommandLineIcon },
+]
 
 export function MarkdownEditor({
   value,
@@ -67,27 +86,39 @@ export function MarkdownEditor({
   }
 
   return (
-    <div className="border-border overflow-hidden rounded-lg border">
-      <div className="bg-muted/40 border-border flex items-center gap-1 border-b px-2 py-1.5">
-        <Button
-          type="button"
-          variant={tab === 'write' ? 'secondary' : 'ghost'}
-          size="xs"
-          onClick={() => setTab('write')}
-        >
-          Write
-        </Button>
-        <Button
-          type="button"
-          variant={tab === 'preview' ? 'secondary' : 'ghost'}
-          size="xs"
-          onClick={() => setTab('preview')}
-        >
-          Preview
-        </Button>
+    <div
+      role="group"
+      aria-label="Markdown editor"
+      data-slot="markdown-editor"
+      data-mode={tab}
+      className="bg-background border-border/70 focus-within:border-ring focus-within:ring-ring/25 overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow] focus-within:ring-2"
+    >
+      <div className="bg-muted/30 border-border/60 flex flex-col gap-2 border-b p-2 sm:flex-row sm:items-center">
+        <div className="bg-background/70 border-border/60 flex w-fit rounded-lg border p-0.5">
+          <Button
+            type="button"
+            variant={tab === 'write' ? 'secondary' : 'ghost'}
+            size="xs"
+            aria-pressed={tab === 'write'}
+            disabled={disabled}
+            onClick={() => setTab('write')}
+          >
+            Write
+          </Button>
+          <Button
+            type="button"
+            variant={tab === 'preview' ? 'secondary' : 'ghost'}
+            size="xs"
+            aria-pressed={tab === 'preview'}
+            disabled={disabled}
+            onClick={() => setTab('preview')}
+          >
+            Preview
+          </Button>
+        </div>
         {tab === 'write' ? (
-          <div className="ml-auto flex flex-wrap gap-0.5">
-            {tools.map(([label, prefix, suffix]) => (
+          <div className="border-border/50 flex flex-wrap gap-0.5 sm:ml-auto sm:border-l sm:pl-2">
+            {tools.map(({ label, prefix, suffix, icon: Icon, mark, markClassName }) => (
               <Button
                 key={label}
                 type="button"
@@ -96,11 +127,16 @@ export function MarkdownEditor({
                 disabled={disabled}
                 aria-label={label}
                 title={label}
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => apply(prefix, suffix)}
               >
-                <span className="text-[10px] font-semibold">
-                  {label.slice(0, 2)}
-                </span>
+                {Icon ? (
+                  <Icon aria-hidden="true" className="size-3.5" />
+                ) : (
+                  <span aria-hidden="true" className={`text-[11px] ${markClassName ?? ''}`}>
+                    {mark}
+                  </span>
+                )}
               </Button>
             ))}
           </div>
@@ -117,16 +153,16 @@ export function MarkdownEditor({
           placeholder={placeholder}
           rows={minRows}
           disabled={disabled}
-          className="min-h-32 resize-y rounded-none border-0 focus-visible:ring-0"
+          className="bg-background min-h-32 resize-y rounded-none border-0 px-4 py-3 shadow-none focus-visible:ring-0"
         />
       ) : (
-        <div className="min-h-32 px-3 py-2">
+        <div className="bg-background min-h-32 px-4 py-3">
           {value ? (
             <Markdown content={value} />
           ) : (
-            <span className="text-muted-foreground text-sm">
+            <div className="border-border/60 text-muted-foreground rounded-lg border border-dashed px-4 py-8 text-center text-sm">
               Nothing to preview.
-            </span>
+            </div>
           )}
         </div>
       )}
