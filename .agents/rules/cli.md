@@ -464,6 +464,50 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
 - Always redirect `< /dev/null`.
 - Same non-overlapping-file-scope and no-commit rules as Codex/`opencode`.
 
+## Never redirect a delegated run's stdout to a file in the repo
+
+**Do not do this:**
+
+```bash
+codex exec -m gpt-5.6-terra "$(cat brief.md)" > plans/<run>/reports/codex/phase2-run.log 2>&1 &
+```
+
+A single Codex or `agy` run emits roughly **20,000 lines** — it echoes the brief,
+every rule file it loads, every tool call, and every file it reads. Measured on
+2026-09-05: seven runs produced **3.9 MB** of transcripts, the largest a single
+1.1 MB file, and three were committed before anyone noticed.
+
+Two costs, both severe:
+
+1. **It poisons the orchestrator's context.** Any later `cat`, `tail`, or even a
+   `grep` with loose anchors pulls thousands of lines of echoed rule text into
+   the window. The user hit exactly this and had to stop the session.
+2. **It bloats the repository permanently.** `plans/` is committed on purpose
+   (`.agents/rules/implementation-tracker.md`), so a transcript committed once is
+   in history forever.
+
+`plans/**/*-run.log` is gitignored. Do not add an exception, and do not rename
+around it.
+
+### What to do instead
+
+- **Let the transcript go to the harness.** `run_in_background: true` on the
+  Bash tool already captures stdout to a temp path outside the repo. That is the
+  only copy anyone needs, and it is the one to read if a run genuinely misbehaves.
+- **The deliverable is the delegate's report `.md`**, which every brief must
+  require: files changed, decisions, counted test numbers, verification output,
+  and what could not be verified. Read that, not the transcript.
+- **Judge the work by the diff and your own verification**, never by the
+  transcript. `git status`, `git diff`, and running the checks yourself are the
+  acceptance gate — `.agents/rules/cli.md` already says a delegation you never
+  inspect is not delegation, and the transcript is not the inspection.
+- If you must keep a transcript for one debugging session, write it to `/tmp`,
+  never under `plans/` or anywhere else in the working tree.
+
+**Never `cat` or `tail` a delegated run transcript into your context.** If you
+need something from it, `grep` with a tight anchor and a hard `head -n`, and
+prefer the report.
+
 ## Shared rules across all delegated CLIs/sub-agents
 
 - **Never let a delegated CLI or sub-agent commit.** The orchestrating

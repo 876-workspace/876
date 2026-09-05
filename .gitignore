@@ -127,3 +127,8 @@ apps/*/public/pwa/offline-recovery.js
 
 # Local database backups (e.g. outbox prune snapshots) — never commit data dumps
 .backups/
+
+# Delegated CLI run transcripts. Never commit these: a single Codex run is
+# ~20k lines, which bloats the repo and burns an orchestrator context window
+# if it is ever read back. Delegates report in their report .md, not a log.
+plans/**/*-run.log
