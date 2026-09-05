@@ -1,6 +1,18 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '@876/ui/alert-dialog'
 import { Button } from '@876/ui/button'
 import {
   Accordion,
@@ -15,27 +27,23 @@ import {
   permissionGroupRollup,
   permissionModuleRollup,
 } from '@/lib/permission-grouping'
+import { client } from '@/lib/client'
 import { PERMISSION_GROUPS } from '@/lib/permissions'
+import { useTeamMemberLinks } from '../../_lib/use-team-member-links'
 
 type Props = {
+  memberId: string
   permissions: readonly string[]
-  /**
-   * Whether the viewer may revoke this grant. The revoke button also needs an
-   * `onRevoke` handler, so a read-only render — a server component with no
-   * handler to pass — cannot produce a dead button.
-   */
-  canRevoke?: boolean
-  revoking?: boolean
-  onRevoke?: () => void
+  canRevoke: boolean
 }
 
-export function AccessPanel({
-  permissions,
-  canRevoke = true,
-  revoking = false,
-  onRevoke,
-}: Props) {
+export function AccessPanel({ memberId, permissions, canRevoke }: Props) {
+  const router = useRouter()
+  const linkTo = useTeamMemberLinks()
   const [open, setOpen] = useState<string[]>([])
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false)
+  const [revokeError, setRevokeError] = useState<string | null>(null)
+  const [revoking, startRevocation] = useTransition()
 
   const held = useMemo(() => new Set(permissions), [permissions])
 
@@ -49,6 +57,22 @@ export function AccessPanel({
       }),
     [held]
   )
+
+  function revokeAccess() {
+    setRevokeError(null)
+    startRevocation(async () => {
+      const result = await client.team.revoke(memberId)
+      if (result.error) {
+        setRevokeError(result.error.message)
+        setRevokeDialogOpen(false)
+        return
+      }
+
+      setRevokeDialogOpen(false)
+      router.push(linkTo('/settings/users'))
+      router.refresh()
+    })
+  }
 
   return (
     <div className="-m-6 flex flex-col">
@@ -161,18 +185,18 @@ export function AccessPanel({
                 </h3>
               </div>
               <p className="text-muted-foreground text-xs leading-relaxed">
-                Immediately revokes this member&apos;s access grant and
-                terminates all active Console sessions.
+                Removes this member&apos;s Console access grant. Their next
+                Console authorization check will be denied.
               </p>
             </div>
 
-            {canRevoke && onRevoke ? (
+            {canRevoke ? (
               <Button
                 type="button"
                 size="sm"
                 variant="destructive"
                 disabled={revoking}
-                onClick={onRevoke}
+                onClick={() => setRevokeDialogOpen(true)}
                 className="shrink-0 self-start sm:self-auto"
               >
                 {revoking ? 'Revoking…' : 'Revoke Access'}
@@ -184,8 +208,41 @@ export function AccessPanel({
               </span>
             )}
           </div>
+          {revokeError ? (
+            <p className="text-destructive mt-3 text-xs" role="alert">
+              {revokeError}
+            </p>
+          ) : null}
         </div>
       </div>
+
+      <AlertDialog
+        open={revokeDialogOpen}
+        onOpenChange={(next) => !revoking && setRevokeDialogOpen(next)}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10">
+              <AlertCircle className="text-destructive size-6" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Revoke Console access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the member&apos;s Console access grant. Future
+              Console requests will be denied.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={revoking}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={revoking}
+              onClick={revokeAccess}
+            >
+              {revoking ? 'Revoking…' : 'Revoke access'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

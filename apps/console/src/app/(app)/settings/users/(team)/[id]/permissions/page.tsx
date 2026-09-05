@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { findConsoleAccess, requireSession } from '@/lib/auth/guards'
+import { hasPermission } from '@/lib/permissions'
 import { AccessPanel } from '../_components/access-panel'
 import { resolveMemberGrant, resolveMemberIdentity } from '../_data'
 
@@ -22,8 +24,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TeamMemberPermissionsPage({ params }: Props) {
   const { id } = await params
-  const grant = await resolveMemberGrant(id)
+  const session = await requireSession(`/settings/users/${id}/permissions`)
+  const [grant, viewer] = await Promise.all([
+    resolveMemberGrant(id),
+    findConsoleAccess(session.id),
+  ])
   if (!grant) notFound()
 
-  return <AccessPanel permissions={grant.role.permissions} canRevoke={false} />
+  return (
+    <AccessPanel
+      memberId={id}
+      permissions={grant.role.permissions}
+      canRevoke={viewer ? hasPermission(viewer, 'team:revoke') : false}
+    />
+  )
 }

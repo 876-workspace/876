@@ -2,23 +2,46 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+
+const mocks = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn(),
+  revoke: vi.fn(),
+}))
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+}))
+
+vi.mock('@/lib/client', () => ({
+  client: { team: { revoke: mocks.revoke } },
+}))
+
+vi.mock('../../_lib/use-team-member-links', () => ({
+  useTeamMemberLinks: () => (path: string) => path,
+}))
 
 import { AccessPanel } from './access-panel'
 
 function renderPanel(
   overrides: Partial<Parameters<typeof AccessPanel>[0]> = {}
 ) {
-  const onRevoke = vi.fn()
   render(
     <AccessPanel
+      memberId="user_123"
       permissions={['users:read', 'users:list']}
-      onRevoke={onRevoke}
+      canRevoke
       {...overrides}
     />
   )
-  return { onRevoke }
 }
 
 /** A permission pill, addressed by the key carried in its `title`. */
@@ -27,6 +50,11 @@ function pill(key: string) {
 }
 
 describe('AccessPanel', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.revoke.mockResolvedValue({ data: { count: 1 }, error: null })
+  })
+
   describe('module rows', () => {
     it('keeps every permission collapsed until a module is expanded', () => {
       renderPanel()
@@ -64,28 +92,45 @@ describe('AccessPanel', () => {
   })
 
   describe('revocation', () => {
-    it('calls onRevoke exactly once when the revoke button is pressed', () => {
-      const { onRevoke } = renderPanel()
+    it('confirms and revokes access through the typed team client', async () => {
+      renderPanel()
 
       fireEvent.click(screen.getByRole('button', { name: 'Revoke Access' }))
+      expect(
+        screen.getByRole('heading', { name: 'Revoke Console access?' })
+      ).toBeInTheDocument()
 
-      expect(onRevoke).toHaveBeenCalledTimes(1)
+      fireEvent.click(screen.getByRole('button', { name: 'Revoke access' }))
+
+      await waitFor(() => expect(mocks.revoke).toHaveBeenCalledWith('user_123'))
+      expect(mocks.push).toHaveBeenCalledWith('/settings/users')
+      expect(mocks.refresh).toHaveBeenCalledTimes(1)
     })
 
-    it('disables the revoke button while a revocation is in flight', () => {
-      renderPanel({ revoking: true })
+    it('keeps a failed revocation visible beside the danger zone', async () => {
+      mocks.revoke.mockResolvedValue({
+        data: null,
+        error: { code: 'team/last-super-admin', message: 'Protected grant.' },
+      })
+      renderPanel()
 
-      expect(screen.getByRole('button', { name: 'Revoking…' })).toBeDisabled()
+      fireEvent.click(screen.getByRole('button', { name: 'Revoke Access' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Revoke access' }))
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Protected grant.'
+      )
+      expect(mocks.push).not.toHaveBeenCalled()
     })
 
     it('replaces the revoke button with a locked notice when not permitted', () => {
-      const { onRevoke } = renderPanel({ canRevoke: false })
+      renderPanel({ canRevoke: false })
 
       expect(
         screen.queryByRole('button', { name: 'Revoke Access' })
       ).not.toBeInTheDocument()
       expect(screen.getByText('Not permitted')).toBeInTheDocument()
-      expect(onRevoke).not.toHaveBeenCalled()
+      expect(mocks.revoke).not.toHaveBeenCalled()
     })
   })
 })
