@@ -47,28 +47,82 @@ Commit `4de19178`:
   tests, the Markdown-vs-Editor.js decision, and compatibility cleanup;
 - kept phase-level verification distinct from the still-unrun final matrix.
 
-The live closeout tracker was updated in `fda5477a` after these changes.
+`plan.md` was subsequently aligned with Phase 4 complete-in-code, while
+`todo.md` remains the live operational closeout tracker.
 
-## Branch state at this review
+## Static closeout audit
 
-GitHub comparison against `main` reported:
+A follow-up static contract review was performed after the C1 implementation.
+It verified:
+
+- all new Markdown toolbar icon imports exist in `@876/ui/icons`;
+- `IconComponent` is exported by the same registry and matches the component
+  contract used by the toolbar;
+- the `Button` component supports the used `secondary`, `ghost`, `xs`, and
+  `icon-xs` variants/sizes;
+- the Projects comment create/edit surfaces continue to consume the canonical
+  `@876/ui/markdown-editor` rather than introducing a parallel composer;
+- the C1 diff contains no `as any`, `eslint-disable`, or `@ts-ignore` escape;
+- no comment storage or transport contract was changed by the editor redesign.
+
+This is a **static API/ownership audit**, not a substitute for TypeScript,
+Vitest, ESLint, build, or browser execution.
+
+### Verification command correction
+
+The original closeout matrix used `pnpm --filter @876/projects ...` for the
+Projects application. Static inspection of `apps/projects/package.json` showed
+the actual application workspace is `@876/projects-app`; `@876/projects` is the
+underlying product client/contracts package.
+
+Commit `6db88a11` corrected `todo.md` so the runtime matrix now targets:
+
+```bash
+pnpm --filter @876/projects-app typecheck
+pnpm --filter @876/projects-app lint
+pnpm --filter @876/projects-app test
+```
+
+The production build list now also uses the verified application workspace names:
+
+```bash
+pnpm --filter @876/console build
+pnpm --filter @876/crm-app build
+pnpm --filter @876/billing-app build
+pnpm --filter @876/invoice-app build
+pnpm --filter @876/projects-app build
+```
+
+## Branch state at the latest audited comparison
+
+Immediately before the verification-command correction, GitHub comparison
+against `main` reported:
 
 - status: `ahead`
-- ahead by: **29 commits**
+- ahead by: **33 commits**
 - behind by: **0 commits**
 - merge base: `1419aaee85264ed4c278d952af6e4687383df157`
 
-This must be re-checked immediately before the final PR because `main` may move.
+The tracker/report corrections add repository-only commits after that snapshot,
+so exact ahead/head values must continue to be re-read rather than copied
+forward. Divergence must be checked again immediately before the final PR.
 
 ## Verification infrastructure state
 
 GitHub reports **no Actions runs** for this branch and no commit-status entries
-on the closeout head. Therefore the absence of red checks is not a green CI
-signal.
+on the audited closeout head. Therefore the absence of red checks is not a green
+CI signal.
 
-The available execution container could not resolve `github.com`, so it could
-not clone the repository and run pnpm commands locally. The final C4 matrix must
-run in a repository execution environment before merge.
+The available execution container has Node 22 and Corepack, but:
+
+- no repository checkout exists at `/root/projects/876`;
+- `pnpm` is not already installed;
+- shell DNS cannot resolve `github.com`;
+- Corepack cannot reach `registry.npmjs.org` to obtain pnpm;
+- the public branch archive cannot be obtained through the shell network path.
+
+The final C4 matrix therefore still needs a repository execution environment
+with the existing dependencies/toolchain available.
 
 ## Git/attribution audit
 
@@ -82,7 +136,7 @@ The branch commit listing was searched for prohibited attribution forms:
 large delegated CLI transcripts must not be committed. That is descriptive
 repository documentation, **not** contributor/co-author attribution.
 
-The current `main...branch` changed-file list contains no environment file and
+The audited `main...branch` changed-file list contains no environment file and
 no delegated `*-run.log` transcript. This is a diff-level audit; the final local
 working-tree/security scan remains part of C4/C6.
 
@@ -99,16 +153,17 @@ or internal API key and therefore did not mutate production.
 Still required:
 
 - Console typecheck/lint/test
-- Projects typecheck/lint/test
+- Projects **app** typecheck/lint/test (`@876/projects-app`)
 - Projects UI typecheck/test
 - UI typecheck/test
 - API typecheck/lint/test
 - Core typecheck/test
 - Editor typecheck/test
 - app-structure check
-- shared transpile/Tailwind-source check
+- shared transpile check
 - API boundaries confirmation against the known 18-cycle baseline
-- outstanding production builds
+- outstanding production builds using the exact app workspace names recorded in
+  `todo.md`
 
 ### C5 — browser acceptance
 
@@ -118,8 +173,10 @@ Still requires an authenticated Console/Projects browser session and the full
 ### PROJ-10
 
 No `PROJ-10` exists in this repository's GitHub Issues search. It appears to be
-an external/product tracker key. Do not manufacture a duplicate GitHub issue;
-resolve it in the tracker that actually owns it.
+an external/product tracker key. A Linear integration is available and has been
+surfaced for connection; once connected, search the owning workspace there
+before changing or closing the issue. Do not manufacture a duplicate GitHub
+issue.
 
 ## Final PR gate
 
