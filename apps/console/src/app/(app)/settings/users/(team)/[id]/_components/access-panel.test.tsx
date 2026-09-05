@@ -33,6 +33,7 @@ describe('AccessPanel', () => {
 
       expect(screen.queryByTitle('users:read')).not.toBeInTheDocument()
 
+      fireEvent.click(screen.getByRole('button', { name: /Console/ }))
       fireEvent.click(screen.getByRole('button', { name: /Users/ }))
 
       expect(pill('users:read')).toBeInTheDocument()
@@ -41,6 +42,7 @@ describe('AccessPanel', () => {
     it('reports the granted count against the module size on the trigger', () => {
       renderPanel()
 
+      fireEvent.click(screen.getByRole('button', { name: /Console/ }))
       expect(
         within(screen.getByRole('button', { name: /Users/ })).getByText('2/6')
       ).toBeInTheDocument()
@@ -49,6 +51,7 @@ describe('AccessPanel', () => {
     it('labels a held permission as granted and a withheld one as not granted', () => {
       renderPanel()
 
+      fireEvent.click(screen.getByRole('button', { name: /Console/ }))
       fireEvent.click(screen.getByRole('button', { name: /Users/ }))
 
       expect(

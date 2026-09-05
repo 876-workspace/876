@@ -12,6 +12,7 @@ import {
   CONSOLE_SUPER_ADMIN_ROLE,
   hasPermission,
   PERMISSION_GROUPS,
+  permissionGroupKeys,
   permissionsForRole,
   SYSTEM_ROLE_DEFINITIONS,
   SYSTEM_ROLE_NAMES,
@@ -259,107 +260,63 @@ describe('Console permission catalog', () => {
     expect(result).not.toBe(catalog.auditor)
   })
 
-  it('derives Console editor groups in the same module order as the catalog, followed by each product then operator-exclusive actions', () => {
+  it('nests each product catalog under one product group', () => {
     expect(PERMISSION_GROUPS.map((group) => group.label)).toEqual([
       'Console',
-      'Users',
-      'Organizations',
-      'Memberships',
-      'Apps',
-      'Roles',
-      'Team',
-      'Billing · Dashboard',
-      'Billing · Customers',
-      'Billing · Catalog',
-      'Billing · Sales',
-      'Billing · Subscriptions',
-      'Billing · Reports',
-      'Billing · Currencies',
-      'Billing · Taxes',
-      'Billing · Vendors',
-      'Billing · Purchases',
-      'Billing · Banking',
-      'Billing · Payments',
-      'Billing · Payment methods',
-      'Billing · Settings',
-      'Couriers · Items',
-      'Couriers · Customers',
-      'Couriers · Packages',
-      'Couriers · Pre-alerts',
-      'Couriers · Warehouse',
-      'Couriers · Manifests',
-      'Couriers · Deliveries',
-      'Couriers · Invoices',
-      'Couriers · Payments',
-      'Couriers · Reports',
-      'Couriers · Settings',
-      'CRM · Requests',
-      'CRM · Customers',
-      'CRM · Tasks',
-      'CRM · Reminders',
-      'CRM · Events',
-      'CRM · Calendars',
-      'CRM · My Work',
-      'CRM · Notes',
-      'CRM · Teams',
-      'CRM · Categories',
-      'CRM · Priorities',
-      'CRM · Request forms',
-      'CRM · Reports',
-      'CRM · Settings',
-      'Invoice · Dashboard',
-      'Invoice · Customers',
-      'Invoice · Items',
-      'Invoice · Invoices',
-      'Invoice · Estimates',
-      'Invoice · Payments',
-      'Invoice · Reports',
-      'Invoice · Settings',
-      'Projects · Dashboard',
-      'Projects · Projects',
-      'Projects · Issues',
-      'Projects · Comments',
-      'Projects · Labels',
-      'Projects · Members',
-      'Projects · Reports',
-      'Projects · Settings',
-      'Billing · Operator actions',
-      'Couriers · Operator actions',
-      'CRM · Operator actions',
-      'Invoice · Operator actions',
-      'Projects · Operator actions',
+      '876 Billing',
+      '876 Couriers',
+      '876 CRM',
+      '876 Invoice',
+      '876 Projects',
+      'Operator actions',
+    ])
+    expect(
+      PERMISSION_GROUPS.find((group) => group.key === 'billing')?.modules.map(
+        (module) => module.label
+      )
+    ).toEqual([
+      'Dashboard',
+      'Customers',
+      'Catalog',
+      'Sales',
+      'Subscriptions',
+      'Reports',
+      'Currencies',
+      'Taxes',
+      'Vendors',
+      'Purchases',
+      'Banking',
+      'Payments',
+      'Payment methods',
+      'Settings',
     ])
   })
 
   it('derives every editor permission from the operator permission universe', () => {
-    const editorValues = PERMISSION_GROUPS.flatMap((group) =>
-      group.permissions.map((permission) => permission.value)
-    ).sort()
+    const editorValues = permissionGroupKeys(PERMISSION_GROUPS).sort()
     const universeValues = [...OPERATOR_UNIVERSE_KEYS].sort()
 
     expect(editorValues).toEqual(universeValues)
   })
 
   it('contains no editor permission outside the operator permission universe', () => {
-    const extra = PERMISSION_GROUPS.flatMap((group) =>
-      group.permissions
-        .map((permission) => permission.value)
-        .filter((permission) => !OPERATOR_UNIVERSE_KEYS.has(permission))
+    const extra = permissionGroupKeys(PERMISSION_GROUPS).filter(
+      (permission) => !OPERATOR_UNIVERSE_KEYS.has(permission)
     )
 
     expect(extra).toEqual([])
   })
 
   it('contains unique permission values in the editor catalog', () => {
-    const values = PERMISSION_GROUPS.flatMap((group) =>
-      group.permissions.map((permission) => permission.value)
-    )
+    const values = permissionGroupKeys(PERMISSION_GROUPS)
 
     expect(new Set(values).size).toBe(OPERATOR_UNIVERSE_KEYS.size)
   })
 
   it('renders action-only labels inside an already-labelled module group', () => {
-    const roles = PERMISSION_GROUPS.find((group) => group.label === 'Roles')
+    const roles = PERMISSION_GROUPS.find(
+      (group) => group.key === 'console'
+    )?.modules.find((module) => module.key === 'roles')
 
     expect(roles?.permissions.map((permission) => permission.label)).toEqual([
       'Read',

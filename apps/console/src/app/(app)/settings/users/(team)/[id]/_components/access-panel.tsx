@@ -8,95 +8,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@876/ui/accordion'
-import {
-  AlertCircle,
-  Building2,
-  ChartPieIcon,
-  CircleStackIcon,
-  CreditCardIcon,
-  Fingerprint,
-  KeyIcon,
-  Link2,
-  Lock,
-  ShieldCheck,
-  SquaresPlusIcon,
-  Terminal,
-  Users,
-} from '@876/ui/icons'
+import { AlertCircle, Lock } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
+import { moduleStyle } from '@/components/patterns/permission-module-style'
+import {
+  permissionGroupRollup,
+  permissionModuleRollup,
+} from '@/lib/permission-grouping'
 import { PERMISSION_GROUPS } from '@/lib/permissions'
-
-/**
- * Per-module identity: its icon and its tile colour.
- *
- * Colour here is *identity*, not state — a module keeps the same hue whatever
- * the operator holds, so the list stays scannable by shape and colour rather
- * than turning into a grey wall for a low-privilege role. How much of a module
- * is held is carried by the granted/total count beside it.
- *
- * Emerald is deliberately absent: it means "granted" on the permission pills,
- * and reusing it for a module would make the two readings compete.
- */
-const MODULE_STYLE: Record<string, { icon: typeof KeyIcon; tile: string }> = {
-  console: {
-    icon: Terminal,
-    tile: 'bg-indigo-500/10 text-indigo-600 ring-indigo-500/20 dark:text-indigo-400',
-  },
-  users: {
-    icon: Users,
-    tile: 'bg-sky-500/10 text-sky-600 ring-sky-500/20 dark:text-sky-400',
-  },
-  organizations: {
-    icon: Building2,
-    tile: 'bg-violet-500/10 text-violet-600 ring-violet-500/20 dark:text-violet-400',
-  },
-  memberships: {
-    icon: Link2,
-    tile: 'bg-fuchsia-500/10 text-fuchsia-600 ring-fuchsia-500/20 dark:text-fuchsia-400',
-  },
-  apps: {
-    icon: SquaresPlusIcon,
-    tile: 'bg-cyan-500/10 text-cyan-600 ring-cyan-500/20 dark:text-cyan-400',
-  },
-  roles: {
-    icon: ShieldCheck,
-    tile: 'bg-amber-500/10 text-amber-600 ring-amber-500/20 dark:text-amber-400',
-  },
-  team: {
-    icon: Fingerprint,
-    tile: 'bg-rose-500/10 text-rose-600 ring-rose-500/20 dark:text-rose-400',
-  },
-  storage: {
-    icon: CircleStackIcon,
-    tile: 'bg-blue-500/10 text-blue-600 ring-blue-500/20 dark:text-blue-400',
-  },
-  reports: {
-    icon: ChartPieIcon,
-    tile: 'bg-orange-500/10 text-orange-600 ring-orange-500/20 dark:text-orange-400',
-  },
-  billing: {
-    icon: CreditCardIcon,
-    tile: 'bg-purple-500/10 text-purple-600 ring-purple-500/20 dark:text-purple-400',
-  },
-}
-
-const FALLBACK_STYLE = {
-  icon: KeyIcon,
-  tile: 'bg-muted text-muted-foreground ring-border/60',
-}
-
-/** Resolves a catalog module label to its icon and tile colour. */
-function moduleStyle(label: string) {
-  return MODULE_STYLE[label.toLowerCase()] ?? FALLBACK_STYLE
-}
-
-type Row = { value: string; label: string; granted: boolean }
-type Module = {
-  label: string
-  rows: Row[]
-  granted: number
-  total: number
-}
 
 type Props = {
   permissions: readonly string[]
@@ -120,20 +39,12 @@ export function AccessPanel({
 
   const held = useMemo(() => new Set(permissions), [permissions])
 
-  const modules = useMemo<Module[]>(
+  const groups = useMemo(
     () =>
       PERMISSION_GROUPS.map((group) => {
-        const rows: Row[] = group.permissions.map((permission) => ({
-          value: permission.value,
-          label: permission.label,
-          granted: held.has(permission.value),
-        }))
-
         return {
-          label: group.label,
-          rows,
-          granted: rows.filter((row) => row.granted).length,
-          total: rows.length,
+          ...group,
+          rollup: permissionGroupRollup(group, held),
         }
       }),
     [held]
@@ -147,69 +58,95 @@ export function AccessPanel({
         onValueChange={(next) => setOpen(next as string[])}
         className="border-876-surface-border w-full border-b"
       >
-        {modules.map((module) => {
-          const { icon: Icon, tile } = moduleStyle(module.label)
-
-          return (
-            <AccordionItem
-              key={module.label}
-              value={module.label}
-              className="border-876-surface-border not-last:border-b"
-            >
-              <AccordionTrigger className="hover:bg-muted/40 items-center gap-3 px-6 py-3 hover:no-underline">
-                <span className="flex min-w-0 flex-1 items-center gap-3">
-                  <span
-                    className={cn(
-                      'flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
-                      tile
-                    )}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-
-                  <span className="text-foreground truncate text-sm font-medium">
-                    {module.label}
-                  </span>
-
-                  <span className="text-muted-foreground ms-auto shrink-0 pe-1 font-mono text-[0.6875rem] tabular-nums">
-                    {`${module.granted}/${module.total}`}
-                  </span>
+        {groups.map((group) => (
+          <AccordionItem
+            key={group.key}
+            value={group.key}
+            className="border-876-surface-border not-last:border-b"
+          >
+            <AccordionTrigger className="hover:bg-muted/40 items-center gap-3 px-6 py-3 hover:no-underline">
+              <span className="flex min-w-0 flex-1 items-center gap-3">
+                <span className="text-foreground truncate text-sm font-medium">
+                  {group.label}
                 </span>
-              </AccordionTrigger>
 
-              <AccordionContent className="bg-muted/10 px-6 pt-3 pb-5">
-                <div className="flex flex-wrap gap-2">
-                  {module.rows.map((row) => (
-                    <span
-                      key={row.value}
-                      title={row.value}
-                      className={cn(
-                        'inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                        row.granted
-                          ? 'border-border bg-background text-foreground shadow-2xs'
-                          : 'border-border/40 bg-muted/20 text-muted-foreground/40 line-through'
-                      )}
+                <span className="text-muted-foreground ms-auto shrink-0 pe-1 font-mono text-[0.6875rem] tabular-nums">
+                  {`${group.rollup.granted}/${group.rollup.total}`}
+                </span>
+              </span>
+            </AccordionTrigger>
+
+            <AccordionContent className="bg-muted/10 px-6 pt-3 pb-5">
+              <Accordion multiple className="space-y-2">
+                {group.modules.map((module) => {
+                  const { icon: Icon, tile } = moduleStyle(
+                    group.key,
+                    module.key
+                  )
+                  const rollup = permissionModuleRollup(module, held)
+
+                  return (
+                    <AccordionItem
+                      key={module.key}
+                      value={`${group.key}-${module.key}`}
+                      className="border-border/60 overflow-hidden rounded-xl border"
                     >
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          'size-1.5 shrink-0 rounded-full',
-                          row.granted
-                            ? 'bg-emerald-500 shadow-xs'
-                            : 'bg-muted-foreground/30'
-                        )}
-                      />
-                      {row.label}
-                      <span className="sr-only">
-                        {row.granted ? 'Granted' : 'Not granted'}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )
-        })}
+                      <AccordionTrigger className="hover:bg-muted/40 items-center gap-3 px-3 py-2.5 hover:no-underline">
+                        <span className="flex min-w-0 flex-1 items-center gap-3">
+                          <span
+                            className={cn(
+                              'flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
+                              tile
+                            )}
+                          >
+                            <Icon className="size-4" />
+                          </span>
+                          <span className="text-foreground truncate text-sm font-medium">
+                            {module.label}
+                          </span>
+                          <span className="text-muted-foreground ms-auto shrink-0 pe-1 font-mono text-[0.6875rem] tabular-nums">{`${rollup.granted}/${rollup.total}`}</span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="bg-muted/10 px-3 pt-2 pb-3">
+                        <div className="flex flex-wrap gap-2">
+                          {module.permissions.map((permission) => {
+                            const granted = held.has(permission.value)
+                            return (
+                              <span
+                                key={permission.value}
+                                title={permission.value}
+                                className={cn(
+                                  'inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                                  granted
+                                    ? 'border-border bg-background text-foreground shadow-2xs'
+                                    : 'border-border/40 bg-muted/20 text-muted-foreground/40 line-through'
+                                )}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className={cn(
+                                    'size-1.5 shrink-0 rounded-full',
+                                    granted
+                                      ? 'bg-emerald-500 shadow-xs'
+                                      : 'bg-muted-foreground/30'
+                                  )}
+                                />
+                                {permission.label}
+                                <span className="sr-only">
+                                  {granted ? 'Granted' : 'Not granted'}
+                                </span>
+                              </span>
+                            )
+                          })}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })}
+              </Accordion>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
       </Accordion>
 
       {/* Danger zone */}

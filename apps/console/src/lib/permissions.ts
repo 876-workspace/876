@@ -297,52 +297,63 @@ function productLabel(shortSlug: string): string {
   return PRODUCT_LABELS[shortSlug] ?? shortSlug
 }
 
+function permissionModules(
+  catalog:
+    | ReturnType<typeof operatorProductCatalogs>[number]
+    | typeof consolePermissionCatalog,
+  labels: (permission: { key: string; action: string; label: string }) => string
+) {
+  return groupByModule(catalog, []).map((module) => ({
+    key: module.key,
+    label: module.label,
+    permissions: module.permissions.map((permission) => ({
+      value: permission.key,
+      label: labels(permission),
+    })),
+  }))
+}
+
 /** Console's own vocabulary, grouped by module. */
-const CONSOLE_GROUPS: PermissionGroup[] = groupByModule(
-  consolePermissionCatalog,
-  []
-).map((group) => ({
-  label: group.label,
-  permissions: group.permissions.map((permission) => ({
-    value: permission.key,
-    label: actionLabel(permission.action),
-  })),
-}))
+const CONSOLE_GROUPS: PermissionGroup[] = [
+  {
+    key: 'console',
+    label: 'Console',
+    modules: permissionModules(consolePermissionCatalog, (permission) =>
+      actionLabel(permission.action)
+    ),
+  },
+]
 
 /**
- * Every product's projected permissions, one group per product module —
- * "CRM · Requests", "Billing · Invoices" — so a role editor answers "what can
- * this role do anywhere" from one screen (`.claude/rules/access-control.md`,
- * plan §6.4). `groupByModule` already produces this shape; only the label
- * needs the product name prepended.
+ * Every product’s projected permissions, grouped under the product and then
+ * its modules, so a role editor answers “what can this role do anywhere”
+ * without flattening the product hierarchy into a label.
  */
-const PRODUCT_GROUPS: PermissionGroup[] = operatorProductCatalogs().flatMap(
-  (catalog) =>
-    groupByModule(catalog, []).map((group) => ({
-      label: `${productLabel(catalog.app)} · ${group.label}`,
-      permissions: group.permissions.map((permission) => ({
-        value: permission.key,
-        label: actionLabel(permission.action),
-      })),
-    }))
+const PRODUCT_GROUPS: PermissionGroup[] = operatorProductCatalogs().map(
+  (catalog) => ({
+    key: catalog.app,
+    label: `876 ${productLabel(catalog.app)}`,
+    modules: permissionModules(catalog, (permission) =>
+      actionLabel(permission.action)
+    ),
+  })
 )
 
 /**
- * The Console-only actions — purge today — one group per product. Kept last
- * and separately labelled so an editor never mistakes "Purge CRM records" for
- * a permission the CRM catalog itself grants; per §6.1, only Console can hold
- * this vocabulary.
+ * The Console-only actions — purge today — stay separately labelled so an
+ * editor never mistakes "Purge CRM records" for a permission the CRM catalog
+ * itself grants; per §6.1, only Console can hold this vocabulary.
  */
-const OPERATOR_EXCLUSIVE_GROUPS: PermissionGroup[] = groupByModule(
-  operatorExclusiveCatalog(),
-  []
-).map((group) => ({
-  label: `${productLabel(group.key)} · Operator actions`,
-  permissions: group.permissions.map((permission) => ({
-    value: permission.key,
-    label: permission.label,
-  })),
-}))
+const OPERATOR_EXCLUSIVE_GROUPS: PermissionGroup[] = [
+  {
+    key: 'operator-actions',
+    label: 'Operator actions',
+    modules: permissionModules(
+      operatorExclusiveCatalog(),
+      (permission) => permission.label
+    ),
+  },
+]
 
 /** Grouped permission catalog rendered by the role permission editor. */
 export const PERMISSION_GROUPS: PermissionGroup[] = [
@@ -350,3 +361,14 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
   ...PRODUCT_GROUPS,
   ...OPERATOR_EXCLUSIVE_GROUPS,
 ]
+
+/** Flattens the presentation hierarchy without changing durable permission keys. */
+export function permissionGroupKeys(
+  groups: readonly PermissionGroup[]
+): string[] {
+  return groups.flatMap((group) =>
+    group.modules.flatMap((module) =>
+      module.permissions.map((permission) => permission.value)
+    )
+  )
+}

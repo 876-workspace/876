@@ -1,151 +1,116 @@
 /** @vitest-environment jsdom */
-
 import '@testing-library/jest-dom/vitest'
-
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-
 import type { PermissionGroup } from '@/types/permission'
-
 import { PermissionGroupPicker } from './permission-group-picker'
 
 const GROUPS: PermissionGroup[] = [
   {
-    label: 'CRM · Requests',
-    permissions: [
-      { value: 'crm/requests.view', label: 'View' },
-      { value: 'crm/requests.edit', label: 'Edit' },
+    key: 'crm',
+    label: '876 CRM',
+    modules: [
+      {
+        key: 'requests',
+        label: 'Requests',
+        permissions: [
+          { value: 'crm/requests.view', label: 'View' },
+          { value: 'crm/requests.edit', label: 'Edit' },
+        ],
+      },
+      {
+        key: 'customers',
+        label: 'Customers',
+        permissions: [{ value: 'crm/customers.view', label: 'View' }],
+      },
     ],
-  },
-  {
-    label: 'Billing · Customers',
-    permissions: [{ value: 'billing/customers.view', label: 'View' }],
   },
 ]
 
-describe('PermissionGroupPicker', () => {
-  it('renders a trigger with the group label and its checked/total count', () => {
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set()}
-        onToggle={vi.fn()}
-      />
-    )
+function renderPicker(selected = new Set<string>()) {
+  const onToggle = vi.fn()
+  const onSetGroup = vi.fn()
+  render(
+    <PermissionGroupPicker
+      groups={GROUPS}
+      selected={selected}
+      onToggle={onToggle}
+      onSetGroup={onSetGroup}
+    />
+  )
+  return { onToggle, onSetGroup }
+}
 
-    expect(screen.getByText('CRM · Requests')).toBeInTheDocument()
-    expect(screen.getByText('0/2')).toBeInTheDocument()
-    expect(screen.getByText('Billing · Customers')).toBeInTheDocument()
+describe('PermissionGroupPicker', () => {
+  it('renders a product trigger with its rolled-up count', () => {
+    renderPicker()
+    expect(screen.getByText('876 CRM')).toBeInTheDocument()
+    expect(screen.getByText('0/3')).toBeInTheDocument()
+  })
+  it('starts products collapsed', () => {
+    renderPicker()
+    expect(screen.queryByText('Requests')).not.toBeInTheDocument()
+  })
+  it('reveals modules after its product is opened', async () => {
+    const user = userEvent.setup()
+    renderPicker()
+    await user.click(screen.getByText('876 CRM'))
+    expect(screen.getByText('Requests')).toBeInTheDocument()
+    expect(screen.getByText('Customers')).toBeInTheDocument()
+  })
+  it('renders module counts after a product is opened', async () => {
+    const user = userEvent.setup()
+    renderPicker(new Set(['crm/requests.view']))
+    await user.click(screen.getByText('876 CRM'))
+    expect(screen.getByText('1/2')).toBeInTheDocument()
     expect(screen.getByText('0/1')).toBeInTheDocument()
   })
-
-  it('reflects the current selection in each group count', () => {
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set(['crm/requests.view'])}
-        onToggle={vi.fn()}
-      />
-    )
-
-    expect(screen.getByText('1/2')).toBeInTheDocument()
-  })
-
-  it('starts every group collapsed, so no permission pill is in the document', () => {
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set()}
-        onToggle={vi.fn()}
-      />
-    )
-
-    expect(screen.queryByRole('button', { name: 'View' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull()
-  })
-
-  it("reveals a group's pills only after its trigger is opened", async () => {
+  it('reveals permissions only after its module is opened', async () => {
     const user = userEvent.setup()
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set()}
-        onToggle={vi.fn()}
-      />
-    )
-
-    await user.click(screen.getByText('CRM · Requests'))
-
-    // Only the opened group's pills are in the document; the other group's
-    // single "View" pill has not been mounted yet.
-    expect(screen.getAllByRole('button', { name: 'View' })).toHaveLength(1)
+    renderPicker()
+    await user.click(screen.getByText('876 CRM'))
+    await user.click(screen.getByText('Requests'))
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
   })
-
-  it('allows more than one group to be open at once', async () => {
+  it('toggles the exact durable permission key', async () => {
     const user = userEvent.setup()
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set()}
-        onToggle={vi.fn()}
-      />
-    )
-
-    await user.click(screen.getByText('CRM · Requests'))
-    await user.click(screen.getByText('Billing · Customers'))
-
-    expect(screen.getAllByRole('button', { name: 'View' })).toHaveLength(2)
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
-  })
-
-  it('calls onToggle with the exact permission value when a pill is clicked', async () => {
-    const user = userEvent.setup()
-    const onToggle = vi.fn()
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set()}
-        onToggle={onToggle}
-      />
-    )
-
-    await user.click(screen.getByText('CRM · Requests'))
+    const { onToggle } = renderPicker()
+    await user.click(screen.getByText('876 CRM'))
+    await user.click(screen.getByText('Requests'))
     await user.click(screen.getByRole('button', { name: 'Edit' }))
-
-    expect(onToggle).toHaveBeenCalledTimes(1)
     expect(onToggle).toHaveBeenCalledWith('crm/requests.edit')
   })
-
-  it('marks a selected permission pill as pressed', async () => {
+  it('marks selected permissions as pressed', async () => {
     const user = userEvent.setup()
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set(['crm/requests.edit'])}
-        onToggle={vi.fn()}
-      />
-    )
-
-    await user.click(screen.getByText('CRM · Requests'))
-
+    renderPicker(new Set(['crm/requests.edit']))
+    await user.click(screen.getByText('876 CRM'))
+    await user.click(screen.getByText('Requests'))
     expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute(
       'aria-pressed',
       'true'
     )
   })
-
-  it('does not bold the group trigger label', () => {
-    render(
-      <PermissionGroupPicker
-        groups={GROUPS}
-        selected={new Set()}
-        onToggle={vi.fn()}
-      />
-    )
-
-    const trigger = screen.getByText('CRM · Requests').closest('button')
-    expect(trigger?.className).not.toMatch(/font-(?:medium|semibold|bold)/)
+  it('offers product-level select all', async () => {
+    const user = userEvent.setup()
+    const { onSetGroup } = renderPicker()
+    await user.click(screen.getByText('876 CRM'))
+    await user.click(screen.getByRole('button', { name: 'Select all' }))
+    expect(onSetGroup).toHaveBeenCalledWith(GROUPS[0], true)
+  })
+  it('offers product-level clear', async () => {
+    const user = userEvent.setup()
+    const { onSetGroup } = renderPicker()
+    await user.click(screen.getByText('876 CRM'))
+    await user.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(onSetGroup).toHaveBeenCalledWith(GROUPS[0], false)
+  })
+  it('exposes a partial product selection state', async () => {
+    const user = userEvent.setup()
+    renderPicker(new Set(['crm/requests.view']))
+    await user.click(screen.getByText('876 CRM'))
+    expect(
+      screen.getByLabelText('876 CRM partially selected')
+    ).toBeInTheDocument()
   })
 })
