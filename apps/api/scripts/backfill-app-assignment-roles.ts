@@ -6,6 +6,41 @@ function hasFlag(flag: string): boolean {
   return process.argv.slice(2).includes(`--${flag}`)
 }
 
+type BackfillCandidate = {
+  assignmentId: string
+  organizationId: string
+  userId: string
+  appId: string
+  fromRoleId: string
+  toRoleId: string
+  organizationRole: string
+}
+
+async function candidateStillValid(row: BackfillCandidate): Promise<boolean> {
+  const [membership, targetRole] = await Promise.all([
+    prisma.membership.findFirst({
+      where: {
+        organizationId: row.organizationId,
+        userId: row.userId,
+        role: row.organizationRole,
+        status: 'active',
+        deletedAt: null,
+      },
+      select: { id: true },
+    }),
+    prisma.appRole.findFirst({
+      where: {
+        id: row.toRoleId,
+        organizationId: row.organizationId,
+        appId: row.appId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    }),
+  ])
+  return Boolean(membership && targetRole)
+}
+
 async function main(): Promise<void> {
   if (hasFlag('help')) {
     console.log(
@@ -39,12 +74,7 @@ async function main(): Promise<void> {
     },
   })
 
-  const rows = [] as Array<{
-    assignmentId: string
-    fromRoleId: string
-    toRoleId: string
-    organizationRole: string
-  }>
+  const rows: BackfillCandidate[] = []
   for (const assignment of assignments) {
     const membership = assignment.user.memberships.find(
       (candidate) => candidate.organizationId === assignment.organizationId
@@ -66,6 +96,9 @@ async function main(): Promise<void> {
     if (!role || role.id === assignment.appRoleId) continue
     rows.push({
       assignmentId: assignment.id,
+      organizationId: assignment.organizationId,
+      userId: assignment.userId,
+      appId: assignment.appId,
       fromRoleId: assignment.appRoleId,
       toRoleId: role.id,
       organizationRole: membership.role,
@@ -75,15 +108,21 @@ async function main(): Promise<void> {
   let changed = 0
   if (apply) {
     for (const row of rows) {
+      if (!(await candidateStillValid(row))) continue
+
       // Compare-and-set so an operator or another process changing the role
       // after candidate discovery wins instead of being overwritten by backfill.
       const result = await prisma.appAssignment.updateMany({
         where: {
           id: row.assignmentId,
+          organizationId: row.organizationId,
+          userId: row.userId,
+          appId: row.appId,
           appRoleId: row.fromRoleId,
           status: 'active',
           deletedAt: null,
           revokedAt: null,
+          appRole: { is: { isDefault: true, deletedAt: null } },
         },
         data: { appRoleId: row.toRoleId },
       })
