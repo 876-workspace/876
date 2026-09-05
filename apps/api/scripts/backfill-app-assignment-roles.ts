@@ -14,6 +14,7 @@ async function main(): Promise<void> {
     return
   }
 
+  const apply = hasFlag('apply')
   const assignments = await prisma.appAssignment.findMany({
     where: {
       status: 'active',
@@ -71,20 +72,33 @@ async function main(): Promise<void> {
     })
   }
 
-  if (hasFlag('apply')) {
-    for (const row of rows)
-      await prisma.appAssignment.update({
-        where: { id: row.assignmentId },
+  let changed = 0
+  if (apply) {
+    for (const row of rows) {
+      // Compare-and-set so an operator or another process changing the role
+      // after candidate discovery wins instead of being overwritten by backfill.
+      const result = await prisma.appAssignment.updateMany({
+        where: {
+          id: row.assignmentId,
+          appRoleId: row.fromRoleId,
+          status: 'active',
+          deletedAt: null,
+          revokedAt: null,
+        },
         data: { appRoleId: row.toRoleId },
       })
+      changed += result.count
+    }
   }
+
   console.log(
     JSON.stringify(
       {
         object: 'app_assignment_role_backfill',
-        dryRun: !hasFlag('apply'),
+        dryRun: !apply,
         examined: assignments.length,
-        changed: hasFlag('apply') ? rows.length : 0,
+        changed,
+        skippedAfterDiscovery: apply ? rows.length - changed : 0,
         candidates: rows,
       },
       null,
