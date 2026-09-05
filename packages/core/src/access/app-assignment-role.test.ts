@@ -29,6 +29,24 @@ describe('resolveAppAssignmentRole', () => {
       role: roles[0],
       source: 'organization-role',
     }))
+  it('accepts the persisted legacy super_admin app-role key', () => {
+    const legacyRole = {
+      id: 'role_super_legacy',
+      key: 'super_admin',
+      isDefault: false,
+      deletedAt: null,
+    }
+
+    expect(
+      resolve({
+        organizationRole: 'super_admin',
+        roles: [legacyRole, roles[2]],
+      })
+    ).toEqual({
+      role: legacyRole,
+      source: 'organization-role',
+    })
+  })
   it('maps uppercase super admin safely', () =>
     expect(resolve({ organizationRole: 'SUPER_ADMIN' })).toEqual({
       role: roles[0],
