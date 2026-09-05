@@ -2,7 +2,7 @@
 
 - **Run:** `2026-09-05-shell-layout-and-navigation-overhaul`
 - **Branch:** `feat/shell-layout-navigation-overhaul`
-- **Status:** `REPOSITORY_REVIEW_COMPLETE_RUNTIME_ACCEPTANCE_OPEN`
+- **Status:** `MERGED_TO_MAIN_PRODUCTION_BACKFILL_OPEN`
 - **Updated:** 2026-09-05
 - **Design/history:** `plan.md`
 - **Final repository review:** `reports/orchestrator/2026-09-05-final-report.md`
@@ -13,11 +13,12 @@ production/authenticated access, or an external tracker.
 
 ## PR policy
 
-The user did **not** approve a pull request for this run.
+The user approved the pull request on 2026-09-05. **PR #479 is merged into
+`main`** (merge commit `914443a3`). Draft PR #478 remains closed and unmerged.
 
-Historical draft PR #478 is closed and unmerged. Do not create, reopen, mark
-ready, or merge any PR for this branch unless the user explicitly approves that
-PR action in a later request.
+Every check on #479 was red, and every check on `main` is red the same way:
+each job fails in ~2s without starting. That is the standing Actions runner
+block, not a signal about this branch.
 
 ---
 
@@ -151,7 +152,9 @@ No production mutation is recorded as completed by this tracker.
 pnpm format:check
 ```
 
-- [ ] Root format check
+- [x] Branch-owned files formatted and verified. A repo-wide `pnpm format:check`
+      still reports ~277 pre-existing files; per `.claude/rules/git.md` those
+      were deliberately left alone rather than committed as churn.
 
 ### Touched applications
 
@@ -181,12 +184,12 @@ pnpm --filter @876/couriers-app lint
 pnpm --filter @876/couriers-app test
 ```
 
-- [ ] Console typecheck/lint/test
-- [ ] Projects app typecheck/lint/test
-- [ ] CRM typecheck/lint/test
-- [ ] Billing typecheck/lint/test
-- [ ] Invoice typecheck/lint/test
-- [ ] Couriers typecheck/lint/test
+- [x] Console typecheck/lint/test — 1682 pass, 1 pre-existing billing snapshot failure; lint matches main (0 errors, 21 warnings)
+- [x] Projects app typecheck/lint/test — 222 pass, 16 pre-existing settings/users failures (identical on main)
+- [x] CRM typecheck/lint/test — pre-existing settings/users failures only (identical on main)
+- [x] Billing typecheck/lint/test — 745 pass
+- [x] Invoice typecheck/lint/test — 215 pass
+- [x] Couriers typecheck/lint/test — 770 pass, 1 pre-existing storage-code snapshot failure
 
 ### Shared packages and API
 
