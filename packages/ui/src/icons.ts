@@ -145,6 +145,7 @@ export {
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   EnvelopeIcon,
+  ExclamationCircleIcon,
   ExclamationTriangleIcon,
   EyeIcon,
   EyeSlashIcon,
