@@ -13,14 +13,14 @@
 
 The integration branch is no longer in the earlier working-tree/delegation state. The previously uncommitted shell, navigation, Projects, Console, permissions, and assignment-role work has been committed and pushed.
 
-At the time this closeout TODO was written, the branch is:
+At the time this closeout TODO was written, the branch was 24 commits ahead of `main` and 0 behind. Closeout implementation has now started directly on the same integration branch.
 
-- **24 commits ahead of `main`**
-- **0 commits behind `main`**
+Current phase state:
+
 - Phase 1 complete
 - Phase 2 complete in code
 - Phase 3 complete
-- Phase 4 partial: record pages complete, comment/Markdown editor redesign still missing
+- Phase 4 implementation complete: record pages and the comment/Markdown editor redesign are now landed
 - Phase 5 complete in code
 - Phase 6 complete
 - Phase 7 complete
@@ -39,6 +39,8 @@ At the time this closeout TODO was written, the branch is:
 - `27e795e3` — group role permissions by product and module
 - `a99b5672` — record phase reports and briefs
 - `4b24640f` — update the main plan tracker to the landed state
+- `c09f52f0` — add this dedicated closeout TODO
+- `0ed9cb34` — complete the shared Markdown/comment editor treatment and focused regression coverage
 
 The durable app-assignment role mapping and dry-run backfill landed in earlier commits on the same branch.
 
@@ -66,19 +68,19 @@ Do **not** open the final PR to `main` before C1–C5 are complete.
 
 ---
 
-## C1 — Finish Phase 4: comment / Markdown editor redesign
+## C1 — Finish Phase 4: comment / Markdown editor redesign — COMPLETE IN CODE
 
 **Priority:** BLOCKING  
 **Type:** code + tests  
-**Goal:** complete the only missing implementation item from the original Phase 4.
+**State:** implementation landed in `0ed9cb34`; runtime verification still rolls into C4/C5.
 
-### Why this remains open
+### Why this was open
 
-The Projects record-page report explicitly states that no Markdown-editor implementation or editor-specific regression cases were added during the Projects record-page phase. The current issue comment surface uses the shared `@876/ui/markdown-editor`, so this should be fixed at the shared component level rather than by styling a one-off Projects-only editor.
+The Projects record-page report explicitly stated that no Markdown-editor implementation or editor-specific regression cases were added during the Projects record-page phase. The issue comment surface uses the shared `@876/ui/markdown-editor`, so the fix belongs at the shared component level rather than as a Projects-only styling fork.
 
-### Current path
+### Ownership decision
 
-The composition is:
+The composition remains:
 
 ```text
 apps/projects/src/features/projects/components/issue-comments-data.tsx
@@ -87,75 +89,49 @@ apps/projects/src/features/projects/components/issue-comments-data.tsx
       -> @876/ui/markdown
 ```
 
-Related editor infrastructure also exists in:
+`@876/editor` remains Editor.js-based and was inspected as related infrastructure, but the lightweight Markdown comment storage/transport contract was intentionally not replaced with Editor.js.
 
-```text
-packages/editor/src/react/editor.tsx
-packages/editor/src/react/content.tsx
-packages/editor/src/react/theme.ts
-```
+### Implemented editor changes
 
-`@876/editor` is Editor.js-based and is not automatically the correct replacement for the lightweight comment composer. Inspect it for reusable theme/surface decisions before introducing anything new, but do not replace the Markdown comment contract with Editor.js unless there is a concrete product reason to change stored comment format.
+- [x] Give the outer editor a deliberate light/dark surface.
+- [x] Separate the toolbar surface from the editable body with token-based borders/backgrounds.
+- [x] Add a visible `focus-within` border/ring contract on the editor container.
+- [x] Keep Write / Preview as the primary modes and expose active state with `aria-pressed` and `data-mode`.
+- [x] Replace two-letter toolbar labels with existing semantic icons where available; keep single-letter typographic marks for Bold/Italic/Strike where the icon registry has no canonical formatting glyph.
+- [x] Preserve accessible names/tooltips for every formatting action.
+- [x] Keep keyboard shortcuts for bold, italic, and link.
+- [x] Make the toolbar stack/wrap cleanly at narrow widths.
+- [x] Keep comment editor height deliberate (`minRows={4}` in comment create/edit; shared default remains compatible).
+- [x] Preserve vertical resize behavior.
+- [x] Style Preview as a first-class reading surface using the existing Markdown renderer.
+- [x] Preserve and improve the Preview empty state.
+- [x] Preserve disabled behavior and extend it to mode controls.
+- [x] Keep `id`, `name`, placeholder, controlled-value behavior, and the existing public API.
 
-### Files to inspect first
+### Implemented issue-comment composition changes
 
-- `packages/ui/src/components/markdown-editor.tsx`
-- `packages/ui/src/components/markdown-editor.test.tsx`
-- `packages/ui/src/components/markdown.tsx`
-- `packages/ui/src/components/textarea.tsx`
-- `packages/projects-ui/src/issue-comments.tsx`
-- the corresponding `packages/projects-ui` comment tests
-- `packages/editor/src/react/editor.tsx`
-- `packages/editor/src/react/theme.ts`
+- [x] Review and update `packages/projects-ui/src/issue-comments.tsx` around the shared editor.
+- [x] Give the new-comment composer a labelled bordered/tinted surface separate from the list.
+- [x] Keep the Comment action visually attached to the composer.
+- [x] Keep create errors inline inside the composer without clearing the draft.
+- [x] Use the same editor treatment for edit mode.
+- [x] Keep edit errors inline without dropping edit mode/draft.
+- [x] Leave assignee and unrelated issue controls untouched.
 
-### Required editor changes
+### Added regression coverage
 
-- [ ] Give the outer editor a deliberate surface in both light and dark themes instead of relying on a border around a mostly transparent textarea.
-- [ ] Give the toolbar a clearly separate surface from the editable body without producing grey-on-grey contrast in dark mode.
-- [ ] Add a visible `focus-within` state on the editor container so keyboard focus is obvious even though the textarea itself currently suppresses its ring.
-- [ ] Keep Write / Preview as the primary editor modes and make the active mode visually unambiguous.
-- [ ] Replace the current two-letter toolbar labels (`Bo`, `It`, etc.) with recognizable semantic icons from the existing `@876/ui/icons` registry where available.
-- [ ] Preserve accessible names/tooltips for every formatting action.
-- [ ] Keep keyboard shortcuts for bold, italic, and link.
-- [ ] Ensure toolbar buttons wrap or degrade cleanly at narrower widths instead of crowding the Write / Preview controls.
-- [ ] Ensure the editor body has sufficient minimum height for a comment but does not dominate the issue page.
-- [ ] Keep resize behavior deliberate; if vertical resize remains enabled, verify it does not break the record layout.
-- [ ] Style Preview as a first-class reading surface using the same Markdown renderer used for persisted comments.
-- [ ] Add a useful Preview empty state.
-- [ ] Preserve `disabled` behavior while comment create/update requests are pending.
-- [ ] Ensure disabled styling remains legible in both themes.
-- [ ] Keep `id`, `name`, placeholder, controlled-value behavior, and current public API compatibility unless a change is required.
+- [x] Stable labelled editor group and `data-slot`/`data-mode` contract.
+- [x] Write is the initial active mode.
+- [x] Preview becomes active and hides formatting actions.
+- [x] Toolbar actions retain accessible names after icon conversion.
+- [x] Shared focus-within treatment is asserted.
+- [x] Disabled state covers mode controls, formatting actions, and textarea.
+- [x] New-comment composer renders the shared Markdown editor and submit action.
+- [x] Create errors preserve the draft and composer.
+- [x] Comment edit mode renders the same shared editor.
+- [x] Update errors preserve the edit draft/editor.
 
-### Issue-comment composition changes
-
-The shared Markdown editor should carry most of the visual work, but the comment section still needs a coherent composition around it.
-
-- [ ] Review `packages/projects-ui/src/issue-comments.tsx` after the shared editor redesign.
-- [ ] Give the new-comment composer enough visual separation from the existing comment list.
-- [ ] Confirm the create button reads as the composer action, not as a detached page-level action.
-- [ ] Confirm validation/pending/error states do not shift the editor awkwardly.
-- [ ] Keep `AppError` inline when create/update/delete fails; do not reintroduce page-breaking error behavior.
-- [ ] Verify comment-edit mode uses the same editor treatment as comment-create mode.
-- [ ] Verify comment cards and rendered Markdown remain readable next to the redesigned editor in both themes.
-- [ ] Do not add assignee or other unrelated issue controls while touching this surface.
-
-### Required tests
-
-Existing functional Markdown-editor coverage is already substantial. Add regression coverage for the new contract rather than rewriting the existing tests.
-
-- [ ] Editor root exposes a stable semantic/testable focus container or state.
-- [ ] Write is the initial active mode.
-- [ ] Preview becomes active and hides formatting actions.
-- [ ] Toolbar retains accessible action names after switching from text abbreviations to icons.
-- [ ] Disabled state disables formatting actions and textarea.
-- [ ] Existing formatting insertion tests remain green.
-- [ ] Existing shortcut tests remain green.
-- [ ] Comment create composer renders the redesigned editor and submit action.
-- [ ] Comment edit mode renders the same shared editor.
-- [ ] Comment create error remains in-page and preserves the draft.
-- [ ] Comment update error remains in-page and preserves edit mode/draft.
-
-### Verification for C1
+### C1 verification still required in C4
 
 ```bash
 pnpm --filter @876/ui typecheck
@@ -166,38 +142,22 @@ pnpm --filter @876/projects typecheck
 pnpm --filter @876/projects test
 ```
 
-If `packages/editor/**` is modified, also run:
-
-```bash
-pnpm --filter @876/editor typecheck
-pnpm --filter @876/editor test
-```
-
-### Acceptance criteria
-
-C1 is complete only when:
-
-- the comment composer is visually coherent in light and dark themes;
-- Write/Preview and toolbar actions are usable with mouse and keyboard;
-- create and edit modes share the same treatment;
-- no comment data/storage contract changes were introduced accidentally;
-- all relevant package tests/typechecks pass;
-- the Phase 4 report is ready to be updated to say the editor work is actually complete.
+No `packages/editor/**` files were modified, so its test/typecheck is not required specifically by C1; it remains in the final matrix for integration confidence.
 
 ---
 
-## C2 — Reconcile compatibility cleanup and documentation
+## C2 — Reconcile compatibility cleanup and documentation — IN PROGRESS
 
 **Priority:** HIGH  
 **Type:** small code cleanup + docs  
-**Depends on:** C1 for final Phase 4 report wording  
+**Depends on:** C1 complete  
 **Parallel-safe with:** C3
 
 This phase prevents the final PR from carrying known stale compatibility code and reports that contradict the implementation.
 
 ### C2.1 Remove the dead `projectsHref` compatibility shim
 
-Current state:
+Current state before C2:
 
 - `packages/projects-ui/src/project-detail.tsx` still declares `projectsHref?: string` as deprecated.
 - `ProjectDetail` no longer reads it.
@@ -243,22 +203,15 @@ still describes the old invalid `var(--spacing-4/6/8)` form.
 
 - [ ] Update `reports/codex/2026-09-05-projects-record-pages.md` with the editor files actually changed.
 - [ ] Add the editor/comment tests actually added.
-- [ ] Replace the current “remaining handoff” statement with completed verification evidence.
+- [ ] Replace the current “remaining handoff” statement with completed implementation evidence.
 - [ ] Preserve the record-page design decisions and the explicit assignee-picker deferral.
 
 ### C2.4 Keep the plan and TODO roles separate
 
-- [ ] `plan.md` remains the design/history document.
-- [ ] `todo.md` remains the operational remaining-work checklist.
-- [ ] When C1–C6 complete, set the plan status to `COMPLETE` and mark the final remaining plan checklist items done.
-- [ ] Do not delete historical diagnosis, evidence, or handoff sections merely because the work has landed.
-
-### Acceptance criteria
-
-- no known dead compatibility prop remains;
-- shell-spacing documentation matches actual CSS;
-- Phase 4 documentation no longer says the editor is missing once C1 lands;
-- `plan.md`, reports, and `todo.md` no longer contradict one another about current state.
+- [x] `plan.md` remains the design/history document.
+- [x] `todo.md` remains the operational remaining-work checklist.
+- [ ] When C1–C6 complete, set the plan status to `COMPLETED` and mark the final remaining plan checklist items done.
+- [x] Do not delete historical diagnosis, evidence, or handoff sections merely because the work has landed.
 
 ---
 
@@ -266,7 +219,7 @@ still describes the old invalid `var(--spacing-4/6/8)` form.
 
 **Priority:** BLOCKING FOR PRODUCTION ACCEPTANCE  
 **Type:** controlled production data operation  
-**Parallel-safe with:** C1/C2  
+**Parallel-safe with:** C2  
 **Important:** the backfill is dry-run by default. Never jump directly to `--apply`.
 
 ### Background
@@ -321,9 +274,7 @@ Or use the targeted operator path documented in `plan.md` for only the Efesto as
 
 - [ ] Re-read the Efesto app membership.
 - [ ] Confirm app role is `super-admin`.
-- [ ] Confirm effective permissions include at least:
-  - `comments.create`
-  - project/issue write permissions expected for the app `super-admin` role
+- [ ] Confirm effective permissions include at least `comments.create` and expected project/issue write permissions.
 - [ ] Confirm no explicit deny unexpectedly removes `comments.create`.
 - [ ] Confirm revoked/deleted timestamps remain unset for the active assignment.
 
@@ -331,7 +282,7 @@ Or use the targeted operator path documented in `plan.md` for only the Efesto as
 
 - [ ] Open a real Efesto issue in 876 Projects as the affected user.
 - [ ] Add a short non-sensitive test comment.
-- [ ] Confirm the request succeeds and the comment appears without reload if optimistic/local state is expected.
+- [ ] Confirm the request succeeds and the comment appears.
 - [ ] Edit the test comment.
 - [ ] Delete the test comment.
 - [ ] Confirm there is no `Forbidden.` banner.
@@ -349,7 +300,7 @@ C3 is complete only when the existing affected production assignment is repaired
 **Type:** automated verification  
 **Depends on:** C1 and any C2 code cleanup
 
-Phase-specific green checks do not prove the final 24+ commit integration result is green. Run the matrix from the integration branch after all code changes are complete.
+Phase-specific green checks do not prove the final integration result is green. Run the matrix from the integration branch after all code changes are complete.
 
 ### C4.1 Working-tree hygiene before verification
 
@@ -367,11 +318,9 @@ git status --short
 grep -rn "eslint-disable\|as any" <closeout paths>
 ```
 
-- [ ] Review any match rather than automatically assuming it is invalid.
-
 ### C4.2 Core package/app checks
 
-Run in the foreground:
+Run in the foreground/local execution environment:
 
 ```bash
 pnpm --filter @876/console typecheck
@@ -402,358 +351,142 @@ node scripts/check-app-structure.mjs
 pnpm check:transpile
 ```
 
-### C4.3 Boundary baseline
+### C4.3 Known baseline
 
-```bash
-pnpm --filter @876/api boundaries
-```
+- [ ] Run `pnpm --filter @876/api boundaries`.
+- [ ] Confirm it still reports only the known 18 pre-existing `no-circular` violations and no nineteenth violation from this branch.
 
-Known baseline from this run: **18 existing `no-circular` violations** also existed on the base. The closeout requirement is:
+### C4.4 Production-build coverage still owed from Phase 1
 
-- [ ] still 18, or fewer because of unrelated legitimate cleanup;
-- [ ] never 19+ because this branch added another cycle.
-
-Do not expand this feature into fixing all historical cycles.
-
-### C4.4 Production-build checks owed from the Tailwind source phase
-
-The Phase 1 handoff explicitly left some host production builds unverified. Once the shared UI/editor work is stable, run the relevant host builds required by repository policy and the original source-glob acceptance, including at minimum:
-
-- [ ] Projects
-- [ ] Console
-- [ ] CRM
-- [ ] Billing
-- [ ] Invoice
-
-Use the repo's actual package scripts. Do not alter dependencies merely to make a sandbox-specific build pass without diagnosing the reason.
-
-### C4.5 Failure handling
-
-For every failure:
-
-- [ ] determine whether it is branch-introduced or a verified base failure;
-- [ ] fix branch-introduced failures before proceeding;
-- [ ] record unchanged base failures with evidence rather than silently ignoring them;
-- [ ] rerun the smallest relevant suite after a fix, then rerun the final matrix when closeout fixes stop changing code.
-
-### Acceptance criteria
-
-- all branch-owned typecheck/lint/test/structure/source checks are green;
-- no new API boundary violation;
-- required production builds prove shared product-UI classes are compiled by their hosts;
-- the final verification result is documented with actual counts/results, not “seems green”.
+- [ ] Build/production-verify Console.
+- [ ] Build/production-verify CRM.
+- [ ] Build/production-verify Billing.
+- [ ] Build/production-verify Invoice.
+- [ ] Re-run Projects production build if closeout editor changes affect its compiled CSS/component graph.
 
 ---
 
-## C5 — Browser visual and behavior acceptance
+## C5 — Browser acceptance and production workflow verification
 
 **Priority:** BLOCKING  
-**Type:** manual/browser verification  
-**Depends on:** C1, C3, C4
-
-The original problem is visual/systemic, so unit tests alone cannot close the run.
+**Type:** browser/manual integration verification  
+**Depends on:** C3 and C4
 
 ### Required viewport/theme matrix
 
-For every primary surface below:
+For each named surface, verify at:
 
-- [ ] 1280px desktop — light
-- [ ] 1280px desktop — dark
-- [ ] 1440px desktop — light
-- [ ] 1440px desktop — dark
-- [ ] 1920px desktop — light
-- [ ] 1920px desktop — dark
+- [ ] 1280px light
+- [ ] 1280px dark
+- [ ] 1440px light
+- [ ] 1440px dark
+- [ ] 1920px light
+- [ ] 1920px dark
 
-A representative mobile/tablet smoke pass is also recommended for changed navigation/editor surfaces, but the original acceptance widths above are mandatory.
+### Surfaces
 
-### C5.1 Shared shell rhythm
+- [ ] Console `/settings/users/.../permissions`
+- [ ] Console `/requests`
+- [ ] Console `/settings/users`
+- [ ] Console project detail
+- [ ] Console issue detail
+- [ ] Console org workspace project detail
+- [ ] Console org workspace issue detail
+- [ ] Console `/workspace`
+- [ ] Console role permission editor/detail
+- [ ] Projects sidebar collapsed + expanded persistence
+- [ ] Projects project detail
+- [ ] Projects issue detail
+- [ ] Projects comment create/edit composer
 
-Check representative apps/routes:
+### Visual acceptance rules
 
-- Console `/settings/users`
-- Console `/settings/users/<user>/permissions`
-- Console `/requests`
-- Projects project and issue routes
-- one floating-sidebar host such as Billing/Couriers
+- [ ] Sidebar/window/content insets read as one shared gutter rhythm.
+- [ ] No list pane visually touches the sidebar.
+- [ ] No duplicate navigation icons within a rail.
+- [ ] Projects rail defaults collapsed and persists expansion state.
+- [ ] Project and issue detail own the page; no legacy split detail column remains.
+- [ ] Project summary renders as intended rather than stacked due to missing Tailwind utilities.
+- [ ] Workspace header renders the organization name once.
+- [ ] `/workspace` behaves as a hub rather than 404ing or imitating a table view.
+- [ ] Permissions read as product → module → permission with usable rollups.
+- [ ] Markdown editor has clear light/dark surfaces, focus state, active mode, readable toolbar, and responsive wrapping.
+- [ ] Create/edit comment errors stay in-page without destroying the record surface or draft.
 
-Verify:
+### Production permission acceptance
 
-- [ ] window edge -> sidebar card inset is intentional and symmetric for floating sidebars;
-- [ ] sidebar -> list/content gap uses the common shell rhythm;
-- [ ] list -> detail gap matches the shell rhythm where a split view still exists;
-- [ ] detail -> right edge does not look tighter than the other gutters;
-- [ ] expanded/collapsed rail transitions do not produce jumps or compounded padding;
-- [ ] navigation rows align consistently in rail, expanded panel, and contextual/drill-down states.
-
-### C5.2 Navigation icons and Projects sidebar
-
-- [ ] Projects, Issues, Board, and Labels are visually distinct.
-- [ ] Console Audit is distinct from Issues.
-- [ ] customer/team/subscriber/user concepts are distinguishable.
-- [ ] organization/banking/warehouse concepts are distinguishable.
-- [ ] Projects sidebar defaults to collapsed icon rail for a new preference state.
-- [ ] toggle expands to labels.
-- [ ] preference persists after navigation/reload.
-- [ ] tooltips/labels make icon-only navigation understandable.
-
-### C5.3 Projects record pages
-
-Project detail:
-
-- [ ] exactly one back/breadcrumb affordance;
-- [ ] record header hierarchy is clear;
-- [ ] status/health badges are legible in both themes;
-- [ ] Project lead / Target date / Members render as the intended three-up facts row at supported width;
-- [ ] issues section reads as a separate data surface.
-
-Issue detail:
-
-- [ ] identifier/title/status/priority hierarchy is clear;
-- [ ] description has a readable measure;
-- [ ] facts sidebar aligns with the record body;
-- [ ] empty assignee/due-date/estimate states look intentional;
-- [ ] activity timeline is readable and not visually fused into the facts area.
-
-Comments/editor:
-
-- [ ] new editor has distinct toolbar/body/preview surfaces in light mode;
-- [ ] same in dark mode without grey-on-grey collapse;
-- [ ] focus state is visible;
-- [ ] toolbar remains usable at narrower content widths;
-- [ ] Write/Preview switching is obvious;
-- [ ] Markdown preview matches rendered comments;
-- [ ] create/edit/delete behavior works after the production role repair.
-
-### C5.4 Console project/workspace alignment
-
-- [ ] platform project list is a normal list page, not a permanent split-detail frame;
-- [ ] project record opens as its own page;
-- [ ] issue record opens as its own page;
-- [ ] organization workspace project/issue routes use the same shared record components;
-- [ ] workspace header shows the organization name only once;
-- [ ] root sidebar context no longer redundantly prints `Console`.
-
-### C5.5 `/workspace` hub
-
-- [ ] `/workspace` no longer 404s;
-- [ ] organization/workspace cards render as a hub, not a data table;
-- [ ] only organizations/workspaces the operator is allowed to access appear;
-- [ ] navigation into an organization workspace is correct;
-- [ ] empty state is useful if no entitled workspace exists.
-
-### C5.6 Permission surfaces
-
-Read-only user access panel:
-
-- [ ] top level is product;
-- [ ] modules are nested under the product;
-- [ ] product row shows granted/total roll-up;
-- [ ] module card treatment remains recognizable.
-
-Role editor / role detail:
-
-- [ ] same product -> module hierarchy as the read-only panel;
-- [ ] permission selection remains usable when a product contains many modules;
-- [ ] Console-only operator actions remain visibly separate from product permission groups;
-- [ ] no regression to a flat list of `876 Billing · Catalog`, `876 Billing · Sales`, etc.
-
-### Acceptance criteria
-
-C5 is complete when the user-facing system visually satisfies the original shell/navigation/records/permissions requirements in both themes and the production comment workflow succeeds.
+- [ ] The repaired Efesto super-admin can create/edit/delete a comment.
+- [ ] The write action no longer returns `Forbidden.` for the repaired assignment.
+- [ ] A staff/default-role assignment remains unable to write without the matching permission.
 
 ---
 
-## C6 — Issue cleanup, final documentation, and integration PR
+## C6 — Issue cleanup, final documentation, and final integration PR
 
-**Priority:** FINAL GATE  
-**Type:** tracker/docs/PR  
-**Depends on:** C1–C5
+**Priority:** FINAL  
+**Depends on:** C2, C3, C4, C5
 
 ### C6.1 Resolve PROJ-10
 
-The diagnosed premise “comments are not wired into the app permission catalog” is false: `comments.create` is already catalogued and granted by the appropriate app roles. The defect was automatic assignment of the default read-only app role regardless of organization role.
+The original premise (“comment permissions are missing from the app catalog”) was disproven. The catalog and admin/super-admin roles already held `comments.create`; the defect was assignment-role mapping.
 
-- [ ] Locate PROJ-10 in the project tracker.
-- [ ] Choose one:
-  - close it as superseded/not applicable and link the assignment-role fix; or
-  - rewrite it to describe automatic organization-role -> app-role mapping/backfill behavior.
-- [ ] Do not leave the old title/body implying the permission catalog is missing comment permissions.
-- [ ] Record the resolution in the final closeout report.
+- [ ] Locate the actual tracker containing PROJ-10.
+- [ ] If it only asks to add comment permissions to the catalog, close it as based on a false premise and link/reference the durable assignment-role fix.
+- [ ] If the ticket should remain as historical work, rewrite it to describe automatic org-role → app-role mapping and the production backfill requirement.
+- [ ] Do not create a duplicate GitHub issue merely because PROJ-10 is not present in this repository's GitHub Issues list.
 
-### C6.2 Final documentation closeout
+### C6.2 Final reports and tracker closure
 
-- [ ] Update `plan.md` status from `CLOSEOUT_IN_PROGRESS` to `COMPLETE` only after all gates are satisfied.
-- [ ] Mark the production data repair complete only after actual production verification.
-- [ ] Mark browser acceptance complete only after the required matrix was performed.
-- [ ] Mark final integration verification complete with the actual command results.
-- [ ] Update any stale phase report found during verification.
-- [ ] Add a concise final closeout report under this run's `reports/` tree summarizing:
-  - original defects;
-  - implementation by phase;
-  - production role repair performed;
-  - verification commands/results;
-  - known pre-existing failures/baselines;
-  - deferred work that is explicitly out of scope.
+- [ ] Add/update a final orchestrator report containing the actual closeout commits and verification evidence.
+- [ ] Update `plan.md` status to `COMPLETED ✅` only after C3–C5 are genuinely done.
+- [ ] Mark every remaining top-level plan checklist item accurately.
+- [ ] Mark this `todo.md` status complete.
+- [ ] Preserve any externally blocked item as open rather than falsely certifying it.
 
-### C6.3 Final branch audit
+### C6.3 Branch readiness
 
-Before opening the PR:
+- [ ] Confirm branch is current with `main` before the final PR.
+- [ ] Review the final `main...integration` diff for duplicate helpers, compatibility residue, swallowed errors, `as any`, `eslint-disable`, unrelated formatting churn, and accidental secrets.
+- [ ] Confirm commits contain no `Co-Authored-By`, AI-generated attribution, or similar forbidden trailers.
+- [ ] Confirm no generated logs or environment files are tracked.
 
-```bash
-git status
-git log --oneline main..HEAD
-git diff --check main...HEAD
-```
+### C6.4 Final PR
 
-- [ ] no uncommitted/untracked feature files;
-- [ ] no run logs;
-- [ ] no credentials/secrets;
-- [ ] no accidental generated files;
-- [ ] no AI attribution or `Co-Authored-By` trailers in closeout commits;
-- [ ] commit messages remain focused and conventional;
-- [ ] branch remains updated against `main`.
+Only after C1–C5 are complete:
 
-### C6.4 Open the single integration PR
-
-Target:
-
-```text
-feat/shell-layout-navigation-overhaul -> main
-```
-
-The PR description should explain the **whole feature**, not only the editor closeout.
-
-Required narrative:
-
-- shared Tailwind product-UI source defect and CI/source guard;
-- unified shell gutter contract;
-- semantic navigation icons and Projects collapsible sidebar;
-- Projects + Console full-page project/issue records;
-- `/workspace` hub;
-- nested product -> module -> permission UI;
-- app-assignment organization-role -> app-role mapping;
-- production data/backfill handling;
-- final verification and visual acceptance.
-
-- [ ] Open one final PR only.
-- [ ] Immediately check mergeability/conflicts against `main`.
-- [ ] If `main` moved, update the integration branch without discarding the phase history.
-- [ ] Run/confirm configured CI checks on the PR head.
-- [ ] Wait for configured automated code-review bots.
-- [ ] Inspect top-level and inline review feedback.
-- [ ] Fix every actionable finding and add regression coverage where appropriate.
-- [ ] Rerun affected checks after review fixes.
-- [ ] Do not merge while a configured review is pending or an actionable finding remains.
-
-### Acceptance criteria
-
-The run is complete only when:
-
-- C1 editor implementation is complete;
-- C2 docs/compatibility cleanup is complete;
-- C3 production assignment is repaired and verified;
-- C4 integration matrix passes with known baselines recorded;
-- C5 visual/behavior matrix is accepted;
-- PROJ-10 no longer states the false diagnosis;
-- plan/report/todo state is coherent;
-- final PR to `main` is open, conflict-checked, and ready for the repository's normal review gates.
+- [ ] Open the single final PR from `feat/shell-layout-navigation-overhaul` → `main`.
+- [ ] Describe the feature as a whole, not only the final editor closeout.
+- [ ] Lead with the two platform defects found: missing Tailwind source coverage and default app-role assignment ignoring org role.
+- [ ] Include the shell/navigation/full-page records/workspace/permissions/editor outcomes.
+- [ ] Include exact verification evidence and the known 18-cycle boundary baseline.
+- [ ] Immediately verify mergeability/conflicts against `main`.
+- [ ] Inspect CI/status checks on the PR head.
+- [ ] Wait for configured automated reviewers and resolve every actionable finding before merge.
 
 ---
 
-# Compact execution checklist
+## Compact live checklist
 
-Use this section as the day-to-day tracker. The detailed sections above define what each checkbox means.
+### Implementable in-repo
 
-## C1 — Editor
+- [x] C1 shared Markdown editor redesign
+- [x] C1 Projects comment composer/edit composition
+- [x] C1 focused editor/comment regression coverage
+- [ ] C2 remove dead `ProjectDetail.projectsHref`
+- [ ] C2 correct stale shell-spacing report
+- [ ] C2 update Projects report with editor completion
+- [ ] C4 final integration verification matrix
+- [ ] C4 production-build coverage
+- [ ] C6 final report/tracker closure
+- [ ] C6 final PR readiness audit
 
-- [ ] Redesign shared `MarkdownEditor` surfaces for light/dark
-- [ ] Add visible focus-within treatment
-- [ ] Replace two-letter toolbar controls with semantic icons
-- [ ] Keep accessible labels/tooltips and keyboard shortcuts
-- [ ] Verify toolbar responsive wrapping
-- [ ] Verify Write/Preview visual states
-- [ ] Verify disabled/pending states
-- [ ] Align Projects comment composer around the redesigned editor
-- [ ] Align comment edit mode
-- [ ] Add/update UI + Projects UI tests
-- [ ] Run C1 package checks
+### External/runtime acceptance
 
-## C2 — Cleanup/docs
-
-- [ ] Remove dead `ProjectDetail.projectsHref` compatibility prop
-- [ ] Remove Console caller's dead `projectsHref`
-- [ ] Correct shell-spacing report token table
-- [ ] Update Projects record/editor report after C1
-- [ ] Reconcile plan/report/TODO wording
-
-## C3 — Production data
-
-- [ ] Run role backfill in dry-run mode
-- [ ] Review every candidate
-- [ ] Repair Efesto assignment with reviewed method
-- [ ] Re-read role + effective permissions
-- [ ] Confirm `comments.create`
-- [ ] Production create/edit/delete comment smoke test
-- [ ] Verify staff remains restricted
-
-## C4 — Automated verification
-
-- [ ] Working-tree/security hygiene review
-- [ ] Console typecheck/lint/test
-- [ ] Projects typecheck/lint/test
-- [ ] Projects UI typecheck/test
-- [ ] UI typecheck/test
-- [ ] API typecheck/lint/test
-- [ ] Core typecheck/test
-- [ ] Editor typecheck/test
-- [ ] app-structure check
-- [ ] transpile/Tailwind-source check
-- [ ] API boundaries: no new cycle
-- [ ] Required production host builds
-- [ ] Record exact final results
-
-## C5 — Browser acceptance
-
-- [ ] 1280 light/dark
-- [ ] 1440 light/dark
-- [ ] 1920 light/dark
-- [ ] Shared gutter rhythm
-- [ ] Navigation icon uniqueness/clarity
-- [ ] Projects sidebar collapse/persistence
-- [ ] Projects project page
-- [ ] Projects issue page
-- [ ] Comment editor + live comment workflow
-- [ ] Console full-page records
-- [ ] Workspace header
-- [ ] `/workspace` hub
-- [ ] Permission access panel
-- [ ] Role editor/detail permission hierarchy
-
-## C6 — Finalize
-
-- [ ] Close/rewrite PROJ-10
-- [ ] Final closeout report
-- [ ] Mark `plan.md` complete
-- [ ] Final branch/commit attribution audit
-- [ ] Ensure branch is current with `main`
-- [ ] Open one integration PR to `main`
-- [ ] Check conflicts immediately
-- [ ] Wait for CI and configured review bots
-- [ ] Resolve actionable findings
-- [ ] PR ready for merge
-
----
-
-# Explicitly deferred / out of scope
-
-Do not accidentally grow the closeout into adjacent product work.
-
-- Assignee picker implementation
-- CRM assignment integration
-- General redesign of every Editor.js surface
-- Fixing all historical API circular dependency violations
-- Unrelated Console/Billing/CRM UI cleanup not required by the shell contract
-- New permission catalog concepts unrelated to the assignment-role defect
-- Broad production data rewrites beyond reviewed assignment-role candidates
-
-If any of these are discovered to be required for correctness rather than polish, document the dependency before expanding scope.
+- [ ] C3 production backfill dry-run
+- [ ] C3 production assignment repair
+- [ ] C3 effective-permission re-read
+- [ ] C3 production comment smoke test
+- [ ] C5 light/dark viewport acceptance
+- [ ] C5 production permission acceptance
+- [ ] C6 resolve PROJ-10 in its actual tracker
+- [ ] C6 final PR to `main`
