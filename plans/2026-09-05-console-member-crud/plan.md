@@ -2,7 +2,8 @@
 
 - **Run ID:** `2026-09-05-console-member-crud`
 - **Branch:** `fix/console-member-crud`
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED ✅
+- **Pull request:** [#481](https://github.com/876-workspace/876/pull/481)
 
 ## Goal
 
@@ -78,14 +79,14 @@ security boundary.
 - [x] Shared destructive-change safeguards (self-access, super-admin
       escalation, target protection).
 - [x] Revoke copy corrected — no false session-termination claim.
-- [ ] **Review fix:** constrain `roleName` to `ASSIGNABLE_ROLES` on PATCH
+- [x] **Review fix:** constrain `roleName` to `ASSIGNABLE_ROLES` on PATCH
       (escalation regression — see review findings below).
-- [ ] **Review fix:** remove the forbidden description paragraph under the
+- [x] **Review fix:** remove the forbidden description paragraph under the
       grant editor's section header.
-- [ ] **Review fix:** move grant-editor fields onto `FormRow`.
-- [ ] **Review fix:** hide `super-admin` from the role options for a
+- [x] **Review fix:** move grant-editor fields onto `FormRow`.
+- [x] **Review fix:** hide `super-admin` from the role options for a
       non-super-admin viewer.
-- [ ] **Review fix:** real grant-editor coverage (exact args, negative space).
+- [x] **Review fix:** real grant-editor coverage (exact args, negative space).
 
 ## Review findings (2026-09-05)
 
@@ -134,10 +135,26 @@ of scope here.
 Baseline measured 2026-09-05: clean tree 1682 passed / 1 failed; this branch
 1691 passed / 1 failed (+9 tests) before the review fixes.
 
-## Handoff state
+## Outcome
 
-Review of the delegated implementation is complete and the findings above are
-dispatched to codex. On return: read the codex report, re-run the three
-verification commands in the foreground, confirm the test count rose and that no
-`eslint-disable` / `as any` was introduced, then commit in focused per-concern
-commits and open the PR against `main`.
+All review findings were dispatched to codex and verified in the merged working
+tree, then committed as seven focused commits on `fix/console-member-crud` and
+opened as PR #481.
+
+Final verification, run in the foreground on the committed tree:
+
+- `pnpm --filter @876/console typecheck` — exit 0.
+- `pnpm --filter @876/console lint` — 0 errors, 21 warnings, all pre-existing in
+  unrelated files and none in the team surface.
+- `pnpm --filter @876/console test` — 1705 passed, 1 failed. Clean-tree baseline
+  was 1682 passed / 1 failed, so this work adds **+23 tests** and the only
+  failure is the documented pre-existing billing snapshot error.
+- `node scripts/check-app-structure.mjs` — OK.
+- No `eslint-disable`, `as any`, or `@ts-ignore` anywhere in the changed files.
+
+PR #481 reports `MERGEABLE` with no conflicts. Its five failing checks
+(`chromium-smoke`, `component-tests`, `structure`, `widget-browser`, and the
+Cloudflare `Workers Builds: 876-console`) fail identically on `main`, each in
+about two seconds with no job log, which is the known signature of the disabled
+workflows and the orphaned Cloudflare checks left behind by the move to Vercel.
+They are unrelated to this branch.
