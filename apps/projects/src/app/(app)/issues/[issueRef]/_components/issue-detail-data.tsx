@@ -2,7 +2,7 @@ import { IssueDetail } from '@876/projects-ui/issue-detail'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
-import { IssueCommentsData } from '@/features/projects/components/issue-comments-data'
+import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
 import { projects } from '@/lib/services/projects'
 
 export async function IssueDetailData({
@@ -37,7 +37,7 @@ export async function IssueDetailData({
             </div>
           }
         >
-          <IssueCommentsData
+          <IssueCommentsLoader
             orgId={orgId}
             issueRef={issueResult.data.identifier}
             currentUserId={userId}
