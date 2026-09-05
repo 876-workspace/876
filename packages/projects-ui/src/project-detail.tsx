@@ -1,9 +1,10 @@
-'use client'
-
-import Link from 'next/link'
 import type { Issue, Project } from '@876/projects/contracts'
-import { buttonVariants } from '@876/ui/button'
-import { ArrowLeft, Calendar, Folder, User, Users } from '@876/ui/icons'
+import {
+  DetailCardFact,
+  DetailCardFacts,
+  DetailCardSection,
+} from '@876/ui/detail-card'
+import { Calendar, Folder, User, Users } from '@876/ui/icons'
 
 import { IssuesTable } from './issue-list'
 import { ProjectHealthBadge, ProjectStatusBadge } from './status-badges'
@@ -12,7 +13,8 @@ export type ProjectDetailProps = {
   project: Project
   issues?: readonly Issue[]
   issuesHref: string
-  projectsHref: string
+  /** @deprecated Hosts own their back affordance (usually PageBreadcrumb). */
+  projectsHref?: string
 }
 
 function formatDate(timestamp: number | null): string {
@@ -28,93 +30,84 @@ export function ProjectDetail({
   project,
   issues = [],
   issuesHref,
-  projectsHref,
 }: ProjectDetailProps) {
   return (
-    <div className="space-y-6">
-      <div>
-        <Link
-          href={projectsHref}
-          className={buttonVariants({
-            variant: 'outline',
-            size: 'sm',
-            className: 'mb-4 inline-flex items-center gap-1.5',
-          })}
-        >
-          <ArrowLeft className="size-3.5" />
-          Back to projects
-        </Link>
-
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="bg-muted text-muted-foreground flex size-9 items-center justify-center rounded-lg border">
-                <Folder className="size-5" />
-              </span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold">{project.name}</h1>
-                  <span className="text-muted-foreground font-mono text-sm font-semibold">
-                    ({project.key})
-                  </span>
-                </div>
+    <div className="space-y-8">
+      <header className="876-card p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div className="flex min-w-0 items-start gap-4">
+            <span className="bg-primary/10 text-primary border-primary/15 flex size-12 shrink-0 items-center justify-center rounded-xl border">
+              <Folder aria-hidden="true" className="size-6" />
+            </span>
+            <div className="min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-foreground text-xl font-semibold tracking-tight sm:text-2xl">
+                  {project.name}
+                </h1>
+                <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 font-mono text-xs font-semibold">
+                  {project.key}
+                </span>
               </div>
+              {project.description ? (
+                <p className="text-muted-foreground max-w-3xl text-sm leading-6">
+                  {project.description}
+                </p>
+              ) : (
+                <p className="text-muted-foreground text-sm italic">
+                  No project description has been added.
+                </p>
+              )}
             </div>
-            {project.description ? (
-              <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-                {project.description}
-              </p>
-            ) : null}
           </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             <ProjectStatusBadge status={project.status} />
             <ProjectHealthBadge health={project.health} />
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="876-card flex items-center gap-3 p-4">
-          <User className="text-muted-foreground size-5 shrink-0" />
-          <div>
-            <p className="text-xs text-muted-foreground">Project Lead</p>
-            <p className="text-sm font-semibold">
-              {project.leadUserId ? (
-                <span className="font-mono text-xs">{project.leadUserId}</span>
-              ) : (
-                'Unassigned'
-              )}
-            </p>
-          </div>
-        </div>
+      <section className="876-card px-5 py-5 sm:px-6">
+        <DetailCardSection title="Project summary">
+          <DetailCardFacts className="sm:grid-cols-3">
+            <DetailCardFact
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <User aria-hidden="true" className="size-3.5" />
+                  Project lead
+                </span>
+              }
+              value={project.leadUserId ?? 'No lead assigned'}
+              mono={Boolean(project.leadUserId)}
+            />
+            <DetailCardFact
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar aria-hidden="true" className="size-3.5" />
+                  Target date
+                </span>
+              }
+              value={
+                project.targetDate
+                  ? formatDate(project.targetDate)
+                  : 'No target date'
+              }
+            />
+            <DetailCardFact
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Users aria-hidden="true" className="size-3.5" />
+                  Members
+                </span>
+              }
+              value={`${project.memberCount} ${project.memberCount === 1 ? 'member' : 'members'}`}
+            />
+          </DetailCardFacts>
+        </DetailCardSection>
+      </section>
 
-        <div className="876-card flex items-center gap-3 p-4">
-          <Calendar className="text-muted-foreground size-5 shrink-0" />
-          <div>
-            <p className="text-xs text-muted-foreground">Target Date</p>
-            <p className="text-sm font-semibold">
-              {formatDate(project.targetDate)}
-            </p>
-          </div>
-        </div>
-
-        <div className="876-card flex items-center gap-3 p-4">
-          <Users className="text-muted-foreground size-5 shrink-0" />
-          <div>
-            <p className="text-xs text-muted-foreground">Members</p>
-            <p className="text-sm font-semibold">{project.memberCount}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-base font-semibold">Project Issues</h2>
-        <IssuesTable
-          issues={issues}
-          issuesHref={issuesHref}
-        />
-      </div>
+      <DetailCardSection title="Issues" className="space-y-3">
+        <IssuesTable issues={issues} issuesHref={issuesHref} />
+      </DetailCardSection>
     </div>
   )
 }

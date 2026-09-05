@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { Issue, IssueEvent } from '@876/projects/contracts'
 
@@ -100,7 +100,7 @@ describe('IssueDetail', () => {
   it('header, on render, shows the issue identifier', () => {
     render(<IssueDetail issue={makeIssue()} />)
 
-    expect(screen.getByText('CONSOLE-12')).toBeInTheDocument()
+    expect(screen.getByText('CONSOLE · CONSOLE-12')).toBeInTheDocument()
   })
 
   it('header, on render, shows the title as the top-level heading', () => {
@@ -150,7 +150,9 @@ describe('IssueDetail', () => {
   it('description, when missing, shows the fallback text', () => {
     render(<IssueDetail issue={makeIssue({ description: null })} />)
 
-    expect(screen.getByText('No description provided.')).toBeInTheDocument()
+    expect(
+      screen.getByText('No description has been added to this issue.')
+    ).toBeInTheDocument()
   })
 
   it('badges, on render, show the status text', () => {
@@ -172,26 +174,22 @@ describe('IssueDetail', () => {
     expect(screen.getByText('user_ana')).toBeInTheDocument()
   })
 
-  it('assignee, when missing, shows the Unassigned fallback', () => {
+  it('assignee, when missing, shows the clean empty state', () => {
     render(<IssueDetail issue={makeIssue({ assigneeUserId: null })} />)
 
-    expect(screen.getByText('Unassigned')).toBeInTheDocument()
+    expect(screen.getByText('Not assigned')).toBeInTheDocument()
   })
 
   it('meta, on render, shows the estimate in points', () => {
     render(<IssueDetail issue={makeIssue()} />)
 
-    expect(screen.getByText('3 pts')).toBeInTheDocument()
+    expect(screen.getByText('3 points')).toBeInTheDocument()
   })
 
-  it('meta, without an estimate, shows an em dash for the estimate', () => {
+  it('meta, without an estimate, names the empty estimate state', () => {
     render(<IssueDetail issue={makeIssue({ estimate: null })} />)
 
-    const label = screen.getByText('Estimate')
-    const group = label.parentElement
-
-    expect(group).not.toBeNull()
-    expect(within(group as HTMLElement).getByText('—')).toBeInTheDocument()
+    expect(screen.getByText('No estimate')).toBeInTheDocument()
   })
 
   it('project, with projectHref, links the project key to the href', () => {
@@ -249,9 +247,56 @@ describe('IssueDetail', () => {
     expect(screen.getByText('comment_created')).toBeInTheDocument()
   })
 
-  it('activity, without events, hides the Activity heading', () => {
+  it('activity, without events, shows an explicit empty state', () => {
     render(<IssueDetail issue={makeIssue()} events={[]} />)
 
-    expect(screen.queryByText('Activity')).toBeNull()
+    expect(screen.getByText('Activity')).toBeInTheDocument()
+    expect(screen.getByText('No activity yet.')).toBeInTheDocument()
+  })
+
+  it('record header, on render, identifies the parent project and issue key', () => {
+    render(<IssueDetail issue={makeIssue()} />)
+
+    expect(screen.getByText('CONSOLE · CONSOLE-12')).toBeInTheDocument()
+  })
+
+  it('body, on render, labels the readable description section', () => {
+    render(<IssueDetail issue={makeIssue()} />)
+
+    expect(
+      screen.getByRole('heading', { name: 'Description' })
+    ).toBeInTheDocument()
+  })
+
+  it('facts, without an assignee, use the clean unassigned state', () => {
+    render(<IssueDetail issue={makeIssue({ assigneeUserId: null })} />)
+
+    expect(screen.getByText('Not assigned')).toBeInTheDocument()
+  })
+
+  it('facts, without a due date, use the clean empty state', () => {
+    render(<IssueDetail issue={makeIssue({ dueDate: null })} />)
+
+    expect(screen.getByText('No date set')).toBeInTheDocument()
+  })
+
+  it('facts, without an estimate, use the clean empty state', () => {
+    render(<IssueDetail issue={makeIssue({ estimate: null })} />)
+
+    expect(screen.getByText('No estimate')).toBeInTheDocument()
+  })
+
+  it('activity, with events, renders a timeline list', () => {
+    render(<IssueDetail issue={makeIssue()} events={[statusEvent]} />)
+
+    expect(
+      screen.getByRole('list', { name: 'Activity timeline' })
+    ).toBeInTheDocument()
+  })
+
+  it('facts, on render, are grouped under the Details heading', () => {
+    render(<IssueDetail issue={makeIssue()} />)
+
+    expect(screen.getByRole('heading', { name: 'Details' })).toBeInTheDocument()
   })
 })
