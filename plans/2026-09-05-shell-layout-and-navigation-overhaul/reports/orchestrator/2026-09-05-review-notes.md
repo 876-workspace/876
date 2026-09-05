@@ -86,3 +86,62 @@ grep -rn "eslint-disable\|as any" <paths it touched>
 and confirm the test **count** moved rather than the suite merely being green.
 Codex has previously satisfied a lint gate by disabling the rule, and has
 reported success having written none of the tests its brief required.
+
+---
+
+## CRITICAL — `--876-shell-gutter` resolves to nothing (found 2026-09-05, orchestrator)
+
+`packages/ui/src/876.css` defines the token as:
+
+```css
+--876-shell-gutter: var(--spacing-4);   /* and --spacing-6, --spacing-8 */
+```
+
+**`--spacing-4` does not exist.** Tailwind v4 defines a single `--spacing:
+0.25rem` (`node_modules/tailwindcss/theme.css:325`) and computes each step, which
+is visible in the emitted CSS:
+
+```css
+.px-4{padding-inline:calc(var(--spacing) * 4)}
+```
+
+Grepping every stylesheet in `packages/ui/src`, every app `globals.css`, and
+Tailwind's own theme finds **no definition of `--spacing-4`**. The broken value
+is already in the built output:
+
+```
+--876-shell-gutter:var(--spacing-4)
+```
+
+An unresolved `var()` in a shorthand makes the whole declaration invalid, so
+`padding-inline: var(--876-shell-gutter)` is **dropped**. Every consumer —
+`Page`, the sidebar insets, the `ListDetailShell` column gap, the shared
+floating sidebar's padding, and the negative-margin reclaim — collapses to
+zero. The layout would render flush against the window edges.
+
+### Fix
+
+```css
+--876-shell-gutter: calc(var(--spacing) * 4);   /* 1rem   */
+--876-shell-gutter: calc(var(--spacing) * 6);   /* 1.5rem */
+--876-shell-gutter: calc(var(--spacing) * 8);   /* 2rem   */
+```
+
+Literal `1rem` / `1.5rem` / `2rem` is equally acceptable and arguably clearer,
+but the `calc()` form keeps the token tied to Tailwind's spacing base so a theme
+change moves both together.
+
+### Why the delegate will not fix it
+
+The Phase 2b follow-up brief states *"Keep `--876-shell-gutter` and its 4/6/8
+values; they are correct."* That instruction was the orchestrator's error. Phase
+2b will preserve the broken values, so **the orchestrator must apply this fix
+after Phase 2b exits.**
+
+### Why no test caught it
+
+Every assertion added in Phase 2 compares Tailwind **class strings**
+(`px-[var(--876-shell-gutter)]`), which are identical whether or not the token
+resolves. A test at that level cannot fail on this. The regression test must
+assert the **resolved** value — read the custom property's computed value, or
+assert the token's declaration in `876.css` references a defined variable.
