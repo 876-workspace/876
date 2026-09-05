@@ -28,8 +28,7 @@ function isLive(role: AppAssignmentRoleCandidate): boolean {
 }
 
 function canonicalAppRoleKey(roleKey: string): string {
-  const normalized = roleKey.toLowerCase()
-  return APP_ROLE_KEY_ALIASES[normalized] ?? normalized
+  return APP_ROLE_KEY_ALIASES[roleKey] ?? roleKey
 }
 
 function mappedRoleKey(organizationRole: unknown): string | null {
