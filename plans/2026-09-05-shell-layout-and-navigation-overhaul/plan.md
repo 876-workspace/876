@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-05-shell-layout-and-navigation-overhaul`
 - **Branch:** `feat/shell-layout-navigation-overhaul` (integration branch)
-- **Status:** `CLOSEOUT_BLOCKED_ON_RUNTIME_AND_ACTIONS` — all planned repository implementation is landed and draft PR #478 is open; production data repair, executable verification, authenticated browser acceptance, and external issue cleanup remain before the PR can be marked ready.
+- **Status:** `CLOSEOUT_BLOCKED_ON_RUNTIME_AND_EXTERNAL_ACCESS` — repository implementation and static hardening are landed; production data repair, executable verification, authenticated browser acceptance, and external tracker cleanup remain. PR #478 was externally closed without merge and is not being silently reopened.
 - **Owner:** orchestrating Claude session
 - **Delegates:** Codex (`gpt-5.6-terra`, medium) for the bulk of the code; `agy`
   (`gemini-3.8-flash-high`, falling back to `gemini-3.1-pro-high` if that model
@@ -277,12 +277,20 @@ Completed:
 - Organization `super_admin` / `super-admin` maps to app `super-admin`, `admin`
   maps to app `admin`, and ordinary members fall back to the live default role.
 - Existing assignments are not overwritten during provisioning replay.
-- Provisioning replay now genuinely reactivates a revoked assignment by clearing
-  revocation/deletion metadata while deliberately preserving its existing
-  `appRoleId`; focused regression coverage was added for both invariants.
+- Provisioning replay genuinely reactivates revoked assignments by clearing
+  revocation/deletion metadata while preserving an administrator-selected
+  `appRoleId`; focused regression coverage protects both invariants.
+- The dry-run-by-default role backfill now emits organization/user/app context
+  for review and applies with compare-and-set semantics rather than overwriting a
+  role that changed after discovery.
+- Immediately before an apply write, the backfill revalidates that the member
+  still has the same active organization role and that the target app role is
+  still live for the same organization/application.
+- Apply output reports actual successful `changed` writes plus
+  `skippedAfterDiscovery` stale/racing candidates.
+- API-suite regression coverage asserts default dry-run/no-write behavior,
+  compare-and-set apply, and stale-org-role skipping.
 - The explicit super-admin elevation guard remains intact for requested roles.
-- Core/API regression coverage exercises provisioning, app membership creation,
-  invite routing, fail-closed behavior, and non-super-admin elevation.
 - A dry-run-by-default backfill script exists at
   `apps/api/scripts/backfill-app-assignment-roles.ts`; **it has not been run
   against a production database**.
@@ -317,17 +325,22 @@ The operational closeout checklist is `./todo.md`.
 The phase reports contain focused passing checks, but the integration branch as
 one unit has not completed one executable final verification run.
 
-Draft PR #478 now triggers the repository's existing `pull_request` workflows.
-Across multiple separate branch heads, however, the relevant jobs fail **before
-step 1**: their job records contain empty step lists and no logs. The same result
-was reproduced after retrying GitHub reads and after later commits triggered
-fresh workflow run/job ids. This is therefore a reproducible Actions/runner
-execution block, not a GitHub connector timeout and not evidence that the code
-failed a test or compile step.
+While draft PR #478 was open, the repository's existing `pull_request` workflows
+triggered across multiple branch heads. Relevant jobs reproducibly failed
+**before step 1** with empty step lists and no logs. The result persisted after
+retrying GitHub reads after a gap and after fresh commits produced new workflow
+run/job ids. This is a stable Actions/runner-account execution block, not a
+GitHub connector timeout and not evidence that code failed a test or compile
+step.
+
+PR #478 was then closed without merge by the `876-workspace` account at
+`2026-09-05T13:18:08Z`, with no GitHub App or close reason attached. Newer branch
+heads therefore no longer receive that pull-request workflow path. This session
+is not silently reversing the external close.
 
 The local container cannot substitute for CI because it has no repository
-checkout or installed pnpm, and its shell network path cannot obtain GitHub/npm
-content. `todo.md` C4 contains the detailed execution-state evidence.
+checkout or installed pnpm and its shell network path cannot obtain GitHub/npm
+content. `todo.md` C4 contains the detailed execution state.
 
 Required matrix once an executable environment is available:
 
@@ -363,41 +376,36 @@ surfaces in light and dark themes at 1280/1440/1920.
 - [x] Phase 2 — shell spacing contract and corrected Tailwind v4 gutter token
 - [x] Phase 3 — distinct sidebar icons + collapsible Projects sidebar
 - [x] Phase 4 — Projects app pages + editor implementation
-  - [x] Projects project/issue full-page record redesign
-  - [x] Projects record Suspense/loading boundaries
-  - [x] Remove duplicate shared back control
-  - [x] Redesign comment / Markdown editor for light and dark themes
-  - [x] Add focused editor/comment regression coverage
-  - [x] Remove dead `ProjectDetail.projectsHref` compatibility prop
 - [x] Phase 5 — Console project/issue full-page alignment and workspace header cleanup
 - [x] Phase 6 — Console `/workspace` hub
 - [x] Phase 7 — permissions UI grouped by product → module → permission
 - [x] Phase 8 — durable assignment-role mapping + API/core regression coverage
-- [x] Add dry-run-by-default assignment-role backfill script
-- [x] Harden provisioning replay to clear revoked/deleted metadata without overwriting app role
-- [x] Add focused replay-reactivation regression coverage
-- [x] Open the single integration PR as **draft #478**
-- [x] Confirm PR #478 is mergeable with no base conflict
-- [x] Trigger and inspect existing pull-request workflows
-- [x] Retry GitHub reads and reproduce the Actions pre-step infrastructure failure on fresh runs
-- [x] Complete PR-wide committed-diff escape/security scan
-- [ ] **PRODUCTION DATA:** repoint/backfill the existing Efesto 876-Projects assignment to `super-admin`
-- [ ] Close or rewrite PROJ-10 in its actual tracker
-- [ ] Run the final integration verification matrix in an environment that can execute it
-- [ ] Complete local formatter/working-tree/lockfile checks
+- [x] Harden provisioning replay lifecycle without overwriting app role
+- [x] Harden backfill apply with compare-and-set and stale-candidate revalidation
+- [x] Add API-suite regression coverage for replay and backfill safety
+- [x] Complete PR-wide committed-diff security/escape audit
+- [x] Save GitHub connector retry semantics and references
+- [x] Open historical integration PR #478 as draft CI harness
+- [x] Retry/reproduce the Actions pre-step infrastructure failure while PR was open
+- [x] Record PR #478 external close without silently reopening it
+- [ ] **PRODUCTION DATA:** review dry-run and repair/backfill the existing Efesto 876-Projects assignment to `super-admin`
+- [ ] Re-read effective permissions and run production comment create/edit/delete acceptance
+- [ ] Run the final integration verification matrix
+- [ ] Run API boundary baseline verification
+- [ ] Complete local formatter/working-tree/lockfile gate
 - [ ] Complete production builds
 - [ ] Complete browser visual acceptance in light/dark at required widths
-- [ ] Complete production comment create/edit/delete acceptance
-- [ ] Update PR #478 with final verification evidence and mark it ready for review
+- [ ] Close or rewrite PROJ-10 in its actual tracker
+- [ ] Intentionally reopen/update PR #478 when final PR work resumes
+- [ ] Mark the PR ready only after all acceptance gates pass
 
 ---
 
 ## 9. Current handoff state — updated 2026-09-05
 
-### Repository implementation is complete
+### Repository implementation/static hardening is complete
 
-The integration branch contains the original phase commits plus closeout/hardening
-commits, including:
+Key integration and closeout commits include:
 
 - `f005294d` — product sidebar insets aligned with shell gutter
 - `1d94b272` — distinct navigation icons + collapsible Projects sidebar
@@ -405,81 +413,73 @@ commits, including:
 - `09f5320c` — Console project/issue full-page alignment
 - `7edb1131` — `/workspace` hub and organization navigation resolution
 - `27e795e3` — role permissions grouped by product and module
-- `a99b5672` — phase briefs/reports recorded
 - `0ed9cb34` — shared Markdown/comment editor closeout
 - `242702ef` — remove obsolete `ProjectDetail.projectsHref`
-- `4de19178` — reconcile spacing/Projects reports
 - `6db88a11` — correct Projects app runtime/build verification filters
-- `f9a8af2b` — save GitHub connector retry semantics and exact retry references
-- `11b70128` — fully reactivate provisioned app assignments without overwriting app role
-- `55a72c9e` — focused replay-reactivation regression coverage
-- `9cae5384` — advance the operational closeout tracker after static audit
-- `a7aba9f9` — update the orchestrator closeout report after PR/replay audit
+- `f9a8af2b` — save GitHub connector retry semantics/references
+- `11b70128` — fully reactivate provisioned assignments without overwriting app role
+- `55a72c9e` — replay-reactivation regression coverage
+- `5b6dfe7e` — compare-and-set app-role backfill writes
+- `99122d33` — revalidate backfill membership/target role and enrich candidate context
+- `6ca403e3` — assert default dry-run/no-write behavior in API suite
+- `83ec7235` — refresh live TODO after final backfill hardening
+- `286d3d2f` — reconcile orchestrator report with final static hardening/PR-close state
 
-Earlier commits contain Phase 1 and the original durable Phase 8 role-mapping/backfill implementation.
+Earlier commits contain Phase 1 and the initial Phase 8 mapper/backfill implementation.
 
-### Branch and PR state at latest closeout review
+### Branch state at latest review
 
-Immediately before this plan reconciliation, GitHub comparison reported the
-branch **40 commits ahead of `main` and 0 behind**, with merge base
-`1419aaee85264ed4c278d952af6e4687383df157`. This plan commit itself advances
-the branch again, so exact ahead/head values must always be re-read before the
-PR is marked ready.
+Immediately before this plan update, GitHub comparison reported the branch
+**48 commits ahead of `main` and 0 behind**, with merge base
+`1419aaee85264ed4c278d952af6e4687383df157`.
 
-Draft PR **#478** already targets `main` and was reported mergeable. It is the
-single integration PR and must remain draft until C3-C5 are genuinely accepted.
+This plan commit advances the branch again. Re-read exact divergence before
+final PR readiness.
 
-### Runtime blocks
+### Runtime/external blocks
 
-This session could not finish C3-C5 because:
+1. No connected production database/internal API execution path is available in
+   this session; Neon was surfaced but remains unconnected.
+2. Historical PR Actions runs reproducibly failed before step 1; PR #478 is now
+   externally closed, so newer heads do not receive that PR CI path.
+3. The local container has no usable repo checkout/pnpm/network path for the
+   required command matrix.
+4. No authenticated 876 Console/Projects browser session is available for C5.
+5. PROJ-10 appears to live in an external tracker; Linear is available but not
+   connected.
 
-1. GitHub Actions runs do exist now, but their jobs reproducibly fail before
-   step 1 with empty step lists/no logs across multiple fresh runs;
-2. the available local execution container has no checkout/pnpm and its shell
-   network path cannot obtain the repository/toolchain;
-3. no connected production database/internal API credential is available here;
-4. no authenticated 876 Console/Projects browser session is available here.
-
-These are runtime/infrastructure blocks, not reasons to infer either success or
-code failure. `todo.md` records the exact remaining commands and acceptance
-matrix.
+These blocks are not reasons to infer either success or code failure.
 
 ### GitHub retry behavior
 
-Per the user's instruction, GitHub timeouts and temporary rate limits are never
-treated as exhaustion. Required calls retain their exact repository/PR/SHA/run/
-job/path references and are retried after a short gap. The run-specific note is
+GitHub timeouts/temp rate limits are never treated as exhausted access. Required
+operations retain exact references and are retried after a short gap. See
 `notes/github-tool-retry.md`.
 
 ### Production role repair remains outstanding
 
-The backfill command remains dry-run by default:
+Safe production order:
 
 ```bash
 pnpm --filter @876/api app-access:backfill-roles
+# review every candidate; dryRun must be true and changed must be 0
 pnpm --filter @876/api app-access:backfill-roles --apply
 ```
 
-Do not use `--apply` until the dry-run candidate list is reviewed. A Neon
-integration has been surfaced as a possible route to the production Postgres
-environment if it is connected to the account that owns the relevant database.
+Apply revalidates membership/target role and compare-and-sets the discovered
+assignment state. If `skippedAfterDiscovery > 0`, rerun dry-run before considering
+another apply.
 
 ### PROJ-10 remains external
 
-The repository's GitHub Issues search did not contain `PROJ-10`. Resolve the
-item in the tracker that actually owns that key; do not create a duplicate
-GitHub issue merely to close the checklist. A Linear integration has been
-surfaced for that lookup if connected.
+The repository's GitHub Issues search did not contain `PROJ-10`. Resolve it in
+the tracker that owns the key; do not create a duplicate GitHub issue merely to
+close this run.
 
-### Draft PR #478
+### Final PR state
 
-PR #478 already exists and is mergeable, but **do not mark it ready or merge it
-yet**. Once C3-C5 are genuinely green:
-
-1. update `todo.md`, this plan, and the final acceptance report with exact
-   runtime evidence;
-2. refresh the PR body with final verification/build/browser/backfill results;
-3. re-check `main` divergence, mergeability, attribution, security, comments,
-   reviews, and status checks;
-4. resolve every actionable automated-review finding;
-5. only then mark the single integration PR ready for review.
+PR #478 is currently **closed and unmerged** after an external/account action.
+When final PR work is intentionally resumed, prefer reopening the same PR rather
+than creating a duplicate, ensure it points at the then-current branch head,
+update it with exact C3/C4/C5 evidence, inspect real CI/reviews, and only then
+mark it ready for review.
