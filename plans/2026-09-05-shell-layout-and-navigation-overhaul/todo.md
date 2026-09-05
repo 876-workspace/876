@@ -13,36 +13,49 @@
 
 Latest audited GitHub state before this tracker update:
 
-- head: `bea99ac88dfb85b59f432205613f48874fc9bc1f`
-- **35 commits ahead of `main`**
+- head: `55a72c9e8ff215f53112dc94abf147c2d3a35a80`
+- **39 commits ahead of `main`**
 - **0 commits behind `main`**
 - merge base: `1419aaee85264ed4c278d952af6e4687383df157`
 - draft integration PR: **#478**
 - PR mergeability: **mergeable**, but intentionally draft/not ready
 
-The draft PR was opened as the single integration PR so existing `pull_request`
-workflows could act as the C4 execution harness without making the branch merge-ready.
+The draft PR is the single integration PR and the CI harness for this closeout.
 It must remain draft until C3-C5 are genuinely accepted.
+
+### GitHub connector retry rule
+
+A GitHub tool timeout, transient rate limit, or temporary connector failure is
+not treated as exhaustion. The exact operation reference is retained and retried
+after a short gap. This run-specific rule is saved at:
+
+`notes/github-tool-retry.md`
+
+The current Actions result below is **not** based on a single failed GitHub tool
+call: the workflow/job reads were retried successfully across multiple branch
+heads and returned the same stable result.
 
 ### GitHub Actions result on PR #478
 
-All triggered workflows completed as failures, but their jobs failed **before any
-workflow step executed**:
+The pull-request workflows have now been triggered repeatedly by later branch
+commits. Across separate heads, the same jobs fail before any workflow step runs:
 
-- UI tests — component-tests, widget-browser, and chromium-smoke each have an empty step list and no logs
+- UI tests — component-tests, widget-browser, and chromium-smoke have empty step lists and no logs
 - App structure — `structure` has an empty step list and no logs
-- API container image — failed before steps
+- API container image — fails before steps
 - Billing API quality — `verify` has an empty step list and no logs
-- Billing API container image — failed before steps
-- Couriers API container image — failed before steps
+- Billing API container image — fails before steps
+- Couriers API container image — fails before steps
 
-Because unrelated workflows all fail before checkout/setup and GitHub exposes no
-job logs, this is an Actions/runner-account infrastructure block, **not evidence
-of a repository test or compile failure**. The exact account-side reason is not
-exposed by the available repository API.
+The App structure job was explicitly retried/read again after a gap and still
+returned `steps: []`; the job-log endpoint again had no log blob. A later branch
+head triggered a fresh App structure run and produced the same no-step result.
+This is therefore a reproducible Actions/runner-account execution block, **not a
+GitHub connector timeout and not evidence of a repository test/compile failure**.
+The exact account-side reason is not exposed by the available repository API.
 
-Do not rerun these jobs until the Actions runner/account gate is repaired; a
-rerun would exercise the same pre-step failure rather than test the code.
+Do not treat these red workflow conclusions as code failures. Real C4 acceptance
+still requires a runner/local environment that can actually execute step 1.
 
 ### Closeout commits
 
@@ -53,10 +66,14 @@ rerun would exercise the same pre-step failure rather than test the code.
 - `4de19178` — reconcile shell-spacing and Projects phase reports
 - `fda5477a` — mark repository-side closeout work complete and runtime work open
 - `76bac55e` — add the orchestrator closeout-progress report
-- `8ee9961a` — align `plan.md` with the actual closeout/runtime-blocked state
+- `8ee9961a` — align `plan.md` with the closeout/runtime-blocked state
 - `a7f08e6f` — finalize the repository-side branch/readiness audit
 - `6db88a11` — correct Projects app verification/build workspace filters
 - `bea99ac8` — record static verification and execution-environment findings
+- `5a4845b8` — record draft PR and Actions runner block
+- `f9a8af2b` — save the GitHub connector retry rule and retry references
+- `11b70128` — fully reactivate provisioned app assignments without overwriting app role
+- `55a72c9e` — add focused assignment-reactivation regression coverage
 
 ### Original phase state
 
@@ -157,10 +174,10 @@ rerun would exercise the same pre-step failure rather than test the code.
 
 ### Plan/tracker consistency
 
-- [x] `plan.md` now marks Phase 4 `COMPLETE IN CODE`
+- [x] `plan.md` marks Phase 4 `COMPLETE IN CODE`
 - [x] `todo.md` remains the operational checklist
 - [x] Historical diagnosis/evidence remains preserved in `plan.md`
-- [ ] Final plan status should be reconciled with the draft-PR/Actions block before ready-for-review
+- [ ] Reconcile `plan.md` with draft PR #478, the Actions block, corrected Projects app filter, and reactivation fix
 - [ ] Mark both plan and TODO `COMPLETED` only after C3-C5 genuinely pass
 
 ---
@@ -178,6 +195,11 @@ Affected assignment from the production diagnosis:
 - diagnosed role: default `staff`
 - expected mapped role: `super-admin`
 - missing write permission at diagnosis: `comments.create`
+
+A Neon integration capable of inspecting/managing the Postgres environment has
+been surfaced because the repository documents Neon-backed database endpoints.
+It may unblock C3 once connected to the account that owns the relevant production
+database. No production mutation is inferred from merely connecting it.
 
 ### C3.1 Dry-run first
 
@@ -224,7 +246,7 @@ pnpm --filter @876/api app-access:backfill-roles --apply
 - [ ] Delete the comment
 - [ ] Verify a normal staff/default-role subject still cannot perform writes it lacks permission for
 
-**Current block:** this execution context has no production DB credentials/internal API key and no authenticated 876 Projects session. Do not mark C3 complete from code inspection alone.
+**Current block:** this execution context has no connected production database/internal API credential and no authenticated 876 Projects browser session. Do not mark C3 complete from code inspection alone.
 
 ---
 
@@ -236,19 +258,52 @@ pnpm --filter @876/api app-access:backfill-roles --apply
 - [x] Confirm PR is mergeable and remains draft
 - [x] Trigger existing pull-request workflows
 - [x] Inspect workflow/job results
-- [x] Confirm all failing jobs fail before step 1 with no logs
+- [x] Retry GitHub workflow/job reads after a gap instead of treating a transient tool failure as exhaustion
+- [x] Trigger fresh workflow runs on later branch heads and reproduce the same pre-step failure
+- [x] Confirm failing jobs expose empty step lists and no logs
 - [x] Classify current GitHub Actions result as infrastructure-blocked, not code-failed
-- [ ] Repair/restore Actions runner/account availability outside this repository change
-- [ ] Rerun C4 workflows only after Actions can actually start jobs
+- [ ] Restore Actions runner/account availability outside this repository change
+- [ ] Rerun C4 workflows after Actions can actually start jobs
 
 The local container also cannot replace CI: no checkout exists, `pnpm` is not
 installed, shell DNS cannot resolve GitHub/npm, and Corepack cannot download pnpm.
 
-### Static command audit completed
+### C4.1 Static command/API audit — COMPLETE
 
-- [x] Verified the Projects application workspace name from `apps/projects/package.json` is `@876/projects-app`.
-- [x] Corrected the prior erroneous `@876/projects` app-verification filter below. `@876/projects` is a dependency/package and must not substitute for application verification.
-- [x] Verified exact app build workspace names for Console, CRM, Billing, Invoice, and Projects.
+- [x] Verify the Projects application workspace is `@876/projects-app`
+- [x] Correct the prior erroneous `@876/projects` app-verification filter
+- [x] Verify exact app build workspace names for Console, CRM, Billing, Invoice, and Projects
+- [x] Verify new Markdown toolbar icon imports exist in `@876/ui/icons`
+- [x] Verify used shared Button variants/sizes exist
+- [x] Verify durable role mapper call sites use the target membership's organization role
+- [x] Verify provisioning replay does not overwrite an existing app role
+
+### C4.2 PR-wide diff quality/security audit — COMPLETE AT DIFF LEVEL
+
+The full PR patch was searched directly rather than relying on a local grep.
+
+- [x] `as any` matches are documentation/rule text only; no changed production/test code uses it
+- [x] `eslint-disable` matches are documentation/rule text only
+- [x] `@ts-ignore` matches are documentation/rule text only
+- [x] `as unknown as` matches are documentation/rule text only
+- [x] No `FIXME` marker exists in the branch diff
+- [x] No `API_KEY=` secret assignment surfaced in the patch
+- [x] No password assignment surfaced in the patch
+- [x] No private-key block surfaced in the patch
+- [x] `console.log` additions are limited to intentional CLI/check-script output
+- [x] Changed-file inventory contains no environment file or delegated run transcript
+
+### C4.3 Provisioning replay hardening — COMPLETE IN CODE
+
+Static review found a real assignment lifecycle defect: provisioning replay set a
+revoked row back to `status: 'active'` without clearing `revokedAt`, `deletedAt`,
+or the related actor/reason fields. Effective permission resolution requires
+those timestamps to be null, so the row remained effectively revoked.
+
+- [x] `11b70128` clears revoked/deleted metadata when provisioning reactivates an assignment
+- [x] Reactivation deliberately does **not** write `appRoleId`, preserving a later admin role choice
+- [x] `55a72c9e` adds a focused repository regression test for both invariants
+- [ ] Execute the new test under C4 runtime verification
 
 ### Required checks — NOT YET EXECUTED
 
@@ -287,12 +342,14 @@ pnpm check:transpile
 - [ ] Confirm only the known 18 pre-existing `no-circular` violations remain
 - [ ] Confirm no nineteenth violation was introduced
 
-### Checkout/quality checks
+### Local checkout/formatter checks still required
+
+The PR diff audit above covers committed-content escape/security patterns, but it
+cannot prove local working-tree state or execute formatters.
 
 - [ ] `git status --short` clean after intended commits
 - [ ] No incidental local lockfile churn
-- [ ] Run `grep -rn "eslint-disable\|as any" <closeout paths>` from a checkout and review matches
-- [ ] Run formatter/linter required by git rules on changed closeout code before final merge acceptance
+- [ ] Run repository-required formatter/linter on changed closeout code
 
 ### Production builds still owed
 
@@ -373,45 +430,50 @@ The repository's GitHub Issues search returned no `PROJ-10`, so it appears to li
 
 ### C6.2 Branch/readiness audit
 
-- [x] Branch currently 0 commits behind `main` at latest comparison
-- [x] Latest audited branch comparison: 35 commits ahead / 0 behind before this tracker update
+- [x] Branch 0 commits behind `main` at latest comparison
+- [x] Latest audited branch comparison: 39 commits ahead / 0 behind before this tracker update
 - [x] PR #478 reports mergeable with no base conflict
-- [x] Current changed-file list contains no environment file
-- [x] Current changed-file list contains no delegated `*-run.log` transcript
+- [x] PR-wide committed diff quality/security scan completed
+- [x] Changed-file list contains no environment file
+- [x] Changed-file list contains no delegated `*-run.log` transcript
 - [x] Branch commit listing searched for `Co-Authored-By`: no matches
 - [x] Branch commit listing searched for `Generated with`: no matches
 - [x] Branch commit listing searched for `Claude`: no matches
-- [x] Older descriptive `Codex` mentions were reviewed and are documentation about delegated CLI transcript handling, not contributor attribution
+- [x] Older descriptive `Codex` mentions are repository documentation, not contributor attribution
+- [x] GitHub retry policy saved with exact PR/workflow/job references
 - [ ] Re-check `main` divergence immediately before ready-for-review because `main` may advance
-- [ ] Run final checkout-based diff quality/security scan after C3-C5 runtime work
+- [ ] Confirm local working tree / formatter state after C4 runtime work
 
 ### C6.3 Closeout reporting
 
 - [x] Add repository-side closeout progress report: `reports/orchestrator/2026-09-05-closeout-progress.md`
-- [x] Align `plan.md` with Phase 4 complete-in-code
+- [x] Align Phase 4 to complete-in-code
 - [x] Correct runtime verification commands to target the actual Projects app workspace
 - [x] Open draft PR #478 as the CI harness
-- [x] Record the Actions pre-step infrastructure failure rather than calling it a code failure
-- [ ] Update the orchestrator report with actual C3-C5 results after runtime acceptance
-- [ ] Reconcile `plan.md` with the draft PR / Actions block
+- [x] Record and reproduce the Actions pre-step infrastructure failure
+- [x] Save GitHub connector retry semantics and references
+- [x] Record/fix the provisioning replay lifecycle defect with regression coverage
+- [ ] Update the orchestrator report with the latest reactivation/diff-audit findings
+- [ ] Reconcile `plan.md` with draft PR #478, Actions status, corrected commands, and replay fix
 - [ ] Mark `plan.md` `COMPLETED ✅` only after C3-C5 pass
 - [ ] Mark this TODO `COMPLETED` only after C3-C5 pass
 
 ### C6.4 Integration PR #478
 
-The single integration PR now exists as **draft #478**. Do not mark it ready or merge it while C3-C5 remain unverified.
+The single integration PR exists as **draft #478**. Do not mark it ready or merge it while C3-C5 remain unverified.
 
 - [x] Open one integration PR: `feat/shell-layout-navigation-overhaul` → `main`
 - [x] Keep it draft while runtime acceptance is incomplete
 - [x] Describe the entire overhaul rather than only the editor closeout
 - [x] Lead with the two platform defects found: Tailwind shared-UI source coverage and app-role assignment ignoring org role
 - [x] Confirm current PR has no merge conflict
+- [x] Inspect comments/reviews/review threads: none currently present
 - [ ] Restore Actions execution and obtain real CI results
 - [ ] Complete C3 production repair + permission smoke test
 - [ ] Complete C5 browser acceptance
-- [ ] Update PR body with exact final verification evidence
+- [ ] Update PR body with exact final verification evidence and replay-hardening fix
 - [ ] Mark PR ready for review only after all acceptance gates pass
-- [ ] Inspect review threads/status checks after real CI executes
+- [ ] Inspect review threads/status checks again after real CI executes
 - [ ] Resolve all actionable automated-review findings before merge
 
 ---
@@ -427,31 +489,35 @@ The single integration PR now exists as **draft #478**. Do not mark it ready or 
 - [x] C2 remove `ProjectDetail.projectsHref` residue
 - [x] C2 correct stale shell-spacing report
 - [x] C2 update Projects report
-- [x] C2 align `plan.md` with completed Phase 4 code
 - [x] C4 static workspace/filter audit and command correction
 - [x] C4 open draft PR as CI harness
-- [x] C4 prove current Actions failures occur before workflow steps
+- [x] C4 retry and reproduce current Actions pre-step failure
+- [x] C4 PR-wide diff quality/security audit
+- [x] C4 fix provisioning assignment reactivation lifecycle
+- [x] C4 add focused replay regression coverage
 - [x] C6 repository-side closeout progress report
 - [x] C6 current branch divergence/conflict audit
 - [x] C6 commit attribution audit
 - [x] C6 changed-file env/run-log hygiene audit
+- [x] C6 save GitHub connector retry rule
 - [x] C6 surface Linear integration for PROJ-10 lookup
+- [x] C6 surface Neon integration for production DB access
 - [x] C6 draft integration PR #478
 
 ### Runtime/external work still open
 
-- [ ] Restore GitHub Actions runner/account availability
+- [ ] Restore GitHub Actions runner/account availability or use another executable checkout
 - [ ] C3 production backfill dry-run
 - [ ] C3 production assignment repair
 - [ ] C3 effective-permission re-read
 - [ ] C3 production comment smoke test
 - [ ] C4 execute full integration command matrix
-- [ ] C4 formatter/lint/checkout quality gate
+- [ ] C4 local formatter/working-tree gate
 - [ ] C4 production-build coverage
 - [ ] C5 light/dark browser acceptance
 - [ ] C5 production permission acceptance
 - [ ] C6 resolve PROJ-10 in its actual tracker
-- [ ] C6 final checkout-based security/readiness audit after runtime checks
+- [ ] C6 update closeout report and plan to latest state
 - [ ] C6 final acceptance report update
-- [ ] C6 reconcile and complete `plan.md`/TODO
+- [ ] C6 complete `plan.md`/TODO after acceptance
 - [ ] C6 mark PR #478 ready for review
