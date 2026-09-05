@@ -78,6 +78,32 @@ async function runScript() {
 }
 
 describe('app assignment role backfill script', () => {
+  it('defaults to dry-run and performs no writes even when candidates exist', async () => {
+    process.argv = [originalArgv[0] ?? 'node', 'backfill-app-assignment-roles']
+
+    const output = await runScript()
+
+    expect(prisma.membership.findFirst).not.toHaveBeenCalled()
+    expect(prisma.appRole.findFirst).not.toHaveBeenCalled()
+    expect(prisma.appAssignment.updateMany).not.toHaveBeenCalled()
+    expect(output).toMatchObject({
+      dryRun: true,
+      changed: 0,
+      skippedAfterDiscovery: 0,
+      candidates: [
+        {
+          assignmentId: 'asg_1',
+          organizationId: 'org_1',
+          userId: 'user_1',
+          appId: 'app_projects',
+          fromRoleId: 'role_staff',
+          toRoleId: 'role_super',
+          organizationRole: 'super_admin',
+        },
+      ],
+    })
+  })
+
   it('revalidates and compare-and-sets the original assignment state before applying', async () => {
     const output = await runScript()
 
