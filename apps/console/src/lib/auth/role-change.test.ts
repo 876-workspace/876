@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Access } from '@/types/auth'
 
-import { applyRoleChange, assertRoleChangeAllowed } from './role-change'
+import {
+  applyRoleChange,
+  assertRoleChangeAllowed,
+  assertTeamGrantChangeAllowed,
+} from './role-change'
 
 const mocks = vi.hoisted(() => ({
   retrieve: vi.fn(),
@@ -48,7 +52,7 @@ describe('assertRoleChangeAllowed', () => {
   )
 
   it.each(['user', 'staff', 'admin', 'super-admin'])(
-    'allows a super admin to grant %s without loading the target',
+    'allows a super admin to grant %s after loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
         createCaller({ role: 'super-admin' }),
@@ -57,12 +61,12 @@ describe('assertRoleChangeAllowed', () => {
       )
 
       expect(result).toEqual({ ok: true })
-      expect(mocks.retrieve).not.toHaveBeenCalled()
+      expect(mocks.retrieve).toHaveBeenCalledWith('user_target')
     }
   )
 
   it.each(['super-admin'])(
-    'prevents an admin from granting %s without loading the target',
+    'prevents an admin from granting %s after loading the target',
     async (role) => {
       const result = await assertRoleChangeAllowed(
         createCaller(),
@@ -75,7 +79,7 @@ describe('assertRoleChangeAllowed', () => {
         error: `Only a super admin can grant the ${role} role.`,
         status: 403,
       })
-      expect(mocks.retrieve).not.toHaveBeenCalled()
+      expect(mocks.retrieve).toHaveBeenCalledWith('user_target')
     }
   )
 
@@ -92,7 +96,7 @@ describe('assertRoleChangeAllowed', () => {
 
       expect(result).toEqual({
         ok: false,
-        error: `Only a super admin can change a ${targetRole} role.`,
+        error: 'Only a super admin can change the role of this Console member.',
         status: 403,
       })
       expect(mocks.retrieve).toHaveBeenCalledTimes(1)
@@ -237,5 +241,36 @@ describe('applyRoleChange', () => {
 
     expect(result.data).toBeNull()
     expect(result.error?.code).toBe('team/member-not-found')
+  })
+})
+
+describe('assertTeamGrantChangeAllowed', () => {
+  beforeEach(() => {
+    mocks.retrieve.mockResolvedValue({
+      userId: 'user_target',
+      roleName: 'admin',
+      status: 'active',
+    })
+    vi.clearAllMocks()
+  })
+
+  it('prevents an operator from revoking their own Console access', async () => {
+    const result = await assertTeamGrantChangeAllowed(
+      createCaller(),
+      'user_caller',
+      { revoke: true }
+    )
+
+    expect(result).toEqual({ ok: false, code: 'team/self-access-protected' })
+  })
+
+  it('prevents an admin from granting the super-admin role', async () => {
+    const result = await assertTeamGrantChangeAllowed(
+      createCaller(),
+      'user_target',
+      { roleName: 'super-admin' }
+    )
+
+    expect(result).toEqual({ ok: false, code: 'team/role-forbidden' })
   })
 })

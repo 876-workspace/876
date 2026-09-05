@@ -34,6 +34,10 @@ export const TEAM_ERRORS = {
     message: 'Only a super admin can change the role of this Console member.',
     httpStatus: HttpStatus.FORBIDDEN,
   },
+  'team/self-access-protected': {
+    message: 'You cannot change your own Console access.',
+    httpStatus: HttpStatus.FORBIDDEN,
+  },
 } as const satisfies Record<string, ErrorDef>
 
 export type TeamErrorCode = keyof typeof TEAM_ERRORS

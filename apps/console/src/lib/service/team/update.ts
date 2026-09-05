@@ -1,14 +1,11 @@
 import { prisma } from '@/lib/db'
 
-import {
-  validateTeamGrant,
-  type TeamGrantFields,
-  type TeamServiceResult,
-} from './validation'
+import { validateTeamGrant, type TeamServiceResult } from './validation'
+import type { TeamGrantFields, TeamGrantStatus } from '@/types/team'
 
 type UpdateTeamGrant = Partial<TeamGrantFields> & {
   roleName?: string
-  status?: string
+  status?: TeamGrantStatus
 }
 
 type UpdatedMember = Awaited<ReturnType<typeof prisma.member.update>>

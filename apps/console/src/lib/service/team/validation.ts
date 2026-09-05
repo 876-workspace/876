@@ -2,16 +2,7 @@ import {
   canonicalConsoleRole,
   CONSOLE_SUPER_ADMIN_ROLE,
 } from '@/lib/permissions'
-
-export type TeamAffiliation = 'staff' | 'contractor' | 'external'
-
-export type TeamGrantFields = {
-  affiliation: TeamAffiliation
-  title: string | null
-  expiresAt: bigint | null
-  justification: string | null
-  invitedBy: string | null
-}
+import type { TeamAffiliation, TeamGrantFields } from '@/types/team'
 
 export type TeamServiceError = {
   code:
@@ -26,8 +17,7 @@ export type TeamServiceError = {
 }
 
 export type TeamServiceResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: TeamServiceError }
+  { data: T; error: null } | { data: null; error: TeamServiceError }
 
 const AFFILIATIONS: readonly TeamAffiliation[] = [
   'staff',
