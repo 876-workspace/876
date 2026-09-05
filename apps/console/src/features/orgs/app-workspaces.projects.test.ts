@@ -2,24 +2,10 @@ import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { findAppWorkspace, type WorkspaceIconKey } from './app-workspaces'
+import { NAV_ICONS } from '@/components/shell/nav-icons'
+import { findAppWorkspace } from './app-workspaces'
 
-const VALID_ICON_KEYS = new Set<WorkspaceIconKey>([
-  'dashboard',
-  'customers',
-  'requests',
-  'settings',
-  'billing',
-  'packages',
-  'items',
-  'teams',
-  'categories',
-  'forms',
-  'payments',
-  'banking',
-  'branches',
-  'warehouses',
-])
+const validIconKeys = new Set(Object.keys(NAV_ICONS))
 
 describe('876 Projects workspace registry', () => {
   it('registers the 876-projects workspace with correct metadata', () => {
@@ -29,13 +15,13 @@ describe('876 Projects workspace registry', () => {
       key: 'projects',
       label: '876 Projects',
       summary: 'Projects, issues, and the board this organization plans on.',
-      iconKey: 'requests',
+      iconKey: 'projects',
       sections: [
         { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
-        { label: 'Projects', segment: 'projects', iconKey: 'requests' },
-        { label: 'Issues', segment: 'issues', iconKey: 'requests' },
-        { label: 'Board', segment: 'board', iconKey: 'items' },
-        { label: 'Labels', segment: 'labels', iconKey: 'categories' },
+        { label: 'Projects', segment: 'projects', iconKey: 'projects' },
+        { label: 'Issues', segment: 'issues', iconKey: 'issues' },
+        { label: 'Board', segment: 'board', iconKey: 'board' },
+        { label: 'Labels', segment: 'labels', iconKey: 'labels' },
       ],
     })
   })
@@ -59,13 +45,13 @@ describe('876 Projects workspace registry', () => {
     ])
   })
 
-  it('ensures every section iconKey is a declared WorkspaceIconKey', () => {
+  it('ensures every section iconKey is registered in the shell icon registry', () => {
     const workspace = findAppWorkspace('projects')!
-    expect(VALID_ICON_KEYS.has(workspace.iconKey)).toBe(true)
+    expect(validIconKeys.has(workspace.iconKey)).toBe(true)
 
     for (const section of workspace.sections) {
       expect(
-        VALID_ICON_KEYS.has(section.iconKey),
+        validIconKeys.has(section.iconKey),
         `Section "${section.label}" has undeclared iconKey "${section.iconKey}"`
       ).toBe(true)
     }
