@@ -16,7 +16,8 @@ const { disconnectDb, prisma } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/db/client', () => ({ disconnectDb, prisma }))
+vi.mock('@/db/client', () => ({ prisma }))
+vi.mock('@/db/lifecycle', () => ({ disconnectDb }))
 
 const originalArgv = [...process.argv]
 

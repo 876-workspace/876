@@ -24,6 +24,7 @@ export {
   syncOrganizationFromWorkos,
   findLocalOrgIdByWorkosId,
 } from './organizations.service'
+export { findActiveMembershipWithRoleForRoleBackfill } from './organizations.repository'
 
 // Invite and organization-role reads consumed by the app-access module.
 export {

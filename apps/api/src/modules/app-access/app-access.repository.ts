@@ -372,6 +372,68 @@ export function countActiveAssignmentsForRole(roleId: string): Promise<number> {
   })
 }
 
+export function listDefaultRoleAssignmentsForRoleBackfill() {
+  return prisma.appAssignment.findMany({
+    where: {
+      status: 'active',
+      deletedAt: null,
+      revokedAt: null,
+      appRole: { is: { isDefault: true, deletedAt: null } },
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      userId: true,
+      appId: true,
+      appRoleId: true,
+      user: {
+        select: {
+          memberships: {
+            where: { deletedAt: null, status: 'active' },
+            select: { organizationId: true, role: true },
+          },
+        },
+      },
+    },
+  })
+}
+
+export function listLiveOrganizationAppRolesForRoleBackfill(
+  organizationId: string,
+  appId: string
+) {
+  return prisma.appRole.findMany({
+    where: { organizationId, appId, deletedAt: null },
+    orderBy: [{ isDefault: 'desc' }, { position: 'asc' }, { id: 'asc' }],
+    select: { id: true, key: true, isDefault: true, deletedAt: true },
+  })
+}
+
+export async function compareAndSetAssignmentRoleForRoleBackfill(params: {
+  assignmentId: string
+  organizationId: string
+  userId: string
+  appId: string
+  fromRoleId: string
+  toRoleId: string
+}): Promise<number> {
+  const result = await prisma.appAssignment.updateMany({
+    where: {
+      id: params.assignmentId,
+      organizationId: params.organizationId,
+      userId: params.userId,
+      appId: params.appId,
+      appRoleId: params.fromRoleId,
+      status: 'active',
+      deletedAt: null,
+      revokedAt: null,
+      appRole: { is: { isDefault: true, deletedAt: null } },
+    },
+    data: { appRoleId: params.toRoleId },
+  })
+  return result.count
+}
+
 export function listAssignments(
   organizationId: string,
   filters: {

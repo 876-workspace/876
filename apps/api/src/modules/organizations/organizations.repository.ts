@@ -862,6 +862,23 @@ export function findMembershipForUser(organizationId: string, userId: string) {
   return prisma.membership.findFirst({ where: { organizationId, userId } })
 }
 
+export function findActiveMembershipWithRoleForRoleBackfill(
+  organizationId: string,
+  userId: string,
+  role: string
+) {
+  return prisma.membership.findFirst({
+    where: {
+      organizationId,
+      userId,
+      role,
+      status: 'active',
+      deletedAt: null,
+    },
+    select: { id: true },
+  })
+}
+
 export function createMembership(data: {
   id: string
   organizationId: string
