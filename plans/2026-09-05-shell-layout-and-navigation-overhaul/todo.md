@@ -11,22 +11,29 @@
 
 ## Current branch state
 
-Current GitHub comparison against `main`:
+Current GitHub state at the final repository-side closeout audit:
 
-- **29 commits ahead**
-- **0 commits behind**
+- head: `8ee9961a5a4acb11a0e064018441d8d3db302e5f`
+- **32 commits ahead of `main`**
+- **0 commits behind `main`**
 - merge base: `1419aaee85264ed4c278d952af6e4687383df157`
 - no GitHub Actions runs exist for this branch
+- no commit-status entries are attached to the current head
 
-Closeout commits added after the original phase work:
+Absence of CI/status entries is **not** a green verification result. C4 remains open until the command matrix is actually run.
+
+### Closeout commits
 
 - `c09f52f0` — add this dedicated closeout TODO
 - `0ed9cb34` — complete the shared Markdown/comment editor treatment and focused regression coverage
 - `ee7bebe7` — record C1 completion in this tracker
-- `242702ef` — remove the obsolete `ProjectDetail.projectsHref` compatibility prop and final Console caller
-- `4de19178` — reconcile the shell-spacing and Projects reports with the landed code
+- `242702ef` — remove obsolete `ProjectDetail.projectsHref` compatibility residue
+- `4de19178` — reconcile shell-spacing and Projects phase reports
+- `fda5477a` — mark repository-side closeout work complete and runtime work open
+- `76bac55e` — add the orchestrator closeout-progress report
+- `8ee9961a` — align `plan.md` with the actual closeout/runtime-blocked state
 
-### Phase status
+### Original phase state
 
 - [x] Phase 1 — shared product-UI Tailwind source coverage
 - [x] Phase 2 — shared shell spacing contract
@@ -57,45 +64,45 @@ Closeout commits added after the original phase work:
 - [x] Responsive toolbar wrapping for narrow widths
 - [x] Preview remains the same persisted Markdown renderer
 - [x] Preview empty state retained/improved
-- [x] Disabled state now includes mode controls, formatting controls, and textarea
+- [x] Disabled state includes mode controls, formatting controls, and textarea
 - [x] Public controlled-value/id/name/placeholder contract preserved
 
 ### Projects comments composition
 
-- [x] New-comment composer now has a labelled bordered/tinted surface
-- [x] Comment action stays attached to the composer
+- [x] New-comment composer has a labelled bordered/tinted surface
+- [x] Comment action remains attached to the composer
 - [x] Create error remains inline and preserves draft
-- [x] Edit mode uses the exact same shared Markdown editor treatment
+- [x] Edit mode uses the same shared Markdown editor treatment
 - [x] Update error remains inline and preserves edit mode/draft
 - [x] Assignee/other unrelated controls remain out of scope
 
 ### Regression coverage added
 
-- [x] `packages/ui/src/components/markdown-editor.contract.test.tsx` — 5 cases
-- [x] `packages/projects-ui/src/issue-comments-editor.test.tsx` — 3 cases
-- [x] Existing `markdown-editor.test.tsx` functional contract left intact for C4 verification
+- [x] `packages/ui/src/components/markdown-editor.contract.test.tsx` — 5 focused cases
+- [x] `packages/projects-ui/src/issue-comments-editor.test.tsx` — 3 focused cases
+- [x] Existing `markdown-editor.test.tsx` functional contract retained unchanged for final verification
 
-### Still required for acceptance
+### Acceptance still required
 
-- [ ] Run C4 typecheck/test matrix
-- [ ] Run C5 light/dark browser checks
+- [ ] C4 typecheck/test matrix
+- [ ] C5 light/dark browser checks
 
 ---
 
 ## C2 — Compatibility cleanup + documentation reconciliation — COMPLETE IN CODE/DOCS
 
-**Landed:** `242702ef`, `4de19178`
+**Landed:** `242702ef`, `4de19178`, `8ee9961a`
 
 ### Compatibility residue
 
 - [x] Remove `projectsHref` from the final Console `ProjectDetail` call
 - [x] Remove deprecated `projectsHref?: string` from `ProjectDetailProps`
-- [x] Confirm the current Projects detail route already stopped passing the prop
+- [x] Confirm the Projects detail route already stopped passing the prop
 - [x] Preserve unrelated list-level `projectsHref` contracts
 
 ### Shell-spacing report
 
-- [x] Replace stale `var(--spacing-4/6/8)` documentation with the real Tailwind v4 expressions:
+- [x] Replace stale `var(--spacing-4/6/8)` documentation with real Tailwind v4 expressions:
 
 ```css
 --876-shell-gutter: calc(var(--spacing) * 4);
@@ -103,17 +110,25 @@ Closeout commits added after the original phase work:
 --876-shell-gutter: calc(var(--spacing) * 8);
 ```
 
-- [x] Preserve the historical note explaining that the invalid token form was found and corrected
-- [x] Record that final browser acceptance still belongs to C5
+- [x] Preserve the historical explanation of how the invalid form was found and fixed
+- [x] Record that final browser acceptance remains in C5
 
 ### Projects report
 
-- [x] Add the editor closeout files
-- [x] Add the 8 new focused regression cases
+- [x] Add editor closeout files
+- [x] Add the 8 focused editor/comment regression cases
 - [x] Remove the old “editor remains a handoff” statement
-- [x] Record the deliberate decision to keep comments as Markdown rather than migrate them to Editor.js
+- [x] Record the deliberate Markdown-vs-Editor.js decision
 - [x] Record `projectsHref` compatibility cleanup
-- [x] Keep previous phase verification separate from the still-unrun final C4 matrix
+- [x] Keep prior phase verification separate from final C4 verification
+
+### Plan/tracker consistency
+
+- [x] `plan.md` now marks Phase 4 `COMPLETE IN CODE`
+- [x] `plan.md` status is `CLOSEOUT_BLOCKED_ON_RUNTIME`
+- [x] `todo.md` remains the operational checklist
+- [x] Historical diagnosis/evidence remains preserved in `plan.md`
+- [ ] Mark both plan and TODO `COMPLETED` only after C3-C5 genuinely pass
 
 ---
 
@@ -137,7 +152,7 @@ Affected assignment from the production diagnosis:
 pnpm --filter @876/api app-access:backfill-roles
 ```
 
-- [ ] Confirm execution environment is intentionally pointed at production
+- [ ] Confirm execution environment intentionally points at production
 - [ ] Capture JSON summary
 - [ ] Confirm `dryRun: true`
 - [ ] Review every candidate
@@ -150,7 +165,7 @@ pnpm --filter @876/api app-access:backfill-roles
 Preferred order:
 
 1. If every candidate is expected, run the reviewed global backfill with `--apply`.
-2. If any candidate is surprising, do not apply globally; repair only the Efesto assignment through Console/operator API and investigate the unexpected candidates separately.
+2. If any candidate is surprising, do not apply globally; repair only the Efesto assignment through Console/operator API and investigate unexpected candidates separately.
 
 ```bash
 pnpm --filter @876/api app-access:backfill-roles --apply
@@ -176,13 +191,13 @@ pnpm --filter @876/api app-access:backfill-roles --apply
 - [ ] Delete the comment
 - [ ] Verify a normal staff/default-role subject still cannot perform writes it lacks permission for
 
-**Current block:** this ChatGPT execution context has no production DB credentials/internal API key and no authenticated 876 Projects session. Do not mark C3 complete from code inspection alone.
+**Current block:** this execution context has no production DB credentials/internal API key and no authenticated 876 Projects session. Do not mark C3 complete from code inspection alone.
 
 ---
 
 ## C4 — Full integration verification matrix — BLOCKED ON EXECUTION ENVIRONMENT
 
-There are **no GitHub Actions runs** for this branch. The container available to this session cannot resolve `github.com`, so it cannot clone the repository and run pnpm locally. Final verification therefore remains open rather than being inferred from phase reports.
+There are **no GitHub Actions runs** for this branch, and the current head has no commit-status entries. The container available to this session does not contain `/root/projects/876` and cannot resolve `github.com`, so it cannot obtain a checkout and run pnpm locally. Final verification remains open rather than being inferred from phase reports.
 
 ### Required checks
 
@@ -221,13 +236,12 @@ pnpm check:transpile
 - [ ] Confirm only the known 18 pre-existing `no-circular` violations remain
 - [ ] Confirm no nineteenth violation was introduced
 
-### Working-tree/quality checks
+### Checkout/quality checks
 
-- [ ] `git status --short` is clean after intended commits
-- [ ] No generated run logs
-- [ ] No environment files/secrets
-- [ ] No incidental lockfile churn
-- [ ] `grep -rn "eslint-disable\|as any" <closeout paths>` reviewed
+- [ ] `git status --short` clean after intended commits
+- [ ] No incidental local lockfile churn
+- [ ] Run `grep -rn "eslint-disable\|as any" <closeout paths>` from a checkout and review matches
+- [ ] Run formatter/linter required by git rules on changed closeout code before final merge acceptance
 
 ### Production builds still owed
 
@@ -286,9 +300,9 @@ For each required surface:
 
 ---
 
-## C6 — Final issue cleanup, closeout report, and PR — PARTIALLY IMPLEMENTABLE
+## C6 — Final issue cleanup, closeout report, and PR — REPOSITORY AUDIT PARTIAL
 
-### C6.1 PROJ-10
+### C6.1 PROJ-10 — EXTERNAL TRACKER BLOCK
 
 The repository's GitHub Issues search returned no `PROJ-10`, so it appears to live in another tracker rather than GitHub Issues.
 
@@ -299,21 +313,29 @@ The repository's GitHub Issues search returned no `PROJ-10`, so it appears to li
 
 ### C6.2 Branch/readiness audit
 
-- [x] Branch is currently **0 commits behind `main`**
-- [ ] Re-check immediately before final PR in case `main` advances
-- [ ] Run final diff quality scan after C3-C5/runtime results are available
-- [ ] Confirm no `Co-Authored-By` / AI attribution trailers across branch commits
-- [ ] Confirm no secrets/environment files/generated logs are tracked
+- [x] Branch currently 0 commits behind `main`
+- [x] Current branch comparison reviewed: 32 commits ahead / 0 behind
+- [x] Current changed-file list contains no environment file
+- [x] Current changed-file list contains no delegated `*-run.log` transcript
+- [x] Branch commit listing searched for `Co-Authored-By`: no matches
+- [x] Branch commit listing searched for `Generated with`: no matches
+- [x] Branch commit listing searched for `Claude`: no matches
+- [x] Older descriptive `Codex` mentions were reviewed and are documentation about delegated CLI transcript handling, not contributor attribution
+- [x] Current head has no commit-status entries; this is recorded as “not verified,” not “green”
+- [ ] Re-check `main` divergence immediately before final PR because `main` may advance
+- [ ] Run final checkout-based diff quality/security scan after C3-C5 runtime work
 
-### C6.3 Final report + tracker closure
+### C6.3 Closeout reporting
 
-- [ ] Add final orchestrator report with actual C3-C5 evidence
-- [ ] Mark `plan.md` `COMPLETED ✅` only after runtime acceptance genuinely passes
-- [ ] Mark this TODO complete only after runtime acceptance genuinely passes
+- [x] Add repository-side closeout progress report: `reports/orchestrator/2026-09-05-closeout-progress.md`
+- [x] Align `plan.md` with Phase 4 complete-in-code and runtime-blocked closeout state
+- [ ] Update the orchestrator report with actual C3-C5 results after runtime acceptance
+- [ ] Mark `plan.md` `COMPLETED ✅` only after C3-C5 pass
+- [ ] Mark this TODO `COMPLETED` only after C3-C5 pass
 
 ### C6.4 Final integration PR
 
-Do **not** open the final PR yet. C3-C5 are still unverified.
+Do **not** open the final PR yet. C3-C5 are acceptance gates and remain unverified.
 
 When they pass:
 
@@ -338,7 +360,11 @@ When they pass:
 - [x] C2 remove `ProjectDetail.projectsHref` residue
 - [x] C2 correct stale shell-spacing report
 - [x] C2 update Projects report
-- [x] Current branch synced with `main` at time of review (`behind_by: 0`)
+- [x] C2 align `plan.md` with completed Phase 4 code
+- [x] C6 repository-side closeout progress report
+- [x] C6 current branch divergence audit
+- [x] C6 commit attribution audit
+- [x] C6 changed-file env/run-log hygiene audit
 
 ### Runtime/external work still open
 
@@ -347,11 +373,12 @@ When they pass:
 - [ ] C3 effective-permission re-read
 - [ ] C3 production comment smoke test
 - [ ] C4 full integration command matrix
+- [ ] C4 formatter/lint/checkout quality gate
 - [ ] C4 production-build coverage
 - [ ] C5 light/dark browser acceptance
 - [ ] C5 production permission acceptance
 - [ ] C6 resolve PROJ-10 in its actual tracker
-- [ ] C6 final attribution/security/readiness audit after runtime checks
-- [ ] C6 final orchestrator report
-- [ ] C6 mark `plan.md` complete
+- [ ] C6 final checkout-based security/readiness audit after runtime checks
+- [ ] C6 final acceptance report update
+- [ ] C6 mark `plan.md` and this TODO complete
 - [ ] C6 final PR to `main`
