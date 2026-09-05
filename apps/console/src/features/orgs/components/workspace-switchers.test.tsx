@@ -105,7 +105,7 @@ describe('WorkspaceSwitchers', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Switch organization' }))
 
-    expect(await screen.findByText('Organizations')).toBeVisible()
+    expect(await screen.findByRole('menu')).toBeVisible()
     expect(screen.getByRole('menuitem', { name: 'Acme Corp' })).toBeVisible()
     expect(
       screen.getByRole('menuitem', { name: 'Globex Corporation' })
