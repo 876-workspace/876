@@ -431,45 +431,130 @@ and confirm the test **count** moved, not merely that the suite is green.
 
 ---
 
-## 9. Handoff state
+## 9. Handoff state — session ended 2026-09-05 ~05:15 UTC
 
-**Branch:** `feat/shell-layout-navigation-overhaul`.
+**Branch:** `feat/shell-layout-navigation-overhaul` (9 commits, all docs/Phase 1).
+Nothing is pushed. No PR is open.
 
-### Done
+### READ THIS FIRST
 
-- The plan, the seven briefs, and the orchestrator review notes are committed.
-- **Phase 1 is merged** (`ea0b95fe` the fix, `7c8158f5` the guard). Verified by
-  the orchestrator, not taken from the delegate's report:
-  - `sm\:grid-cols-3` is present in `apps/projects/.next/static/css/` after the
-    change and was absent before;
-  - `node scripts/check-tailwind-sources.mjs` exits **1** on a removed glob and
-    **0** when clean, and names the app and the package in the message;
-  - 6 test cases pass; no `eslint-disable` or `as any` in the touched files.
-  - Apps changed: billing, console, crm, invoice, projects. Couriers, 876 and
-    enterprise transpile no shared product-UI package, which the check confirms.
-  - agy explicitly did **not** verify production builds of Console, CRM, Billing
-    or Invoice. Do that once Phase 2 has landed and `packages/ui` is stable.
+1. **Never `cat`/`tail` a `*-run.log`.** They are ~20k lines each and will burn
+   your context window. They are now gitignored and the rule is in
+   `.claude/rules/cli.md` → "Never redirect a delegated run's stdout to a file in
+   the repo". The user is deleting the existing ones. Judge delegate work by
+   `git diff` and by running the checks yourself.
+2. **Four Codex runs were still in flight when this session ended.** Their edits
+   are in the working tree, uncommitted and **unverified**. Check
+   `pgrep -f "codex exec -m gpt"` before touching anything — if any are still
+   alive, let them finish or kill them, but **do not `git stash` while a delegate
+   is running** (that mistake cost ~10 minutes this session).
 
-### In flight
+### Committed and verified
 
-- **Phase 2** (Codex, shell spacing) — editing `packages/ui` and all six app
-  sidebars. See the review notes on the `-ml-[var(--876-shell-gutter)]` gutter
-  reclaim in `ListDetailShell`; do not accept it without an answer.
-- **Phase 8** (Codex, assignment role mapping) — `apps/api` plus a new
-  `packages/core/src/access/app-assignment-role.ts`. See the review notes on the
-  blanket `replaceAll('_','-')` and on proving the elevation guard.
+- Plan, seven briefs, orchestrator review notes.
+- **Phase 1 complete** (`ea0b95fe`, `7c8158f5`) — verified independently, not
+  taken from the report. See §8.
+- **`.claude/rules/cli.md` + `.agents/rules/cli.md`** (`893047ae`) — the new
+  no-run-logs rule, mirrored, plus the `plans/**/*-run.log` gitignore.
 
-### Held deliberately
+### In the working tree, uncommitted — four concurrent runs
 
-Phases 3–7 are briefed but **not dispatched**. Phase 3 and Phase 4 need the
-sidebar files Phase 2 is rewriting; Phases 5–7 would run the Console suite
-concurrently with Phase 2's edits to Console. Dispatch them once Phase 2 has
-been accepted and committed.
+| Run | Owns | State |
+| --- | --- | --- |
+| **Phase 2b** shell spacing follow-up | `packages/ui/**`, every `apps/*/src/components/shell/sidebar.tsx` | applying the fix — `RAIL_INSET` is now `pl-[var(--876-shell-gutter)]` and the `-ml-` reclaim is gone |
+| **Phase 8b** assignment role mapping follow-up | `apps/api/**`, `packages/core/src/access/**` | adding the integration tests — `provisioning.test.ts`, `invite-app-access.service.test.ts`, new `app-access-membership-roles.test.ts` |
+| **Phase 7** permissions grouping | `apps/console/src/lib/permissions.ts`, `settings/users/**` | new `lib/permission-grouping.ts`, `patterns/permission-module-style.ts`, `types/permission.ts` |
+| **Phase 5/6** Console workspace + records | `apps/console/src/app/(app)/workspace/**`, `sidebar-context.ts` | editing the projects/issues layouts in both Console and the org workspace |
+
+### ⚠️ MUST FIX BEFORE ANY OF PHASE 2 IS ACCEPTED
+
+`packages/ui/src/876.css` defines:
+
+```css
+--876-shell-gutter: var(--spacing-4);   /* also --spacing-6, --spacing-8 */
+```
+
+**`--spacing-4` does not exist.** Tailwind v4 defines only `--spacing: 0.25rem`
+and computes each step (`.px-4{padding-inline:calc(var(--spacing) * 4)}`). The
+unresolved `var()` invalidates every declaration that consumes it, so *every*
+shell gutter collapses to zero — sidebar insets, `Page` padding, the list/detail
+column gap. It is already in the built CSS. Replace with:
+
+```css
+--876-shell-gutter: calc(var(--spacing) * 4);   /* 1rem   */
+--876-shell-gutter: calc(var(--spacing) * 6);   /* 1.5rem */
+--876-shell-gutter: calc(var(--spacing) * 8);   /* 2rem   */
+```
+
+**Phase 2b will not fix this** — its brief wrongly told it those values were
+correct. Apply it yourself once Phase 2b exits.
+
+No existing test can catch it: every Phase 2 assertion compares Tailwind **class
+strings**, which are identical whether or not the token resolves. Add a test that
+asserts the **resolved** value.
+
+### Not started
+
+- **Phase 3 — sidebar icons.** Brief ready with its concurrency note
+  (`briefs/agy/2026-09-05-sidebar-icons.md`). Route to `agy`
+  `gemini-3.8-flash-high` (Gemini quota was 80% weekly / 100% 5h). Blocked only
+  because it must edit the same `sidebar.tsx` files Phase 2b owns — dispatch once
+  Phase 2b is committed.
+- **Phase 4 — Projects record pages + markdown editor.** Brief ready
+  (`briefs/codex/2026-09-05-projects-record-pages.md`). Same blocker.
+
+### Acceptance checklist for the four in-flight runs
+
+For each, before committing:
+
+```bash
+grep -rn "eslint-disable\|as any" <paths it touched>
+```
+
+and confirm the `it()` **count** moved in the files it actually changed — Phase 8
+originally wrote 20 tests for a pure function and **zero** for the six `apps/api`
+files it modified, which is what the follow-up exists to fix.
+
+Then run, in the **foreground**:
+
+```bash
+pnpm --filter @876/ui typecheck && pnpm --filter @876/ui test
+pnpm --filter @876/console typecheck && pnpm --filter @876/console lint && pnpm --filter @876/console test
+pnpm --filter @876/projects typecheck && pnpm --filter @876/projects test
+pnpm --filter @876/api typecheck && pnpm --filter @876/api lint && pnpm --filter @876/api test
+pnpm --filter @876/core typecheck && pnpm --filter @876/core test
+node scripts/check-app-structure.mjs && pnpm check:transpile
+```
+
+**`pnpm --filter @876/api boundaries` reports 18 `no-circular` violations that
+pre-date this branch** — verified identical on the base. Do not try to fix them;
+just do not add a nineteenth.
+
+Also still owed from Phase 1: production builds of Console, CRM, Billing and
+Invoice, which agy explicitly did not verify. Run them once `packages/ui` is
+stable.
 
 ### Blocked on the user
 
-The production role fix in §2(a) is **outstanding**. The orchestrator's `PATCH`
-was denied by the sandbox permission classifier and was never applied, so the
-user still cannot comment in 876 Projects until they run it.
+The production role fix is **still outstanding**. The orchestrator's `PATCH` was
+denied by the sandbox permission classifier and was never applied, so the user
+**still cannot comment in 876 Projects**:
 
-PROJ-10 has not been touched — the orchestrator did not mutate the tracker.
+```bash
+curl -X PATCH "https://876-api.vercel.app/organizations/org_fa2cfb0bce834ae6a6537830159e5f14/app-memberships/asg_90275575846147508476c7e2b16c4335" \
+  -H "x-internal-key: $API_INTERNAL_KEY" -H "X-876-API-Key: $PROJECTS_API_876_KEY" \
+  -H 'content-type: application/json' -d '{"app_role_id":"role_64a6a57a085452df374cacc463e6291c"}'
+```
+
+Or Console → Orgs → Efesto → Apps → 876 Projects → set the role to `super-admin`.
+
+### Final PR — not started
+
+Once every phase is committed and green, open **one** PR from
+`feat/shell-layout-navigation-overhaul` → `main`, described as a whole feature
+per `.claude/rules/git.md` → "The final `main` PR". The two findings worth
+leading with are the Tailwind `@source` gap (§3) and the app-assignment role
+defect (§2) — both are platform defects that were invisible before this run.
+
+PROJ-10 has **not** been touched. It is based on a false premise (§2) and should
+be closed or rewritten to describe the assignment-role mapping instead.
