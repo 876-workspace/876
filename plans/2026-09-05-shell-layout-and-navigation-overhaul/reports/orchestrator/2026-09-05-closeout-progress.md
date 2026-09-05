@@ -2,257 +2,260 @@
 
 ## Scope
 
-This report records the repository-side closeout work performed directly on
+This report records repository-side closeout work performed directly on
 `feat/shell-layout-navigation-overhaul` after the original phase implementation.
-It is intentionally **not** the final acceptance report: production data repair,
-full command verification, and authenticated browser acceptance remain blocked
-on runtime access and are tracked in `../../todo.md`.
+It is **not** the final acceptance report: production data repair, executable
+verification, and authenticated browser acceptance remain open in `../../todo.md`.
 
-## Repository-side closeout completed
+---
+
+## Repository implementation completed
 
 ### C1 — Markdown/comment editor
 
-Commit `0ed9cb34` completed the only remaining Phase 4 implementation item:
+Commit `0ed9cb34` completed the remaining Phase 4 editor work:
 
-- redesigned `@876/ui/markdown-editor` with token-based light/dark surfaces;
-- explicit Write/Preview active state (`aria-pressed` + `data-mode`);
-- a shared focus-within ring/border contract;
-- responsive toolbar layout;
-- semantic existing UI icons where there is a canonical match, while retaining
-  simple typographic B/I/S marks for formatting concepts without an owned icon;
-- existing Markdown storage/rendering and keyboard shortcut contracts preserved;
-- Projects create/edit comment composition updated around the same shared editor;
+- deliberate token-based light/dark Markdown editor surfaces;
+- explicit Write/Preview state via `aria-pressed` + `data-mode`;
+- shared focus-within ring/border treatment;
+- responsive toolbar and semantic shared icons where canonical icons exist;
+- existing Markdown storage/rendering and keyboard shortcuts preserved;
+- Projects create/edit comment composition aligned around the same editor;
 - create/update errors remain inline and preserve drafts;
-- 8 focused regression cases added across UI and Projects UI.
+- 8 focused editor/comment regression cases added.
 
-The existing Editor.js package was inspected as related infrastructure but was
-not substituted into comments because no requirement called for changing the
-persisted comment format away from Markdown text.
+`@876/editor` remains Editor.js-based infrastructure and was deliberately not
+substituted into comments because the product contract stores Markdown text.
 
-### C2 — compatibility cleanup
+### C2 — compatibility/documentation cleanup
 
-Commit `242702ef` removed the obsolete `ProjectDetail.projectsHref` compatibility
-prop and the last Console caller. Hosts now own their breadcrumb/back affordance
-without a dead shared prop.
+- `242702ef` removed obsolete `ProjectDetail.projectsHref` compatibility residue.
+- `4de19178` corrected the stale shell-spacing report and updated the Projects
+  phase report.
+- `6db88a11` corrected the final Projects application verification target from
+  `@876/projects` to `@876/projects-app`.
+- `4952cd23` reconciled `plan.md` with the then-current draft-PR/Actions/replay
+  state.
 
-### C2 — report reconciliation
+---
 
-Commit `4de19178`:
+## Static quality and ownership audit
 
-- corrected the shell-spacing report from the invalid historical
-  `var(--spacing-4/6/8)` notation to Tailwind v4's actual
-  `calc(var(--spacing) * 4/6/8)` expressions;
-- preserved the explanation of how the invalid form was discovered and fixed;
-- updated the Projects record-page report to include editor closeout files,
-  tests, the Markdown-vs-Editor.js decision, and compatibility cleanup;
-- kept phase-level verification distinct from the still-unrun final matrix.
+### Editor/API contracts
 
-`plan.md` was subsequently aligned with Phase 4 complete-in-code, while
-`todo.md` remains the live operational closeout tracker.
+Static inspection verified:
 
-## Static closeout audit
-
-A follow-up static contract review was performed after the C1 implementation.
-It verified:
-
-- all new Markdown toolbar icon imports exist in `@876/ui/icons`;
-- `IconComponent` is exported by the same registry and matches the component
-  contract used by the toolbar;
-- the `Button` component supports the used `secondary`, `ghost`, `xs`, and
-  `icon-xs` variants/sizes;
-- the Projects comment create/edit surfaces continue to consume the canonical
-  `@876/ui/markdown-editor` rather than introducing a parallel composer;
-- no comment storage or transport contract was changed by the editor redesign.
+- Markdown toolbar icon imports exist in `@876/ui/icons`;
+- `IconComponent` matches the toolbar component contract;
+- shared Button variants/sizes used by the editor exist;
+- Projects continues to consume the canonical shared Markdown editor;
+- no comment storage/transport contract changed.
 
 ### PR-wide committed diff audit
 
-Once draft PR #478 existed, the entire pull-request patch was inspected directly.
-The changed committed code contains no new escape/security residue hidden outside
-C1:
+While draft PR #478 was open, the complete patch was inspected. In changed
+production/test code:
 
-- `as any` — matches are rule/plan text forbidding it, not changed code;
-- `eslint-disable` — rule/plan text only;
-- `@ts-ignore` — rule/plan text only;
-- `as unknown as` — rule/plan text only;
-- no `FIXME` markers;
-- no API-key assignment pattern;
-- no password assignment pattern;
+- no `as any`;
+- no `eslint-disable`;
+- no `@ts-ignore`;
+- no `as unknown as` escape;
+- no `FIXME` marker;
+- no API-key/password assignment pattern;
 - no private-key block;
-- added `console.log` calls are limited to deliberate CLI/check-script output;
-- the changed-file inventory contains no environment file and no delegated
-  `*-run.log` transcript.
+- no new environment file;
+- no delegated `*-run.log` transcript.
 
-This is a committed-diff audit. It does not replace formatter/linter execution or
-a final local `git status`/lockfile check.
+The only added `console.log` calls are intentional operational/check-script
+output. This is a committed-diff audit, not a substitute for final formatter,
+lint, typecheck, test, build, or working-tree verification.
 
-### Verification command correction
+---
 
-The original closeout matrix used `pnpm --filter @876/projects ...` for the
-Projects application. Static inspection of `apps/projects/package.json` showed
-the actual application workspace is `@876/projects-app`; `@876/projects` is the
-underlying product client/contracts package.
+## Phase 8 closeout hardening
 
-Commit `6db88a11` corrected `todo.md` so the runtime matrix now targets:
+### Provisioning replay lifecycle
 
-```bash
-pnpm --filter @876/projects-app typecheck
-pnpm --filter @876/projects-app lint
-pnpm --filter @876/projects-app test
-```
+Static review found a real lifecycle defect on the same assignment replay path:
+provisioning could set a revoked assignment to `status: 'active'` while leaving
+`revokedAt`/`deletedAt` populated. Effective permission resolution therefore
+still treated the row as inactive.
 
-The production build list now also uses the verified application workspace names:
-
-```bash
-pnpm --filter @876/console build
-pnpm --filter @876/crm-app build
-pnpm --filter @876/billing-app build
-pnpm --filter @876/invoice-app build
-pnpm --filter @876/projects-app build
-```
-
-## Provisioning replay hardening discovered during closeout
-
-Static review of the Phase 8 assignment lifecycle exposed a real defect in
-`services/provisioning.repository.ts` that pre-dated the new role mapper but sat
-on the same replay path.
-
-`assignApp()` described itself as reactivating revoked assignments, but the upsert
-update only changed `status` to `active`. Revocation/deletion timestamps remained
-set. `resolveEffectiveAppPermissions()` requires `revokedAt` and `deletedAt` to be
-null, so such a row remained effectively revoked despite its active status.
-
-Commit `11b70128` fixes the lifecycle by clearing:
+`11b70128` now clears:
 
 - `revokedAt` / `revokedBy`;
 - `deletedAt` / `deletedBy`;
 - `deletionReason`.
 
-It deliberately **does not** restore or recompute `appRoleId` on replay. That
-preserves Phase 8's invariant that provisioning is creation-only for role
-selection and must not overwrite a later administrator role decision.
+It deliberately does **not** write `appRoleId` during replay, preserving a later
+administrator-selected app role. `55a72c9e` adds focused regression coverage for
+genuine reactivation and role preservation.
 
-Commit `55a72c9e` adds focused repository-level regression coverage proving both
-reactivation and role preservation. The new test still needs to execute under the
-final C4 runtime matrix.
+### Backfill compare-and-set safety
 
-## Branch and PR state at latest audited comparison
+The original backfill was dry-run by default but `--apply` updated by assignment
+ID after candidate discovery. Closeout review hardened this for production use:
 
-Immediately before this report update, GitHub comparison against `main` reported:
+- `5b6dfe7e` changed apply writes to compare-and-set `updateMany` against the
+  discovered source role and active/non-deleted/non-revoked lifecycle state;
+- the current role must still be a live default role;
+- concurrent/manual app-role changes therefore win instead of being overwritten;
+- actual successful writes determine `changed`;
+- stale candidates contribute to `skippedAfterDiscovery`.
 
-- head: `9cae5384863d84937b05a4732d06bc87bd43bedc`
-- status: `ahead`
-- ahead by: **40 commits**
-- behind by: **0 commits**
-- merge base: `1419aaee85264ed4c278d952af6e4687383df157`
-- draft PR: **#478**
-- PR mergeability: **mergeable**
+`99122d33` added immediate pre-write revalidation:
 
-Re-check divergence immediately before marking the PR ready because `main` may
-move.
+- target user must still have the same active organization role;
+- target app role must still exist live for the same organization/application;
+- dry-run candidates include organization, user, and app ids so operators can
+  review the real scope before applying.
+
+### Backfill regression coverage
+
+The API Vitest config only discovers `src/**/*.{test,spec}.ts`, so operational
+script coverage was deliberately placed under the API `src/` test tree.
+
+`7a419d08` / `6ca403e3` now cover:
+
+1. default invocation is a dry-run and performs **zero writes** even when a
+   candidate exists;
+2. apply revalidates the membership/target role and compare-and-sets the original
+   assignment state;
+3. a candidate whose organization role changed after discovery is skipped.
+
+These cases are added to the real API suite but remain **unexecuted** until C4
+has a working runtime.
+
+---
 
 ## GitHub connector retry rule
 
-Per the user's explicit instruction, a GitHub timeout, temporary rate limit, or
-connector failure is treated as transient rather than as exhausted access. The
-exact operation reference is retained and retried after a short gap. The rule
-and current workflow/job references are saved in:
+Per the user's explicit instruction, GitHub timeouts, temporary rate limits, and
+transient connector errors are never treated as exhausted access. Required
+operations retain their exact repository/branch/PR/SHA/run/job/path references
+and are retried after a short gap.
 
-`../../notes/github-tool-retry.md`
+The rule is saved at `../../notes/github-tool-retry.md` and was exercised during
+the Actions investigation.
 
-This retry policy was exercised during the Actions investigation. GitHub reads
-succeeded on retry and then fresh branch commits triggered entirely new workflow
-runs, allowing connector failures to be distinguished from the stable Actions
-runner failure below.
+---
 
-## Verification infrastructure state
+## GitHub Actions / PR history
 
-Draft PR #478 was opened specifically to trigger the repository's existing
-`pull_request` workflows while keeping the feature non-merge-ready.
+### PR #478 while open
 
-The workflows do trigger, but every relevant job fails **before step 1**. Across
-separate branch heads:
+Draft PR #478 was opened as the single integration PR and CI harness. It was
+confirmed mergeable while open.
 
-- App structure returns a failed `structure` job with `steps: []` and no logs;
-- UI tests returns failed component/browser jobs with empty step lists and no logs;
-- API container, Billing API quality/container, and Couriers API container fail
-  in the same pre-step manner.
+Across multiple independent branch heads, the repository's pull-request
+workflows triggered but failed **before step 1**:
 
-The App structure job/log read was retried after a gap and returned the same
-stable result. Later commits triggered fresh runs with new run/job ids and the
-same empty-step failure. This is therefore a reproducible Actions/runner-account
-execution block, not a GitHub connector timeout and not evidence of code test
-failure. The available repository API does not expose the exact account-side
-reason.
+- UI tests;
+- App structure;
+- API container image;
+- Billing API quality;
+- Billing API container image;
+- Couriers API container image.
 
-The local execution container also cannot replace CI:
+Affected jobs repeatedly returned empty step lists and no job-log blobs. GitHub
+reads were retried after gaps, and later commits generated fresh run/job ids with
+the same result. This is a reproducible Actions/runner-account execution block,
+not a connector timeout and not evidence of a repository test/compiler failure.
 
-- no repository checkout exists at `/root/projects/876`;
-- `pnpm` is not already installed;
-- shell DNS cannot resolve `github.com`;
-- Corepack cannot reach `registry.npmjs.org` to obtain pnpm;
-- the public branch archive cannot be obtained through the shell network path.
+### PR #478 external close
 
-The final C4 matrix therefore still needs an execution environment where step 1
-can actually run.
+At `2026-09-05T13:18:08Z`, PR #478 was closed **without merge** by the
+`876-workspace` account. The event was not performed by a GitHub App and contains
+no reason/comment.
 
-## Git/attribution audit
+The close was an external/account action, so this session did **not** silently
+reopen it. Its last recorded PR head was `4952cd234cd47898127ea3362ff971497aad6d7c`;
+later branch hardening commits are not represented by that closed PR snapshot.
 
-The branch commit listing was searched for prohibited attribution forms:
+When final PR work is intentionally resumed, prefer reopening #478 rather than
+creating a duplicate, then confirm it points at the current branch head.
 
-- `Co-Authored-By` — no matches
-- `Generated with` — no matches
-- `Claude` — no matches
+---
 
-`Codex` appears in older descriptive repository documentation about delegated CLI
-transcripts. That is not contributor/co-author attribution.
+## Current branch state
 
-## Runtime work still blocked
+Immediately before the latest tracker/report reconciliation, GitHub comparison
+reported:
+
+- status: `ahead`;
+- ahead by: **47 commits**;
+- behind by: **0 commits**;
+- merge base: `1419aaee85264ed4c278d952af6e4687383df157`.
+
+This report commit advances the branch again. Exact divergence must always be
+re-read before final readiness.
+
+---
+
+## Runtime work still open
 
 ### C3 — production data repair
 
-The existing Efesto 876 Projects app assignment still needs a deliberate dry-run
-review and repair/backfill. No production mutation has been performed.
+No production mutation has been performed. The current safe order is:
 
-The repository documents Neon-backed Postgres database endpoints, and a Neon
-integration capable of inspecting/managing those environments has been surfaced.
-If connected to the account that owns the relevant production project, it can be
-used to identify the correct database and help execute/verify C3 deliberately.
+```bash
+pnpm --filter @876/api app-access:backfill-roles
+# review every candidate
+pnpm --filter @876/api app-access:backfill-roles --apply
+```
 
-### C4 — final command matrix
+The production dry-run must confirm `dryRun: true`, `changed: 0`, and expected
+candidate scope before apply. If apply reports `skippedAfterDiscovery > 0`, rerun
+dry-run before any subsequent write attempt.
+
+A Neon integration was surfaced as a possible Postgres access path but remains
+unconnected.
+
+### C4 — executable verification
 
 Still required:
 
-- Console typecheck/lint/test
-- Projects **app** typecheck/lint/test (`@876/projects-app`)
-- Projects UI typecheck/test
-- UI typecheck/test
-- API typecheck/lint/test, including the new reactivation test
-- Core typecheck/test
-- Editor typecheck/test
-- app-structure check
-- shared transpile check
-- API boundaries confirmation against the known 18-cycle baseline
-- outstanding production builds using the exact app workspace names recorded in
-  `todo.md`
-- local formatter/working-tree/lockfile confirmation
+- Console typecheck/lint/test;
+- Projects app typecheck/lint/test (`@876/projects-app`);
+- Projects UI typecheck/test;
+- UI typecheck/test;
+- API typecheck/lint/test including replay/backfill tests;
+- Core typecheck/test;
+- Editor typecheck/test;
+- app structure + shared transpile checks;
+- API boundaries against the known 18-cycle baseline;
+- production builds;
+- local formatter/working-tree/lockfile confirmation.
+
+The current local container cannot replace CI because it has no repo checkout or
+pnpm and cannot obtain the repo/toolchain through its shell network path.
 
 ### C5 — browser acceptance
 
-Still requires an authenticated Console/Projects browser session and the full
-1280/1440/1920 light/dark matrix, including the real Efesto comment workflow.
+Still requires an authenticated Console/Projects browser session for the
+1280/1440/1920 light/dark matrix and the real Efesto comment workflow.
 
 ### PROJ-10
 
-No `PROJ-10` exists in this repository's GitHub Issues search. It appears to be
-an external/product tracker key. A Linear integration is available and has been
-surfaced for connection; once connected, search the owning workspace there
-before changing or closing the issue. Do not manufacture a duplicate GitHub
-issue.
+No `PROJ-10` exists in this repository's GitHub Issues. Linear was surfaced as
+the likely external tracker integration but remains unconnected. Do not create a
+duplicate GitHub issue.
 
-## Final PR gate
+---
 
-Draft PR #478 now exists and is mergeable, but it must stay draft. Do not mark it
-ready or merge while C3-C5 remain unverified. Once those gates are genuinely
-green, update the plan/TODO and this report with exact evidence, re-check branch
-sync/attribution/security state, refresh the PR body, and mark the single
-integration PR ready for review.
+## Final readiness gate
+
+Repository-side implementation and static hardening are complete to the extent
+possible without a runtime. The feature is **not accepted yet**.
+
+Before `main`:
+
+1. execute/review the production dry-run and repair;
+2. prove effective permissions and real comment create/edit/delete behavior;
+3. run the full command/build/boundary matrix;
+4. complete browser acceptance;
+5. resolve PROJ-10 in its real tracker;
+6. update plan/TODO/final report with exact evidence;
+7. re-check divergence, attribution, security, and working-tree state;
+8. intentionally reopen/update PR #478 (preferred over a duplicate), inspect
+   real CI/reviews, and only then mark it ready.
