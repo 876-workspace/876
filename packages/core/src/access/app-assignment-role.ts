@@ -11,15 +11,25 @@ export type AppAssignmentRoleResolution = {
   source: 'requested' | 'organization-role' | 'default' | 'none'
 }
 
-/** Organization role → the app role key it maps to. Durable on both sides. */
+/** Organization role → the canonical app role key it maps to. */
 const ORG_ROLE_TO_APP_ROLE: Record<string, string> = {
   super_admin: 'super-admin',
   'super-admin': 'super-admin',
   admin: 'admin',
 }
 
+/** Persisted legacy app-role aliases accepted during the naming migration. */
+const APP_ROLE_KEY_ALIASES: Record<string, string> = {
+  super_admin: 'super-admin',
+}
+
 function isLive(role: AppAssignmentRoleCandidate): boolean {
   return role.deletedAt === null || role.deletedAt === undefined
+}
+
+function canonicalAppRoleKey(roleKey: string): string {
+  const normalized = roleKey.toLowerCase()
+  return APP_ROLE_KEY_ALIASES[normalized] ?? normalized
 }
 
 function mappedRoleKey(organizationRole: unknown): string | null {
@@ -34,6 +44,8 @@ function mappedRoleKey(organizationRole: unknown): string | null {
  *
  * Fallback order is requested live role, mapped organization role,
  * live default role, then no role. It never substitutes a broader role.
+ * Legacy persisted app-role aliases are canonicalized only for comparison; the
+ * original role object is returned unchanged so callers keep the persisted id.
  */
 export function resolveAppAssignmentRole(input: {
   organizationRole: unknown
@@ -48,7 +60,9 @@ export function resolveAppAssignmentRole(input: {
 
   const mappedKey = mappedRoleKey(input.organizationRole)
   if (mappedKey) {
-    const mapped = roles.find((role) => role.key === mappedKey)
+    const mapped = roles.find(
+      (role) => canonicalAppRoleKey(role.key) === mappedKey
+    )
     if (mapped) return { role: mapped, source: 'organization-role' }
   }
 
