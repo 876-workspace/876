@@ -277,6 +277,11 @@ export async function assignApp(params: {
     update: {
       status: 'active',
       assignedBy: params.assignedBy,
+      revokedAt: null,
+      revokedBy: null,
+      deletedAt: null,
+      deletedBy: null,
+      deletionReason: null,
       updatedAt: params.now,
     },
   })
