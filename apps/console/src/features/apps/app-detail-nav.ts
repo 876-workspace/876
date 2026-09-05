@@ -150,6 +150,7 @@ export function appSidebarContext(
   return {
     key: `app-${slug}`,
     kind: 'product',
+    backLabel: appName,
     title: appName,
     href: base,
     icon: 'apps',

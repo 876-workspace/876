@@ -16,6 +16,7 @@ vi.mock('next/navigation', () => ({ usePathname }))
 import { navConfig } from '@/components/shell/nav-config'
 import { navContexts } from '@/components/shell/nav-contexts'
 import { Sidebar } from '@/components/shell/sidebar'
+import { sidebarContexts } from '@/components/shell/sidebar-context'
 import type { SidebarSlot } from '@/components/shell/sidebar-slots'
 
 function renderSidebar(pathname: string, slots: SidebarSlot[] = []) {
@@ -193,6 +194,23 @@ describe('Sidebar', () => {
       renderSidebar('/requests')
 
       expect(backControl('Back to Console')).toBeVisible()
+    })
+
+    it('gives every registered context a non-empty back-control name', () => {
+      const contexts = sidebarContexts(navConfig, navContexts)
+
+      for (const context of contexts) {
+        if (context.parentKey === null) continue
+
+        const parent = contexts.find((item) => item.key === context.parentKey)
+        const label = `Back to ${parent?.backLabel ?? ''}`
+        const view = renderSidebar(context.href)
+
+        expect(label).not.toBe('Back to ')
+        expect(screen.getByRole('button', { name: label })).toBeVisible()
+
+        view.unmount()
+      }
     })
   })
 

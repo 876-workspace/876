@@ -19,6 +19,7 @@ export const navContexts: readonly SidebarContextDefinition[] = [
   {
     key: 'storage',
     kind: 'product',
+    backLabel: 'Storage',
     title: 'Storage',
     href: '/storage',
     icon: 'storage',

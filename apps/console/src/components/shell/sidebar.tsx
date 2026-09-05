@@ -240,7 +240,7 @@ function BackControl({
 }) {
   // Names the level actually returned to, which is not always the root once
   // a workspace sits beneath a product.
-  const label = `Back to ${parent.title}`
+  const label = `Back to ${parent.backLabel}`
 
   return (
     <Tooltip>

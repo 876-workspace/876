@@ -53,6 +53,7 @@ const navigation: readonly NavGroupDefinition[] = [
 const storageContext: SidebarContextDefinition = {
   key: 'storage',
   kind: 'product',
+  backLabel: 'Storage',
   title: 'Storage',
   href: '/storage',
   icon: 'storage',
@@ -63,6 +64,7 @@ const storageContext: SidebarContextDefinition = {
 const workspaceContext: SidebarContextDefinition = {
   key: 'storage-workspace',
   kind: 'workspace',
+  backLabel: 'Acme storage',
   title: 'Acme storage',
   href: '/storage/acme',
   parentKey: 'storage',
@@ -113,10 +115,11 @@ describe('resolveSidebarContextStack', () => {
       expect(stack[0]?.groups).toEqual([])
     })
 
-    it('does not give the root context a redundant Console label', () => {
+    it('keeps Console for return controls without rendering it as the root title', () => {
       const [platform] = resolveSidebarContextStack('/users', navigation)
 
       expect(platform?.title).toBe('')
+      expect(platform?.backLabel).toBe('Console')
     })
 
     it('keeps the root href at the Console home route', () => {
