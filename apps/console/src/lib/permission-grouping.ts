@@ -37,8 +37,8 @@ export function setPermissionGroupSelection(
 ): Set<string> {
   const next = new Set(selected)
 
-  for (const module of group.modules) {
-    for (const permission of module.permissions) {
+  for (const permissionModule of group.modules) {
+    for (const permission of permissionModule.permissions) {
       if (grant) next.add(permission.value)
       else next.delete(permission.value)
     }
