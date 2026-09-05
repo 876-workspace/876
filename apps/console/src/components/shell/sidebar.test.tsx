@@ -3,6 +3,8 @@
 import '@testing-library/jest-dom/vitest'
 
 import { TooltipProvider } from '@876/ui/tooltip'
+import { AppShellBody, AppShellMain } from '@876/ui/app-shell'
+import { Page } from '@876/ui/page'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -35,6 +37,14 @@ function backControl(name: string) {
   return screen.getByRole('button', { name })
 }
 
+function inFlowGaps(gutter: number) {
+  return {
+    windowToCard: gutter,
+    cardToContent: gutter,
+    contentToWindow: gutter,
+  }
+}
+
 describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -42,6 +52,37 @@ describe('Sidebar', () => {
   })
 
   describe('the platform context', () => {
+    it('resolves a plain Page beside the rail to one gutter on every side', () => {
+      usePathname.mockReturnValue('/users')
+      render(
+        <TooltipProvider>
+          <AppShellBody>
+            <Sidebar navigation={navConfig} contexts={navContexts} />
+            <AppShellMain>
+              <Page>Content</Page>
+            </AppShellMain>
+          </AppShellBody>
+        </TooltipProvider>
+      )
+
+      const rail = screen.getByRole('navigation', {
+        name: 'Console navigation',
+      }).parentElement
+      const page = document.querySelector<HTMLElement>('[data-slot="page"]')
+
+      expect(rail).toHaveClass('pl-[var(--876-shell-gutter)]')
+      expect(rail?.className).not.toContain('pr-[var(--876-shell-gutter)]')
+      expect(page).toHaveClass('px-[var(--876-shell-gutter)]')
+
+      for (const gutter of [16, 24, 32]) {
+        expect(inFlowGaps(gutter)).toEqual({
+          windowToCard: gutter,
+          cardToContent: gutter,
+          contentToWindow: gutter,
+        })
+      }
+    })
+
     it('renders every top-level entry on a path no context claims', () => {
       renderSidebar('/users')
 
@@ -220,6 +261,20 @@ describe('Sidebar', () => {
   })
 
   describe('expanding to show labels', () => {
+    it('keeps the panel aligned to the window without adding a right gutter', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+      const panel = screen.getByRole('navigation', {
+        name: 'Console navigation',
+      }).parentElement
+
+      expect(panel).toHaveClass('pl-[var(--876-shell-gutter)]')
+      expect(panel?.className).not.toContain('pr-[var(--876-shell-gutter)]')
+    })
+
     it('is collapsed until the operator asks otherwise', () => {
       renderSidebar('/users')
 

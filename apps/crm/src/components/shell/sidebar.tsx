@@ -52,7 +52,7 @@ export function Sidebar({ navigation }: { navigation: NavGroupDefinition[] }) {
       {/* Desktop Floating Sidebar (under Navbar) */}
       <aside
         aria-label="CRM sections"
-        className="hidden shrink-0 flex-col items-center py-4 pr-1 pl-3 sm:flex"
+        className="hidden shrink-0 flex-col items-center py-4 pl-[var(--876-shell-gutter)] sm:flex"
       >
         <div className="border-border/80 bg-background/90 dark:bg-sidebar/90 flex flex-col items-center gap-1.5 rounded-2xl border p-2 shadow-xl ring-1 shadow-black/5 ring-black/[0.04] backdrop-blur-xl dark:shadow-black/25 dark:ring-white/[0.06]">
           {navigation.map((group, groupIndex) => (
