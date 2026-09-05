@@ -42,7 +42,7 @@ function ListPane({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="list-pane"
       className={cn(
-        '876-card flex h-full min-h-0 flex-col overflow-hidden',
+        '876-card flex min-w-0 flex-col overflow-hidden',
         className
       )}
       {...props}
@@ -68,7 +68,7 @@ function ListPaneHeader({
 }
 
 /**
- * The scrolling row region.
+ * The row region.
  *
  * Deliberately **not** `overscroll-contain` — see the note on
  * `DetailCardBody`. A pane inside the page must let the wheel reach the page
@@ -78,7 +78,7 @@ function ListPaneBody({ className, ...props }: React.ComponentProps<'ul'>) {
   return (
     <ul
       data-slot="list-pane-body"
-      className={cn('876-scroll min-h-0 flex-1 overflow-y-auto', className)}
+      className={cn('min-w-0 flex-1', className)}
       {...props}
     />
   )

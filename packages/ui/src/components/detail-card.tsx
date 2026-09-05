@@ -47,7 +47,7 @@ function DetailCard({ className, ...props }: React.ComponentProps<'section'>) {
     <section
       data-slot="detail-card"
       className={cn(
-        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        '876-card flex min-w-0 flex-col',
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out',
         className
       )}
@@ -99,6 +99,7 @@ function DetailCardHeader({
       data-slot="detail-card-header"
       className={cn(
         'border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5',
+        'sticky top-0 z-10 rounded-t-[calc(var(--radius-xl)-1px)] bg-[var(--876-surface)]',
         className
       )}
     >
@@ -289,7 +290,7 @@ function DetailCardBody({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="detail-card-body"
-      className={cn('876-scroll min-h-0 flex-1 overflow-y-auto p-6', className)}
+      className={cn('min-w-0 flex-1 p-6', className)}
       {...props}
     />
   )

@@ -88,6 +88,15 @@ describe('DetailCardHeader', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
+
+  it('renders as a sticky header at the top of the detail pane', () => {
+    const { container } = render(<DetailCardHeader title="Alejandra Reyes" />)
+    const header = container.querySelector('[data-slot="detail-card-header"]')!
+    expect(header).toBeInTheDocument()
+    expect(header.className).toContain('sticky')
+    expect(header.className).toContain('top-0')
+    expect(header.className).toContain('z-10')
+  })
 })
 
 describe('DetailCardMetaItem', () => {
