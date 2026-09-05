@@ -6,6 +6,7 @@ export {
 export { ensureAppMembershipForProvisioning } from './app-access-provisioning.service'
 export { materializeRoleTemplatesForApp } from './app-access-role-templates.service'
 export {
+  backfillAppAssignmentRoles,
   isEntitled,
   materializeProvisionedRolesForApp,
   resolveEffectiveAppPermissions,

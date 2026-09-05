@@ -32,6 +32,10 @@ export type WorkspaceIconKey =
   | 'dashboard'
   | 'customers'
   | 'requests'
+  | 'projects'
+  | 'issues'
+  | 'board'
+  | 'labels'
   | 'settings'
   | 'billing'
   | 'packages'
@@ -108,13 +112,13 @@ export const APP_WORKSPACES = [
     key: 'projects',
     label: '876 Projects',
     summary: 'Projects, issues, and the board this organization plans on.',
-    iconKey: 'requests',
+    iconKey: 'projects',
     sections: [
       { label: 'Overview', segment: '', iconKey: 'dashboard', exact: true },
-      { label: 'Projects', segment: 'projects', iconKey: 'requests' },
-      { label: 'Issues', segment: 'issues', iconKey: 'requests' },
-      { label: 'Board', segment: 'board', iconKey: 'items' },
-      { label: 'Labels', segment: 'labels', iconKey: 'categories' },
+      { label: 'Projects', segment: 'projects', iconKey: 'projects' },
+      { label: 'Issues', segment: 'issues', iconKey: 'issues' },
+      { label: 'Board', segment: 'board', iconKey: 'board' },
+      { label: 'Labels', segment: 'labels', iconKey: 'labels' },
     ],
   },
   {

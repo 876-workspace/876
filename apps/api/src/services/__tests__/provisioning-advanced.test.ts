@@ -7,7 +7,7 @@ const { prisma } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
-    appRole: { findFirst: vi.fn() },
+    appRole: { findFirst: vi.fn(), findMany: vi.fn() },
     app: { findFirst: vi.fn() },
     subscription: {
       findFirst: vi.fn(),
@@ -19,7 +19,7 @@ const { prisma } = vi.hoisted(() => ({
     price: { findFirst: vi.fn() },
     orgContact: { findMany: vi.fn(), create: vi.fn() },
     appAssignment: { upsert: vi.fn() },
-    membership: { update: vi.fn() },
+    membership: { update: vi.fn(), findFirst: vi.fn() },
     organization: { findUnique: vi.fn() },
     // repository layer uses $transaction for price repair
     $transaction: vi.fn(async (cb: (tx: unknown) => unknown) =>
@@ -138,6 +138,8 @@ beforeEach(() => {
   prisma.orgContact.findMany.mockResolvedValue([])
   prisma.orgContact.create.mockResolvedValue({})
   prisma.appAssignment.upsert.mockResolvedValue({})
+  prisma.membership.findFirst.mockResolvedValue({ role: 'staff' })
+  prisma.appRole.findMany.mockResolvedValue([])
   prisma.membership.update.mockResolvedValue({})
   prisma.organization.findUnique.mockResolvedValue({
     id: ORG,
@@ -734,7 +736,9 @@ describe('resolveRoleId', () => {
   it('scopes query to organization', async () => {
     await resolveRoleId(ORG, 'super_admin')
     expect(prisma.organizationRole.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { organizationId: ORG, name: 'super_admin' } })
+      expect.objectContaining({
+        where: { organizationId: ORG, name: 'super_admin' },
+      })
     )
   })
 })
@@ -772,7 +776,12 @@ describe('linkMembershipRole', () => {
       roleRow({ id: 'rol_owner', name: 'super_admin' })
     )
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'super_admin', roleId: 'rol_owner' },
+      {
+        id: 'mem_1',
+        organizationId: ORG,
+        role: 'super_admin',
+        roleId: 'rol_owner',
+      },
       NOW
     )
     expect(prisma.membership.update).not.toHaveBeenCalled()

@@ -5,39 +5,14 @@ import Link from 'next/link'
 import type { NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import {
-  BarChart3,
-  Building2,
-  CircleStackIcon,
-  ClipboardList,
-  Clock,
-  CreditCard,
-  ReceiptPercent,
-  Settings,
-  StickyNote,
-  Users,
-} from '@876/ui/icons'
-import {
   Sidebar as BaseSidebar,
   SidebarContent,
   SidebarGroup,
   SidebarHeader,
 } from '@876/ui/sidebar'
 
+import { resolveInvoiceNavIcon } from './nav-icons'
 import { NavLink } from './nav-link'
-
-const icons = {
-  dashboard: BarChart3,
-  customers: Users,
-  items: CircleStackIcon,
-  quotes: StickyNote,
-  invoices: ClipboardList,
-  'sales-receipts': ReceiptPercent,
-  payments: CreditCard,
-  expenses: Building2,
-  'time-tracking': Clock,
-  reports: CreditCard,
-  settings: Settings,
-}
 
 export function InvoiceSidebar({
   orgName,
@@ -47,7 +22,7 @@ export function InvoiceSidebar({
   navigation: NavGroupDefinition[]
 }) {
   return (
-    <BaseSidebar collapsible="icon" className="bg-sidebar">
+    <BaseSidebar variant="floating" collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href="/"
@@ -86,7 +61,7 @@ export function InvoiceSidebar({
                     key={item.key}
                     href={item.href}
                     title={item.title}
-                    icon={icons[item.icon as keyof typeof icons] ?? Settings}
+                    icon={resolveInvoiceNavIcon(item.icon)}
                     colorClassName={item.colorClassName}
                   />
                 ))}

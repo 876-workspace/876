@@ -8,7 +8,12 @@ const AppShell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SidebarProvider
     ref={ref}
-    className={cn('h-svh overflow-hidden', className)}
+    className={cn(
+      // The token is inherited by the sidebar and page frame; those surfaces
+      // consume it where their geometry requires a horizontal gutter.
+      'h-svh [scroll-padding-inline:var(--876-shell-gutter)] overflow-hidden',
+      className
+    )}
     {...props}
   />
 ))
@@ -78,7 +83,10 @@ const AppShellMain = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('min-h-0 min-w-0 flex-1 overflow-y-auto', className)}
+    className={cn(
+      'min-h-0 min-w-0 flex-1 [scroll-padding-inline:var(--876-shell-gutter)] overflow-y-auto',
+      className
+    )}
     {...props}
   />
 ))

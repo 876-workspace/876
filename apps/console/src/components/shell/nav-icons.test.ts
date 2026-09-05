@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { navConfig } from './nav-config'
 import {
   NAV_ICON_COLORS,
   NAV_ICONS,
@@ -109,5 +110,24 @@ describe('resolveNavIcon', () => {
 
   it('falls back to the neutral group icon for an unknown key', () => {
     expect(resolveNavIcon('no-such-icon')).toBe(resolveNavIcon('widgets'))
+  })
+})
+
+describe('rail icon collision assertions', () => {
+  it('resolves distinct icon components for every visible entry in any single rendered rail in navConfig', () => {
+    // 1. Root platform rail
+    const rootEntries = navConfig.flatMap((group) => group.entries)
+    const rootIcons = rootEntries.map((entry) => resolveNavIcon(entry.icon))
+    expect(new Set(rootIcons).size).toBe(rootIcons.length)
+
+    // 2. Each drill-down context rail formed by entries with children
+    for (const entry of rootEntries) {
+      if (entry.children && entry.children.length > 0) {
+        const childIcons = entry.children.map((child) =>
+          resolveNavIcon(child.icon)
+        )
+        expect(new Set(childIcons).size).toBe(childIcons.length)
+      }
+    }
   })
 })

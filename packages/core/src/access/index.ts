@@ -26,6 +26,11 @@ export {
   resolveNavigation,
 } from './navigation'
 export type { NavEntry, NavGroupDefinition, NavRequirement } from './navigation'
+export {
+  resolveAppAssignmentRole,
+  type AppAssignmentRoleCandidate,
+  type AppAssignmentRoleResolution,
+} from './app-assignment-role'
 
 // Bounded on purpose: a permission key is a stable, persisted identifier, so an
 // unbounded one is both a storage hazard and an unusable UI label.

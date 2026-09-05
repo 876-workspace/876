@@ -54,13 +54,11 @@ const PANEL_WIDTH = 'w-56'
 const RAIL_COLUMN_WIDTH = 'w-11'
 
 /**
- * How far the card sits from the window edge and from the main region. Both
- * grow with the panel: a rail floating in 4px of gutter reads as deliberate,
- * but the panel is nearly four times as wide and its labels run much closer to
- * the card's edge, so the same 4px reads as the panel touching the content.
+ * The in-flow sidebar owns the window inset only. Page owns the adjacent
+ * content gutter, so the card has no right inset to compound with it.
  */
-const RAIL_INSET = 'pr-1 pl-3'
-const PANEL_INSET = 'pr-2 pl-5'
+const RAIL_INSET = 'pl-[var(--876-shell-gutter)]'
+const PANEL_INSET = 'pl-[var(--876-shell-gutter)]'
 
 /**
  * The card resizes in both axes: it widens when expanded, and its height
@@ -242,7 +240,7 @@ function BackControl({
 }) {
   // Names the level actually returned to, which is not always the root once
   // a workspace sits beneath a product.
-  const label = `Back to ${parent.title}`
+  const label = `Back to ${parent.backLabel}`
 
   return (
     <Tooltip>
@@ -405,7 +403,7 @@ function ContextEntry({
             onClick={onOpenContext}
             className={cn(
               expanded
-                ? 'group flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.8125rem] whitespace-nowrap transition-colors'
+                ? 'group flex h-8.5 min-w-0 items-center gap-2.5 rounded-lg px-2 text-[0.8125rem] whitespace-nowrap transition-colors'
                 : navLinkBase,
               active
                 ? expanded

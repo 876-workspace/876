@@ -1,4 +1,5 @@
 import { listObject, type ListObject } from '@/http/envelope'
+import { resolveAppAssignmentRole } from '@876/core/access'
 import {
   findAppForAccessById,
   findAppForAccessBySlug,
@@ -10,6 +11,7 @@ import {
   listMembershipsForAccess,
 } from '@/modules/memberships'
 import {
+  findActiveMembershipWithRoleForRoleBackfill,
   getOrgAppEntitlement,
   listOrgAppEntitlements,
   requireOrgAppAccessPermission,
@@ -64,6 +66,7 @@ type AccessMembership = {
   organization_id: string
   user_id: string
   status: string
+  role: string
 }
 
 export type EffectiveAppPermissionResolution = {
@@ -246,6 +249,7 @@ async function requireTargetMembership(params: {
     organization_id: membership.organization_id,
     user_id: membership.user_id,
     status: membership.status,
+    role: membership.role,
   }
 }
 
@@ -857,13 +861,19 @@ export async function createAppMembership(
     membershipId: body.membership_id,
   })
 
-  const role = body.app_role_id
+  const requestedRole = body.app_role_id
     ? await requireRole({
         appId: app.id,
         organizationId,
         roleId: body.app_role_id,
       })
-    : await repository.findDefaultRole(app.id, organizationId)
+    : null
+  const resolvedRole = resolveAppAssignmentRole({
+    organizationRole: membership.role,
+    requestedRoleId: requestedRole?.id,
+    roles: await repository.listRoles(app.id, organizationId),
+  })
+  const role = resolvedRole.role as AppRoleRow | null
   if (!role) throw appError('app-role/not-found')
   await requireSuperAdminForElevation(organizationId, role, principal)
 
@@ -1057,6 +1067,7 @@ export async function listAppMembershipsForMember(
     organization_id: membership.organization_id,
     user_id: membership.user_id,
     status: membership.status,
+    role: membership.role,
   }
 
   const entitlements = (await listOrgAppEntitlements(organizationId)).filter(
@@ -1230,6 +1241,89 @@ export async function materializeProvisionedRolesForApp(params: {
   }
 
   return { seeded, skipped }
+}
+
+type BackfillCandidate = {
+  assignmentId: string
+  organizationId: string
+  userId: string
+  appId: string
+  fromRoleId: string
+  toRoleId: string
+  organizationRole: string
+}
+
+async function candidateStillValid(row: BackfillCandidate): Promise<boolean> {
+  const [membership, roles] = await Promise.all([
+    findActiveMembershipWithRoleForRoleBackfill(
+      row.organizationId,
+      row.userId,
+      row.organizationRole
+    ),
+    repository.listLiveOrganizationAppRolesForRoleBackfill(
+      row.organizationId,
+      row.appId
+    ),
+  ])
+  if (!membership) return false
+
+  const currentRole = resolveAppAssignmentRole({
+    organizationRole: row.organizationRole,
+    roles,
+  }).role
+  return currentRole?.id === row.toRoleId
+}
+
+export async function backfillAppAssignmentRoles(apply: boolean) {
+  const assignments =
+    await repository.listDefaultRoleAssignmentsForRoleBackfill()
+  const rows: BackfillCandidate[] = []
+  for (const assignment of assignments) {
+    const membership = assignment.user.memberships.find(
+      (candidate) => candidate.organizationId === assignment.organizationId
+    )
+    if (!membership || !assignment.appRoleId) continue
+
+    const roles = await repository.listLiveOrganizationAppRolesForRoleBackfill(
+      assignment.organizationId,
+      assignment.appId
+    )
+    const role = resolveAppAssignmentRole({
+      organizationRole: membership.role,
+      roles,
+    }).role
+    if (!role || role.id === assignment.appRoleId) continue
+
+    rows.push({
+      assignmentId: assignment.id,
+      organizationId: assignment.organizationId,
+      userId: assignment.userId,
+      appId: assignment.appId,
+      fromRoleId: assignment.appRoleId,
+      toRoleId: role.id,
+      organizationRole: membership.role,
+    })
+  }
+
+  let changed = 0
+  if (apply) {
+    for (const row of rows) {
+      if (!(await candidateStillValid(row))) continue
+
+      // Compare-and-set so a concurrent role change wins over the backfill.
+      changed +=
+        await repository.compareAndSetAssignmentRoleForRoleBackfill(row)
+    }
+  }
+
+  return {
+    object: 'app_assignment_role_backfill' as const,
+    dryRun: !apply,
+    examined: assignments.length,
+    changed,
+    skippedAfterDiscovery: apply ? rows.length - changed : 0,
+    candidates: rows,
+  }
 }
 
 export { isEntitled }

@@ -225,4 +225,29 @@ describe('applyInviteAppAccess', () => {
       actorUserId: 'user_admin',
     })
   })
+
+  it('routes an unselected invite through canonical automatic role resolution', async () => {
+    appAccess.ensureAppMembershipForProvisioning.mockResolvedValue({
+      id: 'apa_02',
+    })
+
+    const result = await applyInviteAppAccess({
+      organizationId: ORG,
+      userId: 'user_02',
+      sourceAppId: APP,
+      actorUserId: 'user_admin',
+    })
+
+    expect(result).toEqual({ id: 'apa_02' })
+    expect(appAccess.ensureAppMembershipForProvisioning).toHaveBeenCalledTimes(
+      1
+    )
+    expect(appAccess.ensureAppMembershipForProvisioning).toHaveBeenCalledWith({
+      organizationId: ORG,
+      userId: 'user_02',
+      appId: APP,
+      appRoleId: null,
+      actorUserId: 'user_admin',
+    })
+  })
 })

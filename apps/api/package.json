@@ -15,6 +15,7 @@
     "provisioning:import": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local scripts/import-provisioning.ts",
     "provisioning:verify": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local scripts/verify-provisioning.ts",
     "provisioning:backfill-selections": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local scripts/backfill-provisioning-selections.ts",
+    "app-access:backfill-roles": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local scripts/backfill-app-assignment-roles.ts",
     "generate": "node scripts/prisma-generate.mjs",
     "node:dev": "tsx watch --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local src/server.ts",
     "node:build": "tsup",

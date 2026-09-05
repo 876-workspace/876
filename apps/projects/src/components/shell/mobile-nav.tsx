@@ -16,7 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@876/ui/sheet'
-import { MenuIcon, Settings } from '@876/ui/icons'
+import { MenuIcon } from '@876/ui/icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -25,7 +25,7 @@ import type { ProjectsUiFeatures } from '@/types/features'
 import { GlobalAdd } from './global-add'
 import { OrgSwitcher } from './org-switcher'
 import { isActiveProjectsPath } from './nav-link'
-import { sidebarIcons } from './sidebar'
+import { NavIcon } from './nav-icons'
 
 const mobileNavItemBase =
   'focus-visible:ring-sidebar-ring flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[0.9375rem] leading-5 transition-colors focus-visible:ring-2 focus-visible:outline-hidden'
@@ -88,9 +88,6 @@ export function MobileNav({
                   <div className="border-876-surface-border my-2 border-t" />
                 ) : null}
                 {group.entries.map((item) => {
-                  const Icon =
-                    sidebarIcons[item.icon as keyof typeof sidebarIcons] ??
-                    Settings
                   const active = isActiveProjectsPath(pathname, item.href)
 
                   return (
@@ -105,8 +102,8 @@ export function MobileNav({
                       )}
                     >
                       <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg dark:bg-white/8">
-                        <Icon
-                          aria-hidden="true"
+                        <NavIcon
+                          icon={item.icon}
                           className={cn('size-[1.125rem]', item.colorClassName)}
                         />
                       </span>

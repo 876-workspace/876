@@ -11,6 +11,7 @@ import { useConsoleUser } from '@/stores/user'
 
 import { client } from '@/lib/client'
 import { PERMISSION_GROUPS } from '@/lib/permissions'
+import { setPermissionGroupSelection } from '@/lib/permission-grouping'
 import { PermissionGroupPicker } from '@/app/(app)/settings/users/roles/_components/permission-group-picker'
 
 export function CreateRoleForm() {
@@ -30,6 +31,10 @@ export function CreateRoleForm() {
       else next.add(perm)
       return next
     })
+  }
+
+  function setGroup(group: (typeof PERMISSION_GROUPS)[number], grant: boolean) {
+    setSelected((prev) => setPermissionGroupSelection(group, prev, grant))
   }
 
   function handleNameInput(value: string) {
@@ -138,6 +143,7 @@ export function CreateRoleForm() {
           groups={PERMISSION_GROUPS}
           selected={selected}
           onToggle={toggle}
+          onSetGroup={setGroup}
         />
         <p className="text-muted-foreground mt-2 text-xs">
           {selected.size} permission{selected.size !== 1 ? 's' : ''} selected

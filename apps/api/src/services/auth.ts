@@ -284,7 +284,6 @@ export type AuthDeps = {
     userId: string
     now: number
     sourceAppId?: string | null
-    appRoleKey?: 'super-admin' | 'admin' | 'staff'
   }): Promise<void>
   /** Apply the selected setup's Work service/capability policy. */
   ensureWork(organizationId: string): Promise<void>
@@ -852,7 +851,6 @@ export class AuthService {
         userId: localUser.id,
         now,
         sourceAppId: params.sourceAppId ?? null,
-        appRoleKey: 'super-admin',
       })
 
       await this.deps.ensureDefaultContact(
@@ -963,7 +961,6 @@ export class AuthService {
         userId: localUser.id,
         now,
         sourceAppId: params.sourceAppId ?? null,
-        appRoleKey: 'super-admin',
       })
       await this.deps.ensureWork(localOrg.id)
 
@@ -1367,8 +1364,7 @@ export function createAuthService(): AuthService {
     provisionOrganization: (organizationId, now, options) =>
       provisionOrganization(organizationId, now, options),
     assignMemberApps: (params) => assignMemberApps(params),
-    ensureWork: (organizationId) =>
-      workspace.work.ensure({ organizationId }),
+    ensureWork: (organizationId) => workspace.work.ensure({ organizationId }),
     ensureDefaultContact: (organizationId, user, now) =>
       ensureDefaultContact(organizationId, user, now),
     deliverOtp: postOtpCode,

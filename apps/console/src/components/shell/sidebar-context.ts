@@ -24,6 +24,8 @@ export const PLATFORM_CONTEXT_KEY = 'platform'
 export type SidebarContext = {
   key: string
   kind: SidebarContextKind
+  /** Name used by controls that return to this context. */
+  backLabel: string
   title: string
   /**
    * A second line under the title, for a context that names two things.
@@ -69,7 +71,8 @@ function platformContext(
   return {
     key: PLATFORM_CONTEXT_KEY,
     kind: 'platform',
-    title: 'Console',
+    backLabel: 'Console',
+    title: '',
     href: '/',
     parentKey: null,
     groups: navigation,
@@ -92,6 +95,7 @@ function sectionContexts(
             {
               key: entry.key,
               kind: 'section' as const,
+              backLabel: entry.title,
               title: entry.title,
               href: entry.href,
               icon: entry.icon,

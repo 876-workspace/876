@@ -148,7 +148,7 @@ function MobileContextBody({
           className="text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring mb-2 flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-hidden"
         >
           <ChevronsLeft aria-hidden="true" className="size-4" />
-          {`Back to ${parent.title}`}
+          {`Back to ${parent.backLabel}`}
         </button>
       ) : null}
 

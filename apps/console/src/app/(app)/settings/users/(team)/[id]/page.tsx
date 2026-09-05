@@ -14,8 +14,10 @@ const ROLE_LABELS: Record<string, string> = {
 
 function permissionLabel(value: string): string {
   for (const group of PERMISSION_GROUPS) {
-    const match = group.permissions.find((p) => p.value === value)
-    if (match) return match.label
+    for (const permissionModule of group.modules) {
+      const match = permissionModule.permissions.find((p) => p.value === value)
+      if (match) return match.label
+    }
   }
   return value
 }

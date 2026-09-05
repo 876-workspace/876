@@ -168,7 +168,7 @@ describe('OrganizationIssueDetailPage', () => {
     expect(mocks.listComments).toHaveBeenCalledWith('org_123', 'APO-99')
     expect(mocks.listEvents).toHaveBeenCalledWith('org_123', 'APO-99')
 
-    expect(screen.getByText('APO-99')).toBeInTheDocument()
+    expect(screen.getByText('APO · APO-99')).toBeInTheDocument()
     expect(
       screen.getByRole('heading', {
         name: 'Oxygen pressure fluctuating in Module B',

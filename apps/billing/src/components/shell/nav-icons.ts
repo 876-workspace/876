@@ -1,0 +1,31 @@
+import {
+  BarChart3,
+  Building2,
+  BuildingLibraryIcon,
+  ChartPieIcon,
+  CircleStackIcon,
+  ClipboardList,
+  IdentificationIcon,
+  RefreshCw,
+  Settings,
+  UserCircleIcon,
+  type IconComponent,
+} from '@876/ui/icons'
+
+/** Semantic icon registry for every Billing rail entry. */
+export const BILLING_NAV_ICONS: Record<string, IconComponent> = {
+  dashboard: BarChart3,
+  customers: UserCircleIcon,
+  items: CircleStackIcon,
+  sales: ClipboardList,
+  subscriptions: RefreshCw,
+  purchases: Building2,
+  banking: BuildingLibraryIcon,
+  payroll: IdentificationIcon,
+  reports: ChartPieIcon,
+  settings: Settings,
+}
+
+export function resolveBillingNavIcon(key: string): IconComponent {
+  return BILLING_NAV_ICONS[key] ?? Settings
+}

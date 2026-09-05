@@ -1,5 +1,6 @@
 import { AppHttpError } from '@/http/errors'
 import { listObject, type ListObject } from '@/http/envelope'
+import { resolveAppAssignmentRole } from '@876/core/access'
 import {
   deleteMembership as deleteMembershipLifecycle,
   updateMembership as updateMembershipLifecycle,
@@ -324,8 +325,7 @@ export async function updateOrgMemberRole(
     if (!caller || !isSuperAdminRoleName(caller.role)) {
       throw new AppHttpError({
         code: 'role/super-admin-required',
-        message:
-          'Only a super admin can grant or remove the super admin role.',
+        message: 'Only a super admin can grant or remove the super admin role.',
         httpStatus: 403,
       })
     }
@@ -466,11 +466,16 @@ export async function createAppAssignment(
     })
   }
   const now = BigInt(nowUnixSeconds())
+  const role = resolveAppAssignmentRole({
+    organizationRole: membership.role,
+    roles: await repository.listAppRolesByOrgApp(orgId, app.id),
+  }).role
   const assignment = await repository.assignApp({
     id: generateId('appAssignment'),
     organizationId: orgId,
     userId: body.user_id,
     appId: app.id,
+    appRoleId: role?.id ?? null,
     assignedBy: principal.userId,
     now,
   })

@@ -1,25 +1,25 @@
 import { AppError } from '@876/ui/app-error'
+import type { ProjectStatus } from '@876/projects/contracts'
 import { ProjectsList } from '@876/projects-ui/project-list'
 
 import { projects } from '@/lib/services/projects'
 
 /**
- * The data half of the Projects list column, shared by 876's own `/projects`
- * section and by every organization workspace.
- *
- * The status filter is applied inside `ProjectsList` rather than threaded into
- * this call: the list lives in a layout so it survives opening a record, and a
- * layout receives no `searchParams` (`.claude/rules/app-layout.md` §5a).
+ * The data half of the Projects list, shared by 876's own `/projects` section
+ * and by every organization workspace.
  */
 export async function ProjectsData({
   organizationId,
   base,
+  status,
 }: {
   organizationId: string
   /** The host's Projects root, e.g. `/projects` or `/workspace/acme/projects`. */
   base: string
+  /** Already narrowed by the route's isProjectStatus guard. */
+  status?: ProjectStatus
 }) {
-  const result = await projects.projects.list(organizationId)
+  const result = await projects.projects.list(organizationId, { status })
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">

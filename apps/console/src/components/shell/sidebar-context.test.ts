@@ -53,6 +53,7 @@ const navigation: readonly NavGroupDefinition[] = [
 const storageContext: SidebarContextDefinition = {
   key: 'storage',
   kind: 'product',
+  backLabel: 'Storage',
   title: 'Storage',
   href: '/storage',
   icon: 'storage',
@@ -63,6 +64,7 @@ const storageContext: SidebarContextDefinition = {
 const workspaceContext: SidebarContextDefinition = {
   key: 'storage-workspace',
   kind: 'workspace',
+  backLabel: 'Acme storage',
   title: 'Acme storage',
   href: '/storage/acme',
   parentKey: 'storage',
@@ -112,9 +114,45 @@ describe('resolveSidebarContextStack', () => {
       ])
       expect(stack[0]?.groups).toEqual([])
     })
+
+    it('keeps Console for return controls without rendering it as the root title', () => {
+      const [platform] = resolveSidebarContextStack('/users', navigation)
+
+      expect(platform?.title).toBe('')
+      expect(platform?.backLabel).toBe('Console')
+    })
+
+    it('keeps the root href at the Console home route', () => {
+      const [platform] = resolveSidebarContextStack('/users', navigation)
+
+      expect(platform?.href).toBe('/')
+    })
+
+    it('keeps the root parentless after removing its label', () => {
+      const [platform] = resolveSidebarContextStack('/users', navigation)
+
+      expect(platform?.parentKey).toBeNull()
+    })
   })
 
   describe('sections implied by an entry with children', () => {
+    it('keeps an informative label for a drill-down section', () => {
+      const [, projects] = resolveSidebarContextStack('/projects', navigation)
+
+      expect(projects?.title).toBe('Projects')
+    })
+
+    it('keeps the drill-down section attached to the root', () => {
+      const [, projects] = resolveSidebarContextStack('/projects', navigation)
+
+      expect(projects?.parentKey).toBe(PLATFORM_CONTEXT_KEY)
+    })
+
+    it('keeps the drill-down section href informative', () => {
+      const [, projects] = resolveSidebarContextStack('/projects', navigation)
+
+      expect(projects?.href).toBe('/projects')
+    })
     it('opens the section for the section root', () => {
       expect(keys('/projects')).toEqual([PLATFORM_CONTEXT_KEY, 'projects'])
     })

@@ -12,6 +12,7 @@ import {
   SYSTEM_ROLE_NAMES,
   hasPermission,
   permissionsForRole,
+  permissionGroupKeys,
 } from './permissions'
 
 describe('permissions — weird edge cases', () => {
@@ -232,26 +233,25 @@ describe('permissions — weird edge cases', () => {
       ),
       ...operatorExclusiveCatalog().permissions.map((p) => p.key),
     ])
-    for (const g of PERMISSION_GROUPS) {
-      for (const p of g.permissions) {
-        expect(p.value.includes(':') || p.value.includes('/')).toBe(true)
-        expect(universeKeys.has(p.value)).toBe(true)
-        expect(p.label.trim().length).toBeGreaterThan(0)
-      }
+    for (const p of permissionGroupKeys(PERMISSION_GROUPS).map((value) => ({
+      value,
+      label: value,
+    }))) {
+      expect(p.value.includes(':') || p.value.includes('/')).toBe(true)
+      expect(universeKeys.has(p.value)).toBe(true)
+      expect(p.label.trim().length).toBeGreaterThan(0)
     }
   })
   it('PERMISSION_GROUPS exposes canonical dangerous permissions', () => {
-    const all = PERMISSION_GROUPS.flatMap((g) =>
-      g.permissions.map((p) => p.value)
-    )
+    const all = permissionGroupKeys(PERMISSION_GROUPS)
     expect(all.includes('console:danger-zone')).toBe(true)
     expect(all.includes('console:danger_zone')).toBe(false)
     expect(all.includes('users:delete')).toBe(true)
   })
   it('PERMISSION_GROUPS handles RTL override in label (still preserves)', () => {
-    const found = PERMISSION_GROUPS.flatMap((g) => g.permissions).find(
-      (p) => p.value === 'users:read'
-    )
+    const found = PERMISSION_GROUPS.flatMap((g) =>
+      g.modules.flatMap((module) => module.permissions)
+    ).find((p) => p.value === 'users:read')
     expect(found?.label).toBe('Read')
   })
   it('hasPermission handles permission with newline', () => {

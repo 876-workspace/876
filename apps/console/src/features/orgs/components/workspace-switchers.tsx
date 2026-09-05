@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +11,6 @@ import {
 } from '@876/ui/dropdown-menu'
 import { ArrowLeft, ChevronDown } from '@876/ui/icons'
 
-import { resolveWorkspaceReturn } from '../workspace-return'
 import {
   workspaceBase,
   workspaceIndex,
@@ -43,8 +41,8 @@ export type WorkspaceSwitchersProps = {
  * Header navigation controls for an operator workspace.
  *
  * A workspace is a top-level context, so nothing above it names the
- * organization or offers a way back. The return link preserves the operator's
- * entry route, while the organization and app switchers provide the two
+ * organization or offers a way back. The return link goes to the organization
+ * directory, while the organization and app switchers provide the two
  * primary navigation axes (cross-organization and cross-product) an operator
  * actually moves along.
  */
@@ -56,18 +54,15 @@ export function WorkspaceSwitchers({
   orgs,
   apps,
 }: WorkspaceSwitchersProps) {
-  const from = useSearchParams().get('from')
-  const back = resolveWorkspaceReturn(from, orgSlug, orgName)
-
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <Link
-        href={back.href}
-        aria-label={`Back to ${back.label}`}
+        href="/orgs"
+        aria-label="Back to Organizations"
         className="text-muted-foreground hover:text-foreground hover:bg-muted/70 flex min-w-0 items-center gap-1.5 rounded-lg px-2 py-1"
       >
         <ArrowLeft className="size-3.5" />
-        {back.label}
+        Organizations
       </Link>
 
       <span aria-hidden="true" className="text-muted-foreground/40">

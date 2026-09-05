@@ -1,5 +1,5 @@
 import {
-  BuildingOffice2Icon,
+  ArchiveBoxIcon,
   ChartBarIcon,
   ChartPieIcon,
   DocumentTextIcon,
@@ -86,7 +86,7 @@ export const nav: NavGroup[] = [
       {
         title: 'Warehouse',
         href: '/warehouse',
-        icon: BuildingOffice2Icon,
+        icon: ArchiveBoxIcon,
         color: 'var(--876-orange)',
       },
     ],

@@ -1,3 +1,4 @@
+import { resolveAppAssignmentRole } from '@876/core/access'
 import { prisma } from '@/db/client'
 
 /** Every query organization provisioning makes. */
@@ -271,10 +272,16 @@ export async function assignApp(params: {
       createdAt: params.now,
       updatedAt: params.now,
     },
+    // Assignment provisioning is creation-only for role selection. Replays may
+    // reactivate access but must not silently widen a later admin choice.
     update: {
       status: 'active',
-      appRoleId: params.appRoleId,
       assignedBy: params.assignedBy,
+      revokedAt: null,
+      revokedBy: null,
+      deletedAt: null,
+      deletedBy: null,
+      deletionReason: null,
       updatedAt: params.now,
     },
   })
@@ -290,22 +297,30 @@ export async function assignApp(params: {
 export function findProvisionedAppRole(
   organizationId: string,
   appId: string,
-  roleKey?: string
+  organizationRole: string
 ) {
-  const keys =
-    roleKey === 'super-admin' ? ['super-admin', 'super_admin'] : undefined
+  return prisma.appRole
+    .findMany({
+      where: {
+        organizationId,
+        appId,
+        deletedAt: null,
+      },
+      orderBy: [{ isDefault: 'desc' }, { position: 'asc' }, { id: 'asc' }],
+      select: { id: true, key: true, isDefault: true, deletedAt: true },
+    })
+    .then((roles) => resolveAppAssignmentRole({ organizationRole, roles }).role)
+}
 
-  return prisma.appRole.findFirst({
-    where: {
-      organizationId,
-      appId,
-      deletedAt: null,
-      ...(roleKey
-        ? { key: keys ? { in: keys } : roleKey }
-        : { isDefault: true }),
-    },
-    select: { id: true },
+export async function findMembershipRole(
+  organizationId: string,
+  userId: string
+): Promise<string | null> {
+  const membership = await prisma.membership.findFirst({
+    where: { organizationId, userId, deletedAt: null, status: 'active' },
+    select: { role: true },
   })
+  return membership?.role ?? null
 }
 
 export async function updateMembershipRole(

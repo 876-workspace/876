@@ -32,6 +32,7 @@ export function workspaceSidebarContext(
   return {
     key: `workspace-${orgSlug}-${workspace.key}`,
     kind: 'workspace',
+    backLabel: workspace.label,
     title: workspace.label,
     // The rail is the only chrome naming the organization once the workspace is
     // top-level, so the subtitle is not decoration: without it an operator

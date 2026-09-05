@@ -392,6 +392,32 @@ claim unverified work were the most useful part. Reinforce that: tell it a
 truthful "not executed" beats a confident claim, and that a fabricated test
 count is worse than a missing phase.
 
+### A connector timeout is not a spent budget
+
+GPT web reaches GitHub through a connector, and that connector fails
+transiently. Observed repeatedly: a tool timeout, a rate-limit response, or a
+temporary connector error gets read as "GitHub access is exhausted", and the
+run abandons an operation it was one retry away from completing.
+
+Put this in the brief, because the model will not assume it:
+
+1. Retry the same read or write after a short gap.
+2. If it fails transiently again, retry at least once more while the operation
+   is still needed.
+3. **Preserve the exact reference the retry needs** — repository, branch, PR
+   number, SHA, workflow run id, job id, file path — rather than dropping it
+   along with the failed attempt.
+4. Call an operation blocked only when repeated retries give a _stable_
+   non-transient answer: a real permission denial, an unsupported endpoint, a
+   missing resource, or a reproducible service-side failure.
+5. **Distinguish a connector failure from an Actions runner failure.** A
+   workflow job that reports an empty step list and has no log because it never
+   started is a CI execution problem. It says nothing about the connector, and
+   retrying the connector will not fix it.
+
+The same brief should name the run's durable references — repo, branch, PR — in
+one place, so a retry after a failure has something to retry _against_.
+
 ### Reviewing what comes back
 
 Pull, then in this order:
@@ -463,6 +489,50 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
   either flag errors.
 - Always redirect `< /dev/null`.
 - Same non-overlapping-file-scope and no-commit rules as Codex/`opencode`.
+
+## Never redirect a delegated run's stdout to a file in the repo
+
+**Do not do this:**
+
+```bash
+codex exec -m gpt-5.6-terra "$(cat brief.md)" > plans/<run>/reports/codex/phase2-run.log 2>&1 &
+```
+
+A single Codex or `agy` run emits roughly **20,000 lines** — it echoes the brief,
+every rule file it loads, every tool call, and every file it reads. Measured on
+2026-09-05: seven runs produced **3.9 MB** of transcripts, the largest a single
+1.1 MB file, and three were committed before anyone noticed.
+
+Two costs, both severe:
+
+1. **It poisons the orchestrator's context.** Any later `cat`, `tail`, or even a
+   `grep` with loose anchors pulls thousands of lines of echoed rule text into
+   the window. The user hit exactly this and had to stop the session.
+2. **It bloats the repository permanently.** `plans/` is committed on purpose
+   (`.agents/rules/implementation-tracker.md`), so a transcript committed once is
+   in history forever.
+
+`plans/**/*-run.log` is gitignored. Do not add an exception, and do not rename
+around it.
+
+### What to do instead
+
+- **Let the transcript go to the harness.** `run_in_background: true` on the
+  Bash tool already captures stdout to a temp path outside the repo. That is the
+  only copy anyone needs, and it is the one to read if a run genuinely misbehaves.
+- **The deliverable is the delegate's report `.md`**, which every brief must
+  require: files changed, decisions, counted test numbers, verification output,
+  and what could not be verified. Read that, not the transcript.
+- **Judge the work by the diff and your own verification**, never by the
+  transcript. `git status`, `git diff`, and running the checks yourself are the
+  acceptance gate — `.agents/rules/cli.md` already says a delegation you never
+  inspect is not delegation, and the transcript is not the inspection.
+- If you must keep a transcript for one debugging session, write it to `/tmp`,
+  never under `plans/` or anywhere else in the working tree.
+
+**Never `cat` or `tail` a delegated run transcript into your context.** If you
+need something from it, `grep` with a tight anchor and a hard `head -n`, and
+prefer the report.
 
 ## Shared rules across all delegated CLIs/sub-agents
 

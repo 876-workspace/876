@@ -10,6 +10,7 @@ import { track } from '@/lib/analytics/track'
 import { useConsoleUser } from '@/stores/user'
 import { client } from '@/lib/client'
 import { PERMISSION_GROUPS } from '@/lib/permissions'
+import { setPermissionGroupSelection } from '@/lib/permission-grouping'
 import { PermissionGroupPicker } from './permission-group-picker'
 
 type Props = {
@@ -48,6 +49,11 @@ export function PermissionEditor({
       else next.add(perm)
       return next
     })
+    setFeedback(null)
+  }
+
+  function setGroup(group: (typeof PERMISSION_GROUPS)[number], grant: boolean) {
+    setSelected((prev) => setPermissionGroupSelection(group, prev, grant))
     setFeedback(null)
   }
 
@@ -163,6 +169,7 @@ export function PermissionEditor({
           groups={PERMISSION_GROUPS}
           selected={selected}
           onToggle={toggle}
+          onSetGroup={setGroup}
         />
       </div>
 

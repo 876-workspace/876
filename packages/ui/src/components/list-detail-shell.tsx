@@ -141,7 +141,10 @@ export function ListDetailShell({
           '@3xl/list-detail:transition-[grid-template-columns,column-gap]',
           '@3xl/list-detail:duration-300 @3xl/list-detail:ease-out',
           open
-            ? cn(LIST_WIDTHS[listWidth], '@3xl/list-detail:gap-x-4')
+            ? cn(
+                LIST_WIDTHS[listWidth],
+                '@3xl/list-detail:gap-x-[var(--876-shell-gutter)]'
+              )
             : '@3xl/list-detail:grid-cols-[minmax(0,1fr)_0fr] @3xl/list-detail:gap-x-0'
         )}
       >
