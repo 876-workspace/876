@@ -94,10 +94,10 @@ describe('OrganizationProjectDetailPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Falcon Heavy' })
     ).toBeInTheDocument()
-    expect(screen.getByText('(FAL)')).toBeInTheDocument()
+    expect(screen.getByText('FAL')).toBeInTheDocument()
     expect(screen.getByText('Heavy lift launch vehicle')).toBeInTheDocument()
     expect(screen.getByText('user_lead')).toBeInTheDocument()
-    expect(screen.getByText('Back to projects')).toBeInTheDocument()
+    expect(screen.queryByText('Back to projects')).toBeNull()
   })
 
   it('renders AppError notice when project retrieve fails', async () => {
