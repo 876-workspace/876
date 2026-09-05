@@ -2,6 +2,7 @@
 @import '@876/ui/876.css';
 
 @source '../';
+@source '../../../../packages/billing/src/navigation.ts';
 /* Shared product-UI packages. */
 @source '../../../../packages/billing-ui/src/**/*.{ts,tsx}';
 /* Shared widgets package — sticky colors, Editor.js host UI, dock. */
