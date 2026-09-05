@@ -30,3 +30,24 @@ export const SHARED_UI_PACKAGES = [
 export function sharedTranspilePackages(extra = []) {
   return [...new Set([...SHARED_UI_PACKAGES, ...extra])]
 }
+
+/**
+ * Shared product-UI packages whose component source trees must be scanned
+ * by Tailwind via `@source` in host apps that transpile them.
+ *
+ * `@876/ui` is excluded because its design tokens and UI primitives
+ * are imported directly via `@import '@876/ui/styles.css'`.
+ */
+export const SHARED_PRODUCT_UI_PACKAGES = SHARED_UI_PACKAGES.filter(
+  (pkg) => pkg !== '@876/ui'
+)
+
+/**
+ * Expected Tailwind v4 `@source` glob for a package from within an app's
+ * `apps/<app>/src/app/globals.css`.
+ */
+export function tailwindSourceGlobForPackage(packageName) {
+  const shortName = packageName.replace(/^@876\//, '')
+  return `../../../../packages/${shortName}/src/**/*.{ts,tsx}`
+}
+
