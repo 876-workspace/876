@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({ request: vi.fn() }))
 
 vi.mock('./request', () => ({ request: mocks.request }))
 
-import { revoke } from './team'
+import { revoke, update } from './team'
 
 describe('team client', () => {
   beforeEach(() => {
@@ -52,5 +52,19 @@ describe('team client', () => {
 
     expect(result).toEqual({ data: { count: 0 }, error: null })
     expect(mocks.request).toHaveBeenCalledTimes(1)
+  })
+
+  it('updates a member through the same Console-owned resource route', async () => {
+    mocks.request.mockResolvedValue({
+      data: { userId: 'user_123' },
+      error: null,
+    })
+
+    await update('user_123', { status: 'suspended' })
+
+    expect(mocks.request).toHaveBeenCalledWith('/api/team/user_123', {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'suspended' }),
+    })
   })
 })
