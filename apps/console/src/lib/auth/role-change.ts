@@ -1,10 +1,20 @@
 import 'server-only'
 
-import { canonicalConsoleRole, CONSOLE_SUPER_ADMIN_ROLE } from '@/lib/permissions'
+import { getError } from '@/lib/errors'
+import {
+  canonicalConsoleRole,
+  CONSOLE_SUPER_ADMIN_ROLE,
+} from '@/lib/permissions'
 import { team } from '@/lib/service/team'
 import type { TeamServiceResult } from '@/lib/service/team/validation'
-import type { Access, RoleCheckResult, RoleChangeResult } from '@/types/auth'
+import type {
+  Access,
+  RoleCheckResult,
+  RoleChangeResult,
+  TeamGrantChangeResult,
+} from '@/types/auth'
 import { ASSIGNABLE_ROLES, type AssignableRole } from '@/types/role'
+import type { TeamGrantUpdate } from '@/types/team'
 
 function normalizeAssignableRole(value: string): AssignableRole | null {
   const normalized = canonicalConsoleRole(value)
@@ -27,10 +37,12 @@ export async function assertRoleChangeAllowed(
     }
   }
 
-  if (canonicalConsoleRole(caller.role) === CONSOLE_SUPER_ADMIN_ROLE)
-    return { ok: true }
-
-  if (normalizedRole === CONSOLE_SUPER_ADMIN_ROLE) {
+  const target = await team.retrieve(targetUserId)
+  if (
+    !target &&
+    normalizedRole === CONSOLE_SUPER_ADMIN_ROLE &&
+    canonicalConsoleRole(caller.role) !== CONSOLE_SUPER_ADMIN_ROLE
+  ) {
     return {
       ok: false,
       error: `Only a super admin can grant the ${normalizedRole} role.`,
@@ -38,17 +50,64 @@ export async function assertRoleChangeAllowed(
     }
   }
 
-  const target = await team.retrieve(targetUserId)
-  if (
-    target?.roleName &&
-    canonicalConsoleRole(target.roleName) === CONSOLE_SUPER_ADMIN_ROLE
-  ) {
+  if (!target) return { ok: true }
+
+  const check = await evaluateTeamGrantChange(caller, targetUserId, target, {
+    roleName: normalizedRole,
+  })
+  if (!check.ok) {
+    const error = getError(check.code)
     return {
       ok: false,
-      error: 'Only a super admin can change a super-admin role.',
-      status: 403,
+      error: error.message,
+      status: error.httpStatus === 409 ? 409 : 403,
     }
   }
+
+  return { ok: true }
+}
+
+/** Applies self-access and super-admin escalation safeguards to grant mutations. */
+export async function assertTeamGrantChangeAllowed(
+  caller: Access,
+  targetUserId: string,
+  change: Pick<TeamGrantUpdate, 'roleName' | 'status'> | { revoke: true }
+): Promise<TeamGrantChangeResult> {
+  const target = await team.retrieve(targetUserId)
+  if (!target) return { ok: true }
+
+  return evaluateTeamGrantChange(caller, targetUserId, target, change)
+}
+
+async function evaluateTeamGrantChange(
+  caller: Access,
+  targetUserId: string,
+  target: NonNullable<Awaited<ReturnType<typeof team.retrieve>>>,
+  change: Pick<TeamGrantUpdate, 'roleName' | 'status'> | { revoke: true }
+): Promise<TeamGrantChangeResult> {
+  const targetRole = canonicalConsoleRole(target.roleName)
+  const requestedRole =
+    'roleName' in change && change.roleName
+      ? canonicalConsoleRole(change.roleName)
+      : targetRole
+  const revoking = 'revoke' in change
+  const suspending = 'status' in change && change.status === 'suspended'
+  const changesRole = requestedRole !== targetRole
+
+  if (
+    requestedRole === CONSOLE_SUPER_ADMIN_ROLE &&
+    canonicalConsoleRole(caller.role) !== CONSOLE_SUPER_ADMIN_ROLE
+  )
+    return { ok: false, code: 'team/role-forbidden' }
+
+  if (targetUserId === caller.id && (revoking || suspending || changesRole))
+    return { ok: false, code: 'team/self-access-protected' }
+
+  if (
+    targetRole === CONSOLE_SUPER_ADMIN_ROLE &&
+    canonicalConsoleRole(caller.role) !== CONSOLE_SUPER_ADMIN_ROLE
+  )
+    return { ok: false, code: 'team/target-protected' }
 
   return { ok: true }
 }

@@ -1,3 +1,5 @@
+import type { TeamErrorCode } from '@/lib/errors/team'
+
 /** Authorization facts for a Console operator, sourced from MC's own DB. */
 export type Access = {
   id: string
@@ -32,9 +34,16 @@ export type Current876Session = Signed876Session | { user: null }
 
 export type Session876Result<T> = T | Error
 
-export type RoleCheckDenied = { ok: false; error: string; status: 400 | 403 }
+export type RoleCheckDenied = {
+  ok: false
+  error: string
+  status: 400 | 403 | 409
+}
 export type RoleCheckAllowed = { ok: true }
 export type RoleCheckResult = RoleCheckAllowed | RoleCheckDenied
+
+export type TeamGrantChangeResult =
+  { ok: true } | { ok: false; code: TeamErrorCode }
 
 export type RoleChangeResult = {
   userId: string
