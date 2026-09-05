@@ -57,7 +57,7 @@ export function NavDropdown({ item }: { item: NavItem }) {
           >
             <Icon
               aria-hidden="true"
-              className="size-[1.125rem] shrink-0"
+              className="size-[1.125rem] shrink-0 md:size-4"
               style={color ? { color } : undefined}
             />
             <span className="flex-1 truncate">{title}</span>
@@ -87,7 +87,7 @@ export function NavDropdown({ item }: { item: NavItem }) {
           >
             <Icon
               aria-hidden="true"
-              className="size-[1.125rem] shrink-0"
+              className="size-[1.125rem] shrink-0 md:size-4"
               style={color ? { color } : undefined}
             />
             <span className="flex-1 truncate">{title}</span>

@@ -66,7 +66,7 @@ export function NavDropdown({
         >
           <Icon
             aria-hidden="true"
-            className={cn('size-[1.125rem] shrink-0', colorClassName)}
+            className={cn('size-[1.125rem] shrink-0 md:size-4', colorClassName)}
           />
           <span className="flex-1 truncate">{title}</span>
         </Link>

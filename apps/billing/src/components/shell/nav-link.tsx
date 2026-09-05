@@ -43,7 +43,7 @@ export function NavLink({
     >
       <Icon
         aria-hidden="true"
-        className={cn('size-[1.125rem] shrink-0', colorClassName)}
+        className={cn('size-[1.125rem] shrink-0 md:size-4', colorClassName)}
       />
       <span className="truncate group-data-[collapsible=icon]:hidden">
         {title}

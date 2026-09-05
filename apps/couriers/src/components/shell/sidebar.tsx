@@ -24,7 +24,7 @@ export function Sidebar({
   logoUrl?: string | null
 }) {
   return (
-    <SidebarRoot variant="floating" collapsible="icon" className="bg-sidebar">
+    <SidebarRoot variant="sidebar" collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href={basePath}
