@@ -9,7 +9,6 @@ const { disconnectDb, prisma } = vi.hoisted(() => ({
     },
     appRole: {
       findMany: vi.fn(),
-      findFirst: vi.fn(),
     },
     membership: {
       findFirst: vi.fn(),
@@ -47,14 +46,27 @@ const roles = [
   },
 ]
 
+const roleQuery = {
+  where: {
+    organizationId: 'org_1',
+    appId: 'app_projects',
+    deletedAt: null,
+  },
+  orderBy: [{ isDefault: 'desc' }, { position: 'asc' }, { id: 'asc' }],
+  select: { id: true, key: true, isDefault: true, deletedAt: true },
+}
+
 beforeEach(() => {
   vi.resetModules()
   vi.clearAllMocks()
-  process.argv = [originalArgv[0] ?? 'node', 'backfill-app-assignment-roles', '--apply']
+  process.argv = [
+    originalArgv[0] ?? 'node',
+    'backfill-app-assignment-roles',
+    '--apply',
+  ]
   prisma.appAssignment.findMany.mockResolvedValue([assignment])
   prisma.appRole.findMany.mockResolvedValue(roles)
   prisma.membership.findFirst.mockResolvedValue({ id: 'membership_1' })
-  prisma.appRole.findFirst.mockResolvedValue({ id: 'role_super' })
   prisma.appAssignment.updateMany.mockResolvedValue({ count: 1 })
   disconnectDb.mockResolvedValue(undefined)
 })
@@ -84,7 +96,7 @@ describe('app assignment role backfill script', () => {
     const output = await runScript()
 
     expect(prisma.membership.findFirst).not.toHaveBeenCalled()
-    expect(prisma.appRole.findFirst).not.toHaveBeenCalled()
+    expect(prisma.appRole.findMany).toHaveBeenCalledTimes(1)
     expect(prisma.appAssignment.updateMany).not.toHaveBeenCalled()
     expect(output).toMatchObject({
       dryRun: true,
@@ -104,7 +116,7 @@ describe('app assignment role backfill script', () => {
     })
   })
 
-  it('revalidates and compare-and-sets the original assignment state before applying', async () => {
+  it('re-resolves the current role set and compare-and-sets the original assignment before applying', async () => {
     const output = await runScript()
 
     expect(prisma.membership.findFirst).toHaveBeenCalledWith({
@@ -117,15 +129,8 @@ describe('app assignment role backfill script', () => {
       },
       select: { id: true },
     })
-    expect(prisma.appRole.findFirst).toHaveBeenCalledWith({
-      where: {
-        id: 'role_super',
-        organizationId: 'org_1',
-        appId: 'app_projects',
-        deletedAt: null,
-      },
-      select: { id: true },
-    })
+    expect(prisma.appRole.findMany).toHaveBeenCalledTimes(2)
+    expect(prisma.appRole.findMany).toHaveBeenLastCalledWith(roleQuery)
     expect(prisma.appAssignment.updateMany).toHaveBeenCalledWith({
       where: {
         id: 'asg_1',
@@ -163,6 +168,22 @@ describe('app assignment role backfill script', () => {
 
     const output = await runScript()
 
+    expect(prisma.appAssignment.updateMany).not.toHaveBeenCalled()
+    expect(output).toMatchObject({
+      dryRun: false,
+      changed: 0,
+      skippedAfterDiscovery: 1,
+    })
+  })
+
+  it('skips a stale candidate when fresh role resolution no longer selects the discovered target', async () => {
+    prisma.appRole.findMany
+      .mockResolvedValueOnce(roles)
+      .mockResolvedValueOnce([roles[0]])
+
+    const output = await runScript()
+
+    expect(prisma.membership.findFirst).toHaveBeenCalledTimes(1)
     expect(prisma.appAssignment.updateMany).not.toHaveBeenCalled()
     expect(output).toMatchObject({
       dryRun: false,
