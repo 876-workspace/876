@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import { appDetailSections } from '@/features/apps/app-detail-nav'
-import type { WorkspaceIconKey } from '@/features/orgs/app-workspaces'
+import {
+  APP_WORKSPACES,
+  type WorkspaceIconKey,
+} from '@/features/orgs/app-workspaces'
 import { navConfig } from './nav-config'
 import {
   NAV_ICON_COLORS,
@@ -121,6 +124,10 @@ describe('rail icon collision assertions', () => {
       'dashboard',
       'customers',
       'requests',
+      'projects',
+      'issues',
+      'board',
+      'labels',
       'settings',
       'billing',
       'packages',
@@ -152,6 +159,15 @@ describe('rail icon collision assertions', () => {
         )
         expect(new Set(childIcons).size).toBe(childIcons.length)
       }
+    }
+  })
+
+  it('resolves distinct icon components for every workspace section rail', () => {
+    for (const workspace of APP_WORKSPACES) {
+      const icons = workspace.sections.map((section) =>
+        resolveNavIcon(section.iconKey)
+      )
+      expect(new Set(icons).size).toBe(icons.length)
     }
   })
 
