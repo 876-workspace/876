@@ -11,14 +11,14 @@
 
 ## Current branch state
 
-Current GitHub state at the final repository-side closeout audit:
+Current GitHub state at the latest repository-side closeout audit:
 
-- head: `8ee9961a5a4acb11a0e064018441d8d3db302e5f`
-- **32 commits ahead of `main`**
+- head before this tracker correction: `a7f08e6fa0f3b6a55a6bd7838ec9fbc917f844e8`
+- **33 commits ahead of `main`** before this tracker correction
 - **0 commits behind `main`**
 - merge base: `1419aaee85264ed4c278d952af6e4687383df157`
 - no GitHub Actions runs exist for this branch
-- no commit-status entries are attached to the current head
+- no commit-status entries are attached to the audited head
 
 Absence of CI/status entries is **not** a green verification result. C4 remains open until the command matrix is actually run.
 
@@ -32,6 +32,7 @@ Absence of CI/status entries is **not** a green verification result. C4 remains 
 - `fda5477a` — mark repository-side closeout work complete and runtime work open
 - `76bac55e` — add the orchestrator closeout-progress report
 - `8ee9961a` — align `plan.md` with the actual closeout/runtime-blocked state
+- `a7f08e6f` — finalize the repository-side branch/readiness audit
 
 ### Original phase state
 
@@ -197,7 +198,13 @@ pnpm --filter @876/api app-access:backfill-roles --apply
 
 ## C4 — Full integration verification matrix — BLOCKED ON EXECUTION ENVIRONMENT
 
-There are **no GitHub Actions runs** for this branch, and the current head has no commit-status entries. The container available to this session does not contain `/root/projects/876` and cannot resolve `github.com`, so it cannot obtain a checkout and run pnpm locally. Final verification remains open rather than being inferred from phase reports.
+There are **no GitHub Actions runs** for this branch, and the audited head has no commit-status entries. The container available to this session does not contain `/root/projects/876`, does not have `pnpm` installed, and cannot resolve `github.com`, so it cannot obtain a checkout and run the commands locally. Final verification remains open rather than being inferred from phase reports.
+
+### Static command audit completed
+
+- [x] Verified the Projects application workspace name from `apps/projects/package.json` is `@876/projects-app`.
+- [x] Corrected the prior erroneous `@876/projects` app-verification filter below. `@876/projects` is a dependency/package and must not substitute for application verification.
+- [x] Verified exact app build workspace names for Console, CRM, Billing, Invoice, and Projects.
 
 ### Required checks
 
@@ -206,9 +213,9 @@ pnpm --filter @876/console typecheck
 pnpm --filter @876/console lint
 pnpm --filter @876/console test
 
-pnpm --filter @876/projects typecheck
-pnpm --filter @876/projects lint
-pnpm --filter @876/projects test
+pnpm --filter @876/projects-app typecheck
+pnpm --filter @876/projects-app lint
+pnpm --filter @876/projects-app test
 
 pnpm --filter @876/projects-ui typecheck
 pnpm --filter @876/projects-ui test
@@ -244,6 +251,14 @@ pnpm check:transpile
 - [ ] Run formatter/linter required by git rules on changed closeout code before final merge acceptance
 
 ### Production builds still owed
+
+```bash
+pnpm --filter @876/console build
+pnpm --filter @876/crm-app build
+pnpm --filter @876/billing-app build
+pnpm --filter @876/invoice-app build
+pnpm --filter @876/projects-app build
+```
 
 - [ ] Console production build
 - [ ] CRM production build
@@ -304,24 +319,25 @@ For each required surface:
 
 ### C6.1 PROJ-10 — EXTERNAL TRACKER BLOCK
 
-The repository's GitHub Issues search returned no `PROJ-10`, so it appears to live in another tracker rather than GitHub Issues.
+The repository's GitHub Issues search returned no `PROJ-10`, so it appears to live in another tracker rather than GitHub Issues. A Linear integration is available and has been surfaced for connection; once connected, search `PROJ-10` there before attempting any rewrite/close action.
 
 - [ ] Locate the actual tracker containing PROJ-10
 - [ ] Close it if it only claims `comments.create` is missing from the catalog
 - [ ] Or rewrite it around the real org-role → app-role assignment defect/backfill requirement
 - [x] Do not create a duplicate GitHub issue just because the key is absent here
+- [x] Surface the Linear integration as the most likely next issue-tracker lookup path
 
 ### C6.2 Branch/readiness audit
 
 - [x] Branch currently 0 commits behind `main`
-- [x] Current branch comparison reviewed: 32 commits ahead / 0 behind
+- [x] Latest pre-correction branch comparison reviewed: 33 commits ahead / 0 behind
 - [x] Current changed-file list contains no environment file
 - [x] Current changed-file list contains no delegated `*-run.log` transcript
 - [x] Branch commit listing searched for `Co-Authored-By`: no matches
 - [x] Branch commit listing searched for `Generated with`: no matches
 - [x] Branch commit listing searched for `Claude`: no matches
 - [x] Older descriptive `Codex` mentions were reviewed and are documentation about delegated CLI transcript handling, not contributor attribution
-- [x] Current head has no commit-status entries; this is recorded as “not verified,” not “green”
+- [x] Audited head has no commit-status entries; this is recorded as “not verified,” not “green”
 - [ ] Re-check `main` divergence immediately before final PR because `main` may advance
 - [ ] Run final checkout-based diff quality/security scan after C3-C5 runtime work
 
@@ -329,6 +345,7 @@ The repository's GitHub Issues search returned no `PROJ-10`, so it appears to li
 
 - [x] Add repository-side closeout progress report: `reports/orchestrator/2026-09-05-closeout-progress.md`
 - [x] Align `plan.md` with Phase 4 complete-in-code and runtime-blocked closeout state
+- [x] Correct runtime verification commands to target the actual Projects app workspace
 - [ ] Update the orchestrator report with actual C3-C5 results after runtime acceptance
 - [ ] Mark `plan.md` `COMPLETED ✅` only after C3-C5 pass
 - [ ] Mark this TODO `COMPLETED` only after C3-C5 pass
@@ -361,10 +378,12 @@ When they pass:
 - [x] C2 correct stale shell-spacing report
 - [x] C2 update Projects report
 - [x] C2 align `plan.md` with completed Phase 4 code
+- [x] C4 static workspace/filter audit and command correction
 - [x] C6 repository-side closeout progress report
 - [x] C6 current branch divergence audit
 - [x] C6 commit attribution audit
 - [x] C6 changed-file env/run-log hygiene audit
+- [x] C6 surface Linear integration for PROJ-10 lookup
 
 ### Runtime/external work still open
 
