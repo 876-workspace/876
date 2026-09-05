@@ -1,4 +1,5 @@
 import { AppError } from '@876/ui/app-error'
+import type { IssueStatus } from '@876/projects/contracts'
 import { IssuesList } from '@876/projects-ui/issue-list'
 
 import { projects } from '@/lib/services/projects'
@@ -14,7 +15,8 @@ export async function IssuesData({
   organizationId: string
   /** The host's Projects root, e.g. `/projects` or `/workspace/acme/projects`. */
   base: string
-  status?: string
+  /** Already narrowed by the route's isIssueStatus guard. */
+  status?: IssueStatus
 }) {
   const result = await projects.issues.list(organizationId, { status })
 
