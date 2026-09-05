@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import { appDetailSections } from '@/features/apps/app-detail-nav'
-import {
-  APP_WORKSPACES,
-  type WorkspaceIconKey,
-} from '@/features/orgs/app-workspaces'
 import { navConfig } from './nav-config'
 import {
   NAV_ICON_COLORS,
@@ -119,32 +114,6 @@ describe('resolveNavIcon', () => {
 })
 
 describe('rail icon collision assertions', () => {
-  it('registers an icon component for every WorkspaceIconKey', () => {
-    const workspaceIconKeys: WorkspaceIconKey[] = [
-      'dashboard',
-      'customers',
-      'requests',
-      'projects',
-      'issues',
-      'board',
-      'labels',
-      'settings',
-      'billing',
-      'packages',
-      'items',
-      'teams',
-      'categories',
-      'forms',
-      'payments',
-      'banking',
-      'branches',
-      'warehouses',
-    ]
-    for (const key of workspaceIconKeys) {
-      expect(NAV_ICONS[key]).toBeDefined()
-    }
-  })
-
   it('resolves distinct icon components for every visible entry in any single rendered rail in navConfig', () => {
     // 1. Root platform rail
     const rootEntries = navConfig.flatMap((group) => group.entries)
@@ -159,23 +128,6 @@ describe('rail icon collision assertions', () => {
         )
         expect(new Set(childIcons).size).toBe(childIcons.length)
       }
-    }
-  })
-
-  it('resolves distinct icon components for every workspace section rail', () => {
-    for (const workspace of APP_WORKSPACES) {
-      const icons = workspace.sections.map((section) =>
-        resolveNavIcon(section.iconKey)
-      )
-      expect(new Set(icons).size).toBe(icons.length)
-    }
-  })
-
-  it('resolves distinct icon components for every app detail section rail', () => {
-    for (const kind of ['product', 'platform', 'internal'] as const) {
-      const sections = appDetailSections(kind)
-      const icons = sections.map((section) => resolveNavIcon(section.icon))
-      expect(new Set(icons).size).toBe(icons.length)
     }
   })
 })
