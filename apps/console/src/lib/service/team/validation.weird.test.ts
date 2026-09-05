@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { validateTeamGrant } from './validation'
-import type { TeamAffiliation, TeamGrantFields } from './validation'
+import type { TeamAffiliation, TeamGrantFields } from '@/types/team'
 
 describe('validateTeamGrant — weird edge cases', () => {
   const now = BigInt(1_000_000)

@@ -1,10 +1,7 @@
 import { prisma } from '@/lib/db'
 
-import {
-  validateTeamGrant,
-  type TeamGrantFields,
-  type TeamServiceResult,
-} from './validation'
+import { validateTeamGrant, type TeamServiceResult } from './validation'
+import type { TeamGrantFields } from '@/types/team'
 
 type CreateTeamGrant = Partial<TeamGrantFields> & { status?: string }
 
