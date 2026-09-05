@@ -142,14 +142,13 @@ describe('ProjectDetail', () => {
   })
 
   it('does not render a second back-to-projects control', () => {
-    render(
-      <ProjectDetail
-        project={makeProject()}
-        issuesHref="/issues"
-        projectsHref="/projects"
-      />
-    )
+    render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
+    // The host owns the back affordance through its own breadcrumb, so the
+    // shared component must not render one in any form.
     expect(screen.queryByRole('link', { name: /back to projects/i })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: /back to projects/i })
+    ).toBeNull()
   })
 })
