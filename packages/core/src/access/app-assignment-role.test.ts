@@ -47,6 +47,21 @@ describe('resolveAppAssignmentRole', () => {
       source: 'organization-role',
     })
   })
+  it('does not broaden alias matching to arbitrary case variants', () => {
+    const uppercaseAdmin = {
+      id: 'role_admin_uppercase',
+      key: 'ADMIN',
+      isDefault: false,
+      deletedAt: null,
+    }
+
+    expect(
+      resolve({
+        organizationRole: 'admin',
+        roles: [uppercaseAdmin, roles[2]],
+      })
+    ).toEqual({ role: roles[2], source: 'default' })
+  })
   it('maps uppercase super admin safely', () =>
     expect(resolve({ organizationRole: 'SUPER_ADMIN' })).toEqual({
       role: roles[0],
