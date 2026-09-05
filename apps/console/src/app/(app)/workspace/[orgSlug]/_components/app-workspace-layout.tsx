@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Suspense, type ReactNode } from 'react'
 import { AppError } from '@876/ui/app-error'
+import { Page } from '@876/ui/page'
 
 import { findAppWorkspace } from '@/features/orgs/app-workspaces'
 import { WorkspaceEntitlementNotice } from '@/features/orgs/components/workspace-entitlement-notice'
@@ -18,9 +19,8 @@ import { WorkspaceHeader } from './workspace-header'
  * `app/(app)/@sidebar/workspace/[orgSlug]/[[...section]]`. A second rail inside
  * the page would mean two renderings of the same navigation, free to drift.
  *
- * What is left is the entitlement notice, which belongs to the frame rather
- * than to any one page: it is the same answer on every section, and it streams
- * so the section beneath it never waits on the entitlement lookup.
+ * Own the page gutter here so workspace headers, notices, and nested routes
+ * align. Child routes must not add another padded Page wrapper.
  */
 export function createWorkspaceLayout(workspaceKey: string) {
   return async function AppWorkspaceLayoutShell({
@@ -35,7 +35,7 @@ export function createWorkspaceLayout(workspaceKey: string) {
     if (!workspace) notFound()
 
     return (
-      <div className="space-y-6">
+      <Page className="space-y-6">
         <WorkspaceHeader orgSlug={orgSlug} workspaceKey={workspaceKey} />
         <Suspense fallback={null}>
           <EntitlementNotice
@@ -45,7 +45,7 @@ export function createWorkspaceLayout(workspaceKey: string) {
           />
         </Suspense>
         {children}
-      </div>
+      </Page>
     )
   }
 }
