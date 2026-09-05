@@ -419,7 +419,7 @@ and confirm the test **count** moved, not merely that the suite is green.
 - [x] Pull Vercel logs for `876-projects`
 - [x] Identify the shared product-UI Tailwind `@source` gap
 - [ ] **MANUAL (user):** repoint the Efesto 876-Projects assignment to `super-admin`
-- [ ] Phase 1 — Tailwind `@source` for shared product-UI packages
+- [x] Phase 1 — Tailwind `@source` for shared product-UI packages (`ea0b95fe`, `7c8158f5`)
 - [ ] Phase 2 — shell spacing contract
 - [ ] Phase 3 — sidebar icons
 - [ ] Phase 4 — Projects app pages + editor
@@ -433,8 +433,43 @@ and confirm the test **count** moved, not merely that the suite is green.
 
 ## 9. Handoff state
 
-Nothing is committed yet beyond this plan. Phases 1 and 3 briefs are dispatched
-first (non-overlapping). The production role fix in §2(a) is **outstanding and
-blocked on the user** — the orchestrator's `PATCH` attempt was denied by the
-sandbox classifier, so it was never applied and the user is still unable to
-comment until they run it.
+**Branch:** `feat/shell-layout-navigation-overhaul`.
+
+### Done
+
+- The plan, the seven briefs, and the orchestrator review notes are committed.
+- **Phase 1 is merged** (`ea0b95fe` the fix, `7c8158f5` the guard). Verified by
+  the orchestrator, not taken from the delegate's report:
+  - `sm\:grid-cols-3` is present in `apps/projects/.next/static/css/` after the
+    change and was absent before;
+  - `node scripts/check-tailwind-sources.mjs` exits **1** on a removed glob and
+    **0** when clean, and names the app and the package in the message;
+  - 6 test cases pass; no `eslint-disable` or `as any` in the touched files.
+  - Apps changed: billing, console, crm, invoice, projects. Couriers, 876 and
+    enterprise transpile no shared product-UI package, which the check confirms.
+  - agy explicitly did **not** verify production builds of Console, CRM, Billing
+    or Invoice. Do that once Phase 2 has landed and `packages/ui` is stable.
+
+### In flight
+
+- **Phase 2** (Codex, shell spacing) — editing `packages/ui` and all six app
+  sidebars. See the review notes on the `-ml-[var(--876-shell-gutter)]` gutter
+  reclaim in `ListDetailShell`; do not accept it without an answer.
+- **Phase 8** (Codex, assignment role mapping) — `apps/api` plus a new
+  `packages/core/src/access/app-assignment-role.ts`. See the review notes on the
+  blanket `replaceAll('_','-')` and on proving the elevation guard.
+
+### Held deliberately
+
+Phases 3–7 are briefed but **not dispatched**. Phase 3 and Phase 4 need the
+sidebar files Phase 2 is rewriting; Phases 5–7 would run the Console suite
+concurrently with Phase 2's edits to Console. Dispatch them once Phase 2 has
+been accepted and committed.
+
+### Blocked on the user
+
+The production role fix in §2(a) is **outstanding**. The orchestrator's `PATCH`
+was denied by the sandbox permission classifier and was never applied, so the
+user still cannot comment in 876 Projects until they run it.
+
+PROJ-10 has not been touched — the orchestrator did not mutate the tracker.
