@@ -32,16 +32,16 @@ compiled. Design against the corrected behaviour.
 
 2. **Project detail: one back control, not two.**
    `apps/projects/src/app/(app)/projects/[projectId]/page.tsx:33` renders
-   `PageBreadcrumb href="/projects"`, *and*
+   `PageBreadcrumb href="/projects"`, _and_
    `packages/projects-ui/src/project-detail.tsx:35-45` renders its own
-   "Back to projects" button. The user: *"it even has two back projects buttons —
-   I don't see why there needs to be two."* **Remove the button from the shared
+   "Back to projects" button. The user: _"it even has two back projects buttons —
+   I don't see why there needs to be two."_ **Remove the button from the shared
    component** (a host may not want it; the breadcrumb is the host's call) and
    drop the now-unused `projectsHref` prop. Update every caller, including
    Console's.
 
-3. **Redesign the project detail body.** The user: *"Project Lead, Target Date
-   and Members are three long cards going down… it's not in a card layout."*
+3. **Redesign the project detail body.** The user: _"Project Lead, Target Date
+   and Members are three long cards going down… it's not in a card layout."_
    Once the classes compile they will be a three-up row, but the design is still
    thin. Give the page a real hierarchy: a proper record header (folder tile,
    name, key, status/health badges, description), a genuine summary row, then the
@@ -50,26 +50,26 @@ compiled. Design against the corrected behaviour.
    hand-rolled `<p>` stacks — read that file before writing anything.
 
 4. **Issue detail must be a full page and is currently very poor.** The user:
-   *"the issue page is rendering out the project and ID and then the issue title
+   _"the issue page is rendering out the project and ID and then the issue title
    and then the issue whatever in plain text, and it's not even doing the layout
-   for the card right."* `packages/projects-ui/src/issue-detail.tsx` renders the
+   for the card right."_ `packages/projects-ui/src/issue-detail.tsx` renders the
    identifier, title, a bare `Markdown` body, and a thin fact column. Rebuild it:
    a proper record header, a readable body column with real prose measure, and a
    facts sidebar built from `@876/ui/detail-card` primitives. Keep the events
    timeline but give it a real design.
 
-5. **The comment / markdown editor is ugly and mono-theme.** The user: *"the
+5. **The comment / markdown editor is ugly and mono-theme.** The user: _"the
    markdown editor is grey but then it's entirely grey — it's not white or
-   anything. Did you optimize for light and dark mode?"* Fix
+   anything. Did you optimize for light and dark mode?"_ Fix
    `@876/ui/markdown-editor` (and `@876/ui/markdown` where it renders comment
    bodies): real surfaces, borders, focus rings, a usable toolbar, and correct
    contrast in **both** light and dark. Read `packages/editor` first — if a
    richer editor already exists there, use it rather than adding a third one.
 
-6. **Assignee is deliberately out of scope.** The user: *"I don't even have the
+6. **Assignee is deliberately out of scope.** The user: _"I don't even have the
    assignment functionality built out in projects, nor via integration in CRM —
    we don't need to do that yet, we can leave assignee and those other little
-   things off."* Render assignee/estimate/due-date as clean empty states. **Do
+   things off."_ Render assignee/estimate/due-date as clean empty states. **Do
    not build a picker or a mutation for them.**
 
 ## Constraints
@@ -150,3 +150,75 @@ Two notes on `packages/ui`:
 Re-read `apps/projects/src/components/shell/sidebar.tsx` from disk immediately
 before editing it. When you run a suite you may see failures that are not yours
 — report them under a "failures not mine" heading rather than fixing them.
+
+---
+
+## Dispatch note — 2026-09-05 05:25 UTC
+
+You own **all of `apps/projects/**` and `packages/projects-ui/**`**, and nothing
+else. That now explicitly includes two things the original brief left to others:
+
+### 1. The Projects sidebar icons are yours
+
+`apps/projects/src/components/shell/sidebar.tsx:17-26` inlines a `sidebarIcons`
+map, and `apps/projects/src/components/shell/nav-config.ts` declares
+`icon: 'requests'` for both **Projects** and **Issues** (the same clipboard) and
+`icon: 'categories'` for both **Board** and **Labels** (the same card grid).
+
+Extract a real registry at `apps/projects/src/components/shell/nav-icons.tsx`,
+mirroring the shape of `apps/console/src/components/shell/nav-icons.tsx`, and
+give each entry an icon a person would recognise for that concept:
+
+| Entry    | Today (placeholder) | Use instead                    |
+| -------- | ------------------- | ------------------------------ |
+| Projects | clipboard           | a folder / project glyph       |
+| Issues   | clipboard (same)    | a bug / circle-dot issue glyph |
+| Board    | card grid           | a kanban-columns glyph         |
+| Labels   | card grid (same)    | a tag glyph                    |
+
+Add a test asserting that **no two entries in the rendered rail resolve to the
+same icon component**. That assertion is the point — it is what stops the
+placeholders coming back.
+
+### 2. The Projects sidebar becomes collapsible
+
+Give Projects the rail/panel behaviour Console already has: it defaults to the
+**icon rail**, expands to labels via the toggle, and the preference persists.
+Copy Console's mechanism rather than inventing a second one, and keep the item
+spacing identical between rail and expanded panel.
+
+### Shell gutter tokens — now safe to consume
+
+`--876-shell-gutter` in `packages/ui/src/876.css` was defined as
+`var(--spacing-4)`, which **Tailwind v4 does not define** (it defines only
+`--spacing` and computes each step), so every declaration consuming it was
+dropped and the gutters collapsed to zero. That is **fixed as of this dispatch**
+— it now reads `calc(var(--spacing) * 4 | 6 | 8)` and there is a regression test
+at `packages/ui/src/876-tokens.test.ts`. Consume the token normally; do not add
+local margins to compensate for spacing that now works.
+
+### Hard boundaries
+
+- **Do not edit `packages/ui/**`.** It is fixed and verified; if you believe a
+  shell primitive is wrong, say so in your report instead of changing it.
+- **Do not edit anything under `apps/console/`, `apps/api/`, `apps/couriers/`,
+  `apps/crm/`, `apps/billing/`, or `apps/invoice/`.** Four other agents are in
+  this tree right now.
+- `ProjectDetail` currently renders its own "Back to projects" button
+  (`packages/projects-ui/src/project-detail.tsx:35-45`) **and** the host renders
+  a `PageBreadcrumb`. Remove the button from the shared component and let the
+  host own the back affordance. Console calls this component too — you may
+  **not** edit Console, so if removing the prop breaks Console's call site,
+  keep the prop optional and default it off, and state clearly in your report
+  which Console files the next session must update.
+- No `eslint-disable`, `@ts-ignore`, `as any`. Do not commit. Do not branch.
+
+### Verify (foreground, read the output)
+
+```bash
+pnpm --filter @876/projects typecheck && pnpm --filter @876/projects lint && pnpm --filter @876/projects test
+pnpm --filter @876/ui typecheck
+node scripts/check-app-structure.mjs
+```
+
+Report the **counted** number of `it()` cases added, per file.

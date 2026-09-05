@@ -22,25 +22,25 @@ a map that does not even have keys for its own nav entries. Its nav config
 for **both** Projects and Issues, and `icon: 'categories'` for **both** Board and
 Labels, so:
 
-| Entry | Resolves to | Collides with |
-| --- | --- | --- |
-| Projects | `ClipboardList` | Issues |
-| Issues | `ClipboardList` | Projects |
-| Board | `RectangleGroup` | Labels |
-| Labels | `RectangleGroup` | Board |
-| Members | `Building2` (via `teams`) | wrong concept entirely |
+| Entry    | Resolves to               | Collides with          |
+| -------- | ------------------------- | ---------------------- |
+| Projects | `ClipboardList`           | Issues                 |
+| Issues   | `ClipboardList`           | Projects               |
+| Board    | `RectangleGroup`          | Labels                 |
+| Labels   | `RectangleGroup`          | Board                  |
+| Members  | `Building2` (via `teams`) | wrong concept entirely |
 
 **Console** (`apps/console/src/components/shell/nav-icons.tsx`):
 
-| Colliding keys | Shared icon |
-| --- | --- |
-| `issues`, `audit` | `ClipboardList` |
-| `board`, `modules` | `LayoutGrid` |
-| `users`, `customers`, `teams`, `subscribers` | `Users` |
-| `organizations`, `banking`, `warehouses` | `Building2` |
-| `security`, `roles`, `keys` | `KeyRound` |
-| `dashboard`, `overview` | `BarChart3` |
-| `support`, `requests` | split across `ChatBubbleLeftIcon` / `ClipboardList` |
+| Colliding keys                               | Shared icon                                         |
+| -------------------------------------------- | --------------------------------------------------- |
+| `issues`, `audit`                            | `ClipboardList`                                     |
+| `board`, `modules`                           | `LayoutGrid`                                        |
+| `users`, `customers`, `teams`, `subscribers` | `Users`                                             |
+| `organizations`, `banking`, `warehouses`     | `Building2`                                         |
+| `security`, `roles`, `keys`                  | `KeyRound`                                          |
+| `dashboard`, `overview`                      | `BarChart3`                                         |
+| `support`, `requests`                        | split across `ChatBubbleLeftIcon` / `ClipboardList` |
 
 ## What to do
 
@@ -65,25 +65,25 @@ there, add it to `@876/ui/icons` once and say so in your report; do not import
 
 Guidance on intent, not exact names — pick the closest real export:
 
-| Concept | Should read as |
-| --- | --- |
-| Projects | a folder or project/briefcase glyph |
-| Issues | a bug, or a circled dot / ticket — the thing you file |
-| Board | kanban columns |
-| Labels | a tag |
-| Members / Teams | people |
-| Customers | a person with a distinguishing mark, not the same glyph as Members |
-| Users (platform) | distinct again from both of the above |
-| Organizations | a company building |
-| Banking | a bank / landmark, not the same building as Organizations |
-| Warehouses | a warehouse/box glyph |
-| Audit | history / clock-rewind / scroll |
-| Security | a shield |
-| Roles | a key or badge — distinct from Security |
-| API keys | a key — distinct from Roles |
-| Storage | a database or drive |
-| Reports | a chart distinct from Dashboard's |
-| Settings | a gear |
+| Concept          | Should read as                                                     |
+| ---------------- | ------------------------------------------------------------------ |
+| Projects         | a folder or project/briefcase glyph                                |
+| Issues           | a bug, or a circled dot / ticket — the thing you file              |
+| Board            | kanban columns                                                     |
+| Labels           | a tag                                                              |
+| Members / Teams  | people                                                             |
+| Customers        | a person with a distinguishing mark, not the same glyph as Members |
+| Users (platform) | distinct again from both of the above                              |
+| Organizations    | a company building                                                 |
+| Banking          | a bank / landmark, not the same building as Organizations          |
+| Warehouses       | a warehouse/box glyph                                              |
+| Audit            | history / clock-rewind / scroll                                    |
+| Security         | a shield                                                           |
+| Roles            | a key or badge — distinct from Security                            |
+| API keys         | a key — distinct from Roles                                        |
+| Storage          | a database or drive                                                |
+| Reports          | a chart distinct from Dashboard's                                  |
+| Settings         | a gear                                                             |
 
 ### 3. Enforce it with a test
 
@@ -155,3 +155,38 @@ needs more than the icon lookup changed, stop and report it instead of editing.
 
 When you run a test suite you may see failures that are not yours. Do not fix
 them; report them under a "failures not mine" heading.
+
+---
+
+## Dispatch note — 2026-09-05 05:25 UTC (supersedes the scope above)
+
+**876 Projects is now out of your scope entirely.** Another agent owns the whole
+of `apps/projects/**` concurrently — its sidebar, its icon registry, its
+nav-config, and its record pages. It will do the Projects icons itself.
+
+So:
+
+- **Do not create, edit, or delete any file under `apps/projects/`.** Skip
+  §"Create `apps/projects/src/components/shell/nav-icons.tsx`" and the
+  nav-config edit that follows it. Everything the brief says about the Projects
+  clipboard/card placeholders is now someone else's job.
+- Your scope is exactly these five apps' icon registries:
+  `apps/console`, `apps/couriers`, `apps/crm`, `apps/billing`, `apps/invoice`.
+- **Do not edit any `sidebar.tsx`, in any app.** Confine your edits to the icon
+  registry module (`nav-icons.tsx` / equivalent), its test, and the
+  `nav-config.ts` entries that name an icon key. If an app's icons can only be
+  changed by editing `sidebar.tsx`, leave that app alone and say so in your
+  report rather than editing it.
+- **Do not edit `packages/ui/**`, `apps/api/**`, `apps/console/src/lib/permissions.ts`,
+  or anything under `apps/console/src/app/(app)/settings/users/**` or
+  `apps/console/src/app/(app)/workspace/**`** — three other agents own those
+  right now.
+- The collision test (no two entries in one rendered rail resolve to the same
+  icon component) still applies, per app, for the five apps above.
+
+When you run the Console suite you will see failures in permissions, settings,
+workspace and shell tests that are **not yours**. Do not fix them and do not
+work around them. Report them under a "failures not mine" heading and judge your
+work by the icon-registry tests.
+
+Do not commit. Do not create or switch branches.
