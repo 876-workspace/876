@@ -17,7 +17,7 @@ type BackfillCandidate = {
 }
 
 async function candidateStillValid(row: BackfillCandidate): Promise<boolean> {
-  const [membership, targetRole] = await Promise.all([
+  const [membership, roles] = await Promise.all([
     prisma.membership.findFirst({
       where: {
         organizationId: row.organizationId,
@@ -28,17 +28,23 @@ async function candidateStillValid(row: BackfillCandidate): Promise<boolean> {
       },
       select: { id: true },
     }),
-    prisma.appRole.findFirst({
+    prisma.appRole.findMany({
       where: {
-        id: row.toRoleId,
         organizationId: row.organizationId,
         appId: row.appId,
         deletedAt: null,
       },
-      select: { id: true },
+      orderBy: [{ isDefault: 'desc' }, { position: 'asc' }, { id: 'asc' }],
+      select: { id: true, key: true, isDefault: true, deletedAt: true },
     }),
   ])
-  return Boolean(membership && targetRole)
+  if (!membership) return false
+
+  const currentRole = resolveAppAssignmentRole({
+    organizationRole: row.organizationRole,
+    roles,
+  }).role
+  return currentRole?.id === row.toRoleId
 }
 
 async function main(): Promise<void> {
