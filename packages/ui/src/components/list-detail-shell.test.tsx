@@ -188,16 +188,23 @@ describe('ListDetailShell', () => {
     expect(listColumn.children).toHaveLength(2)
   })
 
-  it('places a subnav between the toolbar and the list when one is given', () => {
+  it('pins a subnav with the toolbar as one sticky block, above the list', () => {
     renderShell(true, <div>Subnav</div>)
     const listColumn = document.querySelector<HTMLElement>(
       '[data-slot="list-detail-list-column"]'
     )!
+    const chrome = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-list-chrome"]'
+    )!
 
-    expect(listColumn.children).toHaveLength(3)
-    expect(listColumn.children[0]).toContainElement(screen.getByText('Toolbar'))
-    expect(listColumn.children[1]).toContainElement(screen.getByText('Subnav'))
-    expect(listColumn.children[2]).toContainElement(screen.getByText('List'))
+    expect(listColumn.children).toHaveLength(2)
+    expect(listColumn.children[0]).toBe(chrome)
+    expect(listColumn.children[1]).toContainElement(screen.getByText('List'))
+
+    // One sticky element, so the subnav never needs to know the toolbar's
+    // height — the offset that a growing toolbar would invalidate.
+    expect(chrome.children[0]).toContainElement(screen.getByText('Toolbar'))
+    expect(chrome.children[1]).toContainElement(screen.getByText('Subnav'))
   })
 })
 
@@ -290,6 +297,49 @@ describe('ListDetailShell layout', () => {
 
     expect(screen.getByTestId('list').parentElement?.className).not.toContain(
       'hidden'
+    )
+  })
+
+  it('makes both the list column and detail column independently scrollable sections on desktop when open', () => {
+    render(
+      <ListDetailShell
+        open
+        toolbar={<div>Toolbar</div>}
+        list={<div>List</div>}
+        detail={<div>Detail</div>}
+      />
+    )
+
+    const listColumn = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-list-column"]'
+    )!
+    const detailColumn = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-detail-column"]'
+    )!
+
+    expect(listColumn.className).toContain('@3xl/list-detail:overflow-y-auto')
+    expect(listColumn.className).toContain('876-scroll')
+    expect(detailColumn.className).toContain('@3xl/list-detail:overflow-y-auto')
+    expect(detailColumn.className).toContain('876-scroll-none')
+    expect(detailColumn.className).not.toContain('overflow-hidden')
+  })
+
+  it('pins the toolbar sticky to the top of the scrolling list column with an opaque canvas background', () => {
+    render(
+      <ListDetailShell
+        open
+        toolbar={<div data-testid="toolbar">Toolbar</div>}
+        list={<div>List</div>}
+        detail={<div>Detail</div>}
+      />
+    )
+
+    const toolbarContainer = screen.getByTestId('toolbar').parentElement!
+    expect(toolbarContainer.className).toContain('@3xl/list-detail:sticky')
+    expect(toolbarContainer.className).toContain('@3xl/list-detail:top-0')
+    expect(toolbarContainer.className).toContain('@3xl/list-detail:z-10')
+    expect(toolbarContainer.className).toContain(
+      '@3xl/list-detail:bg-876-canvas'
     )
   })
 })
