@@ -34,6 +34,11 @@
 @import './876-themes.css';
 
 :root {
+  /* ── Shell rhythm ──
+     The app frame, standard page container, and list/detail split all use
+     this one horizontal rhythm. These values deliberately mirror Tailwind's
+     existing 4 / 6 / 8 spacing steps rather than creating a parallel scale. */
+  --876-shell-gutter: calc(var(--spacing) * 4); /* 1rem */
   /* ── The three planes ── */
   --876-chrome: oklch(0.9845 0.005 256);
   --876-canvas: oklch(0.9715 0.0065 256);
@@ -98,6 +103,18 @@
     var(--876-green) 17%,
     transparent
   );
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --876-shell-gutter: calc(var(--spacing) * 6); /* 1.5rem */
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --876-shell-gutter: calc(var(--spacing) * 8); /* 2rem */
+  }
 }
 
 .dark {
