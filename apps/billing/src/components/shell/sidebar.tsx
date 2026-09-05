@@ -5,16 +5,6 @@ import Link from 'next/link'
 import type { NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import {
-  BarChart3,
-  Building2,
-  CircleStackIcon,
-  ClipboardList,
-  CreditCard,
-  RefreshCw,
-  Settings,
-  Users,
-} from '@876/ui/icons'
-import {
   Sidebar as BaseSidebar,
   SidebarContent,
   SidebarGroup,
@@ -22,20 +12,8 @@ import {
 } from '@876/ui/sidebar'
 
 import { NavDropdown } from './nav-dropdown'
+import { resolveBillingNavIcon } from './nav-icons'
 import { NavLink } from './nav-link'
-
-const icons = {
-  dashboard: BarChart3,
-  customers: Users,
-  items: CircleStackIcon,
-  sales: ClipboardList,
-  subscriptions: RefreshCw,
-  purchases: Building2,
-  banking: CreditCard,
-  payroll: Users,
-  reports: CreditCard,
-  settings: Settings,
-}
 
 export function WorkspaceSidebar({
   tenantName,
@@ -77,8 +55,7 @@ export function WorkspaceSidebar({
             >
               <div className="flex flex-col gap-1">
                 {group.entries.map((item) => {
-                  const Icon =
-                    icons[item.icon as keyof typeof icons] ?? Settings
+                  const Icon = resolveBillingNavIcon(item.icon)
 
                   return item.children?.length ? (
                     <NavDropdown key={item.key} item={item} icon={Icon} />
