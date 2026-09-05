@@ -392,6 +392,32 @@ claim unverified work were the most useful part. Reinforce that: tell it a
 truthful "not executed" beats a confident claim, and that a fabricated test
 count is worse than a missing phase.
 
+### A connector timeout is not a spent budget
+
+GPT web reaches GitHub through a connector, and that connector fails
+transiently. Observed repeatedly: a tool timeout, a rate-limit response, or a
+temporary connector error gets read as "GitHub access is exhausted", and the
+run abandons an operation it was one retry away from completing.
+
+Put this in the brief, because the model will not assume it:
+
+1. Retry the same read or write after a short gap.
+2. If it fails transiently again, retry at least once more while the operation
+   is still needed.
+3. **Preserve the exact reference the retry needs** — repository, branch, PR
+   number, SHA, workflow run id, job id, file path — rather than dropping it
+   along with the failed attempt.
+4. Call an operation blocked only when repeated retries give a _stable_
+   non-transient answer: a real permission denial, an unsupported endpoint, a
+   missing resource, or a reproducible service-side failure.
+5. **Distinguish a connector failure from an Actions runner failure.** A
+   workflow job that reports an empty step list and has no log because it never
+   started is a CI execution problem. It says nothing about the connector, and
+   retrying the connector will not fix it.
+
+The same brief should name the run's durable references — repo, branch, PR — in
+one place, so a retry after a failure has something to retry _against_.
+
 ### Reviewing what comes back
 
 Pull, then in this order:
