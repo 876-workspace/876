@@ -13,8 +13,6 @@ export type ProjectDetailProps = {
   project: Project
   issues?: readonly Issue[]
   issuesHref: string
-  /** @deprecated Hosts own their back affordance (usually PageBreadcrumb). */
-  projectsHref?: string
 }
 
 function formatDate(timestamp: number | null): string {

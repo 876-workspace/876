@@ -36,7 +36,6 @@ export async function ProjectDetailData({
       project={projectResult.data}
       issues={issuesResult.data?.data ?? []}
       issuesHref={`${base}/issues`}
-      projectsHref={`${base}/projects`}
     />
   )
 }
