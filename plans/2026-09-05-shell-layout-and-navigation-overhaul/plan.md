@@ -461,7 +461,7 @@ Nothing is pushed. No PR is open.
 
 | Run | Owns | State |
 | --- | --- | --- |
-| **Phase 2b** shell spacing follow-up | `packages/ui/**`, every `apps/*/src/components/shell/sidebar.tsx` | applying the fix — `RAIL_INSET` is now `pl-[var(--876-shell-gutter)]` and the `-ml-` reclaim is gone |
+| **Phase 2b** shell spacing follow-up | `packages/ui/**`, every `apps/*/src/components/shell/sidebar.tsx` | **EXITED 05:15** — unverified. `RAIL_INSET` is now `pl-[var(--876-shell-gutter)]` and the `-ml-` reclaim is gone. Its `sidebar.tsx` files are therefore **free**, so Phases 3 and 4 are unblocked, and the `--876-shell-gutter` fix below can be applied now. |
 | **Phase 8b** assignment role mapping follow-up | `apps/api/**`, `packages/core/src/access/**` | adding the integration tests — `provisioning.test.ts`, `invite-app-access.service.test.ts`, new `app-access-membership-roles.test.ts` |
 | **Phase 7** permissions grouping | `apps/console/src/lib/permissions.ts`, `settings/users/**` | new `lib/permission-grouping.ts`, `patterns/permission-module-style.ts`, `types/permission.ts` |
 | **Phase 5/6** Console workspace + records | `apps/console/src/app/(app)/workspace/**`, `sidebar-context.ts` | editing the projects/issues layouts in both Console and the org workspace |
@@ -486,8 +486,9 @@ column gap. It is already in the built CSS. Replace with:
 --876-shell-gutter: calc(var(--spacing) * 8);   /* 2rem   */
 ```
 
-**Phase 2b will not fix this** — its brief wrongly told it those values were
-correct. Apply it yourself once Phase 2b exits.
+**Phase 2b did not fix this** — its brief wrongly told it those values were
+correct, and it exited at 05:15 with them intact. **This is the first thing to
+do in the next session.**
 
 No existing test can catch it: every Phase 2 assertion compares Tailwind **class
 strings**, which are identical whether or not the token resolves. Add a test that
