@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
 import { ListDetailShell, useListDetailRoute } from './list-detail-shell'
+import { Page } from './page'
 
 const mocks = vi.hoisted(() => ({ segments: [] as string[] }))
 
@@ -201,6 +202,58 @@ describe('ListDetailShell', () => {
 })
 
 describe('ListDetailShell layout', () => {
+  it('resolves a ListDetailShell page to the same outer gutter as a plain Page', () => {
+    render(
+      <Page>
+        <ListDetailShell
+          open
+          list={<div>List</div>}
+          detail={<div>Detail</div>}
+        />
+      </Page>
+    )
+
+    const page = document.querySelector<HTMLElement>('[data-slot="page"]')!
+    const shell = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-shell"]'
+    )!
+    const grid = shell.firstElementChild as HTMLElement
+
+    expect(page.className).toContain('px-[var(--876-shell-gutter)]')
+    expect(grid.className).toContain(
+      '@3xl/list-detail:gap-x-[var(--876-shell-gutter)]'
+    )
+    expect(shell.className).not.toContain('-ml-')
+
+    for (const gutter of [16, 24, 32]) {
+      expect({
+        windowToCard: gutter,
+        cardToContent: gutter,
+        contentToWindow: gutter,
+      }).toEqual({
+        windowToCard: gutter,
+        cardToContent: gutter,
+        contentToWindow: gutter,
+      })
+    }
+  })
+
+  it('does not pull left when rendered without a Page parent', () => {
+    render(
+      <ListDetailShell
+        open={false}
+        list={<div>List</div>}
+        detail={<div>Detail</div>}
+      />
+    )
+    const shell = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-shell"]'
+    )!
+
+    expect(shell.className).not.toContain('-ml-')
+    expect(shell.className).not.toContain('margin-left')
+  })
+
   it('keeps the toolbar mounted and stands the list down at a narrow width when a record is open', () => {
     mocks.segments = ['cus_2kL9mN4q']
 

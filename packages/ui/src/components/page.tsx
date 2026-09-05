@@ -21,7 +21,7 @@ function Page({
       className={cn(
         hub
           ? 'px-6 pt-5 pb-8 sm:px-8 lg:px-12'
-          : 'px-4 pt-5 pb-8 sm:px-6 lg:px-8',
+          : 'px-[var(--876-shell-gutter)] pt-5 pb-8',
         className
       )}
       {...props}
