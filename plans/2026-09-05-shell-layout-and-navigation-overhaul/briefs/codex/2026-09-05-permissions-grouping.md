@@ -133,3 +133,21 @@ Write to
 the new type shape; how you resolved module-key collisions across products; files
 changed; the **counted** number of `it()` cases added; verification output; proof
 that the permission key set is unchanged; and anything you could not verify.
+
+---
+
+## Concurrency note (added at dispatch)
+
+Another agent is editing `apps/console/src/components/shell/sidebar.tsx` and
+`apps/console/src/components/shell/sidebar.test.tsx` at the same time as you, and
+a third is editing `apps/api` and `packages/core/src/access/**`.
+
+- **Do not edit any file under `apps/console/src/components/shell/`.**
+- **Do not edit `packages/ui/**` or `apps/api/**`.**
+- When you run the Console suite you may see failures in `sidebar.test.tsx` or
+  shell-related snapshots that are **not caused by your change**. Do not fix
+  them and do not work around them. Report them separately under a
+  "failures not mine" heading, and judge your own work by the
+  `settings/users/**` and `lib/permissions` tests.
+- Before your final verification run, re-read `apps/console/src/lib/permissions.ts`
+  from disk in case it moved under you.

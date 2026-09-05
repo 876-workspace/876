@@ -144,3 +144,33 @@ files changed and why; what you chose for the root context label and the back
 link, with reasoning; the **counted** number of `it()` cases added; verification
 output; whether the shell gutter tokens existed when you ran; and anything you
 could not verify.
+
+---
+
+## Concurrency note (added at dispatch)
+
+Three other agents are working in this tree at the same time:
+
+- one owns `packages/ui/**` and every `apps/*/src/components/shell/sidebar.tsx`;
+- one owns `apps/api/**` and `packages/core/src/access/**`;
+- one owns `apps/console/src/lib/permissions.ts` and
+  `apps/console/src/app/(app)/settings/users/**`.
+
+Therefore:
+
+- **Do not edit** `apps/console/src/components/shell/sidebar.tsx`,
+  `nav-icons.tsx`, `packages/ui/**`, `apps/api/**`, or anything under
+  `settings/users/**`. You **may** edit
+  `apps/console/src/components/shell/sidebar-context.ts` — that file is yours.
+- §5 of this brief asks you to consume shell gutter tokens for the requests
+  section. **A defect was found in that token** — it currently resolves to
+  nothing and is being fixed by the orchestrator. Do not consume it, do not
+  work around it, and do not add local margins to compensate. Leave the requests
+  spacing alone and say so in your report; it will be handled with the token fix.
+- When you run the Console suite you will likely see failures in
+  `sidebar.test.tsx`, permission/settings tests, or shell snapshots that are
+  **not yours**. Do not fix them and do not work around them. Report them under a
+  "failures not mine" heading and judge your own work by the `workspace/**` and
+  `sidebar-context` tests.
+- Re-read any file you intend to change immediately before changing it, in case
+  it moved under you.

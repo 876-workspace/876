@@ -119,3 +119,34 @@ files changed and why; whether the collapsible rail was shared into `@876/ui` an
 the reasoning; the **counted** number of `it()` cases added; verification output;
 anything you could not verify; and any design decision you made that the brief
 did not settle.
+
+---
+
+## Concurrency note (added at dispatch)
+
+Other agents own these paths. **Do not edit them:**
+
+- `apps/api/**`, `packages/core/src/access/**`
+- `apps/console/src/lib/permissions.ts`,
+  `apps/console/src/app/(app)/settings/**`,
+  `apps/console/src/app/(app)/workspace/**`,
+  `apps/console/src/components/shell/**`
+- `apps/*/src/components/shell/nav-icons.tsx` and `nav-config.ts` — an agent is
+  replacing the sidebar icons concurrently. You may rely on a Projects
+  `nav-icons.tsx` existing, but do not create or edit one.
+
+You **own**: `packages/projects-ui/**`, `apps/projects/src/app/**`,
+`apps/projects/src/components/shell/sidebar.tsx` (for the collapsible rail), and
+`packages/ui/src/components/markdown-editor.tsx` / `markdown.tsx`.
+
+Two notes on `packages/ui`:
+
+1. Another agent has just finished changing `packages/ui/src/components/{app-shell,page,list-detail-shell,sidebar}.tsx`
+   and `876.css`. **Do not edit those five files.** Re-read them before relying
+   on their behaviour.
+2. If you share the collapsible rail into `@876/ui`, put it in a **new** file
+   rather than modifying any of those five.
+
+Re-read `apps/projects/src/components/shell/sidebar.tsx` from disk immediately
+before editing it. When you run a suite you may see failures that are not yours
+— report them under a "failures not mine" heading rather than fixing them.

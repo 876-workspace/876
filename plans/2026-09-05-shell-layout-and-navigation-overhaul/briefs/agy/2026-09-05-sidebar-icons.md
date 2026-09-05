@@ -129,3 +129,29 @@ Write to
 a before/after icon table per app; any icon you had to add to `@876/ui/icons` and
 why; the **counted** number of `it()` cases added; the verification output; and
 anything you could not verify.
+
+---
+
+## Concurrency note (added at dispatch)
+
+Other agents are working in this tree concurrently and own these paths. **Do not
+edit any of them:**
+
+- `packages/ui/**` (except `packages/ui/src/icons.ts`, if and only if you must
+  add a missing icon export — keep that edit to added exports, nothing else)
+- `apps/api/**`, `packages/core/src/access/**`
+- `apps/console/src/lib/permissions.ts`, `apps/console/src/app/(app)/settings/**`
+- `apps/console/src/app/(app)/workspace/**`,
+  `apps/console/src/components/shell/sidebar-context.ts`
+
+You **own**: `apps/console/src/components/shell/nav-icons.tsx` and its test, the
+new `apps/projects/src/components/shell/nav-icons.tsx` and its test, and every
+app's `nav-config.ts`.
+
+The `sidebar.tsx` files in each app were being edited by another agent and should
+be free by the time you run — but **re-read each one from disk immediately before
+touching it**, and keep your edit to the icon lookup only. If a `sidebar.tsx`
+needs more than the icon lookup changed, stop and report it instead of editing.
+
+When you run a test suite you may see failures that are not yours. Do not fix
+them; report them under a "failures not mine" heading.
