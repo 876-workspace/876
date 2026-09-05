@@ -3,24 +3,46 @@
 - **Run:** `2026-09-05-shell-layout-and-navigation-overhaul`
 - **Branch:** `feat/shell-layout-navigation-overhaul`
 - **Tracker type:** execution checklist for remaining work only
-- **Status:** `CLOSEOUT_BLOCKED_ON_RUNTIME`
+- **Status:** `CLOSEOUT_BLOCKED_ON_RUNTIME_AND_ACTIONS`
 - **Updated:** 2026-09-05
 - **Relationship to `plan.md`:** `plan.md` remains the design/history document. This file is the operational source of truth for what still has to be completed before the integration branch is ready to merge to `main`.
 
 ---
 
-## Current branch state
+## Current branch / PR state
 
-Current GitHub state at the latest repository-side closeout audit:
+Latest audited GitHub state before this tracker update:
 
-- head before this tracker correction: `a7f08e6fa0f3b6a55a6bd7838ec9fbc917f844e8`
-- **33 commits ahead of `main`** before this tracker correction
+- head: `bea99ac88dfb85b59f432205613f48874fc9bc1f`
+- **35 commits ahead of `main`**
 - **0 commits behind `main`**
 - merge base: `1419aaee85264ed4c278d952af6e4687383df157`
-- no GitHub Actions runs exist for this branch
-- no commit-status entries are attached to the audited head
+- draft integration PR: **#478**
+- PR mergeability: **mergeable**, but intentionally draft/not ready
 
-Absence of CI/status entries is **not** a green verification result. C4 remains open until the command matrix is actually run.
+The draft PR was opened as the single integration PR so existing `pull_request`
+workflows could act as the C4 execution harness without making the branch merge-ready.
+It must remain draft until C3-C5 are genuinely accepted.
+
+### GitHub Actions result on PR #478
+
+All triggered workflows completed as failures, but their jobs failed **before any
+workflow step executed**:
+
+- UI tests — component-tests, widget-browser, and chromium-smoke each have an empty step list and no logs
+- App structure — `structure` has an empty step list and no logs
+- API container image — failed before steps
+- Billing API quality — `verify` has an empty step list and no logs
+- Billing API container image — failed before steps
+- Couriers API container image — failed before steps
+
+Because unrelated workflows all fail before checkout/setup and GitHub exposes no
+job logs, this is an Actions/runner-account infrastructure block, **not evidence
+of a repository test or compile failure**. The exact account-side reason is not
+exposed by the available repository API.
+
+Do not rerun these jobs until the Actions runner/account gate is repaired; a
+rerun would exercise the same pre-step failure rather than test the code.
 
 ### Closeout commits
 
@@ -33,6 +55,8 @@ Absence of CI/status entries is **not** a green verification result. C4 remains 
 - `76bac55e` — add the orchestrator closeout-progress report
 - `8ee9961a` — align `plan.md` with the actual closeout/runtime-blocked state
 - `a7f08e6f` — finalize the repository-side branch/readiness audit
+- `6db88a11` — correct Projects app verification/build workspace filters
+- `bea99ac8` — record static verification and execution-environment findings
 
 ### Original phase state
 
@@ -83,9 +107,17 @@ Absence of CI/status entries is **not** a green verification result. C4 remains 
 - [x] `packages/projects-ui/src/issue-comments-editor.test.tsx` — 3 focused cases
 - [x] Existing `markdown-editor.test.tsx` functional contract retained unchanged for final verification
 
+### Static C1 audit
+
+- [x] New icon imports resolve against `@876/ui/icons`
+- [x] Used Button variants/sizes exist in the shared Button contract
+- [x] No parallel Markdown composer implementation introduced
+- [x] No `as any`, `eslint-disable`, or `@ts-ignore` in the C1 diff
+- [x] Comment storage/transport contract unchanged
+
 ### Acceptance still required
 
-- [ ] C4 typecheck/test matrix
+- [ ] C4 typecheck/test matrix actually executes
 - [ ] C5 light/dark browser checks
 
 ---
@@ -126,9 +158,9 @@ Absence of CI/status entries is **not** a green verification result. C4 remains 
 ### Plan/tracker consistency
 
 - [x] `plan.md` now marks Phase 4 `COMPLETE IN CODE`
-- [x] `plan.md` status is `CLOSEOUT_BLOCKED_ON_RUNTIME`
 - [x] `todo.md` remains the operational checklist
 - [x] Historical diagnosis/evidence remains preserved in `plan.md`
+- [ ] Final plan status should be reconciled with the draft-PR/Actions block before ready-for-review
 - [ ] Mark both plan and TODO `COMPLETED` only after C3-C5 genuinely pass
 
 ---
@@ -196,9 +228,21 @@ pnpm --filter @876/api app-access:backfill-roles --apply
 
 ---
 
-## C4 — Full integration verification matrix — BLOCKED ON EXECUTION ENVIRONMENT
+## C4 — Full integration verification matrix — BLOCKED ON ACTIONS + LOCAL EXECUTION
 
-There are **no GitHub Actions runs** for this branch, and the audited head has no commit-status entries. The container available to this session does not contain `/root/projects/876`, does not have `pnpm` installed, and cannot resolve `github.com`, so it cannot obtain a checkout and run the commands locally. Final verification remains open rather than being inferred from phase reports.
+### C4.0 CI harness — COMPLETE, INFRASTRUCTURE BLOCK CONFIRMED
+
+- [x] Open the single integration PR as draft: **#478**
+- [x] Confirm PR is mergeable and remains draft
+- [x] Trigger existing pull-request workflows
+- [x] Inspect workflow/job results
+- [x] Confirm all failing jobs fail before step 1 with no logs
+- [x] Classify current GitHub Actions result as infrastructure-blocked, not code-failed
+- [ ] Repair/restore Actions runner/account availability outside this repository change
+- [ ] Rerun C4 workflows only after Actions can actually start jobs
+
+The local container also cannot replace CI: no checkout exists, `pnpm` is not
+installed, shell DNS cannot resolve GitHub/npm, and Corepack cannot download pnpm.
 
 ### Static command audit completed
 
@@ -206,7 +250,7 @@ There are **no GitHub Actions runs** for this branch, and the audited head has n
 - [x] Corrected the prior erroneous `@876/projects` app-verification filter below. `@876/projects` is a dependency/package and must not substitute for application verification.
 - [x] Verified exact app build workspace names for Console, CRM, Billing, Invoice, and Projects.
 
-### Required checks
+### Required checks — NOT YET EXECUTED
 
 ```bash
 pnpm --filter @876/console typecheck
@@ -315,7 +359,7 @@ For each required surface:
 
 ---
 
-## C6 — Final issue cleanup, closeout report, and PR — REPOSITORY AUDIT PARTIAL
+## C6 — Final issue cleanup, closeout report, and PR — DRAFT PR OPEN / EXTERNAL GATES REMAIN
 
 ### C6.1 PROJ-10 — EXTERNAL TRACKER BLOCK
 
@@ -329,40 +373,45 @@ The repository's GitHub Issues search returned no `PROJ-10`, so it appears to li
 
 ### C6.2 Branch/readiness audit
 
-- [x] Branch currently 0 commits behind `main`
-- [x] Latest pre-correction branch comparison reviewed: 33 commits ahead / 0 behind
+- [x] Branch currently 0 commits behind `main` at latest comparison
+- [x] Latest audited branch comparison: 35 commits ahead / 0 behind before this tracker update
+- [x] PR #478 reports mergeable with no base conflict
 - [x] Current changed-file list contains no environment file
 - [x] Current changed-file list contains no delegated `*-run.log` transcript
 - [x] Branch commit listing searched for `Co-Authored-By`: no matches
 - [x] Branch commit listing searched for `Generated with`: no matches
 - [x] Branch commit listing searched for `Claude`: no matches
 - [x] Older descriptive `Codex` mentions were reviewed and are documentation about delegated CLI transcript handling, not contributor attribution
-- [x] Audited head has no commit-status entries; this is recorded as “not verified,” not “green”
-- [ ] Re-check `main` divergence immediately before final PR because `main` may advance
+- [ ] Re-check `main` divergence immediately before ready-for-review because `main` may advance
 - [ ] Run final checkout-based diff quality/security scan after C3-C5 runtime work
 
 ### C6.3 Closeout reporting
 
 - [x] Add repository-side closeout progress report: `reports/orchestrator/2026-09-05-closeout-progress.md`
-- [x] Align `plan.md` with Phase 4 complete-in-code and runtime-blocked closeout state
+- [x] Align `plan.md` with Phase 4 complete-in-code
 - [x] Correct runtime verification commands to target the actual Projects app workspace
+- [x] Open draft PR #478 as the CI harness
+- [x] Record the Actions pre-step infrastructure failure rather than calling it a code failure
 - [ ] Update the orchestrator report with actual C3-C5 results after runtime acceptance
+- [ ] Reconcile `plan.md` with the draft PR / Actions block
 - [ ] Mark `plan.md` `COMPLETED ✅` only after C3-C5 pass
 - [ ] Mark this TODO `COMPLETED` only after C3-C5 pass
 
-### C6.4 Final integration PR
+### C6.4 Integration PR #478
 
-Do **not** open the final PR yet. C3-C5 are acceptance gates and remain unverified.
+The single integration PR now exists as **draft #478**. Do not mark it ready or merge it while C3-C5 remain unverified.
 
-When they pass:
-
-- [ ] Open one PR: `feat/shell-layout-navigation-overhaul` → `main`
-- [ ] Describe the entire overhaul, not only the editor closeout
-- [ ] Lead with the two platform defects found: Tailwind shared-UI source coverage and app-role assignment ignoring org role
-- [ ] Include shell/navigation/full-page record/workspace/permissions/editor outcomes
-- [ ] Include exact final verification results and the 18-cycle baseline
-- [ ] Immediately check mergeability/conflicts
-- [ ] Inspect CI/status checks
+- [x] Open one integration PR: `feat/shell-layout-navigation-overhaul` → `main`
+- [x] Keep it draft while runtime acceptance is incomplete
+- [x] Describe the entire overhaul rather than only the editor closeout
+- [x] Lead with the two platform defects found: Tailwind shared-UI source coverage and app-role assignment ignoring org role
+- [x] Confirm current PR has no merge conflict
+- [ ] Restore Actions execution and obtain real CI results
+- [ ] Complete C3 production repair + permission smoke test
+- [ ] Complete C5 browser acceptance
+- [ ] Update PR body with exact final verification evidence
+- [ ] Mark PR ready for review only after all acceptance gates pass
+- [ ] Inspect review threads/status checks after real CI executes
 - [ ] Resolve all actionable automated-review findings before merge
 
 ---
@@ -374,24 +423,29 @@ When they pass:
 - [x] C1 shared Markdown editor redesign
 - [x] C1 Projects create/edit composer integration
 - [x] C1 focused regression coverage
+- [x] C1 static API/escape audit
 - [x] C2 remove `ProjectDetail.projectsHref` residue
 - [x] C2 correct stale shell-spacing report
 - [x] C2 update Projects report
 - [x] C2 align `plan.md` with completed Phase 4 code
 - [x] C4 static workspace/filter audit and command correction
+- [x] C4 open draft PR as CI harness
+- [x] C4 prove current Actions failures occur before workflow steps
 - [x] C6 repository-side closeout progress report
-- [x] C6 current branch divergence audit
+- [x] C6 current branch divergence/conflict audit
 - [x] C6 commit attribution audit
 - [x] C6 changed-file env/run-log hygiene audit
 - [x] C6 surface Linear integration for PROJ-10 lookup
+- [x] C6 draft integration PR #478
 
 ### Runtime/external work still open
 
+- [ ] Restore GitHub Actions runner/account availability
 - [ ] C3 production backfill dry-run
 - [ ] C3 production assignment repair
 - [ ] C3 effective-permission re-read
 - [ ] C3 production comment smoke test
-- [ ] C4 full integration command matrix
+- [ ] C4 execute full integration command matrix
 - [ ] C4 formatter/lint/checkout quality gate
 - [ ] C4 production-build coverage
 - [ ] C5 light/dark browser acceptance
@@ -399,5 +453,5 @@ When they pass:
 - [ ] C6 resolve PROJ-10 in its actual tracker
 - [ ] C6 final checkout-based security/readiness audit after runtime checks
 - [ ] C6 final acceptance report update
-- [ ] C6 mark `plan.md` and this TODO complete
-- [ ] C6 final PR to `main`
+- [ ] C6 reconcile and complete `plan.md`/TODO
+- [ ] C6 mark PR #478 ready for review
