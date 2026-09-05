@@ -6,11 +6,11 @@
 v4's real base spacing custom property (`--spacing`) and calculates the three
 responsive lengths from it:
 
-| Viewport                    | Token value                    | Resolved length |
-| --------------------------- | ------------------------------ | --------------- |
-| below `40rem`               | `calc(var(--spacing) * 4)`     | `1rem` / 16px   |
-| `40rem` through `63.999rem` | `calc(var(--spacing) * 6)`     | `1.5rem` / 24px |
-| `64rem` and above           | `calc(var(--spacing) * 8)`     | `2rem` / 32px   |
+| Viewport                    | Token value                | Resolved length |
+| --------------------------- | -------------------------- | --------------- |
+| below `40rem`               | `calc(var(--spacing) * 4)` | `1rem` / 16px   |
+| `40rem` through `63.999rem` | `calc(var(--spacing) * 6)` | `1.5rem` / 24px |
+| `64rem` and above           | `calc(var(--spacing) * 8)` | `2rem` / 32px   |
 
 An earlier draft of this report incorrectly documented the token as
 `var(--spacing-4)`, `var(--spacing-6)`, and `var(--spacing-8)`. Those variables

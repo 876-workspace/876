@@ -50,4 +50,3 @@ export function tailwindSourceGlobForPackage(packageName) {
   const shortName = packageName.replace(/^@876\//, '')
   return `../../../../packages/${shortName}/src/**/*.{ts,tsx}`
 }
-

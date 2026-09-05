@@ -34,15 +34,16 @@ describe('MarkdownEditor visual contract', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Preview' }))
 
-    expect(screen.getByRole('group', { name: 'Markdown editor' })).toHaveAttribute(
-      'data-mode',
-      'preview'
-    )
+    expect(
+      screen.getByRole('group', { name: 'Markdown editor' })
+    ).toHaveAttribute('data-mode', 'preview')
     expect(screen.getByRole('button', { name: 'Preview' })).toHaveAttribute(
       'aria-pressed',
       'true'
     )
-    expect(screen.queryByRole('button', { name: 'Bold' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Bold' })
+    ).not.toBeInTheDocument()
   })
 
   it('keeps every formatting action accessible after the icon-toolbar redesign', () => {

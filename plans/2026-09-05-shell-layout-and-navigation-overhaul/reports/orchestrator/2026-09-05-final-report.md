@@ -210,7 +210,7 @@ Apply was hardened repeatedly during closeout:
   resolution, compare-and-set application, and dry-run safety.
 
 A concurrent operator change therefore wins instead of being silently
- overwritten by the backfill. `skippedAfterDiscovery` reports candidates that
+overwritten by the backfill. `skippedAfterDiscovery` reports candidates that
 became stale between discovery and apply.
 
 No production backfill was executed during this repository review.

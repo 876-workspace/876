@@ -40,9 +40,20 @@ At the top of the same file:
 
 ```ts
 const VALID_ICON_KEYS = new Set<WorkspaceIconKey>([
-  'dashboard', 'customers', 'requests', 'settings', 'billing', 'packages',
-  'items', 'teams', 'categories', 'forms', 'payments', 'banking',
-  'branches', 'warehouses',
+  'dashboard',
+  'customers',
+  'requests',
+  'settings',
+  'billing',
+  'packages',
+  'items',
+  'teams',
+  'categories',
+  'forms',
+  'payments',
+  'banking',
+  'branches',
+  'warehouses',
 ])
 ```
 

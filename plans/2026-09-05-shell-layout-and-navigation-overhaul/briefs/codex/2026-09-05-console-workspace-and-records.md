@@ -97,8 +97,8 @@ contexts (Requests, an organization workspace) — those are informative.
 
 ## 5. Requests section spacing
 
-The user: *"what the hell is going on with the layout for requests in console —
-why are they touching the sidebars?"* The list pane visually abuts the sidebar
+The user: _"what the hell is going on with the layout for requests in console —
+why are they touching the sidebars?"_ The list pane visually abuts the sidebar
 card. A concurrent change is introducing shell gutter tokens in `@876/ui`; if
 they exist on this branch, consume them here rather than adding a local margin.
 If they do not, note it and leave the section for that change rather than

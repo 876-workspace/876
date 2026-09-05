@@ -25,7 +25,7 @@ apps/projects/src/app/globals.css   @source '../';
 
 **No app sources any shared product-UI package** — `@876/projects-ui`,
 `@876/crm-ui`, `@876/work-ui`, `@876/billing-ui`, `@876/access-ui`. So any
-utility class used *only* inside one of those packages is never generated for
+utility class used _only_ inside one of those packages is never generated for
 the host app, and that component renders unstyled for those classes.
 
 Concrete proof: `packages/projects-ui/src/project-detail.tsx` renders its

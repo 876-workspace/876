@@ -13,8 +13,8 @@ never substitutes a broader role. Fails closed.
 
 **Note 1 — blanket underscore replacement.** `mappedRoleKey` normalizes with
 `organizationRole.replaceAll('_', '-')`. `.claude/rules/naming.md` is explicit:
-*"Never mass-replace `_` with `-`. Durable values use an explicit, reviewed
-old→new migration map."* This is a comparison rather than a persisted write, and
+_"Never mass-replace `_` with `-`. Durable values use an explicit, reviewed
+old→new migration map."_ This is a comparison rather than a persisted write, and
 with only two matched keys it is safe in practice — but an explicit map is
 strictly better and rule-compliant:
 
@@ -30,15 +30,15 @@ Ask for this change unless the delegate gives a reason not to.
 **Note 2 — the elevation guard must be proven, not assumed.**
 `requireSuperAdminForElevation`
 (`apps/api/src/modules/app-access/app-access.service.ts:266`) rejects a
-non-super-admin caller who *asks* for the super-admin app role. The new mapping
+non-super-admin caller who _asks_ for the super-admin app role. The new mapping
 produces that same role automatically with `source: 'organization-role'`.
 
 That is defensible — the role is derived from the **subject's** organization
 role, not from what the caller requested, so it grants nothing the subject was
 not already entitled to. But it must be covered by an explicit test, not left to
-reasoning. Confirm the brief's case is present: *a non-super-admin caller
-explicitly requesting the super-admin app role is still rejected*, alongside *an
-org super_admin provisioned automatically does receive it*.
+reasoning. Confirm the brief's case is present: _a non-super-admin caller
+explicitly requesting the super-admin app role is still rejected_, alongside _an
+org super_admin provisioned automatically does receive it_.
 
 ## Phase 2 — `packages/ui/src/components/list-detail-shell.tsx`
 
@@ -48,8 +48,8 @@ The shell now reclaims half the page gutter with a negative margin:
 '@container/list-detail -ml-[var(--876-shell-gutter)] h-full min-h-0'
 ```
 
-with the comment *"A Page supplies the outer page gutter. Reclaim its left half
-here so the list begins one shell gutter from a floating sidebar, not two."*
+with the comment _"A Page supplies the outer page gutter. Reclaim its left half
+here so the list begins one shell gutter from a floating sidebar, not two."_
 
 This works but is fragile: the shell now depends on always being rendered inside
 a `Page` that applied exactly that gutter. `ListDetailSection` does that today,
@@ -94,7 +94,7 @@ reported success having written none of the tests its brief required.
 `packages/ui/src/876.css` defines the token as:
 
 ```css
---876-shell-gutter: var(--spacing-4);   /* and --spacing-6, --spacing-8 */
+--876-shell-gutter: var(--spacing-4); /* and --spacing-6, --spacing-8 */
 ```
 
 **`--spacing-4` does not exist.** Tailwind v4 defines a single `--spacing:
@@ -102,7 +102,9 @@ reported success having written none of the tests its brief required.
 is visible in the emitted CSS:
 
 ```css
-.px-4{padding-inline:calc(var(--spacing) * 4)}
+.px-4 {
+  padding-inline: calc(var(--spacing) * 4);
+}
 ```
 
 Grepping every stylesheet in `packages/ui/src`, every app `globals.css`, and
@@ -122,9 +124,9 @@ zero. The layout would render flush against the window edges.
 ### Fix
 
 ```css
---876-shell-gutter: calc(var(--spacing) * 4);   /* 1rem   */
---876-shell-gutter: calc(var(--spacing) * 6);   /* 1.5rem */
---876-shell-gutter: calc(var(--spacing) * 8);   /* 2rem   */
+--876-shell-gutter: calc(var(--spacing) * 4); /* 1rem   */
+--876-shell-gutter: calc(var(--spacing) * 6); /* 1.5rem */
+--876-shell-gutter: calc(var(--spacing) * 8); /* 2rem   */
 ```
 
 Literal `1rem` / `1.5rem` / `2rem` is equally acceptable and arguably clearer,
@@ -133,8 +135,8 @@ change moves both together.
 
 ### Why the delegate will not fix it
 
-The Phase 2b follow-up brief states *"Keep `--876-shell-gutter` and its 4/6/8
-values; they are correct."* That instruction was the orchestrator's error. Phase
+The Phase 2b follow-up brief states _"Keep `--876-shell-gutter` and its 4/6/8
+values; they are correct."_ That instruction was the orchestrator's error. Phase
 2b will preserve the broken values, so **the orchestrator must apply this fix
 after Phase 2b exits.**
 

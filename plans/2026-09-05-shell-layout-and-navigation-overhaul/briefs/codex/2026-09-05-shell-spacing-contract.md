@@ -72,9 +72,9 @@ them.
 
 ### 3. Equal sidebar item spacing in all three sidebar states
 
-The user: *"are we having the same standard spacing between the sidebar items
+The user: _"are we having the same standard spacing between the sidebar items
 for the regular sidebar in console versus when the sidebar switches versus when
-the sidebar expands?"* Today Console's rail has a root context, drill-down
+the sidebar expands?"_ Today Console's rail has a root context, drill-down
 contexts (`sidebar-context.ts`), and an expanded panel. Verify the item rhythm
 (row height, gap, group separation) is identical in all three and make it so.
 

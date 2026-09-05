@@ -65,9 +65,9 @@ guard.
 ## Defect 3 — blanket underscore replacement
 
 `mappedRoleKey` normalizes with `organizationRole.replaceAll('_', '-')`.
-`.claude/rules/naming.md` is explicit: *"Never mass-replace `_` with `-`.
+`.claude/rules/naming.md` is explicit: _"Never mass-replace `_` with `-`.
 Durable values use an explicit, reviewed old→new migration map so provider data,
-customer data, hashes, and opaque IDs cannot be changed accidentally."*
+customer data, hashes, and opaque IDs cannot be changed accidentally."_
 
 It is safe in practice here — only two keys match — but organization role names
 and app role keys are both durable contracts, and an explicit map is the form

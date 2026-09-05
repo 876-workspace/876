@@ -19,11 +19,11 @@ With your change, `aside` is `px-[var(--876-shell-gutter)]` and `Page` is
 `px-[var(--876-shell-gutter)]`, so on **any page that is not a list/detail
 section**:
 
-| Gap | Value |
-| --- | --- |
-| window edge → card | **1 gutter** |
-| card → content | aside `pr` + Page `pl` = **2 gutters** |
-| content → right edge | **1 gutter** |
+| Gap                  | Value                                  |
+| -------------------- | -------------------------------------- |
+| window edge → card   | **1 gutter**                           |
+| card → content       | aside `pr` + Page `pl` = **2 gutters** |
+| content → right edge | **1 gutter**                           |
 
 That is precisely the asymmetry the user reported, and it is now **larger** than
 before: at `lg` the gutter is 32px, so it reads 32px versus 64px, where the
@@ -45,11 +45,11 @@ workspace renders it under a different height wrapper
 job.** Make the in-flow asides `pl-[var(--876-shell-gutter)]` with **no right
 padding**, and **delete the `-ml-` reclaim from `ListDetailShell`**. Then:
 
-| Gap | Value |
-| --- | --- |
-| window edge → card | 1 gutter (aside `pl`) |
-| card → content | 1 gutter (Page `pl`) |
-| content → right edge | 1 gutter (Page `pr`) |
+| Gap                  | Value                 |
+| -------------------- | --------------------- |
+| window edge → card   | 1 gutter (aside `pl`) |
+| card → content       | 1 gutter (Page `pl`)  |
+| content → right edge | 1 gutter (Page `pr`)  |
 
 Even everywhere, with no negative margin and no assumption about the parent.
 

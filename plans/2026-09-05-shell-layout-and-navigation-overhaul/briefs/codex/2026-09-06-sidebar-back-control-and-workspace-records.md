@@ -66,12 +66,12 @@ that is what stops this recurring.
 
 Four files under `apps/console/src/app/(app)/workspace/[orgSlug]/projects/`:
 
-| File | Failure |
-| --- | --- |
-| `projects/layout.test.tsx` | `Unable to find an element by: [data-testid="page"]` |
-| `issues/layout.test.tsx` | `Unable to find an element by: [data-testid="page"]` |
-| `projects/[projectId]/page.test.tsx` | `Unable to find an element with the text: APO-99` |
-| `issues/[issueRef]/page.test.tsx` | `Unable to find an element with the text: (FAL)` |
+| File                                 | Failure                                              |
+| ------------------------------------ | ---------------------------------------------------- |
+| `projects/layout.test.tsx`           | `Unable to find an element by: [data-testid="page"]` |
+| `issues/layout.test.tsx`             | `Unable to find an element by: [data-testid="page"]` |
+| `projects/[projectId]/page.test.tsx` | `Unable to find an element with the text: APO-99`    |
+| `issues/[issueRef]/page.test.tsx`    | `Unable to find an element with the text: (FAL)`     |
 
 The settled product decision, which is **not yours to revisit**: in Console,
 project and issue records open as **full pages**, exactly as they do in the

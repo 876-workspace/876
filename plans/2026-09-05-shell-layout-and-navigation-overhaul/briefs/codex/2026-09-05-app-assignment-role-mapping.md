@@ -51,7 +51,7 @@ exists. Do not implement PROJ-10 as written.
    `requireSuperAdminForElevation`
    (`apps/api/src/modules/app-access/app-access.service.ts:266`) stops a
    non-super-admin from handing out the super-admin app role. Automatic mapping
-   must not become a way around it: the mapping derives from the *subject's* own
+   must not become a way around it: the mapping derives from the _subject's_ own
    organization role, not from what the caller asks for. Make sure an internal /
    provisioning principal taking this path is deliberate and tested.
 
@@ -64,7 +64,7 @@ exists. Do not implement PROJ-10 as written.
 4. **Leave the 403 response shape alone.** Returning 403 with `Forbidden.` is
    correct behaviour for a genuine denial (`.claude/rules/access-control.md` —
    an API authorization failure answers with a status, it never redirects). The
-   bug is upstream. You may improve the *client-side* message so a denied user is
+   bug is upstream. You may improve the _client-side_ message so a denied user is
    told they lack permission to comment rather than a bare "Forbidden.", but do
    not change the status code and do not fail open.
 

@@ -35,7 +35,9 @@ describe('IssueComments editor composition', () => {
       within(composer).getByRole('group', { name: 'Markdown editor' })
     ).toBeInTheDocument()
     expect(within(composer).getByText('Markdown supported')).toBeInTheDocument()
-    expect(within(composer).getByRole('button', { name: 'Comment' })).toBeDisabled()
+    expect(
+      within(composer).getByRole('button', { name: 'Comment' })
+    ).toBeDisabled()
   })
 
   it('keeps a create draft in the redesigned composer when the service rejects it', async () => {

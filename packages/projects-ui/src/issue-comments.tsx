@@ -129,7 +129,9 @@ export function IssueComments({
       >
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-medium">Add a comment</h3>
-          <span className="text-muted-foreground text-xs">Markdown supported</span>
+          <span className="text-muted-foreground text-xs">
+            Markdown supported
+          </span>
         </div>
         <MarkdownEditor
           value={body}
@@ -142,7 +144,11 @@ export function IssueComments({
         />
         {error ? (
           <div className="mt-3">
-            <AppError title="Comment not added" error={error} variant="banner" />
+            <AppError
+              title="Comment not added"
+              error={error}
+              variant="banner"
+            />
           </div>
         ) : null}
         <div className="mt-3 flex justify-end">

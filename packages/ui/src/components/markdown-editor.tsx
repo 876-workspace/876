@@ -36,16 +36,44 @@ type MarkdownTool = {
 }
 
 const tools: readonly MarkdownTool[] = [
-  { label: 'Bold', prefix: '**', suffix: '**', mark: 'B', markClassName: 'font-bold' },
-  { label: 'Italic', prefix: '*', suffix: '*', mark: 'I', markClassName: 'font-serif italic' },
-  { label: 'Strike', prefix: '~~', suffix: '~~', mark: 'S', markClassName: 'line-through' },
+  {
+    label: 'Bold',
+    prefix: '**',
+    suffix: '**',
+    mark: 'B',
+    markClassName: 'font-bold',
+  },
+  {
+    label: 'Italic',
+    prefix: '*',
+    suffix: '*',
+    mark: 'I',
+    markClassName: 'font-serif italic',
+  },
+  {
+    label: 'Strike',
+    prefix: '~~',
+    suffix: '~~',
+    mark: 'S',
+    markClassName: 'line-through',
+  },
   { label: 'Code', prefix: '`', suffix: '`', icon: CodeBracketIcon },
   { label: 'Link', prefix: '[', suffix: '](https://)', icon: LinkIcon },
   { label: 'Bullets', prefix: '- ', suffix: '', icon: QueueListIcon },
-  { label: 'Numbered', prefix: '1. ', suffix: '', icon: ClipboardDocumentListIcon },
+  {
+    label: 'Numbered',
+    prefix: '1. ',
+    suffix: '',
+    icon: ClipboardDocumentListIcon,
+  },
   { label: 'Task', prefix: '- [ ] ', suffix: '', icon: CheckCircleIcon },
   { label: 'Quote', prefix: '> ', suffix: '', icon: ChatBubbleLeftIcon },
-  { label: 'Block code', prefix: '```\n', suffix: '\n```', icon: CommandLineIcon },
+  {
+    label: 'Block code',
+    prefix: '```\n',
+    suffix: '\n```',
+    icon: CommandLineIcon,
+  },
 ]
 
 export function MarkdownEditor({
@@ -118,27 +146,32 @@ export function MarkdownEditor({
         </div>
         {tab === 'write' ? (
           <div className="border-border/50 flex flex-wrap gap-0.5 sm:ml-auto sm:border-l sm:pl-2">
-            {tools.map(({ label, prefix, suffix, icon: Icon, mark, markClassName }) => (
-              <Button
-                key={label}
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                disabled={disabled}
-                aria-label={label}
-                title={label}
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => apply(prefix, suffix)}
-              >
-                {Icon ? (
-                  <Icon aria-hidden="true" className="size-3.5" />
-                ) : (
-                  <span aria-hidden="true" className={`text-[11px] ${markClassName ?? ''}`}>
-                    {mark}
-                  </span>
-                )}
-              </Button>
-            ))}
+            {tools.map(
+              ({ label, prefix, suffix, icon: Icon, mark, markClassName }) => (
+                <Button
+                  key={label}
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  disabled={disabled}
+                  aria-label={label}
+                  title={label}
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => apply(prefix, suffix)}
+                >
+                  {Icon ? (
+                    <Icon aria-hidden="true" className="size-3.5" />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className={`text-[11px] ${markClassName ?? ''}`}
+                    >
+                      {mark}
+                    </span>
+                  )}
+                </Button>
+              )
+            )}
           </div>
         ) : null}
       </div>

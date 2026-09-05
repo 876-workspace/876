@@ -14,12 +14,12 @@ back button name is not `Back to `.
 
 ## Workspace Projects and Issues verdicts
 
-| File | Verdict | Evidence |
-| --- | --- | --- |
-| `projects/projects/layout.test.tsx` | Test wrong; route correct. | The layout renders its children directly, the list page renders its own `Page` and toolbar, and no list/detail shell or definite-height wrapper remains. |
-| `issues/layout.test.tsx` | Test wrong; route correct. | Same full-page pairing as Projects: direct children in the layout and a self-owned list page/toolbar, with no split shell or obsolete height wrapper. |
-| `projects/[projectId]/page.test.tsx` | Test wrong; route correct. | The shared full-page `ProjectDetail` renders the key as `FAL` and has no split-pane `Back to projects` control. |
-| `issues/[issueRef]/page.test.tsx` | Test wrong; route correct. | The shared full-page `IssueDetail` renders its header identifier as `APO · APO-99`. |
+| File                                 | Verdict                    | Evidence                                                                                                                                                 |
+| ------------------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `projects/projects/layout.test.tsx`  | Test wrong; route correct. | The layout renders its children directly, the list page renders its own `Page` and toolbar, and no list/detail shell or definite-height wrapper remains. |
+| `issues/layout.test.tsx`             | Test wrong; route correct. | Same full-page pairing as Projects: direct children in the layout and a self-owned list page/toolbar, with no split shell or obsolete height wrapper.    |
+| `projects/[projectId]/page.test.tsx` | Test wrong; route correct. | The shared full-page `ProjectDetail` renders the key as `FAL` and has no split-pane `Back to projects` control.                                          |
+| `issues/[issueRef]/page.test.tsx`    | Test wrong; route correct. | The shared full-page `IssueDetail` renders its header identifier as `APO · APO-99`.                                                                      |
 
 The rewritten workspace layout tests mirror the platform route tests: they
 assert direct layout children and no shell, assert that the list page owns the
@@ -38,15 +38,15 @@ supplied organization entry.
 
 ## Changed `it()` case counts
 
-| File | Cases added or changed |
-| --- | --- |
-| `components/shell/sidebar-context.test.ts` | 1 changed |
-| `components/shell/sidebar.test.tsx` | 1 added |
-| `workspace/[orgSlug]/projects/projects/layout.test.tsx` | 2 rewritten, 5 added (7) |
-| `workspace/[orgSlug]/projects/issues/layout.test.tsx` | 2 rewritten, 5 added (7) |
-| `workspace/[orgSlug]/projects/projects/[projectId]/page.test.tsx` | 1 changed |
-| `workspace/[orgSlug]/projects/issues/[issueRef]/page.test.tsx` | 1 changed |
-| `features/orgs/components/workspace-switchers.test.tsx` | 1 changed |
+| File                                                              | Cases added or changed   |
+| ----------------------------------------------------------------- | ------------------------ |
+| `components/shell/sidebar-context.test.ts`                        | 1 changed                |
+| `components/shell/sidebar.test.tsx`                               | 1 added                  |
+| `workspace/[orgSlug]/projects/projects/layout.test.tsx`           | 2 rewritten, 5 added (7) |
+| `workspace/[orgSlug]/projects/issues/layout.test.tsx`             | 2 rewritten, 5 added (7) |
+| `workspace/[orgSlug]/projects/projects/[projectId]/page.test.tsx` | 1 changed                |
+| `workspace/[orgSlug]/projects/issues/[issueRef]/page.test.tsx`    | 1 changed                |
+| `features/orgs/components/workspace-switchers.test.tsx`           | 1 changed                |
 
 ## Verification
 

@@ -31,8 +31,8 @@ compound problem: **the app shell does not read as one system.** Concretely:
   as sibling top-level accordions instead of nesting under one product.
 - Adding a comment in 876 Projects fails with **`Forbidden.`**
 
-The user's framing is the requirement: *"Given that the sidebar item is an issue
-perhaps we need to have a standard layout component or app shell."* The answer is
+The user's framing is the requirement: _"Given that the sidebar item is an issue
+perhaps we need to have a standard layout component or app shell."_ The answer is
 yes — the shared shell exists but its spacing is not a contract, and the shared
 product-UI packages are not even compiled correctly (see §3).
 
@@ -64,19 +64,19 @@ output (a 403 is a normal response, so nothing is logged):
 Probing the production identity API (`https://876-api.vercel.app`) with the
 internal key:
 
-| Check | Result |
-| --- | --- |
-| App `876-projects` = `rap_3b512e264a9a4529a4266bd37d54ed79` | present |
-| Permission catalog rows | **`comments.create` present** (25 keys total) |
-| Template roles `super-admin` / `admin` | **both include `comments.create`** |
-| Org copies for `efesto` (`org_fa2cfb0bce834ae6a6537830159e5f14`) | `super-admin` (25), `admin` (20) both include it; `staff` (8) does not |
-| **The user's app assignment** `asg_90275575846147508476c7e2b16c4335` | **`app_role.key = "staff"`, `is_default: true`** |
-| `effective_permissions` on that assignment | the 8 read-only `*.view` keys — **no `comments.create`** |
+| Check                                                                | Result                                                                 |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| App `876-projects` = `rap_3b512e264a9a4529a4266bd37d54ed79`          | present                                                                |
+| Permission catalog rows                                              | **`comments.create` present** (25 keys total)                          |
+| Template roles `super-admin` / `admin`                               | **both include `comments.create`**                                     |
+| Org copies for `efesto` (`org_fa2cfb0bce834ae6a6537830159e5f14`)     | `super-admin` (25), `admin` (20) both include it; `staff` (8) does not |
+| **The user's app assignment** `asg_90275575846147508476c7e2b16c4335` | **`app_role.key = "staff"`, `is_default: true`**                       |
+| `effective_permissions` on that assignment                           | the 8 read-only `*.view` keys — **no `comments.create`**               |
 
 ### Root cause
 
 The catalog, the seeds, and the org role copies are all correct. **The user's
-876 Projects app assignment carries the app's *default* role (`staff`,
+876 Projects app assignment carries the app's _default_ role (`staff`,
 read-only).** Auto-provisioning assigns the app's `is_default` role regardless of
 the member's organization role, so an organization `super_admin` lands in a
 product app with view-only permissions and cannot write anything — comment,
@@ -137,7 +137,7 @@ apps/projects/.../globals.css       @source '../';
 `packages/ui/src/styles.css` sources only `./components` and `./auth`.
 
 **No app sources any `packages/<product>-ui` package.** So every utility class
-used *only* inside `@876/projects-ui`, `@876/crm-ui`, `@876/work-ui`,
+used _only_ inside `@876/projects-ui`, `@876/crm-ui`, `@876/work-ui`,
 `@876/billing-ui`, or `@876/access-ui` is never generated for the host app.
 
 Proof from the screenshots: `packages/projects-ui/src/project-detail.tsx` renders
@@ -147,8 +147,8 @@ use `sm:grid-cols-3` somewhere, so the class exists). In the **Projects app**
 they render as three full-width stacked bars — exactly what the user described —
 because `sm:grid-cols-3` was never compiled there.
 
-The user's complaint *"Project Lead, Target dates and members are three long
-vertical cards going down"* is therefore a build defect, not a design choice.
+The user's complaint _"Project Lead, Target dates and members are three long
+vertical cards going down"_ is therefore a build defect, not a design choice.
 
 ---
 
@@ -304,16 +304,16 @@ Still outside the durable code fix:
 
 ## 6. Delegation record
 
-| Phase | Delegate | Model |
-| --- | --- | --- |
-| 1 | `agy` | `gemini-3.8-flash-high` |
-| 2 | Codex | `gpt-5.6-terra` medium |
-| 3 | `agy` | `gemini-3.8-flash-high` |
-| 4 | Codex + closeout implementation | `gpt-5.6-terra` / current session |
-| 5 | Codex | `gpt-5.6-terra` medium |
-| 6 | Codex | `gpt-5.6-terra` medium |
-| 7 | Codex | `gpt-5.6-terra` medium |
-| 8 | Codex + closeout hardening | `gpt-5.6-terra` / current session |
+| Phase | Delegate                        | Model                             |
+| ----- | ------------------------------- | --------------------------------- |
+| 1     | `agy`                           | `gemini-3.8-flash-high`           |
+| 2     | Codex                           | `gpt-5.6-terra` medium            |
+| 3     | `agy`                           | `gemini-3.8-flash-high`           |
+| 4     | Codex + closeout implementation | `gpt-5.6-terra` / current session |
+| 5     | Codex                           | `gpt-5.6-terra` medium            |
+| 6     | Codex                           | `gpt-5.6-terra` medium            |
+| 7     | Codex                           | `gpt-5.6-terra` medium            |
+| 8     | Codex + closeout hardening      | `gpt-5.6-terra` / current session |
 
 Briefs live in `./briefs/<tool>/`; reports live in `./reports/<tool>/`.
 The operational closeout checklist is `./todo.md`.
