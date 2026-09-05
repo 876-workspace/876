@@ -20,6 +20,7 @@ export function NavLink({
   icon: Icon,
   color,
   colorClassName,
+  expanded = false,
   side = 'right',
 }: {
   href: string
@@ -27,6 +28,7 @@ export function NavLink({
   icon: IconComponent
   color?: string
   colorClassName?: string
+  expanded?: boolean
   side?: 'right' | 'bottom' | 'top' | 'left'
 }) {
   const pathname = usePathname()
@@ -40,7 +42,12 @@ export function NavLink({
             href={href}
             aria-label={title}
             aria-current={isActive ? 'page' : undefined}
-            className={cn(navLinkBase, isActive ? navLinkActive : navLinkRest)}
+            className={cn(
+              expanded
+                ? 'group flex h-8.5 min-w-0 items-center gap-2.5 rounded-lg px-2 text-[0.8125rem] whitespace-nowrap transition-colors'
+                : navLinkBase,
+              isActive ? navLinkActive : navLinkRest
+            )}
           >
             <Icon
               aria-hidden="true"
@@ -50,12 +57,17 @@ export function NavLink({
               )}
               style={color ? { color } : undefined}
             />
+            {expanded ? (
+              <span className="min-w-0 flex-1 truncate">{title}</span>
+            ) : null}
           </Link>
         }
       />
-      <TooltipContent side={side} sideOffset={8}>
-        {title}
-      </TooltipContent>
+      {expanded ? null : (
+        <TooltipContent side={side} sideOffset={8}>
+          {title}
+        </TooltipContent>
+      )}
     </Tooltip>
   )
 }

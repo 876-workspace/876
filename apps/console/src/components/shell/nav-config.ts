@@ -52,7 +52,7 @@ export const navConfig = defineNavigation([
             key: 'projects-overview',
             title: 'Overview',
             href: '/projects',
-            icon: 'dashboard',
+            icon: 'overview',
             requires: { permission: 'projects/dashboard.view' },
           },
           {
@@ -89,7 +89,7 @@ export const navConfig = defineNavigation([
         key: 'requests',
         title: 'Requests',
         href: '/requests',
-        icon: 'support',
+        icon: 'requests',
         colorClassName: 'text-cyan-500 dark:text-cyan-400',
         activeClassName: 'bg-cyan-500/12 ring-cyan-500/30',
         requires: { permission: 'crm/requests.view' },
@@ -98,7 +98,7 @@ export const navConfig = defineNavigation([
             key: 'requests-list',
             title: 'Requests',
             href: '/requests',
-            icon: 'support',
+            icon: 'requests',
             requires: { permission: 'crm/requests.view' },
           },
           {

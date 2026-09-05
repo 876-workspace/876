@@ -112,9 +112,44 @@ describe('resolveSidebarContextStack', () => {
       ])
       expect(stack[0]?.groups).toEqual([])
     })
+
+    it('does not give the root context a redundant Console label', () => {
+      const [platform] = resolveSidebarContextStack('/users', navigation)
+
+      expect(platform?.title).toBe('')
+    })
+
+    it('keeps the root href at the Console home route', () => {
+      const [platform] = resolveSidebarContextStack('/users', navigation)
+
+      expect(platform?.href).toBe('/')
+    })
+
+    it('keeps the root parentless after removing its label', () => {
+      const [platform] = resolveSidebarContextStack('/users', navigation)
+
+      expect(platform?.parentKey).toBeNull()
+    })
   })
 
   describe('sections implied by an entry with children', () => {
+    it('keeps an informative label for a drill-down section', () => {
+      const [, projects] = resolveSidebarContextStack('/projects', navigation)
+
+      expect(projects?.title).toBe('Projects')
+    })
+
+    it('keeps the drill-down section attached to the root', () => {
+      const [, projects] = resolveSidebarContextStack('/projects', navigation)
+
+      expect(projects?.parentKey).toBe(PLATFORM_CONTEXT_KEY)
+    })
+
+    it('keeps the drill-down section href informative', () => {
+      const [, projects] = resolveSidebarContextStack('/projects', navigation)
+
+      expect(projects?.href).toBe('/projects')
+    })
     it('opens the section for the section root', () => {
       expect(keys('/projects')).toEqual([PLATFORM_CONTEXT_KEY, 'projects'])
     })

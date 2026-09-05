@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {
+  ArchiveBoxIcon,
   ArrowDownTrayIcon,
   ArrowLeftIcon,
   ArrowPathIcon,
@@ -14,6 +15,9 @@ import {
   Bars3BottomLeftIcon,
   BellAlertIcon,
   BoltIcon,
+  BriefcaseIcon,
+  BugAntIcon,
+  BuildingLibraryIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
   ChartBarIcon,
@@ -51,8 +55,10 @@ import {
   GlobeAltIcon,
   HashtagIcon,
   HomeIcon,
+  IdentificationIcon,
   InformationCircleIcon,
   KeyIcon,
+  LifebuoyIcon,
   LinkIcon,
   LockClosedIcon,
   MagnifyingGlassIcon,
@@ -80,9 +86,11 @@ import {
   TrashIcon,
   TruckIcon,
   UserCircleIcon,
+  UserGroupIcon,
   UserIcon,
   UserPlusIcon,
   UsersIcon,
+  ViewColumnsIcon,
   AdjustmentsHorizontalIcon,
   PaintBrushIcon,
   WrenchScrewdriverIcon,
@@ -100,6 +108,7 @@ export type IconComponent = React.ForwardRefExoticComponent<
 >
 
 export {
+  ArchiveBoxIcon,
   ArrowLeftIcon,
   ArrowPathIcon,
   ArrowRightIcon,
@@ -110,6 +119,9 @@ export {
   ArrowsPointingInIcon,
   AtSymbolIcon,
   BellAlertIcon,
+  BriefcaseIcon,
+  BugAntIcon,
+  BuildingLibraryIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
   ChartBarIcon,
@@ -143,8 +155,10 @@ export {
   GlobeAltIcon,
   HashtagIcon,
   HomeIcon,
+  IdentificationIcon,
   InformationCircleIcon,
   KeyIcon,
+  LifebuoyIcon,
   LinkIcon,
   LockClosedIcon,
   MagnifyingGlassIcon,
@@ -169,9 +183,12 @@ export {
   AdjustmentsHorizontalIcon,
   PaintBrushIcon,
   WrenchScrewdriverIcon,
+  UserCircleIcon,
+  UserGroupIcon,
   UserIcon,
   UserPlusIcon,
   UsersIcon,
+  ViewColumnsIcon,
   ChevronDoubleLeftIcon,
   WindowIcon,
   XCircleIcon,
@@ -273,6 +290,14 @@ export const AlertCircle = ExclamationCircleIcon
 export const ReceiptText = DocumentTextIcon
 export const ReceiptPercent = ReceiptPercentIcon
 export const Clock = ClockIcon
+export const ArchiveBox = ArchiveBoxIcon
+export const Briefcase = BriefcaseIcon
+export const BugAnt = BugAntIcon
+export const BuildingLibrary = BuildingLibraryIcon
+export const Identification = IdentificationIcon
+export const Lifebuoy = LifebuoyIcon
+export const UserGroup = UserGroupIcon
+export const ViewColumns = ViewColumnsIcon
 
 // Sidebar panel icon — matches the Lucide `SidebarIcon` used in fumadocs
 export const SidebarPanelIcon = (

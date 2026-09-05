@@ -69,7 +69,7 @@ function platformContext(
   return {
     key: PLATFORM_CONTEXT_KEY,
     kind: 'platform',
-    title: 'Console',
+    title: '',
     href: '/',
     parentKey: null,
     groups: navigation,

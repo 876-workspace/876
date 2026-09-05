@@ -97,4 +97,10 @@ describe('CRM navigation access binding', () => {
   it('does not treat a feature as a permission', () => {
     expect(can(context([], ['crm-search-bar']), 'requests.view')).toBe(false)
   })
+  it('resolves distinct icon keys for every visible entry in the rendered rail', () => {
+    const iconKeys = navConfig.flatMap((group) =>
+      group.entries.map((entry) => entry.icon)
+    )
+    expect(new Set(iconKeys).size).toBe(iconKeys.length)
+  })
 })
