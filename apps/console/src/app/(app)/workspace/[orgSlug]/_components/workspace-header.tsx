@@ -10,10 +10,10 @@ import {
   type WorkspaceSwitcherOrg,
 } from '@/features/orgs/components/workspace-switchers'
 import {
+  resolveActiveOrganizations,
   resolveOrg,
   resolveOrgEntitledAppSlugs,
 } from '@/features/orgs/org-data'
-import { platform } from '@/lib/services/platform'
 
 export function WorkspaceHeader({
   orgSlug,
@@ -45,7 +45,7 @@ async function WorkspaceHeaderData({
   // behind the lookup that the entitlement list genuinely does depend on.
   const [org, orgsResult] = await Promise.all([
     resolveOrg(orgSlug),
-    platform.organizations.list({ limit: 50, status: 'active' }),
+    resolveActiveOrganizations(),
   ])
   const entitled = org
     ? entitledWorkspaces((await resolveOrgEntitledAppSlugs(org.id)).data)

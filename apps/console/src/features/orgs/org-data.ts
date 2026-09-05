@@ -33,6 +33,11 @@ export const resolveOrg = cache(async (slug: string) => {
   return result.data ?? null
 })
 
+/** Cached active organization directory for workspace selection surfaces. */
+export const resolveActiveOrganizations = cache(async () =>
+  platform.organizations.list({ limit: 50, status: 'active' })
+)
+
 /**
  * Cached organization member directory (membership + user identity), plus its
  * registered application error.

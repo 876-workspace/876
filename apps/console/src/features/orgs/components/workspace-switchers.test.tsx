@@ -49,31 +49,55 @@ describe('WorkspaceSwitchers', () => {
     expect(trigger).toHaveTextContent('876 CRM')
   })
 
-  it('the return link defaults to /orgs/acme labelled with the org name when there is no from', () => {
-    render(<WorkspaceSwitchers {...defaultProps} />)
-
-    const returnLink = screen.getByRole('link', { name: 'Back to Acme Corp' })
-    expect(returnLink).toHaveAttribute('href', '/orgs/acme')
-    expect(returnLink).toHaveTextContent('Acme Corp')
-  })
-
-  it('the return link honours a valid from of /workspace/acme and reads All workspaces', () => {
-    searchParamsRef.current = new URLSearchParams('from=/workspace/acme')
+  it('returns to the organization directory with an informative label', () => {
     render(<WorkspaceSwitchers {...defaultProps} />)
 
     const returnLink = screen.getByRole('link', {
-      name: 'Back to All workspaces',
+      name: 'Back to Organizations',
     })
-    expect(returnLink).toHaveAttribute('href', '/workspace/acme')
-    expect(returnLink).toHaveTextContent('All workspaces')
+    expect(returnLink).toHaveAttribute('href', '/orgs')
+    expect(returnLink).toHaveTextContent('Organizations')
   })
 
-  it('a hostile from of //evil.example falls back to /orgs/acme', () => {
-    searchParamsRef.current = new URLSearchParams('from=//evil.example')
+  it('does not repeat the selected organization in the return link', () => {
     render(<WorkspaceSwitchers {...defaultProps} />)
 
-    const returnLink = screen.getByRole('link', { name: 'Back to Acme Corp' })
-    expect(returnLink).toHaveAttribute('href', '/orgs/acme')
+    expect(screen.getAllByText('Acme Corp')).toHaveLength(1)
+  })
+
+  it('keeps the organization selector available beside the directory return link', () => {
+    render(<WorkspaceSwitchers {...defaultProps} />)
+
+    expect(
+      screen.getByRole('button', { name: 'Switch organization' })
+    ).toBeVisible()
+  })
+
+  it('keeps the app selector available beside the directory return link', () => {
+    render(<WorkspaceSwitchers {...defaultProps} />)
+
+    expect(screen.getByRole('button', { name: 'Switch app' })).toBeVisible()
+  })
+
+  it('uses Organizations as the visible return-link text', () => {
+    render(<WorkspaceSwitchers {...defaultProps} />)
+
+    expect(screen.getByText('Organizations')).toBeVisible()
+  })
+
+  it('does not make the return label depend on a search parameter', () => {
+    searchParamsRef.current = new URLSearchParams('from=/workspace/acme')
+    render(<WorkspaceSwitchers {...defaultProps} />)
+
+    expect(
+      screen.getByRole('link', { name: 'Back to Organizations' })
+    ).toHaveAttribute('href', '/orgs')
+  })
+
+  it('keeps a single organization name in the header controls', () => {
+    render(<WorkspaceSwitchers {...defaultProps} />)
+
+    expect(screen.getAllByText('Acme Corp')).toHaveLength(1)
   })
 
   it('opening the org switcher lists every supplied organization', async () => {
