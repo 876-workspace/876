@@ -47,7 +47,7 @@ export function NavLink({
       <Icon
         aria-hidden="true"
         className={cn(
-          'size-[1.125rem] shrink-0 transition-colors',
+          'size-[1.125rem] shrink-0 transition-colors md:size-4',
           iconClassName
         )}
         style={color ? { color } : undefined}
