@@ -1,8 +1,8 @@
 # Implementation Plan: Shell Layout, Navigation & Permissions Overhaul
 
 - **Run ID:** `2026-09-05-shell-layout-and-navigation-overhaul`
-- **Branch:** `feat/shell-layout-navigation-overhaul` (integration branch; phases branch off it)
-- **Status:** `IN_PROGRESS`
+- **Branch:** `feat/shell-layout-navigation-overhaul` (integration branch)
+- **Status:** `CLOSEOUT_IN_PROGRESS` — implementation is substantially landed; editor, production data repair, issue cleanup, integration verification, and final PR remain.
 - **Owner:** orchestrating Claude session
 - **Delegates:** Codex (`gpt-5.6-terra`, medium) for the bulk of the code; `agy`
   (`gemini-3.8-flash-high`, falling back to `gemini-3.1-pro-high` if that model
@@ -102,7 +102,7 @@ curl -X PATCH "https://876-api.vercel.app/organizations/org_fa2cfb0bce834ae6a653
 ```
 
 **(b) Durable code fix — Phase 8 below.** Map the organization membership role to
-the app role at assignment time.
+the app role at assignment time. **This code fix is now landed on the integration branch.**
 
 ### Explicitly NOT the cause
 
@@ -212,163 +212,96 @@ present-but-empty states; do not build the picker.
 
 ## 5. Phases
 
-Each phase is its own branch off the integration branch, its own PR, and is
-merged as it goes green. Per `.claude/rules/git.md`, merges use merge commits
-with a real subject, never squash.
+The integration branch now carries the landed phase work directly. The states
+below describe the **current remote branch**, not the earlier live working-tree
+snapshot.
 
-### Phase 1 — Compile the shared product-UI packages (blocking, do first)
+### Phase 1 — Compile the shared product-UI packages — COMPLETE
 
-**Why first:** every later visual judgement is unreliable until utilities are
-actually generated. Fixing this alone will change how several pages look.
+- Added shared-product `@source` coverage and an automated source check.
+- Independently verified before the later shell work landed.
 
-- Add `@source` entries for each shared product-UI package to every app that
-  transpiles it. Prefer deriving the list from
-  `scripts/shared-ui-packages.mjs` (already the single source of truth for
-  `transpilePackages`) rather than hand-copying globs into 8 files.
-- Add a check to `pnpm check:transpile` (or a sibling `check:tailwind-sources`)
-  asserting that every package in the shared list has a matching `@source` in
-  every app that lists it. A shared UI package added next month must fail CI
-  rather than silently render unstyled.
-- Re-audit the pages that consume shared product UI in each app and note any
-  layout that changes once the classes exist.
+### Phase 2 — The shell spacing contract — COMPLETE IN CODE
 
-**Verify:** `pnpm --filter @876/projects build`, then confirm
-`ProjectDetail`'s tiles render three-across in the Projects app.
+- `@876/ui` owns `--876-shell-gutter` and resolves it from Tailwind v4's real
+  `--spacing` token with `calc(var(--spacing) * 4/6/8)`.
+- `AppShell`, `Page`, `ListDetailShell`, shared floating `Sidebar`, and product
+  sidebars consume the common horizontal rhythm.
+- Console/Projects/CRM in-flow sidebars and Billing/Invoice/Couriers floating
+  sidebars no longer compound asymmetric insets.
+- Focused spacing/sidebar coverage was added and passed in the phase report.
+- **Still required for final acceptance:** browser-level visual verification of
+  the named routes at the target widths/themes as part of the integration pass.
 
-### Phase 2 — The shell spacing contract
+### Phase 3 — Sidebar icons across every app — COMPLETE
 
-- Introduce the gutter tokens in `packages/ui/src/876.css` and consume them in
-  `AppShell`, `AppShellMain`, `ListDetailShell`, and `Page`.
-- Make the sidebar card inset symmetric at both rail and panel width
-  (`apps/console/src/components/shell/sidebar.tsx`, and the equivalent in
-  Projects/CRM/Billing/Invoice/Couriers).
-- Equalise the three-column rhythm: sidebar → list, list → detail, detail →
-  right edge. `ListDetailShell` currently uses `gap-x-4` when open and the page
-  container adds its own `px-4 sm:px-6 lg:px-8`; reconcile the two so the visible
-  gaps match rather than compounding.
-- Reference screenshots to satisfy: Console `/settings/users/.../permissions`
-  (three-column, uneven), Console `/requests` (list pane visually touching the
-  sidebar), Console `/settings/users` (wide sidebar gap, narrow card gap).
-- Sidebar item spacing must be identical in the regular rail, the switched
-  (drill-down) context, and the expanded panel.
+- Console and Projects now use explicit semantic icon registries.
+- Projects, Issues, Board, Labels, Audit, Customers, Teams, Banking, Warehouses,
+  and other known collisions were separated.
+- Projects gained the default-collapsed, expandable, persisted sidebar rail.
+- Collision/regression tests were added; Couriers and CRM related mappings were
+  updated as part of the same phase.
 
-**Verify:** visual check at 1280/1440/1920 in both themes; existing shell tests.
+### Phase 4 — 876 Projects app — PARTIAL
 
-### Phase 3 — Sidebar icons across every app
+Completed:
 
-Replace placeholder icons in `apps/console/src/components/shell/nav-icons.tsx`
-and add a real registry for Projects (which currently has none — it inlines
-`sidebarIcons` in `apps/projects/src/components/shell/sidebar.tsx:47`).
+1. Collapsible persisted Projects sidebar.
+2. Project detail is a standalone page with only the host breadcrumb/back affordance.
+3. Project detail record/header/summary redesign.
+4. Issue detail is a standalone redesigned record page with facts/activity layout.
+5. Dedicated Suspense/loading boundaries for the record reads.
+6. Assignee/due-date/estimate remain intentionally display-only empty states.
 
-Known offenders and their replacements:
+Outstanding:
 
-| Entry | Today | Use instead |
-| --- | --- | --- |
-| Projects (projects app) | `requests` → clipboard | folder / kanban-ish project glyph |
-| Issues (projects app) | `requests` → **same clipboard** | bug / circle-dot issue glyph |
-| Board | `categories` → card grid | kanban columns glyph |
-| Labels | `categories` → **same card grid** | tag glyph |
-| Console `issues` | `ClipboardList` | issue glyph, distinct from audit |
-| Console `audit` | `ClipboardList` (**collides with issues**) | history / scroll glyph |
-| Console `board` / `modules` | both `LayoutGrid` | distinct glyphs |
-| Console `customers` / `teams` / `subscribers` / `users` | all `Users` | distinguish customer vs team vs user |
-| Console `organizations` / `banking` / `warehouses` | all `Building2` | distinguish org vs bank vs warehouse |
+- **Comment / Markdown editor redesign (D6).** The phase report explicitly says
+  no editor implementation or editor tests were added. This is the only missing
+  Phase 4 implementation item and remains required before the run is complete.
 
-**Rule to enforce with a test:** within any single rendered rail, no two entries
-resolve to the same icon component. Add that assertion to
-`nav-icons.test.ts` and the Projects equivalent.
+### Phase 5 — Console alignment with Projects — COMPLETE IN CODE
 
-Also sweep Couriers, CRM, Billing, and Invoice rails for the same collisions.
+- Console platform and organization-workspace project/issue records now use
+  independent full-page routes instead of `ListDetailSection` split panes.
+- Shared `@876/projects-ui` record components are reused rather than forked.
+- Workspace header organization duplication is removed.
+- Root Console sidebar context no longer redundantly labels itself `Console`.
+- Shared shell spacing work supplies the common gutter contract; final browser
+  verification of the requests/list-detail surfaces remains part of closeout.
 
-### Phase 4 — 876 Projects app
+### Phase 6 — Console `/workspace` index — COMPLETE
 
-1. **Collapsible sidebar (D4)** — rail by default, expandable, persisted.
-2. **Project detail as its own page** — remove the duplicate back control. The
-   page renders `PageBreadcrumb href="/projects"`
-   (`apps/projects/src/app/(app)/projects/[projectId]/page.tsx:33`) *and*
-   `ProjectDetail` renders its own "Back to projects" button
-   (`packages/projects-ui/src/project-detail.tsx:35-45`). **Keep exactly one** —
-   drop the button from the shared component, since a host may not want it, and
-   keep the breadcrumb the host controls. Update Console's usage accordingly.
-3. **Redesign the project detail body.** The three summary tiles must be a real
-   three-up card row (fixed by Phase 1, then designed properly), not three
-   stacked bars. Give the header, status badges, and the issues table a
-   deliberate hierarchy.
-4. **Issue detail as its own page, redesigned.** Today it renders the project
-   key, the title, and the body as flat text with a thin side card. Give it:
-   a proper record header (identifier, title, status/priority), a readable body
-   column, and a sidebar of facts using `DetailCardSection`/`DetailCardFacts`
-   from `@876/ui/detail-card` rather than ad-hoc rows.
-5. **Comment / markdown editor redesign (D6).** It is grey-on-grey with no
-   light-mode treatment. Give it real surfaces, borders, focus states, a usable
-   toolbar, and correct rendering in both themes. Look at `packages/editor`
-   before adding anything new.
-6. Leave assignee pickers unbuilt (D7); render the empty state.
+- `/workspace` now has a guarded hub page instead of 404ing.
+- It uses organization/app workspace cards and the canonical entitlement/
+  organization resolvers rather than a second registry.
+- `/workspace` is bound to `console:organizations` and has route/layout tests.
 
-### Phase 5 — Console alignment with Projects
+### Phase 7 — Permissions UI, both surfaces — COMPLETE
 
-- Project and issue detail open as **full pages** (D2), matching Phase 4's
-  designs. Reuse `@876/projects-ui` components — do not fork them
-  (`.claude/rules/shared-product-ui.md`).
-- Fix the requests section's spacing so the list pane does not visually touch
-  the sidebar.
-- **The sidebar context header currently reads "Console"**
-  (`apps/console/src/components/shell/sidebar-context.ts:72`), sitting next to a
-  back/collapse control inside Console itself — redundant. Replace the root
-  context's title with something that carries information (the current section,
-  or the operator's scope) and keep the back-control label for genuine
-  drill-down contexts only.
-- **Workspace header prints the organization name twice.** Screenshot 1 shows
-  `Efesto Technologies, Inc | Efesto Technologies, Inc ⌄ / 876 CRM ⌄`. The
-  back-link label and the org switcher render the same string. Show the org once.
+- Permission grouping is product → module → permission rather than flat
+  `<Product> · <Module>` siblings.
+- The read-only access panel, role editor, permission picker, and related role
+  surfaces use the nested contract.
+- Product/module grant rollups and shared module styling are covered by tests.
 
-### Phase 6 — Console `/workspace` index
+### Phase 8 — App assignment role mapping — DURABLE FIX COMPLETE
 
-`apps/console/src/app/(app)/workspace/` contains only `[orgSlug]/`, so
-`/workspace` **404s**. Add a real index page.
+- All automatic assignment paths now use `resolveAppAssignmentRole` from
+  `@876/core/access`.
+- Organization `super_admin` / `super-admin` maps to app `super-admin`, `admin`
+  maps to app `admin`, and ordinary members fall back to the live default role.
+- Existing assignments are not overwritten during provisioning replay.
+- The explicit super-admin elevation guard remains intact for requested roles.
+- Core and API regression coverage now exercises provisioning, app membership
+  creation, invite routing, fail-closed behavior, and non-super-admin elevation.
+- A dry-run-by-default backfill script exists at
+  `apps/api/scripts/backfill-app-assignment-roles.ts`; **it has not been run
+  against a database**.
 
-- It is a hub route: use `<Page hub>` per `.claude/rules/app-layout.md` §2.
-- **No data table and no two-bar layout** — the user was explicit. Render a
-  card/tile grid of organizations and, on selection, the apps entitled to that
-  org, so the route is a genuine workspace picker.
-- Reuse `WorkspaceIcon` and `entitledWorkspaces` from
-  `apps/console/src/features/orgs/` rather than inventing a second source.
-- Guard it with the same permission the `[orgSlug]` layout uses.
+Still outside the durable code fix:
 
-### Phase 7 — Permissions UI, both surfaces
-
-- Change `PermissionGroup` in `apps/console/src/lib/permissions.ts` from a flat
-  list with `"<Product> · <Module>"` labels (lines 319-352) to a nested
-  product → module → permissions structure.
-- Render nested accordions in
-  `apps/console/src/app/(app)/settings/users/(team)/[id]/_components/access-panel.tsx`
-  (read-only) and
-  `apps/console/src/app/(app)/settings/users/roles/_components/permission-group-picker.tsx`
-  (editor).
-- The user likes the current per-module card treatment (icon tile, granted/total
-  count) — **keep it** and apply it at the module level inside a collapsed
-  product group. Preserve `MODULE_STYLE` colour identity.
-- Show a granted/total roll-up on the product row so a collapsed product still
-  says how much is held.
-- **Also redesign `/settings/users/roles/<role>`** to match. The user called the
-  role page "ugly" and asked for the same card treatment there.
-- Console-exclusive operator actions stay visibly separate — do not fold
-  "Purge CRM records" into the CRM product group.
-
-### Phase 8 — App assignment role mapping (fixes §2 durably)
-
-- When an app assignment is created for an organization member, resolve the app
-  role from the **member's organization role** — `super_admin` → the app's
-  `super-admin` role, `admin` → `admin`, otherwise the app's default role.
-- Keep the existing `requireSuperAdminForElevation` guard
-  (`apps/api/src/modules/app-access/app-access.service.ts:266`) intact: the
-  mapping must not let a non-super-admin caller elevate anyone.
-- Backfill consideration: existing assignments where the member is an org
-  `super_admin` but holds the default role. Propose a one-off script; **do not
-  run it against production** in this run.
-- Regression tests: an org super_admin provisioned into a fresh app can create a
-  comment; a `staff` member cannot.
-- Close or rewrite PROJ-10 (§2, "Explicitly NOT the cause").
+- The existing Efesto Projects assignment remains a production data repair.
+- PROJ-10 still needs to be closed or rewritten to reflect the actual cause.
 
 ---
 
@@ -385,177 +318,119 @@ Also sweep Couriers, CRM, Billing, and Invoice rails for the same collisions.
 | 7 | Codex | `gpt-5.6-terra` medium |
 | 8 | Codex | `gpt-5.6-terra` medium — auth-adjacent, tests required |
 
-Briefs live in `./briefs/<tool>/`, reports in `./reports/<tool>/`. Scope parallel
-tasks to non-overlapping files: Phases 1 and 3 do not overlap and may run
-together; Phase 2 must land before 4/5 so the spacing contract exists.
+Briefs live in `./briefs/<tool>/`, reports in `./reports/<tool>/`.
 
 ---
 
-## 7. Verification
+## 7. Final integration verification
+
+The phase reports contain focused passing checks, but the **integration branch as
+one merged unit has not yet been accepted by one final verification pass**.
+GitHub currently has no commit-status checks attached to the integration head,
+so do not treat the absence of failures as a green CI signal.
+
+Run the final foreground matrix after the editor work is complete:
 
 ```bash
 pnpm --filter @876/console typecheck && pnpm --filter @876/console lint && pnpm --filter @876/console test
 pnpm --filter @876/projects typecheck && pnpm --filter @876/projects lint && pnpm --filter @876/projects test
+pnpm --filter @876/projects-ui typecheck && pnpm --filter @876/projects-ui test
 pnpm --filter @876/ui typecheck && pnpm --filter @876/ui test
-pnpm --filter @876/api typecheck && pnpm --filter @876/api test && pnpm --filter @876/api boundaries
+pnpm --filter @876/api typecheck && pnpm --filter @876/api lint && pnpm --filter @876/api test
+pnpm --filter @876/core typecheck && pnpm --filter @876/core test
 node scripts/check-app-structure.mjs
 pnpm check:transpile
 ```
 
-Verification runs in the **foreground** (`.claude/rules/cli.md`). After any
-delegated run, before accepting it:
+Known baseline: `pnpm --filter @876/api boundaries` reports 18 existing
+`no-circular` violations on the base as well; the Phase 8 work did not add a
+nineteenth. Record that baseline rather than expanding this run to fix unrelated
+cycles.
 
-```bash
-grep -rn "eslint-disable\|as any" <paths it touched>
-```
-
-and confirm the test **count** moved, not merely that the suite is green.
+Final browser acceptance must cover the touched shell/record/permissions
+surfaces in light and dark themes, including the 1280/1440/1920 desktop widths
+called out in Phase 2.
 
 ---
 
-## 8. Task checklist
+## 8. Task checklist — current source of truth
 
 - [x] Diagnose the 876 Projects comment `Forbidden.` against production
 - [x] Pull Vercel logs for `876-projects`
 - [x] Identify the shared product-UI Tailwind `@source` gap
-- [ ] **MANUAL (user):** repoint the Efesto 876-Projects assignment to `super-admin`
-- [x] Phase 1 — Tailwind `@source` for shared product-UI packages (`ea0b95fe`, `7c8158f5`)
-- [ ] Phase 2 — shell spacing contract
-- [ ] Phase 3 — sidebar icons
+- [x] Phase 1 — Tailwind `@source` for shared product-UI packages
+- [x] Phase 2 — shell spacing contract and corrected Tailwind v4 gutter token
+- [x] Phase 3 — distinct sidebar icons + collapsible Projects sidebar
 - [ ] Phase 4 — Projects app pages + editor
-- [ ] Phase 5 — Console alignment
-- [ ] Phase 6 — Console `/workspace` index
-- [ ] Phase 7 — permissions UI (both surfaces)
-- [ ] Phase 8 — assignment role mapping
-- [ ] Close/rewrite PROJ-10
+  - [x] Projects project/issue full-page record redesign
+  - [x] Projects record Suspense/loading boundaries
+  - [x] Remove duplicate shared back control
+  - [ ] Redesign the comment / Markdown editor for light and dark themes
+- [x] Phase 5 — Console project/issue full-page alignment and workspace header cleanup
+- [x] Phase 6 — Console `/workspace` hub
+- [x] Phase 7 — permissions UI grouped by product → module → permission
+- [x] Phase 8 — durable assignment-role mapping + API/core regression coverage
+- [x] Add dry-run-by-default assignment-role backfill script
+- [ ] **PRODUCTION DATA:** repoint/backfill the existing Efesto 876-Projects assignment to `super-admin`
+- [ ] Close or rewrite PROJ-10 to describe assignment-role mapping rather than missing comment permissions
+- [ ] Run the final integration verification matrix on the completed branch
+- [ ] Complete browser visual acceptance in light/dark at the required widths
+- [ ] Open the single final PR from `feat/shell-layout-navigation-overhaul` → `main`
 
 ---
 
-## 9. Handoff state — session ended 2026-09-05 ~05:15 UTC
+## 9. Current handoff state — updated 2026-09-05
 
-**Branch:** `feat/shell-layout-navigation-overhaul` (9 commits, all docs/Phase 1).
-Nothing is pushed. No PR is open.
+### Remote branch
 
-### READ THIS FIRST
+`feat/shell-layout-navigation-overhaul` is pushed and contains the formerly
+uncommitted shell/navigation/Projects/Console/permissions work. The atomic
+closeout commits include:
 
-1. **Never `cat`/`tail` a `*-run.log`.** They are ~20k lines each and will burn
-   your context window. They are now gitignored and the rule is in
-   `.claude/rules/cli.md` → "Never redirect a delegated run's stdout to a file in
-   the repo". The user is deleting the existing ones. Judge delegate work by
-   `git diff` and by running the checks yourself.
-2. **Four Codex runs were still in flight when this session ended.** Their edits
-   are in the working tree, uncommitted and **unverified**. Check
-   `pgrep -f "codex exec -m gpt"` before touching anything — if any are still
-   alive, let them finish or kill them, but **do not `git stash` while a delegate
-   is running** (that mistake cost ~10 minutes this session).
+- `f005294d` — product sidebar insets aligned with the shell gutter
+- `1d94b272` — distinct navigation icons + collapsible Projects sidebar
+- `3592b334` — Projects project/issue full-page record redesign
+- `09f5320c` — Console project/issue full-page alignment
+- `7edb1131` — `/workspace` hub and organization navigation resolution
+- `27e795e3` — role permissions grouped by product and module
+- `a99b5672` — phase briefs/reports recorded
 
-### Committed and verified
+Earlier commits on the same integration branch contain Phase 1 and the durable
+Phase 8 role-mapping/backfill implementation.
 
-- Plan, seven briefs, orchestrator review notes.
-- **Phase 1 complete** (`ea0b95fe`, `7c8158f5`) — verified independently, not
-  taken from the report. See §8.
-- **`.claude/rules/cli.md` + `.agents/rules/cli.md`** (`893047ae`) — the new
-  no-run-logs rule, mirrored, plus the `plans/**/*-run.log` gitignore.
+### What is actually left
 
-### In the working tree, uncommitted — four concurrent runs
+1. **Finish Phase 4:** redesign the comment/Markdown editor and add its tests.
+2. **Repair existing production data:** change the Efesto 876 Projects
+   assignment from the default `staff` role to the mapped `super-admin` role, or
+   validate and run the backfill deliberately.
+3. **Resolve PROJ-10:** close it as based on a false premise or rewrite it around
+   assignment-role mapping.
+4. **Run one final integration verification pass** across Console, Projects,
+   Projects UI, shared UI, API, Core, structure checks, and Tailwind source checks.
+5. **Perform browser visual acceptance** for the touched shell, record, editor,
+   workspace, and permission surfaces in light/dark at the target desktop widths.
+6. **Open the final integration PR to `main`** only after those items are done.
 
-| Run | Owns | State |
-| --- | --- | --- |
-| **Phase 2b** shell spacing follow-up | `packages/ui/**`, every `apps/*/src/components/shell/sidebar.tsx` | **EXITED 05:15** — unverified. `RAIL_INSET` is now `pl-[var(--876-shell-gutter)]` and the `-ml-` reclaim is gone. Its `sidebar.tsx` files are therefore **free**, so Phases 3 and 4 are unblocked, and the `--876-shell-gutter` fix below can be applied now. |
-| **Phase 8b** assignment role mapping follow-up | `apps/api/**`, `packages/core/src/access/**` | adding the integration tests — `provisioning.test.ts`, `invite-app-access.service.test.ts`, new `app-access-membership-roles.test.ts` |
-| **Phase 7** permissions grouping | `apps/console/src/lib/permissions.ts`, `settings/users/**` | new `lib/permission-grouping.ts`, `patterns/permission-module-style.ts`, `types/permission.ts` |
-| **Phase 5/6** Console workspace + records | `apps/console/src/app/(app)/workspace/**`, `sidebar-context.ts` | editing the projects/issues layouts in both Console and the org workspace |
+### Production role repair remains outstanding
 
-### ⚠️ MUST FIX BEFORE ANY OF PHASE 2 IS ACCEPTED
-
-`packages/ui/src/876.css` defines:
-
-```css
---876-shell-gutter: var(--spacing-4);   /* also --spacing-6, --spacing-8 */
-```
-
-**`--spacing-4` does not exist.** Tailwind v4 defines only `--spacing: 0.25rem`
-and computes each step (`.px-4{padding-inline:calc(var(--spacing) * 4)}`). The
-unresolved `var()` invalidates every declaration that consumes it, so *every*
-shell gutter collapses to zero — sidebar insets, `Page` padding, the list/detail
-column gap. It is already in the built CSS. Replace with:
-
-```css
---876-shell-gutter: calc(var(--spacing) * 4);   /* 1rem   */
---876-shell-gutter: calc(var(--spacing) * 6);   /* 1.5rem */
---876-shell-gutter: calc(var(--spacing) * 8);   /* 2rem   */
-```
-
-**Phase 2b did not fix this** — its brief wrongly told it those values were
-correct, and it exited at 05:15 with them intact. **This is the first thing to
-do in the next session.**
-
-No existing test can catch it: every Phase 2 assertion compares Tailwind **class
-strings**, which are identical whether or not the token resolves. Add a test that
-asserts the **resolved** value.
-
-### Not started
-
-- **Phase 3 — sidebar icons.** Brief ready with its concurrency note
-  (`briefs/agy/2026-09-05-sidebar-icons.md`). Route to `agy`
-  `gemini-3.8-flash-high` (Gemini quota was 80% weekly / 100% 5h). Blocked only
-  because it must edit the same `sidebar.tsx` files Phase 2b owns — dispatch once
-  Phase 2b is committed.
-- **Phase 4 — Projects record pages + markdown editor.** Brief ready
-  (`briefs/codex/2026-09-05-projects-record-pages.md`). Same blocker.
-
-### Acceptance checklist for the four in-flight runs
-
-For each, before committing:
+The durable code fix only changes future/automatic assignment behavior; it does
+not retroactively mutate existing rows. The affected Efesto assignment is still
+tracked as a manual production repair. The backfill command is dry-run by
+default:
 
 ```bash
-grep -rn "eslint-disable\|as any" <paths it touched>
+pnpm --filter @876/api app-access:backfill-roles
+pnpm --filter @876/api app-access:backfill-roles --apply
 ```
 
-and confirm the `it()` **count** moved in the files it actually changed — Phase 8
-originally wrote 20 tests for a pure function and **zero** for the six `apps/api`
-files it modified, which is what the follow-up exists to fix.
+Do not use `--apply` until the dry-run candidate list has been reviewed.
 
-Then run, in the **foreground**:
+### Final PR
 
-```bash
-pnpm --filter @876/ui typecheck && pnpm --filter @876/ui test
-pnpm --filter @876/console typecheck && pnpm --filter @876/console lint && pnpm --filter @876/console test
-pnpm --filter @876/projects typecheck && pnpm --filter @876/projects test
-pnpm --filter @876/api typecheck && pnpm --filter @876/api lint && pnpm --filter @876/api test
-pnpm --filter @876/core typecheck && pnpm --filter @876/core test
-node scripts/check-app-structure.mjs && pnpm check:transpile
-```
-
-**`pnpm --filter @876/api boundaries` reports 18 `no-circular` violations that
-pre-date this branch** — verified identical on the base. Do not try to fix them;
-just do not add a nineteenth.
-
-Also still owed from Phase 1: production builds of Console, CRM, Billing and
-Invoice, which agy explicitly did not verify. Run them once `packages/ui` is
-stable.
-
-### Blocked on the user
-
-The production role fix is **still outstanding**. The orchestrator's `PATCH` was
-denied by the sandbox permission classifier and was never applied, so the user
-**still cannot comment in 876 Projects**:
-
-```bash
-curl -X PATCH "https://876-api.vercel.app/organizations/org_fa2cfb0bce834ae6a6537830159e5f14/app-memberships/asg_90275575846147508476c7e2b16c4335" \
-  -H "x-internal-key: $API_INTERNAL_KEY" -H "X-876-API-Key: $PROJECTS_API_876_KEY" \
-  -H 'content-type: application/json' -d '{"app_role_id":"role_64a6a57a085452df374cacc463e6291c"}'
-```
-
-Or Console → Orgs → Efesto → Apps → 876 Projects → set the role to `super-admin`.
-
-### Final PR — not started
-
-Once every phase is committed and green, open **one** PR from
-`feat/shell-layout-navigation-overhaul` → `main`, described as a whole feature
-per `.claude/rules/git.md` → "The final `main` PR". The two findings worth
-leading with are the Tailwind `@source` gap (§3) and the app-assignment role
-defect (§2) — both are platform defects that were invisible before this run.
-
-PROJ-10 has **not** been touched. It is based on a false premise (§2) and should
-be closed or rewritten to describe the assignment-role mapping instead.
+Do **not** open the `main` PR yet. Per `.claude/rules/git.md`, the integration
+branch is allowed to carry incomplete multi-phase work; `main` should receive the
+whole feature. Once the checklist above is green, open one PR from
+`feat/shell-layout-navigation-overhaul` to `main`, with the Tailwind shared-UI
+source defect and the app-assignment role defect called out as the two root
+platform fixes.
