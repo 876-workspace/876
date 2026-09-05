@@ -36,32 +36,27 @@ export function SetupsList({ setups }: { setups: AdminProvisioningSetup[] }) {
   if (!open) return <SetupsTable setups={rows} />
 
   return (
-    <div className="876-card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="876-header-row shrink-0 border-b px-4 py-3 text-[0.8125rem] font-semibold">
-        Setups
-      </header>
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
-        <Table className="table-fixed">
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
-                  No setups match this view
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((setup) => (
-                <SetupRow
-                  key={setup.id}
-                  setup={setup}
-                  selected={setup.key === selectedKey}
-                  condensed
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="876-card overflow-hidden">
+      <Table className="table-fixed">
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
+                No setups match this view
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((setup) => (
+              <SetupRow
+                key={setup.id}
+                setup={setup}
+                selected={setup.key === selectedKey}
+                condensed
+              />
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   )
 }

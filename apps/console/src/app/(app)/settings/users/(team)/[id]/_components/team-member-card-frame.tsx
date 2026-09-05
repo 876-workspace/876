@@ -55,11 +55,11 @@ export function TeamMemberCardFrame({ member, children }: Props) {
     <section
       aria-label={`Member details: ${member.name}`}
       className={cn(
-        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        '876-card flex min-w-0 flex-col',
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
       )}
     >
-      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
+      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5 sticky top-0 z-10 bg-[var(--876-surface)] rounded-t-[calc(var(--radius-xl)-1px)]">
         <Avatar className="size-14 shrink-0 rounded-xl after:rounded-xl sm:size-16">
           {member.avatar ? <AvatarImage src={member.avatar} alt="" /> : null}
           <AvatarFallback className="rounded-xl text-lg font-semibold sm:text-xl">
@@ -123,7 +123,7 @@ export function TeamMemberCardFrame({ member, children }: Props) {
         </div>
       </div>
 
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-w-0 flex-1 p-6">
         {children}
       </div>
 

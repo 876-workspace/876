@@ -55,31 +55,26 @@ export function RolesList({ roles }: { roles: RoleView[] }) {
   }
 
   return (
-    <div className="876-card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="876-header-row shrink-0 border-b px-4 py-3 text-[0.8125rem] font-semibold">
-        Roles
-      </header>
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
-        <Table className="table-fixed">
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
-                  No roles match this view
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((role) => (
-                <CondensedRolesTableRow
-                  key={role.name}
-                  role={role}
-                  selected={role.name === selectedName}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="876-card overflow-hidden">
+      <Table className="table-fixed">
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
+                No roles match this view
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((role) => (
+              <CondensedRolesTableRow
+                key={role.name}
+                role={role}
+                selected={role.name === selectedName}
+              />
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   )
 }

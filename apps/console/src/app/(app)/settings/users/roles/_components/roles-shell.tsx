@@ -40,7 +40,7 @@ export function RolesShell({ list, children }: Props) {
   const type = searchParams.get(ROLE_TYPE_PARAM) ?? 'all'
 
   return (
-    <Page className="h-full min-h-0">
+    <Page className="min-h-full">
       <ListDetailShell
         open={open}
         toolbar={

@@ -41,33 +41,28 @@ export function ProfilesList({
   if (!open) return <ProfilesTable profiles={rows} slug={slug} />
 
   return (
-    <div className="876-card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="876-header-row shrink-0 border-b px-4 py-3 text-[0.8125rem] font-semibold">
-        Profiles
-      </header>
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
-        <Table className="table-fixed">
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
-                  No profiles match this view
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((profile) => (
-                <ProfileRow
-                  key={profile.id}
-                  profile={profile}
-                  slug={slug}
-                  selected={profile.key === selectedKey}
-                  condensed
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="876-card overflow-hidden">
+      <Table className="table-fixed">
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
+                No profiles match this view
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((profile) => (
+              <ProfileRow
+                key={profile.id}
+                profile={profile}
+                slug={slug}
+                selected={profile.key === selectedKey}
+                condensed
+              />
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   )
 }

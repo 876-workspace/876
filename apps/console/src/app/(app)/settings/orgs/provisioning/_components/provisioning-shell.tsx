@@ -40,7 +40,7 @@ export function ProvisioningShell({ list, children }: Props) {
   const status = searchParams.get('status') ?? 'all'
 
   return (
-    <Page className="h-full min-h-0">
+    <Page className="min-h-full">
       <ListDetailShell
         open={open}
         toolbar={

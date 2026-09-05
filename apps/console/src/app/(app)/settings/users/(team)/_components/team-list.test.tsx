@@ -73,7 +73,6 @@ describe('TeamList', () => {
     mocks.segments = ['user_1']
     render(<TeamList members={members} />)
 
-    expect(screen.getByText('Users')).toBeInTheDocument()
     expect(screen.getAllByText('Alejandra Reyes').length).toBeGreaterThan(0)
     expect(
       screen.getByRole('link', { name: 'View team member Marcus Sterling' })
