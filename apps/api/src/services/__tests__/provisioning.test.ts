@@ -7,14 +7,14 @@ const { prisma } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
-    appRole: { findFirst: vi.fn() },
+    appRole: { findFirst: vi.fn(), findMany: vi.fn() },
     app: { findFirst: vi.fn() },
     subscription: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     subscriptionItem: { create: vi.fn() },
     price: { findFirst: vi.fn() },
     orgContact: { findMany: vi.fn(), create: vi.fn() },
     appAssignment: { upsert: vi.fn() },
-    membership: { update: vi.fn(), findMany: vi.fn() },
+    membership: { update: vi.fn(), findMany: vi.fn(), findFirst: vi.fn() },
     organization: { findUnique: vi.fn() },
     user: { findUnique: vi.fn() },
     billingCustomerOutbox: {
@@ -129,6 +129,10 @@ beforeEach(() => {
   prisma.orgContact.create.mockResolvedValue({})
   prisma.appAssignment.upsert.mockResolvedValue({})
   prisma.membership.update.mockResolvedValue({})
+  prisma.membership.findFirst.mockResolvedValue({ role: 'staff' })
+  prisma.appRole.findMany.mockResolvedValue([
+    { id: 'rol_default', key: 'member', isDefault: true, deletedAt: null },
+  ])
   prisma.organization.findUnique.mockResolvedValue({ id: ORG })
 })
 
@@ -474,7 +478,12 @@ describe('linkMembershipRole', () => {
     })
 
     await linkMembershipRole(
-      { id: 'mem_1', organizationId: ORG, role: 'super_admin', roleId: 'rol_owner' },
+      {
+        id: 'mem_1',
+        organizationId: ORG,
+        role: 'super_admin',
+        roleId: 'rol_owner',
+      },
       NOW
     )
 
@@ -496,6 +505,113 @@ describe('linkMembershipRole', () => {
 })
 
 describe('assignMemberApps', () => {
+  it('persists the super-admin app role for a newly provisioned super_admin creator', async () => {
+    prisma.membership.findFirst.mockResolvedValue({ role: 'super_admin' })
+    prisma.appRole.findMany.mockResolvedValue([
+      { id: 'rol_default', key: 'member', isDefault: true, deletedAt: null },
+      {
+        id: 'rol_super',
+        key: 'super-admin',
+        isDefault: false,
+        deletedAt: null,
+      },
+      { id: 'rol_admin', key: 'admin', isDefault: false, deletedAt: null },
+    ])
+
+    await assignMemberApps({
+      organizationId: ORG,
+      userId: 'user_creator',
+      now: NOW,
+    })
+
+    expect(prisma.membership.findFirst).toHaveBeenCalledWith({
+      where: {
+        organizationId: ORG,
+        userId: 'user_creator',
+        deletedAt: null,
+        status: 'active',
+      },
+      select: { role: true },
+    })
+    expect(prisma.appAssignment.upsert).toHaveBeenCalledTimes(1)
+    expect(prisma.appAssignment.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          organizationId: ORG,
+          userId: 'user_creator',
+          appId: 'app_876-enterprise',
+          appRoleId: 'rol_super',
+          status: 'active',
+        }),
+      })
+    )
+  })
+
+  it('persists the admin app role for an admin member', async () => {
+    prisma.membership.findFirst.mockResolvedValue({ role: 'admin' })
+    prisma.appRole.findMany.mockResolvedValue([
+      { id: 'rol_default', key: 'member', isDefault: true, deletedAt: null },
+      { id: 'rol_admin', key: 'admin', isDefault: false, deletedAt: null },
+    ])
+
+    await assignMemberApps({
+      organizationId: ORG,
+      userId: 'user_admin',
+      now: NOW,
+    })
+
+    expect(prisma.appAssignment.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ appRoleId: 'rol_admin' }),
+      })
+    )
+  })
+
+  it('persists the default role for an ordinary member when it cannot map their role', async () => {
+    prisma.membership.findFirst.mockResolvedValue({ role: 'member' })
+    prisma.appRole.findMany.mockResolvedValue([
+      { id: 'rol_default', key: 'viewer', isDefault: true, deletedAt: null },
+      {
+        id: 'rol_comments',
+        key: 'comments',
+        isDefault: false,
+        deletedAt: null,
+      },
+    ])
+
+    await assignMemberApps({
+      organizationId: ORG,
+      userId: 'user_member',
+      now: NOW,
+    })
+
+    expect(prisma.appAssignment.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ appRoleId: 'rol_default' }),
+      })
+    )
+  })
+
+  it('falls back to the default instead of admin when an app has no super-admin role', async () => {
+    prisma.membership.findFirst.mockResolvedValue({ role: 'super_admin' })
+    prisma.appRole.findMany.mockResolvedValue([
+      { id: 'rol_default', key: 'viewer', isDefault: true, deletedAt: null },
+      { id: 'rol_admin', key: 'admin', isDefault: false, deletedAt: null },
+    ])
+
+    await assignMemberApps({
+      organizationId: ORG,
+      userId: 'user_creator',
+      now: NOW,
+    })
+
+    expect(prisma.appAssignment.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ appRoleId: 'rol_default' }),
+      })
+    )
+  })
+
   it('assigns the Enterprise directory app', async () => {
     await assignMemberApps({ organizationId: ORG, userId: 'user_1', now: NOW })
 

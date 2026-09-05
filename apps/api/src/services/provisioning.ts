@@ -459,7 +459,6 @@ export async function assignMemberApps(params: {
   now: number
   sourceAppId?: string | null
   assignedBy?: string | null
-  appRoleKey?: 'super-admin' | 'admin' | 'staff'
 }): Promise<void> {
   const now = BigInt(params.now)
   const assignedBy = params.assignedBy ?? null
@@ -476,11 +475,16 @@ export async function assignMemberApps(params: {
   const sourceAppId = params.sourceAppId ?? null
   if (sourceAppId && !appIds.includes(sourceAppId)) appIds.push(sourceAppId)
 
+  const organizationRole = await repository.findMembershipRole(
+    params.organizationId,
+    params.userId
+  )
+
   for (const appId of appIds) {
     const role = await repository.findProvisionedAppRole(
       params.organizationId,
       appId,
-      params.appRoleKey
+      organizationRole ?? ''
     )
     await repository.assignApp({
       id: generateId('appAssignment'),

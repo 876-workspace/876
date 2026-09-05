@@ -107,6 +107,24 @@ const APP_ASSIGNMENT_INCLUDE = {
   appRole: { select: APP_ROLE_SELECT },
 } as const
 
+export async function listAppRolesByOrgApp(
+  organizationId: string,
+  appId: string
+): Promise<
+  Array<{
+    id: string
+    key: string
+    isDefault: boolean
+    deletedAt: bigint | null
+  }>
+> {
+  return prisma.appRole.findMany({
+    where: { organizationId, appId, deletedAt: null },
+    orderBy: [{ isDefault: 'desc' }, { position: 'asc' }, { id: 'asc' }],
+    select: { id: true, key: true, isDefault: true, deletedAt: true },
+  })
+}
+
 export async function listMembersByOrg(
   organizationId: string,
   limit: number,
@@ -217,6 +235,7 @@ export async function assignApp(params: {
   organizationId: string
   userId: string
   appId: string
+  appRoleId: string | null
   assignedBy: string | null
   now: bigint
 }): Promise<AppAssignmentRow> {
@@ -251,6 +270,7 @@ export async function assignApp(params: {
       organizationId: params.organizationId,
       userId: params.userId,
       appId: params.appId,
+      appRoleId: params.appRoleId,
       status: 'active',
       assignedBy: params.assignedBy,
       assignedAt: params.now,

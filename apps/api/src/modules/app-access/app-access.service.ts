@@ -1,4 +1,5 @@
 import { listObject, type ListObject } from '@/http/envelope'
+import { resolveAppAssignmentRole } from '@876/core/access'
 import {
   findAppForAccessById,
   findAppForAccessBySlug,
@@ -64,6 +65,7 @@ type AccessMembership = {
   organization_id: string
   user_id: string
   status: string
+  role: string
 }
 
 export type EffectiveAppPermissionResolution = {
@@ -246,6 +248,7 @@ async function requireTargetMembership(params: {
     organization_id: membership.organization_id,
     user_id: membership.user_id,
     status: membership.status,
+    role: membership.role,
   }
 }
 
@@ -857,13 +860,19 @@ export async function createAppMembership(
     membershipId: body.membership_id,
   })
 
-  const role = body.app_role_id
+  const requestedRole = body.app_role_id
     ? await requireRole({
         appId: app.id,
         organizationId,
         roleId: body.app_role_id,
       })
-    : await repository.findDefaultRole(app.id, organizationId)
+    : null
+  const resolvedRole = resolveAppAssignmentRole({
+    organizationRole: membership.role,
+    requestedRoleId: requestedRole?.id,
+    roles: await repository.listRoles(app.id, organizationId),
+  })
+  const role = resolvedRole.role as AppRoleRow | null
   if (!role) throw appError('app-role/not-found')
   await requireSuperAdminForElevation(organizationId, role, principal)
 
@@ -1057,6 +1066,7 @@ export async function listAppMembershipsForMember(
     organization_id: membership.organization_id,
     user_id: membership.user_id,
     status: membership.status,
+    role: membership.role,
   }
 
   const entitlements = (await listOrgAppEntitlements(organizationId)).filter(
