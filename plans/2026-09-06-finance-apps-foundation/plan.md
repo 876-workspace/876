@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-06-finance-apps-foundation`
 - **Integration branch:** `feature/finance-apps` (cut from `main` @ `72d87028`)
-- **Status:** IN_PROGRESS — foundation complete, Phase 6 (document create/edit routes) not started
+- **Status:** IN_PROGRESS — foundation complete; Phase 6 re-scoped after its premise was found false, now in flight
 
 ## Overview
 
@@ -157,13 +157,65 @@ Verification runs in the **foreground**, always
 (`.claude/rules/cli.md`). Never in a log file
 (`plans/**/*-run.log` is gitignored and reading one wastes the session).
 
+### Phase 6 — the premise was wrong, and what replaced it
+
+**The plan's Phase 6 was written against a false baseline.** Checked against
+the tree on 2026-09-06:
+
+| Phase 6's premise                                | What is actually there                                                            |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- |
+| "Neither app has any document create/edit route" | Billing has `invoices/new`, `quotes/new`, `credit-notes/new`, all working         |
+| "no line-item editor exists anywhere"            | `apps/billing/src/features/documents/components/document-line-editor.tsx`, in use |
+
+The consequence is what matters. **Phase 5b's `DocumentLineItemsEditor` had
+zero consumers** outside its own test, while Billing ran its own editor and its
+own float-based `calculateDocumentTotals` in `document-create-model.ts` — a
+second function of the same name as the bigint one Phase 5a put in
+`@876/core/money`, doing the arithmetic on JS numbers that
+`billing-data-plane.md` prohibits outright.
+
+So Phase 5b had not consolidated anything; it had added a third implementation.
+Building Invoice's routes on the shared editor while Billing kept its own would
+have left two forks of one screen — precisely what this run's own rule was
+written to prevent.
+
+**Decision (user, 2026-09-06): consolidate first, then Invoice.** Phase 6 is
+therefore three pieces, not one:
+
+- **6a — extend the shared contract** so Billing can actually adopt it. The
+  editor could only express a free-text line with a flat money discount; Billing
+  needs an item catalogue, price-list pricing, and a percent/amount toggle.
+  Done directly rather than delegated, because it is money semantics
+  (`.claude/rules/cli.md`). A percentage now resolves through basis points
+  against the line's own subtotal, matching the submitted document's
+  arithmetic; a server-resolved catalogue subtotal replaces quantity × rate,
+  because a tiered price is not reproducible from one unit amount. All three
+  additions are opt-in props, so Invoice still gets the plain editor.
+  17 new tests, 146 passing.
+- **6b — migrate Billing onto it** and delete both the app-local editor and the
+  float totals. Delegated to Codex (`gpt-5.6-terra`, medium).
+- **6c — give Invoice its create routes** on the same editor, plus the
+  `quotes.create` SDK verb the backend already supports but `@876/billing` does
+  not expose. Delegated to Codex (`gpt-5.6-terra`, medium), non-overlapping
+  file set.
+
+**Verified while briefing, worth keeping:** `@876/billing`'s
+`createQuotesResource` has `list` only, but
+`apps/billing-api/src/modules/documents/documents.routes.ts:160-176` declares
+quotes with `create`, `get`, `update` and `del`. The route exists; only the SDK
+verb is missing. Invoice registers browser resources in
+`src/lib/api/resource-manifest.ts` and has `invoices` but not `quotes`.
+
 ## Dispatched briefs
 
-| Phase | Delegate | Brief                                                                                                            |
-| ----- | -------- | ---------------------------------------------------------------------------------------------------------------- |
-| 1     | Codex    | [`briefs/codex/2026-09-06-panel-layer-customer-tabs.md`](./briefs/codex/2026-09-06-panel-layer-customer-tabs.md) |
-| 2     | Codex    | [`briefs/codex/2026-09-06-billing-membership-parity.md`](./briefs/codex/2026-09-06-billing-membership-parity.md) |
-| 3     | GPT web  | [`briefs/gpt-web/2026-09-06-finance-module-catalogs.md`](./briefs/gpt-web/2026-09-06-finance-module-catalogs.md) |
+| Phase | Delegate | Brief                                                                                                                        |
+| ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Codex    | [`briefs/codex/2026-09-06-panel-layer-customer-tabs.md`](./briefs/codex/2026-09-06-panel-layer-customer-tabs.md)             |
+| 2     | Codex    | [`briefs/codex/2026-09-06-billing-membership-parity.md`](./briefs/codex/2026-09-06-billing-membership-parity.md)             |
+| 3     | GPT web  | [`briefs/gpt-web/2026-09-06-finance-module-catalogs.md`](./briefs/gpt-web/2026-09-06-finance-module-catalogs.md)             |
+| 6b    | Codex    | [`briefs/codex/2026-09-06-billing-document-form-migration.md`](./briefs/codex/2026-09-06-billing-document-form-migration.md) |
+| 6c    | Codex    | [`briefs/codex/2026-09-06-invoice-document-create-routes.md`](./briefs/codex/2026-09-06-invoice-document-create-routes.md)   |
+| docs  | agy      | [`briefs/agy/2026-09-06-billing-ui-readme.md`](./briefs/agy/2026-09-06-billing-ui-readme.md)                                 |
 
 ## Execution reports
 
@@ -184,7 +236,10 @@ Verification runs in the **foreground**, always
 - [x] Phase 5a — shared totals extracted to `@876/core/money`, server rewired
 - [x] Phase 5b — `DocumentLineItemsEditor` in `@876/billing-ui`
 - [x] Phase 5c — invoice create routed through the shared function (quotes/estimates needed no change)
-- [ ] Phase 6 — document create/edit routes
+- [x] Phase 6a — shared editor extended: catalogue lines, price-list pricing, percentage discounts (17 tests)
+- [ ] Phase 6b — Billing's document form migrated onto the shared editor (Codex, in flight)
+- [ ] Phase 6c — Invoice document create routes + `quotes.create` SDK verb (Codex, in flight)
+- [ ] Docs — `packages/billing-ui/README.md` brought up to its real 16-export surface (agy, in flight)
 - [ ] Final PR `feature/finance-apps` → `main`
 
 ## Handoff state
