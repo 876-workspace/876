@@ -8,6 +8,12 @@ const log = getLogger('posthog')
 const FEATURE_FLAG_EVALUATION_TIMEOUT_MS = 3_000
 const FEATURE_FLAGS_POLLING_INTERVAL_MS = 30_000
 
+export type FeatureEvaluationResult = {
+  enabled: boolean
+  variant: string | null
+  payload: unknown
+}
+
 export type FeatureFlagEvaluator = {
   evaluate(params: {
     distinctId: string
@@ -15,7 +21,7 @@ export type FeatureFlagEvaluator = {
     groups?: Record<string, string>
     personProperties?: Record<string, string>
     groupProperties?: Record<string, Record<string, string>>
-  }): Promise<Map<string, boolean>>
+  }): Promise<Map<string, FeatureEvaluationResult>>
   shutdown(): Promise<void>
 }
 
@@ -48,35 +54,36 @@ function evaluationOptions(
     ...(params.groupProperties
       ? { groupProperties: params.groupProperties }
       : {}),
-    sendFeatureFlagEvents: true,
   }
 }
 
 async function evaluateWithTimeout(
   posthog: PostHog,
   params: Parameters<FeatureFlagEvaluator['evaluate']>[0]
-): Promise<Map<string, boolean>> {
+): Promise<Map<string, FeatureEvaluationResult>> {
   let timeout: ReturnType<typeof setTimeout> | null = null
 
   try {
     return await Promise.race([
-      Promise.all(
-        params.slugs.map(async (slug) => {
-          const value = await posthog.getFeatureFlag(
-            slug,
-            params.distinctId,
-            evaluationOptions(params)
-          )
-          return [slug, value] as const
+      posthog
+        .evaluateFlags(params.distinctId, {
+          flagKeys: params.slugs,
+          ...evaluationOptions(params),
         })
-      ).then((results) => {
-        const decisions = new Map<string, boolean>()
-        for (const [slug, value] of results) {
-          if (value !== undefined) decisions.set(slug, value !== false)
-        }
-        return decisions
-      }),
-      new Promise<Map<string, boolean>>((_, reject) => {
+        .then((flags) => {
+          const decisions = new Map<string, FeatureEvaluationResult>()
+          for (const slug of params.slugs) {
+            const value = flags.getFlag(slug)
+            if (value === undefined) continue
+            decisions.set(slug, {
+              enabled: value !== false,
+              variant: typeof value === 'string' ? value : null,
+              payload: flags.getFlagPayload(slug) ?? null,
+            })
+          }
+          return decisions
+        }),
+      new Promise<Map<string, FeatureEvaluationResult>>((_, reject) => {
         timeout = setTimeout(
           () => reject(new Error('PostHog feature flag evaluation timed out.')),
           FEATURE_FLAG_EVALUATION_TIMEOUT_MS
