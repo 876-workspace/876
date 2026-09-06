@@ -140,6 +140,14 @@ async function FeatureDiagnosticsResult({
                   Rollout source:{' '}
                   {decision.rollout_source === 'posthog' ? 'PostHog' : 'Local'}
                 </p>
+                {decision.variant && (
+                  <p className="text-muted-foreground text-xs">
+                    Variant:{' '}
+                    <span className="text-foreground font-mono">
+                      {decision.variant}
+                    </span>
+                  </p>
+                )}
               </TableCell>
               <DecisionCell value={decision.global_enabled} />
               <DecisionCell value={decision.parent_enabled} />
