@@ -5,9 +5,9 @@ settings surface in `apps/billing`, `apps/invoice`, or the Console workspace
 views that render finance data. It fixes how the two finance apps stay visually
 and structurally in sync without being forced into one implementation.
 
-Companion to `.claude/rules/shared-product-ui.md` (the host/product split),
-`.claude/rules/app-layout.md` (what a page looks like), and
-`.claude/rules/module-settings.md` (org module/preference layering).
+Companion to `.agents/rules/shared-product-ui.md` (the host/product split),
+`.agents/rules/app-layout.md` (what a page looks like), and
+`.agents/rules/module-settings.md` (org module/preference layering).
 
 ## The relationship, stated once
 
@@ -108,7 +108,7 @@ Notes that have already been got wrong once:
   feature "will appear here". A placeholder that does not look like the real
   thing teaches nobody anything and hides the layout work.
 - The tab strip is built from `params` in the detail layout and rendered
-  immediately (`.claude/rules/navigation-performance.md` Rule 2). The layout
+  immediately (`.agents/rules/navigation-performance.md` Rule 2). The layout
   awaits `params` and nothing else.
 
 ## Modules
@@ -125,7 +125,7 @@ Billing adds `subscriptions`, `banking`, `credit-notes`, `purchases`, `payroll`.
 
 Module keys are canonical kebab-case, must match the permission-catalog module
 key where one exists, and are durable persisted identifiers — see
-`.claude/rules/module-settings.md`, which owns the storage, resolution, and
+`.agents/rules/module-settings.md`, which owns the storage, resolution, and
 migration rules in full. A module is **not** a feature flag: a module is
 org-controlled usage, a flag is platform-controlled rollout.
 
@@ -141,7 +141,7 @@ and a status. The line-item editor is therefore one component,
 slots for extra columns, extra row actions, and a footer region.
 
 - Money and rates are strings/integers end-to-end per
-  `.claude/rules/billing-data-plane.md`. The editor must never carry an amount
+  `.agents/rules/billing-data-plane.md`. The editor must never carry an amount
   as a JS `number`.
 - Totals are computed by one shared pure function that both the editor and the
   server can call. Two implementations of a subtotal is a defect that will be
