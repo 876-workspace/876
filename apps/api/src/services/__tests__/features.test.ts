@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AppHttpError } from '@/platform/errors'
-import type { FeatureFlagEvaluator } from '@/providers/posthog/flags'
+import type {
+  FeatureEvaluationResult,
+  FeatureFlagEvaluator,
+} from '@/providers/posthog/flags'
 
 import type {
   FeatureFlagProvider,
@@ -992,7 +995,9 @@ describe('revokeOrgFeature', () => {
 // ---------------------------------------------------------------------------
 
 describe('evaluate', () => {
-  function usePostHogEvaluator(decisions: Map<string, boolean>) {
+  function usePostHogEvaluator(
+    decisions: Map<string, FeatureEvaluationResult>
+  ) {
     const evaluate = vi.fn().mockResolvedValue(decisions)
     const flagEvaluator: FeatureFlagEvaluator = {
       evaluate,
@@ -1016,6 +1021,8 @@ describe('evaluate', () => {
       organizationOverride: null,
       userOverride: null,
       enabled: feature.enabled,
+      variant: null,
+      payload: null,
       ...overrides,
     }
   }
@@ -1026,7 +1033,12 @@ describe('evaluate', () => {
       .fn()
       .mockResolvedValue([feature] as never)
     const evaluate = usePostHogEvaluator(
-      new Map([[feature.slug as string, true]])
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: true, variant: null, payload: null },
+        ],
+      ])
     )
 
     const result = await evaluateDetailed(deps, { userId: 'user_1' })
@@ -1044,7 +1056,14 @@ describe('evaluate', () => {
     repository.listEvaluationFeatures = vi
       .fn()
       .mockResolvedValue([feature] as never)
-    usePostHogEvaluator(new Map([[feature.slug as string, true]]))
+    usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: true, variant: null, payload: null },
+        ],
+      ])
+    )
 
     const result = await evaluateDetailed(deps, { userId: 'user_1' })
 
@@ -1064,7 +1083,14 @@ describe('evaluate', () => {
     repository.listOrgFeatures = vi
       .fn()
       .mockResolvedValue([{ featureId: 'ftr_1', status: 'enabled' }] as never)
-    usePostHogEvaluator(new Map([[feature.slug as string, false]]))
+    usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: false, variant: null, payload: null },
+        ],
+      ])
+    )
 
     const result = await evaluateDetailed(deps, {
       userId: 'user_1',
@@ -1090,7 +1116,14 @@ describe('evaluate', () => {
     repository.listUserFeatures = vi
       .fn()
       .mockResolvedValue([{ featureId: 'ftr_1', status: 'disabled' }] as never)
-    usePostHogEvaluator(new Map([[feature.slug as string, false]]))
+    usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: false, variant: null, payload: null },
+        ],
+      ])
+    )
 
     const result = await evaluateDetailed(deps, {
       userId: 'user_1',
@@ -1145,7 +1178,12 @@ describe('evaluate', () => {
       .fn()
       .mockResolvedValue([feature] as never)
     const evaluate = usePostHogEvaluator(
-      new Map([[feature.slug as string, false]])
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: false, variant: null, payload: null },
+        ],
+      ])
     )
 
     const result = await evaluateDetailed(deps, { userId: null })
@@ -1156,13 +1194,40 @@ describe('evaluate', () => {
     expect(evaluate).not.toHaveBeenCalled()
   })
 
+  it('uses local state when both userId and visitorId are absent', async () => {
+    const feature = makeFeature({ id: 'ftr_1', enabled: false })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const evaluate = usePostHogEvaluator(new Map())
+
+    const result = await evaluateDetailed(deps, {
+      userId: null,
+      visitorId: null,
+    })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        rolloutSource: 'local',
+        globalEnabled: false,
+        enabled: false,
+      }),
+    ])
+    expect(evaluate).not.toHaveBeenCalled()
+  })
+
   it('does not evaluate PostHog when local rollout is selected', async () => {
     const feature = makeFeature({ id: 'ftr_1', enabled: true })
     repository.listEvaluationFeatures = vi
       .fn()
       .mockResolvedValue([feature] as never)
     const evaluate = usePostHogEvaluator(
-      new Map([[feature.slug as string, false]])
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: false, variant: null, payload: null },
+        ],
+      ])
     )
     deps = { ...deps, evaluationSource: 'local' }
 
@@ -1191,8 +1256,11 @@ describe('evaluate', () => {
       .mockResolvedValue([parent, child] as never)
     usePostHogEvaluator(
       new Map([
-        ['platform_parent', false],
-        ['platform_parent_child', true],
+        ['platform_parent', { enabled: false, variant: null, payload: null }],
+        [
+          'platform_parent_child',
+          { enabled: true, variant: null, payload: null },
+        ],
       ])
     )
 
@@ -1202,6 +1270,130 @@ describe('evaluate', () => {
       expectSingleDecision(parent, { enabled: false }),
       expectSingleDecision(child, { parentEnabled: false, enabled: false }),
     ])
+  })
+
+  it('preserves multivariate variant and payload for an enabled feature', async () => {
+    const feature = makeFeature({
+      id: 'ftr_1',
+      slug: 'platform_experiment_flag',
+    })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          {
+            enabled: true,
+            variant: 'treatment_b',
+            payload: { cta_text: 'Get Started Today' },
+          },
+        ],
+      ])
+    )
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        variant: 'treatment_b',
+        payload: { cta_text: 'Get Started Today' },
+      }),
+    ])
+  })
+
+  it('clears variant and payload when a local kill switch disables the feature', async () => {
+    const feature = makeFeature({
+      id: 'ftr_1',
+      slug: 'platform_experiment_flag',
+      enabled: false,
+    })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          {
+            enabled: true,
+            variant: 'treatment_b',
+            payload: { cta_text: 'Get Started' },
+          },
+        ],
+      ])
+    )
+
+    const result = await evaluateDetailed(deps, { userId: 'user_1' })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        globalEnabled: false,
+        enabled: false,
+        variant: null,
+        payload: null,
+      }),
+    ])
+  })
+
+  it('evaluates PostHog with visitorId when userId is null', async () => {
+    const feature = makeFeature({ id: 'ftr_1', slug: 'app_signup_flow' })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const evaluate = usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: true, variant: 'variant_minimal', payload: null },
+        ],
+      ])
+    )
+
+    const result = await evaluateDetailed(deps, {
+      userId: null,
+      visitorId: 'vid_anonymous_123',
+    })
+
+    expect(result).toEqual([
+      expectSingleDecision(feature, {
+        variant: 'variant_minimal',
+      }),
+    ])
+    expect(evaluate).toHaveBeenCalledWith({
+      distinctId: 'vid_anonymous_123',
+      slugs: ['app_signup_flow'],
+      groups: undefined,
+    })
+  })
+
+  it('prefers userId over visitorId for the PostHog distinctId', async () => {
+    const feature = makeFeature({ id: 'ftr_1', slug: 'app_signup_flow' })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([feature] as never)
+    const evaluate = usePostHogEvaluator(
+      new Map([
+        [
+          feature.slug as string,
+          { enabled: true, variant: null, payload: null },
+        ],
+      ])
+    )
+
+    const result = await evaluateDetailed(deps, {
+      userId: 'user_1',
+      visitorId: 'vid_anonymous_123',
+    })
+
+    expect(result).toEqual([expectSingleDecision(feature)])
+    expect(evaluate).toHaveBeenCalledTimes(1)
+    expect(evaluate).toHaveBeenCalledWith({
+      distinctId: 'user_1',
+      slugs: ['app_signup_flow'],
+      groups: undefined,
+    })
   })
 
   it('returns enabled non-widget features', async () => {

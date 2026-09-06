@@ -2,7 +2,10 @@ import { AppHttpError } from '@/platform/errors'
 import { normalizeSlug } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
-import type { FeatureFlagEvaluator } from '@/providers/posthog/flags'
+import type {
+  FeatureEvaluationResult,
+  FeatureFlagEvaluator,
+} from '@/providers/posthog/flags'
 
 /**
  * Feature-flag service — provider sync, scoped grants, and evaluation.
@@ -241,6 +244,7 @@ export function featureSlugMatchesApp(
 
 export type FeatureEvaluationContext = {
   userId?: string | null
+  visitorId?: string | null
   organizationId?: string | null
   appId?: string | null
   appSlug?: string | null
@@ -256,6 +260,8 @@ export type FeatureEvaluationDecision = {
   organizationOverride: boolean | null
   userOverride: boolean | null
   enabled: boolean
+  variant?: string | null
+  payload?: unknown
 }
 
 // ---------------------------------------------------------------------------
@@ -966,15 +972,12 @@ export async function evaluateDetailed(
   const app = await resolveApp(deps, context)
   const features = await deps.repository.listEvaluationFeatures(app?.id ?? null)
 
-  let posthogDecisions = new Map<string, boolean>()
-  if (
-    deps.evaluationSource !== 'local' &&
-    deps.flagEvaluator &&
-    context.userId
-  ) {
+  const distinctId = context.userId ?? context.visitorId ?? null
+  let posthogDecisions = new Map<string, FeatureEvaluationResult>()
+  if (deps.evaluationSource !== 'local' && deps.flagEvaluator && distinctId) {
     try {
       posthogDecisions = await deps.flagEvaluator.evaluate({
-        distinctId: context.userId,
+        distinctId,
         slugs: features.map((feature) => feature.slug),
         groups: context.organizationId
           ? { organization: context.organizationId }
@@ -1028,7 +1031,10 @@ export async function evaluateDetailed(
   >()
   for (const feature of features) {
     const posthogDecision = posthogDecisions.get(feature.slug)
-    rolloutDecisions.set(feature.id, posthogDecision ?? feature.enabled)
+    rolloutDecisions.set(
+      feature.id,
+      posthogDecision?.enabled ?? feature.enabled
+    )
     rolloutSources.set(
       feature.id,
       posthogDecision === undefined ? 'local' : 'posthog'
@@ -1102,6 +1108,8 @@ export async function evaluateDetailed(
       gated: false,
       entitled: true,
     }
+    const isEnabled = resolve(feature)
+    const posthogDecision = posthogDecisions.get(feature.slug)
 
     return {
       feature,
@@ -1114,7 +1122,9 @@ export async function evaluateDetailed(
       moduleEntitled: eligibility.entitled,
       organizationOverride: organizationOverrides.get(feature.id) ?? null,
       userOverride: userOverrides.get(feature.id) ?? null,
-      enabled: resolve(feature),
+      enabled: isEnabled,
+      variant: isEnabled ? (posthogDecision?.variant ?? null) : null,
+      payload: isEnabled ? (posthogDecision?.payload ?? null) : null,
     }
   })
 }
