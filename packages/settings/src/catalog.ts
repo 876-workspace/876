@@ -10,7 +10,7 @@ const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 export function defineModuleCatalog<
   const T extends readonly ModuleDefinition[],
->(modules: T): T {
+>(modules: T): Readonly<T> {
   const moduleKeys = new Set<string>()
 
   for (const module of modules) {
@@ -25,8 +25,7 @@ export function defineModuleCatalog<
     Object.freeze(module)
   }
 
-  Object.freeze(modules)
-  return modules
+  return Object.freeze(modules)
 }
 
 export function findModule(
