@@ -1,8 +1,17 @@
-import type { SettingsHubGroup } from '@876/ui/settings-hub'
+import type { SettingsHubGroup, SettingsHubItem } from '@876/ui/settings-hub'
 
 import { INVOICE_MODULE_CATALOG } from '@/lib/modules'
 
-export const SETTINGS_GROUPS: SettingsHubGroup[] = [
+export const ROLES_READ_PERMISSION = 'roles:read'
+
+export type InvoiceSettingsHubItem = SettingsHubItem & {
+  requires?: { permission: string }
+}
+export type InvoiceSettingsHubGroup = Omit<SettingsHubGroup, 'items'> & {
+  items: InvoiceSettingsHubItem[]
+}
+
+export const SETTINGS_GROUPS: InvoiceSettingsHubGroup[] = [
   {
     label: 'Workspace',
     items: [
@@ -11,6 +20,13 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
         icon: 'members',
         availability: 'available',
         href: '/settings/users',
+      },
+      {
+        label: 'Roles',
+        icon: 'roles',
+        availability: 'available',
+        href: '/settings/roles',
+        requires: { permission: ROLES_READ_PERMISSION },
       },
       { label: 'Preferences', icon: 'preferences', availability: 'planned' },
     ],
