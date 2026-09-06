@@ -95,7 +95,10 @@ describe('finance module catalogs', () => {
   })
 
   it('keeps every Billing-only module out of Invoice', () => {
-    const invoiceKeys = new Set(
+    // Typed as strings, not as Invoice's key union: the question this test
+    // asks is whether a key outside that union is absent, which `Set<K>.has`
+    // will not accept as an argument.
+    const invoiceKeys = new Set<string>(
       INVOICE_MODULE_CATALOG.map((module) => module.key)
     )
 
