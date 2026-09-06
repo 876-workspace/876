@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-06-finance-apps-foundation`
 - **Integration branch:** `feature/finance-apps` (cut from `main` @ `72d87028`)
-- **Status:** IN_PROGRESS
+- **Status:** IN_PROGRESS — foundation complete, Phase 6 (document create/edit routes) not started
 
 ## Overview
 
@@ -127,9 +127,21 @@ and its billing-engine parity (9) and documents (19) suites still pass.
 three should call `calculateDocumentTotals` with the new `lineAmounts` and the
 document-level params. Until they do, that formula has two homes.
 
-Still to build: `DocumentLineItemsEditor` in `@876/billing-ui`, consuming
-`@876/core/money`, with slots for extra columns, extra row actions, and a
-footer region.
+**Phase 5b is done.** `DocumentLineItemsEditor` lives at
+`@876/billing-ui/document/document-line-items-editor` and computes through
+`@876/core/money`, so a running total in the browser cannot disagree with the
+document the service writes. Divergence is a slot — `extraColumns`,
+`renderRowActions`, `footer` — never a fork.
+
+Two details worth knowing before extending it:
+
+- Draft rows hold the **raw typed strings**, so a half-finished entry survives
+  a re-render instead of snapping to a parsed value mid-keystroke. An
+  unparseable amount reads as zero for the running total rather than replacing
+  the total with an error while someone is still typing.
+- `parseDecimalToMinorUnits` refuses more decimal places than the currency has,
+  rather than truncating. `1500.07 * 100` is `150006.99999999999` in IEEE 754,
+  which is why none of this touches a float.
 
 ## Verification commands
 
@@ -170,8 +182,8 @@ Verification runs in the **foreground**, always
 - [x] Phase 3 — module catalogs (GPT web, verified)
 - [x] Phase 4 — rules mirror verified: no real content drift across 48 pairs
 - [x] Phase 5a — shared totals extracted to `@876/core/money`, server rewired
-- [ ] Phase 5b — `DocumentLineItemsEditor` in `@876/billing-ui`
-- [ ] Phase 5c — route `*/create.ts` document-level math through the shared function
+- [x] Phase 5b — `DocumentLineItemsEditor` in `@876/billing-ui`
+- [x] Phase 5c — invoice create routed through the shared function (quotes/estimates needed no change)
 - [ ] Phase 6 — document create/edit routes
 - [ ] Final PR `feature/finance-apps` → `main`
 
