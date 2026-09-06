@@ -390,7 +390,12 @@
 /* ── Table header rows ───────────────────────────────────────────────────
    Surface colour so the header reads as part of the card, not the page. */
 [class~='876-header-row'] {
-  background-color: var(--876-surface);
+  /* The canvas tone, not the surface. A header row painted the same white as
+     the rows beneath it is a header only by virtue of its bottom hairline,
+     which is how a table inside a white card ends up reading as one
+     undifferentiated block. Canvas is themed on both sides, so the band stays
+     a band in dark mode instead of inverting into nothing. */
+  background-color: var(--876-canvas);
   border-bottom: 1px solid var(--876-surface-border);
 }
 [class~='876-header-row'] tr:first-child th:first-child {
