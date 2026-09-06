@@ -5,7 +5,7 @@ import {
   ChartPieIcon,
   CircleStackIcon,
   ClipboardDocumentListIcon,
-  ClipboardList,
+  DocumentTextIcon,
   IdentificationIcon,
   RefreshCw,
   Settings,
@@ -18,7 +18,9 @@ export const BILLING_NAV_ICONS: Record<string, IconComponent> = {
   dashboard: BarChart3,
   customers: UsersIcon,
   items: ClipboardDocumentListIcon,
-  sales: ClipboardList,
+  // `ClipboardList` is an alias of `ClipboardDocumentListIcon` in `@876/ui`, so
+  // sharing it with `items` made two rail entries render the same glyph.
+  sales: DocumentTextIcon,
   subscriptions: RefreshCw,
   purchases: Building2,
   banking: BuildingLibraryIcon,

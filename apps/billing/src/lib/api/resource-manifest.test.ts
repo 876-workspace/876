@@ -21,8 +21,10 @@ describe('Billing proxied resource manifest', () => {
         if (!entry.isDirectory()) return false
         const routeFile = join(API_ROOT, entry.name, '[[...path]]', 'route.ts')
         if (!existsSync(routeFile)) return false
-        return readFileSync(routeFile, 'utf8').includes(
-          'createBillingResourceRoute'
+        const source = readFileSync(routeFile, 'utf8')
+        return (
+          source.includes('createBillingResourceRoute') ||
+          source.includes('proxyBillingResourceRequest')
         )
       })
       .map((entry) => entry.name)
