@@ -1,23 +1,29 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Building2, CreditCard, Mail, ShieldCheck } from '@876/ui/icons'
-import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
+import { Suspense } from 'react'
+import {
+  CustomerBillingFactsPanel,
+  CustomerBillingFactsPanelSkeleton,
+} from '@876/billing-ui/panels/customer-billing-facts-panel'
+import {
+  CustomerContactPanel,
+  CustomerContactPanelSkeleton,
+} from '@876/billing-ui/panels/customer-contact-panel'
+import {
+  CustomerOrganizationPanel,
+  CustomerOrganizationPanelSkeleton,
+} from '@876/billing-ui/panels/customer-organization-panel'
+import {
+  CustomerReceivablesPanel,
+  CustomerReceivablesPanelSkeleton,
+} from '@876/billing-ui/panels/customer-receivables-panel'
 
-import { MetricCard } from '@/components/patterns/metric-card'
-import {
-  DetailAccordion,
-  DetailAccordionCard,
-  Fact,
-  FactGrid,
-} from '@/components/patterns/detail/detail-accordion'
 import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
+import { MetricCard } from '@/components/patterns/metric-card'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { formatDate } from '@/lib/format'
-import {
-  resolveCustomerParty,
-  type PrimaryContact,
-  type CustomerPartyInput,
-} from './_data'
+import { formatDate, formatMoney } from '@/lib/format'
+import { service } from '@/lib/service'
+import { resolveCustomerParty, type CustomerPartyInput } from './_data'
 
 interface Props {
   params: Promise<{ customerId: string }>
@@ -28,25 +34,22 @@ export const metadata: Metadata = {
   description: 'Customer billing activity and subscriptions.',
 }
 
-const SOURCE_LABEL: Record<PrimaryContact['source'], string> = {
+const sourceLabels = {
   'org-super-admin': 'Organization super admin',
   'org-member': 'Organization member',
   user: '876 user',
   self: 'Customer',
-}
+} as const
 
-function initialsOf(name: string): string {
+export default function CustomerDetailPage({ params }: Props) {
   return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || '?'
+    <Suspense fallback={<CustomerOverviewSkeleton />}>
+      <CustomerOverviewData params={params} />
+    </Suspense>
   )
 }
 
-export default async function CustomerDetailPage({ params }: Props) {
+async function CustomerOverviewData({ params }: Props) {
   const { customerId } = await params
   const context = await getWorkspaceContext()
   if (!context) return null
@@ -54,10 +57,10 @@ export default async function CustomerDetailPage({ params }: Props) {
   const customer = await resolveCustomer(context.tenant.id, customerId)
   if (!customer) notFound()
 
-  const party = await resolveCustomerParty(
-    customer as unknown as CustomerPartyInput
-  )
-  const contact = party.contact
+  const [party, account] = await Promise.all([
+    resolveCustomerParty(customer as unknown as CustomerPartyInput),
+    service.customers.account(context.tenant.id, customerId),
+  ])
   const currency = (
     customer.defaultCurrency ?? context.tenant.defaultCurrency
   ).toUpperCase()
@@ -66,81 +69,48 @@ export default async function CustomerDetailPage({ params }: Props) {
     customer.userId ??
     customer.externalReference ??
     '—'
+  const contact = party.contact
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,32%)_1fr]">
-      <div className="min-w-0">
-        <DetailAccordion defaultOpen="contact">
-          <DetailAccordionCard title="Contact" icon={Mail} tone="sky">
-            {!contact ? (
-              <p className="text-muted-foreground py-2 text-sm">
-                No contact details.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-10 text-sm">
-                    {contact.avatar ? (
-                      <AvatarImage src={contact.avatar} alt="" />
-                    ) : null}
-                    <AvatarFallback>{initialsOf(contact.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {contact.name}
-                    </p>
-                    <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-                      {contact.role ? (
-                        <>
-                          <ShieldCheck className="size-3 shrink-0" />
-                          {contact.role}
-                          <span aria-hidden="true">·</span>
-                        </>
-                      ) : null}
-                      {SOURCE_LABEL[contact.source]}
-                    </p>
-                  </div>
-                </div>
-                <FactGrid>
-                  <Fact label="Email" value={contact.email || '—'} />
-                  <Fact label="Phone" value={contact.phone || '—'} />
-                </FactGrid>
-              </div>
-            )}
-          </DetailAccordionCard>
-
-          <DetailAccordionCard title="Billing" icon={CreditCard} tone="violet">
-            <FactGrid>
-              <Fact
-                label="Type"
-                value={formatCustomerType(customer.customerType)}
-              />
-              <Fact label="Currency" value={currency} />
-              <Fact label="Reference" value={reference} mono />
-              <Fact label="Added" value={formatDate(customer.createdAt)} />
-            </FactGrid>
-          </DetailAccordionCard>
-
-          {party.org ? (
-            <DetailAccordionCard
-              title="Organization"
-              icon={Building2}
-              tone="blue"
-            >
-              <FactGrid>
-                <Fact label="Name" value={party.org.name || '—'} />
-                <Fact label="Slug" value={party.org.slug} mono />
-                <Fact label="Members" value={party.memberCount ?? '—'} />
-                <Fact
-                  label="Status"
-                  value={<span className="capitalize">{party.org.status}</span>}
-                />
-              </FactGrid>
-            </DetailAccordionCard>
-          ) : null}
-        </DetailAccordion>
+      <div className="min-w-0 space-y-6">
+        <CustomerContactPanel
+          state={
+            contact
+              ? {
+                  status: 'ready',
+                  data: { ...contact, sourceLabel: sourceLabels[contact.source] },
+                }
+              : { status: 'empty' }
+          }
+        />
+        <CustomerBillingFactsPanel
+          state={{
+            status: 'ready',
+            data: {
+              type: formatCustomerType(customer.customerType),
+              currency,
+              reference,
+              addedDate: formatDate(customer.createdAt),
+            },
+          }}
+        />
+        <CustomerOrganizationPanel
+          state={
+            party.org
+              ? {
+                  status: 'ready',
+                  data: {
+                    name: party.org.name || '—',
+                    slug: party.org.slug,
+                    members: String(party.memberCount ?? '—'),
+                    status: party.org.status,
+                  },
+                }
+              : { status: 'empty' }
+          }
+        />
       </div>
-
       <div className="min-w-0 space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <MetricCard
@@ -159,26 +129,48 @@ export default async function CustomerDetailPage({ params }: Props) {
             detail="Prepared proposals"
           />
         </div>
-
-        <div className="876-card flex min-h-40 flex-col items-center justify-center border-dashed p-6 text-center">
-          <p className="text-muted-foreground text-sm font-medium">Reserved</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Recent transactions and statements for this customer will appear
-            here.
-          </p>
-        </div>
+        <CustomerReceivablesPanel
+          state={
+            account
+              ? {
+                  status: 'ready',
+                  data: {
+                    outstanding: formatMoney(account.outstandingReceivable, currency),
+                    overdue: '—',
+                    paid: formatMoney(account.lifetimePaid, currency),
+                    currency,
+                  },
+                }
+              : { status: 'empty' }
+          }
+        />
       </div>
     </div>
   )
 }
 
-function formatCustomerType(type: string): string {
-  switch (type) {
-    case 'CORE_ORGANIZATION':
-      return '876 organization'
-    case 'CORE_USER':
-      return '876 user'
-    default:
-      return 'External customer'
-  }
+function CustomerOverviewSkeleton() {
+  return (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,32%)_1fr]">
+      <div className="space-y-6">
+        <CustomerContactPanelSkeleton />
+        <CustomerBillingFactsPanelSkeleton />
+        <CustomerOrganizationPanelSkeleton />
+      </div>
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <MetricCard label="Subscriptions" value="—" detail="Commercial agreements" />
+          <MetricCard label="Invoices" value="—" detail="Billing documents" />
+          <MetricCard label="Quotes" value="—" detail="Prepared proposals" />
+        </div>
+        <CustomerReceivablesPanelSkeleton />
+      </div>
+    </div>
+  )
+}
+
+function formatCustomerType(type: string) {
+  if (type === 'CORE_ORGANIZATION') return '876 organization'
+  if (type === 'CORE_USER') return '876 user'
+  return 'External customer'
 }

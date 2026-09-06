@@ -1,23 +1,5 @@
-import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { CustomerTransactionsPanel, CustomerTransactionsPanelSkeleton } from '@876/billing-ui/panels/customer-transactions-panel'
 
-import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
-import { getWorkspaceContext } from '@/lib/auth/billing-context'
-
-export default async function CustomerTransactionsPage({
-  params,
-}: {
-  params: Promise<{ customerId: string }>
-}) {
-  const { customerId } = await params
-  const context = await getWorkspaceContext()
-  if (!context) return null
-
-  const customer = await resolveCustomer(context.tenant.id, customerId)
-  if (!customer) notFound()
-
-  return (
-    <div className="876-card text-muted-foreground p-8 text-center text-sm">
-      Transactions for {customer.name} will appear here.
-    </div>
-  )
-}
+export default function CustomerTransactionsPage() { return <Suspense fallback={<CustomerTransactionsPanelSkeleton />}><CustomerTransactionsData /></Suspense> }
+async function CustomerTransactionsData() { return <CustomerTransactionsPanel state={{ status: 'empty' }} hrefForDocument={(id) => `/invoices/${id}`} /> }

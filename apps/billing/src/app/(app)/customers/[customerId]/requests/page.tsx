@@ -1,23 +1,5 @@
-import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { CustomerTimelinePanel, CustomerTimelinePanelSkeleton } from '@876/billing-ui/panels/customer-timeline-panel'
 
-import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
-import { getWorkspaceContext } from '@/lib/auth/billing-context'
-
-export default async function CustomerRequestsPage({
-  params,
-}: {
-  params: Promise<{ customerId: string }>
-}) {
-  const { customerId } = await params
-  const context = await getWorkspaceContext()
-  if (!context) return null
-
-  const customer = await resolveCustomer(context.tenant.id, customerId)
-  if (!customer) notFound()
-
-  return (
-    <div className="876-card text-muted-foreground p-8 text-center text-sm">
-      Requests for {customer.name} will appear here.
-    </div>
-  )
-}
+export default function CustomerRequestsPage() { return <Suspense fallback={<CustomerTimelinePanelSkeleton />}><CustomerRequestsData /></Suspense> }
+async function CustomerRequestsData() { return <CustomerTimelinePanel title="Requests" state={{ status: 'empty' }} /> }
