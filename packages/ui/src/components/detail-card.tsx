@@ -47,7 +47,12 @@ function DetailCard({ className, ...props }: React.ComponentProps<'section'>) {
     <section
       data-slot="detail-card"
       className={cn(
-        '876-card flex min-w-0 flex-col',
+        // The card fills its pane and scrolls its own body, so the record's
+        // name and tab strip stay pinned while the content moves under them —
+        // and the card never ends mid-pane in a border a reader would take for
+        // the end of the record. `h-full` resolves to `auto` while the panes
+        // are stacked, where the card grows and the pane scrolls instead.
+        '876-card flex h-full min-w-0 flex-col overflow-hidden',
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out',
         className
       )}
@@ -98,7 +103,7 @@ function DetailCardHeader({
     <header
       data-slot="detail-card-header"
       className={cn(
-        'border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5',
+        'border-876-surface-border flex shrink-0 items-start gap-4 border-b px-5 py-4',
         className
       )}
     >
@@ -231,7 +236,7 @@ function DetailCardTabs({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="detail-card-tabs"
       className={cn(
-        'border-876-surface-border shrink-0 border-b px-6 pt-3',
+        'border-876-surface-border shrink-0 border-b px-5 pt-3',
         className
       )}
     >
@@ -289,7 +294,7 @@ function DetailCardBody({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="detail-card-body"
-      className={cn('min-w-0 flex-1 p-6', className)}
+      className={cn('876-scroll min-w-0 flex-1 overflow-y-auto p-5', className)}
       {...props}
     />
   )
@@ -304,7 +309,7 @@ function DetailCardFooter({
     <div
       data-slot="detail-card-footer"
       className={cn(
-        'border-876-surface-border flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4',
+        'border-876-surface-border flex shrink-0 items-center justify-end gap-3 border-t px-5 py-4',
         className
       )}
       {...props}
@@ -321,7 +326,7 @@ function DetailCardIdBar({
     <footer
       data-slot="detail-card-id-bar"
       className={cn(
-        'border-876-surface-border bg-muted/30 text-muted-foreground flex shrink-0 items-center justify-between gap-3 border-t px-6 py-2.5 font-mono text-xs',
+        'border-876-surface-border bg-muted/30 text-muted-foreground flex shrink-0 items-center justify-between gap-3 border-t px-5 py-2.5 font-mono text-xs',
         className
       )}
       {...props}
