@@ -5,7 +5,10 @@ import {
   calculateLineSubtotal,
   formatMinorUnits,
   parseDecimalToMinorUnits,
+  resolvePercentageDiscount,
   toMinorUnits,
+  MAX_PERCENT_BASIS_POINTS,
+  PERCENT_SCALE,
   type DocumentLineAmounts,
 } from './document-totals'
 
@@ -465,5 +468,74 @@ describe('formatMinorUnits', () => {
     for (const amount of [0n, 7n, -250n, 150_007n, 9_007_199_254_740_993n]) {
       expect(parseDecimalToMinorUnits(formatMinorUnits(amount))).toBe(amount)
     }
+  })
+})
+
+describe('resolvePercentageDiscount', () => {
+  it('takes a whole percentage off a subtotal', () => {
+    expect(resolvePercentageDiscount(150_000n, 1_000n)).toBe(15_000n)
+  })
+
+  it('takes a fractional percentage, carried as basis points', () => {
+    expect(resolvePercentageDiscount(150_000n, 1_250n)).toBe(18_750n)
+  })
+
+  it('returns the whole subtotal at 100%', () => {
+    expect(resolvePercentageDiscount(150_000n, MAX_PERCENT_BASIS_POINTS)).toBe(
+      150_000n
+    )
+  })
+
+  it('returns zero at 0%', () => {
+    expect(resolvePercentageDiscount(150_000n, 0n)).toBe(0n)
+  })
+
+  it('resolves a percentage above 100% rather than swallowing it, so the document invariant can name the line', () => {
+    const discount = resolvePercentageDiscount(
+      150_000n,
+      MAX_PERCENT_BASIS_POINTS + 5_000n
+    )
+
+    expect(discount).toBe(225_000n)
+    expect(
+      calculateDocumentTotals({
+        lines: [line({ subtotalAmount: 150_000n, discountAmount: 225_000n })],
+      }).error
+    ).toEqual({
+      code: 'billing/line-discount-exceeds-subtotal',
+      message: 'A line discount cannot exceed the line subtotal.',
+      lineIndex: 0,
+    })
+  })
+
+  it('rejects a negative percentage, which would be a surcharge', () => {
+    expect(resolvePercentageDiscount(150_000n, -1n)).toBeNull()
+  })
+
+  it('truncates toward zero rather than rounding up', () => {
+    // 1 unit at 33.33% is 0.3333 units; the customer is not credited the
+    // fraction of a cent.
+    expect(resolvePercentageDiscount(1n, 3_333n)).toBe(0n)
+    expect(resolvePercentageDiscount(3n, 3_333n)).toBe(0n)
+    expect(resolvePercentageDiscount(10n, 3_333n)).toBe(3n)
+  })
+
+  it('stays within the subtotal for every percentage up to 100%', () => {
+    for (let bp = 0n; bp <= MAX_PERCENT_BASIS_POINTS; bp += 137n) {
+      const discount = resolvePercentageDiscount(150_007n, bp)
+      expect(discount).not.toBeNull()
+      expect(discount!).toBeLessThanOrEqual(150_007n)
+      expect(discount!).toBeGreaterThanOrEqual(0n)
+    }
+  })
+
+  it('holds exactness past the float-safe integer range', () => {
+    expect(resolvePercentageDiscount(9_007_199_254_740_993_00n, 5_000n)).toBe(
+      4_503_599_627_370_496_50n
+    )
+  })
+
+  it('scales percentages by basis points, not by hundredths', () => {
+    expect(PERCENT_SCALE).toBe(10_000n)
   })
 })

@@ -132,6 +132,46 @@ export function calculateLineSubtotal(
 }
 
 /**
+ * Percentages are carried as basis points, so 12.5% is 1250 and never 0.125.
+ * A fraction cannot survive integer arithmetic, and money never uses a float.
+ */
+export const PERCENT_SCALE = 10_000n
+
+/** Basis points give a percentage two decimal places: 12.34% is 1234. */
+export const PERCENT_DIGITS = 2
+
+/** 100%, in basis points — the largest discount a line may carry. */
+export const MAX_PERCENT_BASIS_POINTS = PERCENT_SCALE
+
+/**
+ * Resolves a percentage discount against the amount it applies to.
+ *
+ * This is the one definition of the rule. An editor showing a running total
+ * and the service writing the document must agree to the minor unit, so both
+ * call this rather than repeating `subtotal * bp / 10_000`.
+ *
+ * Truncates toward zero, which is what the integer division in the document
+ * pipeline already did — a discount never rounds up in the customer's favour
+ * by accident.
+ *
+ * A percentage over 100% is deliberately *not* rejected here. It resolves to
+ * more than the subtotal, and `calculateDocumentTotals` then reports
+ * `billing/line-discount-exceeds-subtotal` against the offending line — a
+ * named error naming the line, rather than a silent zero. Callers that must
+ * refuse it earlier compare against `MAX_PERCENT_BASIS_POINTS` themselves.
+ *
+ * Only a negative percentage is refused, because that is a surcharge wearing
+ * a discount's name and no downstream invariant would catch it.
+ */
+export function resolvePercentageDiscount(
+  subtotalAmount: bigint,
+  basisPoints: bigint
+): bigint | null {
+  if (basisPoints < 0n) return null
+  return (subtotalAmount * basisPoints) / PERCENT_SCALE
+}
+
+/**
  * Rolls lines up into document totals, enforcing the same invariants the
  * Billing service enforces.
  *
