@@ -31,12 +31,12 @@ export function SetupCardFrame({
     <section
       aria-label="Provisioning setup"
       className={cn(
-        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        '876-card flex min-w-0 flex-col',
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
       )}
     >
       {/* Header */}
-      <header className="border-876-surface-border flex shrink-0 items-center gap-4 border-b px-6 py-4">
+      <header className="border-876-surface-border flex shrink-0 items-center gap-4 border-b px-6 py-4 sticky top-0 z-10 bg-[var(--876-surface)] rounded-t-[calc(var(--radius-xl)-1px)]">
         <div className="min-w-0 flex-1">{title}</div>
         <div className="flex items-center gap-1">
           {actions}
@@ -94,7 +94,7 @@ export function SetupCardFrame({
       </div>
 
       {/* Body */}
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
+      <div className="min-w-0 flex-1">
         {children}
       </div>
 

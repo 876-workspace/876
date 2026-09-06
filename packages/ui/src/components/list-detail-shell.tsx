@@ -129,11 +129,21 @@ export function ListDetailShell({
     <div
       data-slot="list-detail-shell"
       data-state={open ? 'open' : 'closed'}
-      className={cn('@container/list-detail h-full min-h-0', className)}
+      className={cn(
+        '@container/list-detail min-h-0',
+        // Open, the split view is a viewport-fitted two-pane surface: the page
+        // does not scroll, each pane does. Below the two-column breakpoint the
+        // panes stack, so the shell takes the scroll instead — a clamped stack
+        // with nothing scrollable simply hides its own tail.
+        open &&
+          '876-scroll-none h-full min-h-0 overflow-y-auto @3xl/list-detail:overflow-visible',
+        className
+      )}
     >
       <div
         className={cn(
-          '@3xl/list-detail:grid @3xl/list-detail:h-full @3xl/list-detail:min-h-0',
+          '@3xl/list-detail:grid @3xl/list-detail:min-h-0',
+          open && '@3xl/list-detail:h-full',
           '@3xl/list-detail:grid-rows-[minmax(0,1fr)]',
           // Animating the track itself is what produces "the table closes in
           // and the card comes out": one grid, two column widths, 300ms
@@ -149,19 +159,36 @@ export function ListDetailShell({
         )}
       >
         {/*
-         * The complete list side is one grid item. Keeping its toolbar,
-         * optional sub-navigation, and list in a flex stack prevents a tall
-         * detail card from contributing height to separate list-side rows.
+         * Each pane owns its own scroll and keeps its own position, which is
+         * the whole point of the pattern: moving through a record must not
+         * scroll the rows away, and moving through the rows must not disturb
+         * the record. The toolbar stays pinned at the top of the rows.
          */}
         <div
           data-slot="list-detail-list-column"
-          className="@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1 @3xl/list-detail:flex @3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0 @3xl/list-detail:flex-col"
+          className={cn(
+            '@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1 @3xl/list-detail:flex @3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0 @3xl/list-detail:flex-col',
+            open &&
+              '876-scroll-none @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto'
+          )}
         >
-          <div className="@3xl/list-detail:shrink-0">{toolbar}</div>
-
-          {subnav ? (
-            <div className="@3xl/list-detail:shrink-0">{subnav}</div>
-          ) : null}
+          {/*
+           * Toolbar and subnav pin as one block. Stacking them as two sticky
+           * elements would need the second to know the first's height, and any
+           * fixed offset is wrong the moment the toolbar grows — a wrapped
+           * title, or the search row this column is meant to carry.
+           */}
+          <div
+            data-slot="list-detail-list-chrome"
+            className={cn(
+              '@3xl/list-detail:shrink-0',
+              open &&
+                '@3xl/list-detail:bg-876-canvas @3xl/list-detail:sticky @3xl/list-detail:top-0 @3xl/list-detail:z-10 @3xl/list-detail:pb-2'
+            )}
+          >
+            {toolbar}
+            {subnav}
+          </div>
 
           {/*
            * Too narrow for the two columns to sit side by side: the record
@@ -170,29 +197,32 @@ export function ListDetailShell({
            * record that was just opened. The toolbar above stays — it names
            * the section and carries its actions at every width.
            */}
-          <div
-            className={cn(
-              '@3xl/list-detail:min-h-0 @3xl/list-detail:flex-1',
-              open && 'hidden @3xl/list-detail:block'
-            )}
-          >
+          {/*
+           * The rows take their natural height and overflow the pane, which is
+           * what gives the pane something to scroll. Sizing them to the
+           * leftover space instead (`flex-1` with `min-h-0`) caps them at
+           * exactly the visible height, and a list that never exceeds its pane
+           * cannot scroll — the rows past the fold are simply clipped by the
+           * card around them.
+           */}
+          <div className={cn(open && 'hidden @3xl/list-detail:block')}>
             {list}
           </div>
         </div>
 
         {/*
-         * Column 2 in the same single row: the card fills the full height of
-         * the content area while remaining aligned with the list-side stack.
-         * `overflow-hidden` keeps it clipped to the zero-width track while
-         * closed, so there is nothing to see until the track opens.
+         * The record pane scrolls itself, so it is free to be a card, several
+         * cards, or no card at all — nothing inside it needs a scrollbox of
+         * its own, and nothing it contains can push the page taller.
          */}
         <div
+          data-slot="list-detail-detail-column"
           className={cn(
             '@3xl/list-detail:col-start-2 @3xl/list-detail:row-start-1',
-            '@3xl/list-detail:min-h-0 @3xl/list-detail:overflow-hidden',
+            '@3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0',
             open
-              ? 'mt-4 @3xl/list-detail:mt-0'
-              : 'hidden @3xl/list-detail:block'
+              ? '876-scroll-none mt-4 @3xl/list-detail:mt-0 @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto'
+              : 'hidden @3xl/list-detail:block @3xl/list-detail:overflow-hidden'
           )}
         >
           {detail}

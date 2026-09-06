@@ -86,7 +86,7 @@ export function ProfileCardFrame({
   return (
     <section
       aria-label={`Provisioning profile: ${profile.name}`}
-      className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 flex h-full min-h-0 min-w-0 items-start gap-4 overflow-hidden motion-safe:duration-300"
+      className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 flex min-h-0 min-w-0 items-start gap-4 motion-safe:duration-300"
     >
       <aside
         aria-label="Profile navigation"
@@ -190,8 +190,8 @@ export function ProfileCardFrame({
         </nav>
       </aside>
 
-      <div className="876-card flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="border-876-surface-border flex shrink-0 items-center justify-between gap-4 border-b px-6 py-4">
+      <div className="876-card flex min-w-0 flex-1 flex-col">
+        <header className="border-876-surface-border flex shrink-0 items-center justify-between gap-4 border-b px-6 py-4 sticky top-0 z-10 bg-[var(--876-surface)] rounded-t-[calc(var(--radius-xl)-1px)]">
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
@@ -244,7 +244,7 @@ export function ProfileCardFrame({
           </div>
         </header>
 
-        <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
+        <div className="min-w-0 flex-1">
           {activeSection === 'overview' || activeSection === 'routing' ? (
             <div className="p-6">{activeContent}</div>
           ) : (

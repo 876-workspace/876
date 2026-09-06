@@ -69,11 +69,8 @@ export function TeamList({ members }: Props) {
     )
 
   return (
-    <div className="876-card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="876-header-row shrink-0 border-b px-4 py-3 text-[0.8125rem] font-semibold">
-        Users
-      </header>
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto">
+    <div className="876-card flex min-w-0 flex-col overflow-hidden">
+      <div className="min-w-0 flex-1">
         <Table className="table-fixed">
           <TableBody>
             {rows.length === 0 ? (

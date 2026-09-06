@@ -80,7 +80,7 @@ function ListDetailSection({
   if (takeover) return children
 
   return (
-    <Page className={cn('h-full min-h-0', className)}>
+    <Page className={cn(open ? 'h-full min-h-0' : 'min-h-full', className)}>
       <ListDetailShell
         open={open}
         toolbar={toolbar}

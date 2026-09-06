@@ -47,7 +47,7 @@ function DetailCard({ className, ...props }: React.ComponentProps<'section'>) {
     <section
       data-slot="detail-card"
       className={cn(
-        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        '876-card flex min-w-0 flex-col',
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out',
         className
       )}
@@ -289,7 +289,7 @@ function DetailCardBody({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="detail-card-body"
-      className={cn('876-scroll min-h-0 flex-1 overflow-y-auto p-6', className)}
+      className={cn('min-w-0 flex-1 p-6', className)}
       {...props}
     />
   )

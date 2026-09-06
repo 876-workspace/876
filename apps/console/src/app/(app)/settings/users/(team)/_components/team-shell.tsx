@@ -38,7 +38,7 @@ export function TeamShell({ list, children }: Props) {
   const newHref = query ? `/settings/users/new?${query}` : '/settings/users/new'
 
   return (
-    <Page className="h-full min-h-0">
+    <Page className={open ? 'h-full min-h-0' : 'min-h-full'}>
       <ListDetailShell
         open={open}
         toolbar={

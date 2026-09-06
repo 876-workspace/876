@@ -88,6 +88,12 @@ describe('DetailCardHeader', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
+
+  it('does not pin itself — the record scrolls with the page, not inside a box', () => {
+    const { container } = render(<DetailCardHeader title="Alejandra Reyes" />)
+    const header = container.querySelector('[data-slot="detail-card-header"]')!
+    expect(header.className).not.toContain('sticky')
+  })
 })
 
 describe('DetailCardMetaItem', () => {

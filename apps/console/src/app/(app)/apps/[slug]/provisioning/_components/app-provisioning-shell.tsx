@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { cn } from '@876/core/utils'
 import { ListDetailShell, useListDetailRoute } from '@876/ui/list-detail-shell'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
@@ -51,7 +52,7 @@ export function AppProvisioningShell({ slug, appId, list, children }: Props) {
   const status = searchParams.get('status') ?? 'all'
 
   return (
-    <div className={PROVISIONING_CONTENT_HEIGHT}>
+    <div className={cn(open ? PROVISIONING_CONTENT_HEIGHT : 'min-h-full')}>
       <ListDetailShell
         open={open}
         toolbar={

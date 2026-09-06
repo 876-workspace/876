@@ -21,11 +21,11 @@ export function RoleCardFrame({
     <section
       aria-label={`Role details: ${role.displayName}`}
       className={cn(
-        '876-card flex h-full min-w-0 flex-col overflow-hidden',
+        '876-card flex min-w-0 flex-col',
         'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
       )}
     >
-      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5">
+      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5 sticky top-0 z-10 bg-[var(--876-surface)] rounded-t-[calc(var(--radius-xl)-1px)]">
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
@@ -52,7 +52,7 @@ export function RoleCardFrame({
         </Button>
       </header>
 
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-w-0 flex-1 p-6">
         {children}
       </div>
 

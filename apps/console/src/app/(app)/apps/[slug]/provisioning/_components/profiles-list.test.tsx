@@ -128,7 +128,6 @@ describe('ProfilesList', () => {
     detailSegments = ['default']
     render(<ProfilesList profiles={mockProfiles} slug="876-billing" />)
 
-    expect(screen.getByText('Profiles')).toBeInTheDocument()
     expect(screen.getByText('Default Profile')).toHaveClass('text-sky-600')
     expect(screen.getByText('Jamaica Enterprise')).toHaveClass('text-sky-600')
   })

@@ -11,9 +11,9 @@ export function NewSetupCard() {
   return (
     <section
       aria-label="New provisioning setup"
-      className="876-card flex h-full min-w-0 flex-col overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out"
+      className="876-card flex min-w-0 flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out"
     >
-      <header className="border-876-surface-border flex shrink-0 items-center justify-between gap-4 border-b px-6 py-4">
+      <header className="border-876-surface-border flex shrink-0 items-center justify-between gap-4 border-b px-6 py-4 sticky top-0 z-10 bg-[var(--876-surface)] rounded-t-[calc(var(--radius-xl)-1px)]">
         <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
           New setup
         </h2>
@@ -29,7 +29,7 @@ export function NewSetupCard() {
         </Button>
       </header>
 
-      <div className="876-scroll min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-w-0 flex-1 p-6">
         <CreateSetupForm />
       </div>
     </section>
