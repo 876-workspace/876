@@ -52,6 +52,7 @@ export async function getInvoice() {
     items: bindOrganization(finance.items, organizationId),
     paymentModes: bindOrganization(finance.paymentModes, organizationId),
     payments: bindOrganization(finance.payments, organizationId),
+    quotes: bindOrganization(finance.quotes, organizationId),
   }
 }
 

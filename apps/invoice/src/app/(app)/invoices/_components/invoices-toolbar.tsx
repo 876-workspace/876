@@ -32,7 +32,7 @@ export function InvoicesToolbar({
           options={INVOICE_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
+      primaryLabel={showPrimary ? 'Add' : undefined}
       primaryHref={showPrimary ? '/invoices/new' : undefined}
       primaryVariant="info"
       refresh

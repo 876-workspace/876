@@ -5,6 +5,7 @@ export const PROXIED_RESOURCES = Object.freeze([
   'items',
   'payment-modes',
   'payments',
+  'quotes',
 ] as const)
 
 export type ProxiedResource = (typeof PROXIED_RESOURCES)[number]

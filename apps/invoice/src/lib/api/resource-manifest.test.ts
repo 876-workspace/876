@@ -40,6 +40,14 @@ describe('Invoice proxied resource manifest', () => {
     expect(PROXIED_RESOURCES.every(isProxiedResource)).toBe(true)
   })
 
+  it('accepts quotes as an explicitly declared resource', () => {
+    expect(isProxiedResource('quotes')).toBe(true)
+  })
+
+  it('rejects an unlisted resource', () => {
+    expect(isProxiedResource('refunds')).toBe(false)
+  })
+
   it.each(['admin', 'internal', '..', ''])('rejects non-member %j', (value) => {
     expect(isProxiedResource(value)).toBe(false)
   })
