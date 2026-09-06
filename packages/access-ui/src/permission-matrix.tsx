@@ -1,5 +1,3 @@
-'use client'
-
 import type { ReactElement } from 'react'
 import type { AppPermissionCatalog } from '@876/core/access'
 import { cn } from '@876/core/utils'
