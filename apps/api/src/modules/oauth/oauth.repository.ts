@@ -27,6 +27,14 @@ const USER_SELECT = {
   avatar: true,
 } as const
 
+const SESSION_SELECT = {
+  id: true,
+  appId: true,
+  expiresAt: true,
+  revokedAt: true,
+  user: { select: USER_SELECT },
+} as const
+
 export type AppRow = Prisma.AppGetPayload<{ select: typeof APP_SELECT }>
 export type UserRow = Prisma.UserGetPayload<{ select: typeof USER_SELECT }>
 
@@ -201,13 +209,23 @@ export function findSessionByTokenHash(tokenHash: string): Promise<{
 } | null> {
   return prisma.session.findUnique({
     where: { tokenHash },
-    select: {
-      id: true,
-      appId: true,
-      expiresAt: true,
-      revokedAt: true,
-      user: { select: USER_SELECT },
-    },
+    select: SESSION_SELECT,
+  })
+}
+
+export function findSessionById(
+  sessionId: string,
+  userId: string
+): Promise<{
+  id: string
+  appId: string | null
+  expiresAt: bigint
+  revokedAt: bigint | null
+  user: UserRow
+} | null> {
+  return prisma.session.findFirst({
+    where: { id: sessionId, userId },
+    select: SESSION_SELECT,
   })
 }
 
@@ -221,8 +239,11 @@ export async function deleteSessionsByTokenHash(
 export async function deleteSession(
   sessionId: string,
   userId: string
-): Promise<void> {
-  await prisma.session.deleteMany({ where: { id: sessionId, userId } })
+): Promise<number> {
+  const { count } = await prisma.session.deleteMany({
+    where: { id: sessionId, userId },
+  })
+  return count
 }
 
 /* ---------------------------- refresh tokens ----------------------------- */
