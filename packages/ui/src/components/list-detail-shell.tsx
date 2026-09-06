@@ -89,6 +89,22 @@ export type ListDetailShellProps = {
   detail: React.ReactNode
   /** Width of the list column while open. Defaults to `wide`. */
   listWidth?: ListDetailListWidth
+  /**
+   * The host has given up its page padding for this shell, so the shell owns
+   * its own insets.
+   *
+   * Set it and, once there is room for two columns, the panes go edge to edge:
+   * the columns carry the white surface, the list column's right hairline is
+   * the only separator, and the pane objects inside drop their own card chrome
+   * (see the split-view block in `876.css`). A card inside a scrolling pane
+   * always ends in a clipped edge that reads as "the content stops here"; with
+   * no card there is no such edge, and each pane scrolls to the real bottom of
+   * the frame.
+   *
+   * Leave it unset when the host keeps its padding — the shell then renders
+   * the older gutter-and-cards layout, which is still correct there.
+   */
+  bleed?: boolean
   className?: string
 }
 
@@ -120,8 +136,13 @@ export function ListDetailShell({
   list,
   detail,
   listWidth = 'wide',
+  bleed = false,
   className,
 }: ListDetailShellProps) {
+  // Bleeding only means anything with two columns beside each other; stacked,
+  // the panes are cards on the canvas exactly as before.
+  const bleeding = open && bleed
+
   return (
     // The container query is measured on this wrapper, and the grid that reads
     // it is the child. An element cannot query its own container, so the two
@@ -129,6 +150,7 @@ export function ListDetailShell({
     <div
       data-slot="list-detail-shell"
       data-state={open ? 'open' : 'closed'}
+      data-bleed={bleeding ? 'true' : undefined}
       className={cn(
         '@container/list-detail min-h-0',
         // Open, the split view is a viewport-fitted two-pane surface: the page
@@ -150,10 +172,20 @@ export function ListDetailShell({
           // between them.
           '@3xl/list-detail:transition-[grid-template-columns,column-gap]',
           '@3xl/list-detail:duration-300 @3xl/list-detail:ease-out',
+          // A bleeding host has zeroed the page padding, which is right for
+          // the split but wrong for the stack below it — the shell puts the
+          // page's own rhythm back until the columns separate.
+          bleeding &&
+            'px-[var(--876-shell-gutter)] pt-5 pb-8 @3xl/list-detail:p-0',
           open
             ? cn(
                 LIST_WIDTHS[listWidth],
-                '@3xl/list-detail:gap-x-[var(--876-shell-gutter)]'
+                // Split, the two panes touch and the list column's right
+                // hairline separates them. A gutter here would put canvas
+                // between two white panes and give each one an edge.
+                bleeding
+                  ? '@3xl/list-detail:gap-x-0'
+                  : '@3xl/list-detail:gap-x-[var(--876-shell-gutter)]'
               )
             : '@3xl/list-detail:grid-cols-[minmax(0,1fr)_0fr] @3xl/list-detail:gap-x-0'
         )}
@@ -169,7 +201,9 @@ export function ListDetailShell({
           className={cn(
             '@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1 @3xl/list-detail:flex @3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0 @3xl/list-detail:flex-col',
             open &&
-              '876-scroll-none @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto'
+              '876-scroll-none @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto',
+            bleeding &&
+              '@3xl/list-detail:bg-876-surface @3xl/list-detail:border-876-surface-border @3xl/list-detail:border-r'
           )}
         >
           {/*
@@ -183,7 +217,15 @@ export function ListDetailShell({
             className={cn(
               '@3xl/list-detail:shrink-0',
               open &&
-                '@3xl/list-detail:bg-876-canvas @3xl/list-detail:sticky @3xl/list-detail:top-0 @3xl/list-detail:z-10 @3xl/list-detail:pb-2'
+                '@3xl/list-detail:sticky @3xl/list-detail:top-0 @3xl/list-detail:z-10 @3xl/list-detail:pb-2',
+              open &&
+                (bleeding
+                  ? // The chrome sits *on* the pane now, so it is painted the
+                    // pane's white and inset to the same 1rem as the rows
+                    // below it — the toolbar already carries its own bottom
+                    // margin, so the block adds none.
+                    '@3xl/list-detail:bg-876-surface @3xl/list-detail:px-4 @3xl/list-detail:pt-4 @3xl/list-detail:pb-0'
+                  : '@3xl/list-detail:bg-876-canvas')
             )}
           >
             {toolbar}
@@ -222,7 +264,8 @@ export function ListDetailShell({
             '@3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0',
             open
               ? '876-scroll-none mt-4 @3xl/list-detail:mt-0 @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto'
-              : 'hidden @3xl/list-detail:block @3xl/list-detail:overflow-hidden'
+              : 'hidden @3xl/list-detail:block @3xl/list-detail:overflow-hidden',
+            bleeding && '@3xl/list-detail:bg-876-surface'
           )}
         >
           {detail}

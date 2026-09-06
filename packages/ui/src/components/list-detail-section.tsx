@@ -79,8 +79,12 @@ function ListDetailSection({
   // section's page measure either.
   if (takeover) return children
 
+  // Open, the page gives up its padding and the shell takes it over: stacked
+  // it puts the same rhythm back, and split it runs the panes edge to edge so
+  // neither ends in a card border a reader could mistake for the end of the
+  // content. Closed, this is an ordinary page with a table on it.
   return (
-    <Page className={cn(open ? 'h-full min-h-0' : 'min-h-full', className)}>
+    <Page className={cn(open ? 'h-full min-h-0 p-0' : 'min-h-full', className)}>
       <ListDetailShell
         open={open}
         toolbar={toolbar}
@@ -88,6 +92,7 @@ function ListDetailSection({
         list={list}
         detail={children}
         listWidth={listWidth}
+        bleed
       />
     </Page>
   )
