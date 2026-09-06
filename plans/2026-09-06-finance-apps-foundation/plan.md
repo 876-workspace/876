@@ -165,10 +165,10 @@ Verification runs in the **foreground**, always
 - [x] `.claude/rules/finance-app-parity.md` written and mirrored
 - [x] `.claude/rules/gpt-web-operating-rules.md` written and mirrored
 - [x] `plan.md` written
-- [ ] Phase 1 — panel layer + customer tab parity
-- [ ] Phase 2 — Billing membership parity
-- [ ] Phase 3 — module catalogs
-- [ ] Phase 4 — docs/rules mirror check
+- [x] Phase 1 — panel layer + customer tab parity (Codex, verified)
+- [x] Phase 2 — Billing membership parity (Codex, verified; two defects fixed on review)
+- [x] Phase 3 — module catalogs (GPT web, verified)
+- [x] Phase 4 — rules mirror verified: no real content drift across 48 pairs
 - [x] Phase 5a — shared totals extracted to `@876/core/money`, server rewired
 - [ ] Phase 5b — `DocumentLineItemsEditor` in `@876/billing-ui`
 - [ ] Phase 5c — route `*/create.ts` document-level math through the shared function
