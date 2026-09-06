@@ -65,7 +65,7 @@ describe('finance module catalogs', () => {
 
   it('keeps shared labels and descriptions identical in both apps', () => {
     const billingByKey = new Map(
-      BILLING_MODULE_CATALOG.map((module) => [module.key, module])
+      BILLING_MODULE_CATALOG.map((module) => [module.key, module] as const)
     )
 
     for (const invoiceModule of INVOICE_MODULE_CATALOG) {
