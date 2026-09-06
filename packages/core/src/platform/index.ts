@@ -38,6 +38,7 @@ import { createPlatformUsersResource } from './resources/users'
 import type { Platform876ClientOptions } from './types'
 
 export * from './types'
+export * from './experiments'
 
 /**
  * Creates the server-only platform bootstrap client.
