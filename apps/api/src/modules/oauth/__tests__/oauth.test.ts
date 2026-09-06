@@ -22,6 +22,7 @@ const {
   },
   session: {
     create: vi.fn(),
+    findFirst: vi.fn(),
     findUnique: vi.fn(),
     deleteMany: vi.fn(),
   },
@@ -850,6 +851,26 @@ describe('GET /oauth/userinfo', () => {
     })
   })
 
+  it('uses the live session id after another app rotates the token hash', async () => {
+    session.findFirst.mockResolvedValue({
+      id: 'ses_1',
+      appId: 'app_4qR8',
+      expiresAt: BigInt(NOW + 600),
+      revokedAt: null,
+      user: userRow(),
+    })
+
+    const response = await request(createApp())
+      .get('/oauth/userinfo')
+      .set('Authorization', `Bearer ${await accessToken({ sid: 'ses_1' })}`)
+
+    expect(response.status).toBe(200)
+    expect(session.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'ses_1', userId: USER_ID } })
+    )
+    expect(session.findUnique).not.toHaveBeenCalled()
+  })
+
   it('withholds email when the scope was not granted', async () => {
     session.findUnique.mockResolvedValue({
       id: 'ses_1',
@@ -913,6 +934,23 @@ describe('GET /oauth/userinfo', () => {
     expect(response.body.error.code).toBe('invalid_token')
   })
 
+  it('rejects a token whose session has been revoked', async () => {
+    session.findFirst.mockResolvedValue({
+      id: 'ses_1',
+      appId: 'app_4qR8',
+      expiresAt: BigInt(NOW + 600),
+      revokedAt: BigInt(NOW - 1),
+      user: userRow(),
+    })
+
+    const response = await request(createApp())
+      .get('/oauth/userinfo')
+      .set('Authorization', `Bearer ${await accessToken({ sid: 'ses_1' })}`)
+
+    expect(response.status).toBe(401)
+    expect(response.body.error.code).toBe('invalid_token')
+  })
+
   it('rejects a garbage token', async () => {
     const response = await request(createApp())
       .get('/oauth/userinfo')
@@ -942,6 +980,29 @@ describe('POST /oauth/revoke and /oauth/introspect', () => {
     expect(response.body.data).toEqual({ revoked: true })
     expect(session.deleteMany).toHaveBeenCalledWith({
       where: { tokenHash: sha256('some-token') },
+    })
+  })
+
+  it('revokes a rotated access token by its session id', async () => {
+    session.deleteMany.mockResolvedValue({ count: 1 })
+    const token = await signProviderJwt({
+      sub: USER_ID,
+      sid: 'ses_rotated',
+      exp: NOW + 600,
+      iat: NOW,
+      scope: 'openid',
+      token_use: 'access',
+    })
+
+    const response = await request(createApp())
+      .post('/oauth/revoke')
+      .set('Authorization', `Bearer ${API_KEY}`)
+      .type('form')
+      .send({ token })
+
+    expect(response.status).toBe(200)
+    expect(session.deleteMany).toHaveBeenCalledWith({
+      where: { id: 'ses_rotated', userId: USER_ID },
     })
   })
 
@@ -1002,6 +1063,43 @@ describe('POST /oauth/revoke and /oauth/introspect', () => {
       sub: USER_ID,
       token_type: 'Bearer',
     })
+  })
+
+  it('reports a rotated first-party token active through its live session id', async () => {
+    const token = await signProviderJwt({
+      sub: USER_ID,
+      sid: 'ses_rotated',
+      exp: NOW + 600,
+      iat: NOW,
+      scope: 'openid',
+      token_use: 'access',
+    })
+    session.findFirst.mockResolvedValue({
+      id: 'ses_rotated',
+      appId: 'app_4qR8',
+      expiresAt: BigInt(NOW + 600),
+      revokedAt: null,
+      user: userRow(),
+    })
+
+    const response = await request(createApp())
+      .post('/oauth/introspect')
+      .set('Authorization', `Bearer ${API_KEY}`)
+      .type('form')
+      .send({ token })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toMatchObject({
+      active: true,
+      app_id: 'app_4qR8',
+      sub: USER_ID,
+    })
+    expect(session.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'ses_rotated', userId: USER_ID },
+      })
+    )
+    expect(session.findUnique).not.toHaveBeenCalled()
   })
 
   it('reports inactive once the session has been revoked', async () => {

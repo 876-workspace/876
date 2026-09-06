@@ -369,12 +369,15 @@ export async function userinfo(req: Request, res: Response): Promise<void> {
     return
   }
 
-  // The signature alone is not enough: a session revoked or ended since the
-  // token was minted must stop working before its expiry.
-  const session = await repository.findSessionByTokenHash(
-    service.sha256Hash(accessToken)
-  )
+  const session = await resolveAccessTokenSession(accessToken, claims)
   if (!session) {
+    send(
+      res,
+      oauthError('provider/token-invalid', 'The access token is invalid.', 401)
+    )
+    return
+  }
+  if (session.revokedAt != null) {
     send(
       res,
       oauthError('provider/token-invalid', 'The access token is invalid.', 401)
@@ -459,9 +462,14 @@ export async function revoke(req: Request, res: Response): Promise<void> {
   const apiKey = await requireApiKey(req)
   const body = validBody<TokenActionBody>(req)
 
-  const deleted = await repository.deleteSessionsByTokenHash(
-    service.sha256Hash(body.token)
-  )
+  const claims = await verifyProviderJwt(body.token)
+  const identity = accessTokenSessionIdentity(claims)
+  const deleted =
+    identity !== null
+      ? await repository.deleteSession(identity.sessionId, identity.userId)
+      : await repository.deleteSessionsByTokenHash(
+          service.sha256Hash(body.token)
+        )
 
   log.info(
     { api_key_id: apiKey.id, sessions_deleted: deleted },
@@ -483,12 +491,7 @@ export async function introspect(req: Request, res: Response): Promise<void> {
     return
   }
 
-  // The session row is the revocation record — a sign-in token outlives any
-  // one request, so a revoked or expired session has to stop introspecting as
-  // active even while its token is still inside its own `exp`.
-  const session = await repository.findSessionByTokenHash(
-    service.sha256Hash(body.token)
-  )
+  const session = await resolveAccessTokenSession(body.token, claims)
   if (
     !session ||
     session.revokedAt != null ||
@@ -508,6 +511,34 @@ export async function introspect(req: Request, res: Response): Promise<void> {
     exp: claims.exp ?? null,
     iat: claims.iat ?? null,
   })
+}
+
+async function resolveAccessTokenSession(
+  token: string,
+  claims: NonNullable<Awaited<ReturnType<typeof verifyProviderJwt>>>
+) {
+  // A session can be re-sealed with a new token when the active account
+  // changes. Other first-party app cookies still carry the prior token, but
+  // every copy names the same session in `sid`; the session row remains the
+  // revocation authority. OAuth tokens without `sid` retain the hash lookup.
+  const identity = accessTokenSessionIdentity(claims)
+  if (identity)
+    return repository.findSessionById(identity.sessionId, identity.userId)
+
+  return repository.findSessionByTokenHash(service.sha256Hash(token))
+}
+
+function accessTokenSessionIdentity(
+  claims: Awaited<ReturnType<typeof verifyProviderJwt>>
+): { sessionId: string; userId: string } | null {
+  if (
+    claims?.token_use !== 'access' ||
+    typeof claims.sid !== 'string' ||
+    typeof claims.sub !== 'string'
+  )
+    return null
+
+  return { sessionId: claims.sid, userId: claims.sub }
 }
 
 /* -------------------------------- consent --------------------------------- */
