@@ -27,7 +27,7 @@ export const billingNavigation = defineNavigation([
         title: 'Home',
         href: '/',
         icon: 'dashboard',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'dashboard:read' },
       },
       {
@@ -35,7 +35,7 @@ export const billingNavigation = defineNavigation([
         title: 'Customers',
         href: '/customers',
         icon: 'customers',
-        colorClassName: 'text-[var(--876-gold)]',
+        colorClassName: 'group-hover:text-[var(--876-gold)]',
         requires: { permission: 'customers:read' },
       },
       {
@@ -43,7 +43,7 @@ export const billingNavigation = defineNavigation([
         title: 'Items',
         href: '/items',
         icon: 'items',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'catalog:read' },
       },
       {
@@ -51,7 +51,7 @@ export const billingNavigation = defineNavigation([
         title: 'Sales',
         href: '/quotes',
         icon: 'sales',
-        colorClassName: 'text-[var(--876-purple)]',
+        colorClassName: 'group-hover:text-[var(--876-purple)]',
         requires: { permission: 'sales:read', feature: 'billing-sales' },
         children: [
           {
@@ -96,7 +96,7 @@ export const billingNavigation = defineNavigation([
         title: 'Subscriptions',
         href: '/subscriptions',
         icon: 'subscriptions',
-        colorClassName: 'text-[var(--876-orange)]',
+        colorClassName: 'group-hover:text-[var(--876-orange)]',
         requires: {
           permission: 'subscriptions:read',
           feature: 'billing-subscriptions',
@@ -150,7 +150,7 @@ export const billingNavigation = defineNavigation([
         title: 'Purchases',
         href: '/purchases/vendors',
         icon: 'purchases',
-        colorClassName: 'text-[var(--876-gold)]',
+        colorClassName: 'group-hover:text-[var(--876-gold)]',
         requires: {
           permission: 'billing:access',
           feature: 'billing-purchases',
@@ -182,7 +182,7 @@ export const billingNavigation = defineNavigation([
         title: 'Banking',
         href: '/banking',
         icon: 'banking',
-        colorClassName: 'text-[var(--876-green)]',
+        colorClassName: 'group-hover:text-[var(--876-green)]',
         requires: {
           permission: 'banking:read',
           feature: 'billing-banking',
@@ -193,7 +193,7 @@ export const billingNavigation = defineNavigation([
         title: 'Payroll',
         href: '/payroll',
         icon: 'payroll',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: {
           permission: 'billing:access',
           feature: 'billing-payroll',
@@ -209,7 +209,7 @@ export const billingNavigation = defineNavigation([
         title: 'Reports',
         href: '/reports',
         icon: 'reports',
-        colorClassName: 'text-[var(--876-green)]',
+        colorClassName: 'group-hover:text-[var(--876-green)]',
         requires: { permission: 'reports:read' },
       },
       {
@@ -217,7 +217,7 @@ export const billingNavigation = defineNavigation([
         title: 'Settings',
         href: '/settings',
         icon: 'settings',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'settings:read' },
       },
     ],
@@ -259,7 +259,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Home',
         href: '/',
         icon: 'dashboard',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'dashboard.view' },
       },
       {
@@ -267,7 +267,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Customers',
         href: '/customers',
         icon: 'customers',
-        colorClassName: 'text-[var(--876-gold)]',
+        colorClassName: 'group-hover:text-[var(--876-gold)]',
         requires: { permission: 'customers.view' },
       },
       {
@@ -275,7 +275,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Items',
         href: '/items',
         icon: 'items',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'items.view' },
       },
     ],
@@ -288,7 +288,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Quotes',
         href: '/quotes',
         icon: 'quotes',
-        colorClassName: 'text-[var(--876-purple)]',
+        colorClassName: 'group-hover:text-[var(--876-purple)]',
         requires: { permission: 'estimates.view' },
       },
       {
@@ -296,7 +296,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Invoices',
         href: '/invoices',
         icon: 'invoices',
-        colorClassName: 'text-[var(--876-purple)]',
+        colorClassName: 'group-hover:text-[var(--876-purple)]',
         requires: { permission: 'invoices.view' },
       },
       {
@@ -304,7 +304,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Sales Receipt',
         href: '/sales-receipts',
         icon: 'sales-receipts',
-        colorClassName: 'text-[var(--876-purple)]',
+        colorClassName: 'group-hover:text-[var(--876-purple)]',
         requires: { permission: 'invoices.view' },
       },
       {
@@ -312,7 +312,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Payments Received',
         href: '/payments',
         icon: 'payments',
-        colorClassName: 'text-[var(--876-green)]',
+        colorClassName: 'group-hover:text-[var(--876-green)]',
         requires: { permission: 'payments.view' },
       },
     ],
@@ -325,7 +325,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Expenses',
         href: '/expenses',
         icon: 'expenses',
-        colorClassName: 'text-[var(--876-gold)]',
+        colorClassName: 'group-hover:text-[var(--876-gold)]',
         requires: { permission: 'settings.view' },
       },
     ],
@@ -338,7 +338,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Time Tracking',
         href: '/time-tracking',
         icon: 'time-tracking',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'settings.view' },
       },
       {
@@ -346,7 +346,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Reports',
         href: '/reports',
         icon: 'reports',
-        colorClassName: 'text-[var(--876-green)]',
+        colorClassName: 'group-hover:text-[var(--876-green)]',
         requires: { permission: 'reports.view' },
       },
       {
@@ -354,7 +354,7 @@ export const invoiceNavigation = defineNavigation([
         title: 'Settings',
         href: '/settings',
         icon: 'settings',
-        colorClassName: 'text-[var(--876-blue)]',
+        colorClassName: 'group-hover:text-[var(--876-blue)]',
         requires: { permission: 'settings.view' },
       },
     ],
