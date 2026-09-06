@@ -139,12 +139,12 @@ mechanical file generation, and bulk repetitive edits.
 
 **Its capacity is large on Gemini models and small on Claude/GPT models — they
 are separate quota buckets.** "Effectively unlimited" was recorded here from the
-Gemini experience and is not true of the whole tool. Measured 2026-08-07:
+Gemini experience and is not true of the whole tool. Measured 2026-09-06:
 
-| Bucket                | Weekly | 5-hour |
-| --------------------- | ------ | ------ |
-| Gemini models         | 95%    | 98%    |
-| Claude and GPT models | 7%     | **0%** |
+| Bucket                | Weekly | 5-hour   |
+| --------------------- | ------ | -------- |
+| Gemini models         | 66%    | 100%     |
+| Claude and GPT models | 0%     | disabled |
 
 **Check before delegating, never guess** — quota state is a one-line query that
 costs nothing and needs no agent turn:
@@ -214,15 +214,16 @@ from its own report.
 
 ### Models
 
-Run `agy models` for the live list. As of July 2026 it offers:
+Run `agy models` for the live list. As of 2026-09-06 it offers:
 
-| Model                                                                  | Use for                                                                  |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `gemini-3.1-pro-high`                                                  | The default for delegated work — docs, scaffolding, bulk edits.          |
-| `gemini-3.6-flash-high` / `-medium` / `-low`                           | Trivial mechanical passes where speed matters more than care.            |
-| `gemini-3.5-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.6.                                            |
-| `gemini-3.1-pro-low`                                                   | Cheap pro-tier pass.                                                     |
-| `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` | Available, but route Claude-model work through the `Agent` tool instead. |
+| Model                                                                  | Use for                                                                                      |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `gemini-3.1-pro-high`                                                  | The default for delegated work — docs, scaffolding, bulk edits.                              |
+| `gemini-3.8-flash-high` / `-medium` / `-low`                           | Trivial mechanical passes where speed matters more than care.                                |
+| `gemini-3.7-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.8.                                                                |
+| `gemini-3.6-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.8.                                                                |
+| `gemini-3.1-pro-low`                                                   | Cheap pro-tier pass (note: `gemini-3.1-pro-medium` does not exist — only `-high` and `-low`). |
+| `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` | Available, but route Claude-model work through the `Agent` tool instead.                     |
 
 `agy` does not commit. The orchestrating agent stages and commits its output.
 
