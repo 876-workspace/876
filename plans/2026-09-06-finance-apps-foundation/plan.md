@@ -269,11 +269,58 @@ around a `kind` prop so `/quotes/new` becomes a page rather than a rewrite.
 - [x] Phase 5b — `DocumentLineItemsEditor` in `@876/billing-ui`
 - [x] Phase 5c — invoice create routed through the shared function (quotes/estimates needed no change)
 - [x] Phase 6a — shared editor extended: catalogue lines, price-list pricing, percentage discounts (17 tests)
-- [ ] Phase 6b — Billing's document form migrated onto the shared editor (Codex, in flight)
-- [ ] Phase 6c — Invoice `/invoices/new` on the shared editor (Codex, in flight)
-- [ ] Phase 6d — quotes integration route, scope, SDK verb and `/quotes/new` (not started)
-- [ ] Docs — `packages/billing-ui/README.md` brought up to its real 16-export surface (agy, in flight)
+- [x] Phase 6b — Billing's document form migrated onto the shared editor; the app-local editor and its float totals deleted (Codex)
+- [x] Phase 6c — Invoice `/invoices/new` on the shared editor (Codex)
+- [x] Phase 6d(i) — quote integration routes, scopes, SDK verb (Codex); contract regenerated
+- [ ] Phase 6d(ii) — Invoice manifest entry, proxy route and `/quotes/new` (Codex, in flight)
+- [x] Phase 6e — the percentage-discount rule consolidated into `@876/core/money` (orchestrator)
+- [x] Docs — `packages/billing-ui/README.md` at its real 16-export surface (agy)
+- [x] Docs — `cli.md` agy model/quota table refreshed and mirrored (agy, gemini-3.8-flash-high)
+- [ ] Operations — grant `billing.quotes.*` on Invoice's provisioning-profile revision
 - [ ] Final PR `feature/finance-apps` → `main`
+
+## Phase 6e — the third copy of the percentage rule
+
+Reviewing 6b's diff rather than its report turned up the defect the run's own
+rule exists to prevent. 6b correctly deleted Billing's float
+`calculateDocumentTotals`, but `prepareDocumentLine` still carried its own
+`(subtotal * basisPoints) / 10_000n`, and `resolveLineDiscount` in
+`@876/billing-ui` carried the same expression. One money rule, two packages.
+
+`resolvePercentageDiscount`, `PERCENT_SCALE`, `PERCENT_DIGITS` and
+`MAX_PERCENT_BASIS_POINTS` now live in `@876/core/money`, and both callers use
+them. Billing's subtotal also routes through the existing
+`calculateLineSubtotal` instead of repeating `unit * BigInt(quantity)`.
+
+**The interesting part is what the first attempt broke.** Making the shared
+function reject a percentage above 100% looked like tightening a contract. It
+was not: the editor coalesced that `null` to `0n`, so a 150% discount stopped
+being an error and quietly became _no discount at all_ — the swallowed-failure
+anti-pattern in `ai-code-quality.md`, and an existing billing-ui test caught it
+immediately. The range check belongs in validation, not in the arithmetic. The
+shared function now refuses only a **negative** percentage (a surcharge wearing
+a discount's name, which no downstream invariant would catch) and lets an
+over-100% value resolve past the subtotal so `calculateDocumentTotals` reports
+`billing/line-discount-exceeds-subtotal` **naming the offending line**.
+
+10 new tests in `@876/core`, including truncation direction (a customer is
+never credited a fraction of a cent) and exactness past `Number.MAX_SAFE_INTEGER`.
+
+## Two gates the delegates left red
+
+Both were real, and neither was in a delegate's report as a failure:
+
+- **`full-route-auth-matrix.test.ts`** pinned the public operation count at 213.
+  The three new quote routes make it 216. Corrected, with the protected count.
+- **`contract-baseline.test.ts`** failed because `route-manifest.json` is a
+  **frozen baseline kept in sync by hand** (its own README says so), and the
+  regenerated OpenAPI documented two paths the manifest did not list. Added the
+  two entries by surgical text insertion — a JSON round-trip reformatted 1,046
+  lines of a frozen file and had to be thrown away twice before that landed as
+  33 insertions and zero deletions.
+
+`pnpm --filter @876/billing-api api:contract:check` now reports
+`Frozen operations: 216; Express operations: 216` with zero mismatches.
 
 ## Handoff state
 
