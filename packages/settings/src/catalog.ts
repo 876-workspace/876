@@ -8,9 +8,9 @@ import type {
 
 const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
-export function defineModuleCatalog<const T extends ModuleDefinition[]>(
-  modules: T
-): Readonly<T> {
+export function defineModuleCatalog<
+  const T extends readonly ModuleDefinition[],
+>(modules: T): T {
   const moduleKeys = new Set<string>()
 
   for (const module of modules) {
@@ -25,7 +25,8 @@ export function defineModuleCatalog<const T extends ModuleDefinition[]>(
     Object.freeze(module)
   }
 
-  return Object.freeze(modules)
+  Object.freeze(modules)
+  return modules
 }
 
 export function findModule(
