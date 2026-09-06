@@ -1,3 +1,4 @@
+import { calculateDocumentTotals } from '@876/core/money'
 import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { prisma } from '@/db/client'
@@ -282,15 +283,25 @@ async function createManualInvoice(
   const discountAmount = params.discountAmount ?? 0n
   const shippingAmount = params.shippingAmount ?? 0n
   const adjustmentAmount = params.adjustmentAmount ?? 0n
-  const totalAmount =
-    preparedDocument.totalAmount -
-    discountAmount +
-    shippingAmount +
-    adjustmentAmount
-  if (discountAmount > preparedDocument.subtotalAmount)
-    return err('The invoice discount cannot exceed its subtotal.', 422)
-  if (totalAmount < 0n)
-    return err('Invoice adjustments cannot produce a negative total.', 422)
+
+  // The same calculator the document line-item editor uses, so a running total
+  // in the browser cannot disagree with the invoice that gets written. It
+  // returns a stable code; the invoice-facing wording stays here, because the
+  // message belongs to this caller's context rather than to the arithmetic.
+  const totals = calculateDocumentTotals({
+    lines: preparedDocument.lineAmounts,
+    discountAmount,
+    shippingAmount,
+    adjustmentAmount,
+  })
+  if (totals.error !== null) {
+    if (totals.error.code === 'billing/document-discount-exceeds-subtotal')
+      return err('The invoice discount cannot exceed its subtotal.', 422)
+    if (totals.error.code === 'billing/negative-document-total')
+      return err('Invoice adjustments cannot produce a negative total.', 422)
+    return err(totals.error.message, 422)
+  }
+  const totalAmount = totals.data.totalAmount
 
   const now = nowUnixSeconds()
   const number = await nextDocumentNumber(tenantId, 'INVOICE', now)
