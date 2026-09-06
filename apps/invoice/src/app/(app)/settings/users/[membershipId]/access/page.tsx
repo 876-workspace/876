@@ -3,7 +3,7 @@ import { buildAccessEntries } from '@876/access-ui/entries'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { resolveInvoiceAccessViewer } from '@/lib/auth/app-access'
 import { getWorkspace } from '@/lib/services/workspace'
-import type { AppMembership, AppRole } from '../../_lib/types'
+import type { AppMembership } from '@876/access-ui/member-types'
 import { loadMemberAppMemberships } from '../../_data'
 import { MemberAccessPanel } from '../_components/member-access-panel'
 
@@ -52,14 +52,14 @@ export default async function MemberAccessPage({
     context.orgId,
     membershipId
   )
-  const rolesPromise = membershipsPromise.then((result) =>
-    result.error
-      ? Promise.resolve({
-          rolesByApp: new Map<string, AppRole[]>(),
-          errors: [],
-        })
-      : loadRoles(context.orgId, result.memberships)
-  )
+  // Derived from loadRoles rather than restated, so the empty fallback cannot
+  // drift from the shape the workspace client actually returns.
+  const rolesPromise: Promise<Awaited<ReturnType<typeof loadRoles>>> =
+    membershipsPromise.then(async (result) =>
+      result.error
+        ? { rolesByApp: new Map(), errors: [] }
+        : loadRoles(context.orgId, result.memberships)
+    )
   const [accessOutcome, membershipsResult, rolesResult] = await Promise.all([
     resolveInvoiceAccessViewer(context.orgId),
     membershipsPromise,

@@ -4,7 +4,7 @@ import { cache } from 'react'
 
 import { getWorkspace } from '@/lib/services/workspace'
 
-import type { AppMembership, OrgMember } from './_lib/types'
+import type { AppMembership, OrgMember } from '@876/access-ui/member-types'
 
 type ErrorValue = { code: string; message: string }
 
