@@ -79,6 +79,15 @@ export const SCOPE_REGISTRY: Record<string, ScopeDefinition> = {
     description:
       'Create and manage Billing invoices for organizations you can access.',
   },
+  'billing.quotes.read': {
+    name: 'billing.quotes.read',
+    description: 'Read Billing quotes for organizations you can access.',
+  },
+  'billing.quotes.write': {
+    name: 'billing.quotes.write',
+    description:
+      'Create and manage Billing quotes for organizations you can access.',
+  },
   'billing.payments.read': {
     name: 'billing.payments.read',
     description: 'Read Billing payments for organizations you can access.',
