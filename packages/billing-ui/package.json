@@ -11,6 +11,10 @@
       "types": "./src/bank-accounts-grid.tsx",
       "default": "./src/bank-accounts-grid.tsx"
     },
+    "./customer-transactions-accordions": {
+      "types": "./src/customer-transactions-accordions.tsx",
+      "default": "./src/customer-transactions-accordions.tsx"
+    },
     "./customers-list": {
       "types": "./src/customers-list.tsx",
       "default": "./src/customers-list.tsx"
@@ -18,10 +22,6 @@
     "./customers-table": {
       "types": "./src/customers-table.tsx",
       "default": "./src/customers-table.tsx"
-    },
-    "./customer-transactions-accordions": {
-      "types": "./src/customer-transactions-accordions.tsx",
-      "default": "./src/customer-transactions-accordions.tsx"
     },
     "./document-status": {
       "types": "./src/document-status.ts",
@@ -38,6 +38,50 @@
     "./items-table": {
       "types": "./src/items-table.tsx",
       "default": "./src/items-table.tsx"
+    },
+    "./panels/access/member-identity": {
+      "types": "./src/panels/access/member-identity.ts",
+      "default": "./src/panels/access/member-identity.ts"
+    },
+    "./panels/access/member-invite-panel": {
+      "types": "./src/panels/access/member-invite-panel.tsx",
+      "default": "./src/panels/access/member-invite-panel.tsx"
+    },
+    "./panels/access/members-table-panel": {
+      "types": "./src/panels/access/members-table-panel.tsx",
+      "default": "./src/panels/access/members-table-panel.tsx"
+    },
+    "./panels/access/permission-matrix-panel": {
+      "types": "./src/panels/access/permission-matrix-panel.tsx",
+      "default": "./src/panels/access/permission-matrix-panel.tsx"
+    },
+    "./panels/access/permission-surface": {
+      "types": "./src/panels/access/permission-surface.ts",
+      "default": "./src/panels/access/permission-surface.ts"
+    },
+    "./panels/access/role-card-panel": {
+      "types": "./src/panels/access/role-card-panel.tsx",
+      "default": "./src/panels/access/role-card-panel.tsx"
+    },
+    "./panels/access/role-form-panel": {
+      "types": "./src/panels/access/role-form-panel.tsx",
+      "default": "./src/panels/access/role-form-panel.tsx"
+    },
+    "./panels/access/role-members-panel": {
+      "types": "./src/panels/access/role-members-panel.tsx",
+      "default": "./src/panels/access/role-members-panel.tsx"
+    },
+    "./panels/access/roles-list-panel": {
+      "types": "./src/panels/access/roles-list-panel.tsx",
+      "default": "./src/panels/access/roles-list-panel.tsx"
+    },
+    "./panels/access/roles-shell": {
+      "types": "./src/panels/access/roles-shell.tsx",
+      "default": "./src/panels/access/roles-shell.tsx"
+    },
+    "./panels/access/types": {
+      "types": "./src/panels/access/types.ts",
+      "default": "./src/panels/access/types.ts"
     },
     "./panels/customer-billing-facts-panel": {
       "types": "./src/panels/customer-billing-facts-panel.tsx",
