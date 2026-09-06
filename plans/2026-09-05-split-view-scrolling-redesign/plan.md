@@ -210,3 +210,40 @@ the visible thin bar.
   pre-existing `subscription-billing-summary` snapshot-client error, unrelated)
 - `pnpm --filter @876/billing-app test` — 745/745
 - `pnpm --filter @876/invoice-app test` — 215/215
+
+## 7. Second pass — the canonical two-pane surface
+
+Testing on a laptop viewport showed the first pass was still wrong in both
+directions: a page scrollbar appeared beside the panes on short screens (the
+`min-h-[32rem]` floor plus a guessed `calc(100svh - 11rem)` overshot the space
+actually available), and a long record scrolled the whole page rather than
+itself.
+
+The pattern this is meant to be — Zoho Books, and the master/detail canonical
+layout documented at
+<https://uxpatternsguide.com/patterns/master-detail/> (sourced from Microsoft's
+list/details pattern, Android's canonical layouts, Material, and Apple's HIG) —
+is a **viewport-fitted two-pane surface**: side-by-side panes on wide screens,
+each owning its own scroll and preserving its own position, and the page itself
+does not scroll at all.
+
+What the shell does now, open and side by side:
+
+- The shell is `h-full`, fitted to the frame `AppShellMain` already gives it —
+  a real definite height, not a `svh` guess, so nothing can push the page taller
+  and summon a page scrollbar.
+- Both panes are `h-full overflow-y-auto`, each scrolling independently.
+- Neither pane shows a scrollbar (`876-scroll-none`). Two visible bars mid-page
+  read as boxes rather than sections of a page.
+- The rows take their **natural height** inside the list pane. Sizing them with
+  `flex-1 min-h-0` capped them at exactly the pane height, so the list could
+  never overflow and never scrolled — the rows past the fold were simply clipped
+  by the card around them.
+- `DetailCardHeader` is not sticky. The record scrolls as one thing; pinning the
+  header is a later decision, not a side effect of the scroll model.
+
+Stacked (below the two-column container query), the panes sit one above the
+other and the **shell** takes the scroll instead of the panes. A clamped stack
+with nothing scrollable hides its own tail, which is the failure the first pass
+introduced by clamping on a viewport breakpoint while the columns switched on a
+container query.

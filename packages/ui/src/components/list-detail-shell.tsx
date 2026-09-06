@@ -129,20 +129,21 @@ export function ListDetailShell({
     <div
       data-slot="list-detail-shell"
       data-state={open ? 'open' : 'closed'}
-      className={cn('@container/list-detail min-h-0', className)}
+      className={cn(
+        '@container/list-detail min-h-0',
+        // Open, the split view is a viewport-fitted two-pane surface: the page
+        // does not scroll, each pane does. Below the two-column breakpoint the
+        // panes stack, so the shell takes the scroll instead — a clamped stack
+        // with nothing scrollable simply hides its own tail.
+        open &&
+          '876-scroll-none h-full min-h-0 overflow-y-auto @3xl/list-detail:overflow-visible',
+        className
+      )}
     >
       <div
         className={cn(
           '@3xl/list-detail:grid @3xl/list-detail:min-h-0',
-          // A definite height, and one that depends on no ancestor. The
-          // columns below scroll independently, and `1fr` can only be a
-          // fraction of a height that actually resolves — a percentage height
-          // inherited from a page that merely sets `min-height` does not.
-          // Gated on the same container query as the two-column layout, so a
-          // stacked narrow shell is never clamped. Hosts tune the inset with
-          // `--876-split-inset` when their chrome is taller or shorter.
-          open &&
-            '@3xl/list-detail:h-[calc(100svh-var(--876-split-inset,11rem))] @3xl/list-detail:min-h-[32rem]',
+          open && '@3xl/list-detail:h-full',
           '@3xl/list-detail:grid-rows-[minmax(0,1fr)]',
           // Animating the track itself is what produces "the table closes in
           // and the card comes out": one grid, two column widths, 300ms
@@ -158,16 +159,17 @@ export function ListDetailShell({
         )}
       >
         {/*
-         * The list side is an independent scrollable section when open. Its
-         * toolbar stays sticky at the top so filter controls, status headers,
-         * and action buttons remain visible while scrolling rows below.
+         * Each pane owns its own scroll and keeps its own position, which is
+         * the whole point of the pattern: moving through a record must not
+         * scroll the rows away, and moving through the rows must not disturb
+         * the record. The toolbar stays pinned at the top of the rows.
          */}
         <div
           data-slot="list-detail-list-column"
           className={cn(
             '@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1 @3xl/list-detail:flex @3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0 @3xl/list-detail:flex-col',
             open &&
-              '876-scroll @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto'
+              '876-scroll-none @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto'
           )}
         >
           {/*
@@ -195,24 +197,23 @@ export function ListDetailShell({
            * record that was just opened. The toolbar above stays — it names
            * the section and carries its actions at every width.
            */}
-          <div
-            className={cn(
-              '@3xl/list-detail:min-h-0 @3xl/list-detail:flex-1',
-              open && 'hidden @3xl/list-detail:block'
-            )}
-          >
+          {/*
+           * The rows take their natural height and overflow the pane, which is
+           * what gives the pane something to scroll. Sizing them to the
+           * leftover space instead (`flex-1` with `min-h-0`) caps them at
+           * exactly the visible height, and a list that never exceeds its pane
+           * cannot scroll — the rows past the fold are simply clipped by the
+           * card around them.
+           */}
+          <div className={cn(open && 'hidden @3xl/list-detail:block')}>
             {list}
           </div>
         </div>
 
         {/*
-         * Column 2 is an independent scrollable section for the detail view.
-         * It scrolls with no bar of its own (`876-scroll-none`) so it reads as
-         * part of the page beside the browser's own scrollbar rather than a
-         * boxed card with internal chrome.
-         * Content is free-flowing and can be a card, multiple cards, or uncarded
-         * document sections with sticky headers, scrolling independently without
-         * trapping scrollbars inside small card boxes.
+         * The record pane scrolls itself, so it is free to be a card, several
+         * cards, or no card at all — nothing inside it needs a scrollbox of
+         * its own, and nothing it contains can push the page taller.
          */}
         <div
           data-slot="list-detail-detail-column"

@@ -300,7 +300,7 @@ describe('ListDetailShell layout', () => {
     )
   })
 
-  it('makes both the list column and detail column independently scrollable sections on desktop when open', () => {
+  it('gives each pane its own scroll and leaves the page itself unscrolled', () => {
     render(
       <ListDetailShell
         open
@@ -310,6 +310,9 @@ describe('ListDetailShell layout', () => {
       />
     )
 
+    const shell = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-shell"]'
+    )!
     const listColumn = document.querySelector<HTMLElement>(
       '[data-slot="list-detail-list-column"]'
     )!
@@ -317,11 +320,34 @@ describe('ListDetailShell layout', () => {
       '[data-slot="list-detail-detail-column"]'
     )!
 
-    expect(listColumn.className).toContain('@3xl/list-detail:overflow-y-auto')
-    expect(listColumn.className).toContain('876-scroll')
-    expect(detailColumn.className).toContain('@3xl/list-detail:overflow-y-auto')
-    expect(detailColumn.className).toContain('876-scroll-none')
-    expect(detailColumn.className).not.toContain('overflow-hidden')
+    // Fitted to the shell frame, so nothing it contains can push the page
+    // taller and summon a page scrollbar beside the panes' own.
+    expect(shell.className).toContain('h-full')
+
+    for (const column of [listColumn, detailColumn]) {
+      expect(column.className).toContain('@3xl/list-detail:h-full')
+      expect(column.className).toContain('@3xl/list-detail:overflow-y-auto')
+      // No bar of its own: a visible scrollbar mid-page reads as a box.
+      expect(column.className).toContain('876-scroll-none')
+    }
+  })
+
+  it('lets the shell scroll while the panes are stacked, so a clamped stack cannot hide its tail', () => {
+    render(
+      <ListDetailShell
+        open
+        toolbar={<div>Toolbar</div>}
+        list={<div>List</div>}
+        detail={<div>Detail</div>}
+      />
+    )
+
+    const shell = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-shell"]'
+    )!
+
+    expect(shell.className).toContain('overflow-y-auto')
+    expect(shell.className).toContain('@3xl/list-detail:overflow-visible')
   })
 
   it('pins the toolbar sticky to the top of the scrolling list column with an opaque canvas background', () => {

@@ -99,7 +99,6 @@ function DetailCardHeader({
       data-slot="detail-card-header"
       className={cn(
         'border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5',
-        'sticky top-0 z-10 rounded-t-[calc(var(--radius-xl)-1px)] bg-[var(--876-surface)]',
         className
       )}
     >

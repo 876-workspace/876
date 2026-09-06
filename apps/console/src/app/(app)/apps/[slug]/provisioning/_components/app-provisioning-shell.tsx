@@ -52,13 +52,7 @@ export function AppProvisioningShell({ slug, appId, list, children }: Props) {
   const status = searchParams.get('status') ?? 'all'
 
   return (
-    <div
-      className={cn(
-        open
-          ? PROVISIONING_CONTENT_HEIGHT
-          : 'min-h-full'
-      )}
-    >
+    <div className={cn(open ? PROVISIONING_CONTENT_HEIGHT : 'min-h-full')}>
       <ListDetailShell
         open={open}
         toolbar={
