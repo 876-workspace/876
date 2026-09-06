@@ -40,4 +40,29 @@ describe('invoice settings navigation', () => {
 
     expect(new Set(labels).size).toBe(labels.length)
   })
+
+  it('adds canonical module settings destinations', () => {
+    const modules = SETTINGS_GROUPS.find((group) => group.label === 'Modules')
+
+    expect(modules?.items.map(({ label, href }) => ({ label, href }))).toEqual([
+      { label: 'Invoices settings', href: '/settings/modules/invoices' },
+      { label: 'Quotes settings', href: '/settings/modules/quotes' },
+      { label: 'Payments settings', href: '/settings/modules/payments' },
+      { label: 'Expenses settings', href: '/settings/modules/expenses' },
+      { label: 'Items settings', href: '/settings/modules/items' },
+      {
+        label: 'Sales receipts settings',
+        href: '/settings/modules/sales-receipts',
+      },
+      {
+        label: 'Time tracking settings',
+        href: '/settings/modules/time-tracking',
+      },
+      { label: 'Customers settings', href: '/settings/modules/customers' },
+    ])
+  })
+
+  it('keeps exported settings navigation structurally cloneable', () => {
+    expect(() => structuredClone(SETTINGS_GROUPS)).not.toThrow()
+  })
 })
