@@ -670,6 +670,18 @@ export const v1OperationMetadata = {
       summary: 'Void a shared finance invoice',
       tags: ['Organization integrations'],
     },
+  'GET /integrations/organizations/{organizationId}/quotes': {
+    summary: 'List organization Billing quotes',
+    tags: ['Invoices'],
+  },
+  'POST /integrations/organizations/{organizationId}/quotes': {
+    summary: 'Create an organization Billing quote',
+    tags: ['Invoices'],
+  },
+  'GET /integrations/organizations/{organizationId}/quotes/{quoteId}': {
+    summary: 'Retrieve an organization Billing quote',
+    tags: ['Invoices'],
+  },
   'GET /tax-authorities': {
     summary: 'List tax authorities',
     tags: ['Taxes'],
@@ -12904,6 +12916,506 @@ export const v1OperationContracts = {
         },
       },
     },
+  'GET /integrations/organizations/{organizationId}/quotes': {
+    tags: ['Invoices'],
+    summary: 'List organization Billing quotes',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: [
+            'DRAFT',
+            'SENT',
+            'ACCEPTED',
+            'DECLINED',
+            'EXPIRED',
+            'CANCELED',
+          ],
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'quote',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/quotes': {
+    tags: ['Invoices'],
+    summary: 'Create an organization Billing quote',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              customerId: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 191,
+              },
+              priceListId: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 191,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              currency: {
+                type: 'string',
+                pattern: '^[A-Za-z]{3}$',
+              },
+              issueAt: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+              expiresAt: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+              notes: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 2000,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              terms: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 2000,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              lines: {
+                minItems: 1,
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    itemId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 191,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    priceId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 191,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 2000,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    quantity: {
+                      default: 1,
+                      type: 'integer',
+                      minimum: 1,
+                      maximum: 1000000,
+                    },
+                    unitAmount: {
+                      anyOf: [
+                        {
+                          anyOf: [
+                            {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                            {
+                              type: 'string',
+                              pattern: '^(0|[1-9]\\d*)$',
+                            },
+                          ],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    taxAmount: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'string',
+                          pattern: '^(0|[1-9]\\d*)$',
+                        },
+                      ],
+                    },
+                    discountAmount: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'string',
+                          pattern: '^(0|[1-9]\\d*)$',
+                        },
+                      ],
+                    },
+                  },
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['customerId', 'lines'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Quote created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/quotes/{quoteId}': {
+    tags: ['Invoices'],
+    summary: 'Retrieve an organization Billing quote',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'GET /tax-authorities': {
     security: [
       {

@@ -702,6 +702,39 @@
         {
           "auth_tier": "integration",
           "declared_permissions": [],
+          "declared_scopes": ["billing.quotes.read"],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": ["billing.quotes.write"],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/quotes",
+      "source": "apps/billing-api/src/modules/documents/documents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": ["billing.quotes.read"],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/quotes/{quoteId}",
+      "source": "apps/billing-api/src/modules/documents/documents.routes.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
           "declared_scopes": ["billing.invoices.write"],
           "declared_statuses": [404, 422],
           "method": "POST"

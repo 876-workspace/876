@@ -21,9 +21,11 @@ describe('Billing API v1 contract baseline', () => {
 
     // 109 legacy Next.js routes / 187 operations, plus the payment-method and
     // payment-intent surface, plus the accounting-provider surface — both of
-    // which only ever existed in @876/billing-api.
-    expect(routeManifest.routes).toHaveLength(128)
-    expect(operationCount).toBe(213)
+    // which only ever existed in @876/billing-api — plus the two quote
+    // integration routes (3 operations) added so 876 Invoice can reach the
+    // quote capability the documents service already owns.
+    expect(routeManifest.routes).toHaveLength(130)
+    expect(operationCount).toBe(216)
   })
 
   it('records authorization per operation instead of per route file', () => {
