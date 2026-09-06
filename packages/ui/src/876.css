@@ -405,6 +405,38 @@
   border-top-right-radius: var(--radius-xl);
 }
 
+/* ── Split view: at two columns, the panes ARE the surface ───────────
+   A card that is taller than the pane scrolling it always ends in a hard
+   clipped edge, and a reader cannot tell that edge apart from "the content
+   stops here": the record's own name slides under the top border, and the last
+   section is sliced off where white meets canvas. Zoho Books sidesteps the
+   whole problem by letting the two panes touch and separating them with a rule
+   instead of a gutter, so neither pane has an edge that could be mistaken for
+   an ending.
+
+   So once the shell is wide enough for two columns, the columns themselves
+   carry the white surface and the list column's right hairline is the only
+   separator. The pane objects inside them drop their own chrome — nothing is
+   nested, so nothing has a false edge. Below that width the panes stack and
+   each is a card again, which is correct there.
+
+   This lives here rather than on the components because thirty-odd sections
+   compose the shell and none of them should have to opt in. It is gated on
+   `data-bleed` so a host that has NOT given up its page padding keeps the card
+   treatment; see `ListDetailShell`. */
+@container list-detail (width >= 48rem) {
+  [data-slot='list-detail-shell'][data-bleed='true'][data-state='open']
+    [data-slot='list-pane'],
+  [data-slot='list-detail-shell'][data-bleed='true'][data-state='open']
+    [data-slot='detail-card'] {
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+  }
+}
+
 /* ── 876-scroll — the platform scrollbar ─────────────────────────────────
    A thin, muted, self-effacing bar for any pane that owns its own scroll
    (split-view lists, detail panels, long forms). The default OS bar is a

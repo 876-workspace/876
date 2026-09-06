@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
 import { ListDetailShell, useListDetailRoute } from './list-detail-shell'
@@ -365,6 +365,97 @@ describe('ListDetailShell layout', () => {
     expect(toolbarContainer.className).toContain('@3xl/list-detail:top-0')
     expect(toolbarContainer.className).toContain('@3xl/list-detail:z-10')
     expect(toolbarContainer.className).toContain(
+      '@3xl/list-detail:bg-876-canvas'
+    )
+  })
+})
+
+describe('ListDetailShell bleed', () => {
+  function renderBleeding(open: boolean) {
+    render(
+      <ListDetailShell
+        open={open}
+        bleed
+        toolbar={<div data-testid="toolbar">Toolbar</div>}
+        list={<div>List</div>}
+        detail={<div>Detail</div>}
+      />
+    )
+    const shell = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-shell"]'
+    )!
+    return {
+      shell,
+      grid: shell.firstElementChild as HTMLElement,
+      listColumn: document.querySelector<HTMLElement>(
+        '[data-slot="list-detail-list-column"]'
+      )!,
+      detailColumn: document.querySelector<HTMLElement>(
+        '[data-slot="list-detail-detail-column"]'
+      )!,
+    }
+  }
+
+  it('marks itself bleeding only while a record is open', () => {
+    expect(renderBleeding(true).shell.dataset.bleed).toBe('true')
+    cleanup()
+    expect(renderBleeding(false).shell.dataset.bleed).toBeUndefined()
+  })
+
+  it('leaves the panes touching, separated by the list column hairline', () => {
+    const { grid, listColumn, detailColumn } = renderBleeding(true)
+
+    expect(grid.className).toContain('@3xl/list-detail:gap-x-0')
+    expect(grid.className).not.toContain(
+      '@3xl/list-detail:gap-x-[var(--876-shell-gutter)]'
+    )
+    expect(listColumn.className).toContain('@3xl/list-detail:border-r')
+    expect(listColumn.className).toContain('@3xl/list-detail:bg-876-surface')
+    expect(detailColumn.className).toContain('@3xl/list-detail:bg-876-surface')
+  })
+
+  it('carries the page rhythm the host gave up, and drops it once split', () => {
+    const { grid } = renderBleeding(true)
+
+    expect(grid.className).toContain('px-[var(--876-shell-gutter)]')
+    expect(grid.className).toContain('pt-5')
+    expect(grid.className).toContain('pb-8')
+    expect(grid.className).toContain('@3xl/list-detail:p-0')
+  })
+
+  it('paints the pinned toolbar the pane surface rather than the canvas', () => {
+    renderBleeding(true)
+
+    const toolbarContainer = screen.getByTestId('toolbar').parentElement!
+    expect(toolbarContainer.className).toContain(
+      '@3xl/list-detail:bg-876-surface'
+    )
+    expect(toolbarContainer.className).not.toContain(
+      '@3xl/list-detail:bg-876-canvas'
+    )
+  })
+
+  it('keeps the gutter and the canvas toolbar when the host keeps its padding', () => {
+    render(
+      <ListDetailShell
+        open
+        toolbar={<div data-testid="toolbar">Toolbar</div>}
+        list={<div>List</div>}
+        detail={<div>Detail</div>}
+      />
+    )
+
+    const shell = document.querySelector<HTMLElement>(
+      '[data-slot="list-detail-shell"]'
+    )!
+    const grid = shell.firstElementChild as HTMLElement
+
+    expect(shell.dataset.bleed).toBeUndefined()
+    expect(grid.className).toContain(
+      '@3xl/list-detail:gap-x-[var(--876-shell-gutter)]'
+    )
+    expect(grid.className).not.toContain('pt-5')
+    expect(screen.getByTestId('toolbar').parentElement!.className).toContain(
       '@3xl/list-detail:bg-876-canvas'
     )
   })
