@@ -17,12 +17,17 @@ import {
   InvoiceVoidSchema,
 } from './schemas/invoice'
 import { InvoicePreferenceUpdateSchema } from './schemas/invoice-preference'
-import { QuoteCreateSchema, QuoteUpdateSchema } from './schemas/quote'
+import {
+  IntegrationQuoteCreateSchema,
+  QuoteCreateSchema,
+  QuoteUpdateSchema,
+} from './schemas/quote'
 
 type Handler = (req: Request, res: Response) => unknown | Promise<unknown>
 const id = (name: string) => z.strictObject({ [name]: z.string().min(1) })
 const org = z.strictObject({ organizationId: z.string().min(1) })
 const orgInvoice = org.extend({ invoiceId: z.string().min(1) })
+const orgQuote = org.extend({ quoteId: z.string().min(1) })
 const resource = (name: string) =>
   z.object({ object: z.literal(name), id: z.string() }).passthrough()
 const list = (name: string) =>
@@ -524,6 +529,60 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.invoicesIntegrationVoid,
+  })
+  const quoteBase = '/integrations/organizations/:organizationId/quotes'
+  const quoteIntegrationRead = {
+    kind: 'integration' as const,
+    scope: 'billing.quotes.read',
+  }
+  const quoteIntegrationWrite = {
+    kind: 'integration' as const,
+    scope: 'billing.quotes.write',
+  }
+  api.get({
+    path: quoteBase,
+    summary: 'List organization Billing quotes',
+    security: quoteIntegrationRead,
+    request: {
+      params: org,
+      query: z.strictObject({ status: documentStatus.optional() }),
+    },
+    responses: {
+      200: {
+        description: 'Quote list',
+        schema: successEnvelopeSchema(list('quote')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.quotesIntegrationList,
+  })
+  api.post({
+    path: quoteBase,
+    summary: 'Create an organization Billing quote',
+    security: quoteIntegrationWrite,
+    request: { params: org, body: IntegrationQuoteCreateSchema },
+    responses: {
+      201: {
+        description: 'Quote created',
+        schema: successEnvelopeSchema(resource('quote')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.quotesIntegrationCreate,
+  })
+  api.get({
+    path: `${quoteBase}/:quoteId`,
+    summary: 'Retrieve an organization Billing quote',
+    security: quoteIntegrationRead,
+    request: { params: orgQuote },
+    responses: {
+      200: {
+        description: 'Quote returned',
+        schema: successEnvelopeSchema(resource('quote')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.quotesIntegrationGet,
   })
   return api.router
 }
