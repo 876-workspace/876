@@ -95,9 +95,41 @@ keys are durable kebab-case identifiers per `.claude/rules/module-settings.md`.
 
 ### Phase 5 — Document line items
 
-One `DocumentLineItemsEditor` plus one pure `calculateDocumentTotals`. Money
-as integer minor units or decimal strings — never a JS `number`. Slots for
-extra columns, extra row actions, and a footer region.
+**The plan for this phase changed once the code was read.** The brief said
+"write one shared totals function". In fact the arithmetic already existed,
+in `apps/billing-api/src/modules/documents/repositories/documents/lines.ts`
+plus the document-level block in each `*/create.ts` — and it is Prisma-coupled,
+so a browser editor could not reach it. Writing a second one would have created
+precisely the defect this run's rule forbids.
+
+Done instead:
+
+- **Extracted the arithmetic** to `@876/core/money`
+  (`calculateDocumentTotals`, `calculateLineSubtotal`, `toMinorUnits`).
+  `@876/core` is the one package `billing-api`, both apps, and `billing-ui`
+  all already depend on.
+- **The split is resolution vs arithmetic.** Which unit amount, which
+  price-list entry, which description — that needs the catalogue and stays on
+  the server. The sums need nothing and moved.
+- **Failures are values**, with the service's exact existing message strings,
+  because an over-large discount is a half-typed form rather than a bug.
+- **Rewired `buildDocumentLines`** onto it, and gave it a `lineAmounts` field
+  so document-level roll-up uses the same function rather than a second copy.
+- **Bumped `@876/core`'s typecheck target to ES2020.** It was ES2017, which
+  cannot express a bigint literal — and this platform stores money as bigint.
+
+Verified: 36 new tests pass, `@876/core` typechecks, `billing-api` typechecks,
+and its billing-engine parity (9) and documents (19) suites still pass.
+
+**Known follow-up:** the document-level formula
+(`linesTotal - discount + shipping + adjustment`) still appears inline in
+`invoices/create.ts`, `quotes/create.ts`, and `estimates/create.ts`. Those
+three should call `calculateDocumentTotals` with the new `lineAmounts` and the
+document-level params. Until they do, that formula has two homes.
+
+Still to build: `DocumentLineItemsEditor` in `@876/billing-ui`, consuming
+`@876/core/money`, with slots for extra columns, extra row actions, and a
+footer region.
 
 ## Verification commands
 
@@ -137,7 +169,9 @@ Verification runs in the **foreground**, always
 - [ ] Phase 2 — Billing membership parity
 - [ ] Phase 3 — module catalogs
 - [ ] Phase 4 — docs/rules mirror check
-- [ ] Phase 5 — `DocumentLineItemsEditor` + totals
+- [x] Phase 5a — shared totals extracted to `@876/core/money`, server rewired
+- [ ] Phase 5b — `DocumentLineItemsEditor` in `@876/billing-ui`
+- [ ] Phase 5c — route `*/create.ts` document-level math through the shared function
 - [ ] Phase 6 — document create/edit routes
 - [ ] Final PR `feature/finance-apps` → `main`
 
