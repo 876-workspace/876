@@ -19,6 +19,10 @@
       "types": "./src/customers-table.tsx",
       "default": "./src/customers-table.tsx"
     },
+    "./customer-transactions-accordions": {
+      "types": "./src/customer-transactions-accordions.tsx",
+      "default": "./src/customer-transactions-accordions.tsx"
+    },
     "./document-status": {
       "types": "./src/document-status.ts",
       "default": "./src/document-status.ts"
