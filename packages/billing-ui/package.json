@@ -7,9 +7,25 @@
   "private": true,
   "sideEffects": false,
   "exports": {
+    "./bank-accounts-grid": {
+      "types": "./src/bank-accounts-grid.tsx",
+      "default": "./src/bank-accounts-grid.tsx"
+    },
+    "./customers-list": {
+      "types": "./src/customers-list.tsx",
+      "default": "./src/customers-list.tsx"
+    },
+    "./customers-table": {
+      "types": "./src/customers-table.tsx",
+      "default": "./src/customers-table.tsx"
+    },
     "./document-status": {
       "types": "./src/document-status.ts",
       "default": "./src/document-status.ts"
+    },
+    "./document/document-line-items-editor": {
+      "types": "./src/document/document-line-items-editor.tsx",
+      "default": "./src/document/document-line-items-editor.tsx"
     },
     "./invoices-table": {
       "types": "./src/invoices-table.tsx",
@@ -19,21 +35,41 @@
       "types": "./src/items-table.tsx",
       "default": "./src/items-table.tsx"
     },
-    "./customers-table": {
-      "types": "./src/customers-table.tsx",
-      "default": "./src/customers-table.tsx"
+    "./panels/customer-billing-facts-panel": {
+      "types": "./src/panels/customer-billing-facts-panel.tsx",
+      "default": "./src/panels/customer-billing-facts-panel.tsx"
     },
-    "./customers-list": {
-      "types": "./src/customers-list.tsx",
-      "default": "./src/customers-list.tsx"
+    "./panels/customer-contact-panel": {
+      "types": "./src/panels/customer-contact-panel.tsx",
+      "default": "./src/panels/customer-contact-panel.tsx"
+    },
+    "./panels/customer-organization-panel": {
+      "types": "./src/panels/customer-organization-panel.tsx",
+      "default": "./src/panels/customer-organization-panel.tsx"
+    },
+    "./panels/customer-receivables-panel": {
+      "types": "./src/panels/customer-receivables-panel.tsx",
+      "default": "./src/panels/customer-receivables-panel.tsx"
+    },
+    "./panels/customer-statement-panel": {
+      "types": "./src/panels/customer-statement-panel.tsx",
+      "default": "./src/panels/customer-statement-panel.tsx"
+    },
+    "./panels/customer-timeline-panel": {
+      "types": "./src/panels/customer-timeline-panel.tsx",
+      "default": "./src/panels/customer-timeline-panel.tsx"
+    },
+    "./panels/customer-transactions-panel": {
+      "types": "./src/panels/customer-transactions-panel.tsx",
+      "default": "./src/panels/customer-transactions-panel.tsx"
+    },
+    "./panels/panel": {
+      "types": "./src/panels/panel.ts",
+      "default": "./src/panels/panel.ts"
     },
     "./payments-table": {
       "types": "./src/payments-table.tsx",
       "default": "./src/payments-table.tsx"
-    },
-    "./bank-accounts-grid": {
-      "types": "./src/bank-accounts-grid.tsx",
-      "default": "./src/bank-accounts-grid.tsx"
     }
   },
   "scripts": {
@@ -42,6 +78,7 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/core": "workspace:*",
     "@876/ui": "workspace:*",
     "@tanstack/react-table": "^9.1.2"
   },

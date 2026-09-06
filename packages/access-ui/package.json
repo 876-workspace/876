@@ -30,6 +30,14 @@
     "./entries": {
       "types": "./src/entries.ts",
       "default": "./src/entries.ts"
+    },
+    "./member-types": {
+      "types": "./src/member-types.ts",
+      "default": "./src/member-types.ts"
+    },
+    "./member-utils": {
+      "types": "./src/member-utils.ts",
+      "default": "./src/member-utils.ts"
     }
   },
   "scripts": {

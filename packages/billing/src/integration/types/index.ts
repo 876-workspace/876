@@ -69,6 +69,14 @@ export {
   BillingInvoiceSchema,
   BillingInvoiceListSchema,
 } from './invoice.schema'
+export type {
+  BillingQuote,
+  BillingQuoteCreateParams,
+  BillingQuoteLineCreateParams,
+  BillingQuoteList,
+  BillingQuoteListParams,
+} from './quote'
+export { BillingQuoteListSchema, BillingQuoteSchema } from './quote.schema'
 export type { BillingPaymentMode, BillingPaymentModeList } from './payment-mode'
 export {
   BillingPaymentModeSchema,

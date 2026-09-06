@@ -21,6 +21,7 @@
     "@876/billing": "workspace:*",
     "@876/billing-ui": "workspace:*",
     "@876/core": "workspace:*",
+    "@876/settings": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/workspace": "workspace:*",
     "@sentry/nextjs": "10.56.0",

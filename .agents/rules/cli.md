@@ -3,7 +3,7 @@
 Read this before spawning any sub-agent or driving any external CLI (Codex,
 `agy`, `opencode`, Command Code) for a delegated chunk of work. It defines
 **which model/tool handles which class of task**, and how to invoke each CLI
-non-interactively. See `.agents/rules/implementation-tracker.md` for tracking
+non-interactively. See `.claude/rules/implementation-tracker.md` for tracking
 multi-file delegated work, and the root `CLAUDE.md` "Sub-Agent Rules" section
 for the background-execution rule.
 
@@ -139,12 +139,12 @@ mechanical file generation, and bulk repetitive edits.
 
 **Its capacity is large on Gemini models and small on Claude/GPT models — they
 are separate quota buckets.** "Effectively unlimited" was recorded here from the
-Gemini experience and is not true of the whole tool. Measured 2026-08-07:
+Gemini experience and is not true of the whole tool. Measured 2026-09-06:
 
-| Bucket                | Weekly | 5-hour |
-| --------------------- | ------ | ------ |
-| Gemini models         | 95%    | 98%    |
-| Claude and GPT models | 7%     | **0%** |
+| Bucket                | Weekly | 5-hour   |
+| --------------------- | ------ | -------- |
+| Gemini models         | 66%    | 100%     |
+| Claude and GPT models | 0%     | disabled |
 
 **Check before delegating, never guess** — quota state is a one-line query that
 costs nothing and needs no agent turn:
@@ -214,15 +214,16 @@ from its own report.
 
 ### Models
 
-Run `agy models` for the live list. As of July 2026 it offers:
+Run `agy models` for the live list. As of 2026-09-06 it offers:
 
-| Model                                                                  | Use for                                                                  |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `gemini-3.1-pro-high`                                                  | The default for delegated work — docs, scaffolding, bulk edits.          |
-| `gemini-3.6-flash-high` / `-medium` / `-low`                           | Trivial mechanical passes where speed matters more than care.            |
-| `gemini-3.5-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.6.                                            |
-| `gemini-3.1-pro-low`                                                   | Cheap pro-tier pass.                                                     |
-| `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` | Available, but route Claude-model work through the `Agent` tool instead. |
+| Model                                                                  | Use for                                                                                      |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `gemini-3.1-pro-high`                                                  | The default for delegated work — docs, scaffolding, bulk edits.                              |
+| `gemini-3.8-flash-high` / `-medium` / `-low`                           | Trivial mechanical passes where speed matters more than care.                                |
+| `gemini-3.7-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.8.                                                                |
+| `gemini-3.6-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.8.                                                                |
+| `gemini-3.1-pro-low`                                                   | Cheap pro-tier pass (note: `gemini-3.1-pro-medium` does not exist — only `-high` and `-low`). |
+| `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` | Available, but route Claude-model work through the `Agent` tool instead.                     |
 
 `agy` does not commit. The orchestrating agent stages and commits its output.
 
@@ -509,7 +510,7 @@ Two costs, both severe:
    `grep` with loose anchors pulls thousands of lines of echoed rule text into
    the window. The user hit exactly this and had to stop the session.
 2. **It bloats the repository permanently.** `plans/` is committed on purpose
-   (`.agents/rules/implementation-tracker.md`), so a transcript committed once is
+   (`.claude/rules/implementation-tracker.md`), so a transcript committed once is
    in history forever.
 
 `plans/**/*-run.log` is gitignored. Do not add an exception, and do not rename
@@ -525,7 +526,7 @@ around it.
   and what could not be verified. Read that, not the transcript.
 - **Judge the work by the diff and your own verification**, never by the
   transcript. `git status`, `git diff`, and running the checks yourself are the
-  acceptance gate — `.agents/rules/cli.md` already says a delegation you never
+  acceptance gate — `.claude/rules/cli.md` already says a delegation you never
   inspect is not delegation, and the transcript is not the inspection.
 - If you must keep a transcript for one debugging session, write it to `/tmp`,
   never under `plans/` or anywhere else in the working tree.
@@ -537,7 +538,7 @@ prefer the report.
 ## Shared rules across all delegated CLIs/sub-agents
 
 - **Never let a delegated CLI or sub-agent commit.** The orchestrating
-  Claude agent stages and commits, per `.agents/rules/git.md` (no AI
+  Claude agent stages and commits, per `.claude/rules/git.md` (no AI
   attribution).
 - **Background execution is authorized** (user, 2026-07-26: _"run codex in the
   background always going further"_, refined to _"in the background only if they
@@ -625,7 +626,7 @@ plans/<date>-<feature-slug>/
   `plans/2026-08-30-bounded-service-clients/`.
 - **Standard `plan.md` in every run:** Maintain a single source of truth for the
   feature's scope, decisions, task checklist (`[ ]` / `[x]`), verification commands,
-  and multi-session handoff state. See `.agents/rules/implementation-tracker.md`.
+  and multi-session handoff state. See `.claude/rules/implementation-tracker.md`.
 - **Subdirectories per delegated tool:** Under `briefs/` and `reports/`, organize files by
   the tool/delegate (`briefs/codex/`, `briefs/agy/`, `briefs/muse/`, `briefs/gpt-web/`,
   `briefs/sub-agent/`, `briefs/opencode/`, `briefs/command-code/`). Name each file for the specific

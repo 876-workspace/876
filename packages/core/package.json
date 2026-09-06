@@ -43,6 +43,10 @@
       "types": "./src/lib/platform-apps.ts",
       "default": "./src/lib/platform-apps.ts"
     },
+    "./money": {
+      "types": "./src/lib/money/document-totals.ts",
+      "default": "./src/lib/money/document-totals.ts"
+    },
     "./utils": {
       "types": "./src/utils.ts",
       "default": "./src/utils.ts"

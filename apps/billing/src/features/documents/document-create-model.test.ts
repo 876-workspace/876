@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  calculateDocumentLineTotal,
-  calculateDocumentTotals,
   emptyDocumentLine,
   prepareDocumentLine,
 } from './document-create-model'
@@ -15,7 +13,7 @@ describe('document create model', () => {
       quantity: '2',
       unitAmount: '1250.00',
       discountType: 'PERCENTAGE' as const,
-      discountValue: '10',
+      discountAmount: '10',
       taxAmount: '337.50',
     }
 
@@ -33,7 +31,7 @@ describe('document create model', () => {
       ...emptyDocumentLine('line-1'),
       description: 'License',
       unitAmount: '5000',
-      discountValue: '500',
+      discountAmount: '500',
     }
 
     expect(prepareDocumentLine(line, 0)).toMatchObject({
@@ -48,29 +46,30 @@ describe('document create model', () => {
       ...emptyDocumentLine('line-1'),
       description: 'License',
       unitAmount: '100.00',
-      discountValue: '101.00',
+      discountAmount: '101.00',
     }
 
     expect(prepareDocumentLine(line, 2)).toBeNull()
   })
 
-  it('calculates the live line and document totals', () => {
+  it('uses the server-resolved subtotal for a price-list percentage discount', () => {
     const line = {
       ...emptyDocumentLine('line-1'),
       description: 'Support',
       quantity: '2',
-      unitAmount: '100',
+      priceId: 'price_support',
+      resolvedSubtotal: '175.00',
       discountType: 'PERCENTAGE' as const,
-      discountValue: '25',
-      taxAmount: '10',
+      discountAmount: '25',
+      taxAmount: '10.00',
     }
 
-    expect(calculateDocumentLineTotal(line)).toBe(160)
-    expect(calculateDocumentTotals([line])).toEqual({
-      subtotal: 200,
-      discount: 50,
-      tax: 10,
-      total: 160,
+    expect(prepareDocumentLine(line, 2, true)).toEqual({
+      priceId: 'price_support',
+      description: 'Support',
+      quantity: 2,
+      discountAmount: '4375',
+      taxAmount: '1000',
     })
   })
 })

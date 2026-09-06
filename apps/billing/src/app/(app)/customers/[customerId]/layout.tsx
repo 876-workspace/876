@@ -148,10 +148,11 @@ export default async function CustomerDetailLayout({
       tabs={[
         { label: 'Overview', href: base, exact: true },
         { label: 'Transactions', href: `${base}/transactions` },
-        { label: 'Mails', href: `${base}/mails` },
+        { label: 'Subscriptions', href: `${base}/subscriptions` },
         { label: 'Requests', href: `${base}/requests` },
+        { label: 'Mails', href: `${base}/mails` },
         { label: 'Statement', href: `${base}/statement` },
-        { label: 'History', href: `${base}/history` },
+        { label: 'Activity', href: `${base}/activity` },
       ]}
     >
       {children}

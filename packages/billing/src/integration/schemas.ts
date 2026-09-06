@@ -10,6 +10,8 @@ export {
   BillingCustomerSchema,
   BillingInvoiceListSchema,
   BillingInvoiceSchema,
+  BillingQuoteListSchema,
+  BillingQuoteSchema,
   BillingItemListSchema,
   BillingItemSchema,
   BillingOrganizationSchema,

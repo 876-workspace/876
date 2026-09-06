@@ -18,6 +18,11 @@ export const QuoteCreateSchema = z.strictObject({
   lines: z.array(DocumentLineCreateSchema).min(1).max(100),
 })
 
+// Quotes do not yet persist integration attribution, unlike invoices. Keep a
+// distinct exported contract so that integration-only fields are not accepted
+// accidentally when quote attribution is added later.
+export const IntegrationQuoteCreateSchema = QuoteCreateSchema
+
 export type QuoteCreateParams = z.infer<typeof QuoteCreateSchema>
 export type QuoteCreateInput = z.input<typeof QuoteCreateSchema>
 

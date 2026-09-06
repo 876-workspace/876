@@ -30,7 +30,7 @@ export type PreferenceDefinition =
   | (PreferenceBase & {
       type: 'enum'
       default: string
-      options: PreferenceOption[]
+      options: readonly PreferenceOption[]
     })
   | (PreferenceBase & {
       type: 'integer'

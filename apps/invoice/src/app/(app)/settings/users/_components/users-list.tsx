@@ -23,13 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from '@876/ui/table'
-
 import {
   memberInitials,
   memberName,
   memberRoleLabel,
-} from '../_lib/member-utils'
-import type { OrgMember } from '../_lib/types'
+} from '@876/access-ui/member-utils'
+import type { OrgMember } from '@876/access-ui/member-types'
+
 
 function memberHref(id: string) {
   return `/settings/users/${encodeURIComponent(id)}`

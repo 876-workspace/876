@@ -1,3 +1,8 @@
+import {
+  calculateDocumentTotals,
+  type DocumentLineAmounts,
+} from '@876/core/money'
+
 import { prisma } from '@/db/client'
 import type { DocumentLineCreateParams } from '../../schemas/document-line'
 
@@ -19,6 +24,12 @@ type BuildLinesResult =
   | {
       data: {
         lines: PreparedDocumentLine[]
+        /**
+         * The per-line amounts in the shape `calculateDocumentTotals` takes, so
+         * a caller applying document-level discount/shipping/adjustment rolls
+         * the document up with the same function rather than a second copy.
+         */
+        lineAmounts: DocumentLineAmounts[]
         subtotalAmount: bigint
         taxAmount: bigint
         totalAmount: bigint
@@ -80,9 +91,7 @@ export async function buildDocumentLines(
     priceList?.entries.map((entry) => [entry.priceId, entry]) ?? []
   )
   const lines: PreparedDocumentLine[] = []
-  let subtotalAmount = 0n
-  let taxAmount = 0n
-  let totalAmount = 0n
+  const lineAmounts: DocumentLineAmounts[] = []
 
   for (const line of params) {
     const selectedItem = line.itemId
@@ -153,14 +162,11 @@ export async function buildDocumentLines(
         error: 'The selected catalog price does not cover this quantity.',
       }
     }
-    if (discountAmount > lineSubtotal) {
-      return {
-        data: null,
-        error: 'A line discount cannot exceed the line subtotal.',
-      }
-    }
-
-    const lineTotalAmount = lineSubtotal - discountAmount + lineTaxAmount
+    lineAmounts.push({
+      subtotalAmount: lineSubtotal,
+      taxAmount: lineTaxAmount,
+      discountAmount,
+    })
     lines.push({
       itemId: resolvedItem?.id ?? null,
       priceId: selectedPrice?.id ?? null,
@@ -170,19 +176,27 @@ export async function buildDocumentLines(
       unitAmount,
       taxAmount: lineTaxAmount,
       discountAmount,
-      totalAmount: lineTotalAmount,
+      totalAmount: 0n,
     })
-    subtotalAmount += lineSubtotal
-    taxAmount += lineTaxAmount
-    totalAmount += lineTotalAmount
+  }
+
+  // One implementation of the arithmetic, shared with the document line-item
+  // editor via `@876/core/money`. It also owns the line-discount invariant.
+  const totals = calculateDocumentTotals({ lines: lineAmounts })
+  if (totals.error !== null) return { data: null, error: totals.error.message }
+
+  for (const [index, entry] of totals.data.lines.entries()) {
+    const line = lines[index]
+    if (line) line.totalAmount = entry.totalAmount
   }
 
   return {
     data: {
       lines,
-      subtotalAmount,
-      taxAmount,
-      totalAmount,
+      lineAmounts,
+      subtotalAmount: totals.data.subtotalAmount,
+      taxAmount: totals.data.taxAmount,
+      totalAmount: totals.data.linesTotalAmount,
       priceList: priceList ? { id: priceList.id, name: priceList.name } : null,
     },
     error: null,

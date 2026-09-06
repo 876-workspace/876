@@ -7,9 +7,9 @@ import {
   DetailCardHeader,
   DetailCardRouteTabs,
 } from '@876/ui/detail-card'
+import { memberInitials, memberName } from '@876/access-ui/member-utils'
+import type { OrgMember } from '@876/access-ui/member-types'
 
-import { memberInitials, memberName } from '../../_lib/member-utils'
-import type { OrgMember } from '../../_lib/types'
 
 export function MemberCard({
   membershipId,

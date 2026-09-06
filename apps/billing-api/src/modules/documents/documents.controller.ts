@@ -158,13 +158,34 @@ export const documentsController = {
       )
     )
   },
+  async quotesIntegrationList(req: Request, res: Response) {
+    res.json(
+      await service.listQuotes(
+        tenant(req),
+        validQuery<{ status?: QuoteStatus }>(req).status
+      )
+    )
+  },
   async quotesGet(req: Request, res: Response) {
+    res.json(await service.getQuote(tenant(req), param(req, 'quoteId')))
+  },
+  async quotesIntegrationGet(req: Request, res: Response) {
     res.json(await service.getQuote(tenant(req), param(req, 'quoteId')))
   },
   async quotesCreate(req: Request, res: Response) {
     res.json(
       await service.createQuote(tenant(req), validBody<QuoteCreateParams>(req))
     )
+  },
+  async quotesIntegrationCreate(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(
+        await service.createQuote(
+          tenant(req),
+          validBody<QuoteCreateParams>(req)
+        )
+      )
   },
   async quotesUpdate(req: Request, res: Response) {
     res.json(
