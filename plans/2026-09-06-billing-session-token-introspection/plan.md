@@ -3,7 +3,8 @@
 - **Run ID:** `2026-09-06-billing-session-token-introspection`
 - **Branch:** `fix/billing-session-token-introspection`
 - **Base:** `main`
-- **Status:** IMPLEMENTED — PR PENDING
+- **Status:** PR OPEN
+- **Pull request:** [#489](https://github.com/876-workspace/876/pull/489)
 
 ## Goal
 
@@ -116,6 +117,6 @@ After the branch is pushed:
 - [x] Pass focused OAuth tests and API typecheck.
 - [x] Pass API typecheck, lint, tests, and build.
 - [x] Record the unrelated pre-existing boundary failures.
-- [ ] Commit and push focused changes.
-- [ ] Open the PR and confirm mergeability.
-- [ ] Record final verification and PR link in this plan.
+- [x] Commit and push focused changes.
+- [x] Open the PR and confirm mergeability.
+- [x] Record final verification and PR link in this plan.
