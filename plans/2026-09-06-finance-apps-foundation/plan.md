@@ -206,6 +206,38 @@ quotes with `create`, `get`, `update` and `del`. The route exists; only the SDK
 verb is missing. Invoice registers browser resources in
 `src/lib/api/resource-manifest.ts` and has `invoices` but not `quotes`.
 
+### Phase 6d — quotes need an integration route before Invoice can create one
+
+Discovered while briefing 6c, and confirmed by the delegate's refusal:
+
+**Invoice does not reach Billing's tenant routes.** Its proxy
+(`apps/invoice/src/lib/api/resource-proxy.ts:48`) builds
+`/integrations/organizations/:organizationId/<resource>/...`, and
+`apps/billing-api` defines that integration base for **invoices only**
+(`documents.routes.ts:428`). Quotes have a tenant create route
+(`POST /api/v1/quotes`, `billing-billing_post_quotes`, `sales:write`) and no
+integration counterpart, so registering `quotes` in Invoice's manifest would
+have produced an endpoint that 404s on every call.
+
+Adding it is legitimate and is exactly what `access-tiers.md` describes — the
+capability is implemented once in the documents service and routed at a second
+principal with its own guard and scope. The surface:
+
+| #   | Where                                        | What                                                             |
+| --- | -------------------------------------------- | ---------------------------------------------------------------- |
+| 1   | `apps/api/src/modules/oauth/oauth.scopes.ts` | declare `billing.quotes.read` / `billing.quotes.write`           |
+| 2   | `apps/billing-api` documents module          | integration routes + controller mirroring the invoices block     |
+| 3   | `packages/billing` integration client        | a `quotes` resource with `list` and `create`                     |
+| 4   | `apps/invoice`                               | manifest entry, proxy route, `/quotes/new`                       |
+| 5   | **operations, not code**                     | Invoice's provisioning-profile revision must grant the new scope |
+
+Row 5 is the one that will be missed. `financeScopes` is data on a provisioning
+profile revision, not a constant in the tree, so shipping rows 1–4 alone leaves
+`/quotes/new` returning an authorization failure until the profile is revised.
+
+**Not started.** 6c ships `/invoices/new` alone, with the form already shaped
+around a `kind` prop so `/quotes/new` becomes a page rather than a rewrite.
+
 ## Dispatched briefs
 
 | Phase | Delegate | Brief                                                                                                                        |
@@ -238,7 +270,8 @@ verb is missing. Invoice registers browser resources in
 - [x] Phase 5c — invoice create routed through the shared function (quotes/estimates needed no change)
 - [x] Phase 6a — shared editor extended: catalogue lines, price-list pricing, percentage discounts (17 tests)
 - [ ] Phase 6b — Billing's document form migrated onto the shared editor (Codex, in flight)
-- [ ] Phase 6c — Invoice document create routes + `quotes.create` SDK verb (Codex, in flight)
+- [ ] Phase 6c — Invoice `/invoices/new` on the shared editor (Codex, in flight)
+- [ ] Phase 6d — quotes integration route, scope, SDK verb and `/quotes/new` (not started)
 - [ ] Docs — `packages/billing-ui/README.md` brought up to its real 16-export surface (agy, in flight)
 - [ ] Final PR `feature/finance-apps` → `main`
 
