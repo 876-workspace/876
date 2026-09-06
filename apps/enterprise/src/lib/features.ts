@@ -2,21 +2,13 @@ import 'server-only'
 
 import { cache } from 'react'
 import { resolveExperimentDecision } from '@876/core/platform'
+import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
 import { getPlatformClient } from '@/lib/services/platform'
-import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
 
 /**
- * Invoice has no app-owned feature rollouts yet. Keeping this request-shaped
- * boundary lets AccessContext add them without turning a flag into authority.
+ * Resolves a PostHog experiment for the Enterprise app.
  */
-export async function getFeatures(): Promise<{ featureKeys: string[] }> {
-  return { featureKeys: [] }
-}
-
-/**
- * Resolves a PostHog experiment for the Invoice app.
- */
-export async function getInvoiceExperiment<T = unknown>(
+export async function getEnterpriseExperiment<T = unknown>(
   featureSlug: string,
   context?: {
     userId?: string
@@ -41,7 +33,7 @@ const getExperimentDecisions = cache(async function getExperimentDecisions(
 ) {
   const platform = await getPlatformClient()
   const { data, error } = await platform.features.evaluateDetails({
-    appSlug: INVOICE_APP_SLUG,
+    appSlug: ENTERPRISE_APP_SLUG,
     userId,
     organizationId,
     visitorId,

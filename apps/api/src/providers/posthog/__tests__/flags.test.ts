@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const snapshot = vi.hoisted(() => ({
+  getFlag: vi.fn(),
+  getFlagPayload: vi.fn(),
+}))
 const posthogClient = vi.hoisted(() => ({
-  getFeatureFlag: vi.fn(),
+  evaluateFlags: vi.fn(),
   shutdown: vi.fn(),
 }))
 const PostHog = vi.hoisted(() =>
@@ -9,7 +13,6 @@ const PostHog = vi.hoisted(() =>
     return posthogClient
   })
 )
-
 vi.mock('posthog-node', () => ({ PostHog }))
 
 const settings = {
@@ -24,80 +27,118 @@ describe('getPostHogFlagEvaluator', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.resetModules()
-    posthogClient.getFeatureFlag.mockResolvedValue(false)
+    snapshot.getFlag.mockReturnValue(false)
+    snapshot.getFlagPayload.mockReturnValue(undefined)
+    posthogClient.evaluateFlags.mockResolvedValue(snapshot)
     posthogClient.shutdown.mockResolvedValue(undefined)
   })
 
-  it('coerces a string variant to an enabled decision', async () => {
-    posthogClient.getFeatureFlag.mockResolvedValue('treatment')
+  it('makes one scoped evaluateFlags call per evaluation', async () => {
     const { getPostHogFlagEvaluator } = await import('../flags')
-    const evaluator = getPostHogFlagEvaluator(settings as never)
-
-    const result = await evaluator!.evaluate({
+    await getPostHogFlagEvaluator(settings as never)!.evaluate({
       distinctId: 'user_1',
-      slugs: ['platform_test_flag'],
+      slugs: ['platform-first', 'platform-second'],
     })
-
-    expect(result).toEqual(new Map([['platform_test_flag', true]]))
+    expect(posthogClient.evaluateFlags).toHaveBeenCalledTimes(1)
+    expect(posthogClient.evaluateFlags).toHaveBeenCalledWith('user_1', {
+      flagKeys: ['platform-first', 'platform-second'],
+    })
   })
 
-  it('omits an undefined provider response instead of recording false', async () => {
-    posthogClient.getFeatureFlag.mockResolvedValue(undefined)
+  it('passes evaluation context fields to the one scoped request', async () => {
     const { getPostHogFlagEvaluator } = await import('../flags')
-    const evaluator = getPostHogFlagEvaluator(settings as never)
-
-    const result = await evaluator!.evaluate({
+    await getPostHogFlagEvaluator(settings as never)!.evaluate({
       distinctId: 'user_1',
-      slugs: ['platform_test_flag'],
-    })
-
-    expect(result).toEqual(new Map())
-  })
-
-  it('sends the feature flag exposure event with exact options', async () => {
-    const { getPostHogFlagEvaluator } = await import('../flags')
-    const evaluator = getPostHogFlagEvaluator(settings as never)
-
-    await evaluator!.evaluate({
-      distinctId: 'user_1',
-      slugs: ['platform_test_flag'],
-    })
-
-    expect(posthogClient.getFeatureFlag).toHaveBeenCalledOnce()
-    expect(posthogClient.getFeatureFlag).toHaveBeenCalledWith(
-      'platform_test_flag',
-      'user_1',
-      { sendFeatureFlagEvents: true }
-    )
-  })
-
-  it('passes organization groups to PostHog', async () => {
-    const { getPostHogFlagEvaluator } = await import('../flags')
-    const evaluator = getPostHogFlagEvaluator(settings as never)
-
-    await evaluator!.evaluate({
-      distinctId: 'user_1',
-      slugs: ['platform_test_flag'],
+      slugs: ['platform-test'],
       groups: { organization: 'org_1' },
+      personProperties: { plan: 'pro' },
+      groupProperties: { organization: { plan: 'pro' } },
     })
+    expect(posthogClient.evaluateFlags).toHaveBeenCalledTimes(1)
+    expect(posthogClient.evaluateFlags).toHaveBeenCalledWith('user_1', {
+      flagKeys: ['platform-test'],
+      groups: { organization: 'org_1' },
+      personProperties: { plan: 'pro' },
+      groupProperties: { organization: { plan: 'pro' } },
+    })
+  })
 
-    expect(posthogClient.getFeatureFlag).toHaveBeenCalledWith(
-      'platform_test_flag',
-      'user_1',
-      { groups: { organization: 'org_1' }, sendFeatureFlagEvents: true }
+  it('maps a multivariate value and payload into a complete decision', async () => {
+    snapshot.getFlag.mockReturnValue('treatment')
+    snapshot.getFlagPayload.mockReturnValue({ color: 'blue' })
+    const { getPostHogFlagEvaluator } = await import('../flags')
+    const result = await getPostHogFlagEvaluator(settings as never)!.evaluate({
+      distinctId: 'user_1',
+      slugs: ['platform-test'],
+    })
+    expect(result).toEqual(
+      new Map([
+        [
+          'platform-test',
+          { enabled: true, variant: 'treatment', payload: { color: 'blue' } },
+        ],
+      ])
     )
   })
 
-  it('returns an empty map when the PostHog client rejects', async () => {
-    posthogClient.getFeatureFlag.mockRejectedValue(new Error('unavailable'))
+  it('maps true to an enabled decision with a null variant and payload', async () => {
+    snapshot.getFlag.mockReturnValue(true)
     const { getPostHogFlagEvaluator } = await import('../flags')
-    const evaluator = getPostHogFlagEvaluator(settings as never)
-
-    const result = await evaluator!.evaluate({
+    const result = await getPostHogFlagEvaluator(settings as never)!.evaluate({
       distinctId: 'user_1',
-      slugs: ['platform_test_flag'],
+      slugs: ['platform-test'],
     })
+    expect(result).toEqual(
+      new Map([
+        ['platform-test', { enabled: true, variant: null, payload: null }],
+      ])
+    )
+  })
 
+  it('maps false to a disabled decision with a null variant and payload', async () => {
+    snapshot.getFlag.mockReturnValue(false)
+    const { getPostHogFlagEvaluator } = await import('../flags')
+    const result = await getPostHogFlagEvaluator(settings as never)!.evaluate({
+      distinctId: 'user_1',
+      slugs: ['platform-test'],
+    })
+    expect(result).toEqual(
+      new Map([
+        ['platform-test', { enabled: false, variant: null, payload: null }],
+      ])
+    )
+  })
+
+  it('does not add a decision for a flag absent from the snapshot', async () => {
+    snapshot.getFlag.mockReturnValue(undefined)
+    const { getPostHogFlagEvaluator } = await import('../flags')
+    const result = await getPostHogFlagEvaluator(settings as never)!.evaluate({
+      distinctId: 'user_1',
+      slugs: ['platform-test'],
+    })
     expect(result).toEqual(new Map())
+    expect(snapshot.getFlagPayload).not.toHaveBeenCalled()
+  })
+
+  it('returns an empty map when PostHog rejects', async () => {
+    posthogClient.evaluateFlags.mockRejectedValue(new Error('unavailable'))
+    const { getPostHogFlagEvaluator } = await import('../flags')
+    const result = await getPostHogFlagEvaluator(settings as never)!.evaluate({
+      distinctId: 'user_1',
+      slugs: ['platform-test'],
+    })
+    expect(result).toEqual(new Map())
+    expect(posthogClient.evaluateFlags).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns an empty map when PostHog exceeds the timeout', async () => {
+    posthogClient.evaluateFlags.mockReturnValue(new Promise(() => undefined))
+    const { getPostHogFlagEvaluator } = await import('../flags')
+    const promise = getPostHogFlagEvaluator(settings as never)!.evaluate({
+      distinctId: 'user_1',
+      slugs: ['platform-test'],
+    })
+    await expect(promise).resolves.toEqual(new Map())
+    expect(posthogClient.evaluateFlags).toHaveBeenCalledTimes(1)
   })
 })

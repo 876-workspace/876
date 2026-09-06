@@ -276,7 +276,13 @@ export type PlatformFeatureEvaluationDecision = {
   organization_override: boolean | null
   user_override: boolean | null
   enabled: boolean
+  variant?: string | null
+  payload?: unknown
 }
+
+/** A resolved experiment decision for a user/visitor. */
+export type PlatformExperimentDecision<T = unknown> =
+  import('./experiments').ExperimentDecision<T>
 
 export type PlatformProvisioningProperty = ProvisioningProperty
 export type PlatformProvisioningRevision = ProvisioningManifestRevision

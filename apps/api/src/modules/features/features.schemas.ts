@@ -136,6 +136,8 @@ export const featureEvaluationDecisionSchema = z
     organization_override: z.boolean().nullable(),
     user_override: z.boolean().nullable(),
     enabled: z.boolean(),
+    variant: z.string().nullable().optional(),
+    payload: z.unknown().optional(),
   })
   .meta({ id: 'FeatureEvaluationDecision' })
 
@@ -220,6 +222,7 @@ export const listFeaturesQuerySchema = paginationQuerySchema.extend({
 
 export const evaluateFeaturesQuerySchema = z.object({
   userId: z.string().optional(),
+  visitorId: z.string().optional(),
   organizationId: z.string().optional(),
   appId: z.string().optional(),
   appSlug: z.string().optional(),

@@ -1,10 +1,12 @@
 import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+import { resolveExperimentDecision } from '@876/core/platform'
 
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
   AdminDeletedFeature,
   AdminDeletedOrgFeature,
+  AdminExperimentDecision,
   AdminFeature,
   AdminFeatureCreateParams,
   AdminFeatureEvaluateParams,
@@ -63,7 +65,13 @@ export function createAdminFeaturesResource(runtime: AdminRuntime) {
       return adminRequest<AdminListResponse<AdminFeature>>(runtime, {
         method: 'GET',
         path: '/features/evaluate',
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          userId: params.userId,
+          visitorId: params.visitorId,
+          organizationId: params.organizationId,
+          appId: params.appId,
+          appSlug: params.appSlug,
+        },
       })
     },
 
@@ -74,11 +82,41 @@ export function createAdminFeaturesResource(runtime: AdminRuntime) {
         {
           method: 'GET',
           path: '/features/evaluate/details',
-          query: params as Record<
-            string,
-            string | number | boolean | undefined
-          >,
+          query: {
+            userId: params.userId,
+            visitorId: params.visitorId,
+            organizationId: params.organizationId,
+            appId: params.appId,
+            appSlug: params.appSlug,
+          },
         }
+      )
+    },
+
+    /**
+     * Resolves a single experiment decision with variant and typed payload.
+     */
+    async getExperiment<T = unknown>(
+      featureSlug: string,
+      params: AdminFeatureEvaluateParams = {}
+    ): Promise<AdminExperimentDecision<T>> {
+      const { data, error } = await adminRequest<
+        AdminListResponse<AdminFeatureEvaluationDecision>
+      >(runtime, {
+        method: 'GET',
+        path: '/features/evaluate/details',
+        query: {
+          userId: params.userId,
+          visitorId: params.visitorId,
+          organizationId: params.organizationId,
+          appId: params.appId,
+          appSlug: params.appSlug,
+        },
+      })
+
+      return resolveExperimentDecision<T>(
+        featureSlug,
+        error || !data ? null : data.data
       )
     },
 

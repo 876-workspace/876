@@ -718,7 +718,13 @@ export type AdminFeatureEvaluationDecision = {
   organization_override: boolean | null
   user_override: boolean | null
   enabled: boolean
+  variant?: string | null
+  payload?: unknown
 }
+
+/** A resolved experiment decision for a user/visitor. */
+export type AdminExperimentDecision<T = unknown> =
+  import('@876/core/platform').ExperimentDecision<T>
 
 export type AdminFeatureCreateParams = {
   name: string
@@ -867,6 +873,7 @@ export type AdminDeletedOrgFeature = {
 
 export type AdminFeatureEvaluateParams = {
   userId?: string
+  visitorId?: string
   organizationId?: string
   appId?: string
   appSlug?: string

@@ -17,7 +17,7 @@ import { SETTINGS_NAV } from './settings-groups'
 describe('SETTINGS_NAV', () => {
   const items = SETTINGS_NAV.flatMap((group) => group.items)
   const moduleItems = items.filter((item) => item.module !== undefined)
-  const catalogKeys = new Set(COURIERS_MODULE_CATALOG.map((m) => m.key))
+  const catalogKeys = new Set<string>(COURIERS_MODULE_CATALOG.map((m) => m.key))
 
   it('names a module key that exists in the module catalog', () => {
     const unknown = moduleItems
@@ -44,7 +44,7 @@ describe('SETTINGS_NAV', () => {
   })
 
   it('titles every module item "<Module> settings", never the bare label', () => {
-    const labelByKey = new Map(
+    const labelByKey = new Map<string, string>(
       COURIERS_MODULE_CATALOG.map((m) => [m.key, m.label])
     )
 

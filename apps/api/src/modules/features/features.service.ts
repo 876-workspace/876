@@ -328,6 +328,7 @@ export async function evaluateFeatures(
   const deps = getDeps()
   const rows = await svc.evaluate(deps, {
     userId: query.userId ?? null,
+    visitorId: query.visitorId ?? null,
     organizationId: query.organizationId ?? null,
     appId: query.appId ?? null,
     appSlug: query.appSlug ?? null,
@@ -345,6 +346,7 @@ export async function evaluateFeatureDetails(
   const deps = getDeps()
   const decisions = await svc.evaluateDetailed(deps, {
     userId: query.userId ?? null,
+    visitorId: query.visitorId ?? null,
     organizationId: query.organizationId ?? null,
     appId: query.appId ?? null,
     appSlug: query.appSlug ?? null,
@@ -362,6 +364,8 @@ export async function evaluateFeatureDetails(
       organization_override: decision.organizationOverride,
       user_override: decision.userOverride,
       enabled: decision.enabled,
+      variant: decision.variant ?? null,
+      payload: decision.payload ?? null,
     })),
     hasMore: false,
     url: '/features/evaluate/details',

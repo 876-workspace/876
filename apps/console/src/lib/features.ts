@@ -3,6 +3,7 @@ import { workspace } from '@/lib/services/workspace'
 
 import * as Sentry from '@sentry/nextjs'
 import { chatWidgetMetadata, isWidgetEnabled } from '@876/widgets'
+import { resolveExperimentDecision } from '@876/core/platform'
 import { cache } from 'react'
 
 import { listConsoleApps } from '@/lib/apps-catalog'
@@ -128,3 +129,38 @@ export async function getConsoleFeatures({
 
   return { enabledWidgetIds, uiFeatures }
 }
+
+/**
+ * Resolves a PostHog experiment for the Console app.
+ */
+export async function getConsoleExperiment<T = unknown>(
+  featureSlug: string,
+  context?: {
+    userId?: string
+    organizationId?: string
+    visitorId?: string
+  }
+) {
+  return resolveExperimentDecision<T>(
+    featureSlug,
+    await getExperimentDecisions(
+      context?.userId,
+      context?.organizationId,
+      context?.visitorId
+    )
+  )
+}
+
+const getExperimentDecisions = cache(async function getExperimentDecisions(
+  userId: string | undefined,
+  organizationId: string | undefined,
+  visitorId: string | undefined
+) {
+  const { data, error } = await workspace.features.evaluateDetails({
+    appSlug: CONSOLE_APP_SLUG,
+    userId,
+    organizationId,
+    visitorId,
+  })
+  return error || !data ? null : data.data
+})

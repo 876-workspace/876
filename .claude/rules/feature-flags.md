@@ -114,6 +114,14 @@ resolved.
 - During the naming migration, temporary legacy reads are allowed only through
   an explicit alias map. New seeds and provider/local writes remain canonical.
 
+## PostHog Experiments & Multivariate Testing
+
+- **Authority & Evaluation:** PostHog determines multivariate variant assignments and payloads through one server-side `evaluateFlags()` call scoped with `flagKeys`. `getFeatureFlag` and `getFeatureFlagPayload` are deprecated and must not be reintroduced.
+- **Exposure Events:** `FeatureFlagEvaluations.getFlag()` emits `$feature_flag_called` on first access per `(distinctId, flag, value)` tuple, deduped by the SDK.
+- **Local Governance & Kill Switch Invariant:** Local kill switches (`feature.enabled: false`) take absolute precedence. If a feature is disabled locally, the experiment decision evaluates to `enabled: false`, `variant: null`, and `payload: null`. An experiment can never revive a locally killed feature.
+- **Anonymous Visitors:** Experiments may be evaluated for an anonymous visitor by passing `visitorId`; establishing a durable visitor id is a per-app concern and is not yet implemented.
+- **Client Access:** `resolveExperimentDecision` is the single resolver; per-package `getExperiment` methods are thin transport wrappers over it. Apps never call PostHog directly from the browser.
+
 ## Managing flags in Console
 
 An admin should not need PostHog to perform normal platform feature management.
