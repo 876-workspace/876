@@ -9,7 +9,7 @@ export interface ModuleDefinition {
   optional: boolean
   /** Default enabled state for a newly provisioned organization. */
   enabledByDefault: boolean
-  preferences: PreferenceDefinition[]
+  preferences: readonly PreferenceDefinition[]
 }
 
 export type ModuleCatalog = readonly ModuleDefinition[]
