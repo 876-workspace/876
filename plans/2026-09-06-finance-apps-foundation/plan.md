@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-06-finance-apps-foundation`
 - **Integration branch:** `feature/finance-apps` (cut from `main` @ `72d87028`)
-- **Status:** IN_PROGRESS — foundation complete; Phase 6 re-scoped after its premise was found false, now in flight
+- **Status:** COMPLETED ✅ — every phase delivered and verified; PR open against `main`
 
 ## Overview
 
@@ -62,7 +62,15 @@ Phase 5 depends on 1. Phase 6 depends on 1 and 5.
 | 3   | Module catalogs for both apps             | GPT web                                      | `packages/billing/src/settings-catalog.ts`, both apps' `src/lib/modules/`, `settings/(list)` nav, `settings/modules/**`    | 0          |
 | 4   | Rules mirror + package READMEs            | agy (Gemini 3.1 Pro high)                    | `.agents/rules/`, `packages/billing-ui/README.md`, `docs/`                                                                 | 0          |
 | 5   | `DocumentLineItemsEditor` + shared totals | orchestrator (Fable-tier: money correctness) | `packages/billing-ui/src/document/`                                                                                        | 1          |
-| 6   | Document create/edit routes, both apps    | Codex                                        | `invoices/new`, `quotes/new`, `*/edit` in both apps                                                                        | 1, 5       |
+| 6   | Document **create** routes, both apps     | Codex                                        | `invoices/new`, `quotes/new` in both apps                                                                                  | 1, 5       |
+
+Row 6 originally read "create/edit routes … `*/edit` in both apps". **Edit
+routes were dropped when Phase 6 was re-scoped, and were never built.** The
+create routes earn their place in a foundation run because they are what proves
+one editor serves two hosts; an edit route re-uses that same editor and adds no
+consolidation, so it is ordinary feature work and belongs to whichever run
+builds the document lifecycle. The table is corrected here rather than left to
+imply a delivery that did not happen.
 
 Phase 5 is **not delegated**: it is money arithmetic, which
 `.claude/rules/cli.md` routes to the primary agent at high effort.
@@ -251,9 +259,20 @@ around a `kind` prop so `/quotes/new` becomes a page rather than a rewrite.
 
 ## Execution reports
 
-| Phase | Delegate | Report      |
-| ----- | -------- | ----------- |
-| —     | —        | _(pending)_ |
+| Phase  | Delegate | Report                                                                                             |
+| ------ | -------- | -------------------------------------------------------------------------------------------------- |
+| 1      | Codex    | [`panel-layer-customer-tabs`](./reports/codex/2026-09-06-panel-layer-customer-tabs.md)             |
+| 2      | Codex    | [`billing-membership-parity`](./reports/codex/2026-09-06-billing-membership-parity.md)             |
+| 3      | GPT web  | [`finance-module-catalogs`](./reports/gpt-web/2026-09-06-finance-module-catalogs.md)               |
+| 6b     | Codex    | [`billing-document-form-migration`](./reports/codex/2026-09-06-billing-document-form-migration.md) |
+| 6c     | Codex    | [`invoice-document-create-routes`](./reports/codex/2026-09-06-invoice-document-create-routes.md)   |
+| 6c     | Codex    | [`invoice-invoice-create-route`](./reports/codex/2026-09-06-invoice-invoice-create-route.md)       |
+| 6d(i)  | Codex    | [`quotes-integration-boundary`](./reports/codex/2026-09-06-quotes-integration-boundary.md)         |
+| 6d(ii) | Codex    | [`invoice-quotes-surface`](./reports/codex/2026-09-06-invoice-quotes-surface.md)                   |
+
+Each report was checked against `git diff` rather than taken at its word. Three
+findings that were not in any report are recorded above: the third copy of the
+percentage rule, the pinned auth-matrix count, and the frozen contract manifest.
 
 ## Task checklist
 
@@ -330,3 +349,41 @@ squash, so the final PR carries every phase's commits.
 
 **No run logs.** Never create or read a delegate transcript, in the repo or in
 `/tmp`. Judge delegated work by `git diff` and the delegate's report.
+
+## PR preparation summary
+
+64 commits, `feature/finance-apps` → `main`. `main` has not moved since the
+branch was cut, and `git merge-tree` reports no conflicts.
+
+Verified on the merged branch head, every command in the foreground:
+
+| Package            | Result                                           |
+| ------------------ | ------------------------------------------------ |
+| `@876/core`        | 1058 tests                                       |
+| `@876/billing-ui`  | 146 tests                                        |
+| `@876/billing`     | 226 tests                                        |
+| `@876/billing-api` | 582 tests, boundaries clean (511 modules)        |
+| `@876/billing-app` | 789 tests                                        |
+| `@876/invoice-app` | 251 tests                                        |
+| `@876/api`         | 2245 tests                                       |
+| contract           | `216` frozen vs `216` Express, zero mismatches   |
+| repo               | `check-app-structure`, `check:transpile` both OK |
+
+Typecheck and lint pass for every package touched; the only lint output is
+pre-existing warnings in files this run did not change.
+
+### Deliberately not in this run
+
+1. **Document edit routes.** See the note under the phase table — feature work,
+   not foundation.
+2. **The `billing.quotes.*` grant on Invoice's provisioning-profile revision.**
+   This is the one item that makes shipped code behave differently in a
+   deployed environment: `/quotes/new` enforces the scopes correctly and will
+   return an authorization failure until the profile is revised. `financeScopes`
+   is profile data, not a constant in this repository, so it cannot be committed
+   here.
+3. **The document-level formula in `invoices/create.ts`, `quotes/create.ts` and
+   `estimates/create.ts`** still appears inline. Phase 5a gave
+   `calculateDocumentTotals` a `lineAmounts` field so those three can call it;
+   until they do, that formula has two homes. Tracked from Phase 5's follow-up
+   note.
