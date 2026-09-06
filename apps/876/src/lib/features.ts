@@ -2,28 +2,23 @@ import 'server-only'
 
 import { cache } from 'react'
 import { resolveExperimentDecision } from '@876/core/platform'
-import { getPlatformClient } from '@/lib/services/platform'
-import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
+import { CONSUMER_APP_SLUG } from '@/lib/consumer-app'
+import { getAuthRoutingClient } from '@/lib/auth/auth-routing-client'
+import type { ExperimentDecision } from '@876/core/platform'
+
+export type { ExperimentDecision }
 
 /**
- * Invoice has no app-owned feature rollouts yet. Keeping this request-shaped
- * boundary lets AccessContext add them without turning a flag into authority.
+ * Resolves a PostHog experiment for the Consumer app.
  */
-export async function getFeatures(): Promise<{ featureKeys: string[] }> {
-  return { featureKeys: [] }
-}
-
-/**
- * Resolves a PostHog experiment for the Invoice app.
- */
-export async function getInvoiceExperiment<T = unknown>(
+export async function getConsumerExperiment<T = unknown>(
   featureSlug: string,
   context?: {
     userId?: string
     organizationId?: string
     visitorId?: string
   }
-) {
+): Promise<ExperimentDecision<T>> {
   return resolveExperimentDecision<T>(
     featureSlug,
     await getExperimentDecisions(
@@ -39,9 +34,9 @@ const getExperimentDecisions = cache(async function getExperimentDecisions(
   organizationId: string | undefined,
   visitorId: string | undefined
 ) {
-  const platform = await getPlatformClient()
-  const { data, error } = await platform.features.evaluateDetails({
-    appSlug: INVOICE_APP_SLUG,
+  const client = await getAuthRoutingClient()
+  const { data, error } = await client.features.evaluateDetails({
+    appSlug: CONSUMER_APP_SLUG,
     userId,
     organizationId,
     visitorId,

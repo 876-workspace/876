@@ -1,5 +1,9 @@
 import 'server-only'
 
+import { cache } from 'react'
+import { resolveExperimentDecision } from '@876/core/platform'
+import { getPlatformClient } from '@/lib/services/platform'
+import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import type { ProjectsFeatures, ProjectsUiFeatures } from '@/types/features'
 
 /**
@@ -22,3 +26,39 @@ const UI_FEATURES: ProjectsUiFeatures = {
 export async function getFeatures(): Promise<ProjectsFeatures> {
   return { uiFeatures: UI_FEATURES }
 }
+
+/**
+ * Resolves a PostHog experiment for the Projects app.
+ */
+export async function getProjectsExperiment<T = unknown>(
+  featureSlug: string,
+  context?: {
+    userId?: string
+    organizationId?: string
+    visitorId?: string
+  }
+) {
+  return resolveExperimentDecision<T>(
+    featureSlug,
+    await getExperimentDecisions(
+      context?.userId,
+      context?.organizationId,
+      context?.visitorId
+    )
+  )
+}
+
+const getExperimentDecisions = cache(async function getExperimentDecisions(
+  userId: string | undefined,
+  organizationId: string | undefined,
+  visitorId: string | undefined
+) {
+  const platform = await getPlatformClient()
+  const { data, error } = await platform.features.evaluateDetails({
+    appSlug: PROJECTS_APP_SLUG,
+    userId,
+    organizationId,
+    visitorId,
+  })
+  return error || !data ? null : data.data
+})

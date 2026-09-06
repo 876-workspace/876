@@ -8,6 +8,10 @@ import {
 } from '@876/core/client'
 import type { ClientHttpMethod } from '@876/core/client'
 import type { LookupResult } from '@876/core/client/lookup'
+import {
+  resolveExperimentDecision,
+  type ExperimentDecision,
+} from '@876/core/platform'
 import { headers } from 'next/headers'
 
 type AuthRoutingUserRow = {
@@ -45,6 +49,21 @@ type AuthRoutingFeature = {
   id: string
   slug: string
   enabled: boolean
+}
+
+type AuthRoutingFeatureDecision = {
+  object: 'feature_evaluation'
+  feature: AuthRoutingFeature
+  rollout_source?: 'posthog' | 'local'
+  global_enabled: boolean
+  parent_enabled: boolean
+  module_gated: boolean
+  module_entitled: boolean
+  organization_override: boolean | null
+  user_override: boolean | null
+  enabled: boolean
+  variant?: string | null
+  payload?: unknown
 }
 
 type AuthRoutingList<T> = {
@@ -112,6 +131,7 @@ export async function getAuthRoutingClient() {
     features: {
       evaluate(params: {
         userId?: string
+        visitorId?: string
         organizationId?: string
         appId?: string
         appSlug?: string
@@ -124,12 +144,68 @@ export async function getAuthRoutingClient() {
             path: '/features/evaluate',
             query: {
               userId: params.userId,
+              visitorId: params.visitorId,
               organizationId: params.organizationId,
               appId: params.appId,
               appSlug: params.appSlug,
               includeGlobal: params.includeGlobal,
             },
           }
+        )
+      },
+
+      evaluateDetails(params: {
+        userId?: string
+        visitorId?: string
+        organizationId?: string
+        appId?: string
+        appSlug?: string
+        includeGlobal?: boolean
+      }) {
+        return authRoutingRequest<AuthRoutingList<AuthRoutingFeatureDecision>>(
+          runtime,
+          {
+            method: 'GET',
+            path: '/features/evaluate/details',
+            query: {
+              userId: params.userId,
+              visitorId: params.visitorId,
+              organizationId: params.organizationId,
+              appId: params.appId,
+              appSlug: params.appSlug,
+              includeGlobal: params.includeGlobal,
+            },
+          }
+        )
+      },
+
+      async getExperiment<T = unknown>(
+        featureSlug: string,
+        params: {
+          userId?: string
+          visitorId?: string
+          organizationId?: string
+          appId?: string
+          appSlug?: string
+        } = {}
+      ): Promise<ExperimentDecision<T>> {
+        const result = await authRoutingRequest<
+          AuthRoutingList<AuthRoutingFeatureDecision>
+        >(runtime, {
+          method: 'GET',
+          path: '/features/evaluate/details',
+          query: {
+            userId: params.userId,
+            visitorId: params.visitorId,
+            organizationId: params.organizationId,
+            appId: params.appId,
+            appSlug: params.appSlug,
+          },
+        })
+
+        return resolveExperimentDecision<T>(
+          featureSlug,
+          result.error || !result.data ? null : result.data.data
         )
       },
     },
