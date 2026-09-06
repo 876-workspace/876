@@ -4,6 +4,7 @@ import { SettingsHub } from '@876/ui/settings-hub'
 import { getVisibleSettingsSections } from '@/components/shell/nav-config'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
+import { BILLING_MODULE_SETTINGS_GROUP } from './_lib/module-settings-group'
 import { toSettingsHubGroups } from './_lib/settings-hub-groups'
 
 export const metadata = {
@@ -14,7 +15,10 @@ export const metadata = {
 export default async function SettingsPage() {
   const context = await requirePagePermission('settings:read')
   const sections = getVisibleSettingsSections(context.permissions)
-  const groups = toSettingsHubGroups(sections)
+  const groups = [
+    ...toSettingsHubGroups(sections),
+    BILLING_MODULE_SETTINGS_GROUP,
+  ]
 
   return (
     <Page hub>
