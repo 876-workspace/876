@@ -16,52 +16,28 @@
       "types": "./src/access/catalogs.ts",
       "default": "./src/access/catalogs.ts"
     },
-    "./countries.json": {
-      "default": "./src/countries.json"
+    "./access/finance-catalog": {
+      "types": "./src/access/finance-catalog.ts",
+      "default": "./src/access/finance-catalog.ts"
     },
-    "./errors": {
-      "types": "./src/lib/errors/index.ts",
-      "default": "./src/lib/errors/index.ts"
+    "./api": {
+      "types": "./src/api.ts",
+      "default": "./src/api.ts"
     },
-    "./errors/*": {
-      "types": "./src/lib/errors/*.ts",
-      "default": "./src/lib/errors/*.ts"
-    },
-    "./id": {
-      "types": "./src/lib/id/index.ts",
-      "default": "./src/lib/id/index.ts"
-    },
-    "./timestamps": {
-      "types": "./src/lib/timestamps.ts",
-      "default": "./src/lib/timestamps.ts"
-    },
-    "./phone": {
-      "types": "./src/lib/phone.ts",
-      "default": "./src/lib/phone.ts"
-    },
-    "./platform-apps": {
-      "types": "./src/lib/platform-apps.ts",
-      "default": "./src/lib/platform-apps.ts"
-    },
-    "./money": {
-      "types": "./src/lib/money/document-totals.ts",
-      "default": "./src/lib/money/document-totals.ts"
-    },
-    "./utils": {
-      "types": "./src/utils.ts",
-      "default": "./src/utils.ts"
-    },
-    "./types": {
-      "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
-    },
-    "./types/*": {
-      "types": "./src/types/*.ts",
-      "default": "./src/types/*.ts"
+    "./auth/*": {
+      "types": "./src/auth/*.ts",
+      "default": "./src/auth/*.ts"
     },
     "./client": {
       "types": "./src/client/index.ts",
       "default": "./src/client/index.ts"
+    },
+    "./client/lookup": {
+      "types": "./src/client/lookup.ts",
+      "default": "./src/client/lookup.ts"
+    },
+    "./countries.json": {
+      "default": "./src/countries.json"
     },
     "./crypto/secure-field": {
       "types": "./src/crypto/secure-field.ts",
@@ -71,29 +47,57 @@
       "types": "./src/db/worker-client.ts",
       "default": "./src/db/worker-client.ts"
     },
-    "./platform": {
-      "types": "./src/platform/index.ts",
-      "default": "./src/platform/index.ts"
+    "./errors": {
+      "types": "./src/lib/errors/index.ts",
+      "default": "./src/lib/errors/index.ts"
     },
-    "./client/lookup": {
-      "types": "./src/client/lookup.ts",
-      "default": "./src/client/lookup.ts"
+    "./errors/*": {
+      "types": "./src/lib/errors/*.ts",
+      "default": "./src/lib/errors/*.ts"
     },
     "./fetch/bridge": {
       "types": "./src/fetch/bridge.ts",
       "default": "./src/fetch/bridge.ts"
     },
+    "./id": {
+      "types": "./src/lib/id/index.ts",
+      "default": "./src/lib/id/index.ts"
+    },
+    "./money": {
+      "types": "./src/lib/money/document-totals.ts",
+      "default": "./src/lib/money/document-totals.ts"
+    },
+    "./phone": {
+      "types": "./src/lib/phone.ts",
+      "default": "./src/lib/phone.ts"
+    },
+    "./platform": {
+      "types": "./src/platform/index.ts",
+      "default": "./src/platform/index.ts"
+    },
+    "./platform-apps": {
+      "types": "./src/lib/platform-apps.ts",
+      "default": "./src/lib/platform-apps.ts"
+    },
     "./request-context": {
       "types": "./src/request-context/index.ts",
       "default": "./src/request-context/index.ts"
     },
-    "./api": {
-      "types": "./src/api.ts",
-      "default": "./src/api.ts"
+    "./timestamps": {
+      "types": "./src/lib/timestamps.ts",
+      "default": "./src/lib/timestamps.ts"
     },
-    "./auth/*": {
-      "types": "./src/auth/*.ts",
-      "default": "./src/auth/*.ts"
+    "./types": {
+      "types": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./types/*": {
+      "types": "./src/types/*.ts",
+      "default": "./src/types/*.ts"
+    },
+    "./utils": {
+      "types": "./src/utils.ts",
+      "default": "./src/utils.ts"
     }
   },
   "scripts": {
