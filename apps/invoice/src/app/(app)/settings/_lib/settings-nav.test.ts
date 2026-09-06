@@ -1,6 +1,6 @@
 import { SETTINGS_HUB_ICON_KEYS } from '@876/ui/settings-hub'
 
-import { SETTINGS_GROUPS } from './settings-nav'
+import { ROLES_READ_PERMISSION, SETTINGS_GROUPS } from './settings-nav'
 
 describe('invoice settings navigation', () => {
   it('exports a non-empty settings list', () => {
@@ -33,6 +33,15 @@ describe('invoice settings navigation', () => {
       availability: 'available',
       href: '/settings/users',
     })
+  })
+
+  it('binds the Roles navigation requirement to the roles route guard permission', () => {
+    const roles = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/roles'
+    )
+
+    expect(roles?.requires?.permission).toBe(ROLES_READ_PERMISSION)
+    expect(ROLES_READ_PERMISSION).toBe('roles:read')
   })
 
   it('uses unique group labels', () => {

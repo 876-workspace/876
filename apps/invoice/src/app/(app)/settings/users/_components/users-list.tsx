@@ -109,7 +109,7 @@ function MemberTableRow({ member }: { member: OrgMember }) {
   const name = memberName(member)
   return (
     <TableRow>
-      <TableCell className="relative px-5 py-4">
+      <TableCell className="group relative px-5 py-4">
         <Link
           href={memberHref(member.id)}
           aria-label={`View user ${name}`}
@@ -118,7 +118,9 @@ function MemberTableRow({ member }: { member: OrgMember }) {
         <div className="flex items-center gap-3">
           <MemberAvatar member={member} />
           <div className="min-w-0">
-            <span className="text-[0.8125rem] font-medium">{name}</span>
+            <span className="text-[0.8125rem] font-medium text-sky-600 group-hover:text-sky-700 group-hover:underline hover:text-sky-700 hover:underline dark:text-sky-400 dark:group-hover:text-sky-300 dark:hover:text-sky-300">
+              {name}
+            </span>
             <p className="text-muted-foreground text-xs">
               {member.email ?? `@${member.user_id}`}
             </p>

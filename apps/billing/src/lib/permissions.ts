@@ -1,3 +1,8 @@
+import {
+  withImpliedFinancePermissions,
+  withoutFinancePermission,
+} from '@876/core/access/finance-catalog'
+
 import type { Permission, RoleCreateParams } from '@/types/access'
 import { BILLING_PERMISSION_VALUES } from '@/types/permission-values'
 import type { PermissionGroup } from '@/types/permission'
@@ -15,19 +20,11 @@ export function togglePermission(
   current: ReadonlySet<Permission>,
   permission: Permission
 ): Set<Permission> {
-  const next = new Set(current)
-  if (next.has(permission)) {
-    if (permission === 'billing:access') return next
-    next.delete(permission)
-    if (permission.endsWith(':read'))
-      next.delete(permission.replace(/:read$/, ':write') as Permission)
-    return next
-  }
+  const next = current.has(permission)
+    ? withoutFinancePermission([...current], permission)
+    : withImpliedFinancePermissions([...current, permission])
 
-  next.add(permission)
-  if (permission.endsWith(':write'))
-    next.add(permission.replace(/:write$/, ':read') as Permission)
-  return next
+  return new Set(next as Permission[])
 }
 
 export const BILLING_SYSTEM_ROLES: Array<

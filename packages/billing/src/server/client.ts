@@ -2,6 +2,12 @@ import { resolveClientBaseUrl } from '@876/core/client'
 import { z } from 'zod'
 
 import { sendRequest } from '../transport'
+import { MemberAccessSchema, MemberListSchema } from '../types/member.schema'
+import type {
+  Member,
+  MemberAccess,
+  MemberAccessResolveParams,
+} from '../types/member'
 import type {
   BillingServerClientOptions,
   BillingServerRequest,
@@ -37,6 +43,15 @@ export function create876BillingServerClient(
 ) {
   const baseUrl = resolveBaseUrl(options.baseUrl)
 
+  function internalHeaders(): Record<string, string> {
+    return {
+      ...('internalKey' in options && options.internalKey
+        ? { 'x-internal-key': options.internalKey }
+        : {}),
+      ...(options.requestId ? { 'x-request-id': options.requestId } : {}),
+    }
+  }
+
   return {
     request<T = unknown>(
       request: BillingServerRequest
@@ -61,6 +76,57 @@ export function create876BillingServerClient(
         { ...request, method: request.method ?? 'GET' },
         z.unknown()
       ) as Promise<BillingServerResult<T>>
+    },
+
+    /**
+     * Finance-member projections.
+     *
+     * These join workspace grants with identity, so they are internal-key
+     * routes rather than tenant ones and live here instead of on the session
+     * client. They are typed so a host reads `members.resolve(...)` rather
+     * than hand-writing an internal projection path — three apps had copies of
+     * those strings.
+     */
+    members: {
+      /** Lists the explicit grants in one workspace. */
+      list(tenantId: string): Promise<BillingServerResult<Member[]>> {
+        return sendRequest(
+          {
+            baseUrl,
+            fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
+            headers: internalHeaders(),
+          },
+          {
+            method: 'GET',
+            path: `/internal/projections/tenants/${encodeURIComponent(tenantId)}/members`,
+          },
+          MemberListSchema
+        ) as Promise<BillingServerResult<Member[]>>
+      },
+
+      /**
+       * Resolves one account's effective access, falling back to the role its
+       * 876 organization membership implies when it holds no explicit grant.
+       * Resolves to `null` when neither applies — that is "no access", not an
+       * error.
+       */
+      resolve(
+        params: MemberAccessResolveParams
+      ): Promise<BillingServerResult<MemberAccess | null>> {
+        return sendRequest(
+          {
+            baseUrl,
+            fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
+            headers: internalHeaders(),
+          },
+          {
+            method: 'POST',
+            path: '/internal/projections/member-access',
+            body: params,
+          },
+          MemberAccessSchema
+        ) as Promise<BillingServerResult<MemberAccess | null>>
+      },
     },
 
     /**

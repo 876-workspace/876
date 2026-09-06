@@ -197,3 +197,19 @@ export function groupByModule(
     })),
   }))
 }
+
+export {
+  FINANCE_PERMISSION_MODULES,
+  FINANCE_PERMISSION_VALUES,
+  financePermissionSurface,
+  mergeFinancePermissions,
+  partitionFinancePermissions,
+  withImpliedFinancePermissions,
+  withoutFinancePermission,
+} from './finance-catalog'
+export type {
+  FinanceApp,
+  FinancePermissionKey,
+  FinancePermissionModule,
+  FinancePermissionSurface,
+} from './finance-catalog'

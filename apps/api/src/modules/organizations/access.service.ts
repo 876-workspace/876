@@ -276,18 +276,13 @@ export async function retrieveOrgMemberMe(
   )
   if (!membership || membership.status !== 'active') throw forbidden()
   const perms = await resolveMemberPermissions(membership)
-  return serializeOrganizationMemberMe(
-    {
-      id: membership.id,
-      userId: membership.userId,
-      role: membership.role,
-      roleId: membership.roleId,
-      status: membership.status,
-      createdAt: membership.createdAt,
-      user: membership.user,
-    } as never,
-    [...perms]
-  )
+  // The row is passed whole rather than rebuilt field by field. The hand-built
+  // object omitted `position`, and the `as never` cast hid that from the type
+  // checker; `position` then serialized as `undefined`, JSON dropped the key,
+  // and every SDK caller got `auth/invalid-response` from a strict schema that
+  // requires it — which is how 876 Invoice's users settings reported that
+  // member access "could not be verified".
+  return serializeOrganizationMemberMe(membership, [...perms])
 }
 
 export async function updateOrgMemberRole(

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { withImpliedFinancePermissions } from '@876/core/access/finance-catalog'
+
 import { IdSchema, optionalTextSchema } from './common'
 import { BILLING_PERMISSION_VALUES } from './permission-values'
 
@@ -9,18 +11,20 @@ export type Permission = z.infer<typeof PermissionSchema>
 const PermissionListSchema = z
   .array(PermissionSchema)
   .max(BILLING_PERMISSION_VALUES.length)
+  // Both rules live in `@876/core/access/finance-catalog` so the editor, this
+  // schema, and the API cannot drift — but they stay two refinements, because a
+  // role missing workspace access and a role missing an implied read are
+  // different mistakes and the operator needs to be told which one they made.
   .refine(
     (permissions) => permissions.includes('billing:access'),
     'Every role must include Billing access.'
   )
   .refine(
     (permissions) =>
-      permissions.every(
+      withImpliedFinancePermissions(permissions).every(
         (permission) =>
-          !permission.endsWith(':write') ||
-          permissions.includes(
-            permission.replace(/:write$/, ':read') as Permission
-          )
+          permission === 'billing:access' ||
+          permissions.includes(permission as Permission)
       ),
     'Write permissions require the matching read permission.'
   )

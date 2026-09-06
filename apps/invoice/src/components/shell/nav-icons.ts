@@ -5,7 +5,7 @@ import {
   ChartPieIcon,
   CircleStackIcon,
   ClipboardDocumentListIcon,
-  ClipboardList,
+  DocumentTextIcon,
   Clock,
   CreditCard,
   ReceiptPercent,
@@ -20,7 +20,10 @@ export const INVOICE_NAV_ICONS: Record<string, IconComponent> = {
   customers: UsersIcon,
   items: ClipboardDocumentListIcon,
   quotes: CalculatorIcon,
-  invoices: ClipboardDocumentListIcon,
+  // Distinct from `items`: `ClipboardList` is an alias of
+  // `ClipboardDocumentListIcon` in `@876/ui`, so reusing either made two rail
+  // entries render the same glyph.
+  invoices: DocumentTextIcon,
   'sales-receipts': ReceiptPercent,
   payments: CreditCard,
   expenses: Building2,

@@ -18,7 +18,9 @@ import {
   createEstimatesResource,
   createQuotesResource,
 } from './resources/quotes'
+import { createMembersResource } from './resources/members'
 import { createPaymentsResource } from './resources/payments'
+import { createRolesResource } from './resources/roles'
 import { createPaymentProvidersResource } from './resources/payment-providers'
 import { createSubscriptionsResource } from './resources/subscriptions'
 import { createTaxAuthoritiesResource } from './resources/tax-authorities'
@@ -40,6 +42,7 @@ export function create876Client(options: ClientOptions = {}) {
     invoices: createInvoicesResource(runtime),
     invoicePreferences: createInvoicePreferencesResource(runtime),
     items: createItemsResource(runtime),
+    members: createMembersResource(runtime),
     paymentModes: createPaymentModesResource(runtime),
     paymentMethods: createPaymentMethodsResource(runtime),
     paymentIntents: createPaymentIntentsResource(runtime),
@@ -51,6 +54,7 @@ export function create876Client(options: ClientOptions = {}) {
     priceLists: catalog.priceLists,
     products: catalog.products,
     quotes: createQuotesResource(runtime),
+    roles: createRolesResource(runtime),
     salespeople: createSalespeopleResource(runtime),
     subscriptions: createSubscriptionsResource(runtime),
     taxAuthorities: createTaxAuthoritiesResource(runtime),

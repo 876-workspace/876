@@ -19,9 +19,19 @@ export default async function UsersLayout({
 
   // An outage is not a denial. Saying "not found" for either would tell the
   // operator something untrue and give them nothing to act on.
+  // An outage keeps the roster mounted. Passing `list={null}` here removed the
+  // whole users table and left an operator staring at a settings page with no
+  // table on it — `.claude/rules/error-handling.md`: a failure is a notice
+  // beside the data region, never a replacement for it.
   if (outcome.status === 'unavailable')
     return (
-      <UsersShell list={null}>
+      <UsersShell
+        list={
+          <Suspense fallback={<UsersListSkeleton />}>
+            <UsersListData orgId={context.orgId} />
+          </Suspense>
+        }
+      >
         <AppError
           title="Access could not be verified"
           error={{
@@ -39,6 +49,7 @@ export default async function UsersLayout({
 
   return (
     <UsersShell
+      canInvite={outcome.viewer.canManageAppAccess}
       list={
         <Suspense fallback={<UsersListSkeleton />}>
           <UsersListData orgId={context.orgId} />

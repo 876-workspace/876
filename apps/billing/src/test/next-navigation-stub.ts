@@ -19,6 +19,10 @@ export function useSearchParams() {
   return new URLSearchParams()
 }
 
+export function useSelectedLayoutSegments() {
+  return []
+}
+
 export function useParams() {
   return {}
 }

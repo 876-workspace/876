@@ -29,6 +29,7 @@ export function MemberCard({
           { label: 'Overview', href: base },
           { label: 'App access', href: `${base}/access` },
           { label: 'Permissions', href: `${base}/permissions` },
+          { label: 'Finance role', href: `${base}/finance` },
         ]}
       />
       <DetailCardBody>{children}</DetailCardBody>

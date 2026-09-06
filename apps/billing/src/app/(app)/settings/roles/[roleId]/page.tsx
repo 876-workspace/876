@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
 
-import { Badge } from '@876/ui/badge'
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { toFinanceMemberSummaries } from '@876/billing-ui/panels/access/member-identity'
+import type { FinanceMemberSummary } from '@876/billing-ui/panels/access/types'
 
-import { RoleEditor } from '@/features/access/components/role-editor'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { service } from '@/lib/service'
+
+import { EditRolePanel } from '../_components/role-panels'
+import { loadBillingMembers, loadUsers } from '../../users/_data'
+import { loadRole } from '../_data'
 
 export async function generateMetadata({
   params,
@@ -23,31 +25,36 @@ export default async function RoleDetailPage({
 }) {
   const context = await requirePagePermission('roles:read')
   const { roleId } = await params
-  const role = await service.roles.retrieve(context.tenant.id, roleId)
+  const [role, roster, users] = await Promise.all([
+    loadRole(context.tenant.id, roleId),
+    loadBillingMembers(context.tenant.id),
+    loadUsers(context.orgId),
+  ])
   if (!role) notFound()
 
+  const members: FinanceMemberSummary[] = toFinanceMemberSummaries(
+    roster.members
+      .filter((m) => m.roleId === role.id)
+      .map((m) => ({
+        userId: m.userId,
+        roleId: m.roleId,
+        roleName: m.roleName,
+        status: m.status,
+      })),
+    users.members.map((u) => ({
+      userId: u.user_id,
+      firstName: u.first_name,
+      lastName: u.last_name,
+      email: u.email,
+      avatarUrl: u.avatar,
+    }))
+  )
+
   return (
-    <Page>
-      <PageBreadcrumb href="/settings/roles" label="Roles" className="mb-4" />
-
-      <div className="mb-7">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="876-page-title">{role.name}</h1>
-          <Badge variant={role.isSystem ? 'outline' : 'secondary'}>
-            {role.isSystem ? 'System' : 'Custom'}
-          </Badge>
-          {role.isDefault ? <Badge variant="secondary">Default</Badge> : null}
-        </div>
-        <p className="text-muted-foreground mt-1 font-mono text-xs">
-          {role.slug} · {role.memberCount} member
-          {role.memberCount === 1 ? '' : 's'}
-        </p>
-      </div>
-
-      <RoleEditor
-        role={role}
-        canManage={context.permissions.includes('roles:write')}
-      />
-    </Page>
+    <EditRolePanel
+      role={role}
+      canManage={context.permissions.includes('roles:write')}
+      members={members}
+    />
   )
 }

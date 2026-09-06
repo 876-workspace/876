@@ -332,3 +332,35 @@ export {
   TaxAuthorityListSchema,
   TaxRateListSchema,
 } from './tax.schema'
+
+// Finance workspace roles
+export type {
+  Role,
+  RoleCreated,
+  RoleCreateParams,
+  RoleDeleted,
+  RoleUpdateParams,
+} from './role'
+export {
+  RoleCreatedSchema,
+  RoleDeletedSchema,
+  RoleListSchema,
+  RoleSchema,
+} from './role.schema'
+
+// Finance workspace members
+export type {
+  Member,
+  MemberAccess,
+  MemberAccessResolveParams,
+  MemberRole,
+  MemberStatus,
+  MemberUpdateParams,
+  MemberUpdated,
+} from './member'
+export {
+  MemberAccessSchema,
+  MemberListSchema,
+  MemberSchema,
+  MemberUpdatedSchema,
+} from './member.schema'

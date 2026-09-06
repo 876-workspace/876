@@ -1,40 +1,16 @@
+import { FINANCE_PERMISSION_VALUES } from '@876/core/access/finance-catalog'
+
 import { prisma } from '@/db/client'
 import type { Prisma } from '@/db'
 import { generateId } from '@/platform/ids'
 
-/** Every permission a workspace super admin holds. */
-const SUPER_ADMIN_PERMISSIONS = [
-  'billing:access',
-  'dashboard:read',
-  'customers:read',
-  'customers:write',
-  'catalog:read',
-  'catalog:write',
-  'sales:read',
-  'sales:write',
-  'subscriptions:read',
-  'subscriptions:write',
-  'reports:read',
-  'settings:read',
-  'currencies:read',
-  'currencies:write',
-  'taxes:read',
-  'taxes:write',
-  'members:read',
-  'members:write',
-  'roles:read',
-  'roles:write',
-  'vendors:read',
-  'vendors:write',
-  'purchases:read',
-  'purchases:write',
-  'banking:read',
-  'banking:write',
-  'payments:read',
-  'payments:write',
-  'payment_methods:read',
-  'payment_methods:write',
-]
+/**
+ * Every permission a workspace super admin holds.
+ *
+ * Derived from the one finance catalog in `@876/core/access` rather than
+ * restated, so a module added there cannot leave super admins short of it.
+ */
+const SUPER_ADMIN_PERMISSIONS: string[] = [...FINANCE_PERMISSION_VALUES]
 
 /**
  * The system roles every workspace is seeded with.

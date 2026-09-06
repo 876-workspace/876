@@ -19,9 +19,12 @@ export const USER_STATUS_OPTIONS: StatusFilterOption[] = [
 export function UsersShell({
   list,
   children,
+  canInvite = false,
 }: {
   list: ReactNode
   children: ReactNode
+  /** Gated on `apps:assign`; the invite route enforces it again. */
+  canInvite?: boolean
 }) {
   const { open } = useListDetailRoute()
   const status = useSearchParams().get('status') ?? 'all'
@@ -39,6 +42,13 @@ export function UsersShell({
                 options={USER_STATUS_OPTIONS}
               />
             }
+            {...(canInvite
+              ? {
+                  primaryLabel: 'Add',
+                  primaryHref: '/settings/users/invite',
+                  primaryVariant: 'info' as const,
+                }
+              : {})}
             refresh
           />
         }
