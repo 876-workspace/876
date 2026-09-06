@@ -1906,6 +1906,9 @@ importers:
 
   packages/billing-ui:
     dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../core
       '@876/ui':
         specifier: workspace:*
         version: link:../ui

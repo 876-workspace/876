@@ -5,6 +5,8 @@ import {
   calculateDocumentTotals,
   formatMinorUnits,
   parseDecimalToMinorUnits,
+  resolvePercentageDiscount,
+  PERCENT_DIGITS,
   type DocumentTotals,
 } from '@876/core/money'
 import { Button } from '@876/ui/button'
@@ -120,16 +122,12 @@ function emptyLine(id: string): DocumentLineDraft {
   return { id, description: '', quantity: '1', unitAmount: '' }
 }
 
-/** Percentages are carried as basis points, so 12.5% is 1250 and never 0.125. */
-const PERCENT_SCALE = 10_000n
-const PERCENT_DIGITS = 2
-
 /**
  * Resolves a line's discount to minor units.
  *
- * A percentage is taken against the line's own subtotal using the same
- * basis-point arithmetic the submitted document uses, so the running total a
- * person reads cannot disagree with the document the service writes.
+ * The percentage arithmetic itself lives in `@876/core/money`, so the running
+ * total a person reads cannot disagree with the document the service writes.
+ * What stays here is reading the draft string a person is still typing.
  */
 export function resolveLineDiscount(
   line: Pick<DocumentLineDraft, 'discountAmount' | 'discountType'>,
@@ -140,8 +138,12 @@ export function resolveLineDiscount(
 
   if (line.discountType === 'PERCENTAGE') {
     const basisPoints = parseDecimalToMinorUnits(typed, PERCENT_DIGITS)
-    if (basisPoints === null || basisPoints < 0n) return 0n
-    return (subtotalAmount * basisPoints) / PERCENT_SCALE
+    if (basisPoints === null) return 0n
+    // A half-typed or negative percentage reads as no discount, so a running
+    // total stays on screen while a person types. A percentage over 100% is
+    // deliberately left to resolve past the subtotal, so the document reports
+    // it as invalid instead of quietly showing no discount.
+    return resolvePercentageDiscount(subtotalAmount, basisPoints) ?? 0n
   }
 
   return parseDecimalToMinorUnits(typed, minorUnitDigits) ?? 0n

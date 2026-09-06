@@ -78,6 +78,7 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/core": "workspace:*",
     "@876/ui": "workspace:*",
     "@tanstack/react-table": "^9.1.2"
   },
