@@ -75,6 +75,36 @@ const envSchema = z.object({
   ZOHO_BOOKS_ACCOUNTS_DOMAIN: optionalString('https://accounts.zoho.com'),
 })
 
+/**
+ * Hosts that used to serve an 876 service and no longer should.
+ *
+ * The platform left Cloudflare for Vercel, but the old Workers still answer —
+ * with pre-migration code. An `API_URL` left pointing at one does not fail: it
+ * introspects every user bearer against a stale identity service, which
+ * answers `active: false`, so Billing rejects valid tokens as
+ * `auth/invalid-token`. That happened in production on 2026-09-06 and cost a
+ * day, because the symptom (a client-side React #441) names neither the
+ * variable nor the origin. Refuse to boot instead.
+ */
+const RETIRED_ORIGIN_SUFFIX = '.workers.dev'
+
+function assertLiveIdentityOrigin(url: string): void {
+  let host: string
+  try {
+    host = new URL(url).hostname
+  } catch {
+    throw new Error(`API_URL is not a valid URL: ${url}`)
+  }
+
+  if (host.endsWith(RETIRED_ORIGIN_SUFFIX))
+    throw new Error(
+      `API_URL points at the retired Cloudflare origin ${host}. That Worker` +
+        ' still responds but runs pre-Vercel code, so token introspection' +
+        ' fails for every signed-in user. Point API_URL at the current 876' +
+        ' identity service.'
+    )
+}
+
 function build(env: NodeJS.ProcessEnv) {
   const parsed = envSchema.safeParse(env)
   if (!parsed.success) {
@@ -85,6 +115,9 @@ function build(env: NodeJS.ProcessEnv) {
   }
 
   const value = parsed.data
+  const identityApiUrl = value.API_URL.replace(/\/+$/, '')
+  assertLiveIdentityOrigin(identityApiUrl)
+
   return Object.freeze({
     port: value.PORT,
     environment: value.ENVIRONMENT,
@@ -94,7 +127,7 @@ function build(env: NodeJS.ProcessEnv) {
       value.BILLING_DIRECT_DATABASE_URL || value.BILLING_DATABASE_URL,
     legacyDatabaseUrl: value.BILLING_LEGACY_DATABASE_URL,
     billingWriter: value.BILLING_WRITER,
-    identityApiUrl: value.API_URL.replace(/\/+$/, ''),
+    identityApiUrl,
     identityApiKey:
       value.BILLING_API_876_KEY || value.BILLING_API_KEY || value.API_876_KEY,
     internalKey: value.BILLING_INTERNAL_KEY || value.API_INTERNAL_KEY,

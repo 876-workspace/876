@@ -120,3 +120,30 @@ After the branch is pushed:
 - [x] Commit and push focused changes.
 - [x] Open the PR and confirm mergeability.
 - [x] Record final verification and PR link in this plan.
+
+## Follow-up: the 401 survived the fix (2026-09-06, 20:40 UTC)
+
+After #489 merged and `876-api` was redeployed, Billing still answered
+`auth/invalid-token` on `/items`, `/quotes`, and `/customers` — including for a
+token minted seconds earlier by a fresh social sign-in.
+
+**Cause:** `876-billing-api`'s production `API_URL` still pointed at
+`https://876-api.1876.workers.dev`. That Cloudflare Worker is orphaned from the
+pre-Vercel deployment, is still serving 200s, and runs the pre-fix OAuth code.
+Every `/oauth/introspect` call therefore went to a stale identity service and
+answered `active: false`.
+
+Verified with one token against both origins:
+
+| Origin                              | `/oauth/introspect` |
+| ----------------------------------- | ------------------- |
+| `https://876-api.1876.workers.dev`  | `active: false`     |
+| `https://876-api.vercel.app`        | `active: true`      |
+
+**Fix:** repointed `876-billing-api` production `API_URL` at
+`https://876-api.vercel.app` and redeployed. `GET /api/v1/items` with the same
+bearer now returns `200`.
+
+`876-billing-api` was the only project whose production environment still
+referenced a `workers.dev` origin; every other Vercel project was audited and is
+clean.
