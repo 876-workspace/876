@@ -1,8 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
+import {
+  DocumentLineItemsEditor,
+  formatMinorUnits,
+  type DocumentItemOption,
+  type DocumentLineDraft,
+  type DocumentTotalsSnapshot,
+} from '@876/billing-ui/document/document-line-items-editor'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
@@ -13,12 +20,10 @@ import { cn } from '@876/ui/lib/utils'
 import {
   emptyDocumentLine,
   prepareDocumentLine,
-  type DocumentItemOption,
-  type EditableDocumentLine,
 } from '../document-create-model'
-import { DocumentLineEditor } from './document-line-editor'
 import { client } from '@/lib/client'
 import {
+  formatMinorAmountInput,
   parseMinorAmountInput,
   parseSignedMinorAmountInput,
   minorAmountInputStep,
@@ -72,9 +77,11 @@ export function DocumentCreateForm({
   )
   const [notes, setNotes] = useState('')
   const [terms, setTerms] = useState('')
-  const [lines, setLines] = useState<EditableDocumentLine[]>([
+  const [lines, setLines] = useState<DocumentLineDraft[]>([
     emptyDocumentLine('line-1'),
   ])
+  const [totalsSnapshot, setTotalsSnapshot] =
+    useState<DocumentTotalsSnapshot | null>(null)
 
   const title = kind === 'quote' ? 'Quote' : 'Invoice'
   const selectedCustomer = customers.find(
@@ -82,11 +89,104 @@ export function DocumentCreateForm({
   )
   const decimalPlaces =
     currencies.find((option) => option.value === currency)?.decimalPlaces ?? 2
+  const editorItems = useMemo(
+    () =>
+      items.map((item) => ({
+        ...item,
+        defaultAmount:
+          item.defaultAmount !== null && item.currency === currency
+            ? formatMinorAmountInput(item.defaultAmount, decimalPlaces)
+            : null,
+      })),
+    [currency, decimalPlaces, items]
+  )
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!priceListId) return () => {
+      cancelled = true
+    }
+
+    const targets = lines.flatMap((line) => {
+      const quantity = Number(line.quantity)
+      if (!line.priceId || !Number.isInteger(quantity) || quantity < 1)
+        return []
+
+      return [{ id: line.id, priceId: line.priceId, quantity }]
+    })
+    if (targets.length === 0)
+      return () => {
+        cancelled = true
+      }
+
+    void Promise.all(
+      targets.map(async (target) => ({
+        id: target.id,
+        result: await client.priceLists.resolve(
+          priceListId,
+          target.priceId,
+          target.quantity
+        ),
+      }))
+    ).then((resolved) => {
+      if (cancelled) return
+
+      const amounts = new Map(
+        resolved.flatMap(({ id, result }) =>
+          result.data && result.data.currency === currency
+            ? [
+                [
+                  id,
+                  formatMinorAmountInput(result.data.amount, decimalPlaces),
+                ] as const,
+              ]
+            : []
+        )
+      )
+      setLines((current) => {
+        if (
+          !current.some(
+            (line) =>
+              amounts.has(line.id) &&
+              amounts.get(line.id) !== line.resolvedSubtotal
+          )
+        )
+          return current
+
+        return current.map((line) => ({
+          ...line,
+          resolvedSubtotal: amounts.get(line.id) ?? null,
+        }))
+      })
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [currency, decimalPlaces, lines, priceListId])
+
+  function handlePriceListChange(value: string) {
+    setPriceListId(value)
+    setLines((current) =>
+      current.map((line) => ({ ...line, resolvedSubtotal: null }))
+    )
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     if (!customerId) {
       setError('Select the customer this document is for.')
+      return
+    }
+
+    if (totalsSnapshot?.status !== 'ready') {
+      setError(
+        totalsSnapshot?.status === 'invalid'
+          ? totalsSnapshot.message
+          : 'Line item totals are still being calculated.'
+      )
       return
     }
 
@@ -198,7 +298,7 @@ export function DocumentCreateForm({
               options={customers}
               onChange={(value) => {
                 setCustomerId(value)
-                setPriceListId(
+                handlePriceListChange(
                   customers.find((customer) => customer.value === value)
                     ?.priceListId ?? ''
                 )
@@ -250,7 +350,7 @@ export function DocumentCreateForm({
               label="Price list (optional)"
               value={priceListId}
               options={priceLists}
-              onChange={setPriceListId}
+              onChange={handlePriceListChange}
             />
             {kind === 'invoice' ? (
               <>
@@ -305,15 +405,26 @@ export function DocumentCreateForm({
         </div>
       </section>
 
-      <DocumentLineEditor
-        kind={kind}
-        lines={lines}
-        items={items}
-        currency={currency}
-        priceListId={priceListId}
-        decimalPlaces={decimalPlaces}
-        onChange={setLines}
-      />
+      <section className="876-card space-y-4 overflow-hidden p-5 sm:p-6">
+        <div>
+          <h2 className="text-base font-semibold text-balance">Line items</h2>
+          <p className="text-muted-foreground mt-1 text-sm text-pretty">
+            Add every product or service included in this {kind}.
+          </p>
+        </div>
+        <DocumentLineItemsEditor
+          lines={lines}
+          items={editorItems}
+          minorUnitDigits={decimalPlaces}
+          formatAmount={(amount) =>
+            `${currency} ${formatMinorUnits(amount, decimalPlaces)}`
+          }
+          allowPercentageDiscount
+          priceListActive={Boolean(priceListId)}
+          onChange={setLines}
+          onTotalsChange={setTotalsSnapshot}
+        />
+      </section>
 
       <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
         <div className="space-y-2">
@@ -399,7 +510,10 @@ export function DocumentCreateForm({
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending || totalsSnapshot?.status !== 'ready'}
+        >
           {isPending ? 'Saving…' : `Save draft ${title.toLowerCase()}`}
         </Button>
       </div>
