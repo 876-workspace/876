@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   calculateDocumentTotals,
   calculateLineSubtotal,
+  formatMinorUnits,
+  parseDecimalToMinorUnits,
   toMinorUnits,
   type DocumentLineAmounts,
 } from './document-totals'
@@ -342,5 +344,126 @@ describe('parity with the Billing service', () => {
     expect(result.data?.linesTotalAmount).toBe(635_500n)
     // 635,500 - 50,000 + 15,000 - 2,500
     expect(result.data?.totalAmount).toBe(598_000n)
+  })
+})
+
+describe('parseDecimalToMinorUnits', () => {
+  it('parses a whole number as minor units', () => {
+    expect(parseDecimalToMinorUnits('1500')).toBe(150_000n)
+  })
+
+  it('parses a two-decimal amount exactly', () => {
+    expect(parseDecimalToMinorUnits('1500.07')).toBe(150_007n)
+  })
+
+  it('parses an amount a float would round wrongly', () => {
+    // 1500.07 * 100 === 150006.99999999999 in IEEE 754.
+    expect(parseDecimalToMinorUnits('1500.07')).not.toBe(150_006n)
+  })
+
+  it('strips grouping commas', () => {
+    expect(parseDecimalToMinorUnits('1,234,567.89')).toBe(123_456_789n)
+  })
+
+  it('pads a single decimal place', () => {
+    expect(parseDecimalToMinorUnits('1.5')).toBe(150n)
+  })
+
+  it('accepts a leading decimal point', () => {
+    expect(parseDecimalToMinorUnits('.5')).toBe(50n)
+  })
+
+  it('accepts a trailing decimal point', () => {
+    expect(parseDecimalToMinorUnits('5.')).toBe(500n)
+  })
+
+  it('parses a negative amount', () => {
+    expect(parseDecimalToMinorUnits('-2.50')).toBe(-250n)
+  })
+
+  it('trims surrounding whitespace', () => {
+    expect(parseDecimalToMinorUnits('  12.34  ')).toBe(1_234n)
+  })
+
+  it('honours a zero-decimal currency', () => {
+    expect(parseDecimalToMinorUnits('1500', 0)).toBe(1_500n)
+  })
+
+  it('honours a three-decimal currency', () => {
+    expect(parseDecimalToMinorUnits('1.234', 3)).toBe(1_234n)
+  })
+
+  it('rejects more decimal places than the currency has, rather than truncating', () => {
+    expect(parseDecimalToMinorUnits('1.234')).toBeNull()
+  })
+
+  it('rejects a decimal on a zero-decimal currency', () => {
+    expect(parseDecimalToMinorUnits('1.5', 0)).toBeNull()
+  })
+
+  it('rejects an empty string', () => {
+    expect(parseDecimalToMinorUnits('')).toBeNull()
+  })
+
+  it('rejects a lone decimal point', () => {
+    expect(parseDecimalToMinorUnits('.')).toBeNull()
+  })
+
+  it('rejects a currency symbol', () => {
+    expect(parseDecimalToMinorUnits('$12.34')).toBeNull()
+  })
+
+  it('rejects letters', () => {
+    expect(parseDecimalToMinorUnits('12.34abc')).toBeNull()
+  })
+
+  it('rejects exponential notation', () => {
+    expect(parseDecimalToMinorUnits('1e3')).toBeNull()
+  })
+
+  it('rejects a negative minorUnitDigits', () => {
+    expect(parseDecimalToMinorUnits('1.00', -1)).toBeNull()
+  })
+
+  it('keeps precision beyond Number.MAX_SAFE_INTEGER', () => {
+    expect(parseDecimalToMinorUnits('90071992547409.93')).toBe(
+      9_007_199_254_740_993n
+    )
+  })
+})
+
+describe('formatMinorUnits', () => {
+  it('renders minor units with two decimal places', () => {
+    expect(formatMinorUnits(150_007n)).toBe('1500.07')
+  })
+
+  it('pads an amount smaller than one major unit', () => {
+    expect(formatMinorUnits(7n)).toBe('0.07')
+  })
+
+  it('renders zero', () => {
+    expect(formatMinorUnits(0n)).toBe('0.00')
+  })
+
+  it('renders a negative amount', () => {
+    expect(formatMinorUnits(-250n)).toBe('-2.50')
+  })
+
+  it('renders a zero-decimal currency without a point', () => {
+    expect(formatMinorUnits(1_500n, 0)).toBe('1500')
+  })
+
+  it('renders a three-decimal currency', () => {
+    expect(formatMinorUnits(1_234n, 3)).toBe('1.234')
+  })
+
+  it('throws for a negative minorUnitDigits, which is a programming error', () => {
+    expect(() => formatMinorUnits(1n, -1)).toThrow(RangeError)
+  })
+
+  it('round-trips through parseDecimalToMinorUnits', () => {
+    for (const amount of [0n, 7n, -250n, 150_007n, 9_007_199_254_740_993n]) {
+      expect(parseDecimalToMinorUnits(formatMinorUnits(amount))).toBe(amount)
+    }
   })
 })

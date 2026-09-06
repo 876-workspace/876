@@ -221,3 +221,56 @@ export function calculateDocumentTotals(
     error: null,
   }
 }
+
+/**
+ * Parses what a person types — `1500`, `1,500.00`, `.5`, `-2.50` — into minor
+ * units, using string arithmetic only.
+ *
+ * A float cannot do this: `1500.07 * 100` is `150006.99999999999`, and money
+ * that rounds the wrong way once is a support ticket. Returns `null` for
+ * anything it cannot read exactly, including more decimal places than the
+ * currency has, so a silently truncated amount can never be written.
+ */
+export function parseDecimalToMinorUnits(
+  input: string,
+  minorUnitDigits = 2
+): bigint | null {
+  if (!Number.isInteger(minorUnitDigits) || minorUnitDigits < 0) return null
+
+  const cleaned = input.trim().replace(/,/g, '')
+  if (cleaned === '') return null
+
+  const match = /^(-?)(\d*)(?:\.(\d*))?$/.exec(cleaned)
+  if (!match) return null
+
+  const [, sign, whole = '', fraction = ''] = match
+  if (whole === '' && fraction === '') return null
+  if (fraction.length > minorUnitDigits) return null
+
+  const padded = fraction.padEnd(minorUnitDigits, '0')
+  const magnitude = BigInt(`${whole || '0'}${padded}`)
+  return sign === '-' ? -magnitude : magnitude
+}
+
+/**
+ * Renders minor units as a plain decimal string, without a currency symbol or
+ * grouping — the inverse of `parseDecimalToMinorUnits`, for populating an
+ * input a person will edit.
+ *
+ * Presentation formatting (symbol, grouping, locale) belongs to the host,
+ * which knows the viewer.
+ */
+export function formatMinorUnits(amount: bigint, minorUnitDigits = 2): string {
+  if (!Number.isInteger(minorUnitDigits) || minorUnitDigits < 0) {
+    throw new RangeError('minorUnitDigits must be a non-negative integer.')
+  }
+  if (minorUnitDigits === 0) return amount.toString()
+
+  const negative = amount < 0n
+  const digits = (negative ? -amount : amount)
+    .toString()
+    .padStart(minorUnitDigits + 1, '0')
+  const whole = digits.slice(0, -minorUnitDigits)
+  const fraction = digits.slice(-minorUnitDigits)
+  return `${negative ? '-' : ''}${whole}.${fraction}`
+}
