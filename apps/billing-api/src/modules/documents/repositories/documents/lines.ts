@@ -10,6 +10,9 @@ import { applyPercentageAdjustment, calculateCatalogAmount } from '../pricing'
 
 type PreparedDocumentLine = {
   itemId: string | null
+  variantId: string | null
+  variantName: string | null
+  variantSku: string | null
   priceId: string | null
   description: string
   unit: string | null
@@ -49,13 +52,27 @@ export async function buildDocumentLines(
   const itemIds = [
     ...new Set(params.flatMap((line) => (line.itemId ? [line.itemId] : []))),
   ]
+  const variantIds = [
+    ...new Set(
+      params.flatMap((line) => (line.variantId ? [line.variantId] : []))
+    ),
+  ]
   const priceIds = [
     ...new Set(params.flatMap((line) => (line.priceId ? [line.priceId] : []))),
   ]
 
-  const [items, prices, priceList] = await Promise.all([
+  const [items, variants, prices, priceList] = await Promise.all([
     prisma.item.findMany({
       where: { id: { in: itemIds }, tenantId, isActive: true },
+    }),
+    prisma.itemVariant.findMany({
+      where: {
+        id: { in: variantIds },
+        tenantId,
+        isActive: true,
+        item: { tenantId, isActive: true, variantMode: 'variant' },
+      },
+      include: { item: true },
     }),
     prisma.price.findMany({
       where: { id: { in: priceIds }, tenantId, isActive: true },
@@ -80,12 +97,15 @@ export async function buildDocumentLines(
   ])
   if (items.length !== itemIds.length)
     return { data: null, error: 'One or more selected items were not found.' }
+  if (variants.length !== variantIds.length)
+    return { data: null, error: 'One or more selected item variants were not found.' }
   if (prices.length !== priceIds.length)
     return { data: null, error: 'One or more selected prices were not found.' }
   if (priceListId && !priceList)
     return { data: null, error: 'The selected price list was not found.' }
 
   const itemById = new Map(items.map((item) => [item.id, item]))
+  const variantById = new Map(variants.map((variant) => [variant.id, variant]))
   const priceById = new Map(prices.map((price) => [price.id, price]))
   const priceListEntryByPriceId = new Map(
     priceList?.entries.map((entry) => [entry.priceId, entry]) ?? []
@@ -97,12 +117,38 @@ export async function buildDocumentLines(
     const selectedItem = line.itemId
       ? (itemById.get(line.itemId) ?? null)
       : null
+    const selectedVariant = line.variantId
+      ? (variantById.get(line.variantId) ?? null)
+      : null
     const selectedPrice = line.priceId
       ? (priceById.get(line.priceId) ?? null)
       : null
     const selectedEntry = selectedPrice
       ? (priceListEntryByPriceId.get(selectedPrice.id) ?? null)
       : null
+
+    const resolvedItem =
+      selectedItem ?? selectedPrice?.item ?? selectedVariant?.item ?? null
+    if (
+      selectedVariant &&
+      (selectedItem?.id ?? selectedPrice?.item?.id ?? selectedVariant.itemId) !==
+        selectedVariant.itemId
+    )
+      return {
+        data: null,
+        error: 'The selected item variant does not belong to this line item.',
+      }
+    if (resolvedItem?.variantMode === 'variant' && !selectedVariant)
+      return {
+        data: null,
+        error: 'Choose a variant for each variant-based item.',
+      }
+    if (selectedVariant && resolvedItem?.variantMode !== 'variant')
+      return {
+        data: null,
+        error: 'The selected item does not use variants.',
+      }
+
     const resolvedCurrency =
       priceList?.mode === 'CUSTOM' && selectedEntry
         ? (priceList.currency ?? selectedPrice?.currency)
@@ -114,7 +160,10 @@ export async function buildDocumentLines(
       }
     }
 
-    const resolvedItem = selectedItem ?? selectedPrice?.item ?? null
+    const variantDefaultAmount =
+      selectedVariant?.defaultSellingCurrency === currency
+        ? selectedVariant.defaultSellingAmount
+        : null
     const defaultItemAmount =
       resolvedItem?.defaultSellingCurrency === currency
         ? resolvedItem.defaultSellingAmount
@@ -124,18 +173,20 @@ export async function buildDocumentLines(
         selectedPrice.unitAmount ??
         selectedPrice.tiers[0]?.unitAmount ??
         0n)
-      : (line.unitAmount ?? defaultItemAmount)
+      : (line.unitAmount ?? variantDefaultAmount ?? defaultItemAmount)
     if (unitAmount === null || unitAmount === undefined) {
       return {
         data: null,
         error:
-          'Each line needs a unit amount or a matching item/price default.',
+          'Each line needs a unit amount or a matching item/variant/price default.',
       }
     }
 
     const description =
       line.description ??
-      resolvedItem?.name ??
+      (resolvedItem && selectedVariant
+        ? `${resolvedItem.name} — ${selectedVariant.name}`
+        : resolvedItem?.name) ??
       selectedPrice?.plan?.name ??
       selectedPrice?.addon?.name ??
       selectedPrice?.plan?.product.name ??
@@ -169,6 +220,9 @@ export async function buildDocumentLines(
     })
     lines.push({
       itemId: resolvedItem?.id ?? null,
+      variantId: selectedVariant?.id ?? null,
+      variantName: selectedVariant?.name ?? null,
+      variantSku: selectedVariant?.sku ?? null,
       priceId: selectedPrice?.id ?? null,
       description,
       unit: resolvedItem?.unit ?? selectedPrice?.unitName ?? null,
