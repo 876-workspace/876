@@ -19,6 +19,9 @@ export default async function NewInvoicePage() {
           priceId: null,
           defaultAmount: item.defaultSellingAmount,
           currency: item.defaultSellingCurrency,
+          trackStock: item.trackStock,
+          stockQuantity: item.stockQuantity,
+          allowOutOfStock: item.allowOutOfStock,
         }))
       : []
   )

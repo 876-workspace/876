@@ -29,6 +29,10 @@ export interface DocumentLineDraft {
   priceId?: string | null
   /** The `value` of the chosen `DocumentItemOption`, or '' for a free-text line. */
   selectionId?: string
+  /** Stock metadata captured from the selected catalogue option for draft UX. */
+  trackStock?: boolean
+  stockQuantity?: number | null
+  allowOutOfStock?: boolean
   description: string
   quantity: string
   unitAmount: string
@@ -58,6 +62,9 @@ export interface DocumentItemOption {
   /** Unit amount in major units, prefilled on selection. */
   defaultAmount: string | null
   currency: string | null
+  trackStock?: boolean
+  stockQuantity?: number | null
+  allowOutOfStock?: boolean
 }
 
 export interface DocumentLineItemsEditorProps {
@@ -107,6 +114,13 @@ export interface DocumentLineItemsEditorProps {
     query: string,
     signal: AbortSignal
   ) => Promise<readonly DocumentItemOption[]>
+
+  /**
+   * Blocks a draft snapshot when tracked Item quantities exceed live stock and
+   * the Item does not allow out-of-stock sales. Invoice enables this; Quote does
+   * not. The Billing API still performs the authoritative check.
+   */
+  enforceItemStock?: boolean
 
   /**
    * Locks the rate cell for a catalogue line, because a price list prices it
@@ -193,6 +207,46 @@ function resolveLine(line: DocumentLineDraft, minorUnitDigits: number) {
   }
 }
 
+function resolveStockError(
+  lines: readonly DocumentLineDraft[]
+): DocumentTotalsSnapshot | null {
+  const requested = new Map<
+    string,
+    { quantity: number; stock: number; label: string; lineIndex: number }
+  >()
+
+  for (const [lineIndex, line] of lines.entries()) {
+    if (!line.itemId || !line.trackStock || line.allowOutOfStock) continue
+
+    const quantity = Number(line.quantity)
+    if (!Number.isInteger(quantity) || quantity <= 0) continue
+
+    const current = requested.get(line.itemId)
+    if (current) {
+      current.quantity += quantity
+      continue
+    }
+
+    requested.set(line.itemId, {
+      quantity,
+      stock: line.stockQuantity ?? 0,
+      label: line.description || 'This item',
+      lineIndex,
+    })
+  }
+
+  for (const value of requested.values()) {
+    if (value.quantity > value.stock)
+      return {
+        status: 'invalid',
+        message: `Only ${value.stock} units of ${value.label} are currently in stock.`,
+        lineIndex: value.lineIndex,
+      }
+  }
+
+  return null
+}
+
 /**
  * Catalogue entries as combobox options, led by the free-text escape hatch so
  * "this is not in the catalogue" is always one click away rather than being
@@ -208,15 +262,22 @@ function toCatalogueOptions(
       description: 'Bill something that is not in the catalogue',
       isAction: true,
     },
-    ...entries.map((entry) => ({
-      value: entry.value,
-      label: entry.label,
-      meta:
+    ...entries.map((entry) => {
+      const price =
         entry.defaultAmount && entry.currency
           ? `${entry.currency} ${entry.defaultAmount}`
-          : undefined,
-      raw: entry,
-    })),
+          : null
+      const stock = entry.trackStock
+        ? `${entry.stockQuantity ?? 0} in stock`
+        : null
+
+      return {
+        value: entry.value,
+        label: entry.label,
+        meta: [price, stock].filter(Boolean).join(' · ') || undefined,
+        raw: entry,
+      }
+    }),
   ]
 }
 
@@ -235,6 +296,7 @@ export function DocumentLineItemsEditor({
   onTotalsChange,
   items,
   onSearchItems,
+  enforceItemStock = false,
   priceListActive = false,
   allowPercentageDiscount = false,
 }: DocumentLineItemsEditorProps) {
@@ -254,16 +316,22 @@ export function DocumentLineItemsEditor({
     [resolved, discountAmount, shippingAmount, adjustmentAmount]
   )
 
+  const stockError = useMemo(
+    () => (enforceItemStock ? resolveStockError(lines) : null),
+    [enforceItemStock, lines]
+  )
+
   const snapshot = useMemo<DocumentTotalsSnapshot>(
     () =>
-      result.error === null
+      stockError ??
+      (result.error === null
         ? { status: 'ready', totals: result.data }
         : {
             status: 'invalid',
             message: result.error.message,
             lineIndex: result.error.lineIndex,
-          },
-    [result]
+          }),
+    [result, stockError]
   )
 
   // Reported from an effect, not during render: a host that stores the
@@ -284,15 +352,20 @@ export function DocumentLineItemsEditor({
   function selectItem(
     index: number,
     selectionId: string,
-    resolved?: DocumentItemOption | null
+    resolvedOption?: DocumentItemOption | null
   ) {
     const option =
-      resolved ?? items?.find((entry) => entry.value === selectionId) ?? null
+      resolvedOption ??
+      items?.find((entry) => entry.value === selectionId) ??
+      null
 
     update(index, {
       selectionId,
       itemId: option?.itemId ?? null,
       priceId: option?.priceId ?? null,
+      trackStock: option?.trackStock ?? false,
+      stockQuantity: option?.stockQuantity ?? null,
+      allowOutOfStock: option?.allowOutOfStock ?? false,
       // The previous resolution belonged to the previous price. Clearing it
       // lets the host re-resolve rather than showing a stale subtotal.
       resolvedSubtotal: null,
