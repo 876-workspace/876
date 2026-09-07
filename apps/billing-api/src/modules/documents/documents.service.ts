@@ -2,6 +2,7 @@ import { getSettings } from '@/config'
 import { AppHttpError, appError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
 import { getLogger } from '@/platform/logger'
+import type { IdempotencyContext } from '@/types/commerce'
 
 import { documentList, serializeDocument } from './documents.serializers'
 import { creditNotes } from './repositories/credit-notes'
@@ -128,13 +129,14 @@ export const documentsService = {
     tenantId: string,
     id: string,
     body: InvoiceFinalizeParams,
-    sourceAppId?: string
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
   ) {
     if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
     return {
       object: 'invoice',
       ...(await unwrap(
-        await finalizeInvoiceWorkflow(tenantId, id, body),
+        await finalizeInvoiceWorkflow(tenantId, id, body, idempotency),
         'invoice'
       )),
     }
@@ -144,13 +146,14 @@ export const documentsService = {
     tenantId: string,
     id: string,
     body: InvoiceVoidParams,
-    sourceAppId?: string
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
   ) {
     if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
     return {
       object: 'invoice',
       ...(await unwrap(
-        await voidInvoiceWorkflow(tenantId, id, body),
+        await voidInvoiceWorkflow(tenantId, id, body, idempotency),
         'invoice'
       )),
     }
