@@ -119,7 +119,7 @@ export async function POST(request: Request) {
 
   const link = await storage.resourceLinks.create({
     file_id: file.id,
-    app_id: '876-invoice',
+    app_id: '876-billing',
     resource_type: isVariant ? 'item-variant' : 'item',
     resource_id: target.variantId ?? target.itemId,
     relation: 'image',
