@@ -16,7 +16,7 @@ type SellableResolutionResult<T> =
   | { data: T; error: null }
   | SellableResolutionError
 
-function key(reference: SellableReference): string {
+export function sellableKey(reference: SellableReference): string {
   return `${reference.itemId}:${reference.variantId ?? ''}`
 }
 
@@ -29,6 +29,36 @@ function failure(
 }
 
 /**
+ * Resolves Variant-only legacy/document selections to canonical references.
+ * Canonical callers should already carry both Item and Variant ids.
+ */
+export async function resolveVariantReferences(
+  tenantId: string,
+  variantIds: readonly string[]
+): Promise<SellableResolutionResult<Map<string, SellableReference>>> {
+  const uniqueIds = [...new Set(variantIds)]
+  if (uniqueIds.length === 0) return { data: new Map(), error: null }
+
+  const [, variants] = await loadSellables(tenantId, [], uniqueIds)
+  if (variants.length !== uniqueIds.length)
+    return failure(
+      'One or more selected item variants were not found.',
+      404,
+      'billing/item-variant-not-found'
+    )
+
+  return {
+    data: new Map(
+      variants.map((variant) => [
+        variant.id,
+        { itemId: variant.itemId, variantId: variant.id },
+      ])
+    ),
+    error: null,
+  }
+}
+
+/**
  * Resolves tenant-owned Item/Variant selections without leaking catalogue row
  * structure into consuming workflows.
  */
@@ -36,7 +66,9 @@ export async function resolveSellables(
   tenantId: string,
   references: readonly SellableReference[]
 ): Promise<SellableResolutionResult<Map<string, ResolvedSellable>>> {
-  const unique = new Map(references.map((reference) => [key(reference), reference]))
+  const unique = new Map(
+    references.map((reference) => [sellableKey(reference), reference])
+  )
   if (unique.size === 0) return { data: new Map(), error: null }
 
   const itemIds = [...new Set([...unique.values()].map((entry) => entry.itemId))]
@@ -97,7 +129,7 @@ export async function resolveSellables(
           ? ({ type: 'variant', id: variant.id } as const)
           : ({ type: 'item', id: item.id } as const)
 
-    resolved.set(key(reference), {
+    resolved.set(sellableKey(reference), {
       reference,
       identity: {
         name: item.name,
@@ -126,7 +158,7 @@ export async function resolveSellable(
   const result = await resolveSellables(tenantId, [reference])
   if (result.error !== null) return result
 
-  const sellable = result.data.get(key(reference))
+  const sellable = result.data.get(sellableKey(reference))
   return sellable
     ? { data: sellable, error: null }
     : failure('The selected item was not found.', 404, 'item/not-found')
