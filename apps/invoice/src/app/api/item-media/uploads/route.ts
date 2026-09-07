@@ -133,5 +133,19 @@ export async function POST(request: Request) {
       { status: 400 }
     )
 
+  const billing = await getBilling(target.organizationId)
+  const attached = target.variantId
+    ? await billing.items.attachVariantMedia(
+        target.itemId,
+        target.variantId,
+        { fileId: file.id }
+      )
+    : await billing.items.attachMedia(target.itemId, { fileId: file.id })
+  if (attached.error)
+    return apiJson(
+      { error: 'The image is ready in Storage but could not be attached to the Item. Retry completion.' },
+      { status: 502 }
+    )
+
   return apiJson({ data: { file, link: link.data } })
 }
