@@ -1,4 +1,5 @@
 import { AppHttpError, appError } from '@/http/errors'
+import { adjust as adjustInventory } from '@/modules/inventory'
 import type { ServiceResult } from './schemas/api'
 import type {
   ItemMediaAttachParams,
@@ -186,15 +187,14 @@ export const itemVariantsService = {
     createdBy?: string,
     sourceAppId?: string
   ) {
-    await ownedItem(tenantId, itemId, sourceAppId)
+    await retrieveVariant(tenantId, itemId, variantId, sourceAppId)
     await unwrap(
-      await items.variants.adjustStock(
-        tenantId,
-        itemId,
-        variantId,
-        body,
-        createdBy
-      )
+      await adjustInventory(tenantId, {
+        target: { type: 'variant', id: variantId },
+        quantity: body.quantity,
+        note: body.note,
+        createdBy,
+      })
     )
     return retrieveVariant(tenantId, itemId, variantId, sourceAppId)
   },
