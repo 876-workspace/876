@@ -34,9 +34,14 @@ export interface BillingItemMediaTarget {
   variantId: string | null
 }
 
+export interface BillingItemMediaStoragePort {
+  uploads: Pick<StorageServiceClient['uploads'], 'create' | 'complete'>
+  resourceLinks: Pick<StorageServiceClient['resourceLinks'], 'create' | 'list'>
+}
+
 export interface BillingItemMediaUploadOptions {
   sourceAppId: '876-billing' | '876-invoice'
-  storage: StorageServiceClient
+  storage: BillingItemMediaStoragePort
   attach(fileId: string): Promise<boolean>
 }
 
@@ -63,7 +68,7 @@ function resourceIdentity(target: BillingItemMediaTarget) {
 }
 
 async function ensureImageLink(
-  storage: StorageServiceClient,
+  storage: BillingItemMediaStoragePort,
   target: BillingItemMediaTarget,
   fileId: string
 ) {
