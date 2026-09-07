@@ -28,6 +28,10 @@ function createExistingWorkspaceTx(options?: {
         provisioningVersion: 3,
       }),
     },
+    paymentMode: {
+      findMany: vi.fn().mockResolvedValue([]),
+      createMany: vi.fn().mockResolvedValue({ count: 3 }),
+    },
     role: {
       findFirst: vi.fn().mockResolvedValue(ownerRole),
       create: vi.fn(async ({ data }: { data: { id: string } }) => ({
@@ -62,6 +66,13 @@ describe('finance-created workspace Billing upgrade', () => {
         roleId: 'role_owner',
         status: 'ACTIVE',
       }),
+    })
+    expect(tx.paymentMode.createMany).toHaveBeenCalledWith({
+      data: expect.arrayContaining([
+        expect.objectContaining({ name: 'Cash', isSystem: true }),
+        expect.objectContaining({ name: 'Credit Card', isSystem: true }),
+        expect.objectContaining({ name: 'Bank Transfer', isSystem: true }),
+      ]),
     })
   })
 

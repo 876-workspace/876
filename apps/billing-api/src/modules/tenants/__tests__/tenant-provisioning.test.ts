@@ -17,7 +17,8 @@ function createTx(existingSlugs: string[] = []) {
     tenantCurrency: unknown[]
     role: unknown[]
     member: unknown[]
-  } = { tenant: [], tenantCurrency: [], role: [], member: [] }
+    paymentMode: unknown[]
+  } = { tenant: [], tenantCurrency: [], role: [], member: [], paymentMode: [] }
   let byOrganization: TenantRow | null = null
 
   const tx = {
@@ -45,6 +46,13 @@ function createTx(existingSlugs: string[] = []) {
       create: vi.fn(async ({ data }: { data: unknown }) => {
         created.tenantCurrency.push(data)
         return data
+      }),
+    },
+    paymentMode: {
+      findMany: vi.fn(async () => []),
+      createMany: vi.fn(async ({ data }: { data: unknown[] }) => {
+        created.paymentMode.push(...data)
+        return { count: data.length }
       }),
     },
     role: {
@@ -126,6 +134,11 @@ describe('provisionTenantWorkspace', () => {
         }),
         expect.objectContaining({ slug: 'admin', isSystem: true }),
         expect.objectContaining({ slug: 'staff', isSystem: true }),
+      ])
+      expect(harness.created.paymentMode).toEqual([
+        expect.objectContaining({ name: 'Cash', isSystem: true, isDefault: false }),
+        expect.objectContaining({ name: 'Credit Card', isSystem: true, isDefault: false }),
+        expect.objectContaining({ name: 'Bank Transfer', isSystem: true, isDefault: true }),
       ])
     })
 
