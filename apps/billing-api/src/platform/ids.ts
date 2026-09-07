@@ -4,6 +4,8 @@ const entityPrefixes: Record<string, string> = {
   Tenant: 'ten',
   AppFinanceConnection: 'afc',
   ModulePreference: 'mpref',
+  CommandIdempotencyKey: 'idem',
+  OutboxEvent: 'evt',
   Item: 'item',
   ItemOption: 'iopt',
   ItemOptionValue: 'ioval',
