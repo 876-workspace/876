@@ -23,6 +23,7 @@ export const client = {
 export { customers } from './customers'
 export { items } from './items'
 export { documents } from './documents'
+export type { DocumentUpdateParams } from './documents'
 export { appMemberships } from './app-memberships'
 export { onboarding } from './onboarding'
 export { roles } from './roles'

@@ -1,23 +1,47 @@
 /** @vitest-environment jsdom */
 
+import '@testing-library/jest-dom/vitest'
+
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ create: vi.fn() }))
+const mocks = vi.hoisted(() => ({ create: vi.fn(), customerList: vi.fn() }))
 
 vi.mock('@/lib/client', () => ({
-  client: { documents: { create: mocks.create } },
+  client: {
+    customers: { list: mocks.customerList },
+    documents: { create: mocks.create },
+  },
 }))
 
 import { DocumentCreateForm } from './document-create-form'
 
-const customers = Promise.resolve([{ id: 'cus_123', name: 'Alejandra Reyes' }])
+const customers = [{
+  id: 'cus_123',
+  name: 'Alejandra Reyes',
+  companyName: null,
+  email: 'alejandra@example.test',
+  phone: '+15550100',
+  workPhone: null,
+  primaryContact: null,
+}]
+
+/**
+ * The customer control is a server-backed typeahead: it fetches nothing until
+ * the character threshold is reached, so a test has to type rather than click.
+ */
+async function chooseCustomer(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByRole('combobox', { name: 'Customer' }), 'ale')
+  await user.click(
+    await screen.findByRole('option', { name: /Alejandra Reyes/ })
+  )
+}
 
 async function fillValidDocument(user: ReturnType<typeof userEvent.setup>) {
-  await user.selectOptions(screen.getByLabelText('Customer'), 'cus_123')
+  await chooseCustomer(user)
   await user.type(screen.getByLabelText('Line 1 description'), 'Consulting')
   await user.type(screen.getByLabelText('Line 1 rate'), '1500.07')
 }
@@ -29,12 +53,12 @@ describe('DocumentCreateForm', () => {
       data: null,
       error: { code: 'billing/failed', message: 'Invoice could not be saved.' },
     })
+    mocks.customerList.mockResolvedValue({ data: { data: customers }, error: null })
   })
 
   it('renders the shared line-item editor for manual invoice lines', async () => {
     await act(async () => {
-      render(<DocumentCreateForm kind="invoice" customers={customers} />)
-      await customers
+      render(<DocumentCreateForm kind="invoice" />)
     })
 
     expect(screen.getByLabelText('Line 1 description')).not.toBeNull()
@@ -54,22 +78,16 @@ describe('DocumentCreateForm', () => {
   })
 
   it('keeps the customer control loading while customer options resolve', async () => {
-    const pendingCustomers = new Promise<{ id: string; name: string }[]>(
-      () => {}
-    )
     await act(async () => {
-      render(<DocumentCreateForm kind="invoice" customers={pendingCustomers} />)
+      render(<DocumentCreateForm kind="invoice" />)
     })
 
-    expect(screen.getByLabelText('Customer').hasAttribute('disabled')).toBe(
-      true
-    )
-    expect(screen.getByText('Loading customers…')).not.toBeNull()
+    expect(screen.getByRole('combobox', { name: 'Customer' })).not.toBeDisabled()
   })
 
   it('blocks the request when no customer is selected', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
     await screen.findByLabelText('Customer')
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
@@ -82,7 +100,7 @@ describe('DocumentCreateForm', () => {
 
   it('submits after the shared totals snapshot is ready', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
     await fillValidDocument(user)
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
@@ -92,7 +110,7 @@ describe('DocumentCreateForm', () => {
 
   it('blocks submission and shows the shared totals message when totals are invalid', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
     await fillValidDocument(user)
     await user.type(screen.getByLabelText('Line 1 discount'), '2000')
@@ -106,12 +124,9 @@ describe('DocumentCreateForm', () => {
 
   it('blocks the request when a line description is missing', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
-    await user.selectOptions(
-      await screen.findByLabelText('Customer'),
-      'cus_123'
-    )
+    await chooseCustomer(user)
     await user.type(screen.getByLabelText('Line 1 rate'), '10')
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
 
@@ -125,12 +140,9 @@ describe('DocumentCreateForm', () => {
 
   it('blocks the request when a line rate is missing', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
-    await user.selectOptions(
-      await screen.findByLabelText('Customer'),
-      'cus_123'
-    )
+    await chooseCustomer(user)
     await user.type(screen.getByLabelText('Line 1 description'), 'Consulting')
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
 
@@ -144,7 +156,7 @@ describe('DocumentCreateForm', () => {
 
   it('posts schema-shaped minor-unit integers through the invoice client', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
     await fillValidDocument(user)
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
@@ -172,7 +184,7 @@ describe('DocumentCreateForm', () => {
 
   it('keeps entered values on screen when the invoice request is rejected', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="invoice" customers={customers} />)
+    render(<DocumentCreateForm kind="invoice" />)
 
     await fillValidDocument(user)
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
@@ -191,7 +203,7 @@ describe('DocumentCreateForm', () => {
   })
 
   it('renders quote-specific title and submission copy', async () => {
-    render(<DocumentCreateForm kind="quote" customers={customers} />)
+    render(<DocumentCreateForm kind="quote" />)
 
     expect(await screen.findByLabelText('Quote date')).not.toBeNull()
     expect(
@@ -203,7 +215,7 @@ describe('DocumentCreateForm', () => {
 
   it('posts a quote submission to the quote endpoint with the exact body', async () => {
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="quote" customers={customers} />)
+    render(<DocumentCreateForm kind="quote" />)
 
     await fillValidDocument(user)
     fireEvent.change(screen.getByLabelText('Quote date'), {
@@ -242,7 +254,7 @@ describe('DocumentCreateForm', () => {
       error: { code: 'billing/failed', message: 'Quote could not be saved.' },
     })
     const user = userEvent.setup()
-    render(<DocumentCreateForm kind="quote" customers={customers} />)
+    render(<DocumentCreateForm kind="quote" />)
 
     await fillValidDocument(user)
     await user.click(screen.getByRole('button', { name: 'Add quote' }))

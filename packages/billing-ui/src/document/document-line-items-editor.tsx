@@ -13,6 +13,7 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Plus, Trash } from '@876/ui/icons'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { SearchableSelect } from '@876/ui/searchable-select'
 
 /**
  * One editable row. Amounts are the raw strings the person typed, so a
@@ -291,26 +292,16 @@ export function DocumentLineItemsEditor({
               <tr key={line.id} className="border-b last:border-0">
                 {items ? (
                   <td className="py-2 pr-3">
-                    <NativeSelect
-                      aria-label={`Line ${index + 1} item`}
+                    <SearchableSelect
+                      id={`line-${line.id}-item`}
+                      ariaLabel={`Line ${index + 1} item`}
                       value={line.selectionId ?? ''}
                       disabled={readOnly}
-                      onChange={(event) =>
-                        selectItem(index, event.target.value)
-                      }
-                    >
-                      <NativeSelectOption value="">
-                        Custom line
-                      </NativeSelectOption>
-                      {items.map((option) => (
-                        <NativeSelectOption
-                          key={option.value}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
+                      placeholder="One-off line"
+                      searchPlaceholder="Search catalogue…"
+                      options={[{ value: '', label: 'One-off line' }, ...items]}
+                      onValueChange={(value) => selectItem(index, value)}
+                    />
                   </td>
                 ) : null}
                 <td className="py-2 pr-3">

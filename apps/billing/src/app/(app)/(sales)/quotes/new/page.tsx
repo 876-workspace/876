@@ -4,7 +4,6 @@ import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
 import { formatPriceCadence } from '@/lib/format'
 import { service } from '@/lib/service'
 
@@ -13,8 +12,7 @@ export const metadata = { title: 'New Quote' }
 export default async function NewQuotePage() {
   const context = await requirePagePermission('sales:write')
 
-  const [customers, items, prices, priceLists, currencies] = await Promise.all([
-    service.customers.listDocumentRecipients(context.tenant.id),
+  const [items, prices, priceLists, currencies] = await Promise.all([
     service.items.list(context.tenant.id),
     service.prices.list(context.tenant.id, true),
     service.priceLists.list(context.tenant.id, true),
@@ -46,7 +44,6 @@ export default async function NewQuotePage() {
         kind="quote"
         defaultCurrency={context.tenant.defaultCurrency}
         returnUrl="/quotes"
-        customers={customers.map(toDocumentCustomerOption)}
         items={[
           ...items.map((item) => ({
             value: `item:${item.id}`,

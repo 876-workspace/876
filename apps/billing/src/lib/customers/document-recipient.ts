@@ -11,7 +11,7 @@ interface DocumentRecipient {
   email: string | null
   phone: string | null
   workPhone: string | null
-  priceListId: string | null
+  priceListId?: string | null
   primaryContact?: {
     salutation?: string | null
     firstName?: string | null
@@ -46,7 +46,7 @@ export function toDocumentCustomerOption(
   return {
     value: customer.id,
     label: organizationName ?? contactName ?? customer.name,
-    priceListId: customer.priceListId,
+    priceListId: customer.priceListId ?? null,
     organizationName,
     contactName,
     email: contact?.email ?? customer.email,

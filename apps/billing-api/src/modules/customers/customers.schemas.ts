@@ -63,6 +63,7 @@ export const customerUpdateBodySchema = customerCreateBodySchema
   .refine((body) => Object.keys(body).length > 0, 'Provide at least one field.')
 
 export const customerListQuerySchema = z.strictObject({
+  q: z.string().trim().max(160).optional(),
   status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
   userId: z.string().min(1).optional(),
   organizationId: z.string().min(1).optional(),
@@ -79,6 +80,7 @@ export const customerListQuerySchema = z.strictObject({
   limit: z.coerce.number().int().min(1).max(100).default(100),
 })
 export const integrationCustomerListQuerySchema = z.strictObject({
+  q: z.string().trim().max(160).optional(),
   status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
   user_id: z.string().min(1).optional(),
   organization_id: z.string().min(1).optional(),

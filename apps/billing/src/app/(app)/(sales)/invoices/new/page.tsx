@@ -2,7 +2,6 @@ import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
 import { formatPriceCadence } from '@/lib/format'
 import { service } from '@/lib/service'
 
@@ -11,9 +10,8 @@ export const metadata = { title: 'New Invoice' }
 export default async function NewInvoicePage() {
   const context = await requirePagePermission('sales:write')
 
-  const [customers, items, prices, priceLists, currencies, salespeople] =
+  const [items, prices, priceLists, currencies, salespeople] =
     await Promise.all([
-      service.customers.listDocumentRecipients(context.tenant.id),
       service.items.list(context.tenant.id),
       service.prices.list(context.tenant.id, true),
       service.priceLists.list(context.tenant.id, true),
@@ -31,7 +29,6 @@ export default async function NewInvoicePage() {
         kind="invoice"
         defaultCurrency={context.tenant.defaultCurrency}
         returnUrl="/invoices"
-        customers={customers.map(toDocumentCustomerOption)}
         items={[
           ...items.map((item) => ({
             value: `item:${item.id}`,

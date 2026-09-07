@@ -36,6 +36,7 @@ export function createIntegrationCustomersResource(
           method: 'GET',
           path: collectionPath(organizationId),
           query: {
+            q: params.q,
             ...toCursorQuery(params),
             status: params.status,
             user_id: params.userId,

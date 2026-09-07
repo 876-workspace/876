@@ -1,10 +1,19 @@
 'use client'
 
-import { Suspense, use, useState, useTransition, type FormEvent } from 'react'
+import {
+  Suspense,
+  use,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from 'react'
 import { useRouter } from 'next/navigation'
 import {
   DocumentLineItemsEditor,
   formatMinorUnits,
+  type DocumentItemOption,
   type DocumentLineDraft,
   type DocumentTotalsSnapshot,
 } from '@876/billing-ui/document/document-line-items-editor'
@@ -12,7 +21,7 @@ import { Button } from '@876/ui/button'
 import { AppError } from '@876/ui/app-error'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
-import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { AsyncCombobox } from '@876/ui/async-combobox'
 import { Textarea } from '@876/ui/textarea'
 
 import { client } from '@/lib/client'
@@ -20,7 +29,21 @@ import { initialDocumentLine, toInvoiceLine } from '../document-create-model'
 
 export type DocumentKind = 'invoice' | 'quote'
 
-type CustomerOption = { id: string; name: string }
+type CustomerOption = {
+  id: string
+  name: string
+  companyName: string | null
+  email: string | null
+  phone: string | null
+  workPhone: string | null
+  primaryContact: {
+    firstName: string | null
+    lastName: string | null
+    email: string | null
+    workPhone: string | null
+    mobilePhone: string | null
+  } | null
+}
 
 const documentConfig = {
   invoice: {
@@ -37,6 +60,16 @@ const documentConfig = {
   },
 } as const
 
+/**
+ * A stable identity for "this host supplied no catalogue".
+ *
+ * `use()` suspends on the promise it is given, so a `Promise.resolve([])`
+ * written as a default parameter would be a *new* promise on every render and
+ * re-suspend the line-items subtree forever, which silently prevents its totals
+ * snapshot from ever reaching the form.
+ */
+const NO_ITEMS: Promise<DocumentItemOption[]> = Promise.resolve([])
+
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -48,13 +81,15 @@ function toUnixTimestamp(value: string): number | null {
 
 export function DocumentCreateForm({
   kind,
-  customers,
+  items = NO_ITEMS,
 }: {
   kind: DocumentKind
-  customers: Promise<CustomerOption[]>
+  items?: Promise<DocumentItemOption[]>
 }) {
   const router = useRouter()
   const [customerId, setCustomerId] = useState('')
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<CustomerOption | null>(null)
   const [issueDate, setIssueDate] = useState(todayInputValue)
   const [notes, setNotes] = useState('')
   const [terms, setTerms] = useState('')
@@ -66,7 +101,6 @@ export function DocumentCreateForm({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const config = documentConfig[kind]
-
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
@@ -125,14 +159,77 @@ export function DocumentCreateForm({
       <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
         <div className="space-y-2">
           <Label htmlFor="invoice-customer">Customer</Label>
-          <Suspense fallback={<LoadingCustomerSelect />}>
-            <CustomerSelect
-              customers={customers}
-              value={customerId}
-              onChange={setCustomerId}
-              disabled={isPending}
-            />
-          </Suspense>
+          <AsyncCombobox
+            id="invoice-customer"
+            ariaLabel="Customer"
+            value={customerId}
+            selectedLabel={
+              selectedCustomer
+                ? (selectedCustomer.companyName ?? selectedCustomer.name)
+                : ''
+            }
+            onValueChange={(value, option) => {
+              setCustomerId(value)
+              setSelectedCustomer(
+                (option?.raw as CustomerOption | undefined) ?? null
+              )
+            }}
+            onSearch={async (query, signal) => {
+              const result = await client.customers.list(
+                { q: query, limit: 20 },
+                { signal }
+              )
+              if (result.error || !result.data) throw new Error('search failed')
+
+              return result.data.data.map((customer) => ({
+                value: customer.id,
+                label: customer.companyName ?? customer.name,
+                description: customer.email ?? undefined,
+                raw: customer,
+              }))
+            }}
+            placeholder="Search customers…"
+            emptyMessage="No customers found."
+            disabled={isPending}
+          />
+          {selectedCustomer ? (
+            <div className="border-border mt-4 border-t pt-4 text-sm">
+              <p className="font-semibold">
+                {selectedCustomer.companyName ?? selectedCustomer.name}
+              </p>
+              {selectedCustomer.primaryContact ? (
+                <p className="text-muted-foreground mt-1">
+                  {[
+                    selectedCustomer.primaryContact.firstName,
+                    selectedCustomer.primaryContact.lastName,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                </p>
+              ) : null}
+              {[
+                selectedCustomer.primaryContact?.email ?? selectedCustomer.email,
+                selectedCustomer.primaryContact?.mobilePhone ??
+                  selectedCustomer.primaryContact?.workPhone ??
+                  selectedCustomer.phone ??
+                  selectedCustomer.workPhone,
+              ]
+                .filter(Boolean)
+                .join(' · ') ? (
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {[
+                    selectedCustomer.primaryContact?.email ?? selectedCustomer.email,
+                    selectedCustomer.primaryContact?.mobilePhone ??
+                      selectedCustomer.primaryContact?.workPhone ??
+                      selectedCustomer.phone ??
+                      selectedCustomer.workPhone,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <div className="space-y-2">
           <Label htmlFor="invoice-issue-date">{config.title} date</Label>
@@ -155,12 +252,14 @@ export function DocumentCreateForm({
             {config.title.toLowerCase()}.
           </p>
         </div>
-        <DocumentLineItemsEditor
-          lines={lines}
-          onChange={setLines}
-          formatAmount={formatMinorUnits}
-          onTotalsChange={setTotalsSnapshot}
-        />
+        <Suspense fallback={<LineItemsLoading />}>
+          <InvoiceLineItems
+            items={items}
+            lines={lines}
+            onChange={setLines}
+            onTotalsChange={setTotalsSnapshot}
+          />
+        </Suspense>
       </section>
 
       <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
@@ -208,42 +307,33 @@ export function DocumentCreateForm({
   )
 }
 
-function LoadingCustomerSelect() {
+function InvoiceLineItems({
+  items,
+  lines,
+  onChange,
+  onTotalsChange,
+}: {
+  items: Promise<DocumentItemOption[]>
+  lines: DocumentLineDraft[]
+  onChange: (lines: DocumentLineDraft[]) => void
+  onTotalsChange: (snapshot: DocumentTotalsSnapshot) => void
+}) {
+  // An empty array is truthy, and the editor decides whether to render its
+  // Item column from the *presence* of this prop. Pass undefined for an empty
+  // catalogue so a host with no items does not get an empty picker column.
+  const catalogue = use(items)
+
   return (
-    <NativeSelect id="invoice-customer" disabled aria-label="Customer">
-      <NativeSelectOption value="">Loading customers…</NativeSelectOption>
-    </NativeSelect>
+    <DocumentLineItemsEditor
+      items={catalogue.length > 0 ? catalogue : undefined}
+      lines={lines}
+      onChange={onChange}
+      formatAmount={formatMinorUnits}
+      onTotalsChange={onTotalsChange}
+    />
   )
 }
 
-function CustomerSelect({
-  customers,
-  value,
-  onChange,
-  disabled,
-}: {
-  customers: Promise<CustomerOption[]>
-  value: string
-  onChange: (value: string) => void
-  disabled: boolean
-}) {
-  const options = use(customers)
-
-  return (
-    <NativeSelect
-      id="invoice-customer"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      disabled={disabled || options.length === 0}
-    >
-      <NativeSelectOption value="">
-        {options.length === 0 ? 'No customers available' : 'Select customer'}
-      </NativeSelectOption>
-      {options.map((customer) => (
-        <NativeSelectOption key={customer.id} value={customer.id}>
-          {customer.name}
-        </NativeSelectOption>
-      ))}
-    </NativeSelect>
-  )
+function LineItemsLoading() {
+  return <div className="h-24 animate-pulse rounded-md bg-muted" />
 }

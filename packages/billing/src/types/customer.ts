@@ -539,6 +539,8 @@ export type CustomerList = import('./common').List<Customer>
  * Parameters for listing customers.
  */
 export interface CustomerListParams {
+  /** Case-insensitive match on customer name, company, email, or reference. */
+  q?: string
   /**
    * Filter by lifecycle status. One of `ACTIVE` or `ARCHIVED`.
    */

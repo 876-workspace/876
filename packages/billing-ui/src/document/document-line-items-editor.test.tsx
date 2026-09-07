@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import userEvent from '@testing-library/user-event'
 import { formatMinorUnits } from '@876/core/money'
@@ -425,9 +425,13 @@ describe('DocumentLineItemsEditor — catalogue and percentage discount', () => 
       const user = userEvent.setup()
       const { onChange } = renderEditor({ items })
 
-      await user.selectOptions(
-        screen.getByLabelText('Line 1 item'),
-        'price:price_1'
+      const itemSelect = screen.getByLabelText('Line 1 item')
+      fireEvent.click(itemSelect)
+      await waitFor(() =>
+        expect(itemSelect).toHaveAttribute('aria-expanded', 'true')
+      )
+      await user.click(
+        screen.getByRole('option', { name: 'Consulting hour' })
       )
 
       expect(onChange).toHaveBeenCalledTimes(1)
@@ -458,7 +462,12 @@ describe('DocumentLineItemsEditor — catalogue and percentage discount', () => 
         ],
       })
 
-      await user.selectOptions(screen.getByLabelText('Line 1 item'), '')
+      const itemSelect = screen.getByLabelText('Line 1 item')
+      fireEvent.click(itemSelect)
+      await waitFor(() =>
+        expect(itemSelect).toHaveAttribute('aria-expanded', 'true')
+      )
+      await user.click(screen.getByRole('option', { name: 'One-off line' }))
 
       expect(onChange.mock.calls[0]?.[0]?.[0]).toMatchObject({
         selectionId: '',

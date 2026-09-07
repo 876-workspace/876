@@ -33,6 +33,7 @@ export type SearchableSelectOption = {
 type Props = {
   /** Applied to the trigger so a `<Label htmlFor>` points at the control. */
   id?: string
+  ariaLabel?: string
   options: readonly SearchableSelectOption[]
   /** The selected option's `value`, or `''` when nothing is selected. */
   value: string
@@ -40,6 +41,10 @@ type Props = {
   placeholder?: string
   searchPlaceholder?: string
   emptyMessage?: string
+  /** Called as the popup search query changes, for server-backed options. */
+  onSearchChange?: (query: string) => void
+  loading?: boolean
+  error?: string | null
   disabled?: boolean
   className?: string
 }
@@ -58,12 +63,16 @@ type Props = {
  */
 export function SearchableSelect({
   id,
+  ariaLabel,
   options,
   value,
   onValueChange,
   placeholder = 'Select an option',
   searchPlaceholder = 'Search…',
   emptyMessage = 'No matches found.',
+  onSearchChange,
+  loading = false,
+  error = null,
   disabled,
   className,
 }: Props) {
@@ -74,10 +83,12 @@ export function SearchableSelect({
       onValueChange={(next) =>
         onValueChange(typeof next === 'string' ? next : '')
       }
+      onInputValueChange={onSearchChange}
       disabled={disabled}
     >
       <ComboboxTrigger
         id={id}
+        aria-label={ariaLabel}
         data-placeholder={value === '' ? '' : undefined}
         className={cn(
           "border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground dark:bg-input/30 dark:hover:bg-input/50 flex h-9 w-full items-center justify-between gap-1.5 rounded-md border bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-3 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -89,7 +100,9 @@ export function SearchableSelect({
 
       <ComboboxContent>
         <ComboboxInput placeholder={searchPlaceholder} showTrigger={false} />
-        <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
+        <ComboboxEmpty>
+          {error ?? (loading ? 'Loading…' : emptyMessage)}
+        </ComboboxEmpty>
         <ComboboxList>
           {(option: SearchableSelectOption) => (
             <ComboboxItem

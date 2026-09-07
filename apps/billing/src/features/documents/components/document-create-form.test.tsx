@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   invoiceCreate: vi.fn(),
   quoteCreate: vi.fn(),
   resolvePrice: vi.fn(),
+  customerList: vi.fn(),
   push: vi.fn(),
   refresh: vi.fn(),
 }))
@@ -18,6 +19,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/client', () => ({
   client: {
     invoices: { create: mocks.invoiceCreate },
+    customers: { list: mocks.customerList },
     priceLists: { resolve: mocks.resolvePrice },
     quotes: { create: mocks.quoteCreate },
   },
@@ -27,14 +29,18 @@ import { DocumentCreateForm } from './document-create-form'
 
 const customers = [
   {
-    value: 'cus_123',
-    label: 'Kingston Studio',
-    priceListId: null,
-    organizationName: 'Kingston Studio',
-    contactName: null,
+    id: 'cus_123',
+    name: 'Kingston Studio',
+    customerKind: 'BUSINESS',
+    companyName: 'Kingston Studio',
+    salutation: null,
+    firstName: null,
+    lastName: null,
     email: null,
     phone: null,
-    address: null,
+    workPhone: null,
+    priceListId: null,
+    primaryContact: null,
   },
 ]
 const items = [
@@ -57,7 +63,6 @@ function renderForm(
   return render(
     <DocumentCreateForm
       kind="invoice"
-      customers={customers}
       items={items}
       currencies={currencies}
       defaultCurrency="JMD"
@@ -68,7 +73,15 @@ function renderForm(
 }
 
 async function fillValidLine(user: ReturnType<typeof userEvent.setup>) {
-  await user.selectOptions(screen.getByLabelText('Customer'), 'cus_123')
+  // The customer control is a server-backed typeahead: it fetches nothing
+  // until the character threshold is reached, so type rather than click.
+  await user.type(
+    screen.getByRole('combobox', { name: 'Customer' }),
+    'kingston'
+  )
+  await user.click(
+    await screen.findByRole('option', { name: /Kingston Studio/ })
+  )
   await user.type(screen.getByLabelText('Line 1 description'), 'Consulting')
   await user.type(screen.getByLabelText('Line 1 rate'), '125.00')
 }
@@ -82,22 +95,41 @@ describe('DocumentCreateForm', () => {
     })
     mocks.quoteCreate.mockResolvedValue({ data: { id: 'qt_123' }, error: null })
     mocks.resolvePrice.mockResolvedValue({ data: null, error: null })
+    mocks.customerList.mockResolvedValue({
+      data: { data: customers },
+      error: null,
+    })
   })
 
-  it('renders every catalogue option in the shared editor', () => {
+// The line-item catalogue control is a SearchableSelect combobox, not a native
+// <select>, so it is opened and chosen by role. Mirrors the interaction in
+// packages/ui/src/components/searchable-select.test.tsx.
+async function chooseCatalogueOption(
+  user: ReturnType<typeof userEvent.setup>,
+  lineLabel: string,
+  optionName: string | RegExp
+) {
+  await user.click(screen.getByRole('combobox', { name: lineLabel }))
+  await user.click(await screen.findByRole('option', { name: optionName }))
+}
+
+  it('renders every catalogue option in the shared editor', async () => {
+    const user = userEvent.setup()
     renderForm()
 
-    expect(screen.getByLabelText('Line 1 item')).toHaveTextContent('Consulting')
+    await user.click(screen.getByRole('combobox', { name: 'Line 1 item' }))
+
+    expect(
+      await screen.findByRole('option', { name: /Consulting/ })
+    ).toBeVisible()
+    expect(screen.getByRole('option', { name: 'One-off line' })).toBeVisible()
   })
 
   it('fills an item line from the catalogue selection', async () => {
     const user = userEvent.setup()
     renderForm()
 
-    await user.selectOptions(
-      screen.getByLabelText('Line 1 item'),
-      'price:price_123'
-    )
+    await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
 
     expect(screen.getByLabelText('Line 1 description')).toHaveValue(
       'Consulting'
@@ -110,10 +142,7 @@ describe('DocumentCreateForm', () => {
     renderForm({ priceLists: [{ value: 'pl_123', label: 'Standard' }] })
 
     await user.selectOptions(screen.getByLabelText('Price list (optional)'), 'pl_123')
-    await user.selectOptions(
-      screen.getByLabelText('Line 1 item'),
-      'price:price_123'
-    )
+    await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
 
     expect(screen.getByLabelText('Line 1 rate')).toBeDisabled()
   })
@@ -127,10 +156,7 @@ describe('DocumentCreateForm', () => {
     renderForm({ priceLists: [{ value: 'pl_123', label: 'Standard' }] })
 
     await user.selectOptions(screen.getByLabelText('Price list (optional)'), 'pl_123')
-    await user.selectOptions(
-      screen.getByLabelText('Line 1 item'),
-      'price:price_123'
-    )
+    await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
 
     await waitFor(() =>
       expect(mocks.resolvePrice).toHaveBeenCalledWith('pl_123', 'price_123', 1)
@@ -147,10 +173,7 @@ describe('DocumentCreateForm', () => {
     renderForm({ priceLists: [{ value: 'pl_123', label: 'Standard' }] })
 
     await user.selectOptions(screen.getByLabelText('Price list (optional)'), 'pl_123')
-    await user.selectOptions(
-      screen.getByLabelText('Line 1 item'),
-      'price:price_123'
-    )
+    await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
     await waitFor(() =>
       expect(screen.getByTestId('line-total-0')).toHaveTextContent('JMD 250.00')
     )
@@ -194,7 +217,13 @@ describe('DocumentCreateForm', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Save draft invoice' })).toBeEnabled()
     )
-    await user.selectOptions(screen.getByLabelText('Customer'), 'cus_123')
+    await user.type(
+      screen.getByRole('combobox', { name: 'Customer' }),
+      'kingston'
+    )
+    await user.click(
+      await screen.findByRole('option', { name: /Kingston Studio/ })
+    )
     await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
 
     expect(
