@@ -269,4 +269,98 @@ export const itemVariantsController = {
       )
     )
   },
+
+  async integrationMediaList(req: Request, res: Response) {
+    res.json(
+      await service.listMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        undefined,
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationMediaAttach(req: Request, res: Response) {
+    res.json(
+      await service.attachMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        validBody<ItemMediaAttachParams>(req),
+        undefined,
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationMediaReorder(req: Request, res: Response) {
+    res.json(
+      await service.reorderMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        validBody<ItemMediaReorderParams>(req),
+        undefined,
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationMediaRemove(req: Request, res: Response) {
+    res.json(
+      await service.removeMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        param(req, 'fileId'),
+        undefined,
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationVariantMediaList(req: Request, res: Response) {
+    res.json(
+      await service.listMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        param(req, 'variantId'),
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationVariantMediaAttach(req: Request, res: Response) {
+    res.json(
+      await service.attachMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        validBody<ItemMediaAttachParams>(req),
+        param(req, 'variantId'),
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationVariantMediaReorder(req: Request, res: Response) {
+    res.json(
+      await service.reorderMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        validBody<ItemMediaReorderParams>(req),
+        param(req, 'variantId'),
+        sourceApp(req)
+      )
+    )
+  },
+
+  async integrationVariantMediaRemove(req: Request, res: Response) {
+    res.json(
+      await service.removeMedia(
+        tenantId(req),
+        param(req, 'itemId'),
+        param(req, 'fileId'),
+        param(req, 'variantId'),
+        sourceApp(req)
+      )
+    )
+  },
 }
