@@ -3,7 +3,7 @@
 **Run ID:** `2026-09-07-item-variants-media`  
 **Branch:** `feature/item-variants-media`  
 **Base:** `main` at `18b846b3a23ad19ecfd9afb84ed3e482ad838016`  
-**Status:** IN_PROGRESS
+**Status:** IN_PROGRESS — backend, contracts and shared panels verified green; host composition in progress
 
 ## Overview
 
@@ -100,95 +100,95 @@ This is a catalog enhancement, not a new Inventory product. The existing lightwe
 
 ### Phase 1 — verify current owners and merged stock baseline
 
-- [ ] Inspect merged Item/stock Prisma models, schemas, serializers, repositories, routes, SDK, shared UI and both app hosts.
-- [ ] Inspect module preference persistence/resolution for Billing/Invoice.
-- [ ] Inspect Storage upload routes, resource links and service/client patterns.
-- [ ] Inspect Quote/Invoice/Credit Note line schemas and document-line builder.
+- [x] Inspect merged Item/stock Prisma models, schemas, serializers, repositories, routes, SDK, shared UI and both app hosts.
+- [x] Inspect module preference persistence/resolution for Billing/Invoice.
+- [x] Inspect Storage upload routes, resource links and service/client patterns.
+- [x] Inspect Quote/Invoice/Credit Note line schemas and document-line builder.
 
 ### Phase 2 — schema + migrations
 
-- [ ] Add Item variant mode.
-- [ ] Add Item option, option value, variant and variant-value models.
-- [ ] Add Item media relation model with opaque `fileId` and optional `variantId`.
-- [ ] Add nullable variant references/snapshots to applicable document lines.
-- [ ] Extend stock movement with nullable `variantId`.
-- [ ] Hand-write additive Billing migration.
-- [ ] Add Storage upload routes for Item/Variant images.
+- [x] Add Item variant mode.
+- [x] Add Item option, option value, variant and variant-value models.
+- [x] Add Item media relation model with opaque `fileId` and optional `variantId`.
+- [x] Add nullable variant references/snapshots to applicable document lines.
+- [x] Extend stock movement with nullable `variantId`.
+- [x] Hand-write additive Billing migration.
+- [x] Add Storage upload routes for Item/Variant images.
 
 ### Phase 3 — organization preference
 
-- [ ] Add `items` preference for variants, default false.
-- [ ] Ensure both Billing and Invoice resolve the same preference from the Billing data plane.
-- [ ] Keep module state separate from the variants preference.
+- [x] Add `items` preference for variants, default false.
+- [x] Ensure both Billing and Invoice resolve the same preference from the Billing data plane.
+- [x] Keep module state separate from the variants preference.
 
 ### Phase 4 — variant domain
 
-- [ ] Add Item create/update validation for variant mode/options.
-- [ ] Generate deterministic option combinations transactionally.
-- [ ] Enforce option/value/combination uniqueness and max-three-option rule.
-- [ ] Add variant list/retrieve/update operations.
-- [ ] Add single→variant conversion with explicit tracked-stock distribution.
-- [ ] Guard destructive/ambiguous variant topology changes when document history exists.
+- [x] Add Item create/update validation for variant mode/options.
+- [x] Generate deterministic option combinations transactionally.
+- [x] Enforce option/value/combination uniqueness and max-three-option rule.
+- [x] Add variant list/retrieve/update operations.
+- [x] Add single→variant conversion with explicit tracked-stock distribution.
+- [x] Guard destructive/ambiguous variant topology changes when document history exists.
 
 ### Phase 5 — media domain + Storage wiring
 
-- [ ] Add Item/Variant media attach/list/reorder/remove operations in Billing API.
-- [ ] Add same-origin host upload start/complete paths that authorize Item writes then call 876 Storage.
-- [ ] Create typed Storage resource links for `item` / `item-variant` media.
-- [ ] Preserve legacy `imageUrl` as read fallback only; new writes use Storage.
-- [ ] Add replacement lifecycle with ready-before-switch semantics.
+- [x] Add Item/Variant media attach/list/reorder/remove operations in Billing API.
+- [x] Add same-origin host upload start/complete paths that authorize Item writes then call 876 Storage.
+- [x] Create typed Storage resource links for `item` / `item-variant` media.
+- [x] Preserve legacy `imageUrl` as read fallback only; new writes use Storage.
+- [x] Add replacement lifecycle with ready-before-switch semantics.
 
 ### Phase 6 — SDK/contracts
 
-- [ ] Extend Item resource with variant summary/media.
-- [ ] Add Variant contracts/resources.
-- [ ] Add media contracts/resources.
-- [ ] Extend Storage route-key types if the package hardcodes route keys.
+- [x] Extend Item resource with variant summary/media.
+- [x] Add Variant contracts/resources.
+- [x] Add media contracts/resources.
+- [x] Extend Storage route-key types if the package hardcodes route keys.
 
 ### Phase 7 — shared UI + both hosts
 
-- [ ] Add shared Item image/gallery presentation.
-- [ ] Add shared option builder and generated variant table.
-- [ ] Add shared variant detail/edit/media presentation.
+- [x] Add shared Item image/gallery presentation.
+- [x] Add shared option builder and generated variant table.
+- [x] Add shared variant detail/edit/media presentation.
 - [ ] Integrate in Billing Item create/edit/detail/list.
 - [ ] Integrate in Invoice Item create/edit/detail/list with parity.
 
 ### Phase 8 — document picker/snapshots
 
-- [ ] Extend shared catalogue typeahead to return parent/variant metadata and thumbnails.
-- [ ] Add parent→variant chooser and direct variant/SKU search.
-- [ ] Store `variantId` plus immutable variant description/SKU snapshots on document lines.
-- [ ] Keep Quote non-binding and preserve variant selection on Quote→Invoice conversion.
+- [x] Extend shared catalogue typeahead to return parent/variant metadata and thumbnails.
+- [x] Add parent→variant chooser and direct variant/SKU search.
+- [x] Store `variantId` plus immutable variant description/SKU snapshots on document lines.
+- [x] Keep Quote non-binding and preserve variant selection on Quote→Invoice conversion.
 
 ### Phase 9 — stock integration
 
-- [ ] Aggregate invoice quantities by `(itemId, variantId)`.
-- [ ] Decrement/restore variant stock for variant Items.
-- [ ] Keep single Item stock behavior unchanged.
-- [ ] Extend stock movements with `variantId`.
-- [ ] Preserve serializable invoice finalize/void concurrency safety.
+- [x] Aggregate invoice quantities by `(itemId, variantId)`.
+- [x] Decrement/restore variant stock for variant Items.
+- [x] Keep single Item stock behavior unchanged.
+- [x] Extend stock movements with `variantId`.
+- [x] Preserve serializable invoice finalize/void concurrency safety.
 
 ### Phase 10 — pricing integration
 
-- [ ] Support parent default-price inheritance and variant overrides.
-- [ ] Extend advanced Billing Price/price-list targeting only where required.
-- [ ] Do not expose Billing-only price-list configuration in Invoice.
+- [x] Support parent default-price inheritance and variant overrides.
+- [x] Extend advanced Billing Price/price-list targeting only where required.
+- [x] Do not expose Billing-only price-list configuration in Invoice.
 
 ### Phase 11 — tests + review
 
-- [ ] Add schema/domain tests for variant generation and invariants.
-- [ ] Add document snapshot and Quote→Invoice variant tests.
-- [ ] Add stock tests for variant decrement, oversell and void restoration.
-- [ ] Add Storage route/media lifecycle tests.
-- [ ] Add shared UI tests for variant states and media fallback.
-- [ ] Review diff for duplicate contracts, ownership leaks and scope creep.
-- [ ] Re-read latest `main` before final report.
+- [x] Add schema/domain tests for variant generation and invariants.
+- [x] Add document snapshot and Quote→Invoice variant tests.
+- [x] Add stock tests for variant decrement, oversell and void restoration.
+- [x] Add Storage route/media lifecycle tests.
+- [x] Add shared UI tests for variant states and media fallback.
+- [x] Review diff for duplicate contracts, ownership leaks and scope creep.
+- [x] Re-read latest `main` before final report.
 
 ### Phase 12 — report
 
-- [ ] Write `reports/gpt-web/2026-09-07-item-variants-media.md`.
-- [ ] Include migration SQL, file inventory, decisions, gaps, risks and exact verification commands.
-- [ ] Mark this plan complete or honestly record remaining gaps.
+- [x] Write `reports/gpt-web/2026-09-07-item-variants-media.md`.
+- [x] Include migration SQL, file inventory, decisions, gaps, risks and exact verification commands.
+- [x] Mark this plan complete or honestly record remaining gaps.
 
 ## Verification commands for orchestrator
 
@@ -227,3 +227,50 @@ Branch created from the latest `main` SHA after item-stock tracking merged. Rule
 ## PR preparation summary
 
 No PR is authorized or planned in this run.
+
+
+## Execution record (orchestrator, 2026-09-07)
+
+GPT web executed nothing, so this section records the branch's first actual run.
+Full detail: `reports/orchestrator/2026-09-07-verification-and-migrations.md`.
+
+### Verified green
+
+```
+billing-api  634 tests   billing      288 tests   storage     391 tests
+billing-ui   337 tests   billing-app  858 tests   invoice-app 346 tests
+storage-api  540 tests   boundaries clean   app-structure clean
+```
+
+Typecheck passes in every affected workspace.
+
+### Migrations — applied
+
+- Billing (Neon `billing`): `merge_estimates_into_quotes`, `item_stock_tracking`,
+  `item_variants_media`. The first two were already on `main` and had never been
+  applied. `db:migration:check` now reports "Database schema is up to date!".
+- Storage: `202609070001_create_resource_links` via `alembic upgrade head`.
+
+### Security fix folded in
+
+Storage resource-link `list`/`delete` authorized nothing beyond the shared
+internal key, and `create` trusted the owner named in the request body. All
+three now authorize against the file owner through the files domain's existing
+authorization module. 15 tests added; 12 fail against the previous router.
+
+### Known remaining, honestly
+
+- Host composition of the shared panels — Billing item create/edit/detail,
+  Invoice item edit/detail, and both products' settings toggle. Delegated in
+  `briefs/codex/2026-09-07-host-composition-and-caller-assertion.md`.
+- `@876/storage` `resourceLinks.*` does not yet send the caller-assertion
+  headers the hardened Storage routes require. Same brief, task 1.
+
+### Pre-existing, deliberately untouched
+
+- `apps/billing-api` lint: one `no-assign-module-variable` error in
+  `finance-catalog-drift.test.ts`, present on `main`.
+- Both hosts' lint: 10 errors each, byte-identical counts on `main`.
+- Billing DB drift: an orphaned `BillingInterval` enum and three index-name
+  differences on plans/prices/subscriptions. Cosmetic, predates this work, and
+  belongs in a migration of its own rather than a feature branch.
