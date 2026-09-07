@@ -2,7 +2,9 @@ import { adjustStock } from './adjust-stock'
 import { create } from './create'
 import { deleteItem } from './delete'
 import { list } from './list'
+import { media } from './media'
 import { retrieve } from './retrieve'
+import { searchVariants } from './search-variants'
 import { update } from './update'
 import { variants } from './variants'
 
@@ -12,6 +14,7 @@ export const items = {
   list,
   update,
   adjustStock,
-  variants,
+  variants: { ...variants, search: searchVariants },
+  media,
   delete: deleteItem,
 }
