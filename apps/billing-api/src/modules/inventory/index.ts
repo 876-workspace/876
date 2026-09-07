@@ -1,5 +1,6 @@
 export {
   adjust,
+  checkAvailability,
   consume,
   inventoryService,
   restore,
