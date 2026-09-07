@@ -30,6 +30,10 @@
     "./request-events": {
       "types": "./src/request-events.tsx",
       "default": "./src/request-events.tsx"
+    },
+    "./support-widget": {
+      "types": "./src/support-widget.tsx",
+      "default": "./src/support-widget.tsx"
     }
   },
   "scripts": {
