@@ -29,7 +29,6 @@ const entityPrefixes: Record<string, string> = {
   Subscription: 'sub',
   SubscriptionItem: 'si',
   SubscriptionEvent: 'sev',
-  SubscriptionAmment: 'samd',
   SubscriptionAmendment: 'samd',
   SubscriptionAmendmentItem: 'sami',
   SubscriptionLifecycleSchedule: 'ssch',
