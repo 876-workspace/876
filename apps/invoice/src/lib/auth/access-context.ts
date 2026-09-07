@@ -39,7 +39,7 @@ export const resolveAccessContext = cache(async function resolveAccessContext(
 
   let features: string[] = []
   try {
-    features = (await getFeatures()).featureKeys
+    features = (await getFeatures({ userId, organizationId })).featureKeys
   } catch {
     // Feature rollout is availability, not authorization. A provider outage
     // disables features without discarding otherwise valid permissions.

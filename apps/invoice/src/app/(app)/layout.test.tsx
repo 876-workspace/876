@@ -4,9 +4,20 @@ const {
   mockGetAuthSession,
   mockGetInvoiceContextResult,
   mockRedirect,
+  mockGetFeatures,
   mockRequireValidSession,
   mockResolveAccessContext,
 } = vi.hoisted(() => ({
+  mockGetFeatures: vi.fn(async () => ({
+    featureKeys: [],
+    uiFeatures: {
+      searchBar: false,
+      themeSwitcher: false,
+      globalAdd: false,
+      appSwitcher: false,
+      orgSwitcher: false,
+    },
+  })),
   mockGetAuthSession: vi.fn(),
   mockGetInvoiceContextResult: vi.fn(),
   mockRedirect: vi.fn((target: string) => {
@@ -34,6 +45,8 @@ vi.mock('@/lib/auth/session', () => ({
   getAuthSession: mockGetAuthSession,
   isSignedSession: (session: { user: unknown }) => session.user !== null,
 }))
+
+vi.mock('@/lib/features', () => ({ getFeatures: mockGetFeatures }))
 
 vi.mock('@/components/shell/shell', () => ({
   InvoiceShell: ({ children }: { children: React.ReactNode }) => children,
