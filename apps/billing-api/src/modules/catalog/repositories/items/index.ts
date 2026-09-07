@@ -4,6 +4,7 @@ import { deleteItem } from './delete'
 import { list } from './list'
 import { retrieve } from './retrieve'
 import { update } from './update'
+import { variants } from './variants'
 
 export const items = {
   create,
@@ -11,5 +12,6 @@ export const items = {
   list,
   update,
   adjustStock,
+  variants,
   delete: deleteItem,
 }
