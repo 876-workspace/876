@@ -16,9 +16,10 @@ export default async function EditItemPage({ params }: Props) {
   const invoice = await getInvoice()
   if (!invoice) redirect('/no-access')
 
-  const [itemResult, platform] = await Promise.all([
+  const [itemResult, platform, preferences] = await Promise.all([
     invoice.items.retrieve(itemId),
     getPlatformClient(),
+    invoice.items.getPreferences(),
   ])
 
   if (itemResult.error) {
@@ -57,7 +58,9 @@ export default async function EditItemPage({ params }: Props) {
           lowStockThreshold: item.lowStockThreshold,
           allowOutOfStock: item.allowOutOfStock,
           isActive: item.isActive,
+          variantMode: item.variantMode,
         }}
+        variantsEnabled={preferences.data?.productVariants === true}
       />
     </Page>
   )
