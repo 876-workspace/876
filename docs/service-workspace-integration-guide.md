@@ -4,9 +4,16 @@ This guide is the implementation contract for exposing one 876 service inside
 another 876 product without accidentally granting the service's standalone
 product entitlement.
 
-The first concrete service using the terminology is CRM. No product other than
-Console is wired to embedded CRM by this change; the examples below describe the
-required pattern for a later implementation.
+CRM now has two deliberately different cross-product patterns:
+
+1. **Platform support intake** is implemented in CRM, Billing, and Invoice. It is
+   a narrow first-party service boundary that always writes to Efesto's CRM
+   workspace.
+2. **Embedded organization CRM** remains a future integration tier. It will write
+   to the acting organization's own CRM workspace and must not grant the
+   standalone `876-crm` product entitlement.
+
+Do not combine those two flows just because both create CRM requests.
 
 Read first:
 
@@ -21,7 +28,7 @@ Read first:
 
 ## 1. Identify the four separate things
 
-Before writing code, name each explicitly:
+Before writing an embedded service integration, name each explicitly:
 
 ```text
 host product entitlement
@@ -42,6 +49,10 @@ surface            package/customer Requests panel
 ```
 
 There is **no** `876-crm` entitlement in that list.
+
+Platform support intake is different. Its service workspace is fixed to Efesto's
+CRM organization; the caller's organization becomes a CRM customer in that
+workspace instead of becoming the target tenant.
 
 ## 2. Ensure infrastructure without granting the product
 
@@ -66,72 +77,102 @@ proof of an `876-crm` subscription.
 
 Product activation is separately controlled by Core entitlement APIs.
 
-## 3. Add the integration tier only for a real caller
+The same distinction exists for Work. Work is infrastructure/service state, not
+an organization-facing product entitlement. Current fresh-organization
+provisioning enables the Work service entitlement by default and the bootstrap
+path ensures its workspace idempotently.
+
+## 3. Add an integration tier only for a real organization-owned caller
 
 A normal product application must **not** use the operator client above for its
-runtime resource calls.
+runtime business-resource calls.
 
-When a host product is implemented, add formal CRM integration routes beside the
-existing operator routes and point them at the same CRM service functions:
+When an organization-owned CRM integration is implemented, add formal CRM
+integration routes beside the existing operator routes and point them at the same
+CRM service functions:
 
 ```text
 /v1/organizations/:organizationId/requests
-  operator guard
+  operator/internal boundary today
 
 /integrations/organizations/:organizationId/requests
-  integration guard + crm.requests.* scopes
+  future integration guard + crm.requests.* scopes
 
 /organizations/:organizationId/requests
-  session/member guard
+  future session/member boundary
 ```
 
-Start with the smallest scopes the host actually needs, for example:
+Start with the smallest scopes the host actually needs. Do not publish broad
+scopes merely because another 876 product is the first caller. First-party
+products are the integration contract's first customers.
+
+### The support boundary is intentionally narrower
+
+Platform support does **not** expose the general CRM resource graph. The typed
+entrypoint is `@876/crm/support` and CRM API exposes only:
 
 ```text
-crm.requests.create
-crm.requests.read
-crm.requests.update
-crm.customers.read
-crm.intake.submit
+GET  /v1/service/support/categories
+GET  /v1/service/support/requests
+POST /v1/service/support/requests
 ```
 
-Do not publish broad scopes merely because another 876 product is the first
-caller. First-party products are the integration contract's first customers.
+A host presents two server-only headers:
 
-## 4. Keep the data-plane resource vocabulary flat
-
-At application call sites, the owning service remains an implementation detail.
-Use the canonical resource vocabulary:
-
-```ts
-await $876.requests.create(...)
-await $876.requests.list(...)
+```text
+x-876-service-app
+x-876-service-key
 ```
 
-Do not introduce:
+`CRM_SUPPORT_SERVICE_KEYS` maps each allowed first-party app slug to its own key,
+so a Billing key cannot authenticate as Invoice. The browser never receives
+these credentials.
 
-```ts
-$876.crm.requests.create(...)
-workspace.crm.requests.create(...)
+## 4. Keep platform support tenant routing explicit
+
+The CRM API owns:
+
+```text
+CRM_SUPPORT_ORGANIZATION_ID=<Efesto organization id>
+CRM_SUPPORT_SERVICE_KEYS={"876-crm":"...","876-billing":"...","876-invoice":"..."}
 ```
 
-`workspace` prepares or connects the environment. `$876` operates on business
-resources.
+Each participating host owns:
 
-## 5. Compose the correct tier into the host server facade
+```text
+CRM_API_URL=<server-only CRM API origin>
+CRM_SUPPORT_SERVICE_KEY=<that host's key only>
+```
 
-A later product integration should add a CRM **integration client**, authenticated
-as that host app for one organization and limited by the service connection.
-Compose it through the host application's canonical `$876` server facade.
+For a request raised by organization `org_customer` and account `usr_requester`:
 
-Feature/page code must not construct a CRM service client directly.
+```text
+Efesto CRM workspace
+  customer = BUSINESS / CORE_ORGANIZATION linked to org_customer
+  request.customerId = that customer profile
+  request.requesterUserId = usr_requester
+  request.channel = WIDGET
+```
 
-Console is the exception only in authority, not in resource shape: Console uses
-CRM's operator tier because it acts as 876 itself.
+The customer link is idempotent by source organization. Request history is
+therefore organization-wide: two users from the same customer organization see
+the same support queue, while requester attribution still records who submitted
+each item.
 
-## 6. Keep browser URLs owned by the host product
+The host BFF derives source organization, organization name, and requester user
+from authenticated server context. These fields are not accepted from the
+browser draft contract.
 
-The browser sees the host product vocabulary:
+## 5. Keep browser URLs owned by the host product
+
+The browser sees the host application's own boundary:
+
+```text
+/api/support
+/api/support/categories
+```
+
+The same rule applies to future organization-owned embedded CRM:
 
 ```text
 /api/requests
@@ -139,7 +180,7 @@ The browser sees the host product vocabulary:
 /api/customers/:customerId/requests
 ```
 
-Never expose backend topology through:
+Never expose backend topology through browser URLs such as:
 
 ```text
 /api/crm/*
@@ -147,10 +188,50 @@ Never expose backend topology through:
 /api/v1/*
 ```
 
-The Next.js route handler authorizes the host user, resolves organization/context,
-and calls the server `$876` facade. It contains no CRM business logic.
+The Next.js route handler authorizes the signed-in host user, resolves acting
+organization/context, and invokes the bounded server client. It contains no CRM
+database or provider logic.
 
-## 7. Model cross-service context with opaque references
+## 6. Share product UI, not host authority
+
+`@876/crm-ui/support-widget` owns the reusable support popover. CRM, Billing, and
+Invoice provide host-local transport callbacks that call their same-origin BFFs.
+
+The shared component owns:
+
+- request history rendering;
+- create form and category picker;
+- loading/error/empty states;
+- host-copy customization;
+- optional host request-detail href behavior.
+
+The host owns:
+
+- authentication and organization selection;
+- same-origin API routes;
+- service credential configuration;
+- whether a created request has a local detail route.
+
+Support data is loaded only when the popover opens. Do not block the application
+layout on categories or request history.
+
+## 7. Keep the future organization CRM module separate from support
+
+Billing and Invoice declare a shared finance module key:
+
+```text
+crm
+```
+
+It is optional and disabled by default. It is a catalog seam for a future
+organization-owned CRM surface; it does not currently create an entitlement,
+service connection, or CRM workspace, and its disabled state must **not** hide
+"Contact 876" support.
+
+This distinction prevents a customer from losing platform support merely because
+its own CRM module is disabled.
+
+## 8. Model future cross-service context with opaque references
 
 A request related to another product resource should reference that resource by
 opaque service/resource/id values rather than a cross-database foreign key.
@@ -165,13 +246,14 @@ Conceptual shape:
 }
 ```
 
-The CRM database does not join Couriers tables. Human-readable details are
-resolved through the appropriate client/service boundary.
+The CRM database does not join Couriers, Billing, or Invoice tables.
+Human-readable details are resolved through the appropriate client/service
+boundary.
 
-Add this only when the first contextual host integration is implemented; do not
-invent unused polymorphic fields in advance.
+Add contextual fields only when the first real embedded workflow requires them;
+do not invent unused polymorphic fields in advance.
 
-## 8. Build the embedded surface around the host job
+## 9. Build embedded surfaces around the host job
 
 An embedded CRM surface is not a miniature copy of the entire CRM product.
 Expose only the contextual workflow the host needs.
@@ -192,90 +274,67 @@ Package
 The standalone 876 CRM product remains the broad workspace for customers,
 requests, intake, teams, routing, settings, reporting, and automation.
 
-## 9. Distinguish product support from an organization's own CRM
+## 10. Required regression coverage
 
-Two flows can both say "request" but target different CRM workspaces.
+### Platform support
 
-### 876 support intake
-
-```text
-customer in any 876 product
-  -> Contact 876
-  -> request in 876/Efesto CRM workspace
-```
-
-Console `/requests` is the operator view of those and other requests in 876's
-CRM workspace.
-
-### Embedded organization CRM
+Source tests must prove:
 
 ```text
-organization user in a host product
-  -> create request about its customer/package/invoice
-  -> request in that organization's CRM workspace
+wrong host key                        -> 401
+missing service key                   -> fail closed
+support destination missing           -> crm/not-configured
+source organization not yet customer  -> creates one linked BUSINESS customer
+source organization already customer  -> reuses it
+history                               -> filters by source-org customer
+request create                        -> Efesto tenant + requester attribution
+browser identity injection            -> rejected
+signed-out host viewer                -> rejected by host BFF
 ```
 
-Never infer the target tenant from the word `support`. Resolve it deliberately.
+### Future embedded organization CRM
 
-## 10. Required regression tests for a host integration
-
-When the first non-Console product is wired, tests must prove all of these:
+When the first embedded CRM module becomes functional, tests must separately
+prove:
 
 ```text
 host product activation
   -> grants host entitlement
   -> ensures required service workspace
   -> creates/reconciles scoped service connection
-  -> does NOT grant the service's standalone product entitlement
-```
+  -> does NOT grant 876-crm entitlement
 
-For CRM specifically:
-
-```text
-Couriers (example) activation
-  -> may ensure CRM workspace
-  -> may grant crm.requests.* integration scopes
-  -> MUST NOT create an 876-crm subscription
-```
-
-Then prove historical continuity:
-
-```text
 embedded request exists
   -> later grant 876-crm entitlement
   -> CRM tenant ensure reuses the same tenant
   -> embedded request remains visible
 ```
 
-Also verify tier boundaries:
-
-```text
-Console          -> operator
-host product     -> integration
-standalone CRM   -> session
-```
-
 ## Current implementation status
 
-Implemented now:
+Implemented:
 
-- CRM service and product identifiers are distinct in `@876/crm`.
-- `create876CrmWorkspaceClient()` can retrieve/ensure a CRM workspace through
-  the existing internal tenant lifecycle endpoint without granting a product
-  entitlement.
-- Console's top-level operator surface is `/requests`, not `/support`.
-- Shared Console request components derive their host route rather than sending
-  deletes back to a hard-coded `/support` path.
+- CRM service and product identifiers remain distinct in `@876/crm`.
+- `create876CrmWorkspaceClient()` retrieves/ensures a CRM workspace without
+  granting a product entitlement.
+- `@876/crm/support` is the narrow first-party platform-support client.
+- CRM API has an app-bound support credential guard and a fixed Efesto support
+  destination.
+- CRM, Billing, and Invoice expose host-owned `/api/support` BFF routes.
+- `@876/crm-ui/support-widget` is the single reusable support React surface.
+- support history is source-organization-wide and requester attribution is kept.
+- Billing and Invoice declare the disabled-by-default `crm` module seam.
+- Invoice has PostHog/Core-backed feature flags for search, theme switcher,
+  global add, app switcher, and organization switcher.
 
-Not implemented now:
+Not implemented:
 
-- CRM integration authentication/scopes for another product app.
-- Embedded CRM UI in Couriers, Billing, Invoice, Careers, or any other product.
-- A generic service-connection manifest replacing Finance-specific provisioning
+- general CRM integration authentication/scopes for organization-owned embedded
+  CRM resources;
+- an enabled/persisted embedded CRM module in Billing or Invoice;
+- embedded CRM UI in Couriers, Careers, or another contextual product workflow;
+- a generic service-connection manifest replacing Finance-specific provisioning
   fields.
-- Calendars, events, recurrence, and alerts. These belong to the Work service, not
-  CRM — task and reminder extraction already landed there
-  (`docs/work-service.md`, `docs/architecture/019-work-service-and-productivity-plane.md`).
 
-Those are follow-ups and should be implemented only with a real caller so the
-published scope and UI contracts stay minimal.
+Those remain follow-ups and should be implemented only with a real organization-
+owned caller so the scope and UI contracts stay minimal.
