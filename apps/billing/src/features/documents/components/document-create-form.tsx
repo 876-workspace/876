@@ -21,10 +21,7 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
-import {
-  AsyncCombobox,
-  type AsyncComboboxOption,
-} from '@876/ui/async-combobox'
+import { AsyncCombobox, type AsyncComboboxOption } from '@876/ui/async-combobox'
 import { Textarea } from '@876/ui/textarea'
 import { cn } from '@876/ui/lib/utils'
 
@@ -113,9 +110,10 @@ export function DocumentCreateForm({
   useEffect(() => {
     let cancelled = false
 
-    if (!priceListId) return () => {
-      cancelled = true
-    }
+    if (!priceListId)
+      return () => {
+        cancelled = true
+      }
 
     const targets = lines.flatMap((line) => {
       const quantity = Number(line.quantity)
@@ -182,7 +180,9 @@ export function DocumentCreateForm({
         { signal }
       )
       if (result.error || !result.data)
-        throw new Error(result.error?.message ?? 'Customers could not be loaded.')
+        throw new Error(
+          result.error?.message ?? 'Customers could not be loaded.'
+        )
 
       return result.data.data.map((customer) => {
         const option = toDocumentCustomerOption(customer)
@@ -444,6 +444,23 @@ export function DocumentCreateForm({
         <DocumentLineItemsEditor
           lines={lines}
           items={editorItems}
+          onSearchItems={async (query, signal) => {
+            const result = await client.items.list(
+              { q: query, limit: 20 },
+              { signal }
+            )
+            if (result.error || !result.data)
+              throw new Error('catalogue search failed')
+
+            return result.data.data.map((item) => ({
+              value: item.id,
+              label: item.name,
+              itemId: item.id,
+              priceId: null,
+              defaultAmount: item.defaultSellingAmount ?? null,
+              currency: item.defaultSellingCurrency ?? null,
+            }))
+          }}
           minorUnitDigits={decimalPlaces}
           formatAmount={(amount) =>
             `${currency} ${formatMinorUnits(amount, decimalPlaces)}`
@@ -564,10 +581,7 @@ function CustomerPicker({
     query: string,
     signal: AbortSignal
   ) => Promise<AsyncComboboxOption[]>
-  onValueChange: (
-    value: string,
-    option: DocumentCustomerOption | null
-  ) => void
+  onValueChange: (value: string, option: DocumentCustomerOption | null) => void
 }) {
   return (
     <div className="space-y-2">

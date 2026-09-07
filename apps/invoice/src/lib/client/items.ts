@@ -31,7 +31,34 @@ interface ItemMutationResult {
   id: string
 }
 
+export interface ItemListRow {
+  object: 'item'
+  id: string
+  name: string
+  sku?: string | null
+  defaultSellingAmount?: string | null
+  defaultSellingCurrency?: string | null
+}
+
+/** Searches the item catalogue. `signal` cancels a superseded typeahead query. */
+export const list = (
+  params: { q?: string; limit?: number } = {},
+  init?: { signal?: AbortSignal }
+) => {
+  const search = new URLSearchParams({
+    active: 'true',
+    limit: String(params.limit ?? 20),
+  })
+  if (params.q) search.set('q', params.q)
+
+  return request<{ object: 'list'; data: ItemListRow[] }>(
+    `/api/items?${search.toString()}`,
+    { method: 'GET', signal: init?.signal }
+  )
+}
+
 export const items = {
+  list,
   create(params: ItemCreateParams) {
     return request<ItemMutationResult>('/api/items', {
       method: 'POST',

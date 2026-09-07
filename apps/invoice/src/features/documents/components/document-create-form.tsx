@@ -208,7 +208,8 @@ export function DocumentCreateForm({
                 </p>
               ) : null}
               {[
-                selectedCustomer.primaryContact?.email ?? selectedCustomer.email,
+                selectedCustomer.primaryContact?.email ??
+                  selectedCustomer.email,
                 selectedCustomer.primaryContact?.mobilePhone ??
                   selectedCustomer.primaryContact?.workPhone ??
                   selectedCustomer.phone ??
@@ -218,7 +219,8 @@ export function DocumentCreateForm({
                 .join(' · ') ? (
                 <p className="text-muted-foreground mt-1 text-xs">
                   {[
-                    selectedCustomer.primaryContact?.email ?? selectedCustomer.email,
+                    selectedCustomer.primaryContact?.email ??
+                      selectedCustomer.email,
                     selectedCustomer.primaryContact?.mobilePhone ??
                       selectedCustomer.primaryContact?.workPhone ??
                       selectedCustomer.phone ??
@@ -325,7 +327,24 @@ function InvoiceLineItems({
 
   return (
     <DocumentLineItemsEditor
-      items={catalogue.length > 0 ? catalogue : undefined}
+      items={catalogue}
+      onSearchItems={async (query, signal) => {
+        const result = await client.items.list(
+          { q: query, limit: 20 },
+          { signal }
+        )
+        if (result.error || !result.data)
+          throw new Error('catalogue search failed')
+
+        return result.data.data.map((item) => ({
+          value: item.id,
+          label: item.name,
+          itemId: item.id,
+          priceId: null,
+          defaultAmount: item.defaultSellingAmount ?? null,
+          currency: item.defaultSellingCurrency ?? null,
+        }))
+      }}
       lines={lines}
       onChange={onChange}
       formatAmount={formatMinorUnits}
@@ -335,5 +354,5 @@ function InvoiceLineItems({
 }
 
 function LineItemsLoading() {
-  return <div className="h-24 animate-pulse rounded-md bg-muted" />
+  return <div className="bg-muted h-24 animate-pulse rounded-md" />
 }

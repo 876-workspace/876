@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 
+import { Loader2Icon } from '../icons'
 import { cn } from '../lib/utils'
 import {
   Combobox,
@@ -17,6 +18,13 @@ export type AsyncComboboxOption = {
   label: string
   /** Optional muted second line, e.g. an email or reference. */
   description?: string
+  /** Right-aligned trailing value, e.g. a price. Rendered tabular. */
+  meta?: string
+  /**
+   * Renders the row as a quiet "escape hatch" rather than a record — used for
+   * a free-text choice such as a one-off invoice line.
+   */
+  isAction?: boolean
   /**
    * The host's own record for this option, handed back on selection so the
    * host does not have to re-find it in a list it no longer holds.
@@ -51,6 +59,12 @@ type Props = {
    * control from pulling an entire table on focus.
    */
   minChars?: number
+  /**
+   * Shown while the query is below `minChars`. Lets a control offer a useful
+   * starting set -- a catalogue picker wants a first page, a customer picker
+   * over thousands of records deliberately does not.
+   */
+  initialOptions?: readonly AsyncComboboxOption[]
   debounceMs?: number
   placeholder?: string
   /** Shown before `minChars` is reached. */
@@ -82,6 +96,7 @@ export function AsyncCombobox({
   onValueChange,
   onSearch,
   minChars = 2,
+  initialOptions,
   debounceMs = 250,
   placeholder = 'Search…',
   promptMessage,
@@ -101,9 +116,10 @@ export function AsyncCombobox({
   React.useEffect(() => {
     const trimmed = query.trim()
 
-    // Below the threshold there is nothing worth asking the server for, and a
-    // blank query must never turn into "send me everything".
-    if (trimmed.length < minChars) {
+    // An empty box never asks the server for anything: either the host gave a
+    // starting set to show, or the control stays empty until the user narrows
+    // it. Beyond that, `minChars` decides how much narrowing is enough.
+    if (trimmed.length === 0 || trimmed.length < minChars) {
       abortRef.current?.abort()
       abortRef.current = null
       setOptions([])
@@ -143,9 +159,18 @@ export function AsyncCombobox({
 
   const prompt =
     promptMessage ??
-    `Type ${minChars} or more characters to search.`
+    (minChars > 1
+      ? `Type ${minChars} or more characters to search.`
+      : 'Start typing to search.')
 
-  const belowThreshold = query.trim().length < minChars
+  const trimmedQuery = query.trim()
+  const belowThreshold =
+    trimmedQuery.length === 0 || trimmedQuery.length < minChars
+
+  // Before the threshold the control shows whatever starting set the host
+  // supplied, so a catalogue picker is useful on focus while a picker over
+  // thousands of records stays empty until the user narrows it.
+  const visible = belowThreshold ? (initialOptions ?? []) : options
 
   const message = error
     ? error
@@ -157,7 +182,7 @@ export function AsyncCombobox({
 
   return (
     <Combobox
-      items={options}
+      items={visible}
       // Results are already filtered by the server; filtering them again on
       // the client would hide rows that legitimately matched.
       filter={null}
@@ -168,7 +193,7 @@ export function AsyncCombobox({
         const selected = typeof next === 'string' ? next : ''
         onValueChange(
           selected,
-          options.find((option) => option.value === selected) ?? null
+          visible.find((option) => option.value === selected) ?? null
         )
       }}
       disabled={disabled}
@@ -183,15 +208,46 @@ export function AsyncCombobox({
       />
 
       <ComboboxContent>
-        <ComboboxEmpty>{message}</ComboboxEmpty>
+        <ComboboxEmpty>
+          <span
+            className={cn(
+              'flex items-center gap-2 px-2 py-3 text-sm',
+              error ? 'text-destructive' : 'text-muted-foreground'
+            )}
+          >
+            {loading ? (
+              <Loader2Icon
+                className="size-3.5 shrink-0 animate-spin"
+                aria-hidden
+              />
+            ) : null}
+            {message}
+          </span>
+        </ComboboxEmpty>
         <ComboboxList>
           {(option: AsyncComboboxOption) => (
             <ComboboxItem key={option.value} value={option.value}>
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate">{option.label}</span>
-                {option.description ? (
-                  <span className="text-muted-foreground truncate text-xs">
-                    {option.description}
+              <span className="flex min-w-0 flex-1 items-center gap-3">
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span
+                    className={cn(
+                      'truncate',
+                      option.isAction
+                        ? 'text-muted-foreground italic'
+                        : 'font-medium'
+                    )}
+                  >
+                    {option.label}
+                  </span>
+                  {option.description ? (
+                    <span className="text-muted-foreground truncate text-xs">
+                      {option.description}
+                    </span>
+                  ) : null}
+                </span>
+                {option.meta ? (
+                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                    {option.meta}
                   </span>
                 ) : null}
               </span>
