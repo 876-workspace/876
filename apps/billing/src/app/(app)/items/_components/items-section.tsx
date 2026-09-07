@@ -15,7 +15,7 @@ export function ItemsSection({
   list: ReactNode
   children: ReactNode
 }) {
-  const status = useSearchParams().get('status') ?? 'all'
+  const status = useSearchParams().get('status') ?? 'active'
 
   return (
     <ListDetailSection
