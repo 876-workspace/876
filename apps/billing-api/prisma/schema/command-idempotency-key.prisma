@@ -9,6 +9,7 @@ model CommandIdempotencyKey {
   resourceId   String? @map("resource_id")
   httpStatus   Int?    @map("http_status")
   createdAt    Int     @map("created_at")
+  completedAt  Int?    @map("completed_at")
   expiresAt    Int?    @map("expires_at")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_command_idempotency_keys_tenant_id_fkey")
