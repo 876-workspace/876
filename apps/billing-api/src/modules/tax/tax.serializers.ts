@@ -28,6 +28,7 @@ export function serializeTaxRate(
     inclusive: row.inclusive,
     startsAt: row.startsAt,
     isActive: row.isActive,
+    isDefault: row.isDefault,
     taxAuthority: serializeTaxAuthority(row.taxAuthority),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

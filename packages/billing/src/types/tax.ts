@@ -171,6 +171,9 @@ export interface TaxRateCreateParams {
    * Time at which the rate becomes effective. Measured in seconds since the Unix epoch.
    */
   startsAt?: number | null
+
+  /** Whether this rate should become the tenant default. */
+  isDefault?: boolean
 }
 
 /**
@@ -180,7 +183,10 @@ export interface TaxRateUpdateParams {
   /**
    * Whether the tax rate is active for new applications.
    */
-  isActive: boolean
+  isActive?: boolean
+
+  /** Whether this rate should become the tenant default. */
+  isDefault?: boolean
 }
 
 /**
@@ -231,6 +237,9 @@ export interface TaxRate {
    * Whether the tax rate is active for new applications.
    */
   isActive: boolean
+
+  /** Whether this is the tenant's default tax rate. */
+  isDefault: boolean
 
   /**
    * The tax authority this rate belongs to.

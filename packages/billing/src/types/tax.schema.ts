@@ -52,6 +52,7 @@ export const TaxRateSchema = z.object({
   inclusive: z.boolean(),
   startsAt: z.number().int().nullable(),
   isActive: z.boolean(),
+  isDefault: z.boolean(),
   taxAuthority: TaxAuthoritySchema,
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
