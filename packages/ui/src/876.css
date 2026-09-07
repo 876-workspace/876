@@ -390,13 +390,15 @@
 /* ── Table header rows ───────────────────────────────────────────────────
    Surface colour so the header reads as part of the card, not the page. */
 [class~='876-header-row'] {
-  /* The canvas tone, not the surface. A header row painted the same white as
-     the rows beneath it is a header only by virtue of its bottom hairline,
-     which is how a table inside a white card ends up reading as one
-     undifferentiated block. Canvas is themed on both sides, so the band stays
-     a band in dark mode instead of inverting into nothing. */
-  background-color: var(--876-canvas);
+  /* Subtle off-white grey tone in light mode (oklch ~98.5% lightness) —
+     provides a calm, understated header band against the white card surface.
+     In dark mode canvas sits flush with the card surface and the hairline
+     alone separates it from the rows. */
+  background-color: var(--876-chrome);
   border-bottom: 1px solid var(--876-surface-border);
+}
+.dark [class~='876-header-row'] {
+  background-color: var(--876-canvas);
 }
 [class~='876-header-row'] tr:first-child th:first-child {
   border-top-left-radius: var(--radius-xl);
@@ -434,6 +436,13 @@
     background-color: transparent;
     background-image: none;
     box-shadow: none;
+  }
+
+  /* When split view is open, the list column already carries the sticky
+     section toolbar at its top; the pane header beneath it is redundant. */
+  [data-slot='list-detail-shell'][data-state='open']
+    [data-slot='list-pane-header'] {
+    display: none;
   }
 }
 
