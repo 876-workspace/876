@@ -69,11 +69,6 @@ const INVOICE_KEYS = [
   'customers.edit',
   'customers.view',
   'dashboard.view',
-  'estimates.create',
-  'estimates.delete',
-  'estimates.edit',
-  'estimates.export',
-  'estimates.view',
   'invoices.create',
   'invoices.delete',
   'invoices.edit',
@@ -87,6 +82,11 @@ const INVOICE_KEYS = [
   'payments.delete',
   'payments.edit',
   'payments.view',
+  'quotes.create',
+  'quotes.delete',
+  'quotes.edit',
+  'quotes.export',
+  'quotes.view',
   'reports.view',
   'settings.edit',
   'settings.view',
@@ -166,19 +166,19 @@ describe('invoicePermissionCatalog', () => {
       'customers',
       'items',
       'invoices',
-      'estimates',
+      'quotes',
       'payments',
       'reports',
       'settings',
     ])
   })
 
-  it('gives invoices and estimates an export action', () => {
+  it('gives invoices and quotes an export action', () => {
     const exportable = invoicePermissionCatalog.permissions
       .filter((permission) => permission.action === 'export')
       .map((permission) => permission.moduleKey)
       .sort()
-    expect(exportable).toEqual(['estimates', 'invoices'])
+    expect(exportable).toEqual(['invoices', 'quotes'])
   })
 
   it('declares no duplicate keys', () => {

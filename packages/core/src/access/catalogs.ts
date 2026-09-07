@@ -248,7 +248,7 @@ export const invoicePermissionCatalog: AppPermissionCatalog =
       crud('customers', 'Customers'),
       crud('items', 'Items'),
       crud('invoices', 'Invoices', ['export']),
-      crud('estimates', 'Estimates', ['export']),
+      crud('quotes', 'Quotes', ['export']),
       crud('payments', 'Payments'),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
