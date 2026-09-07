@@ -1,5 +1,6 @@
+export { calculateCatalogAmount } from '@/modules/billing-engine'
+
 export { createCatalogRouter } from './catalog.routes'
-export { calculateCatalogAmount } from './repositories/pricing/calculate'
 export {
   resolveSellable,
   resolveSellables,
