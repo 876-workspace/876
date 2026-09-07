@@ -8,6 +8,7 @@ CREATE TABLE "billing_command_idempotency_keys" (
   "resource_id" TEXT,
   "http_status" INTEGER,
   "created_at" INTEGER NOT NULL,
+  "completed_at" INTEGER,
   "expires_at" INTEGER,
 
   CONSTRAINT "billing_command_idempotency_keys_pkey" PRIMARY KEY ("id"),
