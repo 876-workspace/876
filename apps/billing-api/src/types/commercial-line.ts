@@ -1,9 +1,10 @@
-import type { StockTarget } from './commerce'
-
 /**
- * Internal immutable sell/credit line snapshot. Workflows may resolve this from
+ * Internal immutable commercial line snapshot. Workflows may resolve this from
  * Catalog + Pricing or accept an already-snapshotted amount, but persistence
  * never needs to reinterpret current Item/Variant state later.
+ *
+ * The shape deliberately matches the persisted Quote/Invoice line fields so it
+ * can be written without leaking transient resolver concepts such as StockTarget.
  */
 export interface CommercialLineSnapshot {
   itemId: string | null
@@ -18,5 +19,4 @@ export interface CommercialLineSnapshot {
   taxAmount: bigint
   discountAmount: bigint
   totalAmount: bigint
-  stockTarget: StockTarget | null
 }
