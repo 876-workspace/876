@@ -81,7 +81,7 @@ describe('item stock invoice operations', () => {
       )
     ).resolves.toEqual({ data: { movementCount: 1 }, error: null })
 
-    expect(itemUpdate).toHaveBeenCalledOnce()
+    expect(itemUpdate).toHaveBeenCalledTimes(1)
     expect(itemUpdate).toHaveBeenCalledWith({
       where: { id: 'item_1' },
       data: { stockQuantity: 5, updatedAt: 100 },
