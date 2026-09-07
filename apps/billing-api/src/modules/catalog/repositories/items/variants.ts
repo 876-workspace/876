@@ -5,10 +5,10 @@ import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import type {
+  ItemStockAdjustmentParams,
   ItemVariantGenerateParams,
   ItemVariantOptionInput,
   ItemVariantUpdateParams,
-  ItemStockAdjustmentParams,
 } from '../../schemas/item'
 import type { ServiceResult } from '../../schemas/api'
 
@@ -19,6 +19,8 @@ import {
   variantCombinationKey,
 } from './variant-combinations'
 
+type OpeningMovementType = 'initial-stock' | 'variant-allocation'
+
 export async function createVariantStructure(
   tx: Prisma.TransactionClient,
   params: {
@@ -27,6 +29,7 @@ export async function createVariantStructure(
     options: readonly ItemVariantOptionInput[]
     trackStock: boolean
     stockAllocations?: ItemVariantGenerateParams['stockAllocations']
+    openingMovementType?: OpeningMovementType
     now: number
   }
 ) {
@@ -100,7 +103,9 @@ export async function createVariantStructure(
 
     for (const [optionPosition, value] of combination.values.entries()) {
       const option = optionRows[optionPosition]
-      const optionValue = option?.values.find((candidate) => candidate.value === value)
+      const optionValue = option?.values.find(
+        (candidate) => candidate.value === value
+      )
       if (!option || !optionValue)
         throw new Error('Generated variant value could not be resolved.')
 
@@ -121,7 +126,7 @@ export async function createVariantStructure(
           itemId: params.itemId,
           variantId,
           stockTargetKey: variantId,
-          type: 'initial-stock',
+          type: params.openingMovementType ?? 'initial-stock',
           quantityDelta: quantity,
           quantityBefore: 0,
           quantityAfter: quantity,
@@ -150,10 +155,7 @@ export async function list(
       item: { tenantId },
     },
     include: {
-      optionValues: {
-        include: { option: true, optionValue: true },
-        orderBy: { option: { position: 'asc' } },
-      },
+      optionValues: { include: { option: true, optionValue: true } },
       media: { orderBy: { position: 'asc' } },
     },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -164,10 +166,7 @@ export function retrieve(tenantId: string, itemId: string, variantId: string) {
   return prisma.itemVariant.findFirst({
     where: { id: variantId, itemId, tenantId, item: { tenantId } },
     include: {
-      optionValues: {
-        include: { option: true, optionValue: true },
-        orderBy: { option: { position: 'asc' } },
-      },
+      optionValues: { include: { option: true, optionValue: true } },
       media: { orderBy: { position: 'asc' } },
     },
   })
@@ -191,6 +190,15 @@ export async function update(
     !(await hasEnabledCurrency(tenantId, params.defaultCostCurrency))
   )
     return err('Enable the cost currency before using it on a variant.', 422)
+
+  if (typeof params.sku === 'string') {
+    const parentSku = await prisma.item.findFirst({
+      where: { tenantId, sku: params.sku },
+      select: { id: true },
+    })
+    if (parentSku)
+      return err('This SKU is already used by another item.', 409)
+  }
 
   const result = await prisma.itemVariant.updateMany({
     where: { id: variantId, itemId, tenantId, item: { tenantId } },
@@ -223,6 +231,20 @@ export async function generate(
         if (item.variantMode === 'variant')
           return err('This item already has variants.', 409)
 
+        const historicalFinalizations = await tx.itemStockMovement.count({
+          where: {
+            tenantId,
+            itemId,
+            variantId: null,
+            type: 'invoice-finalized',
+          },
+        })
+        if (historicalFinalizations > 0)
+          return err(
+            'An item with finalized stock history cannot be converted to variants in this release.',
+            409
+          )
+
         const currentStock = item.trackStock ? (item.stockQuantity ?? 0) : 0
         const allocatedStock = (params.stockAllocations ?? []).reduce(
           (total, allocation) => total + allocation.quantity,
@@ -243,8 +265,27 @@ export async function generate(
           options: params.options,
           trackStock: item.trackStock,
           stockAllocations: params.stockAllocations,
+          openingMovementType: 'variant-allocation',
           now,
         })
+
+        if (item.trackStock && currentStock > 0)
+          await tx.itemStockMovement.create({
+            data: {
+              id: generateId('ItemStockMovement'),
+              tenantId,
+              itemId,
+              stockTargetKey: itemId,
+              type: 'variant-allocation',
+              quantityDelta: -currentStock,
+              quantityBefore: currentStock,
+              quantityAfter: 0,
+              referenceType: 'item',
+              referenceId: itemId,
+              createdAt: now,
+            },
+          })
+
         await tx.item.update({
           where: { id: itemId },
           data: { variantMode: 'variant', stockQuantity: null, updatedAt: now },
