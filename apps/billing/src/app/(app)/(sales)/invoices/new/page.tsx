@@ -37,6 +37,9 @@ export default async function NewInvoicePage() {
             priceId: null,
             defaultAmount: item.defaultSellingAmount?.toString() ?? null,
             currency: item.defaultSellingCurrency,
+            trackStock: item.trackStock,
+            stockQuantity: item.stockQuantity,
+            allowOutOfStock: item.allowOutOfStock,
           })),
           ...prices.map((price) => ({
             value: `price:${price.id}`,
@@ -48,6 +51,9 @@ export default async function NewInvoicePage() {
               price.tiers[0]?.unitAmount?.toString() ??
               null,
             currency: price.currency,
+            trackStock: price.item?.trackStock ?? false,
+            stockQuantity: price.item?.stockQuantity ?? null,
+            allowOutOfStock: price.item?.allowOutOfStock ?? false,
           })),
         ]}
         priceLists={priceLists.map((priceList) => ({
