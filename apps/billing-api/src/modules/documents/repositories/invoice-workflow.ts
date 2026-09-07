@@ -1,13 +1,14 @@
+import type { Prisma } from '@/db'
 import { prisma } from '@/db/client'
 
 export function runInvoiceTransaction<T>(
-  work: (tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => Promise<T>
+  work: (tx: Prisma.TransactionClient) => Promise<T>
 ) {
   return prisma.$transaction(work, { isolationLevel: 'Serializable' })
 }
 
 export function findInvoiceForFinalize(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   tenantId: string,
   invoiceId: string
 ) {
@@ -21,7 +22,7 @@ export function findInvoiceForFinalize(
 }
 
 export function findPaymentTerm(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   tenantId: string,
   paymentTermId?: string | null
 ) {
@@ -36,7 +37,7 @@ export function findPaymentTerm(
 }
 
 export function findSalesperson(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   tenantId: string,
   salespersonId?: string | null
 ) {
@@ -48,7 +49,7 @@ export function findSalesperson(
 }
 
 export function markInvoiceFinalized(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   params: {
     id: string
     status: 'OPEN' | 'PAID'
@@ -79,7 +80,7 @@ export function markInvoiceFinalized(
 }
 
 export function findInvoiceForVoid(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   tenantId: string,
   invoiceId: string
 ) {
@@ -93,7 +94,7 @@ export function findInvoiceForVoid(
 }
 
 export function markInvoiceVoid(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   params: {
     id: string
     now: number
