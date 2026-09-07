@@ -189,11 +189,7 @@ export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
       )
     },
 
-    retrieveVariant(
-      organizationId: string,
-      itemId: string,
-      variantId: string
-    ) {
+    retrieveVariant(organizationId: string, itemId: string, variantId: string) {
       return IntegrationRequest<BillingItemVariant>(
         runtime,
         {
