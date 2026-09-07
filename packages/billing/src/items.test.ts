@@ -8,6 +8,7 @@ const item = {
   sourceAppId: null,
   sourceExternalReference: null,
   type: 'SERVICE' as const,
+  variantMode: 'single' as const,
   name: 'Consulting',
   sku: null,
   unit: 'hour',
@@ -19,6 +20,10 @@ const item = {
   defaultCostCurrency: null,
   isTaxable: true,
   taxCode: 'GCT',
+  trackStock: false,
+  stockQuantity: null,
+  lowStockThreshold: null,
+  allowOutOfStock: false,
   isActive: true,
   metadata: null,
   createdAt: 1_788_825_600,
@@ -69,10 +74,15 @@ describe('items resource', () => {
     const deleted = await client.items.delete(item.id)
 
     expect(listed.data?.data).toEqual([item])
+    expect(listed.error).toBeNull()
     expect(retrieved.data).toEqual(item)
+    expect(retrieved.error).toBeNull()
     expect(created.data).toEqual({ object: 'item', id: item.id })
+    expect(created.error).toBeNull()
     expect(updated.data).toEqual({ object: 'item', id: item.id })
+    expect(updated.error).toBeNull()
     expect(deleted.data).toEqual({ object: 'item', id: item.id, deleted: true })
+    expect(deleted.error).toBeNull()
 
     const calls = fetchMock.mock.calls.map(([url, init]) => ({
       url: String(url),
