@@ -74,6 +74,11 @@ export const BILLING_ERRORS = {
     message: 'Select a variant before using this item.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'billing/item-variants-conversion-blocked': {
+    message:
+      'An item already used on quotes or invoices cannot be converted to variants in this release.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'billing/item-variants-disabled': {
     message: 'Product variants are not enabled for this workspace.',
     httpStatus: HttpStatus.CONFLICT,
