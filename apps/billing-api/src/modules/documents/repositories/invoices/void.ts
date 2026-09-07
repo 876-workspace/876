@@ -4,11 +4,12 @@ import { prisma } from '@/db/client'
 import type { InvoiceVoidParams } from '../../schemas/invoice'
 import type { ServiceResult } from '../../schemas/api'
 
+import { restoreInvoiceStock } from '@/modules/catalog'
 import { recomputeCustomerAr } from '@/modules/customers'
 import { recordLedgerEntry } from '@/modules/ledger'
 import { err, ok } from '../result'
 
-/** Voids an unsettled finalized invoice without deleting its history. */
+/** Voids an unsettled finalized invoice and restores stock it consumed. */
 export async function voidInvoice(
   tenantId: string,
   invoiceId: string,
@@ -38,6 +39,9 @@ export async function voidInvoice(
           'An invoice with settlements must be corrected with a credit note.',
           409
         )
+
+      const stock = await restoreInvoiceStock(tx, tenantId, invoice.id, now)
+      if (stock.error !== null) return stock
 
       await tx.invoice.update({
         where: { id: invoice.id },

@@ -4,6 +4,7 @@ import { prisma } from '@/db/client'
 import type { InvoiceFinalizeParams } from '../../schemas/invoice'
 import type { ServiceResult } from '../../schemas/api'
 
+import { applyInvoiceStock } from '@/modules/catalog'
 import { recomputeCustomerAr } from '@/modules/customers'
 import { recordLedgerEntry } from '@/modules/ledger'
 import { resolveDueAt } from '../payment-terms'
@@ -20,7 +21,7 @@ class InvoiceFinalizeError extends Error {
   }
 }
 
-/** Finalizes a draft invoice and creates its accounts-receivable position. */
+/** Finalizes a draft invoice, consumes tracked stock, and creates its AR position. */
 export async function finalize(
   tenantId: string,
   invoiceId: string,
@@ -29,12 +30,13 @@ export async function finalize(
   const now = nowUnixSeconds()
 
   try {
-    await prisma.$transaction(
+    const stockError = await prisma.$transaction(
       async (tx) => {
         const invoice = await tx.invoice.findFirst({
           where: { id: invoiceId, tenantId },
           include: {
             customer: { select: { salespersonId: true } },
+            lines: { select: { itemId: true, quantity: true } },
           },
         })
         if (!invoice) throw new InvoiceFinalizeError('Invoice not found.', 404)
@@ -72,6 +74,15 @@ export async function finalize(
           throw new InvoiceFinalizeError('Payment term not found.', 404)
         if (salespersonId && !salesperson)
           throw new InvoiceFinalizeError('Salesperson not found.', 404)
+
+        const stock = await applyInvoiceStock(
+          tx,
+          tenantId,
+          invoice.id,
+          invoice.lines,
+          now
+        )
+        if (stock.error !== null) return stock
 
         const issueAt = invoice.issueAt ?? now
         const dueAt =
@@ -135,16 +146,18 @@ export async function finalize(
           )
 
         await recomputeCustomerAr(tx, tenantId, invoice.customerId, now)
+        return null
       },
       { isolationLevel: 'Serializable' }
     )
 
+    if (stockError) return stockError
     return ok({ id: invoiceId })
   } catch (error) {
     if (error instanceof InvoiceFinalizeError)
       return err(error.message, error.status)
     if (isRetryableTransactionError(error))
-      return err('Invoice balances changed; retry finalizing the invoice.', 409)
+      return err('Invoice balances or item stock changed; retry finalizing.', 409)
 
     console.error('[billing.service.invoices.finalize]', error)
     return err('Failed to finalize the invoice.', 500)

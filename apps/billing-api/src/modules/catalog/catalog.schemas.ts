@@ -6,7 +6,11 @@ import {
   AddonCreateSchema,
   AddonUpdateSchema,
 } from './schemas/addon'
-import { ItemCreateSchema, ItemUpdateSchema } from './schemas/item'
+import {
+  ItemCreateSchema,
+  ItemStockAdjustmentSchema,
+  ItemUpdateSchema,
+} from './schemas/item'
 import {
   PlanCloneSchema,
   PlanCreateSchema,
@@ -31,6 +35,7 @@ export {
   AddonCreateSchema,
   AddonUpdateSchema,
   ItemCreateSchema,
+  ItemStockAdjustmentSchema,
   ItemUpdateSchema,
   PlanCloneSchema,
   PlanCreateSchema,
