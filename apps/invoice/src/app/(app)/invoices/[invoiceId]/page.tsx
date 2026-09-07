@@ -14,9 +14,13 @@ import {
 import { CreditCardIcon } from '@876/ui/icons'
 
 import { getInvoiceContext } from '@/lib/auth/context'
+import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { listInvoices } from '@/app/(app)/_lib/list-data'
 import { formatDate, formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
+
+import { InvoiceActions } from './_components/invoice-actions'
+import type { InvoiceStatus } from './_lib/invoice-editability'
 
 type Props = { params: Promise<{ invoiceId: string }> }
 
@@ -44,6 +48,9 @@ export default async function InvoiceDetailPage({ params }: Props) {
 
   const invoice = result.data.data.find((row) => row.id === invoiceId)
   if (!invoice) notFound()
+  const access = await resolveAccessContext(context.userId, context.orgId)
+  const canWrite =
+    access.status === 'ok' && canAccess(access.context, 'invoices.write')
 
   const customer =
     invoice.customer &&
@@ -55,7 +62,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const totalAmount = String(invoice.totalAmount ?? '0')
   const amountDue = String(invoice.amountDue ?? invoice.totalAmount ?? '0')
   const currency = String(invoice.currency ?? 'JMD')
-  const status = String(invoice.status ?? 'DRAFT')
+  const status = String(invoice.status ?? 'DRAFT') as InvoiceStatus
   const date =
     typeof invoice.issueAt === 'number'
       ? invoice.issueAt
@@ -81,6 +88,13 @@ export default async function InvoiceDetailPage({ params }: Props) {
         closeHref="/invoices"
         closeLabel="Close invoice details"
       />
+      <div className="px-5 pt-5 sm:px-6 print:hidden">
+        <InvoiceActions
+          invoiceId={invoice.id}
+          status={status}
+          canWrite={canWrite}
+        />
+      </div>
       <DetailCardBody className="space-y-8">
         <DetailCardHeadline
           value={formatMoney(totalAmount, currency)}

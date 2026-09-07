@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import {
@@ -15,11 +16,24 @@ import {
   AlertDialogTrigger,
 } from '@876/ui/alert-dialog'
 import { Button } from '@876/ui/button'
+import { AppError } from '@876/ui/app-error'
+import { cn } from '@876/ui/lib/utils'
+import { buttonVariants } from '@876/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@876/ui/dropdown-menu'
+import { MoreHorizontalIcon, Pencil, Trash } from '@876/ui/icons'
 import { Label } from '@876/ui/label'
 import { Textarea } from '@876/ui/textarea'
 
 import { client } from '@/lib/client'
 import type { InvoiceStatus } from '@/types/invoice'
+
+import { getInvoiceEditability } from '../_lib/invoice-editability'
 
 export function InvoiceActions({
   invoiceId,
@@ -31,6 +45,7 @@ export function InvoiceActions({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [voidOpen, setVoidOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const [voidReason, setVoidReason] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -65,11 +80,38 @@ export function InvoiceActions({
     })
   }
 
+  function deleteInvoice() {
+    setError(null)
+    startTransition(async () => {
+      const result = await client.invoices.delete(invoiceId)
+      if (result.error) {
+        setError(result.error.message)
+        return
+      }
+
+      setDeleteOpen(false)
+      router.push('/invoices')
+      router.refresh()
+    })
+  }
+
+  const editability = getInvoiceEditability(status)
+
   return (
     <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <Button type="button" variant="outline" onClick={() => window.print()}>
         Print
       </Button>
+
+      {editability.editable ? (
+        <Link
+          href={`/invoices/${invoiceId}/edit`}
+          className={cn(buttonVariants({ variant: 'outline' }))}
+        >
+          <Pencil className="size-4" />
+          Edit
+        </Link>
+      ) : null}
 
       {status === 'DRAFT' ? (
         <Button type="button" disabled={isPending} onClick={finalizeInvoice}>
@@ -131,6 +173,64 @@ export function InvoiceActions({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      ) : null}
+
+      {editability.deletable ? (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'icon-sm' })
+              )}
+              aria-label="More actions"
+              disabled={isPending}
+            >
+              <MoreHorizontalIcon className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-40">
+              <DropdownMenuItem onClick={() => window.print()}>
+                Print
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <AlertDialogContent size="sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete invoice?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This draft invoice will be permanently removed.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {error ? (
+                <AppError
+                  error={{ code: 'invoice/delete-failed', message: error }}
+                  variant="form"
+                />
+              ) : null}
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isPending}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  type="button"
+                  variant="destructive"
+                  disabled={isPending}
+                  onClick={deleteInvoice}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       ) : null}
     </div>
   )
