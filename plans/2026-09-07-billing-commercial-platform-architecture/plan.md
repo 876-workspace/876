@@ -2,48 +2,52 @@
 
 **Run ID:** `2026-09-07-billing-commercial-platform-architecture`  
 **Branch:** `feature/billing-commercial-platform-architecture`  
-**Base:** `main` at `90c986688ddd4add71fd665592b15722029ebc42`  
-**Status:** `IN_PROGRESS`
+**Original base:** `main` at `90c986688ddd4add71fd665592b15722029ebc42`  
+**Final status:** `IMPLEMENTATION_COMPLETE — LOCAL_VERIFICATION_REQUIRED`
 
-## Overview
+## Goal
 
-Refactor 876 Billing into a deeper financial + commercial platform architecture while preserving all current Billing and Invoice product behavior and deliberately **not** implementing speculative commerce features.
+Refactor 876 Billing into the canonical financial + commercial data plane while preserving current Billing/Invoice behavior and deliberately **not** implementing speculative commerce features.
 
-The target is a modular commercial data plane where existing Quote/Invoice workflows and future Order/POS/Restaurant/Store workflows can consume the same Catalog, Pricing, Inventory, Tax, Customer, Payment, Ledger, calculation, idempotency, event, and media primitives.
+The implemented architecture lets current Invoice/Quote workflows and future Store/Restaurant/POS/Marketplace/Order workflows reuse the same Catalog, Pricing, Inventory, calculation, customer, payment, ledger, idempotency, event, and media boundaries.
 
-Invoices become one workflow over shared commercial domains rather than the architectural center of stock, catalog, and pricing behavior.
+Invoice is now one application workflow over shared commercial domains rather than the architectural owner of Item/Variant pricing and stock behavior.
 
-## Explicit non-goals
+## Explicit non-goals preserved
 
-Do not create persisted resources, routes, SDK namespaces, or UI for:
+No persisted resources, routes, SDK namespaces, or UI were added for:
 
-- orders or carts;
-- warehouses or stock locations;
-- inventory items/levels/reservations/transfers;
-- purchase orders or new supplier workflows;
-- fulfillment or shipments;
+- Orders or carts/checkouts;
+- warehouses or stock locations/bins;
+- InventoryItem/InventoryLevel/reservations/transfers;
+- purchase orders/supplier receiving;
+- fulfillment/shipments;
 - sales channels;
-- restaurant menus, kitchen tickets/stations, tables/seats;
-- modifiers, bundles, or combos;
+- restaurant menus/kitchen/table workflows;
+- modifiers/bundles/combos;
 - marketplace listings/offers;
-- returns as a new commerce domain.
+- advanced inventory costing;
+- a generic workflow/state-machine framework.
 
-Future ownership may be documented only.
+Future ownership/insertion points are documented only.
 
-## Binding invariants
+## Binding invariants — final
 
-1. 876 Billing is the canonical financial + commercial data plane.
-2. Canonical Items/Variants never belong to Invoice, Store, Restaurant, POS, or Marketplace apps.
-3. Future apps may own projections such as menus/listings but reference Billing sellables by opaque IDs.
-4. Catalog owns sellable identity; Pricing owns unit-price resolution; Inventory owns stock/availability; Documents own document lifecycle and snapshots.
-5. Repositories never coordinate another bounded domain directly.
-6. Cross-module access goes through the owning module public API.
-7. Financial/inventory side effects use append/reverse/compensate semantics rather than destructive historical edits.
-8. Existing public v1 API and `@876/billing` contracts remain compatible unless a coordinated migration is explicitly required.
-9. Storage owns bytes/object identity; Billing stores opaque `fileId` references and owns Item/Variant media relationships.
-10. No speculative commerce tables or empty future module implementations.
+- [x] 876 Billing is the canonical financial + commercial data plane.
+- [x] Canonical Items/Variants remain Billing-owned across Invoice/future product surfaces.
+- [x] Product apps may own projections/workflow state but reference Billing sellables by opaque IDs.
+- [x] Catalog owns sellable identity.
+- [x] Pricing owns Price/Price List selection.
+- [x] Billing Engine remains deterministic monetary calculation owner.
+- [x] Inventory owns stock interpretation/mutation.
+- [x] Documents own document lifecycle + immutable snapshots.
+- [x] Repositories no longer coordinate another bounded domain for Invoice finalize/void.
+- [x] Cross-module access is through public module APIs and dependency rules enforce the new direction.
+- [x] Storage owns bytes/File identity; Billing owns Item/Variant media relationships using opaque `fileId`.
+- [x] Existing public resource shapes remain compatible; optional lifecycle idempotency is additive.
+- [x] No speculative future commerce resources were created.
 
-## Rules read / required
+## Rules read
 
 - [x] root `CLAUDE.md`
 - [x] `.agents/rules/gpt-web-operating-rules.md`
@@ -65,171 +69,214 @@ Future ownership may be documented only.
 - [x] `.agents/rules/module-settings.md`
 - [x] `.agents/rules/git.md`
 
-## Dispatched briefs
-
-None. GPT Web is implementing directly on the requested branch.
-
-## Execution reports
+## Report
 
 | Tool | Report | Status |
 | --- | --- | --- |
-| GPT Web | `./reports/gpt-web/2026-09-07-billing-commercial-platform-architecture.md` | pending |
+| GPT Web | `./reports/gpt-web/2026-09-07-billing-commercial-platform-architecture.md` | complete |
 
-## Phase checklist
+## Phase completion
 
 ### Phase 0 — Architecture contract + characterization
 
-- [x] Add `docs/architecture/013-billing-commercial-platform.md`.
-- [x] Add mirrored `.claude/rules/billing-commercial-platform.md` and `.agents/rules/billing-commercial-platform.md`.
-- [x] Reference the rule from root `CLAUDE.md` without changing existing public behavior.
-- [x] Document existing vs reserved-future domain map and app projection ownership.
-- [ ] Expand characterization tests around Item/Variant resolution, stock, invoice finalize/void, quote conversion, and media where existing test structure supports it.
+- [x] Added `docs/architecture/013-billing-commercial-platform.md`.
+- [x] Added byte-identical `.claude/rules/billing-commercial-platform.md` and `.agents/rules/billing-commercial-platform.md`.
+- [x] Updated both `platform-services.md` mirrors so canonical commercial truth explicitly resolves to Billing rather than a parallel generic commerce/orders service.
+- [x] Documented current vs reserved-future domains and Store/Restaurant/Marketplace projection ownership.
+- [x] Added targeted characterization around Catalog, Inventory, Invoice workflows, idempotency, Pricing, Item capability, and media orchestration.
+- [x] Root `CLAUDE.md` was intentionally not rewritten solely to add another bullet: the repository declares `.claude/rules/` canonical and both `platform-services.md` mirrors explicitly point to this new rule/ADR. This is recorded honestly rather than claiming a root-file edit.
 
 ### Phase 1 — Shared commercial kernel
 
-- [x] Add small server-only commerce contracts for `CommerceContext`, `ActorContext`, `ResourceReference`, `ResourceOrigin`, `SellableReference`, and `StockTarget`.
-- [x] Reuse existing actor/source/reference types where present rather than duplicating them.
-- [x] Keep future `channelId`/`locationId` contextual only; no tables or resources.
+- [x] Added `CommerceContext`, `ActorContext`, `ResourceReference`, `ResourceOrigin`, `SellableReference`, `StockTarget`, `ResolvedSellable`, and `IdempotencyContext` server contracts.
+- [x] Reused existing canonical hashing/source attribution concepts instead of duplicating them.
+- [x] Kept future `channelId` / `locationId` contextual only; no persistence/resources.
 
-### Phase 2 — Transaction / unit-of-work seam
+### Phase 2 — Transaction seam
 
-- [x] Audit existing Prisma transaction helpers and reuse the canonical owner.
-- [x] Add only the transaction seam required by existing multi-domain Invoice workflows: Documents repositories own the serializable Prisma transaction helper; workflows do not query Prisma directly.
-- [x] Avoid a god repository/factory or pass-through abstraction with one caller.
+- [x] Audited/reused Prisma transaction ownership.
+- [x] Documents repository layer owns the serializable Invoice transaction helper.
+- [x] Application workflows do not query Prisma directly.
+- [x] No generic god Unit of Work/factory was added.
 
 ### Phase 3 — Catalog sellable resolver
 
-- [x] Add one canonical `resolveSellable()` path plus batch `resolveSellables()`.
-- [x] Resolve single Item vs Variant identity, active/sellable state, SKU/name, media fallback, tax/unit metadata, pricing reference, and stock target.
-- [x] Refactor document line resolution to consume it.
+- [x] Added canonical `resolveSellable()` / `resolveSellables()`.
+- [x] Added Variant-only reference resolution for legacy/current call sites.
+- [x] Canonicalized Item/Variant active state, identity, SKU, unit/tax metadata, price defaults, media fallback, Pricing reference, and Inventory stock target.
+- [x] Documents now consume the Catalog resolver instead of duplicating Item/Variant interpretation.
 
 ### Phase 4 — Inventory bounded domain
 
-- [x] Create `modules/inventory` as the owner of current lightweight stock behavior.
-- [x] Move current stock availability/mutation logic out of Catalog without changing physical Item/Variant quantity storage.
-- [x] Replace Invoice-specific stock operations with generic `checkAvailability`, `consume`, `restore`, and `adjust` commands using generic resource references.
-- [x] Preserve exact Item and Variant stock behavior, duplicate-line aggregation, out-of-stock policy, finalization, and void restoration.
-- [x] Preserve legacy `invoice-finalized`/`invoice-voided` audit history while allowing new generic `sale`/`sale-reversal` movement semantics.
-- [x] Fix the stock-movement SQL constraint so existing merged `variant-allocation` writes are actually permitted.
-- [x] Define future Inventory evolution contract without adding advanced inventory schema.
-- [ ] Add targeted Inventory regression tests for generic target-based commands and legacy movement restoration.
+- [x] Added `modules/inventory` as current lightweight stock owner.
+- [x] Removed old Catalog Item stock mutation implementation.
+- [x] Removed the transitional oversized Inventory repository and split persistence by command.
+- [x] Implemented generic `checkAvailability`, `consume`, `restore`, and `adjust`.
+- [x] Preserved duplicate-target aggregation and `allowOutOfStock` semantics.
+- [x] Preserved Variant stock ownership.
+- [x] New lifecycle movement vocabulary is `sale` / `sale-reversal`.
+- [x] Legacy `invoice-finalized` restore compatibility remains.
+- [x] Added migration repair allowing already-written `variant-allocation` plus new semantic values.
+- [x] Current physical quantity columns stay on Item/Variant intentionally behind Inventory ownership.
 
 ### Phase 5 — Pricing resolver
 
-- [x] Audit current Product/Price/Price List/default Item/Variant price ownership.
-- [x] Add one Pricing bounded resolver for batched Price/Price List selection.
-- [x] Keep deterministic document total calculation separate from price selection.
-- [x] Reuse Billing Engine's canonical catalog amount calculation rather than creating another pricing implementation.
-- [x] Remove float-based percentage adjustment from the new Pricing path; use exact decimal/integer arithmetic.
-- [ ] Remove remaining duplicate legacy pricing helpers/re-exports after all callers use Pricing/Billing Engine.
+- [x] Added one Pricing bounded resolver for batched Price/Price List selection.
+- [x] Kept document totals separate from price selection.
+- [x] Reused Billing Engine's canonical pricing-model calculator.
+- [x] Deleted duplicate Catalog and Documents pricing calculator implementations.
+- [x] Replaced JS-float percentage adjustment in the new path with exact decimal/integer arithmetic.
+- [x] Retained only a narrow Catalog re-export of Billing Engine's calculator for two large existing Subscription repositories; there is one executable algorithm. Direct-import cleanup is optional future compatibility cleanup, not an unfinished domain implementation.
 
 ### Phase 6 — Commercial line contract
 
-- [ ] Define a shared internal commercial-line snapshot contract reusable by document workflows without leaking public SDK internals.
-- [x] Refactor Quote/Invoice document line construction to resolve Item/Variant through Catalog and Price/Price List through Pricing.
-- [x] Preserve immutable historical snapshots and wire contracts.
-- [x] Reject mismatched Price↔Item selections instead of silently snapshotting one Item with another resource's Price.
-- [ ] Review Credit Note line construction and reuse the same shared line contract where safe.
+- [x] Added internal `CommercialLineSnapshot`.
+- [x] Quote/Invoice line preparation resolves Price through Pricing and Item/Variant through Catalog.
+- [x] Preserved immutable historical line snapshots.
+- [x] Rejects Price↔Item mismatch rather than combining unrelated resources.
+- [x] Reviewed Credit Notes and intentionally retained explicit correction snapshots rather than re-pricing historical corrections against the live Catalog.
 
 ### Phase 7 — Document application workflows
 
-- [x] Move Invoice finalize orchestration into `modules/documents/workflows`.
-- [x] Move Invoice void orchestration into `modules/documents/workflows`.
-- [x] Keep lifecycle transition rules explicit without building a generic state-machine framework.
-- [x] Delete the old repository-layer Invoice finalize/void orchestration paths instead of retaining aliases.
-- [x] Repositories no longer coordinate Catalog/Inventory/Pricing/Ledger domains for Invoice finalize/void.
+- [x] Moved Invoice finalize orchestration into `modules/documents/workflows`.
+- [x] Moved Invoice void orchestration into `modules/documents/workflows`.
+- [x] Deleted old repository lifecycle implementations/aliases.
+- [x] Kept lifecycle rules explicit; no generic state machine.
+- [x] Cross-domain effects use owning public module APIs.
 
 ### Phase 8 — Trusted actor/origin context
 
-- [x] Audit existing `sourceAppId`, integration references, `createdBy`, and provider references.
-- [x] Define trusted server-side `ActorContext` / `ResourceOrigin` seams without accepting authority from request bodies.
-- [ ] Normalize high-value command workflow call sites onto the context where it reduces real duplicated attribution behavior.
-- [x] Avoid app-specific columns.
+- [x] Audited existing `sourceAppId`, integration references, `createdBy`, and provider references.
+- [x] Added trusted server-side actor/origin seams without accepting authority from request bodies.
+- [x] Preserved existing attribution call sites where replacing them would be aesthetic churn rather than removing duplicated policy.
+- [x] No app-specific commercial schema columns were introduced.
 
-### Phase 9 — Idempotency infrastructure
+### Phase 9 — Command idempotency
 
-- [x] Reuse the existing canonical JSON/hash implementation in `src/platform/idempotency.ts`.
-- [x] Add additive tenant-scoped command idempotency Prisma schema + hand-written migration.
-- [x] Store canonical request hash and resulting resource reference/status rather than arbitrary response blobs.
-- [x] Add `completedAt` semantics so a committed replay is distinguishable from an in-transaction claim.
-- [ ] Wire persisted idempotency into existing high-value Invoice finalize/void workflows inside the same serializable transaction.
-- [ ] Keep normal session/UI lifecycle calls backward compatible when no key is supplied; do not retrofit every CRUD route.
-- [ ] Add same-key/same-request replay and same-key/different-request conflict tests.
+- [x] Reused Billing canonical JSON/hash implementation.
+- [x] Added `billing_command_idempotency_keys` Prisma schema + hand-written migration.
+- [x] Stores canonical request hash + resource/status, not arbitrary response blobs.
+- [x] Added `completedAt` semantics.
+- [x] Uses race-safe `createMany(..., skipDuplicates: true)` claim behavior.
+- [x] Wired optional persisted idempotency into Invoice finalize/void inside the same serializable transaction.
+- [x] Same-key/same-request completed commands replay.
+- [x] Same key with another canonical request/resource conflicts.
+- [x] In-progress duplicate conflicts.
+- [x] Existing callers without an idempotency header retain previous behavior.
 
 ### Phase 10 — Transactional event outbox
 
-- [x] Audit existing Billing/Core outbox implementations and avoid reusing Core-owned projection tables for Billing domain events.
-- [x] Add additive tenant-scoped `billing_outbox_events` Prisma schema + hand-written migration.
-- [ ] Add a small Billing outbox repository/service contract with stable versioned event envelopes.
-- [ ] Write Invoice finalized/voided events atomically with their real domain mutation transactions.
-- [ ] Document domain-event vs stable integration-event distinction.
-- [ ] Do not invent order/fulfillment events.
+- [x] Added `billing_outbox_events` Prisma schema + hand-written migration.
+- [x] Added Billing outbox repository/service contract.
+- [x] Added stable versioned `invoice.finalized` v1 event.
+- [x] Added stable versioned `invoice.voided` v1 event.
+- [x] Events are written with the same transaction as state/stock/ledger/idempotency completion.
+- [x] Documented stable integration-event distinction.
+- [x] No future Order/Fulfillment events invented.
+- [x] Publisher/queue/webhook delivery is intentionally deferred until a real event consumer exists.
 
-### Phase 11 — Storage media port / orchestration
+### Phase 11 — Storage media port/orchestration
 
-- [ ] Audit merged Item/Variant Storage orchestration for duplication between Billing and Invoice hosts.
-- [ ] Introduce a Billing-owned Storage adapter/port only where it removes real duplicated business behavior.
-- [ ] Keep direct browser→R2 signed upload flow; Billing never proxies bytes.
-- [ ] Preserve opaque `fileId` identity and Storage ownership/audience rules.
+- [x] Audited Billing vs Invoice Item-media upload duplication.
+- [x] Extracted shared server-only Billing Item/Variant media orchestration to `@876/billing/server`.
+- [x] Hosts retain authentication/authorization and source-app identity.
+- [x] Browser still uploads directly to R2 through Storage signed URLs; Billing does not proxy bytes.
+- [x] Opaque Storage `fileId` remains canonical media identity.
+- [x] Added recovery for partial completion where Storage link succeeded but Billing attachment failed.
 
 ### Phase 12 — Capability resolver
 
-- [ ] Centralize existing Item/Variant/stock capability evaluation where real duplicate checks exist.
-- [ ] Map current persisted preferences without aesthetic key migrations.
-- [ ] Document reserved future capability namespaces only; do not seed unavailable features.
+- [x] Centralized the real duplicated Item Variant capability decision.
+- [x] Variant-mode Item creation and Variant mutation now use the same service-layer capability resolver.
+- [x] Existing `items / product-variants` preference key/default is preserved.
+- [x] No unavailable future capabilities were seeded.
+- [x] Stock tracking remains Item state; no artificial org capability was introduced.
 
 ### Phase 13 — SDK/caller boundaries
 
-- [x] Preserve explicit `@876/billing` bounded client and existing caller tiers so far.
-- [x] Keep internal `StockTarget`, transaction, idempotency, and outbox concepts out of public SDK contracts so far.
-- [x] Do not add empty future `orders`, `inventory`, `fulfillments`, or `channels` SDK namespaces.
-- [ ] Recheck the finished diff for accidental internal-type leakage after all phases land.
+- [x] Preserved explicit `@876/billing` bounded client/caller tiers.
+- [x] Kept `StockTarget`, transaction, idempotency rows, outbox rows, and persistence ports internal.
+- [x] Added only a server-side Item-media orchestration export required by both hosts.
+- [x] Added no empty future Orders/Inventory/Fulfillment/Channels SDK namespaces.
 
 ### Phase 14 — Dependency boundaries
 
-- [ ] Strengthen `apps/billing-api/.dependency-cruiser.cjs` for new Inventory/Pricing/workflow boundaries.
-- [ ] Cross-module imports use `index.ts` only.
-- [ ] Inventory may not import Documents.
-- [ ] Catalog/Pricing may not import Documents internals.
-- [ ] Workflows may not import another module's repository.
+- [x] Strengthened `apps/billing-api/.dependency-cruiser.cjs`.
+- [x] Inventory cannot depend on Documents.
+- [x] Catalog cannot depend on Documents.
+- [x] Pricing cannot depend on Documents.
+- [x] Documents workflows cannot import another module's repositories.
+- [x] Existing public-index/module-boundary and repository-only Prisma rules remain authoritative.
 
 ### Phase 15 — Error ownership
 
-- [ ] Reuse/normalize registered Billing domain errors for sellable/inventory/pricing/idempotency failures.
-- [x] New Catalog/Inventory/Pricing boundaries return domain errors rather than exposing raw Prisma errors.
-- [ ] Audit remaining new error strings/codes and register/normalize them consistently.
+- [x] Reused existing registered Item/Variant/stock errors.
+- [x] Registered new idempotency/Pricing/currency errors in Billing's central error registry.
+- [x] New domain seams normalize failures instead of exposing Prisma/Storage internals as Billing domain errors.
 
 ### Phase 16 — Tests and hardening
 
-- [ ] Add targeted Catalog resolver tests.
-- [ ] Add targeted Inventory generic-command tests.
-- [ ] Add Pricing resolver tests.
-- [ ] Add document workflow transaction/rollback tests where feasible with existing test patterns.
-- [ ] Add idempotency tests.
-- [ ] Add outbox atomicity tests.
-- [ ] Add boundary-test coverage/config assertions.
-- [ ] Review diff for duplicate abstractions, compatibility residue, swallowed errors, forbidden casts/comments, and speculative features.
+- [x] 5 Catalog sellable resolver tests authored.
+- [x] 3 Item capability tests authored.
+- [x] 5 Inventory generic-command tests authored.
+- [x] 5 Pricing resolver tests authored.
+- [x] 5 command-idempotency service tests authored.
+- [x] 5 command-idempotency repository tests authored.
+- [x] 5 Invoice workflow/outbox-composition tests authored.
+- [x] 5 shared Item-media orchestration tests authored.
+- [x] **38 focused tests total across 8 files.**
+- [x] Final compile-oriented review fixed the workflow test's Zod output shape for `autoApplyCredits`.
+- [x] Removed dead Catalog stock implementation/tests and transitional Inventory god repository.
+- [x] Removed duplicate executable pricing implementations.
+- [x] Reviewed diff for speculative resources/internal SDK leakage; none intentionally introduced.
+- [ ] Runtime/typecheck/build/database verification — **LOCAL VERIFICATION REQUIRED; GPT Web did not execute commands.**
 
-### Phase 17 — Documentation + final report
+### Phase 17 — Documentation + closeout
 
-- [ ] Update relevant Billing docs/rules with final implemented architecture rather than aspirational code that was not added.
-- [ ] Record exact future insertion points for Orders, advanced Inventory, Channels, Fulfillment, Purchasing, Restaurant projections, Store projections, and Marketplace projections.
-- [ ] Write GPT Web report at `reports/gpt-web/2026-09-07-billing-commercial-platform-architecture.md` with per-phase status, test counts, files changed, migrations in full, decisions, risks, unverified work, and verification commands.
-- [ ] Update this plan to `COMPLETED` or explicitly document any genuine block.
+- [x] Added accepted architecture ADR.
+- [x] Added byte-identical commercial-platform rule mirrors.
+- [x] Updated byte-identical platform-services rule mirrors to remove architecture contradiction.
+- [x] Recorded future insertion points for Orders, advanced Inventory, Channels, Fulfillment, Purchasing, Restaurant, Store, and Marketplace projections.
+- [x] Wrote final GPT Web report with migrations in full, tests, decisions, risks, deferrals, compatibility seams, and verification commands.
+- [x] Tracker closed as `IMPLEMENTATION_COMPLETE — LOCAL_VERIFICATION_REQUIRED`.
 
-## Implementation findings / decisions
+## Key implementation findings
 
-1. Billing already owned cross-app source attribution and deterministic canonical request hashing; the new command idempotency layer reuses those primitives rather than introducing another canonicalizer.
-2. Billing Engine already owned the tested deterministic catalog-price calculation. Catalog and Documents contained duplicate copies, so Pricing delegates amount calculation to Billing Engine and owns selection/price-list policy only.
-3. The merged Item Variant implementation wrote `variant-allocation` movements while the original stock SQL check constraint did not permit that value. The commercial-platform migration repairs the constraint additively and also admits semantic `sale` / `sale-reversal` movement values.
-4. Inventory's public command contract is `StockTarget` based. Current persistence still resolves those targets to Item/Variant quantity columns and movement FKs; future inventory indirection can change without changing callers.
-5. Invoice finalize/void orchestration now lives in Documents workflows, while a Documents repository helper owns Prisma transaction/query/write details. Cross-domain side effects use Inventory/Ledger public APIs.
-6. Document line preparation now batches Pricing and Catalog resolution and keeps `@876/core/money` as the document-total arithmetic owner. It does not introduce per-line N+1 resolution.
-7. `platform-services.md` previously used commerce/orders as an example future shared service. The new Billing commercial-platform rule/ADR makes Billing the actual shared commercial data plane; final docs review must ensure those rules do not contradict one another.
+1. Billing already owned canonical request hashing; command idempotency reuses it.
+2. Billing Engine already owned the canonical pricing-model calculation; duplicate Catalog/Documents copies were removed.
+3. The merged Variant implementation had a real SQL constraint mismatch for `variant-allocation`; the additive migration repairs it.
+4. Inventory can own stock semantics before physical Item/Variant quantity columns are normalized.
+5. Application workflows can orchestrate Inventory/Ledger/Outbox while Documents repositories own Invoice persistence/transaction details.
+6. Credit Notes should keep explicit immutable correction snapshots rather than depending on current live Catalog pricing.
+7. Billing and Invoice duplicated meaningful Storage orchestration; extracting it also enabled a correct partial-failure retry path.
+8. `platform-services.md` needed an explicit Billing commercial-plane exception to avoid future agents creating a parallel commerce/orders source of truth.
 
-## Verification commands
+## Schema/migrations added
 
-GPT Web cannot execute these. They must be run by the local/orchestrating agent.
+- `apps/billing-api/prisma/migrations/20260907230000_billing_commercial_platform/migration.sql`
+  - repairs stock movement type constraint;
+  - permits `variant-allocation`, `sale`, `sale-reversal` while retaining historical values.
+- `apps/billing-api/prisma/migrations/20260907231000_billing_command_idempotency_outbox/migration.sql`
+  - adds `billing_command_idempotency_keys`;
+  - adds `billing_outbox_events`.
+
+Full SQL is preserved in the GPT Web report.
+
+## Verification status
+
+GPT Web did **not** run and does **not** claim success for:
+
+- Prisma generation;
+- typecheck;
+- lint;
+- dependency-cruiser;
+- tests;
+- builds;
+- DB validate/drift/migration checks;
+- API contract checks;
+- database migrations.
+
+## Required local verification
 
 ```bash
 pnpm --filter @876/billing-api generate
@@ -245,7 +292,6 @@ pnpm --filter @876/billing-api api:contract:check
 
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/billing test
-
 pnpm --filter @876/billing-ui typecheck
 pnpm --filter @876/billing-ui test
 
@@ -263,28 +309,20 @@ pnpm --filter @876/storage typecheck
 pnpm --filter @876/storage test
 ```
 
-Do not blindly run `prisma migrate deploy`; inspect migration status/target first.
+Do not blindly run `prisma migrate deploy`; inspect target/status/constraints first.
 
-## Multi-session continuity / handoff
+## Closeout / local-agent handoff
 
-Current state as of the tracker sync:
-
-- Branch remains based on `main` commit `90c986688ddd4add71fd665592b15722029ebc42` and was 60 commits ahead / 0 behind that base when compared during this run.
-- Architecture ADR/rules, commercial kernel, Catalog sellable resolution, Inventory boundary, Pricing boundary, document-line delegation, and explicit Invoice finalize/void workflows are implemented.
-- Command-idempotency and Billing-outbox persistence schemas/migrations exist, but workflow wiring and tests are still pending.
-- No speculative commerce resources have been added.
-- The branch also contains unrelated Invoice/Billing finance-settings work from concurrent work. Preserve it; do not rewrite, revert, or fold it into this architecture task.
-- GPT Web cannot run shell/tests/typecheck/build/migrations; all verification remains local/orchestrator responsibility.
-- No PR is authorized.
-
-Next step:
-
-1. Wire command idempotency into Invoice finalize/void atomically with the existing serializable transaction.
-2. Add the Billing outbox repository/service and emit only real Invoice lifecycle events from those same transactions.
-3. Remove the remaining duplicate legacy pricing helpers after caller audit.
-4. Complete shared line/error/capability/media/boundary work only where it removes real duplication.
-5. Add focused regression tests, finish docs, write the GPT Web report, and close this tracker only after the implementation diff has been reviewed.
+- Preserve branch history and all files.
+- Read the final report before local verification.
+- Current `main` caught up with the concurrent finance-settings work during this run; the commercial-platform branch was ahead of current `main` with no behind divergence at final pre-closeout comparison.
+- Generate Prisma before judging TypeScript errors involving the two new models.
+- Verify Billing API typecheck + dependency boundaries before broad app builds.
+- Exercise concurrent/last-unit stock finalize behavior and idempotency replay on a real local DB after static verification.
+- Confirm one outbox row per successful lifecycle command and none for rolled-back commands.
+- Confirm Item-media completion can be retried after Storage linking succeeds but Billing attachment fails.
+- A future PR split should be focused, but no PR is authorized/created by GPT Web.
 
 ## PR preparation summary
 
-Implementation is in progress. No PR should be opened unless explicitly authorized by the user.
+Architecture implementation is complete. Local verification remains required. No PR was opened.
