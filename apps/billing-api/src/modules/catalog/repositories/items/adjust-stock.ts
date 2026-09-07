@@ -8,7 +8,7 @@ import type { ServiceResult } from '../../schemas/api'
 
 import { err, ok } from '../result'
 
-/** Replaces the current count and records the delta in the stock audit trail. */
+/** Replaces a single Item's current count and records the delta in the stock audit trail. */
 export async function adjustStock(
   tenantId: string,
   itemId: string,
@@ -23,12 +23,19 @@ export async function adjustStock(
           select: {
             id: true,
             type: true,
+            variantMode: true,
             trackStock: true,
             stockQuantity: true,
             allowOutOfStock: true,
           },
         })
         if (!item) return err('Item not found.', 404)
+        if (item.variantMode === 'variant')
+          return err(
+            'Adjust stock on a specific variant for this item.',
+            409,
+            'billing/item-stock-variant-required'
+          )
         if (item.type !== 'GOOD' || !item.trackStock)
           return err(
             'Stock tracking is not enabled for this item.',
@@ -54,6 +61,7 @@ export async function adjustStock(
             id: generateId('ItemStockMovement'),
             tenantId,
             itemId: item.id,
+            stockTargetKey: item.id,
             type: 'manual-adjustment',
             quantityDelta: params.quantity - before,
             quantityBefore: before,
