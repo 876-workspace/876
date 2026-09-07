@@ -36,7 +36,9 @@ export async function finalize(
           where: { id: invoiceId, tenantId },
           include: {
             customer: { select: { salespersonId: true } },
-            lines: { select: { itemId: true, quantity: true } },
+            lines: {
+              select: { itemId: true, variantId: true, quantity: true },
+            },
           },
         })
         if (!invoice) throw new InvoiceFinalizeError('Invoice not found.', 404)
