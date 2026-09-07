@@ -1,9 +1,15 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
+import {
+  claimCommand,
+  completeCommand,
+} from '@/modules/command-idempotency'
 import { recomputeCustomerAr } from '@/modules/customers'
 import { restore as restoreInventory } from '@/modules/inventory'
 import { recordLedgerEntry } from '@/modules/ledger'
+import { enqueueBillingEvent } from '@/modules/outbox'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
+import type { IdempotencyContext } from '@/types/commerce'
 
 import {
   findInvoiceForVoid,
@@ -18,12 +24,28 @@ import type { InvoiceVoidParams } from '../schemas/invoice'
 export async function voidInvoiceWorkflow(
   tenantId: string,
   invoiceId: string,
-  params: InvoiceVoidParams
+  params: InvoiceVoidParams,
+  idempotency?: IdempotencyContext
 ): ServiceResult<{ id: string }> {
   const now = nowUnixSeconds()
 
   try {
     return await runInvoiceTransaction(async (tx) => {
+      let claimId: string | undefined
+      if (idempotency) {
+        const claim = await claimCommand(tx, tenantId, {
+          operation: 'invoice-void',
+          key: idempotency.key,
+          requestHash: idempotency.requestHash,
+          resource: { type: 'invoice', id: invoiceId },
+          httpStatus: 201,
+          now,
+        })
+        if (claim.error !== null) return claim
+        if (claim.data.state === 'replayed') return ok({ id: invoiceId })
+        claimId = claim.data.claimId
+      }
+
       const invoice = await findInvoiceForVoid(tx, tenantId, invoiceId)
       if (!invoice) return err('Invoice not found.', 404)
       if (invoice.status === 'DRAFT')
@@ -46,6 +68,7 @@ export async function voidInvoiceWorkflow(
       })
       if (stock.error !== null) return stock
 
+      const amountReversed = invoice.amountDue
       await markInvoiceVoid(tx, {
         id: invoice.id,
         now,
@@ -59,7 +82,7 @@ export async function voidInvoiceWorkflow(
         invoiceId: invoice.id,
         type: 'INVOICE_VOIDED',
         direction: 'CREDIT',
-        amount: invoice.amountDue,
+        amount: amountReversed,
         currency: invoice.currency,
         description: `Invoice ${invoice.number} voided`,
         idempotencyKey: `invoice:${invoice.id}:voided`,
@@ -67,7 +90,22 @@ export async function voidInvoiceWorkflow(
         createdAt: now,
       })
       await recomputeCustomerAr(tx, tenantId, invoice.customerId, now)
+      await enqueueBillingEvent(tx, tenantId, {
+        type: 'invoice.voided',
+        version: 1,
+        resource: { type: 'invoice', id: invoice.id },
+        payload: {
+          invoiceId: invoice.id,
+          customerId: invoice.customerId,
+          number: invoice.number,
+          currency: invoice.currency,
+          amountReversed: amountReversed.toString(),
+          voidedAt: now,
+        },
+        occurredAt: now,
+      })
 
+      if (claimId) await completeCommand(tx, tenantId, claimId, now)
       return ok({ id: invoice.id })
     })
   } catch (error) {
