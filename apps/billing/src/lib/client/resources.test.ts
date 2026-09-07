@@ -28,6 +28,7 @@ import { refunds } from './refunds'
 import { roles } from './roles'
 import { salespeople } from './salespeople'
 import { subscriptions } from './subscriptions'
+import { support } from './support'
 import { taxAuthorities } from './tax-authorities'
 import { taxRates } from './tax-rates'
 
@@ -606,6 +607,7 @@ describe('Billing browser resource clients', () => {
       quotes,
       refunds,
       subscriptions,
+      support,
       roles,
       salespeople,
       taxAuthorities,

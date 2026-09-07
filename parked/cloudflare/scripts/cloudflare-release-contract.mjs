@@ -45,6 +45,7 @@ export const CLOUDFLARE_WORKERS = {
       'API_INTERNAL_KEY',
       'BILLING_API_876_KEY',
       'BILLING_INTERNAL_KEY',
+      'CRM_SUPPORT_SERVICE_KEY',
       'SESSION_COOKIE_SECRET',
       'WIDGETS_SERVICE_KEY',
     ],
@@ -72,6 +73,7 @@ export const CLOUDFLARE_WORKERS = {
     readinessUrl: 'https://876-invoice.1876.workers.dev/api/health',
     requiredSecrets: [
       'API_INTERNAL_KEY',
+      'CRM_SUPPORT_SERVICE_KEY',
       'INVOICE_API_876_KEY',
       'SESSION_COOKIE_SECRET',
     ],

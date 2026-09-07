@@ -37,12 +37,32 @@ describe('feature seed catalog', () => {
     expect(seeds.some((seed) => seed.slug.includes('_'))).toBe(false)
   })
 
-  it('keeps explicit legacy aliases for every renamed seed', () => {
+  it('keeps historical aliases explicit instead of deriving them', () => {
     const seeds = [
       ...PLATFORM_FEATURE_SEEDS,
       ...Object.values(FEATURE_SEEDS_BY_APP).flat(),
     ]
-    expect(seeds.every((seed) => (seed.legacySlugs?.length ?? 0) > 0)).toBe(
+    const aliases = seeds.flatMap((seed) => seed.legacySlugs ?? [])
+
+    expect(aliases.length).toBeGreaterThan(0)
+    expect(aliases.every((alias) => alias.includes('_'))).toBe(true)
+    expect(new Set(aliases).size).toBe(aliases.length)
+  })
+
+  it('seeds the five Invoice shell flags enabled without invented legacy aliases', () => {
+    const invoiceSeeds = FEATURE_SEEDS_BY_APP['876-invoice'] ?? []
+
+    expect(invoiceSeeds.map((seed) => seed.slug)).toEqual([
+      'invoice-theme-switcher',
+      'invoice-global-add',
+      'invoice-app-switcher',
+      'invoice-search-bar',
+      'invoice-org-switcher',
+    ])
+    expect(invoiceSeeds.every((seed) => seed.defaultEnabled === true)).toBe(
+      true
+    )
+    expect(invoiceSeeds.every((seed) => seed.legacySlugs === undefined)).toBe(
       true
     )
   })

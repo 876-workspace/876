@@ -6,6 +6,7 @@
 /* Shared product-UI packages. */
 @source '../../../../packages/billing-ui/src/**/*.{ts,tsx}';
 @source '../../../../packages/access-ui/src/**/*.{ts,tsx}';
+@source '../../../../packages/crm-ui/src/**/*.{ts,tsx}';
 /* Shared widgets package — sticky colors, Editor.js host UI, dock. */
 @source '../../../../packages/widgets/src/**/*.{ts,tsx}';
 

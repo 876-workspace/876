@@ -16,13 +16,40 @@ function resolveBaseUrl(baseUrl?: string): string {
   return 'http://localhost:4010'
 }
 
-export function buildRuntime(options: ClientOptions) {
+function baseRuntime(options: {
+  baseUrl?: string
+  fetch?: typeof fetch
+  requestId?: string
+}) {
   return {
     baseUrl: resolveBaseUrl(options.baseUrl),
-    internalKey: options.internalKey,
     fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
     requestId: options.requestId,
   }
 }
 
+export function buildRuntime(options: ClientOptions) {
+  return {
+    ...baseRuntime(options),
+    internalKey: options.internalKey,
+  }
+}
+
+export interface ServiceRuntimeOptions {
+  baseUrl?: string
+  serviceApp: string
+  serviceKey?: string
+  fetch?: typeof fetch
+  requestId?: string
+}
+
+export function buildServiceRuntime(options: ServiceRuntimeOptions) {
+  return {
+    ...baseRuntime(options),
+    serviceApp: options.serviceApp,
+    serviceKey: options.serviceKey,
+  }
+}
+
 export type Runtime = ReturnType<typeof buildRuntime>
+export type ServiceRuntime = ReturnType<typeof buildServiceRuntime>

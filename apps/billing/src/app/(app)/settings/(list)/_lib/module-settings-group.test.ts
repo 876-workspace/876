@@ -24,6 +24,7 @@ describe('billing module settings navigation', () => {
         href: '/settings/modules/time-tracking',
       },
       { label: 'Customers settings', href: '/settings/modules/customers' },
+      { label: 'CRM settings', href: '/settings/modules/crm' },
       {
         label: 'Subscriptions settings',
         href: '/settings/modules/subscriptions',

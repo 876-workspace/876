@@ -32,6 +32,11 @@ export type {
   UpdateRequestInput,
 } from './request-types'
 export {
+  supportRequestDraftSchema,
+  supportResponseStatus,
+} from './support-types'
+export type { SupportRequestDraft } from './support-types'
+export {
   requestEventBusyStatusSchema,
   requestEventListSchema,
   requestEventParticipantKindSchema,

@@ -11,7 +11,6 @@ import { getCrmContextResult } from '@/lib/auth/context'
 import { navConfig } from '@/components/shell/nav-config'
 import { getFeatures } from '@/lib/features'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { crm } from '@/lib/services/crm'
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const result = await getCrmContextResult()
@@ -49,15 +48,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const currentOrg = orgs.find((org) => org.id === orgId) ??
     orgs[0] ?? { id: orgId, name: orgName, slug: orgSlug ?? orgId }
 
-  const categoriesResult = await crm.requestCategories.list(orgId)
-  if (categoriesResult.error)
-    console.error(
-      `[crm/shell] request categories unavailable: ${categoriesResult.error.code} — ${categoriesResult.error.message}`
-    )
-  const supportCategories = (categoriesResult.data?.data ?? [])
-    .filter((category) => category.isActive)
-    .map((category) => ({ id: category.id, name: category.name }))
-
   const { uiFeatures } = await getFeatures({ userId, organizationId: orgId })
 
   return (
@@ -68,9 +58,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       orgs={orgs}
       apps={getAppsDirectory()}
       uiFeatures={uiFeatures}
-      supportCategories={supportCategories}
       navigation={
-        access.status === 'ok' ? resolveNavigation(navConfig, access.context) : []
+        access.status === 'ok'
+          ? resolveNavigation(navConfig, access.context)
+          : []
       }
     >
       {access.status === 'unavailable' ? (
@@ -78,7 +69,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           title="Access could not be verified"
           error={{
             code: access.code,
-            message: 'App access is temporarily unavailable. Try again shortly.',
+            message:
+              'App access is temporarily unavailable. Try again shortly.',
           }}
           variant="banner"
         />

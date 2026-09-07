@@ -8,6 +8,7 @@ import {
   createOperatorRequestsRouter,
   createRequestsRouter,
 } from '../modules/requests/requests.routes.js'
+import { createSupportRouter } from '../modules/support/index.js'
 import { createTeamsRouter } from '../modules/teams/teams.routes.js'
 import { createTenantsRouter } from '../modules/tenants/tenants.routes.js'
 
@@ -15,6 +16,7 @@ export function buildRoutes() {
   const router = Router()
   router.use('/v1/tenants', createTenantsRouter())
   router.use('/v1/requests', createOperatorRequestsRouter())
+  router.use('/v1/service/support', createSupportRouter())
   router.use(
     '/v1/organizations/:organizationId/customers',
     createCustomersRouter()
