@@ -1,5 +1,13 @@
 import { notFound, redirect } from 'next/navigation'
 
+import {
+  Page,
+  PageBreadcrumb,
+  PageDescription,
+  PageHeader,
+  PageTitle,
+} from '@876/ui/page'
+
 import { getInvoice } from '@/lib/invoice'
 import { StockAdjustmentForm } from './_components/stock-adjustment-form'
 
@@ -26,19 +34,23 @@ export default async function ItemStockPage({
     redirect(`/items/${item.id}`)
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-base font-semibold">Adjust stock</h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Update the current count for {item.name}. The change is recorded in
-          the stock audit trail.
-        </p>
-      </div>
+    <Page>
+      <PageBreadcrumb
+        href={`/items/${item.id}`}
+        label={item.name}
+        className="mb-4"
+      />
+      <PageHeader className="mb-8">
+        <PageTitle>Adjust stock</PageTitle>
+        <PageDescription>
+          Every change is recorded in the stock audit trail.
+        </PageDescription>
+      </PageHeader>
       <StockAdjustmentForm
         itemId={item.id}
         currentQuantity={item.stockQuantity ?? 0}
         allowOutOfStock={item.allowOutOfStock}
       />
-    </div>
+    </Page>
   )
 }
