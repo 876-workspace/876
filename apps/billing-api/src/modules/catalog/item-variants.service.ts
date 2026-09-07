@@ -8,7 +8,12 @@ import type {
   ItemVariantUpdateParams,
 } from './schemas/item'
 import type { ItemPreferencesUpdateParams } from './schemas/item-preference'
-import { catalogList, serializeCatalog } from './catalog.serializers'
+import { serializeCatalog } from './catalog.serializers'
+import {
+  itemMediaList,
+  itemVariantList,
+  serializeItemVariant,
+} from './item-variant.serializers'
 import { itemPreferences } from './repositories/item-preferences'
 import { items } from './repositories/items'
 
@@ -64,7 +69,7 @@ async function retrieveVariant(
   await ownedItem(tenantId, itemId, sourceAppId)
   const variant = await items.variants.retrieve(tenantId, itemId, variantId)
   if (!variant) throw appError('billing/item-variant-not-found')
-  return serializeCatalog('item_variant', variant)
+  return serializeItemVariant(variant)
 }
 
 async function listMedia(
@@ -87,7 +92,7 @@ async function listMedia(
   const path = variantId
     ? `/api/v1/items/${itemId}/variants/${variantId}/media`
     : `/api/v1/items/${itemId}/media`
-  return catalogList('item_media', rows, path)
+  return itemMediaList(rows, path)
 }
 
 export const itemVariantsService = {
@@ -121,8 +126,7 @@ export const itemVariantsService = {
     active?: boolean
   ) {
     await ownedItem(tenantId, itemId, sourceAppId)
-    return catalogList(
-      'item_variant',
+    return itemVariantList(
       await items.variants.list(tenantId, itemId, active),
       url
     )
@@ -135,8 +139,7 @@ export const itemVariantsService = {
     sourceAppId?: string,
     url = '/api/v1/item-variants'
   ) {
-    return catalogList(
-      'item_variant',
+    return itemVariantList(
       await items.variants.search(tenantId, q, limit, sourceAppId),
       url
     )
