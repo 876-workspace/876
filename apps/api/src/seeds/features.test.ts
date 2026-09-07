@@ -59,7 +59,9 @@ describe('feature seed catalog', () => {
       'invoice-search-bar',
       'invoice-org-switcher',
     ])
-    expect(invoiceSeeds.every((seed) => seed.defaultEnabled === true)).toBe(true)
+    expect(invoiceSeeds.every((seed) => seed.defaultEnabled === true)).toBe(
+      true
+    )
     expect(invoiceSeeds.every((seed) => seed.legacySlugs === undefined)).toBe(
       true
     )

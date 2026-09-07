@@ -48,7 +48,9 @@ describe('INVOICE_MODULE_KEYS', () => {
   })
 
   it('keeps the embedded CRM seam optional and disabled by default', () => {
-    expect(INVOICE_MODULE_CATALOG.find((module) => module.key === 'crm')).toMatchObject({
+    expect(
+      INVOICE_MODULE_CATALOG.find((module) => module.key === 'crm')
+    ).toMatchObject({
       optional: true,
       enabledByDefault: false,
     })

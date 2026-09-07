@@ -71,7 +71,9 @@ export default async function AppLayout({
       orgs={orgs}
       features={features}
       navigation={
-        access.status === 'ok' ? resolveNavigation(navConfig, access.context) : []
+        access.status === 'ok'
+          ? resolveNavigation(navConfig, access.context)
+          : []
       }
     >
       {access.status === 'unavailable' ? (
@@ -79,7 +81,8 @@ export default async function AppLayout({
           title="Access could not be verified"
           error={{
             code: access.code,
-            message: 'App access is temporarily unavailable. Try again shortly.',
+            message:
+              'App access is temporarily unavailable. Try again shortly.',
           }}
           variant="banner"
         />

@@ -6,9 +6,17 @@ import * as controller from './support.controller.js'
 export function createSupportRouter() {
   const router = Router()
 
-  router.get('/categories', requireSupportService, controller.listSupportCategories)
+  router.get(
+    '/categories',
+    requireSupportService,
+    controller.listSupportCategories
+  )
   router.get('/requests', requireSupportService, controller.listSupportRequests)
-  router.post('/requests', requireSupportService, controller.createSupportRequest)
+  router.post(
+    '/requests',
+    requireSupportService,
+    controller.createSupportRequest
+  )
 
   return router
 }

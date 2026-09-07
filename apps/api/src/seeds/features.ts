@@ -790,6 +790,7 @@ async function seedPosthogFeatures(params: {
       const mergedTags = [
         ...new Set([...existingTags, ...(seed.tags ?? [])]),
       ].sort()
+
       const updatePayload: Parameters<typeof updateFeature>[1] = {
         provider: 'posthog',
         providerFeatureId,

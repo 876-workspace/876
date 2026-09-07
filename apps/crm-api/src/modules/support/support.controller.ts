@@ -13,7 +13,9 @@ export async function listSupportCategories(_req: Request, res: Response) {
 }
 
 export async function listSupportRequests(req: Request, res: Response) {
-  const { sourceOrganizationId } = listSupportRequestsQuerySchema.parse(req.query)
+  const { sourceOrganizationId } = listSupportRequestsQuerySchema.parse(
+    req.query
+  )
   const result = await service.listRequests(sourceOrganizationId)
   return sendCrmList(res, result, '/v1/service/support/requests')
 }

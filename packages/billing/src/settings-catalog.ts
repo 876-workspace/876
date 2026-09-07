@@ -37,8 +37,7 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
   {
     key: 'items',
     label: 'Items',
-    description:
-      'Manage the products and services used on finance documents.',
+    description: 'Manage the products and services used on finance documents.',
     optional: true,
     enabledByDefault: true,
     preferences: [],
@@ -63,7 +62,8 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
   {
     key: 'customers',
     label: 'Customers',
-    description: 'Manage customer billing identities and finance relationships.',
+    description:
+      'Manage customer billing identities and finance relationships.',
     optional: true,
     enabledByDefault: true,
     preferences: [],

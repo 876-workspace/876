@@ -5,12 +5,15 @@ import { secretsMatch } from './internal-auth.js'
 const SERVICE_APP_HEADER = 'x-876-service-app'
 const SERVICE_KEY_HEADER = 'x-876-service-key'
 
-function parseSupportServiceKeys(raw: string | undefined): Record<string, string> {
+function parseSupportServiceKeys(
+  raw: string | undefined
+): Record<string, string> {
   if (!raw?.trim()) return {}
 
   try {
     const parsed: unknown = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+      return {}
 
     const keys: Record<string, string> = {}
     for (const [appSlug, value] of Object.entries(parsed)) {

@@ -77,9 +77,7 @@ describe('@876/crm support client', () => {
   beforeEach(() => fetch.mockReset())
 
   it('uses app-bound service headers rather than the CRM internal key', async () => {
-    fetch.mockResolvedValue(
-      json(list([], '/v1/service/support/categories'))
-    )
+    fetch.mockResolvedValue(json(list([], '/v1/service/support/categories')))
 
     await client.categories.list()
 
@@ -88,13 +86,13 @@ describe('@876/crm support client', () => {
       'x-876-service-app': '876-billing',
       'x-876-service-key': 'billing-support-key',
     })
-    expect(fetch.mock.calls[0]?.[1]?.headers).not.toHaveProperty('x-internal-key')
+    expect(fetch.mock.calls[0]?.[1]?.headers).not.toHaveProperty(
+      'x-internal-key'
+    )
   })
 
   it('scopes support history to the source organization query', async () => {
-    fetch.mockResolvedValue(
-      json(list([], '/v1/service/support/requests'))
-    )
+    fetch.mockResolvedValue(json(list([], '/v1/service/support/requests')))
 
     const result = await client.requests.list('org_source/a')
 

@@ -48,7 +48,8 @@ const DEFAULT_LABELS: SupportWidgetLabels = {
   emptyTitle: 'Nothing open',
   emptyDescription: 'Anything your organization raises with 876 shows up here.',
   subjectPlaceholder: 'What is happening?',
-  descriptionPlaceholder: 'Any detail that would help someone reproduce or act on it…',
+  descriptionPlaceholder:
+    'Any detail that would help someone reproduce or act on it…',
   sendButton: 'Send',
 }
 
@@ -67,9 +68,9 @@ export function SupportWidget({
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<View>('list')
   const [requests, setRequests] = useState<RequestList['data'] | null>(null)
-  const [categories, setCategories] = useState<RequestCategoryList['data'] | null>(
-    null
-  )
+  const [categories, setCategories] = useState<
+    RequestCategoryList['data'] | null
+  >(null)
   const [requestsError, setRequestsError] = useState<string | null>(null)
   const [categoriesError, setCategoriesError] = useState<string | null>(null)
 
@@ -129,7 +130,9 @@ export function SupportWidget({
         <div className="bg-muted/20 flex items-center justify-between gap-2 border-b px-3 py-2.5">
           {view === 'list' ? (
             <>
-              <span className="876-eyebrow text-[0.6875rem]">{copy.listTitle}</span>
+              <span className="876-eyebrow text-[0.6875rem]">
+                {copy.listTitle}
+              </span>
               <Button
                 type="button"
                 variant="info"
@@ -151,7 +154,9 @@ export function SupportWidget({
                 <ChevronLeftIcon className="size-3.5" />
                 Back
               </button>
-              <span className="876-eyebrow text-[0.6875rem]">{copy.newTitle}</span>
+              <span className="876-eyebrow text-[0.6875rem]">
+                {copy.newTitle}
+              </span>
             </>
           )}
         </div>
@@ -309,7 +314,9 @@ function RequestsTab({
     return (
       <div className="space-y-1 px-6 py-8 text-center">
         <p className="text-sm font-medium">{labels.emptyTitle}</p>
-        <p className="text-muted-foreground text-xs">{labels.emptyDescription}</p>
+        <p className="text-muted-foreground text-xs">
+          {labels.emptyDescription}
+        </p>
       </div>
     )
 
@@ -330,7 +337,9 @@ function RequestsTab({
                 {content}
               </Link>
             ) : (
-              <div className="flex items-center gap-3 px-4 py-2.5">{content}</div>
+              <div className="flex items-center gap-3 px-4 py-2.5">
+                {content}
+              </div>
             )}
           </li>
         )
