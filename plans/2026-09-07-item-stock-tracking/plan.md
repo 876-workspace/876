@@ -120,7 +120,7 @@ The shared Billing API remains the sole owner of Item state. Billing and Invoice
 
 ### Phase 4 — invoice lifecycle enforcement
 
-- [x] Validate tracked stock for invoice draft creation without affecting Quotes.
+- [x] ~~Validate tracked stock for invoice draft creation~~ — **reversed during review (2026-09-07).** Draft creation blocked with a 409 while draft *update* had no equivalent check, so qty 1 → edit to 999 bypassed it entirely: friction that guaranteed nothing. Drafts now never block, matching the documented advisory intent and the "quotes never block" rule. The editor still warns client-side and finalization remains the authoritative serializable check. The dead `validateInvoiceStock`/`validateAvailability` chain was removed with it.
 - [x] Aggregate duplicate Item lines before stock checks.
 - [x] Re-check and atomically decrement stock during invoice finalization.
 - [x] Write one `invoice-finalized` movement per tracked Item.
