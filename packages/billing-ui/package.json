@@ -43,6 +43,18 @@
       "types": "./src/invoices-table.tsx",
       "default": "./src/invoices-table.tsx"
     },
+    "./item-stock": {
+      "types": "./src/item-stock.ts",
+      "default": "./src/item-stock.ts"
+    },
+    "./item-stock-adjustment-form": {
+      "types": "./src/item-stock-adjustment-form.tsx",
+      "default": "./src/item-stock-adjustment-form.tsx"
+    },
+    "./item-stock-summary": {
+      "types": "./src/item-stock-summary.tsx",
+      "default": "./src/item-stock-summary.tsx"
+    },
     "./items-table": {
       "types": "./src/items-table.tsx",
       "default": "./src/items-table.tsx"
