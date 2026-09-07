@@ -23,7 +23,7 @@ import {
   enqueueConnectionResources,
   findAccountingReference,
   findProjectableCustomer,
-  findProjectableEstimate,
+  findProjectableQuote,
   findProjectableInvoice,
   findProjectableItem,
   findProjectablePayment,
@@ -110,7 +110,7 @@ async function loadResource(
       }
     }
     case 'estimate': {
-      const row = await findProjectableEstimate(tenantId, id)
+      const row = await findProjectableQuote(tenantId, id)
       if (!row) return null
       const providerCustomerId = await externalId(
         connectionId,

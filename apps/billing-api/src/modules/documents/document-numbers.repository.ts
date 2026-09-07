@@ -3,7 +3,6 @@ import { prisma } from '@/db/client'
 const PREFIX_BY_TYPE = {
   QUOTE: 'Q',
   INVOICE: 'INV',
-  ESTIMATE: 'EST',
   PAYMENT: 'PAY',
   CREDIT_NOTE: 'CN',
   REFUND: 'REF',

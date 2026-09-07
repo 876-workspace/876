@@ -36,8 +36,6 @@ const ENTITY_PREFIXES = {
   Role: 'role',
   Member: 'mem',
   Vendor: 'vend',
-  Estimate: 'est',
-  EstimateLine: 'estl',
   BankAccount: 'ba',
   BankTransaction: 'btxn',
   PaymentMode: 'pmode',

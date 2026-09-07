@@ -15,7 +15,6 @@ export function retrieve(tenantId: string, priceListId: string) {
           customers: true,
           invoices: true,
           quotes: true,
-          estimates: true,
         },
       },
     },

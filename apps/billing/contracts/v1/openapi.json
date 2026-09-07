@@ -12621,88 +12621,27 @@
         }
       }
     },
-    "/estimates": {
-      "get": {
-        "description": "Ported from `src/app/api/billing/estimates/route.ts`.",
-        "operationId": "billing-billing_get_estimates",
-        "security": [
-          {
-            "tenantOAuth": []
-          }
-        ],
-        "summary": "Billing GET /estimates",
-        "tags": [
-          "Billing"
-        ],
-        "parameters": [
-          {
-            "in": "header",
-            "name": "X-Billing-Organization-Id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Billing-Organization-Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Billing-Billing Get Estimates"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/quotes/{quoteId}/send": {
       "post": {
-        "description": "Ported from `src/app/api/billing/estimates/route.ts`.",
-        "operationId": "billing-billing_post_estimates",
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Send a quote",
+        "operationId": "billing-billing_post_quotes_quoteId_send",
         "security": [
           {
             "tenantOAuth": []
           }
         ],
-        "summary": "Billing POST /estimates",
-        "tags": [
-          "Billing"
-        ],
         "parameters": [
           {
-            "in": "header",
-            "name": "X-Billing-Organization-Id",
-            "required": false,
+            "in": "path",
+            "name": "quoteId",
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Billing-Organization-Id"
-            }
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true
           }
         ],
         "responses": {
@@ -12711,17 +12650,71 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Billing-Billing Post Estimates"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "object": {
+                          "type": "string",
+                          "const": "quote"
+                        },
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "object",
+                        "id"
+                      ],
+                      "additionalProperties": {}
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "4XX": {
+            "description": "Client Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -12729,35 +12722,27 @@
         }
       }
     },
-    "/estimates/{estimateId}": {
-      "get": {
-        "description": "Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.",
-        "operationId": "billing-billing_get_estimates_estimateId",
+    "/quotes/{quoteId}/accept": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Accept a quote",
+        "operationId": "billing-billing_post_quotes_quoteId_accept",
         "security": [
           {
             "tenantOAuth": []
           }
         ],
-        "summary": "Billing GET /estimates/{estimateId}",
-        "tags": [
-          "Billing"
-        ],
         "parameters": [
           {
-            "in": "header",
-            "name": "X-Billing-Organization-Id",
-            "required": false,
+            "in": "path",
+            "name": "quoteId",
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Billing-Organization-Id"
-            }
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true
           }
         ],
         "responses": {
@@ -12766,51 +12751,99 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Billing-Billing Get Estimates Estimateid"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "object": {
+                          "type": "string",
+                          "const": "quote"
+                        },
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "object",
+                        "id"
+                      ],
+                      "additionalProperties": {}
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "4XX": {
+            "description": "Client Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
           }
         }
-      },
-      "patch": {
-        "description": "Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.",
-        "operationId": "billing-billing_patch_estimates_estimateId",
+      }
+    },
+    "/quotes/{quoteId}/decline": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Decline a quote",
+        "operationId": "billing-billing_post_quotes_quoteId_decline",
         "security": [
           {
             "tenantOAuth": []
           }
         ],
-        "summary": "Billing PATCH /estimates/{estimateId}",
-        "tags": [
-          "Billing"
-        ],
         "parameters": [
           {
-            "in": "header",
-            "name": "X-Billing-Organization-Id",
-            "required": false,
+            "in": "path",
+            "name": "quoteId",
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Billing-Organization-Id"
-            }
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true
           }
         ],
         "responses": {
@@ -12819,51 +12852,99 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Billing-Billing Patch Estimates Estimateid"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "object": {
+                          "type": "string",
+                          "const": "quote"
+                        },
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "object",
+                        "id"
+                      ],
+                      "additionalProperties": {}
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "4XX": {
+            "description": "Client Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
           }
         }
-      },
-      "delete": {
-        "description": "Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.",
-        "operationId": "billing-billing_delete_estimates_estimateId",
+      }
+    },
+    "/quotes/{quoteId}/cancel": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Cancel a quote",
+        "operationId": "billing-billing_post_quotes_quoteId_cancel",
         "security": [
           {
             "tenantOAuth": []
           }
         ],
-        "summary": "Billing DELETE /estimates/{estimateId}",
-        "tags": [
-          "Billing"
-        ],
         "parameters": [
           {
-            "in": "header",
-            "name": "X-Billing-Organization-Id",
-            "required": false,
+            "in": "path",
+            "name": "quoteId",
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Billing-Organization-Id"
-            }
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true
           }
         ],
         "responses": {
@@ -12872,17 +12953,71 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Billing-Billing Delete Estimates Estimateid"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "object": {
+                          "type": "string",
+                          "const": "quote"
+                        },
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "object",
+                        "id"
+                      ],
+                      "additionalProperties": {}
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "4XX": {
+            "description": "Client Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "error"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }

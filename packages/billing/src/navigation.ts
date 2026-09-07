@@ -62,13 +62,6 @@ export const billingNavigation = defineNavigation([
             requires: { feature: 'billing-sales-quotes' },
           },
           {
-            key: 'sales-estimates',
-            title: 'Estimates',
-            href: '/estimates',
-            icon: 'sales',
-            requires: { feature: 'billing-sales-estimates' },
-          },
-          {
             key: 'sales-invoices',
             title: 'Invoices',
             href: '/invoices',
@@ -289,7 +282,7 @@ export const invoiceNavigation = defineNavigation([
         href: '/quotes',
         icon: 'quotes',
         colorClassName: 'text-[var(--876-purple)]',
-        requires: { permission: 'estimates.view' },
+        requires: { permission: 'quotes.view' },
       },
       {
         key: 'invoices',

@@ -26,7 +26,6 @@ describe('getFeatures', () => {
           { slug: 'billing-widgets-chat' },
           { slug: 'billing-sales' },
           { slug: 'billing-sales-quotes' },
-          { slug: 'billing-sales-estimates' },
           { slug: 'billing-sales-invoices' },
           { slug: 'billing-subscriptions' },
           { slug: 'billing-purchases' },
@@ -62,7 +61,6 @@ describe('getFeatures', () => {
     expect(result.productFeatures).toEqual({
       sales: true,
       quotes: true,
-      estimates: true,
       invoices: true,
       subscriptions: true,
       purchases: true,
@@ -78,7 +76,6 @@ describe('getFeatures', () => {
       'billing-org-switcher',
       'billing-sales',
       'billing-sales-quotes',
-      'billing-sales-estimates',
       'billing-sales-invoices',
       'billing-subscriptions',
       'billing-purchases',
@@ -122,7 +119,6 @@ describe('getFeatures', () => {
     expect(result.productFeatures).toEqual({
       sales: false,
       quotes: false,
-      estimates: false,
       invoices: false,
       subscriptions: false,
       purchases: false,
@@ -208,7 +204,6 @@ describe('getFeatures', () => {
     expect(result.productFeatures).toEqual({
       sales: false,
       quotes: false,
-      estimates: false,
       invoices: false,
       subscriptions: false,
       purchases: false,
@@ -244,7 +239,6 @@ describe('getFeatures', () => {
     expect(result.productFeatures).toEqual({
       sales: false,
       quotes: false,
-      estimates: false,
       invoices: false,
       subscriptions: false,
       purchases: false,

@@ -161,17 +161,6 @@ enum QuoteStatus {
   @@map("BillingQuoteStatus")
 }
 
-enum EstimateStatus {
-  DRAFT
-  SENT
-  ACCEPTED
-  DECLINED
-  EXPIRED
-  CANCELED
-
-  @@map("BillingEstimateStatus")
-}
-
 enum InvoiceStatus {
   DRAFT
   OPEN

@@ -5,7 +5,6 @@ import { service } from '@/lib/service'
 export const resolveCreditNote = cache(service.creditNotes.retrieve)
 export const resolveCoupon = cache(service.discounts.coupons.retrieve)
 export const resolveCustomer = cache(service.customers.retrieve)
-export const resolveEstimate = cache(service.estimates.retrieve)
 export const resolveInvoice = cache(service.invoices.retrieve)
 export const resolveItem = cache(service.items.retrieve)
 export const resolveAddon = cache(service.addons.retrieve)

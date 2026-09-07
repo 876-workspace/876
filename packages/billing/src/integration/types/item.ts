@@ -189,10 +189,14 @@ export type BillingItemUpdateParams = Partial<
  * Parameters for listing Billing items.
  */
 export interface BillingItemListParams {
+  /** Case-insensitive match on item name, SKU, or description. */
+  q?: string
   /**
    * Filter by active status.
    */
   active?: boolean
+  /** Maximum number of items to return. */
+  limit?: number
 }
 
 /**

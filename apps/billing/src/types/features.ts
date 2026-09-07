@@ -11,7 +11,6 @@ export interface BillingProductFeatures {
   sales: boolean
   quotes: boolean
   invoices: boolean
-  estimates: boolean
   subscriptions: boolean
   purchases: boolean
   vendors: boolean

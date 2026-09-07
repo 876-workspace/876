@@ -21,7 +21,6 @@ export type InvoiceStatus =
 
 const invoiceCreateShape = {
   quoteId: IdSchema.nullable().optional(),
-  estimateId: IdSchema.nullable().optional(),
   customerId: IdSchema.nullable().optional(),
   subscriptionId: IdSchema.nullable().optional(),
   salespersonId: IdSchema.nullable().optional(),
@@ -50,7 +49,7 @@ function invoiceCreateSchema(integration: boolean) {
         : {}),
     })
     .superRefine((value, context) => {
-      if (value.quoteId || value.estimateId) {
+      if (value.quoteId) {
         if (
           value.customerId ||
           value.lines ||
@@ -58,14 +57,13 @@ function invoiceCreateSchema(integration: boolean) {
           value.subscriptionId ||
           value.priceListId ||
           ('sourceExternalReference' in value &&
-            value.sourceExternalReference) ||
-          (value.quoteId && value.estimateId)
+            value.sourceExternalReference)
         ) {
           context.addIssue({
             code: 'custom',
             message:
               'An invoice converted from a sales document cannot override its details.',
-            path: [value.quoteId ? 'quoteId' : 'estimateId'],
+            path: ['quoteId'],
           })
         }
         return

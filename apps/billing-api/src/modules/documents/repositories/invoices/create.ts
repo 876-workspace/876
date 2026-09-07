@@ -41,14 +41,6 @@ export async function create(
         params,
         attribution
       )
-    if (params.estimateId)
-      return await createFromEstimate(
-        tenantId,
-        params.estimateId,
-        params,
-        attribution
-      )
-
     return await createManualInvoice(tenantId, params, attribution)
   } catch (error) {
     if (isUniqueConstraintError(error) && attribution) {
@@ -153,81 +145,6 @@ async function createFromQuote(
       },
     })
   })
-
-  return ok({ id: invoice.id })
-}
-
-async function createFromEstimate(
-  tenantId: string,
-  estimateId: string,
-  params: InvoiceCreateParams,
-  attribution?: IntegrationAttribution
-): ServiceResult<AttributedCreateResult> {
-  const [estimate, salesperson] = await Promise.all([
-    prisma.estimate.findFirst({
-      where: { id: estimateId, tenantId },
-      include: { lines: true, convertedInvoice: { select: { id: true } } },
-    }),
-    resolveSalesperson(tenantId, params.salespersonId),
-  ])
-  if (!estimate) return err('The selected estimate was not found.', 404)
-  if (params.salespersonId && !salesperson)
-    return err('The selected salesperson was not found.', 404)
-  if (estimate.convertedInvoice)
-    return err('This estimate already has an invoice.', 409)
-  if (estimate.status === 'CANCELED' || estimate.status === 'DECLINED')
-    return err('This estimate cannot be converted to an invoice.', 422)
-
-  const defaults = await resolveInvoiceDefaults(tenantId, estimate.customerId)
-  if (!defaults) return err('Invoice defaults could not be resolved.', 409)
-
-  const now = nowUnixSeconds()
-  const number = await nextDocumentNumber(tenantId, 'INVOICE', now)
-  const invoice = await prisma.$transaction((tx) =>
-    tx.invoice.create({
-      data: {
-        id: generateId('Invoice'),
-        tenantId,
-        ...attributionData(attribution),
-        customerId: estimate.customerId,
-        estimateId: estimate.id,
-        priceListId: estimate.priceListId,
-        priceListName: estimate.priceListName,
-        salespersonId: salesperson?.id ?? null,
-        number,
-        status: 'DRAFT',
-        billingReason: 'ESTIMATE',
-        currency: estimate.currency,
-        issueAt: params.issueAt ?? now,
-        dueAt: params.dueAt ?? null,
-        subtotalAmount: estimate.subtotalAmount,
-        taxAmount: estimate.taxAmount,
-        totalAmount: estimate.totalAmount,
-        amountDue: estimate.totalAmount,
-        ...invoiceSnapshotData(defaults, params),
-        notes: params.notes ?? estimate.notes ?? defaults.notes,
-        terms: params.terms ?? estimate.terms ?? defaults.terms,
-        createdAt: now,
-        updatedAt: now,
-        lines: {
-          create: estimate.lines.map((line, position) => ({
-            id: generateId('InvoiceLine'),
-            itemId: line.itemId,
-            priceId: line.priceId,
-            description: line.description,
-            position,
-            quantity: line.quantity,
-            unitAmount: line.unitAmount,
-            taxAmount: line.taxAmount,
-            discountAmount: line.discountAmount,
-            totalAmount: line.totalAmount,
-            createdAt: now,
-            updatedAt: now,
-          })),
-        },
-      },
-    })
-  )
 
   return ok({ id: invoice.id })
 }

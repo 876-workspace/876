@@ -27,7 +27,6 @@ model Item {
   tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_items_tenant_id_fkey")
   prices          Price[]
   quoteLines      QuoteLine[]
-  estimateLines   EstimateLine[]
   invoiceLines    InvoiceLine[]
   creditNoteLines CreditNoteLine[]
 

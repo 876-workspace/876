@@ -54,7 +54,7 @@ export interface BillingApplicationProvisioningManifest {
   manifestVersion: 1
   revision: number
   documentPreferences: Array<{
-    documentType: 'QUOTE' | 'INVOICE' | 'ESTIMATE' | 'CREDIT_NOTE'
+    documentType: 'QUOTE' | 'INVOICE' | 'CREDIT_NOTE'
     customerNote: string | null
     termsAndConditions: string | null
   }>
@@ -330,7 +330,6 @@ function documentTypeValue(
   const mapped = {
     quote: 'QUOTE',
     invoice: 'INVOICE',
-    estimate: 'ESTIMATE',
     credit_note: 'CREDIT_NOTE',
   } as const
   const documentType = mapped[value as keyof typeof mapped]

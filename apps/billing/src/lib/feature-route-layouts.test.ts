@@ -8,7 +8,6 @@ vi.mock('@/lib/auth/billing-context', () => ({
 }))
 
 import CreditNotesLayout from '../app/(app)/(sales)/credit-notes/layout'
-import EstimatesLayout from '../app/(app)/(sales)/estimates/layout'
 import ExpensesLayout from '../app/(app)/purchases/expenses/layout'
 import PurchasesLayout from '../app/(app)/purchases/layout'
 import VendorsLayout from '../app/(app)/purchases/vendors/layout'
@@ -39,7 +38,6 @@ describe('Billing feature route layouts', () => {
     // record opens beside it. The capability guard still has to run first.
     it.each([
       ['Credit notes', CreditNotesLayout, 'invoices'],
-      ['Estimates', EstimatesLayout, 'estimates'],
       ['Vendors', VendorsLayout, 'vendors'],
     ] as const)(
       '%s requires its matching capability and hands children to the section',
