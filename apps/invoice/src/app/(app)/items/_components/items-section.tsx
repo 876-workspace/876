@@ -24,7 +24,7 @@ export function ItemsSection({
   const { open } = useListDetailRoute(TAKEOVER_SEGMENTS)
   // A layout receives no `searchParams`, so the active filter is read here on
   // the client, where it stays current across navigations.
-  const status = useSearchParams().get('status') ?? 'all'
+  const status = useSearchParams().get('status') ?? 'active'
 
   return (
     <ListDetailSection
