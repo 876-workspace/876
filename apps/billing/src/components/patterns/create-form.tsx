@@ -42,6 +42,7 @@ export function CreateForm({
   const isEdit = method === 'PATCH'
   const idleLabel = submitLabel ?? `Create ${title}`
   const busyLabel = pendingLabel ?? (isEdit ? 'Saving…' : 'Creating…')
+  const visibleFields = fields.filter((field) => isFieldVisible(field, values))
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -73,7 +74,7 @@ export function CreateForm({
           <span className="876-eyebrow">Details</span>
         </div>
         <div className="space-y-4">
-          {fields.map((field) => (
+          {visibleFields.map((field) => (
             <FormField
               key={field.name}
               field={field}
@@ -189,14 +190,27 @@ function initialValues(fields: FormField[]): Record<string, FieldValue> {
   )
 }
 
+function isFieldVisible(
+  field: FormField,
+  values: Record<string, FieldValue>
+): boolean {
+  return (
+    field.visibleWhen?.every(
+      (condition) => values[condition.field] === condition.equals
+    ) ?? true
+  )
+}
+
 function buildPayload(
   fields: FormField[],
   values: Record<string, FieldValue>
 ): Record<string, unknown> {
+  const visibleFields = fields.filter((field) => isFieldVisible(field, values))
+
   // Pre-compute which paired fields should be dropped because their counterpart
   // is empty. Collect field names that appear in a pairedWith relationship first.
   const pairedDropped = new Set<string>()
-  for (const field of fields) {
+  for (const field of visibleFields) {
     if (!field.pairedWith) continue
     const thisValue = values[field.name]
     const thatValue = values[field.pairedWith]
@@ -204,7 +218,7 @@ function buildPayload(
       field.type === 'checkbox'
         ? false
         : typeof thisValue !== 'string' || thisValue.trim() === ''
-    const pairedField = fields.find((f) => f.name === field.pairedWith)
+    const pairedField = visibleFields.find((f) => f.name === field.pairedWith)
     const thatEmpty =
       pairedField?.type === 'checkbox'
         ? false
@@ -217,7 +231,7 @@ function buildPayload(
 
   const entries: Array<[string, unknown]> = []
 
-  for (const field of fields) {
+  for (const field of visibleFields) {
     if (pairedDropped.has(field.name)) continue
     const value = values[field.name]
     if (field.type === 'checkbox') {

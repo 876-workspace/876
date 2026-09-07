@@ -21,6 +21,10 @@ function createItem(overrides: Partial<ItemRow> = {}): ItemRow {
     defaultSellingCurrency: 'JMD',
     isTaxable: true,
     isActive: true,
+    trackStock: false,
+    stockQuantity: null,
+    lowStockThreshold: null,
+    allowOutOfStock: false,
     ...overrides,
   }
 }

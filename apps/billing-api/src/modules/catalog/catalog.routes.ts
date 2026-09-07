@@ -9,6 +9,7 @@ import {
 import { errorEnvelopeSchema, successEnvelopeSchema } from '@/http/envelope'
 
 import { catalogController as controller } from './catalog.controller'
+import { itemStockController } from './item-stock.controller'
 import {
   activeQuerySchema,
   AddonAssociationMutationSchema,
@@ -20,6 +21,7 @@ import {
   idParams,
   integrationItemCreateSchema,
   ItemCreateSchema,
+  ItemStockAdjustmentSchema,
   ItemUpdateSchema,
   listSchema,
   organizationIdParams,
@@ -294,6 +296,23 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   })
 
   api.post({
+    path: '/items/:itemId/stock-adjustments',
+    summary: 'Adjust item stock',
+    security: write,
+    request: {
+      params: idParams('itemId'),
+      body: ItemStockAdjustmentSchema,
+    },
+    responses: {
+      200: {
+        description: 'Item stock adjusted',
+        schema: successEnvelopeSchema(resourceSchema('item')),
+      },
+      ...clientErrors,
+    },
+    handler: itemStockController.adjust,
+  })
+  api.post({
     path: '/plans/:planId/clone',
     summary: 'Clone a plan',
     security: write,
@@ -462,6 +481,23 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.integrationItemsUpdate,
+  })
+  api.post({
+    path: `${itemBase}/:itemId/stock-adjustments`,
+    summary: 'Adjust organization Billing item stock',
+    security: { kind: 'integration', scope: 'billing.items.write' },
+    request: {
+      params: organizationResourceParams('itemId'),
+      body: ItemStockAdjustmentSchema,
+    },
+    responses: {
+      200: {
+        description: 'Item stock adjusted',
+        schema: successEnvelopeSchema(resourceSchema('item')),
+      },
+      ...clientErrors,
+    },
+    handler: itemStockController.integrationAdjust,
   })
   api.delete({
     path: `${itemBase}/:itemId`,

@@ -19,16 +19,21 @@ model Item {
   defaultCostCurrency     String?  @map("default_cost_currency")
   isTaxable               Boolean  @default(false) @map("is_taxable")
   taxCode                 String?  @map("tax_code")
+  trackStock              Boolean  @default(false) @map("track_stock")
+  stockQuantity           Int?     @map("stock_quantity")
+  lowStockThreshold       Int?     @map("low_stock_threshold")
+  allowOutOfStock         Boolean  @default(false) @map("allow_out_of_stock")
   isActive                Boolean  @default(true) @map("is_active")
   metadata                Json?
   createdAt               Int      @map("created_at")
   updatedAt               Int      @map("updated_at")
 
-  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_items_tenant_id_fkey")
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_items_tenant_id_fkey")
   prices          Price[]
   quoteLines      QuoteLine[]
   invoiceLines    InvoiceLine[]
   creditNoteLines CreditNoteLine[]
+  stockMovements  ItemStockMovement[]
 
   @@unique([tenantId, sku], name: "billing_items_tenant_id_sku_key", map: "billing_items_tenant_id_sku_key")
   @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_items_source_external_key", map: "billing_items_source_external_key")

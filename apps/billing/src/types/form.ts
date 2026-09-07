@@ -6,6 +6,11 @@ export interface FormOption {
   value: string
 }
 
+export interface FormVisibilityCondition {
+  field: string
+  equals: boolean | string
+}
+
 export interface FormField {
   name: string
   label: string
@@ -27,4 +32,6 @@ export interface FormField {
    * If either field is empty/omitted, both are dropped from the payload.
    */
   pairedWith?: string
+  /** Plain-data conditions that must all match before this field is submitted. */
+  visibleWhen?: FormVisibilityCondition[]
 }

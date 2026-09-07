@@ -27,15 +27,16 @@ export const BillingItemSchema = z.object({
   defaultCostCurrency: z.string().nullable(),
   isTaxable: z.boolean(),
   taxCode: z.string().nullable(),
+  trackStock: z.boolean(),
+  stockQuantity: z.number().int().nullable(),
+  lowStockThreshold: z.number().int().min(0).nullable(),
+  allowOutOfStock: z.boolean(),
   isActive: z.boolean(),
   metadata: z.unknown().nullable(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<BillingItem>
 
-/**
- * The schema for a paginated list of Billing items.
- */
 export const BillingItemListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(BillingItemSchema),
@@ -44,9 +45,6 @@ export const BillingItemListSchema = z.strictObject({
   url: z.string(),
 }) satisfies z.ZodType<BillingItemList>
 
-/**
- * The schema for a deleted item tombstone.
- */
 export const DeletedBillingItemSchema = z.strictObject({
   object: z.literal('item'),
   id: z.string().min(1),

@@ -19,6 +19,10 @@ export const ItemCreateSchema = z
     defaultCostCurrency: currencyCodeSchema.nullable().optional(),
     isTaxable: z.boolean().default(false),
     taxCode: z.string().trim().min(1).max(100).nullable().optional(),
+    trackStock: z.boolean().default(false),
+    stockQuantity: z.number().int().min(0).optional(),
+    lowStockThreshold: z.number().int().min(0).nullable().optional(),
+    allowOutOfStock: z.boolean().default(false),
   })
   .superRefine((value, context) => {
     if (
@@ -26,27 +30,50 @@ export const ItemCreateSchema = z
         value.defaultSellingAmount === undefined) !==
       (value.defaultSellingCurrency === null ||
         value.defaultSellingCurrency === undefined)
-    ) {
+    )
       context.addIssue({
         code: 'custom',
         message:
           'A selling amount and selling currency must be provided together.',
         path: ['defaultSellingAmount'],
       })
-    }
 
     if (
       (value.defaultCostAmount === null ||
         value.defaultCostAmount === undefined) !==
       (value.defaultCostCurrency === null ||
         value.defaultCostCurrency === undefined)
-    ) {
+    )
       context.addIssue({
         code: 'custom',
         message: 'A cost amount and cost currency must be provided together.',
         path: ['defaultCostAmount'],
       })
-    }
+
+    if (value.type === 'SERVICE' && value.trackStock)
+      context.addIssue({
+        code: 'custom',
+        message: 'Stock tracking is available only for goods.',
+        path: ['trackStock'],
+      })
+    if (!value.trackStock && value.stockQuantity !== undefined)
+      context.addIssue({
+        code: 'custom',
+        message: 'Enable stock tracking before setting a stock quantity.',
+        path: ['stockQuantity'],
+      })
+    if (!value.trackStock && value.lowStockThreshold != null)
+      context.addIssue({
+        code: 'custom',
+        message: 'Enable stock tracking before setting a low-stock threshold.',
+        path: ['lowStockThreshold'],
+      })
+    if (!value.trackStock && value.allowOutOfStock)
+      context.addIssue({
+        code: 'custom',
+        message: 'Enable stock tracking before allowing out-of-stock sales.',
+        path: ['allowOutOfStock'],
+      })
   })
 
 export type ItemCreateParams = z.infer<typeof ItemCreateSchema>
@@ -71,6 +98,9 @@ export const ItemUpdateSchema = z
     defaultCostCurrency: currencyCodeSchema.nullable().optional(),
     isTaxable: z.boolean().optional(),
     taxCode: z.string().trim().min(1).max(100).nullable().optional(),
+    trackStock: z.boolean().optional(),
+    lowStockThreshold: z.number().int().min(0).nullable().optional(),
+    allowOutOfStock: z.boolean().optional(),
     isActive: z.boolean().optional(),
   })
   .superRefine((value, context) => {
@@ -83,14 +113,13 @@ export const ItemUpdateSchema = z
           value.defaultSellingAmount === undefined) !==
         (value.defaultSellingCurrency === null ||
           value.defaultSellingCurrency === undefined)
-      ) {
+      )
         context.addIssue({
           code: 'custom',
           message:
             'A selling amount and selling currency must be provided together.',
           path: ['defaultSellingAmount'],
         })
-      }
     }
 
     if (
@@ -102,13 +131,12 @@ export const ItemUpdateSchema = z
           value.defaultCostAmount === undefined) !==
         (value.defaultCostCurrency === null ||
           value.defaultCostCurrency === undefined)
-      ) {
+      )
         context.addIssue({
           code: 'custom',
           message: 'A cost amount and cost currency must be provided together.',
           path: ['defaultCostAmount'],
         })
-      }
     }
   })
 
@@ -126,7 +154,16 @@ export interface ItemDeleted {
   deleted: true
 }
 
+export interface ItemStockAdjustmentInput {
+  quantity: number
+  note?: string | null
+}
+
 export type ItemResource = {
   object: 'item'
   id: string
+  trackStock?: boolean
+  stockQuantity?: number | null
+  lowStockThreshold?: number | null
+  allowOutOfStock?: boolean
 } & Record<string, unknown>

@@ -14,15 +14,24 @@ export interface ItemCreateParams {
   defaultSellingCurrency?: string | null
   isTaxable?: boolean
   taxCode?: string | null
+  trackStock?: boolean
+  stockQuantity?: number
+  lowStockThreshold?: number | null
+  allowOutOfStock?: boolean
 }
 
-export interface ItemUpdateParams extends Partial<ItemCreateParams> {
+export interface ItemUpdateParams
+  extends Partial<Omit<ItemCreateParams, 'stockQuantity'>> {
   isActive?: boolean
 }
 
-export interface ItemResource extends ItemCreateParams {
+export interface ItemResource extends Omit<ItemCreateParams, 'stockQuantity'> {
   object: 'item'
   id: string
+  trackStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number | null
+  allowOutOfStock: boolean
   isActive: boolean
 }
 
@@ -34,10 +43,16 @@ interface ItemMutationResult {
 export interface ItemListRow {
   object: 'item'
   id: string
+  type: InvoiceItemType
   name: string
   sku?: string | null
+  unit?: string | null
   defaultSellingAmount?: string | null
   defaultSellingCurrency?: string | null
+  trackStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number | null
+  allowOutOfStock: boolean
 }
 
 /** Searches the item catalogue. `signal` cancels a superseded typeahead query. */
@@ -77,6 +92,16 @@ export const items = {
       {
         method: 'PATCH',
         body: JSON.stringify(params),
+      }
+    )
+  },
+
+  adjustStock(itemId: string, quantity: number, note?: string | null) {
+    return request<ItemResource>(
+      `/api/items/${encodeURIComponent(itemId)}/stock-adjustments`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ quantity, note: note ?? null }),
       }
     )
   },

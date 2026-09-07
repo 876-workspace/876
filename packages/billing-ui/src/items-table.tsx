@@ -8,6 +8,8 @@ import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { ResourceRowLink } from '@876/ui/resource-row-link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
+import { formatItemStock } from './item-stock'
+
 /**
  * A catalog item as the finance plane serves it. `defaultSellingAmount` accepts
  * both shapes the hosts hold it in — Billing reads Prisma `BigInt` minor units,
@@ -23,6 +25,10 @@ export interface ItemRow {
   defaultSellingAmount: bigint | string | null
   defaultSellingCurrency: string | null
   isTaxable: boolean
+  trackStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number | null
+  allowOutOfStock: boolean
   isActive: boolean
   priceCount?: number
 }
@@ -94,6 +100,18 @@ export function ItemsTable({
           item.defaultSellingCurrency ?? defaultCurrency
         )
       },
+    },
+    {
+      id: 'stock',
+      accessorKey: 'stockQuantity',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Stock" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-xs tabular-nums">
+          {formatItemStock(row.original)}
+        </span>
+      ),
     },
     {
       id: 'tax',

@@ -86,6 +86,26 @@ export interface BillingItem {
   taxCode: string | null
 
   /**
+   * Whether this Good participates in lightweight stock tracking.
+   */
+  trackStock: boolean
+
+  /**
+   * Current stock count. Null when stock is not applicable to the item.
+   */
+  stockQuantity: number | null
+
+  /**
+   * Count at or below which the item is considered low stock.
+   */
+  lowStockThreshold: number | null
+
+  /**
+   * Whether invoice finalization may take this item's count below zero.
+   */
+  allowOutOfStock: boolean
+
+  /**
    * Whether the item is active for new use.
    */
   isActive: boolean
@@ -171,19 +191,53 @@ export interface BillingItemCreateParams {
   taxCode?: string | null
 
   /**
+   * Enables lightweight stock tracking. Valid only for `GOOD` items.
+   */
+  trackStock?: boolean
+
+  /**
+   * Opening stock count. Accepted only when creating a tracked Good.
+   */
+  stockQuantity?: number
+
+  /**
+   * Count at or below which the item is considered low stock.
+   */
+  lowStockThreshold?: number | null
+
+  /**
+   * Whether finalized invoices may take the count below zero.
+   */
+  allowOutOfStock?: boolean
+
+  /**
    * External reference for the product app that created the item.
    */
   sourceExternalReference?: string | null
 }
 
 /**
- * Parameters for updating a Billing item.
+ * Parameters for updating a Billing item. Current stock quantity is changed
+ * through `adjustStock()` so every manual count change remains auditable.
  */
 export type BillingItemUpdateParams = Partial<
-  Omit<BillingItemCreateParams, 'sourceExternalReference'> & {
+  Omit<
+    BillingItemCreateParams,
+    'sourceExternalReference' | 'stockQuantity'
+  > & {
     isActive: boolean
   }
 >
+
+/**
+ * Parameters for replacing the current stock count of a tracked Good.
+ */
+export interface BillingItemStockAdjustmentParams {
+  /** Absolute new stock count; the service records the derived delta. */
+  quantity: number
+  /** Optional human-readable reason for the adjustment. */
+  note?: string | null
+}
 
 /**
  * Parameters for listing Billing items.

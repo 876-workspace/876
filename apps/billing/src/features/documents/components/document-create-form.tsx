@@ -444,6 +444,7 @@ export function DocumentCreateForm({
         <DocumentLineItemsEditor
           lines={lines}
           items={editorItems}
+          enforceItemStock={kind === 'invoice'}
           onSearchItems={async (query, signal) => {
             const result = await client.items.list(
               { q: query, limit: 20 },
@@ -459,6 +460,9 @@ export function DocumentCreateForm({
               priceId: null,
               defaultAmount: item.defaultSellingAmount ?? null,
               currency: item.defaultSellingCurrency ?? null,
+              trackStock: item.trackStock,
+              stockQuantity: item.stockQuantity,
+              allowOutOfStock: item.allowOutOfStock,
             }))
           }}
           minorUnitDigits={decimalPlaces}

@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ItemStockSummary } from '@876/billing-ui/item-stock-summary'
+import { buttonVariants } from '@876/ui/button'
 
 import { DetailField } from '@/components/patterns/detail/detail-field'
 import { DetailActionList } from '@/components/patterns/detail/detail-action-list'
@@ -48,6 +51,29 @@ export default async function ItemDetailPage({ params }: Props) {
         />
       </div>
 
+      {item.type === 'GOOD' ? (
+        <section className="876-card p-5">
+          <h2 className="876-section-title mb-4">Stock</h2>
+          <ItemStockSummary
+            type={item.type}
+            trackStock={item.trackStock}
+            stockQuantity={item.stockQuantity}
+            lowStockThreshold={item.lowStockThreshold}
+            allowOutOfStock={item.allowOutOfStock}
+            action={
+              item.trackStock && context.permissions.includes('catalog:write') ? (
+                <Link
+                  href={`/items/${item.id}/stock`}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  Adjust stock
+                </Link>
+              ) : null
+            }
+          />
+        </section>
+      ) : null}
+
       <DetailActionList
         title="Item workspace"
         description="Use prices for future sales terms and transactions to understand where this item affects customer documents."
@@ -70,7 +96,7 @@ export default async function ItemDetailPage({ params }: Props) {
             href: `/items/${item.id}/audit`,
             label: 'Audit',
             description:
-              'Review identifiers, inventory settings, and the latest update time.',
+              'Review identifiers, stock settings, and the latest update time.',
           },
         ]}
       />

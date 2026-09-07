@@ -37,29 +37,61 @@ export async function create(
   if (costCurrency && !(await hasEnabledCurrency(tenantId, costCurrency)))
     return err('Enable the cost currency before using it on an item.', 422)
 
+  const trackStock = params.type === 'GOOD' && params.trackStock
+  const stockQuantity = trackStock ? (params.stockQuantity ?? 0) : null
+  const lowStockThreshold = trackStock
+    ? (params.lowStockThreshold ?? null)
+    : null
+  const allowOutOfStock = trackStock ? params.allowOutOfStock : false
+
   try {
     const now = nowUnixSeconds()
-    const item = await prisma.item.create({
-      data: {
-        id: generateId('Item'),
-        tenantId,
-        ...attributionData(attribution),
-        type: params.type,
-        name: params.name,
-        sku: params.sku ?? null,
-        unit: params.unit ?? null,
-        description: params.description ?? null,
-        imageUrl: params.imageUrl ?? null,
-        defaultSellingAmount: params.defaultSellingAmount ?? null,
-        defaultSellingCurrency: sellingCurrency,
-        defaultCostAmount: params.defaultCostAmount ?? null,
-        defaultCostCurrency: costCurrency,
-        isTaxable: params.isTaxable,
-        taxCode: params.taxCode ?? null,
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      },
+    const item = await prisma.$transaction(async (tx) => {
+      const created = await tx.item.create({
+        data: {
+          id: generateId('Item'),
+          tenantId,
+          ...attributionData(attribution),
+          type: params.type,
+          name: params.name,
+          sku: params.sku ?? null,
+          unit: params.unit ?? null,
+          description: params.description ?? null,
+          imageUrl: params.imageUrl ?? null,
+          defaultSellingAmount: params.defaultSellingAmount ?? null,
+          defaultSellingCurrency: sellingCurrency,
+          defaultCostAmount: params.defaultCostAmount ?? null,
+          defaultCostCurrency: costCurrency,
+          isTaxable: params.isTaxable,
+          taxCode: params.taxCode ?? null,
+          trackStock,
+          stockQuantity,
+          lowStockThreshold,
+          allowOutOfStock,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        },
+      })
+
+      if (trackStock && stockQuantity !== null && stockQuantity > 0) {
+        await tx.itemStockMovement.create({
+          data: {
+            id: generateId('ItemStockMovement'),
+            tenantId,
+            itemId: created.id,
+            type: 'initial-stock',
+            quantityDelta: stockQuantity,
+            quantityBefore: 0,
+            quantityAfter: stockQuantity,
+            referenceType: 'item',
+            referenceId: created.id,
+            createdAt: now,
+          },
+        })
+      }
+
+      return created
     })
 
     return ok({ id: item.id })
@@ -91,7 +123,7 @@ export async function create(
     if (isUniqueConstraintError(error))
       return err('An item with this SKU already exists in this workspace.', 409)
 
-    console.error('[billing.service.create]', error)
+    console.error('[billing.service.items.create]', error)
     return err('Failed to create the item.', 500)
   }
 }

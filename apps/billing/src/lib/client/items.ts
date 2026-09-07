@@ -3,6 +3,7 @@ import type {
   ItemCreateInput,
   ItemDeleted,
   ItemResource,
+  ItemStockAdjustmentInput,
   ItemUpdated,
   ItemUpdateInput,
 } from '@/types/item'
@@ -26,6 +27,18 @@ export const update = (itemId: string, params: ItemUpdateInput) =>
     body: JSON.stringify(params),
   })
 
+export const adjustStock = (
+  itemId: string,
+  params: ItemStockAdjustmentInput
+) =>
+  request<ItemResource>(
+    `/api/items/${encodeURIComponent(itemId)}/stock-adjustments`,
+    {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }
+  )
+
 const deleteItem = (itemId: string) =>
   request<ItemDeleted>(`/api/v1/items/${encodeURIComponent(itemId)}`, {
     method: 'DELETE',
@@ -34,10 +47,16 @@ const deleteItem = (itemId: string) =>
 export interface ItemListRow {
   object: 'item'
   id: string
+  type: 'GOOD' | 'SERVICE'
   name: string
   sku?: string | null
+  unit?: string | null
   defaultSellingAmount?: string | null
   defaultSellingCurrency?: string | null
+  trackStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number | null
+  allowOutOfStock: boolean
 }
 
 /** Searches the item catalogue. `signal` cancels a superseded typeahead query. */
@@ -62,5 +81,6 @@ export const items = {
   create,
   retrieve,
   update,
+  adjustStock,
   delete: deleteItem,
 }

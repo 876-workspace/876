@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { ItemStockSummary } from '@876/billing-ui/item-stock-summary'
+import { buttonVariants } from '@876/ui/button'
 import {
   DetailCardFact,
   DetailCardFacts,
@@ -54,6 +57,28 @@ export default async function ItemDetailPage({ params }: Props) {
           <p className="text-foreground text-sm leading-6">
             {item.description}
           </p>
+        </DetailCardSection>
+      ) : null}
+
+      {!isService ? (
+        <DetailCardSection title="Stock">
+          <ItemStockSummary
+            type={item.type}
+            trackStock={item.trackStock}
+            stockQuantity={item.stockQuantity}
+            lowStockThreshold={item.lowStockThreshold}
+            allowOutOfStock={item.allowOutOfStock}
+            action={
+              item.trackStock && invoice.role !== 'staff' ? (
+                <Link
+                  href={`/items/${item.id}/stock`}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  Adjust stock
+                </Link>
+              ) : null
+            }
+          />
         </DetailCardSection>
       ) : null}
 

@@ -34,6 +34,8 @@ async function unwrap<T>(
 ): Promise<T> {
   if (result.error === null) return result.data
   const status = result.status ?? 500
+  if (result.code)
+    throw appError(result.code, { message: result.error, httpStatus: status })
   if (status === 409 && kind === 'quote')
     throw appError('billing/quote-invalid-state')
   throw new AppHttpError({

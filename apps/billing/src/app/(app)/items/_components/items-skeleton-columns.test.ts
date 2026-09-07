@@ -3,14 +3,15 @@ import { describe, expect, it } from 'vitest'
 import { ITEMS_SKELETON_COLUMNS } from './items-skeleton-columns'
 
 describe('ITEMS_SKELETON_COLUMNS', () => {
-  it('has 6 columns', () => {
-    expect(ITEMS_SKELETON_COLUMNS).toHaveLength(6)
+  it('has 7 columns', () => {
+    expect(ITEMS_SKELETON_COLUMNS).toHaveLength(7)
   })
 
   it('has expected labels in order', () => {
     expect(ITEMS_SKELETON_COLUMNS.map((c) => c.label)).toEqual([
       'Item',
       'Default price',
+      'Stock',
       'Tax',
       'Prices',
       'Status',
@@ -23,7 +24,7 @@ describe('ITEMS_SKELETON_COLUMNS', () => {
       label: 'Item',
       cell: 'avatar',
     })
-    expect(ITEMS_SKELETON_COLUMNS[4]).toMatchObject({
+    expect(ITEMS_SKELETON_COLUMNS[5]).toMatchObject({
       label: 'Status',
       cell: 'badge',
     })
@@ -35,10 +36,11 @@ describe('ITEMS_SKELETON_COLUMNS', () => {
   })
 
   it('mirrors items-table headers', () => {
-    // items-table: Item, Default price, Tax, Prices, Status, Actions
+    // items-table: Item, Default price, Stock, Tax, Prices, Status, Actions
     expect(ITEMS_SKELETON_COLUMNS[1]?.label).toBe('Default price')
-    expect(ITEMS_SKELETON_COLUMNS[2]?.label).toBe('Tax')
-    expect(ITEMS_SKELETON_COLUMNS[3]?.label).toBe('Prices')
+    expect(ITEMS_SKELETON_COLUMNS[2]?.label).toBe('Stock')
+    expect(ITEMS_SKELETON_COLUMNS[3]?.label).toBe('Tax')
+    expect(ITEMS_SKELETON_COLUMNS[4]?.label).toBe('Prices')
   })
 
   it('only Actions is srOnly', () => {
@@ -56,7 +58,7 @@ describe('ITEMS_SKELETON_COLUMNS', () => {
   it('does not mutate original when copied', () => {
     const clone = [...ITEMS_SKELETON_COLUMNS]
     clone.pop()
-    expect(ITEMS_SKELETON_COLUMNS).toHaveLength(6)
+    expect(ITEMS_SKELETON_COLUMNS).toHaveLength(7)
   })
 
   it('labels are unique', () => {

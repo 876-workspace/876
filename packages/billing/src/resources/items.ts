@@ -12,6 +12,7 @@ import type {
   BillingItemCreateParams,
   BillingItemList,
   BillingItemListParams,
+  BillingItemStockAdjustmentParams,
   BillingItemUpdateParams,
   DeletedBillingItem,
 } from '../integration/types'
@@ -82,6 +83,23 @@ export function createItemsResource(runtime: Runtime) {
           signal: options?.signal,
         },
         ItemMutationSchema
+      )
+    },
+
+    adjustStock(
+      itemId: string,
+      params: BillingItemStockAdjustmentParams,
+      options?: RequestOptions
+    ) {
+      return Request<BillingItem>(
+        runtime,
+        {
+          method: 'POST',
+          path: `/api/v1/items/${encodeURIComponent(itemId)}/stock-adjustments`,
+          body: params,
+          signal: options?.signal,
+        },
+        BillingItemSchema
       )
     },
 

@@ -3,8 +3,6 @@
 import {
   Suspense,
   use,
-  useEffect,
-  useRef,
   useState,
   useTransition,
   type FormEvent,
@@ -60,14 +58,6 @@ const documentConfig = {
   },
 } as const
 
-/**
- * A stable identity for "this host supplied no catalogue".
- *
- * `use()` suspends on the promise it is given, so a `Promise.resolve([])`
- * written as a default parameter would be a *new* promise on every render and
- * re-suspend the line-items subtree forever, which silently prevents its totals
- * snapshot from ever reaching the form.
- */
 const NO_ITEMS: Promise<DocumentItemOption[]> = Promise.resolve([])
 
 function todayInputValue() {
@@ -101,6 +91,7 @@ export function DocumentCreateForm({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const config = documentConfig[kind]
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
@@ -256,6 +247,7 @@ export function DocumentCreateForm({
         </div>
         <Suspense fallback={<LineItemsLoading />}>
           <InvoiceLineItems
+            kind={kind}
             items={items}
             lines={lines}
             onChange={setLines}
@@ -310,24 +302,24 @@ export function DocumentCreateForm({
 }
 
 function InvoiceLineItems({
+  kind,
   items,
   lines,
   onChange,
   onTotalsChange,
 }: {
+  kind: DocumentKind
   items: Promise<DocumentItemOption[]>
   lines: DocumentLineDraft[]
   onChange: (lines: DocumentLineDraft[]) => void
   onTotalsChange: (snapshot: DocumentTotalsSnapshot) => void
 }) {
-  // An empty array is truthy, and the editor decides whether to render its
-  // Item column from the *presence* of this prop. Pass undefined for an empty
-  // catalogue so a host with no items does not get an empty picker column.
   const catalogue = use(items)
 
   return (
     <DocumentLineItemsEditor
       items={catalogue}
+      enforceItemStock={kind === 'invoice'}
       onSearchItems={async (query, signal) => {
         const result = await client.items.list(
           { q: query, limit: 20 },
@@ -343,6 +335,9 @@ function InvoiceLineItems({
           priceId: null,
           defaultAmount: item.defaultSellingAmount ?? null,
           currency: item.defaultSellingCurrency ?? null,
+          trackStock: item.trackStock,
+          stockQuantity: item.stockQuantity,
+          allowOutOfStock: item.allowOutOfStock,
         }))
       }}
       lines={lines}

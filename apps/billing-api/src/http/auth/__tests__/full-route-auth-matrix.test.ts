@@ -36,9 +36,12 @@ describe('frozen v1 route authentication matrix', () => {
 
     // 221 -> 220: the five `/estimates` operations were removed when the
     // duplicate Estimate document type was merged into Quote, and four quote
-    // transitions (send/accept/decline/cancel) were added in their place.
-    expect(operations).toHaveLength(220)
-    expect(protectedPublicOperations()).toHaveLength(219)
+    // transitions (send/accept/decline/cancel) were added in their place. 220
+    // -> 222: `POST /items/{itemId}/stock-adjustments` and `POST
+    // /integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments`
+    // were added as authenticated operations.
+    expect(operations).toHaveLength(222)
+    expect(protectedPublicOperations()).toHaveLength(221)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })
