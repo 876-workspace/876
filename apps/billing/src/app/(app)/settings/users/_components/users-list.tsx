@@ -5,13 +5,12 @@ import { useSearchParams } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
-import { Users } from '@876/ui/icons'
+import { Mail, Users } from '@876/ui/icons'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
 import {
   ListPane,
   ListPaneBody,
   ListPaneEmpty,
-  ListPaneHeader,
   ListPaneItem,
 } from '@876/ui/list-pane'
 import {
@@ -70,7 +69,6 @@ export function UsersList({ members }: { members: OrgMember[] }) {
     )
   return (
     <ListPane>
-      <ListPaneHeader>Users</ListPaneHeader>
       <ListPaneBody>
         {rows.length === 0 ? (
           <ListPaneEmpty>No users match this view</ListPaneEmpty>
@@ -82,8 +80,21 @@ export function UsersList({ members }: { members: OrgMember[] }) {
               label={`View user ${memberName(member)}`}
               selected={member.id === selected}
               leading={<MemberAvatar member={member} />}
-              title={memberName(member)}
-              subtitle={member.position ?? memberRoleLabel(member.role)}
+              title={
+                <span className="text-sky-600 dark:text-sky-400">
+                  {memberName(member)}
+                </span>
+              }
+              subtitle={
+                member.email ? (
+                  <span className="inline-flex items-center gap-1.5 truncate">
+                    <Mail className="size-3 shrink-0" aria-hidden />
+                    <span className="truncate">{member.email}</span>
+                  </span>
+                ) : (
+                  (member.position ?? memberRoleLabel(member.role))
+                )
+              }
               trailing={
                 member.status === 'active' ? null : (
                   <Badge variant="secondary" className="capitalize">
