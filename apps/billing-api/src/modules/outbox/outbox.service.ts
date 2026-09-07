@@ -11,9 +11,9 @@ export type BillingOutboxEvent =
         invoiceId: string
         customerId: string
         number: string
-        status: 'OPEN' | 'PAID'
         currency: string
         totalAmount: string
+        finalizedAt: number
         issueAt: number
         dueAt: number
       }
