@@ -87,15 +87,19 @@ export type {
   InvoiceFinalizeParams,
   InvoiceVoidParams,
   InvoiceCreated,
+  InvoiceUpdateParams,
+  DeletedInvoice,
   QuoteListParams,
+  QuoteCreateParams,
+  QuoteLineCreateParams,
+  QuoteUpdateParams,
   Quote,
   QuoteList,
-  EstimateListParams,
-  Estimate,
-  EstimateList,
+  DeletedQuote,
 } from './invoice'
 export {
   InvoiceSchema,
+  DeletedInvoiceSchema,
   InvoiceListSchema,
   InvoiceCreatedSchema,
   InvoicePreferenceSchema,
@@ -103,9 +107,20 @@ export {
   LateFeeRunSchema,
   QuoteSchema,
   QuoteListSchema,
-  EstimateSchema,
-  EstimateListSchema,
+  DeletedQuoteSchema,
 } from './invoice.schema'
+
+// Credit notes
+export type {
+  CreditNote,
+  CreditNoteAllocationParams,
+  CreditNoteApplyParams,
+  CreditNoteCreateParams,
+  CreditNoteLineCreateParams,
+  CreditNoteList,
+  CreditNoteListParams,
+} from './credit-note'
+export { CreditNoteListSchema, CreditNoteSchema } from './credit-note.schema'
 
 // Bank
 export type {

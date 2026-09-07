@@ -51,11 +51,6 @@ export interface InvoiceCreateParams {
   quoteId?: string | null
 
   /**
-   * ID of the estimate to convert into an invoice.
-   */
-  estimateId?: string | null
-
-  /**
    * ID of the customer who receives the invoice.
    */
   customerId?: string | null
@@ -341,6 +336,24 @@ export interface InvoiceVoidParams {
   reason?: string | null
 }
 
+/** Parameters for updating a draft invoice. */
+export interface InvoiceUpdateParams {
+  /** Time at which the invoice is issued, in Unix seconds. */
+  issueAt?: number | null
+  /** Time at which the invoice is due, in Unix seconds. */
+  dueAt?: number | null
+  /** Notes printed on the invoice. */
+  notes?: string | null
+  /** Payment terms printed on the invoice. */
+  terms?: string | null
+  /** Customer-facing order number. */
+  orderNumber?: string | null
+  /** Arbitrary reference number attached to the invoice. */
+  referenceNumber?: string | null
+  /** Short subject line for the invoice. */
+  subject?: string | null
+}
+
 /**
  * A minimal invoice resource returned after creation.
  */
@@ -355,11 +368,29 @@ export interface InvoiceCreated {
    */
   id: string
 }
+
+/** A tombstone returned after deleting a draft invoice. */
+export interface DeletedInvoice {
+  /** String representing the object's type. */
+  object: 'invoice'
+  /** Unique identifier for the deleted invoice. */
+  id: string
+  /** Always true for a deleted resource. */
+  deleted: true
+}
 /**
  * Parameters for listing invoices.
  */
 export interface InvoiceListParams {
-  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+  status?:
+    | 'DRAFT'
+    | 'OPEN'
+    | 'SENT'
+    | 'PARTIALLY_PAID'
+    | 'OVERDUE'
+    | 'PAID'
+    | 'UNCOLLECTIBLE'
+    | 'VOID'
 }
 
 /**
@@ -383,6 +414,48 @@ export interface QuoteListParams {
   status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
 }
 
+/** A line included when creating a quote. */
+export interface QuoteLineCreateParams extends DocumentLineCreateParams {
+  /** Unit amount in integer minor-unit string form when overriding a price. */
+  unitAmount?: string | null
+  /** Tax amount in integer minor-unit string form. */
+  taxAmount?: string
+  /** Discount amount in integer minor-unit string form. */
+  discountAmount?: string
+}
+
+/** Parameters for creating a quote. */
+export interface QuoteCreateParams {
+  /** ID of the customer receiving the quote. */
+  customerId: string
+  /** ID of the price list used when resolving line prices. */
+  priceListId?: string | null
+  /** Three-letter ISO currency code. */
+  currency?: string
+  /** Time at which the quote is issued, in Unix seconds. */
+  issueAt?: number
+  /** Time at which the quote expires, in Unix seconds. */
+  expiresAt?: number
+  /** Notes printed on the quote. */
+  notes?: string | null
+  /** Terms printed on the quote. */
+  terms?: string | null
+  /** Line items to include on the quote. */
+  lines: QuoteLineCreateParams[]
+}
+
+/** Parameters for updating a draft quote. */
+export interface QuoteUpdateParams {
+  /** Time at which the quote is issued, in Unix seconds. */
+  issueAt?: number | null
+  /** Time at which the quote expires, in Unix seconds. */
+  expiresAt?: number | null
+  /** Notes printed on the quote. */
+  notes?: string | null
+  /** Terms printed on the quote. */
+  terms?: string | null
+}
+
 /**
  * A tenant quote resource returned by the list endpoint.
  * The API guarantees object/id and uses a passthrough shape for forward compat.
@@ -397,23 +470,12 @@ export type Quote = {
  */
 export type QuoteList = import('./common').List<Quote>
 
-/**
- * Parameters for listing estimates.
- */
-export interface EstimateListParams {
-  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
-}
-
-/**
- * A tenant estimate resource returned by the list endpoint.
- * The API guarantees object/id and uses a passthrough shape for forward compat.
- */
-export type Estimate = {
-  object: 'estimate'
+/** A tombstone returned after deleting a draft quote. */
+export interface DeletedQuote {
+  /** String representing the object's type. */
+  object: 'quote'
+  /** Unique identifier for the deleted quote. */
   id: string
-} & Record<string, unknown>
-
-/**
- * Paginated list of estimates.
- */
-export type EstimateList = import('./common').List<Estimate>
+  /** Always true for a deleted resource. */
+  deleted: true
+}
