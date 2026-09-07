@@ -1,9 +1,8 @@
-import { AppHttpError } from '@/http/errors'
+import { AppHttpError, appError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
 import { getSettings } from '@/config'
 import { getLogger } from '@/platform/logger'
 import { creditNotes } from './repositories/credit-notes'
-import { estimates } from './repositories/estimates'
 import { invoicePreferences } from './repositories/invoice-preferences'
 import { invoices } from './repositories/invoices'
 import { quotes } from './repositories/quotes'
@@ -12,11 +11,6 @@ import type {
   CreditNoteApplyParams,
   CreditNoteCreateParams,
 } from './schemas/credit-note'
-import type {
-  EstimateCreateParams,
-  EstimateStatus,
-  EstimateUpdateParams,
-} from './schemas/estimate'
 import type {
   InvoiceFinalizeParams,
   InvoiceCreateParams,
@@ -40,6 +34,8 @@ async function unwrap<T>(
 ): Promise<T> {
   if (result.error === null) return result.data
   const status = result.status ?? 500
+  if (status === 409 && kind === 'quote')
+    throw appError('billing/quote-invalid-state')
   throw new AppHttpError({
     code:
       status === 404
@@ -177,40 +173,45 @@ export const documentsService = {
       deleted: true,
     }
   },
-  async listEstimates(tenantId: string, status?: EstimateStatus) {
-    return documentList(
-      'estimate',
-      await estimates.list(tenantId, status),
-      '/api/v1/estimates'
-    )
-  },
-  async getEstimate(tenantId: string, id: string) {
-    const row = await estimates.retrieve(tenantId, id)
-    if (!row) throw missing('estimate')
-    return serializeDocument('estimate', row)
-  },
-  async createEstimate(tenantId: string, body: EstimateCreateParams) {
-    return {
-      object: 'estimate',
-      ...(await unwrap(await estimates.create(tenantId, body), 'estimate')),
-    }
-  },
-  async updateEstimate(
+  async transitionQuote(
     tenantId: string,
     id: string,
-    body: EstimateUpdateParams
+    action: 'send' | 'accept' | 'decline' | 'cancel'
   ) {
-    return {
-      object: 'estimate',
-      ...(await unwrap(await estimates.update(tenantId, id, body), 'estimate')),
+    const quote = await quotes.retrieve(tenantId, id)
+    if (!quote) throw missing('quote')
+
+    const transitions: Record<
+      'send' | 'accept' | 'decline' | 'cancel',
+      {
+        from: readonly QuoteStatus[]
+        to: QuoteStatus
+        timestampField?: 'acceptedAt' | 'declinedAt' | 'canceledAt'
+      }
+    > = {
+      send: { from: ['DRAFT'], to: 'SENT' },
+      accept: { from: ['SENT'], to: 'ACCEPTED', timestampField: 'acceptedAt' },
+      decline: { from: ['SENT'], to: 'DECLINED', timestampField: 'declinedAt' },
+      cancel: {
+        from: ['DRAFT', 'SENT'],
+        to: 'CANCELED',
+        timestampField: 'canceledAt',
+      },
     }
-  },
-  async deleteEstimate(tenantId: string, id: string) {
-    return {
-      object: 'estimate',
-      ...(await unwrap(await estimates.delete(tenantId, id), 'estimate')),
-      deleted: true,
-    }
+    const transition = transitions[action]
+    if (!transition.from.includes(quote.status))
+      throw appError('billing/quote-invalid-state')
+
+    const changed = await quotes.transition(
+      tenantId,
+      id,
+      quote.status,
+      transition.to,
+      transition.timestampField
+    )
+    if (!changed) throw appError('billing/quote-invalid-state')
+
+    return { object: 'quote' as const, id }
   },
   async listCreditNotes(
     tenantId: string,

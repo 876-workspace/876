@@ -3,5 +3,13 @@ import { deleteQuote } from './delete'
 import { list } from './list'
 import { retrieve } from './retrieve'
 import { update } from './update'
+import { transition } from './transition'
 
-export const quotes = { create, list, retrieve, update, delete: deleteQuote }
+export const quotes = {
+  create,
+  list,
+  retrieve,
+  update,
+  delete: deleteQuote,
+  transition,
+}

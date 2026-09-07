@@ -37,7 +37,6 @@ describe('DocumentsService / assessLateFees / chaos & error propagation', () => 
       invoicePreferences: { assessLateFees: assessImpl ?? mockAssess },
     }))
     vi.doMock('../repositories/credit-notes', () => ({ creditNotes: {} }))
-    vi.doMock('../repositories/estimates', () => ({ estimates: {} }))
     vi.doMock('../repositories/invoices', () => ({ invoices: {} }))
     vi.doMock('../repositories/quotes', () => ({ quotes: {} }))
 

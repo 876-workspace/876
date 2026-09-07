@@ -17,7 +17,8 @@ export const BILLING_ERRORS = {
     httpStatus: HttpStatus.CONFLICT,
   },
   'billing/accounting-projection-invalid': {
-    message: 'The Billing resource cannot be projected to the accounting provider.',
+    message:
+      'The Billing resource cannot be projected to the accounting provider.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
   'billing/accounting-provider-adoption-not-found': {
@@ -41,7 +42,8 @@ export const BILLING_ERRORS = {
     httpStatus: HttpStatus.NOT_FOUND,
   },
   'billing/accounting-provider-resource-already-adopted': {
-    message: 'This provider resource is already mapped to another Billing resource.',
+    message:
+      'This provider resource is already mapped to another Billing resource.',
     httpStatus: HttpStatus.CONFLICT,
   },
   'billing/accounting-provider-unsupported': {
@@ -49,7 +51,8 @@ export const BILLING_ERRORS = {
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
   'billing/oauth-invalid-state': {
-    message: 'The accounting provider authorization state is invalid or expired.',
+    message:
+      'The accounting provider authorization state is invalid or expired.',
     httpStatus: HttpStatus.BAD_REQUEST,
   },
   'billing/provider-authentication-failed': {
@@ -73,11 +76,13 @@ export const BILLING_ERRORS = {
     httpStatus: HttpStatus.BAD_GATEWAY,
   },
   'billing/provider-offline-authorization-required': {
-    message: 'The accounting provider did not grant offline access. Reconnect and approve consent.',
+    message:
+      'The accounting provider did not grant offline access. Reconnect and approve consent.',
     httpStatus: HttpStatus.CONFLICT,
   },
   'billing/provider-organization-not-found': {
-    message: 'The configured accounting provider organization is not available.',
+    message:
+      'The configured accounting provider organization is not available.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
   'billing/provider-rate-limited': {
@@ -91,6 +96,10 @@ export const BILLING_ERRORS = {
   'billing/provider-unavailable': {
     message: 'The accounting provider is temporarily unavailable.',
     httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
+  'billing/quote-invalid-state': {
+    message: 'This quote cannot be changed from its current status.',
+    httpStatus: HttpStatus.CONFLICT,
   },
   'billing/workspace-not-found': {
     message: 'The Billing workspace was not found.',

@@ -6,6 +6,8 @@ import { MetricCard } from '@/components/patterns/metric-card'
 import { resolveQuote } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
+import { hasPermission } from '@/lib/auth/billing-context'
+import { QuoteActions } from './_components/quote-actions'
 
 interface Props {
   params: Promise<{ quoteId: string }>
@@ -26,6 +28,11 @@ export default async function QuoteDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <QuoteActions
+        quoteId={quote.id}
+        status={quote.status}
+        canWrite={hasPermission(context, 'sales:write')}
+      />
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Subtotal"

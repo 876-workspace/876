@@ -8,11 +8,6 @@ import type {
   CreditNoteCreateParams,
 } from './schemas/credit-note'
 import type {
-  EstimateCreateParams,
-  EstimateStatus,
-  EstimateUpdateParams,
-} from './schemas/estimate'
-import type {
   InvoiceCreateParams,
   InvoiceFinalizeParams,
   InvoiceStatus,
@@ -199,37 +194,36 @@ export const documentsController = {
   async quotesDelete(req: Request, res: Response) {
     res.json(await service.deleteQuote(tenant(req), param(req, 'quoteId')))
   },
-  async estimatesList(req: Request, res: Response) {
+  async quotesSend(req: Request, res: Response) {
     res.json(
-      await service.listEstimates(
+      await service.transitionQuote(tenant(req), param(req, 'quoteId'), 'send')
+    )
+  },
+  async quotesAccept(req: Request, res: Response) {
+    res.json(
+      await service.transitionQuote(
         tenant(req),
-        validQuery<{ status?: EstimateStatus }>(req).status
+        param(req, 'quoteId'),
+        'accept'
       )
     )
   },
-  async estimatesGet(req: Request, res: Response) {
-    res.json(await service.getEstimate(tenant(req), param(req, 'estimateId')))
-  },
-  async estimatesCreate(req: Request, res: Response) {
+  async quotesDecline(req: Request, res: Response) {
     res.json(
-      await service.createEstimate(
+      await service.transitionQuote(
         tenant(req),
-        validBody<EstimateCreateParams>(req)
+        param(req, 'quoteId'),
+        'decline'
       )
     )
   },
-  async estimatesUpdate(req: Request, res: Response) {
+  async quotesCancel(req: Request, res: Response) {
     res.json(
-      await service.updateEstimate(
+      await service.transitionQuote(
         tenant(req),
-        param(req, 'estimateId'),
-        validBody<EstimateUpdateParams>(req)
+        param(req, 'quoteId'),
+        'cancel'
       )
-    )
-  },
-  async estimatesDelete(req: Request, res: Response) {
-    res.json(
-      await service.deleteEstimate(tenant(req), param(req, 'estimateId'))
     )
   },
   async creditNotesList(req: Request, res: Response) {

@@ -8,7 +8,6 @@ import {
   CreditNoteCreateSchema,
   CreditNoteStatusSchema,
 } from './schemas/credit-note'
-import { EstimateCreateSchema, EstimateUpdateSchema } from './schemas/estimate'
 import {
   IntegrationInvoiceCreateSchema,
   InvoiceCreateSchema,
@@ -182,27 +181,28 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
       del: 'billing-billing_delete_quotes_quoteId',
     },
   })
-  registerDraftCrud(api, {
-    plural: 'estimates',
-    object: 'estimate',
-    idName: 'estimateId',
-    create: EstimateCreateSchema,
-    update: EstimateUpdateSchema,
-    handlers: {
-      list: controller.estimatesList,
-      get: controller.estimatesGet,
-      create: controller.estimatesCreate,
-      update: controller.estimatesUpdate,
-      del: controller.estimatesDelete,
-    },
-    ids: {
-      list: 'billing-billing_get_estimates',
-      create: 'billing-billing_post_estimates',
-      get: 'billing-billing_get_estimates_estimateId',
-      update: 'billing-billing_patch_estimates_estimateId',
-      del: 'billing-billing_delete_estimates_estimateId',
-    },
-  })
+  function quoteAction(action: string, handler: Handler) {
+    api.post({
+      path: `/quotes/:quoteId/${action}`,
+      summary: `${action[0]!.toUpperCase()}${action.slice(1)} a quote`,
+      operationId: `billing-billing_post_quotes_quoteId_${action}`,
+      security: write,
+      request: { params: id('quoteId'), body: z.strictObject({}).default({}) },
+      documentBody: false,
+      responses: {
+        200: {
+          description: 'Successful Response',
+          schema: successEnvelopeSchema(resource('quote')),
+        },
+        ...clientErrors,
+      },
+      handler,
+    })
+  }
+  quoteAction('send', controller.quotesSend)
+  quoteAction('accept', controller.quotesAccept)
+  quoteAction('decline', controller.quotesDecline)
+  quoteAction('cancel', controller.quotesCancel)
   const invoiceStatus = z.enum([
     'DRAFT',
     'OPEN',
