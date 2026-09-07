@@ -21,6 +21,13 @@ const envelopeSchema = z.object({
 
 type RequestRuntime = Pick<Runtime, 'baseUrl' | 'fetch' | 'requestId'>
 
+/**
+ * Reports why a response failed to parse — on the server only.
+ *
+ * The returned error stays deliberately opaque, because a client-safe error
+ * must not carry internals. The public message remains owned by the CRM error
+ * catalog while server logs retain the validation details needed to debug it.
+ */
 function reportInvalidResponse(stage: string, issues: unknown): void {
   if (typeof window !== 'undefined') return
   console.error(`[crm/invalid-response] ${stage} failed validation:`, issues)

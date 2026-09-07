@@ -7,3 +7,17 @@ export const supportRequestDraftSchema = z.strictObject({
 })
 
 export type SupportRequestDraft = z.infer<typeof supportRequestDraftSchema>
+
+/**
+ * Maps a support-service failure onto the HTTP status a host route returns.
+ * A missing support destination is 876's own misconfiguration (503); anything
+ * else the CRM service reports is an upstream failure (502). Shared so the
+ * three host apps cannot disagree about what a support outage looks like.
+ */
+export function supportResponseStatus(
+  errorCode: string | undefined,
+  successStatus: number
+): number {
+  if (!errorCode) return successStatus
+  return errorCode === 'crm/not-configured' ? 503 : 502
+}
