@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import '@testing-library/jest-dom/vitest'
 
 import type { SupportWidgetTransport } from './support-widget'
 import { SupportWidget } from './support-widget'
@@ -22,7 +23,9 @@ const requestList = {
 
 function transport(): SupportWidgetTransport {
   return {
-    listCategories: vi.fn().mockResolvedValue({ data: categoryList, error: null }),
+    listCategories: vi
+      .fn()
+      .mockResolvedValue({ data: categoryList, error: null }),
     listRequests: vi.fn().mockResolvedValue({ data: requestList, error: null }),
     createRequest: vi.fn(),
   }
@@ -63,7 +66,9 @@ describe('SupportWidget', () => {
 
     expect(await screen.findByText('Nothing open')).toBeInTheDocument()
     expect(
-      screen.getByText('Anything your organization raises with 876 shows up here.')
+      screen.getByText(
+        'Anything your organization raises with 876 shows up here.'
+      )
     ).toBeInTheDocument()
   })
 })
