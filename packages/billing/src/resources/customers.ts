@@ -3,21 +3,31 @@ import type { Runtime } from '../runtime'
 import {
   CustomerAccountSchema,
   CustomerCreatedSchema,
+  CustomerContactCreatedSchema,
+  CustomerContactListSchema,
+  CustomerContactSchema,
   CustomerListSchema,
   CustomerSchema,
   DeletedCustomerSchema,
+  DeletedCustomerContactSchema,
   InvoiceCreatedSchema,
 } from '../schemas'
 import type {
   Customer,
   CustomerAccount,
   CustomerCreated,
+  CustomerContact,
+  CustomerContactCreateParams,
+  CustomerContactCreated,
+  CustomerContactList,
+  CustomerContactUpdateParams,
   CustomerCreateParams,
   CustomerList,
   CustomerListParams,
   CustomerOpeningBalanceParams,
   CustomerUpdateParams,
   DeletedCustomer,
+  DeletedCustomerContact,
   InvoiceCreated,
   RequestOptions,
 } from '../types'
@@ -25,6 +35,78 @@ import type {
 /** `$876.billing.customers.*` — tenant-scoped customer operations. */
 export function createCustomersResource(runtime: Runtime) {
   return {
+    contacts: {
+      list(customerId: string, options?: RequestOptions) {
+        return Request<CustomerContactList>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/api/v1/customers/${encodeURIComponent(customerId)}/contacts`,
+            signal: options?.signal,
+          },
+          CustomerContactListSchema
+        )
+      },
+      retrieve(
+        customerId: string,
+        contactId: string,
+        options?: RequestOptions
+      ) {
+        return Request<CustomerContact>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/api/v1/customers/${encodeURIComponent(customerId)}/contacts/${encodeURIComponent(contactId)}`,
+            signal: options?.signal,
+          },
+          CustomerContactSchema
+        )
+      },
+      create(
+        customerId: string,
+        params: CustomerContactCreateParams,
+        options?: RequestOptions
+      ) {
+        return Request<CustomerContactCreated>(
+          runtime,
+          {
+            method: 'POST',
+            path: `/api/v1/customers/${encodeURIComponent(customerId)}/contacts`,
+            body: params,
+            signal: options?.signal,
+          },
+          CustomerContactCreatedSchema
+        )
+      },
+      update(
+        customerId: string,
+        contactId: string,
+        params: CustomerContactUpdateParams,
+        options?: RequestOptions
+      ) {
+        return Request<CustomerContact>(
+          runtime,
+          {
+            method: 'PATCH',
+            path: `/api/v1/customers/${encodeURIComponent(customerId)}/contacts/${encodeURIComponent(contactId)}`,
+            body: params,
+            signal: options?.signal,
+          },
+          CustomerContactSchema
+        )
+      },
+      delete(customerId: string, contactId: string, options?: RequestOptions) {
+        return Request<DeletedCustomerContact>(
+          runtime,
+          {
+            method: 'DELETE',
+            path: `/api/v1/customers/${encodeURIComponent(customerId)}/contacts/${encodeURIComponent(contactId)}`,
+            signal: options?.signal,
+          },
+          DeletedCustomerContactSchema
+        )
+      },
+    },
     /** Creates a customer in the active Billing workspace. */
     create(params: CustomerCreateParams, options?: RequestOptions) {
       return Request<CustomerCreated>(

@@ -46,6 +46,7 @@ function createCustomer(overrides: Partial<Customer> = {}): Customer {
       email: 'don.wehby@gkco.com',
       workPhone: '+18769223440',
       mobilePhone: '+18765550199',
+      avatar: null,
       isPrimary: true,
       coreSyncedAt: 1_788_825_600,
     },
@@ -419,5 +420,69 @@ describe('customers resource', () => {
         })
       )
     })
+  })
+})
+
+describe('customers.contacts resource', () => {
+  const contact = {
+    object: 'contact' as const,
+    id: 'contact_1',
+    userId: null,
+    salutation: null,
+    firstName: 'Ana',
+    lastName: null,
+    email: 'ana@example.test',
+    workPhone: null,
+    mobilePhone: null,
+    avatar: null,
+    isPrimary: true,
+    coreSyncedAt: null,
+  }
+
+  function contactClient(body: unknown) {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
+      Response.json(body)
+    )
+    return {
+      fetch,
+      client: create876Client({ baseUrl: 'https://billing.example.test', fetch }),
+    }
+  }
+
+  it('lists contacts at the nested customer path', async () => {
+    const list = { object: 'list' as const, data: [contact], has_more: false, total_count: null, url: '/api/v1/customers/cust_1/contacts' }
+    const { client, fetch } = contactClient({ data: list, error: null })
+
+    await expect(client.customers.contacts.list('cust_1')).resolves.toEqual({ data: list, error: null })
+    expect(fetch).toHaveBeenCalledWith('https://billing.example.test/api/v1/customers/cust_1/contacts', expect.objectContaining({ method: 'GET' }))
+  })
+
+  it('retrieves a contact with both identifiers encoded', async () => {
+    const { client, fetch } = contactClient({ data: contact, error: null })
+
+    await expect(client.customers.contacts.retrieve('cust/ 1', 'contact/ 1')).resolves.toEqual({ data: contact, error: null })
+    expect(fetch).toHaveBeenCalledWith('https://billing.example.test/api/v1/customers/cust%2F%201/contacts/contact%2F%201', expect.objectContaining({ method: 'GET' }))
+  })
+
+  it('creates a contact with the supplied body', async () => {
+    const { client, fetch } = contactClient({ data: { object: 'contact', id: 'contact_1' }, error: null })
+
+    await expect(client.customers.contacts.create('cust_1', { email: 'ana@example.test' })).resolves.toEqual({ data: { object: 'contact', id: 'contact_1' }, error: null })
+    expect(fetch).toHaveBeenCalledWith('https://billing.example.test/api/v1/customers/cust_1/contacts', expect.objectContaining({ method: 'POST', body: JSON.stringify({ email: 'ana@example.test' }) }))
+  })
+
+  it('updates a contact with PATCH', async () => {
+    const { client, fetch } = contactClient({ data: contact, error: null })
+
+    await expect(client.customers.contacts.update('cust_1', 'contact_1', { mobilePhone: '+15550100' })).resolves.toEqual({ data: contact, error: null })
+    expect(fetch).toHaveBeenCalledWith('https://billing.example.test/api/v1/customers/cust_1/contacts/contact_1', expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ mobilePhone: '+15550100' }) }))
+  })
+
+  it('deletes a contact with DELETE and parses its tombstone', async () => {
+    const tombstone = { object: 'contact' as const, id: 'contact_1', deleted: true as const }
+    const { client, fetch } = contactClient({ data: tombstone, error: null })
+
+    await expect(client.customers.contacts.delete('cust_1', 'contact_1')).resolves.toEqual({ data: tombstone, error: null })
+    expect(fetch).toHaveBeenCalledWith('https://billing.example.test/api/v1/customers/cust_1/contacts/contact_1', expect.objectContaining({ method: 'DELETE' }))
   })
 })

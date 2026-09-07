@@ -4,7 +4,10 @@ import type {
   Customer,
   CustomerAccount,
   CustomerContact,
+  CustomerContactCreated,
+  CustomerContactList,
   CustomerCreated,
+  DeletedCustomerContact,
   CustomerList,
   DeletedCustomer,
 } from './customer'
@@ -20,6 +23,10 @@ import {
 export const CustomerCreatedSchema = createdResourceSchema(
   'customer'
 ) satisfies z.ZodType<CustomerCreated>
+
+export const CustomerContactCreatedSchema = createdResourceSchema(
+  'contact'
+) satisfies z.ZodType<CustomerContactCreated>
 
 const CustomerLedgerEntrySchema = z.object({
   object: z.literal('customer_ledger_entry'),
@@ -68,9 +75,18 @@ export const CustomerContactSchema = z.object({
   email: z.string().nullable(),
   workPhone: z.string().nullable(),
   mobilePhone: z.string().nullable(),
+  avatar: z.string().nullable(),
   isPrimary: z.boolean(),
   coreSyncedAt: z.number().int().nullable(),
 }) satisfies z.ZodType<CustomerContact>
+
+export const CustomerContactListSchema = listSchema(
+  CustomerContactSchema
+) satisfies z.ZodType<CustomerContactList>
+
+export const DeletedCustomerContactSchema = deletedResourceSchema(
+  'contact'
+) satisfies z.ZodType<DeletedCustomerContact>
 
 /**
  * The schema for a full customer resource.

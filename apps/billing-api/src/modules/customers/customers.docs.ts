@@ -10,4 +10,9 @@ export const customersDocs = {
   openingBalance: { summary: 'Record a dated customer opening balance' },
   importRows: { summary: 'Import Billing customers' },
   ensure: { summary: 'Idempotently ensure a customer' },
+  listContacts: { summary: 'List a customer’s contacts' },
+  retrieveContact: { summary: 'Retrieve a customer contact' },
+  createContact: { summary: 'Create a customer contact' },
+  updateContact: { summary: 'Update a customer contact' },
+  deleteContact: { summary: 'Delete a customer contact' },
 } as const

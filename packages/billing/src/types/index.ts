@@ -49,6 +49,11 @@ export type {
   CustomerLedgerEntry,
   CustomerAccount,
   CustomerContact,
+  CustomerContactCreateParams,
+  CustomerContactCreated,
+  CustomerContactUpdateParams,
+  CustomerContactList,
+  DeletedCustomerContact,
   CustomerStatus,
   Customer,
   CustomerList,
@@ -58,8 +63,11 @@ export type {
 } from './customer'
 export {
   CustomerCreatedSchema,
+  CustomerContactCreatedSchema,
   CustomerAccountSchema,
   CustomerContactSchema,
+  CustomerContactListSchema,
+  DeletedCustomerContactSchema,
   CustomerSchema,
   CustomerListSchema,
   DeletedCustomerSchema,

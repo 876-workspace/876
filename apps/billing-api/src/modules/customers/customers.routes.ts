@@ -8,6 +8,11 @@ import { customersDocs as docs } from './customers.docs'
 import {
   createdInvoiceSchema,
   customerAccountSchema,
+  contactCreateBodySchema,
+  contactListSchema,
+  contactParamsSchema,
+  contactSchema,
+  contactUpdateBodySchema,
   customerCreateBodySchema,
   customerEnsureBodySchema,
   customerImportBodySchema,
@@ -18,6 +23,7 @@ import {
   customerSchema,
   customerUpdateBodySchema,
   deletedCustomerSchema,
+  deletedContactSchema,
   integrationCustomerListQuerySchema,
   integrationCustomerCreateBodySchema,
   linkCustomerBodySchema,
@@ -81,6 +87,86 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
       ...legacyErrors,
     },
     handler: controller.importRows,
+  })
+  api.get({
+    path: '/customers/:customerId/contacts',
+    ...docs.listContacts,
+    operationId: 'billing-billing_get_customers_customerId_contacts',
+    security: { kind: 'tenant', permission: 'customers:read' },
+    request: { params: customerParamsSchema },
+    responses: {
+      200: {
+        description: 'contact list',
+        schema: successEnvelopeSchema(contactListSchema),
+      },
+      ...legacyErrors,
+    },
+    handler: controller.listContacts,
+  })
+  api.post({
+    path: '/customers/:customerId/contacts',
+    ...docs.createContact,
+    operationId: 'billing-billing_post_customers_customerId_contacts',
+    security: { kind: 'tenant', permission: 'customers:write' },
+    request: { params: customerParamsSchema, body: contactCreateBodySchema },
+    responses: {
+      201: {
+        description: 'contact created',
+        schema: successEnvelopeSchema(
+          z.strictObject({ object: z.literal('contact'), id: z.string() })
+        ),
+      },
+      ...clientErrors,
+    },
+    handler: controller.createContact,
+  })
+  api.get({
+    path: '/customers/:customerId/contacts/:contactId',
+    ...docs.retrieveContact,
+    operationId: 'billing-billing_get_customers_customerId_contacts_contactId',
+    security: { kind: 'tenant', permission: 'customers:read' },
+    request: { params: contactParamsSchema },
+    responses: {
+      200: {
+        description: 'contact returned',
+        schema: successEnvelopeSchema(contactSchema),
+      },
+      ...legacyErrors,
+    },
+    handler: controller.retrieveContact,
+  })
+  api.patch({
+    path: '/customers/:customerId/contacts/:contactId',
+    ...docs.updateContact,
+    operationId:
+      'billing-billing_patch_customers_customerId_contacts_contactId',
+    security: { kind: 'tenant', permission: 'customers:write' },
+    request: { params: contactParamsSchema, body: contactUpdateBodySchema },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'contact updated',
+        schema: successEnvelopeSchema(contactSchema),
+      },
+      ...legacyErrors,
+    },
+    handler: controller.updateContact,
+  })
+  api.delete({
+    path: '/customers/:customerId/contacts/:contactId',
+    ...docs.deleteContact,
+    operationId:
+      'billing-billing_delete_customers_customerId_contacts_contactId',
+    security: { kind: 'tenant', permission: 'customers:write' },
+    request: { params: contactParamsSchema },
+    responses: {
+      200: {
+        description: 'contact deleted',
+        schema: successEnvelopeSchema(deletedContactSchema),
+      },
+      ...legacyErrors,
+    },
+    handler: controller.deleteContact,
   })
   api.get({
     path: '/customers/:customerId',

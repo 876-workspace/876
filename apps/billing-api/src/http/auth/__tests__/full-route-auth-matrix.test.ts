@@ -34,8 +34,8 @@ describe('frozen v1 route authentication matrix', () => {
         method === 'get' && path === '/providers/zoho-books/oauth/callback'
     )
 
-    expect(operations).toHaveLength(216)
-    expect(protectedPublicOperations()).toHaveLength(215)
+    expect(operations).toHaveLength(221)
+    expect(protectedPublicOperations()).toHaveLength(220)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })
