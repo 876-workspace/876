@@ -1,6 +1,7 @@
 import { prisma } from '@/db/client'
 
-import { applyPercentageAdjustment, calculateCatalogAmount } from '../pricing'
+import { calculateCatalogAmount } from '@/modules/billing-engine'
+import { applyPercentageAdjustment } from '@/modules/pricing'
 
 /** Resolves one quantity against an immutable price and optional price list. */
 export async function resolveAmount(
@@ -40,7 +41,7 @@ export async function resolveAmount(
       amount: applyPercentageAdjustment(
         baseAmount,
         priceList.direction,
-        Number(priceList.percentage),
+        priceList.percentage.toString(),
         priceList.rounding,
         priceList.roundingPrecision
       ),
