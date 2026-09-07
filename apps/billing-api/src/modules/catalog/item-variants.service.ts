@@ -152,6 +152,9 @@ export const itemVariantsService = {
   ) {
     await requireVariantsEnabled(tenantId)
     await ownedItem(tenantId, itemId, sourceAppId)
+    if (await items.variants.hasConversionBlockers(tenantId, itemId))
+      throw appError('billing/item-variants-conversion-blocked')
+
     await unwrap(await items.variants.generate(tenantId, itemId, body))
     return serializeCatalog(
       'item',
