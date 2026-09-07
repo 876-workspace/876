@@ -1,27 +1,19 @@
-import { getInvoiceContextResult } from '@/lib/auth/context'
+import { apiError, apiJson } from '@876/core/api'
+import { supportResponseStatus } from '@876/crm'
+
 import { getCrmSupport } from '@/lib/services/crm-support'
+import { resolveSupportContext } from '../_lib/support-context'
 
 export async function GET() {
-  const context = await getInvoiceContextResult()
-  if (
-    context.status !== 'ok' ||
-    (context.context.accessStatus !== 'active' &&
-      context.context.accessStatus !== 'trialing')
-  )
-    return Response.json(
-      {
-        data: null,
-        error: { code: 'invoice/unauthorized', message: 'Unauthorized.' },
-      },
+  const context = await resolveSupportContext()
+  if (!context)
+    return apiError(
+      { code: 'invoice/unauthorized', message: 'Unauthorized.' },
       { status: 401 }
     )
 
   const result = await getCrmSupport().categories.list()
-  return Response.json(result, {
-    status: result.error
-      ? result.error.code === 'crm/not-configured'
-        ? 503
-        : 502
-      : 200,
+  return apiJson(result, {
+    status: supportResponseStatus(result.error?.code, 200),
   })
 }

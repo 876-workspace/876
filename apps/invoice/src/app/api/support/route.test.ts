@@ -10,7 +10,9 @@ vi.mock('@/lib/auth/context', () => ({
   getInvoiceContextResult: mocks.context,
 }))
 vi.mock('@/lib/services/crm-support', () => ({
-  getCrmSupport: () => ({ requests: { list: mocks.list, create: mocks.create } }),
+  getCrmSupport: () => ({
+    requests: { list: mocks.list, create: mocks.create },
+  }),
 }))
 
 import { GET, POST } from './route'
