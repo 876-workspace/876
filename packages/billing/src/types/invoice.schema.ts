@@ -1,18 +1,22 @@
 import { z } from 'zod'
 
 import type {
-  Estimate,
-  EstimateList,
   Invoice,
   InvoiceList,
   Quote,
   QuoteList,
   InvoiceCreated,
+  DeletedInvoice,
+  DeletedQuote,
   InvoicePreference,
   InvoicePreferenceUpdated,
   LateFeeRun,
 } from './invoice'
-import { createdResourceSchema, listSchema } from './common.schema'
+import {
+  createdResourceSchema,
+  deletedResourceSchema,
+  listSchema,
+} from './common.schema'
 
 /**
  * The schema for a created invoice response.
@@ -62,6 +66,11 @@ export const InvoiceSchema = z
   .strictObject({ object: z.literal('invoice'), id: z.string().min(1) })
   .passthrough() satisfies z.ZodType<Invoice>
 
+/** The schema for a deleted invoice tombstone. */
+export const DeletedInvoiceSchema = deletedResourceSchema(
+  'invoice'
+) satisfies z.ZodType<DeletedInvoice>
+
 export const InvoiceListSchema = listSchema(
   InvoiceSchema
 ) satisfies z.ZodType<InvoiceList>
@@ -76,12 +85,7 @@ export const QuoteListSchema = listSchema(
   QuoteSchema
 ) satisfies z.ZodType<QuoteList>
 
-/** The schema for one tenant estimate. */
-export const EstimateSchema = z
-  .strictObject({ object: z.literal('estimate'), id: z.string().min(1) })
-  .passthrough() satisfies z.ZodType<Estimate>
-
-/** The schema for a paginated list of estimates. */
-export const EstimateListSchema = listSchema(
-  EstimateSchema
-) satisfies z.ZodType<EstimateList>
+/** The schema for a deleted quote tombstone. */
+export const DeletedQuoteSchema = deletedResourceSchema(
+  'quote'
+) satisfies z.ZodType<DeletedQuote>

@@ -1,6 +1,11 @@
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
-import { InvoiceCreatedSchema, InvoiceListSchema } from '../schemas'
+import {
+  DeletedInvoiceSchema,
+  InvoiceCreatedSchema,
+  InvoiceListSchema,
+  InvoiceSchema,
+} from '../schemas'
 import type {
   Invoice,
   InvoiceCreated,
@@ -9,7 +14,8 @@ import type {
   InvoiceList,
   InvoiceListParams,
   InvoiceVoidParams,
-  List,
+  InvoiceUpdateParams,
+  DeletedInvoice,
   RequestOptions,
 } from '../types'
 
@@ -43,6 +49,47 @@ export function createInvoicesResource(runtime: Runtime) {
           signal: options?.signal,
         },
         InvoiceCreatedSchema
+      )
+    },
+    /** Retrieves a single invoice by ID. */
+    retrieve(invoiceId: string, options?: RequestOptions) {
+      return Request<Invoice>(
+        runtime,
+        {
+          method: 'GET',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
+          signal: options?.signal,
+        },
+        InvoiceSchema
+      )
+    },
+    /** Updates a draft invoice. */
+    update(
+      invoiceId: string,
+      params: InvoiceUpdateParams,
+      options?: RequestOptions
+    ) {
+      return Request<Invoice>(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
+          body: params,
+          signal: options?.signal,
+        },
+        InvoiceSchema
+      )
+    },
+    /** Deletes a draft invoice. */
+    delete(invoiceId: string, options?: RequestOptions) {
+      return Request<DeletedInvoice>(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
+          signal: options?.signal,
+        },
+        DeletedInvoiceSchema
       )
     },
     /** Finalizes a draft invoice and posts its receivable. */
