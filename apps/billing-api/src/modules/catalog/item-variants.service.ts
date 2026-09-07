@@ -55,6 +55,41 @@ async function requireVariantsEnabled(tenantId: string) {
     throw appError('billing/item-variants-disabled')
 }
 
+async function retrieveVariant(
+  tenantId: string,
+  itemId: string,
+  variantId: string,
+  sourceAppId?: string
+) {
+  await ownedItem(tenantId, itemId, sourceAppId)
+  const variant = await items.variants.retrieve(tenantId, itemId, variantId)
+  if (!variant) throw appError('billing/item-variant-not-found')
+  return serializeCatalog('item_variant', variant)
+}
+
+async function listMedia(
+  tenantId: string,
+  itemId: string,
+  variantId?: string,
+  sourceAppId?: string
+) {
+  await ownedItem(tenantId, itemId, sourceAppId)
+  const rows = await items.media.list(tenantId, itemId, variantId)
+  if (!rows)
+    throw variantId
+      ? appError('billing/item-variant-not-found')
+      : new AppHttpError({
+          code: 'item/not-found',
+          message: 'item not found.',
+          httpStatus: 404,
+        })
+
+  const path = variantId
+    ? `/api/v1/items/${itemId}/variants/${variantId}/media`
+    : `/api/v1/items/${itemId}/media`
+  return catalogList('item_media', rows, path)
+}
+
 export const itemVariantsService = {
   getPreferences(tenantId: string) {
     return itemPreferences.retrieve(tenantId)
@@ -100,17 +135,7 @@ export const itemVariantsService = {
     )
   },
 
-  async retrieve(
-    tenantId: string,
-    itemId: string,
-    variantId: string,
-    sourceAppId?: string
-  ) {
-    await ownedItem(tenantId, itemId, sourceAppId)
-    const variant = await items.variants.retrieve(tenantId, itemId, variantId)
-    if (!variant) throw appError('billing/item-variant-not-found')
-    return serializeCatalog('item_variant', variant)
-  },
+  retrieve: retrieveVariant,
 
   async generate(
     tenantId: string,
@@ -137,7 +162,7 @@ export const itemVariantsService = {
     await requireVariantsEnabled(tenantId)
     await ownedItem(tenantId, itemId, sourceAppId)
     await unwrap(await items.variants.update(tenantId, itemId, variantId, body))
-    return this.retrieve(tenantId, itemId, variantId, sourceAppId)
+    return retrieveVariant(tenantId, itemId, variantId, sourceAppId)
   },
 
   async adjustStock(
@@ -158,27 +183,10 @@ export const itemVariantsService = {
         createdBy
       )
     )
-    return this.retrieve(tenantId, itemId, variantId, sourceAppId)
+    return retrieveVariant(tenantId, itemId, variantId, sourceAppId)
   },
 
-  async listMedia(
-    tenantId: string,
-    itemId: string,
-    variantId?: string,
-    sourceAppId?: string
-  ) {
-    await ownedItem(tenantId, itemId, sourceAppId)
-    const rows = await items.media.list(tenantId, itemId, variantId)
-    if (!rows)
-      throw variantId
-        ? appError('billing/item-variant-not-found')
-        : new AppHttpError({
-            code: 'item/not-found',
-            message: 'item not found.',
-            httpStatus: 404,
-          })
-    return catalogList('item_media', rows, `/api/v1/items/${itemId}/media`)
-  },
+  listMedia,
 
   async attachMedia(
     tenantId: string,
@@ -189,7 +197,7 @@ export const itemVariantsService = {
   ) {
     await ownedItem(tenantId, itemId, sourceAppId)
     await unwrap(await items.media.attach(tenantId, itemId, body, variantId))
-    return this.listMedia(tenantId, itemId, variantId, sourceAppId)
+    return listMedia(tenantId, itemId, variantId, sourceAppId)
   },
 
   async reorderMedia(
@@ -201,7 +209,7 @@ export const itemVariantsService = {
   ) {
     await ownedItem(tenantId, itemId, sourceAppId)
     await unwrap(await items.media.reorder(tenantId, itemId, body, variantId))
-    return this.listMedia(tenantId, itemId, variantId, sourceAppId)
+    return listMedia(tenantId, itemId, variantId, sourceAppId)
   },
 
   async removeMedia(
