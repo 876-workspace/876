@@ -78,6 +78,10 @@ export const BILLING_ERRORS = {
     message: 'Product variants are not enabled for this workspace.',
     httpStatus: HttpStatus.CONFLICT,
   },
+  'billing/item-variants-in-use': {
+    message: 'Product variants cannot be disabled while variant items exist.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'billing/oauth-invalid-state': {
     message:
       'The accounting provider authorization state is invalid or expired.',
