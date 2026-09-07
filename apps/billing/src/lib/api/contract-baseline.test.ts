@@ -71,6 +71,11 @@ describe('Billing API v1 contract baseline', () => {
     '/quotes/{quoteId}/accept',
     '/quotes/{quoteId}/decline',
     '/quotes/{quoteId}/cancel',
+    // Item stock adjustments, added with lightweight stock tracking. Stock is
+    // an Express-only capability, so neither path exists in the legacy
+    // inventory.
+    '/items/{itemId}/stock-adjustments',
+    '/integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {

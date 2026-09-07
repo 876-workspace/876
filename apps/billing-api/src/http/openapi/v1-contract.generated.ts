@@ -309,6 +309,10 @@ export const v1OperationMetadata = {
     summary: 'Delete an unused price list',
     tags: ['Catalog'],
   },
+  'POST /items/{itemId}/stock-adjustments': {
+    summary: 'Adjust item stock',
+    tags: ['Catalog'],
+  },
   'POST /plans/{planId}/clone': {
     summary: 'Clone a plan with fresh prices and tiers',
     tags: ['Catalog'],
@@ -357,6 +361,11 @@ export const v1OperationMetadata = {
     summary: 'Archive a shared finance catalog item',
     tags: ['Organization integrations'],
   },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments':
+    {
+      summary: 'Adjust organization Billing item stock',
+      tags: ['Catalog'],
+    },
   'GET /integrations/organizations/{organizationId}/plans': {
     operationId:
       'billing-billing_get_integrations_organizations_organizationId_plans',
@@ -7805,6 +7814,121 @@ export const v1OperationContracts = {
       },
     },
   },
+  'POST /items/{itemId}/stock-adjustments': {
+    tags: ['Catalog'],
+    summary: 'Adjust item stock',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              quantity: {
+                type: 'integer',
+                minimum: -9007199254740991,
+                maximum: 9007199254740991,
+              },
+              note: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 500,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+            },
+            required: ['quantity'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item stock adjusted',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'POST /plans/{planId}/clone': {
     security: [
       {
@@ -8851,6 +8975,137 @@ export const v1OperationContracts = {
       },
     },
   },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments':
+    {
+      tags: ['Catalog'],
+      summary: 'Adjust organization Billing item stock',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                quantity: {
+                  type: 'integer',
+                  minimum: -9007199254740991,
+                  maximum: 9007199254740991,
+                },
+                note: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 500,
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+              },
+              required: ['quantity'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Item stock adjusted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
   'GET /integrations/organizations/{organizationId}/plans': {
     description:
       'Ported from `src/app/api/billing/integrations/organizations/[organizationId]/plans/route.ts`.',
