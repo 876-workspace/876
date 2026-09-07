@@ -68,6 +68,15 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
     enabledByDefault: true,
     preferences: [],
   },
+  {
+    key: 'crm',
+    label: 'CRM',
+    description:
+      'Enable the future organization-owned CRM workspace inside finance apps.',
+    optional: true,
+    enabledByDefault: false,
+    preferences: [],
+  },
 ])
 
 const BILLING_ONLY_MODULE_CATALOG = defineModuleCatalog([

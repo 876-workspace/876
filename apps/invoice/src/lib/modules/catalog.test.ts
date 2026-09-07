@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
-import { INVOICE_MODULE_KEYS, isInvoiceModuleKey } from './catalog'
+import {
+  INVOICE_MODULE_CATALOG,
+  INVOICE_MODULE_KEYS,
+  isInvoiceModuleKey,
+} from './catalog'
 
 describe('isInvoiceModuleKey', () => {
   it('accepts a shared finance module key', () => {
     expect(isInvoiceModuleKey('invoices')).toBe(true)
+  })
+
+  it('accepts the shared CRM module seam', () => {
+    expect(isInvoiceModuleKey('crm')).toBe(true)
   })
 
   it('rejects a Billing-only module key', () => {
@@ -35,6 +43,14 @@ describe('INVOICE_MODULE_KEYS', () => {
       'sales-receipts',
       'time-tracking',
       'customers',
+      'crm',
     ])
+  })
+
+  it('keeps the embedded CRM seam optional and disabled by default', () => {
+    expect(INVOICE_MODULE_CATALOG.find((module) => module.key === 'crm')).toMatchObject({
+      optional: true,
+      enabledByDefault: false,
+    })
   })
 })
