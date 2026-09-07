@@ -150,6 +150,7 @@ export interface CustomerTableRow {
   companyName: string | null
   /** Primary contact's full name. Null when the customer has no contact. */
   contactName: string | null
+  email?: string | null
   phone: string | null
   /** Lifetime revenue received from this customer, in the currency's minor units. */
   receivables: number

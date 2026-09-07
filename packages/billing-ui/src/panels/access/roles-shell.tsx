@@ -38,7 +38,7 @@ export function RolesShell({
   const type = searchParams.get(ROLE_TYPE_PARAM) ?? 'all'
 
   return (
-    <Page className={open ? 'h-full min-h-0' : 'min-h-full'}>
+    <Page className={open ? 'h-full min-h-0 p-0' : 'min-h-full'}>
       <ListDetailShell
         open={open}
         toolbar={
@@ -52,8 +52,8 @@ export function RolesShell({
                 paramKey={ROLE_TYPE_PARAM}
               />
             }
-            primaryLabel="Add"
-            primaryHref={newHref}
+            primaryLabel={!open ? 'Add' : undefined}
+            primaryHref={!open ? newHref : undefined}
             primaryDisabled={!canCreate}
             primaryVariant="info"
             refresh
@@ -61,6 +61,7 @@ export function RolesShell({
         }
         list={list}
         detail={children}
+        bleed
       />
     </Page>
   )

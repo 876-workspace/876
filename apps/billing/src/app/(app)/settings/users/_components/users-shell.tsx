@@ -18,7 +18,7 @@ export function UsersShell({
   const { open } = useListDetailRoute()
   const status = useSearchParams().get('status') ?? 'all'
   return (
-    <Page className="h-full min-h-0">
+    <Page className={open ? 'h-full min-h-0 p-0' : 'min-h-full'}>
       <ListDetailShell
         open={open}
         toolbar={
@@ -35,18 +35,17 @@ export function UsersShell({
                 ]}
               />
             }
-            {...(canInvite
-              ? {
-                  primaryLabel: 'Add',
-                  primaryHref: '/settings/users/invite',
-                  primaryVariant: 'info' as const,
-                }
-              : {})}
+            primaryLabel={canInvite && !open ? 'Add' : undefined}
+            primaryHref={
+              canInvite && !open ? '/settings/users/invite' : undefined
+            }
+            primaryVariant="info"
             refresh
           />
         }
         list={list}
         detail={children}
+        bleed
       />
     </Page>
   )

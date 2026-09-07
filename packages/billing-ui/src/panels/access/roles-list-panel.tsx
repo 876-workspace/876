@@ -12,7 +12,6 @@ import {
   ListPane,
   ListPaneBody,
   ListPaneEmpty,
-  ListPaneHeader,
   ListPaneItem,
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
@@ -148,7 +147,6 @@ export function RolesListPanel({
   if (selectedId)
     return (
       <ListPane className="h-full">
-        <ListPaneHeader>Roles</ListPaneHeader>
         <ListPaneBody>
           {rows.length === 0 ? (
             <ListPaneEmpty>No roles match this view.</ListPaneEmpty>
@@ -159,7 +157,11 @@ export function RolesListPanel({
                 href={detailHref(role.id)}
                 selected={role.id === selectedId}
                 label={`View ${role.name} role`}
-                title={role.name}
+                title={
+                  <span className="text-sky-600 dark:text-sky-400">
+                    {role.name}
+                  </span>
+                }
                 subtitle={`${role.permissions.length} permissions · ${role.memberCount} members`}
                 trailing={<RoleBadges role={role} compact />}
               />

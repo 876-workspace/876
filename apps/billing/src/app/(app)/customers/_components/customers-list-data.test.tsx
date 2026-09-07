@@ -146,9 +146,9 @@ describe('CustomersListData', () => {
     const jsx = await CustomersListData()
     render(jsx!)
 
-    // The pane replaces the table: its header names the collection, and the
-    // open row is the one marked current.
-    expect(screen.getByText('Customers')).toBeTruthy()
+    // The pane replaces the table, showing the open row marked current
+    // and the customer's email.
+    expect(screen.getByText('john@acme.com')).toBeTruthy()
     const openRow = screen.getByRole('link', {
       name: 'View customer Jane Individual',
     })

@@ -112,6 +112,7 @@ export async function CustomersListData() {
       name: customer.name,
       companyName: customer.companyName ?? null,
       contactName,
+      email: customer.email ?? primary?.email ?? null,
       phone: customer.phone ?? customer.workPhone ?? null,
       receivables: customer.outstandingReceivable,
       currency: customer.defaultCurrency ?? 'JMD',

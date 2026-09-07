@@ -139,7 +139,9 @@ function ListPaneItem({
         className={cn(
           'focus-visible:ring-ring flex items-center gap-3 border-b px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none',
           'border-876-surface-border/60 last:border-b-0',
-          selected ? 'bg-muted/70 font-medium' : 'hover:bg-muted/40',
+          selected
+            ? 'bg-[color-mix(in_oklab,var(--876-blue)_11%,transparent)] font-medium dark:bg-[color-mix(in_oklab,var(--876-blue)_20%,transparent)]'
+            : 'hover:bg-muted/40',
           className
         )}
       >
