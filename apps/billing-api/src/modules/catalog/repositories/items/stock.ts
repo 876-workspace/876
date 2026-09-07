@@ -1,5 +1,4 @@
 import type { Prisma } from '@/db'
-import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
 import type { ServiceResult } from '../../schemas/api'
 
@@ -82,17 +81,6 @@ async function resolveTracked(
   }
 
   return { data: resolved, error: null }
-}
-
-export async function validateAvailability(
-  tenantId: string,
-  lines: readonly StockLine[]
-): ServiceResult<{ trackedCount: number }> {
-  const resolved = await resolveTracked(prisma, tenantId, lines)
-  if (resolved.error !== null)
-    return err(resolved.error, resolved.status, resolved.code)
-
-  return ok({ trackedCount: resolved.data.length })
 }
 
 export async function applyInvoice(
@@ -185,7 +173,6 @@ export async function restoreInvoice(
 }
 
 export const stock = {
-  validateAvailability,
   applyInvoice,
   restoreInvoice,
 }

@@ -4,5 +4,4 @@ export {
   adjustItemStock,
   applyInvoiceStock,
   restoreInvoiceStock,
-  validateInvoiceStock,
 } from './item-stock.service'

@@ -6,7 +6,7 @@ import { items } from './repositories/items'
 import { stock } from './repositories/items/stock'
 
 type StockTransaction = Parameters<typeof stock.applyInvoice>[0]
-type StockLines = Parameters<typeof stock.validateAvailability>[1]
+type StockLines = Parameters<typeof stock.applyInvoice>[3]
 
 async function unwrapStock<T>(result: Awaited<ServiceResult<T>>): Promise<T> {
   if (result.error === null) return result.data
@@ -58,10 +58,6 @@ export async function adjustItemStock(
     })
 
   return serializeCatalog('item', item)
-}
-
-export function validateInvoiceStock(tenantId: string, lines: StockLines) {
-  return stock.validateAvailability(tenantId, lines)
 }
 
 export function applyInvoiceStock(

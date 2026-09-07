@@ -6,7 +6,6 @@ import { generateId } from '@/platform/ids'
 import type { InvoiceCreateParams } from '../../schemas/invoice'
 import type { ServiceResult } from '../../schemas/api'
 
-import { validateInvoiceStock } from '@/modules/catalog'
 import { buildDocumentLines } from '../documents/lines'
 import { nextDocumentNumber } from '../../document-numbers.repository'
 import {
@@ -95,9 +94,6 @@ async function createFromQuote(
     return err('This quote already has an invoice.', 409)
   if (quote.status === 'CANCELED' || quote.status === 'DECLINED')
     return err('This quote cannot be converted to an invoice.', 422)
-
-  const stock = await validateInvoiceStock(tenantId, quote.lines)
-  if (stock.error !== null) return stock
 
   const defaults = await resolveInvoiceDefaults(tenantId, quote.customerId)
   if (!defaults) return err('Invoice defaults could not be resolved.', 409)
@@ -201,9 +197,6 @@ async function createManualInvoice(
   if (prepared.error !== null) return err(prepared.error, 422)
 
   const preparedDocument = prepared.data
-  const stock = await validateInvoiceStock(tenantId, preparedDocument.lines)
-  if (stock.error !== null) return stock
-
   const discountAmount = params.discountAmount ?? 0n
   const shippingAmount = params.shippingAmount ?? 0n
   const adjustmentAmount = params.adjustmentAmount ?? 0n
