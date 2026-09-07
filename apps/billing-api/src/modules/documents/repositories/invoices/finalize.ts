@@ -1,16 +1,16 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { prisma } from '@/db/client'
+import { consume as consumeInventory } from '@/modules/inventory'
+import { recomputeCustomerAr } from '@/modules/customers'
+import { recordLedgerEntry } from '@/modules/ledger'
+import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import type { InvoiceFinalizeParams } from '../../schemas/invoice'
 import type { ServiceResult } from '../../schemas/api'
 
-import { applyInvoiceStock } from '@/modules/catalog'
-import { recomputeCustomerAr } from '@/modules/customers'
-import { recordLedgerEntry } from '@/modules/ledger'
 import { resolveDueAt } from '../payment-terms'
 import { err, ok } from '../result'
 import { settleWithAvailableCredits } from './settlement'
-import { isRetryableTransactionError } from '@/platform/prisma-errors'
 
 class InvoiceFinalizeError extends Error {
   constructor(
@@ -77,13 +77,19 @@ export async function finalize(
         if (salespersonId && !salesperson)
           throw new InvoiceFinalizeError('Salesperson not found.', 404)
 
-        const stock = await applyInvoiceStock(
-          tx,
-          tenantId,
-          invoice.id,
-          invoice.lines,
-          now
-        )
+        const stock = await consumeInventory(tx, tenantId, {
+          reference: { type: 'invoice', id: invoice.id },
+          reason: 'sale',
+          lines: invoice.lines.flatMap((line) => {
+            const target = line.variantId
+              ? ({ type: 'variant', id: line.variantId } as const)
+              : line.itemId
+                ? ({ type: 'item', id: line.itemId } as const)
+                : null
+            return target ? [{ target, quantity: line.quantity }] : []
+          }),
+          occurredAt: now,
+        })
         if (stock.error !== null) return stock
 
         const issueAt = invoice.issueAt ?? now
