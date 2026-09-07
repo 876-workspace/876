@@ -1,6 +1,7 @@
 import { AppHttpError, appError } from '@/http/errors'
 import type { ServiceResult } from './schemas/api'
 import type { ItemStockAdjustmentParams } from './schemas/item'
+import { serializeCatalog } from './catalog.serializers'
 import { items } from './repositories/items'
 import { stock } from './repositories/items/stock'
 
@@ -37,8 +38,8 @@ export async function adjustItemStock(
   sourceAppId?: string
 ) {
   if (sourceAppId) {
-    const item = await items.retrieve(tenantId, itemId, sourceAppId)
-    if (!item)
+    const owned = await items.retrieve(tenantId, itemId, sourceAppId)
+    if (!owned)
       throw new AppHttpError({
         code: 'item/not-found',
         message: 'item not found.',
@@ -46,12 +47,17 @@ export async function adjustItemStock(
       })
   }
 
-  return {
-    object: 'item' as const,
-    ...(await unwrapStock(
-      await items.adjustStock(tenantId, itemId, body, createdBy)
-    )),
-  }
+  await unwrapStock(await items.adjustStock(tenantId, itemId, body, createdBy))
+
+  const item = await items.retrieve(tenantId, itemId, sourceAppId)
+  if (!item)
+    throw new AppHttpError({
+      code: 'item/not-found',
+      message: 'item not found.',
+      httpStatus: 404,
+    })
+
+  return serializeCatalog('item', item)
 }
 
 export function validateInvoiceStock(tenantId: string, lines: StockLines) {

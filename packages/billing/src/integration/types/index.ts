@@ -45,6 +45,7 @@ export type {
   BillingItem,
   BillingItemCreateParams,
   BillingItemUpdateParams,
+  BillingItemStockAdjustmentParams,
   BillingItemListParams,
   DeletedBillingItem,
   BillingItemList,

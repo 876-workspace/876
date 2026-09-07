@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import {
   BillingItemListSchema,
   BillingItemSchema,
@@ -10,10 +12,16 @@ import type {
   BillingItemCreateParams,
   BillingItemList,
   BillingItemListParams,
+  BillingItemStockAdjustmentParams,
   BillingItemUpdateParams,
   DeletedBillingItem,
   IntegrationCreateOptions,
 } from '../types'
+
+const itemMutationSchema = z.strictObject({
+  object: z.literal('item'),
+  id: z.string().min(1),
+})
 
 function collectionPath(organizationId: string): string {
   return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/items`
@@ -50,7 +58,7 @@ export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
       params: BillingItemCreateParams,
       options: IntegrationCreateOptions
     ) {
-      return IntegrationRequest<BillingItem>(
+      return IntegrationRequest<z.infer<typeof itemMutationSchema>>(
         runtime,
         {
           method: 'POST',
@@ -58,7 +66,7 @@ export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
           body: params,
           headers: { 'Idempotency-Key': options.idempotencyKey },
         },
-        BillingItemSchema
+        itemMutationSchema
       )
     },
 
@@ -67,11 +75,27 @@ export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
       itemId: string,
       params: BillingItemUpdateParams
     ) {
-      return IntegrationRequest<BillingItem>(
+      return IntegrationRequest<z.infer<typeof itemMutationSchema>>(
         runtime,
         {
           method: 'PATCH',
           path: `${collectionPath(organizationId)}/${encodeURIComponent(itemId)}`,
+          body: params,
+        },
+        itemMutationSchema
+      )
+    },
+
+    adjustStock(
+      organizationId: string,
+      itemId: string,
+      params: BillingItemStockAdjustmentParams
+    ) {
+      return IntegrationRequest<BillingItem>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${collectionPath(organizationId)}/${encodeURIComponent(itemId)}/stock-adjustments`,
           body: params,
         },
         BillingItemSchema
