@@ -10,6 +10,7 @@ import type {
 } from './schemas/item'
 import type { ItemPreferencesUpdateParams } from './schemas/item-preference'
 import { serializeCatalog } from './catalog.serializers'
+import { requireItemVariantsEnabled } from './item-capabilities.service'
 import {
   itemMediaList,
   itemVariantList,
@@ -53,12 +54,6 @@ async function ownedItem(
       httpStatus: 404,
     })
   return item
-}
-
-async function requireVariantsEnabled(tenantId: string) {
-  const preferences = await itemPreferences.retrieve(tenantId)
-  if (!preferences.productVariants)
-    throw appError('billing/item-variants-disabled')
 }
 
 async function retrieveVariant(
@@ -116,7 +111,7 @@ export const itemVariantsService = {
   },
 
   async requireEnabled(tenantId: string) {
-    await requireVariantsEnabled(tenantId)
+    await requireItemVariantsEnabled(tenantId)
   },
 
   async list(
@@ -154,7 +149,7 @@ export const itemVariantsService = {
     body: ItemVariantGenerateParams,
     sourceAppId?: string
   ) {
-    await requireVariantsEnabled(tenantId)
+    await requireItemVariantsEnabled(tenantId)
     await ownedItem(tenantId, itemId, sourceAppId)
     if (await items.variants.hasConversionBlockers(tenantId, itemId))
       throw appError('billing/item-variants-conversion-blocked')
@@ -173,7 +168,7 @@ export const itemVariantsService = {
     body: ItemVariantUpdateParams,
     sourceAppId?: string
   ) {
-    await requireVariantsEnabled(tenantId)
+    await requireItemVariantsEnabled(tenantId)
     await ownedItem(tenantId, itemId, sourceAppId)
     await unwrap(await items.variants.update(tenantId, itemId, variantId, body))
     return retrieveVariant(tenantId, itemId, variantId, sourceAppId)
