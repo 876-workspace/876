@@ -1921,6 +1921,9 @@ importers:
 
   packages/billing-ui:
     dependencies:
+      '@876/billing':
+        specifier: workspace:*
+        version: link:../billing
       '@876/core':
         specifier: workspace:*
         version: link:../core
