@@ -147,9 +147,25 @@
       "types": "./src/panels/customer-transactions-panel.tsx",
       "default": "./src/panels/customer-transactions-panel.tsx"
     },
+    "./panels/currency-settings-panel": {
+      "types": "./src/panels/currency-settings-panel.tsx",
+      "default": "./src/panels/currency-settings-panel.tsx"
+    },
     "./panels/panel": {
       "types": "./src/panels/panel.ts",
       "default": "./src/panels/panel.ts"
+    },
+    "./panels/payment-mode-settings-panel": {
+      "types": "./src/panels/payment-mode-settings-panel.tsx",
+      "default": "./src/panels/payment-mode-settings-panel.tsx"
+    },
+    "./panels/tax-authority-settings-panel": {
+      "types": "./src/panels/tax-authority-settings-panel.tsx",
+      "default": "./src/panels/tax-authority-settings-panel.tsx"
+    },
+    "./panels/tax-rate-settings-panel": {
+      "types": "./src/panels/tax-rate-settings-panel.tsx",
+      "default": "./src/panels/tax-rate-settings-panel.tsx"
     },
     "./payments-table": {
       "types": "./src/payments-table.tsx",
