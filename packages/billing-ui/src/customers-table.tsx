@@ -19,6 +19,7 @@ export interface CustomerRow {
   name: string
   companyName: string | null
   contactName: string | null
+  email?: string | null
   phone: string | null
   receivables: bigint | string
   currency: string

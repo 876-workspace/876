@@ -110,4 +110,20 @@ describe('CustomersList', () => {
 
     expect(screen.getByText('No customers yet')).toBeTruthy()
   })
+
+  it('renders the customer email in the condensed pane when present', () => {
+    navigationTestState.segments = ['cus_2kL9mN4q']
+
+    render(
+      <CustomersList
+        customers={[
+          createCustomer({
+            email: 'alejandra@example.com',
+          }),
+        ]}
+      />
+    )
+
+    expect(screen.getByText('alejandra@example.com')).toBeTruthy()
+  })
 })

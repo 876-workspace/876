@@ -6,12 +6,14 @@ import {
   ListPane,
   ListPaneBody,
   ListPaneEmpty,
-  ListPaneHeader,
   ListPaneItem,
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
 
-import { ItemsTable, type ItemRow as ItemsTableRow } from '@876/billing-ui/items-table'
+import {
+  ItemsTable,
+  type ItemRow as ItemsTableRow,
+} from '@876/billing-ui/items-table'
 
 import { formatMoney } from '@/lib/format'
 
@@ -55,7 +57,6 @@ export function ItemsList({ items, defaultCurrency, emptyState }: Props) {
 
   return (
     <ListPane>
-      <ListPaneHeader>Items</ListPaneHeader>
       <ListPaneBody>
         {rows.length === 0 ? (
           <ListPaneEmpty>No items yet</ListPaneEmpty>

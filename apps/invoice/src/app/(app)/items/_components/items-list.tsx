@@ -8,7 +8,6 @@ import {
   ListPane,
   ListPaneBody,
   ListPaneEmpty,
-  ListPaneHeader,
   ListPaneItem,
 } from '@876/ui/list-pane'
 
@@ -59,7 +58,6 @@ export function ItemsList({
 
   return (
     <ListPane>
-      <ListPaneHeader>Items</ListPaneHeader>
       <ListPaneBody>
         {rows.length === 0 ? (
           <ListPaneEmpty>No items yet</ListPaneEmpty>

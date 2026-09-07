@@ -26,6 +26,7 @@ export function toCustomerTableRows(
       name: customer.name,
       companyName: customer.companyName,
       contactName,
+      email: customer.email ?? contact?.email ?? null,
       phone:
         customer.phone ??
         customer.workPhone ??
