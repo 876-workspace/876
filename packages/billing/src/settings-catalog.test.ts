@@ -13,6 +13,7 @@ const SHARED_KEYS = [
   'sales-receipts',
   'time-tracking',
   'customers',
+  'crm',
 ] as const
 
 const BILLING_ONLY_KEYS = [
@@ -108,9 +109,18 @@ describe('finance module catalogs', () => {
   it('declares module state only and leaves preferences empty', () => {
     for (const module of BILLING_MODULE_CATALOG) {
       expect(module.description.length).toBeGreaterThan(0)
-      expect(module.enabledByDefault).toBe(true)
       expect(module.optional).toBe(true)
       expect(module.preferences).toEqual([])
     }
+  })
+
+  // `crm` is deliberately opt-in; every other finance module is on by default.
+  // Pinned explicitly so a new opt-out module cannot slip in unnoticed.
+  it('enables every module by default except crm', () => {
+    const optIn = BILLING_MODULE_CATALOG.filter(
+      (module) => !module.enabledByDefault
+    ).map((module) => module.key)
+
+    expect(optIn).toEqual(['crm'])
   })
 })

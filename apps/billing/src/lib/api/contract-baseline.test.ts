@@ -58,13 +58,37 @@ describe('Billing API v1 contract baseline', () => {
     ])
   })
 
+  // `route-manifest.json` is the frozen *legacy* inventory (the Next.js and
+  // FastAPI surface). Capabilities added after that freeze are legitimately
+  // documented without appearing in it, so each one is listed here explicitly
+  // rather than the check being dropped — an undocumented path still fails.
+  const POST_LEGACY_PATHS = [
+    // Customer contacts: Express-only, and already documented on `main`.
+    '/customers/{customerId}/contacts',
+    '/customers/{customerId}/contacts/{contactId}',
+    // Quote lifecycle transitions, added with the Estimate/Quote merge.
+    '/quotes/{quoteId}/send',
+    '/quotes/{quoteId}/accept',
+    '/quotes/{quoteId}/decline',
+    '/quotes/{quoteId}/cancel',
+  ]
+
   it('does not document paths absent from the implementation inventory', () => {
-    const implementedPaths = new Set(
-      routeManifest.routes.map((entry) => entry.path)
-    )
+    const implementedPaths = new Set([
+      ...routeManifest.routes.map((entry) => entry.path),
+      ...POST_LEGACY_PATHS,
+    ])
 
     expect(
       Object.keys(openApi.paths).filter((path) => !implementedPaths.has(path))
+    ).toEqual([])
+  })
+
+  it('keeps every allowed post-legacy path actually documented', () => {
+    const documented = new Set(Object.keys(openApi.paths))
+
+    expect(
+      POST_LEGACY_PATHS.filter((path) => !documented.has(path))
     ).toEqual([])
   })
 })
