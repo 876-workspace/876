@@ -95,11 +95,17 @@ export const itemVariantsService = {
     return itemPreferences.retrieve(tenantId)
   },
 
-  updatePreferences(
+  async updatePreferences(
     tenantId: string,
     body: ItemPreferencesUpdateParams,
     updatedBy?: string
   ) {
+    if (
+      !body.productVariants &&
+      (await itemPreferences.hasVariantItems(tenantId))
+    )
+      throw appError('billing/item-variants-in-use')
+
     return itemPreferences.update(tenantId, body.productVariants, updatedBy)
   },
 
@@ -111,12 +117,13 @@ export const itemVariantsService = {
     tenantId: string,
     itemId: string,
     sourceAppId?: string,
-    url = `/api/v1/items/${itemId}/variants`
+    url = `/api/v1/items/${itemId}/variants`,
+    active?: boolean
   ) {
     await ownedItem(tenantId, itemId, sourceAppId)
     return catalogList(
       'item_variant',
-      await items.variants.list(tenantId, itemId),
+      await items.variants.list(tenantId, itemId, active),
       url
     )
   },
