@@ -22,6 +22,14 @@ export async function retrieve(
   }
 }
 
+export async function hasVariantItems(tenantId: string) {
+  return (
+    (await prisma.item.count({
+      where: { tenantId, variantMode: 'variant' },
+    })) > 0
+  )
+}
+
 /** Stores only non-default overrides; false removes the row and falls back to default. */
 export async function update(
   tenantId: string,
@@ -71,4 +79,4 @@ export async function update(
   return { object: 'item_preferences', productVariants: true }
 }
 
-export const itemPreferences = { retrieve, update }
+export const itemPreferences = { retrieve, hasVariantItems, update }
