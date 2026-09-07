@@ -445,6 +445,9 @@ describe('DocumentLineItemsEditor — catalogue and percentage discount', () => 
           description: 'Consulting hour',
           quantity: '2',
           unitAmount: '250.00',
+          trackStock: false,
+          stockQuantity: null,
+          allowOutOfStock: false,
         },
       ])
     })

@@ -33,6 +33,10 @@ function items(overrides: Partial<ItemRow>[] = []): ItemRow[] {
       isTaxable: true,
       isActive: true,
       priceCount: 2,
+      trackStock: true,
+      stockQuantity: 12,
+      lowStockThreshold: 3,
+      allowOutOfStock: true,
     },
     {
       id: 'item_2',
@@ -45,6 +49,10 @@ function items(overrides: Partial<ItemRow>[] = []): ItemRow[] {
       isTaxable: false,
       isActive: false,
       priceCount: 0,
+      trackStock: false,
+      stockQuantity: null,
+      lowStockThreshold: null,
+      allowOutOfStock: false,
     },
   ]
 
