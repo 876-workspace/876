@@ -3,11 +3,11 @@
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
+import { Mail } from '@876/ui/icons'
 import {
   ListPane,
   ListPaneBody,
   ListPaneEmpty,
-  ListPaneHeader,
   ListPaneItem,
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
@@ -64,7 +64,6 @@ export function CustomersList({
 
   return (
     <ListPane>
-      <ListPaneHeader>Customers</ListPaneHeader>
       <ListPaneBody>
         {rows.length === 0 ? (
           <ListPaneEmpty>No customers yet</ListPaneEmpty>
@@ -87,7 +86,14 @@ export function CustomersList({
                   {customer.name}
                 </span>
               }
-              subtitle={customer.companyName ?? customer.contactName ?? '—'}
+              subtitle={
+                customer.email ? (
+                  <span className="inline-flex items-center gap-1.5 truncate">
+                    <Mail className="size-3 shrink-0" aria-hidden />
+                    <span className="truncate">{customer.email}</span>
+                  </span>
+                ) : null
+              }
             />
           ))
         )}
