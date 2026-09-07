@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  Suspense,
-  use,
-  useState,
-  useTransition,
-  type FormEvent,
-} from 'react'
+import { Suspense, use, useState, useTransition, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   DocumentLineItemsEditor,
@@ -328,17 +322,40 @@ function InvoiceLineItems({
         if (result.error || !result.data)
           throw new Error('catalogue search failed')
 
-        return result.data.data.map((item) => ({
-          value: item.id,
-          label: item.name,
-          itemId: item.id,
-          priceId: null,
-          defaultAmount: item.defaultSellingAmount ?? null,
-          currency: item.defaultSellingCurrency ?? null,
-          trackStock: item.trackStock,
-          stockQuantity: item.stockQuantity,
-          allowOutOfStock: item.allowOutOfStock,
-        }))
+        return await Promise.all(
+          result.data.data.map(async (item) => {
+            const variants =
+              item.variantMode === 'variant'
+                ? await client.items.listVariants(item.id)
+                : null
+            if (variants?.error) throw new Error('variant search failed')
+            return {
+              value: item.id,
+              label: item.name,
+              itemId: item.id,
+              priceId: null,
+              defaultAmount: item.defaultSellingAmount ?? null,
+              currency: item.defaultSellingCurrency ?? null,
+              trackStock: item.trackStock,
+              stockQuantity: item.stockQuantity,
+              allowOutOfStock: item.allowOutOfStock,
+              variants: variants?.data?.data.map((variant) => ({
+                id: variant.id,
+                label:
+                  variant.options.map((option) => option.value).join(' / ') ||
+                  variant.name,
+                sku: variant.sku,
+                defaultAmount:
+                  variant.defaultSellingAmount ??
+                  item.defaultSellingAmount ??
+                  null,
+                trackStock: item.trackStock,
+                stockQuantity: variant.stockQuantity,
+                allowOutOfStock: item.allowOutOfStock,
+              })),
+            }
+          })
+        )
       }}
       lines={lines}
       onChange={onChange}
