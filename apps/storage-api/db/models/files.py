@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.models.base import Base
 
 if TYPE_CHECKING:
+    from db.models.resource_links import ResourceLink
     from db.models.upload_sessions import UploadSession
 
 
@@ -51,6 +52,11 @@ class File(Base):
     purged_at: Mapped[int | None] = mapped_column(BigInteger)
 
     upload_sessions: Mapped[list["UploadSession"]] = relationship(
+        back_populates="file",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    resource_links: Mapped[list["ResourceLink"]] = relationship(
         back_populates="file",
         cascade="all, delete-orphan",
         passive_deletes=True,
