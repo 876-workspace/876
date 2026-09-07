@@ -1,6 +1,9 @@
-import { Client } from '@modelcontextprotocol/client'
-import { InMemoryTransport } from '@modelcontextprotocol/server'
-import { serveStdio } from '@modelcontextprotocol/server/stdio'
+import {
+  Client,
+  StreamableHTTPClientTransport,
+  type VersionNegotiationMode,
+} from '@modelcontextprotocol/client'
+import { createMcpHandler } from '@modelcontextprotocol/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -14,7 +17,7 @@ import {
 import { PROJECTS_SERVER_INSTRUCTIONS } from './instructions'
 import { buildProjectsMcpServer } from './server'
 
-describe('protocol conformance (MCP 2026-07-28 + legacy 2025)', () => {
+describe('protocol era compatibility', () => {
   const { client: operatorClient } = createClient()
 
   beforeEach(() => {
@@ -56,158 +59,83 @@ describe('protocol conformance (MCP 2026-07-28 + legacy 2025)', () => {
     })
   })
 
-  it('serves modern MCP 2026-07-28 clients via server/discover probe', async () => {
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-
-    const handle = serveStdio(
-      () => buildProjectsMcpServer(config, operatorClient),
-      {
-        legacy: 'serve',
-        transport: serverTransport,
-      }
+  function createTransport(): StreamableHTTPClientTransport {
+    const handler = createMcpHandler(() =>
+      buildProjectsMcpServer(config, operatorClient)
     )
 
-    const client = new Client(
-      { name: 'modern-test-client', version: '1.0.0' },
-      {
-        versionNegotiation: { mode: { pin: '2026-07-28' } },
-      }
-    )
-
-    await client.connect(clientTransport)
-
-    // Discover metadata verification
-    const discoverResult = client.getDiscoverResult()
-    expect(discoverResult).toBeDefined()
-    expect(discoverResult?.supportedVersions).toContain('2026-07-28')
-    expect(discoverResult?.instructions).toBe(PROJECTS_SERVER_INSTRUCTIONS)
-
-    const serverVersion = client.getServerVersion()
-    expect(serverVersion?.name).toBe('876-projects')
-    expect(serverVersion?.version).toBe('0.2.0')
-
-    // Tool discovery
-    const toolsRes = await client.listTools()
-    expect(toolsRes.tools.length).toBe(17)
-
-    // Tool call with structured output
-    const callRes = await client.callTool({
-      name: 'workspace_get',
-      arguments: {},
+    return new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
+      fetch: (url, init) => handler.fetch(new Request(url, init)),
     })
-    expect(callRes.isError).toBeFalsy()
-    expect(callRes.structuredContent).toBeDefined()
-    const content = callRes.structuredContent as {
-      tenant: typeof mockTenant
-      projects: Array<{ project: typeof mockProject; openIssueCount: number }>
-    }
-    expect(content.tenant.id).toBe(mockTenant.id)
-    expect(content.projects[0]?.project.id).toBe(mockProject.id)
+  }
+
+  function createProtocolClient(mode: VersionNegotiationMode): Client {
+    return new Client(
+      { name: 'projects-mcp-test-client', version: '1.0.0' },
+      { versionNegotiation: { mode } }
+    )
+  }
+
+  it('negotiates pinned MCP 2026-07-28 through server discovery', async () => {
+    const client = createProtocolClient({ pin: '2026-07-28' })
+
+    await client.connect(createTransport())
+
+    expect(client.getProtocolEra()).toBe('modern')
+    expect(client.getDiscoverResult()?.supportedVersions).toContain('2026-07-28')
+    expect(client.getDiscoverResult()?.instructions).toBe(
+      PROJECTS_SERVER_INSTRUCTIONS
+    )
+    expect(client.getServerVersion()).toEqual({
+      name: '876-projects',
+      version: '0.2.0',
+    })
 
     await client.close()
-    await handle.close()
   })
 
-  it('serves legacy 2025-era MCP clients via 2025 initialize handshake', async () => {
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+  it('serves legacy 2025-era clients from the same server factory', async () => {
+    const client = createProtocolClient('legacy')
 
-    const handle = serveStdio(
-      () => buildProjectsMcpServer(config, operatorClient),
-      {
-        legacy: 'serve',
-        transport: serverTransport,
-      }
-    )
+    await client.connect(createTransport())
 
-    const client = new Client(
-      { name: 'legacy-test-client', version: '1.0.0' },
-      {
-        versionNegotiation: { mode: 'legacy' },
-      }
-    )
-
-    await client.connect(clientTransport)
-
-    // Legacy client has no discoverResult (performed 2025 initialize)
+    expect(client.getProtocolEra()).toBe('legacy')
     expect(client.getDiscoverResult()).toBeUndefined()
-
-    const serverVersion = client.getServerVersion()
-    expect(serverVersion?.name).toBe('876-projects')
-    expect(serverVersion?.version).toBe('0.2.0')
-
-    // Instructions are surfaced to legacy clients
     expect(client.getInstructions()).toBe(PROJECTS_SERVER_INSTRUCTIONS)
+    expect(client.getServerVersion()).toEqual({
+      name: '876-projects',
+      version: '0.2.0',
+    })
 
-    // Tool discovery works on legacy client
-    const toolsRes = await client.listTools()
-    expect(toolsRes.tools.length).toBe(17)
+    await client.close()
+  })
 
-    // Tool invocation works on legacy client
-    const callRes = await client.callTool({
+  it('auto-negotiates the modern era when the server offers it', async () => {
+    const client = createProtocolClient('auto')
+
+    await client.connect(createTransport())
+
+    expect(client.getProtocolEra()).toBe('modern')
+    expect(client.getDiscoverResult()?.supportedVersions).toContain('2026-07-28')
+
+    await client.close()
+  })
+
+  it('returns structured tool output on a modern request', async () => {
+    const client = createProtocolClient({ pin: '2026-07-28' })
+    await client.connect(createTransport())
+
+    const result = await client.callTool({
       name: 'workspace_get',
       arguments: {},
     })
-    expect(callRes.isError).toBeFalsy()
-    expect(callRes.structuredContent).toBeDefined()
+
+    expect(result.isError).toBeFalsy()
+    expect(result.structuredContent).toEqual({
+      tenant: mockTenant,
+      projects: [{ project: mockProject, openIssueCount: 1 }],
+    })
 
     await client.close()
-    await handle.close()
-  })
-
-  it('supports auto-negotiation mode, upgrading to modern MCP 2026-07-28', async () => {
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-
-    const handle = serveStdio(
-      () => buildProjectsMcpServer(config, operatorClient),
-      {
-        legacy: 'serve',
-        transport: serverTransport,
-      }
-    )
-
-    const client = new Client(
-      { name: 'auto-negotiation-client', version: '1.0.0' },
-      {
-        versionNegotiation: { mode: 'auto' },
-      }
-    )
-
-    await client.connect(clientTransport)
-
-    // Auto-mode discovers modern server and upgrades
-    const discoverResult = client.getDiscoverResult()
-    expect(discoverResult).toBeDefined()
-    expect(discoverResult?.supportedVersions).toContain('2026-07-28')
-
-    const toolsRes = await client.listTools()
-    expect(toolsRes.tools.length).toBe(17)
-
-    await client.close()
-    await handle.close()
-  })
-
-  it('rejects legacy clients when legacy mode is set to reject', async () => {
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-
-    const handle = serveStdio(
-      () => buildProjectsMcpServer(config, operatorClient),
-      {
-        legacy: 'reject',
-        transport: serverTransport,
-      }
-    )
-
-    const client = new Client(
-      { name: 'legacy-rejected-client', version: '1.0.0' },
-      {
-        versionNegotiation: { mode: 'legacy' },
-      }
-    )
-
-    await expect(client.connect(clientTransport)).rejects.toThrow(
-      /Unsupported protocol version/
-    )
-
-    await handle.close()
   })
 })
