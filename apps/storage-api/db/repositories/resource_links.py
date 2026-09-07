@@ -62,6 +62,9 @@ class ResourceLinkRepository:
         )
         return (await self.db.scalars(statement)).first()
 
+    async def get_by_id(self, link_id: str) -> ResourceLink | None:
+        return await self.db.get(ResourceLink, link_id)
+
     async def list_for_resource(
         self,
         *,
