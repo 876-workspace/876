@@ -1,6 +1,5 @@
 import type {
   InventoryAdjustment,
-  InventoryLine,
   InventoryMutation,
   InventoryRestore,
 } from '@/types/inventory'
@@ -29,21 +28,8 @@ export function adjust(tenantId: string, params: InventoryAdjustment) {
   return repository.adjust(tenantId, params)
 }
 
-/**
- * Runs the same authoritative availability resolution used by consumption but
- * does not mutate stock. This is advisory; callers that mutate must still call
- * `consume` inside their transaction.
- */
-export function checkAvailability(
-  tenantId: string,
-  lines: readonly InventoryLine[]
-) {
-  return repository.checkAvailability(tenantId, lines)
-}
-
 export const inventoryService = {
   adjust,
-  checkAvailability,
   consume,
   restore,
 }
