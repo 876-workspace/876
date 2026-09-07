@@ -1,28 +1,36 @@
 import { describe, expect, it } from 'vitest'
 
-import { ConfigError, validateConfig } from './config'
+import { ConfigError, DEFAULT_PROJECTS_API_URL, validateConfig } from './config'
 
 describe('config', () => {
-  it('a missing PROJECTS_API_URL fails validation, naming that variable', () => {
-    expect(() =>
-      validateConfig({
-        PROJECTS_INTERNAL_KEY: 'test-key',
-        PROJECTS_ORGANIZATION_ID: 'org_test',
-      })
-    ).toThrow(ConfigError)
+  it('defaults PROJECTS_API_URL to the production 876 Projects API', () => {
+    const config = validateConfig({
+      PROJECTS_INTERNAL_KEY: 'test-key',
+      PROJECTS_ORGANIZATION_ID: 'org_test',
+    })
 
-    try {
-      validateConfig({
-        PROJECTS_INTERNAL_KEY: 'test-key',
-        PROJECTS_ORGANIZATION_ID: 'org_test',
-      })
-    } catch (error) {
-      expect(error).toBeInstanceOf(ConfigError)
-      if (error instanceof ConfigError) {
-        expect(error.variable).toBe('PROJECTS_API_URL')
-        expect(error.message).toContain('PROJECTS_API_URL')
-      }
-    }
+    expect(config.apiUrl).toBe(DEFAULT_PROJECTS_API_URL)
+    expect(config.apiUrl).toBe('https://876-projects-api.vercel.app')
+  })
+
+  it('defaults PROJECTS_API_URL when the variable is present but blank', () => {
+    const config = validateConfig({
+      PROJECTS_API_URL: '   ',
+      PROJECTS_INTERNAL_KEY: 'test-key',
+      PROJECTS_ORGANIZATION_ID: 'org_test',
+    })
+
+    expect(config.apiUrl).toBe(DEFAULT_PROJECTS_API_URL)
+  })
+
+  it('an explicit PROJECTS_API_URL overrides the production default', () => {
+    const config = validateConfig({
+      PROJECTS_API_URL: 'http://localhost:4030',
+      PROJECTS_INTERNAL_KEY: 'test-key',
+      PROJECTS_ORGANIZATION_ID: 'org_test',
+    })
+
+    expect(config.apiUrl).toBe('http://localhost:4030')
   })
 
   it('a missing PROJECTS_INTERNAL_KEY fails validation', () => {
