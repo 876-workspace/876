@@ -28,7 +28,7 @@ export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
         {
           method: 'GET',
           path: collectionPath(organizationId),
-          query: { active: params.active },
+          query: { active: params.active, q: params.q, limit: params.limit },
         },
         BillingItemListSchema
       )

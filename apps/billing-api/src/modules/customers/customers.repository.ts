@@ -49,6 +49,17 @@ export function listCustomerRows(tenantId: string, query: CustomerListQuery) {
       ...(query.status ? { status: query.status } : {}),
       ...(query.userId ? { userId: query.userId } : {}),
       ...(query.organizationId ? { organizationId: query.organizationId } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              { name: { contains: query.q, mode: 'insensitive' } },
+              { companyName: { contains: query.q, mode: 'insensitive' } },
+              { email: { contains: query.q, mode: 'insensitive' } },
+              { customerNumber: { contains: query.q, mode: 'insensitive' } },
+              { externalReference: { contains: query.q, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
       ...(idPredicates.length > 0 ? { AND: idPredicates } : {}),
     },
     include: customerInclude,

@@ -64,6 +64,8 @@ export const organizationResourceParams = (name: string) =>
   organizationIdParams.extend({ [name]: z.string().min(1) })
 export const activeQuerySchema = z.strictObject({
   active: z.enum(['true', 'false']).optional(),
+  q: z.string().trim().max(160).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(100),
 })
 export const planQuerySchema = activeQuerySchema.extend({
   productId: z.string().optional(),

@@ -1,6 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
 import { useRouter } from 'next/navigation'
 
 import {
@@ -14,6 +21,10 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import {
+  AsyncCombobox,
+  type AsyncComboboxOption,
+} from '@876/ui/async-combobox'
 import { Textarea } from '@876/ui/textarea'
 import { cn } from '@876/ui/lib/utils'
 
@@ -30,6 +41,7 @@ import {
   zeroMinorAmountInput,
 } from '@/lib/format'
 import type { DocumentCustomerOption } from '@/types/customer'
+import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
 
 type SelectOption = { label: string; value: string }
 type CurrencyOption = SelectOption & { decimalPlaces: number }
@@ -47,7 +59,6 @@ function futureInputValue(days: number) {
 
 export function DocumentCreateForm({
   kind,
-  customers,
   items,
   priceLists = [],
   salespeople = [],
@@ -56,7 +67,6 @@ export function DocumentCreateForm({
   returnUrl,
 }: {
   kind: DocumentKind
-  customers: DocumentCustomerOption[]
   items: DocumentItemOption[]
   priceLists?: SelectOption[]
   salespeople?: SelectOption[]
@@ -68,6 +78,8 @@ export function DocumentCreateForm({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [customerId, setCustomerId] = useState('')
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<DocumentCustomerOption | null>(null)
   const [currency, setCurrency] = useState(defaultCurrency)
   const [salespersonId, setSalespersonId] = useState('')
   const [priceListId, setPriceListId] = useState('')
@@ -84,9 +96,6 @@ export function DocumentCreateForm({
     useState<DocumentTotalsSnapshot | null>(null)
 
   const title = kind === 'quote' ? 'Quote' : 'Invoice'
-  const selectedCustomer = customers.find(
-    (customer) => customer.value === customerId
-  )
   const decimalPlaces =
     currencies.find((option) => option.value === currency)?.decimalPlaces ?? 2
   const editorItems = useMemo(
@@ -165,6 +174,28 @@ export function DocumentCreateForm({
       cancelled = true
     }
   }, [currency, decimalPlaces, lines, priceListId])
+
+  const searchCustomers = useCallback(
+    async (query: string, signal: AbortSignal) => {
+      const result = await client.customers.list(
+        { q: query, limit: 20 },
+        { signal }
+      )
+      if (result.error || !result.data)
+        throw new Error(result.error?.message ?? 'Customers could not be loaded.')
+
+      return result.data.data.map((customer) => {
+        const option = toDocumentCustomerOption(customer)
+        return {
+          value: option.value,
+          label: option.label,
+          description: customer.email ?? undefined,
+          raw: option,
+        }
+      })
+    },
+    []
+  )
 
   function handlePriceListChange(value: string) {
     setPriceListId(value)
@@ -291,17 +322,15 @@ export function DocumentCreateForm({
             <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
               {kind === 'quote' ? 'Prepared for' : 'Bill to'}
             </p>
-            <SelectField
+            <CustomerPicker
               id={`billing-${kind}-customer`}
-              label="Customer"
               value={customerId}
-              options={customers}
-              onChange={(value) => {
+              selectedLabel={selectedCustomer?.label ?? ''}
+              onSearch={searchCustomers}
+              onValueChange={(value, customer) => {
                 setCustomerId(value)
-                handlePriceListChange(
-                  customers.find((customer) => customer.value === value)
-                    ?.priceListId ?? ''
-                )
+                setSelectedCustomer(customer)
+                handlePriceListChange(customer?.priceListId ?? '')
               }}
             />
             {selectedCustomer ? (
@@ -518,6 +547,44 @@ export function DocumentCreateForm({
         </Button>
       </div>
     </form>
+  )
+}
+
+function CustomerPicker({
+  id,
+  value,
+  selectedLabel,
+  onSearch,
+  onValueChange,
+}: {
+  id: string
+  value: string
+  selectedLabel: string
+  onSearch: (
+    query: string,
+    signal: AbortSignal
+  ) => Promise<AsyncComboboxOption[]>
+  onValueChange: (
+    value: string,
+    option: DocumentCustomerOption | null
+  ) => void
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>Customer</Label>
+      <AsyncCombobox
+        id={id}
+        ariaLabel="Customer"
+        value={value}
+        selectedLabel={selectedLabel}
+        onValueChange={(next, option) =>
+          onValueChange(next, (option?.raw as DocumentCustomerOption) ?? null)
+        }
+        onSearch={onSearch}
+        placeholder="Search customers…"
+        emptyMessage="No customers found."
+      />
+    </div>
   )
 }
 

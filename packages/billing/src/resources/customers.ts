@@ -158,6 +158,7 @@ export function createCustomersResource(runtime: Runtime) {
           path: '/api/v1/customers',
           query: {
             status: params.status,
+            q: params.q,
             ids: params.ids?.join(','),
             userId: params.userId,
             organizationId: params.organizationId,

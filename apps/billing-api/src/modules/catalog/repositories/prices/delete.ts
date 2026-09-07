@@ -16,7 +16,6 @@ export async function deletePrice(
           select: {
             subscriptionItems: true,
             quoteLines: true,
-            estimateLines: true,
             invoiceLines: true,
             creditNoteLines: true,
             priceListEntries: true,
@@ -30,7 +29,6 @@ export async function deletePrice(
     if (
       price._count.subscriptionItems > 0 ||
       price._count.quoteLines > 0 ||
-      price._count.estimateLines > 0 ||
       price._count.invoiceLines > 0 ||
       price._count.creditNoteLines > 0 ||
       price._count.priceListEntries > 0

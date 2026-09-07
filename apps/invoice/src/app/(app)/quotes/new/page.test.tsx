@@ -25,7 +25,14 @@ describe('NewQuotePage', () => {
       data: { data: [{ id: 'cus_123', name: 'Alejandra Reyes' }] },
       error: null,
     })
-    mockGetInvoice.mockResolvedValue({ customers: { list: customers } })
+    const items = vi.fn().mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    })
+    mockGetInvoice.mockResolvedValue({
+      customers: { list: customers },
+      items: { list: items },
+    })
 
     render(await NewQuotePage())
 
@@ -33,8 +40,10 @@ describe('NewQuotePage', () => {
     expect(await screen.findByRole('button', { name: 'Add quote' })).not.toBeNull()
     expect(screen.queryByRole('heading', { name: 'New Invoice' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Add invoice' })).toBeNull()
-    expect(customers).toHaveBeenCalledTimes(1)
-    expect(customers).toHaveBeenCalledWith({ status: 'ACTIVE' })
+    // The customer picker is a server-backed typeahead now, so the page must
+    // NOT prefetch a customer list — that was the bandwidth waste this change
+    // removed.
+    expect(customers).not.toHaveBeenCalled()
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 

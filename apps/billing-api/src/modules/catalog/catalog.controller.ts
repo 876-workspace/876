@@ -36,6 +36,8 @@ import type {
 
 type Query = {
   active?: string
+  q?: string
+  limit?: number
   productId?: string
   itemId?: string
   planId?: string
@@ -234,7 +236,7 @@ export const catalogController = {
   },
   async itemsList(req: Request, res: Response) {
     const q = validQuery<Query>(req)
-    res.json(await service.listItems(tenant(req), active(q.active)))
+    res.json(await service.listItems(tenant(req), active(q.active), undefined, undefined, q.q, q.limit))
   },
   async itemsGet(req: Request, res: Response) {
     res.json(await service.getItem(tenant(req), param(req, 'itemId')))
@@ -265,7 +267,9 @@ export const catalogController = {
         tenant(req),
         active(q.active),
         sourceApp(req),
-        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/items`
+        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/items`,
+        q.q,
+        q.limit
       )
     )
   },

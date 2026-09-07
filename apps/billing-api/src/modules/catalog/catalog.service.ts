@@ -280,11 +280,13 @@ export const catalogService = {
     tenantId: string,
     active?: boolean,
     sourceAppId?: string,
-    url = '/api/v1/items'
+    url = '/api/v1/items',
+    q?: string,
+    limit?: number
   ) {
     return catalogList(
       'item',
-      await items.list(tenantId, active, sourceAppId),
+      await items.list(tenantId, active, sourceAppId, q, limit),
       url
     )
   },

@@ -97,3 +97,29 @@ describe('documents.create', () => {
     })
   })
 })
+
+describe('documents.update and delete', () => {
+  it('patches an invoice with the exact update payload', async () => {
+    const params = {
+      dueAt: 1_788_652_800,
+      notes: 'Updated note',
+      terms: null,
+      referenceNumber: 'PO-42',
+    }
+
+    await documents.update('inv_123', params)
+
+    expect(mocks.request).toHaveBeenCalledWith('/api/invoices/inv_123', {
+      method: 'PATCH',
+      body: JSON.stringify(params),
+    })
+  })
+
+  it('deletes the exact invoice resource', async () => {
+    await documents.delete('inv_123')
+
+    expect(mocks.request).toHaveBeenCalledWith('/api/invoices/inv_123', {
+      method: 'DELETE',
+    })
+  })
+})

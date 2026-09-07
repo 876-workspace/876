@@ -10,18 +10,26 @@ export default async function NewQuotePage() {
   const invoice = await getInvoice()
   if (!invoice) redirect('/no-access')
 
-  const customers = invoice.customers
-    .list({ status: 'ACTIVE' })
-    .then((result) =>
-      result.data ? result.data.data.map(({ id, name }) => ({ id, name })) : []
-    )
-
   return (
     <Page>
       <PageHeader className="mb-4">
         <PageTitle>New Quote</PageTitle>
       </PageHeader>
-      <DocumentCreateForm kind="quote" customers={customers} />
+      <DocumentCreateForm
+        kind="quote"
+        items={invoice.items.list({ active: true, limit: 20 }).then((result) =>
+          result.data
+            ? result.data.data.map((item) => ({
+                value: `item:${item.id}`,
+                label: item.name,
+                itemId: item.id,
+                priceId: null,
+                defaultAmount: item.defaultSellingAmount,
+                currency: item.defaultSellingCurrency,
+              }))
+            : []
+        )}
+      />
     </Page>
   )
 }

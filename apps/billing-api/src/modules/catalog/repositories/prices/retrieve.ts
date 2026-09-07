@@ -13,7 +13,6 @@ export function retrieve(tenantId: string, priceId: string) {
         select: {
           subscriptionItems: true,
           quoteLines: true,
-          estimateLines: true,
           invoiceLines: true,
           creditNoteLines: true,
           priceListEntries: true,

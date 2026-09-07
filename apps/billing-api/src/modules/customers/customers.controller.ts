@@ -176,6 +176,7 @@ export const customersController = {
       await listCustomers(
         tenant(req),
         {
+          q: query.q,
           status: query.status,
           userId: query.user_id,
           organizationId: query.organization_id,

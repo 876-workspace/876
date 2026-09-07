@@ -8,11 +8,33 @@ import type {
   CustomerUpdateInput,
 } from '@/types/customer'
 import type {
+  CustomerContact,
+  CustomerContactCreateParams,
+  CustomerContactCreated,
+  CustomerList,
+  DeletedCustomerContact,
+} from '@876/billing'
+import type {
   CustomerImportRawRow,
   CustomerImportResult,
 } from '@/types/customer-import'
 
 import { request } from './request'
+
+export const list = (
+  params: { q?: string; limit?: number } = {},
+  init?: { signal?: AbortSignal }
+) => {
+  const search = new URLSearchParams({
+    status: 'ACTIVE',
+    limit: String(params.limit ?? 20),
+  })
+  if (params.q) search.set('q', params.q)
+
+  return request<CustomerList>(`/api/v1/customers?${search.toString()}`, {
+    method: 'GET',
+  })
+}
 
 export const create = (params: CustomerCreateInput) =>
   request<CustomerCreated>('/api/v1/customers', {
@@ -69,6 +91,7 @@ const unlink = (customerId: string) =>
   )
 
 export const customers = {
+  list,
   create,
   retrieve,
   update,
@@ -76,4 +99,28 @@ export const customers = {
   import: importCustomers,
   link,
   unlink,
+  contacts: {
+    create(customerId: string, params: CustomerContactCreateParams) {
+      return request<CustomerContactCreated>(
+        `/api/v1/customers/${encodeURIComponent(customerId)}/contacts`,
+        { method: 'POST', body: JSON.stringify(params) }
+      )
+    },
+    update(
+      customerId: string,
+      contactId: string,
+      params: CustomerContactCreateParams
+    ) {
+      return request<CustomerContact>(
+        `/api/v1/customers/${encodeURIComponent(customerId)}/contacts/${encodeURIComponent(contactId)}`,
+        { method: 'PATCH', body: JSON.stringify(params) }
+      )
+    },
+    delete(customerId: string, contactId: string) {
+      return request<DeletedCustomerContact>(
+        `/api/v1/customers/${encodeURIComponent(customerId)}/contacts/${encodeURIComponent(contactId)}`,
+        { method: 'DELETE' }
+      )
+    },
+  },
 }
