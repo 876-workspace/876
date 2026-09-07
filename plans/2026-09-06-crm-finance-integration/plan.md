@@ -337,3 +337,43 @@ Do not squash away architectural commits while other focused branches depend on 
 ## Verification status from GPT Web
 
 No tests, typecheck, lint, build, database migration, seed, or running-service verification can be executed from GPT Web. All executable verification is the local/orchestrating agent's responsibility. The implementation must still include regression tests as source code and this plan must list the commands that should be run.
+
+## Local verification and corrections (2026-09-07)
+
+Executed locally on `feature/crm-support-module-integration` after pulling the
+GPT Web work. Everything below is a defect GPT Web could not have caught,
+because it cannot run a command.
+
+| #   | Defect                                                                                                                                                   | Fix                                                                                                                   |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1   | `pnpm-lock.yaml` never regenerated for the new Billing/Invoice deps, so every install failed `--frozen-lockfile`.                                        | `chore(deps): lock the CRM packages Billing and Invoice now consume`                                                  |
+| 2   | Billing's `context.orgName`/`orgSlug` are nullable; the support create requires a name.                                                                  | Fallback chain to `orgId`.                                                                                            |
+| 3   | `getFeatures()` gained a required argument; `access-context.ts` still called it with none.                                                               | Pass `{ userId, organizationId }`.                                                                                    |
+| 4   | The Invoice layout test never mocked `@/lib/features`, so the layout reached the platform client and `headers()` threw outside a request scope.          | Mock added; 4 tests restored.                                                                                         |
+| 5   | `crm-ui` has no vitest setup file, so the new widget suite's `toBeInTheDocument` assertions failed as invalid Chai properties — the suite had never run. | Import `@testing-library/jest-dom/vitest`.                                                                            |
+| 6   | Billing's `route-envelope` convention test rejects `Response.json`; all six support routes used it.                                                      | All six moved to `apiJson`/`apiError`, with the 503/502 mapping shared from `@876/crm` instead of copied three times. |
+| 7   | Billing's `resources.test` enumerates the root browser client; `support` was missing.                                                                    | Expectation updated.                                                                                                  |
+| 8   | Adding the `crm` module to the shared catalog adds a settings destination in both apps; both anti-drift nav tests still expected the old list.           | Expectations updated.                                                                                                 |
+| 9   | The Invoice categories route inlined a second copy of the entitlement gate.                                                                              | Shared `_lib/support-context.ts`.                                                                                     |
+| 10  | The JSDoc explaining why `reportInvalidResponse` stays opaque was dropped in the transport split.                                                        | Restored.                                                                                                             |
+
+### Verified green
+
+`typecheck`, `test`, and `lint` across `@876/crm-api`, `@876/crm`, `@876/crm-ui`,
+`@876/api`, `@876/crm-app`, `@876/billing-app`, `@876/invoice-app`, plus
+`check-app-structure` and `check:transpile`. No `eslint-disable`, `@ts-ignore`,
+or `as any` anywhere in the branch diff.
+
+### Two pre-existing failures on `origin/main`, NOT from this branch
+
+Both reproduce on `origin/main` at `776c5aa3` and will keep CI red until fixed
+separately. Do not absorb either into this PR.
+
+1. `apps/billing` — `contract-baseline.test.ts` › "does not document paths
+   absent from the implementation inventory". PR #491 documented
+   `/customers/{customerId}/contacts` and `.../{contactId}` in
+   `contracts/v1/openapi.json` without registering them in
+   `contracts/v1/route-manifest.json`. Fixing it means adding both paths with
+   their real auth tiers and bumping the frozen route/operation counts.
+2. `packages/crm` — `client.advanced.test.ts:24` `prefer-const` lint error, in a
+   file this branch does not touch.
