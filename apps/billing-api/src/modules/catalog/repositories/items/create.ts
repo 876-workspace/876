@@ -30,6 +30,25 @@ export async function create(
     : null
   if (replay) return replay
 
+  const variantMode = params.variantMode
+  if (variantMode === 'variant') {
+    const preference = await prisma.modulePreference.findFirst({
+      where: {
+        tenantId,
+        module: 'items',
+        key: 'product-variants',
+        booleanValue: true,
+      },
+      select: { id: true },
+    })
+    if (!preference)
+      return err(
+        'Product variants are not enabled for this workspace.',
+        409,
+        'billing/item-variants-disabled'
+      )
+  }
+
   const sellingCurrency = params.defaultSellingCurrency ?? null
   const costCurrency = params.defaultCostCurrency ?? null
 
@@ -38,7 +57,6 @@ export async function create(
   if (costCurrency && !(await hasEnabledCurrency(tenantId, costCurrency)))
     return err('Enable the cost currency before using it on an item.', 422)
 
-  const variantMode = params.variantMode
   const trackStock = params.type === 'GOOD' && params.trackStock
   const stockQuantity =
     trackStock && variantMode === 'single' ? (params.stockQuantity ?? 0) : null
