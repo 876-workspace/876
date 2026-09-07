@@ -297,21 +297,6 @@ export function toolError(
 
   return {
     isError: true,
-    content: [
-      { type: 'text', text: `Error [${code}]: ${publicMessage}` },
-    ],
-  }
-}
-
-export function formatError(error: {
-  code: string
-  message: string
-}): ToolResult {
-  return toolError(error)
-}
-
-export function formatSuccess(text: string): ToolResult {
-  return {
-    content: [{ type: 'text', text }],
+    content: [{ type: 'text', text: `Error [${code}]: ${publicMessage}` }],
   }
 }

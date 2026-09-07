@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   formatDate,
-  formatError,
   formatIssue,
   formatIssueLine,
   formatIssueList,
   formatProject,
+  toolError,
   type ToolResult,
 } from './format'
 
@@ -185,11 +185,11 @@ describe('format', () => {
     expect(issueOutput).not.toContain('1788480000')
   })
 
-  it('formatError produces isError: true carrying code and message', () => {
-    const result = formatError({
-      code: 'projects/issue-not-found',
-      message: 'Issue CONSOLE-99 was not found',
-    })
+  it('toolError produces isError: true carrying code and message', () => {
+    const result = toolError(
+      'projects/issue-not-found',
+      'Issue CONSOLE-99 was not found'
+    )
     expect(result.isError).toBe(true)
     expect(result.content).toHaveLength(1)
     expect(textOf(result)).toBe(

@@ -183,7 +183,10 @@ export async function handleProjectGet(
   )
   if (resolved.error !== null) return toolError(resolved.error)
 
-  const result = await client.projects.retrieve(config.organizationId, resolved.id)
+  const result = await client.projects.retrieve(
+    config.organizationId,
+    resolved.id
+  )
   if (result.error !== null) return toolError(result.error)
 
   return toolSuccess(formatProject(result.data), {
@@ -379,7 +382,9 @@ export async function handleIssueCreate(
       ? { description: parsed.data.description }
       : {}),
     ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
-    ...(parsed.data.typeKey !== undefined ? { typeKey: parsed.data.typeKey } : {}),
+    ...(parsed.data.typeKey !== undefined
+      ? { typeKey: parsed.data.typeKey }
+      : {}),
     ...(parsed.data.milestoneId !== undefined
       ? { milestoneId: parsed.data.milestoneId }
       : {}),
@@ -509,9 +514,13 @@ export async function handleIssueComments(
         .join(', '),
     })
 
-  const result = await client.comments.list(config.organizationId, parsed.data.issue, {
-    ...(parsed.data.limit !== undefined ? { limit: parsed.data.limit } : {}),
-  })
+  const result = await client.comments.list(
+    config.organizationId,
+    parsed.data.issue,
+    {
+      ...(parsed.data.limit !== undefined ? { limit: parsed.data.limit } : {}),
+    }
+  )
   if (result.error !== null) return toolError(result.error)
 
   return toolSuccess(formatComments(result.data.data), {
@@ -583,7 +592,9 @@ export async function handleWorkItemTypesList(
   const result = await client.workItemTypes.list(config.organizationId)
   if (result.error !== null) return toolError(result.error)
 
-  const activeTypes = result.data.data.filter((type) => type.archivedAt === null)
+  const activeTypes = result.data.data.filter(
+    (type) => type.archivedAt === null
+  )
   return toolSuccess(
     formatWorkItemTypeList({
       ...result.data,
@@ -612,7 +623,9 @@ export async function handleWorkflowStatesList(
   const result = await client.workflowStates.list(config.organizationId)
   if (result.error !== null) return toolError(result.error)
 
-  const activeStates = result.data.data.filter((state) => state.archivedAt === null)
+  const activeStates = result.data.data.filter(
+    (state) => state.archivedAt === null
+  )
   return toolSuccess(
     formatWorkflowStateList({
       ...result.data,
@@ -676,31 +689,4 @@ export async function handleLabelCreate(
   return toolSuccess(formatLabel(result.data), {
     label: result.data,
   })
-}
-
-export const HANDLERS: Record<
-  string,
-  (
-    client: ProjectsOperatorClient,
-    config: Config,
-    args: unknown
-  ) => Promise<ToolResult>
-> = {
-  workspace_get: handleWorkspaceGet,
-  projects_list: handleProjectsList,
-  project_get: handleProjectGet,
-  project_create: handleProjectCreate,
-  project_update: handleProjectUpdate,
-  issues_list: handleIssuesList,
-  issue_get: handleIssueGet,
-  issue_create: handleIssueCreate,
-  issue_update: handleIssueUpdate,
-  issue_comment: handleIssueComment,
-  issue_comments: handleIssueComments,
-  issue_events: handleIssueEvents,
-  labels_list: handleLabelsList,
-  work_item_types_list: handleWorkItemTypesList,
-  workflow_states_list: handleWorkflowStatesList,
-  milestones_list: handleMilestonesList,
-  label_create: handleLabelCreate,
 }
