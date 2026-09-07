@@ -70,6 +70,13 @@ async function authorizeTarget(
   }
 }
 
+function mediaPath(target: AuthorizedTarget) {
+  const base = `/api/v1/items/${encodeURIComponent(target.itemId)}`
+  return target.variantId
+    ? `${base}/variants/${encodeURIComponent(target.variantId)}/media`
+    : `${base}/media`
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   const parsed = bodySchema.safeParse(body)
@@ -139,6 +146,19 @@ export async function POST(request: Request) {
       { error: link.error?.message ?? 'Failed to link the image to the Item.' },
       { status: 400 }
     )
+
+  try {
+    await billingApiRequest({
+      method: 'POST',
+      path: mediaPath(target),
+      body: { fileId: file.id },
+    })
+  } catch {
+    return apiJson(
+      { error: 'The image is ready in Storage but could not be attached to the Item. Retry completion.' },
+      { status: 502 }
+    )
+  }
 
   return apiJson({ data: { file, link: link.data } })
 }
