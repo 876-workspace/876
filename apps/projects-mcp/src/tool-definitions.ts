@@ -75,8 +75,8 @@ const CREATE_ANNOTATIONS = {
 
 const UPDATE_ANNOTATIONS = {
   readOnlyHint: false,
-  destructiveHint: false,
-  idempotentHint: true,
+  destructiveHint: true,
+  idempotentHint: false,
   openWorldHint: false,
 } as const
 
