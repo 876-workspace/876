@@ -1,0 +1,30 @@
+/// A sellable combination generated from an Item's option values.
+model ItemVariant {
+  id                     String  @id
+  tenantId               String  @map("tenant_id")
+  itemId                 String  @map("item_id")
+  name                   String
+  sku                    String?
+  defaultSellingAmount   BigInt? @map("default_selling_amount")
+  defaultSellingCurrency String? @map("default_selling_currency")
+  defaultCostAmount      BigInt? @map("default_cost_amount")
+  defaultCostCurrency    String? @map("default_cost_currency")
+  stockQuantity          Int?    @map("stock_quantity")
+  isActive               Boolean @default(true) @map("is_active")
+  createdAt              Int     @map("created_at")
+  updatedAt              Int     @map("updated_at")
+
+  tenant          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_item_variants_tenant_id_fkey")
+  item            Item                     @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_item_variants_item_id_fkey")
+  optionValues    ItemVariantOptionValue[]
+  media           ItemMedia[]
+  quoteLines      QuoteLine[]
+  invoiceLines    InvoiceLine[]
+  creditNoteLines CreditNoteLine[]
+  stockMovements  ItemStockMovement[]
+
+  @@unique([tenantId, sku], name: "billing_item_variants_tenant_sku_key", map: "billing_item_variants_tenant_sku_key")
+  @@unique([itemId, name], name: "billing_item_variants_item_name_key", map: "billing_item_variants_item_name_key")
+  @@index([tenantId, itemId, isActive], map: "billing_item_variants_tenant_item_active_idx")
+  @@map("billing_item_variants")
+}
