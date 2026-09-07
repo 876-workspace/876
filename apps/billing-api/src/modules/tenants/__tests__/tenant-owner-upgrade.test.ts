@@ -32,6 +32,9 @@ function createExistingWorkspaceTx(options?: {
       findMany: vi.fn().mockResolvedValue([]),
       createMany: vi.fn().mockResolvedValue({ count: 3 }),
     },
+    invoicePreference: {
+      upsert: vi.fn().mockResolvedValue({ tenantId: 'ten_shared_finance' }),
+    },
     role: {
       findFirst: vi.fn().mockResolvedValue(ownerRole),
       create: vi.fn(async ({ data }: { data: { id: string } }) => ({
