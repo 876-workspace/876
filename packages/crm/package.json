@@ -19,6 +19,10 @@
       "types": "./src/service-client.ts",
       "default": "./src/service-client.ts"
     },
+    "./support": {
+      "types": "./src/support-client.ts",
+      "default": "./src/support-client.ts"
+    },
     "./operator": {
       "types": "./src/operator.ts",
       "default": "./src/operator.ts"
