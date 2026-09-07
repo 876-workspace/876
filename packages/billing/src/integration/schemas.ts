@@ -14,6 +14,11 @@ export {
   BillingQuoteSchema,
   BillingItemListSchema,
   BillingItemSchema,
+  BillingItemVariantSchema,
+  BillingItemVariantListSchema,
+  BillingItemPreferencesSchema,
+  BillingItemMediaSchema,
+  BillingItemMediaListSchema,
   BillingOrganizationSchema,
   BillingPaymentListSchema,
   BillingPaymentModeListSchema,
@@ -21,4 +26,5 @@ export {
   BillingPaymentSchema,
   DeletedBillingCustomerSchema,
   DeletedBillingItemSchema,
+  DeletedBillingItemMediaSchema,
 } from './types'
