@@ -24,6 +24,24 @@ export type StockTarget =
   | { type: 'item'; id: string }
   | { type: 'variant'; id: string }
 
+export interface ResolvedSellable {
+  reference: SellableReference
+  identity: {
+    name: string
+    variantName: string | null
+    sku: string | null
+  }
+  type: 'GOOD' | 'SERVICE'
+  unit: string | null
+  taxable: boolean
+  taxCode: string | null
+  defaultSellingAmount: bigint | null
+  defaultSellingCurrency: string | null
+  pricingReference: SellableReference
+  stockTarget: StockTarget | null
+  primaryFileId: string | null
+}
+
 export interface CommerceContext {
   tenantId: string
   actor?: ActorContext
