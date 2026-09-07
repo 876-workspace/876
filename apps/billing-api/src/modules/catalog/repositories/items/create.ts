@@ -80,6 +80,7 @@ export async function create(
             id: generateId('ItemStockMovement'),
             tenantId,
             itemId: created.id,
+            stockTargetKey: created.id,
             type: 'initial-stock',
             quantityDelta: stockQuantity,
             quantityBefore: 0,
