@@ -42,14 +42,14 @@ export async function resolvePrices(
       data: null,
       error: 'One or more selected prices were not found.',
       status: 404,
-      code: 'price/not-found',
+      code: 'billing/price-not-found',
     }
   if (priceListId && !priceList)
     return {
       data: null,
       error: 'The selected price list was not found.',
       status: 404,
-      code: 'price_list/not-found',
+      code: 'billing/price-list-not-found',
     }
 
   const priceById = new Map(prices.map((price) => [price.id, price]))
@@ -73,7 +73,7 @@ export async function resolvePrices(
         data: null,
         error: 'The selected price was not found.',
         status: 404,
-        code: 'price/not-found',
+        code: 'billing/price-not-found',
       }
     const entry = entryByPriceId.get(price.id) ?? null
     const resolvedCurrency =
@@ -182,6 +182,6 @@ export async function resolvePrice(
         data: null,
         error: 'The selected price was not found.',
         status: 404,
-        code: 'price/not-found',
+        code: 'billing/price-not-found',
       }
 }
