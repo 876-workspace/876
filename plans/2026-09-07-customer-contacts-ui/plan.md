@@ -267,3 +267,79 @@ and all run through its `fillValidDocument` helper. Customer selection is **not*
 the cause (the "select a customer" guard does not fire); submission is blocked at
 the `totalsSnapshot?.status !== 'ready'` gate. The Billing app's equivalent suite
 was fixed the same way and is fully green, so this is isolated to that one file.
+
+---
+
+## Phase 12 — Feature flags and the Invoice permission regression
+
+**Symptom.** Sales surfaces did not render in either app.
+
+**Billing — fixed.** Its navigation is gated by `billing-api`'s own tenant
+permissions plus a platform feature. A read-only check showed **no
+`billing-sales*` features existed in the database at all**, and feature
+evaluation fails closed, so the whole Sales group was hidden. Running
+`pnpm --filter @876/api seed --only=features` created 5 and updated 54;
+`billing-sales`, `billing-sales-quotes` and `billing-sales-invoices` are now
+present and enabled. The dead `billing-sales-estimates` flag was removed from
+the seed (PR #505).
+
+**Invoice — NOT fixed, and currently a regression.** Its navigation is gated by
+the *core* app-permission catalog, where `estimates.view` was renamed to
+`quotes.view`. Production still holds `estimates.*` and **zero** `quotes.*`, so
+the Quotes entry is hidden from every role until the migration runs:
+
+```
+npx prisma migrate deploy --schema prisma/schema   # from apps/api
+```
+
+Exactly one migration is pending (`20260907140000_…`) and Prisma resolves the
+direct, non-pooled endpoint correctly. The sandbox classifier blocks running it
+from here.
+
+---
+
+## Phase 13 — Customer record tabs (audited, not built)
+
+Five of six tabs still render `null`, and `@876/billing-ui` ships finished,
+unused statement/timeline/receivables/organization/billing-facts panels. Wiring
+them was attempted and **correctly abandoned**, because the data does not exist:
+
+- the statement panel needs `openingBalance`/`closingBalance` and the
+  receivables panel needs `overdue` — none are returned;
+- there is no customer-scoped typed subscription listing;
+- there is no customer requests, correspondence, or activity resource at all.
+
+**Defect found on the way.** `@876/billing`'s `CustomerAccountSchema` requires
+`lifetimeBilled`, `lifetimePaid`, `availableCredit`, `netPosition` and
+`statement[]`, while `apps/billing-api` actually returns
+`{ outstandingReceivable, unusedCredits, entries[] }`. The shapes do not
+overlap, so `customers.account()` cannot parse a real response today. This is
+its own bug, unrelated to the tabs.
+
+---
+
+## Phase 14 — Catalogue typeahead and dropdown design (PR #506)
+
+The line-item picker became the same autocomplete as the customer picker, with
+one deliberate difference: it keeps a **starting set** (`minChars: 0` plus
+`initialOptions`), so the common case needs no typing, while a customer picker
+over thousands of records stays empty until narrowed. An empty box never issues
+a request in either configuration.
+
+The dropdown itself was reworked: the one-off line leads the list as a quiet,
+explained escape hatch; options are two-line with a right-aligned tabular meta
+slot showing an item's default price; and loading/empty/below-threshold/error
+share one treatment with a spinner and a destructive tone respectively.
+
+---
+
+## Outstanding, and who can unblock it
+
+| Item | State |
+| ---- | ----- |
+| Invoice `quotes.view` migration | **Blocked** — needs `prisma migrate deploy` (above) |
+| Production CRM support secrets | **Blocked** — classifier blocks writing prod secrets |
+| Customer tabs | Needs backend capabilities (Phase 13) |
+| `customers.account()` contract drift | Needs the API and SDK reconciled |
+| Invoice line editing, quote→invoice conversion | Need backend contract changes |
+| Invoice delivery / PDF | No endpoint exists anywhere; from-scratch feature |
