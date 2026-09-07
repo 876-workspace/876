@@ -19,15 +19,17 @@ vi.mock('@/lib/client', () => ({
 
 import { DocumentCreateForm } from './document-create-form'
 
-const customers = [{
-  id: 'cus_123',
-  name: 'Alejandra Reyes',
-  companyName: null,
-  email: 'alejandra@example.test',
-  phone: '+15550100',
-  workPhone: null,
-  primaryContact: null,
-}]
+const customers = [
+  {
+    id: 'cus_123',
+    name: 'Alejandra Reyes',
+    companyName: null,
+    email: 'alejandra@example.test',
+    phone: '+15550100',
+    workPhone: null,
+    primaryContact: null,
+  },
+]
 
 /**
  * The customer control is a server-backed typeahead: it fetches nothing until
@@ -53,7 +55,10 @@ describe('DocumentCreateForm', () => {
       data: null,
       error: { code: 'billing/failed', message: 'Invoice could not be saved.' },
     })
-    mocks.customerList.mockResolvedValue({ data: { data: customers }, error: null })
+    mocks.customerList.mockResolvedValue({
+      data: { data: customers },
+      error: null,
+    })
   })
 
   it('renders the shared line-item editor for manual invoice lines', async () => {
@@ -86,7 +91,9 @@ describe('DocumentCreateForm', () => {
       render(<DocumentCreateForm kind="invoice" />)
     })
 
-    expect(screen.getByRole('combobox', { name: 'Customer' })).not.toBeDisabled()
+    expect(
+      screen.getByRole('combobox', { name: 'Customer' })
+    ).not.toBeDisabled()
   })
 
   it('blocks the request when no customer is selected', async () => {
@@ -110,6 +117,34 @@ describe('DocumentCreateForm', () => {
     await user.click(screen.getByRole('button', { name: 'Add invoice' }))
 
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
+  })
+
+  it('hydrates and submits the customer selected by the page URL', async () => {
+    const user = userEvent.setup()
+    render(
+      <DocumentCreateForm
+        kind="invoice"
+        initialCustomer={Promise.resolve({
+          data: customers[0]!,
+          error: null,
+        })}
+      />
+    )
+
+    expect(
+      await screen.findByRole('combobox', { name: 'Customer' })
+    ).toHaveValue('Alejandra Reyes')
+    await user.type(screen.getByLabelText('Line 1 description'), 'Consulting')
+    await user.type(screen.getByLabelText('Line 1 rate'), '1500.07')
+    await user.click(screen.getByRole('button', { name: 'Add invoice' }))
+
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ customerId: 'cus_123' }),
+        '/api/invoices'
+      )
+    )
+    expect(mocks.customerList).not.toHaveBeenCalled()
   })
 
   it('blocks submission and shows the shared totals message when totals are invalid', async () => {
