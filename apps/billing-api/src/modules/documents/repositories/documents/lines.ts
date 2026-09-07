@@ -9,29 +9,15 @@ import {
   sellableKey,
 } from '@/modules/catalog'
 import { resolvePrices } from '@/modules/pricing'
+import type { CommercialLineSnapshot } from '@/types/commercial-line'
 import type { ResolvedSellable, SellableReference } from '@/types/commerce'
 import type { ResolvedPrice } from '@/types/pricing'
 import type { DocumentLineCreateParams } from '../../schemas/document-line'
 
-type PreparedDocumentLine = {
-  itemId: string | null
-  variantId: string | null
-  variantName: string | null
-  variantSku: string | null
-  priceId: string | null
-  description: string
-  unit: string | null
-  quantity: number
-  unitAmount: bigint
-  taxAmount: bigint
-  discountAmount: bigint
-  totalAmount: bigint
-}
-
 type BuildLinesResult =
   | {
       data: {
-        lines: PreparedDocumentLine[]
+        lines: CommercialLineSnapshot[]
         lineAmounts: DocumentLineAmounts[]
         subtotalAmount: bigint
         taxAmount: bigint
@@ -112,7 +98,7 @@ export async function buildDocumentLines(
   const sellables = await resolveSellables(tenantId, sellableReferences)
   if (sellables.error !== null) return { data: null, error: sellables.error }
 
-  const lines: PreparedDocumentLine[] = []
+  const lines: CommercialLineSnapshot[] = []
   const lineAmounts: DocumentLineAmounts[] = []
 
   for (const selection of lineSelections) {
