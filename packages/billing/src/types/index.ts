@@ -356,6 +356,20 @@ export {
   TaxRateListSchema,
 } from './tax.schema'
 
+// Currencies
+export type {
+  Currency,
+  CurrencyCreated,
+  CurrencyEnableParams,
+  CurrencyMutation,
+} from './currency'
+export {
+  CurrencyCreatedSchema,
+  CurrencyListSchema,
+  CurrencyMutationSchema,
+  CurrencySchema,
+} from './currency'
+
 // Finance workspace roles
 export type {
   Role,

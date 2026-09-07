@@ -4,6 +4,7 @@ import { createBankTransactionsResource } from './resources/bank-transactions'
 import { createCatalogResources } from './resources/catalog'
 import { createCustomersResource } from './resources/customers'
 import { createCreditNotesResource } from './resources/credit-notes'
+import { createCurrenciesResource } from './resources/currencies'
 import {
   createPaymentTermsResource,
   createSalespeopleResource,
@@ -36,6 +37,7 @@ export function create876Client(options: ClientOptions = {}) {
     addons: catalog.addons,
     customers: createCustomersResource(runtime),
     creditNotes: createCreditNotesResource(runtime),
+    currencies: createCurrenciesResource(runtime),
     discounts: createDiscountsResource(runtime),
     invoices: createInvoicesResource(runtime),
     invoicePreferences: createInvoicePreferencesResource(runtime),
