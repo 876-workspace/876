@@ -1,9 +1,15 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
+import {
+  claimCommand,
+  completeCommand,
+} from '@/modules/command-idempotency'
 import { recomputeCustomerAr } from '@/modules/customers'
 import { consume as consumeInventory } from '@/modules/inventory'
 import { recordLedgerEntry } from '@/modules/ledger'
+import { enqueueBillingEvent } from '@/modules/outbox'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
+import type { IdempotencyContext } from '@/types/commerce'
 
 import {
   findInvoiceForFinalize,
@@ -35,12 +41,28 @@ class InvoiceFinalizeError extends Error {
 export async function finalizeInvoiceWorkflow(
   tenantId: string,
   invoiceId: string,
-  params: InvoiceFinalizeParams
+  params: InvoiceFinalizeParams,
+  idempotency?: IdempotencyContext
 ): ServiceResult<{ id: string }> {
   const now = nowUnixSeconds()
 
   try {
-    const stockError = await runInvoiceTransaction(async (tx) => {
+    const workflowResult = await runInvoiceTransaction(async (tx) => {
+      let claimId: string | undefined
+      if (idempotency) {
+        const claim = await claimCommand(tx, tenantId, {
+          operation: 'invoice-finalize',
+          key: idempotency.key,
+          requestHash: idempotency.requestHash,
+          resource: { type: 'invoice', id: invoiceId },
+          httpStatus: 201,
+          now,
+        })
+        if (claim.error !== null) return claim
+        if (claim.data.state === 'replayed') return ok({ id: invoiceId })
+        claimId = claim.data.claimId
+      }
+
       const invoice = await findInvoiceForFinalize(tx, tenantId, invoiceId)
       if (!invoice) throw new InvoiceFinalizeError('Invoice not found.', 404)
       if (invoice.status !== 'DRAFT')
@@ -136,10 +158,28 @@ export async function finalizeInvoiceWorkflow(
         )
 
       await recomputeCustomerAr(tx, tenantId, invoice.customerId, now)
+      await enqueueBillingEvent(tx, tenantId, {
+        type: 'invoice.finalized',
+        version: 1,
+        resource: { type: 'invoice', id: invoice.id },
+        payload: {
+          invoiceId: invoice.id,
+          customerId: invoice.customerId,
+          number: invoice.number,
+          currency: invoice.currency,
+          totalAmount: invoice.totalAmount.toString(),
+          finalizedAt: now,
+          issueAt,
+          dueAt,
+        },
+        occurredAt: now,
+      })
+
+      if (claimId) await completeCommand(tx, tenantId, claimId, now)
       return null
     })
 
-    if (stockError) return stockError
+    if (workflowResult) return workflowResult
     return ok({ id: invoiceId })
   } catch (error) {
     if (error instanceof InvoiceFinalizeError)
