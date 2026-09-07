@@ -31,30 +31,72 @@ Startup fails with exit code 1 if any required variable is missing. The target o
 ## Package Notes
 
 - The server requires the Node `react-server` export condition because `@876/projects/operator` imports `server-only`.
-- Tools are declared using plain JSON Schema rather than MCP SDK Zod helpers because MCP SDK 1.30 pins Zod 3 while the monorepo uses Zod 4.
+- Modernized to the MCP v2 TypeScript SDK (`@modelcontextprotocol/server` and `@modelcontextprotocol/core`).
+- Fully supports the MCP `2026-07-28` modern protocol revision (via `server/discover` probe and `_meta` envelope handling) while maintaining backward compatibility with 2025-era clients via `serveStdio(..., { legacy: 'serve' })`.
+- Single source of truth: tool input and output contracts are declared using canonical Zod 4 schemas in `src/schemas.ts`, eliminating schema drift between advertised tool capabilities and runtime validation.
+- Every tool advertises explicit tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) for precise client-side approval routing.
+- Returns machine-readable structured output (`structuredContent`) alongside human-readable markdown text for all tools.
+- Serves server-wide agent guidelines and instructions (`PROJECTS_SERVER_INSTRUCTIONS`) to conforming clients.
 - `issue_get` returns the full comment thread by default; `issue_comments` reads only the thread oldest first.
 
 ## Available Tools
 
-| Tool                   | Purpose                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------ |
-| `workspace_get`        | Retrieve tenant details and projects with open-issue counts.                               |
-| `projects_list`        | List and filter projects by status, lead, query, or archive status.                        |
-| `project_get`          | Retrieve details for a project by ID or key.                                               |
-| `project_create`       | Create a new project.                                                                      |
-| `project_update`       | Update project metadata, status, health, or target date.                                   |
-| `issues_list`          | List and filter issues by project, status, priority, assignee, label, or update timestamp. |
-| `issue_get`            | Retrieve full issue details, description, and comments.                                    |
-| `issue_create`         | Create a new issue in a project or Triage.                                                 |
-| `issue_update`         | Update issue fields, reassign, or move to another project.                                 |
-| `issue_comment`        | Add a comment to an issue.                                                                 |
-| `issue_comments`       | Read an issue's comment thread oldest first.                                               |
-| `issue_events`         | Retrieve chronological lifecycle and audit events for an issue.                            |
-| `labels_list`          | List all configured labels in the workspace.                                               |
-| `label_create`         | Create a new issue label.                                                                  |
-| `work_item_types_list` | List active work item types before assigning a type to an issue.                           |
-| `workflow_states_list` | List active workflow states before assigning a state to an issue.                          |
-| `milestones_list`      | List a project's milestones, optionally filtered by status.                                |
+| Tool                   | Annotations               | Purpose                                                                                    |
+| ---------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| `workspace_get`        | `readOnly`, `idempotent`  | Retrieve tenant details and projects with open-issue counts.                               |
+| `projects_list`        | `readOnly`, `idempotent`  | List and filter projects by status, lead, query, or archive status.                        |
+| `project_get`          | `readOnly`, `idempotent`  | Retrieve details for a project by ID or key.                                               |
+| `project_create`       | mutable                   | Create a new project.                                                                      |
+| `project_update`       | `idempotent`              | Update project metadata, status, health, or target date.                                   |
+| `issues_list`          | `readOnly`, `idempotent`  | List and filter issues by project, status, priority, assignee, label, or update timestamp. |
+| `issue_get`            | `readOnly`, `idempotent`  | Retrieve full issue details, description, and comments.                                    |
+| `issue_create`         | mutable                   | Create a new issue in a project or Triage.                                                 |
+| `issue_update`         | `idempotent`              | Update issue fields, reassign, or move to another project.                                 |
+| `issue_comment`        | mutable                   | Add a comment to an issue.                                                                 |
+| `issue_comments`       | `readOnly`, `idempotent`  | Read an issue's comment thread oldest first.                                               |
+| `issue_events`         | `readOnly`, `idempotent`  | Retrieve chronological lifecycle and audit events for an issue.                            |
+| `labels_list`          | `readOnly`, `idempotent`  | List all configured labels in the workspace.                                               |
+| `label_create`         | mutable                   | Create a new issue label.                                                                  |
+| `work_item_types_list` | `readOnly`, `idempotent`  | List active work item types before assigning a type to an issue.                           |
+| `workflow_states_list` | `readOnly`, `idempotent`  | List active workflow states before assigning a state to an issue.                          |
+| `milestones_list`      | `readOnly`, `idempotent`  | List a project's milestones, optionally filtered by status.                                |
+
+## Client Configuration
+
+### Claude Code / Generic MCP (`.mcp.json`)
+
+```json
+{
+  "mcpServers": {
+    "876-projects": {
+      "type": "stdio",
+      "command": "pnpm",
+      "args": ["--filter", "@876/projects-mcp", "--silent", "dev"],
+      "env": {
+        "PROJECTS_API_URL": "http://localhost:4030",
+        "PROJECTS_INTERNAL_KEY": "your-internal-key",
+        "PROJECTS_ORGANIZATION_ID": "org_your_org_id",
+        "PROJECTS_DEFAULT_USER_ID": "usr_your_user_id"
+      }
+    }
+  }
+}
+```
+
+### Codex (`.codex/config.toml`)
+
+```toml
+[mcp_servers.876-projects]
+command = "pnpm"
+args = ["--filter", "@876/projects-mcp", "--silent", "dev"]
+env_vars = [
+  "PROJECTS_API_URL",
+  "PROJECTS_INTERNAL_KEY",
+  "PROJECTS_ORGANIZATION_ID",
+  "PROJECTS_DEFAULT_USER_ID",
+]
+default_tools_approval_mode = "writes"
+```
 
 ## Work structure discovery
 

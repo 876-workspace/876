@@ -1,4 +1,4 @@
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult } from '@modelcontextprotocol/server'
 
 import type {
   Comment,
@@ -16,9 +16,7 @@ import type {
 } from '@876/projects/contracts'
 
 /**
- * The MCP SDK owns this contract, so it is aliased rather than restated. A
- * hand-written copy drifts from the SDK's result union — which is exactly what
- * made the request handler fail to typecheck against `setRequestHandler`.
+ * The MCP SDK owns this contract, so it is aliased rather than restated.
  */
 export type ToolResult = CallToolResult
 
@@ -272,16 +270,41 @@ export function formatMilestoneList(list: MilestoneList): string {
   return [header, ...lines].join('\n')
 }
 
+export function toolSuccess<T>(
+  text: string,
+  structuredContent: T
+): CallToolResult {
+  return {
+    content: [{ type: 'text', text }],
+    structuredContent,
+  }
+}
+
+export function toolError(
+  error: { code: string; message: string } | string,
+  message?: string
+): CallToolResult {
+  const code = typeof error === 'string' ? error : error.code
+  const msg = typeof error === 'string' ? (message ?? error) : error.message
+  return {
+    isError: true,
+    content: [
+      { type: 'text', text: `Error [${code}]: ${msg}` },
+    ],
+    structuredContent: {
+      error: {
+        code,
+        message: msg,
+      },
+    },
+  }
+}
+
 export function formatError(error: {
   code: string
   message: string
 }): ToolResult {
-  return {
-    isError: true,
-    content: [
-      { type: 'text', text: `Error [${error.code}]: ${error.message}` },
-    ],
-  }
+  return toolError(error)
 }
 
 export function formatSuccess(text: string): ToolResult {
@@ -289,3 +312,4 @@ export function formatSuccess(text: string): ToolResult {
     content: [{ type: 'text', text }],
   }
 }
+

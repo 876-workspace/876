@@ -76,7 +76,7 @@ All required variables are validated on startup; missing variables cause the pro
 | Development | `pnpm --filter @876/projects-mcp --silent dev`                   | Runs `tsx -C react-server --env-file-if-exists=.env src/index.ts`.             |
 | Production  | `node --conditions=react-server apps/projects-mcp/dist/index.js` | Runs pre-built ESM bundle (built via `pnpm --filter @876/projects-mcp build`). |
 
-MCP client configuration (`.mcp.json`):
+MCP client configuration (`.mcp.json` / Claude Code):
 
 ```json
 {
@@ -94,4 +94,19 @@ MCP client configuration (`.mcp.json`):
     }
   }
 }
+```
+
+Codex configuration (`.codex/config.toml`):
+
+```toml
+[mcp_servers.876-projects]
+command = "pnpm"
+args = ["--filter", "@876/projects-mcp", "--silent", "dev"]
+env_vars = [
+  "PROJECTS_API_URL",
+  "PROJECTS_INTERNAL_KEY",
+  "PROJECTS_ORGANIZATION_ID",
+  "PROJECTS_DEFAULT_USER_ID",
+]
+default_tools_approval_mode = "writes"
 ```
