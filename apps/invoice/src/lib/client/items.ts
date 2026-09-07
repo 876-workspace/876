@@ -25,7 +25,7 @@ export interface ItemUpdateParams
   isActive?: boolean
 }
 
-export interface ItemResource extends ItemCreateParams {
+export interface ItemResource extends Omit<ItemCreateParams, 'stockQuantity'> {
   object: 'item'
   id: string
   trackStock: boolean
