@@ -285,18 +285,21 @@ export function toolError(
   message?: string
 ): CallToolResult {
   const code = typeof error === 'string' ? error : error.code
-  const msg = typeof error === 'string' ? (message ?? error) : error.message
+  const detail = typeof error === 'string' ? (message ?? error) : error.message
+  const isUnexpected = code === 'internal/tool-error'
+  const publicMessage = isUnexpected
+    ? 'The Projects MCP tool failed unexpectedly. Check the server logs for details.'
+    : detail
+
+  if (isUnexpected) {
+    console.error('876 Projects MCP unexpected tool error:', detail)
+  }
+
   return {
     isError: true,
     content: [
-      { type: 'text', text: `Error [${code}]: ${msg}` },
+      { type: 'text', text: `Error [${code}]: ${publicMessage}` },
     ],
-    structuredContent: {
-      error: {
-        code,
-        message: msg,
-      },
-    },
   }
 }
 
@@ -312,4 +315,3 @@ export function formatSuccess(text: string): ToolResult {
     content: [{ type: 'text', text }],
   }
 }
-
