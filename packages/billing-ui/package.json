@@ -15,6 +15,10 @@
       "types": "./src/customer-detail-actions.tsx",
       "default": "./src/customer-detail-actions.tsx"
     },
+    "./customer-contact-form": {
+      "types": "./src/customer-contact-form.tsx",
+      "default": "./src/customer-contact-form.tsx"
+    },
     "./customer-transactions-accordions": {
       "types": "./src/customer-transactions-accordions.tsx",
       "default": "./src/customer-transactions-accordions.tsx"
@@ -95,6 +99,10 @@
       "types": "./src/panels/customer-contact-panel.tsx",
       "default": "./src/panels/customer-contact-panel.tsx"
     },
+    "./panels/customer-contacts-panel": {
+      "types": "./src/panels/customer-contacts-panel.tsx",
+      "default": "./src/panels/customer-contacts-panel.tsx"
+    },
     "./panels/customer-organization-panel": {
       "types": "./src/panels/customer-organization-panel.tsx",
       "default": "./src/panels/customer-organization-panel.tsx"
@@ -130,6 +138,7 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/billing": "workspace:*",
     "@876/core": "workspace:*",
     "@876/ui": "workspace:*",
     "@tanstack/react-table": "^9.1.2"

@@ -6,7 +6,8 @@ import type { PlatformOrganization } from '@876/core/platform'
 import { getPlatformClient } from '@/lib/services/platform'
 
 /** Where a customer's primary contact details were sourced from. */
-export type PrimaryContactSource = 'org-super-admin' | 'org-member' | 'user' | 'self'
+export type PrimaryContactSource =
+  'org-super-admin' | 'org-member' | 'user' | 'self'
 
 /** Resolved contact card for a customer's overview page. */
 export interface PrimaryContact {
