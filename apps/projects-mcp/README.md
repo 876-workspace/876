@@ -32,34 +32,37 @@ Startup fails with exit code 1 if any required variable is missing. The target o
 
 - The server requires the Node `react-server` export condition because `@876/projects/operator` imports `server-only`.
 - Modernized to the MCP v2 TypeScript SDK (`@modelcontextprotocol/server` and `@modelcontextprotocol/core`).
-- Fully supports the MCP `2026-07-28` modern protocol revision (via `server/discover` probe and `_meta` envelope handling) while maintaining backward compatibility with 2025-era clients via `serveStdio(..., { legacy: 'serve' })`.
+- Supports the MCP `2026-07-28` modern protocol revision through `serveStdio()` while maintaining backward compatibility with 2025-era clients via `legacy: 'serve'`.
 - Single source of truth: tool input and output contracts are declared using canonical Zod 4 schemas in `src/schemas.ts`, eliminating schema drift between advertised tool capabilities and runtime validation.
-- Every tool advertises explicit tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) for precise client-side approval routing.
-- Returns machine-readable structured output (`structuredContent`) alongside human-readable markdown text for all tools.
+- Every tool advertises explicit tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) for client-side approval routing.
+- Successful tools return machine-readable structured output (`structuredContent`) alongside human-readable markdown text. Tool errors remain text-only so success `outputSchema` validation cannot conflict with error payloads.
+- Unexpected internal failures are logged to stderr and returned to MCP clients as a stable generic error rather than exposing caught exception details.
 - Serves server-wide agent guidelines and instructions (`PROJECTS_SERVER_INSTRUCTIONS`) to conforming clients.
 - `issue_get` returns the full comment thread by default; `issue_comments` reads only the thread oldest first.
 
 ## Available Tools
 
-| Tool                   | Annotations               | Purpose                                                                                    |
-| ---------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
-| `workspace_get`        | `readOnly`, `idempotent`  | Retrieve tenant details and projects with open-issue counts.                               |
-| `projects_list`        | `readOnly`, `idempotent`  | List and filter projects by status, lead, query, or archive status.                        |
-| `project_get`          | `readOnly`, `idempotent`  | Retrieve details for a project by ID or key.                                               |
-| `project_create`       | mutable                   | Create a new project.                                                                      |
-| `project_update`       | `idempotent`              | Update project metadata, status, health, or target date.                                   |
-| `issues_list`          | `readOnly`, `idempotent`  | List and filter issues by project, status, priority, assignee, label, or update timestamp. |
-| `issue_get`            | `readOnly`, `idempotent`  | Retrieve full issue details, description, and comments.                                    |
-| `issue_create`         | mutable                   | Create a new issue in a project or Triage.                                                 |
-| `issue_update`         | `idempotent`              | Update issue fields, reassign, or move to another project.                                 |
-| `issue_comment`        | mutable                   | Add a comment to an issue.                                                                 |
-| `issue_comments`       | `readOnly`, `idempotent`  | Read an issue's comment thread oldest first.                                               |
-| `issue_events`         | `readOnly`, `idempotent`  | Retrieve chronological lifecycle and audit events for an issue.                            |
-| `labels_list`          | `readOnly`, `idempotent`  | List all configured labels in the workspace.                                               |
-| `label_create`         | mutable                   | Create a new issue label.                                                                  |
-| `work_item_types_list` | `readOnly`, `idempotent`  | List active work item types before assigning a type to an issue.                           |
-| `workflow_states_list` | `readOnly`, `idempotent`  | List active workflow states before assigning a state to an issue.                          |
-| `milestones_list`      | `readOnly`, `idempotent`  | List a project's milestones, optionally filtered by status.                                |
+| Tool                   | Annotations                   | Purpose                                                                                    |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `workspace_get`        | `readOnly`, `idempotent`      | Retrieve tenant details and projects with open-issue counts.                               |
+| `projects_list`        | `readOnly`, `idempotent`      | List and filter projects by status, lead, query, or archive status.                        |
+| `project_get`          | `readOnly`, `idempotent`      | Retrieve details for a project by ID or key.                                               |
+| `project_create`       | mutable                       | Create a new project.                                                                      |
+| `project_update`       | mutable, `destructive`        | Update or clear project metadata, status, health, dates, lead, or defaults.                |
+| `issues_list`          | `readOnly`, `idempotent`      | List and filter issues by project, status, priority, assignee, label, or update timestamp. |
+| `issue_get`            | `readOnly`, `idempotent`      | Retrieve full issue details, description, and comments.                                    |
+| `issue_create`         | mutable                       | Create a new issue in a project or Triage.                                                 |
+| `issue_update`         | mutable, `destructive`        | Update, replace, or clear issue fields, assignments, labels, and work structure.           |
+| `issue_comment`        | mutable                       | Add a comment to an issue.                                                                 |
+| `issue_comments`       | `readOnly`, `idempotent`      | Read an issue's comment thread oldest first.                                               |
+| `issue_events`         | `readOnly`, `idempotent`      | Retrieve chronological lifecycle and audit events for an issue.                            |
+| `labels_list`          | `readOnly`, `idempotent`      | List all configured labels in the workspace.                                               |
+| `label_create`         | mutable                       | Create a new issue label.                                                                  |
+| `work_item_types_list` | `readOnly`, `idempotent`      | List active work item types before assigning a type to an issue.                           |
+| `workflow_states_list` | `readOnly`, `idempotent`      | List active workflow states before assigning a state to an issue.                          |
+| `milestones_list`      | `readOnly`, `idempotent`      | List a project's milestones, optionally filtered by status.                                |
+
+The update tools are intentionally not annotated as idempotent: the Projects API advances `updatedAt` on each update call, and update inputs can clear or replace existing values. The conservative annotations prevent clients from treating those writes as safely repeatable or additive-only.
 
 ## Client Configuration
 
