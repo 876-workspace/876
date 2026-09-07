@@ -155,6 +155,90 @@ describe('DocumentLineItemsEditor', () => {
   })
 
   describe('editing', () => {
+    it('stores both the item id and chosen variant id for a variant item', async () => {
+      const user = userEvent.setup()
+      const { onChange, rerender } = renderEditor({
+        items: [
+          {
+            value: 'item:shirt',
+            label: 'Shirt',
+            itemId: 'item_shirt',
+            priceId: null,
+            defaultAmount: '20.00',
+            currency: 'JMD',
+            variants: [
+              {
+                id: 'variant_small',
+                label: 'Small / Blue',
+                sku: 'SH-S-B',
+                defaultAmount: '22.00',
+                stockQuantity: 4,
+                trackStock: true,
+                allowOutOfStock: false,
+              },
+            ],
+          },
+        ],
+      })
+
+      const itemSelect = screen.getByRole('combobox', { name: 'Line 1 item' })
+      fireEvent.click(itemSelect)
+      await waitFor(() =>
+        expect(itemSelect).toHaveAttribute('aria-expanded', 'true')
+      )
+      await user.click(screen.getByRole('option', { name: 'Shirt' }))
+      const selectedLines = onChange.mock.calls[0]?.[0] as DocumentLineDraft[]
+      rerender(
+        <DocumentLineItemsEditor
+          lines={selectedLines}
+          onChange={onChange}
+          formatAmount={formatAmount}
+          items={[
+            {
+              value: 'item:shirt',
+              label: 'Shirt',
+              itemId: 'item_shirt',
+              priceId: null,
+              defaultAmount: '20.00',
+              currency: 'JMD',
+              variants: [
+                {
+                  id: 'variant_small',
+                  label: 'Small / Blue',
+                  sku: 'SH-S-B',
+                  defaultAmount: '22.00',
+                  stockQuantity: 4,
+                  trackStock: true,
+                  allowOutOfStock: false,
+                },
+              ],
+            },
+          ]}
+        />
+      )
+      await user.selectOptions(
+        screen.getByLabelText('Line 1 variant'),
+        'variant_small'
+      )
+
+      expect(onChange).toHaveBeenLastCalledWith([
+        {
+          id: 'line-1',
+          selectionId: 'item:shirt',
+          itemId: 'item_shirt',
+          priceId: null,
+          variantId: 'variant_small',
+          description: 'Shirt · Small / Blue',
+          quantity: '2',
+          unitAmount: '22.00',
+          resolvedSubtotal: null,
+          trackStock: true,
+          stockQuantity: 4,
+          allowOutOfStock: false,
+        },
+      ])
+    })
+
     it('reports a description edit with the full line list', async () => {
       const user = userEvent.setup()
       const { onChange } = renderEditor()
@@ -430,9 +514,7 @@ describe('DocumentLineItemsEditor — catalogue and percentage discount', () => 
       await waitFor(() =>
         expect(itemSelect).toHaveAttribute('aria-expanded', 'true')
       )
-      await user.click(
-        screen.getByRole('option', { name: 'Consulting hour' })
-      )
+      await user.click(screen.getByRole('option', { name: 'Consulting hour' }))
 
       expect(onChange).toHaveBeenCalledTimes(1)
       expect(onChange.mock.calls[0]?.[0]).toEqual([
