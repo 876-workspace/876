@@ -15,7 +15,6 @@ export async function deletePriceList(
           customers: true,
           invoices: true,
           quotes: true,
-          estimates: true,
         },
       },
     },
@@ -24,8 +23,7 @@ export async function deletePriceList(
   if (
     list._count.customers ||
     list._count.invoices ||
-    list._count.quotes ||
-    list._count.estimates
+    list._count.quotes
   )
     return err(
       'This price list is assigned or has transaction history. Archive it instead.',

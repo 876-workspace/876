@@ -24,7 +24,6 @@ const BILLING_APP_SWITCHER_SLUG = 'billing-app-switcher'
 const BILLING_ORG_SWITCHER_SLUG = 'billing-org-switcher'
 const BILLING_SALES_SLUG = 'billing-sales'
 const BILLING_SALES_QUOTES_SLUG = 'billing-sales-quotes'
-const BILLING_SALES_ESTIMATES_SLUG = 'billing-sales-estimates'
 const BILLING_SALES_INVOICES_SLUG = 'billing-sales-invoices'
 const BILLING_SUBSCRIPTIONS_SLUG = 'billing-subscriptions'
 const BILLING_PURCHASES_SLUG = 'billing-purchases'
@@ -42,7 +41,6 @@ const BILLING_FEATURE_SLUGS = [
   BILLING_ORG_SWITCHER_SLUG,
   BILLING_SALES_SLUG,
   BILLING_SALES_QUOTES_SLUG,
-  BILLING_SALES_ESTIMATES_SLUG,
   BILLING_SALES_INVOICES_SLUG,
   BILLING_SUBSCRIPTIONS_SLUG,
   BILLING_PURCHASES_SLUG,
@@ -61,7 +59,6 @@ const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
   [BILLING_ORG_SWITCHER_SLUG]: ['billing_org_switcher'],
   [BILLING_SALES_SLUG]: ['billing_sales'],
   [BILLING_SALES_QUOTES_SLUG]: ['billing_sales_quotes'],
-  [BILLING_SALES_ESTIMATES_SLUG]: ['billing_sales_estimates'],
   [BILLING_SALES_INVOICES_SLUG]: ['billing_sales_invoices'],
   [BILLING_SUBSCRIPTIONS_SLUG]: ['billing_subscriptions'],
   [BILLING_PURCHASES_SLUG]: ['billing_purchases'],
@@ -93,7 +90,6 @@ const DEFAULT_UI_FEATURES: BillingUiFeatures = {
 const DEFAULT_PRODUCT_FEATURES: BillingProductFeatures = {
   sales: false,
   quotes: false,
-  estimates: false,
   invoices: false,
   subscriptions: false,
   purchases: false,
@@ -166,8 +162,6 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     productFeatures: {
       sales,
       quotes: sales && hasFeature(enabledSlugs, BILLING_SALES_QUOTES_SLUG),
-      estimates:
-        sales && hasFeature(enabledSlugs, BILLING_SALES_ESTIMATES_SLUG),
       invoices: sales && hasFeature(enabledSlugs, BILLING_SALES_INVOICES_SLUG),
       subscriptions: hasFeature(enabledSlugs, BILLING_SUBSCRIPTIONS_SLUG),
       purchases,

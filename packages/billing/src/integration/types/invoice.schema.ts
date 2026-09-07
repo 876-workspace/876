@@ -40,7 +40,6 @@ export const BillingInvoiceSchema = z.strictObject({
   source: sourceSchema,
   customerId: z.string().min(1),
   quoteId: z.string().nullable(),
-  estimateId: z.string().nullable(),
   subscriptionId: z.string().nullable(),
   number: z.string(),
   status: invoiceStatusSchema,

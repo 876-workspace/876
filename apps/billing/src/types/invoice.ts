@@ -22,7 +22,6 @@ export type InvoiceStatus =
 export const InvoiceCreateSchema = z
   .strictObject({
     quoteId: IdSchema.nullable().optional(),
-    estimateId: IdSchema.nullable().optional(),
     customerId: IdSchema.nullable().optional(),
     subscriptionId: IdSchema.nullable().optional(),
     salespersonId: IdSchema.nullable().optional(),
@@ -42,20 +41,19 @@ export const InvoiceCreateSchema = z
     lines: z.array(DocumentLineCreateSchema).min(1).max(100).optional(),
   })
   .superRefine((value, context) => {
-    if (value.quoteId || value.estimateId) {
+    if (value.quoteId) {
       if (
         value.customerId ||
         value.lines ||
         value.currency ||
         value.subscriptionId ||
-        value.priceListId ||
-        (value.quoteId && value.estimateId)
+        value.priceListId
       ) {
         context.addIssue({
           code: 'custom',
           message:
             'An invoice converted from a sales document cannot override its details.',
-          path: [value.quoteId ? 'quoteId' : 'estimateId'],
+          path: ['quoteId'],
         })
       }
       return

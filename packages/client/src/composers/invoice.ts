@@ -8,7 +8,7 @@ import { createCoreSurface } from './base'
  *
  * Invoice is the entry-level product over the shared Billing data plane: it
  * gets the customer registry plus the invoicing chain (items → quotes /
- * estimates → invoices → payments) and its document preferences, and nothing else. The catalogue,
+ * quotes → invoices → payments) and its document preferences, and nothing else. The catalogue,
  * subscriptions, ledger, banking, and reporting resources stay behind 876
  * Billing — an organization that needs them upgrades, and finds every record
  * it already created here waiting for it.
@@ -26,7 +26,6 @@ export function createInvoiceClient(options: InvoiceServerClientOptions) {
     customers: billing.customers,
     items: billing.items,
     quotes: billing.quotes,
-    estimates: billing.estimates,
     invoices: billing.invoices,
     invoicePreferences: billing.invoicePreferences,
     payments: billing.payments,

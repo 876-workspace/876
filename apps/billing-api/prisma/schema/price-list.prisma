@@ -19,7 +19,6 @@ model PriceList {
   entries       PriceListEntry[]
   customers     Customer[]
   quotes        Quote[]
-  estimates     Estimate[]
   invoices      Invoice[]
   subscriptions Subscription[]
 

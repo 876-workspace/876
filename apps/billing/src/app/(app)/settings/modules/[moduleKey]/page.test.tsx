@@ -27,7 +27,7 @@ describe('billing module settings route', () => {
 
   it('calls notFound for a non-catalog finance key', async () => {
     await expect(
-      ModuleSettingsPage({ params: Promise.resolve({ moduleKey: 'estimates' }) })
+      ModuleSettingsPage({ params: Promise.resolve({ moduleKey: 'not-a-finance-module' }) })
     ).rejects.toThrow('notFound')
   })
 })

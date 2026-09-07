@@ -63,7 +63,6 @@ model Customer {
   contacts            Contact[]
   addresses           Address[]
   quotes              Quote[]
-  estimates           Estimate[]
   invoices            Invoice[]
   payments            Payment[]
   creditNotes         CreditNote[]

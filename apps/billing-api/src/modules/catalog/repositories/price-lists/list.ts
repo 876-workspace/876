@@ -13,7 +13,6 @@ export function list(tenantId: string, isActive?: boolean) {
           customers: true,
           invoices: true,
           quotes: true,
-          estimates: true,
         },
       },
     },

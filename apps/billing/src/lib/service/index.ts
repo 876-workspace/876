@@ -272,12 +272,6 @@ const quotes = {
     detail(`/quotes/${id(quoteId)}`),
 }
 
-const estimates = {
-  ...crud('/estimates', 'estimateId'),
-  list: (_tenantId: string, status?: string) =>
-    list('/estimates', { status }) as Promise<any[]>,
-}
-
 const creditNotes = {
   ...crud('/credit-notes', 'creditNoteId'),
   list: (_tenantId: string, status?: string) =>
@@ -342,7 +336,6 @@ export const service = {
       }) as Promise<any>,
   },
   discounts,
-  estimates,
   financeConnections: {
     retrieve: (_tenantId: string, appId: string) =>
       detail(`/finance-connections/${id(appId)}`),

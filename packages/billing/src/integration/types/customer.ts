@@ -314,6 +314,8 @@ export interface BillingCustomerCreateParams {
  * Parameters for listing Billing customers.
  */
 export interface BillingCustomerListParams extends CursorPageParams {
+  /** Case-insensitive match on customer name, company, email, or reference. */
+  q?: string
   /**
    * Filter by lifecycle status. One of `ACTIVE` or `ARCHIVED`.
    */

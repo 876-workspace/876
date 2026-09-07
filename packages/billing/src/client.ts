@@ -3,6 +3,7 @@ import { createBankAccountsResource } from './resources/bank-accounts'
 import { createBankTransactionsResource } from './resources/bank-transactions'
 import { createCatalogResources } from './resources/catalog'
 import { createCustomersResource } from './resources/customers'
+import { createCreditNotesResource } from './resources/credit-notes'
 import {
   createPaymentTermsResource,
   createSalespeopleResource,
@@ -14,10 +15,7 @@ import { createInvoicePreferencesResource } from './resources/invoice-preference
 import { createPaymentModesResource } from './resources/payment-modes'
 import { createPaymentMethodsResource } from './resources/payment-methods'
 import { createPaymentIntentsResource } from './resources/payment-intents'
-import {
-  createEstimatesResource,
-  createQuotesResource,
-} from './resources/quotes'
+import { createQuotesResource } from './resources/quotes'
 import { createMembersResource } from './resources/members'
 import { createPaymentsResource } from './resources/payments'
 import { createRolesResource } from './resources/roles'
@@ -37,8 +35,8 @@ export function create876Client(options: ClientOptions = {}) {
     bankTransactions: createBankTransactionsResource(runtime),
     addons: catalog.addons,
     customers: createCustomersResource(runtime),
+    creditNotes: createCreditNotesResource(runtime),
     discounts: createDiscountsResource(runtime),
-    estimates: createEstimatesResource(runtime),
     invoices: createInvoicesResource(runtime),
     invoicePreferences: createInvoicePreferencesResource(runtime),
     items: createItemsResource(runtime),

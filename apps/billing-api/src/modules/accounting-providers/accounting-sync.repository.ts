@@ -334,8 +334,8 @@ export function findProjectableItem(tenantId: string, id: string) {
   return prisma.item.findFirst({ where: { tenantId, id } })
 }
 
-export function findProjectableEstimate(tenantId: string, id: string) {
-  return prisma.estimate.findFirst({
+export function findProjectableQuote(tenantId: string, id: string) {
+  return prisma.quote.findFirst({
     where: { tenantId, id },
     include: { lines: { orderBy: { createdAt: 'asc' } } },
   })

@@ -312,11 +312,6 @@ export interface BillingInvoice {
   quoteId: string | null
 
   /**
-   * ID of the estimate converted into this invoice, if any.
-   */
-  estimateId: string | null
-
-  /**
    * ID of the subscription that generated the invoice, if any.
    */
   subscriptionId: string | null
