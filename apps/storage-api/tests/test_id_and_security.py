@@ -19,6 +19,7 @@ def test_generate_id_uses_stable_prefixes() -> None:
     assert generate_id("storage_quota").startswith("squota_")
     assert generate_id("upload_session").startswith("upl_")
     assert generate_id("version").startswith("ver_")
+    assert generate_id("resource_link").startswith("rlink_")
 
 
 def test_generate_id_is_url_safe_and_unique() -> None:
@@ -37,6 +38,7 @@ def test_generate_id_rejects_unknown_entity_type() -> None:
 def test_entity_prefixes_are_complete_for_current_entities() -> None:
     assert set(ENTITY_PREFIXES) == {
         "file",
+        "resource_link",
         "storage_quota",
         "upload_session",
         "version",
