@@ -427,6 +427,38 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       legacySlugs: ['billing_org_switcher'],
     },
   ],
+  '876-invoice': [
+    {
+      slug: 'invoice-theme-switcher',
+      name: 'Theme switcher',
+      description: 'Controls access to the Invoice theme switcher.',
+      defaultEnabled: true,
+    },
+    {
+      slug: 'invoice-global-add',
+      name: 'Global add',
+      description: 'Controls access to the Invoice global add action.',
+      defaultEnabled: true,
+    },
+    {
+      slug: 'invoice-app-switcher',
+      name: 'App switcher',
+      description: 'Controls access to the Invoice app switcher.',
+      defaultEnabled: true,
+    },
+    {
+      slug: 'invoice-search-bar',
+      name: 'Search bar',
+      description: 'Controls access to the Invoice search bar.',
+      defaultEnabled: true,
+    },
+    {
+      slug: 'invoice-org-switcher',
+      name: 'Org switcher',
+      description: 'Organization switcher in the Invoice top nav.',
+      defaultEnabled: true,
+    },
+  ],
 }
 
 function normalizeSlug(slug: string): string {
@@ -446,6 +478,7 @@ function featurePrefixForAppSlug(appSlug: string): string {
     '876-couriers': 'couriers',
     '876-billing': 'billing',
     '876-crm': 'crm',
+    '876-invoice': 'invoice',
   }
   return map[appSlug] ?? normalizeSlug(appSlug.replace(/^876-/, ''))
 }
@@ -757,7 +790,6 @@ async function seedPosthogFeatures(params: {
       const mergedTags = [
         ...new Set([...existingTags, ...(seed.tags ?? [])]),
       ].sort()
-
       const updatePayload: Parameters<typeof updateFeature>[1] = {
         provider: 'posthog',
         providerFeatureId,
@@ -812,6 +844,14 @@ export async function seedBillingFeatures(): Promise<FeatureSeedSummary> {
   return seedPosthogFeatures({
     appSlug: '876-billing',
     featureSeeds: FEATURE_SEEDS_BY_APP['876-billing'] ?? [],
+  })
+}
+
+export async function seedInvoiceFeatures(): Promise<FeatureSeedSummary> {
+  validateFeatureSeeds('876-invoice', FEATURE_SEEDS_BY_APP['876-invoice'] ?? [])
+  return seedPosthogFeatures({
+    appSlug: '876-invoice',
+    featureSeeds: FEATURE_SEEDS_BY_APP['876-invoice'] ?? [],
   })
 }
 
@@ -876,6 +916,7 @@ export async function seedAllFeatures(): Promise<FeatureSeedSummary> {
   for (const appSlug of [
     'console',
     '876-billing',
+    '876-invoice',
     '876-couriers',
     '876-crm',
   ] as const) {
