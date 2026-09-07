@@ -11,6 +11,7 @@ import {
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
 import { Badge } from '@876/ui/badge'
+import { resolveInvoiceStatus } from '@876/billing-ui/document-status'
 
 import { InvoicesTable } from '@/features/documents/components/invoices-table'
 import type { ComponentProps } from 'react'
@@ -30,11 +31,7 @@ export function InvoicesList({ invoices, emptyState }: Props) {
   const selectedId = segments[0] ?? null
 
   const status = searchParams.get('status') ?? 'all'
-  const selectedStatus = ['draft', 'sent', 'overdue', 'paid', 'void'].includes(
-    status
-  )
-    ? status
-    : 'all'
+  const selectedStatus = resolveInvoiceStatus(status)
 
   const rows =
     selectedStatus === 'all'

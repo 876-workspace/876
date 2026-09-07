@@ -2,17 +2,12 @@
 
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
+import {
+  INVOICE_STATUS_OPTIONS,
+  resolveInvoiceStatus,
+} from '@876/billing-ui/document-status'
 import { ListDetailSection } from '@876/ui/list-detail-section'
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
-
-const INVOICE_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Invoices' },
-  { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
-  { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },
-  { value: 'overdue', label: 'Overdue', headingLabel: 'Overdue Invoices' },
-  { value: 'paid', label: 'Paid', headingLabel: 'Paid Invoices' },
-  { value: 'void', label: 'Void', headingLabel: 'Void Invoices' },
-]
 
 const TAKEOVER_SEGMENTS = ['new', 'edit'] as const
 
@@ -24,11 +19,7 @@ export function InvoicesSection({
   children: ReactNode
 }) {
   const status = useSearchParams().get('status') ?? 'all'
-  const selectedStatus = ['draft', 'sent', 'overdue', 'paid', 'void'].includes(
-    status
-  )
-    ? status
-    : 'all'
+  const selectedStatus = resolveInvoiceStatus(status)
 
   return (
     <ListDetailSection
