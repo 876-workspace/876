@@ -2,6 +2,7 @@ import { getSettings } from '@/config'
 import { AppHttpError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
 
+import { requireItemVariantsEnabled } from './item-capabilities.service'
 import { addons } from './repositories/addons'
 import { items } from './repositories/items'
 import { plans } from './repositories/plans'
@@ -301,6 +302,9 @@ export const catalogService = {
     body: ItemCreateParams,
     attribution?: IntegrationAttribution | null
   ) {
+    if (body.variantMode === 'variant')
+      await requireItemVariantsEnabled(tenantId)
+
     const result = await unwrap(
       await items.create(tenantId, body, attribution ?? undefined),
       'item'
