@@ -1,0 +1,10 @@
+[mcp_servers.876-projects]
+command = "pnpm"
+args = ["--filter", "@876/projects-mcp", "--silent", "dev"]
+env_vars = [
+  "PROJECTS_API_URL",
+  "PROJECTS_INTERNAL_KEY",
+  "PROJECTS_ORGANIZATION_ID",
+  "PROJECTS_DEFAULT_USER_ID",
+]
+default_tools_approval_mode = "writes"

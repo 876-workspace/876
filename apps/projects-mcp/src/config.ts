@@ -1,3 +1,10 @@
+/**
+ * Production 876 Projects API. The MCP server points here unless a caller
+ * explicitly overrides PROJECTS_API_URL, so a normally-configured agent host
+ * reaches real data instead of a local port that may not be running.
+ */
+export const DEFAULT_PROJECTS_API_URL = 'https://876-projects-api.vercel.app'
+
 export interface Config {
   apiUrl: string
   internalKey: string
@@ -18,13 +25,7 @@ export class ConfigError extends Error {
 export function validateConfig(
   env: Record<string, string | undefined>
 ): Config {
-  const apiUrl = env.PROJECTS_API_URL?.trim()
-  if (!apiUrl) {
-    throw new ConfigError(
-      'PROJECTS_API_URL',
-      'Missing required environment variable: PROJECTS_API_URL'
-    )
-  }
+  const apiUrl = env.PROJECTS_API_URL?.trim() || DEFAULT_PROJECTS_API_URL
 
   const internalKey = env.PROJECTS_INTERNAL_KEY?.trim()
   if (!internalKey) {

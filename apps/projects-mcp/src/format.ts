@@ -1,4 +1,4 @@
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult } from '@modelcontextprotocol/server'
 
 import type {
   Comment,
@@ -16,9 +16,7 @@ import type {
 } from '@876/projects/contracts'
 
 /**
- * The MCP SDK owns this contract, so it is aliased rather than restated. A
- * hand-written copy drifts from the SDK's result union — which is exactly what
- * made the request handler fail to typecheck against `setRequestHandler`.
+ * The MCP SDK owns this contract, so it is aliased rather than restated.
  */
 export type ToolResult = CallToolResult
 
@@ -272,20 +270,33 @@ export function formatMilestoneList(list: MilestoneList): string {
   return [header, ...lines].join('\n')
 }
 
-export function formatError(error: {
-  code: string
-  message: string
-}): ToolResult {
+export function toolSuccess<T>(
+  text: string,
+  structuredContent: T
+): CallToolResult {
   return {
-    isError: true,
-    content: [
-      { type: 'text', text: `Error [${error.code}]: ${error.message}` },
-    ],
+    content: [{ type: 'text', text }],
+    structuredContent,
   }
 }
 
-export function formatSuccess(text: string): ToolResult {
+export function toolError(
+  error: { code: string; message: string } | string,
+  message?: string
+): CallToolResult {
+  const code = typeof error === 'string' ? error : error.code
+  const detail = typeof error === 'string' ? (message ?? error) : error.message
+  const isUnexpected = code === 'internal/tool-error'
+  const publicMessage = isUnexpected
+    ? 'The Projects MCP tool failed unexpectedly. Check the server logs for details.'
+    : detail
+
+  if (isUnexpected) {
+    console.error('876 Projects MCP unexpected tool error:', detail)
+  }
+
   return {
-    content: [{ type: 'text', text }],
+    isError: true,
+    content: [{ type: 'text', text: `Error [${code}]: ${publicMessage}` }],
   }
 }
