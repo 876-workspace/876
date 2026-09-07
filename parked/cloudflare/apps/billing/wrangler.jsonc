@@ -24,9 +24,15 @@
     },
   ],
   "secrets": {
-    "required": ["BILLING_INTERNAL_KEY", "SESSION_COOKIE_SECRET"],
+    "required": [
+      "BILLING_INTERNAL_KEY",
+      "CRM_SUPPORT_SERVICE_KEY",
+      "SESSION_COOKIE_SECRET",
+    ],
   },
   // Non-secret service URLs. Secrets are set with `wrangler secret put`.
+  // CRM_API_URL is deployment-specific because CRM API is Vercel-backed; set it
+  // as a runtime variable alongside these checked-in service origins.
   "vars": {
     "API_URL": "https://876-api.1876.workers.dev",
     "NEXT_PUBLIC_APP_URL": "https://876-app.1876.workers.dev",
