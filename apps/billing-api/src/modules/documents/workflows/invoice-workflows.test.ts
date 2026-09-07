@@ -56,6 +56,7 @@ import { finalizeInvoiceWorkflow } from './finalize-invoice'
 import { voidInvoiceWorkflow } from './void-invoice'
 
 const idempotency = { key: 'retry-key', requestHash: 'hash_1' }
+const finalizeParams = { autoApplyCredits: false }
 
 function draftInvoice() {
   return {
@@ -123,7 +124,7 @@ describe('Invoice application workflows', () => {
     })
 
     await expect(
-      finalizeInvoiceWorkflow('ten_1', 'inv_1', {}, idempotency)
+      finalizeInvoiceWorkflow('ten_1', 'inv_1', finalizeParams, idempotency)
     ).resolves.toEqual({ data: { id: 'inv_1' }, error: null })
 
     expect(mocks.findInvoiceForFinalize).not.toHaveBeenCalled()
@@ -140,7 +141,7 @@ describe('Invoice application workflows', () => {
     mocks.findInvoiceForFinalize.mockResolvedValue(draftInvoice())
 
     await expect(
-      finalizeInvoiceWorkflow('ten_1', 'inv_1', {}, idempotency)
+      finalizeInvoiceWorkflow('ten_1', 'inv_1', finalizeParams, idempotency)
     ).resolves.toEqual({ data: { id: 'inv_1' }, error: null })
 
     expect(mocks.consume).toHaveBeenCalledWith({}, 'ten_1', {
@@ -190,7 +191,7 @@ describe('Invoice application workflows', () => {
     })
 
     await expect(
-      finalizeInvoiceWorkflow('ten_1', 'inv_1', {}, idempotency)
+      finalizeInvoiceWorkflow('ten_1', 'inv_1', finalizeParams, idempotency)
     ).resolves.toEqual({
       data: null,
       error: 'Only 1 units of Widget are currently in stock.',
