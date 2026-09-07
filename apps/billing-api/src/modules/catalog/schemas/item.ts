@@ -5,6 +5,49 @@ import { currencyCodeSchema, minorAmountSchema } from './currency'
 
 export const ItemTypeSchema = z.enum(['GOOD', 'SERVICE'])
 
+function validateStockCreate(
+  value: {
+    type: 'GOOD' | 'SERVICE'
+    trackStock: boolean
+    stockQuantity?: number
+    lowStockThreshold?: number | null
+    allowOutOfStock: boolean
+  },
+  context: z.RefinementCtx
+) {
+  if (value.type === 'SERVICE' && value.trackStock) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Stock tracking is available only for goods.',
+      path: ['trackStock'],
+    })
+  }
+
+  if (!value.trackStock && value.stockQuantity !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Enable stock tracking before setting a stock quantity.',
+      path: ['stockQuantity'],
+    })
+  }
+
+  if (!value.trackStock && value.lowStockThreshold != null) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Enable stock tracking before setting a low-stock threshold.',
+      path: ['lowStockThreshold'],
+    })
+  }
+
+  if (!value.trackStock && value.allowOutOfStock) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Enable stock tracking before allowing out-of-stock sales.',
+      path: ['allowOutOfStock'],
+    })
+  }
+}
+
 export const ItemCreateSchema = z
   .strictObject({
     type: ItemTypeSchema,
@@ -19,6 +62,10 @@ export const ItemCreateSchema = z
     defaultCostCurrency: currencyCodeSchema.nullable().optional(),
     isTaxable: z.boolean().default(false),
     taxCode: z.string().trim().min(1).max(100).nullable().optional(),
+    trackStock: z.boolean().default(false),
+    stockQuantity: z.number().int().min(0).optional(),
+    lowStockThreshold: z.number().int().min(0).nullable().optional(),
+    allowOutOfStock: z.boolean().default(false),
   })
   .superRefine((value, context) => {
     if (
@@ -47,6 +94,8 @@ export const ItemCreateSchema = z
         path: ['defaultCostAmount'],
       })
     }
+
+    validateStockCreate(value, context)
   })
 
 export type ItemCreateParams = z.infer<typeof ItemCreateSchema>
@@ -71,6 +120,9 @@ export const ItemUpdateSchema = z
     defaultCostCurrency: currencyCodeSchema.nullable().optional(),
     isTaxable: z.boolean().optional(),
     taxCode: z.string().trim().min(1).max(100).nullable().optional(),
+    trackStock: z.boolean().optional(),
+    lowStockThreshold: z.number().int().min(0).nullable().optional(),
+    allowOutOfStock: z.boolean().optional(),
     isActive: z.boolean().optional(),
   })
   .superRefine((value, context) => {
@@ -110,10 +162,27 @@ export const ItemUpdateSchema = z
         })
       }
     }
+
+    if (value.type === 'SERVICE' && value.trackStock === true) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Stock tracking is available only for goods.',
+        path: ['trackStock'],
+      })
+    }
   })
 
 export type ItemUpdateParams = z.infer<typeof ItemUpdateSchema>
 export type ItemUpdateInput = z.input<typeof ItemUpdateSchema>
+
+export const ItemStockAdjustmentSchema = z.strictObject({
+  quantity: z.number().int(),
+  note: z.string().trim().min(1).max(500).nullable().optional(),
+})
+
+export type ItemStockAdjustmentParams = z.infer<
+  typeof ItemStockAdjustmentSchema
+>
 
 export interface ItemUpdated {
   object: 'item'

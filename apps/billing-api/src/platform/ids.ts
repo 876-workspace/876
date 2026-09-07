@@ -4,6 +4,7 @@ const entityPrefixes: Record<string, string> = {
   Tenant: 'ten',
   AppFinanceConnection: 'afc',
   Item: 'item',
+  ItemStockMovement: 'ism',
   Customer: 'cus',
   Contact: 'con',
   Address: 'addr',

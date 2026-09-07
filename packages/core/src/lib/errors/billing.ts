@@ -50,6 +50,14 @@ export const BILLING_ERRORS = {
     message: 'This accounting provider is not available yet.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'billing/item-insufficient-stock': {
+    message: 'The requested item quantity is greater than the stock available.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/item-stock-not-tracked': {
+    message: 'Stock tracking is not enabled for this item.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'billing/oauth-invalid-state': {
     message:
       'The accounting provider authorization state is invalid or expired.',

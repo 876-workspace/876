@@ -8,7 +8,7 @@ import { err, ok } from '../result'
 import { hasEnabledCurrency } from '../shared'
 import { isUniqueConstraintError } from '../prisma-error'
 
-/** Updates a billing item. */
+/** Updates a billing item without bypassing the stock-adjustment ledger. */
 export async function update(
   tenantId: string,
   itemId: string,
@@ -16,17 +16,37 @@ export async function update(
 ): ServiceResult<{ id: string }> {
   if (Object.keys(params).length === 0) return err('Nothing to update.', 422)
 
+  const current = await prisma.item.findFirst({
+    where: { id: itemId, tenantId },
+    select: {
+      type: true,
+      trackStock: true,
+      stockQuantity: true,
+    },
+  })
+  if (!current) return err('Item not found.', 404)
+
   if (typeof params.defaultSellingCurrency === 'string') {
-    if (!(await hasEnabledCurrency(tenantId, params.defaultSellingCurrency))) {
+    if (!(await hasEnabledCurrency(tenantId, params.defaultSellingCurrency)))
       return err('Enable the selling currency before using it on an item.', 422)
-    }
   }
 
   if (typeof params.defaultCostCurrency === 'string') {
-    if (!(await hasEnabledCurrency(tenantId, params.defaultCostCurrency))) {
+    if (!(await hasEnabledCurrency(tenantId, params.defaultCostCurrency)))
       return err('Enable the cost currency before using it on an item.', 422)
-    }
   }
+
+  const nextType = params.type ?? current.type
+  const nextTrackStock = params.trackStock ?? current.trackStock
+  if (nextType === 'SERVICE' && nextTrackStock)
+    return err('Stock tracking is available only for goods.', 422)
+  if (
+    params.lowStockThreshold != null &&
+    !nextTrackStock
+  )
+    return err('Enable stock tracking before setting a low-stock threshold.', 422)
+  if (params.allowOutOfStock === true && !nextTrackStock)
+    return err('Enable stock tracking before allowing out-of-stock sales.', 422)
 
   const data: Record<string, unknown> = {
     updatedAt: nowUnixSeconds(),
@@ -48,7 +68,22 @@ export async function update(
     data.defaultCostCurrency = params.defaultCostCurrency
   if (params.isTaxable !== undefined) data.isTaxable = params.isTaxable
   if (params.taxCode !== undefined) data.taxCode = params.taxCode
+  if (params.trackStock !== undefined) data.trackStock = params.trackStock
+  if (params.lowStockThreshold !== undefined)
+    data.lowStockThreshold = params.lowStockThreshold
+  if (params.allowOutOfStock !== undefined)
+    data.allowOutOfStock = params.allowOutOfStock
   if (params.isActive !== undefined) data.isActive = params.isActive
+
+  if (!current.trackStock && nextTrackStock)
+    data.stockQuantity = current.stockQuantity ?? 0
+
+  if (nextType === 'SERVICE') {
+    data.trackStock = false
+    data.stockQuantity = null
+    data.lowStockThreshold = null
+    data.allowOutOfStock = false
+  }
 
   try {
     const result = await prisma.item.updateMany({
@@ -63,7 +98,7 @@ export async function update(
     if (isUniqueConstraintError(error))
       return err('An item with this SKU already exists.', 409)
 
-    console.error('[billing.service.update]', error)
+    console.error('[billing.service.items.update]', error)
     return err('Failed to update the item.', 500)
   }
 }
