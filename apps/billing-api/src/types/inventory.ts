@@ -24,3 +24,12 @@ export interface InventoryRestore {
   reason: 'sale'
   occurredAt: number
 }
+
+export type InventoryResult<T> =
+  | { data: T; error: null }
+  | {
+      data: null
+      error: string
+      status?: number
+      code?: string
+    }
