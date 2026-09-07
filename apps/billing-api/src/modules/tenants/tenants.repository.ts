@@ -54,7 +54,19 @@ const SYSTEM_PAYMENT_MODES = [
 ] as const
 
 /** The workspace shape every provisioning path produces. */
-const WORKSPACE_PROVISIONING_VERSION = 3
+const WORKSPACE_PROVISIONING_VERSION = 4
+
+async function ensureInvoicePreferences(
+  tx: TenantProvisioningClient,
+  tenantId: string,
+  now: number
+) {
+  await tx.invoicePreference.upsert({
+    where: { tenantId },
+    create: { tenantId, createdAt: now, updatedAt: now },
+    update: {},
+  })
+}
 
 /**
  * Picks a free workspace slug derived from the requested one.
@@ -115,7 +127,10 @@ async function ensureSystemPaymentModes(
   now: number
 ) {
   const existing = await tx.paymentMode.findMany({
-    where: { tenantId, name: { in: SYSTEM_PAYMENT_MODES.map((mode) => mode.name) } },
+    where: {
+      tenantId,
+      name: { in: SYSTEM_PAYMENT_MODES.map((mode) => mode.name) },
+    },
     select: { name: true },
   })
   const names = new Set(existing.map((mode) => mode.name))
@@ -223,7 +238,10 @@ export async function provisionTenantWorkspace(
     where: { organizationId: input.organizationId },
   })
   if (existing) {
-    await ensureSystemPaymentModes(tx, existing.id, input.now)
+    await Promise.all([
+      ensureSystemPaymentModes(tx, existing.id, input.now),
+      ensureInvoicePreferences(tx, existing.id, input.now),
+    ])
     if (input.superAdminUserId)
       await ensureSuperAdminMembership(
         tx,
@@ -265,7 +283,10 @@ export async function provisionTenantWorkspace(
       updatedAt: input.now,
     },
   })
-  await ensureSystemPaymentModes(tx, tenantId, input.now)
+  await Promise.all([
+    ensureSystemPaymentModes(tx, tenantId, input.now),
+    ensureInvoicePreferences(tx, tenantId, input.now),
+  ])
   let superAdminRoleId = ''
   for (const role of SYSTEM_ROLES) {
     const id = generateId('Role')

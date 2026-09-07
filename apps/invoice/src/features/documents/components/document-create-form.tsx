@@ -1,7 +1,15 @@
 'use client'
 
-import { Suspense, use, useState, useTransition, type FormEvent } from 'react'
+import {
+  Suspense,
+  use,
+  useEffect,
+  useState,
+  useTransition,
+  type FormEvent,
+} from 'react'
 import { useRouter } from 'next/navigation'
+import type { Customer } from '@876/billing'
 import {
   DocumentLineItemsEditor,
   formatMinorUnits,
@@ -17,25 +25,21 @@ import { AsyncCombobox } from '@876/ui/async-combobox'
 import { Textarea } from '@876/ui/textarea'
 
 import { client } from '@/lib/client'
+import type { ClientResult } from '@/types/api'
 import { initialDocumentLine, toInvoiceLine } from '../document-create-model'
 
 export type DocumentKind = 'invoice' | 'quote'
 
-type CustomerOption = {
-  id: string
-  name: string
-  companyName: string | null
-  email: string | null
-  phone: string | null
-  workPhone: string | null
-  primaryContact: {
-    firstName: string | null
-    lastName: string | null
-    email: string | null
-    workPhone: string | null
-    mobilePhone: string | null
-  } | null
-}
+type CustomerOption = Pick<
+  Customer,
+  | 'id'
+  | 'name'
+  | 'companyName'
+  | 'email'
+  | 'phone'
+  | 'workPhone'
+  | 'primaryContact'
+>
 
 const documentConfig = {
   invoice: {
@@ -66,14 +70,23 @@ function toUnixTimestamp(value: string): number | null {
 export function DocumentCreateForm({
   kind,
   items = NO_ITEMS,
+  initialCustomer,
 }: {
   kind: DocumentKind
   items?: Promise<DocumentItemOption[]>
+  initialCustomer?: Promise<ClientResult<CustomerOption | null>>
 }) {
   const router = useRouter()
   const [customerId, setCustomerId] = useState('')
   const [selectedCustomer, setSelectedCustomer] =
     useState<CustomerOption | null>(null)
+  const [isInitialCustomerLoading, setIsInitialCustomerLoading] = useState(
+    Boolean(initialCustomer)
+  )
+  const [initialCustomerError, setInitialCustomerError] = useState<{
+    code: string
+    message: string
+  } | null>(null)
   const [issueDate, setIssueDate] = useState(todayInputValue)
   const [notes, setNotes] = useState('')
   const [terms, setTerms] = useState('')
@@ -85,6 +98,35 @@ export function DocumentCreateForm({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const config = documentConfig[kind]
+
+  useEffect(() => {
+    if (!initialCustomer) return
+
+    let active = true
+    void initialCustomer.then(
+      (result) => {
+        if (!active) return
+        if (result.data) {
+          setCustomerId(result.data.id)
+          setSelectedCustomer(result.data)
+        }
+        setInitialCustomerError(result.error)
+        setIsInitialCustomerLoading(false)
+      },
+      () => {
+        if (!active) return
+        setInitialCustomerError({
+          code: 'customer/prefill-failed',
+          message: 'The selected customer could not be loaded.',
+        })
+        setIsInitialCustomerLoading(false)
+      }
+    )
+
+    return () => {
+      active = false
+    }
+  }, [initialCustomer])
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -158,6 +200,7 @@ export function DocumentCreateForm({
               setSelectedCustomer(
                 (option?.raw as CustomerOption | undefined) ?? null
               )
+              setInitialCustomerError(null)
             }}
             onSearch={async (query, signal) => {
               const result = await client.customers.list(
@@ -175,8 +218,11 @@ export function DocumentCreateForm({
             }}
             placeholder="Search customers…"
             emptyMessage="No customers found."
-            disabled={isPending}
+            disabled={isPending || isInitialCustomerLoading}
           />
+          {initialCustomerError ? (
+            <AppError error={initialCustomerError} variant="form" />
+          ) : null}
           {selectedCustomer ? (
             <div className="border-border mt-4 border-t pt-4 text-sm">
               <p className="font-semibold">
@@ -287,7 +333,11 @@ export function DocumentCreateForm({
         >
           Cancel
         </Button>
-        <Button type="submit" variant="info" disabled={isPending}>
+        <Button
+          type="submit"
+          variant="info"
+          disabled={isPending || isInitialCustomerLoading}
+        >
           {isPending ? 'Adding…' : config.submitLabel}
         </Button>
       </div>
