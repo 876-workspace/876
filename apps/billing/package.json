@@ -23,6 +23,7 @@
     "@876/crm": "workspace:*",
     "@876/crm-ui": "workspace:*",
     "@876/settings": "workspace:*",
+    "@876/storage": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/workspace": "workspace:*",
     "@876/widgets": "workspace:*",
