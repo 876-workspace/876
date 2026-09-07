@@ -1,279 +1,199 @@
 import type { List } from '../../types'
 import type { BillingItemType } from './enums'
 
-/**
- * This object represents a catalog item exposed through the integration API.
- */
+export type BillingItemVariantMode = 'single' | 'variant'
+
+/** This object represents a catalog item exposed through the integration API. */
 export interface BillingItem {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'item'
-
-  /**
-   * Unique identifier for the object.
-   */
   id: string
-
-  /**
-   * ID of the product app that created this item, if any.
-   */
   sourceAppId: string | null
-
-  /**
-   * External reference in the product app that created this item, if any.
-   */
   sourceExternalReference: string | null
-
-  /**
-   * Whether the item is a good or a service. One of `GOOD` or `SERVICE`.
-   */
   type: BillingItemType
-
-  /**
-   * The item's display name.
-   */
+  variantMode: BillingItemVariantMode
   name: string
-
-  /**
-   * Stock-keeping unit for the item, if any.
-   */
   sku: string | null
-
-  /**
-   * Unit name shown next to quantities.
-   */
   unit: string | null
-
-  /**
-   * An arbitrary description of the item. Often useful for displaying to users.
-   */
   description: string | null
-
-  /**
-   * URL of an image representing the item.
-   */
   imageUrl: string | null
-
-  /**
-   * Default selling amount as a decimal string.
-   */
   defaultSellingAmount: string | null
-
-  /**
-   * Three-letter ISO currency code for the default selling amount.
-   */
   defaultSellingCurrency: string | null
-
-  /**
-   * Default cost amount as a decimal string.
-   */
   defaultCostAmount: string | null
-
-  /**
-   * Three-letter ISO currency code for the default cost amount.
-   */
   defaultCostCurrency: string | null
-
-  /**
-   * Whether the item is taxable.
-   */
   isTaxable: boolean
-
-  /**
-   * Tax code used for tax calculation.
-   */
   taxCode: string | null
-
-  /**
-   * Whether this Good participates in lightweight stock tracking.
-   */
   trackStock: boolean
-
-  /**
-   * Current stock count. Null when stock is not applicable to the item.
-   */
+  /** Parent count for single Items; null for variant-mode Items. */
   stockQuantity: number | null
-
-  /**
-   * Count at or below which the item is considered low stock.
-   */
   lowStockThreshold: number | null
-
-  /**
-   * Whether invoice finalization may take this item's count below zero.
-   */
   allowOutOfStock: boolean
-
-  /**
-   * Whether the item is active for new use.
-   */
   isActive: boolean
-
-  /**
-   * Set of key-value pairs attached to the item.
-   */
   metadata: unknown | null
-
-  /**
-   * Time at which the object was created. Measured in seconds since the Unix epoch.
-   */
   createdAt: number
-
-  /**
-   * Time at which the object was last updated. Measured in seconds since the Unix epoch.
-   */
   updatedAt: number
 }
 
-/**
- * Parameters for creating a Billing item.
- */
-export interface BillingItemCreateParams {
-  /**
-   * Whether the item is a good or a service. One of `GOOD` or `SERVICE`.
-   */
-  type: BillingItemType
-
-  /**
-   * The item's display name.
-   */
+export interface BillingItemVariantOptionInput {
   name: string
+  values: string[]
+}
 
-  /**
-   * Stock-keeping unit for the item, if any.
-   */
+export interface BillingItemVariantStockAllocation {
+  values: string[]
+  quantity: number
+}
+
+export interface BillingItemCreateParams {
+  type: BillingItemType
+  variantMode?: BillingItemVariantMode
+  /** Required when creating directly in variant mode. */
+  variantOptions?: BillingItemVariantOptionInput[]
+  name: string
   sku?: string | null
-
-  /**
-   * Unit name shown next to quantities.
-   */
   unit?: string | null
-
-  /**
-   * An arbitrary description of the item. Often useful for displaying to users.
-   */
   description?: string | null
-
-  /**
-   * URL of an image representing the item.
-   */
   imageUrl?: string | null
-
-  /**
-   * Default selling amount in the smallest currency unit or as a decimal string.
-   */
   defaultSellingAmount?: number | string | null
-
-  /**
-   * Three-letter ISO currency code for the default selling amount.
-   */
   defaultSellingCurrency?: string | null
-
-  /**
-   * Default cost amount in the smallest currency unit or as a decimal string.
-   */
   defaultCostAmount?: number | string | null
-
-  /**
-   * Three-letter ISO currency code for the default cost amount.
-   */
   defaultCostCurrency?: string | null
-
-  /**
-   * Whether the item is taxable.
-   */
   isTaxable?: boolean
-
-  /**
-   * Tax code used for tax calculation.
-   */
   taxCode?: string | null
-
-  /**
-   * Enables lightweight stock tracking. Valid only for `GOOD` items.
-   */
   trackStock?: boolean
-
-  /**
-   * Opening stock count. Accepted only when creating a tracked Good.
-   */
+  /** Opening parent stock for a single tracked Good only. */
   stockQuantity?: number
-
-  /**
-   * Count at or below which the item is considered low stock.
-   */
   lowStockThreshold?: number | null
-
-  /**
-   * Whether finalized invoices may take the count below zero.
-   */
   allowOutOfStock?: boolean
-
-  /**
-   * External reference for the product app that created the item.
-   */
   sourceExternalReference?: string | null
 }
 
-/**
- * Parameters for updating a Billing item. Current stock quantity is changed
- * through `adjustStock()` so every manual count change remains auditable.
- */
+/** Current stock quantity is changed through an auditable stock-adjustment operation. */
 export type BillingItemUpdateParams = Partial<
   Omit<
     BillingItemCreateParams,
-    'sourceExternalReference' | 'stockQuantity'
+    'sourceExternalReference' | 'stockQuantity' | 'variantMode' | 'variantOptions'
   > & {
     isActive: boolean
   }
 >
 
-/**
- * Parameters for replacing the current stock count of a tracked Good.
- */
 export interface BillingItemStockAdjustmentParams {
-  /** Absolute new stock count; the service records the derived delta. */
   quantity: number
-  /** Optional human-readable reason for the adjustment. */
   note?: string | null
 }
 
-/**
- * Parameters for listing Billing items.
- */
 export interface BillingItemListParams {
-  /** Case-insensitive match on item name, SKU, or description. */
   q?: string
-  /**
-   * Filter by active status.
-   */
   active?: boolean
-  /** Maximum number of items to return. */
   limit?: number
 }
 
-/**
- * A deleted item tombstone.
- */
-export interface DeletedBillingItem {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
-  object: 'item'
+export interface BillingItemVariantOption {
+  optionId: string
+  name: string
+  valueId: string
+  value: string
+  position: number
+}
 
-  /**
-   * Unique identifier for the object.
-   */
+export interface BillingItemVariantMedia {
+  fileId: string
+  position: number
+}
+
+export interface BillingItemVariantParent {
   id: string
+  name: string
+  unit: string | null
+  defaultSellingAmount: string | null
+  defaultSellingCurrency: string | null
+  defaultCostAmount: string | null
+  defaultCostCurrency: string | null
+  trackStock: boolean
+  lowStockThreshold: number | null
+  allowOutOfStock: boolean
+}
 
-  /**
-   * Always true for a deleted object.
-   */
+export interface BillingItemVariant {
+  object: 'item_variant'
+  id: string
+  itemId: string
+  name: string
+  sku: string | null
+  defaultSellingAmount: string | null
+  defaultSellingCurrency: string | null
+  defaultCostAmount: string | null
+  defaultCostCurrency: string | null
+  stockQuantity: number | null
+  isActive: boolean
+  options: BillingItemVariantOption[]
+  media: BillingItemVariantMedia[]
+  item?: BillingItemVariantParent
+  createdAt: number
+  updatedAt: number
+}
+
+export interface BillingItemVariantListParams {
+  q?: string
+  active?: boolean
+  limit?: number
+}
+
+export interface BillingItemVariantGenerateParams {
+  options: BillingItemVariantOptionInput[]
+  /** Required to redistribute all current parent stock when converting a tracked Item. */
+  stockAllocations?: BillingItemVariantStockAllocation[]
+}
+
+export interface BillingItemVariantUpdateParams {
+  name?: string
+  sku?: string | null
+  defaultSellingAmount?: number | string | null
+  defaultSellingCurrency?: string | null
+  defaultCostAmount?: number | string | null
+  defaultCostCurrency?: string | null
+  isActive?: boolean
+}
+
+export interface BillingItemPreferences {
+  object: 'item_preferences'
+  productVariants: boolean
+}
+
+export interface BillingItemPreferencesUpdateParams {
+  productVariants: boolean
+}
+
+export interface BillingItemMedia {
+  object: 'item_media'
+  id: string
+  fileId: string
+  position: number
+  createdAt: number
+  updatedAt: number
+}
+
+export interface BillingItemMediaAttachParams {
+  fileId: string
+  position?: number
+}
+
+export interface BillingItemMediaReorderParams {
+  fileIds: string[]
+}
+
+export interface DeletedBillingItem {
+  object: 'item'
+  id: string
   deleted: true
 }
 
-/**
- * A list of Billing items.
- */
+export interface DeletedBillingItemMedia {
+  object: 'item_media'
+  id: string
+  deleted: true
+}
+
 export type BillingItemList = List<BillingItem>
+export type BillingItemVariantList = List<BillingItemVariant>
+export type BillingItemMediaList = List<BillingItemMedia>
