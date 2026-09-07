@@ -67,11 +67,15 @@ describe('feature seed catalog', () => {
     )
   })
 
-  it('seeds Estimates as a disabled child of Billing Sales', () => {
-    expect(seedFor('876-billing', 'billing-sales-estimates')).toMatchObject({
+  // The Estimate document type was merged into Quote, so its flag is gone.
+  it('no longer seeds a Billing estimates flag', () => {
+    expect(seedFor('876-billing', 'billing-sales-estimates')).toBeUndefined()
+  })
+
+  it('seeds Quotes as an enabled child of Billing Sales', () => {
+    expect(seedFor('876-billing', 'billing-sales-quotes')).toMatchObject({
       parentSlug: 'billing-sales',
-      defaultEnabled: false,
-      legacySlugs: ['billing_sales_estimates'],
+      legacySlugs: ['billing_sales_quotes'],
     })
   })
 

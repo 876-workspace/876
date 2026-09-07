@@ -331,14 +331,6 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       legacySlugs: ['billing_sales_quotes'],
     },
     {
-      slug: 'billing-sales-estimates',
-      name: 'Estimates',
-      description: 'Controls access to Billing estimates.',
-      parentSlug: 'billing-sales',
-      defaultEnabled: false,
-      legacySlugs: ['billing_sales_estimates'],
-    },
-    {
       slug: 'billing-sales-invoices',
       name: 'Invoices',
       description: 'Controls access to Billing invoices.',
