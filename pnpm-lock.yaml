@@ -438,6 +438,12 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/crm':
+        specifier: workspace:*
+        version: link:../../packages/crm
+      '@876/crm-ui':
+        specifier: workspace:*
+        version: link:../../packages/crm-ui
       '@876/settings':
         specifier: workspace:*
         version: link:../../packages/settings
@@ -1304,6 +1310,12 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/crm':
+        specifier: workspace:*
+        version: link:../../packages/crm
+      '@876/crm-ui':
+        specifier: workspace:*
+        version: link:../../packages/crm-ui
       '@876/settings':
         specifier: workspace:*
         version: link:../../packages/settings
