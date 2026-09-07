@@ -17,6 +17,14 @@ export type InvoiceFinanceAccessOutcome =
   | { status: 'ok'; viewer: InvoiceFinanceViewer }
   | { status: 'unavailable'; code: string }
 
+type InvoiceFinancePermission =
+  | 'currencies:read'
+  | 'currencies:write'
+  | 'payments:read'
+  | 'payments:write'
+  | 'taxes:read'
+  | 'taxes:write'
+
 /**
  * Resolves a member's finance role once per request. All arguments are
  * primitives deliberately: React.cache compares them with Object.is.
@@ -70,10 +78,18 @@ export async function requireFinanceMemberManager(organizationId: string) {
   return requireFinanceManager(organizationId, 'members:write', 'members')
 }
 
+/** API-only guard for a product route that exposes a Billing finance resource. */
+export async function requireInvoiceFinancePermission(
+  organizationId: string,
+  permission: InvoiceFinancePermission
+) {
+  return requireFinanceManager(organizationId, permission, 'settings')
+}
+
 async function requireFinanceManager(
   organizationId: string,
-  permission: 'roles:write' | 'members:write',
-  subject: 'roles' | 'members'
+  permission: 'roles:write' | 'members:write' | InvoiceFinancePermission,
+  subject: 'roles' | 'members' | 'settings'
 ) {
   const context = await getInvoiceContextResult()
   if (context.status === 'signed-out')
