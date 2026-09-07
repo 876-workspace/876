@@ -26,3 +26,9 @@ export const BillingPaymentModeListSchema = z.strictObject({
   total_count: z.number().int().nullable(),
   url: z.string(),
 }) satisfies z.ZodType<BillingPaymentModeList>
+
+export const DeletedBillingPaymentModeSchema = z.strictObject({
+  object: z.literal('payment_mode'),
+  id: z.string().min(1),
+  deleted: z.literal(true),
+}) satisfies z.ZodType<import('./payment-mode').BillingPaymentModeDeleted>

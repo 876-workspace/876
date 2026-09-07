@@ -1,6 +1,11 @@
 import { SETTINGS_HUB_ICON_KEYS } from '@876/ui/settings-hub'
 
-import { ROLES_READ_PERMISSION, SETTINGS_GROUPS } from './settings-nav'
+import {
+  FINANCE_READ_PERMISSIONS,
+  ROLES_READ_PERMISSION,
+  SETTINGS_GROUPS,
+  isSettingsItemVisible,
+} from './settings-nav'
 
 describe('invoice settings navigation', () => {
   it('exports a non-empty settings list', () => {
@@ -70,6 +75,67 @@ describe('invoice settings navigation', () => {
       { label: 'Customers settings', href: '/settings/modules/customers' },
       { label: 'CRM settings', href: '/settings/modules/crm' },
     ])
+  })
+
+  it('condenses currencies, payment modes, and taxes into one Finance destination', () => {
+    const money = SETTINGS_GROUPS.find((group) => group.label === 'Money')
+
+    expect(money?.items.map(({ label, href }) => ({ label, href }))).toEqual([
+      { label: 'Finance', href: '/settings/finance' },
+    ])
+  })
+
+  it('binds the Finance requirement to the three reads its route enforces', () => {
+    const finance = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/finance'
+    )
+
+    expect(finance?.requires?.anyPermission).toEqual([
+      'currencies:read',
+      'payments:read',
+      'taxes:read',
+    ])
+    expect(FINANCE_READ_PERMISSIONS).toEqual([
+      'currencies:read',
+      'payments:read',
+      'taxes:read',
+    ])
+  })
+
+  it('shows Finance to a viewer holding only one of the three reads', () => {
+    const finance = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/finance'
+    )
+
+    expect(isSettingsItemVisible(finance!, ['taxes:read'])).toBe(true)
+    expect(isSettingsItemVisible(finance!, ['payments:read'])).toBe(true)
+    expect(isSettingsItemVisible(finance!, ['currencies:read'])).toBe(true)
+  })
+
+  it('hides Finance from a viewer holding none of the three reads', () => {
+    const finance = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/finance'
+    )
+
+    expect(isSettingsItemVisible(finance!, ['roles:read'])).toBe(false)
+    expect(isSettingsItemVisible(finance!, [])).toBe(false)
+  })
+
+  it('still honours a single-permission requirement', () => {
+    const roles = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/roles'
+    )
+
+    expect(isSettingsItemVisible(roles!, ['roles:read'])).toBe(true)
+    expect(isSettingsItemVisible(roles!, ['taxes:read'])).toBe(false)
+  })
+
+  it('shows an item that declares no requirement', () => {
+    const users = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/users'
+    )
+
+    expect(isSettingsItemVisible(users!, [])).toBe(true)
   })
 
   it('keeps exported settings navigation structurally cloneable', () => {

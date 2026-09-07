@@ -23,8 +23,16 @@ export {
   BillingPaymentListSchema,
   BillingPaymentModeListSchema,
   BillingPaymentModeSchema,
+  DeletedBillingPaymentModeSchema,
   BillingPaymentSchema,
   DeletedBillingCustomerSchema,
   DeletedBillingItemSchema,
   DeletedBillingItemMediaSchema,
 } from './types'
+
+export {
+  TaxAuthorityListSchema,
+  TaxAuthoritySchema,
+  TaxRateListSchema,
+  TaxRateSchema,
+} from '../types/tax.schema'

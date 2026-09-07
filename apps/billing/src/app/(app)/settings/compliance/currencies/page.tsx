@@ -19,12 +19,13 @@ export default async function CurrenciesPage() {
 
   return (
     <CurrencySettings
-      enabled={enabledCurrencies.map(({ currency, isDefault }) => ({
+      enabled={enabledCurrencies.map(({ currency, isDefault, isEnabled }) => ({
         code: currency.code,
         name: currency.name,
         symbol: currency.symbol,
         decimalPlaces: currency.decimalPlaces,
         isDefault,
+        isEnabled,
       }))}
       canManage={context.permissions.includes('currencies:write')}
     />

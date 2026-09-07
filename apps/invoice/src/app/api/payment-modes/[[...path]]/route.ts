@@ -1,9 +1,12 @@
-import { createInvoiceResourceRoute } from '@/lib/api/resource-proxy'
+import { createInvoiceFinanceResourceRoute } from '@/lib/api/resource-proxy'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const route = createInvoiceResourceRoute('payment-modes')
+const route = createInvoiceFinanceResourceRoute('payment-modes', {
+  read: 'payments:read',
+  write: 'payments:write',
+})
 
 export const GET = route
 export const POST = route

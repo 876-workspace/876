@@ -10,6 +10,7 @@ import {
 } from '@/lib/api/resource-manifest'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { requireInvoiceFinancePermission } from '@/lib/auth/finance-access'
 
 export type ResourceRouteContext = {
   params: Promise<{ path?: string[] }>
@@ -66,5 +67,37 @@ export function createInvoiceResourceRoute(resource: ProxiedResource) {
 
     const { path = [] } = await context.params
     return proxyInvoiceResourceRequest(request, resource, path)
+  }
+}
+
+/** Creates a Billing resource proxy with Invoice's finance-member permission check. */
+export function createInvoiceFinanceResourceRoute(
+  resource: ProxiedResource,
+  permissions: {
+    read: 'currencies:read' | 'payments:read' | 'taxes:read'
+    write: 'currencies:write' | 'payments:write' | 'taxes:write'
+  }
+) {
+  const proxy = createInvoiceResourceRoute(resource)
+
+  return async function invoiceFinanceResourceRoute(
+    request: Request,
+    context: ResourceRouteContext
+  ): Promise<Response> {
+    const session = await getAuthSession()
+    if (!isSignedSession(session))
+      return apiError('Invoice authentication is required.', { status: 401 })
+
+    const organizationId = session.user.orgId ?? (await getInvoiceContext())?.orgId
+    if (!organizationId)
+      return apiError('Select an organization to access Invoice.', { status: 400 })
+
+    const access = await requireInvoiceFinancePermission(
+      organizationId,
+      request.method === 'GET' ? permissions.read : permissions.write
+    )
+    if (access.response) return access.response
+
+    return proxy(request, context)
   }
 }

@@ -7,6 +7,9 @@ import { roles } from './roles'
 import { members } from './members'
 import { invites } from './invites'
 import { support } from './support'
+import { paymentModes } from './payment-modes'
+import { currencies } from './currencies'
+import { taxAuthorities, taxRates } from './taxes'
 
 export const client = {
   onboarding,
@@ -18,6 +21,10 @@ export const client = {
   documents,
   appMemberships,
   support,
+  paymentModes,
+  currencies,
+  taxAuthorities,
+  taxRates,
 }
 
 export { customers } from './customers'
@@ -30,4 +37,5 @@ export { roles } from './roles'
 export { members } from './members'
 export { invites } from './invites'
 export { support } from './support'
+export { currencies } from './currencies'
 export type { ClientResult } from '@/types/api'

@@ -100,6 +100,15 @@ describe('Billing API v1 contract baseline', () => {
     '/integrations/organizations/{organizationId}/items/{itemId}/media/{fileId}',
     '/integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media',
     '/integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media/{fileId}',
+
+    // Organization-scoped payment mode and tax administration. Express-only,
+    // added so 876 Invoice configures the same Billing-owned payment modes,
+    // tax authorities, and tax rates rather than keeping its own copies.
+    '/integrations/organizations/{organizationId}/payment-modes/{modeId}',
+    '/integrations/organizations/{organizationId}/tax-authorities',
+    '/integrations/organizations/{organizationId}/tax-authorities/{taxAuthorityId}',
+    '/integrations/organizations/{organizationId}/tax-rates',
+    '/integrations/organizations/{organizationId}/tax-rates/{taxRateId}',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {

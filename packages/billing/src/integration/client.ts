@@ -8,6 +8,8 @@ import { createIntegrationPaymentModesResource } from './resources/payment-modes
 import { createIntegrationPaymentMethodsResource } from './resources/payment-methods'
 import { createIntegrationPaymentIntentsResource } from './resources/payment-intents'
 import { createIntegrationPaymentsResource } from './resources/payments'
+import { createIntegrationTaxAuthoritiesResource } from './resources/tax-authorities'
+import { createIntegrationTaxRatesResource } from './resources/tax-rates'
 import { buildIntegrationRuntime } from './runtime'
 import type { IntegrationClientOptions } from './types'
 
@@ -28,6 +30,8 @@ export function create876BillingIntegrationClient(
     paymentMethods: createIntegrationPaymentMethodsResource(runtime),
     paymentIntents: createIntegrationPaymentIntentsResource(runtime),
     payments: createIntegrationPaymentsResource(runtime),
+    taxAuthorities: createIntegrationTaxAuthoritiesResource(runtime),
+    taxRates: createIntegrationTaxRatesResource(runtime),
   }
 }
 

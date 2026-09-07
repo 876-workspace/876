@@ -47,6 +47,12 @@ const SYSTEM_ROLES = [
   },
 ] as const
 
+const SYSTEM_PAYMENT_MODES = [
+  { name: 'Cash', isDefault: false },
+  { name: 'Credit Card', isDefault: false },
+  { name: 'Bank Transfer', isDefault: true },
+] as const
+
 /** The workspace shape every provisioning path produces. */
 const WORKSPACE_PROVISIONING_VERSION = 3
 
@@ -101,6 +107,33 @@ export type TenantProvisioningInput = {
    */
   superAdminUserId?: string | null
   now: number
+}
+
+async function ensureSystemPaymentModes(
+  tx: TenantProvisioningClient,
+  tenantId: string,
+  now: number
+) {
+  const existing = await tx.paymentMode.findMany({
+    where: { tenantId, name: { in: SYSTEM_PAYMENT_MODES.map((mode) => mode.name) } },
+    select: { name: true },
+  })
+  const names = new Set(existing.map((mode) => mode.name))
+  const missing = SYSTEM_PAYMENT_MODES.filter((mode) => !names.has(mode.name))
+  if (missing.length === 0) return
+
+  await tx.paymentMode.createMany({
+    data: missing.map((mode) => ({
+      id: generateId('PaymentMode'),
+      tenantId,
+      name: mode.name,
+      isDefault: mode.isDefault,
+      isActive: true,
+      isSystem: true,
+      createdAt: now,
+      updatedAt: now,
+    })),
+  })
 }
 
 /**
@@ -190,6 +223,7 @@ export async function provisionTenantWorkspace(
     where: { organizationId: input.organizationId },
   })
   if (existing) {
+    await ensureSystemPaymentModes(tx, existing.id, input.now)
     if (input.superAdminUserId)
       await ensureSuperAdminMembership(
         tx,
@@ -231,6 +265,7 @@ export async function provisionTenantWorkspace(
       updatedAt: input.now,
     },
   })
+  await ensureSystemPaymentModes(tx, tenantId, input.now)
   let superAdminRoleId = ''
   for (const role of SYSTEM_ROLES) {
     const id = generateId('Role')

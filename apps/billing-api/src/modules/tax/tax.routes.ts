@@ -119,5 +119,103 @@ export function createTaxRouter(resolveGuards: GuardResolver) {
     },
     handler: taxController.updateRate,
   })
+  const org = z.strictObject({ organizationId: z.string().min(1) })
+  const authorityParams = org.extend({ taxAuthorityId: z.string().min(1) })
+  const rateParams = org.extend({ taxRateId: z.string().min(1) })
+  const integrationRead = {
+    kind: 'integration' as const,
+    scope: 'billing.taxes.read',
+  }
+  const integrationWrite = {
+    kind: 'integration' as const,
+    scope: 'billing.taxes.write',
+  }
+  const authorityBase =
+    '/integrations/organizations/:organizationId/tax-authorities'
+  const rateBase = '/integrations/organizations/:organizationId/tax-rates'
+  api.get({
+    path: authorityBase,
+    summary: 'List organization tax authorities',
+    security: integrationRead,
+    request: { params: org },
+    responses: {
+      200: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(listSchema(taxAuthoritySchema)),
+      },
+      ...clientErrors,
+    },
+    handler: taxController.listAuthorities,
+  })
+  api.post({
+    path: authorityBase,
+    summary: 'Create an organization tax authority',
+    security: integrationWrite,
+    request: { params: org, body: taxAuthorityCreateBodySchema },
+    responses: {
+      201: {
+        description: 'Created',
+        schema: successEnvelopeSchema(taxAuthoritySchema),
+      },
+      ...clientErrors,
+    },
+    handler: taxController.createAuthority,
+  })
+  api.patch({
+    path: `${authorityBase}/:taxAuthorityId`,
+    summary: 'Update an organization tax authority',
+    security: integrationWrite,
+    request: { params: authorityParams, body: taxAuthorityUpdateBodySchema },
+    responses: {
+      200: {
+        description: 'Updated',
+        schema: successEnvelopeSchema(taxAuthoritySchema),
+      },
+      ...clientErrors,
+    },
+    handler: taxController.updateAuthority,
+  })
+  api.get({
+    path: rateBase,
+    summary: 'List organization tax rates',
+    security: integrationRead,
+    request: { params: org },
+    responses: {
+      200: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(listSchema(taxRateSchema)),
+      },
+      ...clientErrors,
+    },
+    handler: taxController.listRates,
+  })
+  api.post({
+    path: rateBase,
+    summary: 'Create an organization tax rate',
+    security: integrationWrite,
+    request: { params: org, body: taxRateCreateBodySchema },
+    responses: {
+      201: {
+        description: 'Created',
+        schema: successEnvelopeSchema(taxRateSchema),
+      },
+      ...clientErrors,
+    },
+    handler: taxController.createRate,
+  })
+  api.patch({
+    path: `${rateBase}/:taxRateId`,
+    summary: 'Update an organization tax rate',
+    security: integrationWrite,
+    request: { params: rateParams, body: taxRateUpdateBodySchema },
+    responses: {
+      200: {
+        description: 'Updated',
+        schema: successEnvelopeSchema(taxRateSchema),
+      },
+      ...clientErrors,
+    },
+    handler: taxController.updateRate,
+  })
   return api.router
 }

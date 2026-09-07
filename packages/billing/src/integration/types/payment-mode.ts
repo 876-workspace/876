@@ -45,6 +45,23 @@ export interface BillingPaymentMode {
   updatedAt: number
 }
 
+export interface BillingPaymentModeCreateParams {
+  name: string
+  isDefault?: boolean
+}
+
+export interface BillingPaymentModeUpdateParams {
+  name?: string
+  isDefault?: boolean
+  isActive?: boolean
+}
+
+export interface BillingPaymentModeDeleted {
+  object: 'payment_mode'
+  id: string
+  deleted: true
+}
+
 /**
  * A list of Billing payment modes.
  */

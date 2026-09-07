@@ -105,10 +105,17 @@ export type {
   BillingQuoteListParams,
 } from './quote'
 export { BillingQuoteListSchema, BillingQuoteSchema } from './quote.schema'
-export type { BillingPaymentMode, BillingPaymentModeList } from './payment-mode'
+export type {
+  BillingPaymentMode,
+  BillingPaymentModeCreateParams,
+  BillingPaymentModeDeleted,
+  BillingPaymentModeList,
+  BillingPaymentModeUpdateParams,
+} from './payment-mode'
 export {
   BillingPaymentModeSchema,
   BillingPaymentModeListSchema,
+  DeletedBillingPaymentModeSchema,
 } from './payment-mode.schema'
 export type { BillingBankAccount, BillingBankAccountList } from './bank-account'
 export {
