@@ -43,7 +43,6 @@ describe('nextDocumentNumber', () => {
   it('maps document types to correct prefixes', async () => {
     const cases: Array<[string, string]> = [
       ['QUOTE', 'Q-000001'],
-      ['ESTIMATE', 'EST-000001'],
       ['CREDIT_NOTE', 'CN-000001'],
       ['REFUND', 'REF-000001'],
     ]

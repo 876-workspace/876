@@ -17,7 +17,6 @@ vi.mock('../repositories/invoice-preferences', () => ({
 }))
 
 vi.mock('../repositories/credit-notes', () => ({ creditNotes: {} }))
-vi.mock('../repositories/estimates', () => ({ estimates: {} }))
 vi.mock('../repositories/invoices', () => ({ invoices: {} }))
 vi.mock('../repositories/quotes', () => ({ quotes: {} }))
 
@@ -30,7 +29,6 @@ describe('documentsService.assessLateFees feature flag', () => {
       invoicePreferences: { assessLateFees: mockAssess },
     }))
     vi.doMock('../repositories/credit-notes', () => ({ creditNotes: {} }))
-    vi.doMock('../repositories/estimates', () => ({ estimates: {} }))
     vi.doMock('../repositories/invoices', () => ({ invoices: {} }))
     vi.doMock('../repositories/quotes', () => ({ quotes: {} }))
   })
@@ -95,7 +93,6 @@ describe('documentsService.assessLateFees feature flag', () => {
         invoicePreferences: { assessLateFees: mockAssess },
       }))
       vi.doMock('../repositories/credit-notes', () => ({ creditNotes: {} }))
-      vi.doMock('../repositories/estimates', () => ({ estimates: {} }))
       vi.doMock('../repositories/invoices', () => ({ invoices: {} }))
       vi.doMock('../repositories/quotes', () => ({ quotes: {} }))
       mockAssess.mockResolvedValue({

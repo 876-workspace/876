@@ -14,9 +14,12 @@ import {
 import { ClipboardList } from '@876/ui/icons'
 
 import { getInvoiceContext } from '@/lib/auth/context'
+import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { listQuotes } from '@/app/(app)/_lib/list-data'
 import { formatDate, formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
+
+import { QuoteActions } from './_components/quote-actions'
 
 type Props = { params: Promise<{ quoteId: string }> }
 
@@ -44,6 +47,8 @@ export default async function QuoteDetailPage({ params }: Props) {
 
   const quote = result.data.data.find((row) => row.id === quoteId)
   if (!quote) notFound()
+  const access = await resolveAccessContext(context.userId, context.orgId)
+  const canWrite = access.status === 'ok' && canAccess(access.context, 'sales:write')
 
   const customer =
     quote.customer &&
@@ -86,6 +91,9 @@ export default async function QuoteDetailPage({ params }: Props) {
         closeHref="/quotes"
         closeLabel="Close quote details"
       />
+      <div className="px-5 pt-5 sm:px-6 print:hidden">
+        <QuoteActions quoteId={quote.id} status={status as Parameters<typeof QuoteActions>[0]['status']} canWrite={canWrite} />
+      </div>
       <DetailCardBody className="space-y-8">
         <DetailCardHeadline
           value={formatMoney(totalAmount, currency)}

@@ -560,38 +560,25 @@ export const v1OperationMetadata = {
     description: 'Ported from `src/app/api/billing/quotes/[quoteId]/route.ts`.',
     tags: ['Billing'],
   },
-  'GET /estimates': {
-    operationId: 'billing-billing_get_estimates',
-    summary: 'Billing GET /estimates',
-    description: 'Ported from `src/app/api/billing/estimates/route.ts`.',
-    tags: ['Billing'],
+  'POST /quotes/{quoteId}/send': {
+    operationId: 'billing-billing_post_quotes_quoteId_send',
+    summary: 'Send a quote',
+    tags: ['Invoices'],
   },
-  'POST /estimates': {
-    operationId: 'billing-billing_post_estimates',
-    summary: 'Billing POST /estimates',
-    description: 'Ported from `src/app/api/billing/estimates/route.ts`.',
-    tags: ['Billing'],
+  'POST /quotes/{quoteId}/accept': {
+    operationId: 'billing-billing_post_quotes_quoteId_accept',
+    summary: 'Accept a quote',
+    tags: ['Invoices'],
   },
-  'GET /estimates/{estimateId}': {
-    operationId: 'billing-billing_get_estimates_estimateId',
-    summary: 'Billing GET /estimates/{estimateId}',
-    description:
-      'Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.',
-    tags: ['Billing'],
+  'POST /quotes/{quoteId}/decline': {
+    operationId: 'billing-billing_post_quotes_quoteId_decline',
+    summary: 'Decline a quote',
+    tags: ['Invoices'],
   },
-  'PATCH /estimates/{estimateId}': {
-    operationId: 'billing-billing_patch_estimates_estimateId',
-    summary: 'Billing PATCH /estimates/{estimateId}',
-    description:
-      'Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.',
-    tags: ['Billing'],
-  },
-  'DELETE /estimates/{estimateId}': {
-    operationId: 'billing-billing_delete_estimates_estimateId',
-    summary: 'Billing DELETE /estimates/{estimateId}',
-    description:
-      'Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.',
-    tags: ['Billing'],
+  'POST /quotes/{quoteId}/cancel': {
+    operationId: 'billing-billing_post_quotes_quoteId_cancel',
+    summary: 'Cancel a quote',
+    tags: ['Invoices'],
   },
   'GET /invoices': {
     operationId: 'billing-billing_get_invoices',
@@ -12140,32 +12127,24 @@ export const v1OperationContracts = {
       },
     },
   },
-  'GET /estimates': {
-    description: 'Ported from `src/app/api/billing/estimates/route.ts`.',
-    operationId: 'billing-billing_get_estimates',
+  'POST /quotes/{quoteId}/send': {
+    tags: ['Invoices'],
+    summary: 'Send a quote',
+    operationId: 'billing-billing_post_quotes_quoteId_send',
     security: [
       {
         tenantOAuth: [],
       },
     ],
-    summary: 'Billing GET /estimates',
-    tags: ['Billing'],
     parameters: [
       {
-        in: 'header',
-        name: 'X-Billing-Organization-Id',
-        required: false,
+        in: 'path',
+        name: 'quoteId',
         schema: {
-          anyOf: [
-            {
-              type: 'string',
-            },
-            {
-              type: 'null',
-            },
-          ],
-          title: 'X-Billing-Organization-Id',
+          type: 'string',
+          minLength: 1,
         },
+        required: true,
       },
     ],
     responses: {
@@ -12174,49 +12153,83 @@ export const v1OperationContracts = {
         content: {
           'application/json': {
             schema: {
-              title: 'Response Billing-Billing Get Estimates',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
-      '422': {
-        description: 'Validation Error',
+      '4XX': {
+        description: 'Client Error',
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/HTTPValidationError',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
     },
   },
-  'POST /estimates': {
-    description: 'Ported from `src/app/api/billing/estimates/route.ts`.',
-    operationId: 'billing-billing_post_estimates',
+  'POST /quotes/{quoteId}/accept': {
+    tags: ['Invoices'],
+    summary: 'Accept a quote',
+    operationId: 'billing-billing_post_quotes_quoteId_accept',
     security: [
       {
         tenantOAuth: [],
       },
     ],
-    summary: 'Billing POST /estimates',
-    tags: ['Billing'],
     parameters: [
       {
-        in: 'header',
-        name: 'X-Billing-Organization-Id',
-        required: false,
+        in: 'path',
+        name: 'quoteId',
         schema: {
-          anyOf: [
-            {
-              type: 'string',
-            },
-            {
-              type: 'null',
-            },
-          ],
-          title: 'X-Billing-Organization-Id',
+          type: 'string',
+          minLength: 1,
         },
+        required: true,
       },
     ],
     responses: {
@@ -12225,50 +12238,83 @@ export const v1OperationContracts = {
         content: {
           'application/json': {
             schema: {
-              title: 'Response Billing-Billing Post Estimates',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
-      '422': {
-        description: 'Validation Error',
+      '4XX': {
+        description: 'Client Error',
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/HTTPValidationError',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
     },
   },
-  'GET /estimates/{estimateId}': {
-    description:
-      'Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.',
-    operationId: 'billing-billing_get_estimates_estimateId',
+  'POST /quotes/{quoteId}/decline': {
+    tags: ['Invoices'],
+    summary: 'Decline a quote',
+    operationId: 'billing-billing_post_quotes_quoteId_decline',
     security: [
       {
         tenantOAuth: [],
       },
     ],
-    summary: 'Billing GET /estimates/{estimateId}',
-    tags: ['Billing'],
     parameters: [
       {
-        in: 'header',
-        name: 'X-Billing-Organization-Id',
-        required: false,
+        in: 'path',
+        name: 'quoteId',
         schema: {
-          anyOf: [
-            {
-              type: 'string',
-            },
-            {
-              type: 'null',
-            },
-          ],
-          title: 'X-Billing-Organization-Id',
+          type: 'string',
+          minLength: 1,
         },
+        required: true,
       },
     ],
     responses: {
@@ -12277,50 +12323,83 @@ export const v1OperationContracts = {
         content: {
           'application/json': {
             schema: {
-              title: 'Response Billing-Billing Get Estimates Estimateid',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
-      '422': {
-        description: 'Validation Error',
+      '4XX': {
+        description: 'Client Error',
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/HTTPValidationError',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
     },
   },
-  'PATCH /estimates/{estimateId}': {
-    description:
-      'Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.',
-    operationId: 'billing-billing_patch_estimates_estimateId',
+  'POST /quotes/{quoteId}/cancel': {
+    tags: ['Invoices'],
+    summary: 'Cancel a quote',
+    operationId: 'billing-billing_post_quotes_quoteId_cancel',
     security: [
       {
         tenantOAuth: [],
       },
     ],
-    summary: 'Billing PATCH /estimates/{estimateId}',
-    tags: ['Billing'],
     parameters: [
       {
-        in: 'header',
-        name: 'X-Billing-Organization-Id',
-        required: false,
+        in: 'path',
+        name: 'quoteId',
         schema: {
-          anyOf: [
-            {
-              type: 'string',
-            },
-            {
-              type: 'null',
-            },
-          ],
-          title: 'X-Billing-Organization-Id',
+          type: 'string',
+          minLength: 1,
         },
+        required: true,
       },
     ],
     responses: {
@@ -12329,69 +12408,59 @@ export const v1OperationContracts = {
         content: {
           'application/json': {
             schema: {
-              title: 'Response Billing-Billing Patch Estimates Estimateid',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
       },
-      '422': {
-        description: 'Validation Error',
+      '4XX': {
+        description: 'Client Error',
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/HTTPValidationError',
-            },
-          },
-        },
-      },
-    },
-  },
-  'DELETE /estimates/{estimateId}': {
-    description:
-      'Ported from `src/app/api/billing/estimates/[estimateId]/route.ts`.',
-    operationId: 'billing-billing_delete_estimates_estimateId',
-    security: [
-      {
-        tenantOAuth: [],
-      },
-    ],
-    summary: 'Billing DELETE /estimates/{estimateId}',
-    tags: ['Billing'],
-    parameters: [
-      {
-        in: 'header',
-        name: 'X-Billing-Organization-Id',
-        required: false,
-        schema: {
-          anyOf: [
-            {
-              type: 'string',
-            },
-            {
-              type: 'null',
-            },
-          ],
-          title: 'X-Billing-Organization-Id',
-        },
-      },
-    ],
-    responses: {
-      '200': {
-        description: 'Successful Response',
-        content: {
-          'application/json': {
-            schema: {
-              title: 'Response Billing-Billing Delete Estimates Estimateid',
-            },
-          },
-        },
-      },
-      '422': {
-        description: 'Validation Error',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/HTTPValidationError',
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

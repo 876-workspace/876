@@ -34,8 +34,11 @@ describe('frozen v1 route authentication matrix', () => {
         method === 'get' && path === '/providers/zoho-books/oauth/callback'
     )
 
-    expect(operations).toHaveLength(221)
-    expect(protectedPublicOperations()).toHaveLength(220)
+    // 221 -> 220: the five `/estimates` operations were removed when the
+    // duplicate Estimate document type was merged into Quote, and four quote
+    // transitions (send/accept/decline/cancel) were added in their place.
+    expect(operations).toHaveLength(220)
+    expect(protectedPublicOperations()).toHaveLength(219)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

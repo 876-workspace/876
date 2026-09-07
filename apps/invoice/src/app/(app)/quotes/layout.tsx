@@ -15,7 +15,7 @@ const QUOTES_SKELETON_COLUMNS = [
 ]
 
 export default async function QuotesLayout({ children }: { children: ReactNode }) {
-  await requireAppPermission('estimates.view')
+  await requireAppPermission('quotes.view')
 
   return (
     <QuotesSection

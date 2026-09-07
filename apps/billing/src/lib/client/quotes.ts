@@ -26,6 +26,15 @@ export const update = (quoteId: string, params: QuoteUpdateInput) =>
     body: JSON.stringify(params),
   })
 
+const transition = (
+  quoteId: string,
+  action: 'send' | 'accept' | 'decline' | 'cancel'
+) =>
+  request<QuoteResource>(
+    `/api/v1/quotes/${encodeURIComponent(quoteId)}/${action}`,
+    { method: 'POST', body: JSON.stringify({}) }
+  )
+
 const deleteQuote = (quoteId: string) =>
   request<QuoteDeleted>(`/api/v1/quotes/${encodeURIComponent(quoteId)}`, {
     method: 'DELETE',
@@ -35,5 +44,9 @@ export const quotes = {
   create,
   retrieve,
   update,
+  send: (quoteId: string) => transition(quoteId, 'send'),
+  accept: (quoteId: string) => transition(quoteId, 'accept'),
+  decline: (quoteId: string) => transition(quoteId, 'decline'),
+  cancel: (quoteId: string) => transition(quoteId, 'cancel'),
   delete: deleteQuote,
 }
