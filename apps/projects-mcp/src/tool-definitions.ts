@@ -2,7 +2,7 @@ import type { ProjectsOperatorClient } from '@876/projects/operator'
 import type { McpServer } from '@modelcontextprotocol/server'
 
 import type { Config } from './config'
-import { toolError } from './format'
+import { toolError, type ToolResult } from './format'
 import {
   handleIssueComment,
   handleIssueComments,
@@ -80,6 +80,21 @@ const UPDATE_ANNOTATIONS = {
   openWorldHint: false,
 } as const
 
+function withToolErrorBoundary<Args>(
+  handler: (args: Args) => Promise<ToolResult>
+): (args: Args) => Promise<ToolResult> {
+  return async (args) => {
+    try {
+      return await handler(args)
+    } catch (error) {
+      return toolError(
+        'internal/tool-error',
+        error instanceof Error ? error.message : String(error)
+      )
+    }
+  }
+}
+
 /**
  * Registers all 876 Projects tools onto the provided v2 McpServer instance.
  */
@@ -98,16 +113,7 @@ export function registerProjectTools(
       outputSchema: workspaceGetOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleWorkspaceGet(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleWorkspaceGet(client, config, args))
   )
 
   // 2. projects_list
@@ -120,16 +126,7 @@ export function registerProjectTools(
       outputSchema: projectsListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleProjectsList(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleProjectsList(client, config, args))
   )
 
   // 3. project_get
@@ -142,16 +139,7 @@ export function registerProjectTools(
       outputSchema: projectGetOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleProjectGet(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleProjectGet(client, config, args))
   )
 
   // 4. project_create
@@ -164,16 +152,7 @@ export function registerProjectTools(
       outputSchema: projectCreateOutputSchema,
       annotations: CREATE_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleProjectCreate(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleProjectCreate(client, config, args))
   )
 
   // 5. project_update
@@ -186,16 +165,7 @@ export function registerProjectTools(
       outputSchema: projectUpdateOutputSchema,
       annotations: UPDATE_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleProjectUpdate(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleProjectUpdate(client, config, args))
   )
 
   // 6. issues_list
@@ -208,16 +178,7 @@ export function registerProjectTools(
       outputSchema: issuesListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssuesList(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssuesList(client, config, args))
   )
 
   // 7. issue_get
@@ -230,16 +191,7 @@ export function registerProjectTools(
       outputSchema: issueGetOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssueGet(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssueGet(client, config, args))
   )
 
   // 8. issue_create
@@ -252,16 +204,7 @@ export function registerProjectTools(
       outputSchema: issueCreateOutputSchema,
       annotations: CREATE_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssueCreate(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssueCreate(client, config, args))
   )
 
   // 9. issue_update
@@ -274,16 +217,7 @@ export function registerProjectTools(
       outputSchema: issueUpdateOutputSchema,
       annotations: UPDATE_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssueUpdate(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssueUpdate(client, config, args))
   )
 
   // 10. issue_comment
@@ -296,16 +230,7 @@ export function registerProjectTools(
       outputSchema: issueCommentOutputSchema,
       annotations: CREATE_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssueComment(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssueComment(client, config, args))
   )
 
   // 11. issue_comments
@@ -318,16 +243,7 @@ export function registerProjectTools(
       outputSchema: issueCommentsOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssueComments(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssueComments(client, config, args))
   )
 
   // 12. issue_events
@@ -340,16 +256,7 @@ export function registerProjectTools(
       outputSchema: issueEventsOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleIssueEvents(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleIssueEvents(client, config, args))
   )
 
   // 13. labels_list
@@ -362,16 +269,7 @@ export function registerProjectTools(
       outputSchema: labelsListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleLabelsList(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleLabelsList(client, config, args))
   )
 
   // 14. label_create
@@ -384,16 +282,7 @@ export function registerProjectTools(
       outputSchema: labelCreateOutputSchema,
       annotations: CREATE_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleLabelCreate(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleLabelCreate(client, config, args))
   )
 
   // 15. work_item_types_list
@@ -406,16 +295,9 @@ export function registerProjectTools(
       outputSchema: workItemTypesListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleWorkItemTypesList(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) =>
+      handleWorkItemTypesList(client, config, args)
+    )
   )
 
   // 16. workflow_states_list
@@ -428,16 +310,9 @@ export function registerProjectTools(
       outputSchema: workflowStatesListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleWorkflowStatesList(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) =>
+      handleWorkflowStatesList(client, config, args)
+    )
   )
 
   // 17. milestones_list
@@ -450,15 +325,6 @@ export function registerProjectTools(
       outputSchema: milestonesListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async (args) => {
-      try {
-        return await handleMilestonesList(client, config, args)
-      } catch (error) {
-        return toolError(
-          'internal/tool-error',
-          error instanceof Error ? error.message : String(error)
-        )
-      }
-    }
+    withToolErrorBoundary((args) => handleMilestonesList(client, config, args))
   )
 }
