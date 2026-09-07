@@ -2,14 +2,14 @@ import type { NextRequest } from 'next/server'
 
 import { supportRequestDraftSchema } from '@876/crm'
 
-import { getCrmApiContext } from '@/lib/auth/api-context'
+import { getInvoiceContextResult } from '@/lib/auth/context'
 import { getCrmSupport } from '@/lib/services/crm-support'
 
 function unauthorized() {
   return Response.json(
     {
       data: null,
-      error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
+      error: { code: 'invoice/unauthorized', message: 'Unauthorized.' },
     },
     { status: 401 }
   )
@@ -20,8 +20,19 @@ function statusFor(errorCode: string | undefined, success: number) {
   return errorCode === 'crm/not-configured' ? 503 : 502
 }
 
+async function supportContext() {
+  const result = await getInvoiceContextResult()
+  if (result.status !== 'ok') return null
+  if (
+    result.context.accessStatus !== 'active' &&
+    result.context.accessStatus !== 'trialing'
+  )
+    return null
+  return result.context
+}
+
 export async function GET() {
-  const context = await getCrmApiContext()
+  const context = await supportContext()
   if (!context) return unauthorized()
 
   const result = await getCrmSupport().requests.list(context.orgId)
@@ -31,7 +42,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const context = await getCrmApiContext()
+  const context = await supportContext()
   if (!context) return unauthorized()
 
   const parsed = supportRequestDraftSchema.safeParse(
@@ -42,7 +53,7 @@ export async function POST(request: NextRequest) {
       {
         data: null,
         error: {
-          code: 'crm/invalid-request',
+          code: 'invoice/invalid-request',
           message: 'The support request is invalid.',
         },
       },

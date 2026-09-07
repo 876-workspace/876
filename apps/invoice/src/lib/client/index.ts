@@ -6,6 +6,7 @@ import { onboarding } from './onboarding'
 import { roles } from './roles'
 import { members } from './members'
 import { invites } from './invites'
+import { support } from './support'
 
 export const client = {
   onboarding,
@@ -16,6 +17,7 @@ export const client = {
   items,
   documents,
   appMemberships,
+  support,
 }
 
 export { customers } from './customers'
@@ -26,4 +28,5 @@ export { onboarding } from './onboarding'
 export { roles } from './roles'
 export { members } from './members'
 export { invites } from './invites'
+export { support } from './support'
 export type { ClientResult } from '@/types/api'

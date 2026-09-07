@@ -17,6 +17,7 @@ import {
 
 import { InvoiceSidebar } from './sidebar'
 import { OrgSwitcher } from './org-switcher'
+import { SupportWidget } from './support-widget'
 import { TopbarActions } from './topbar-actions'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
@@ -61,6 +62,7 @@ export async function InvoiceShell({
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <SupportWidget />
             <div className="hidden items-center gap-1.5 md:flex">
               <OrgSwitcher current={currentOrg} orgs={orgs} />
               <TopbarActions />

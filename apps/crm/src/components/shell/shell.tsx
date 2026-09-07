@@ -21,7 +21,6 @@ import { Sidebar } from './sidebar'
 import { GlobalAdd } from './global-add'
 import { OrgSwitcher } from './org-switcher'
 import { SupportWidget } from './support-widget'
-import type { SupportCategory } from './support-categories'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
 
@@ -33,7 +32,6 @@ export function Shell({
   orgs,
   apps,
   uiFeatures,
-  supportCategories,
   navigation,
 }: {
   children: ReactNode
@@ -43,7 +41,6 @@ export function Shell({
   orgs: OrgSwitcherOrg[]
   apps: AppSwitcherApp[]
   uiFeatures: CrmUiFeatures
-  supportCategories: SupportCategory[]
   navigation: NavGroupDefinition[]
 }) {
   return (
@@ -74,19 +71,6 @@ export function Shell({
             )}
           </div>
 
-          {/*
-            Three groups, not one undifferentiated row: the organization you
-            are acting for, the actions you can take, and who you are. The icon
-            actions share a tighter gap than the gap between groups, so they
-            read as one cluster, and a hairline marks each seam — which is what
-            stops a control from looking like it belongs to its neighbour as
-            more of them are added.
-
-            Sizes match the shared AppSwitcher trigger (32px); the breathing
-            room comes from the gaps, not from resizing one app's buttons. The
-            seams stay narrow — the user menu ends the row, it is not a
-            separate island floating away from it.
-          */}
           <div className="ml-auto flex items-center gap-2 sm:gap-2.5">
             {uiFeatures.orgSwitcher ? (
               <>
@@ -99,9 +83,7 @@ export function Shell({
             ) : null}
 
             <div className="flex items-center gap-1.5">
-              {/* Sits where a help button would: raising a bug or a piece of
-                  feedback should not require leaving the page you are on. */}
-              <SupportWidget categories={supportCategories} />
+              <SupportWidget />
               {uiFeatures.globalAdd && <GlobalAdd />}
               {uiFeatures.appSwitcher && <AppSwitcher apps={apps} />}
             </div>

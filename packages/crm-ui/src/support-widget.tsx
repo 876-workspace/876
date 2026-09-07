@@ -8,6 +8,7 @@ import type {
   RequestCategoryList,
   RequestList,
   Result,
+  SupportRequestDraft,
 } from '@876/crm'
 import { Badge } from '@876/ui/badge'
 import { Button, buttonVariants } from '@876/ui/button'
@@ -21,16 +22,10 @@ import { Textarea } from '@876/ui/textarea'
 
 type View = 'list' | 'new'
 
-export interface SupportRequestInput {
-  subject: string
-  description?: string | null
-  categoryId?: string | null
-}
-
 export interface SupportWidgetTransport {
   listCategories(): Promise<Result<RequestCategoryList>>
   listRequests(): Promise<Result<RequestList>>
-  createRequest(input: SupportRequestInput): Promise<Result<CrmRequest>>
+  createRequest(input: SupportRequestDraft): Promise<Result<CrmRequest>>
 }
 
 export interface SupportWidgetLabels {

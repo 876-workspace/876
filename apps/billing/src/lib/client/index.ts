@@ -27,6 +27,7 @@ import { roles } from './roles'
 import { subscriptions } from './subscriptions'
 import { salespeople } from './salespeople'
 import { discounts } from './discounts'
+import { support } from './support'
 import { taxAuthorities } from './tax-authorities'
 import { taxRates } from './tax-rates'
 
@@ -58,6 +59,7 @@ export const client = {
   roles,
   salespeople,
   subscriptions,
+  support,
   taxAuthorities,
   taxRates,
 }

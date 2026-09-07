@@ -6,15 +6,13 @@ import {
   buildServiceRuntime,
   type ServiceRuntimeOptions,
 } from './runtime'
+import type { SupportRequestDraft } from './support-types'
 import { requestCategoryListSchema, type RequestOptions } from './types'
 
-export interface SupportRequestCreateParams {
+export interface SupportRequestCreateParams extends SupportRequestDraft {
   sourceOrganizationId: string
   sourceOrganizationName: string
   requesterUserId: string
-  subject: string
-  description?: string | null
-  categoryId?: string | null
 }
 
 export type CrmSupportClientOptions = ServiceRuntimeOptions
