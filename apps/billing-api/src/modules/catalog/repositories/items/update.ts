@@ -77,6 +77,11 @@ export async function update(
   if (!current.trackStock && nextTrackStock)
     data.stockQuantity = current.stockQuantity ?? 0
 
+  if (params.trackStock === false) {
+    data.lowStockThreshold = null
+    data.allowOutOfStock = false
+  }
+
   if (nextType === 'SERVICE') {
     data.trackStock = false
     data.stockQuantity = null
