@@ -1,13 +1,13 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { prisma } from '@/db/client'
+import { recomputeCustomerAr } from '@/modules/customers'
+import { restore as restoreInventory } from '@/modules/inventory'
+import { recordLedgerEntry } from '@/modules/ledger'
+import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import type { InvoiceVoidParams } from '../../schemas/invoice'
 import type { ServiceResult } from '../../schemas/api'
 
-import { restoreInvoiceStock } from '@/modules/catalog'
-import { recomputeCustomerAr } from '@/modules/customers'
-import { recordLedgerEntry } from '@/modules/ledger'
-import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import { err, ok } from '../result'
 
 /** Voids an unsettled finalized invoice and restores stock it consumed. */
@@ -42,7 +42,11 @@ export async function voidInvoice(
             409
           )
 
-        const stock = await restoreInvoiceStock(tx, tenantId, invoice.id, now)
+        const stock = await restoreInventory(tx, tenantId, {
+          reference: { type: 'invoice', id: invoice.id },
+          reason: 'sale',
+          occurredAt: now,
+        })
         if (stock.error !== null) return stock
 
         await tx.invoice.update({
