@@ -76,6 +76,30 @@ describe('Billing API v1 contract baseline', () => {
     // inventory.
     '/items/{itemId}/stock-adjustments',
     '/integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments',
+    // Item variants and Storage-backed Item media, added with optional product
+    // variants. Both are Express-only capabilities, and each is exposed at the
+    // tenant tier and again at the integration tier so 876 Invoice reaches the
+    // same Item records rather than growing a catalogue of its own.
+    '/item-preferences',
+    '/item-variants',
+    '/items/{itemId}/variants',
+    '/items/{itemId}/variants/generate',
+    '/items/{itemId}/variants/{variantId}',
+    '/items/{itemId}/variants/{variantId}/stock-adjustments',
+    '/items/{itemId}/media',
+    '/items/{itemId}/media/{fileId}',
+    '/items/{itemId}/variants/{variantId}/media',
+    '/items/{itemId}/variants/{variantId}/media/{fileId}',
+    '/integrations/organizations/{organizationId}/item-preferences',
+    '/integrations/organizations/{organizationId}/item-variants',
+    '/integrations/organizations/{organizationId}/items/{itemId}/variants',
+    '/integrations/organizations/{organizationId}/items/{itemId}/variants/generate',
+    '/integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}',
+    '/integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/stock-adjustments',
+    '/integrations/organizations/{organizationId}/items/{itemId}/media',
+    '/integrations/organizations/{organizationId}/items/{itemId}/media/{fileId}',
+    '/integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media',
+    '/integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media/{fileId}',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {
@@ -92,8 +116,8 @@ describe('Billing API v1 contract baseline', () => {
   it('keeps every allowed post-legacy path actually documented', () => {
     const documented = new Set(Object.keys(openApi.paths))
 
-    expect(
-      POST_LEGACY_PATHS.filter((path) => !documented.has(path))
-    ).toEqual([])
+    expect(POST_LEGACY_PATHS.filter((path) => !documented.has(path))).toEqual(
+      []
+    )
   })
 })
