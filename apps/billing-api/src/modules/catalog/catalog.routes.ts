@@ -10,6 +10,7 @@ import { errorEnvelopeSchema, successEnvelopeSchema } from '@/http/envelope'
 
 import { catalogController as controller } from './catalog.controller'
 import { itemStockController } from './item-stock.controller'
+import { itemVariantsController } from './item-variants.controller'
 import {
   activeQuerySchema,
   AddonAssociationMutationSchema,
@@ -21,8 +22,14 @@ import {
   idParams,
   integrationItemCreateSchema,
   ItemCreateSchema,
+  ItemMediaAttachSchema,
+  ItemMediaReorderSchema,
+  itemPreferencesSchema,
+  ItemPreferencesUpdateSchema,
   ItemStockAdjustmentSchema,
   ItemUpdateSchema,
+  ItemVariantGenerateSchema,
+  ItemVariantUpdateSchema,
   listSchema,
   organizationIdParams,
   organizationResourceParams,
@@ -177,6 +184,18 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter({ tag: 'Catalog', resolveGuards })
   const read: BillingSecurity = { kind: 'tenant', permission: 'catalog:read' }
   const write: BillingSecurity = { kind: 'tenant', permission: 'catalog:write' }
+  const itemVariantParams = z.strictObject({
+    itemId: z.string().min(1),
+    variantId: z.string().min(1),
+  })
+  const itemMediaParams = z.strictObject({
+    itemId: z.string().min(1),
+    fileId: z.string().min(1),
+  })
+  const variantMediaParams = itemVariantParams.extend({
+    fileId: z.string().min(1),
+  })
+
   registerCrud(api, {
     name: 'products',
     object: 'product',
@@ -293,6 +312,231 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
       update: controller.priceListsUpdate,
       del: controller.priceListsDelete,
     },
+  })
+
+  api.get({
+    path: '/item-preferences',
+    summary: 'Retrieve item preferences',
+    security: read,
+    responses: {
+      200: {
+        description: 'Item preferences returned',
+        schema: successEnvelopeSchema(itemPreferencesSchema),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.preferencesGet,
+  })
+  api.patch({
+    path: '/item-preferences',
+    summary: 'Update item preferences',
+    security: write,
+    request: { body: ItemPreferencesUpdateSchema },
+    responses: {
+      200: {
+        description: 'Item preferences updated',
+        schema: successEnvelopeSchema(itemPreferencesSchema),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.preferencesUpdate,
+  })
+  api.get({
+    path: '/item-variants',
+    summary: 'Search item variants',
+    security: read,
+    request: { query: activeQuerySchema },
+    responses: {
+      200: {
+        description: 'Variant list',
+        schema: successEnvelopeSchema(listSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.search,
+  })
+  api.get({
+    path: '/items/:itemId/variants',
+    summary: 'List item variants',
+    security: read,
+    request: { params: idParams('itemId'), query: activeQuerySchema },
+    responses: {
+      200: {
+        description: 'Variant list',
+        schema: successEnvelopeSchema(listSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.list,
+  })
+  api.post({
+    path: '/items/:itemId/variants/generate',
+    summary: 'Generate item variants',
+    security: write,
+    request: { params: idParams('itemId'), body: ItemVariantGenerateSchema },
+    responses: {
+      200: {
+        description: 'Item converted to variants',
+        schema: successEnvelopeSchema(resourceSchema('item')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.generate,
+  })
+  api.get({
+    path: '/items/:itemId/variants/:variantId',
+    summary: 'Retrieve item variant',
+    security: read,
+    request: { params: itemVariantParams },
+    responses: {
+      200: {
+        description: 'Variant returned',
+        schema: successEnvelopeSchema(resourceSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.get,
+  })
+  api.patch({
+    path: '/items/:itemId/variants/:variantId',
+    summary: 'Update item variant',
+    security: write,
+    request: { params: itemVariantParams, body: ItemVariantUpdateSchema },
+    responses: {
+      200: {
+        description: 'Variant updated',
+        schema: successEnvelopeSchema(resourceSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.update,
+  })
+  api.post({
+    path: '/items/:itemId/variants/:variantId/stock-adjustments',
+    summary: 'Adjust item variant stock',
+    security: write,
+    request: { params: itemVariantParams, body: ItemStockAdjustmentSchema },
+    responses: {
+      200: {
+        description: 'Variant stock adjusted',
+        schema: successEnvelopeSchema(resourceSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.adjustStock,
+  })
+
+  api.get({
+    path: '/items/:itemId/media',
+    summary: 'List item media',
+    security: read,
+    request: { params: idParams('itemId') },
+    responses: {
+      200: {
+        description: 'Item media list',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.mediaList,
+  })
+  api.post({
+    path: '/items/:itemId/media',
+    summary: 'Attach item media',
+    security: write,
+    request: { params: idParams('itemId'), body: ItemMediaAttachSchema },
+    responses: {
+      200: {
+        description: 'Item media attached',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.mediaAttach,
+  })
+  api.put({
+    path: '/items/:itemId/media',
+    summary: 'Reorder item media',
+    security: write,
+    request: { params: idParams('itemId'), body: ItemMediaReorderSchema },
+    responses: {
+      200: {
+        description: 'Item media reordered',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.mediaReorder,
+  })
+  api.delete({
+    path: '/items/:itemId/media/:fileId',
+    summary: 'Detach item media',
+    security: write,
+    request: { params: itemMediaParams },
+    responses: {
+      200: {
+        description: 'Item media detached',
+        schema: successEnvelopeSchema(deletedSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.mediaRemove,
+  })
+  api.get({
+    path: '/items/:itemId/variants/:variantId/media',
+    summary: 'List item variant media',
+    security: read,
+    request: { params: itemVariantParams },
+    responses: {
+      200: {
+        description: 'Variant media list',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.variantMediaList,
+  })
+  api.post({
+    path: '/items/:itemId/variants/:variantId/media',
+    summary: 'Attach item variant media',
+    security: write,
+    request: { params: itemVariantParams, body: ItemMediaAttachSchema },
+    responses: {
+      200: {
+        description: 'Variant media attached',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.variantMediaAttach,
+  })
+  api.put({
+    path: '/items/:itemId/variants/:variantId/media',
+    summary: 'Reorder item variant media',
+    security: write,
+    request: { params: itemVariantParams, body: ItemMediaReorderSchema },
+    responses: {
+      200: {
+        description: 'Variant media reordered',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.variantMediaReorder,
+  })
+  api.delete({
+    path: '/items/:itemId/variants/:variantId/media/:fileId',
+    summary: 'Detach item variant media',
+    security: write,
+    request: { params: variantMediaParams },
+    responses: {
+      200: {
+        description: 'Variant media detached',
+        schema: successEnvelopeSchema(deletedSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.variantMediaRemove,
   })
 
   api.post({
@@ -416,10 +660,71 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   })
 
   const itemBase = '/integrations/organizations/:organizationId/items'
+  const integrationRead: BillingSecurity = {
+    kind: 'integration',
+    scope: 'billing.items.read',
+  }
+  const integrationWrite: BillingSecurity = {
+    kind: 'integration',
+    scope: 'billing.items.write',
+  }
+  const integrationItemVariantParams = organizationResourceParams('itemId').extend({
+    variantId: z.string().min(1),
+  })
+  const integrationItemMediaParams = organizationResourceParams('itemId').extend({
+    fileId: z.string().min(1),
+  })
+  const integrationVariantMediaParams = integrationItemVariantParams.extend({
+    fileId: z.string().min(1),
+  })
+
+  api.get({
+    path: '/integrations/organizations/:organizationId/item-preferences',
+    summary: 'Retrieve organization item preferences',
+    security: integrationRead,
+    request: { params: organizationIdParams },
+    responses: {
+      200: {
+        description: 'Item preferences returned',
+        schema: successEnvelopeSchema(itemPreferencesSchema),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.preferencesGet,
+  })
+  api.patch({
+    path: '/integrations/organizations/:organizationId/item-preferences',
+    summary: 'Update organization item preferences',
+    security: integrationWrite,
+    request: { params: organizationIdParams, body: ItemPreferencesUpdateSchema },
+    responses: {
+      200: {
+        description: 'Item preferences updated',
+        schema: successEnvelopeSchema(itemPreferencesSchema),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.preferencesUpdate,
+  })
+  api.get({
+    path: '/integrations/organizations/:organizationId/item-variants',
+    summary: 'Search organization Billing item variants',
+    security: integrationRead,
+    request: { params: organizationIdParams, query: activeQuerySchema },
+    responses: {
+      200: {
+        description: 'Variant list',
+        schema: successEnvelopeSchema(listSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationSearch,
+  })
+
   api.get({
     path: itemBase,
     summary: 'List organization Billing items',
-    security: { kind: 'integration', scope: 'billing.items.read' },
+    security: integrationRead,
     request: { params: organizationIdParams, query: activeQuerySchema },
     responses: {
       200: {
@@ -433,7 +738,7 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   api.post({
     path: itemBase,
     summary: 'Create an organization Billing item',
-    security: { kind: 'integration', scope: 'billing.items.write' },
+    security: integrationWrite,
     request: {
       params: organizationIdParams,
       body: integrationItemCreateSchema,
@@ -454,7 +759,7 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   api.get({
     path: `${itemBase}/:itemId`,
     summary: 'Retrieve an organization Billing item',
-    security: { kind: 'integration', scope: 'billing.items.read' },
+    security: integrationRead,
     request: { params: organizationResourceParams('itemId') },
     responses: {
       200: {
@@ -468,7 +773,7 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   api.patch({
     path: `${itemBase}/:itemId`,
     summary: 'Update an organization Billing item',
-    security: { kind: 'integration', scope: 'billing.items.write' },
+    security: integrationWrite,
     request: {
       params: organizationResourceParams('itemId'),
       body: ItemUpdateSchema,
@@ -482,10 +787,218 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.integrationItemsUpdate,
   })
+  api.get({
+    path: `${itemBase}/:itemId/variants`,
+    summary: 'List organization Billing item variants',
+    security: integrationRead,
+    request: {
+      params: organizationResourceParams('itemId'),
+      query: activeQuerySchema,
+    },
+    responses: {
+      200: {
+        description: 'Variant list',
+        schema: successEnvelopeSchema(listSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationList,
+  })
+  api.post({
+    path: `${itemBase}/:itemId/variants/generate`,
+    summary: 'Generate organization Billing item variants',
+    security: integrationWrite,
+    request: {
+      params: organizationResourceParams('itemId'),
+      body: ItemVariantGenerateSchema,
+    },
+    responses: {
+      200: {
+        description: 'Item converted to variants',
+        schema: successEnvelopeSchema(resourceSchema('item')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationGenerate,
+  })
+  api.get({
+    path: `${itemBase}/:itemId/variants/:variantId`,
+    summary: 'Retrieve organization Billing item variant',
+    security: integrationRead,
+    request: { params: integrationItemVariantParams },
+    responses: {
+      200: {
+        description: 'Variant returned',
+        schema: successEnvelopeSchema(resourceSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationGet,
+  })
+  api.patch({
+    path: `${itemBase}/:itemId/variants/:variantId`,
+    summary: 'Update organization Billing item variant',
+    security: integrationWrite,
+    request: {
+      params: integrationItemVariantParams,
+      body: ItemVariantUpdateSchema,
+    },
+    responses: {
+      200: {
+        description: 'Variant updated',
+        schema: successEnvelopeSchema(resourceSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationUpdate,
+  })
+  api.post({
+    path: `${itemBase}/:itemId/variants/:variantId/stock-adjustments`,
+    summary: 'Adjust organization Billing item variant stock',
+    security: integrationWrite,
+    request: {
+      params: integrationItemVariantParams,
+      body: ItemStockAdjustmentSchema,
+    },
+    responses: {
+      200: {
+        description: 'Variant stock adjusted',
+        schema: successEnvelopeSchema(resourceSchema('item_variant')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationAdjustStock,
+  })
+
+  api.get({
+    path: `${itemBase}/:itemId/media`,
+    summary: 'List organization Billing item media',
+    security: integrationRead,
+    request: { params: organizationResourceParams('itemId') },
+    responses: {
+      200: {
+        description: 'Item media list',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationMediaList,
+  })
+  api.post({
+    path: `${itemBase}/:itemId/media`,
+    summary: 'Attach organization Billing item media',
+    security: integrationWrite,
+    request: {
+      params: organizationResourceParams('itemId'),
+      body: ItemMediaAttachSchema,
+    },
+    responses: {
+      200: {
+        description: 'Item media attached',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationMediaAttach,
+  })
+  api.put({
+    path: `${itemBase}/:itemId/media`,
+    summary: 'Reorder organization Billing item media',
+    security: integrationWrite,
+    request: {
+      params: organizationResourceParams('itemId'),
+      body: ItemMediaReorderSchema,
+    },
+    responses: {
+      200: {
+        description: 'Item media reordered',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationMediaReorder,
+  })
+  api.delete({
+    path: `${itemBase}/:itemId/media/:fileId`,
+    summary: 'Detach organization Billing item media',
+    security: integrationWrite,
+    request: { params: integrationItemMediaParams },
+    responses: {
+      200: {
+        description: 'Item media detached',
+        schema: successEnvelopeSchema(deletedSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationMediaRemove,
+  })
+  api.get({
+    path: `${itemBase}/:itemId/variants/:variantId/media`,
+    summary: 'List organization Billing item variant media',
+    security: integrationRead,
+    request: { params: integrationItemVariantParams },
+    responses: {
+      200: {
+        description: 'Variant media list',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationVariantMediaList,
+  })
+  api.post({
+    path: `${itemBase}/:itemId/variants/:variantId/media`,
+    summary: 'Attach organization Billing item variant media',
+    security: integrationWrite,
+    request: {
+      params: integrationItemVariantParams,
+      body: ItemMediaAttachSchema,
+    },
+    responses: {
+      200: {
+        description: 'Variant media attached',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationVariantMediaAttach,
+  })
+  api.put({
+    path: `${itemBase}/:itemId/variants/:variantId/media`,
+    summary: 'Reorder organization Billing item variant media',
+    security: integrationWrite,
+    request: {
+      params: integrationItemVariantParams,
+      body: ItemMediaReorderSchema,
+    },
+    responses: {
+      200: {
+        description: 'Variant media reordered',
+        schema: successEnvelopeSchema(listSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationVariantMediaReorder,
+  })
+  api.delete({
+    path: `${itemBase}/:itemId/variants/:variantId/media/:fileId`,
+    summary: 'Detach organization Billing item variant media',
+    security: integrationWrite,
+    request: { params: integrationVariantMediaParams },
+    responses: {
+      200: {
+        description: 'Variant media detached',
+        schema: successEnvelopeSchema(deletedSchema('item_media')),
+      },
+      ...clientErrors,
+    },
+    handler: itemVariantsController.integrationVariantMediaRemove,
+  })
+
   api.post({
     path: `${itemBase}/:itemId/stock-adjustments`,
     summary: 'Adjust organization Billing item stock',
-    security: { kind: 'integration', scope: 'billing.items.write' },
+    security: integrationWrite,
     request: {
       params: organizationResourceParams('itemId'),
       body: ItemStockAdjustmentSchema,
@@ -502,7 +1015,7 @@ export function createCatalogRouter(resolveGuards: GuardResolver) {
   api.delete({
     path: `${itemBase}/:itemId`,
     summary: 'Delete an organization Billing item',
-    security: { kind: 'integration', scope: 'billing.items.write' },
+    security: integrationWrite,
     request: { params: organizationResourceParams('itemId') },
     responses: {
       200: {
