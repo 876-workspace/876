@@ -70,8 +70,12 @@ export function ItemsList({
               href={query ? `/items/${item.id}?${query}` : `/items/${item.id}`}
               selected={item.id === selectedId}
               label={`View item ${item.name}`}
-              title={item.name}
-              subtitle={item.sku ?? item.type}
+              title={
+                <span className="text-sky-600 dark:text-sky-400">
+                  {item.name}
+                </span>
+              }
+              subtitle={item.sku}
               trailing={
                 item.isActive ? (
                   item.defaultSellingAmount ? (

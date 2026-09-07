@@ -76,6 +76,13 @@ export function ItemActions({ itemId, itemName, isActive, canManage }: Props) {
             {error}
           </p>
         ) : null}
+        <Link
+          href={`/items/${itemId}/edit`}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+        >
+          <Pencil className="size-3.5" />
+          Edit
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
@@ -91,10 +98,6 @@ export function ItemActions({ itemId, itemName, isActive, canManage }: Props) {
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-auto min-w-44">
-            <DropdownMenuItem render={<Link href={`/items/${itemId}/edit`} />}>
-              <Pencil className="size-4" />
-              Edit
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleStatusChange}>
               {isActive ? 'Archive' : 'Reactivate'}
             </DropdownMenuItem>

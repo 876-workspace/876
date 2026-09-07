@@ -28,20 +28,20 @@ describe('ItemsToolbar', () => {
     expect(screen.getByText('All Items')).toBeTruthy()
   })
 
-  it('shows New primary when catalog:write allowed', () => {
+  it('shows the Add primary action when catalog:write is allowed', () => {
     mocks.useBillingPermission.mockReturnValue(true)
     render(<ItemsToolbar status="active" />)
-    expect(screen.getByRole('link', { name: /^New$/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Add$/ })).toHaveAttribute(
       'href',
       '/items/new'
     )
     expect(mocks.useBillingPermission).toHaveBeenCalledWith('catalog:write')
   })
 
-  it('hides New when not permitted', () => {
+  it('hides the Add primary action when not permitted', () => {
     mocks.useBillingPermission.mockReturnValue(false)
     render(<ItemsToolbar status="all" />)
-    expect(screen.queryByRole('link', { name: /^New$/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /^Add$/ })).toBeNull()
   })
 
   it('reflects inactive status label', () => {

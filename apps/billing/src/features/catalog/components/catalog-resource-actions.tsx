@@ -134,6 +134,15 @@ export function CatalogResourceActions({
             {error}
           </p>
         ) : null}
+        {editHref ? (
+          <Link
+            href={editHref}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            <Pencil className="size-3.5" />
+            Edit
+          </Link>
+        ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
@@ -149,12 +158,6 @@ export function CatalogResourceActions({
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-44">
-            {editHref ? (
-              <DropdownMenuItem render={<Link href={editHref} />}>
-                <Pencil className="size-4" />
-                Edit
-              </DropdownMenuItem>
-            ) : null}
             {(resource === 'plan' || resource === 'addon') && resourceCode ? (
               <DropdownMenuItem
                 onClick={() => {

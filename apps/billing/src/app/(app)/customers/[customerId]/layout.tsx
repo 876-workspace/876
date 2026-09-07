@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import {
   Building2,
@@ -12,8 +13,15 @@ import {
 import { OrgAvatar } from '@876/ui/org-avatar'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+  DetailCardMeta,
+  DetailCardRouteTabs,
+} from '@876/ui/detail-card'
+import { Skeleton } from '@876/ui/skeleton'
 
-import { DetailLayout } from '@/components/patterns/detail/detail-layout'
 import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
@@ -39,6 +47,29 @@ export default async function CustomerDetailLayout({
   params: Promise<{ customerId: string }>
 }) {
   const { customerId } = await params
+  const base = `/customers/${customerId}`
+  const tabs = [
+    { label: 'Overview', href: base, exact: true },
+    { label: 'Transactions', href: `${base}/transactions` },
+    { label: 'Subscriptions', href: `${base}/subscriptions` },
+    { label: 'Requests', href: `${base}/requests` },
+    { label: 'Mails', href: `${base}/mails` },
+    { label: 'Statement', href: `${base}/statement` },
+    { label: 'Activity', href: `${base}/activity` },
+  ]
+
+  return (
+    <DetailCard aria-label="Customer">
+      <Suspense fallback={<CustomerHeaderSkeleton />}>
+        <CustomerHeaderData customerId={customerId} />
+      </Suspense>
+      <DetailCardRouteTabs tabs={tabs} />
+      <DetailCardBody>{children}</DetailCardBody>
+    </DetailCard>
+  )
+}
+
+async function CustomerHeaderData({ customerId }: { customerId: string }) {
   const context = await getWorkspaceContext()
   if (!context) return null
 
@@ -50,12 +81,9 @@ export default async function CustomerDetailLayout({
   const party = await resolveCustomerParty(
     customer as unknown as CustomerPartyInput
   )
-
-  const base = `/customers/${customer.id}`
   const currency = (
     customer.defaultCurrency ?? context.tenant.defaultCurrency
   ).toUpperCase()
-
   const avatar = isOrg ? (
     <OrgAvatar
       name={party.org?.name ?? customer.name}
@@ -71,17 +99,14 @@ export default async function CustomerDetailLayout({
   ) : (
     <CustomerAvatar name={customer.name} size="lg" />
   )
-
   const meta = isOrg ? (
     <>
-      {party.org?.slug ? (
-        <span className="flex min-w-0 items-center gap-1.5">
-          <Hash className="size-3.5 shrink-0" />
-          <span className="max-w-[160px] truncate sm:max-w-[220px]">
-            {party.org.slug}
-          </span>
+      <span className="flex min-w-0 items-center gap-1.5">
+        <Hash className="size-3.5 shrink-0" />
+        <span className="max-w-[160px] truncate sm:max-w-[220px]">
+          {party.org?.slug}
         </span>
-      ) : null}
+      </span>
       {party.memberCount !== null ? (
         <span className="flex shrink-0 items-center gap-1.5">
           <Users className="size-3.5 shrink-0" />
@@ -93,14 +118,7 @@ export default async function CustomerDetailLayout({
           876 organization
         </span>
       )}
-      <span className="flex shrink-0 items-center gap-1.5">
-        <CreditCard className="size-3.5 shrink-0" />
-        {currency}
-      </span>
-      <span className="flex shrink-0 items-center gap-1.5">
-        <Calendar className="size-3.5 shrink-0" />
-        Added {formatDate(customer.createdAt)}
-      </span>
+      <CustomerMeta currency={currency} createdAt={customer.createdAt} />
     </>
   ) : (
     <>
@@ -118,26 +136,15 @@ export default async function CustomerDetailLayout({
           {customer.phone}
         </span>
       ) : null}
-      <span className="flex shrink-0 items-center gap-1.5">
-        <CreditCard className="size-3.5 shrink-0" />
-        {currency}
-      </span>
-      <span className="flex shrink-0 items-center gap-1.5">
-        <Calendar className="size-3.5 shrink-0" />
-        Added {formatDate(customer.createdAt)}
-      </span>
+      <CustomerMeta currency={currency} createdAt={customer.createdAt} />
     </>
   )
 
   return (
-    <DetailLayout
-      backHref="/customers"
-      backLabel="Customers"
+    <DetailCardHeader
+      icon={avatar}
       title={customer.name}
-      status={customer.status.toLowerCase()}
-      statusVariant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
-      avatar={avatar}
-      meta={meta}
+      subtitle={<DetailCardMeta>{meta}</DetailCardMeta>}
       actions={
         <CustomerActions
           customerId={customer.id}
@@ -145,17 +152,42 @@ export default async function CustomerDetailLayout({
           canManage={hasPermission(context, 'customers:write')}
         />
       }
-      tabs={[
-        { label: 'Overview', href: base, exact: true },
-        { label: 'Transactions', href: `${base}/transactions` },
-        { label: 'Subscriptions', href: `${base}/subscriptions` },
-        { label: 'Requests', href: `${base}/requests` },
-        { label: 'Mails', href: `${base}/mails` },
-        { label: 'Statement', href: `${base}/statement` },
-        { label: 'Activity', href: `${base}/activity` },
-      ]}
-    >
-      {children}
-    </DetailLayout>
+      closeHref="/customers"
+      closeLabel="Close customer details"
+    />
+  )
+}
+
+function CustomerMeta({
+  currency,
+  createdAt,
+}: {
+  currency: string
+  createdAt: number
+}) {
+  return (
+    <>
+      <span className="flex shrink-0 items-center gap-1.5">
+        <CreditCard className="size-3.5 shrink-0" />
+        {currency}
+      </span>
+      <span className="flex shrink-0 items-center gap-1.5">
+        <Calendar className="size-3.5 shrink-0" />
+        Added {formatDate(createdAt)}
+      </span>
+    </>
+  )
+}
+
+function CustomerHeaderSkeleton() {
+  return (
+    <DetailCardHeader
+      icon={<Skeleton className="size-14 rounded-full sm:size-16" />}
+      title={<Skeleton className="h-6 w-44" />}
+      subtitle={<Skeleton className="h-3.5 w-72" />}
+      actions={<Skeleton className="h-8 w-32" />}
+      closeHref="/customers"
+      closeLabel="Close customer details"
+    />
   )
 }

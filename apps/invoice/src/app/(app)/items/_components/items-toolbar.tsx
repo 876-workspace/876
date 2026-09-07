@@ -30,7 +30,7 @@ export function ItemsToolbar({
           options={ITEM_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
+      primaryLabel={showPrimary ? 'Add' : undefined}
       primaryHref={showPrimary ? '/items/new' : undefined}
       primaryVariant="info"
       refresh
