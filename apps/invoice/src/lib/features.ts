@@ -1,21 +1,86 @@
 import 'server-only'
 
 import { cache } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { resolveExperimentDecision } from '@876/core/platform'
+
 import { getPlatformClient } from '@/lib/services/platform'
 import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
+import type {
+  InvoiceFeatureRequest,
+  InvoiceFeatures,
+  InvoiceUiFeatures,
+} from '@/types/features'
 
-/**
- * Invoice has no app-owned feature rollouts yet. Keeping this request-shaped
- * boundary lets AccessContext add them without turning a flag into authority.
- */
-export async function getFeatures(): Promise<{ featureKeys: string[] }> {
-  return { featureKeys: [] }
+const INVOICE_SEARCH_BAR_SLUG = 'invoice-search-bar'
+const INVOICE_THEME_SWITCHER_SLUG = 'invoice-theme-switcher'
+const INVOICE_GLOBAL_ADD_SLUG = 'invoice-global-add'
+const INVOICE_APP_SWITCHER_SLUG = 'invoice-app-switcher'
+const INVOICE_ORG_SWITCHER_SLUG = 'invoice-org-switcher'
+
+const INVOICE_FEATURE_SLUGS = [
+  INVOICE_SEARCH_BAR_SLUG,
+  INVOICE_THEME_SWITCHER_SLUG,
+  INVOICE_GLOBAL_ADD_SLUG,
+  INVOICE_APP_SWITCHER_SLUG,
+  INVOICE_ORG_SWITCHER_SLUG,
+] as const
+
+const DEFAULT_UI_FEATURES: InvoiceUiFeatures = {
+  searchBar: false,
+  themeSwitcher: false,
+  globalAdd: false,
+  appSwitcher: false,
+  orgSwitcher: false,
 }
 
-/**
- * Resolves a PostHog experiment for the Invoice app.
- */
+export async function getFeatures({
+  userId,
+  organizationId,
+}: InvoiceFeatureRequest): Promise<InvoiceFeatures> {
+  return getCachedFeatures(userId, organizationId)
+}
+
+const getCachedFeatures = cache(async function getCachedFeatures(
+  userId?: string,
+  organizationId?: string
+): Promise<InvoiceFeatures> {
+  const platform = await getPlatformClient()
+  const { data, error } = await platform.features.evaluate({
+    appSlug: INVOICE_APP_SLUG,
+    userId,
+    organizationId,
+  })
+
+  if (error || !data) {
+    Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
+      level: 'error',
+      tags: { category: 'feature-flags' },
+      extra: {
+        call: 'features.evaluate',
+        errorCode: error?.code ?? null,
+        errorMessage: error?.message ?? null,
+        appSlug: INVOICE_APP_SLUG,
+      },
+    })
+    return { featureKeys: [], uiFeatures: DEFAULT_UI_FEATURES }
+  }
+
+  const enabledSlugs = new Set(data.data.map((feature) => feature.slug))
+
+  return {
+    featureKeys: INVOICE_FEATURE_SLUGS.filter((slug) => enabledSlugs.has(slug)),
+    uiFeatures: {
+      searchBar: enabledSlugs.has(INVOICE_SEARCH_BAR_SLUG),
+      themeSwitcher: enabledSlugs.has(INVOICE_THEME_SWITCHER_SLUG),
+      globalAdd: enabledSlugs.has(INVOICE_GLOBAL_ADD_SLUG),
+      appSwitcher: enabledSlugs.has(INVOICE_APP_SWITCHER_SLUG),
+      orgSwitcher: enabledSlugs.has(INVOICE_ORG_SWITCHER_SLUG),
+    },
+  }
+})
+
+/** Resolves a PostHog experiment for the Invoice app. */
 export async function getInvoiceExperiment<T = unknown>(
   featureSlug: string,
   context?: {

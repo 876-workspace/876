@@ -24,18 +24,28 @@ const INVOICE_APPS: AppSwitcherApp[] = [
   },
 ]
 
-export function TopbarActions() {
+export function TopbarActions({
+  showGlobalAdd,
+  showAppSwitcher,
+}: {
+  showGlobalAdd: boolean
+  showAppSwitcher: boolean
+}) {
   return (
     <div className="flex items-center gap-1.5">
-      <Button
-        variant="info"
-        size="icon"
-        className="h-8 w-8 rounded-lg shadow-sm"
-        aria-label="Create new"
-      >
-        <PlusIcon className="size-4" strokeWidth={2.5} />
-      </Button>
-      <div aria-hidden className="bg-border mx-1 h-4 w-px" />
+      {showGlobalAdd ? (
+        <>
+          <Button
+            variant="info"
+            size="icon"
+            className="h-8 w-8 rounded-lg shadow-sm"
+            aria-label="Create new"
+          >
+            <PlusIcon className="size-4" strokeWidth={2.5} />
+          </Button>
+          <div aria-hidden className="bg-border mx-1 h-4 w-px" />
+        </>
+      ) : null}
 
       <a
         href="https://docs.876.dev"
@@ -46,7 +56,7 @@ export function TopbarActions() {
         Help
       </a>
 
-      <AppSwitcher apps={INVOICE_APPS} />
+      {showAppSwitcher ? <AppSwitcher apps={INVOICE_APPS} /> : null}
     </div>
   )
 }

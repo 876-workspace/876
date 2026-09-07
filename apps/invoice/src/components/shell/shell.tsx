@@ -15,6 +15,7 @@ import {
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
 
+import type { InvoiceFeatures } from '@/types/features'
 import { InvoiceSidebar } from './sidebar'
 import { OrgSwitcher } from './org-switcher'
 import { SupportWidget } from './support-widget'
@@ -28,6 +29,7 @@ export async function InvoiceShell({
   user,
   currentOrg,
   orgs,
+  features,
   navigation,
 }: {
   children: ReactNode
@@ -35,6 +37,7 @@ export async function InvoiceShell({
   user: SidebarUserMenuUser
   currentOrg: OrgSwitcherOrg
   orgs: OrgSwitcherOrg[]
+  features: InvoiceFeatures
   navigation: NavGroupDefinition[]
 }) {
   const cookieStore = await cookies()
@@ -54,20 +57,30 @@ export async function InvoiceShell({
           <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
-            <TopbarSearch
-              navigation={navigation.flatMap((group) =>
-                group.entries.map(({ title, href }) => ({ title, href }))
-              )}
-            />
+            {features.uiFeatures.searchBar ? (
+              <TopbarSearch
+                navigation={navigation.flatMap((group) =>
+                  group.entries.map(({ title, href }) => ({ title, href }))
+                )}
+              />
+            ) : null}
           </div>
 
           <div className="ml-auto flex items-center gap-2">
             <SupportWidget />
             <div className="hidden items-center gap-1.5 md:flex">
-              <OrgSwitcher current={currentOrg} orgs={orgs} />
-              <TopbarActions />
+              {features.uiFeatures.orgSwitcher ? (
+                <OrgSwitcher current={currentOrg} orgs={orgs} />
+              ) : null}
+              <TopbarActions
+                showGlobalAdd={features.uiFeatures.globalAdd}
+                showAppSwitcher={features.uiFeatures.appSwitcher}
+              />
             </div>
-            <UserMenu user={user} />
+            <UserMenu
+              user={user}
+              showThemeSwitcher={features.uiFeatures.themeSwitcher}
+            />
           </div>
         </AppShellHeader>
 
