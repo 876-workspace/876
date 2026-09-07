@@ -159,7 +159,7 @@ export const FINANCE_RESOURCES: Record<string, Resource> = {
   ),
   payment_term: resource(
     'Payment terms',
-    'Reusable due-date rules for invoices and estimates.',
+    'Reusable due-date rules for invoices and quotes.',
     true,
     1,
     {
