@@ -866,6 +866,31 @@ export const v1OperationMetadata = {
     summary: 'Update a tax rate',
     tags: ['Taxes'],
   },
+  'GET /integrations/organizations/{organizationId}/tax-authorities': {
+    summary: 'List organization tax authorities',
+    tags: ['Billing'],
+  },
+  'POST /integrations/organizations/{organizationId}/tax-authorities': {
+    summary: 'Create an organization tax authority',
+    tags: ['Billing'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/tax-authorities/{taxAuthorityId}':
+    {
+      summary: 'Update an organization tax authority',
+      tags: ['Billing'],
+    },
+  'GET /integrations/organizations/{organizationId}/tax-rates': {
+    summary: 'List organization tax rates',
+    tags: ['Billing'],
+  },
+  'POST /integrations/organizations/{organizationId}/tax-rates': {
+    summary: 'Create an organization tax rate',
+    tags: ['Billing'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/tax-rates/{taxRateId}': {
+    summary: 'Update an organization tax rate',
+    tags: ['Billing'],
+  },
   'GET /payment-providers': {
     summary: 'List available payment providers',
     tags: ['Payment providers'],
@@ -1011,6 +1036,23 @@ export const v1OperationMetadata = {
     summary: 'List shared payment methods',
     tags: ['Organization integrations'],
   },
+  'POST /integrations/organizations/{organizationId}/payment-modes': {
+    summary: 'Create an organization Billing payment mode',
+    tags: ['Payments'],
+  },
+  'GET /integrations/organizations/{organizationId}/payment-modes/{modeId}': {
+    summary: 'Retrieve an organization Billing payment mode',
+    tags: ['Payments'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/payment-modes/{modeId}': {
+    summary: 'Update an organization Billing payment mode',
+    tags: ['Payments'],
+  },
+  'DELETE /integrations/organizations/{organizationId}/payment-modes/{modeId}':
+    {
+      summary: 'Delete an organization Billing payment mode',
+      tags: ['Payments'],
+    },
   'GET /vendors': {
     operationId: 'billing-billing_get_vendors',
     summary: 'Billing GET /vendors',
@@ -19653,6 +19695,1403 @@ export const v1OperationContracts = {
       },
     },
   },
+  'GET /integrations/organizations/{organizationId}/tax-authorities': {
+    tags: ['Billing'],
+    summary: 'List organization tax authorities',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.taxes.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'tax_authority',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          countryCode: {
+                            type: 'string',
+                          },
+                          subdivisionCode: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          isDefault: {
+                            type: 'boolean',
+                          },
+                          isActive: {
+                            type: 'boolean',
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'name',
+                          'description',
+                          'countryCode',
+                          'subdivisionCode',
+                          'isDefault',
+                          'isActive',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/tax-authorities': {
+    tags: ['Billing'],
+    summary: 'Create an organization tax authority',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.taxes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+              },
+              description: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              countryCode: {
+                default: 'JM',
+                type: 'string',
+                minLength: 2,
+                maxLength: 2,
+              },
+              subdivisionCode: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              isDefault: {
+                default: false,
+                type: 'boolean',
+              },
+            },
+            required: ['name'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tax_authority',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    countryCode: {
+                      type: 'string',
+                    },
+                    subdivisionCode: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    isDefault: {
+                      type: 'boolean',
+                    },
+                    isActive: {
+                      type: 'boolean',
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'name',
+                    'description',
+                    'countryCode',
+                    'subdivisionCode',
+                    'isDefault',
+                    'isActive',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/tax-authorities/{taxAuthorityId}':
+    {
+      tags: ['Billing'],
+      summary: 'Update an organization tax authority',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.taxes.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'taxAuthorityId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  minLength: 1,
+                },
+                description: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      minLength: 1,
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                countryCode: {
+                  type: 'string',
+                  minLength: 2,
+                  maxLength: 2,
+                },
+                subdivisionCode: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      minLength: 1,
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                isDefault: {
+                  type: 'boolean',
+                },
+                isActive: {
+                  type: 'boolean',
+                },
+              },
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'tax_authority',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      name: {
+                        type: 'string',
+                      },
+                      description: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      countryCode: {
+                        type: 'string',
+                      },
+                      subdivisionCode: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      isDefault: {
+                        type: 'boolean',
+                      },
+                      isActive: {
+                        type: 'boolean',
+                      },
+                      createdAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      updatedAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                    },
+                    required: [
+                      'object',
+                      'id',
+                      'name',
+                      'description',
+                      'countryCode',
+                      'subdivisionCode',
+                      'isDefault',
+                      'isActive',
+                      'createdAt',
+                      'updatedAt',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/tax-rates': {
+    tags: ['Billing'],
+    summary: 'List organization tax rates',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.taxes.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'tax_rate',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          taxType: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          rate: {
+                            type: 'string',
+                          },
+                          inclusive: {
+                            type: 'boolean',
+                          },
+                          startsAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          isActive: {
+                            type: 'boolean',
+                          },
+                          taxAuthority: {
+                            type: 'object',
+                            properties: {
+                              object: {
+                                type: 'string',
+                                const: 'tax_authority',
+                              },
+                              id: {
+                                type: 'string',
+                              },
+                              name: {
+                                type: 'string',
+                              },
+                              description: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              countryCode: {
+                                type: 'string',
+                              },
+                              subdivisionCode: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              isDefault: {
+                                type: 'boolean',
+                              },
+                              isActive: {
+                                type: 'boolean',
+                              },
+                              createdAt: {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              updatedAt: {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                            },
+                            required: [
+                              'object',
+                              'id',
+                              'name',
+                              'description',
+                              'countryCode',
+                              'subdivisionCode',
+                              'isDefault',
+                              'isActive',
+                              'createdAt',
+                              'updatedAt',
+                            ],
+                            additionalProperties: false,
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'name',
+                          'description',
+                          'taxType',
+                          'rate',
+                          'inclusive',
+                          'startsAt',
+                          'isActive',
+                          'taxAuthority',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/tax-rates': {
+    tags: ['Billing'],
+    summary: 'Create an organization tax rate',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.taxes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+              },
+              description: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              taxType: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              rate: {
+                anyOf: [
+                  {
+                    type: 'number',
+                  },
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                ],
+              },
+              taxAuthorityId: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              inclusive: {
+                default: false,
+                type: 'boolean',
+              },
+              startsAt: {
+                anyOf: [
+                  {
+                    type: 'integer',
+                    exclusiveMinimum: 0,
+                    maximum: 9007199254740991,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              isDefault: {
+                default: false,
+                type: 'boolean',
+              },
+            },
+            required: ['name', 'rate'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tax_rate',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    taxType: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    rate: {
+                      type: 'string',
+                    },
+                    inclusive: {
+                      type: 'boolean',
+                    },
+                    startsAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    isActive: {
+                      type: 'boolean',
+                    },
+                    taxAuthority: {
+                      type: 'object',
+                      properties: {
+                        object: {
+                          type: 'string',
+                          const: 'tax_authority',
+                        },
+                        id: {
+                          type: 'string',
+                        },
+                        name: {
+                          type: 'string',
+                        },
+                        description: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        countryCode: {
+                          type: 'string',
+                        },
+                        subdivisionCode: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        isDefault: {
+                          type: 'boolean',
+                        },
+                        isActive: {
+                          type: 'boolean',
+                        },
+                        createdAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        updatedAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                      },
+                      required: [
+                        'object',
+                        'id',
+                        'name',
+                        'description',
+                        'countryCode',
+                        'subdivisionCode',
+                        'isDefault',
+                        'isActive',
+                        'createdAt',
+                        'updatedAt',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'name',
+                    'description',
+                    'taxType',
+                    'rate',
+                    'inclusive',
+                    'startsAt',
+                    'isActive',
+                    'taxAuthority',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/tax-rates/{taxRateId}': {
+    tags: ['Billing'],
+    summary: 'Update an organization tax rate',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.taxes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'taxRateId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              isActive: {
+                type: 'boolean',
+              },
+              isDefault: {
+                type: 'boolean',
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tax_rate',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    taxType: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    rate: {
+                      type: 'string',
+                    },
+                    inclusive: {
+                      type: 'boolean',
+                    },
+                    startsAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    isActive: {
+                      type: 'boolean',
+                    },
+                    taxAuthority: {
+                      type: 'object',
+                      properties: {
+                        object: {
+                          type: 'string',
+                          const: 'tax_authority',
+                        },
+                        id: {
+                          type: 'string',
+                        },
+                        name: {
+                          type: 'string',
+                        },
+                        description: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        countryCode: {
+                          type: 'string',
+                        },
+                        subdivisionCode: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        isDefault: {
+                          type: 'boolean',
+                        },
+                        isActive: {
+                          type: 'boolean',
+                        },
+                        createdAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        updatedAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                      },
+                      required: [
+                        'object',
+                        'id',
+                        'name',
+                        'description',
+                        'countryCode',
+                        'subdivisionCode',
+                        'isDefault',
+                        'isActive',
+                        'createdAt',
+                        'updatedAt',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'name',
+                    'description',
+                    'taxType',
+                    'rate',
+                    'inclusive',
+                    'startsAt',
+                    'isActive',
+                    'taxAuthority',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'GET /payment-providers': {
     security: [
       {
@@ -23072,6 +24511,444 @@ export const v1OperationContracts = {
       },
     },
   },
+  'POST /integrations/organizations/{organizationId}/payment-modes': {
+    tags: ['Payments'],
+    summary: 'Create an organization Billing payment mode',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 120,
+              },
+              isDefault: {
+                type: 'boolean',
+              },
+            },
+            required: ['name'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_mode',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/payment-modes/{modeId}': {
+    tags: ['Payments'],
+    summary: 'Retrieve an organization Billing payment mode',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'modeId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_mode',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/payment-modes/{modeId}': {
+    tags: ['Payments'],
+    summary: 'Update an organization Billing payment mode',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'modeId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 120,
+              },
+              isDefault: {
+                type: 'boolean',
+              },
+              isActive: {
+                type: 'boolean',
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_mode',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /integrations/organizations/{organizationId}/payment-modes/{modeId}':
+    {
+      tags: ['Payments'],
+      summary: 'Delete an organization Billing payment mode',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.payments.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'modeId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Deleted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'payment_mode',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      deleted: {
+                        type: 'boolean',
+                        const: true,
+                      },
+                    },
+                    required: ['object', 'id', 'deleted'],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
   'GET /vendors': {
     description: 'Ported from `src/app/api/billing/vendors/route.ts`.',
     operationId: 'billing-billing_get_vendors',

@@ -282,5 +282,63 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.modesIntegrationList,
   })
+  const modesBase = '/integrations/organizations/:organizationId/payment-modes'
+  const orgMode = org.extend({ modeId: z.string().min(1) })
+  api.post({
+    path: modesBase,
+    summary: 'Create an organization Billing payment mode',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: org, body: PaymentModeCreateSchema },
+    responses: {
+      201: {
+        description: 'Created',
+        schema: successEnvelopeSchema(resource('payment_mode')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.modesCreate,
+  })
+  api.get({
+    path: `${modesBase}/:modeId`,
+    summary: 'Retrieve an organization Billing payment mode',
+    security: { kind: 'integration', scope: 'billing.payments.read' },
+    request: { params: orgMode },
+    responses: {
+      200: {
+        description: 'Returned',
+        schema: successEnvelopeSchema(resource('payment_mode')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.modesGet,
+  })
+  api.patch({
+    path: `${modesBase}/:modeId`,
+    summary: 'Update an organization Billing payment mode',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgMode, body: PaymentModeUpdateSchema },
+    responses: {
+      200: {
+        description: 'Updated',
+        schema: successEnvelopeSchema(resource('payment_mode')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.modesUpdate,
+  })
+  api.delete({
+    path: `${modesBase}/:modeId`,
+    summary: 'Delete an organization Billing payment mode',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgMode },
+    responses: {
+      200: {
+        description: 'Deleted',
+        schema: successEnvelopeSchema(deleted('payment_mode')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.modesDelete,
+  })
   return api.router
 }
