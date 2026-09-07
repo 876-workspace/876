@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.errors import AppHTTPException
 from core.id import generate_id
+from db.models import ResourceLink
 from db.repositories.files import FileRepository
 from db.repositories.resource_links import ResourceLinkRepository
 from db.session import get_db
@@ -46,16 +47,16 @@ def _link_not_found() -> AppHTTPException:
     )
 
 
-def _serialize(row: object) -> ResourceLinkResponse:
+def _serialize(row: ResourceLink) -> ResourceLinkResponse:
     return ResourceLinkResponse(
-        id=getattr(row, "id"),
-        file_id=getattr(row, "file_id"),
-        app_id=getattr(row, "app_id"),
-        resource_type=getattr(row, "resource_type"),
-        resource_id=getattr(row, "resource_id"),
-        relation=getattr(row, "relation"),
-        created_by=getattr(row, "created_by"),
-        created_at=getattr(row, "created_at"),
+        id=row.id,
+        file_id=row.file_id,
+        app_id=row.app_id,
+        resource_type=row.resource_type,
+        resource_id=row.resource_id,
+        relation=row.relation,
+        created_by=row.created_by,
+        created_at=row.created_at,
     )
 
 

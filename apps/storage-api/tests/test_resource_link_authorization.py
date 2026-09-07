@@ -81,7 +81,8 @@ def _set_audience(harness: StorageHarness, audience: str) -> None:
 def _create_link(harness: StorageHarness) -> str:
     response = harness.client.post("/v1/resource-links", headers=AUTH_HEADERS, json=LINK_BODY)
     assert response.status_code == 201, response.text
-    return response.json()["id"]
+    link_id: str = response.json()["id"]
+    return link_id
 
 
 def test_create_links_a_file_for_its_own_owner(storage_harness: StorageHarness) -> None:
