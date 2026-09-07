@@ -4,6 +4,7 @@ import { request } from './request'
 
 export interface DocumentLineCreateParams {
   itemId?: string | null
+  variantId?: string | null
   priceId?: string | null
   description?: string | null
   quantity?: number

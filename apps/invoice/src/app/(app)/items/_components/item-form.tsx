@@ -3,6 +3,10 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
+import {
+  ItemOptionBuilderPanel,
+  type ItemOptionDraft,
+} from '@876/billing-ui/panels/item-option-builder-panel'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import {
@@ -32,6 +36,7 @@ export interface ItemFormValues {
   lowStockThreshold: number | null
   allowOutOfStock: boolean
   isActive: boolean
+  variantMode?: 'single' | 'variant'
 }
 
 const itemFormRowClassName = 'sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-3'
@@ -83,9 +88,11 @@ function nonNegativeInteger(value: string): number | null {
 export function ItemForm({
   currency,
   item,
+  variantsEnabled = false,
 }: {
   currency: string
   item?: ItemFormValues
+  variantsEnabled?: boolean
 }) {
   const router = useRouter()
   const [type, setType] = useState<InvoiceItemType>(item?.type ?? 'SERVICE')
@@ -116,6 +123,10 @@ export function ItemForm({
   const [isTaxable, setIsTaxable] = useState(item?.isTaxable ?? false)
   const [taxCode, setTaxCode] = useState(item?.taxCode ?? '')
   const [isActive, setIsActive] = useState(item?.isActive ?? true)
+  const [variantMode, setVariantMode] = useState<'single' | 'variant'>(
+    item?.variantMode ?? 'single'
+  )
+  const [variantOptions, setVariantOptions] = useState<ItemOptionDraft[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -142,9 +153,10 @@ export function ItemForm({
       return
     }
 
-    const opening = !item && type === 'GOOD' && trackStock
-      ? nonNegativeInteger(openingStock)
-      : null
+    const opening =
+      !item && type === 'GOOD' && trackStock
+        ? nonNegativeInteger(openingStock)
+        : null
     if (!item && type === 'GOOD' && trackStock && opening === null) {
       setError('Opening stock must be a whole number of zero or more.')
       return
@@ -195,6 +207,23 @@ export function ItemForm({
               }
             : {}),
         isTaxable,
+        ...(variantsEnabled && !item
+          ? {
+              variantMode,
+              ...(variantMode === 'variant'
+                ? {
+                    variantOptions: variantOptions
+                      .filter((option) => option.name.trim())
+                      .map((option) => ({
+                        name: option.name.trim(),
+                        values: option.values
+                          .map((value) => value.trim())
+                          .filter(Boolean),
+                      })),
+                  }
+                : {}),
+            }
+          : {}),
         ...(taxCodeValue === undefined ? {} : { taxCode: taxCodeValue }),
         ...stockParams,
       }
@@ -231,6 +260,26 @@ export function ItemForm({
             </SelectContent>
           </Select>
         </FormRow>
+
+        {variantsEnabled && !item ? (
+          <FormRow label="Selling mode" className={itemFormRowClassName}>
+            <Select
+              value={variantMode}
+              onValueChange={(value) =>
+                setVariantMode(value as 'single' | 'variant')
+              }
+              disabled={isPending}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="single">Single item</SelectItem>
+                <SelectItem value="variant">Variants</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormRow>
+        ) : null}
 
         <FormRow
           htmlFor="item-name"
@@ -341,10 +390,7 @@ export function ItemForm({
                   />
                 </FormRow>
 
-                <FormRow
-                  label="Out of stock"
-                  className={itemFormRowClassName}
-                >
+                <FormRow label="Out of stock" className={itemFormRowClassName}>
                   <label className="flex min-h-9 items-center gap-2 text-sm">
                     <input
                       id="item-allow-out-of-stock"
@@ -436,6 +482,17 @@ export function ItemForm({
           </FormRow>
         ) : null}
       </div>
+
+      {variantsEnabled && !item && variantMode === 'variant' ? (
+        <ItemOptionBuilderPanel
+          state={
+            variantOptions.length === 0
+              ? { status: 'empty', options: variantOptions }
+              : { status: 'ready', options: variantOptions }
+          }
+          onChange={setVariantOptions}
+        />
+      ) : null}
 
       {error ? <div className="text-destructive text-sm">{error}</div> : null}
 

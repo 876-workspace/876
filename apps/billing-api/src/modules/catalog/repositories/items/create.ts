@@ -14,8 +14,9 @@ import {
   resolveIdempotencyReplay,
 } from '../integrations/attribution'
 import { isUniqueConstraintError } from '../prisma-error'
+import { createVariantStructure } from './variants'
 
-/** Creates a sellable good or service. */
+/** Creates a single sellable item or a parent Item with generated Variants. */
 export async function create(
   tenantId: string,
   params: ItemCreateParams,
@@ -29,6 +30,25 @@ export async function create(
     : null
   if (replay) return replay
 
+  const variantMode = params.variantMode
+  if (variantMode === 'variant') {
+    const preference = await prisma.modulePreference.findFirst({
+      where: {
+        tenantId,
+        module: 'items',
+        key: 'product-variants',
+        booleanValue: true,
+      },
+      select: { id: true },
+    })
+    if (!preference)
+      return err(
+        'Product variants are not enabled for this workspace.',
+        409,
+        'billing/item-variants-disabled'
+      )
+  }
+
   const sellingCurrency = params.defaultSellingCurrency ?? null
   const costCurrency = params.defaultCostCurrency ?? null
 
@@ -38,7 +58,8 @@ export async function create(
     return err('Enable the cost currency before using it on an item.', 422)
 
   const trackStock = params.type === 'GOOD' && params.trackStock
-  const stockQuantity = trackStock ? (params.stockQuantity ?? 0) : null
+  const stockQuantity =
+    trackStock && variantMode === 'single' ? (params.stockQuantity ?? 0) : null
   const lowStockThreshold = trackStock
     ? (params.lowStockThreshold ?? null)
     : null
@@ -53,6 +74,7 @@ export async function create(
           tenantId,
           ...attributionData(attribution),
           type: params.type,
+          variantMode,
           name: params.name,
           sku: params.sku ?? null,
           unit: params.unit ?? null,
@@ -74,12 +96,21 @@ export async function create(
         },
       })
 
-      if (trackStock && stockQuantity !== null && stockQuantity > 0) {
+      if (variantMode === 'variant') {
+        await createVariantStructure(tx, {
+          tenantId,
+          itemId: created.id,
+          options: params.variantOptions!,
+          trackStock,
+          now,
+        })
+      } else if (trackStock && stockQuantity !== null && stockQuantity > 0) {
         await tx.itemStockMovement.create({
           data: {
             id: generateId('ItemStockMovement'),
             tenantId,
             itemId: created.id,
+            stockTargetKey: created.id,
             type: 'initial-stock',
             quantityDelta: stockQuantity,
             quantityBefore: 0,
@@ -121,7 +152,7 @@ export async function create(
     }
 
     if (isUniqueConstraintError(error))
-      return err('An item with this SKU already exists in this workspace.', 409)
+      return err('An item or variant SKU already exists in this workspace.', 409)
 
     console.error('[billing.service.items.create]', error)
     return err('Failed to create the item.', 500)

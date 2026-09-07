@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { BILLING_MODULE_CATALOG, INVOICE_MODULE_CATALOG } from './settings-catalog'
+import {
+  BILLING_MODULE_CATALOG,
+  INVOICE_MODULE_CATALOG,
+} from './settings-catalog'
 
 const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
@@ -106,11 +109,23 @@ describe('finance module catalogs', () => {
     expect(BILLING_ONLY_KEYS.every((key) => !invoiceKeys.has(key))).toBe(true)
   })
 
-  it('declares module state only and leaves preferences empty', () => {
-    for (const module of BILLING_MODULE_CATALOG) {
-      expect(module.description.length).toBeGreaterThan(0)
-      expect(module.optional).toBe(true)
-      expect(module.preferences).toEqual([])
+  it('declares product-variants as the exact items preference', () => {
+    for (const catalogModule of BILLING_MODULE_CATALOG) {
+      expect(catalogModule.description.length).toBeGreaterThan(0)
+      expect(catalogModule.optional).toBe(true)
+      expect(catalogModule.preferences).toEqual(
+        catalogModule.key === 'items'
+          ? [
+              {
+                key: 'product-variants',
+                label: 'Product variants',
+                type: 'boolean',
+                default: false,
+                hint: 'Allow goods to have multiple sellable versions such as size or color.',
+              },
+            ]
+          : []
+      )
     }
   })
 

@@ -131,6 +131,18 @@
       "types": "./src/panels/customer-timeline-panel.tsx",
       "default": "./src/panels/customer-timeline-panel.tsx"
     },
+    "./panels/item-media-panel": {
+      "types": "./src/panels/item-media-panel.tsx",
+      "default": "./src/panels/item-media-panel.tsx"
+    },
+    "./panels/item-option-builder-panel": {
+      "types": "./src/panels/item-option-builder-panel.tsx",
+      "default": "./src/panels/item-option-builder-panel.tsx"
+    },
+    "./panels/item-variants-panel": {
+      "types": "./src/panels/item-variants-panel.tsx",
+      "default": "./src/panels/item-variants-panel.tsx"
+    },
     "./panels/customer-transactions-panel": {
       "types": "./src/panels/customer-transactions-panel.tsx",
       "default": "./src/panels/customer-transactions-panel.tsx"

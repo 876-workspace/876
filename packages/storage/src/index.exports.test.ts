@@ -54,14 +54,18 @@ describe('@876/storage public module surface', () => {
     }
   })
 
-  it('client surface only exposes uploads and files namespaces', () => {
+  it('client surface exposes uploads, files, and resourceLinks namespaces', () => {
     const fetchMock = vi.fn<typeof fetch>()
     const client = create876StorageClient({
       baseUrl: 'https://example.test',
       internalKey: 'k',
       fetch: fetchMock,
     })
-    expect(Object.keys(client).toSorted()).toEqual(['files', 'uploads'])
+    expect(Object.keys(client).toSorted()).toEqual([
+      'files',
+      'resourceLinks',
+      'uploads',
+    ])
     expect(Object.keys(client.files).toSorted()).toEqual([
       'createReadUrl',
       'delete',

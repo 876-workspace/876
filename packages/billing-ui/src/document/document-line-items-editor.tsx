@@ -25,6 +25,8 @@ export interface DocumentLineDraft {
   /** Stable client-side key. Not the persisted line id. */
   id: string
   itemId?: string | null
+  /** Required alongside itemId when the selected Item is variant-mode. */
+  variantId?: string | null
   /** Catalogue price this line was priced from, when one was selected. */
   priceId?: string | null
   /** The `value` of the chosen `DocumentItemOption`, or '' for a free-text line. */
@@ -62,6 +64,17 @@ export interface DocumentItemOption {
   /** Unit amount in major units, prefilled on selection. */
   defaultAmount: string | null
   currency: string | null
+  trackStock?: boolean
+  stockQuantity?: number | null
+  allowOutOfStock?: boolean
+  variants?: readonly DocumentItemVariantOption[]
+}
+
+export interface DocumentItemVariantOption {
+  id: string
+  label: string
+  sku: string | null
+  defaultAmount: string | null
   trackStock?: boolean
   stockQuantity?: number | null
   allowOutOfStock?: boolean
@@ -221,13 +234,14 @@ function resolveStockError(
     const quantity = Number(line.quantity)
     if (!Number.isInteger(quantity) || quantity <= 0) continue
 
-    const current = requested.get(line.itemId)
+    const stockKey = line.variantId ?? line.itemId
+    const current = requested.get(stockKey)
     if (current) {
       current.quantity += quantity
       continue
     }
 
-    requested.set(line.itemId, {
+    requested.set(stockKey, {
       quantity,
       stock: line.stockQuantity ?? 0,
       label: line.description || 'This item',
@@ -362,6 +376,7 @@ export function DocumentLineItemsEditor({
     update(index, {
       selectionId,
       itemId: option?.itemId ?? null,
+      ...(option?.variants?.length ? { variantId: null } : {}),
       priceId: option?.priceId ?? null,
       trackStock: option?.trackStock ?? false,
       stockQuantity: option?.stockQuantity ?? null,
@@ -371,6 +386,29 @@ export function DocumentLineItemsEditor({
       resolvedSubtotal: null,
       description: option?.label ?? lines[index]?.description ?? '',
       unitAmount: option?.defaultAmount ?? lines[index]?.unitAmount ?? '',
+    })
+  }
+
+  function selectVariant(index: number, variantId: string) {
+    const item = items?.find(
+      (entry) => entry.value === lines[index]?.selectionId
+    )
+    const variant = item?.variants?.find((entry) => entry.id === variantId)
+    update(index, {
+      variantId: variantId || null,
+      trackStock: variant?.trackStock ?? item?.trackStock ?? false,
+      stockQuantity: variant?.stockQuantity ?? item?.stockQuantity ?? null,
+      allowOutOfStock:
+        variant?.allowOutOfStock ?? item?.allowOutOfStock ?? false,
+      description: variant
+        ? `${item?.label ?? ''} · ${variant.label}`
+        : (lines[index]?.description ?? ''),
+      unitAmount:
+        variant?.defaultAmount ??
+        item?.defaultAmount ??
+        lines[index]?.unitAmount ??
+        '',
+      resolvedSubtotal: null,
     })
   }
 
@@ -453,6 +491,36 @@ export function DocumentLineItemsEditor({
                         onValueChange={(value) => selectItem(index, value)}
                       />
                     )}
+                    {items?.find((entry) => entry.value === line.selectionId)
+                      ?.variants?.length ? (
+                      <NativeSelect
+                        aria-label={`Line ${index + 1} variant`}
+                        className="mt-2 w-full"
+                        value={line.variantId ?? ''}
+                        disabled={readOnly}
+                        onChange={(event) =>
+                          selectVariant(index, event.target.value)
+                        }
+                      >
+                        <NativeSelectOption value="">
+                          Choose variant
+                        </NativeSelectOption>
+                        {items
+                          .find((entry) => entry.value === line.selectionId)
+                          ?.variants?.map((variant) => (
+                            <NativeSelectOption
+                              key={variant.id}
+                              value={variant.id}
+                            >
+                              {variant.label}
+                              {variant.sku ? ` · ${variant.sku}` : ''}
+                              {variant.trackStock
+                                ? ` · ${variant.stockQuantity ?? 0} in stock`
+                                : ''}
+                            </NativeSelectOption>
+                          ))}
+                      </NativeSelect>
+                    ) : null}
                   </td>
                 ) : null}
                 <td className="py-2 pr-3">

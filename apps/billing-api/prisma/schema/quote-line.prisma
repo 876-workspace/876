@@ -4,6 +4,9 @@ model QuoteLine {
   id             String  @id
   quoteId        String  @map("quote_id")
   itemId         String? @map("item_id")
+  variantId      String? @map("variant_id")
+  variantName    String? @map("variant_name")
+  variantSku     String? @map("variant_sku")
   priceId        String? @map("price_id")
   description    String
   quantity       Int     @default(1)
@@ -14,12 +17,14 @@ model QuoteLine {
   createdAt      Int     @map("created_at")
   updatedAt      Int     @map("updated_at")
 
-  quote Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_quote_lines_quote_id_fkey")
-  item  Item?  @relation(fields: [itemId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_quote_lines_item_id_fkey")
-  price Price? @relation(fields: [priceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_quote_lines_price_id_fkey")
+  quote   Quote        @relation(fields: [quoteId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_quote_lines_quote_id_fkey")
+  item    Item?        @relation(fields: [itemId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_quote_lines_item_id_fkey")
+  variant ItemVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_quote_lines_variant_id_fkey")
+  price   Price?       @relation(fields: [priceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_quote_lines_price_id_fkey")
 
   @@index([quoteId], map: "billing_quote_lines_quote_id_idx")
   @@index([itemId], map: "billing_quote_lines_item_id_idx")
+  @@index([variantId], map: "billing_quote_lines_variant_id_idx")
   @@index([priceId], map: "billing_quote_lines_price_id_idx")
   @@map("billing_quote_lines")
 }

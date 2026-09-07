@@ -39,9 +39,11 @@ describe('frozen v1 route authentication matrix', () => {
     // transitions (send/accept/decline/cancel) were added in their place. 220
     // -> 222: `POST /items/{itemId}/stock-adjustments` and `POST
     // /integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments`
-    // were added as authenticated operations.
-    expect(operations).toHaveLength(222)
-    expect(protectedPublicOperations()).toHaveLength(221)
+    // were added as authenticated operations. 222 -> 254: item preferences,
+    // variant search and item-variant operations, item media, and variant media
+    // operations were added for both tenant and integration routes.
+    expect(operations).toHaveLength(254)
+    expect(protectedPublicOperations()).toHaveLength(253)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

@@ -40,7 +40,15 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
     description: 'Manage the products and services used on finance documents.',
     optional: true,
     enabledByDefault: true,
-    preferences: [],
+    preferences: [
+      {
+        key: 'product-variants',
+        label: 'Product variants',
+        type: 'boolean',
+        default: false,
+        hint: 'Allow goods to have multiple sellable versions such as size or color.',
+      },
+    ],
   },
   {
     key: 'sales-receipts',

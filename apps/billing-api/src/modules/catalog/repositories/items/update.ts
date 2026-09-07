@@ -20,6 +20,7 @@ export async function update(
     where: { id: itemId, tenantId },
     select: {
       type: true,
+      variantMode: true,
       trackStock: true,
       stockQuantity: true,
     },
@@ -47,9 +48,8 @@ export async function update(
   if (params.allowOutOfStock === true && !nextTrackStock)
     return err('Enable stock tracking before allowing out-of-stock sales.', 422)
 
-  const data: Record<string, unknown> = {
-    updatedAt: nowUnixSeconds(),
-  }
+  const now = nowUnixSeconds()
+  const data: Record<string, unknown> = { updatedAt: now }
 
   if (params.type !== undefined) data.type = params.type
   if (params.name !== undefined) data.name = params.name
@@ -74,8 +74,14 @@ export async function update(
     data.allowOutOfStock = params.allowOutOfStock
   if (params.isActive !== undefined) data.isActive = params.isActive
 
-  if (!current.trackStock && nextTrackStock)
+  if (
+    current.variantMode === 'single' &&
+    !current.trackStock &&
+    nextTrackStock
+  )
     data.stockQuantity = current.stockQuantity ?? 0
+
+  if (current.variantMode === 'variant') data.stockQuantity = null
 
   if (params.trackStock === false) {
     data.lowStockThreshold = null
@@ -90,13 +96,32 @@ export async function update(
   }
 
   try {
-    const result = await prisma.item.updateMany({
-      where: { id: itemId, tenantId },
-      data,
+    const result = await prisma.$transaction(async (tx) => {
+      const updated = await tx.item.updateMany({
+        where: { id: itemId, tenantId },
+        data,
+      })
+      if (updated.count === 0) return updated
+
+      if (current.variantMode === 'variant' && nextType === 'SERVICE')
+        await tx.itemVariant.updateMany({
+          where: { tenantId, itemId },
+          data: { stockQuantity: null, updatedAt: now },
+        })
+      else if (
+        current.variantMode === 'variant' &&
+        !current.trackStock &&
+        nextTrackStock
+      )
+        await tx.itemVariant.updateMany({
+          where: { tenantId, itemId, stockQuantity: null },
+          data: { stockQuantity: 0, updatedAt: now },
+        })
+
+      return updated
     })
 
     if (result.count === 0) return err('Item not found.', 404)
-
     return ok({ id: itemId })
   } catch (error) {
     if (isUniqueConstraintError(error))

@@ -3,12 +3,14 @@ import { z } from 'zod'
 /** Stable error codes returned by the Storage service backend. */
 export const storageErrorCodeSchema = z.enum([
   'storage/file-not-found',
+  'storage/file-not-ready',
   'storage/file-too-large',
   'storage/forbidden',
   'storage/invalid-owner',
   'storage/invalid-request',
   'storage/mime-not-allowed',
   'storage/provider-error',
+  'storage/resource-link-not-found',
   'storage/route-not-found',
   'storage/unauthorized',
   'storage/upload-expired',

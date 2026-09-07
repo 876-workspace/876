@@ -17,43 +17,6 @@
  * R2, then your server completes the session so Storage can verify the stored
  * object itself.
  *
- * @example
- * // src/lib/876/index.ts — one singleton per app
- * import 'server-only'
- * import { create876ServerClient } from '@876/client/server'
- *
- * export const $876 = create876ServerClient({
- *   storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
- * })
- *
- * @example
- * // Step 1 — your route handler, after authorizing the actor:
- * const { data: session, error } = await $876.storage.uploads.create({
- *   route_key: 'organization.primaryLogo',
- *   owner_type: 'organization',
- *   owner_id: ctx.orgId,
- *   actor_user_id: ctx.userId,
- *   source_app_id: '876-couriers',
- *   file_name: upload.name,
- *   content_type: upload.type,
- *   size_bytes: upload.size,
- * })
- * if (error) return storageErrorResponse(error)
- *
- * // Step 2 — the browser, with the session you returned to it:
- * // await fetch(session.upload_url, {
- * //   method: session.method,
- * //   headers: session.headers,
- * //   body: upload,
- * // })
- *
- * // Step 3 — your route handler again:
- * const { data: file, error: completeError } =
- *   await $876.storage.uploads.complete(session.id)
- * if (completeError) return storageErrorResponse(completeError)
- *
- * // file.status === 'ready'; file.url is set only for public files.
- *
  * @module @876/storage
  */
 import 'server-only'
@@ -95,6 +58,20 @@ export type {
   FileStatus,
   ReadUrl,
 } from './types/files'
+export {
+  deletedResourceLinkSchema,
+  resourceLinkCreateParamsSchema,
+  resourceLinkListParamsSchema,
+  resourceLinkListSchema,
+  resourceLinkSchema,
+} from './types/resource-links'
+export type {
+  DeletedResourceLink,
+  ResourceLink,
+  ResourceLinkCreateParams,
+  ResourceLinkList,
+  ResourceLinkListParams,
+} from './types/resource-links'
 export {
   uploadCreateParamsSchema,
   uploadHeadersSchema,

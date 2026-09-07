@@ -130,6 +130,9 @@ async function createFromQuote(
           create: quote.lines.map((line, position) => ({
             id: generateId('InvoiceLine'),
             itemId: line.itemId,
+            variantId: line.variantId,
+            variantName: line.variantName,
+            variantSku: line.variantSku,
             priceId: line.priceId,
             description: line.description,
             position,

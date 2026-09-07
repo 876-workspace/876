@@ -24,6 +24,7 @@
     "@876/crm": "workspace:*",
     "@876/crm-ui": "workspace:*",
     "@876/settings": "workspace:*",
+    "@876/storage": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/workspace": "workspace:*",
     "@sentry/nextjs": "10.56.0",

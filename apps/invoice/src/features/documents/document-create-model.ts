@@ -37,6 +37,8 @@ export function toInvoiceLine(
     return null
 
   return {
+    ...(line.itemId ? { itemId: line.itemId } : {}),
+    ...(line.variantId ? { variantId: line.variantId } : {}),
     description: line.description.trim(),
     quantity,
     unitAmount: unitAmount.toString(),

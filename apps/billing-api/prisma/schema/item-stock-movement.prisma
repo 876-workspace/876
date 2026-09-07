@@ -1,8 +1,10 @@
-/// Immutable explanation for a lightweight Item stock counter change.
+/// Immutable explanation for a lightweight Item or Item Variant stock counter change.
 model ItemStockMovement {
   id             String  @id
   tenantId       String  @map("tenant_id")
   itemId         String  @map("item_id")
+  variantId      String? @map("variant_id")
+  stockTargetKey String  @map("stock_target_key")
   type           String
   quantityDelta  Int     @map("quantity_delta")
   quantityBefore Int     @map("quantity_before")
@@ -13,10 +15,12 @@ model ItemStockMovement {
   createdBy      String? @map("created_by")
   createdAt      Int     @map("created_at")
 
-  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_item_stock_movements_item_id_fkey")
+  item    Item         @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_item_stock_movements_item_id_fkey")
+  variant ItemVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_item_stock_movements_variant_id_fkey")
 
-  @@unique([tenantId, itemId, type, referenceId], name: "billing_item_stock_movements_reference_key", map: "billing_item_stock_movements_reference_key")
+  @@unique([tenantId, stockTargetKey, type, referenceId], name: "billing_item_stock_movements_target_reference_key", map: "billing_item_stock_movements_target_reference_key")
   @@index([tenantId, itemId, createdAt], map: "billing_item_stock_movements_item_created_idx")
+  @@index([tenantId, variantId, createdAt], map: "billing_item_stock_movements_variant_created_idx")
   @@index([tenantId, referenceType, referenceId], map: "billing_item_stock_movements_reference_idx")
   @@map("billing_item_stock_movements")
 }

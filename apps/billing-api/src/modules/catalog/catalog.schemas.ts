@@ -8,9 +8,14 @@ import {
 } from './schemas/addon'
 import {
   ItemCreateSchema,
+  ItemMediaAttachSchema,
+  ItemMediaReorderSchema,
   ItemStockAdjustmentSchema,
   ItemUpdateSchema,
+  ItemVariantGenerateSchema,
+  ItemVariantUpdateSchema,
 } from './schemas/item'
+import { ItemPreferencesUpdateSchema } from './schemas/item-preference'
 import {
   PlanCloneSchema,
   PlanCreateSchema,
@@ -35,8 +40,13 @@ export {
   AddonCreateSchema,
   AddonUpdateSchema,
   ItemCreateSchema,
+  ItemMediaAttachSchema,
+  ItemMediaReorderSchema,
+  ItemPreferencesUpdateSchema,
   ItemStockAdjustmentSchema,
   ItemUpdateSchema,
+  ItemVariantGenerateSchema,
+  ItemVariantUpdateSchema,
   PlanCloneSchema,
   PlanCreateSchema,
   PlanUpdateSchema,
@@ -96,6 +106,10 @@ export const listSchema = (object: string) =>
     total_count: z.number().int().nullable(),
     url: z.string(),
   })
+export const itemPreferencesSchema = z.strictObject({
+  object: z.literal('item_preferences'),
+  productVariants: z.boolean(),
+})
 export const associationBatchSchema = z.object({
   object: z.literal('addon_association_batch'),
   ids: z.array(z.string()),

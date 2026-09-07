@@ -69,6 +69,7 @@ export function prepareDocumentLine(
 
   return {
     ...(line.itemId ? { itemId: line.itemId } : {}),
+    ...(line.variantId ? { variantId: line.variantId } : {}),
     ...(line.priceId ? { priceId: line.priceId } : {}),
     description: line.description.trim(),
     quantity,

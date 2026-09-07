@@ -8,6 +8,7 @@ model Item {
   sourceIdempotencyKey    String?  @map("source_idempotency_key")
   sourcePayloadHash       String?  @map("source_payload_hash")
   type                    ItemType
+  variantMode             String   @default("single") @map("variant_mode")
   name                    String
   sku                     String?
   unit                    String?
@@ -28,7 +29,10 @@ model Item {
   createdAt               Int      @map("created_at")
   updatedAt               Int      @map("updated_at")
 
-  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_items_tenant_id_fkey")
+  tenant          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_items_tenant_id_fkey")
+  options         ItemOption[]
+  variants        ItemVariant[]
+  media           ItemMedia[]
   prices          Price[]
   quoteLines      QuoteLine[]
   invoiceLines    InvoiceLine[]
@@ -40,5 +44,6 @@ model Item {
   @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_items_source_idempotency_key", map: "billing_items_source_idempotency_key")
   @@index([tenantId], map: "billing_items_tenant_id_idx")
   @@index([tenantId, sourceAppId], map: "billing_items_source_app_idx")
+  @@index([tenantId, variantMode], map: "billing_items_tenant_variant_mode_idx")
   @@map("billing_items")
 }

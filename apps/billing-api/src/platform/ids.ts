@@ -3,7 +3,12 @@ import { createPrefixedId } from '@876/core/id'
 const entityPrefixes: Record<string, string> = {
   Tenant: 'ten',
   AppFinanceConnection: 'afc',
+  ModulePreference: 'mpref',
   Item: 'item',
+  ItemOption: 'iopt',
+  ItemOptionValue: 'ioval',
+  ItemVariant: 'ivar',
+  ItemMedia: 'imed',
   ItemStockMovement: 'ism',
   Customer: 'cus',
   Contact: 'con',

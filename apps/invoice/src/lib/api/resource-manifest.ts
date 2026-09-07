@@ -2,6 +2,8 @@ export const PROXIED_RESOURCES = Object.freeze([
   'bank-accounts',
   'customers',
   'invoices',
+  'item-preferences',
+  'item-variants',
   'items',
   'payment-modes',
   'payments',

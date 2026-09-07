@@ -309,6 +309,70 @@ export const v1OperationMetadata = {
     summary: 'Delete an unused price list',
     tags: ['Catalog'],
   },
+  'GET /item-preferences': {
+    summary: 'Retrieve item preferences',
+    tags: ['Catalog'],
+  },
+  'PATCH /item-preferences': {
+    summary: 'Update item preferences',
+    tags: ['Catalog'],
+  },
+  'GET /item-variants': {
+    summary: 'Search item variants',
+    tags: ['Catalog'],
+  },
+  'GET /items/{itemId}/variants': {
+    summary: 'List item variants',
+    tags: ['Catalog'],
+  },
+  'POST /items/{itemId}/variants/generate': {
+    summary: 'Generate item variants',
+    tags: ['Catalog'],
+  },
+  'GET /items/{itemId}/variants/{variantId}': {
+    summary: 'Retrieve item variant',
+    tags: ['Catalog'],
+  },
+  'PATCH /items/{itemId}/variants/{variantId}': {
+    summary: 'Update item variant',
+    tags: ['Catalog'],
+  },
+  'POST /items/{itemId}/variants/{variantId}/stock-adjustments': {
+    summary: 'Adjust item variant stock',
+    tags: ['Catalog'],
+  },
+  'GET /items/{itemId}/media': {
+    summary: 'List item media',
+    tags: ['Catalog'],
+  },
+  'POST /items/{itemId}/media': {
+    summary: 'Attach item media',
+    tags: ['Catalog'],
+  },
+  'PUT /items/{itemId}/media': {
+    summary: 'Reorder item media',
+    tags: ['Catalog'],
+  },
+  'DELETE /items/{itemId}/media/{fileId}': {
+    summary: 'Detach item media',
+    tags: ['Catalog'],
+  },
+  'GET /items/{itemId}/variants/{variantId}/media': {
+    summary: 'List item variant media',
+    tags: ['Catalog'],
+  },
+  'POST /items/{itemId}/variants/{variantId}/media': {
+    summary: 'Attach item variant media',
+    tags: ['Catalog'],
+  },
+  'PUT /items/{itemId}/variants/{variantId}/media': {
+    summary: 'Reorder item variant media',
+    tags: ['Catalog'],
+  },
+  'DELETE /items/{itemId}/variants/{variantId}/media/{fileId}': {
+    summary: 'Detach item variant media',
+    tags: ['Catalog'],
+  },
   'POST /items/{itemId}/stock-adjustments': {
     summary: 'Adjust item stock',
     tags: ['Catalog'],
@@ -341,6 +405,18 @@ export const v1OperationMetadata = {
     summary: 'Idempotently ensure a price',
     tags: ['Admin sync'],
   },
+  'GET /integrations/organizations/{organizationId}/item-preferences': {
+    summary: 'Retrieve organization item preferences',
+    tags: ['Catalog'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/item-preferences': {
+    summary: 'Update organization item preferences',
+    tags: ['Catalog'],
+  },
+  'GET /integrations/organizations/{organizationId}/item-variants': {
+    summary: 'Search organization Billing item variants',
+    tags: ['Catalog'],
+  },
   'GET /integrations/organizations/{organizationId}/items': {
     summary: 'List shared finance catalog items',
     tags: ['Organization integrations'],
@@ -361,6 +437,67 @@ export const v1OperationMetadata = {
     summary: 'Archive a shared finance catalog item',
     tags: ['Organization integrations'],
   },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/variants': {
+    summary: 'List organization Billing item variants',
+    tags: ['Catalog'],
+  },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/variants/generate':
+    {
+      summary: 'Generate organization Billing item variants',
+      tags: ['Catalog'],
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}':
+    {
+      summary: 'Retrieve organization Billing item variant',
+      tags: ['Catalog'],
+    },
+  'PATCH /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}':
+    {
+      summary: 'Update organization Billing item variant',
+      tags: ['Catalog'],
+    },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/stock-adjustments':
+    {
+      summary: 'Adjust organization Billing item variant stock',
+      tags: ['Catalog'],
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/media': {
+    summary: 'List organization Billing item media',
+    tags: ['Catalog'],
+  },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/media': {
+    summary: 'Attach organization Billing item media',
+    tags: ['Catalog'],
+  },
+  'PUT /integrations/organizations/{organizationId}/items/{itemId}/media': {
+    summary: 'Reorder organization Billing item media',
+    tags: ['Catalog'],
+  },
+  'DELETE /integrations/organizations/{organizationId}/items/{itemId}/media/{fileId}':
+    {
+      summary: 'Detach organization Billing item media',
+      tags: ['Catalog'],
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media':
+    {
+      summary: 'List organization Billing item variant media',
+      tags: ['Catalog'],
+    },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media':
+    {
+      summary: 'Attach organization Billing item variant media',
+      tags: ['Catalog'],
+    },
+  'PUT /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media':
+    {
+      summary: 'Reorder organization Billing item variant media',
+      tags: ['Catalog'],
+    },
+  'DELETE /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media/{fileId}':
+    {
+      summary: 'Detach organization Billing item variant media',
+      tags: ['Catalog'],
+    },
   'POST /integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments':
     {
       summary: 'Adjust organization Billing item stock',
@@ -7814,6 +7951,2059 @@ export const v1OperationContracts = {
       },
     },
   },
+  'GET /item-preferences': {
+    tags: ['Catalog'],
+    summary: 'Retrieve item preferences',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item preferences returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_preferences',
+                    },
+                    productVariants: {
+                      type: 'boolean',
+                    },
+                  },
+                  required: ['object', 'productVariants'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /item-preferences': {
+    tags: ['Catalog'],
+    summary: 'Update item preferences',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              productVariants: {
+                type: 'boolean',
+              },
+            },
+            required: ['productVariants'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item preferences updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_preferences',
+                    },
+                    productVariants: {
+                      type: 'boolean',
+                    },
+                  },
+                  required: ['object', 'productVariants'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /item-variants': {
+    tags: ['Catalog'],
+    summary: 'Search item variants',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'active',
+        schema: {
+          type: 'string',
+          enum: ['true', 'false'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'q',
+        schema: {
+          type: 'string',
+          maxLength: 160,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 100,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_variant',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /items/{itemId}/variants': {
+    tags: ['Catalog'],
+    summary: 'List item variants',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'active',
+        schema: {
+          type: 'string',
+          enum: ['true', 'false'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'q',
+        schema: {
+          type: 'string',
+          maxLength: 160,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 100,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_variant',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /items/{itemId}/variants/generate': {
+    tags: ['Catalog'],
+    summary: 'Generate item variants',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              options: {
+                minItems: 1,
+                maxItems: 3,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 80,
+                    },
+                    values: {
+                      minItems: 1,
+                      maxItems: 20,
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 80,
+                      },
+                    },
+                  },
+                  required: ['name', 'values'],
+                  additionalProperties: false,
+                },
+              },
+              stockAllocations: {
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    values: {
+                      minItems: 1,
+                      maxItems: 3,
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 80,
+                      },
+                    },
+                    quantity: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: ['values', 'quantity'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['options'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item converted to variants',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /items/{itemId}/variants/{variantId}': {
+    tags: ['Catalog'],
+    summary: 'Retrieve item variant',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_variant',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /items/{itemId}/variants/{variantId}': {
+    tags: ['Catalog'],
+    summary: 'Update item variant',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              sku: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 120,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              defaultSellingAmount: {
+                anyOf: [
+                  {
+                    anyOf: [
+                      {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      {
+                        type: 'string',
+                        pattern: '^(0|[1-9]\\d*)$',
+                      },
+                    ],
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              defaultSellingCurrency: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    pattern: '^[A-Za-z]{3}$',
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              defaultCostAmount: {
+                anyOf: [
+                  {
+                    anyOf: [
+                      {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      {
+                        type: 'string',
+                        pattern: '^(0|[1-9]\\d*)$',
+                      },
+                    ],
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              defaultCostCurrency: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    pattern: '^[A-Za-z]{3}$',
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              isActive: {
+                type: 'boolean',
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Variant updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_variant',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /items/{itemId}/variants/{variantId}/stock-adjustments': {
+    tags: ['Catalog'],
+    summary: 'Adjust item variant stock',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              quantity: {
+                type: 'integer',
+                minimum: -9007199254740991,
+                maximum: 9007199254740991,
+              },
+              note: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 500,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+            },
+            required: ['quantity'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Variant stock adjusted',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_variant',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /items/{itemId}/media': {
+    tags: ['Catalog'],
+    summary: 'List item media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item media list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /items/{itemId}/media': {
+    tags: ['Catalog'],
+    summary: 'Attach item media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fileId: {
+                type: 'string',
+                pattern: '^file_.*',
+              },
+              position: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+            },
+            required: ['fileId'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item media attached',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PUT /items/{itemId}/media': {
+    tags: ['Catalog'],
+    summary: 'Reorder item media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fileIds: {
+                maxItems: 20,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  pattern: '^file_.*',
+                },
+              },
+            },
+            required: ['fileIds'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item media reordered',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /items/{itemId}/media/{fileId}': {
+    tags: ['Catalog'],
+    summary: 'Detach item media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'fileId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item media detached',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_media',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /items/{itemId}/variants/{variantId}/media': {
+    tags: ['Catalog'],
+    summary: 'List item variant media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant media list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /items/{itemId}/variants/{variantId}/media': {
+    tags: ['Catalog'],
+    summary: 'Attach item variant media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fileId: {
+                type: 'string',
+                pattern: '^file_.*',
+              },
+              position: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+            },
+            required: ['fileId'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Variant media attached',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PUT /items/{itemId}/variants/{variantId}/media': {
+    tags: ['Catalog'],
+    summary: 'Reorder item variant media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fileIds: {
+                maxItems: 20,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  pattern: '^file_.*',
+                },
+              },
+            },
+            required: ['fileIds'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Variant media reordered',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /items/{itemId}/variants/{variantId}/media/{fileId}': {
+    tags: ['Catalog'],
+    summary: 'Detach item variant media',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'variantId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'fileId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant media detached',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_media',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'POST /items/{itemId}/stock-adjustments': {
     tags: ['Catalog'],
     summary: 'Adjust item stock',
@@ -8466,6 +10656,357 @@ export const v1OperationContracts = {
       },
     },
   },
+  'GET /integrations/organizations/{organizationId}/item-preferences': {
+    tags: ['Catalog'],
+    summary: 'Retrieve organization item preferences',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item preferences returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_preferences',
+                    },
+                    productVariants: {
+                      type: 'boolean',
+                    },
+                  },
+                  required: ['object', 'productVariants'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/item-preferences': {
+    tags: ['Catalog'],
+    summary: 'Update organization item preferences',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              productVariants: {
+                type: 'boolean',
+              },
+            },
+            required: ['productVariants'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item preferences updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item_preferences',
+                    },
+                    productVariants: {
+                      type: 'boolean',
+                    },
+                  },
+                  required: ['object', 'productVariants'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/item-variants': {
+    tags: ['Catalog'],
+    summary: 'Search organization Billing item variants',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'active',
+        schema: {
+          type: 'string',
+          enum: ['true', 'false'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'q',
+        schema: {
+          type: 'string',
+          maxLength: 160,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 100,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_variant',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'GET /integrations/organizations/{organizationId}/items': {
     security: [
       {
@@ -8975,6 +11516,1961 @@ export const v1OperationContracts = {
       },
     },
   },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/variants': {
+    tags: ['Catalog'],
+    summary: 'List organization Billing item variants',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'active',
+        schema: {
+          type: 'string',
+          enum: ['true', 'false'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'q',
+        schema: {
+          type: 'string',
+          maxLength: 160,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 100,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Variant list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_variant',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/variants/generate':
+    {
+      tags: ['Catalog'],
+      summary: 'Generate organization Billing item variants',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                options: {
+                  minItems: 1,
+                  maxItems: 3,
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 80,
+                      },
+                      values: {
+                        minItems: 1,
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 80,
+                        },
+                      },
+                    },
+                    required: ['name', 'values'],
+                    additionalProperties: false,
+                  },
+                },
+                stockAllocations: {
+                  maxItems: 100,
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      values: {
+                        minItems: 1,
+                        maxItems: 3,
+                        type: 'array',
+                        items: {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 80,
+                        },
+                      },
+                      quantity: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 9007199254740991,
+                      },
+                    },
+                    required: ['values', 'quantity'],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ['options'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Item converted to variants',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}':
+    {
+      tags: ['Catalog'],
+      summary: 'Retrieve organization Billing item variant',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Variant returned',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item_variant',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'PATCH /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}':
+    {
+      tags: ['Catalog'],
+      summary: 'Update organization Billing item variant',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                sku: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 120,
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                defaultSellingAmount: {
+                  anyOf: [
+                    {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'string',
+                          pattern: '^(0|[1-9]\\d*)$',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                defaultSellingCurrency: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      pattern: '^[A-Za-z]{3}$',
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                defaultCostAmount: {
+                  anyOf: [
+                    {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'string',
+                          pattern: '^(0|[1-9]\\d*)$',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                defaultCostCurrency: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      pattern: '^[A-Za-z]{3}$',
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+                isActive: {
+                  type: 'boolean',
+                },
+              },
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Variant updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item_variant',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/stock-adjustments':
+    {
+      tags: ['Catalog'],
+      summary: 'Adjust organization Billing item variant stock',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                quantity: {
+                  type: 'integer',
+                  minimum: -9007199254740991,
+                  maximum: 9007199254740991,
+                },
+                note: {
+                  anyOf: [
+                    {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 500,
+                    },
+                    {
+                      type: 'null',
+                    },
+                  ],
+                },
+              },
+              required: ['quantity'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Variant stock adjusted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item_variant',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/media': {
+    tags: ['Catalog'],
+    summary: 'List organization Billing item media',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item media list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/media': {
+    tags: ['Catalog'],
+    summary: 'Attach organization Billing item media',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fileId: {
+                type: 'string',
+                pattern: '^file_.*',
+              },
+              position: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+            },
+            required: ['fileId'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item media attached',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PUT /integrations/organizations/{organizationId}/items/{itemId}/media': {
+    tags: ['Catalog'],
+    summary: 'Reorder organization Billing item media',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.items.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fileIds: {
+                maxItems: 20,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  pattern: '^file_.*',
+                },
+              },
+            },
+            required: ['fileIds'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Item media reordered',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'item_media',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /integrations/organizations/{organizationId}/items/{itemId}/media/{fileId}':
+    {
+      tags: ['Catalog'],
+      summary: 'Detach organization Billing item media',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'fileId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Item media detached',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item_media',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      deleted: {
+                        type: 'boolean',
+                        const: true,
+                      },
+                    },
+                    required: ['object', 'id', 'deleted'],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media':
+    {
+      tags: ['Catalog'],
+      summary: 'List organization Billing item variant media',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Variant media list',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'list',
+                      },
+                      data: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            object: {
+                              type: 'string',
+                              const: 'item_media',
+                            },
+                            id: {
+                              type: 'string',
+                            },
+                          },
+                          required: ['object', 'id'],
+                          additionalProperties: {},
+                        },
+                      },
+                      has_more: {
+                        type: 'boolean',
+                      },
+                      total_count: {
+                        anyOf: [
+                          {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      url: {
+                        type: 'string',
+                      },
+                    },
+                    required: [
+                      'object',
+                      'data',
+                      'has_more',
+                      'total_count',
+                      'url',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media':
+    {
+      tags: ['Catalog'],
+      summary: 'Attach organization Billing item variant media',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                fileId: {
+                  type: 'string',
+                  pattern: '^file_.*',
+                },
+                position: {
+                  type: 'integer',
+                  minimum: 0,
+                  maximum: 9007199254740991,
+                },
+              },
+              required: ['fileId'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Variant media attached',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'list',
+                      },
+                      data: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            object: {
+                              type: 'string',
+                              const: 'item_media',
+                            },
+                            id: {
+                              type: 'string',
+                            },
+                          },
+                          required: ['object', 'id'],
+                          additionalProperties: {},
+                        },
+                      },
+                      has_more: {
+                        type: 'boolean',
+                      },
+                      total_count: {
+                        anyOf: [
+                          {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      url: {
+                        type: 'string',
+                      },
+                    },
+                    required: [
+                      'object',
+                      'data',
+                      'has_more',
+                      'total_count',
+                      'url',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'PUT /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media':
+    {
+      tags: ['Catalog'],
+      summary: 'Reorder organization Billing item variant media',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                fileIds: {
+                  maxItems: 20,
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    pattern: '^file_.*',
+                  },
+                },
+              },
+              required: ['fileIds'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Variant media reordered',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'list',
+                      },
+                      data: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            object: {
+                              type: 'string',
+                              const: 'item_media',
+                            },
+                            id: {
+                              type: 'string',
+                            },
+                          },
+                          required: ['object', 'id'],
+                          additionalProperties: {},
+                        },
+                      },
+                      has_more: {
+                        type: 'boolean',
+                      },
+                      total_count: {
+                        anyOf: [
+                          {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      url: {
+                        type: 'string',
+                      },
+                    },
+                    required: [
+                      'object',
+                      'data',
+                      'has_more',
+                      'total_count',
+                      'url',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'DELETE /integrations/organizations/{organizationId}/items/{itemId}/variants/{variantId}/media/{fileId}':
+    {
+      tags: ['Catalog'],
+      summary: 'Detach organization Billing item variant media',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.items.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'variantId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'fileId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Variant media detached',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item_media',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      deleted: {
+                        type: 'boolean',
+                        const: true,
+                      },
+                    },
+                    required: ['object', 'id', 'deleted'],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
   'POST /integrations/organizations/{organizationId}/items/{itemId}/stock-adjustments':
     {
       tags: ['Catalog'],

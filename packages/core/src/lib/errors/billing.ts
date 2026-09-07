@@ -54,8 +54,37 @@ export const BILLING_ERRORS = {
     message: 'The requested item quantity is greater than the stock available.',
     httpStatus: HttpStatus.CONFLICT,
   },
+  'billing/item-media-invalid-file': {
+    message: 'The selected Storage file cannot be attached to this item.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'billing/item-stock-not-tracked': {
     message: 'Stock tracking is not enabled for this item.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/item-stock-variant-required': {
+    message: 'Adjust stock on a specific variant for this item.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/item-variant-not-found': {
+    message: 'The selected item variant was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'billing/item-variant-required': {
+    message: 'Select a variant before using this item.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/item-variants-conversion-blocked': {
+    message:
+      'An item already used on quotes or invoices cannot be converted to variants in this release.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/item-variants-disabled': {
+    message: 'Product variants are not enabled for this workspace.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/item-variants-in-use': {
+    message: 'Product variants cannot be disabled while variant items exist.',
     httpStatus: HttpStatus.CONFLICT,
   },
   'billing/oauth-invalid-state': {

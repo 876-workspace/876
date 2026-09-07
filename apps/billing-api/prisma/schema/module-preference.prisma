@@ -1,0 +1,24 @@
+/// Tenant-scoped override for one typed preference declared by the finance module catalog.
+/// Missing rows resolve to the catalog default.
+model ModulePreference {
+  id                 String   @id
+  tenantId           String   @map("tenant_id")
+  module             String
+  key                String
+  valueType          String   @map("value_type")
+  stringValue        String?  @map("string_value")
+  integerValue       Int?     @map("integer_value")
+  decimalValue       String?  @map("decimal_value")
+  booleanValue       Boolean? @map("boolean_value")
+  referenceNamespace String?  @map("reference_namespace")
+  referenceKey       String?  @map("reference_key")
+  updatedBy          String?  @map("updated_by")
+  createdAt          Int      @map("created_at")
+  updatedAt          Int      @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_module_preferences_tenant_id_fkey")
+
+  @@unique([tenantId, module, key], name: "billing_module_preferences_tenant_module_key", map: "billing_module_preferences_tenant_module_key")
+  @@index([tenantId, module], map: "billing_module_preferences_tenant_module_idx")
+  @@map("billing_module_preferences")
+}
