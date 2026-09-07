@@ -1,10 +1,11 @@
 import type {
   InventoryAdjustment,
+  InventoryLine,
   InventoryMutation,
   InventoryRestore,
 } from '@/types/inventory'
 
-import * as repository from './inventory.repository'
+import * as repository from './repositories'
 
 type InventoryTransaction = Parameters<typeof repository.consume>[0]
 
@@ -28,8 +29,17 @@ export function adjust(tenantId: string, params: InventoryAdjustment) {
   return repository.adjust(tenantId, params)
 }
 
+/** Advisory only; mutating workflows still re-check through `consume`. */
+export function checkAvailability(
+  tenantId: string,
+  lines: readonly InventoryLine[]
+) {
+  return repository.checkAvailability(tenantId, lines)
+}
+
 export const inventoryService = {
   adjust,
+  checkAvailability,
   consume,
   restore,
 }
