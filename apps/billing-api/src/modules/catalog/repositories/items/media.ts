@@ -81,15 +81,24 @@ export async function attach(
   try {
     const now = nowUnixSeconds()
     const row = await prisma.$transaction(async (tx) => {
-      if (params.position !== undefined)
+      if (params.position !== undefined) {
         await tx.itemMedia.updateMany({
           where: {
             tenantId,
             targetKey: target.targetKey,
             position: { gte: position },
           },
-          data: { position: { increment: 1 }, updatedAt: now },
+          data: { position: { increment: 1000 }, updatedAt: now },
         })
+        await tx.itemMedia.updateMany({
+          where: {
+            tenantId,
+            targetKey: target.targetKey,
+            position: { gte: position + 1000 },
+          },
+          data: { position: { decrement: 999 }, updatedAt: now },
+        })
+      }
 
       return tx.itemMedia.create({
         data: {
@@ -188,7 +197,15 @@ export async function remove(
         targetKey: target.targetKey,
         position: { gt: row.position },
       },
-      data: { position: { decrement: 1 }, updatedAt: now },
+      data: { position: { increment: 1000 }, updatedAt: now },
+    })
+    await tx.itemMedia.updateMany({
+      where: {
+        tenantId,
+        targetKey: target.targetKey,
+        position: { gt: row.position + 1000 },
+      },
+      data: { position: { decrement: 1001 }, updatedAt: now },
     })
   })
   return ok({ id: row.id })
