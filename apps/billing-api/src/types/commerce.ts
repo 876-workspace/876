@@ -42,12 +42,19 @@ export interface ResolvedSellable {
   primaryFileId: string | null
 }
 
+/** Optional replay context derived from a trusted HTTP header + canonical request. */
+export interface IdempotencyContext {
+  key: string
+  requestHash: string
+}
+
 export interface CommerceContext {
   tenantId: string
   actor?: ActorContext
   origin?: ResourceOrigin
   customerId?: string
   currency?: string
+  idempotency?: IdempotencyContext
   /** Reserved context seam. No Channel persistence exists yet. */
   channelId?: string
   /** Reserved context seam. No Stock Location persistence exists yet. */
