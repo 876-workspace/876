@@ -52,6 +52,10 @@ export default async function EditItemPage({ params }: Props) {
           defaultSellingCurrency: item.defaultSellingCurrency,
           isTaxable: item.isTaxable,
           taxCode: item.taxCode,
+          trackStock: item.trackStock,
+          stockQuantity: item.stockQuantity,
+          lowStockThreshold: item.lowStockThreshold,
+          allowOutOfStock: item.allowOutOfStock,
           isActive: item.isActive,
         }}
       />

@@ -27,6 +27,10 @@ export interface ItemFormValues {
   defaultSellingCurrency?: string | null
   isTaxable: boolean
   taxCode?: string | null
+  trackStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number | null
+  allowOutOfStock: boolean
   isActive: boolean
 }
 
@@ -70,6 +74,12 @@ function inputToMinor(value: string, currency: string): string | null {
   )
 }
 
+function nonNegativeInteger(value: string): number | null {
+  if (!/^\d+$/.test(value.trim())) return null
+  const parsed = Number(value)
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : null
+}
+
 export function ItemForm({
   currency,
   item,
@@ -83,6 +93,20 @@ export function ItemForm({
   const [description, setDescription] = useState(item?.description ?? '')
   const [sku, setSku] = useState(item?.sku ?? '')
   const [unit, setUnit] = useState(item?.unit ?? '')
+  const [trackStock, setTrackStock] = useState(item?.trackStock ?? false)
+  const [openingStock, setOpeningStock] = useState(
+    item?.stockQuantity === null || item?.stockQuantity === undefined
+      ? '0'
+      : String(item.stockQuantity)
+  )
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    item?.lowStockThreshold === null || item?.lowStockThreshold === undefined
+      ? ''
+      : String(item.lowStockThreshold)
+  )
+  const [allowOutOfStock, setAllowOutOfStock] = useState(
+    item?.allowOutOfStock ?? false
+  )
   const [price, setPrice] = useState(() =>
     minorToInput(
       item?.defaultSellingAmount,
@@ -110,6 +134,22 @@ export function ItemForm({
       return
     }
 
+    const lowStock = lowStockThreshold.trim()
+      ? nonNegativeInteger(lowStockThreshold)
+      : null
+    if (trackStock && lowStockThreshold.trim() && lowStock === null) {
+      setError('Low stock warning must be a whole number of zero or more.')
+      return
+    }
+
+    const opening = !item && type === 'GOOD' && trackStock
+      ? nonNegativeInteger(openingStock)
+      : null
+    if (!item && type === 'GOOD' && trackStock && opening === null) {
+      setError('Opening stock must be a whole number of zero or more.')
+      return
+    }
+
     startTransition(async () => {
       const cleared = (next: string, previous: string | null | undefined) =>
         next ? next : previous ? null : undefined
@@ -119,6 +159,21 @@ export function ItemForm({
       const unitValue = cleared(unit.trim(), item?.unit)
       const taxCodeValue = cleared(taxCode.trim(), item?.taxCode)
       const hadPrice = Boolean(item?.defaultSellingAmount)
+      const stockParams =
+        type === 'GOOD'
+          ? {
+              trackStock,
+              lowStockThreshold: trackStock ? lowStock : null,
+              allowOutOfStock: trackStock ? allowOutOfStock : false,
+              ...(!item && trackStock && opening !== null
+                ? { stockQuantity: opening }
+                : {}),
+            }
+          : {
+              trackStock: false,
+              lowStockThreshold: null,
+              allowOutOfStock: false,
+            }
 
       const params = {
         type,
@@ -141,6 +196,7 @@ export function ItemForm({
             : {}),
         isTaxable,
         ...(taxCodeValue === undefined ? {} : { taxCode: taxCodeValue }),
+        ...stockParams,
       }
 
       const result = item
@@ -230,6 +286,83 @@ export function ItemForm({
             disabled={isPending}
           />
         </FormRow>
+
+        {type === 'GOOD' ? (
+          <>
+            <FormRow label="Stock" className={itemFormRowClassName}>
+              <label className="flex min-h-9 items-center gap-2 text-sm">
+                <input
+                  id="item-track-stock"
+                  type="checkbox"
+                  checked={trackStock}
+                  onChange={(event) => setTrackStock(event.target.checked)}
+                  disabled={isPending}
+                  className="size-4 rounded border"
+                />
+                Track stock for this good
+              </label>
+            </FormRow>
+
+            {trackStock ? (
+              <>
+                {!item ? (
+                  <FormRow
+                    htmlFor="item-opening-stock"
+                    label="Opening stock"
+                    className={itemFormRowClassName}
+                  >
+                    <Input
+                      id="item-opening-stock"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={openingStock}
+                      onChange={(event) => setOpeningStock(event.target.value)}
+                      disabled={isPending}
+                    />
+                  </FormRow>
+                ) : null}
+
+                <FormRow
+                  htmlFor="item-low-stock"
+                  label="Low stock warning"
+                  className={itemFormRowClassName}
+                >
+                  <Input
+                    id="item-low-stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={lowStockThreshold}
+                    onChange={(event) =>
+                      setLowStockThreshold(event.target.value)
+                    }
+                    disabled={isPending}
+                  />
+                </FormRow>
+
+                <FormRow
+                  label="Out of stock"
+                  className={itemFormRowClassName}
+                >
+                  <label className="flex min-h-9 items-center gap-2 text-sm">
+                    <input
+                      id="item-allow-out-of-stock"
+                      type="checkbox"
+                      checked={allowOutOfStock}
+                      onChange={(event) =>
+                        setAllowOutOfStock(event.target.checked)
+                      }
+                      disabled={isPending}
+                      className="size-4 rounded border"
+                    />
+                    Allow invoices to take stock below zero
+                  </label>
+                </FormRow>
+              </>
+            ) : null}
+          </>
+        ) : null}
 
         <FormRow
           htmlFor="item-price"

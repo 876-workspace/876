@@ -37,13 +37,12 @@ export async function update(
   }
 
   const nextType = params.type ?? current.type
-  const nextTrackStock = params.trackStock ?? current.trackStock
-  if (nextType === 'SERVICE' && nextTrackStock)
+  if (nextType === 'SERVICE' && params.trackStock === true)
     return err('Stock tracking is available only for goods.', 422)
-  if (
-    params.lowStockThreshold != null &&
-    !nextTrackStock
-  )
+
+  const nextTrackStock =
+    nextType === 'SERVICE' ? false : (params.trackStock ?? current.trackStock)
+  if (params.lowStockThreshold != null && !nextTrackStock)
     return err('Enable stock tracking before setting a low-stock threshold.', 422)
   if (params.allowOutOfStock === true && !nextTrackStock)
     return err('Enable stock tracking before allowing out-of-stock sales.', 422)

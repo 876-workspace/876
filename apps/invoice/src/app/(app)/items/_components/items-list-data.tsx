@@ -55,6 +55,10 @@ export async function ItemsListData() {
         defaultSellingAmount: item.defaultSellingAmount,
         defaultSellingCurrency: item.defaultSellingCurrency,
         isTaxable: item.isTaxable,
+        trackStock: item.trackStock,
+        stockQuantity: item.stockQuantity,
+        lowStockThreshold: item.lowStockThreshold,
+        allowOutOfStock: item.allowOutOfStock,
         isActive: item.isActive,
       }))
 
