@@ -13,6 +13,7 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Plus, Trash } from '@876/ui/icons'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { AsyncCombobox, type AsyncComboboxOption } from '@876/ui/async-combobox'
 import { SearchableSelect } from '@876/ui/searchable-select'
 
 /**
@@ -96,6 +97,16 @@ export interface DocumentLineItemsEditorProps {
    * leaves every line free-text, which is all Invoice needs.
    */
   items?: readonly DocumentItemOption[]
+  /**
+   * Server-backed catalogue search. When supplied the Item column becomes a
+   * typeahead whose box is the input, with `items` as its starting set, so a
+   * tenant with a large catalogue is not shipped the whole thing up front.
+   * It must forward the `AbortSignal` so a superseded query is cancelled.
+   */
+  onSearchItems?: (
+    query: string,
+    signal: AbortSignal
+  ) => Promise<readonly DocumentItemOption[]>
 
   /**
    * Locks the rate cell for a catalogue line, because a price list prices it
@@ -182,6 +193,33 @@ function resolveLine(line: DocumentLineDraft, minorUnitDigits: number) {
   }
 }
 
+/**
+ * Catalogue entries as combobox options, led by the free-text escape hatch so
+ * "this is not in the catalogue" is always one click away rather than being
+ * something the user has to discover by typing.
+ */
+function toCatalogueOptions(
+  entries: readonly DocumentItemOption[]
+): AsyncComboboxOption[] {
+  return [
+    {
+      value: '',
+      label: 'One-off line',
+      description: 'Bill something that is not in the catalogue',
+      isAction: true,
+    },
+    ...entries.map((entry) => ({
+      value: entry.value,
+      label: entry.label,
+      meta:
+        entry.defaultAmount && entry.currency
+          ? `${entry.currency} ${entry.defaultAmount}`
+          : undefined,
+      raw: entry,
+    })),
+  ]
+}
+
 export function DocumentLineItemsEditor({
   lines,
   onChange,
@@ -196,6 +234,7 @@ export function DocumentLineItemsEditor({
   footer,
   onTotalsChange,
   items,
+  onSearchItems,
   priceListActive = false,
   allowPercentageDiscount = false,
 }: DocumentLineItemsEditorProps) {
@@ -242,8 +281,13 @@ export function DocumentLineItemsEditor({
     )
   }
 
-  function selectItem(index: number, selectionId: string) {
-    const option = items?.find((entry) => entry.value === selectionId)
+  function selectItem(
+    index: number,
+    selectionId: string,
+    resolved?: DocumentItemOption | null
+  ) {
+    const option =
+      resolved ?? items?.find((entry) => entry.value === selectionId) ?? null
 
     update(index, {
       selectionId,
@@ -292,16 +336,50 @@ export function DocumentLineItemsEditor({
               <tr key={line.id} className="border-b last:border-0">
                 {items ? (
                   <td className="py-2 pr-3">
-                    <SearchableSelect
-                      id={`line-${line.id}-item`}
-                      ariaLabel={`Line ${index + 1} item`}
-                      value={line.selectionId ?? ''}
-                      disabled={readOnly}
-                      placeholder="One-off line"
-                      searchPlaceholder="Search catalogue…"
-                      options={[{ value: '', label: 'One-off line' }, ...items]}
-                      onValueChange={(value) => selectItem(index, value)}
-                    />
+                    {onSearchItems ? (
+                      <AsyncCombobox
+                        id={`line-${line.id}-item`}
+                        ariaLabel={`Line ${index + 1} item`}
+                        value={line.selectionId ?? ''}
+                        selectedLabel={
+                          items.find(
+                            (entry) => entry.value === line.selectionId
+                          )?.label ??
+                          line.description ??
+                          ''
+                        }
+                        disabled={readOnly}
+                        placeholder="Search catalogue…"
+                        minChars={0}
+                        initialOptions={toCatalogueOptions(items)}
+                        onSearch={async (query, signal) =>
+                          toCatalogueOptions(await onSearchItems(query, signal))
+                        }
+                        emptyMessage="No catalogue matches. Keep typing to bill it as a one-off."
+                        onValueChange={(value, option) =>
+                          selectItem(
+                            index,
+                            value,
+                            (option?.raw as DocumentItemOption | undefined) ??
+                              null
+                          )
+                        }
+                      />
+                    ) : (
+                      <SearchableSelect
+                        id={`line-${line.id}-item`}
+                        ariaLabel={`Line ${index + 1} item`}
+                        value={line.selectionId ?? ''}
+                        disabled={readOnly}
+                        placeholder="One-off line"
+                        searchPlaceholder="Search catalogue…"
+                        options={[
+                          { value: '', label: 'One-off line' },
+                          ...items,
+                        ]}
+                        onValueChange={(value) => selectItem(index, value)}
+                      />
+                    )}
                   </td>
                 ) : null}
                 <td className="py-2 pr-3">

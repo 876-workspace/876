@@ -122,7 +122,7 @@ async function chooseCatalogueOption(
     expect(
       await screen.findByRole('option', { name: /Consulting/ })
     ).toBeVisible()
-    expect(screen.getByRole('option', { name: 'One-off line' })).toBeVisible()
+    expect(screen.getByRole('option', { name: /One-off line/ })).toBeVisible()
   })
 
   it('fills an item line from the catalogue selection', async () => {

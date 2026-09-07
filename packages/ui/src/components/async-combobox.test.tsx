@@ -204,4 +204,58 @@ describe('AsyncCombobox', () => {
     await waitFor(() => expect(onSearch).toHaveBeenCalledTimes(1))
     expect(onSearch.mock.calls[0]?.[0]).toBe('alej')
   })
+  it('shows the host-supplied starting set before any search', async () => {
+    const user = userEvent.setup()
+    const { onSearch } = renderCombobox({
+      minChars: 0,
+      initialOptions: [{ value: 'itm_1', label: 'Consulting' }],
+    })
+
+    await user.click(screen.getByRole('combobox', { name: 'Customer' }))
+
+    expect(
+      await screen.findByRole('option', { name: /Consulting/ })
+    ).toBeVisible()
+    // A supplied starting set must not cost a request on open.
+    expect(onSearch).not.toHaveBeenCalled()
+  })
+
+  it('replaces the starting set with results once the user types', async () => {
+    const user = userEvent.setup()
+    renderCombobox({
+      minChars: 0,
+      initialOptions: [{ value: 'itm_1', label: 'Consulting' }],
+    })
+
+    await user.type(screen.getByRole('combobox', { name: 'Customer' }), 'ale')
+
+    expect(
+      await screen.findByRole('option', { name: /Alejandra Reyes/ })
+    ).toBeVisible()
+    expect(screen.queryByRole('option', { name: /Consulting/ })).toBeNull()
+  })
+
+  it('renders trailing meta for an option', async () => {
+    const user = userEvent.setup()
+    renderCombobox({
+      onSearch: vi
+        .fn()
+        .mockResolvedValue([
+          { value: 'itm_1', label: 'Consulting', meta: 'JMD 125.00' },
+        ]),
+    })
+
+    await user.type(screen.getByRole('combobox', { name: 'Customer' }), 'con')
+
+    expect(await screen.findByText('JMD 125.00')).toBeVisible()
+  })
+
+  it('never searches on an empty query even with no threshold', async () => {
+    const user = userEvent.setup()
+    const { onSearch } = renderCombobox({ minChars: 0 })
+
+    await user.click(screen.getByRole('combobox', { name: 'Customer' }))
+
+    await waitFor(() => expect(onSearch).not.toHaveBeenCalled())
+  })
 })

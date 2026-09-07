@@ -63,7 +63,11 @@ describe('DocumentCreateForm', () => {
 
     expect(screen.getByLabelText('Line 1 description')).not.toBeNull()
     expect(screen.getByRole('button', { name: 'Add line' })).not.toBeNull()
-    expect(screen.queryByLabelText('Line 1 item')).toBeNull()
+    // The catalogue column is always available now: even with no items loaded
+    // up front, the picker can search the catalogue as the user types.
+    expect(
+      screen.getByRole('combobox', { name: 'Line 1 item' })
+    ).toBeInTheDocument()
   })
 
   it('does not carry a local line-editor module beside the document form', () => {
