@@ -3,8 +3,6 @@
 import {
   Suspense,
   use,
-  useEffect,
-  useRef,
   useState,
   useTransition,
   type FormEvent,
