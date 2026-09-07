@@ -11,6 +11,10 @@
       "types": "./src/bank-accounts-grid.tsx",
       "default": "./src/bank-accounts-grid.tsx"
     },
+    "./customer-detail-actions": {
+      "types": "./src/customer-detail-actions.tsx",
+      "default": "./src/customer-detail-actions.tsx"
+    },
     "./customer-transactions-accordions": {
       "types": "./src/customer-transactions-accordions.tsx",
       "default": "./src/customer-transactions-accordions.tsx"

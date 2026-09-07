@@ -2,6 +2,8 @@ import type { Prisma } from '@/db'
 import { prisma } from '@/db/client'
 
 import type {
+  ContactCreateBody,
+  ContactUpdateBody,
   CustomerEnsureBody,
   CustomerListQuery,
   CustomerUpdateBody,
@@ -59,6 +61,111 @@ export function findCustomerRow(tenantId: string, id: string) {
   return prisma.customer.findFirst({
     where: { tenantId, id },
     include: customerInclude,
+  })
+}
+
+export function listContacts(tenantId: string, customerId: string) {
+  return prisma.contact.findMany({
+    where: { tenantId, customerId },
+    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+  })
+}
+
+export function retrieveContact(
+  tenantId: string,
+  customerId: string,
+  contactId: string
+) {
+  return prisma.contact.findFirst({
+    where: { tenantId, customerId, id: contactId },
+  })
+}
+
+async function promoteContact(
+  tx: Prisma.TransactionClient,
+  tenantId: string,
+  customerId: string,
+  contactId: string,
+  now: number
+) {
+  await tx.contact.updateMany({
+    where: { tenantId, customerId, isPrimary: true, id: { not: contactId } },
+    data: { isPrimary: false, updatedAt: now },
+  })
+}
+
+export function createContact(
+  tenantId: string,
+  customerId: string,
+  id: string,
+  data: ContactCreateBody,
+  now: number
+) {
+  return prisma.$transaction(async (tx) => {
+    if (data.isPrimary) await promoteContact(tx, tenantId, customerId, id, now)
+    return tx.contact.create({
+      data: {
+        id,
+        tenantId,
+        customerId,
+        salutation: data.salutation ?? null,
+        firstName: data.firstName ?? null,
+        lastName: data.lastName ?? null,
+        email: data.email ?? null,
+        workPhone: data.workPhone ?? null,
+        mobilePhone: data.mobilePhone ?? null,
+        isPrimary: data.isPrimary ?? false,
+        createdAt: now,
+        updatedAt: now,
+      },
+    })
+  })
+}
+
+export function updateContact(
+  tenantId: string,
+  customerId: string,
+  contactId: string,
+  data: ContactUpdateBody,
+  now: number
+) {
+  return prisma.$transaction(async (tx) => {
+    const contact = await tx.contact.findFirst({
+      where: { tenantId, customerId, id: contactId },
+    })
+    if (!contact) return null
+    if (data.isPrimary)
+      await promoteContact(tx, tenantId, customerId, contactId, now)
+    return tx.contact.update({
+      where: { id: contactId },
+      data: { ...data, updatedAt: now },
+    })
+  })
+}
+
+export function deleteContact(
+  tenantId: string,
+  customerId: string,
+  contactId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const contact = await tx.contact.findFirst({
+      where: { tenantId, customerId, id: contactId },
+    })
+    if (!contact) return null
+    await tx.contact.delete({ where: { id: contactId } })
+    if (contact.isPrimary) {
+      const next = await tx.contact.findFirst({
+        where: { tenantId, customerId },
+        orderBy: { createdAt: 'asc' },
+      })
+      if (next)
+        await tx.contact.update({
+          where: { id: next.id },
+          data: { isPrimary: true },
+        })
+    }
+    return contact
   })
 }
 

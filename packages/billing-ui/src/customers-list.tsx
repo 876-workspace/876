@@ -82,7 +82,11 @@ export function CustomersList({
               leading={
                 <CustomerAvatar name={customer.name} className="size-7" />
               }
-              title={customer.name}
+              title={
+                <span className="text-sky-600 dark:text-sky-400">
+                  {customer.name}
+                </span>
+              }
               subtitle={customer.companyName ?? customer.contactName ?? '—'}
             />
           ))

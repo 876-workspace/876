@@ -3,14 +3,14 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2Icon, MoreHorizontalIcon, Pencil, Trash } from '@876/ui/icons'
+import { Loader2Icon, MoreHorizontalIcon, Trash } from '@876/ui/icons'
+import { CustomerDetailActions } from '@876/billing-ui/customer-detail-actions'
 import { cn } from '@876/core/utils'
 import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
 import {
@@ -55,36 +55,60 @@ export function CustomerActions({
 
   if (!canManage) return null
 
+  const transactionGroups = [
+    {
+      actions: [
+        { label: 'Invoice', href: `/invoices/new?customerId=${customerId}` },
+        {
+          label: 'Customer Payment',
+          href: `/payments/new?customerId=${customerId}`,
+        },
+        { label: 'Quote', href: `/quotes/new?customerId=${customerId}` },
+        {
+          label: 'Credit Note',
+          href: `/credit-notes/new?customerId=${customerId}`,
+        },
+      ],
+    },
+    {
+      label: 'Recurring',
+      actions: [
+        {
+          label: 'Subscription',
+          href: `/subscriptions/new?customerId=${customerId}`,
+        },
+      ],
+    },
+  ]
+
   return (
     <>
-      <div className="flex w-full items-center sm:w-auto sm:justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'icon-sm' })
-            )}
-            aria-label="More actions"
-          >
-            <MoreHorizontalIcon className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-auto min-w-44">
-            <DropdownMenuItem
-              render={<Link href={`/customers/${customerId}/edit`} />}
+      <CustomerDetailActions
+        editHref={`/customers/${customerId}/edit`}
+        transactionGroups={transactionGroups}
+        linkComponent={Link}
+        overflow={
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'icon-sm' })
+              )}
+              aria-label="More actions"
             >
-              <Pencil className="size-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash className="size-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              <MoreHorizontalIcon className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto min-w-44">
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent size="sm">

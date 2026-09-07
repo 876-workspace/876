@@ -42,7 +42,7 @@ export function DetailLayout({
   eyebrow?: string
   title: ReactNode
   description?: ReactNode
-  status: string
+  status?: string
   statusVariant?: 'secondary' | 'success' | 'info' | 'warning' | 'destructive'
   tabs: DetailTab[]
   /** Optional leading avatar/logo, rendered to the left of the title. */
@@ -69,7 +69,7 @@ export function DetailLayout({
       <DetailCardHeader
         icon={avatar}
         title={<span className={cn(titleClassName)}>{title}</span>}
-        meta={<Badge variant={statusVariant}>{status}</Badge>}
+        meta={status ? <Badge variant={statusVariant}>{status}</Badge> : null}
         subtitle={subtitle}
         actions={actions}
         closeHref={backHref}

@@ -10,22 +10,29 @@ import type {
   CustomerImportBody,
   CustomerListQuery,
   CustomerUpdateBody,
+  ContactCreateBody,
+  ContactUpdateBody,
   IntegrationCustomerListQuery,
   LinkCustomerBody,
   OpeningBalanceBody,
 } from './customers.schemas'
 import {
   createCustomer,
+  createCustomerContact,
   customerAccount,
   deleteCustomer,
+  deleteCustomerContact,
   ensureCoreCustomer,
   importCustomers,
   linkCustomer,
   listCustomers,
   recordOpeningBalance,
   retrieveCustomer,
+  retrieveContact,
   unlinkCustomer,
   updateCustomer,
+  updateCustomerContact,
+  listContacts,
 } from './customers.service'
 
 function tenant(req: Request) {
@@ -39,6 +46,49 @@ function sourceApp(req: Request) {
 }
 
 export const customersController = {
+  async listContacts(req: Request, res: Response) {
+    res.json(
+      await listContacts(
+        tenant(req),
+        validParams<{ customerId: string }>(req).customerId
+      )
+    )
+  },
+  async retrieveContact(req: Request, res: Response) {
+    const params = validParams<{ customerId: string; contactId: string }>(req)
+    res.json(
+      await retrieveContact(tenant(req), params.customerId, params.contactId)
+    )
+  },
+  async createContact(req: Request, res: Response) {
+    const result = await createCustomerContact(
+      tenant(req),
+      validParams<{ customerId: string }>(req).customerId,
+      validBody<ContactCreateBody>(req)
+    )
+    res.status(201).json({ object: 'contact', id: result.id })
+  },
+  async updateContact(req: Request, res: Response) {
+    const params = validParams<{ customerId: string; contactId: string }>(req)
+    res.json(
+      await updateCustomerContact(
+        tenant(req),
+        params.customerId,
+        params.contactId,
+        validBody<ContactUpdateBody>(req)
+      )
+    )
+  },
+  async deleteContact(req: Request, res: Response) {
+    const params = validParams<{ customerId: string; contactId: string }>(req)
+    res.json(
+      await deleteCustomerContact(
+        tenant(req),
+        params.customerId,
+        params.contactId
+      )
+    )
+  },
   async list(req: Request, res: Response) {
     res.json(
       await listCustomers(tenant(req), validQuery<CustomerListQuery>(req))

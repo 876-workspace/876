@@ -24,7 +24,7 @@ export function ItemsToolbar({ status }: { status: string }) {
           options={ITEM_STATUS_OPTIONS}
         />
       }
-      primaryLabel={canWrite ? 'New' : undefined}
+      primaryLabel={canWrite ? 'Add' : undefined}
       primaryHref={canWrite ? '/items/new' : undefined}
       primaryVariant="info"
       refresh

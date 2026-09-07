@@ -51,6 +51,8 @@ type Props = {
   titleFilter?: React.ReactNode
   description?: string
   primaryLabel?: string
+  /** Render the primary action as an icon-only button. */
+  primaryIconOnly?: boolean
   primaryDisabled?: boolean
   primaryVariant?:
     'default' | 'brand' | 'outline' | 'info' | 'success' | 'warning'
@@ -68,6 +70,7 @@ export function ResourceToolbar({
   titleFilter,
   description,
   primaryLabel,
+  primaryIconOnly = false,
   primaryDisabled = false,
   primaryVariant = 'default',
   primaryHref,
@@ -82,25 +85,30 @@ export function ResourceToolbar({
       <Link
         href={primaryDisabled ? '#' : primaryHref}
         aria-disabled={primaryDisabled}
+        aria-label={primaryIconOnly ? primaryLabel : undefined}
         tabIndex={primaryDisabled ? -1 : undefined}
         className={cn(
-          buttonVariants({ variant: primaryVariant, size: 'sm' }),
+          buttonVariants({
+            variant: primaryVariant,
+            size: primaryIconOnly ? 'icon-sm' : 'sm',
+          }),
           primaryDisabled && 'pointer-events-none opacity-60'
         )}
       >
         <Plus className="size-4" strokeWidth={2.25} />
-        {primaryLabel}
+        {primaryIconOnly ? null : primaryLabel}
       </Link>
     ) : (
       <Button
         variant={primaryVariant}
-        size="sm"
         disabled={primaryDisabled}
         className="disabled:opacity-60"
         onClick={onPrimaryAction}
+        aria-label={primaryIconOnly ? primaryLabel : undefined}
+        size={primaryIconOnly ? 'icon-sm' : 'sm'}
       >
         <Plus className="size-4" strokeWidth={2.25} />
-        {primaryLabel}
+        {primaryIconOnly ? null : primaryLabel}
       </Button>
     )
   ) : null

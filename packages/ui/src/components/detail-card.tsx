@@ -98,7 +98,7 @@ function DetailCardHeader({
   children,
 }: DetailCardHeaderProps) {
   const closeIcon = <XIcon className="size-4" />
-  const closeClassName = 'text-muted-foreground hover:text-foreground'
+  const closeClassName = 'text-destructive hover:text-destructive'
   return (
     <header
       data-slot="detail-card-header"

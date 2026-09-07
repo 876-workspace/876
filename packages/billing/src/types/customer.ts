@@ -1,5 +1,5 @@
 import type { CustomerKind, CustomerType, TaxBehavior } from './enums'
-import type { MinorAmount } from './common'
+import type { List, MinorAmount } from './common'
 
 /**
  * Parameters for creating a tenant-owned Billing customer.
@@ -336,6 +336,9 @@ export interface CustomerContact {
    */
   mobilePhone: string | null
 
+  /** Snapshot of the linked 876 user's avatar, if any. */
+  avatar: string | null
+
   /**
    * Whether this is the primary contact for the customer.
    */
@@ -345,6 +348,36 @@ export interface CustomerContact {
    * Time at which this contact was last synced with the 876 core identity platform. Measured in seconds since the Unix epoch. `null` if not synced.
    */
   coreSyncedAt: number | null
+}
+
+/** Parameters for creating a customer contact. */
+export interface CustomerContactCreateParams {
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+  workPhone?: string | null
+  mobilePhone?: string | null
+  isPrimary?: boolean
+}
+
+/** Parameters for updating a customer contact. */
+export type CustomerContactUpdateParams = CustomerContactCreateParams
+
+/** A list of customer contacts. */
+export type CustomerContactList = List<CustomerContact>
+
+/** A minimal customer contact resource returned after creation. */
+export interface CustomerContactCreated {
+  object: 'contact'
+  id: string
+}
+
+/** A deleted customer contact tombstone. */
+export interface DeletedCustomerContact {
+  object: 'contact'
+  id: string
+  deleted: true
 }
 
 /**

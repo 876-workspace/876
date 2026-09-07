@@ -36,7 +36,7 @@ describe('Billing UsersList', () => {
     navigation.searchParams = new URLSearchParams()
     render(<UsersList members={[member()]} />)
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
-    expect(screen.getByText('Organization role')).toBeInTheDocument()
+    expect(screen.getByText('Role')).toBeInTheDocument()
   })
   it('renders the selected member in the condensed pane', () => {
     navigation.segments = ['mem_1']

@@ -54,7 +54,7 @@ export function UsersList({ members }: { members: OrgMember[] }) {
               <TableHead className="px-5 py-3.5">Member</TableHead>
               <TableHead className="px-5 py-3.5">Email</TableHead>
               <TableHead className="px-5 py-3.5">Position</TableHead>
-              <TableHead className="px-5 py-3.5">Organization role</TableHead>
+              <TableHead className="px-5 py-3.5">Role</TableHead>
               <TableHead className="px-5 py-3.5">Status</TableHead>
             </TableRow>
           </TableHeader>

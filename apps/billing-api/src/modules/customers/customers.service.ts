@@ -7,20 +7,26 @@ import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
+  createContact,
   createCustomerRow,
+  deleteContact,
   deleteCustomerRow,
   ensureCoreCustomerRows,
   findCoreCustomer,
   findCustomerDetailRow,
+  findCustomerRow,
   findIdempotentCustomerRow,
   findTenantDefaults,
   listCustomerLedgerRows,
   listDocumentRecipientRows,
   listCustomerRows,
+  listContacts as listContactRows,
   recordOpeningBalanceRows,
   resolveEnsureTenant,
   updateCustomerLinkRow,
   updateCustomerRow,
+  updateContact as updateContactRow,
+  retrieveContact as retrieveContactRow,
 } from './customers.repository'
 import { importCustomerRows } from './customers-import.repository'
 import type {
@@ -29,12 +35,15 @@ import type {
   CustomerImportBody,
   CustomerListQuery,
   CustomerUpdateBody,
+  ContactCreateBody,
+  ContactUpdateBody,
   LinkCustomerBody,
   OpeningBalanceBody,
 } from './customers.schemas'
 import {
   serializeCustomer,
   serializeCustomerDetail,
+  serializeContact,
   serializeLedgerEntry,
 } from './customers.serializers'
 
@@ -43,6 +52,30 @@ function notFound() {
     code: 'customer/not-found',
     message: 'Customer not found.',
     httpStatus: 404,
+  })
+}
+
+function contactNotFound() {
+  return new AppHttpError({
+    code: 'billing/contact-not-found',
+    message: 'Contact not found.',
+    httpStatus: 404,
+  })
+}
+
+function coreLinkedContact() {
+  return new AppHttpError({
+    code: 'billing/contact-core-linked',
+    message: 'Core-linked contact identity fields are managed by Core.',
+    httpStatus: 409,
+  })
+}
+
+function lastContactRequired() {
+  return new AppHttpError({
+    code: 'billing/contact-last-required',
+    message: 'A Core organization customer must retain a contact.',
+    httpStatus: 409,
   })
 }
 
@@ -107,6 +140,94 @@ export async function retrieveCustomer(tenantId: string, id: string) {
   const row = await findCustomerDetailRow(tenantId, id)
   if (!row) throw notFound()
   return serializeCustomerDetail(row)
+}
+
+async function requireCustomer(tenantId: string, customerId: string) {
+  const customer = await findCustomerRow(tenantId, customerId)
+  if (!customer) throw notFound()
+  return customer
+}
+
+export async function listContacts(tenantId: string, customerId: string) {
+  await requireCustomer(tenantId, customerId)
+  const rows = await listContactRows(tenantId, customerId)
+  return {
+    object: 'list' as const,
+    data: rows.map(serializeContact),
+    has_more: false,
+    total_count: null,
+    url: `/api/v1/customers/${customerId}/contacts`,
+  }
+}
+
+export async function retrieveContact(
+  tenantId: string,
+  customerId: string,
+  contactId: string
+) {
+  await requireCustomer(tenantId, customerId)
+  const row = await retrieveContactRow(tenantId, customerId, contactId)
+  if (!row) throw contactNotFound()
+  return serializeContact(row)
+}
+
+export async function createCustomerContact(
+  tenantId: string,
+  customerId: string,
+  body: ContactCreateBody
+) {
+  await requireCustomer(tenantId, customerId)
+  const row = await createContact(
+    tenantId,
+    customerId,
+    generateId('contact'),
+    body,
+    nowUnixSeconds()
+  )
+  return serializeContact(row)
+}
+
+export async function updateCustomerContact(
+  tenantId: string,
+  customerId: string,
+  contactId: string,
+  body: ContactUpdateBody
+) {
+  await requireCustomer(tenantId, customerId)
+  const existing = await retrieveContactRow(tenantId, customerId, contactId)
+  if (!existing) throw contactNotFound()
+  if (
+    existing.userId !== null &&
+    (body.firstName !== undefined ||
+      body.lastName !== undefined ||
+      body.email !== undefined)
+  )
+    throw coreLinkedContact()
+  const row = await updateContactRow(
+    tenantId,
+    customerId,
+    contactId,
+    body,
+    nowUnixSeconds()
+  )
+  if (!row) throw contactNotFound()
+  return serializeContact(row)
+}
+
+export async function deleteCustomerContact(
+  tenantId: string,
+  customerId: string,
+  contactId: string
+) {
+  const customer = await requireCustomer(tenantId, customerId)
+  const contacts = await listContactRows(tenantId, customerId)
+  if (!contacts.some((contact) => contact.id === contactId))
+    throw contactNotFound()
+  if (customer.customerType === 'CORE_ORGANIZATION' && contacts.length === 1)
+    throw lastContactRequired()
+  if (!(await deleteContact(tenantId, customerId, contactId)))
+    throw contactNotFound()
+  return { object: 'contact' as const, id: contactId, deleted: true as const }
 }
 
 export async function createCustomer(

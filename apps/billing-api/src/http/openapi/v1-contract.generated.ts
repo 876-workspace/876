@@ -407,6 +407,33 @@ export const v1OperationMetadata = {
     description: 'Ported from `src/app/api/billing/customers/import/route.ts`.',
     tags: ['Billing'],
   },
+  'GET /customers/{customerId}/contacts': {
+    operationId: 'billing-billing_get_customers_customerId_contacts',
+    summary: 'List a customer’s contacts',
+    tags: ['Customers'],
+  },
+  'POST /customers/{customerId}/contacts': {
+    operationId: 'billing-billing_post_customers_customerId_contacts',
+    summary: 'Create a customer contact',
+    tags: ['Customers'],
+  },
+  'GET /customers/{customerId}/contacts/{contactId}': {
+    operationId: 'billing-billing_get_customers_customerId_contacts_contactId',
+    summary: 'Retrieve a customer contact',
+    tags: ['Customers'],
+  },
+  'PATCH /customers/{customerId}/contacts/{contactId}': {
+    operationId:
+      'billing-billing_patch_customers_customerId_contacts_contactId',
+    summary: 'Update a customer contact',
+    tags: ['Customers'],
+  },
+  'DELETE /customers/{customerId}/contacts/{contactId}': {
+    operationId:
+      'billing-billing_delete_customers_customerId_contacts_contactId',
+    summary: 'Delete a customer contact',
+    tags: ['Customers'],
+  },
   'GET /customers/{customerId}': {
     operationId: 'billing-billing_get_customers_customerId',
     summary: 'Billing GET /customers/{customerId}',
@@ -9370,6 +9397,916 @@ export const v1OperationContracts = {
           'application/json': {
             schema: {
               $ref: '#/components/schemas/HTTPValidationError',
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /customers/{customerId}/contacts': {
+    tags: ['Customers'],
+    summary: 'List a customer’s contacts',
+    operationId: 'billing-billing_get_customers_customerId_contacts',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'contact list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'contact',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          userId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          salutation: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          firstName: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          lastName: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          email: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          workPhone: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          mobilePhone: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          avatar: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          isPrimary: {
+                            type: 'boolean',
+                          },
+                          coreSyncedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'userId',
+                          'salutation',
+                          'firstName',
+                          'lastName',
+                          'email',
+                          'workPhone',
+                          'mobilePhone',
+                          'avatar',
+                          'isPrimary',
+                          'coreSyncedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '422': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /customers/{customerId}/contacts': {
+    tags: ['Customers'],
+    summary: 'Create a customer contact',
+    operationId: 'billing-billing_post_customers_customerId_contacts',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              salutation: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 40,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              firstName: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 80,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              lastName: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 80,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              email: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    maxLength: 320,
+                    format: 'email',
+                    pattern:
+                      "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              workPhone: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 160,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              mobilePhone: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 160,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              isPrimary: {
+                type: 'boolean',
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'contact created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'contact',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /customers/{customerId}/contacts/{contactId}': {
+    tags: ['Customers'],
+    summary: 'Retrieve a customer contact',
+    operationId: 'billing-billing_get_customers_customerId_contacts_contactId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'contactId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'contact returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'contact',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    userId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    salutation: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    firstName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    lastName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    email: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    workPhone: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    mobilePhone: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    avatar: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    isPrimary: {
+                      type: 'boolean',
+                    },
+                    coreSyncedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'userId',
+                    'salutation',
+                    'firstName',
+                    'lastName',
+                    'email',
+                    'workPhone',
+                    'mobilePhone',
+                    'avatar',
+                    'isPrimary',
+                    'coreSyncedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '422': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /customers/{customerId}/contacts/{contactId}': {
+    tags: ['Customers'],
+    summary: 'Update a customer contact',
+    operationId:
+      'billing-billing_patch_customers_customerId_contacts_contactId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'contactId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'contact updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'contact',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    userId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    salutation: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    firstName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    lastName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    email: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    workPhone: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    mobilePhone: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    avatar: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    isPrimary: {
+                      type: 'boolean',
+                    },
+                    coreSyncedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'userId',
+                    'salutation',
+                    'firstName',
+                    'lastName',
+                    'email',
+                    'workPhone',
+                    'mobilePhone',
+                    'avatar',
+                    'isPrimary',
+                    'coreSyncedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '422': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /customers/{customerId}/contacts/{contactId}': {
+    tags: ['Customers'],
+    summary: 'Delete a customer contact',
+    operationId:
+      'billing-billing_delete_customers_customerId_contacts_contactId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'contactId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'contact deleted',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'contact',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '422': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

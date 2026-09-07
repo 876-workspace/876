@@ -10,6 +10,9 @@ const currency = z
 export const customerParamsSchema = z.strictObject({
   customerId: z.string().min(1),
 })
+export const contactParamsSchema = customerParamsSchema.extend({
+  contactId: z.string().min(1),
+})
 export const organizationCustomerParamsSchema = customerParamsSchema.extend({
   organizationId: z.string().min(1),
 })
@@ -198,7 +201,7 @@ export type CustomerImportBody = z.infer<typeof customerImportBodySchema>
 export type CustomerImportRow = z.infer<typeof customerImportRowSchema>
 export { customerImportRowSchema }
 
-export const contactSchema = z.object({
+export const contactSchema = z.strictObject({
   object: z.literal('contact'),
   id: z.string(),
   userId: z.string().nullable(),
@@ -208,9 +211,42 @@ export const contactSchema = z.object({
   email: z.string().nullable(),
   workPhone: z.string().nullable(),
   mobilePhone: z.string().nullable(),
+  avatar: z.string().nullable(),
   isPrimary: z.boolean(),
   coreSyncedAt: z.number().int().nullable(),
 })
+export const contactListSchema = z.strictObject({
+  object: z.literal('list'),
+  data: z.array(contactSchema),
+  has_more: z.boolean(),
+  total_count: z.number().int().nullable(),
+  url: z.string(),
+})
+export const deletedContactSchema = z.strictObject({
+  object: z.literal('contact'),
+  id: z.string(),
+  deleted: z.literal(true),
+})
+const contactBodyFields = {
+  salutation: nullableText(40),
+  firstName: nullableText(80),
+  lastName: nullableText(80),
+  email: z.string().email().max(320).nullable().optional(),
+  workPhone: nullableText(160),
+  mobilePhone: nullableText(160),
+  isPrimary: z.boolean().optional(),
+}
+export const contactCreateBodySchema = z
+  .strictObject(contactBodyFields)
+  .refine(
+    (body) => Boolean(body.firstName || body.lastName || body.email),
+    'Provide at least one of firstName, lastName, or email.'
+  )
+export const contactUpdateBodySchema = z
+  .strictObject(contactBodyFields)
+  .refine((body) => Object.keys(body).length > 0, 'Provide at least one field.')
+export type ContactCreateBody = z.infer<typeof contactCreateBodySchema>
+export type ContactUpdateBody = z.infer<typeof contactUpdateBodySchema>
 export const customerSchema = z.object({
   object: z.literal('customer'),
   id: z.string(),

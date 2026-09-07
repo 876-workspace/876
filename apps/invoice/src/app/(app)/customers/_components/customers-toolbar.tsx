@@ -30,8 +30,9 @@ export function CustomersToolbar({
           options={CUSTOMER_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
-      primaryHref={showPrimary ? '/customers/new' : undefined}
+      primaryLabel="New"
+      primaryIconOnly={!showPrimary}
+      primaryHref="/customers/new"
       primaryVariant="info"
       refresh
       dropdownActions={[

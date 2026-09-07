@@ -469,6 +469,10 @@ Detail page headers carry inline actions, not `ResourceToolbar`:
                [metadata row]
 ```
 
+- **Primary action** — when a detail page offers a create action (a customer's
+  `New Transaction` menu), it is a solid blue `variant="info"` button, the same
+  blue as a list page's `Add` (§4). There is exactly one blue on the platform;
+  never introduce a second accent or a lighter/darker blue for a detail toolbar.
 - **Edit button** — outline variant with `Pencil` icon.
 - **More-actions dropdown** (`···`) — outline icon-sm, `min-w-44 w-auto` on
   `DropdownMenuContent`.
