@@ -274,3 +274,9 @@ authorization module. 15 tests added; 12 fail against the previous router.
 - Billing DB drift: an orphaned `BillingInterval` enum and three index-name
   differences on plans/prices/subscriptions. Cosmetic, predates this work, and
   belongs in a migration of its own rather than a feature branch.
+
+### Pull request
+
+[#510](https://github.com/876-workspace/876/pull/510) — opened as a draft while host composition lands.
+`MERGEABLE`, no conflicts with `main`. Its red checks are the repo-wide CI failure
+(every workflow fails in ~3s on `main` itself), not this branch.
