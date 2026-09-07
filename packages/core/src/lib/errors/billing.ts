@@ -50,6 +50,18 @@ export const BILLING_ERRORS = {
     message: 'This accounting provider is not available yet.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'billing/currency-mismatch': {
+    message: 'The selected commercial resource uses a different currency.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/idempotency-conflict': {
+    message: 'The idempotency key was already used for another command.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/idempotency-key-required': {
+    message: 'A valid Idempotency-Key header is required.',
+    httpStatus: HttpStatus.BAD_REQUEST,
+  },
   'billing/item-insufficient-stock': {
     message: 'The requested item quantity is greater than the stock available.',
     httpStatus: HttpStatus.CONFLICT,
@@ -91,6 +103,22 @@ export const BILLING_ERRORS = {
     message:
       'The accounting provider authorization state is invalid or expired.',
     httpStatus: HttpStatus.BAD_REQUEST,
+  },
+  'billing/price-list-invalid': {
+    message: 'The selected price list is incomplete or invalid.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/price-list-not-found': {
+    message: 'The selected price list was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'billing/price-not-found': {
+    message: 'The selected price was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'billing/price-quantity-unavailable': {
+    message: 'The selected price does not cover the requested quantity.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
   'billing/provider-authentication-failed': {
     message: 'The accounting provider rejected the authorization request.',
