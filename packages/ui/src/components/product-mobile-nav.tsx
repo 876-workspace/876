@@ -6,7 +6,12 @@ import { usePathname } from 'next/navigation'
 
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 
-import { ChevronDown, MenuIcon, type IconComponent } from '../icons'
+import {
+  ChevronDown,
+  ChevronsLeft,
+  MenuIcon,
+  type IconComponent,
+} from '../icons'
 import { cn } from '../lib/utils'
 import { Logo } from './logo'
 import {
@@ -27,12 +32,22 @@ const mobileNavItemActive =
 const mobileNavIconBase =
   'flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f4] transition-colors dark:bg-white/8'
 
+type BackAction = {
+  label: string
+  onClick: () => void
+}
+
 type ProductMobileNavProps = {
   title: string
   subtitle?: string
   navigation: readonly NavGroupDefinition[]
   resolveIcon: (key: string) => IconComponent
+  resolveIconColor?: (key: string) => string
+  isActive?: (item: NavEntry, pathname: string) => boolean
+  onNavigate?: (item: NavEntry) => void
+  backAction?: BackAction
   ariaLabel?: string
+  triggerLabel?: string
 }
 
 export function ProductMobileNav({
@@ -40,15 +55,25 @@ export function ProductMobileNav({
   subtitle,
   navigation,
   resolveIcon,
+  resolveIconColor,
+  isActive,
+  onNavigate,
+  backAction,
   ariaLabel = `${title} navigation`,
+  triggerLabel = `Open ${title} navigation`,
 }: ProductMobileNavProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
+  const handleNavigate = (item: NavEntry) => {
+    onNavigate?.(item)
+    setOpen(false)
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
-        aria-label={`Open ${title} navigation`}
+        aria-label={triggerLabel}
         className="focus-visible:ring-sidebar-ring flex size-11 shrink-0 items-center justify-center rounded-xl border border-transparent text-[#3c4043] transition-colors hover:bg-[#f1f3f4] focus-visible:ring-2 focus-visible:outline-hidden dark:text-white/75 dark:hover:bg-white/8"
       >
         <MenuIcon aria-hidden="true" className="size-5" />
@@ -68,9 +93,7 @@ export function ProductMobileNav({
                 {title}
               </SheetTitle>
               <SheetDescription
-                className={cn(
-                  subtitle ? 'truncate text-xs' : 'sr-only'
-                )}
+                className={cn(subtitle ? 'truncate text-xs' : 'sr-only')}
               >
                 {subtitle ?? `Navigate ${title}`}
               </SheetDescription>
@@ -83,6 +106,17 @@ export function ProductMobileNav({
           className="min-h-0 flex-1 overflow-y-auto px-3 py-4"
         >
           <div className="flex flex-col gap-1">
+            {backAction ? (
+              <button
+                type="button"
+                onClick={backAction.onClick}
+                className="text-foreground hover:bg-muted/70 focus-visible:ring-sidebar-ring mb-2 flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-hidden"
+              >
+                <ChevronsLeft aria-hidden="true" className="size-4" />
+                {backAction.label}
+              </button>
+            ) : null}
+
             {navigation.map((group, groupIndex) => (
               <div key={group.key} className="flex flex-col gap-1">
                 {groupIndex > 0 ? (
@@ -99,7 +133,9 @@ export function ProductMobileNav({
                     item={item}
                     pathname={pathname}
                     resolveIcon={resolveIcon}
-                    onNavigate={() => setOpen(false)}
+                    resolveIconColor={resolveIconColor}
+                    isActive={isActive}
+                    onNavigate={handleNavigate}
                   />
                 ))}
               </div>
@@ -115,16 +151,20 @@ function ProductMobileNavItem({
   item,
   pathname,
   resolveIcon,
+  resolveIconColor,
+  isActive,
   onNavigate,
 }: {
   item: NavEntry
   pathname: string
   resolveIcon: (key: string) => IconComponent
-  onNavigate: () => void
+  resolveIconColor?: (key: string) => string
+  isActive?: (item: NavEntry, pathname: string) => boolean
+  onNavigate: (item: NavEntry) => void
 }) {
   const Icon = resolveIcon(item.icon)
   const hasChildren = Boolean(item.children?.length)
-  const active = isNavEntryActive(pathname, item)
+  const active = isNavEntryActive(pathname, item, isActive)
   const childrenId = useId()
   const [expanded, setExpanded] = useState(active)
 
@@ -136,7 +176,7 @@ function ProductMobileNavItem({
     return (
       <Link
         href={item.href}
-        onClick={onNavigate}
+        onClick={() => onNavigate(item)}
         aria-current={active ? 'page' : undefined}
         className={cn(
           mobileNavItemBase,
@@ -145,7 +185,9 @@ function ProductMobileNavItem({
       >
         <MobileNavIcon
           icon={Icon}
-          colorClassName={item.colorClassName}
+          colorClassName={
+            item.colorClassName ?? resolveIconColor?.(item.icon)
+          }
           activeClassName={item.activeClassName}
           active={active}
         />
@@ -168,7 +210,9 @@ function ProductMobileNavItem({
       >
         <MobileNavIcon
           icon={Icon}
-          colorClassName={item.colorClassName}
+          colorClassName={
+            item.colorClassName ?? resolveIconColor?.(item.icon)
+          }
           activeClassName={item.activeClassName}
           active={active}
         />
@@ -185,13 +229,13 @@ function ProductMobileNavItem({
       {expanded ? (
         <div id={childrenId} className="ml-11 flex flex-col gap-1">
           {item.children?.map((child) => {
-            const childActive = isNavEntryActive(pathname, child)
+            const childActive = isNavEntryActive(pathname, child, isActive)
 
             return (
               <Link
                 key={child.key}
                 href={child.href}
-                onClick={onNavigate}
+                onClick={() => onNavigate(child)}
                 aria-current={childActive ? 'page' : undefined}
                 className={cn(
                   'focus-visible:ring-sidebar-ring flex min-h-11 items-center rounded-lg px-3 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
@@ -240,12 +284,22 @@ function MobileNavIcon({
   )
 }
 
-function isNavEntryActive(pathname: string, item: NavEntry): boolean {
-  if (isActivePath(pathname, item.href)) return true
-  return item.children?.some((child) => isNavEntryActive(pathname, child)) ?? false
+function isNavEntryActive(
+  pathname: string,
+  item: NavEntry,
+  isActive?: (item: NavEntry, pathname: string) => boolean
+): boolean {
+  if (isActive ? isActive(item, pathname) : isActivePath(pathname, item.href))
+    return true
+
+  return (
+    item.children?.some((child) => isNavEntryActive(pathname, child, isActive)) ??
+    false
+  )
 }
 
 function isActivePath(pathname: string, href: string): boolean {
+  if (href === '#') return false
   if (href === '/') return pathname === '/'
   return pathname === href || pathname.startsWith(`${href}/`)
 }
