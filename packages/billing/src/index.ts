@@ -2,3 +2,4 @@
 export { create876Client } from './client'
 export type { Client } from './client'
 export type * from './types'
+export type { InvoiceWriteOffParams } from './types/invoice'
