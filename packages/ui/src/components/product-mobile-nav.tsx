@@ -46,6 +46,7 @@ type ProductMobileNavProps = {
   isActive?: (item: NavEntry, pathname: string) => boolean
   onNavigate?: (item: NavEntry) => void
   backAction?: BackAction
+  expandChildren?: boolean
   ariaLabel?: string
   triggerLabel?: string
 }
@@ -59,6 +60,7 @@ export function ProductMobileNav({
   isActive,
   onNavigate,
   backAction,
+  expandChildren = true,
   ariaLabel = `${title} navigation`,
   triggerLabel = `Open ${title} navigation`,
 }: ProductMobileNavProps) {
@@ -136,6 +138,7 @@ export function ProductMobileNav({
                     resolveIconColor={resolveIconColor}
                     isActive={isActive}
                     onNavigate={handleNavigate}
+                    expandChildren={expandChildren}
                   />
                 ))}
               </div>
@@ -154,6 +157,7 @@ function ProductMobileNavItem({
   resolveIconColor,
   isActive,
   onNavigate,
+  expandChildren,
 }: {
   item: NavEntry
   pathname: string
@@ -161,9 +165,10 @@ function ProductMobileNavItem({
   resolveIconColor?: (key: string) => string
   isActive?: (item: NavEntry, pathname: string) => boolean
   onNavigate: (item: NavEntry) => void
+  expandChildren: boolean
 }) {
   const Icon = resolveIcon(item.icon)
-  const hasChildren = Boolean(item.children?.length)
+  const hasChildren = expandChildren && Boolean(item.children?.length)
   const active = isNavEntryActive(pathname, item, isActive)
   const childrenId = useId()
   const [expanded, setExpanded] = useState(active)
