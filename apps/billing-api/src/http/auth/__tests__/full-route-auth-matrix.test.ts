@@ -43,9 +43,11 @@ describe('frozen v1 route authentication matrix', () => {
     // variant search and item-variant operations, item media, and variant media
     // operations were added for both tenant and integration routes. 254 ->
     // 264: payment-mode CRUD and tax authority/rate configuration were added
-    // to the organization-scoped integration surface.
-    expect(operations).toHaveLength(264)
-    expect(protectedPublicOperations()).toHaveLength(263)
+    // to the organization-scoped integration surface. 264 -> 268: invoice
+    // send and write-off commands were added to both tenant and integration
+    // surfaces.
+    expect(operations).toHaveLength(268)
+    expect(protectedPublicOperations()).toHaveLength(267)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

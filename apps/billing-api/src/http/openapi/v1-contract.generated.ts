@@ -761,8 +761,16 @@ export const v1OperationMetadata = {
     summary: 'Finalize an invoice and post its receivable',
     tags: ['Invoices'],
   },
+  'POST /invoices/{invoiceId}/send': {
+    summary: 'Record an invoice send',
+    tags: ['Invoices'],
+  },
   'POST /invoices/{invoiceId}/void': {
     summary: 'Void an unsettled finalized invoice',
+    tags: ['Invoices'],
+  },
+  'POST /invoices/{invoiceId}/write-off': {
+    summary: 'Write off an invoice balance',
     tags: ['Invoices'],
   },
   'GET /credit-notes': {
@@ -825,10 +833,20 @@ export const v1OperationMetadata = {
       summary: 'Finalize a shared finance invoice',
       tags: ['Organization integrations'],
     },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/send':
+    {
+      summary: 'Record an organization Billing invoice send',
+      tags: ['Invoices'],
+    },
   'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/void':
     {
       summary: 'Void a shared finance invoice',
       tags: ['Organization integrations'],
+    },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/write-off':
+    {
+      summary: 'Write off an organization Billing invoice balance',
+      tags: ['Invoices'],
     },
   'GET /integrations/organizations/{organizationId}/quotes': {
     summary: 'List organization Billing quotes',
@@ -17619,6 +17637,90 @@ export const v1OperationContracts = {
       },
     },
   },
+  'POST /invoices/{invoiceId}/send': {
+    tags: ['Invoices'],
+    summary: 'Record an invoice send',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'invoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Invoice send recorded',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'POST /invoices/{invoiceId}/void': {
     security: [
       {
@@ -17694,6 +17796,90 @@ export const v1OperationContracts = {
               },
               required: ['data', 'error'],
               type: 'object',
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /invoices/{invoiceId}/write-off': {
+    tags: ['Invoices'],
+    summary: 'Write off an invoice balance',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'invoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Invoice balance written off',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },
@@ -18619,6 +18805,106 @@ export const v1OperationContracts = {
         },
       },
     },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/send':
+    {
+      tags: ['Invoices'],
+      summary: 'Record an organization Billing invoice send',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'invoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Invoice send recorded',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
   'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/void':
     {
       security: [
@@ -18709,6 +18995,106 @@ export const v1OperationContracts = {
                 },
                 required: ['data', 'error'],
                 type: 'object',
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/write-off':
+    {
+      tags: ['Invoices'],
+      summary: 'Write off an organization Billing invoice balance',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'invoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Invoice balance written off',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
               },
             },
           },
