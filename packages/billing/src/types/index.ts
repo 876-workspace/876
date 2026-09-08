@@ -369,7 +369,7 @@ export {
   CurrencyListSchema,
   CurrencyMutationSchema,
   CurrencySchema,
-} from './currency.schema'
+} from './currency'
 
 // Finance workspace roles
 export type {
