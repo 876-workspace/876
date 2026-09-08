@@ -13,8 +13,8 @@ const payment: PaymentDetailView = {
   paymentDate: '8 Sep 2026',
   received: 'J$150.00',
   allocated: 'J$100.00',
-  unapplied: 'J$25.00',
-  refunded: 'J$25.00',
+  unapplied: 'J$30.00',
+  refunded: 'J$20.00',
   bankCharges: 'J$0.00',
   paymentMode: 'Bank transfer',
   depositAccount: 'Main bank',
@@ -44,7 +44,7 @@ describe('PaymentDetailCard', () => {
     )
 
     expect(screen.getByText('Partially refunded')).toBeVisible()
-    expect(screen.getByText('J$25.00')).toBeVisible()
+    expect(screen.getByText('J$20.00')).toBeVisible()
     expect(screen.getByRole('link', { name: 'Refund' })).toHaveAttribute(
       'href',
       '/payments/pay_1/refund'
