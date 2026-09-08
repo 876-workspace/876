@@ -19,6 +19,10 @@
       "types": "./src/calendar-list.tsx",
       "default": "./src/calendar-list.tsx"
     },
+    "./calendar": {
+      "types": "./src/calendar.tsx",
+      "default": "./src/calendar.tsx"
+    },
     "./summary": {
       "types": "./src/summary.tsx",
       "default": "./src/summary.tsx"
