@@ -220,13 +220,15 @@ describe('Invoice application workflows', () => {
   it('records sending an open invoice without changing its financial state first', async () => {
     mocks.findInvoiceForSend.mockResolvedValue(openInvoice())
 
-    await expect(
-      sendInvoiceWorkflow('ten_1', 'inv_1')
-    ).resolves.toEqual({ data: { id: 'inv_1' }, error: null })
+    await expect(sendInvoiceWorkflow('ten_1', 'inv_1')).resolves.toEqual({
+      data: { id: 'inv_1' },
+      error: null,
+    })
 
     expect(mocks.markInvoiceSent).toHaveBeenCalledWith({}, {
       id: 'inv_1',
       status: 'OPEN',
+      sentAt: null,
       now: 100,
     })
     expect(mocks.enqueueBillingEvent).toHaveBeenCalledWith({}, 'ten_1', {
@@ -244,19 +246,22 @@ describe('Invoice application workflows', () => {
     })
   })
 
-  it('preserves overdue as the financial status when recording a send', async () => {
+  it('preserves overdue and the first sent timestamp when recording another send', async () => {
     mocks.findInvoiceForSend.mockResolvedValue({
       ...openInvoice(),
       status: 'OVERDUE',
+      sentAt: 50,
     })
 
-    await expect(
-      sendInvoiceWorkflow('ten_1', 'inv_1')
-    ).resolves.toEqual({ data: { id: 'inv_1' }, error: null })
+    await expect(sendInvoiceWorkflow('ten_1', 'inv_1')).resolves.toEqual({
+      data: { id: 'inv_1' },
+      error: null,
+    })
 
     expect(mocks.markInvoiceSent).toHaveBeenCalledWith({}, {
       id: 'inv_1',
       status: 'OVERDUE',
+      sentAt: 50,
       now: 100,
     })
   })
@@ -267,11 +272,10 @@ describe('Invoice application workflows', () => {
       status: 'DRAFT',
     })
 
-    await expect(
-      sendInvoiceWorkflow('ten_1', 'inv_1')
-    ).resolves.toEqual({
+    await expect(sendInvoiceWorkflow('ten_1', 'inv_1')).resolves.toEqual({
       data: null,
-      error: 'Only a finalized collectible invoice can be sent.',
+      error:
+        'Only a finalized invoice that is not void or written off can be marked sent.',
       status: 409,
     })
 
