@@ -21,6 +21,11 @@ export async function create(
 ): ServiceResult<{ id: string }> {
   if (!(await hasEnabledCurrency(tenantId, params.currency)))
     return err('Enable the refund currency before using it.', 422)
+  if (sourceAppId && params.creditNoteId)
+    return err(
+      'Credit-note refunds require tenant finance authority.',
+      403
+    )
 
   const now = nowUnixSeconds()
   const number = await nextDocumentNumber(tenantId, 'REFUND', now)
