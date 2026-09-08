@@ -48,6 +48,14 @@ export const PLATFORM_FEATURE_SEEDS: readonly FeatureSeed[] = [
     legacySlugs: ['platform_widgets_notepad', 'platform_widgets_notes'],
   },
   {
+    slug: 'platform-widgets-work',
+    name: '876 Work widget',
+    description: 'Global switch for the shared 876 Work productivity widget.',
+    parentSlug: 'platform-widgets',
+    defaultEnabled: false,
+    tags: ['widget'],
+  },
+  {
     slug: 'platform-widgets-chat',
     name: '876 Chat widget',
     description: 'Global switch for the shared 876 Chat rail widget.',
@@ -424,6 +432,14 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       slug: 'invoice-widgets',
       name: 'Widgets',
       description: 'Master switch for the Invoice widget rail.',
+      tags: ['widget'],
+    },
+    {
+      slug: 'invoice-widgets-work',
+      name: '876 Work widget',
+      description: 'Controls access to the shared 876 Work widget in Invoice.',
+      parentSlug: 'invoice-widgets',
+      defaultEnabled: false,
       tags: ['widget'],
     },
     {
