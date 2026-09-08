@@ -60,7 +60,7 @@ export function CustomerActions({
       actions: [
         { label: 'Invoice', href: `/invoices/new?customerId=${customerId}` },
         {
-          label: 'Customer Payment',
+          label: 'Payment Received',
           href: `/payments/new?customerId=${customerId}`,
         },
         { label: 'Quote', href: `/quotes/new?customerId=${customerId}` },

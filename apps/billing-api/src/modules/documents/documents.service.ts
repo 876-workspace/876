@@ -20,6 +20,7 @@ import type {
   InvoiceStatus,
   InvoiceUpdateParams,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
 } from './schemas/invoice'
 import type { InvoicePreferenceUpdateParams } from './schemas/invoice-preference'
 import type {
@@ -29,7 +30,9 @@ import type {
 } from './schemas/quote'
 import {
   finalizeInvoiceWorkflow,
+  sendInvoiceWorkflow,
   voidInvoiceWorkflow,
+  writeOffInvoiceWorkflow,
 } from './workflows'
 
 const log = getLogger('documents')
@@ -76,6 +79,18 @@ async function ownedInvoice(
   return row
 }
 
+async function assertQuoteConvertible(tenantId: string, quoteId: string) {
+  const quote = await quotes.retrieve(tenantId, quoteId)
+  if (!quote) throw missing('quote')
+  if (quote.status !== 'ACCEPTED') {
+    throw new AppHttpError({
+      code: 'invoice/invalid-state',
+      message: 'Accept the quote before converting it to an invoice.',
+      httpStatus: 409,
+    })
+  }
+}
+
 export const documentsService = {
   async listInvoices(
     tenantId: string,
@@ -102,6 +117,7 @@ export const documentsService = {
     body: InvoiceCreateParams,
     attribution?: IntegrationAttribution | null
   ) {
+    if (body.quoteId) await assertQuoteConvertible(tenantId, body.quoteId)
     const result = await unwrap(
       await invoices.create(tenantId, body, attribution ?? undefined),
       'invoice'
@@ -142,6 +158,22 @@ export const documentsService = {
     }
   },
 
+  async sendInvoice(
+    tenantId: string,
+    id: string,
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
+  ) {
+    if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
+    return {
+      object: 'invoice',
+      ...(await unwrap(
+        await sendInvoiceWorkflow(tenantId, id, idempotency),
+        'invoice'
+      )),
+    }
+  },
+
   async voidInvoice(
     tenantId: string,
     id: string,
@@ -154,6 +186,23 @@ export const documentsService = {
       object: 'invoice',
       ...(await unwrap(
         await voidInvoiceWorkflow(tenantId, id, body, idempotency),
+        'invoice'
+      )),
+    }
+  },
+
+  async writeOffInvoice(
+    tenantId: string,
+    id: string,
+    body: InvoiceWriteOffParams,
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
+  ) {
+    if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
+    return {
+      object: 'invoice',
+      ...(await unwrap(
+        await writeOffInvoiceWorkflow(tenantId, id, body, idempotency),
         'invoice'
       )),
     }

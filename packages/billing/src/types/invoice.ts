@@ -336,6 +336,12 @@ export interface InvoiceVoidParams {
   reason?: string | null
 }
 
+/** Parameters for writing off an invoice's full remaining receivable. */
+export interface InvoiceWriteOffParams {
+  /** Required audit reason for the write-off. */
+  reason: string
+}
+
 /** Parameters for updating a draft invoice. */
 export interface InvoiceUpdateParams {
   /** Time at which the invoice is issued, in Unix seconds. */

@@ -51,6 +51,8 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const access = await resolveAccessContext(context.userId, context.orgId)
   const canWrite =
     access.status === 'ok' && canAccess(access.context, 'invoices.write')
+  const canRecordPayment =
+    access.status === 'ok' && canAccess(access.context, 'payments.create')
 
   const customer =
     invoice.customer &&
@@ -58,6 +60,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
     'name' in invoice.customer
       ? String(invoice.customer.name ?? '—')
       : String(invoice.customerName ?? '—')
+  const customerId = String(invoice.customerId ?? '')
   const number = String(invoice.number ?? invoice.id)
   const totalAmount = String(invoice.totalAmount ?? '0')
   const amountDue = String(invoice.amountDue ?? invoice.totalAmount ?? '0')
@@ -91,8 +94,10 @@ export default async function InvoiceDetailPage({ params }: Props) {
       <div className="px-5 pt-5 sm:px-6 print:hidden">
         <InvoiceActions
           invoiceId={invoice.id}
+          customerId={customerId}
           status={status}
           canWrite={canWrite}
+          canRecordPayment={canRecordPayment}
         />
       </div>
       <DetailCardBody className="space-y-8">

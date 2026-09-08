@@ -8,6 +8,7 @@ import { members } from './members'
 import { invites } from './invites'
 import { support } from './support'
 import { paymentModes } from './payment-modes'
+import { payments } from './payments'
 import { currencies } from './currencies'
 import { taxAuthorities, taxRates } from './taxes'
 
@@ -22,6 +23,7 @@ export const client = {
   appMemberships,
   support,
   paymentModes,
+  payments,
   currencies,
   taxAuthorities,
   taxRates,
@@ -37,5 +39,6 @@ export { roles } from './roles'
 export { members } from './members'
 export { invites } from './invites'
 export { support } from './support'
+export { payments } from './payments'
 export { currencies } from './currencies'
 export type { ClientResult } from '@/types/api'

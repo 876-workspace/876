@@ -79,6 +79,43 @@ export function markInvoiceFinalized(
   })
 }
 
+export function findInvoiceForSend(
+  tx: Prisma.TransactionClient,
+  tenantId: string,
+  invoiceId: string
+) {
+  return tx.invoice.findFirst({
+    where: { id: invoiceId, tenantId },
+    select: {
+      id: true,
+      status: true,
+      customerId: true,
+      number: true,
+      currency: true,
+      sentAt: true,
+    },
+  })
+}
+
+export function markInvoiceSent(
+  tx: Prisma.TransactionClient,
+  params: {
+    id: string
+    status: 'OPEN' | 'SENT' | 'PARTIALLY_PAID' | 'OVERDUE' | 'PAID'
+    sentAt: number | null
+    now: number
+  }
+) {
+  return tx.invoice.update({
+    where: { id: params.id },
+    data: {
+      status: params.status === 'OPEN' ? 'SENT' : params.status,
+      sentAt: params.sentAt ?? params.now,
+      updatedAt: params.now,
+    },
+  })
+}
+
 export function findInvoiceForVoid(
   tx: Prisma.TransactionClient,
   tenantId: string,
@@ -93,28 +130,80 @@ export function findInvoiceForVoid(
   })
 }
 
+function objectMetadata(
+  metadata: Prisma.JsonValue
+): Prisma.JsonObject | undefined {
+  return typeof metadata === 'object' && metadata !== null && !Array.isArray(metadata)
+    ? metadata
+    : undefined
+}
+
 export function markInvoiceVoid(
   tx: Prisma.TransactionClient,
   params: {
     id: string
     now: number
     reason?: string | null
-    metadata: unknown
+    metadata: Prisma.JsonValue
   }
 ) {
-  const existingMetadata =
-    typeof params.metadata === 'object' && params.metadata !== null
-      ? params.metadata
-      : undefined
+  const existingMetadata = objectMetadata(params.metadata)
+  const metadata = params.reason
+    ? { ...existingMetadata, voidReason: params.reason }
+    : existingMetadata
+
   return tx.invoice.update({
     where: { id: params.id },
     data: {
       status: 'VOID',
       amountDue: 0n,
       voidedAt: params.now,
-      metadata: params.reason
-        ? { voidReason: params.reason }
-        : existingMetadata,
+      metadata,
+      updatedAt: params.now,
+    },
+  })
+}
+
+export function findInvoiceForWriteOff(
+  tx: Prisma.TransactionClient,
+  tenantId: string,
+  invoiceId: string
+) {
+  return tx.invoice.findFirst({
+    where: { id: invoiceId, tenantId },
+    select: {
+      id: true,
+      status: true,
+      customerId: true,
+      subscriptionId: true,
+      number: true,
+      currency: true,
+      amountDue: true,
+      metadata: true,
+    },
+  })
+}
+
+export function markInvoiceWrittenOff(
+  tx: Prisma.TransactionClient,
+  params: {
+    id: string
+    amount: bigint
+    now: number
+    reason: string
+    metadata: Prisma.JsonValue
+  }
+) {
+  const existingMetadata = objectMetadata(params.metadata)
+
+  return tx.invoice.update({
+    where: { id: params.id },
+    data: {
+      status: 'UNCOLLECTIBLE',
+      amountDue: 0n,
+      amountWrittenOff: { increment: params.amount },
+      paidAt: null,
+      metadata: { ...existingMetadata, writeOffReason: params.reason },
       updatedAt: params.now,
     },
   })

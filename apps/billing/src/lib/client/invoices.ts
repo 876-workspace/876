@@ -7,6 +7,7 @@ import type {
   InvoiceUpdated,
   InvoiceUpdateInput,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
 } from '@/types/invoice'
 
 import { request } from './request'
@@ -40,9 +41,30 @@ export const finalize = (invoiceId: string, params: InvoiceFinalizeParams) =>
     }
   )
 
+export const send = (invoiceId: string) =>
+  request<InvoiceUpdated>(
+    `/api/v1/invoices/${encodeURIComponent(invoiceId)}/send`,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }
+  )
+
 export const voidInvoice = (invoiceId: string, params: InvoiceVoidParams) =>
   request<InvoiceUpdated>(
     `/api/v1/invoices/${encodeURIComponent(invoiceId)}/void`,
+    {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }
+  )
+
+export const writeOff = (
+  invoiceId: string,
+  params: InvoiceWriteOffParams
+) =>
+  request<InvoiceUpdated>(
+    `/api/v1/invoices/${encodeURIComponent(invoiceId)}/write-off`,
     {
       method: 'POST',
       body: JSON.stringify(params),
@@ -59,6 +81,8 @@ export const invoices = {
   retrieve,
   update,
   finalize,
+  send,
   void: voidInvoice,
+  writeOff,
   delete: deleteInvoice,
 }

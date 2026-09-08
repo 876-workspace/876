@@ -20,6 +20,19 @@ export type BillingOutboxEvent =
       occurredAt: number
     }
   | {
+      type: 'invoice.sent'
+      version: 1
+      resource: { type: 'invoice'; id: string }
+      payload: {
+        invoiceId: string
+        customerId: string
+        number: string
+        currency: string
+        sentAt: number
+      }
+      occurredAt: number
+    }
+  | {
       type: 'invoice.voided'
       version: 1
       resource: { type: 'invoice'; id: string }
@@ -30,6 +43,21 @@ export type BillingOutboxEvent =
         currency: string
         amountReversed: string
         voidedAt: number
+      }
+      occurredAt: number
+    }
+  | {
+      type: 'invoice.written-off'
+      version: 1
+      resource: { type: 'invoice'; id: string }
+      payload: {
+        invoiceId: string
+        customerId: string
+        number: string
+        currency: string
+        amountWrittenOff: string
+        reason: string
+        writtenOffAt: number
       }
       occurredAt: number
     }

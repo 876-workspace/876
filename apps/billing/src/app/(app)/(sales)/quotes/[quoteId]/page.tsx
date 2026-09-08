@@ -31,6 +31,7 @@ export default async function QuoteDetailPage({ params }: Props) {
       <QuoteActions
         quoteId={quote.id}
         status={quote.status}
+        convertedInvoiceId={quote.convertedInvoice?.id ?? null}
         canWrite={hasPermission(context, 'sales:write')}
       />
       <div className="grid gap-4 md:grid-cols-3">
@@ -57,6 +58,10 @@ export default async function QuoteDetailPage({ params }: Props) {
           <DetailField label="Issued" value={formatDate(quote.issueAt)} />
           <DetailField label="Expires" value={formatDate(quote.expiresAt)} />
           <DetailField label="Accepted" value={formatDate(quote.acceptedAt)} />
+          <DetailField
+            label="Converted invoice"
+            value={quote.convertedInvoice?.number ?? 'Not converted'}
+          />
           <DetailField label="Notes" value={quote.notes ?? '—'} />
           <DetailField label="Terms" value={quote.terms ?? '—'} />
           <DetailField label="Updated" value={formatDate(quote.updatedAt)} />

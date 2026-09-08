@@ -93,6 +93,7 @@ export type {
   BillingInvoiceListParams,
   BillingInvoiceList,
 } from './invoice'
+export type { BillingInvoiceWriteOffParams } from './invoice-write-off'
 export {
   BillingInvoiceSchema,
   BillingInvoiceListSchema,

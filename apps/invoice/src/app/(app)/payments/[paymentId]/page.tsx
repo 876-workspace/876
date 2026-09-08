@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import {
@@ -101,6 +102,29 @@ export default async function PaymentDetailPage({ params }: Props) {
             />
           </DetailCardFacts>
         </DetailCardSection>
+        {payment.invoiceAllocations.length > 0 ? (
+          <DetailCardSection title="Applied to invoices">
+            <div className="divide-border divide-y rounded-lg border">
+              {payment.invoiceAllocations.map((allocation) => (
+                <Link
+                  key={allocation.id}
+                  href={`/invoices/${allocation.invoice.id}`}
+                  className="hover:bg-muted/30 flex items-center justify-between gap-4 px-4 py-3"
+                >
+                  <div>
+                    <p className="font-medium">{allocation.invoice.number}</p>
+                    <p className="text-muted-foreground text-xs capitalize">
+                      {allocation.invoice.status.toLowerCase().replaceAll('_', ' ')}
+                    </p>
+                  </div>
+                  <span className="font-medium tabular-nums">
+                    {formatMoney(allocation.amount, payment.currency)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </DetailCardSection>
+        ) : null}
         {payment.notes ? (
           <DetailCardSection title="Notes">
             <p className="text-foreground text-sm leading-6">{payment.notes}</p>

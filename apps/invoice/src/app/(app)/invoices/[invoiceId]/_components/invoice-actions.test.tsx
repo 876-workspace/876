@@ -8,14 +8,36 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }))
-vi.mock('@/lib/client', () => ({ client: { documents: { delete: vi.fn() } } }))
+vi.mock('@/lib/client', () => ({
+  client: {
+    documents: {
+      delete: vi.fn(),
+      finalize: vi.fn(),
+      send: vi.fn(),
+      void: vi.fn(),
+      writeOff: vi.fn(),
+    },
+  },
+}))
 
 import { InvoiceActions } from './invoice-actions'
+
+function renderActions(status: Parameters<typeof InvoiceActions>[0]['status']) {
+  return render(
+    <InvoiceActions
+      invoiceId="inv_123"
+      customerId="cus_123"
+      status={status}
+      canWrite
+      canRecordPayment
+    />
+  )
+}
 
 describe('InvoiceActions', () => {
   it('shows Edit and Delete for a draft writer', async () => {
     const user = userEvent.setup()
-    render(<InvoiceActions invoiceId="inv_123" status="DRAFT" canWrite />)
+    renderActions('DRAFT')
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
       '/invoices/inv_123/edit'
@@ -26,9 +48,18 @@ describe('InvoiceActions', () => {
     ).toBeVisible()
   })
 
-  it('hides both mutations for a void invoice', () => {
-    render(<InvoiceActions invoiceId="inv_123" status="VOID" canWrite />)
+  it('links an open invoice to the payments received workflow', () => {
+    renderActions('OPEN')
+    expect(screen.getByRole('link', { name: 'Record payment' })).toHaveAttribute(
+      'href',
+      '/payments/new?customerId=cus_123&invoiceId=inv_123'
+    )
+  })
+
+  it('hides mutations and payment entry for a void invoice', () => {
+    renderActions('VOID')
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('More actions')).not.toBeInTheDocument()
   })
 })

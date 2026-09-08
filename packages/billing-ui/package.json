@@ -39,6 +39,10 @@
       "types": "./src/document/document-line-items-editor.tsx",
       "default": "./src/document/document-line-items-editor.tsx"
     },
+    "./invoice-lifecycle-actions": {
+      "types": "./src/invoice-lifecycle-actions.tsx",
+      "default": "./src/invoice-lifecycle-actions.tsx"
+    },
     "./invoices-table": {
       "types": "./src/invoices-table.tsx",
       "default": "./src/invoices-table.tsx"
@@ -166,6 +170,10 @@
     "./panels/tax-rate-settings-panel": {
       "types": "./src/panels/tax-rate-settings-panel.tsx",
       "default": "./src/panels/tax-rate-settings-panel.tsx"
+    },
+    "./payment-received-form": {
+      "types": "./src/payment-received-form.tsx",
+      "default": "./src/payment-received-form.tsx"
     },
     "./payments-table": {
       "types": "./src/payments-table.tsx",

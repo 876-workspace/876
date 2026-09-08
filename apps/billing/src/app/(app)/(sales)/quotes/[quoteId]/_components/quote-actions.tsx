@@ -30,10 +30,12 @@ import type { QuoteStatus } from '@/types/quote'
 export function QuoteActions({
   quoteId,
   status,
+  convertedInvoiceId,
   canWrite,
 }: {
   quoteId: string
   status: QuoteStatus
+  convertedInvoiceId?: string | null
   canWrite: boolean
 }) {
   const router = useRouter()
@@ -43,6 +45,7 @@ export function QuoteActions({
   )
   const [error, setError] = useState<string | null>(null)
   if (!canWrite) return null
+
   const run = (action: 'send' | 'accept' | 'decline' | 'cancel' | 'delete') =>
     startTransition(async () => {
       setError(null)
@@ -55,11 +58,36 @@ export function QuoteActions({
       setConfirmation(null)
       router.refresh()
     })
+
+  const convertToInvoice = () =>
+    startTransition(async () => {
+      setError(null)
+      const result = await client.invoices.create({ quoteId })
+      if (result.error || !result.data) {
+        setError(result.error?.message ?? 'Failed to convert the quote.')
+        return
+      }
+      router.push(`/invoices/${result.data.id}`)
+      router.refresh()
+    })
+
   const primary =
     status === 'DRAFT' ? 'send' : status === 'SENT' ? 'accept' : null
+
   return (
     <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
-      {primary ? (
+      {convertedInvoiceId ? (
+        <Link
+          href={`/invoices/${convertedInvoiceId}`}
+          className={buttonVariants({ variant: 'info' })}
+        >
+          View invoice
+        </Link>
+      ) : status === 'ACCEPTED' ? (
+        <Button variant="info" disabled={pending} onClick={convertToInvoice}>
+          {pending ? 'Converting…' : 'Convert to invoice'}
+        </Button>
+      ) : primary ? (
         <Button variant="info" disabled={pending} onClick={() => run(primary)}>
           {pending ? 'Working…' : primary === 'send' ? 'Send' : 'Accept'}
         </Button>
@@ -88,6 +116,17 @@ export function QuoteActions({
               Edit
             </DropdownMenuItem>
           ) : null}
+          {convertedInvoiceId ? (
+            <DropdownMenuItem
+              render={<Link href={`/invoices/${convertedInvoiceId}`} />}
+            >
+              View invoice
+            </DropdownMenuItem>
+          ) : status === 'ACCEPTED' ? (
+            <DropdownMenuItem disabled={pending} onClick={convertToInvoice}>
+              Convert to invoice
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuItem
             disabled={status !== 'DRAFT' && status !== 'SENT'}
             title="Only draft or sent quotes can be canceled."
@@ -106,6 +145,11 @@ export function QuoteActions({
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
+      {error && confirmation === null ? (
+        <p className="text-destructive basis-full text-right text-sm" role="alert">
+          {error}
+        </p>
+      ) : null}
       <AlertDialog
         open={confirmation !== null}
         onOpenChange={(open) => !open && setConfirmation(null)}
@@ -117,11 +161,11 @@ export function QuoteActions({
                 ? 'Delete this quote?'
                 : 'Cancel this quote?'}
             </AlertDialogTitle>
-          <AlertDialogDescription>
+            <AlertDialogDescription>
               {confirmation === 'delete'
                 ? 'This permanently removes the draft quote.'
                 : 'This marks the quote as canceled.'}
-          </AlertDialogDescription>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           {error ? (
             <AppError

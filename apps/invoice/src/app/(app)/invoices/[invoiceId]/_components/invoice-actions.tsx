@@ -1,30 +1,8 @@
 'use client'
 
-import Link from 'next/link'
-import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { cn } from '@876/core/utils'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@876/ui/alert-dialog'
-import { AppError } from '@876/ui/app-error'
-import { Button, buttonVariants } from '@876/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@876/ui/dropdown-menu'
-import { MoreHorizontalIcon, Pencil, Trash } from '@876/ui/icons'
+import { InvoiceLifecycleActions } from '@876/billing-ui/invoice-lifecycle-actions'
 
 import { client } from '@/lib/client'
 
@@ -35,104 +13,90 @@ import {
 
 export function InvoiceActions({
   invoiceId,
+  customerId,
   status,
   canWrite,
+  canRecordPayment,
 }: {
   invoiceId: string
+  customerId: string
   status: InvoiceStatus
   canWrite: boolean
+  canRecordPayment: boolean
 }) {
   const router = useRouter()
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
   const editability = getInvoiceEditability(status)
+  const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
-  function deleteInvoice() {
-    setError(null)
-    startTransition(async () => {
-      const result = await client.documents.delete(invoiceId)
-      if (result.error) {
-        setError(result.error.message)
-        return
-      }
-      setDeleteOpen(false)
-      router.push('/invoices')
-      router.refresh()
-    })
-  }
-
-  if (!canWrite) return null
+  if (!canWrite && !canRecordPayment) return null
 
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" onClick={() => window.print()}>
-          Print
-        </Button>
-        {editability.editable ? (
-          <Link
-            href={`/invoices/${invoiceId}/edit`}
-            className={cn(buttonVariants({ variant: 'outline' }))}
-          >
-            <Pencil className="size-4" />
-            Edit
-          </Link>
-        ) : null}
-        {editability.deletable ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'icon-sm' })
-              )}
-              aria-label="More actions"
-              disabled={isPending}
-            >
-              <MoreHorizontalIcon className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-40">
-              <DropdownMenuItem onClick={() => window.print()}>
-                Print
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setDeleteOpen(true)}
-              >
-                <Trash className="size-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : null}
-      </div>
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete invoice?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This draft invoice will be permanently removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {error ? (
-            <AppError
-              error={{ code: 'invoice/delete-failed', message: error }}
-              variant="form"
-            />
-          ) : null}
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              type="button"
-              variant="destructive"
-              disabled={isPending}
-              onClick={deleteInvoice}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <InvoiceLifecycleActions
+      status={status}
+      editHref={canWrite ? `/invoices/${invoiceId}/edit` : undefined}
+      recordPaymentHref={
+        canRecordPayment ? `/payments/new?${paymentParams.toString()}` : undefined
+      }
+      canEdit={canWrite && editability.editable}
+      canDelete={canWrite && editability.deletable}
+      onFinalize={
+        canWrite && status === 'DRAFT'
+          ? async () => {
+              const result = await client.documents.finalize(invoiceId)
+              if (result.error) return { error: result.error.message }
+              router.refresh()
+              return { error: null }
+            }
+          : undefined
+      }
+      onSend={
+        canWrite &&
+        status !== 'DRAFT' &&
+        status !== 'VOID' &&
+        status !== 'UNCOLLECTIBLE'
+          ? async () => {
+              const result = await client.documents.send(invoiceId)
+              if (result.error) return { error: result.error.message }
+              router.refresh()
+              return { error: null }
+            }
+          : undefined
+      }
+      onVoid={
+        canWrite && (status === 'OPEN' || status === 'SENT')
+          ? async (reason) => {
+              const result = await client.documents.void(invoiceId, reason)
+              if (result.error) return { error: result.error.message }
+              router.refresh()
+              return { error: null }
+            }
+          : undefined
+      }
+      onWriteOff={
+        canWrite &&
+        (status === 'OPEN' ||
+          status === 'SENT' ||
+          status === 'PARTIALLY_PAID' ||
+          status === 'OVERDUE')
+          ? async (reason) => {
+              const result = await client.documents.writeOff(invoiceId, reason)
+              if (result.error) return { error: result.error.message }
+              router.refresh()
+              return { error: null }
+            }
+          : undefined
+      }
+      onDelete={
+        canWrite && editability.deletable
+          ? async () => {
+              const result = await client.documents.delete(invoiceId)
+              if (result.error) return { error: result.error.message }
+              router.push('/invoices')
+              router.refresh()
+              return { error: null }
+            }
+          : undefined
+      }
+    />
   )
 }

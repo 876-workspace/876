@@ -11,6 +11,7 @@ import { enqueueBillingEvent } from '@/modules/outbox'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import type { IdempotencyContext } from '@/types/commerce'
 
+import { isCollectibleInvoiceStatus } from '../invoice-lifecycle'
 import {
   findInvoiceForVoid,
   markInvoiceVoid,
@@ -51,8 +52,14 @@ export async function voidInvoiceWorkflow(
       if (invoice.status === 'DRAFT')
         return err('Delete a draft invoice instead of voiding it.', 409)
       if (invoice.status === 'VOID') return err('Invoice is already void.', 409)
+      if (invoice.status === 'PAID')
+        return err(
+          'An invoice with settlements must be corrected with a credit note.',
+          409
+        )
+      if (!isCollectibleInvoiceStatus(invoice.status))
+        return err('Only an unsettled collectible invoice can be voided.', 409)
       if (
-        invoice.status === 'PAID' ||
         invoice.allocations.length > 0 ||
         invoice.creditNoteAllocations.length > 0
       )

@@ -86,6 +86,7 @@ export type {
   LateFeeRun,
   InvoiceFinalizeParams,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
   InvoiceCreated,
   InvoiceUpdateParams,
   DeletedInvoice,

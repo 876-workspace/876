@@ -77,24 +77,57 @@ entries are the auditable evidence.
 
 ## Invoice lifecycle
 
+The persisted invoice status is a compatibility projection across several
+separate concerns. Callers change lifecycle through domain commands and
+settlement records, never by directly setting `status`.
+
 ```text
-DRAFT -> OPEN -> PARTIALLY_PAID -> PAID
-             \-> OVERDUE
-             \-> UNCOLLECTIBLE
-        OPEN/OVERDUE (unsettled) -> VOID
+DRAFT --finalize--> OPEN
+OPEN --send-------> SENT              (communication compatibility state)
+OPEN/SENT --settle partially---------> PARTIALLY_PAID
+OPEN/SENT/PARTIALLY_PAID --past due--> OVERDUE
+collectible invoice --settle fully---> PAID
+collectible invoice --write off------> UNCOLLECTIBLE
+unsettled collectible invoice --void-> VOID
 ```
 
 - `DRAFT`: editable and has no receivable impact.
 - `OPEN`: finalized/posted and increases accounts receivable.
-- `SENT`: legacy-compatible open status.
-- `PARTIALLY_PAID`: some value is settled but a positive balance remains.
-- `OVERDUE`: open after its due date.
-- `PAID`: the balance is zero through payment or credit allocations.
-- `UNCOLLECTIBLE`: reserved for the explicit write-off workflow.
-- `VOID`: canceled while preserving its audit history.
+- `SENT`: legacy-compatible open status backed by `sentAt` communication evidence.
+- `PARTIALLY_PAID`: some cash or credit is settled but a positive balance remains.
+- `OVERDUE`: a collectible invoice with a positive balance after its due date.
+- `PAID`: the remaining receivable is zero through payment and/or credit allocations.
+- `UNCOLLECTIBLE`: the remaining receivable was explicitly written off.
+- `VOID`: an unsettled posted invoice was canceled while preserving audit history.
 
-Sending is a communication action recorded with `sentAt`; it is not the only
-way to post an invoice.
+For collectible invoices the compatibility projection is deterministic:
+
+```text
+amountDue = 0                       -> PAID
+positive balance after dueAt       -> OVERDUE
+cash or credit applied             -> PARTIALLY_PAID
+sentAt exists                      -> SENT
+otherwise                          -> OPEN
+```
+
+This means partial settlement does not hide delinquency: if a payment reduces an
+overdue invoice but leaves a positive balance, the persisted compatibility
+status remains `OVERDUE`.
+
+Sending is a communication action recorded with `sentAt` and an `invoice.sent`
+outbox event. It never creates a second receivable and does not replace
+`PARTIALLY_PAID`, `OVERDUE`, or `PAID` with `SENT`; only an otherwise plain
+`OPEN` invoice uses `SENT` as the compatibility status.
+
+A full write-off clears `amountDue`, increments `amountWrittenOff`, records a
+`WRITE_OFF` ledger credit, recomputes customer AR, and transitions to
+`UNCOLLECTIBLE`. It does not restore inventory because the underlying sale still
+occurred. Voiding is different: it is permitted only for an unsettled collectible
+invoice and reverses the posted sale/receivable while preserving history.
+
+`amountPaid`, `amountCredited`, and `amountWrittenOff` remain distinct accounting
+evidence. A zero receivable therefore does not imply that the customer paid the
+entire original invoice in cash.
 
 Invoice header discounts, shipping charges, and signed adjustments participate
 in the draft total. Posted amount fields remain locked; an optional workspace

@@ -1,5 +1,6 @@
 import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
+import { projectCollectibleInvoiceStatus } from '../../invoice-lifecycle'
 
 type TransactionClient = Omit<
   typeof prisma,
@@ -16,6 +17,38 @@ interface OpenInvoice {
   status: 'OPEN'
   amountDue: bigint
   paidAt: number | null
+}
+
+async function updateSettledInvoice(
+  tx: TransactionClient,
+  invoiceId: string,
+  now: number
+): Promise<void> {
+  const current = await tx.invoice.findUnique({
+    where: { id: invoiceId },
+    select: {
+      amountDue: true,
+      amountPaid: true,
+      amountCredited: true,
+      dueAt: true,
+      sentAt: true,
+    },
+  })
+  if (!current) throw new Error('Invoice disappeared during settlement.')
+
+  const status = projectCollectibleInvoiceStatus({
+    ...current,
+    asOf: now,
+  })
+
+  await tx.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      status,
+      paidAt: status === 'PAID' ? now : null,
+      updatedAt: now,
+    },
+  })
 }
 
 /** Applies oldest customer cash and credit-note balances to a new invoice. */
@@ -76,11 +109,10 @@ export async function settleWithAvailableCredits(
       data: {
         amountDue,
         amountPaid: { increment: amount },
-        status: amountDue === 0n ? 'PAID' : 'PARTIALLY_PAID',
-        paidAt: amountDue === 0n ? now : null,
         updatedAt: now,
       },
     })
+    await updateSettledInvoice(tx, invoice.id, now)
   }
 
   const creditNotes = await tx.creditNote.findMany({
@@ -138,10 +170,9 @@ export async function settleWithAvailableCredits(
       data: {
         amountDue,
         amountCredited: { increment: amount },
-        status: amountDue === 0n ? 'PAID' : 'PARTIALLY_PAID',
-        paidAt: amountDue === 0n ? now : null,
         updatedAt: now,
       },
     })
+    await updateSettledInvoice(tx, invoice.id, now)
   }
 }
