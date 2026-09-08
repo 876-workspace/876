@@ -66,7 +66,7 @@ export type WidgetDataOwner = 'widgets' | 'external'
 export type WidgetSurface = 'panel' | 'secondary-rail'
 
 export type WidgetVisual =
-  | { kind: 'icon'; icon: 'notepad' | 'terminal' | 'chat' }
+  | { kind: 'icon'; icon: 'notepad' | 'work' | 'terminal' | 'chat' }
   | { kind: 'image'; src: string; alt: string }
 
 export interface WidgetFeatureKeys {
@@ -156,6 +156,40 @@ export const notepadWidgetMetadata = {
   },
 } as const satisfies WidgetMetadata
 
+export const workWidgetMetadata = {
+  object: 'widget',
+  id: 'work',
+  name: '876 Work',
+  description:
+    'Your calendar events, tasks, reminders, and schedule across the 876 productivity plane.',
+  version: '1.0.0',
+  visual: { kind: 'icon', icon: 'work' },
+  distribution: 'shared',
+  dataOwner: 'external',
+  surface: 'panel',
+  ownership: 'organization',
+  defaultPanel: { width: 520, height: 620 },
+  supportedHosts: ['invoice', 'billing'],
+  implementedHosts: ['invoice'],
+  features: {
+    platform: {
+      parent: 'platform-widgets',
+      widget: 'platform-widgets-work',
+    },
+    apps: {
+      invoice: {
+        parent: 'invoice-widgets',
+        widget: 'invoice-widgets-work',
+      },
+    },
+  },
+  administration: {
+    canListContent: false,
+    canEditContent: false,
+    canDeleteContent: false,
+  },
+} as const satisfies WidgetMetadata
+
 export const chatWidgetMetadata = {
   object: 'widget',
   id: 'chat',
@@ -200,6 +234,7 @@ export const chatWidgetMetadata = {
 
 export const widgetCatalog = [
   notepadWidgetMetadata,
+  workWidgetMetadata,
   chatWidgetMetadata,
 ] as const
 
