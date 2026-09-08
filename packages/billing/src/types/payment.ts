@@ -276,6 +276,20 @@ export interface Payment {
   invoiceAllocations: PaymentAllocation[]
 
   /**
+   * Refund evidence returned on payment detail reads. Payment lists may omit it.
+   */
+  refunds?: Array<{
+    object: 'refund'
+    id: string
+    number: string
+    amount: string
+    currency: string
+    reason: string | null
+    refundedAt: number
+    createdAt: number
+  }>
+
+  /**
    * Linked bank transaction, if one was created.
    */
   bankTransaction?: BankTransaction | null
