@@ -63,7 +63,8 @@ export function MobileNav({
 
   return (
     <ProductMobileNav
-      title={context.title || 'Console'}
+      title={context.title}
+      accessibleTitle="Console navigation"
       subtitle={context.subtitle}
       navigation={context.groups}
       resolveIcon={resolveNavIcon}
