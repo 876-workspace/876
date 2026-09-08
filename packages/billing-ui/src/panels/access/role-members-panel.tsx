@@ -1,12 +1,13 @@
 'use client'
 
-import Link from 'next/link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Empty, EmptyTitle } from '@876/ui/empty'
+
+import { Link } from '../../link'
 
 import type { FinanceMemberSummary } from './types'
 

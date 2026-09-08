@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
+
+import { Link } from './link'
 
 import {
   AlertDialog,

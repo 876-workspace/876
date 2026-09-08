@@ -1,9 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
+
+import { Link } from '../../link'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'

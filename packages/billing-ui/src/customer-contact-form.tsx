@@ -12,7 +12,8 @@ import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { PhoneInput, type PhoneInputValue } from '@876/ui/phone-input'
 import { Spinner } from '@876/ui/spinner'
-import Link from 'next/link'
+
+import { Link } from './link'
 
 const dialCodes = listDialCodes().map((country) => ({
   value: country.countryCode,

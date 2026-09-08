@@ -1,7 +1,6 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
@@ -9,6 +8,7 @@ import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { documentStatusVariant } from './document-status'
+import { Link } from './link'
 
 /**
  * A sales invoice as the finance plane serves it. `customer` accepts a bare
