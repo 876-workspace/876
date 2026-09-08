@@ -4,7 +4,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { PaymentReceivedForm } from './payment-received-form'
+import {
+  PaymentReceivedForm,
+  type PaymentReceivedFormProps,
+} from './payment-received-form'
 
 const customers = [{ value: 'cus_1', label: 'Acme Ltd' }]
 const accounts = [
@@ -25,7 +28,7 @@ const invoices = [
 ]
 
 function renderForm(
-  onSubmit: ReturnType<typeof vi.fn>,
+  onSubmit: PaymentReceivedFormProps['onSubmit'],
   prefill: { customerId?: string; invoiceId?: string }
 ) {
   return render(
@@ -45,7 +48,7 @@ function renderForm(
 
 describe('PaymentReceivedForm', () => {
   it('prefills customer, amount, and allocation from an invoice', () => {
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<PaymentReceivedFormProps['onSubmit']>()
     renderForm(onSubmit, { invoiceId: 'inv_1' })
 
     expect(screen.getByLabelText('Customer')).toHaveValue('cus_1')
@@ -55,7 +58,9 @@ describe('PaymentReceivedForm', () => {
   })
 
   it('records a customer payment with no invoice allocation', async () => {
-    const onSubmit = vi.fn(async () => ({ error: null }))
+    const onSubmit = vi.fn<PaymentReceivedFormProps['onSubmit']>(async () => ({
+      error: null,
+    }))
     const user = userEvent.setup()
     renderForm(onSubmit, { customerId: 'cus_1' })
 
