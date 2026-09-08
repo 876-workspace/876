@@ -3,7 +3,7 @@
 import type { NavGroupDefinition } from '@876/core/access'
 import { ProductMobileNav } from '@876/ui/product-mobile-nav'
 
-import { resolveCrmNavIcon } from './nav-icons'
+import { resolveNavIcon } from './nav-icons'
 
 export function MobileNav({
   orgName,
@@ -17,7 +17,7 @@ export function MobileNav({
       title="CRM"
       subtitle={orgName}
       navigation={navigation}
-      resolveIcon={resolveCrmNavIcon}
+      resolveIcon={resolveNavIcon}
     />
   )
 }
