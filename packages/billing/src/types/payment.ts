@@ -183,9 +183,19 @@ export interface Payment {
   unappliedAmount: string
 
   /**
-   * Status of the payment. One of `PENDING`, `SUCCEEDED`, `FAILED`, or `CANCELED`.
+   * Current payment lifecycle state.
    */
-  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED'
+  status:
+    | 'PENDING'
+    | 'REQUIRES_ACTION'
+    | 'AUTHORIZED'
+    | 'PROCESSING'
+    | 'SUCCEEDED'
+    | 'FAILED'
+    | 'CANCELED'
+    | 'PARTIALLY_REFUNDED'
+    | 'REFUNDED'
+    | 'DISPUTED'
 
   /**
    * ID of the payment provider connection used for the payment, if any.

@@ -12,9 +12,9 @@ import {
   DeletedCustomerContactSchema,
   InvoiceCreatedSchema,
 } from '../schemas'
+import type { CustomerAccountProjection } from '../types/customer-account'
 import type {
   Customer,
-  CustomerAccount,
   CustomerCreated,
   CustomerContact,
   CustomerContactCreateParams,
@@ -122,7 +122,7 @@ export function createCustomersResource(runtime: Runtime) {
     },
     /** Retrieves customer balances and the latest statement entries. */
     account(customerId: string, options?: RequestOptions) {
-      return Request<CustomerAccount>(
+      return Request<CustomerAccountProjection>(
         runtime,
         {
           method: 'GET',

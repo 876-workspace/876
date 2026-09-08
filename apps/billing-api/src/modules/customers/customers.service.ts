@@ -17,7 +17,6 @@ import {
   findCustomerRow,
   findIdempotentCustomerRow,
   findTenantDefaults,
-  listCustomerLedgerRows,
   listDocumentRecipientRows,
   listCustomerRows,
   listContacts as listContactRows,
@@ -44,7 +43,6 @@ import {
   serializeCustomer,
   serializeCustomerDetail,
   serializeContact,
-  serializeLedgerEntry,
 } from './customers.serializers'
 
 function notFound() {
@@ -340,18 +338,6 @@ export async function deleteCustomer(
 ) {
   if (!(await deleteCustomerRow(tenantId, id, sourceAppId))) throw notFound()
   return { object: 'customer' as const, id, deleted: true as const }
-}
-
-export async function customerAccount(tenantId: string, id: string) {
-  const customer = await retrieveCustomer(tenantId, id)
-  const entries = await listCustomerLedgerRows(tenantId, id)
-  return {
-    object: 'customer_account' as const,
-    customer,
-    outstandingReceivable: customer.outstandingReceivable,
-    unusedCredits: customer.unusedCredits,
-    entries: entries.map(serializeLedgerEntry),
-  }
 }
 
 export async function linkCustomer(
