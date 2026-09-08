@@ -102,6 +102,7 @@ export function markInvoiceSent(
   params: {
     id: string
     status: 'OPEN' | 'SENT' | 'PARTIALLY_PAID' | 'OVERDUE' | 'PAID'
+    sentAt: number | null
     now: number
   }
 ) {
@@ -109,7 +110,7 @@ export function markInvoiceSent(
     where: { id: params.id },
     data: {
       status: params.status === 'OPEN' ? 'SENT' : params.status,
-      sentAt: params.now,
+      sentAt: params.sentAt ?? params.now,
       updatedAt: params.now,
     },
   })
