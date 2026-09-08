@@ -183,6 +183,11 @@ export interface Payment {
   unappliedAmount: string
 
   /**
+   * Total amount already returned to the customer as a decimal string.
+   */
+  amountRefunded: string
+
+  /**
    * Current payment lifecycle state.
    */
   status:
