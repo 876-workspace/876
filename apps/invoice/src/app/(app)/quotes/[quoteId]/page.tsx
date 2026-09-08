@@ -48,7 +48,21 @@ export default async function QuoteDetailPage({ params }: Props) {
   const quote = result.data.data.find((row) => row.id === quoteId)
   if (!quote) notFound()
   const access = await resolveAccessContext(context.userId, context.orgId)
-  const canWrite = access.status === 'ok' && canAccess(access.context, 'sales:write')
+
+  const convertedInvoice =
+    quote.convertedInvoice &&
+    typeof quote.convertedInvoice === 'object' &&
+    'number' in quote.convertedInvoice
+      ? String(quote.convertedInvoice.number)
+      : null
+  const canWrite =
+    access.status === 'ok' && canAccess(access.context, 'quotes.edit')
+  const canDelete =
+    access.status === 'ok' && canAccess(access.context, 'quotes.delete')
+  const canConvert =
+    convertedInvoice === null &&
+    access.status === 'ok' &&
+    canAccess(access.context, 'invoices.create')
 
   const customer =
     quote.customer &&
@@ -60,12 +74,6 @@ export default async function QuoteDetailPage({ params }: Props) {
   const totalAmount = String(quote.totalAmount ?? quote.amount ?? '0')
   const currency = String(quote.currency ?? 'JMD')
   const status = String(quote.status ?? 'DRAFT')
-  const convertedInvoice =
-    quote.convertedInvoice &&
-    typeof quote.convertedInvoice === 'object' &&
-    'number' in quote.convertedInvoice
-      ? String(quote.convertedInvoice.number)
-      : null
   const date =
     typeof quote.issueAt === 'number'
       ? quote.issueAt
@@ -92,7 +100,13 @@ export default async function QuoteDetailPage({ params }: Props) {
         closeLabel="Close quote details"
       />
       <div className="px-5 pt-5 sm:px-6 print:hidden">
-        <QuoteActions quoteId={quote.id} status={status as Parameters<typeof QuoteActions>[0]['status']} canWrite={canWrite} />
+        <QuoteActions
+          quoteId={quote.id}
+          status={status as Parameters<typeof QuoteActions>[0]['status']}
+          canWrite={canWrite}
+          canDelete={canDelete}
+          canConvert={canConvert}
+        />
       </div>
       <DetailCardBody className="space-y-8">
         <DetailCardHeadline
