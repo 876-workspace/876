@@ -58,7 +58,7 @@ export async function sendInvoiceWorkflow(
       const invoice = await findInvoiceForSend(tx, tenantId, invoiceId)
       if (!invoice) return err('Invoice not found.', 404)
       if (!isSendableStatus(invoice.status))
-        return err('Only a finalized invoice can be sent.', 409)
+        return err('Only a finalized collectible invoice can be sent.', 409)
 
       await markInvoiceSent(tx, {
         id: invoice.id,
