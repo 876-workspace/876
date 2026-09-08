@@ -4,6 +4,7 @@ import { getPrincipal } from '@/http/auth'
 import { integrationAttribution } from '@/http/integration/idempotency'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
+import { customerAccount } from './customer-account.service'
 import type {
   CustomerCreateBody,
   CustomerEnsureBody,
@@ -19,7 +20,6 @@ import type {
 import {
   createCustomer,
   createCustomerContact,
-  customerAccount,
   deleteCustomer,
   deleteCustomerContact,
   ensureCoreCustomer,
