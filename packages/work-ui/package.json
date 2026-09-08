@@ -26,6 +26,10 @@
     "./today": {
       "types": "./src/today.tsx",
       "default": "./src/today.tsx"
+    },
+    "./tasks": {
+      "types": "./src/tasks.tsx",
+      "default": "./src/tasks.tsx"
     }
   },
   "scripts": {
