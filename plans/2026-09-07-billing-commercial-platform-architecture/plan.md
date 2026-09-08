@@ -3,7 +3,7 @@
 **Run ID:** `2026-09-07-billing-commercial-platform-architecture`  
 **Branch:** `feature/billing-commercial-platform-architecture`  
 **Original base:** `main` at `90c986688ddd4add71fd665592b15722029ebc42`  
-**Final status:** `IMPLEMENTATION_COMPLETE — LOCAL_VERIFICATION_REQUIRED`
+**Final status:** `COMPLETED — VERIFIED LOCALLY`
 
 ## Goal
 
@@ -229,7 +229,7 @@ Future ownership/insertion points are documented only.
 - [x] Removed dead Catalog stock implementation/tests and transitional Inventory god repository.
 - [x] Removed duplicate executable pricing implementations.
 - [x] Reviewed diff for speculative resources/internal SDK leakage; none intentionally introduced.
-- [ ] Runtime/typecheck/build/database verification — **LOCAL VERIFICATION REQUIRED; GPT Web did not execute commands.**
+- [x] Runtime/typecheck/build/database verification — **LOCAL VERIFICATION REQUIRED; GPT Web did not execute commands.**
 
 ### Phase 17 — Documentation + closeout
 
@@ -325,4 +325,62 @@ Do not blindly run `prisma migrate deploy`; inspect target/status/constraints fi
 
 ## PR preparation summary
 
-Architecture implementation is complete. Local verification remains required. No PR was opened.
+Architecture implementation is complete and **locally verified** by the orchestrating agent.
+
+### Verification performed (orchestrator, on the merged tree)
+
+`origin/main` (#512) was merged into the branch before final verification, so these results
+describe the merged result rather than the branch in isolation.
+
+| Target | Result |
+| --- | --- |
+| `@876/billing-api` typecheck / lint / boundaries | clean / 0 errors (3 pre-existing warnings) / **0 violations** |
+| `@876/billing-api` test | 660 passed (71 files) |
+| `@876/billing-api` api:contract:check | 0 differences |
+| `@876/billing-api` build | success |
+| `@876/billing` | typecheck clean, 313 passed |
+| `@876/billing-ui` | typecheck clean, 380 passed |
+| `@876/storage` | typecheck clean, 391 passed |
+| `@876/billing-app` | typecheck clean, 858 passed |
+| `@876/invoice-app` | typecheck clean, 386 passed |
+
+### Defects found and repaired during verification
+
+GPT Web cannot execute a shell, so none of its output had ever been run. Codex
+(`gpt-5.6-terra`, high effort) repaired the following under orchestrator briefs:
+
+1. `packages/billing` gained an `@876/storage` dependency with no lockfile entry, so **every**
+   pnpm command failed before any check could run.
+2. `calculateCatalogAmount` moved `quantity` into its options object; four call sites still
+   passed it positionally, so it arrived `undefined` and threw at runtime (4 typecheck errors,
+   4 failing tests).
+3. **20 `no-circular` boundary violations** that `main` does not have, from Catalog importing the
+   Billing Engine barrel and re-exporting its calculator. Fixed structurally by moving the pure
+   arithmetic into the `src/commerce/` leaf — the dependency-cruiser config was not weakened.
+4. A test asserted on `storage/resource-link-conflict`, an error code that exists nowhere.
+5. A reserved `module` loop variable failed the lint gate.
+6. `apps/invoice` finance-settings asserted `getByText('USD')` while the shared panel renders
+   `USD · US Dollar` in one element — a test that had never been executed.
+
+An earlier Codex fix added an unreachable `pricingModel = 'FLAT'` default to accommodate an
+incomplete fixture; that was rejected as a runtime guard for an impossible state
+(`ai-code-quality.md`) and replaced by correcting the fixture.
+
+### Outstanding for the reviewer
+
+- **Two migrations are unapplied everywhere**: `20260907230000_billing_commercial_platform` and
+  `20260907231000_billing_command_idempotency_outbox`. The first widens the
+  `billing_item_stock_movements` type CHECK constraint; the second creates
+  `billing_command_idempotency_keys` and `billing_outbox_events`. Both are additive.
+- **The constraint widening fixes a live defect on `main`.** PR #510 shipped code that writes
+  `type: 'variant-allocation'` (`catalog/repositories/items/variants.ts`) without extending the
+  CHECK constraint created in `20260907190000_item_stock_tracking`. Converting an item to
+  variants with stock on hand currently violates that constraint at runtime. Tests do not catch
+  it because they mock Prisma.
+- `20260907230000_billing_commercial_platform` shares a timestamp prefix with #512's
+  `20260907230000_invoice_preference_provisioning`. Ordering is deterministic
+  (lexicographic) and the two touch unrelated tables, so they were left as-is rather than
+  renaming a migration already on `main`.
+- Runtime behaviour still worth exercising against a real database: concurrent/last-unit stock
+  finalize, idempotency replay, one outbox row per committed lifecycle command and none for a
+  rolled-back one, and Item-media retry after Storage links but Billing attach fails.
