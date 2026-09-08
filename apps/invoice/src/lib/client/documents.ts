@@ -88,6 +88,46 @@ export const documents = {
       { method: 'PATCH', body: JSON.stringify(params) }
     )
   },
+  finalize(invoiceId: string) {
+    return request<DocumentUpdated>(
+      `/api/invoices/${encodeURIComponent(invoiceId)}/finalize`,
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({ autoApplyCredits: true }),
+      }
+    )
+  },
+  send(invoiceId: string) {
+    return request<DocumentUpdated>(
+      `/api/invoices/${encodeURIComponent(invoiceId)}/send`,
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({}),
+      }
+    )
+  },
+  void(invoiceId: string, reason: string | null) {
+    return request<DocumentUpdated>(
+      `/api/invoices/${encodeURIComponent(invoiceId)}/void`,
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({ reason }),
+      }
+    )
+  },
+  writeOff(invoiceId: string, reason: string) {
+    return request<DocumentUpdated>(
+      `/api/invoices/${encodeURIComponent(invoiceId)}/write-off`,
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({ reason }),
+      }
+    )
+  },
   transitionQuote(
     quoteId: string,
     action: 'send' | 'accept' | 'decline' | 'cancel'
