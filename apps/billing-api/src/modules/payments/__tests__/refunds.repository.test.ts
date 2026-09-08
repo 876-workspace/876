@@ -113,6 +113,8 @@ function buildPrisma(): MockPrisma {
         customerId: CUSTOMER,
         currency: 'JMD',
         status: 'SUCCEEDED',
+        amount: 10_000n,
+        amountRefunded: 0n,
         unappliedAmount: 5_000n,
       }),
       update: vi.fn().mockResolvedValue({}),
@@ -152,7 +154,7 @@ beforeEach(() => {
 })
 
 describe('refunds repository', () => {
-  it('tracks a payment refund in both available and refunded projections', async () => {
+  it('tracks a payment refund in available, refunded, and status projections', async () => {
     const result = await createRefund(paymentParams())
 
     expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
@@ -162,6 +164,7 @@ describe('refunds repository', () => {
       data: {
         unappliedAmount: { decrement: 2_000n },
         amountRefunded: { increment: 2_000n },
+        status: 'PARTIALLY_REFUNDED',
         updatedAt: NOW,
       },
     })
@@ -188,7 +191,7 @@ describe('refunds repository', () => {
     )
   })
 
-  it('allows the full unapplied payment balance to be refunded', async () => {
+  it('keeps a payment partially refunded when all available credit is returned but an allocation remains', async () => {
     const result = await createRefund(paymentParams(5_000n))
 
     expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
@@ -197,6 +200,31 @@ describe('refunds repository', () => {
       data: {
         unappliedAmount: { decrement: 5_000n },
         amountRefunded: { increment: 5_000n },
+        status: 'PARTIALLY_REFUNDED',
+        updatedAt: NOW,
+      },
+    })
+  })
+
+  it('marks a payment refunded when its full amount has been returned', async () => {
+    mocks.mockPrismaRef.current!.payment.findFirst.mockResolvedValue({
+      customerId: CUSTOMER,
+      currency: 'JMD',
+      status: 'SUCCEEDED',
+      amount: 5_000n,
+      amountRefunded: 0n,
+      unappliedAmount: 5_000n,
+    })
+
+    const result = await createRefund(paymentParams(5_000n))
+
+    expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
+    expect(mocks.mockPrismaRef.current!.payment.update).toHaveBeenCalledWith({
+      where: { id: PAYMENT },
+      data: {
+        unappliedAmount: { decrement: 5_000n },
+        amountRefunded: { increment: 5_000n },
+        status: 'REFUNDED',
         updatedAt: NOW,
       },
     })
@@ -221,6 +249,8 @@ describe('refunds repository', () => {
       customerId: 'cus_other',
       currency: 'JMD',
       status: 'SUCCEEDED',
+      amount: 10_000n,
+      amountRefunded: 0n,
       unappliedAmount: 5_000n,
     })
 
@@ -240,6 +270,8 @@ describe('refunds repository', () => {
       customerId: CUSTOMER,
       currency: 'USD',
       status: 'SUCCEEDED',
+      amount: 10_000n,
+      amountRefunded: 0n,
       unappliedAmount: 5_000n,
     })
 
