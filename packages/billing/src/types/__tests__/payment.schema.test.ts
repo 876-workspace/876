@@ -32,7 +32,7 @@ const payment = {
     object: 'bank_account' as const,
     id: 'acct_1',
     name: 'Main bank',
-    accountType: 'BANK' as const,
+    accountType: 'CHECKING' as const,
     currency: 'JMD',
   },
   invoiceAllocations: [
