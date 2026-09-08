@@ -23,7 +23,12 @@ export function WorkspaceSidebar({
   navigation: NavGroupDefinition[]
 }) {
   return (
-    <BaseSidebar variant="sidebar" collapsible="icon" className="bg-sidebar">
+    <BaseSidebar
+      variant="sidebar"
+      collapsible="icon"
+      renderMobile={false}
+      className="bg-sidebar"
+    >
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href="/"

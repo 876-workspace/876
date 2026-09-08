@@ -59,4 +59,22 @@ describe('Billing WorkspaceSidebar', () => {
     expect(sidebar).toHaveAttribute('data-collapsible', '')
     expect(sidebar).toHaveAttribute('data-state', 'expanded')
   })
+
+  it('does not render the generic sidebar sheet on mobile', () => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 375,
+    })
+
+    const { container } = render(
+      <SidebarProvider>
+        <WorkspaceSidebar
+          tenantName="Island Commerce"
+          navigation={navigation}
+        />
+      </SidebarProvider>
+    )
+
+    expect(container.querySelector('[data-slot="sidebar"]')).toBeNull()
+  })
 })

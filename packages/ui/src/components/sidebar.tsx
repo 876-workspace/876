@@ -149,6 +149,7 @@ function Sidebar({
   side = 'left',
   variant = 'sidebar',
   collapsible = 'offcanvas',
+  renderMobile = true,
   className,
   children,
   dir,
@@ -157,8 +158,11 @@ function Sidebar({
   side?: 'left' | 'right'
   variant?: 'sidebar' | 'floating' | 'inset'
   collapsible?: 'offcanvas' | 'icon' | 'none'
+  renderMobile?: boolean
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+
+  if (isMobile && !renderMobile) return null
 
   if (collapsible === 'none') {
     return (

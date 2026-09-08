@@ -1,5 +1,6 @@
 /** @vitest-environment jsdom */
 
+import '@testing-library/jest-dom/vitest'
 import { render } from '@testing-library/react'
 import { beforeAll, describe, expect, it } from 'vitest'
 
@@ -55,5 +56,20 @@ describe('Invoice Sidebar', () => {
     expect(sidebar).toHaveAttribute('data-variant', 'sidebar')
     expect(sidebar).toHaveAttribute('data-collapsible', '')
     expect(sidebar).toHaveAttribute('data-state', 'expanded')
+  })
+
+  it('does not render the generic sidebar sheet on mobile', () => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 375,
+    })
+
+    const { container } = render(
+      <SidebarProvider>
+        <InvoiceSidebar orgName="Island Commerce" navigation={navigation} />
+      </SidebarProvider>
+    )
+
+    expect(container.querySelector('[data-slot="sidebar"]')).toBeNull()
   })
 })
