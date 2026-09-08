@@ -55,10 +55,7 @@ export function InvoiceActions({
           : undefined
       }
       onVoid={
-        status === 'OPEN' ||
-        status === 'SENT' ||
-        status === 'PARTIALLY_PAID' ||
-        status === 'OVERDUE'
+        status === 'OPEN' || status === 'SENT'
           ? async (reason) => {
               const result = await client.documents.void(invoiceId, reason)
               if (result.error) return { error: result.error.message }
