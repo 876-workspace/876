@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -131,7 +131,7 @@ export function ProductMobileNav({
                 ) : null}
                 {group.entries.map((item) => (
                   <ProductMobileNavItem
-                    key={item.key}
+                    key={`${item.key}:${pathname}`}
                     item={item}
                     pathname={pathname}
                     resolveIcon={resolveIcon}
@@ -172,10 +172,6 @@ function ProductMobileNavItem({
   const active = isNavEntryActive(pathname, item, isActive)
   const childrenId = useId()
   const [expanded, setExpanded] = useState(active)
-
-  useEffect(() => {
-    if (active) setExpanded(true)
-  }, [active])
 
   if (!hasChildren) {
     return (
