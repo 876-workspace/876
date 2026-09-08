@@ -1,5 +1,5 @@
 export type WidgetHost =
-  'console' | 'billing' | 'couriers' | 'enterprise' | '876'
+  'console' | 'billing' | 'couriers' | 'enterprise' | '876' | 'invoice'
 
 export const WIDGET_HOST_APP_SLUGS: Record<WidgetHost, string> = {
   console: 'console',
@@ -7,6 +7,16 @@ export const WIDGET_HOST_APP_SLUGS: Record<WidgetHost, string> = {
   couriers: '876-couriers',
   enterprise: '876-enterprise',
   '876': '876-consumer',
+  invoice: '876-invoice',
+}
+
+export const WIDGET_HOST_LABELS: Record<WidgetHost, string> = {
+  console: 'Console',
+  billing: '876 Billing',
+  couriers: '876 Couriers',
+  enterprise: '876 Enterprise',
+  '876': '876',
+  invoice: '876 Invoice',
 }
 
 /**
@@ -53,6 +63,8 @@ export type WidgetDistribution = 'shared' | 'host'
  */
 export type WidgetDataOwner = 'widgets' | 'external'
 
+export type WidgetSurface = 'panel' | 'secondary-rail'
+
 export type WidgetVisual =
   | { kind: 'icon'; icon: 'notepad' | 'terminal' | 'chat' }
   | { kind: 'image'; src: string; alt: string }
@@ -72,6 +84,8 @@ interface WidgetMetadataBase {
   ownership: 'account' | 'organization' | 'workspace'
   /** Independent of distribution: where authoritative content lives. */
   dataOwner: WidgetDataOwner
+  /** Where the host renders the widget after feature resolution. */
+  surface: WidgetSurface
   defaultPanel: { width: number; height: number }
   supportedHosts: readonly WidgetHost[]
   implementedHosts: readonly WidgetHost[]
@@ -110,6 +124,7 @@ export const notepadWidgetMetadata = {
   visual: { kind: 'icon', icon: 'notepad' },
   distribution: 'shared',
   dataOwner: 'widgets',
+  surface: 'panel',
   ownership: 'account',
   defaultPanel: { width: 384, height: 520 },
   supportedHosts: ['console', 'billing', 'couriers', 'enterprise', '876'],
@@ -151,6 +166,7 @@ export const chatWidgetMetadata = {
   visual: { kind: 'icon', icon: 'chat' },
   distribution: 'shared',
   dataOwner: 'external',
+  surface: 'secondary-rail',
   ownership: 'account',
   defaultPanel: { width: 384, height: 520 },
   supportedHosts: ['console', 'billing', 'couriers'],
@@ -186,6 +202,8 @@ export const widgetCatalog = [
   notepadWidgetMetadata,
   chatWidgetMetadata,
 ] as const
+
+export type WidgetId = (typeof widgetCatalog)[number]['id']
 
 export function getWidgetAppFeatureKeys(
   widget: WidgetMetadata,
@@ -240,6 +258,13 @@ export function isWidgetEnabled(
   host: WidgetHost,
   enabledFeatureSlugs: ReadonlySet<string>
 ): boolean {
+  if (
+    !widget.supportedHosts.includes(host) ||
+    !widget.implementedHosts.includes(host)
+  ) {
+    return false
+  }
+
   const required = getRequiredWidgetFeatureSlugs(widget, host)
   return (
     required.length > 0 &&
@@ -247,6 +272,19 @@ export function isWidgetEnabled(
       hasFeatureSlug(enabledFeatureSlugs, featureSlug)
     )
   )
+}
+
+export function resolveEnabledWidgetIds(
+  host: WidgetHost,
+  enabledFeatureSlugs: ReadonlySet<string>
+): WidgetId[] {
+  return widgetCatalog
+    .filter(
+      (widget) =>
+        widget.surface === 'panel' &&
+        isWidgetEnabled(widget, host, enabledFeatureSlugs)
+    )
+    .map((widget) => widget.id)
 }
 
 export function getWidgetMetadata(

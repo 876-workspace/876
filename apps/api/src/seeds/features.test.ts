@@ -49,19 +49,34 @@ describe('feature seed catalog', () => {
     expect(new Set(aliases).size).toBe(aliases.length)
   })
 
-  it('seeds the five Invoice shell flags enabled without invented legacy aliases', () => {
+  it('seeds the five Invoice shell flags enabled without invented legacy aliases and the disabled widget master', () => {
     const invoiceSeeds = FEATURE_SEEDS_BY_APP['876-invoice'] ?? []
 
     expect(invoiceSeeds.map((seed) => seed.slug)).toEqual([
+      'invoice-widgets',
       'invoice-theme-switcher',
       'invoice-global-add',
       'invoice-app-switcher',
       'invoice-search-bar',
       'invoice-org-switcher',
     ])
-    expect(invoiceSeeds.every((seed) => seed.defaultEnabled === true)).toBe(
-      true
+
+    const widgetMaster = invoiceSeeds.find(
+      (seed) => seed.slug === 'invoice-widgets'
     )
+    expect(widgetMaster).toMatchObject({
+      slug: 'invoice-widgets',
+      name: 'Widgets',
+      description: 'Master switch for the Invoice widget rail.',
+      tags: ['widget'],
+    })
+    expect(widgetMaster?.defaultEnabled).toBeUndefined()
+
+    const shellFlags = invoiceSeeds.filter(
+      (seed) => seed.slug !== 'invoice-widgets'
+    )
+    expect(shellFlags).toHaveLength(5)
+    expect(shellFlags.every((seed) => seed.defaultEnabled === true)).toBe(true)
     expect(invoiceSeeds.every((seed) => seed.legacySlugs === undefined)).toBe(
       true
     )

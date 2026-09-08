@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
 import { resolveExperimentDecision } from '@876/core/platform'
+import { resolveEnabledWidgetIds } from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
@@ -17,6 +18,7 @@ const INVOICE_THEME_SWITCHER_SLUG = 'invoice-theme-switcher'
 const INVOICE_GLOBAL_ADD_SLUG = 'invoice-global-add'
 const INVOICE_APP_SWITCHER_SLUG = 'invoice-app-switcher'
 const INVOICE_ORG_SWITCHER_SLUG = 'invoice-org-switcher'
+const INVOICE_WIDGETS_SLUG = 'invoice-widgets'
 
 const INVOICE_FEATURE_SLUGS = [
   INVOICE_SEARCH_BAR_SLUG,
@@ -24,6 +26,7 @@ const INVOICE_FEATURE_SLUGS = [
   INVOICE_GLOBAL_ADD_SLUG,
   INVOICE_APP_SWITCHER_SLUG,
   INVOICE_ORG_SWITCHER_SLUG,
+  INVOICE_WIDGETS_SLUG,
 ] as const
 
 const DEFAULT_UI_FEATURES: InvoiceUiFeatures = {
@@ -63,10 +66,15 @@ const getCachedFeatures = cache(async function getCachedFeatures(
         appSlug: INVOICE_APP_SLUG,
       },
     })
-    return { featureKeys: [], uiFeatures: DEFAULT_UI_FEATURES }
+    return {
+      featureKeys: [],
+      uiFeatures: DEFAULT_UI_FEATURES,
+      widgets: { enabledWidgetIds: [] },
+    }
   }
 
   const enabledSlugs = new Set(data.data.map((feature) => feature.slug))
+  const enabledWidgetIds = resolveEnabledWidgetIds('invoice', enabledSlugs)
 
   return {
     featureKeys: INVOICE_FEATURE_SLUGS.filter((slug) => enabledSlugs.has(slug)),
@@ -76,6 +84,9 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       globalAdd: enabledSlugs.has(INVOICE_GLOBAL_ADD_SLUG),
       appSwitcher: enabledSlugs.has(INVOICE_APP_SWITCHER_SLUG),
       orgSwitcher: enabledSlugs.has(INVOICE_ORG_SWITCHER_SLUG),
+    },
+    widgets: {
+      enabledWidgetIds,
     },
   }
 })

@@ -21,6 +21,14 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
   },
 ]
 
+const sharedWidgetPanelWidths: Partial<Record<string, number>> =
+  Object.fromEntries(
+    sharedWidgetRenderers.map(({ metadata }) => [
+      metadata.id,
+      metadata.defaultPanel.width,
+    ])
+  )
+
 export function SharedWidgetDock({
   enabledWidgetIds,
   chatEnabled = false,
@@ -39,7 +47,7 @@ export function SharedWidgetDock({
 
   return (
     <WidgetPopout.Root side="right" navbarHeight={navbarHeight}>
-      <WidgetPopout.Panel size="md">
+      <WidgetPopout.Panel widthByItem={sharedWidgetPanelWidths}>
         {renderers.map(({ metadata, icon: Icon, panel: Panel }) => (
           <WidgetPopout.Content
             key={metadata.id}

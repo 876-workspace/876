@@ -1,3 +1,5 @@
+import type { WidgetId } from '@876/widgets'
+
 export interface BillingUiFeatures {
   searchBar: boolean
   themeSwitcher: boolean
@@ -27,6 +29,6 @@ export interface BillingFeatures {
   uiFeatures: BillingUiFeatures
   productFeatures: BillingProductFeatures
   widgets: {
-    notepad: boolean
+    enabledWidgetIds: WidgetId[]
   }
 }

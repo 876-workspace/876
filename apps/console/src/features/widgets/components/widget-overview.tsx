@@ -1,14 +1,6 @@
-import type { WidgetMetadata } from '@876/widgets'
+import { WIDGET_HOST_LABELS, type WidgetMetadata } from '@876/widgets'
 
 import { WidgetStatCards } from './widget-stat-cards'
-
-const HOST_LABELS = {
-  console: 'Console',
-  billing: '876 Billing',
-  couriers: '876 Couriers',
-  enterprise: '876 Enterprise',
-  '876': '876',
-} as const
 
 export function WidgetOverview({ widget }: { widget: WidgetMetadata }) {
   return (
@@ -35,7 +27,7 @@ export function WidgetOverview({ widget }: { widget: WidgetMetadata }) {
             <DefinitionRow
               label="Implemented apps"
               value={widget.implementedHosts
-                .map((host) => HOST_LABELS[host])
+                .map((host) => WIDGET_HOST_LABELS[host])
                 .join(', ')}
             />
             <DefinitionRow

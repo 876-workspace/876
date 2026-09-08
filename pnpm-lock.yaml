@@ -1328,6 +1328,9 @@ importers:
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@876/widgets':
+        specifier: workspace:*
+        version: link:../../packages/widgets
       '@876/workspace':
         specifier: workspace:*
         version: link:../../packages/workspace

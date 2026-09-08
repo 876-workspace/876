@@ -471,8 +471,12 @@ function resolvePanelWidth(
   activeItem: string | null,
   size: WidgetPopoutSize,
   sizeByItem: Partial<Record<string, WidgetPopoutSize>> | undefined,
-  defaultWidth: number | undefined
+  defaultWidth: number | undefined,
+  widthByItem?: Partial<Record<string, number>>
 ) {
+  const itemWidth = activeItem ? widthByItem?.[activeItem] : undefined
+  if (itemWidth !== undefined) return itemWidth
+
   const resolvedSize = activeItem ? (sizeByItem?.[activeItem] ?? size) : size
   return defaultWidth ?? SIZE_MAP[resolvedSize]
 }
@@ -485,12 +489,14 @@ function Panel({
   size = 'md',
   sizeByItem,
   defaultWidth,
+  widthByItem,
   className,
   children,
 }: {
   size?: WidgetPopoutSize
   sizeByItem?: Partial<Record<string, WidgetPopoutSize>>
   defaultWidth?: number
+  widthByItem?: Partial<Record<string, number>>
   className?: string
   children: ReactNode
 }) {
@@ -504,7 +510,13 @@ function Panel({
     side,
   } = useWidgetPopout()
   const reduceMotion = useReducedMotion()
-  const width = resolvePanelWidth(activeItem, size, sizeByItem, defaultWidth)
+  const width = resolvePanelWidth(
+    activeItem,
+    size,
+    sizeByItem,
+    defaultWidth,
+    widthByItem
+  )
   const open = Boolean(activeItem) && !isMobile
   const docked = presentation === 'docked'
   const canDock =

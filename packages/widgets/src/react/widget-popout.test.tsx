@@ -11,6 +11,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { WidgetPopout } from './widget-popout'
 import { ChatRail } from './chat-rail'
+import { SharedWidgetDock } from './widget-dock'
+import { notepadWidgetMetadata } from '../catalog'
 
 let layoutWidth = 1_200
 
@@ -270,5 +272,72 @@ describe('Widget popout panel', () => {
     const trigger = screen.getByRole('button', { name: 'Draft' })
     expect(trigger.querySelector('.absolute.left-\\[3px\\]')).toBeNull()
     expect(trigger.querySelector('[class*="w-[3px]"]')).toBeNull()
+  })
+
+  it('applies item-specific numeric width from widthByItem with precedence over size', () => {
+    render(
+      <div>
+        <WidgetPopout.Root defaultOpen="custom-item">
+          <WidgetPopout.Panel size="lg" widthByItem={{ 'custom-item': 450 }}>
+            <WidgetPopout.Content id="custom-item" title="Custom Item">
+              <div>Content</div>
+            </WidgetPopout.Content>
+          </WidgetPopout.Panel>
+          <WidgetPopout.Rail>
+            <WidgetPopout.Trigger id="custom-item" label="Custom" icon="C" />
+          </WidgetPopout.Rail>
+        </WidgetPopout.Root>
+      </div>
+    )
+
+    const panel = document.querySelector(
+      '[data-slot="widget-panel"]'
+    ) as HTMLElement
+    // 450px takes precedence over size="lg" (520px)
+    expect(panel.style.width).toBe('450px')
+  })
+
+  it('falls back to size when active item is not present in widthByItem', () => {
+    render(
+      <div>
+        <WidgetPopout.Root defaultOpen="fallback-item">
+          <WidgetPopout.Panel size="sm" widthByItem={{ 'other-item': 450 }}>
+            <WidgetPopout.Content id="fallback-item" title="Fallback Item">
+              <div>Content</div>
+            </WidgetPopout.Content>
+          </WidgetPopout.Panel>
+          <WidgetPopout.Rail>
+            <WidgetPopout.Trigger
+              id="fallback-item"
+              label="Fallback"
+              icon="F"
+            />
+          </WidgetPopout.Rail>
+        </WidgetPopout.Root>
+      </div>
+    )
+
+    const panel = document.querySelector(
+      '[data-slot="widget-panel"]'
+    ) as HTMLElement
+    // sm is 320px
+    expect(panel.style.width).toBe('320px')
+  })
+
+  it('allows SharedWidgetDock to use registered renderer numeric metadata width', async () => {
+    render(<SharedWidgetDock enabledWidgetIds={['notepad']} />)
+
+    const trigger = screen.getByRole('button', { name: 'Notepad' })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      const panel = document.querySelector(
+        '[data-slot="widget-panel"]'
+      ) as HTMLElement
+      expect(panel.getAttribute('data-open')).toBe('true')
+      expect(panel.style.width).toBe(
+        `${notepadWidgetMetadata.defaultPanel.width}px`
+      )
+    })
   })
 })

@@ -8,7 +8,9 @@ export {
   isWidgetEnabled,
   isWidgetsDataOwner,
   notepadWidgetMetadata,
+  resolveEnabledWidgetIds,
   WIDGET_HOST_APP_SLUGS,
+  WIDGET_HOST_LABELS,
   widgetCatalog,
 } from './catalog'
 export type {
@@ -16,7 +18,9 @@ export type {
   WidgetDistribution,
   WidgetFeatureKeys,
   WidgetHost,
+  WidgetId,
   WidgetMetadata,
+  WidgetSurface,
   WidgetVisual,
 } from './catalog'
 export type {

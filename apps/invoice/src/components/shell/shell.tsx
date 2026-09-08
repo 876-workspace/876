@@ -14,6 +14,7 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { SharedWidgetDock } from '@876/widgets/react'
 
 import type { InvoiceFeatures } from '@/types/features'
 import { MobileNav } from './mobile-nav'
@@ -92,6 +93,11 @@ export async function InvoiceShell({
 
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
+          {features.widgets.enabledWidgetIds.length > 0 ? (
+            <SharedWidgetDock
+              enabledWidgetIds={features.widgets.enabledWidgetIds}
+            />
+          ) : null}
         </AppShellBody>
       </AppShellContent>
     </AppShell>

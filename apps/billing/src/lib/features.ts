@@ -6,7 +6,7 @@ import { resolveExperimentDecision } from '@876/core/platform'
 import {
   chatWidgetMetadata,
   isWidgetEnabled,
-  notepadWidgetMetadata,
+  resolveEnabledWidgetIds,
 } from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/services/platform'
@@ -137,13 +137,14 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       featureKeys: [],
       uiFeatures: DEFAULT_UI_FEATURES,
       productFeatures: DEFAULT_PRODUCT_FEATURES,
-      widgets: { notepad: false },
+      widgets: { enabledWidgetIds: [] },
     }
   }
 
   const enabledSlugs = new Set(
     evaluateResult.data.map((feature) => feature.slug)
   )
+  const enabledWidgetIds = resolveEnabledWidgetIds('billing', enabledSlugs)
   const sales = hasFeature(enabledSlugs, BILLING_SALES_SLUG)
   const purchases = hasFeature(enabledSlugs, BILLING_PURCHASES_SLUG)
 
@@ -174,7 +175,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       payroll: hasFeature(enabledSlugs, BILLING_PAYROLL_SLUG),
     },
     widgets: {
-      notepad: isWidgetEnabled(notepadWidgetMetadata, 'billing', enabledSlugs),
+      enabledWidgetIds,
     },
   }
 })
