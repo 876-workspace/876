@@ -7,6 +7,10 @@
   "private": true,
   "sideEffects": false,
   "exports": {
+    "./link": {
+      "types": "./src/link.tsx",
+      "default": "./src/link.tsx"
+    },
     "./bank-accounts-grid": {
       "types": "./src/bank-accounts-grid.tsx",
       "default": "./src/bank-accounts-grid.tsx"
