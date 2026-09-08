@@ -15,26 +15,13 @@ import {
   AlertDialogTitle,
 } from '@876/ui/alert-dialog'
 import { Button, buttonVariants } from '@876/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@876/ui/dialog'
-import { Input } from '@876/ui/input'
-import { Label } from '@876/ui/label'
 
 import { client } from '@/lib/client'
-import { minorAmountInputStep, parseMinorAmountInput } from '@/lib/format'
 
 interface Props {
   creditNoteId: string
   status: string
   balanceAmount: string
-  currency: string
-  decimalPlaces: number
   canWrite: boolean
   canRefund: boolean
 }
@@ -43,57 +30,15 @@ export function CreditNoteActions({
   creditNoteId,
   status,
   balanceAmount,
-  currency,
-  decimalPlaces,
   canWrite,
   canRefund,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-
-  const [applyOpen, setApplyOpen] = useState(false)
-  const [applyInvoiceId, setApplyInvoiceId] = useState('')
-  const [applyAmount, setApplyAmount] = useState('')
-  const [applyError, setApplyError] = useState<string | null>(null)
-
   const [voidOpen, setVoidOpen] = useState(false)
   const [voidError, setVoidError] = useState<string | null>(null)
 
   if (!canWrite && !canRefund) return null
-
-  function handleApply(e: React.FormEvent) {
-    e.preventDefault()
-    setApplyError(null)
-
-    if (!applyInvoiceId.trim()) {
-      setApplyError('Enter an invoice ID.')
-      return
-    }
-
-    const minorUnits = parseMinorAmountInput(applyAmount, decimalPlaces)
-    if (!minorUnits) {
-      setApplyError('Enter a valid amount greater than zero.')
-      return
-    }
-    if (BigInt(minorUnits) > BigInt(balanceAmount)) {
-      setApplyError('Amount cannot exceed the remaining credit balance.')
-      return
-    }
-
-    startTransition(async () => {
-      const result = await client.creditNotes.apply(creditNoteId, {
-        allocations: [{ invoiceId: applyInvoiceId.trim(), amount: minorUnits }],
-      })
-      if (result.error) {
-        setApplyError(result.error.message)
-        return
-      }
-      setApplyOpen(false)
-      setApplyInvoiceId('')
-      setApplyAmount('')
-      router.refresh()
-    })
-  }
 
   function handleVoid(e: React.MouseEvent) {
     e.preventDefault()
@@ -111,14 +56,13 @@ export function CreditNoteActions({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {status === 'OPEN' && canWrite ? (
-        <Button
-          variant="outline"
-          onClick={() => setApplyOpen(true)}
-          disabled={isPending}
+      {status === 'OPEN' && canWrite && BigInt(balanceAmount) > 0n ? (
+        <Link
+          href={`/credit-notes/${creditNoteId}/apply`}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
         >
           Apply
-        </Button>
+        </Link>
       ) : null}
 
       {status === 'OPEN' && canRefund && BigInt(balanceAmount) > 0n ? (
@@ -139,56 +83,6 @@ export function CreditNoteActions({
         >
           Void
         </Button>
-      ) : null}
-
-      {canWrite ? (
-        <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Apply to invoice</DialogTitle>
-              <DialogDescription>
-                Allocate credit to an open invoice.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleApply} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="apply-invoice-id">Invoice ID</Label>
-                <Input
-                  id="apply-invoice-id"
-                  value={applyInvoiceId}
-                  onChange={(e) => setApplyInvoiceId(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="apply-amount">Amount ({currency})</Label>
-                <Input
-                  id="apply-amount"
-                  type="number"
-                  min={minorAmountInputStep(decimalPlaces)}
-                  step={minorAmountInputStep(decimalPlaces)}
-                  value={applyAmount}
-                  onChange={(e) => setApplyAmount(e.target.value)}
-                />
-              </div>
-              {applyError ? (
-                <p className="text-destructive text-sm">{applyError}</p>
-              ) : null}
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setApplyOpen(false)}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? 'Applying…' : 'Apply'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
       ) : null}
 
       {canWrite ? (
