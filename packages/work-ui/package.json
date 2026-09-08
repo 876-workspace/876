@@ -22,6 +22,10 @@
     "./summary": {
       "types": "./src/summary.tsx",
       "default": "./src/summary.tsx"
+    },
+    "./today": {
+      "types": "./src/today.tsx",
+      "default": "./src/today.tsx"
     }
   },
   "scripts": {
