@@ -123,3 +123,59 @@ describe('documents.update and delete', () => {
     })
   })
 })
+
+describe('documents invoice lifecycle commands', () => {
+  it('finalizes through the same-origin invoice proxy with idempotency', async () => {
+    await documents.finalize('inv_123')
+
+    expect(mocks.request).toHaveBeenCalledWith(
+      '/api/invoices/inv_123/finalize',
+      {
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Idempotency-Key': expect.any(String),
+        }),
+        body: JSON.stringify({ autoApplyCredits: true }),
+      }
+    )
+  })
+
+  it('records send through the same-origin invoice proxy with idempotency', async () => {
+    await documents.send('inv_123')
+
+    expect(mocks.request).toHaveBeenCalledWith('/api/invoices/inv_123/send', {
+      method: 'POST',
+      headers: expect.objectContaining({
+        'Idempotency-Key': expect.any(String),
+      }),
+      body: JSON.stringify({}),
+    })
+  })
+
+  it('voids through the same-origin invoice proxy with the audit reason', async () => {
+    await documents.void('inv_123', 'Duplicate invoice')
+
+    expect(mocks.request).toHaveBeenCalledWith('/api/invoices/inv_123/void', {
+      method: 'POST',
+      headers: expect.objectContaining({
+        'Idempotency-Key': expect.any(String),
+      }),
+      body: JSON.stringify({ reason: 'Duplicate invoice' }),
+    })
+  })
+
+  it('writes off through the same-origin invoice proxy with the required reason', async () => {
+    await documents.writeOff('inv_123', 'Collection exhausted')
+
+    expect(mocks.request).toHaveBeenCalledWith(
+      '/api/invoices/inv_123/write-off',
+      {
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Idempotency-Key': expect.any(String),
+        }),
+        body: JSON.stringify({ reason: 'Collection exhausted' }),
+      }
+    )
+  })
+})
