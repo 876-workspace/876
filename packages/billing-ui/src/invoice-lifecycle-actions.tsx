@@ -66,6 +66,10 @@ function canRecordSend(status: InvoiceLifecycleStatus) {
   return collectibleStatuses.has(status) || status === 'PAID'
 }
 
+function canVoidFromStatus(status: InvoiceLifecycleStatus) {
+  return status === 'OPEN' || status === 'SENT'
+}
+
 /** Shared invoice lifecycle action presentation for Billing and Invoice hosts. */
 export function InvoiceLifecycleActions({
   status,
@@ -193,7 +197,7 @@ export function InvoiceLifecycleActions({
         </AlertDialog>
       ) : null}
 
-      {collectible && onVoid ? (
+      {canVoidFromStatus(status) && onVoid ? (
         <AlertDialog open={voidOpen} onOpenChange={setVoidOpen}>
           <AlertDialogTrigger
             render={<Button type="button" variant="destructive" disabled={isPending} />}
