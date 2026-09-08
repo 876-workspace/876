@@ -1,9 +1,16 @@
 'use client'
 
 import type { ComponentType } from 'react'
-import { notepadWidgetMetadata, type WidgetMetadata } from '../catalog'
+import { CalendarDaysIcon } from '@876/ui/icons'
+
+import {
+  notepadWidgetMetadata,
+  workWidgetMetadata,
+  type WidgetMetadata,
+} from '../catalog'
 import { NotepadWidgetPanel } from './notepad-widget'
 import { NotepadIcon } from './notepad-icon'
+import { WorkWidgetPanel } from './work-widget'
 import { ChatRail } from './chat-rail'
 import { WidgetPopout } from './widget-popout'
 
@@ -18,6 +25,11 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
     metadata: notepadWidgetMetadata,
     icon: NotepadIcon,
     panel: NotepadWidgetPanel,
+  },
+  {
+    metadata: workWidgetMetadata,
+    icon: CalendarDaysIcon,
+    panel: WorkWidgetPanel,
   },
 ]
 
