@@ -1,6 +1,10 @@
 import type { InvoiceStatus } from '@/db'
 import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
+import {
+  isCollectibleInvoiceStatus,
+  projectCollectibleInvoiceStatus,
+} from '../../invoice-lifecycle'
 import type {
   CreditNoteApplyParams,
   CreditNoteCreateParams,
@@ -84,6 +88,10 @@ interface InvoiceTarget {
   currency: string
   status: InvoiceStatus
   amountDue: bigint
+  amountPaid: bigint
+  amountCredited: bigint
+  dueAt: number | null
+  sentAt: number | null
   paidAt: number | null
 }
 
@@ -105,6 +113,10 @@ export async function loadApplyTargets(
       currency: true,
       status: true,
       amountDue: true,
+      amountPaid: true,
+      amountCredited: true,
+      dueAt: true,
+      sentAt: true,
       paidAt: true,
     },
   })
@@ -140,12 +152,7 @@ export async function loadApplyTargets(
         'Every invoice must use the credit note currency.',
         422
       )
-    if (
-      invoice.status === 'DRAFT' ||
-      invoice.status === 'VOID' ||
-      invoice.status === 'PAID' ||
-      invoice.status === 'UNCOLLECTIBLE'
-    )
+    if (!isCollectibleInvoiceStatus(invoice.status))
       throw new CreditNoteMutationError(
         'Only open invoices can receive a credit.',
         409
@@ -161,10 +168,8 @@ export async function loadApplyTargets(
 }
 
 /**
- * Applies credit-note allocations to invoices: reduces each invoice balance,
- * advances its status (PARTIALLY_PAID / PAID), records the allocation with the
- * pre-application invoice state for safe reversal, and draws down the credit
- * note balance. Returns the total applied.
+ * Applies credit-note allocations to invoices, records the pre-application
+ * state for safe reversal, and draws down the credit-note balance.
  */
 export async function applyCreditNoteAllocations(
   tx: TransactionClient,
@@ -224,20 +229,29 @@ export async function applyCreditNoteAllocations(
 
     const current = await tx.invoice.findUnique({
       where: { id: invoice.id },
-      select: { amountDue: true },
+      select: {
+        amountDue: true,
+        amountPaid: true,
+        amountCredited: true,
+        dueAt: true,
+        sentAt: true,
+      },
     })
     if (!current) throw new CreditNoteMutationError('Invoice not found.', 404)
 
-    if (current.amountDue === 0n)
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: { status: 'PAID', paidAt: appliedAt, updatedAt: now },
-      })
-    else
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: { status: 'PARTIALLY_PAID', updatedAt: now },
-      })
+    const status = projectCollectibleInvoiceStatus({
+      ...current,
+      asOf: now,
+    })
+
+    await tx.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        status,
+        paidAt: status === 'PAID' ? appliedAt : null,
+        updatedAt: now,
+      },
+    })
 
     applied += allocation.amount
   }
