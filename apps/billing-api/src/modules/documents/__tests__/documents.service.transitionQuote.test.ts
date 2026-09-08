@@ -82,12 +82,7 @@ describe('documentsService.transitionQuote', () => {
       requestHash: 'hash_1',
     }
 
-    await documentsService.transitionQuote(
-      TENANT,
-      QUOTE,
-      'send',
-      idempotency
-    )
+    await documentsService.transitionQuote(TENANT, QUOTE, 'send', idempotency)
 
     expect(mocks.transition).toHaveBeenCalledWith(
       TENANT,
@@ -137,7 +132,11 @@ describe('documentsService.transitionQuote', () => {
 
     await documentsService.transitionQuote(TENANT, QUOTE, 'accept')
 
-    expect(mocks.invoiceCreate).toHaveBeenCalledWith(TENANT, { quoteId: QUOTE })
+    expect(mocks.invoiceCreate).toHaveBeenCalledWith(
+      TENANT,
+      { quoteId: QUOTE },
+      undefined
+    )
   })
 
   it('repairs an acceptance retry by reusing the already converted invoice', async () => {
@@ -154,5 +153,42 @@ describe('documentsService.transitionQuote', () => {
     await documentsService.transitionQuote(TENANT, QUOTE, 'accept')
 
     expect(mocks.invoiceCreate).not.toHaveBeenCalled()
+  })
+
+  it('preserves integration ownership for automatic draft conversion', async () => {
+    mocks.preference.mockResolvedValue({
+      object: 'quote-preference',
+      acceptedQuoteConversion: 'draft-invoice-on-accept',
+    })
+    mocks.quoteRetrieve.mockResolvedValue({
+      id: QUOTE,
+      status: 'ACCEPTED',
+      convertedInvoice: null,
+    })
+    mocks.invoiceCreate.mockResolvedValue({
+      data: { id: 'inv_1' },
+      error: null,
+    })
+    const attribution = {
+      sourceAppId: 'app_invoice',
+      sourceExternalReference: null,
+      sourceIdempotencyKey: 'accept-key',
+      sourcePayloadHash: 'hash',
+    }
+    await documentsService.transitionQuote(
+      TENANT,
+      QUOTE,
+      'accept',
+      { key: 'accept-key', requestHash: 'hash' },
+      attribution
+    )
+    expect(mocks.invoiceCreate).toHaveBeenCalledWith(
+      TENANT,
+      { quoteId: QUOTE },
+      expect.objectContaining({
+        sourceAppId: 'app_invoice',
+        sourceIdempotencyKey: 'accept-key',
+      })
+    )
   })
 })

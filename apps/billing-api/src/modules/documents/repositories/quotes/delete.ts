@@ -1,3 +1,5 @@
+import { nowUnixSeconds } from '@876/core/timestamps'
+
 import { prisma } from '@/db/client'
 import type { ServiceResult } from '../../schemas/api'
 
@@ -18,9 +20,20 @@ export async function deleteQuote(
     if (current.status !== 'DRAFT')
       return err('Only draft quotes can be deleted.', 409)
 
-    await prisma.quote.delete({
-      where: { id: quoteId },
+    const deleted = await prisma.quote.deleteMany({
+      where: {
+        id: quoteId,
+        tenantId,
+        status: 'DRAFT',
+        OR: [{ expiresAt: null }, { expiresAt: { gt: nowUnixSeconds() } }],
+      },
     })
+    if (deleted.count !== 1)
+      return err(
+        'Only valid draft quotes can be deleted.',
+        409,
+        'billing/quote-invalid-state'
+      )
 
     return ok({ id: quoteId })
   } catch (error) {

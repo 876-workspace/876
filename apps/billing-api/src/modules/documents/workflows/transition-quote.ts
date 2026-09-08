@@ -1,9 +1,7 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import {
-  claimCommand,
-  completeCommand,
-} from '@/modules/command-idempotency'
+import { AppHttpError, appError } from '@/http/errors'
+import { claimCommand, completeCommand } from '@/modules/command-idempotency'
 import { enqueueBillingEvent } from '@/modules/outbox'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import type { IdempotencyContext } from '@/types/commerce'
@@ -73,7 +71,12 @@ export async function transitionQuoteWorkflow(
       }
 
       const quote = await findQuoteForLifecycle(tx, tenantId, quoteId)
-      if (!quote) return err('Quote not found.', 404)
+      // Throw domain failures so a newly claimed key rolls back with the command.
+      if (!quote)
+        throw appError('quote/not-found', {
+          message: 'Quote not found.',
+          httpStatus: 404,
+        })
 
       if (terminalStatusByAction[action] === quote.status) {
         if (claimId) await completeCommand(tx, tenantId, claimId, now)
@@ -85,12 +88,7 @@ export async function transitionQuoteWorkflow(
         action,
         now
       )
-      if (!transition)
-        return err(
-          'This quote cannot be changed from its current status.',
-          409,
-          'billing/quote-invalid-state'
-        )
+      if (!transition) throw appError('billing/quote-invalid-state')
 
       const changed = await applyQuoteLifecycleTransition(tx, {
         tenantId,
@@ -100,12 +98,7 @@ export async function transitionQuoteWorkflow(
         existingSentAt: quote.sentAt,
         now,
       })
-      if (!changed)
-        return err(
-          'This quote cannot be changed from its current status.',
-          409,
-          'billing/quote-invalid-state'
-        )
+      if (!changed) throw appError('billing/quote-invalid-state')
 
       await enqueueBillingEvent(tx, tenantId, {
         type: eventTypeByAction[action],
@@ -126,8 +119,14 @@ export async function transitionQuoteWorkflow(
       return ok({ id: quoteId })
     })
   } catch (error) {
+    if (error instanceof AppHttpError)
+      return err(error.message, error.httpStatus, error.code)
+
     if (isRetryableTransactionError(error))
-      return err('The quote changed while this command was running; retry.', 409)
+      return err(
+        'The quote changed while this command was running; retry.',
+        409
+      )
 
     console.error('[billing.workflow.quotes.transition]', error)
     return err('Failed to update the quote.', 500)
