@@ -14,11 +14,11 @@ import type {
   InvoiceList,
   InvoiceListParams,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
   InvoiceUpdateParams,
   DeletedInvoice,
   RequestOptions,
 } from '../types'
-import type { InvoiceWriteOffParams } from '../types/invoice'
 
 /** `$876.billing.invoices.*` — tenant-scoped invoice operations. */
 export function createInvoicesResource(runtime: Runtime) {
