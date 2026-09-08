@@ -3,7 +3,8 @@
 **Run:** `2026-09-07-quote-lifecycle-hardening`  
 **Branch:** `feature/quote-lifecycle-hardening`  
 **Original base:** `main@4f869314ff2b264d12bc5c07f1c9017392b55ad8`  
-**Result:** IMPLEMENTED — UNVERIFIED  
+**Synced main:** `main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20`  
+**Result:** IMPLEMENTED — SYNCED WITH MAIN — UNVERIFIED  
 **PR:** Not opened
 
 ## Executive summary
@@ -19,6 +20,8 @@ The implementation keeps Quote as a non-posting commercial proposal and delibera
 A converted quote remains `ACCEPTED`. The existing one-to-one `convertedInvoice` relationship is the durable evidence for a derived “Invoiced” presentation. No `INVOICED` quote status was added.
 
 Conversion creates a **draft invoice only**. Acceptance does not create accounts receivable, and this run does not auto-finalize or auto-send invoices. No sales-order implementation was introduced.
+
+The branch was subsequently synchronized with the latest `main` available at closeout, `fdb78ba8f89624901ce78910bb4ced15c3ed7e20`, through a real two-parent merge commit. The newer host-aware `@876/billing-ui` Link/provider architecture was preserved, and the new quote lifecycle UI was adapted to consume it instead of retaining a direct `next/link` dependency.
 
 ## Final domain model
 
@@ -122,7 +125,7 @@ expire
 
 `send` is intentionally repeatable for a SENT quote. A resend records fresh communication evidence while preserving the original `sentAt` timestamp.
 
-Terminal commands are naturally safe to retry through command idempotency when a caller supplies the same idempotency key/request identity.
+Terminal commands are safe to retry through command idempotency when a caller supplies the same idempotency key/request identity.
 
 ## Durable lifecycle evidence
 
@@ -146,7 +149,7 @@ apps/billing-api/prisma/migrations/20260907232000_quote_lifecycle_timestamps/mig
 
 The migration is additive.
 
-**The migration was written but was not executed by GPT Web.** It must be validated and applied by the local/orchestrator environment after rebasing onto current `main`.
+**The migration was written but was not executed by GPT Web.** It must be validated and applied by the local/orchestrator environment on the now-synced branch.
 
 ## Quote outbox events
 
@@ -346,16 +349,7 @@ The shared component owns presentation rules for:
 - Edit valid draft;
 - Delete valid draft.
 
-It deliberately does **not** own:
-
-- authentication;
-- authorization resolution;
-- API transport;
-- organization lookup;
-- route construction policy;
-- router navigation/refresh.
-
-Those remain host responsibilities.
+It deliberately does **not** own authentication, authorization resolution, API transport, organization lookup, route policy, navigation, or refresh behavior. Those remain host responsibilities.
 
 ### Billing host adapter
 
@@ -367,7 +361,7 @@ apps/billing/src/app/(app)/(sales)/quotes/[quoteId]/page.tsx
 apps/billing/src/lib/client/quotes.ts
 ```
 
-Billing now supplies host-owned callbacks/links to the shared lifecycle UI.
+Billing supplies host-owned callbacks and links to the shared lifecycle UI.
 
 ### Invoice host adapter
 
@@ -382,6 +376,34 @@ apps/invoice/src/lib/client/documents.ts
 Invoice continues to use its same-origin proxy/application boundary while sharing lifecycle presentation with Billing.
 
 The previous duplicated action implementations were substantially removed rather than allowed to drift independently.
+
+### Reconciliation with latest main Link architecture
+
+After the initial quote implementation, `main` introduced a host-aware navigation abstraction in `@876/billing-ui`:
+
+```text
+packages/billing-ui/src/link.tsx
+apps/invoice/src/components/providers/link-provider.tsx
+```
+
+with corresponding Billing/Console host providers and conversions of existing Billing UI components away from direct `next/link` imports.
+
+That work was preserved during synchronization. The quote lifecycle action component was adapted from direct `next/link` use to:
+
+```ts
+import { Link } from './link'
+```
+
+so it participates in the same host-supplied router-aware Link contract as the rest of the package.
+
+The package manifest was structurally merged so both exports are present:
+
+```text
+@876/billing-ui/link
+@876/billing-ui/quote-lifecycle-actions
+```
+
+No upstream host-link/provider work was intentionally replaced by the quote branch.
 
 ## UI bug found during final review
 
@@ -444,7 +466,7 @@ The document explains:
 - automatic draft conversion preference;
 - the separation between acceptance, invoice creation, invoice finalization, and delivery.
 
-The implementation tracker was also finalized at:
+The implementation tracker is:
 
 ```text
 plans/2026-09-07-quote-lifecycle-hardening/plan.md
@@ -466,8 +488,10 @@ Final review confirms:
 10. Shared UI remains product-domain presentation, not service/API ownership.
 11. Quote lifecycle events use the existing transactional outbox architecture.
 12. Preference persistence follows the existing ModulePreference pattern.
+13. Latest-main Billing UI Link/provider architecture is preserved.
+14. Quote lifecycle UI now uses the same package-local host-aware Link contract.
 
-## Upstream drift discovered at closeout
+## Latest-main synchronization completed
 
 The branch was originally cut from:
 
@@ -475,31 +499,58 @@ The branch was originally cut from:
 main@4f869314ff2b264d12bc5c07f1c9017392b55ad8
 ```
 
-By closeout, `main` had advanced six commits beyond that merge base.
-
-The upstream changes primarily concern the shared Billing UI host-link/provider architecture. Notable overlapping areas include:
+During the run, `main` advanced by six commits to:
 
 ```text
-packages/billing-ui/package.json
-apps/invoice/src/app/layout.tsx
-packages/billing-ui/src/invoice-lifecycle-actions.tsx
-packages/billing-ui/src/link.tsx              # new upstream file
-apps/invoice/src/components/providers/link-provider.tsx  # new upstream file
+main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20
 ```
 
-The quote implementation itself does not intentionally replace that newer architecture, but `packages/billing-ui/package.json` is modified on both sides and therefore needs careful reconciliation.
+Those changes were incorporated with a **real two-parent merge commit**:
 
-### Local rebase instruction
+```text
+707c742782f2b4670085cee393dd7c910bf3db8f
+chore: sync quote lifecycle branch with main
+```
 
-Before running verification or opening a PR:
+The synchronization preserved upstream changes including:
 
-1. rebase/merge `feature/quote-lifecycle-hardening` onto current `main`;
-2. preserve the newer upstream Billing UI Link/provider composition;
-3. preserve this branch's `./quote-lifecycle-actions` export and quote lifecycle files;
-4. resolve package export/dependency changes structurally rather than choosing one side wholesale;
-5. rerun the entire verification matrix after the rebase.
+```text
+apps/billing/src/components/providers/providers.tsx
+apps/console/src/components/providers/providers.tsx
+apps/invoice/src/app/layout.tsx
+apps/invoice/src/components/providers/link-provider.tsx
+packages/billing-ui/src/link.tsx
+packages/billing-ui/src/link.test.tsx
+packages/billing-ui/src/invoice-lifecycle-actions.tsx
+```
 
-The branch should not be considered PR-ready before that reconciliation.
+and the other shared Billing UI host-link migrations in those upstream commits.
+
+The quote-specific reconciliation was committed as:
+
+```text
+22603ff59dc1ba7d8100228c044930dc9e8707b9
+fix(billing-ui): reconcile quote actions with host links
+```
+
+The package export reconciliation was committed as:
+
+```text
+7acd507227166de7a395ba1ec147b50ff237e0fc
+fix(billing-ui): restore quote lifecycle export after main sync
+```
+
+At the synchronization checkpoint, GitHub reported:
+
+```text
+base: main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20
+status: ahead
+ahead_by: 48
+behind_by: 0
+merge_base: fdb78ba8f89624901ce78910bb4ced15c3ed7e20
+```
+
+Therefore the previously documented rebase requirement has been resolved for those main changes. The branch is synced with that main commit but remains **unverified**.
 
 ## Verification status
 
@@ -524,7 +575,7 @@ No statement in this report should be read as claiming those checks pass.
 
 ## Required local verification
 
-After rebasing onto current `main`, run the repository's current equivalents of:
+Run the repository's current equivalents of:
 
 ```bash
 pnpm --filter @876/billing-api typecheck
@@ -567,7 +618,8 @@ At minimum verify these end-to-end in Billing and Invoice:
 13. automatic conversion does not finalize or send invoice;
 14. converted quote shows View invoice and no second conversion action;
 15. Invoice host commands pass through the formal Billing integration boundary;
-16. expired quote cannot be edited/deleted through direct API/SDK calls.
+16. expired quote cannot be edited/deleted through direct API/SDK calls;
+17. Billing and Invoice quote navigation uses the host-aware Billing UI Link provider after the main sync.
 
 ## Deliberate deferrals
 
@@ -587,16 +639,14 @@ The following remain future work rather than gaps accidentally omitted from this
 
 ## Final handoff
 
-Implementation work for the scoped quote lifecycle hardening is complete in `feature/quote-lifecycle-hardening`.
+Implementation work for the scoped quote lifecycle hardening is complete in `feature/quote-lifecycle-hardening`, and the branch contains the latest `main` changes available at the synchronization checkpoint.
 
 The next local agent should **not redesign the lifecycle**. Its job is to:
 
-1. rebase onto current `main`;
-2. reconcile the new upstream Billing UI Link/provider work;
-3. run formatting/typecheck/lint/tests/build/boundaries/Prisma/API-contract checks;
-4. apply/validate the new migration in the intended database environment;
-5. fix only concrete failures found by those checks;
-6. perform the manual scenarios above;
-7. then prepare focused PR(s) according to the repository's normal branch/PR workflow.
+1. run formatting/typecheck/lint/tests/build/boundaries/Prisma/API-contract checks on the synced branch;
+2. apply/validate the new migration in the intended database environment;
+3. fix only concrete failures found by those checks;
+4. perform the manual scenarios above;
+5. then prepare focused PR(s) according to the repository's normal branch/PR workflow if requested.
 
 No PR was opened in this run.
