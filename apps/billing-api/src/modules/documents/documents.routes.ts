@@ -14,6 +14,7 @@ import {
   InvoiceFinalizeSchema,
   InvoiceUpdateSchema,
   InvoiceVoidSchema,
+  InvoiceWriteOffSchema,
 } from './schemas/invoice'
 import { InvoicePreferenceUpdateSchema } from './schemas/invoice-preference'
 import {
@@ -305,6 +306,24 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
     handler: controller.invoicesFinalize,
   })
   api.post({
+    path: '/invoices/:invoiceId/send',
+    summary: 'Record an invoice send',
+    security: write,
+    request: {
+      params: id('invoiceId'),
+      body: z.strictObject({}).default({}),
+    },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'Invoice send recorded',
+        schema: successEnvelopeSchema(resource('invoice')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesSend,
+  })
+  api.post({
     path: '/invoices/:invoiceId/void',
     summary: 'Void an invoice',
     security: write,
@@ -317,6 +336,21 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.invoicesVoid,
+  })
+  api.post({
+    path: '/invoices/:invoiceId/write-off',
+    summary: 'Write off an invoice balance',
+    security: write,
+    request: { params: id('invoiceId'), body: InvoiceWriteOffSchema },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'Invoice balance written off',
+        schema: successEnvelopeSchema(resource('invoice')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesWriteOff,
   })
   api.get({
     path: '/credit-notes',
@@ -517,6 +551,24 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
     handler: controller.invoicesIntegrationFinalize,
   })
   api.post({
+    path: `${base}/:invoiceId/send`,
+    summary: 'Record an organization Billing invoice send',
+    security: integrationWrite,
+    request: {
+      params: orgInvoice,
+      body: z.strictObject({}).default({}),
+    },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'Invoice send recorded',
+        schema: successEnvelopeSchema(resource('invoice')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesIntegrationSend,
+  })
+  api.post({
     path: `${base}/:invoiceId/void`,
     summary: 'Void an organization Billing invoice',
     security: integrationWrite,
@@ -529,6 +581,21 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.invoicesIntegrationVoid,
+  })
+  api.post({
+    path: `${base}/:invoiceId/write-off`,
+    summary: 'Write off an organization Billing invoice balance',
+    security: integrationWrite,
+    request: { params: orgInvoice, body: InvoiceWriteOffSchema },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'Invoice balance written off',
+        schema: successEnvelopeSchema(resource('invoice')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesIntegrationWriteOff,
   })
   const quoteBase = '/integrations/organizations/:organizationId/quotes'
   const quoteIntegrationRead = {
