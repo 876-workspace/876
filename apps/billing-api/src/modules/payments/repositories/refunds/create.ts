@@ -16,7 +16,8 @@ import { isRetryableTransactionError } from '@/platform/prisma-errors'
 /** Records a cash return to a customer drawn from a credit note or an overpaid payment. */
 export async function create(
   tenantId: string,
-  params: RefundCreateParams
+  params: RefundCreateParams,
+  sourceAppId?: string
 ): ServiceResult<{ id: string }> {
   if (!(await hasEnabledCurrency(tenantId, params.currency)))
     return err('Enable the refund currency before using it.', 422)
@@ -102,7 +103,11 @@ export async function create(
           })
         } else {
           const payment = await tx.payment.findFirst({
-            where: { id: params.paymentId, tenantId },
+            where: {
+              id: params.paymentId,
+              tenantId,
+              ...(sourceAppId ? { sourceAppId } : {}),
+            },
             select: {
               customerId: true,
               currency: true,
