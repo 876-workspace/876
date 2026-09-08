@@ -76,7 +76,7 @@ describe('requireWorkWidgetPermission', () => {
       data: null,
       error: {
         code: 'work/not-found',
-        message: 'Work resource not found.',
+        message: 'Not found.',
       },
     })
   })
