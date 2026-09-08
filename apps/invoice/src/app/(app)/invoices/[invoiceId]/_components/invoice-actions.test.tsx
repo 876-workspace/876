@@ -29,6 +29,7 @@ function renderActions(status: Parameters<typeof InvoiceActions>[0]['status']) {
       customerId="cus_123"
       status={status}
       canWrite
+      canRecordPayment
     />
   )
 }
