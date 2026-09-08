@@ -84,6 +84,8 @@ export async function create(
               customerId: true,
               currency: true,
               status: true,
+              amount: true,
+              amountRefunded: true,
               unappliedAmount: true,
             },
           })
@@ -109,11 +111,16 @@ export async function create(
               422
             )
 
+          const amountRefunded = payment.amountRefunded + params.amount
           await tx.payment.update({
             where: { id: params.paymentId },
             data: {
               unappliedAmount: { decrement: params.amount },
               amountRefunded: { increment: params.amount },
+              status:
+                amountRefunded === payment.amount
+                  ? 'REFUNDED'
+                  : 'PARTIALLY_REFUNDED',
               updatedAt: now,
             },
           })
