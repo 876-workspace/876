@@ -16,6 +16,7 @@ import {
 import { SharedWidgetDock } from '@876/widgets/react'
 import type { NavGroupDefinition } from '@876/core/access'
 
+import { MobileNav } from './mobile-nav'
 import { WorkspaceSidebar } from './sidebar'
 import { OrgSwitcher } from './org-switcher'
 import { SupportWidget } from './support-widget'
@@ -55,12 +56,17 @@ export async function Shell({
     <BillingPermissionsProvider permissions={permissions}>
       <AppShell defaultOpen={defaultSidebarOpen}>
         <NavProgress />
-        <AppShellSidebarArea>
+        <AppShellSidebarArea className="hidden md:contents">
           <WorkspaceSidebar tenantName={tenantName} navigation={navigation} />
         </AppShellSidebarArea>
         <AppShellContent>
           <AppShellHeader>
-            <SidebarTrigger />
+            <div className="md:hidden">
+              <MobileNav tenantName={tenantName} navigation={navigation} />
+            </div>
+            <div className="hidden md:block">
+              <SidebarTrigger />
+            </div>
 
             <div className="hidden min-w-0 flex-1 items-center md:flex">
               {features.uiFeatures.searchBar && (
