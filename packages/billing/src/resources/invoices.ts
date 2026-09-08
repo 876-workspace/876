@@ -18,6 +18,7 @@ import type {
   DeletedInvoice,
   RequestOptions,
 } from '../types'
+import type { InvoiceWriteOffParams } from '../types/invoice'
 
 /** `$876.billing.invoices.*` — tenant-scoped invoice operations. */
 export function createInvoicesResource(runtime: Runtime) {
@@ -109,6 +110,19 @@ export function createInvoicesResource(runtime: Runtime) {
         InvoiceCreatedSchema
       )
     },
+    /** Records that a finalized invoice was sent without replacing its financial state. */
+    send(invoiceId: string, options?: RequestOptions) {
+      return Request<InvoiceCreated>(
+        runtime,
+        {
+          method: 'POST',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/send`,
+          body: {},
+          signal: options?.signal,
+        },
+        InvoiceCreatedSchema
+      )
+    },
     /** Voids an unsettled finalized invoice. */
     void(
       invoiceId: string,
@@ -120,6 +134,23 @@ export function createInvoicesResource(runtime: Runtime) {
         {
           method: 'POST',
           path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/void`,
+          body: params,
+          signal: options?.signal,
+        },
+        InvoiceCreatedSchema
+      )
+    },
+    /** Writes off the invoice's full remaining receivable. */
+    writeOff(
+      invoiceId: string,
+      params: InvoiceWriteOffParams,
+      options?: RequestOptions
+    ) {
+      return Request<InvoiceCreated>(
+        runtime,
+        {
+          method: 'POST',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/write-off`,
           body: params,
           signal: options?.signal,
         },
