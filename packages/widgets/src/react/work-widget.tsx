@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WorkMyWork, WorkTask, WorkTaskList } from '@876/work'
 import { browserWork } from '@876/work/browser'
-import { WorkTasks } from '@876/work-ui/tasks'
+import {
+  WorkTasks,
+  type WorkTaskDraft,
+  type WorkTaskEdit,
+} from '@876/work-ui/tasks'
 import { WorkToday } from '@876/work-ui/today'
 
 import { WidgetPanelSkeleton } from './widget-loading'
@@ -79,7 +83,8 @@ export function WorkWidgetPanel() {
   const [tasksState, setTasksState] = useState<DeferredLoadState>('idle')
   const [tasksErrorMessage, setTasksErrorMessage] = useState<string | null>(null)
   const [tasksHaveMore, setTasksHaveMore] = useState(false)
-  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null)
+  const [mutatingTaskId, setMutatingTaskId] = useState<string | null>(null)
+  const [creatingTask, setCreatingTask] = useState(false)
   const workRef = useRef<WorkMyWork | null>(null)
   const generationRef = useRef(0)
   const tasksGenerationRef = useRef(0)
@@ -155,49 +160,116 @@ export function WorkWidgetPanel() {
     [loadTasks]
   )
 
-  const completeTask = useCallback(
-    async (task: WorkTask) => {
-      if (completingTaskId) return
+  const applyTaskResult = useCallback((updatedTask: WorkTask) => {
+    setTasks((current) =>
+      current.map((item) => (item.id === updatedTask.id ? updatedTask : item))
+    )
+    setWork((current) => {
+      if (!current) return current
+      const terminal =
+        updatedTask.status === 'DONE' || updatedTask.status === 'CANCELLED'
+      return {
+        ...current,
+        tasks: current.tasks.map((item) =>
+          item.id === updatedTask.id ? updatedTask : item
+        ),
+        overdueTasks: terminal
+          ? current.overdueTasks.filter((item) => item.id !== updatedTask.id)
+          : current.overdueTasks.map((item) =>
+              item.id === updatedTask.id ? updatedTask : item
+            ),
+      }
+    })
+  }, [])
 
-      setCompletingTaskId(task.id)
+  const refreshAfterTaskMutation = useCallback(async () => {
+    await Promise.all([load(), loadTasks(activeListId)])
+  }, [activeListId, load, loadTasks])
+
+  const taskMutationError = useCallback(
+    (message: string) => {
+      if (view === 'tasks') {
+        setTasksState('error')
+        setTasksErrorMessage(message)
+      } else {
+        setState('error')
+        setErrorMessage(message)
+      }
+    },
+    [view]
+  )
+
+  const runTaskMutation = useCallback(
+    async (
+      task: WorkTask,
+      operation: () => ReturnType<typeof browserWork.tasks.complete>
+    ): Promise<boolean> => {
+      if (mutatingTaskId) return false
+
+      setMutatingTaskId(task.id)
       setErrorMessage(null)
       setTasksErrorMessage(null)
-      const result = await browserWork.tasks.complete(task.id)
+      const result = await operation()
 
       if (result.error || !result.data) {
-        const message =
-          result.error?.message ?? 'The task could not be completed. Try again.'
-        if (view === 'tasks') {
-          setTasksState('error')
-          setTasksErrorMessage(message)
-        } else {
-          setState('error')
-          setErrorMessage(message)
-        }
-        setCompletingTaskId(null)
-        return
+        taskMutationError(
+          result.error?.message ?? 'The task could not be updated. Try again.'
+        )
+        setMutatingTaskId(null)
+        return false
       }
 
-      setWork((current) =>
-        current
-          ? {
-              ...current,
-              tasks: current.tasks.filter((item) => item.id !== task.id),
-              overdueTasks: current.overdueTasks.filter(
-                (item) => item.id !== task.id
-              ),
-            }
-          : current
-      )
-      setTasks((current) =>
-        current.map((item) => (item.id === task.id ? result.data! : item))
-      )
-      setCompletingTaskId(null)
-
-      if (view === 'tasks') await loadTasks(activeListId)
-      else await load()
+      applyTaskResult(result.data)
+      setMutatingTaskId(null)
+      await refreshAfterTaskMutation()
+      return true
     },
-    [activeListId, completingTaskId, load, loadTasks, view]
+    [applyTaskResult, mutatingTaskId, refreshAfterTaskMutation, taskMutationError]
+  )
+
+  const createTask = useCallback(
+    async (input: WorkTaskDraft): Promise<boolean> => {
+      if (creatingTask) return false
+      setCreatingTask(true)
+      setTasksErrorMessage(null)
+
+      const result = await browserWork.tasks.create(input)
+      if (result.error || !result.data) {
+        setTasksState('error')
+        setTasksErrorMessage(
+          result.error?.message ?? 'The task could not be created. Try again.'
+        )
+        setCreatingTask(false)
+        return false
+      }
+
+      setCreatingTask(false)
+      await refreshAfterTaskMutation()
+      return true
+    },
+    [creatingTask, refreshAfterTaskMutation]
+  )
+
+  const updateTask = useCallback(
+    (task: WorkTask, input: WorkTaskEdit) =>
+      runTaskMutation(task, () => browserWork.tasks.update(task.id, input)),
+    [runTaskMutation]
+  )
+
+  const completeTask = useCallback(
+    (task: WorkTask) =>
+      runTaskMutation(task, () => browserWork.tasks.complete(task.id)).then(
+        () => undefined
+      ),
+    [runTaskMutation]
+  )
+
+  const cancelTask = useCallback(
+    (task: WorkTask) =>
+      runTaskMutation(task, () => browserWork.tasks.cancel(task.id)).then(
+        () => undefined
+      ),
+    [runTaskMutation]
   )
 
   if (state === 'loading' && !work)
@@ -233,7 +305,7 @@ export function WorkWidgetPanel() {
           ) : null}
           <WorkToday
             work={work}
-            completingTaskId={completingTaskId}
+            completingTaskId={mutatingTaskId}
             onCompleteTask={completeTask}
           />
         </>
@@ -252,8 +324,12 @@ export function WorkWidgetPanel() {
             tasks={tasks}
             activeListId={activeListId}
             onSelectList={selectTaskList}
-            completingTaskId={completingTaskId}
+            mutatingTaskId={mutatingTaskId}
+            creatingTask={creatingTask}
+            onCreateTask={createTask}
+            onUpdateTask={updateTask}
             onCompleteTask={completeTask}
+            onCancelTask={cancelTask}
             hasMore={tasksHaveMore}
           />
         </>
