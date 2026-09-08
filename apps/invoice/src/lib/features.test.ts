@@ -63,12 +63,30 @@ describe('getFeatures', () => {
       appSwitcher: true,
       orgSwitcher: true,
     })
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
     expect(mocks.evaluate).toHaveBeenCalledWith({
       appSlug: '876-invoice',
       userId: 'user_invoice_flags',
       organizationId: 'org_invoice_flags',
     })
     expect(mocks.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('includes invoice-widgets in featureKeys while enabled widget list remains empty', async () => {
+    mocks.evaluate.mockResolvedValue({
+      data: {
+        data: [{ slug: 'invoice-widgets' }, { slug: 'invoice-theme-switcher' }],
+      },
+      error: null,
+    })
+
+    const result = await getFeatures({ userId: 'user_invoice_widgets' })
+
+    expect(result.featureKeys).toEqual([
+      'invoice-theme-switcher',
+      'invoice-widgets',
+    ])
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 
   it('ignores flags belonging to another app', async () => {
@@ -87,6 +105,7 @@ describe('getFeatures', () => {
 
     expect(result.featureKeys).toEqual(['invoice-org-switcher'])
     expect(result.uiFeatures).toEqual({ ...ALL_DISABLED, orgSwitcher: true })
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 
   it('fails closed and reports when server evaluation errors', async () => {
@@ -97,7 +116,11 @@ describe('getFeatures', () => {
 
     const result = await getFeatures({ userId: 'user_unavailable' })
 
-    expect(result).toEqual({ featureKeys: [], uiFeatures: ALL_DISABLED })
+    expect(result).toEqual({
+      featureKeys: [],
+      uiFeatures: ALL_DISABLED,
+      widgets: { enabledWidgetIds: [] },
+    })
     expect(mocks.captureMessage).toHaveBeenCalledWith(
       'Feature flag outage: features.evaluate failed',
       {
@@ -118,7 +141,11 @@ describe('getFeatures', () => {
 
     const result = await getFeatures({})
 
-    expect(result).toEqual({ featureKeys: [], uiFeatures: ALL_DISABLED })
+    expect(result).toEqual({
+      featureKeys: [],
+      uiFeatures: ALL_DISABLED,
+      widgets: { enabledWidgetIds: [] },
+    })
     expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
   })
 })

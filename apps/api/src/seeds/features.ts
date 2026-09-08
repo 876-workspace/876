@@ -421,6 +421,12 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
   ],
   '876-invoice': [
     {
+      slug: 'invoice-widgets',
+      name: 'Widgets',
+      description: 'Master switch for the Invoice widget rail.',
+      tags: ['widget'],
+    },
+    {
       slug: 'invoice-theme-switcher',
       name: 'Theme switcher',
       description: 'Controls access to the Invoice theme switcher.',

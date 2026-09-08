@@ -26,6 +26,7 @@
     "@876/settings": "workspace:*",
     "@876/storage": "workspace:*",
     "@876/ui": "workspace:*",
+    "@876/widgets": "workspace:*",
     "@876/workspace": "workspace:*",
     "@sentry/nextjs": "10.56.0",
     "@tanstack/react-table": "^9.1.2",
