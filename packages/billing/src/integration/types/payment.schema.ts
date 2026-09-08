@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
-import type { BillingPayment, BillingPaymentList } from './payment'
+import type {
+  BillingPayment,
+  BillingPaymentCreated,
+  BillingPaymentDeleted,
+  BillingPaymentList,
+} from './payment'
 import { sourceSchema } from './customer.schema'
 import { BillingPaymentModeSchema } from './payment-mode.schema'
 
@@ -30,6 +35,15 @@ const paymentRefundSchema = z.strictObject({
   refundedAt: z.number().int(),
   createdAt: z.number().int(),
 })
+
+export const BillingPaymentCreatedSchema = z.strictObject({
+  object: z.literal('payment'),
+  id: z.string().min(1),
+}) satisfies z.ZodType<BillingPaymentCreated>
+
+export const BillingPaymentDeletedSchema = BillingPaymentCreatedSchema.extend({
+  deleted: z.literal(true),
+}) satisfies z.ZodType<BillingPaymentDeleted>
 
 /**
  * The schema for a Billing payment resource.

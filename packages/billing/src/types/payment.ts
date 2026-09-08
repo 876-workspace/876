@@ -86,7 +86,7 @@ export interface PaymentApplyParams {
 /**
  * Parameters for replacing a received payment. Same shape as create.
  */
-export interface PaymentUpdateParams extends PaymentCreateParams {}
+export type PaymentUpdateParams = PaymentCreateParams
 
 /**
  * An allocation of a payment to a single invoice.

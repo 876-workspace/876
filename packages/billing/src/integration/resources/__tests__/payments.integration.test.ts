@@ -71,6 +71,26 @@ function setup(response: unknown) {
 }
 
 describe('Billing integration payments resource', () => {
+  it('accepts the payment reference returned by create', async () => {
+    const created = { object: 'payment' as const, id: 'pay_1' }
+    const { client } = setup(created)
+
+    const result = await client.payments.create(
+      'org_1',
+      {
+        customerId: 'cus_1',
+        paymentModeId: 'mode_1',
+        depositAccountId: 'acct_1',
+        amount: '15000',
+        currency: 'JMD',
+        paymentDate: 1_788_825_600,
+      },
+      { idempotencyKey: 'payment-1' }
+    )
+
+    expect(result).toEqual({ data: created, error: null })
+  })
+
   it('accepts partially refunded payment resources with refunded amount evidence', async () => {
     const resultList = {
       object: 'list' as const,
@@ -115,7 +135,9 @@ describe('Billing integration payments resource', () => {
   })
 
   it('rejects a payment response that omits amountRefunded', async () => {
-    const { amountRefunded: _amountRefunded, ...invalidPayment } = payment
+    const invalidPayment = Object.fromEntries(
+      Object.entries(payment).filter(([key]) => key !== 'amountRefunded')
+    )
     const { client } = setup({
       object: 'list',
       data: [invalidPayment],
@@ -131,5 +153,48 @@ describe('Billing integration payments resource', () => {
       code: 'billing/invalid-response',
       message: 'The Billing service returned an invalid response.',
     })
+  })
+
+  it('routes update, apply, and delete through the integration payment path', async () => {
+    const created = { object: 'payment' as const, id: 'pay_1' }
+    const updated = setup(created)
+    const updateParams = {
+      customerId: 'cus_1',
+      paymentModeId: 'mode_1',
+      depositAccountId: 'acct_1',
+      amount: '15000',
+      currency: 'JMD',
+      paymentDate: 1_788_825_600,
+      allocations: [],
+    }
+
+    await updated.client.payments.update('org_1', 'pay/1', updateParams)
+    expect(updated.fetch).toHaveBeenCalledWith(
+      'https://billing.test/api/v1/integrations/organizations/org_1/payments/pay%2F1',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify(updateParams),
+      })
+    )
+
+    const applied = setup(created)
+    const applyParams = {
+      allocations: [{ invoiceId: 'inv_1', amount: '5000' }],
+    }
+    await applied.client.payments.apply('org_1', 'pay/1', applyParams)
+    expect(applied.fetch).toHaveBeenCalledWith(
+      'https://billing.test/api/v1/integrations/organizations/org_1/payments/pay%2F1/apply',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(applyParams),
+      })
+    )
+
+    const deleted = setup({ object: 'payment', id: 'pay_1', deleted: true })
+    await deleted.client.payments.delete('org_1', 'pay/1')
+    expect(deleted.fetch).toHaveBeenCalledWith(
+      'https://billing.test/api/v1/integrations/organizations/org_1/payments/pay%2F1',
+      expect.objectContaining({ method: 'DELETE' })
+    )
   })
 })

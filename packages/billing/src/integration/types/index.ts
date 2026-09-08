@@ -126,10 +126,27 @@ export {
 export type {
   BillingPaymentAllocationCreateParams,
   BillingPaymentCreateParams,
+  BillingPaymentUpdateParams,
+  BillingPaymentApplyParams,
+  BillingPaymentCreated,
+  BillingPaymentDeleted,
   BillingPayment,
   BillingPaymentList,
 } from './payment'
 export {
+  BillingPaymentCreatedSchema,
+  BillingPaymentDeletedSchema,
   BillingPaymentSchema,
   BillingPaymentListSchema,
 } from './payment.schema'
+export type {
+  BillingRefundCreateParams,
+  BillingRefund,
+  BillingRefundCreated,
+  BillingRefundList,
+} from './refund'
+export {
+  BillingRefundSchema,
+  BillingRefundCreatedSchema,
+  BillingRefundListSchema,
+} from './refund.schema'

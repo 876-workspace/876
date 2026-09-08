@@ -78,7 +78,9 @@ describe('PaymentSchema', () => {
   })
 
   it('rejects payment resources that omit amountRefunded', () => {
-    const { amountRefunded: _amountRefunded, ...invalid } = payment
+    const invalid = Object.fromEntries(
+      Object.entries(payment).filter(([key]) => key !== 'amountRefunded')
+    )
     expect(() => PaymentSchema.parse(invalid)).toThrow()
   })
 })

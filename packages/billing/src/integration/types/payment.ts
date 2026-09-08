@@ -76,6 +76,28 @@ export interface BillingPaymentCreateParams {
   sourceExternalReference?: string | null
 }
 
+/** Parameters for replacing an existing integration-owned payment. */
+export type BillingPaymentUpdateParams = Omit<
+  BillingPaymentCreateParams,
+  'sourceExternalReference'
+>
+
+/** Parameters for applying additional allocations to a payment. */
+export interface BillingPaymentApplyParams {
+  allocations: BillingPaymentAllocationCreateParams[]
+}
+
+/** Reference returned after a payment mutation. */
+export interface BillingPaymentCreated {
+  object: 'payment'
+  id: string
+}
+
+/** Tombstone returned after canceling a payment. */
+export interface BillingPaymentDeleted extends BillingPaymentCreated {
+  deleted: true
+}
+
 /**
  * This object represents a payment exposed through the integration API.
  */
