@@ -58,11 +58,15 @@ export async function sendInvoiceWorkflow(
       const invoice = await findInvoiceForSend(tx, tenantId, invoiceId)
       if (!invoice) return err('Invoice not found.', 404)
       if (!isSendableStatus(invoice.status))
-        return err('Only a finalized collectible invoice can be sent.', 409)
+        return err(
+          'Only a finalized invoice that is not void or written off can be marked sent.',
+          409
+        )
 
       await markInvoiceSent(tx, {
         id: invoice.id,
         status: invoice.status,
+        sentAt: invoice.sentAt,
         now,
       })
       await enqueueBillingEvent(tx, tenantId, {
