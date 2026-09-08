@@ -37,25 +37,27 @@ export function isQuoteExpired(
  *
  * `send` is repeatable while SENT so a resend can create fresh communication
  * evidence while preserving the first `sentAt`. Decision states remain
- * terminal. Expiry wins over acceptance/conversion once the configured time is
- * reached.
+ * terminal. Once a DRAFT/SENT quote has reached `expiresAt`, only the explicit
+ * expiry command may advance it.
  */
 export function resolveQuoteLifecycleTransition(
   quote: QuoteLifecycleState,
   action: QuoteLifecycleAction,
   asOf: number
 ): QuoteLifecycleTransition | null {
+  const expired = isQuoteExpired(quote, asOf)
+
   if (action === 'expire') {
     if (
       (quote.status !== 'DRAFT' && quote.status !== 'SENT') ||
-      !isQuoteExpired(quote, asOf)
+      !expired
     )
       return null
 
     return { to: 'EXPIRED', timestampField: 'expiredAt' }
   }
 
-  if (action === 'accept' && isQuoteExpired(quote, asOf)) return null
+  if (expired && (quote.status === 'DRAFT' || quote.status === 'SENT')) return null
 
   if (action === 'send') {
     if (quote.status !== 'DRAFT' && quote.status !== 'SENT') return null
