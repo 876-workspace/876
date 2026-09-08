@@ -147,7 +147,18 @@ export interface PaymentResource {
   number: string
   amount: string
   unappliedAmount: string
-  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED'
+  amountRefunded: string
+  status:
+    | 'PENDING'
+    | 'REQUIRES_ACTION'
+    | 'AUTHORIZED'
+    | 'PROCESSING'
+    | 'SUCCEEDED'
+    | 'FAILED'
+    | 'CANCELED'
+    | 'PARTIALLY_REFUNDED'
+    | 'REFUNDED'
+    | 'DISPUTED'
   bankCharges: string
   currency: string
   paymentDate: number
