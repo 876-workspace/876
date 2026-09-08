@@ -39,6 +39,10 @@
       "types": "./src/document/document-line-items-editor.tsx",
       "default": "./src/document/document-line-items-editor.tsx"
     },
+    "./invoice-lifecycle-actions": {
+      "types": "./src/invoice-lifecycle-actions.tsx",
+      "default": "./src/invoice-lifecycle-actions.tsx"
+    },
     "./invoices-table": {
       "types": "./src/invoices-table.tsx",
       "default": "./src/invoices-table.tsx"
