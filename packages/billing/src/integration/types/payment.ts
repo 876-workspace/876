@@ -111,9 +111,24 @@ export interface BillingPayment {
   unappliedAmount: string
 
   /**
-   * Status of the payment. One of `PENDING`, `SUCCEEDED`, `FAILED`, or `CANCELED`.
+   * Total amount already returned to the customer as a decimal string.
    */
-  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED'
+  amountRefunded: string
+
+  /**
+   * Current payment lifecycle state.
+   */
+  status:
+    | 'PENDING'
+    | 'REQUIRES_ACTION'
+    | 'AUTHORIZED'
+    | 'PROCESSING'
+    | 'SUCCEEDED'
+    | 'FAILED'
+    | 'CANCELED'
+    | 'PARTIALLY_REFUNDED'
+    | 'REFUNDED'
+    | 'DISPUTED'
 
   /**
    * ID of the payment provider connection used for the payment, if any.
