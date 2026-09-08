@@ -184,7 +184,7 @@ Outbox events are not a user-facing history API. No invoice timeline was fabrica
 - [x] Reconciled first-send semantics and conservative Void presentation.
 - [x] Restored no-op quote-schema churn to `main` exactly.
 - [x] Refreshed the GPT Web report with the Payments Received/quote-conversion extension.
-- [ ] Final compare against current `main` after the extension.
+- [x] Final compare against current `main`: branch is 103 commits ahead, 0 behind, with merge base `d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`.
 
 ## Test drafting summary
 
@@ -240,8 +240,9 @@ Implementation state:
 - Finance actions use their own payment/quote/invoice permissions rather than sharing one broad UI authority.
 - Billing and Invoice share lifecycle/payment presentation through `@876/billing-ui`.
 - No database migration is required for either the lifecycle work or this extension.
+- Final branch comparison is clean against current `main`: 103 ahead, 0 behind.
 
-Remaining work is verification and the final branch comparison only.
+Remaining work is **runtime/toolchain/database verification only**.
 
 ## PR preparation summary
 
@@ -249,6 +250,7 @@ Implementation is complete but unverified.
 
 - Base used for this run: `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`.
 - Branch: `feature/invoice-lifecycle-hardening`.
+- Final compare: 103 commits ahead, 0 behind `main`.
 - No PR was opened; GPT Web rules prohibit it.
 - No migration SQL exists for this run.
 - Before PR preparation, the orchestrator must run the verification commands above, inspect generated/API-contract output, and fix only concrete failures without weakening the lifecycle/payment invariants.
