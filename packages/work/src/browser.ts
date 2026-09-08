@@ -4,10 +4,24 @@ import { requestApiResult } from '@876/core/client'
 
 import type { WorkMyWork, WorkMyWorkFilter } from './my-work'
 import type { WorkSessionClient } from './session'
-import type { WorkTask } from './types'
+import type { WorkTask, WorkTaskImportance } from './types'
 
 export type WorkBrowserMyWorkFilter = Pick<WorkMyWorkFilter, 'from' | 'to'>
 export type WorkBrowserTaskFilter = { listId?: string }
+export type WorkBrowserTaskDue = { at: number; timeZone: string }
+export type WorkBrowserCreateTaskInput = {
+  title: string
+  listId?: string
+  description?: string | null
+  importance?: WorkTaskImportance
+  due?: WorkBrowserTaskDue | null
+}
+export type WorkBrowserUpdateTaskInput = {
+  title?: string
+  description?: string | null
+  importance?: WorkTaskImportance
+  due?: WorkBrowserTaskDue | null
+}
 
 type WorkTaskListPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['taskLists']['list']>>['data']
@@ -31,6 +45,10 @@ function tasksPath(filter: WorkBrowserTaskFilter): string {
   return `/api/tasks${query ? `?${query}` : ''}`
 }
 
+function taskPath(taskId: string): string {
+  return `/api/tasks/${encodeURIComponent(taskId)}`
+}
+
 export const browserWork = {
   myWork: {
     retrieve(filter: WorkBrowserMyWorkFilter) {
@@ -46,14 +64,29 @@ export const browserWork = {
     list(filter: WorkBrowserTaskFilter = {}) {
       return requestApiResult<WorkTaskPage>(tasksPath(filter))
     },
+    create(input: WorkBrowserCreateTaskInput) {
+      return requestApiResult<WorkTask>('/api/tasks', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      })
+    },
+    update(taskId: string, input: WorkBrowserUpdateTaskInput) {
+      return requestApiResult<WorkTask>(taskPath(taskId), {
+        method: 'PATCH',
+        body: JSON.stringify({ action: 'update', ...input }),
+      })
+    },
     complete(taskId: string) {
-      return requestApiResult<WorkTask>(
-        `/api/tasks/${encodeURIComponent(taskId)}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'DONE' }),
-        }
-      )
+      return requestApiResult<WorkTask>(taskPath(taskId), {
+        method: 'PATCH',
+        body: JSON.stringify({ action: 'complete' }),
+      })
+    },
+    cancel(taskId: string) {
+      return requestApiResult<WorkTask>(taskPath(taskId), {
+        method: 'PATCH',
+        body: JSON.stringify({ action: 'cancel' }),
+      })
     },
   },
 } as const
