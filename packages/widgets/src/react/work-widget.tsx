@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkMyWork } from '@876/work'
+import type { WorkMyWork, WorkTask } from '@876/work'
 import { browserWork } from '@876/work/browser'
-import { WorkSummary } from '@876/work-ui/summary'
+import { WorkToday } from '@876/work-ui/today'
 
 import { WidgetPanelSkeleton } from './widget-loading'
 
@@ -23,6 +23,7 @@ export function WorkWidgetPanel() {
   const [work, setWork] = useState<WorkMyWork | null>(null)
   const [state, setState] = useState<LoadState>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null)
   const workRef = useRef<WorkMyWork | null>(null)
   const generationRef = useRef(0)
 
@@ -50,6 +51,41 @@ export function WorkWidgetPanel() {
   useEffect(() => {
     void load()
   }, [load])
+
+  const completeTask = useCallback(
+    async (task: WorkTask) => {
+      if (completingTaskId) return
+
+      setCompletingTaskId(task.id)
+      setErrorMessage(null)
+      const result = await browserWork.tasks.complete(task.id)
+
+      if (result.error || !result.data) {
+        setState('error')
+        setErrorMessage(
+          result.error?.message ?? 'The task could not be completed. Try again.'
+        )
+        setCompletingTaskId(null)
+        return
+      }
+
+      setWork((current) =>
+        current
+          ? {
+              ...current,
+              tasks: current.tasks.filter((item) => item.id !== task.id),
+              overdueTasks: current.overdueTasks.filter(
+                (item) => item.id !== task.id
+              ),
+            }
+          : current
+      )
+      setState('ready')
+      setCompletingTaskId(null)
+      await load()
+    },
+    [completingTaskId, load]
+  )
 
   if (state === 'loading' && !work)
     return <WidgetPanelSkeleton label="Loading Work" />
@@ -87,7 +123,11 @@ export function WorkWidgetPanel() {
           </button>
         </div>
       ) : null}
-      <WorkSummary work={work} />
+      <WorkToday
+        work={work}
+        completingTaskId={completingTaskId}
+        onCompleteTask={completeTask}
+      />
     </div>
   )
 }
