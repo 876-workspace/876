@@ -63,8 +63,7 @@ describe('CurrenciesPanel', () => {
         canManage={true}
       />
     )
-    expect(screen.getByText('USD')).toBeInTheDocument()
-    expect(screen.getByText('US Dollar')).toBeInTheDocument()
+    expect(screen.getByText('USD · US Dollar')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()
   })
 
