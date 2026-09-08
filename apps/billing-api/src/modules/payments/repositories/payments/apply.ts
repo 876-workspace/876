@@ -20,7 +20,8 @@ import { isRetryableTransactionError } from '@/platform/prisma-errors'
 export async function apply(
   tenantId: string,
   paymentId: string,
-  params: PaymentApplyParams
+  params: PaymentApplyParams,
+  sourceAppId?: string
 ): ServiceResult<{ id: string }> {
   const total = params.allocations.reduce(
     (sum, allocation) => sum + allocation.amount,
@@ -32,7 +33,11 @@ export async function apply(
     await prisma.$transaction(
       async (tx) => {
         const payment = await tx.payment.findFirst({
-          where: { id: paymentId, tenantId },
+          where: {
+            id: paymentId,
+            tenantId,
+            ...(sourceAppId ? { sourceAppId } : {}),
+          },
         })
         if (!payment) throw new PaymentMutationError('Payment not found.', 404)
         if (
