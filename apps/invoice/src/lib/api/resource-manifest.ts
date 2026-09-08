@@ -9,6 +9,7 @@ export const PROXIED_RESOURCES = Object.freeze([
   'payment-modes',
   'payments',
   'quotes',
+  'refunds',
   'tax-authorities',
   'tax-rates',
 ] as const)
