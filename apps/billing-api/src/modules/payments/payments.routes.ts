@@ -268,6 +268,36 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.integrationGet,
   })
+  const refundsBase = '/integrations/organizations/:organizationId/refunds'
+  api.get({
+    path: refundsBase,
+    summary: 'List organization Billing refunds',
+    security: { kind: 'integration', scope: 'billing.payments.read' },
+    request: { params: org },
+    responses: {
+      200: {
+        description: 'Refund list',
+        schema: successEnvelopeSchema(list('refund')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.refundsList,
+  })
+  api.post({
+    path: refundsBase,
+    summary: 'Create an organization Billing refund',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: org, body: RefundCreateSchema },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'Refund created',
+        schema: successEnvelopeSchema(resource('refund')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.refundsCreate,
+  })
   api.get({
     path: '/integrations/organizations/:organizationId/payment-modes',
     summary: 'List organization Billing payment modes',
