@@ -3,10 +3,22 @@ import type { ReactNode } from 'react'
 
 import { cn } from '@876/core/utils'
 
-type AgendaItem =
-  | { type: 'task'; id: string; at: number; value: WorkTask }
-  | { type: 'reminder'; id: string; at: number; value: WorkReminder }
-  | { type: 'event'; id: string; at: number; value: WorkEvent }
+export type WorkAgendaItem =
+  | { type: 'task'; id: string; at: number; allDay: false; value: WorkTask }
+  | {
+      type: 'reminder'
+      id: string
+      at: number
+      allDay: false
+      value: WorkReminder
+    }
+  | {
+      type: 'event'
+      id: string
+      at: number | null
+      allDay: boolean
+      value: WorkEvent
+    }
 
 export type WorkAgendaProps = {
   tasks?: readonly WorkTask[]
@@ -14,40 +26,77 @@ export type WorkAgendaProps = {
   events?: readonly WorkEvent[]
   className?: string
   empty?: ReactNode
-  renderItem?: (item: AgendaItem) => ReactNode
+  renderItem?: (item: WorkAgendaItem) => ReactNode
+}
+
+function compareItems(left: WorkAgendaItem, right: WorkAgendaItem): number {
+  if (left.allDay !== right.allDay) return left.allDay ? -1 : 1
+  if (left.at !== right.at) {
+    if (left.at == null) return -1
+    if (right.at == null) return 1
+    return left.at - right.at
+  }
+  return left.id.localeCompare(right.id)
 }
 
 function itemsOf(
   tasks: readonly WorkTask[],
   reminders: readonly WorkReminder[],
   events: readonly WorkEvent[]
-): AgendaItem[] {
+): WorkAgendaItem[] {
   return [
     ...tasks.flatMap((task) => {
       const at = task.startAt ?? task.dueAt
       return at == null
         ? []
-        : [{ type: 'task' as const, id: task.id, at, value: task }]
+        : [
+            {
+              type: 'task' as const,
+              id: task.id,
+              at,
+              allDay: false as const,
+              value: task,
+            },
+          ]
     }),
     ...reminders.map((reminder) => ({
       type: 'reminder' as const,
       id: reminder.id,
       at: reminder.remindAt,
+      allDay: false as const,
       value: reminder,
     })),
-    ...events.flatMap((event) =>
-      event.startAt == null
-        ? []
-        : [
-            {
-              type: 'event' as const,
-              id: event.id,
-              at: event.startAt,
-              value: event,
-            },
-          ]
-    ),
-  ].sort((left, right) => left.at - right.at || left.id.localeCompare(right.id))
+    ...events.flatMap((event) => {
+      if (event.allDay && event.startDate)
+        return [
+          {
+            type: 'event' as const,
+            id: event.id,
+            at: null,
+            allDay: true as const,
+            value: event,
+          },
+        ]
+      if (event.startAt == null) return []
+      return [
+        {
+          type: 'event' as const,
+          id: event.id,
+          at: event.startAt,
+          allDay: false as const,
+          value: event,
+        },
+      ]
+    }),
+  ].sort(compareItems)
+}
+
+function timeLabel(item: WorkAgendaItem): string {
+  if (item.allDay) return 'All day'
+  return new Date(item.at * 1000).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function WorkAgenda({
@@ -75,10 +124,7 @@ export function WorkAgenda({
           ) : (
             <div className="flex items-baseline gap-3">
               <time className="text-muted-foreground w-20 shrink-0 text-xs">
-                {new Date(item.at * 1000).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {timeLabel(item)}
               </time>
               <span className="text-sm">{item.value.title}</span>
             </div>
