@@ -12,7 +12,7 @@ vi.mock('@876/ui/product-mobile-nav', () => ({
   },
 }))
 
-import { resolveCrmNavIcon } from './nav-icons'
+import { resolveNavIcon } from './nav-icons'
 import { MobileNav } from './mobile-nav'
 
 const navigation: NavGroupDefinition[] = [
@@ -39,7 +39,7 @@ describe('CRM MobileNav', () => {
       title: 'CRM',
       subtitle: 'Island Commerce',
       navigation,
-      resolveIcon: resolveCrmNavIcon,
+      resolveIcon: resolveNavIcon,
     })
   })
 })
