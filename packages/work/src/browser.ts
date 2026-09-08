@@ -30,6 +30,10 @@ type WorkTaskPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['tasks']['list']>>['data']
 >
 
+type WorkCalendarPage = NonNullable<
+  Awaited<ReturnType<WorkSessionClient['calendars']['list']>>['data']
+>
+
 function myWorkPath(filter: WorkBrowserMyWorkFilter): string {
   const params = new URLSearchParams({
     from: String(filter.from),
@@ -87,6 +91,11 @@ export const browserWork = {
         method: 'PATCH',
         body: JSON.stringify({ action: 'cancel' }),
       })
+    },
+  },
+  calendars: {
+    list() {
+      return requestApiResult<WorkCalendarPage>('/api/calendars')
     },
   },
 } as const
