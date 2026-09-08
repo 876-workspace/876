@@ -24,6 +24,14 @@ export interface PaymentDetailAllocation {
   href: string
 }
 
+export interface PaymentDetailRefund {
+  id: string
+  number: string
+  amount: string
+  date: string
+  reason: string | null
+}
+
 export interface PaymentDetailView {
   id: string
   number: string
@@ -40,6 +48,7 @@ export interface PaymentDetailView {
   reference: string
   notes: string | null
   allocations: PaymentDetailAllocation[]
+  refunds?: PaymentDetailRefund[]
 }
 
 export interface PaymentDetailCardProps {
@@ -131,6 +140,30 @@ export function PaymentDetailCard({
                     {allocation.amount}
                   </span>
                 </Link>
+              ))}
+            </div>
+          </DetailCardSection>
+        ) : null}
+
+        {payment.refunds && payment.refunds.length > 0 ? (
+          <DetailCardSection title="Refunds">
+            <div className="divide-border divide-y rounded-lg border">
+              {payment.refunds.map((refund) => (
+                <div
+                  key={refund.id}
+                  className="flex items-start justify-between gap-4 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium">{refund.number}</p>
+                    <p className="text-muted-foreground text-xs">{refund.date}</p>
+                    {refund.reason ? (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {refund.reason}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="font-medium tabular-nums">{refund.amount}</span>
+                </div>
               ))}
             </div>
           </DetailCardSection>
