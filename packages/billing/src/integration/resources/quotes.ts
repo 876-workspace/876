@@ -35,7 +35,8 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
   const transition = (
     organizationId: string,
     quoteId: string,
-    action: 'send' | 'accept' | 'decline' | 'cancel' | 'expire'
+    action: 'send' | 'accept' | 'decline' | 'cancel' | 'expire',
+    options: IntegrationCreateOptions
   ) =>
     IntegrationRequest<BillingQuote>(
       runtime,
@@ -43,6 +44,7 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
         method: 'POST',
         path: lifecyclePath(organizationId, quoteId, action),
         body: {},
+        headers: { 'Idempotency-Key': options.idempotencyKey },
       },
       BillingQuoteSchema
     )
@@ -85,33 +87,58 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
       )
     },
 
-    send(organizationId: string, quoteId: string) {
-      return transition(organizationId, quoteId, 'send')
+    send(
+      organizationId: string,
+      quoteId: string,
+      options: IntegrationCreateOptions
+    ) {
+      return transition(organizationId, quoteId, 'send', options)
     },
 
-    accept(organizationId: string, quoteId: string) {
-      return transition(organizationId, quoteId, 'accept')
+    accept(
+      organizationId: string,
+      quoteId: string,
+      options: IntegrationCreateOptions
+    ) {
+      return transition(organizationId, quoteId, 'accept', options)
     },
 
-    decline(organizationId: string, quoteId: string) {
-      return transition(organizationId, quoteId, 'decline')
+    decline(
+      organizationId: string,
+      quoteId: string,
+      options: IntegrationCreateOptions
+    ) {
+      return transition(organizationId, quoteId, 'decline', options)
     },
 
-    cancel(organizationId: string, quoteId: string) {
-      return transition(organizationId, quoteId, 'cancel')
+    cancel(
+      organizationId: string,
+      quoteId: string,
+      options: IntegrationCreateOptions
+    ) {
+      return transition(organizationId, quoteId, 'cancel', options)
     },
 
-    expire(organizationId: string, quoteId: string) {
-      return transition(organizationId, quoteId, 'expire')
+    expire(
+      organizationId: string,
+      quoteId: string,
+      options: IntegrationCreateOptions
+    ) {
+      return transition(organizationId, quoteId, 'expire', options)
     },
 
-    convertToInvoice(organizationId: string, quoteId: string) {
+    convertToInvoice(
+      organizationId: string,
+      quoteId: string,
+      options: IntegrationCreateOptions
+    ) {
       return IntegrationRequest<BillingInvoice>(
         runtime,
         {
           method: 'POST',
           path: lifecyclePath(organizationId, quoteId, 'convert-to-invoice'),
           body: {},
+          headers: { 'Idempotency-Key': options.idempotencyKey },
         },
         BillingInvoiceSchema
       )
