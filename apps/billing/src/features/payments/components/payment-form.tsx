@@ -57,6 +57,11 @@ interface InitialPayment {
   allocations: Array<{ invoiceId: string; amount: string }>
 }
 
+interface PaymentPrefill {
+  customerId?: string
+  invoiceId?: string
+}
+
 export function PaymentForm({
   customers,
   accounts,
@@ -65,6 +70,7 @@ export function PaymentForm({
   invoices,
   defaultCurrency,
   initial,
+  prefill,
 }: {
   customers: PaymentOption[]
   accounts: AccountOption[]
@@ -73,32 +79,38 @@ export function PaymentForm({
   invoices: InvoiceOption[]
   defaultCurrency: string
   initial?: InitialPayment
+  prefill?: PaymentPrefill
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [now] = useState(Date.now)
+  const prefilledInvoice = !initial && prefill?.invoiceId
+    ? invoices.find((invoice) => invoice.id === prefill.invoiceId)
+    : undefined
+  const initialCustomerId =
+    initial?.customerId ?? prefilledInvoice?.customerId ?? prefill?.customerId ?? ''
+  const initialCurrency =
+    initial?.currency ?? prefilledInvoice?.currency ?? defaultCurrency
+  const initialDecimals = currencyDecimals(currencies, initialCurrency)
+
   const [error, setError] = useState<string | null>(null)
-  const [customerId, setCustomerId] = useState(initial?.customerId ?? '')
-  const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency)
+  const [customerId, setCustomerId] = useState(initialCustomerId)
+  const [currency, setCurrency] = useState(initialCurrency)
   const [accountId, setAccountId] = useState(initial?.depositAccountId ?? '')
   const [modeId, setModeId] = useState(
     initial?.paymentModeId ?? modes[0]?.value ?? ''
   )
   const [amount, setAmount] = useState(() =>
     initial
-      ? formatMinorAmountInput(
-          initial.amount,
-          currencyDecimals(currencies, initial.currency)
-        )
-      : ''
+      ? formatMinorAmountInput(initial.amount, initialDecimals)
+      : prefilledInvoice
+        ? formatMinorAmountInput(prefilledInvoice.amountDue, initialDecimals)
+        : ''
   )
   const [bankCharges, setBankCharges] = useState(() =>
     initial
-      ? formatMinorAmountInput(
-          initial.bankCharges,
-          currencyDecimals(currencies, initial.currency)
-        )
-      : zeroMinorAmountInput(currencyDecimals(currencies, defaultCurrency))
+      ? formatMinorAmountInput(initial.bankCharges, initialDecimals)
+      : zeroMinorAmountInput(initialDecimals)
   )
   const [paymentDate, setPaymentDate] = useState(
     unixTimestampToDateInput(initial?.paymentDate ?? now / 1000)
@@ -107,17 +119,25 @@ export function PaymentForm({
     initial?.referenceNumber ?? ''
   )
   const [notes, setNotes] = useState(initial?.notes ?? '')
-  const [allocations, setAllocations] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      (initial?.allocations ?? []).map((allocation) => [
-        allocation.invoiceId,
-        formatMinorAmountInput(
-          allocation.amount,
-          currencyDecimals(currencies, initial?.currency ?? defaultCurrency)
+  const [allocations, setAllocations] = useState<Record<string, string>>(() => {
+    if (initial) {
+      return Object.fromEntries(
+        initial.allocations.map((allocation) => [
+          allocation.invoiceId,
+          formatMinorAmountInput(allocation.amount, initialDecimals),
+        ])
+      )
+    }
+    if (prefilledInvoice) {
+      return {
+        [prefilledInvoice.id]: formatMinorAmountInput(
+          prefilledInvoice.amountDue,
+          initialDecimals
         ),
-      ])
-    )
-  )
+      }
+    }
+    return {}
+  })
 
   const decimalPlaces = currencyDecimals(currencies, currency)
   const availableAccounts = accounts.filter(
@@ -135,6 +155,8 @@ export function PaymentForm({
     )
     return total + BigInt(value ?? 0)
   }, 0n)
+  const parsedReceived = parseMinorAmountInput(amount, decimalPlaces, true)
+  const unusedPreview = BigInt(parsedReceived ?? 0) - allocatedPreview
 
   function changeCustomer(value: string) {
     setCustomerId(value)
@@ -176,10 +198,6 @@ export function PaymentForm({
       setError('Bank charges must be less than the payment amount.')
       return
     }
-    if (parsedAllocations.length === 0) {
-      setError('Allocate at least part of the payment to an invoice.')
-      return
-    }
     if (allocatedTotal > BigInt(paymentAmount)) {
       setError('Invoice allocations cannot exceed the payment amount.')
       return
@@ -209,10 +227,10 @@ export function PaymentForm({
         ? await client.payments.update(initial.id, params)
         : await client.payments.create(params)
       if (result.error || !result.data) {
-        setError(result.error?.message ?? 'Failed to save the payment.')
+        setError(result.error?.message ?? 'Failed to save the payment received.')
         return
       }
-      router.push(initial ? `/payments/${initial.id}` : '/payments')
+      router.push(initial ? `/payments/${initial.id}` : `/payments/${result.data.id}`)
       router.refresh()
     })
   }
@@ -349,7 +367,7 @@ export function PaymentForm({
         </div>
 
         <aside className="876-card h-fit p-5">
-          <p className="876-eyebrow">Payment summary</p>
+          <p className="876-eyebrow">Payment received</p>
           <dl className="mt-4 space-y-3 text-sm">
             <SummaryRow
               label="Received"
@@ -360,32 +378,41 @@ export function PaymentForm({
               value={bankCharges || zeroMinorAmountInput(decimalPlaces)}
             />
             <SummaryRow
-              label="Allocated"
+              label="Applied to invoices"
               value={formatMinorAmountInput(allocatedPreview, decimalPlaces)}
+            />
+            <SummaryRow
+              label="Unused / customer credit"
+              value={formatMinorAmountInput(
+                unusedPreview > 0n ? unusedPreview : 0n,
+                decimalPlaces
+              )}
             />
           </dl>
           <p className="text-muted-foreground mt-4 text-xs">
-            All amounts are recorded in {currency}. Unallocated money remains on
-            the payment but does not reduce an invoice balance.
+            All amounts are recorded in {currency}. You may record a customer
+            payment without applying it immediately; the unused amount remains
+            available as customer credit for a later invoice.
           </p>
         </aside>
       </div>
 
       <section className="876-card overflow-hidden">
         <div className="border-border border-b px-5 py-4">
-          <h2 className="font-semibold">Invoice allocations</h2>
+          <h2 className="font-semibold">Apply to invoices</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Distribute the received amount across this customer&apos;s open
-            invoices.
+            Optionally distribute the amount received across this customer&apos;s
+            outstanding invoices.
           </p>
         </div>
         {!customerId ? (
           <p className="text-muted-foreground px-5 py-10 text-center text-sm">
-            Select a customer to see open invoices.
+            Select a customer to see outstanding invoices.
           </p>
         ) : availableInvoices.length === 0 ? (
           <p className="text-muted-foreground px-5 py-10 text-center text-sm">
-            This customer has no open invoices in {currency}.
+            This customer has no outstanding invoices in {currency}. The payment
+            can still be saved as unused customer credit.
           </p>
         ) : (
           <div className="divide-border divide-y">
@@ -431,7 +458,7 @@ export function PaymentForm({
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>
-          {isPending ? 'Saving...' : initial ? 'Save' : 'Create'}
+          {isPending ? 'Saving...' : initial ? 'Save' : 'Record payment'}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
