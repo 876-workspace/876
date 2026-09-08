@@ -130,9 +130,11 @@ export function findInvoiceForVoid(
   })
 }
 
-function objectMetadata(metadata: unknown): Record<string, unknown> | undefined {
+function objectMetadata(
+  metadata: Prisma.JsonValue
+): Prisma.JsonObject | undefined {
   return typeof metadata === 'object' && metadata !== null && !Array.isArray(metadata)
-    ? (metadata as Record<string, unknown>)
+    ? metadata
     : undefined
 }
 
@@ -142,7 +144,7 @@ export function markInvoiceVoid(
     id: string
     now: number
     reason?: string | null
-    metadata: unknown
+    metadata: Prisma.JsonValue
   }
 ) {
   const existingMetadata = objectMetadata(params.metadata)
@@ -189,7 +191,7 @@ export function markInvoiceWrittenOff(
     amount: bigint
     now: number
     reason: string
-    metadata: unknown
+    metadata: Prisma.JsonValue
   }
 ) {
   const existingMetadata = objectMetadata(params.metadata)
