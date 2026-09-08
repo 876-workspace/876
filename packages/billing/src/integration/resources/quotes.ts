@@ -13,6 +13,11 @@ import type {
   BillingQuoteListParams,
   IntegrationCreateOptions,
 } from '../types'
+import type {
+  QuotePreference,
+  QuotePreferenceUpdateParams,
+} from '../../types/quote-preference'
+import { QuotePreferenceSchema } from '../../types/quote-preference.schema'
 
 function collectionPath(organizationId: string): string {
   return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/quotes`
@@ -28,6 +33,10 @@ function lifecyclePath(
   action: string
 ): string {
   return `${resourcePath(organizationId, quoteId)}/${action}`
+}
+
+function preferencePath(organizationId: string): string {
+  return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/quote-preferences`
 }
 
 /** `$876.billing.quotes.*` — shared finance quote integrations. */
@@ -141,6 +150,29 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
           headers: { 'Idempotency-Key': options.idempotencyKey },
         },
         BillingInvoiceSchema
+      )
+    },
+
+    getPreferences(organizationId: string) {
+      return IntegrationRequest<QuotePreference>(
+        runtime,
+        { method: 'GET', path: preferencePath(organizationId) },
+        QuotePreferenceSchema
+      )
+    },
+
+    updatePreferences(
+      organizationId: string,
+      params: QuotePreferenceUpdateParams
+    ) {
+      return IntegrationRequest<QuotePreference>(
+        runtime,
+        {
+          method: 'PATCH',
+          path: preferencePath(organizationId),
+          body: params,
+        },
+        QuotePreferenceSchema
       )
     },
   }
