@@ -96,9 +96,10 @@ export async function Shell({
 
           <AppShellBody>
             <AppShellMain>{children}</AppShellMain>
-            {features.widgets.notepad || features.uiFeatures.chat ? (
+            {features.widgets.enabledWidgetIds.length > 0 ||
+            features.uiFeatures.chat ? (
               <SharedWidgetDock
-                enabledWidgetIds={features.widgets.notepad ? ['notepad'] : []}
+                enabledWidgetIds={features.widgets.enabledWidgetIds}
                 chatEnabled={features.uiFeatures.chat}
               />
             ) : null}

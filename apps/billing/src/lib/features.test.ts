@@ -84,7 +84,7 @@ describe('getFeatures', () => {
       'billing-documents',
       'billing-payroll',
     ])
-    expect(result.widgets).toEqual({ notepad: true })
+    expect(result.widgets).toEqual({ enabledWidgetIds: ['notepad'] })
   })
 
   it('requires group masters before enabling child features', async () => {
@@ -134,7 +134,7 @@ describe('getFeatures', () => {
       'billing-purchases-vendors',
       'billing-purchases-expenses',
     ])
-    expect(result.widgets).toEqual({ notepad: false })
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 
   it('canonicalizes enabled legacy feature aliases', async () => {
@@ -172,6 +172,7 @@ describe('getFeatures', () => {
     const result = await getFeatures({ userId: 'user_without_widget_master' })
 
     expect(result.uiFeatures.chat).toBe(false)
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 
   it('keeps the organization switcher disabled when its feature key is absent', async () => {
@@ -214,7 +215,7 @@ describe('getFeatures', () => {
       payroll: false,
     })
     expect(result.featureKeys).toEqual(['billing-search-bar'])
-    expect(result.widgets).toEqual({ notepad: false })
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 
   it('fails closed when server evaluation is unavailable', async () => {
@@ -249,6 +250,42 @@ describe('getFeatures', () => {
       payroll: false,
     })
     expect(result.featureKeys).toEqual([])
-    expect(result.widgets).toEqual({ notepad: false })
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
+  })
+
+  it('enables Notepad only when all four platform and app gates are present', async () => {
+    mocks.evaluate.mockResolvedValue({
+      data: {
+        data: [
+          { slug: 'platform-widgets' },
+          { slug: 'platform-widgets-notepad' },
+          { slug: 'billing-widgets' },
+          // billing-widgets-notepad is missing
+        ],
+      },
+      error: null,
+    })
+
+    const result = await getFeatures({ userId: 'user_missing_notepad_child' })
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
+    expect(result.uiFeatures.chat).toBe(false)
+
+    mocks.evaluate.mockResolvedValue({
+      data: {
+        data: [
+          { slug: 'platform-widgets' },
+          { slug: 'platform-widgets-notepad' },
+          { slug: 'billing-widgets' },
+          { slug: 'billing-widgets-notepad' },
+        ],
+      },
+      error: null,
+    })
+
+    const enabledResult = await getFeatures({
+      userId: 'user_all_notepad_gates',
+    })
+    expect(enabledResult.widgets).toEqual({ enabledWidgetIds: ['notepad'] })
+    expect(enabledResult.uiFeatures.chat).toBe(false)
   })
 })
