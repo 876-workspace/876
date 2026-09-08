@@ -39,6 +39,7 @@ type BackAction = {
 
 type ProductMobileNavProps = {
   title: string
+  accessibleTitle?: string
   subtitle?: string
   navigation: readonly NavGroupDefinition[]
   resolveIcon: (key: string) => IconComponent
@@ -53,6 +54,7 @@ type ProductMobileNavProps = {
 
 export function ProductMobileNav({
   title,
+  accessibleTitle,
   subtitle,
   navigation,
   resolveIcon,
@@ -66,6 +68,7 @@ export function ProductMobileNav({
 }: ProductMobileNavProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const resolvedAccessibleTitle = accessibleTitle ?? title
 
   const handleNavigate = (item: NavEntry) => {
     onNavigate?.(item)
@@ -91,13 +94,18 @@ export function ProductMobileNav({
               <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
             </span>
             <div className="min-w-0">
-              <SheetTitle className="text-sidebar-foreground truncate text-base leading-6">
-                {title}
+              <SheetTitle
+                className={cn(
+                  'text-sidebar-foreground truncate text-base leading-6',
+                  !title && 'sr-only'
+                )}
+              >
+                {title || resolvedAccessibleTitle}
               </SheetTitle>
               <SheetDescription
                 className={cn(subtitle ? 'truncate text-xs' : 'sr-only')}
               >
-                {subtitle ?? `Navigate ${title}`}
+                {subtitle ?? `Navigate ${resolvedAccessibleTitle}`}
               </SheetDescription>
             </div>
           </div>
