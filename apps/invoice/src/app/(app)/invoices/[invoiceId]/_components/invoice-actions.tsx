@@ -13,15 +13,18 @@ import {
 
 export function InvoiceActions({
   invoiceId,
+  customerId,
   status,
   canWrite,
 }: {
   invoiceId: string
+  customerId: string
   status: InvoiceStatus
   canWrite: boolean
 }) {
   const router = useRouter()
   const editability = getInvoiceEditability(status)
+  const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
   if (!canWrite) return null
 
@@ -29,6 +32,7 @@ export function InvoiceActions({
     <InvoiceLifecycleActions
       status={status}
       editHref={`/invoices/${invoiceId}/edit`}
+      recordPaymentHref={`/payments/new?${paymentParams.toString()}`}
       canEdit={editability.editable}
       canDelete={editability.deletable}
       onFinalize={
