@@ -196,7 +196,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
   api.get({
     path: '/refunds',
     summary: 'List refunds',
-    security: { kind: 'tenant', permission: 'sales:read' },
+    security: read,
     responses: {
       200: {
         description: 'Successful Response',
@@ -209,7 +209,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
   api.post({
     path: '/refunds',
     summary: 'Create a refund',
-    security: { kind: 'tenant', permission: 'sales:write' },
+    security: write,
     request: { body: RefundCreateSchema },
     documentBody: false,
     responses: {
@@ -267,6 +267,48 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.integrationGet,
+  })
+  api.patch({
+    path: `${base}/:paymentId`,
+    summary: 'Update an organization Billing payment',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgPayment, body: PaymentUpdateSchema },
+    responses: {
+      200: {
+        description: 'Payment updated',
+        schema: successEnvelopeSchema(resource('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.update,
+  })
+  api.delete({
+    path: `${base}/:paymentId`,
+    summary: 'Cancel an organization Billing payment',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgPayment },
+    responses: {
+      200: {
+        description: 'Payment canceled',
+        schema: successEnvelopeSchema(deleted('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.del,
+  })
+  api.post({
+    path: `${base}/:paymentId/apply`,
+    summary: 'Apply an organization Billing payment',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgPayment, body: PaymentApplySchema },
+    responses: {
+      201: {
+        description: 'Payment applied',
+        schema: successEnvelopeSchema(resource('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.apply,
   })
   const refundsBase = '/integrations/organizations/:organizationId/refunds'
   api.get({
