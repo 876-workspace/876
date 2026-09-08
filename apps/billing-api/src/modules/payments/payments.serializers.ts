@@ -17,11 +17,6 @@ function record(value: unknown): Record<string, unknown> {
     : {}
 }
 
-function object(value: unknown, discriminator: string): unknown {
-  if (!value || typeof value !== 'object') return value
-  return { object: discriminator, ...(json(value) as Record<string, unknown>) }
-}
-
 /** Public payment-mode shape. Tenant identity stays in the request boundary. */
 export function serializePaymentMode(row: unknown) {
   const data = record(json(row))
@@ -167,8 +162,26 @@ export function serializeIntegrationPayment(row: unknown) {
   }
 }
 
+/** Public refund shape; tenant identity remains in the request boundary. */
 export function serializeRefund(row: unknown) {
-  return object(row, 'refund')
+  const data = record(json(row))
+  return {
+    object: 'refund' as const,
+    id: data.id,
+    customerId: data.customerId,
+    creditNoteId: data.creditNoteId ?? null,
+    paymentId: data.paymentId ?? null,
+    paymentModeId: data.paymentModeId ?? null,
+    depositAccountId: data.depositAccountId ?? null,
+    number: data.number,
+    amount: data.amount,
+    currency: data.currency,
+    reason: data.reason ?? null,
+    notes: data.notes ?? null,
+    refundedAt: data.refundedAt,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+  }
 }
 
 export function paymentList(
