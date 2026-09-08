@@ -45,7 +45,7 @@ const TASK = {
   updatedAt: 150,
 }
 
-function request(body: unknown = { status: 'DONE' }) {
+function request(body: unknown = { action: 'complete' }) {
   return new Request('http://invoice.test/api/tasks/task_1', {
     method: 'PATCH',
     headers: { 'content-type': 'application/json' },
@@ -83,15 +83,15 @@ describe('PATCH /api/tasks/[taskId]', () => {
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
-  it('requires tasks.edit for completion', async () => {
+  it('requires tasks.edit for every task action', async () => {
     await PATCH(request(), context())
 
     expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith('tasks.edit')
   })
 
-  it('accepts only the narrow mark-done body', async () => {
+  it('rejects browser-owned canonical identity or status fields', async () => {
     const response = await PATCH(
-      request({ status: 'DONE', assigneeId: 'user_2' }),
+      request({ action: 'complete', status: 'DONE', assigneeId: 'user_2' }),
       context()
     )
     const payload = await response.json()
@@ -115,8 +115,8 @@ describe('PATCH /api/tasks/[taskId]', () => {
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
-  it('stamps completion with the acting user in the signed-in organization', async () => {
-    const response = await PATCH(request(), context('task_1'))
+  it('stamps completion with the acting user', async () => {
+    const response = await PATCH(request({ action: 'complete' }), context())
     const payload = await response.json()
 
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'task_1', {
@@ -125,6 +125,35 @@ describe('PATCH /api/tasks/[taskId]', () => {
     })
     expect(response.status).toBe(200)
     expect(payload).toEqual({ data: TASK, error: null })
+  })
+
+  it('maps cancel to the canonical cancelled status', async () => {
+    await PATCH(request({ action: 'cancel' }), context())
+
+    expect(mocks.update).toHaveBeenCalledWith('org_1', 'task_1', {
+      status: 'CANCELLED',
+    })
+  })
+
+  it('maps editable fields and due clearing without identity fields', async () => {
+    await PATCH(
+      request({
+        action: 'update',
+        title: 'Updated task',
+        description: 'Updated details',
+        importance: 'HIGH',
+        due: null,
+      }),
+      context()
+    )
+
+    expect(mocks.update).toHaveBeenCalledWith('org_1', 'task_1', {
+      title: 'Updated task',
+      description: 'Updated details',
+      importance: 'HIGH',
+      dueAt: null,
+      dueTimeZone: null,
+    })
   })
 
   it('preserves registered Work authorization failures', async () => {
