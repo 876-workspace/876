@@ -1,8 +1,17 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkMyWork, WorkTask, WorkTaskList } from '@876/work'
+import type {
+  WorkCalendar,
+  WorkMyWork,
+  WorkTask,
+  WorkTaskList,
+} from '@876/work'
 import { browserWork } from '@876/work/browser'
+import {
+  WorkCalendarSurface,
+  type WorkCalendarView,
+} from '@876/work-ui/calendar'
 import {
   WorkTasks,
   type WorkTaskDraft,
@@ -14,16 +23,60 @@ import { WidgetPanelSkeleton } from './widget-loading'
 
 type LoadState = 'loading' | 'ready' | 'error'
 type DeferredLoadState = 'idle' | LoadState
-type WorkView = 'today' | 'tasks'
+type WorkView = 'today' | 'tasks' | 'calendar'
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
+}
 
 export function currentDayWindow(now = new Date()) {
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-
+  const start = startOfDay(now)
+  const end = addDays(start, 1)
   return {
     from: Math.floor(start.getTime() / 1000),
     to: Math.floor(end.getTime() / 1000),
   }
+}
+
+function calendarWindow(view: WorkCalendarView, anchor: Date) {
+  const day = startOfDay(anchor)
+  if (view === 'day') {
+    return {
+      from: Math.floor(day.getTime() / 1000),
+      to: Math.floor(addDays(day, 1).getTime() / 1000),
+    }
+  }
+
+  if (view === 'week') {
+    const start = addDays(day, -day.getDay())
+    return {
+      from: Math.floor(start.getTime() / 1000),
+      to: Math.floor(addDays(start, 7).getTime() / 1000),
+    }
+  }
+
+  const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1)
+  const start = addDays(first, -first.getDay())
+  return {
+    from: Math.floor(start.getTime() / 1000),
+    to: Math.floor(addDays(start, 42).getTime() / 1000),
+  }
+}
+
+function moveCalendarAnchor(
+  view: WorkCalendarView,
+  anchor: Date,
+  direction: 'previous' | 'today' | 'next'
+): Date {
+  if (direction === 'today') return new Date()
+  const amount = direction === 'previous' ? -1 : 1
+  if (view === 'day') return addDays(anchor, amount)
+  if (view === 'week') return addDays(anchor, amount * 7)
+  return new Date(anchor.getFullYear(), anchor.getMonth() + amount, 1)
 }
 
 function WorkViewNav({
@@ -35,7 +88,7 @@ function WorkViewNav({
 }) {
   return (
     <div className="border-876-surface-border flex gap-1 border-b px-3 py-2">
-      {(['today', 'tasks'] as const).map((item) => (
+      {(['today', 'tasks', 'calendar'] as const).map((item) => (
         <button
           key={item}
           type="button"
@@ -77,6 +130,7 @@ export function WorkWidgetPanel() {
   const [work, setWork] = useState<WorkMyWork | null>(null)
   const [state, setState] = useState<LoadState>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
   const [taskLists, setTaskLists] = useState<WorkTaskList[]>([])
   const [tasks, setTasks] = useState<WorkTask[]>([])
   const [activeListId, setActiveListId] = useState<string | null>(null)
@@ -85,9 +139,22 @@ export function WorkWidgetPanel() {
   const [tasksHaveMore, setTasksHaveMore] = useState(false)
   const [mutatingTaskId, setMutatingTaskId] = useState<string | null>(null)
   const [creatingTask, setCreatingTask] = useState(false)
+
+  const [calendarWork, setCalendarWork] = useState<WorkMyWork | null>(null)
+  const [calendars, setCalendars] = useState<WorkCalendar[]>([])
+  const [calendarState, setCalendarState] =
+    useState<DeferredLoadState>('idle')
+  const [calendarErrorMessage, setCalendarErrorMessage] = useState<string | null>(
+    null
+  )
+  const [calendarView, setCalendarView] = useState<WorkCalendarView>('month')
+  const [calendarAnchor, setCalendarAnchor] = useState(() => new Date())
+  const [activeCalendarId, setActiveCalendarId] = useState<string | null>(null)
+
   const workRef = useRef<WorkMyWork | null>(null)
   const generationRef = useRef(0)
   const tasksGenerationRef = useRef(0)
+  const calendarGenerationRef = useRef(0)
 
   const load = useCallback(async () => {
     const generation = ++generationRef.current
@@ -139,6 +206,37 @@ export function WorkWidgetPanel() {
     setTasksState('ready')
   }, [])
 
+  const loadCalendar = useCallback(
+    async (nextView: WorkCalendarView, anchor: Date) => {
+      const generation = ++calendarGenerationRef.current
+      setCalendarState('loading')
+      setCalendarErrorMessage(null)
+
+      const [calendarsResult, workResult] = await Promise.all([
+        browserWork.calendars.list(),
+        browserWork.myWork.retrieve(calendarWindow(nextView, anchor)),
+      ])
+      if (generation !== calendarGenerationRef.current) return
+
+      if (calendarsResult.data) setCalendars(calendarsResult.data.data)
+
+      if (calendarsResult.error || workResult.error || !workResult.data) {
+        setCalendarState('error')
+        setCalendarErrorMessage(
+          calendarsResult.error?.message ??
+            workResult.error?.message ??
+            'Calendar could not be loaded. Try again.'
+        )
+        return
+      }
+
+      setCalendars(calendarsResult.data?.data ?? [])
+      setCalendarWork(workResult.data)
+      setCalendarState('ready')
+    },
+    []
+  )
+
   useEffect(() => {
     void load()
   }, [load])
@@ -148,8 +246,18 @@ export function WorkWidgetPanel() {
       setView(nextView)
       if (nextView === 'tasks' && tasksState === 'idle')
         void loadTasks(activeListId)
+      if (nextView === 'calendar' && calendarState === 'idle')
+        void loadCalendar(calendarView, calendarAnchor)
     },
-    [activeListId, loadTasks, tasksState]
+    [
+      activeListId,
+      calendarAnchor,
+      calendarState,
+      calendarView,
+      loadCalendar,
+      loadTasks,
+      tasksState,
+    ]
   )
 
   const selectTaskList = useCallback(
@@ -158,6 +266,23 @@ export function WorkWidgetPanel() {
       void loadTasks(listId)
     },
     [loadTasks]
+  )
+
+  const changeCalendarView = useCallback(
+    (nextView: WorkCalendarView) => {
+      setCalendarView(nextView)
+      void loadCalendar(nextView, calendarAnchor)
+    },
+    [calendarAnchor, loadCalendar]
+  )
+
+  const navigateCalendar = useCallback(
+    (direction: 'previous' | 'today' | 'next') => {
+      const nextAnchor = moveCalendarAnchor(calendarView, calendarAnchor, direction)
+      setCalendarAnchor(nextAnchor)
+      void loadCalendar(calendarView, nextAnchor)
+    },
+    [calendarAnchor, calendarView, loadCalendar]
   )
 
   const applyTaskResult = useCallback((updatedTask: WorkTask) => {
@@ -183,8 +308,21 @@ export function WorkWidgetPanel() {
   }, [])
 
   const refreshAfterTaskMutation = useCallback(async () => {
-    await Promise.all([load(), loadTasks(activeListId)])
-  }, [activeListId, load, loadTasks])
+    const refreshes: Promise<void>[] = [load()]
+    if (tasksState !== 'idle') refreshes.push(loadTasks(activeListId))
+    if (calendarState !== 'idle')
+      refreshes.push(loadCalendar(calendarView, calendarAnchor))
+    await Promise.all(refreshes)
+  }, [
+    activeListId,
+    calendarAnchor,
+    calendarState,
+    calendarView,
+    load,
+    loadCalendar,
+    loadTasks,
+    tasksState,
+  ])
 
   const taskMutationError = useCallback(
     (message: string) => {
@@ -219,7 +357,8 @@ export function WorkWidgetPanel() {
         return false
       }
 
-      applyTaskResult(result.data)
+      const updatedTask = result.data
+      applyTaskResult(updatedTask)
       setMutatingTaskId(null)
       await refreshAfterTaskMutation()
       return true
@@ -309,30 +448,67 @@ export function WorkWidgetPanel() {
             onCompleteTask={completeTask}
           />
         </>
-      ) : tasksState === 'loading' || tasksState === 'idle' ? (
-        <WidgetPanelSkeleton label="Loading tasks" />
-      ) : (
+      ) : view === 'tasks' ? (
+        tasksState === 'loading' || tasksState === 'idle' ? (
+          <WidgetPanelSkeleton label="Loading tasks" />
+        ) : (
+          <>
+            {tasksState === 'error' ? (
+              <ErrorBanner
+                message={tasksErrorMessage}
+                onRetry={() => void loadTasks(activeListId)}
+              />
+            ) : null}
+            <WorkTasks
+              taskLists={taskLists}
+              tasks={tasks}
+              activeListId={activeListId}
+              onSelectList={selectTaskList}
+              mutatingTaskId={mutatingTaskId}
+              creatingTask={creatingTask}
+              onCreateTask={createTask}
+              onUpdateTask={updateTask}
+              onCompleteTask={completeTask}
+              onCancelTask={cancelTask}
+              hasMore={tasksHaveMore}
+            />
+          </>
+        )
+      ) : calendarState === 'loading' || calendarState === 'idle' ? (
+        <WidgetPanelSkeleton label="Loading calendar" />
+      ) : calendarWork ? (
         <>
-          {tasksState === 'error' ? (
+          {calendarState === 'error' ? (
             <ErrorBanner
-              message={tasksErrorMessage}
-              onRetry={() => void loadTasks(activeListId)}
+              message={calendarErrorMessage}
+              onRetry={() => void loadCalendar(calendarView, calendarAnchor)}
             />
           ) : null}
-          <WorkTasks
-            taskLists={taskLists}
-            tasks={tasks}
-            activeListId={activeListId}
-            onSelectList={selectTaskList}
-            mutatingTaskId={mutatingTaskId}
-            creatingTask={creatingTask}
-            onCreateTask={createTask}
-            onUpdateTask={updateTask}
-            onCompleteTask={completeTask}
-            onCancelTask={cancelTask}
-            hasMore={tasksHaveMore}
+          <WorkCalendarSurface
+            work={calendarWork}
+            calendars={calendars}
+            view={calendarView}
+            anchorDate={calendarAnchor}
+            activeCalendarId={activeCalendarId}
+            onChangeView={changeCalendarView}
+            onNavigate={navigateCalendar}
+            onSelectCalendar={setActiveCalendarId}
           />
         </>
+      ) : (
+        <div className="p-6 text-center">
+          <p className="text-sm font-medium">Unable to load Calendar</p>
+          <p className="text-muted-foreground mt-1 text-xs">
+            {calendarErrorMessage}
+          </p>
+          <button
+            type="button"
+            onClick={() => void loadCalendar(calendarView, calendarAnchor)}
+            className="mt-3 text-xs font-medium underline underline-offset-2"
+          >
+            Try again
+          </button>
+        </div>
       )}
     </div>
   )
