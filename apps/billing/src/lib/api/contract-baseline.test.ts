@@ -71,6 +71,16 @@ describe('Billing API v1 contract baseline', () => {
     '/quotes/{quoteId}/accept',
     '/quotes/{quoteId}/decline',
     '/quotes/{quoteId}/cancel',
+    '/quotes/{quoteId}/expire',
+    '/quotes/{quoteId}/convert-to-invoice',
+    '/quote-preferences',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/send',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/accept',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/decline',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/cancel',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/expire',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-invoice',
+    '/integrations/organizations/{organizationId}/quote-preferences',
     // Item stock adjustments, added with lightweight stock tracking. Stock is
     // an Express-only capability, so neither path exists in the legacy
     // inventory.

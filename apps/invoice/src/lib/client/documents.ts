@@ -65,6 +65,10 @@ interface DocumentDeleted {
 
 type DocumentEndpoint = '/api/invoices' | '/api/quotes'
 
+function commandHeaders() {
+  return { 'Idempotency-Key': crypto.randomUUID() }
+}
+
 export const documents = {
   create(
     params: DocumentCreateParams,
@@ -72,7 +76,7 @@ export const documents = {
   ) {
     return request<DocumentCreated>(endpoint, {
       method: 'POST',
-      headers: { 'Idempotency-Key': crypto.randomUUID() },
+      headers: commandHeaders(),
       body: JSON.stringify(params),
     })
   },
@@ -93,7 +97,7 @@ export const documents = {
       `/api/invoices/${encodeURIComponent(invoiceId)}/finalize`,
       {
         method: 'POST',
-        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        headers: commandHeaders(),
         body: JSON.stringify({ autoApplyCredits: true }),
       }
     )
@@ -103,7 +107,7 @@ export const documents = {
       `/api/invoices/${encodeURIComponent(invoiceId)}/send`,
       {
         method: 'POST',
-        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        headers: commandHeaders(),
         body: JSON.stringify({}),
       }
     )
@@ -113,7 +117,7 @@ export const documents = {
       `/api/invoices/${encodeURIComponent(invoiceId)}/void`,
       {
         method: 'POST',
-        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        headers: commandHeaders(),
         body: JSON.stringify({ reason }),
       }
     )
@@ -123,18 +127,32 @@ export const documents = {
       `/api/invoices/${encodeURIComponent(invoiceId)}/write-off`,
       {
         method: 'POST',
-        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        headers: commandHeaders(),
         body: JSON.stringify({ reason }),
       }
     )
   },
   transitionQuote(
     quoteId: string,
-    action: 'send' | 'accept' | 'decline' | 'cancel'
+    action: 'send' | 'accept' | 'decline' | 'cancel' | 'expire'
   ) {
     return request<DocumentUpdated>(
       `/api/quotes/${encodeURIComponent(quoteId)}/${action}`,
-      { method: 'POST', body: JSON.stringify({}) }
+      {
+        method: 'POST',
+        headers: commandHeaders(),
+        body: JSON.stringify({}),
+      }
+    )
+  },
+  convertQuoteToInvoice(quoteId: string) {
+    return request<DocumentCreated>(
+      `/api/quotes/${encodeURIComponent(quoteId)}/convert-to-invoice`,
+      {
+        method: 'POST',
+        headers: commandHeaders(),
+        body: JSON.stringify({}),
+      }
     )
   },
   delete(invoiceId: string, endpoint: DocumentEndpoint = '/api/invoices') {

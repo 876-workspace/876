@@ -16,7 +16,22 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
       'Prepare customer quotes before converting approved work into invoices.',
     optional: true,
     enabledByDefault: true,
-    preferences: [],
+    preferences: [
+      {
+        key: 'accepted-quote-conversion',
+        label: 'Accepted quote conversion',
+        type: 'enum',
+        default: 'manual',
+        hint: 'Choose whether accepting a quote only records the decision or also creates a draft invoice.',
+        options: [
+          { value: 'manual', label: 'Convert manually' },
+          {
+            value: 'draft-invoice-on-accept',
+            label: 'Create a draft invoice on acceptance',
+          },
+        ],
+      },
+    ],
   },
   {
     key: 'payments',

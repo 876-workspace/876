@@ -43,6 +43,14 @@ export async function create(
       )
     return await createManualInvoice(tenantId, params, attribution)
   } catch (error) {
+    if (isUniqueConstraintError(error) && params.quoteId) {
+      const converted = await prisma.invoice.findFirst({
+        where: { tenantId, quoteId: params.quoteId },
+        select: { id: true },
+      })
+      if (converted) return ok({ id: converted.id, replayed: true })
+    }
+
     if (isUniqueConstraintError(error) && attribution) {
       const replayAfterConflict = resolveIdempotencyReplay(
         await findByIdempotencyKey(tenantId, attribution),

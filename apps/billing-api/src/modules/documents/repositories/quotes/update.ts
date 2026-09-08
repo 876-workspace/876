@@ -33,10 +33,21 @@ export async function update(
     if (params.notes !== undefined) data.notes = params.notes
     if (params.terms !== undefined) data.terms = params.terms
 
-    await prisma.quote.update({
-      where: { id: quoteId },
+    const updated = await prisma.quote.updateMany({
+      where: {
+        id: quoteId,
+        tenantId,
+        status: 'DRAFT',
+        OR: [{ expiresAt: null }, { expiresAt: { gt: nowUnixSeconds() } }],
+      },
       data,
     })
+    if (updated.count !== 1)
+      return err(
+        'Only valid draft quotes can be edited.',
+        409,
+        'billing/quote-invalid-state'
+      )
 
     return ok({ id: quoteId })
   } catch (error) {
