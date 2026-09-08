@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { NavGroupDefinition } from '@876/core/access'
+import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 
 import { Settings } from '../icons'
 import { ProductMobileNav } from './product-mobile-nav'
@@ -170,6 +170,61 @@ describe('ProductMobileNav', () => {
       expect(
         screen.queryByRole('navigation', { name: 'Billing navigation' })
       ).not.toBeInTheDocument()
+    )
+  })
+
+  it('runs a back action without dismissing the drawer', async () => {
+    const user = userEvent.setup()
+    const onBack = vi.fn()
+    render(
+      <ProductMobileNav
+        title="Projects"
+        navigation={navigation}
+        resolveIcon={() => Settings}
+        backAction={{ label: 'Back to Console', onClick: onBack }}
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: 'Open Projects navigation' })
+    )
+    await user.click(screen.getByRole('button', { name: 'Back to Console' }))
+
+    expect(onBack).toHaveBeenCalledTimes(1)
+    expect(
+      screen.getByRole('navigation', { name: 'Projects navigation' })
+    ).toBeVisible()
+  })
+
+  it('uses caller active and navigation hooks for contextual routes', async () => {
+    const user = userEvent.setup()
+    const isActive = vi.fn(
+      (item: NavEntry, pathname: string) =>
+        item.key === 'settings' && pathname === '/projects/123'
+    )
+    const onNavigate = vi.fn()
+    mocks.pathname = '/projects/123'
+    render(
+      <ProductMobileNav
+        title="Console"
+        navigation={navigation}
+        resolveIcon={() => Settings}
+        isActive={isActive}
+        onNavigate={onNavigate}
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: 'Open Console navigation' })
+    )
+    const settings = screen.getByRole('link', { name: 'Settings' })
+    expect(settings).toHaveAttribute('aria-current', 'page')
+
+    await user.click(settings)
+
+    expect(onNavigate).toHaveBeenCalledTimes(1)
+    expect(onNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({ key: 'settings', href: '/settings' })
     )
   })
 })
