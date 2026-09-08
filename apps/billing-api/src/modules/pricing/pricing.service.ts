@@ -1,4 +1,7 @@
-import { calculateCatalogAmount } from '@/modules/billing-engine'
+import {
+  applyPercentageAdjustment,
+  calculateCatalogAmount,
+} from '@/commerce/calculations'
 import type {
   PriceResolutionRequest,
   PricingResult,
@@ -7,7 +10,6 @@ import type {
 } from '@/types/pricing'
 
 import { loadPricingContext } from './pricing.repository'
-import { applyPercentageAdjustment } from './price-list-adjustment'
 
 function key(priceId: string, quantity: number): string {
   return `${priceId}:${quantity}`
