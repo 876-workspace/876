@@ -11,9 +11,11 @@ model Quote {
   currency       String
   issueAt        Int?        @map("issue_at")
   expiresAt      Int?        @map("expires_at")
+  sentAt         Int?        @map("sent_at")
   acceptedAt     Int?        @map("accepted_at")
   declinedAt     Int?        @map("declined_at")
   canceledAt     Int?        @map("canceled_at")
+  expiredAt      Int?        @map("expired_at")
   subtotalAmount BigInt      @default(0) @map("subtotal_amount")
   taxAmount      BigInt      @default(0) @map("tax_amount")
   totalAmount    BigInt      @default(0) @map("total_amount")
