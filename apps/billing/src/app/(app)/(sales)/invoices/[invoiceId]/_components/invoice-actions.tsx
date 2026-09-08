@@ -11,18 +11,22 @@ import { getInvoiceEditability } from '../_lib/invoice-editability'
 
 export function InvoiceActions({
   invoiceId,
+  customerId,
   status,
 }: {
   invoiceId: string
+  customerId: string
   status: InvoiceStatus
 }) {
   const router = useRouter()
   const editability = getInvoiceEditability(status)
+  const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
   return (
     <InvoiceLifecycleActions
       status={status}
       editHref={`/invoices/${invoiceId}/edit`}
+      recordPaymentHref={`/payments/new?${paymentParams.toString()}`}
       canEdit={editability.editable}
       canDelete={editability.deletable}
       onFinalize={
