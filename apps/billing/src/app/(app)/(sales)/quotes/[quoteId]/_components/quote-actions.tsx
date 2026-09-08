@@ -30,10 +30,12 @@ import type { QuoteStatus } from '@/types/quote'
 export function QuoteActions({
   quoteId,
   status,
+  convertedInvoiceId,
   canWrite,
 }: {
   quoteId: string
   status: QuoteStatus
+  convertedInvoiceId?: string | null
   canWrite: boolean
 }) {
   const router = useRouter()
@@ -74,7 +76,14 @@ export function QuoteActions({
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
-      {status === 'ACCEPTED' ? (
+      {convertedInvoiceId ? (
+        <Link
+          href={`/invoices/${convertedInvoiceId}`}
+          className={buttonVariants({ variant: 'info' })}
+        >
+          View invoice
+        </Link>
+      ) : status === 'ACCEPTED' ? (
         <Button variant="info" disabled={pending} onClick={convertToInvoice}>
           {pending ? 'Converting…' : 'Convert to invoice'}
         </Button>
@@ -107,7 +116,13 @@ export function QuoteActions({
               Edit
             </DropdownMenuItem>
           ) : null}
-          {status === 'ACCEPTED' ? (
+          {convertedInvoiceId ? (
+            <DropdownMenuItem
+              render={<Link href={`/invoices/${convertedInvoiceId}`} />}
+            >
+              View invoice
+            </DropdownMenuItem>
+          ) : status === 'ACCEPTED' ? (
             <DropdownMenuItem disabled={pending} onClick={convertToInvoice}>
               Convert to invoice
             </DropdownMenuItem>
