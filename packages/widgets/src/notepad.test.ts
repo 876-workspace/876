@@ -7,6 +7,7 @@ import {
   isWidgetEnabled,
   isWidgetsDataOwner,
   notepadWidgetMetadata,
+  resolveAccessibleWidgetIds,
   resolveEnabledWidgetIds,
   WIDGET_HOST_APP_SLUGS,
   WIDGET_HOST_LABELS,
@@ -131,6 +132,10 @@ describe('shared widget catalog', () => {
     )
   })
 
+  it('declares My Work permission as the Invoice surface access gate', () => {
+    expect(workWidgetMetadata.permissions?.invoice).toEqual(['my-work.view'])
+  })
+
   it('resolves Work for Invoice only when every Work gate is enabled', () => {
     const gates = [
       'platform-widgets',
@@ -149,6 +154,29 @@ describe('shared widget catalog', () => {
         )
       ).toEqual([])
     }
+  })
+
+  it('filters enabled Work unless the host permission is effective', () => {
+    expect(resolveAccessibleWidgetIds('invoice', ['work'], new Set())).toEqual(
+      []
+    )
+    expect(
+      resolveAccessibleWidgetIds(
+        'invoice',
+        ['work'],
+        new Set(['my-work.view'])
+      )
+    ).toEqual(['work'])
+  })
+
+  it('keeps widgets without permission requirements accessible', () => {
+    expect(
+      resolveAccessibleWidgetIds(
+        'billing',
+        ['notepad'],
+        new Set<string>()
+      )
+    ).toEqual(['notepad'])
   })
 
   it('does not enable Work in Billing before that host is implemented', () => {
