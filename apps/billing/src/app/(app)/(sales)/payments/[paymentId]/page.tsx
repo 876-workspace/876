@@ -54,6 +54,13 @@ export default async function PaymentPage({ params }: Props) {
             href: `/invoices/${allocation.invoice.id}`,
           })
         ),
+        refunds: (payment.refunds ?? []).map((refund: LegacyBillingRecord) => ({
+          id: refund.id,
+          number: refund.number,
+          amount: formatMoney(refund.amount, refund.currency),
+          date: formatDate(refund.refundedAt ?? refund.createdAt),
+          reason: refund.reason ?? null,
+        })),
       }}
       closeHref="/payments"
       editHref={
