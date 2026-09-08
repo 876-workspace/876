@@ -139,8 +139,8 @@ function buildPrisma(): MockPrisma {
     $transaction: vi.fn(),
   }
 
-  prisma.$transaction.mockImplementation(
-    (fn: (tx: MockPrisma) => unknown) => fn(prisma)
+  prisma.$transaction.mockImplementation((fn: (tx: MockPrisma) => unknown) =>
+    fn(prisma)
   )
 
   return prisma
@@ -266,11 +266,15 @@ describe('refunds repository', () => {
     const result = await createRefund(manualPaymentParams(1_000n))
 
     expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
-    expect(mocks.mockPrismaRef.current!.paymentMode.findFirst).toHaveBeenCalledWith({
+    expect(
+      mocks.mockPrismaRef.current!.paymentMode.findFirst
+    ).toHaveBeenCalledWith({
       where: { id: 'mode_1', tenantId: TENANT, isActive: true },
       select: { id: true },
     })
-    expect(mocks.mockPrismaRef.current!.bankAccount.findFirst).toHaveBeenCalledWith({
+    expect(
+      mocks.mockPrismaRef.current!.bankAccount.findFirst
+    ).toHaveBeenCalledWith({
       where: { id: 'bank_1', tenantId: TENANT, isActive: true },
       select: { id: true, currency: true },
     })
@@ -286,7 +290,9 @@ describe('refunds repository', () => {
       error: 'Active payment mode not found.',
       status: 404,
     })
-    expect(mocks.mockPrismaRef.current!.payment.findFirst).not.toHaveBeenCalled()
+    expect(
+      mocks.mockPrismaRef.current!.payment.findFirst
+    ).not.toHaveBeenCalled()
     expect(mocks.mockPrismaRef.current!.payment.update).not.toHaveBeenCalled()
     expect(mocks.mockPrismaRef.current!.refund.create).not.toHaveBeenCalled()
   })
@@ -304,7 +310,9 @@ describe('refunds repository', () => {
       error: 'The refund account uses a different currency.',
       status: 422,
     })
-    expect(mocks.mockPrismaRef.current!.payment.findFirst).not.toHaveBeenCalled()
+    expect(
+      mocks.mockPrismaRef.current!.payment.findFirst
+    ).not.toHaveBeenCalled()
     expect(mocks.mockPrismaRef.current!.payment.update).not.toHaveBeenCalled()
     expect(mocks.mockPrismaRef.current!.refund.create).not.toHaveBeenCalled()
   })
@@ -369,14 +377,16 @@ describe('refunds repository', () => {
     const result = await createRefund(creditNoteParams())
 
     expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
-    expect(mocks.mockPrismaRef.current!.creditNote.update).toHaveBeenCalledWith({
-      where: { id: CREDIT_NOTE },
-      data: {
-        balanceAmount: 3_000n,
-        status: 'OPEN',
-        updatedAt: NOW,
-      },
-    })
+    expect(mocks.mockPrismaRef.current!.creditNote.update).toHaveBeenCalledWith(
+      {
+        where: { id: CREDIT_NOTE },
+        data: {
+          balanceAmount: 3_000n,
+          status: 'OPEN',
+          updatedAt: NOW,
+        },
+      }
+    )
     expect(mocks.mockPrismaRef.current!.payment.update).not.toHaveBeenCalled()
   })
 
@@ -384,14 +394,16 @@ describe('refunds repository', () => {
     const result = await createRefund(creditNoteParams(5_000n))
 
     expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
-    expect(mocks.mockPrismaRef.current!.creditNote.update).toHaveBeenCalledWith({
-      where: { id: CREDIT_NOTE },
-      data: {
-        balanceAmount: 0n,
-        status: 'CLOSED',
-        updatedAt: NOW,
-      },
-    })
+    expect(mocks.mockPrismaRef.current!.creditNote.update).toHaveBeenCalledWith(
+      {
+        where: { id: CREDIT_NOTE },
+        data: {
+          balanceAmount: 0n,
+          status: 'CLOSED',
+          updatedAt: NOW,
+        },
+      }
+    )
   })
 
   it('rejects refunds when the customer is not active', async () => {
@@ -404,7 +416,9 @@ describe('refunds repository', () => {
       error: 'Active customer not found.',
       status: 404,
     })
-    expect(mocks.mockPrismaRef.current!.payment.findFirst).not.toHaveBeenCalled()
+    expect(
+      mocks.mockPrismaRef.current!.payment.findFirst
+    ).not.toHaveBeenCalled()
     expect(mocks.mockPrismaRef.current!.refund.create).not.toHaveBeenCalled()
   })
 })

@@ -22,10 +22,7 @@ export async function create(
   if (!(await hasEnabledCurrency(tenantId, params.currency)))
     return err('Enable the refund currency before using it.', 422)
   if (sourceAppId && params.creditNoteId)
-    return err(
-      'Credit-note refunds require tenant finance authority.',
-      403
-    )
+    return err('Credit-note refunds require tenant finance authority.', 403)
 
   const now = nowUnixSeconds()
   const number = await nextDocumentNumber(tenantId, 'REFUND', now)
@@ -56,7 +53,10 @@ export async function create(
             select: { id: true, currency: true },
           })
           if (!depositAccount)
-            throw new RefundMutationError('Active refund account not found.', 404)
+            throw new RefundMutationError(
+              'Active refund account not found.',
+              404
+            )
           if (depositAccount.currency !== params.currency)
             throw new RefundMutationError(
               'The refund account uses a different currency.',

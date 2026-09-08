@@ -147,7 +147,9 @@ describe('payments serializers', () => {
     expect(payment).not.toHaveProperty('risk')
     expect(payment.paymentMode).not.toHaveProperty('tenantId')
     expect(payment.depositAccount).not.toHaveProperty('tenantId')
-    expect(payment.invoiceAllocations[0]?.invoice).not.toHaveProperty('tenantId')
+    expect(payment.invoiceAllocations[0]?.invoice).not.toHaveProperty(
+      'tenantId'
+    )
     expect(payment.refunds?.[0]).not.toHaveProperty('tenantId')
     expect(payment.refunds?.[0]).not.toHaveProperty('paymentModeId')
     expect(payment.refunds?.[0]).not.toHaveProperty('depositAccountId')

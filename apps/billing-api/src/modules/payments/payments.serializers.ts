@@ -105,7 +105,7 @@ export function serializePayment(row: unknown) {
     number: data.number,
     amount: data.amount,
     unappliedAmount: data.unappliedAmount,
-    amountRefunded: data.amountRefunded ?? '0',
+    amountRefunded: data.amountRefunded,
     status: data.status,
     providerConnectionId: data.providerConnectionId ?? null,
     providerPaymentId: data.providerPaymentId ?? null,

@@ -126,6 +126,10 @@ describe('Billing API v1 contract baseline', () => {
     '/invoices/{invoiceId}/write-off',
     '/integrations/organizations/{organizationId}/invoices/{invoiceId}/send',
     '/integrations/organizations/{organizationId}/invoices/{invoiceId}/write-off',
+
+    // Payment corrections and refunds exposed to first-party finance apps.
+    '/integrations/organizations/{organizationId}/payments/{paymentId}/apply',
+    '/integrations/organizations/{organizationId}/refunds',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {
