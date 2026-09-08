@@ -68,12 +68,18 @@ the original allocation; financial history is not deleted.
 - Payments are allocated to open invoices via `PaymentAllocation`.
 - The unallocated remainder of a payment (`Payment.unappliedAmount`) is held as
   customer credit (advance or overpayment).
+- `Payment.amount` is the original cash-receipt amount. Refunds do not rewrite
+  it; cumulative cash returned is projected separately in
+  `Payment.amountRefunded`.
 - A successful received payment posts **one** `PAYMENT_RECEIVED` customer-ledger
   credit for the full cash amount.
 - Applying that payment later does **not** post another customer-ledger credit.
   Allocation only moves settlement between two existing projections:
   `Invoice.amountDue` decreases and `Payment.unappliedAmount` decreases by the
   same amount.
+- A `PARTIALLY_REFUNDED` payment may still have unapplied cash. That remaining
+  amount stays valid customer credit and remains eligible for later allocation
+  and automatic settlement.
 - Corrections append reversal events and retain allocation history instead of
   deleting the financial evidence.
 
@@ -104,15 +110,75 @@ This is why `PaymentAllocation` remains independent from `Payment`: one payment
 may settle several invoices, settle one invoice partially, or remain wholly or
 partly unapplied.
 
+### Correction, reallocation, and refund are different operations
+
+- **Correction / cancellation** means the receipt itself was wrong. The payment
+  workflow appends `PAYMENT_REVERSED`, restores affected invoice balances, and
+  preserves the old allocation evidence as reversed.
+- **Reallocation / apply** means the cash is real but should settle a different
+  invoice. Moving allocation changes invoice and available-credit projections;
+  it does not move cash and therefore is not a refund.
+- **Refund** means real cash leaves the business and is returned to the customer.
+  It creates a `Refund` record and `REFUND_ISSUED` ledger evidence; it does not
+  silently delete or reverse existing invoice allocations.
+
+Once any refund exists against a payment, the ordinary replace/cancel correction
+path is intentionally blocked. Later correction must preserve the refund and its
+cash-out evidence rather than pretending the original receipt never happened.
+
 ## 5. Credit Notes (No Cash)
 
 - Credit notes reduce a customer's receivable without moving cash (e.g., for returns, overcharges).
 - A credit note's `balanceAmount` can be applied to open invoices via `CreditNoteAllocation`, held as unused customer credit, or refunded.
+- Applying a credit note reduces both the invoice amount due and the note's
+  available balance without creating a cash movement.
+- Refunding a credit note consumes its remaining `balanceAmount`; when the
+  balance reaches zero the note becomes `CLOSED`.
 
 ## 6. Refunds (Cash Out)
 
 - Refunds represent cash returned to the customer.
-- A refund draws its funds from either a `CreditNote` balance or a `Payment`'s `unappliedAmount`.
+- Every refund has exactly one value source: either a `CreditNote` balance or a
+  `Payment`'s `unappliedAmount`.
+- A payment-source refund may consume **only unapplied cash**. It cannot exceed
+  `Payment.unappliedAmount`, and it does not implicitly unapply an invoice. If
+  allocated cash must first be freed, that is a separate settlement correction.
+- Each payment may have several partial refund records. The payment projects the
+  cumulative total in `amountRefunded`; there is no single `refundId` on the
+  payment.
+- After a payment refund:
+
+```text
+amountRefunded += refund.amount
+unappliedAmount -= refund.amount
+
+amountRefunded == amount -> REFUNDED
+otherwise                 -> PARTIALLY_REFUNDED
+```
+
+  A payment can therefore be `PARTIALLY_REFUNDED` with zero unapplied cash when
+  some of the original receipt remains allocated to invoices.
+- A credit-note-source refund reduces only the credit note's available balance;
+  it does not change `Payment.amountRefunded`.
+- Every successful refund appends one `REFUND_ISSUED` **DEBIT** to the customer
+  ledger. This reverses the customer-credit effect of the cash being returned;
+  it does not create a second invoice mutation.
+- The manual/offline finance UI requires an active refund method and an active
+  funding account in the refund currency so the recorded cash movement has
+  reconciliation provenance. The lower-level contract keeps those fields
+  optional for future provider-driven execution, where settlement evidence may
+  be supplied by the provider path instead.
+- App-scoped integration refunds may target payments attributed to that source
+  app. Credit-note refunds remain tenant-finance operations because credit notes
+  do not currently carry app-source attribution.
+
+### Provider execution is a later layer
+
+The current `Refund` record is durable accounting evidence that cash was
+returned. A future online-provider implementation may add an execution layer
+such as `requested -> processing -> succeeded | failed`, provider refund IDs,
+attempts, and webhook reconciliation. Provider state must not replace the
+canonical refund or customer-ledger evidence.
 
 ## 7. Denormalized Customer AR
 
@@ -120,6 +186,8 @@ Customer AR position is denormalized directly on the `Customer` record for fast 
 
 - `Customer.outstandingReceivable` = Sum of open invoice balances (`amountDue`).
 - `Customer.unusedCredits` = Sum of unapplied cash (`Payment.unappliedAmount`) + open credit-note balances (`CreditNote.balanceAmount`).
+- `SUCCEEDED` and `PARTIALLY_REFUNDED` payments both contribute any positive
+  `unappliedAmount` to available cash credit.
 - **Strict Consistency**: These values are recomputed from source rows by `recomputeCustomerAr` inside the transaction after every payment, credit note, refund, finalization, void, or write-off mutation that changes AR.
 
 The Customers module intentionally keeps its local open-invoice status predicate
@@ -136,7 +204,7 @@ a persisted account table and does not become a second source of truth.
 The projection exposes:
 
 - `lifetimeBilled`: finalized non-void invoice totals;
-- `lifetimePaid`: successful received cash net of refunds;
+- `lifetimePaid`: successful received cash net of reversals and refunds;
 - `outstandingReceivable`: the customer's current collectible invoice balance;
 - `overdueReceivable`: the portion of that collectible balance whose `dueAt` has
   passed;
