@@ -76,7 +76,11 @@ export default async function InvoiceDetailPage({ params }: Props) {
           </div>
         </div>
         {canWrite ? (
-          <InvoiceActions invoiceId={invoice.id} status={invoice.status} />
+          <InvoiceActions
+            invoiceId={invoice.id}
+            customerId={invoice.customerId}
+            status={invoice.status}
+          />
         ) : null}
       </header>
 
