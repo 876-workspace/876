@@ -21,7 +21,6 @@ export function InvoiceActions({
 
   return (
     <InvoiceLifecycleActions
-      invoiceId={invoiceId}
       status={status}
       editHref={`/invoices/${invoiceId}/edit`}
       canEdit={editability.editable}
