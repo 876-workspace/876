@@ -1,19 +1,10 @@
 import 'server-only'
 
-import {
-  apiError,
-  apiSuccess,
-  getError,
-  isErrorCode,
-  type AppError,
-} from '@876/core'
+import { apiSuccess, getError } from '@876/core'
 import { z } from 'zod'
 
-import {
-  requireApiPermission,
-  type ApiContext,
-} from '@/lib/auth/api-permission'
-import { getFeatures } from '@/lib/features'
+import { workErrorResponse } from '@/lib/api/work-response'
+import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { getWork } from '@/lib/services/work'
 
 export const runtime = 'nodejs'
@@ -27,23 +18,9 @@ const filterSchema = z
   .refine(({ from, to }) => to >= from)
   .refine(({ from, to }) => to - from <= MAX_WINDOW_SECONDS)
 
-function workErrorResponse(error: AppError) {
-  const registered = isErrorCode(error.code)
-    ? getError(error.code)
-    : getError('work/invalid-response')
-  return apiError(registered, { status: registered.httpStatus })
-}
-
 export async function GET(request: Request) {
-  const auth: ApiContext = await requireApiPermission('my-work.view')
+  const auth = await requireWorkWidgetPermission('my-work.view')
   if (auth.response) return auth.response
-
-  const features = await getFeatures({
-    userId: auth.userId,
-    organizationId: auth.orgId,
-  })
-  if (!features.widgets.enabledWidgetIds.includes('work'))
-    return workErrorResponse(getError('work/not-found'))
 
   const url = new URL(request.url)
   const parsed = filterSchema.safeParse({
