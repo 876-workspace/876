@@ -57,6 +57,20 @@ function serializePaymentAllocation(row: unknown) {
   }
 }
 
+function serializePaymentRefund(row: unknown) {
+  const data = record(row)
+  return {
+    object: 'refund' as const,
+    id: data.id,
+    number: data.number,
+    amount: data.amount,
+    currency: data.currency,
+    reason: data.reason ?? null,
+    refundedAt: data.refundedAt,
+    createdAt: data.createdAt,
+  }
+}
+
 function serializeBankTransaction(row: unknown) {
   const data = record(row)
   return {
@@ -119,6 +133,13 @@ export function serializePayment(row: unknown) {
       currency: depositAccount.currency,
     },
     invoiceAllocations: allocations,
+    ...(data.refunds === undefined
+      ? {}
+      : {
+          refunds: Array.isArray(data.refunds)
+            ? data.refunds.map(serializePaymentRefund)
+            : [],
+        }),
     ...(data.bankTransaction === undefined
       ? {}
       : {
