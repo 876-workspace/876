@@ -20,6 +20,17 @@ const paymentAllocationSchema = z.strictObject({
   }),
 })
 
+const paymentRefundSchema = z.strictObject({
+  object: z.literal('refund'),
+  id: z.string().min(1),
+  number: z.string(),
+  amount: z.string(),
+  currency: z.string().length(3),
+  reason: z.string().nullable(),
+  refundedAt: z.number().int(),
+  createdAt: z.number().int(),
+})
+
 /**
  * The schema for a Billing payment resource.
  */
@@ -66,6 +77,7 @@ export const BillingPaymentSchema = z.strictObject({
     currency: z.string().length(3),
   }),
   invoiceAllocations: z.array(paymentAllocationSchema),
+  refunds: z.array(paymentRefundSchema).optional(),
   bankTransaction: z
     .strictObject({
       object: z.literal('bank_transaction'),
