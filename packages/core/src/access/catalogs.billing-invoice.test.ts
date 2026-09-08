@@ -64,11 +64,19 @@ const BILLING_KEYS = [
 ]
 
 const INVOICE_KEYS = [
+  'calendars.create',
+  'calendars.delete',
+  'calendars.edit',
+  'calendars.view',
   'customers.create',
   'customers.delete',
   'customers.edit',
   'customers.view',
   'dashboard.view',
+  'events.create',
+  'events.delete',
+  'events.edit',
+  'events.view',
   'invoices.create',
   'invoices.delete',
   'invoices.edit',
@@ -78,6 +86,7 @@ const INVOICE_KEYS = [
   'items.delete',
   'items.edit',
   'items.view',
+  'my-work.view',
   'payments.create',
   'payments.delete',
   'payments.edit',
@@ -87,9 +96,17 @@ const INVOICE_KEYS = [
   'quotes.edit',
   'quotes.export',
   'quotes.view',
+  'reminders.create',
+  'reminders.delete',
+  'reminders.edit',
+  'reminders.view',
   'reports.view',
   'settings.edit',
   'settings.view',
+  'tasks.create',
+  'tasks.delete',
+  'tasks.edit',
+  'tasks.view',
 ]
 
 function sortedKeys(catalog: typeof billingPermissionCatalog): string[] {
@@ -168,6 +185,11 @@ describe('invoicePermissionCatalog', () => {
       'invoices',
       'quotes',
       'payments',
+      'tasks',
+      'reminders',
+      'events',
+      'calendars',
+      'my-work',
       'reports',
       'settings',
     ])
@@ -181,6 +203,37 @@ describe('invoicePermissionCatalog', () => {
     expect(exportable).toEqual(['invoices', 'quotes'])
   })
 
+  it('grants the Work session API vocabulary needed by the widget', () => {
+    const workPermissions = invoicePermissionCatalog.permissions
+      .filter((permission) =>
+        ['tasks', 'reminders', 'events', 'calendars', 'my-work'].includes(
+          permission.moduleKey
+        )
+      )
+      .map((permission) => permission.key)
+      .sort()
+
+    expect(workPermissions).toEqual([
+      'calendars.create',
+      'calendars.delete',
+      'calendars.edit',
+      'calendars.view',
+      'events.create',
+      'events.delete',
+      'events.edit',
+      'events.view',
+      'my-work.view',
+      'reminders.create',
+      'reminders.delete',
+      'reminders.edit',
+      'reminders.view',
+      'tasks.create',
+      'tasks.delete',
+      'tasks.edit',
+      'tasks.view',
+    ])
+  })
+
   it('declares no duplicate keys', () => {
     const keys = invoicePermissionCatalog.permissions.map(
       (permission) => permission.key
@@ -192,8 +245,6 @@ describe('invoicePermissionCatalog', () => {
 describe('appPermissionCatalogs registry', () => {
   it('registers every catalog under the slug it declares', () => {
     for (const [slug, catalog] of Object.entries(appPermissionCatalogs)) {
-      // Console is the documented exception: its real slug is `console` while
-      // the generic builder validates product slugs as `876-*`.
       const expected = slug === 'console' ? 'console' : catalog.app
       expect(expected).toBe(catalog.app)
     }
