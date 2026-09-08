@@ -9,6 +9,7 @@ import type {
   BillingInvoiceListParams,
   BillingInvoiceUpdateParams,
   BillingInvoiceVoidParams,
+  BillingInvoiceWriteOffParams,
   IntegrationCreateOptions,
 } from '../types'
 
@@ -92,6 +93,18 @@ export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
       )
     },
 
+    send(organizationId: string, invoiceId: string) {
+      return IntegrationRequest<BillingInvoice>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(organizationId, invoiceId)}/send`,
+          body: {},
+        },
+        BillingInvoiceSchema
+      )
+    },
+
     void(
       organizationId: string,
       invoiceId: string,
@@ -102,6 +115,22 @@ export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
         {
           method: 'POST',
           path: `${resourcePath(organizationId, invoiceId)}/void`,
+          body: params,
+        },
+        BillingInvoiceSchema
+      )
+    },
+
+    writeOff(
+      organizationId: string,
+      invoiceId: string,
+      params: BillingInvoiceWriteOffParams
+    ) {
+      return IntegrationRequest<BillingInvoice>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(organizationId, invoiceId)}/write-off`,
           body: params,
         },
         BillingInvoiceSchema
