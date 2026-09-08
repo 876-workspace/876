@@ -20,6 +20,7 @@ import type {
   InvoiceStatus,
   InvoiceUpdateParams,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
 } from './schemas/invoice'
 import type { InvoicePreferenceUpdateParams } from './schemas/invoice-preference'
 import type {
@@ -29,7 +30,9 @@ import type {
 } from './schemas/quote'
 import {
   finalizeInvoiceWorkflow,
+  sendInvoiceWorkflow,
   voidInvoiceWorkflow,
+  writeOffInvoiceWorkflow,
 } from './workflows'
 
 const log = getLogger('documents')
@@ -142,6 +145,22 @@ export const documentsService = {
     }
   },
 
+  async sendInvoice(
+    tenantId: string,
+    id: string,
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
+  ) {
+    if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
+    return {
+      object: 'invoice',
+      ...(await unwrap(
+        await sendInvoiceWorkflow(tenantId, id, idempotency),
+        'invoice'
+      )),
+    }
+  },
+
   async voidInvoice(
     tenantId: string,
     id: string,
@@ -154,6 +173,23 @@ export const documentsService = {
       object: 'invoice',
       ...(await unwrap(
         await voidInvoiceWorkflow(tenantId, id, body, idempotency),
+        'invoice'
+      )),
+    }
+  },
+
+  async writeOffInvoice(
+    tenantId: string,
+    id: string,
+    body: InvoiceWriteOffParams,
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
+  ) {
+    if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
+    return {
+      object: 'invoice',
+      ...(await unwrap(
+        await writeOffInvoiceWorkflow(tenantId, id, body, idempotency),
         'invoice'
       )),
     }
