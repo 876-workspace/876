@@ -35,7 +35,7 @@ const payment = {
     object: 'bank_account' as const,
     id: 'acct_1',
     name: 'Main bank',
-    accountType: 'BANK',
+    accountType: 'CHECKING',
     currency: 'JMD',
   },
   invoiceAllocations: [
@@ -89,6 +89,29 @@ describe('Billing integration payments resource', () => {
       amountRefunded: '2000',
       unappliedAmount: '3000',
     })
+  })
+
+  it('accepts refund summaries on payment detail reads', async () => {
+    const detail = {
+      ...payment,
+      refunds: [
+        {
+          object: 'refund' as const,
+          id: 'ref_1',
+          number: 'REF-001',
+          amount: '2000',
+          currency: 'JMD',
+          reason: 'Duplicate payment',
+          refundedAt: 1_788_825_600,
+          createdAt: 1_788_825_600,
+        },
+      ],
+    }
+    const { client } = setup(detail)
+
+    const result = await client.payments.retrieve('org_1', 'pay_1')
+
+    expect(result.data?.refunds).toEqual(detail.refunds)
   })
 
   it('rejects a payment response that omits amountRefunded', async () => {
