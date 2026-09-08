@@ -16,27 +16,31 @@ export function InvoiceActions({
   customerId,
   status,
   canWrite,
+  canRecordPayment,
 }: {
   invoiceId: string
   customerId: string
   status: InvoiceStatus
   canWrite: boolean
+  canRecordPayment: boolean
 }) {
   const router = useRouter()
   const editability = getInvoiceEditability(status)
   const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
-  if (!canWrite) return null
+  if (!canWrite && !canRecordPayment) return null
 
   return (
     <InvoiceLifecycleActions
       status={status}
-      editHref={`/invoices/${invoiceId}/edit`}
-      recordPaymentHref={`/payments/new?${paymentParams.toString()}`}
-      canEdit={editability.editable}
-      canDelete={editability.deletable}
+      editHref={canWrite ? `/invoices/${invoiceId}/edit` : undefined}
+      recordPaymentHref={
+        canRecordPayment ? `/payments/new?${paymentParams.toString()}` : undefined
+      }
+      canEdit={canWrite && editability.editable}
+      canDelete={canWrite && editability.deletable}
       onFinalize={
-        status === 'DRAFT'
+        canWrite && status === 'DRAFT'
           ? async () => {
               const result = await client.documents.finalize(invoiceId)
               if (result.error) return { error: result.error.message }
@@ -46,6 +50,7 @@ export function InvoiceActions({
           : undefined
       }
       onSend={
+        canWrite &&
         status !== 'DRAFT' &&
         status !== 'VOID' &&
         status !== 'UNCOLLECTIBLE'
@@ -58,7 +63,7 @@ export function InvoiceActions({
           : undefined
       }
       onVoid={
-        status === 'OPEN' || status === 'SENT'
+        canWrite && (status === 'OPEN' || status === 'SENT')
           ? async (reason) => {
               const result = await client.documents.void(invoiceId, reason)
               if (result.error) return { error: result.error.message }
@@ -68,10 +73,11 @@ export function InvoiceActions({
           : undefined
       }
       onWriteOff={
-        status === 'OPEN' ||
-        status === 'SENT' ||
-        status === 'PARTIALLY_PAID' ||
-        status === 'OVERDUE'
+        canWrite &&
+        (status === 'OPEN' ||
+          status === 'SENT' ||
+          status === 'PARTIALLY_PAID' ||
+          status === 'OVERDUE')
           ? async (reason) => {
               const result = await client.documents.writeOff(invoiceId, reason)
               if (result.error) return { error: result.error.message }
@@ -81,7 +87,7 @@ export function InvoiceActions({
           : undefined
       }
       onDelete={
-        editability.deletable
+        canWrite && editability.deletable
           ? async () => {
               const result = await client.documents.delete(invoiceId)
               if (result.error) return { error: result.error.message }
