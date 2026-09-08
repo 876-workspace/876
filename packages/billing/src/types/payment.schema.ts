@@ -50,6 +50,7 @@ export const PaymentSchema = z.strictObject({
   number: z.string(),
   amount: z.string(),
   unappliedAmount: z.string(),
+  amountRefunded: z.string(),
   status: z.enum([
     'PENDING',
     'REQUIRES_ACTION',
