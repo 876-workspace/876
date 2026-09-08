@@ -25,7 +25,7 @@ These values are retained as durable compatibility contracts. They are a flatten
 
 ```text
 DRAFT -> OPEN -> PAID
-          |       
+          |
           +-> UNCOLLECTIBLE
           +-> VOID
 ```
@@ -75,6 +75,53 @@ Terminal states (`VOID`, `UNCOLLECTIBLE`) are entered only by their explicit com
 
 This means a partially settled invoice with a positive past-due balance remains `OVERDUE`; paid/credited amounts remain visible through their separate fields and allocation records.
 
+## Quote to invoice lifecycle
+
+A quote is commercial intent, not accounts receivable:
+
+```text
+DRAFT -> SENT -> ACCEPTED -> Invoice(DRAFT)
+             \-> DECLINED
+DRAFT/SENT -> CANCELED
+```
+
+- Acceptance and invoice conversion are separate operations.
+- Only an `ACCEPTED` quote may be converted to an invoice through the Billing service boundary.
+- Conversion uses invoice creation with the accepted `quoteId`; it copies the quote snapshot into a new draft invoice and keeps `billingReason = QUOTE`.
+- The quote remains `ACCEPTED`. The existing one-to-one `Quote.convertedInvoice` relation is the durable conversion evidence; a second `INVOICED` quote status is not needed.
+- A quote can produce at most one invoice. Duplicate conversion is rejected by the existing one-to-one relation/repository guard.
+- The converted invoice is still a draft and does not affect AR until it is finalized.
+
+This keeps acceptance, conversion, and accounting posting as distinct boundaries while matching the workflow used by mature invoicing products such as Zoho Books.
+
+## Payments Received
+
+A Payment Received belongs to a customer first and may then be allocated to one or more invoices:
+
+```text
+Customer
+  |
+  +-> Payment Received
+        |
+        +-> PaymentAllocation -> Invoice A
+        +-> PaymentAllocation -> Invoice B
+        +-> unappliedAmount    -> Customer credit
+```
+
+Core invariants:
+
+- `Payment.customerId` is required. A payment is never an invoice-owned cash row.
+- Every allocation must reference an invoice owned by the same customer and using the same currency.
+- Recording a payment does not directly set an invoice status. `PaymentAllocation` decreases `amountDue`, increments `amountPaid`, and the canonical invoice lifecycle projection chooses the resulting compatibility status.
+- A partial allocation leaves the remaining invoice balance collectible.
+- A full allocation can settle the invoice as `PAID`.
+- A payment may be recorded with zero allocations. Its unused value remains `Payment.unappliedAmount` and contributes to the customer's available credit until applied later or refunded.
+- A single payment can be distributed across multiple outstanding invoices for that customer.
+- An invoice's **Record payment** action opens the same Payments Received workflow prefilled with the invoice's customer, currency, remaining balance, and allocation. It does not create a second payment model.
+- Payment detail pages expose the customer, deposit account, payment mode, unapplied value, and the invoices reached through active allocations.
+
+The Payments Received form is shared by Billing and Invoice through `@876/billing-ui`; hosts provide data, authority, transport, and navigation only.
+
 ## Commands and invariants
 
 ### Finalize
@@ -95,8 +142,10 @@ This means a partially settled invoice with a positive past-due balance remains 
 - The first `sentAt` remains stable across repeated send records.
 - Each successful command emits `invoice.sent`.
 
-### Payment allocation
+### Payment received / allocation
 
+- Payment creation requires a customer, payment mode, deposit account, amount, currency, and payment date.
+- Invoice allocations are optional at payment creation time.
 - Only collectible invoices accept allocations.
 - Allocation increments `amountPaid` and decreases `amountDue` transactionally.
 - Remaining status is projected centrally.
@@ -143,6 +192,8 @@ Every financial mutation that changes this position must recompute it inside the
 ## Host/UI ownership
 
 Lifecycle presentation shared by Billing and Invoice belongs in `@876/billing-ui`. Hosts supply authority, routing, transport callbacks, and navigation. The Billing API remains authoritative for command eligibility; UI visibility is a convenience and never an authorization or accounting boundary.
+
+The same rule now applies to Payments Received: `@876/billing-ui/payment-received-form` owns the reusable finance presentation while Billing and Invoice keep their own authorization, data loading, same-origin/browser transport, and post-save navigation.
 
 ## Future evolution
 
