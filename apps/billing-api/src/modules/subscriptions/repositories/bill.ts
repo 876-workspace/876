@@ -8,7 +8,7 @@ import { recomputeCustomerAr } from '@/modules/customers'
 import { nextDocumentNumber } from '@/modules/documents'
 import { recordLedgerEntry } from '@/modules/ledger'
 import { resolveDueAt } from '@/modules/documents'
-import { calculateCatalogAmount } from '@/modules/catalog'
+import { calculateCatalogAmount } from '@/commerce/calculations'
 import { settleWithAvailableCredits } from '@/modules/documents'
 import { addInterval } from './period'
 import { adjustRenewalAmount } from './renewal-pricing'
@@ -173,7 +173,11 @@ export async function billSubscription(
         item,
         unitAmount,
         subtotalAmount: prorateInitialStubAmount(
-          calculateCatalogAmount({ ...item.price, unitAmount }, item.quantity),
+          calculateCatalogAmount({
+            ...item.price,
+            unitAmount,
+            quantity: item.quantity,
+          }),
           subscription,
           item.price
         ),
