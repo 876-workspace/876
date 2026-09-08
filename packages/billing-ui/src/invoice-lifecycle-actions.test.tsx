@@ -39,7 +39,7 @@ describe('InvoiceLifecycleActions', () => {
     // AFTER — testing-library performs cleanup.
   })
 
-  it('keeps send and collection actions available for an overdue invoice', () => {
+  it('keeps send and write-off actions available for an overdue invoice', () => {
     // ARRANGE
     render(
       <InvoiceLifecycleActions
@@ -57,7 +57,26 @@ describe('InvoiceLifecycleActions', () => {
     // ASSERT
     expect(send).toBeVisible()
     expect(screen.getByRole('button', { name: 'Write off' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Void' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Void' })).not.toBeInTheDocument()
+
+    // AFTER — testing-library performs cleanup.
+  })
+
+  it('shows void for a plain open invoice when the host supplies the action', () => {
+    // ARRANGE
+    render(
+      <InvoiceLifecycleActions
+        invoiceId="inv_1"
+        status="OPEN"
+        onVoid={async () => ({ error: null })}
+      />
+    )
+
+    // ACT
+    const voidAction = screen.getByRole('button', { name: 'Void' })
+
+    // ASSERT
+    expect(voidAction).toBeVisible()
 
     // AFTER — testing-library performs cleanup.
   })
