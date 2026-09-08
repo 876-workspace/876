@@ -23,11 +23,13 @@ export function WorkWidgetPanel() {
   const [work, setWork] = useState<WorkMyWork | null>(null)
   const [state, setState] = useState<LoadState>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const workRef = useRef<WorkMyWork | null>(null)
   const generationRef = useRef(0)
+  workRef.current = work
 
   const load = useCallback(async () => {
     const generation = ++generationRef.current
-    if (!work) setState('loading')
+    if (!workRef.current) setState('loading')
     setErrorMessage(null)
 
     const result = await browserWork.myWork.retrieve(currentDayWindow())
@@ -41,9 +43,10 @@ export function WorkWidgetPanel() {
       return
     }
 
+    workRef.current = result.data
     setWork(result.data)
     setState('ready')
-  }, [work])
+  }, [])
 
   useEffect(() => {
     void load()
