@@ -109,22 +109,40 @@ describe('finance module catalogs', () => {
     expect(BILLING_ONLY_KEYS.every((key) => !invoiceKeys.has(key))).toBe(true)
   })
 
-  it('declares product-variants as the exact items preference', () => {
+  it('declares the exact preference set for every module', () => {
+    const expected: Record<string, unknown[]> = {
+      items: [
+        {
+          key: 'product-variants',
+          label: 'Product variants',
+          type: 'boolean',
+          default: false,
+          hint: 'Allow goods to have multiple sellable versions such as size or color.',
+        },
+      ],
+      quotes: [
+        {
+          key: 'accepted-quote-conversion',
+          label: 'Accepted quote conversion',
+          type: 'enum',
+          default: 'manual',
+          hint: 'Choose whether accepting a quote only records the decision or also creates a draft invoice.',
+          options: [
+            { value: 'manual', label: 'Convert manually' },
+            {
+              value: 'draft-invoice-on-accept',
+              label: 'Create a draft invoice on acceptance',
+            },
+          ],
+        },
+      ],
+    }
+
     for (const catalogModule of BILLING_MODULE_CATALOG) {
       expect(catalogModule.description.length).toBeGreaterThan(0)
       expect(catalogModule.optional).toBe(true)
       expect(catalogModule.preferences).toEqual(
-        catalogModule.key === 'items'
-          ? [
-              {
-                key: 'product-variants',
-                label: 'Product variants',
-                type: 'boolean',
-                default: false,
-                hint: 'Allow goods to have multiple sellable versions such as size or color.',
-              },
-            ]
-          : []
+        expected[catalogModule.key] ?? []
       )
     }
   })

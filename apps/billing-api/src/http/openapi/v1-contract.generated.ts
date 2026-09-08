@@ -860,6 +860,68 @@ export const v1OperationMetadata = {
     summary: 'Retrieve an organization Billing quote',
     tags: ['Invoices'],
   },
+  'POST /quotes/{quoteId}/expire': {
+    operationId: 'billing-billing_post_quotes_quoteId_expire',
+    summary: 'Expire a quote whose expiry time has passed',
+    tags: ['Quotes'],
+  },
+  'POST /quotes/{quoteId}/convert-to-invoice': {
+    operationId: 'billing-billing_post_quotes_quoteId_convert_to_invoice',
+    summary: 'Convert an accepted quote to a draft invoice',
+    tags: ['Quotes'],
+  },
+  'GET /quote-preferences': {
+    operationId: 'billing-billing_get_quote_preferences',
+    summary: 'Retrieve quote preferences',
+    tags: ['Quotes'],
+  },
+  'PATCH /quote-preferences': {
+    operationId: 'billing-billing_patch_quote_preferences',
+    summary: 'Update quote preferences',
+    tags: ['Quotes'],
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/send': {
+    operationId: 'billing-integration_post_quotes_quoteId_send',
+    summary: 'Send an organization Billing quote',
+    tags: ['Quotes'],
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/accept': {
+    operationId: 'billing-integration_post_quotes_quoteId_accept',
+    summary: 'Accept an organization Billing quote',
+    tags: ['Quotes'],
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/decline':
+    {
+      operationId: 'billing-integration_post_quotes_quoteId_decline',
+      summary: 'Decline an organization Billing quote',
+      tags: ['Quotes'],
+    },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/cancel': {
+    operationId: 'billing-integration_post_quotes_quoteId_cancel',
+    summary: 'Cancel an organization Billing quote',
+    tags: ['Quotes'],
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/expire': {
+    operationId: 'billing-integration_post_quotes_quoteId_expire',
+    summary: 'Expire an organization Billing quote',
+    tags: ['Quotes'],
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-invoice':
+    {
+      operationId: 'billing-integration_post_quotes_quoteId_convert_to_invoice',
+      summary: 'Convert an organization Billing quote to a draft invoice',
+      tags: ['Quotes'],
+    },
+  'GET /integrations/organizations/{organizationId}/quote-preferences': {
+    operationId: 'billing-integration_get_quote_preferences',
+    summary: 'Retrieve organization quote preferences',
+    tags: ['Quotes'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/quote-preferences': {
+    operationId: 'billing-integration_patch_quote_preferences',
+    summary: 'Update organization quote preferences',
+    tags: ['Quotes'],
+  },
   'GET /tax-authorities': {
     summary: 'List tax authorities',
     tags: ['Taxes'],
@@ -19557,6 +19619,1210 @@ export const v1OperationContracts = {
                   },
                   required: ['object', 'id'],
                   additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /quotes/{quoteId}/expire': {
+    tags: ['Quotes'],
+    summary: 'Expire a quote whose expiry time has passed',
+    operationId: 'billing-billing_post_quotes_quoteId_expire',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote expired',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /quotes/{quoteId}/convert-to-invoice': {
+    tags: ['Quotes'],
+    summary: 'Convert an accepted quote to a draft invoice',
+    operationId: 'billing-billing_post_quotes_quoteId_convert_to_invoice',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Existing converted invoice returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '201': {
+        description: 'Draft invoice created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /quote-preferences': {
+    tags: ['Quotes'],
+    summary: 'Retrieve quote preferences',
+    operationId: 'billing-billing_get_quote_preferences',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote preferences',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote-preference',
+                    },
+                    acceptedQuoteConversion: {
+                      type: 'string',
+                      enum: ['manual', 'draft-invoice-on-accept'],
+                    },
+                  },
+                  required: ['object', 'acceptedQuoteConversion'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /quote-preferences': {
+    tags: ['Quotes'],
+    summary: 'Update quote preferences',
+    operationId: 'billing-billing_patch_quote_preferences',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              acceptedQuoteConversion: {
+                type: 'string',
+                enum: ['manual', 'draft-invoice-on-accept'],
+              },
+            },
+            required: ['acceptedQuoteConversion'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Quote preferences updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote-preference',
+                    },
+                    acceptedQuoteConversion: {
+                      type: 'string',
+                      enum: ['manual', 'draft-invoice-on-accept'],
+                    },
+                  },
+                  required: ['object', 'acceptedQuoteConversion'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/send': {
+    tags: ['Quotes'],
+    summary: 'Send an organization Billing quote',
+    operationId: 'billing-integration_post_quotes_quoteId_send',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/accept': {
+    tags: ['Quotes'],
+    summary: 'Accept an organization Billing quote',
+    operationId: 'billing-integration_post_quotes_quoteId_accept',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/decline':
+    {
+      tags: ['Quotes'],
+      summary: 'Decline an organization Billing quote',
+      operationId: 'billing-integration_post_quotes_quoteId_decline',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.quotes.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'quoteId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Quote updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'quote',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/cancel': {
+    tags: ['Quotes'],
+    summary: 'Cancel an organization Billing quote',
+    operationId: 'billing-integration_post_quotes_quoteId_cancel',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/expire': {
+    tags: ['Quotes'],
+    summary: 'Expire an organization Billing quote',
+    operationId: 'billing-integration_post_quotes_quoteId_expire',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-invoice':
+    {
+      tags: ['Quotes'],
+      summary: 'Convert an organization Billing quote to a draft invoice',
+      operationId: 'billing-integration_post_quotes_quoteId_convert_to_invoice',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.quotes.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'quoteId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Existing converted invoice returned',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '201': {
+          description: 'Draft invoice created',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/quote-preferences': {
+    tags: ['Quotes'],
+    summary: 'Retrieve organization quote preferences',
+    operationId: 'billing-integration_get_quote_preferences',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Quote preferences',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote-preference',
+                    },
+                    acceptedQuoteConversion: {
+                      type: 'string',
+                      enum: ['manual', 'draft-invoice-on-accept'],
+                    },
+                  },
+                  required: ['object', 'acceptedQuoteConversion'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/quote-preferences': {
+    tags: ['Quotes'],
+    summary: 'Update organization quote preferences',
+    operationId: 'billing-integration_patch_quote_preferences',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.quotes.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              acceptedQuoteConversion: {
+                type: 'string',
+                enum: ['manual', 'draft-invoice-on-accept'],
+              },
+            },
+            required: ['acceptedQuoteConversion'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Quote preferences updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'quote-preference',
+                    },
+                    acceptedQuoteConversion: {
+                      type: 'string',
+                      enum: ['manual', 'draft-invoice-on-accept'],
+                    },
+                  },
+                  required: ['object', 'acceptedQuoteConversion'],
+                  additionalProperties: false,
                 },
                 error: {
                   type: 'null',
