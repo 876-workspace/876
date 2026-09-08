@@ -55,8 +55,6 @@ export default async function CreditNoteDetailLayout({
           creditNoteId={creditNote.id}
           status={creditNote.status}
           balanceAmount={String(creditNote.balanceAmount)}
-          currency={creditNote.currency}
-          decimalPlaces={decimalPlaces}
           canWrite={context.permissions.includes('sales:write')}
           canRefund={context.permissions.includes('payments:write')}
         />
