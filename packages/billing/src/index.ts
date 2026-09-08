@@ -2,4 +2,5 @@
 export { create876Client } from './client'
 export type { Client } from './client'
 export type * from './types'
+export type * from './types/customer-account'
 export type * from './types/quote-preference'
