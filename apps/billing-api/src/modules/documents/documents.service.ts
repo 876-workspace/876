@@ -1,7 +1,10 @@
+import { getSettings } from '@/config'
 import { AppHttpError, appError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
-import { getSettings } from '@/config'
 import { getLogger } from '@/platform/logger'
+import type { IdempotencyContext } from '@/types/commerce'
+
+import { documentList, serializeDocument } from './documents.serializers'
 import { creditNotes } from './repositories/credit-notes'
 import { invoicePreferences } from './repositories/invoice-preferences'
 import { invoices } from './repositories/invoices'
@@ -12,8 +15,8 @@ import type {
   CreditNoteCreateParams,
 } from './schemas/credit-note'
 import type {
-  InvoiceFinalizeParams,
   InvoiceCreateParams,
+  InvoiceFinalizeParams,
   InvoiceStatus,
   InvoiceUpdateParams,
   InvoiceVoidParams,
@@ -24,7 +27,10 @@ import type {
   QuoteStatus,
   QuoteUpdateParams,
 } from './schemas/quote'
-import { documentList, serializeDocument } from './documents.serializers'
+import {
+  finalizeInvoiceWorkflow,
+  voidInvoiceWorkflow,
+} from './workflows'
 
 const log = getLogger('documents')
 
@@ -51,6 +57,7 @@ async function unwrap<T>(
     httpStatus: status,
   })
 }
+
 function missing(kind: string) {
   return new AppHttpError({
     code: `${kind}/not-found`,
@@ -58,6 +65,7 @@ function missing(kind: string) {
     httpStatus: 404,
   })
 }
+
 async function ownedInvoice(
   tenantId: string,
   id: string,
@@ -81,12 +89,14 @@ export const documentsService = {
       url
     )
   },
+
   async getInvoice(tenantId: string, id: string, sourceAppId?: string) {
     return serializeDocument(
       'invoice',
       await ownedInvoice(tenantId, id, sourceAppId)
     )
   },
+
   async createInvoice(
     tenantId: string,
     body: InvoiceCreateParams,
@@ -101,6 +111,7 @@ export const documentsService = {
       replayed: result.replayed === true,
     }
   },
+
   async updateInvoice(
     tenantId: string,
     id: string,
@@ -113,30 +124,41 @@ export const documentsService = {
       ...(await unwrap(await invoices.update(tenantId, id, body), 'invoice')),
     }
   },
+
   async finalizeInvoice(
     tenantId: string,
     id: string,
     body: InvoiceFinalizeParams,
-    sourceAppId?: string
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
   ) {
     if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
     return {
       object: 'invoice',
-      ...(await unwrap(await invoices.finalize(tenantId, id, body), 'invoice')),
+      ...(await unwrap(
+        await finalizeInvoiceWorkflow(tenantId, id, body, idempotency),
+        'invoice'
+      )),
     }
   },
+
   async voidInvoice(
     tenantId: string,
     id: string,
     body: InvoiceVoidParams,
-    sourceAppId?: string
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
   ) {
     if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
     return {
       object: 'invoice',
-      ...(await unwrap(await invoices.void(tenantId, id, body), 'invoice')),
+      ...(await unwrap(
+        await voidInvoiceWorkflow(tenantId, id, body, idempotency),
+        'invoice'
+      )),
     }
   },
+
   async deleteInvoice(tenantId: string, id: string) {
     return {
       object: 'invoice',
@@ -144,6 +166,7 @@ export const documentsService = {
       deleted: true,
     }
   },
+
   async listQuotes(tenantId: string, status?: QuoteStatus) {
     return documentList(
       'quote',
@@ -151,23 +174,27 @@ export const documentsService = {
       '/api/v1/quotes'
     )
   },
+
   async getQuote(tenantId: string, id: string) {
     const row = await quotes.retrieve(tenantId, id)
     if (!row) throw missing('quote')
     return serializeDocument('quote', row)
   },
+
   async createQuote(tenantId: string, body: QuoteCreateParams) {
     return {
       object: 'quote',
       ...(await unwrap(await quotes.create(tenantId, body), 'quote')),
     }
   },
+
   async updateQuote(tenantId: string, id: string, body: QuoteUpdateParams) {
     return {
       object: 'quote',
       ...(await unwrap(await quotes.update(tenantId, id, body), 'quote')),
     }
   },
+
   async deleteQuote(tenantId: string, id: string) {
     return {
       object: 'quote',
@@ -175,6 +202,7 @@ export const documentsService = {
       deleted: true,
     }
   },
+
   async transitionQuote(
     tenantId: string,
     id: string,
@@ -215,6 +243,7 @@ export const documentsService = {
 
     return { object: 'quote' as const, id }
   },
+
   async listCreditNotes(
     tenantId: string,
     status?: 'DRAFT' | 'OPEN' | 'CLOSED' | 'VOID'
@@ -225,11 +254,13 @@ export const documentsService = {
       '/api/v1/credit-notes'
     )
   },
+
   async getCreditNote(tenantId: string, id: string) {
     const row = await creditNotes.retrieve(tenantId, id)
     if (!row) throw missing('credit_note')
     return serializeDocument('credit_note', row)
   },
+
   async createCreditNote(tenantId: string, body: CreditNoteCreateParams) {
     return {
       object: 'credit_note',
@@ -239,6 +270,7 @@ export const documentsService = {
       )),
     }
   },
+
   async applyCreditNote(
     tenantId: string,
     id: string,
@@ -252,17 +284,20 @@ export const documentsService = {
       )),
     }
   },
+
   async voidCreditNote(tenantId: string, id: string) {
     return {
       object: 'credit_note',
       ...(await unwrap(await creditNotes.void(tenantId, id), 'credit_note')),
     }
   },
+
   async getPreferences(tenantId: string) {
     const row = await invoicePreferences.retrieve(tenantId)
     if (!row) throw missing('invoice_preference')
     return serializeDocument('invoice_preference', row)
   },
+
   async updatePreferences(
     tenantId: string,
     body: InvoicePreferenceUpdateParams
@@ -275,6 +310,7 @@ export const documentsService = {
       )),
     }
   },
+
   async assessLateFees(tenantId: string, asOf?: number) {
     if (!getSettings().features.lateFees) {
       log.info(

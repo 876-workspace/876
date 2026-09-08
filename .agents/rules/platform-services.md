@@ -17,11 +17,11 @@ them — decide which before writing code.
 | ---------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | **Core identity / platform** | `@876/api` (Express) + its Postgres | users, orgs, memberships, org-roles, features, auth, oauth, geo, addresses, legal organization profiles, `audit_events`, org contacts/locations, `user_identifications` (sensitive PII), directory reference data, entitlement plans, `subscriptions` (org→app entitlements) | `@876/account`, `@876/workspace`, or `@876/platform` projection |
 | **App-local operational**    | the app itself, its own datastore   | Console users (access grants), Console roles, staff notes, Console settings (`import { service } from '@/lib/service'`)                                                                                                                                                      | imported directly, server-only, inside that app                 |
-| **Shared platform services** | each its own bounded context + DB   | Billing finance workspaces, the org-customer registry, future ticketing/disputes, commerce/orders, messaging                                                                                                                                                                 | explicit product root `<resource>.<verb>()`, auth-entrypointed  |
+| **Shared platform services** | each its own bounded context + DB   | Billing financial/commercial plane, the org-customer registry, future ticketing/disputes, messaging                                                                                                                                                                         | explicit product root `<resource>.<verb>()`, auth-entrypointed  |
 
 **Concrete instance: org → platform-app provisioning.** `subscriptions` (the `Subscription` model — the table was renamed from `organization_app_access` by migration) is the entitlement table controlling which orgs can access which 876 platform apps. It lives in the core identity API — not any single app's datastore — because it is cross-cutting: the couriers app reads it to gate dashboard access, Console reads and writes it to provision/block orgs, and future apps follow the same pattern. The API owns the table and its organization routes; session callers use the Workspace session client, while Console uses the Workspace operator client. Console provides provision/block controls through its own route handlers. Product access is independent of any app-local tenant row.
 
-**Concrete instance: app permissions and app roles.** `app_permissions`, `app_roles`, and the role/grant/deny columns on `app_assignments` live in the **core identity API**, not in a separate bounded-context service and not in the product app's own datastore. This is a deliberate, recorded exception to decision step #3 above, for two reasons. First, the effective-permission decision is `entitlement → assignment → role → grants → denies → catalog`, and the first two links (`subscriptions`, `app_assignments`) are already core rows; splitting the last three into another database turns every authorization check into a cross-service call, which `.agents/rules/navigation-performance.md` Rule 3 exists to prevent — a guard must block, so it must be cheap. Second, an app role is scoped by `(app, organization)` and administered from Console alongside the entitlement that gates it; the two are edited in the same breath and cannot usefully diverge. **The permission _vocabulary_ is still owned by the product**, as code in `@876/core/access/catalogs`; the identity API only seeds and stores it. An app that needs permissions no other surface can see still keeps those in its own datastore — this exception covers cross-app _access_, not app-internal authorization detail.
+**Concrete instance: app permissions and app roles.** `app_permissions`, `app_roles`, and the role/grant/deny columns on `app_assignments` live in the **core identity API**, not in a separate bounded-context service and not in the product app's own datastore. This is a deliberate, recorded exception to decision step #3 below, for two reasons. First, the effective-permission decision is `entitlement → assignment → role → grants → denies → catalog`, and the first two links (`subscriptions`, `app_assignments`) are already core rows; splitting the last three into another database turns every authorization check into a cross-service call, which `.agents/rules/navigation-performance.md` Rule 3 exists to prevent — a guard must block, so it must be cheap. Second, an app role is scoped by `(app, organization)` and administered from Console alongside the entitlement that gates it; the two are edited in the same breath and cannot usefully diverge. **The permission _vocabulary_ is still owned by the product**, as code in `@876/core/access/catalogs`; the identity API only seeds and stores it. An app that needs permissions no other surface can see still keeps those in its own datastore — this exception covers cross-app _access_, not app-internal authorization detail.
 
 New-org provisioning runs through `provisionOrganization` in `apps/api/src/services/provisioning.ts`. Every org receives `DEFAULT_ORG_APP_SLUGS` = `876-enterprise`, the directory where it manages itself. The app the signup came through is also provisioned; its identity comes from the validated API key, never a client-supplied field. `876-billing` is an explicit app entitlement, while the shared financial data plane remains automatic. Provisioning is idempotent: an existing subscription is left in place and a missing app row logs `provisioning.default_app_missing` and is skipped rather than failing the signup. See `docs/org-provisioning.md` for operational details.
 
@@ -34,6 +34,15 @@ Billing product later opens the same workspace without copying financial data.
 Product databases keep operational links as opaque Billing IDs; they must not
 retain fallback customer, catalog, invoice, payment, account, or ledger tables.
 
+**Concrete instance: shared commercial truth.** Canonical Customers, Items,
+Variants, Prices, Price Lists, lightweight Inventory state, Quotes, Invoices,
+Payments, and Ledger records belong to the existing Billing bounded service even
+when Store, Restaurant, POS, Marketplace, or another product surface consumes
+them. Do not create a parallel generic commerce/orders service for those records.
+Future Orders, Channels, Fulfillment, Purchasing, and advanced Inventory join the
+Billing commercial plane only when a real product requirement exists. See
+`billing-commercial-platform.md` and `docs/architecture/013-billing-commercial-platform.md`.
+
 ### How to place something
 
 1. **Is it identity or platform-foundational** (who a user/org is, what they can
@@ -42,11 +51,13 @@ retain fallback customer, catalog, invoice, payment, account, or ledger tables.
    platform (admin notes, a Console user roster (access grants), one app's settings)? →
    **That app's own datastore.** It must not duplicate identity tables and must
    reference identity by opaque ID.
-3. **Does it span multiple surfaces** — created on one app, acted on by another,
-   overseen in Console (a ticket, an order, a dispute)? → **A new shared
-   platform service**, its own bounded context and DB, exposed through its own
-   product SDK root. **Not** the identity API (it isn't identity) and **not** any single
-   app's datastore (it isn't local to one app).
+3. **Does it span multiple surfaces?** First ask whether it is canonical
+   financial/commercial truth already assigned to Billing. If yes → **the Billing
+   bounded service**, through its explicit Billing client and commercial-domain
+   boundaries. Otherwise (for example ticketing, disputes, or messaging) → **a
+   shared platform service**, its own bounded context and DB, exposed through its
+   own product SDK root. **Not** the identity API and **not** an arbitrary app's
+   datastore.
 
 > Watch for the trap: "only Console touches it today" does **not** make
 > something Console-local. `org_locations` and `org_contacts` started
@@ -150,6 +161,8 @@ When ticketing is built, it slots into all four without rework.
 
 - [ ] Placed in the right bucket (identity / app-local / shared service) per the
       decision steps above — and not misfiled because "only Console sees it today."
+- [ ] If the data is canonical financial/commercial truth, reused the Billing
+      bounded service instead of creating a parallel commerce datastore/service.
 - [ ] Cross-context references are **opaque IDs, no cross-DB FKs**; identity
       resolved through the appropriate Account, Workspace, or Platform client.
 - [ ] No privileged scope on any publishable/exposable key; secret key stays

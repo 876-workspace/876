@@ -1,21 +1,10 @@
-export type PricingModel = 'FLAT' | 'PER_UNIT' | 'PACKAGE' | 'VOLUME' | 'TIERED'
+export { calculateCatalogAmount } from '@/commerce/calculations'
+
 export type IntervalUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
 export type RenewalPricingPolicy =
   'RETAIN_EXISTING' | 'USE_LATEST' | 'MARKUP' | 'MARKDOWN'
 
-export type PriceTier = {
-  fromUnit: number
-  toUnit: number | null
-  unitAmount: bigint | null
-  flatAmount: bigint | null
-}
-
 const percentScale = 1_000_000n
-
-function requiredAmount(value: bigint | null): bigint {
-  if (value === null) throw new Error('Price amount is unavailable.')
-  return value
-}
 
 function scaledPercent(value: string | null): bigint {
   if (!value) return 0n
@@ -26,59 +15,6 @@ function scaledPercent(value: string | null): bigint {
   let result = whole * 10_000n + BigInt(fraction.slice(0, 4))
   if (Number(fraction[4]) >= 5) result += 1n
   return result
-}
-
-export function calculateCatalogAmount(options: {
-  pricingModel: PricingModel
-  unitAmount: bigint | null
-  quantity: number
-  packageSize?: number | null
-  tiers?: readonly PriceTier[]
-}): bigint {
-  const { pricingModel, unitAmount, quantity } = options
-  if (!Number.isInteger(quantity) || quantity <= 0) {
-    throw new Error('Quantity must be a positive integer.')
-  }
-  if (pricingModel === 'FLAT') return requiredAmount(unitAmount)
-  if (pricingModel === 'PER_UNIT')
-    return requiredAmount(unitAmount) * BigInt(quantity)
-  if (pricingModel === 'PACKAGE') {
-    if (!options.packageSize) throw new Error('Package size is unavailable.')
-    const packages = Math.ceil(quantity / options.packageSize)
-    return requiredAmount(unitAmount) * BigInt(packages)
-  }
-
-  const tiers = [...(options.tiers ?? [])].sort(
-    (left, right) => left.fromUnit - right.fromUnit
-  )
-  if (pricingModel === 'VOLUME') {
-    const tier = tiers.find(
-      ({ fromUnit, toUnit }) =>
-        quantity >= fromUnit && (toUnit === null || quantity <= toUnit)
-    )
-    if (!tier) throw new Error('No volume tier covers this quantity.')
-    return (
-      requiredAmount(tier.unitAmount) * BigInt(quantity) +
-      (tier.flatAmount ?? 0n)
-    )
-  }
-
-  let total = 0n
-  let coveredThrough = 0
-  for (const tier of tiers) {
-    if (quantity < tier.fromUnit) break
-    const tierEnd = Math.min(quantity, tier.toUnit ?? quantity)
-    const units = Math.max(tierEnd - tier.fromUnit + 1, 0)
-    if (units > 0) {
-      total +=
-        requiredAmount(tier.unitAmount) * BigInt(units) +
-        (tier.flatAmount ?? 0n)
-      coveredThrough = Math.max(coveredThrough, tierEnd)
-    }
-  }
-  if (coveredThrough < quantity)
-    throw new Error('The tiered price does not cover this quantity.')
-  return total
 }
 
 export function calculateDiscount(options: {

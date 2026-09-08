@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import { getPrincipal } from '@/http/auth'
+import { optionalCommandIdempotency } from '@/http/command-idempotency'
 import { integrationAttribution } from '@/http/integration/idempotency'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import { documentsService as service } from './documents.service'
@@ -101,44 +102,54 @@ export const documentsController = {
     )
   },
   async invoicesFinalize(req: Request, res: Response) {
-    res
-      .status(201)
-      .json(
-        await service.finalizeInvoice(
-          tenant(req),
-          param(req, 'invoiceId'),
-          validBody<InvoiceFinalizeParams>(req)
-        )
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<InvoiceFinalizeParams>(req)
+    res.status(201).json(
+      await service.finalizeInvoice(
+        tenant(req),
+        invoiceId,
+        body,
+        undefined,
+        optionalCommandIdempotency(req, { invoiceId, body })
       )
+    )
   },
   async invoicesIntegrationFinalize(req: Request, res: Response) {
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<InvoiceFinalizeParams>(req)
     res.json(
       await service.finalizeInvoice(
         tenant(req),
-        param(req, 'invoiceId'),
-        validBody<InvoiceFinalizeParams>(req),
-        sourceApp(req)
+        invoiceId,
+        body,
+        sourceApp(req),
+        optionalCommandIdempotency(req, { invoiceId, body })
       )
     )
   },
   async invoicesVoid(req: Request, res: Response) {
-    res
-      .status(201)
-      .json(
-        await service.voidInvoice(
-          tenant(req),
-          param(req, 'invoiceId'),
-          validBody<InvoiceVoidParams>(req)
-        )
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<InvoiceVoidParams>(req)
+    res.status(201).json(
+      await service.voidInvoice(
+        tenant(req),
+        invoiceId,
+        body,
+        undefined,
+        optionalCommandIdempotency(req, { invoiceId, body })
       )
+    )
   },
   async invoicesIntegrationVoid(req: Request, res: Response) {
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<InvoiceVoidParams>(req)
     res.json(
       await service.voidInvoice(
         tenant(req),
-        param(req, 'invoiceId'),
-        validBody<InvoiceVoidParams>(req),
-        sourceApp(req)
+        invoiceId,
+        body,
+        sourceApp(req),
+        optionalCommandIdempotency(req, { invoiceId, body })
       )
     )
   },

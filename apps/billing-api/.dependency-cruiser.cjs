@@ -10,6 +10,32 @@ module.exports = {
       },
     },
     {
+      name: 'inventory-does-not-depend-on-documents',
+      severity: 'error',
+      from: { path: '^src/modules/inventory/' },
+      to: { path: '^src/modules/documents/' },
+    },
+    {
+      name: 'catalog-does-not-depend-on-documents',
+      severity: 'error',
+      from: { path: '^src/modules/catalog/' },
+      to: { path: '^src/modules/documents/' },
+    },
+    {
+      name: 'pricing-does-not-depend-on-documents',
+      severity: 'error',
+      from: { path: '^src/modules/pricing/' },
+      to: { path: '^src/modules/documents/' },
+    },
+    {
+      name: 'document-workflows-use-public-module-apis',
+      severity: 'error',
+      from: { path: '^src/modules/documents/workflows/' },
+      to: {
+        path: '^src/modules/(?!documents/)[^/]+/(?:repositories?/|[^/]+\\.repository\\.ts$)',
+      },
+    },
+    {
       name: 'prisma-only-in-repositories',
       severity: 'error',
       from: { pathNot: '(\\.repository\\.ts$|/repositories/|^src/db/)' },

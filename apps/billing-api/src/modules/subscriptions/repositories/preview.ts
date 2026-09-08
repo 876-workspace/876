@@ -3,7 +3,7 @@ import { nowUnixSeconds } from '@876/core/timestamps'
 import { prisma } from './db'
 
 import { calculateDiscount, calculateInvoiceChargeLines } from './calculations'
-import { calculateCatalogAmount } from '@/modules/catalog'
+import { calculateCatalogAmount } from '@/commerce/calculations'
 import { adjustRenewalAmount } from './renewal-pricing'
 import { prorateInitialStubAmount } from './amounts'
 
@@ -74,7 +74,11 @@ export async function previewUpcomingInvoice(
       item,
       unitAmount,
       subtotalAmount: prorateInitialStubAmount(
-        calculateCatalogAmount({ ...item.price, unitAmount }, item.quantity),
+        calculateCatalogAmount({
+          ...item.price,
+          unitAmount,
+          quantity: item.quantity,
+        }),
         subscription,
         item.price
       ),

@@ -2,11 +2,9 @@ import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
-import type { ItemCreateParams } from '../../schemas/item'
 import type { ServiceResult } from '../../schemas/api'
+import type { ItemCreateParams } from '../../schemas/item'
 
-import { err, ok } from '../result'
-import { hasEnabledCurrency } from '../shared'
 import {
   attributionData,
   type AttributedCreateResult,
@@ -14,6 +12,8 @@ import {
   resolveIdempotencyReplay,
 } from '../integrations/attribution'
 import { isUniqueConstraintError } from '../prisma-error'
+import { err, ok } from '../result'
+import { hasEnabledCurrency } from '../shared'
 import { createVariantStructure } from './variants'
 
 /** Creates a single sellable item or a parent Item with generated Variants. */
@@ -31,24 +31,6 @@ export async function create(
   if (replay) return replay
 
   const variantMode = params.variantMode
-  if (variantMode === 'variant') {
-    const preference = await prisma.modulePreference.findFirst({
-      where: {
-        tenantId,
-        module: 'items',
-        key: 'product-variants',
-        booleanValue: true,
-      },
-      select: { id: true },
-    })
-    if (!preference)
-      return err(
-        'Product variants are not enabled for this workspace.',
-        409,
-        'billing/item-variants-disabled'
-      )
-  }
-
   const sellingCurrency = params.defaultSellingCurrency ?? null
   const costCurrency = params.defaultCostCurrency ?? null
 

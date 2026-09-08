@@ -1,4 +1,3 @@
-import { adjustStock } from './adjust-stock'
 import { create } from './create'
 import { deleteItem } from './delete'
 import { list } from './list'
@@ -14,7 +13,6 @@ export const items = {
   retrieve,
   list,
   update,
-  adjustStock,
   variants: {
     ...variants,
     search: searchVariants,

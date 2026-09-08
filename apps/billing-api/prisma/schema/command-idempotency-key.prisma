@@ -1,0 +1,21 @@
+/// Durable replay guard for high-value Billing application commands.
+model CommandIdempotencyKey {
+  id           String  @id
+  tenantId     String  @map("tenant_id")
+  operation    String
+  key          String
+  requestHash  String  @map("request_hash")
+  resourceType String? @map("resource_type")
+  resourceId   String? @map("resource_id")
+  httpStatus   Int?    @map("http_status")
+  createdAt    Int     @map("created_at")
+  completedAt  Int?    @map("completed_at")
+  expiresAt    Int?    @map("expires_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_command_idempotency_keys_tenant_id_fkey")
+
+  @@unique([tenantId, operation, key], name: "billing_command_idempotency_keys_tenant_operation_key", map: "billing_command_idempotency_keys_tenant_operation_key")
+  @@index([tenantId, createdAt], map: "billing_command_idempotency_keys_tenant_created_idx")
+  @@index([expiresAt], map: "billing_command_idempotency_keys_expires_idx")
+  @@map("billing_command_idempotency_keys")
+}

@@ -84,6 +84,7 @@ function subscription() {
         quantity: 1,
         price: {
           id: 'prc_1',
+          pricingModel: 'FLAT',
           itemId: null,
           nickname: 'Monthly service',
           intervalUnit: 'MONTH',
