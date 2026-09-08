@@ -70,7 +70,10 @@ export function createQuotesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: '/api/v1/quotes',
-          query: params as Record<string, string | number | boolean | undefined>,
+          query: params as Record<
+            string,
+            string | number | boolean | undefined
+          >,
           signal: options?.signal,
         },
         QuoteListSchema

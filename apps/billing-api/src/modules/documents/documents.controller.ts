@@ -1,7 +1,10 @@
 import type { Request, Response } from 'express'
 import { getPrincipal } from '@/http/auth'
 import { optionalCommandIdempotency } from '@/http/command-idempotency'
-import { integrationAttribution } from '@/http/integration/idempotency'
+import {
+  integrationAttribution,
+  type IntegrationAttribution,
+} from '@/http/integration/idempotency'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import { documentsService as service } from './documents.service'
 import type {
@@ -43,6 +46,21 @@ function emptyCommand(req: Request, resourceId: string) {
     idempotency: optionalCommandIdempotency(req, { resourceId, body }),
   }
 }
+async function convertQuote(
+  req: Request,
+  res: Response,
+  attribution?: IntegrationAttribution | null
+) {
+  const result = await service.convertQuoteToInvoice(
+    tenant(req),
+    param(req, 'quoteId'),
+    attribution
+  )
+  res
+    .status(result.replayed ? 200 : 201)
+    .json({ object: result.object, id: result.id })
+}
+
 export const documentsController = {
   async invoicesList(req: Request, res: Response) {
     res.json(
@@ -113,15 +131,17 @@ export const documentsController = {
   async invoicesFinalize(req: Request, res: Response) {
     const invoiceId = param(req, 'invoiceId')
     const body = validBody<InvoiceFinalizeParams>(req)
-    res.status(201).json(
-      await service.finalizeInvoice(
-        tenant(req),
-        invoiceId,
-        body,
-        undefined,
-        optionalCommandIdempotency(req, { invoiceId, body })
+    res
+      .status(201)
+      .json(
+        await service.finalizeInvoice(
+          tenant(req),
+          invoiceId,
+          body,
+          undefined,
+          optionalCommandIdempotency(req, { invoiceId, body })
+        )
       )
-    )
   },
   async invoicesIntegrationFinalize(req: Request, res: Response) {
     const invoiceId = param(req, 'invoiceId')
@@ -163,15 +183,17 @@ export const documentsController = {
   async invoicesVoid(req: Request, res: Response) {
     const invoiceId = param(req, 'invoiceId')
     const body = validBody<InvoiceVoidParams>(req)
-    res.status(201).json(
-      await service.voidInvoice(
-        tenant(req),
-        invoiceId,
-        body,
-        undefined,
-        optionalCommandIdempotency(req, { invoiceId, body })
+    res
+      .status(201)
+      .json(
+        await service.voidInvoice(
+          tenant(req),
+          invoiceId,
+          body,
+          undefined,
+          optionalCommandIdempotency(req, { invoiceId, body })
+        )
       )
-    )
   },
   async invoicesIntegrationVoid(req: Request, res: Response) {
     const invoiceId = param(req, 'invoiceId')
@@ -300,6 +322,19 @@ export const documentsController = {
       )
     )
   },
+  async quotesIntegrationAccept(req: Request, res: Response) {
+    const quoteId = param(req, 'quoteId')
+    const command = emptyCommand(req, quoteId)
+    res.json(
+      await service.transitionQuote(
+        tenant(req),
+        quoteId,
+        'accept',
+        command.idempotency,
+        integrationAttribution(req, getPrincipal(req), command.body)
+      )
+    )
+  },
   async quotesCancel(req: Request, res: Response) {
     const quoteId = param(req, 'quoteId')
     const command = emptyCommand(req, quoteId)
@@ -325,14 +360,18 @@ export const documentsController = {
     )
   },
   async quotesConvertToInvoice(req: Request, res: Response) {
-    const result = await service.convertQuoteToInvoice(
-      tenant(req),
-      param(req, 'quoteId')
+    await convertQuote(req, res)
+  },
+  async quotesIntegrationConvertToInvoice(req: Request, res: Response) {
+    await convertQuote(
+      req,
+      res,
+      integrationAttribution(
+        req,
+        getPrincipal(req),
+        validBody<Record<string, never>>(req)
+      )
     )
-    res.status(result.replayed ? 200 : 201).json({
-      object: result.object,
-      id: result.id,
-    })
   },
   async quotePreferencesGet(req: Request, res: Response) {
     res.json(await service.getQuotePreferences(tenant(req)))

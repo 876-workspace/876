@@ -1,18 +1,10 @@
 import type { QuoteStatus } from './schemas/quote'
 
 export type QuoteLifecycleAction =
-  | 'send'
-  | 'accept'
-  | 'decline'
-  | 'cancel'
-  | 'expire'
+  'send' | 'accept' | 'decline' | 'cancel' | 'expire'
 
 export type QuoteLifecycleTimestampField =
-  | 'sentAt'
-  | 'acceptedAt'
-  | 'declinedAt'
-  | 'canceledAt'
-  | 'expiredAt'
+  'sentAt' | 'acceptedAt' | 'declinedAt' | 'canceledAt' | 'expiredAt'
 
 export interface QuoteLifecycleState {
   status: QuoteStatus
@@ -48,16 +40,14 @@ export function resolveQuoteLifecycleTransition(
   const expired = isQuoteExpired(quote, asOf)
 
   if (action === 'expire') {
-    if (
-      (quote.status !== 'DRAFT' && quote.status !== 'SENT') ||
-      !expired
-    )
+    if ((quote.status !== 'DRAFT' && quote.status !== 'SENT') || !expired)
       return null
 
     return { to: 'EXPIRED', timestampField: 'expiredAt' }
   }
 
-  if (expired && (quote.status === 'DRAFT' || quote.status === 'SENT')) return null
+  if (expired && (quote.status === 'DRAFT' || quote.status === 'SENT'))
+    return null
 
   if (action === 'send') {
     if (quote.status !== 'DRAFT' && quote.status !== 'SENT') return null

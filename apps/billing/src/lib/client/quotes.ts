@@ -1,7 +1,4 @@
-import type {
-  QuotePreference,
-  QuotePreferenceUpdateParams,
-} from '@876/billing'
+import type { QuotePreference, QuotePreferenceUpdateParams } from '@876/billing'
 
 import type { InvoiceResource } from '@/types/invoice'
 import type {

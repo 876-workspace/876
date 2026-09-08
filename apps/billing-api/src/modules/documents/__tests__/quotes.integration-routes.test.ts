@@ -10,6 +10,10 @@ const mocks = vi.hoisted(() => ({
   listQuotes: vi.fn(),
   getQuote: vi.fn(),
   createQuote: vi.fn(),
+  transitionQuote: vi.fn(),
+  convertQuoteToInvoice: vi.fn(),
+  getQuotePreferences: vi.fn(),
+  updateQuotePreferences: vi.fn(),
 }))
 
 vi.mock('@/modules/tenants', async (importOriginal) => ({
@@ -30,6 +34,10 @@ vi.mock('../documents.service', () => ({
     listQuotes: mocks.listQuotes,
     getQuote: mocks.getQuote,
     createQuote: mocks.createQuote,
+    transitionQuote: mocks.transitionQuote,
+    convertQuoteToInvoice: mocks.convertQuoteToInvoice,
+    getQuotePreferences: mocks.getQuotePreferences,
+    updateQuotePreferences: mocks.updateQuotePreferences,
   },
 }))
 
@@ -72,6 +80,7 @@ describe('Quote integration routes', () => {
     })
     mocks.getQuote.mockResolvedValue(quote)
     mocks.createQuote.mockResolvedValue(quote)
+    mocks.transitionQuote.mockResolvedValue(quote)
   })
 
   it('lists quotes with the read scope and returns the standard list envelope', async () => {
@@ -89,6 +98,110 @@ describe('Quote integration routes', () => {
       error: null,
     })
     expect(mocks.listQuotes).toHaveBeenCalledWith('btenant_a', undefined)
+  })
+
+  it.each(['send', 'accept', 'decline', 'cancel', 'expire'])(
+    'routes %s with tenant ownership and command idempotency',
+    async (action) => {
+      const response = await authorized(
+        request(createApp()).post(`${base}/quo_123/${action}`)
+      )
+        .set('Idempotency-Key', 'quote-command')
+        .send({})
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({ data: quote, error: null })
+      expect(mocks.transitionQuote).toHaveBeenCalledWith(
+        'btenant_a',
+        'quo_123',
+        action,
+        {
+          key: 'quote-command',
+          requestHash: expect.any(String),
+        },
+        ...(action === 'accept'
+          ? [
+              expect.objectContaining({
+                sourceAppId: 'app_invoice',
+                sourceIdempotencyKey: 'quote-command',
+              }),
+            ]
+          : [])
+      )
+    }
+  )
+
+  it.each([false, true])(
+    'returns the conversion status without leaking replay metadata (%s)',
+    async (replayed) => {
+      mocks.convertQuoteToInvoice.mockResolvedValue({
+        object: 'invoice',
+        id: 'inv_1',
+        replayed,
+      })
+      const response = await authorized(
+        request(createApp()).post(`${base}/quo_123/convert-to-invoice`)
+      )
+        .set('Idempotency-Key', 'conversion-key')
+        .send({})
+      expect(response.status).toBe(replayed ? 200 : 201)
+      expect(response.body).toEqual({
+        data: { object: 'invoice', id: 'inv_1' },
+        error: null,
+      })
+      expect(mocks.convertQuoteToInvoice).toHaveBeenCalledWith(
+        'btenant_a',
+        'quo_123',
+        expect.objectContaining({
+          sourceAppId: 'app_invoice',
+          sourceIdempotencyKey: 'conversion-key',
+        })
+      )
+    }
+  )
+
+  it.each(['accept', 'expire', 'convert-to-invoice'])(
+    'rejects %s without quote write scope',
+    async (action) => {
+      mocks.activeConnection.mockResolvedValue({
+        scopes: new Set(['billing.quotes.read']),
+      })
+      const response = await authorized(
+        request(createApp()).post(`${base}/quo_123/${action}`)
+      ).send({})
+      expect(response.status).toBe(403)
+      expect(mocks.transitionQuote).not.toHaveBeenCalled()
+      expect(mocks.convertQuoteToInvoice).not.toHaveBeenCalled()
+    }
+  )
+
+  it('rejects nonempty command bodies before invoking the workflow', async () => {
+    const response = await authorized(
+      request(createApp()).post(`${base}/quo_123/accept`)
+    ).send({ status: 'ACCEPTED' })
+    expect(response.status).toBe(422)
+    expect(mocks.transitionQuote).not.toHaveBeenCalled()
+  })
+
+  it('validates and persists the organization conversion preference', async () => {
+    const preference = {
+      object: 'quote-preference',
+      acceptedQuoteConversion: 'draft-invoice-on-accept',
+    }
+    mocks.updateQuotePreferences.mockResolvedValue(preference)
+    const path = `/api/v1/integrations/organizations/${organizationA}/quote-preferences`
+    const response = await authorized(request(createApp()).patch(path)).send({
+      acceptedQuoteConversion: 'draft-invoice-on-accept',
+    })
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({ data: preference, error: null })
+    expect(mocks.updateQuotePreferences).toHaveBeenCalledWith('btenant_a', {
+      acceptedQuoteConversion: 'draft-invoice-on-accept',
+    })
+    const invalid = await authorized(request(createApp()).patch(path)).send({
+      acceptedQuoteConversion: 'finalize',
+    })
+    expect(invalid.status).toBe(422)
+    expect(mocks.updateQuotePreferences).toHaveBeenCalledOnce()
   })
 
   it('creates a quote with the write scope and returns a quote resource', async () => {

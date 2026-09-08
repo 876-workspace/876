@@ -4,7 +4,10 @@ import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import { errorEnvelopeSchema, successEnvelopeSchema } from '@/http/envelope'
 
 import { documentsController as controller } from './documents.controller'
-import { QuotePreferenceUpdateSchema } from './schemas/quote-preference'
+import {
+  QuoteAcceptedConversionSchema,
+  QuotePreferenceUpdateSchema,
+} from './schemas/quote-preference'
 
 type QuoteActionHandler =
   | typeof controller.quotesSend
@@ -24,7 +27,7 @@ const resource = (name: string) =>
   z.object({ object: z.literal(name), id: z.string() }).passthrough()
 const quotePreferenceResource = z.strictObject({
   object: z.literal('quote-preference'),
-  acceptedQuoteConversion: z.enum(['manual', 'draft-invoice-on-accept']),
+  acceptedQuoteConversion: QuoteAcceptedConversionSchema,
 })
 const clientErrors = {
   '4XX': { description: 'Client Error', schema: errorEnvelopeSchema },
@@ -145,7 +148,7 @@ export function createQuoteLifecycleRouter(resolveGuards: GuardResolver) {
   }
 
   integrationQuoteAction('send', controller.quotesSend)
-  integrationQuoteAction('accept', controller.quotesAccept)
+  integrationQuoteAction('accept', controller.quotesIntegrationAccept)
   integrationQuoteAction('decline', controller.quotesDecline)
   integrationQuoteAction('cancel', controller.quotesCancel)
   integrationQuoteAction('expire', controller.quotesExpire)
@@ -168,7 +171,7 @@ export function createQuoteLifecycleRouter(resolveGuards: GuardResolver) {
       },
       ...clientErrors,
     },
-    handler: controller.quotesConvertToInvoice,
+    handler: controller.quotesIntegrationConvertToInvoice,
   })
 
   api.get({

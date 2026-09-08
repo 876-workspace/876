@@ -4,13 +4,11 @@ import { getSettings } from '@/config'
 import { AppHttpError, appError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
 import { getLogger } from '@/platform/logger'
+import { integrationPayloadHash } from '@/platform/idempotency'
 import type { IdempotencyContext } from '@/types/commerce'
 
 import { documentList, serializeDocument } from './documents.serializers'
-import {
-  isQuoteExpired,
-  type QuoteLifecycleAction,
-} from './quote-lifecycle'
+import { isQuoteExpired, type QuoteLifecycleAction } from './quote-lifecycle'
 import { creditNotes } from './repositories/credit-notes'
 import { invoicePreferences } from './repositories/invoice-preferences'
 import { invoices } from './repositories/invoices'
@@ -116,7 +114,11 @@ async function assertQuoteConvertible(tenantId: string, quoteId: string) {
   return quote
 }
 
-async function convertAcceptedQuote(tenantId: string, quoteId: string) {
+async function convertAcceptedQuote(
+  tenantId: string,
+  quoteId: string,
+  attribution?: IntegrationAttribution | null
+) {
   const quote = await assertQuoteConvertible(tenantId, quoteId)
   if (quote.convertedInvoice?.id)
     return {
@@ -125,7 +127,18 @@ async function convertAcceptedQuote(tenantId: string, quoteId: string) {
       replayed: true as const,
     }
 
-  const result = await invoices.create(tenantId, { quoteId })
+  const result = await invoices.create(
+    tenantId,
+    { quoteId },
+    attribution
+      ? {
+          ...attribution,
+          sourcePayloadHash: integrationPayloadHash(
+            JSON.stringify({ quoteId })
+          ),
+        }
+      : undefined
+  )
   if (result.error !== null) {
     // A concurrent conversion can win the one-to-one relation after our first
     // read. Re-read before surfacing a conflict so the command remains
@@ -317,7 +330,8 @@ export const documentsService = {
     tenantId: string,
     id: string,
     action: QuoteLifecycleAction,
-    idempotency?: IdempotencyContext
+    idempotency?: IdempotencyContext,
+    attribution?: IntegrationAttribution | null
   ) {
     const resource = {
       object: 'quote' as const,
@@ -330,24 +344,25 @@ export const documentsService = {
     if (action === 'accept') {
       const preference = await quotePreferences.retrieve(tenantId)
       if (preference.acceptedQuoteConversion === 'draft-invoice-on-accept')
-        await convertAcceptedQuote(tenantId, id)
+        await convertAcceptedQuote(tenantId, id, attribution)
     }
 
     return resource
   },
 
-  async convertQuoteToInvoice(tenantId: string, id: string) {
-    return convertAcceptedQuote(tenantId, id)
+  async convertQuoteToInvoice(
+    tenantId: string,
+    id: string,
+    attribution?: IntegrationAttribution | null
+  ) {
+    return convertAcceptedQuote(tenantId, id, attribution)
   },
 
   getQuotePreferences(tenantId: string) {
     return quotePreferences.retrieve(tenantId)
   },
 
-  updateQuotePreferences(
-    tenantId: string,
-    body: QuotePreferenceUpdateParams
-  ) {
+  updateQuotePreferences(tenantId: string, body: QuotePreferenceUpdateParams) {
     return quotePreferences.update(tenantId, body.acceptedQuoteConversion)
   },
 

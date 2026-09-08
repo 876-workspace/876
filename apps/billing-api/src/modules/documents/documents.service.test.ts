@@ -22,7 +22,9 @@ vi.mock('./repositories/quotes/preferences', () => ({
   },
 }))
 vi.mock('./repositories/credit-notes', () => ({ creditNotes: {} }))
-vi.mock('./repositories/invoice-preferences', () => ({ invoicePreferences: {} }))
+vi.mock('./repositories/invoice-preferences', () => ({
+  invoicePreferences: {},
+}))
 vi.mock('./workflows', () => ({
   finalizeInvoiceWorkflow: vi.fn(),
   sendInvoiceWorkflow: vi.fn(),
@@ -32,6 +34,7 @@ vi.mock('./workflows', () => ({
 }))
 
 import { documentsService } from './documents.service'
+import { integrationPayloadHash } from '@/platform/idempotency'
 
 const convertedInvoice = { quoteId: 'quo_1' }
 
@@ -88,7 +91,34 @@ describe('documentsService quote conversion', () => {
 
     await expect(
       documentsService.convertQuoteToInvoice('ten_1', 'quo_1')
-    ).resolves.toMatchObject({ object: 'invoice', id: 'inv_1', replayed: false })
+    ).resolves.toMatchObject({
+      object: 'invoice',
+      id: 'inv_1',
+      replayed: false,
+    })
+  })
+
+  it('attributes the converted invoice to the caller and hashes the quote identity', async () => {
+    mocks.quoteRetrieve.mockResolvedValue({
+      id: 'quo_1',
+      status: 'ACCEPTED',
+      convertedInvoice: null,
+    })
+    const attribution = {
+      sourceAppId: 'app_invoice',
+      sourceExternalReference: null,
+      sourceIdempotencyKey: 'conversion-key',
+      sourcePayloadHash: 'empty-command-hash',
+    }
+    await documentsService.convertQuoteToInvoice('ten_1', 'quo_1', attribution)
+    expect(mocks.invoiceCreate).toHaveBeenCalledWith(
+      'ten_1',
+      { quoteId: 'quo_1' },
+      {
+        ...attribution,
+        sourcePayloadHash: integrationPayloadHash('{"quoteId":"quo_1"}'),
+      }
+    )
   })
 
   it('returns the already linked invoice when conversion is replayed', async () => {
