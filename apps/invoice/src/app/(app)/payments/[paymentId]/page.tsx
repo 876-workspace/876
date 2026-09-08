@@ -1,19 +1,9 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { Badge } from '@876/ui/badge'
-import {
-  DetailCard,
-  DetailCardBody,
-  DetailCardFact,
-  DetailCardFacts,
-  DetailCardHeader,
-  DetailCardHeadline,
-  DetailCardIcon,
-  DetailCardIdBar,
-  DetailCardSection,
-} from '@876/ui/detail-card'
-import { CreditCardIcon } from '@876/ui/icons'
 
+import { PaymentDetailCard } from '@876/billing-ui/payment-detail-card'
+import { DetailCard, DetailCardBody } from '@876/ui/detail-card'
+
+import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
@@ -31,7 +21,10 @@ export default async function PaymentDetailPage({ params }: Props) {
   if (!context) redirect('/no-access')
 
   const billing = await getBilling(context.orgId)
-  const result = await billing.payments.retrieve(paymentId)
+  const [result, access] = await Promise.all([
+    billing.payments.retrieve(paymentId),
+    resolveAccessContext(context.userId, context.orgId),
+  ])
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
     return (
@@ -50,90 +43,45 @@ export default async function PaymentDetailPage({ params }: Props) {
     (total, allocation) => total + BigInt(allocation.amount),
     0n
   )
+  const canEdit = access.status === 'ok' && canAccess(access.context, 'payments.edit')
+  const canRefund =
+    canEdit &&
+    (payment.status === 'SUCCEEDED' || payment.status === 'PARTIALLY_REFUNDED') &&
+    BigInt(payment.unappliedAmount) > 0n
 
   return (
-    <DetailCard aria-label={`Payment details: ${payment.number}`}>
-      <DetailCardHeader
-        icon={
-          <DetailCardIcon>
-            <CreditCardIcon className="size-5" />
-          </DetailCardIcon>
-        }
-        title={payment.number}
-        meta={<Badge variant="secondary">{payment.status}</Badge>}
-        subtitle={`${payment.customer.name} · ${formatDate(payment.paymentDate)}`}
-        closeHref="/payments"
-        closeLabel="Close payment details"
-      />
-      <DetailCardBody className="space-y-8">
-        <DetailCardHeadline
-          value={formatMoney(payment.amount, payment.currency)}
-          caption="Payment received"
-        />
-        <DetailCardSection title="Payment">
-          <DetailCardFacts>
-            <DetailCardFact label="Customer" value={payment.customer.name} />
-            <DetailCardFact
-              label="Received"
-              value={formatDate(payment.paymentDate)}
-            />
-            <DetailCardFact
-              label="Deposit account"
-              value={payment.depositAccount.name}
-            />
-            <DetailCardFact
-              label="Payment mode"
-              value={payment.paymentMode.name}
-            />
-            <DetailCardFact
-              label="Allocated"
-              value={formatMoney(allocated, payment.currency)}
-              mono
-            />
-            <DetailCardFact
-              label="Unapplied"
-              value={formatMoney(payment.unappliedAmount, payment.currency)}
-              mono
-            />
-            <DetailCardFact
-              label="Reference"
-              value={payment.referenceNumber ?? '—'}
-              mono
-            />
-          </DetailCardFacts>
-        </DetailCardSection>
-        {payment.invoiceAllocations.length > 0 ? (
-          <DetailCardSection title="Applied to invoices">
-            <div className="divide-border divide-y rounded-lg border">
-              {payment.invoiceAllocations.map((allocation) => (
-                <Link
-                  key={allocation.id}
-                  href={`/invoices/${allocation.invoice.id}`}
-                  className="hover:bg-muted/30 flex items-center justify-between gap-4 px-4 py-3"
-                >
-                  <div>
-                    <p className="font-medium">{allocation.invoice.number}</p>
-                    <p className="text-muted-foreground text-xs capitalize">
-                      {allocation.invoice.status.toLowerCase().replaceAll('_', ' ')}
-                    </p>
-                  </div>
-                  <span className="font-medium tabular-nums">
-                    {formatMoney(allocation.amount, payment.currency)}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </DetailCardSection>
-        ) : null}
-        {payment.notes ? (
-          <DetailCardSection title="Notes">
-            <p className="text-foreground text-sm leading-6">{payment.notes}</p>
-          </DetailCardSection>
-        ) : null}
-      </DetailCardBody>
-      <DetailCardIdBar>
-        <span className="truncate">{payment.id}</span>
-      </DetailCardIdBar>
-    </DetailCard>
+    <PaymentDetailCard
+      payment={{
+        id: payment.id,
+        number: payment.number,
+        status: payment.status,
+        customerName: payment.customer.name,
+        paymentDate: formatDate(payment.paymentDate),
+        received: formatMoney(payment.amount, payment.currency),
+        allocated: formatMoney(allocated, payment.currency),
+        unapplied: formatMoney(payment.unappliedAmount, payment.currency),
+        refunded: formatMoney(payment.amountRefunded, payment.currency),
+        bankCharges: formatMoney(payment.bankCharges, payment.currency),
+        paymentMode: payment.paymentMode.name,
+        depositAccount: payment.depositAccount.name,
+        reference: payment.referenceNumber ?? '—',
+        notes: payment.notes,
+        allocations: payment.invoiceAllocations.map((allocation) => ({
+          id: allocation.id,
+          invoiceId: allocation.invoice.id,
+          invoiceNumber: allocation.invoice.number,
+          invoiceStatus: allocation.invoice.status,
+          amount: formatMoney(allocation.amount, payment.currency),
+          href: `/invoices/${allocation.invoice.id}`,
+        })),
+      }}
+      closeHref="/payments"
+      editHref={
+        canEdit && payment.status === 'SUCCEEDED'
+          ? `/payments/${payment.id}/edit`
+          : undefined
+      }
+      refundHref={canRefund ? `/payments/${payment.id}/refund` : undefined}
+    />
   )
 }
