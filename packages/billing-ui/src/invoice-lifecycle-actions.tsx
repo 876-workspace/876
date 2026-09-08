@@ -43,7 +43,6 @@ export interface InvoiceLifecycleActionResult {
 }
 
 export interface InvoiceLifecycleActionsProps {
-  invoiceId: string
   status: InvoiceLifecycleStatus
   editHref?: string
   canEdit?: boolean
@@ -140,7 +139,7 @@ export function InvoiceLifecycleActions({
           disabled={isPending}
           onClick={() => run(onSend)}
         >
-          {isPending ? 'Recording…' : status === 'OPEN' ? 'Mark sent' : 'Send again'}
+          {isPending ? 'Recording…' : 'Mark sent'}
         </Button>
       ) : null}
 
@@ -179,6 +178,7 @@ export function InvoiceLifecycleActions({
               <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 type="button"
+                variant="destructive"
                 disabled={isPending || writeOffReason.trim().length === 0}
                 onClick={() =>
                   run(
