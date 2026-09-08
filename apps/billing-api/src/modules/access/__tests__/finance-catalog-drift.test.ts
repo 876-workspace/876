@@ -24,11 +24,11 @@ describe('finance permission catalog', () => {
 
   it('assigns every permission to exactly one module', () => {
     const owners = new Map<string, string[]>()
-    for (const module of FINANCE_PERMISSION_MODULES)
-      for (const permission of module.permissions)
+    for (const permissionModule of FINANCE_PERMISSION_MODULES)
+      for (const permission of permissionModule.permissions)
         owners.set(permission.key, [
           ...(owners.get(permission.key) ?? []),
-          module.key,
+          permissionModule.key,
         ])
 
     const duplicated = [...owners.entries()].filter(
