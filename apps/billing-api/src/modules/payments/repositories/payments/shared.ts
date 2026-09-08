@@ -1,5 +1,9 @@
 import type { InvoiceStatus } from '@/db'
 import { prisma } from '@/db/client'
+import {
+  isCollectibleInvoiceStatus,
+  projectCollectibleInvoiceStatus,
+} from '@/modules/documents'
 import { generateId } from '@/platform/ids'
 import type { PaymentCreateParams } from '../../schemas/payment'
 
@@ -24,6 +28,10 @@ interface InvoiceTarget {
   currency: string
   status: InvoiceStatus
   amountDue: bigint
+  amountPaid: bigint
+  amountCredited: bigint
+  dueAt: number | null
+  sentAt: number | null
   paidAt: number | null
 }
 
@@ -87,6 +95,10 @@ export async function loadPaymentTargets(
         currency: true,
         status: true,
         amountDue: true,
+        amountPaid: true,
+        amountCredited: true,
+        dueAt: true,
+        sentAt: true,
         paidAt: true,
       },
     }),
@@ -123,12 +135,7 @@ export async function loadPaymentTargets(
         'Every invoice must use the payment currency.',
         422
       )
-    if (
-      invoice.status === 'DRAFT' ||
-      invoice.status === 'VOID' ||
-      invoice.status === 'PAID' ||
-      invoice.status === 'UNCOLLECTIBLE'
-    )
+    if (!isCollectibleInvoiceStatus(invoice.status))
       throw new PaymentMutationError(
         'Only open invoices can receive a payment allocation.',
         409
@@ -200,21 +207,29 @@ export async function applyPaymentAllocations(
 
     const current = await tx.invoice.findUnique({
       where: { id: invoice.id },
-      select: { amountDue: true },
+      select: {
+        amountDue: true,
+        amountPaid: true,
+        amountCredited: true,
+        dueAt: true,
+        sentAt: true,
+      },
     })
     if (!current) throw new PaymentMutationError('Invoice not found.', 404)
 
-    // Fully settled -> PAID; still owing after a payment -> PARTIALLY_PAID.
-    if (current.amountDue === 0n)
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: { status: 'PAID', paidAt: paymentDate, updatedAt: now },
-      })
-    else
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: { status: 'PARTIALLY_PAID', updatedAt: now },
-      })
+    const status = projectCollectibleInvoiceStatus({
+      ...current,
+      asOf: now,
+    })
+
+    await tx.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        status,
+        paidAt: status === 'PAID' ? paymentDate : null,
+        updatedAt: now,
+      },
+    })
   }
 }
 
