@@ -16,6 +16,7 @@ import {
 } from '@876/ui/app-shell'
 
 import type { InvoiceFeatures } from '@/types/features'
+import { MobileNav } from './mobile-nav'
 import { InvoiceSidebar } from './sidebar'
 import { OrgSwitcher } from './org-switcher'
 import { SupportWidget } from './support-widget'
@@ -49,12 +50,17 @@ export async function InvoiceShell({
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
       <NavProgress />
-      <AppShellSidebarArea>
+      <AppShellSidebarArea className="hidden md:contents">
         <InvoiceSidebar orgName={orgName} navigation={navigation} />
       </AppShellSidebarArea>
       <AppShellContent>
         <AppShellHeader>
-          <SidebarTrigger />
+          <div className="md:hidden">
+            <MobileNav orgName={orgName} navigation={navigation} />
+          </div>
+          <div className="hidden md:block">
+            <SidebarTrigger />
+          </div>
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
             {features.uiFeatures.searchBar ? (
