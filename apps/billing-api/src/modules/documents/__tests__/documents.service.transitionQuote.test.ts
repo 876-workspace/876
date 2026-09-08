@@ -1,12 +1,45 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  retrieve: vi.fn(),
   transition: vi.fn(),
+  preference: vi.fn(),
+  quoteRetrieve: vi.fn(),
+  invoiceCreate: vi.fn(),
+}))
+
+vi.mock('../workflows', () => ({
+  finalizeInvoiceWorkflow: vi.fn(),
+  sendInvoiceWorkflow: vi.fn(),
+  transitionQuoteWorkflow: mocks.transition,
+  voidInvoiceWorkflow: vi.fn(),
+  writeOffInvoiceWorkflow: vi.fn(),
+}))
+
+vi.mock('../repositories/quotes/preferences', () => ({
+  quotePreferences: {
+    retrieve: mocks.preference,
+    update: vi.fn(),
+  },
 }))
 
 vi.mock('../repositories/quotes', () => ({
-  quotes: { retrieve: mocks.retrieve, transition: mocks.transition },
+  quotes: {
+    retrieve: mocks.quoteRetrieve,
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    list: vi.fn(),
+  },
+}))
+
+vi.mock('../repositories/invoices', () => ({
+  invoices: {
+    retrieve: vi.fn(),
+    create: mocks.invoiceCreate,
+    update: vi.fn(),
+    delete: vi.fn(),
+    list: vi.fn(),
+  },
 }))
 
 import { documentsService } from '../documents.service'
@@ -14,124 +47,112 @@ import { documentsService } from '../documents.service'
 const TENANT = 'ten_1'
 const QUOTE = 'quo_1'
 
-function quoteWith(status: string) {
-  return { id: QUOTE, tenantId: TENANT, status }
-}
-
-/** Every legal transition, as the service's own table declares it. */
-const LEGAL = [
-  ['send', 'DRAFT', 'SENT', undefined],
-  ['accept', 'SENT', 'ACCEPTED', 'acceptedAt'],
-  ['decline', 'SENT', 'DECLINED', 'declinedAt'],
-  ['cancel', 'DRAFT', 'CANCELED', 'canceledAt'],
-  ['cancel', 'SENT', 'CANCELED', 'canceledAt'],
-] as const
-
-/** Source statuses each action must refuse. */
-const ILLEGAL = [
-  ['send', 'SENT'],
-  ['send', 'ACCEPTED'],
-  ['send', 'CANCELED'],
-  ['accept', 'DRAFT'],
-  ['accept', 'DECLINED'],
-  ['decline', 'DRAFT'],
-  ['decline', 'ACCEPTED'],
-  ['cancel', 'ACCEPTED'],
-  ['cancel', 'DECLINED'],
-  ['cancel', 'EXPIRED'],
-] as const
-
 describe('documentsService.transitionQuote', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.transition.mockResolvedValue(true)
+    mocks.transition.mockResolvedValue({
+      data: { id: QUOTE },
+      error: null,
+    })
+    mocks.preference.mockResolvedValue({
+      object: 'quote-preference',
+      acceptedQuoteConversion: 'manual',
+    })
   })
 
-  it.each(LEGAL)(
-    '%s moves a %s quote to %s and stamps %s',
-    async (action, from, to, timestampField) => {
-      mocks.retrieve.mockResolvedValue(quoteWith(from))
-
+  it.each(['send', 'accept', 'decline', 'cancel', 'expire'] as const)(
+    'delegates %s to the canonical lifecycle workflow',
+    async (action) => {
       await expect(
         documentsService.transitionQuote(TENANT, QUOTE, action)
       ).resolves.toEqual({ object: 'quote', id: QUOTE })
 
-      expect(mocks.transition).toHaveBeenCalledTimes(1)
       expect(mocks.transition).toHaveBeenCalledWith(
         TENANT,
         QUOTE,
-        from,
-        to,
-        timestampField
+        action,
+        undefined
       )
     }
   )
 
-  it.each(ILLEGAL)(
-    'refuses to %s a %s quote with billing/quote-invalid-state',
-    async (action, from) => {
-      mocks.retrieve.mockResolvedValue(quoteWith(from))
-
-      await expect(
-        documentsService.transitionQuote(TENANT, QUOTE, action)
-      ).rejects.toMatchObject({ code: 'billing/quote-invalid-state' })
-
-      // The guard must block the write, not merely report afterwards.
-      expect(mocks.transition).not.toHaveBeenCalled()
+  it('forwards command idempotency context to the lifecycle workflow', async () => {
+    const idempotency = {
+      key: 'idem_1',
+      requestHash: 'hash_1',
     }
-  )
 
-  it('reports a 409 for an illegal transition', async () => {
-    mocks.retrieve.mockResolvedValue(quoteWith('ACCEPTED'))
+    await documentsService.transitionQuote(
+      TENANT,
+      QUOTE,
+      'send',
+      idempotency
+    )
+
+    expect(mocks.transition).toHaveBeenCalledWith(
+      TENANT,
+      QUOTE,
+      'send',
+      idempotency
+    )
+  })
+
+  it('maps lifecycle conflicts to billing/quote-invalid-state', async () => {
+    mocks.transition.mockResolvedValue({
+      data: null,
+      error: 'This quote cannot be changed from its current status.',
+      status: 409,
+      code: 'billing/quote-invalid-state',
+    })
 
     await expect(
-      documentsService.transitionQuote(TENANT, QUOTE, 'send')
+      documentsService.transitionQuote(TENANT, QUOTE, 'accept')
     ).rejects.toMatchObject({
       code: 'billing/quote-invalid-state',
       httpStatus: 409,
     })
   })
 
-  it('rejects a quote that does not exist without attempting a write', async () => {
-    mocks.retrieve.mockResolvedValue(null)
+  it('does not create an invoice on acceptance when conversion is manual', async () => {
+    await documentsService.transitionQuote(TENANT, QUOTE, 'accept')
 
-    await expect(
-      documentsService.transitionQuote(TENANT, QUOTE, 'send')
-    ).rejects.toBeTruthy()
-    expect(mocks.transition).not.toHaveBeenCalled()
+    expect(mocks.preference).toHaveBeenCalledWith(TENANT)
+    expect(mocks.invoiceCreate).not.toHaveBeenCalled()
   })
 
-  it('scopes the lookup to the calling tenant', async () => {
-    mocks.retrieve.mockResolvedValue(quoteWith('DRAFT'))
+  it('creates one draft invoice after acceptance when the tenant opts in', async () => {
+    mocks.preference.mockResolvedValue({
+      object: 'quote-preference',
+      acceptedQuoteConversion: 'draft-invoice-on-accept',
+    })
+    mocks.quoteRetrieve.mockResolvedValue({
+      id: QUOTE,
+      status: 'ACCEPTED',
+      convertedInvoice: null,
+    })
+    mocks.invoiceCreate.mockResolvedValue({
+      data: { id: 'inv_1' },
+      error: null,
+    })
 
-    await documentsService.transitionQuote(TENANT, QUOTE, 'send')
+    await documentsService.transitionQuote(TENANT, QUOTE, 'accept')
 
-    expect(mocks.retrieve).toHaveBeenCalledWith(TENANT, QUOTE)
+    expect(mocks.invoiceCreate).toHaveBeenCalledWith(TENANT, { quoteId: QUOTE })
   })
 
-  it('treats a lost compare-and-set race as an invalid state', async () => {
-    // The repository updates `where status = from`, so a concurrent transition
-    // makes it match zero rows. That must surface as a conflict, never as a
-    // success reporting a change that did not happen.
-    mocks.retrieve.mockResolvedValue(quoteWith('DRAFT'))
-    mocks.transition.mockResolvedValue(false)
+  it('repairs an acceptance retry by reusing the already converted invoice', async () => {
+    mocks.preference.mockResolvedValue({
+      object: 'quote-preference',
+      acceptedQuoteConversion: 'draft-invoice-on-accept',
+    })
+    mocks.quoteRetrieve.mockResolvedValue({
+      id: QUOTE,
+      status: 'ACCEPTED',
+      convertedInvoice: { id: 'inv_existing', number: 'INV-100' },
+    })
 
-    await expect(
-      documentsService.transitionQuote(TENANT, QUOTE, 'send')
-    ).rejects.toMatchObject({ code: 'billing/quote-invalid-state' })
-  })
+    await documentsService.transitionQuote(TENANT, QUOTE, 'accept')
 
-  it('does not stamp a timestamp when sending', async () => {
-    mocks.retrieve.mockResolvedValue(quoteWith('DRAFT'))
-
-    await documentsService.transitionQuote(TENANT, QUOTE, 'send')
-
-    expect(mocks.transition).toHaveBeenCalledWith(
-      TENANT,
-      QUOTE,
-      'DRAFT',
-      'SENT',
-      undefined
-    )
+    expect(mocks.invoiceCreate).not.toHaveBeenCalled()
   })
 })
