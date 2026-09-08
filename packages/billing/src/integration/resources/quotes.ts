@@ -1,7 +1,12 @@
-import { BillingQuoteListSchema, BillingQuoteSchema } from '../schemas'
+import {
+  BillingInvoiceSchema,
+  BillingQuoteListSchema,
+  BillingQuoteSchema,
+} from '../schemas'
 import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
 import type {
+  BillingInvoice,
   BillingQuote,
   BillingQuoteCreateParams,
   BillingQuoteList,
@@ -17,8 +22,31 @@ function resourcePath(organizationId: string, quoteId: string): string {
   return `${collectionPath(organizationId)}/${encodeURIComponent(quoteId)}`
 }
 
+function lifecyclePath(
+  organizationId: string,
+  quoteId: string,
+  action: string
+): string {
+  return `${resourcePath(organizationId, quoteId)}/${action}`
+}
+
 /** `$876.billing.quotes.*` — shared finance quote integrations. */
 export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
+  const transition = (
+    organizationId: string,
+    quoteId: string,
+    action: 'send' | 'accept' | 'decline' | 'cancel' | 'expire'
+  ) =>
+    IntegrationRequest<BillingQuote>(
+      runtime,
+      {
+        method: 'POST',
+        path: lifecyclePath(organizationId, quoteId, action),
+        body: {},
+      },
+      BillingQuoteSchema
+    )
+
   return {
     list(organizationId: string, params: BillingQuoteListParams = {}) {
       return IntegrationRequest<BillingQuoteList>(
@@ -54,6 +82,38 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
           headers: { 'Idempotency-Key': options.idempotencyKey },
         },
         BillingQuoteSchema
+      )
+    },
+
+    send(organizationId: string, quoteId: string) {
+      return transition(organizationId, quoteId, 'send')
+    },
+
+    accept(organizationId: string, quoteId: string) {
+      return transition(organizationId, quoteId, 'accept')
+    },
+
+    decline(organizationId: string, quoteId: string) {
+      return transition(organizationId, quoteId, 'decline')
+    },
+
+    cancel(organizationId: string, quoteId: string) {
+      return transition(organizationId, quoteId, 'cancel')
+    },
+
+    expire(organizationId: string, quoteId: string) {
+      return transition(organizationId, quoteId, 'expire')
+    },
+
+    convertToInvoice(organizationId: string, quoteId: string) {
+      return IntegrationRequest<BillingInvoice>(
+        runtime,
+        {
+          method: 'POST',
+          path: lifecyclePath(organizationId, quoteId, 'convert-to-invoice'),
+          body: {},
+        },
+        BillingInvoiceSchema
       )
     },
   }
