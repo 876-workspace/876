@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
+import { workTaskImportanceSchema } from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
@@ -13,7 +14,19 @@ const filterSchema = z.strictObject({
   listId: z.string().trim().min(1).optional(),
 })
 
-/** Lists only tasks assigned to the acting user for the Work widget. */
+const dueSchema = z.strictObject({
+  at: z.number().int().nonnegative(),
+  timeZone: z.string().trim().min(1).max(120),
+})
+
+const createSchema = z.strictObject({
+  title: z.string().trim().min(1).max(240),
+  listId: z.string().trim().min(1).optional(),
+  description: z.string().max(10_000).optional().nullable(),
+  importance: workTaskImportanceSchema.optional(),
+  due: dueSchema.optional().nullable(),
+})
+
 export async function GET(request: Request) {
   const auth = await requireWorkWidgetPermission('tasks.view')
   if (auth.response) return auth.response
@@ -30,6 +43,36 @@ export async function GET(request: Request) {
     assigneeId: auth.userId,
     ...(parsed.data.listId ? { listId: parsed.data.listId } : {}),
     limit: 100,
+  })
+  if (result.error) return workErrorResponse(result.error)
+
+  return apiSuccess(result.data)
+}
+
+export async function POST(request: Request) {
+  const auth = await requireWorkWidgetPermission('tasks.create')
+  if (auth.response) return auth.response
+
+  const parsed = createSchema.safeParse(await request.json().catch(() => null))
+  if (!parsed.success)
+    return workErrorResponse(getError('work/invalid-request'))
+
+  const work = await getWork()
+  const result = await work.tasks.create(auth.orgId, {
+    title: parsed.data.title,
+    ...(parsed.data.listId ? { listId: parsed.data.listId } : {}),
+    ...(parsed.data.description !== undefined
+      ? { description: parsed.data.description }
+      : {}),
+    ...(parsed.data.importance ? { importance: parsed.data.importance } : {}),
+    ...(parsed.data.due
+      ? {
+          dueAt: parsed.data.due.at,
+          dueTimeZone: parsed.data.due.timeZone,
+        }
+      : {}),
+    assigneeId: auth.userId,
+    createdBy: auth.userId,
   })
   if (result.error) return workErrorResponse(result.error)
 
