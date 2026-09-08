@@ -107,8 +107,13 @@ export const InvoiceVoidSchema = z.strictObject({
   reason: z.string().trim().min(1).max(500).nullable().optional(),
 })
 
+export const InvoiceWriteOffSchema = z.strictObject({
+  reason: z.string().trim().min(1).max(500),
+})
+
 export type InvoiceFinalizeParams = z.infer<typeof InvoiceFinalizeSchema>
 export type InvoiceVoidParams = z.infer<typeof InvoiceVoidSchema>
+export type InvoiceWriteOffParams = z.infer<typeof InvoiceWriteOffSchema>
 
 export interface InvoiceUpdated {
   object: 'invoice'
