@@ -66,7 +66,7 @@ export const paymentsController = {
   },
   async integrationList(req: Request, res: Response) {
     res.json(
-      await service.listPayments(
+      await service.listIntegrationPayments(
         tenant(req),
         sourceApp(req),
         `/api/v1/integrations/organizations/${param(req, 'organizationId')}/payments`
@@ -78,7 +78,7 @@ export const paymentsController = {
   },
   async integrationGet(req: Request, res: Response) {
     res.json(
-      await service.getPayment(
+      await service.getIntegrationPayment(
         tenant(req),
         param(req, 'paymentId'),
         sourceApp(req)
