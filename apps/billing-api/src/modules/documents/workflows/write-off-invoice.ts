@@ -5,12 +5,12 @@ import {
   completeCommand,
 } from '@/modules/command-idempotency'
 import { recomputeCustomerAr } from '@/modules/customers'
-import { isCollectibleInvoiceStatus } from '@/modules/documents'
 import { recordLedgerEntry } from '@/modules/ledger'
 import { enqueueBillingEvent } from '@/modules/outbox'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 import type { IdempotencyContext } from '@/types/commerce'
 
+import { isCollectibleInvoiceStatus } from '../invoice-lifecycle'
 import {
   findInvoiceForWriteOff,
   markInvoiceWrittenOff,
