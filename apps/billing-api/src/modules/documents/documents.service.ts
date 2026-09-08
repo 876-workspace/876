@@ -88,6 +88,17 @@ async function ownedInvoice(
   return row
 }
 
+async function assertQuoteDraftMutable(tenantId: string, quoteId: string) {
+  const quote = await quotes.retrieve(tenantId, quoteId)
+  if (!quote) throw missing('quote')
+  if (
+    quote.status !== 'DRAFT' ||
+    isQuoteExpired({ expiresAt: quote.expiresAt ?? null }, nowUnixSeconds())
+  )
+    throw appError('billing/quote-invalid-state')
+  return quote
+}
+
 async function assertQuoteConvertible(tenantId: string, quoteId: string) {
   const quote = await quotes.retrieve(tenantId, quoteId)
   if (!quote) throw missing('quote')
@@ -98,18 +109,10 @@ async function assertQuoteConvertible(tenantId: string, quoteId: string) {
       httpStatus: 409,
     })
   }
-  if (
-    isQuoteExpired(
-      { expiresAt: quote.expiresAt ?? null },
-      nowUnixSeconds()
-    )
-  ) {
-    throw new AppHttpError({
-      code: 'invoice/invalid-state',
-      message: 'An expired quote cannot be converted to an invoice.',
-      httpStatus: 409,
-    })
-  }
+
+  // expiresAt governs the proposal decision window. Once ACCEPTED has landed,
+  // that terminal decision remains valid even if the original expiry time later
+  // passes; conversion does not retroactively revoke the acceptance.
   return quote
 }
 
@@ -294,6 +297,7 @@ export const documentsService = {
   },
 
   async updateQuote(tenantId: string, id: string, body: QuoteUpdateParams) {
+    await assertQuoteDraftMutable(tenantId, id)
     return {
       object: 'quote',
       ...(await unwrap(await quotes.update(tenantId, id, body), 'quote')),
@@ -301,6 +305,7 @@ export const documentsService = {
   },
 
   async deleteQuote(tenantId: string, id: string) {
+    await assertQuoteDraftMutable(tenantId, id)
     return {
       object: 'quote',
       ...(await unwrap(await quotes.delete(tenantId, id), 'quote')),
