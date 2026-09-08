@@ -74,6 +74,13 @@ export default async function PaymentDetailPage({ params }: Props) {
           amount: formatMoney(allocation.amount, payment.currency),
           href: `/invoices/${allocation.invoice.id}`,
         })),
+        refunds: (payment.refunds ?? []).map((refund) => ({
+          id: refund.id,
+          number: refund.number,
+          amount: formatMoney(refund.amount, refund.currency),
+          date: formatDate(refund.refundedAt),
+          reason: refund.reason,
+        })),
       }}
       closeHref="/payments"
       editHref={
