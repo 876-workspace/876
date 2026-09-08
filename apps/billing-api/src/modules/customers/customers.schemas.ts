@@ -300,16 +300,38 @@ export const customerListSchema = z.strictObject({
   total_count: z.number().int().nullable(),
   url: z.string(),
 })
+const customerLedgerEntrySchema = z.object({
+  object: z.literal('customer_ledger_entry'),
+  id: z.string(),
+  customerId: z.string(),
+  subscriptionId: z.string().nullable(),
+  invoiceId: z.string().nullable(),
+  paymentId: z.string().nullable(),
+  creditNoteId: z.string().nullable(),
+  refundId: z.string().nullable(),
+  type: z.string(),
+  direction: z.enum(['DEBIT', 'CREDIT']),
+  amount: z.string(),
+  currency: z.string(),
+  description: z.string().nullable(),
+  effectiveAt: z.number().int(),
+  createdAt: z.number().int(),
+})
 export const customerAccountSchema = z.object({
   object: z.literal('customer_account'),
   customer: customerSchema,
+  currency: z.string().nullable(),
+  lifetimeBilled: z.string(),
+  lifetimePaid: z.string(),
   outstandingReceivable: z.string(),
+  overdueReceivable: z.string(),
+  availableCredit: z.string(),
+  netPosition: z.string(),
+  openingBalance: z.string(),
+  closingBalance: z.string(),
+  statement: z.array(customerLedgerEntrySchema.extend({ balance: z.string() })),
   unusedCredits: z.string(),
-  entries: z.array(
-    z
-      .object({ object: z.literal('customer_ledger_entry'), id: z.string() })
-      .passthrough()
-  ),
+  entries: z.array(customerLedgerEntrySchema),
 })
 export const createdInvoiceSchema = z.strictObject({
   object: z.literal('invoice'),
