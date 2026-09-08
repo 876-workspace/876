@@ -1,3 +1,5 @@
+import { nowUnixSeconds } from '@876/core/timestamps'
+
 import { getSettings } from '@/config'
 import { AppHttpError, appError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
@@ -5,10 +7,15 @@ import { getLogger } from '@/platform/logger'
 import type { IdempotencyContext } from '@/types/commerce'
 
 import { documentList, serializeDocument } from './documents.serializers'
+import {
+  isQuoteExpired,
+  type QuoteLifecycleAction,
+} from './quote-lifecycle'
 import { creditNotes } from './repositories/credit-notes'
 import { invoicePreferences } from './repositories/invoice-preferences'
 import { invoices } from './repositories/invoices'
 import { quotes } from './repositories/quotes'
+import { quotePreferences } from './repositories/quotes/preferences'
 import type { ServiceResult } from './schemas/api'
 import type {
   CreditNoteApplyParams,
@@ -28,9 +35,11 @@ import type {
   QuoteStatus,
   QuoteUpdateParams,
 } from './schemas/quote'
+import type { QuotePreferenceUpdateParams } from './schemas/quote-preference'
 import {
   finalizeInvoiceWorkflow,
   sendInvoiceWorkflow,
+  transitionQuoteWorkflow,
   voidInvoiceWorkflow,
   writeOffInvoiceWorkflow,
 } from './workflows'
@@ -88,6 +97,53 @@ async function assertQuoteConvertible(tenantId: string, quoteId: string) {
       message: 'Accept the quote before converting it to an invoice.',
       httpStatus: 409,
     })
+  }
+  if (
+    isQuoteExpired(
+      { expiresAt: quote.expiresAt ?? null },
+      nowUnixSeconds()
+    )
+  ) {
+    throw new AppHttpError({
+      code: 'invoice/invalid-state',
+      message: 'An expired quote cannot be converted to an invoice.',
+      httpStatus: 409,
+    })
+  }
+  return quote
+}
+
+async function convertAcceptedQuote(tenantId: string, quoteId: string) {
+  const quote = await assertQuoteConvertible(tenantId, quoteId)
+  if (quote.convertedInvoice?.id)
+    return {
+      object: 'invoice' as const,
+      id: quote.convertedInvoice.id,
+      replayed: true as const,
+    }
+
+  const result = await invoices.create(tenantId, { quoteId })
+  if (result.error !== null) {
+    // A concurrent conversion can win the one-to-one relation after our first
+    // read. Re-read before surfacing a conflict so the command remains
+    // naturally idempotent even without a caller-supplied key.
+    if (result.status === 409) {
+      const current = await quotes.retrieve(tenantId, quoteId)
+      if (current?.convertedInvoice?.id)
+        return {
+          object: 'invoice' as const,
+          id: current.convertedInvoice.id,
+          replayed: true as const,
+        }
+    }
+    await unwrap(result, 'invoice')
+    throw new Error('Unreachable quote conversion result.')
+  }
+
+  return {
+    object: 'invoice' as const,
+    id: result.data.id,
+    replayed: result.data.replayed === true,
   }
 }
 
@@ -255,42 +311,39 @@ export const documentsService = {
   async transitionQuote(
     tenantId: string,
     id: string,
-    action: 'send' | 'accept' | 'decline' | 'cancel'
+    action: QuoteLifecycleAction,
+    idempotency?: IdempotencyContext
   ) {
-    const quote = await quotes.retrieve(tenantId, id)
-    if (!quote) throw missing('quote')
-
-    const transitions: Record<
-      'send' | 'accept' | 'decline' | 'cancel',
-      {
-        from: readonly QuoteStatus[]
-        to: QuoteStatus
-        timestampField?: 'acceptedAt' | 'declinedAt' | 'canceledAt'
-      }
-    > = {
-      send: { from: ['DRAFT'], to: 'SENT' },
-      accept: { from: ['SENT'], to: 'ACCEPTED', timestampField: 'acceptedAt' },
-      decline: { from: ['SENT'], to: 'DECLINED', timestampField: 'declinedAt' },
-      cancel: {
-        from: ['DRAFT', 'SENT'],
-        to: 'CANCELED',
-        timestampField: 'canceledAt',
-      },
+    const resource = {
+      object: 'quote' as const,
+      ...(await unwrap(
+        await transitionQuoteWorkflow(tenantId, id, action, idempotency),
+        'quote'
+      )),
     }
-    const transition = transitions[action]
-    if (!transition.from.includes(quote.status))
-      throw appError('billing/quote-invalid-state')
 
-    const changed = await quotes.transition(
-      tenantId,
-      id,
-      quote.status,
-      transition.to,
-      transition.timestampField
-    )
-    if (!changed) throw appError('billing/quote-invalid-state')
+    if (action === 'accept') {
+      const preference = await quotePreferences.retrieve(tenantId)
+      if (preference.acceptedQuoteConversion === 'draft-invoice-on-accept')
+        await convertAcceptedQuote(tenantId, id)
+    }
 
-    return { object: 'quote' as const, id }
+    return resource
+  },
+
+  async convertQuoteToInvoice(tenantId: string, id: string) {
+    return convertAcceptedQuote(tenantId, id)
+  },
+
+  getQuotePreferences(tenantId: string) {
+    return quotePreferences.retrieve(tenantId)
+  },
+
+  updateQuotePreferences(
+    tenantId: string,
+    body: QuotePreferenceUpdateParams
+  ) {
+    return quotePreferences.update(tenantId, body.acceptedQuoteConversion)
   },
 
   async listCreditNotes(
