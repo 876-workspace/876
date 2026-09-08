@@ -19,6 +19,7 @@ import {
 } from '../repositories/quote-workflow'
 import { err, ok } from '../repositories/result'
 import type { ServiceResult } from '../schemas/api'
+import type { QuoteStatus } from '../schemas/quote'
 
 const eventTypeByAction = {
   send: 'quote.sent',
@@ -28,9 +29,22 @@ const eventTypeByAction = {
   expire: 'quote.expired',
 } as const
 
+const terminalStatusByAction: Partial<
+  Record<QuoteLifecycleAction, QuoteStatus>
+> = {
+  accept: 'ACCEPTED',
+  decline: 'DECLINED',
+  cancel: 'CANCELED',
+  expire: 'EXPIRED',
+}
+
 /**
  * Executes one quote lifecycle command with compare-and-set persistence,
  * transactional outbox evidence, and optional command idempotency.
+ *
+ * Retrying a terminal decision after it has already landed is a semantic
+ * replay. Sending is intentionally different: sending an already-SENT quote
+ * records a fresh communication event while preserving the first sentAt.
  */
 export async function transitionQuoteWorkflow(
   tenantId: string,
@@ -60,6 +74,11 @@ export async function transitionQuoteWorkflow(
 
       const quote = await findQuoteForLifecycle(tx, tenantId, quoteId)
       if (!quote) return err('Quote not found.', 404)
+
+      if (terminalStatusByAction[action] === quote.status) {
+        if (claimId) await completeCommand(tx, tenantId, claimId, now)
+        return ok({ id: quoteId })
+      }
 
       const transition = resolveQuoteLifecycleTransition(
         { status: quote.status, expiresAt: quote.expiresAt },
