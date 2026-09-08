@@ -57,7 +57,7 @@ const row = {
     id: 'acct_1',
     tenantId: 'ten_private',
     name: 'Main bank',
-    accountType: 'BANK',
+    accountType: 'CHECKING',
     currency: 'JMD',
     description: 'private internal note',
     isActive: true,
@@ -86,6 +86,24 @@ const row = {
       },
     },
   ],
+  refunds: [
+    {
+      id: 'ref_1',
+      tenantId: 'ten_private',
+      customerId: 'cus_1',
+      paymentId: 'pay_1',
+      paymentModeId: 'mode_1',
+      depositAccountId: 'acct_1',
+      number: 'REF-001',
+      amount: 2_000n,
+      currency: 'JMD',
+      reason: 'Duplicate payment',
+      notes: 'internal refund note',
+      refundedAt: 1_788_825_600,
+      createdAt: 1_788_825_600,
+      updatedAt: 1_788_825_600,
+    },
+  ],
   bankTransaction: null,
 }
 
@@ -110,6 +128,16 @@ describe('payments serializers', () => {
           invoice: { object: 'invoice', id: 'inv_1', totalAmount: '10000' },
         },
       ],
+      refunds: [
+        {
+          object: 'refund',
+          id: 'ref_1',
+          number: 'REF-001',
+          amount: '2000',
+          currency: 'JMD',
+          reason: 'Duplicate payment',
+        },
+      ],
     })
     expect(payment).not.toHaveProperty('tenantId')
     expect(payment).not.toHaveProperty('sourceAppId')
@@ -120,6 +148,10 @@ describe('payments serializers', () => {
     expect(payment.paymentMode).not.toHaveProperty('tenantId')
     expect(payment.depositAccount).not.toHaveProperty('tenantId')
     expect(payment.invoiceAllocations[0]?.invoice).not.toHaveProperty('tenantId')
+    expect(payment.refunds?.[0]).not.toHaveProperty('tenantId')
+    expect(payment.refunds?.[0]).not.toHaveProperty('paymentModeId')
+    expect(payment.refunds?.[0]).not.toHaveProperty('depositAccountId')
+    expect(payment.refunds?.[0]).not.toHaveProperty('notes')
   })
 
   it('adds normalized source attribution only for integration reads', () => {
