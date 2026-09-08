@@ -27,7 +27,7 @@ export default async function NewPaymentPage({ searchParams }: Props) {
   const access = await resolveAccessContext(context.userId, context.orgId)
   if (
     access.status !== 'ok' ||
-    !canAccess(access.context, 'invoices.write')
+    !canAccess(access.context, 'payments.create')
   )
     redirect('/no-access')
 
