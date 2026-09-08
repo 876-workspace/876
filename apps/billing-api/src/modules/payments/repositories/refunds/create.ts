@@ -113,6 +113,7 @@ export async function create(
             where: { id: params.paymentId },
             data: {
               unappliedAmount: { decrement: params.amount },
+              amountRefunded: { increment: params.amount },
               updatedAt: now,
             },
           })
