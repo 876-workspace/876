@@ -50,17 +50,23 @@ export default async function QuoteDetailPage({ params }: Props) {
   const access = await resolveAccessContext(context.userId, context.orgId)
 
   const convertedInvoice =
-    quote.convertedInvoice &&
-    typeof quote.convertedInvoice === 'object' &&
-    'number' in quote.convertedInvoice
-      ? String(quote.convertedInvoice.number)
+    quote.convertedInvoice && typeof quote.convertedInvoice === 'object'
+      ? quote.convertedInvoice
+      : null
+  const convertedInvoiceId =
+    convertedInvoice && 'id' in convertedInvoice
+      ? String(convertedInvoice.id)
+      : null
+  const convertedInvoiceNumber =
+    convertedInvoice && 'number' in convertedInvoice
+      ? String(convertedInvoice.number)
       : null
   const canWrite =
     access.status === 'ok' && canAccess(access.context, 'quotes.edit')
   const canDelete =
     access.status === 'ok' && canAccess(access.context, 'quotes.delete')
   const canConvert =
-    convertedInvoice === null &&
+    convertedInvoiceId === null &&
     access.status === 'ok' &&
     canAccess(access.context, 'invoices.create')
 
@@ -80,6 +86,16 @@ export default async function QuoteDetailPage({ params }: Props) {
       : typeof quote.createdAt === 'number'
         ? quote.createdAt
         : null
+  const expiresAt =
+    typeof quote.expiresAt === 'number' ? quote.expiresAt : null
+  const isExpired =
+    (status === 'DRAFT' || status === 'SENT') &&
+    expiresAt !== null &&
+    expiresAt <= Math.floor(Date.now() / 1000)
+  const sentAt = typeof quote.sentAt === 'number' ? quote.sentAt : null
+  const acceptedAt =
+    typeof quote.acceptedAt === 'number' ? quote.acceptedAt : null
+  const expiredAt = typeof quote.expiredAt === 'number' ? quote.expiredAt : null
 
   return (
     <DetailCard aria-label={`Quote details: ${number}`}>
@@ -103,9 +119,11 @@ export default async function QuoteDetailPage({ params }: Props) {
         <QuoteActions
           quoteId={quote.id}
           status={status as Parameters<typeof QuoteActions>[0]['status']}
+          isExpired={isExpired}
           canWrite={canWrite}
           canDelete={canDelete}
           canConvert={canConvert}
+          convertedInvoiceId={convertedInvoiceId}
         />
       </div>
       <DetailCardBody className="space-y-8">
@@ -117,10 +135,14 @@ export default async function QuoteDetailPage({ params }: Props) {
           <DetailCardFacts>
             <DetailCardFact label="Customer" value={customer} />
             <DetailCardFact label="Date" value={formatDate(date)} />
+            <DetailCardFact label="Expires" value={formatDate(expiresAt)} />
+            <DetailCardFact label="Sent" value={formatDate(sentAt)} />
+            <DetailCardFact label="Accepted" value={formatDate(acceptedAt)} />
+            <DetailCardFact label="Expired" value={formatDate(expiredAt)} />
             <DetailCardFact label="Currency" value={currency} mono />
             <DetailCardFact
               label="Converted invoice"
-              value={convertedInvoice ?? 'Not converted'}
+              value={convertedInvoiceNumber ?? 'Not converted'}
             />
           </DetailCardFacts>
         </DetailCardSection>
