@@ -30,6 +30,15 @@ const payment: PaymentDetailView = {
       href: '/invoices/inv_1',
     },
   ],
+  refunds: [
+    {
+      id: 'ref_1',
+      number: 'REF-001',
+      amount: 'J$20.00',
+      date: '8 Sep 2026',
+      reason: 'Duplicate payment',
+    },
+  ],
 }
 
 describe('PaymentDetailCard', () => {
@@ -44,7 +53,9 @@ describe('PaymentDetailCard', () => {
     )
 
     expect(screen.getByText('Partially refunded')).toBeVisible()
-    expect(screen.getByText('J$20.00')).toBeVisible()
+    expect(screen.getByText('REF-001')).toBeVisible()
+    expect(screen.getByText('Duplicate payment')).toBeVisible()
+    expect(screen.getAllByText('J$20.00')).toHaveLength(2)
     expect(screen.getByRole('link', { name: 'Refund' })).toHaveAttribute(
       'href',
       '/payments/pay_1/refund'
