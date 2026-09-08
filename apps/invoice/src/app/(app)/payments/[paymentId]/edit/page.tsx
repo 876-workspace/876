@@ -103,7 +103,8 @@ export default async function EditPaymentPage({ params }: Props) {
         customers={customers.data.data
           .filter(
             (customer) =>
-              customer.status === 'ACTIVE' || customer.id === payment.customer.id
+              customer.status === 'ACTIVE' ||
+              customer.id === payment.customer.id
           )
           .map((customer) => ({ value: customer.id, label: customer.name }))}
         accounts={accounts.data.data
@@ -130,14 +131,22 @@ export default async function EditPaymentPage({ params }: Props) {
           const invoiceCustomerId = stringField(invoice, 'customerId')
           const currency = stringField(invoice, 'currency')
           const number = stringField(invoice, 'number')
-          if (!status || !amountDue || !invoiceCustomerId || !currency || !number)
+          if (
+            !status ||
+            !amountDue ||
+            !invoiceCustomerId ||
+            !currency ||
+            !number
+          )
             return []
 
           const currentAllocation = currentAllocations.get(invoice.id) ?? 0n
           const editableAmountDue = BigInt(amountDue) + currentAllocation
           const isCurrent = currentAllocation > 0n
           const isEligible = isCurrent
-            ? status !== 'DRAFT' && status !== 'VOID' && status !== 'UNCOLLECTIBLE'
+            ? status !== 'DRAFT' &&
+              status !== 'VOID' &&
+              status !== 'UNCOLLECTIBLE'
             : COLLECTIBLE_STATUSES.has(status) && BigInt(amountDue) > 0n
           if (!isEligible) return []
 

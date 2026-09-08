@@ -3,7 +3,10 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { PaymentDetailCard, type PaymentDetailView } from './payment-detail-card'
+import {
+  PaymentDetailCard,
+  type PaymentDetailView,
+} from './payment-detail-card'
 
 const payment: PaymentDetailView = {
   id: 'pay_1',
@@ -73,7 +76,9 @@ describe('PaymentDetailCard', () => {
   it('omits mutation actions when the host does not authorize them', () => {
     render(<PaymentDetailCard payment={payment} closeHref="/payments" />)
 
-    expect(screen.queryByRole('link', { name: 'Refund' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Refund' })
+    ).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
   })
 })

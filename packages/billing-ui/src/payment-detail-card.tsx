@@ -65,26 +65,27 @@ export function PaymentDetailCard({
   editHref,
   refundHref,
 }: PaymentDetailCardProps) {
-  const actions = editHref || refundHref ? (
-    <div className="flex items-center gap-2">
-      {refundHref ? (
-        <Link
-          href={refundHref}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          Refund
-        </Link>
-      ) : null}
-      {editHref ? (
-        <Link
-          href={editHref}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          Edit
-        </Link>
-      ) : null}
-    </div>
-  ) : undefined
+  const actions =
+    editHref || refundHref ? (
+      <div className="flex items-center gap-2">
+        {refundHref ? (
+          <Link
+            href={refundHref}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Refund
+          </Link>
+        ) : null}
+        {editHref ? (
+          <Link
+            href={editHref}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Edit
+          </Link>
+        ) : null}
+      </div>
+    ) : undefined
 
   return (
     <DetailCard aria-label={`Payment details: ${payment.number}`}>
@@ -96,7 +97,9 @@ export function PaymentDetailCard({
         }
         title={payment.number}
         meta={
-          <Badge variant={payment.status === 'SUCCEEDED' ? 'success' : 'secondary'}>
+          <Badge
+            variant={payment.status === 'SUCCEEDED' ? 'success' : 'secondary'}
+          >
             {formatStatus(payment.status)}
           </Badge>
         }
@@ -106,17 +109,27 @@ export function PaymentDetailCard({
         closeLabel="Close payment details"
       />
       <DetailCardBody className="space-y-8">
-        <DetailCardHeadline value={payment.received} caption="Payment received" />
+        <DetailCardHeadline
+          value={payment.received}
+          caption="Payment received"
+        />
         <DetailCardSection title="Payment">
           <DetailCardFacts>
             <DetailCardFact label="Customer" value={payment.customerName} />
             <DetailCardFact label="Received" value={payment.paymentDate} />
-            <DetailCardFact label="Deposit account" value={payment.depositAccount} />
+            <DetailCardFact
+              label="Deposit account"
+              value={payment.depositAccount}
+            />
             <DetailCardFact label="Payment mode" value={payment.paymentMode} />
             <DetailCardFact label="Allocated" value={payment.allocated} mono />
             <DetailCardFact label="Unapplied" value={payment.unapplied} mono />
             <DetailCardFact label="Refunded" value={payment.refunded} mono />
-            <DetailCardFact label="Bank charges" value={payment.bankCharges} mono />
+            <DetailCardFact
+              label="Bank charges"
+              value={payment.bankCharges}
+              mono
+            />
             <DetailCardFact label="Reference" value={payment.reference} mono />
           </DetailCardFacts>
         </DetailCardSection>
@@ -155,14 +168,18 @@ export function PaymentDetailCard({
                 >
                   <div className="min-w-0">
                     <p className="font-medium">{refund.number}</p>
-                    <p className="text-muted-foreground text-xs">{refund.date}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {refund.date}
+                    </p>
                     {refund.reason ? (
                       <p className="text-muted-foreground mt-1 text-xs">
                         {refund.reason}
                       </p>
                     ) : null}
                   </div>
-                  <span className="font-medium tabular-nums">{refund.amount}</span>
+                  <span className="font-medium tabular-nums">
+                    {refund.amount}
+                  </span>
                 </div>
               ))}
             </div>

@@ -32,9 +32,11 @@ export function CustomerReceivablesPanel({
       {state.status === 'ready' ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {METRICS.map(({ key, label }) => (
-            <div key={key} className="rounded-lg bg-muted/50 p-3">
+            <div key={key} className="bg-muted/50 rounded-lg p-3">
               <p className="text-muted-foreground text-xs">{label}</p>
-              <p className="mt-1 font-semibold tabular-nums">{state.data[key]}</p>
+              <p className="mt-1 font-semibold tabular-nums">
+                {state.data[key]}
+              </p>
               <p className="text-muted-foreground mt-1 text-xs">
                 {state.data.currency}
               </p>

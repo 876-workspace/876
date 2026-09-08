@@ -6,6 +6,7 @@ import {
 } from '@876/ui/accordion'
 import { Badge } from '@876/ui/badge'
 import { ChevronDownIcon, ChevronRightIcon } from '@876/ui/icons'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { Link } from './link'
 
@@ -112,6 +113,24 @@ export function CustomerTransactionsAccordions({
         )
       })}
     </Accordion>
+  )
+}
+
+export function CustomerTransactionsAccordionsSkeleton() {
+  return (
+    <div className="space-y-3" aria-label="Loading customer transactions">
+      {SECTIONS.slice(0, 4).map((section) => (
+        <div
+          key={section.id}
+          className="border-876-surface-border rounded-lg border px-4 py-3"
+        >
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-4" />
+            <span className="text-sm font-semibold">{section.label}</span>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 

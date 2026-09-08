@@ -94,7 +94,9 @@ export function CreditNoteActions({
                 This will permanently void the credit note and reverse its
                 balance.
                 {voidError ? (
-                  <span className="text-destructive mt-2 block">{voidError}</span>
+                  <span className="text-destructive mt-2 block">
+                    {voidError}
+                  </span>
                 ) : null}
               </AlertDialogDescription>
             </AlertDialogHeader>

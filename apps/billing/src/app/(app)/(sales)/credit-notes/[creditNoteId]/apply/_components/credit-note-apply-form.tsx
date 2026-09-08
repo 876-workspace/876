@@ -49,7 +49,9 @@ export function CreditNoteApplyForm({
         true
       )
       if (!value || BigInt(value) === 0n) return []
-      return [{ invoiceId: invoice.id, amount: value, amountDue: invoice.amountDue }]
+      return [
+        { invoiceId: invoice.id, amount: value, amountDue: invoice.amountDue },
+      ]
     })
 
     if (parsed.length === 0) {
@@ -75,7 +77,10 @@ export function CreditNoteApplyForm({
 
     startTransition(async () => {
       const result = await client.creditNotes.apply(creditNoteId, {
-        allocations: parsed.map(({ invoiceId, amount }) => ({ invoiceId, amount })),
+        allocations: parsed.map(({ invoiceId, amount }) => ({
+          invoiceId,
+          amount,
+        })),
       })
       if (result.error) {
         setError(result.error.message)
@@ -97,8 +102,8 @@ export function CreditNoteApplyForm({
             </p>
           </div>
           <p className="text-muted-foreground max-w-md text-sm">
-            Apply existing credit to this customer&apos;s open invoices. This does
-            not create or move cash.
+            Apply existing credit to this customer&apos;s open invoices. This
+            does not create or move cash.
           </p>
         </div>
 
@@ -121,12 +126,17 @@ export function CreditNoteApplyForm({
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`credit-allocation-${invoice.id}`}>Apply</Label>
+                  <Label htmlFor={`credit-allocation-${invoice.id}`}>
+                    Apply
+                  </Label>
                   <Input
                     id={`credit-allocation-${invoice.id}`}
                     type="number"
                     min="0"
-                    max={formatMinorAmountInput(invoice.amountDue, decimalPlaces)}
+                    max={formatMinorAmountInput(
+                      invoice.amountDue,
+                      decimalPlaces
+                    )}
                     step={minorAmountInputStep(decimalPlaces)}
                     value={allocations[invoice.id] ?? ''}
                     onChange={(event) =>

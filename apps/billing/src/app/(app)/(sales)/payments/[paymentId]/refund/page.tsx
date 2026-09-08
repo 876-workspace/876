@@ -20,21 +20,25 @@ export default async function RefundPaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:write')
   const { paymentId } = await params
   const [payment, accounts, modes, currencies] = await Promise.all([
-    service.payments.retrieve(context.tenant.id, paymentId) as Promise<LegacyBillingRecord>,
+    service.payments.retrieve(
+      context.tenant.id,
+      paymentId
+    ) as Promise<LegacyBillingRecord>,
     service.bankAccounts.list(context.tenant.id),
     service.paymentModes.list(context.tenant.id),
     service.currencies.list(context.tenant.id),
   ])
   if (!payment) notFound()
   if (
-    (payment.status !== 'SUCCEEDED' && payment.status !== 'PARTIALLY_REFUNDED') ||
+    (payment.status !== 'SUCCEEDED' &&
+      payment.status !== 'PARTIALLY_REFUNDED') ||
     payment.unappliedAmount <= 0n
   )
     notFound()
 
   const decimalPlaces =
-    currencies.find(({ currency }) => currency.code === payment.currency)?.currency
-      .decimalPlaces ?? 2
+    currencies.find(({ currency }) => currency.code === payment.currency)
+      ?.currency.decimalPlaces ?? 2
 
   return (
     <Page>
@@ -56,19 +60,30 @@ export default async function RefundPaymentPage({ params }: Props) {
         decimalPlaces={decimalPlaces}
         availableAmount={payment.unappliedAmount.toString()}
         modes={modes
-          .filter((mode) => mode.isActive || mode.id === payment.paymentModeId)
+          .filter((mode) => mode.isActive)
           .map((mode) => ({ value: mode.id, label: mode.name }))}
         accounts={accounts
-          .filter(
-            (account) => account.isActive || account.id === payment.depositAccountId
-          )
+          .filter((account) => account.isActive)
           .map((account) => ({
             value: account.id,
             label: `${account.name} (${account.currency})`,
             currency: account.currency,
           }))}
-        defaultModeId={payment.paymentModeId}
-        defaultAccountId={payment.depositAccountId}
+        defaultModeId={
+          modes.some(
+            (mode) => mode.id === payment.paymentModeId && mode.isActive
+          )
+            ? payment.paymentModeId
+            : modes.find((mode) => mode.isActive && mode.isDefault)?.id
+        }
+        defaultAccountId={
+          accounts.some(
+            (account) =>
+              account.id === payment.depositAccountId && account.isActive
+          )
+            ? payment.depositAccountId
+            : undefined
+        }
         paymentId={payment.id}
         sourceLabel={`${payment.number} · unapplied payment credit`}
         returnHref={`/payments/${payment.id}`}

@@ -18,13 +18,15 @@ export default async function PaymentPage({ params }: Props) {
   if (!payment) notFound()
 
   const allocated = payment.invoiceAllocations.reduce(
-    (total: bigint, allocation: LegacyBillingRecord) => total + allocation.amount,
+    (total: bigint, allocation: LegacyBillingRecord) =>
+      total + allocation.amount,
     0n
   )
   const canWrite = context.permissions.includes('payments:write')
   const canRefund =
     canWrite &&
-    (payment.status === 'SUCCEEDED' || payment.status === 'PARTIALLY_REFUNDED') &&
+    (payment.status === 'SUCCEEDED' ||
+      payment.status === 'PARTIALLY_REFUNDED') &&
     payment.unappliedAmount > 0n
 
   return (
@@ -38,7 +40,7 @@ export default async function PaymentPage({ params }: Props) {
         received: formatMoney(payment.amount, payment.currency),
         allocated: formatMoney(allocated, payment.currency),
         unapplied: formatMoney(payment.unappliedAmount, payment.currency),
-        refunded: formatMoney(payment.amountRefunded ?? 0n, payment.currency),
+        refunded: formatMoney(payment.amountRefunded, payment.currency),
         bankCharges: formatMoney(payment.bankCharges, payment.currency),
         paymentMode: payment.paymentMode.name,
         depositAccount: payment.depositAccount.name,

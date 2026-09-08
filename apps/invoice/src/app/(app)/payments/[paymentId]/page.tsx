@@ -43,10 +43,12 @@ export default async function PaymentDetailPage({ params }: Props) {
     (total, allocation) => total + BigInt(allocation.amount),
     0n
   )
-  const canEdit = access.status === 'ok' && canAccess(access.context, 'payments.edit')
+  const canEdit =
+    access.status === 'ok' && canAccess(access.context, 'payments.edit')
   const canRefund =
     canEdit &&
-    (payment.status === 'SUCCEEDED' || payment.status === 'PARTIALLY_REFUNDED') &&
+    (payment.status === 'SUCCEEDED' ||
+      payment.status === 'PARTIALLY_REFUNDED') &&
     BigInt(payment.unappliedAmount) > 0n
 
   return (

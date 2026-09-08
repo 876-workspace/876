@@ -18,7 +18,11 @@ export default async function RefundCreditNotePage({ params }: Props) {
     service.paymentModes.list(context.tenant.id),
     service.currencies.list(context.tenant.id),
   ])
-  if (!creditNote || creditNote.status !== 'OPEN' || creditNote.balanceAmount <= 0n)
+  if (
+    !creditNote ||
+    creditNote.status !== 'OPEN' ||
+    creditNote.balanceAmount <= 0n
+  )
     notFound()
 
   const decimalPlaces =
@@ -49,7 +53,9 @@ export default async function RefundCreditNotePage({ params }: Props) {
             label: `${account.name} (${account.currency})`,
             currency: account.currency,
           }))}
-        defaultModeId={modes.find((mode) => mode.isActive && mode.isDefault)?.id}
+        defaultModeId={
+          modes.find((mode) => mode.isActive && mode.isDefault)?.id
+        }
         creditNoteId={creditNote.id}
         sourceLabel={`${creditNote.number} · available credit note balance`}
         returnHref={`/credit-notes/${creditNote.id}`}

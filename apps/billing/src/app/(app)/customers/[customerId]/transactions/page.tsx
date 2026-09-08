@@ -1,10 +1,27 @@
-import { CustomerTransactionsAccordions } from '@876/billing-ui/customer-transactions-accordions'
+import { Suspense } from 'react'
+
+import {
+  CustomerTransactionsAccordions,
+  CustomerTransactionsAccordionsSkeleton,
+} from '@876/billing-ui/customer-transactions-accordions'
 import { AppError } from '@876/ui/app-error'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { getBilling } from '@/lib/services/billing'
 
-export default async function CustomerTransactionsPage({
+export default function CustomerTransactionsPage({
+  params,
+}: {
+  params: Promise<{ customerId: string }>
+}) {
+  return (
+    <Suspense fallback={<CustomerTransactionsAccordionsSkeleton />}>
+      <CustomerTransactionsData params={params} />
+    </Suspense>
+  )
+}
+
+async function CustomerTransactionsData({
   params,
 }: {
   params: Promise<{ customerId: string }>

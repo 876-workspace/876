@@ -44,12 +44,18 @@ describe('RefundForm', () => {
     renderForm(vi.fn(async () => ({ error: null })))
 
     const account = screen.getByLabelText('Refund from')
-    expect(within(account).getByRole('option', { name: 'JMD clearing' })).toBeInTheDocument()
-    expect(within(account).queryByRole('option', { name: 'USD clearing' })).not.toBeInTheDocument()
+    expect(
+      within(account).getByRole('option', { name: 'JMD clearing' })
+    ).toBeInTheDocument()
+    expect(
+      within(account).queryByRole('option', { name: 'USD clearing' })
+    ).not.toBeInTheDocument()
   })
 
   it('submits exact minor units with settlement evidence', async () => {
-    const onSubmit = vi.fn<RefundFormProps['onSubmit']>(async () => ({ error: null }))
+    const onSubmit = vi.fn<RefundFormProps['onSubmit']>(async () => ({
+      error: null,
+    }))
     const user = userEvent.setup()
     renderForm(onSubmit, {
       currency: 'JMD',
@@ -63,7 +69,10 @@ describe('RefundForm', () => {
     await user.clear(screen.getByLabelText('Refund date'))
     await user.type(screen.getByLabelText('Refund date'), '2026-09-08')
     await user.type(screen.getByLabelText('Reason'), 'Duplicate payment')
-    await user.type(screen.getByLabelText('Notes'), 'Customer requested return.')
+    await user.type(
+      screen.getByLabelText('Notes'),
+      'Customer requested return.'
+    )
     await user.click(screen.getByRole('button', { name: 'Record refund' }))
 
     expect(onSubmit).toHaveBeenCalledWith({
@@ -77,7 +86,9 @@ describe('RefundForm', () => {
   })
 
   it('rejects a refund above the available credit before mutation', async () => {
-    const onSubmit = vi.fn<RefundFormProps['onSubmit']>(async () => ({ error: null }))
+    const onSubmit = vi.fn<RefundFormProps['onSubmit']>(async () => ({
+      error: null,
+    }))
     const user = userEvent.setup()
     renderForm(onSubmit)
 
@@ -87,13 +98,17 @@ describe('RefundForm', () => {
     await user.click(screen.getByRole('button', { name: 'Record refund' }))
 
     expect(
-      screen.getByText('Refund amount cannot exceed the available customer credit.')
+      screen.getByText(
+        'Refund amount cannot exceed the available customer credit.'
+      )
     ).toBeVisible()
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it('supports currencies with three decimal places without floating-point conversion', async () => {
-    const onSubmit = vi.fn<RefundFormProps['onSubmit']>(async () => ({ error: null }))
+    const onSubmit = vi.fn<RefundFormProps['onSubmit']>(async () => ({
+      error: null,
+    }))
     const user = userEvent.setup()
     renderForm(onSubmit, {
       currency: 'JOD',

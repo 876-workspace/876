@@ -8,6 +8,13 @@ import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Textarea } from '@876/ui/textarea'
 
+import {
+  formatMinorAmountInput,
+  minorAmountInputStep,
+  parseMinorAmountInput,
+  unixTimestampToDateInput,
+} from './money-input'
+
 export interface RefundFormOption {
   value: string
   label: string
@@ -39,9 +46,7 @@ export interface RefundFormProps {
   defaultModeId?: string
   defaultAccountId?: string
   sourceLabel: string
-  onSubmit: (
-    params: RefundFormSubmitParams
-  ) => Promise<RefundFormActionResult>
+  onSubmit: (params: RefundFormSubmitParams) => Promise<RefundFormActionResult>
   onCancel: () => void
 }
 
@@ -117,14 +122,14 @@ export function RefundForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <form onSubmit={submit} className="space-y-6" noValidate>
       <div className="876-card grid gap-5 p-5 sm:grid-cols-2">
         <div className="space-y-2 sm:col-span-2">
           <p className="876-eyebrow">Refund source</p>
           <p className="font-medium">{sourceLabel}</p>
           <p className="text-muted-foreground text-sm">
-            Available to refund: {formatMinorAmountInput(availableAmount, decimalPlaces)}{' '}
-            {currency}
+            Available to refund:{' '}
+            {formatMinorAmountInput(availableAmount, decimalPlaces)} {currency}
           </p>
         </div>
 
@@ -209,7 +214,12 @@ export function RefundForm({
         <Button type="submit" disabled={isPending}>
           {isPending ? 'Recording refund...' : 'Record refund'}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isPending}
+        >
           Cancel
         </Button>
       </div>
@@ -232,42 +242,4 @@ function Field({
       {children}
     </div>
   )
-}
-
-function minorAmountInputStep(decimalPlaces: number): string {
-  return decimalPlaces === 0 ? '1' : `0.${'0'.repeat(decimalPlaces - 1)}1`
-}
-
-function formatMinorAmountInput(
-  amount: bigint | string,
-  decimalPlaces: number
-): string {
-  const value = typeof amount === 'bigint' ? amount : BigInt(amount)
-  if (decimalPlaces === 0) return value.toString()
-  const scale = 10n ** BigInt(decimalPlaces)
-  const whole = value / scale
-  const fraction = (value % scale).toString().padStart(decimalPlaces, '0')
-  return `${whole}.${fraction}`
-}
-
-function parseMinorAmountInput(
-  value: string,
-  decimalPlaces: number
-): string | null {
-  const normalized = value.trim()
-  const pattern =
-    decimalPlaces === 0
-      ? /^\d+$/
-      : new RegExp(`^\\d+(?:\\.\\d{1,${decimalPlaces}})?$`)
-  if (!pattern.test(normalized)) return null
-
-  const [whole, fraction = ''] = normalized.split('.')
-  const scale = 10n ** BigInt(decimalPlaces)
-  const amount =
-    BigInt(whole) * scale + BigInt(fraction.padEnd(decimalPlaces, '0') || '0')
-  return amount > 0n ? amount.toString() : null
-}
-
-function unixTimestampToDateInput(timestamp: number): string {
-  return new Date(Math.floor(timestamp) * 1000).toISOString().slice(0, 10)
 }

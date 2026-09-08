@@ -8,6 +8,14 @@ import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Textarea } from '@876/ui/textarea'
 
+import {
+  formatMinorAmountInput,
+  minorAmountInputStep,
+  parseMinorAmountInput,
+  unixTimestampToDateInput,
+  zeroMinorAmountInput,
+} from './money-input'
+
 export interface PaymentReceivedCurrencyOption {
   value: string
   label: string
@@ -105,7 +113,10 @@ export function PaymentReceivedForm({
       ? invoices.find((invoice) => invoice.id === prefill.invoiceId)
       : undefined
   const initialCustomerId =
-    initial?.customerId ?? prefilledInvoice?.customerId ?? prefill?.customerId ?? ''
+    initial?.customerId ??
+    prefilledInvoice?.customerId ??
+    prefill?.customerId ??
+    ''
   const initialCurrency =
     initial?.currency ?? prefilledInvoice?.currency ?? defaultCurrency
   const initialDecimals = currencyDecimals(currencies, initialCurrency)
@@ -207,8 +218,16 @@ export function PaymentReceivedForm({
       0n
     )
 
-    if (!customerId || !modeId || !accountId || !paymentAmount || charges === null) {
-      setError('Complete the customer, amount, payment mode, and deposit fields.')
+    if (
+      !customerId ||
+      !modeId ||
+      !accountId ||
+      !paymentAmount ||
+      charges === null
+    ) {
+      setError(
+        'Complete the customer, amount, payment mode, and deposit fields.'
+      )
       return
     }
     if (BigInt(charges) >= BigInt(paymentAmount)) {
@@ -405,8 +424,8 @@ export function PaymentReceivedForm({
         <div className="border-border border-b px-5 py-4">
           <h2 className="font-semibold">Apply to invoices</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Optionally distribute the amount received across this customer&apos;s
-            outstanding invoices.
+            Optionally distribute the amount received across this
+            customer&apos;s outstanding invoices.
           </p>
         </div>
         {!customerId ? (
@@ -516,50 +535,6 @@ function currencyDecimals(
   return (
     currencies.find((option) => option.value === currency)?.decimalPlaces ?? 2
   )
-}
-
-function minorAmountInputStep(decimalPlaces: number): string {
-  return decimalPlaces === 0 ? '1' : `0.${'0'.repeat(decimalPlaces - 1)}1`
-}
-
-function zeroMinorAmountInput(decimalPlaces: number): string {
-  return decimalPlaces === 0 ? '0' : `0.${'0'.repeat(decimalPlaces)}`
-}
-
-function formatMinorAmountInput(
-  amount: bigint | string,
-  decimalPlaces: number
-): string {
-  const value = typeof amount === 'bigint' ? amount : BigInt(amount)
-  const negative = value < 0n
-  const absolute = negative ? -value : value
-  if (decimalPlaces === 0) return `${negative ? '-' : ''}${absolute}`
-  const scale = 10n ** BigInt(decimalPlaces)
-  const whole = absolute / scale
-  const fraction = (absolute % scale).toString().padStart(decimalPlaces, '0')
-  return `${negative ? '-' : ''}${whole}.${fraction}`
-}
-
-function parseMinorAmountInput(
-  value: string,
-  decimalPlaces: number,
-  allowZero = false
-): string | null {
-  const normalized = value.trim()
-  if (!normalized) return allowZero ? '0' : null
-  if (!/^-?\d+(?:\.\d+)?$/.test(normalized)) return null
-  const negative = normalized.startsWith('-')
-  if (negative) return null
-  const [whole = '0', fraction = ''] = normalized.split('.')
-  if (fraction.length > decimalPlaces) return null
-  const paddedFraction = fraction.padEnd(decimalPlaces, '0')
-  const minor = BigInt(whole) * 10n ** BigInt(decimalPlaces) + BigInt(paddedFraction || '0')
-  if (!allowZero && minor <= 0n) return null
-  return minor.toString()
-}
-
-function unixTimestampToDateInput(timestamp: number): string {
-  return new Date(timestamp * 1000).toISOString().slice(0, 10)
 }
 
 function formatMoney(

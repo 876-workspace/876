@@ -62,13 +62,14 @@ describe('CustomerTransactionsAccordions', () => {
       />
     )
 
-    expect(screen.queryByRole('button', { name: /Credit notes/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /Credit notes/i })
+    ).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /Refunds/i }))
 
-    expect(screen.getByRole('link', { name: 'Refund REF-001 issued' })).toHaveAttribute(
-      'href',
-      '/payments/pay_1'
-    )
+    expect(
+      screen.getByRole('link', { name: 'Refund REF-001 issued' })
+    ).toHaveAttribute('href', '/payments/pay_1')
     expect(screen.getByText('JMD 25.00')).toBeVisible()
     expect(screen.getByText('Debit')).toBeVisible()
   })
@@ -82,6 +83,8 @@ describe('CustomerTransactionsAccordions', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /Credit notes/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Credit notes/i })
+    ).toBeInTheDocument()
   })
 })

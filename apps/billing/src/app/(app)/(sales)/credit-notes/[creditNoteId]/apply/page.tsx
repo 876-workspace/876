@@ -25,7 +25,11 @@ export default async function ApplyCreditNotePage({ params }: Props) {
     service.invoices.list(context.tenant.id),
     service.currencies.list(context.tenant.id),
   ])
-  if (!creditNote || creditNote.status !== 'OPEN' || creditNote.balanceAmount <= 0n)
+  if (
+    !creditNote ||
+    creditNote.status !== 'OPEN' ||
+    creditNote.balanceAmount <= 0n
+  )
     notFound()
 
   const decimalPlaces =
