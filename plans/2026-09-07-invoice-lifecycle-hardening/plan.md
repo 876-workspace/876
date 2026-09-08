@@ -3,13 +3,13 @@
 **Run ID:** `2026-09-07-invoice-lifecycle-hardening`  
 **Branch:** `feature/invoice-lifecycle-hardening`  
 **Base:** `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`  
-**Status:** IN_PROGRESS
+**Status:** COMPLETED ✅ — verification pending orchestrator execution
 
 ## Overview
 
 Harden the existing 876 Billing invoice lifecycle without replacing the commercial data plane that already landed on `main`. Billing remains the source of truth for invoices, receivables, payments, credits, inventory side effects, and lifecycle commands. 876 Invoice and 876 Billing remain host surfaces over that bounded domain.
 
-The implementation keeps the current durable `InvoiceStatus` compatibility contract (`DRAFT`, `OPEN`, `SENT`, `PARTIALLY_PAID`, `OVERDUE`, `PAID`, `UNCOLLECTIBLE`, `VOID`) while centralizing what those values mean and preventing callers from treating communication, due state, and settlement as unrelated ad-hoc status mutations.
+The implementation preserves the durable `InvoiceStatus` compatibility contract (`DRAFT`, `OPEN`, `SENT`, `PARTIALLY_PAID`, `OVERDUE`, `PAID`, `UNCOLLECTIBLE`, `VOID`) while centralizing what those values mean and preventing communication, due state, and settlement from becoming unrelated ad-hoc status mutations.
 
 ## Rules read
 
@@ -23,8 +23,11 @@ The implementation keeps the current durable `InvoiceStatus` compatibility contr
 - [x] `.agents/rules/testing.md`
 - [x] `.agents/rules/error-handling.md`
 - [x] `.agents/rules/api-backend.md`
-
-Additional domain/UI/SDK rules will be read before the corresponding phase is edited.
+- [x] `.agents/rules/sdk-conventions.md`
+- [x] `.agents/rules/stripe-api-pattern.md`
+- [x] `.agents/rules/shared-product-ui.md`
+- [x] `.agents/rules/app-structure.md`
+- [x] `.agents/rules/app-layout.md`
 
 ## Architectural scope
 
@@ -32,18 +35,19 @@ Primary owner:
 
 - `apps/billing-api/src/modules/documents/**`
 - `apps/billing-api/src/modules/payments/**`
-- `apps/billing-api/src/modules/customers/**` only where shared AR predicates already live
-- `packages/billing/**` for bounded SDK contracts in later phases
-- `packages/billing-ui/**`, `apps/billing/**`, and `apps/invoice/**` only after shared lifecycle behavior is stable
+- `packages/billing/**`
+- `packages/billing-ui/**`
+- `apps/billing/**`
+- `apps/invoice/**`
 
 ### Invariants
 
 1. Draft invoices have no AR impact and are the only invoices that may be deleted or financially rewritten.
 2. Finalization is the posting boundary and creates the receivable exactly once.
-3. Payment and credit allocations, write-offs, and reversals are the only normal settlement mechanisms; callers cannot set `PAID` directly.
-4. `sentAt` is communication evidence. `SENT` remains a compatibility projection, not a new receivable state.
-5. Overdue is determined by a positive remaining balance, a passed due date, and an otherwise collectible posted invoice. The persisted `OVERDUE` value is retained for compatibility.
-6. Partial settlement must not erase overdue information: when a past-due invoice still has a positive balance, the flattened compatibility status is `OVERDUE`.
+3. Payment and credit allocations, write-offs, and reversals are the normal settlement mechanisms; callers cannot set `PAID` directly.
+4. `sentAt` is communication evidence. `SENT` remains a compatibility projection, not a separate receivable state.
+5. Overdue means a collectible posted invoice has a positive remaining balance after its due date.
+6. Partial settlement does not erase delinquency: a past-due invoice with a positive balance remains `OVERDUE`.
 7. `PAID` means the remaining receivable is zero through cash and/or credits. `amountPaid`, `amountCredited`, and `amountWrittenOff` remain distinct evidence.
 8. `VOID` and `UNCOLLECTIBLE` remove an invoice from open AR without deleting history.
 9. Financial mutations remain transactional and preserve BigInt/minor-unit arithmetic.
@@ -51,82 +55,106 @@ Primary owner:
 
 ## Key design decisions
 
-### Canonical flattened-status precedence
+### Canonical collectible projection
 
-For the existing compatibility enum, lifecycle projection will use this precedence:
+The flattened compatibility projection for collectible invoices is:
 
 ```text
-VOID
-UNCOLLECTIBLE
-PAID
-OVERDUE
-PARTIALLY_PAID
-SENT
-OPEN
-DRAFT
+amountDue = 0                       -> PAID
+positive balance after dueAt       -> OVERDUE
+cash or credit applied             -> PARTIALLY_PAID
+sentAt exists                      -> SENT
+otherwise                          -> OPEN
 ```
 
-`OVERDUE` therefore wins over `PARTIALLY_PAID` when a positive balance remains after the due date. UI can still render paid/credited amounts alongside the overdue badge.
+`OVERDUE` therefore wins over `PARTIALLY_PAID` while a positive balance remains after the due date.
 
 ### One lifecycle owner
 
-A focused invoice lifecycle domain helper will own collectible-status predicates and the compatibility status projection. Payment allocation, credit-note allocation, automatic credit settlement, overdue materialization, and AR queries must reuse it or its exported constants instead of restating status arrays/ternaries.
+`apps/billing-api/src/modules/documents/invoice-lifecycle.ts` owns the collectible status set, overdue candidate set, and compatibility projection. Payment allocation, credit-note allocation, automatic credit settlement, and overdue materialization reuse that owner.
+
+The Customers AR repository intentionally keeps a local four-status predicate. Documents already depends on Customers for AR recomputation, so making Customers import Documents would create a prohibited module cycle. The boundary exception is documented in the accounting model and final report.
 
 ### No enum migration
 
-The uppercase enum values are existing durable contracts across Prisma, API, integration SDK, reports, Billing, Invoice, and shared Billing UI. This run does not migrate those stored values.
+The uppercase enum values are durable contracts across Prisma, API, integration SDK, reports, Billing, Invoice, and shared Billing UI. This run does not migrate those stored values.
 
 ### Commands, not status setters
 
-Lifecycle-changing behavior is exposed as explicit domain commands (`finalize`, `send`, `void`, `write-off`, payment allocation, credit-note application). Generic invoice updates do not become a back door for financial status transitions.
+Lifecycle-changing behavior is exposed as explicit domain commands (`finalize`, `send`, `void`, `write-off`, payment allocation, credit-note application). Generic invoice updates are not a back door for financial status transitions.
+
+### Conservative void presentation
+
+Because `OVERDUE` can now represent a partially settled invoice, status alone cannot prove that an overdue/partial invoice is safe to void. The backend still enforces actual settlement evidence; shared UI and host adapters only present Void for `OPEN` and `SENT`. A richer future UI should consume server-provided capabilities rather than guess from flattened status.
+
+### Timeline deferred
+
+Outbox events are not a user-facing history API. No invoice timeline was fabricated from infrastructure events. A future timeline needs a durable, authorized read contract first.
 
 ## Dispatched briefs
 
-No sub-agent briefs. This GPT Web run is implementing directly through the GitHub connector.
+No sub-agent briefs. This GPT Web run implemented directly through the GitHub connector.
 
 ## Execution reports
 
 | Tool | Report | Status |
 | --- | --- | --- |
-| GPT Web | `./reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md` | pending |
+| GPT Web | `./reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md` | complete |
 
 ## Task checklist
 
 ### Phase 1 — Lifecycle foundation
 
-- [ ] Locate every existing owner/call site for invoice collectible-status and settlement-status logic.
-- [ ] Add one canonical lifecycle helper without changing the durable enum.
-- [ ] Reuse it from payment allocations, credit-note allocations, automatic settlement, overdue materialization, and AR status predicates where layer boundaries permit.
-- [ ] Add focused invariant tests, including overdue + partial settlement precedence.
+- [x] Located existing collectible/status logic across Documents, Payments, Credit Notes, overdue materialization, and Customer AR.
+- [x] Added one canonical lifecycle helper without changing the durable enum.
+- [x] Reused it from payment allocations, credit-note allocations, automatic settlement, and overdue materialization; documented the Customer AR cycle exception.
+- [x] Added focused invariant tests, including overdue + partial settlement precedence.
 
 ### Phase 2 — Lifecycle command hardening
 
-- [ ] Verify finalization already recomputes totals/snapshots/AR and preserve the newer inventory side effects from `main`.
-- [ ] Prevent illegal direct financial state transitions through update paths.
-- [ ] Add explicit invoice send command that records communication evidence without creating a second receivable.
-- [ ] Harden void eligibility against settled invoices and preserve reversal/audit evidence.
-- [ ] Add explicit full-remaining-balance write-off workflow and durable evidence if the current schema lacks it.
+- [x] Verified the current finalization workflow already owns posting, inventory consumption, ledger/AR effects, and idempotency; preserved it.
+- [x] Kept generic invoice updates free of financial status setters.
+- [x] Added explicit invoice send command that records communication evidence without creating a second receivable.
+- [x] Hardened void eligibility against terminal and settled invoices while preserving reversal/audit evidence.
+- [x] Added explicit full-remaining-balance write-off using existing `amountWrittenOff`, `UNCOLLECTIBLE`, `WRITE_OFF` ledger evidence, metadata, and outbox infrastructure.
 
 ### Phase 3 — Settlement consistency
 
-- [ ] Route payment and credit-note allocations through the canonical lifecycle projection.
-- [ ] Ensure settlement formula keeps cash, credits, and write-offs distinct.
-- [ ] Preserve unapplied overpayments/customer credits.
-- [ ] Ensure reversals restore the correct open/overdue/partial compatibility state.
+- [x] Routed payment and credit-note allocations through the canonical lifecycle projection.
+- [x] Routed automatic available-credit settlement through the same projection.
+- [x] Kept cash, credits, and write-offs distinct.
+- [x] Preserved existing unapplied overpayment/customer-credit behavior.
+- [x] Preserved reversal behavior that restores captured pre-allocation invoice status and paid timestamp.
 
 ### Phase 4 — Contract and shared UI parity
 
-- [ ] Read `sdk-conventions.md`, `stripe-api-pattern.md`, `shared-product-ui.md`, `app-structure.md`, and `app-layout.md` before edits.
-- [ ] Add bounded SDK methods for new lifecycle commands if missing.
-- [ ] Keep Billing and Invoice lifecycle actions/status presentation in `@876/billing-ui` where both surfaces need the behavior.
-- [ ] Expose settlement evidence and lifecycle timeline only if the backend contract is complete enough to support them honestly.
+- [x] Read SDK, API-pattern, shared-product-UI, app-structure, and app-layout rules before completing the cross-surface work.
+- [x] Added bounded Billing SDK and integration client methods for `send` and `writeOff`.
+- [x] Added Billing and Invoice same-origin browser client commands.
+- [x] Consolidated lifecycle action presentation into `@876/billing-ui` with thin Billing/Invoice adapters.
+- [x] Added shared UI and Invoice client tests.
+- [x] Evaluated settlement/timeline presentation and deliberately deferred timeline UI because no honest backend read contract exists yet.
 
 ### Phase 5 — Documentation, compatibility review, and handoff
 
-- [ ] Update `apps/billing/BILLING_ENGINE.md` and accounting docs to distinguish financial, settlement, due, and communication dimensions.
-- [ ] Search for duplicate lifecycle rules and stale direct status writes.
-- [ ] Review the complete branch diff for compatibility residue, swallowed errors, duplicate helpers, and scope leaks.
-- [ ] Write the GPT Web report with exact unverified items and orchestrator commands.
+- [x] Updated `apps/billing/BILLING_ENGINE.md` and `apps/billing/docs/accounting-model.md`.
+- [x] Reviewed duplicated lifecycle rules and centralized the safe owners.
+- [x] Reviewed the complete branch diff for compatibility residue, duplicate helpers, destructive JSDoc churn, module cycles, and unsafe UI action inference.
+- [x] Restored accidental SDK type documentation churn found during diff review.
+- [x] Fixed an initial Documents self-import in the write-off workflow.
+- [x] Tightened Void presentation after review identified status ambiguity for partially settled overdue invoices.
+- [x] Wrote the GPT Web final report with exact unverified items and orchestrator commands.
+
+## Test drafting summary
+
+No test was executed from GPT Web.
+
+- New lifecycle helper file: 9 literal `it()` declarations; two `it.each` declarations expand the file to 15 expected runtime cases.
+- Existing invoice workflow suite: 6 new `it()` declarations, growing the suite from 5 to 11 declarations.
+- New shared Billing UI suite: 7 `it()` declarations.
+- Invoice app lifecycle browser-client coverage: 4 new `it()` declarations.
+
+**Total new literal `it()` declarations: 26.**
 
 ## Verification commands
 
@@ -141,33 +169,43 @@ pnpm --filter @876/billing-api build
 pnpm --filter @876/billing-api db:validate
 pnpm --filter @876/billing-api db:drift
 pnpm --filter @876/billing-api api:contract:check
-```
 
-If shared Billing packages or hosts change:
-
-```bash
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/billing test
 pnpm --filter @876/billing-ui typecheck
 pnpm --filter @876/billing-ui test
 pnpm --filter @876/billing-app typecheck
+pnpm --filter @876/billing-app test
 pnpm --filter @876/invoice-app typecheck
+pnpm --filter @876/invoice-app test
 ```
 
-Use the actual workspace names from each affected `package.json` if they differ from the labels above.
+No Prisma generator, migration, drift check, formatter, linter, test, typecheck, build, or API contract check was run from this seat.
 
 ## Multi-session continuity / handoff
 
-Current state:
+Implementation state:
 
-- Branch created from the latest `main` after commercial data-plane PR #513 merged.
-- Existing Billing engine already has finalization, voiding, AR ledger entries, payment allocations, credit-note allocations, automatic credit application, overdue materialization, inventory consumption on invoice finalization, and all eight compatibility statuses.
-- Duplicate settlement/status logic has been confirmed in `documents/repositories/invoices/settlement.ts`, payment repository code, credit-note repository code, overdue materialization, and customer AR status predicates.
-- No application code has been edited yet.
-- No tests, typecheck, lint, build, Prisma validation, drift check, API contract check, migration, or generator has been executed.
+- Lifecycle projection is centralized and reused across the primary settlement paths.
+- Send and full-balance write-off commands are available on tenant and integration API surfaces.
+- `invoice.sent` and `invoice.written-off` outbox events are typed.
+- Void rejects written-off/non-collectible and settled invoices.
+- Billing SDK, integration SDK, Billing browser client, and Invoice browser client expose the new commands.
+- Billing and Invoice lifecycle actions share one `@876/billing-ui` implementation.
+- Shared UI conservatively presents Void only for `OPEN`/`SENT`.
+- Engine/accounting documentation describes the new lifecycle semantics.
+- No database migration is required.
+- The full implementation report is committed under this run directory.
 
-Exact next step: implement Phase 1 against the existing owner files, starting with a canonical lifecycle helper and focused tests, then replace duplicated status decisions without changing public wire values.
+Remaining work is **verification only** by an environment with shell/runtime/database access. If checks fail, fix the concrete failures without weakening the lifecycle invariants described here.
 
 ## PR preparation summary
 
-Not ready. No PR is to be opened by GPT Web. The final section will list commits, changed files, and orchestrator verification evidence after implementation.
+Implementation is complete but unverified.
+
+- Base used for this run: `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`.
+- Branch: `feature/invoice-lifecycle-hardening`.
+- No PR was opened; GPT Web rules prohibit it.
+- No migration SQL exists for this run.
+- Before PR preparation, the orchestrator must re-sync/compare with current `main`, run the verification commands above, inspect generated/API-contract output, and review any failures.
+- Final report: `plans/2026-09-07-invoice-lifecycle-hardening/reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md`.
