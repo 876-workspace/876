@@ -25,10 +25,12 @@ const uploadSession = {
   expires_at: 1_800_000_000,
 }
 
-function file(overrides: Partial<{
-  owner_id: string
-  purpose: string
-}> = {}) {
+function file(
+  overrides: Partial<{
+    owner_id: string
+    purpose: string
+  }> = {}
+) {
   return {
     object: 'file' as const,
     id: 'file_1',
@@ -121,17 +123,21 @@ describe('orchestrateBillingItemMediaUpload', () => {
 
     expect(result).toEqual({
       data: null,
-      error: 'The completed Storage file does not match this Item image upload.',
+      error:
+        'The completed Storage file does not match this Item image upload.',
       status: 409,
     })
     expect(storage.resourceLinks.create).not.toHaveBeenCalled()
   })
 
-  it('recovers an existing exact Storage link before retrying Billing attach', async () => {
+  it('recovers an existing exact Storage link after a retryable Storage failure', async () => {
     const storage = storagePort()
     vi.mocked(storage.resourceLinks.create).mockResolvedValue({
       data: null,
-      error: { code: 'storage/resource-link-conflict', message: 'Already linked.' },
+      error: {
+        code: 'storage/provider-error',
+        message: 'The Storage response was unavailable.',
+      },
     })
     vi.mocked(storage.resourceLinks.list).mockResolvedValue({
       data: { object: 'list', data: [link] },
