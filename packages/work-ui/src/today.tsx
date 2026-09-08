@@ -45,6 +45,37 @@ function itemDetail(item: WorkAgendaItem): string | null {
   return item.value.description
 }
 
+function statusLabel(value: string): string {
+  return value.replaceAll('_', ' ').toLowerCase()
+}
+
+function AgendaItemDetails({ item }: { item: WorkAgendaItem }) {
+  if (item.type === 'event')
+    return (
+      <div className="text-muted-foreground mt-3 space-y-1 border-t pt-3 text-xs">
+        <p>Status: {statusLabel(item.value.status)}</p>
+        {item.value.location ? <p>Location: {item.value.location}</p> : null}
+        {item.value.description ? <p>{item.value.description}</p> : null}
+      </div>
+    )
+
+  if (item.type === 'reminder')
+    return (
+      <div className="text-muted-foreground mt-3 space-y-1 border-t pt-3 text-xs">
+        <p>Status: {statusLabel(item.value.status)}</p>
+        {item.value.note ? <p>{item.value.note}</p> : null}
+      </div>
+    )
+
+  return (
+    <div className="text-muted-foreground mt-3 space-y-1 border-t pt-3 text-xs">
+      <p>Status: {statusLabel(item.value.status)}</p>
+      <p>Importance: {statusLabel(item.value.importance)}</p>
+      {item.value.description ? <p>{item.value.description}</p> : null}
+    </div>
+  )
+}
+
 function CompleteTaskButton({
   task,
   completingTaskId,
@@ -112,7 +143,12 @@ function AgendaRow({
           {content}
         </button>
       ) : (
-        content
+        <details className="min-w-0 flex-1">
+          <summary className="focus-visible:ring-ring cursor-pointer list-none rounded-md focus-visible:ring-2 focus-visible:outline-none">
+            {content}
+          </summary>
+          <AgendaItemDetails item={item} />
+        </details>
       )}
       {item.type === 'task' ? (
         <CompleteTaskButton
@@ -161,20 +197,27 @@ export function WorkToday({
                 key={task.id}
                 className="border-876-surface-border flex items-start gap-3 rounded-xl border p-3"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{task.title}</p>
-                  {task.dueAt != null ? (
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      Due{' '}
-                      {new Date(task.dueAt * 1000).toLocaleString([], {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  ) : null}
-                </div>
+                <details className="min-w-0 flex-1">
+                  <summary className="focus-visible:ring-ring cursor-pointer list-none rounded-md focus-visible:ring-2 focus-visible:outline-none">
+                    <p className="truncate text-sm font-medium">{task.title}</p>
+                    {task.dueAt != null ? (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        Due{' '}
+                        {new Date(task.dueAt * 1000).toLocaleString([], {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    ) : null}
+                  </summary>
+                  <div className="text-muted-foreground mt-3 space-y-1 border-t pt-3 text-xs">
+                    <p>Status: {statusLabel(task.status)}</p>
+                    <p>Importance: {statusLabel(task.importance)}</p>
+                    {task.description ? <p>{task.description}</p> : null}
+                  </div>
+                </details>
                 <CompleteTaskButton
                   task={task}
                   completingTaskId={completingTaskId}
