@@ -83,6 +83,10 @@ The uppercase enum values are durable contracts across Prisma, API, integration 
 
 Lifecycle-changing behavior is exposed as explicit domain commands (`finalize`, `send`, `void`, `write-off`, payment allocation, credit-note application). Generic invoice updates are not a back door for financial status transitions.
 
+### Communication audit semantics
+
+The send command preserves the first `sentAt` timestamp across repeated send records while emitting a fresh `invoice.sent` event for every successful command. This keeps the invoice header's initial-send evidence stable without losing later communication events.
+
 ### Conservative void presentation
 
 Because `OVERDUE` can now represent a partially settled invoice, status alone cannot prove that an overdue/partial invoice is safe to void. The backend still enforces actual settlement evidence; shared UI and host adapters only present Void for `OPEN` and `SENT`. A richer future UI should consume server-provided capabilities rather than guess from flattened status.
@@ -114,7 +118,7 @@ No sub-agent briefs. This GPT Web run implemented directly through the GitHub co
 
 - [x] Verified the current finalization workflow already owns posting, inventory consumption, ledger/AR effects, and idempotency; preserved it.
 - [x] Kept generic invoice updates free of financial status setters.
-- [x] Added explicit invoice send command that records communication evidence without creating a second receivable.
+- [x] Added explicit invoice send command that records communication evidence without creating a second receivable and preserves the first `sentAt`.
 - [x] Hardened void eligibility against terminal and settled invoices while preserving reversal/audit evidence.
 - [x] Added explicit full-remaining-balance write-off using existing `amountWrittenOff`, `UNCOLLECTIBLE`, `WRITE_OFF` ledger evidence, metadata, and outbox infrastructure.
 
@@ -130,6 +134,7 @@ No sub-agent briefs. This GPT Web run implemented directly through the GitHub co
 
 - [x] Read SDK, API-pattern, shared-product-UI, app-structure, and app-layout rules before completing the cross-surface work.
 - [x] Added bounded Billing SDK and integration client methods for `send` and `writeOff`.
+- [x] Added bounded Billing SDK request-path tests for the additive commands.
 - [x] Added Billing and Invoice same-origin browser client commands.
 - [x] Consolidated lifecycle action presentation into `@876/billing-ui` with thin Billing/Invoice adapters.
 - [x] Added shared UI and Invoice client tests.
@@ -137,13 +142,14 @@ No sub-agent briefs. This GPT Web run implemented directly through the GitHub co
 
 ### Phase 5 — Documentation, compatibility review, and handoff
 
-- [x] Updated `apps/billing/BILLING_ENGINE.md` and `apps/billing/docs/accounting-model.md`.
+- [x] Updated `apps/billing/BILLING_ENGINE.md`, `apps/billing/docs/accounting-model.md`, and added `apps/billing/docs/invoice-lifecycle.md`.
 - [x] Reviewed duplicated lifecycle rules and centralized the safe owners.
 - [x] Reviewed the complete branch diff for compatibility residue, duplicate helpers, destructive JSDoc churn, module cycles, and unsafe UI action inference.
 - [x] Restored accidental SDK type documentation churn found during diff review.
 - [x] Fixed an initial Documents self-import in the write-off workflow.
 - [x] Tightened Void presentation after review identified status ambiguity for partially settled overdue invoices.
-- [x] Wrote the GPT Web final report with exact unverified items and orchestrator commands.
+- [x] Reconciled first-send timestamp documentation and implementation.
+- [x] Wrote and reconciled the GPT Web final report with exact unverified items and orchestrator commands.
 
 ## Test drafting summary
 
@@ -151,10 +157,11 @@ No test was executed from GPT Web.
 
 - New lifecycle helper file: 9 literal `it()` declarations; two `it.each` declarations expand the file to 15 expected runtime cases.
 - Existing invoice workflow suite: 6 new `it()` declarations, growing the suite from 5 to 11 declarations.
+- Bounded Billing SDK document resources: 2 new `it()` declarations for `send` and `writeOff`.
 - New shared Billing UI suite: 7 `it()` declarations.
 - Invoice app lifecycle browser-client coverage: 4 new `it()` declarations.
 
-**Total new literal `it()` declarations: 26.**
+**Total new literal `it()` declarations: 28.**
 
 ## Verification commands
 
@@ -188,12 +195,13 @@ Implementation state:
 
 - Lifecycle projection is centralized and reused across the primary settlement paths.
 - Send and full-balance write-off commands are available on tenant and integration API surfaces.
+- Repeated sends preserve the invoice's first `sentAt` and emit fresh send events.
 - `invoice.sent` and `invoice.written-off` outbox events are typed.
 - Void rejects written-off/non-collectible and settled invoices.
 - Billing SDK, integration SDK, Billing browser client, and Invoice browser client expose the new commands.
 - Billing and Invoice lifecycle actions share one `@876/billing-ui` implementation.
 - Shared UI conservatively presents Void only for `OPEN`/`SENT`.
-- Engine/accounting documentation describes the new lifecycle semantics.
+- Engine/accounting/dedicated lifecycle documentation describes the new semantics.
 - No database migration is required.
 - The full implementation report is committed under this run directory.
 
@@ -205,6 +213,7 @@ Implementation is complete but unverified.
 
 - Base used for this run: `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`.
 - Branch: `feature/invoice-lifecycle-hardening`.
+- Final pre-handoff comparison showed the branch ahead of and not behind `main`.
 - No PR was opened; GPT Web rules prohibit it.
 - No migration SQL exists for this run.
 - Before PR preparation, the orchestrator must re-sync/compare with current `main`, run the verification commands above, inspect generated/API-contract output, and review any failures.
