@@ -21,7 +21,8 @@ import { isRetryableTransactionError } from '@/platform/prisma-errors'
 export async function update(
   tenantId: string,
   paymentId: string,
-  params: PaymentUpdateParams
+  params: PaymentUpdateParams,
+  sourceAppId?: string
 ): ServiceResult<{ id: string }> {
   if (!(await hasEnabledCurrency(tenantId, params.currency)))
     return err('Enable the payment currency before using it.', 422)
@@ -39,7 +40,11 @@ export async function update(
     await prisma.$transaction(
       async (tx) => {
         const payment = await tx.payment.findFirst({
-          where: { id: paymentId, tenantId },
+          where: {
+            id: paymentId,
+            tenantId,
+            ...(sourceAppId ? { sourceAppId } : {}),
+          },
           include: {
             invoiceAllocations: { where: { reversedAt: null } },
             refunds: { select: { id: true } },

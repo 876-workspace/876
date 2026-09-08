@@ -76,6 +76,28 @@ export interface BillingPaymentCreateParams {
   sourceExternalReference?: string | null
 }
 
+/** Parameters for replacing an existing integration-owned payment. */
+export type BillingPaymentUpdateParams = Omit<
+  BillingPaymentCreateParams,
+  'sourceExternalReference'
+>
+
+/** Parameters for applying additional allocations to a payment. */
+export interface BillingPaymentApplyParams {
+  allocations: BillingPaymentAllocationCreateParams[]
+}
+
+/** Reference returned after a payment mutation. */
+export interface BillingPaymentCreated {
+  object: 'payment'
+  id: string
+}
+
+/** Tombstone returned after canceling a payment. */
+export interface BillingPaymentDeleted extends BillingPaymentCreated {
+  deleted: true
+}
+
 /**
  * This object represents a payment exposed through the integration API.
  */
@@ -111,9 +133,24 @@ export interface BillingPayment {
   unappliedAmount: string
 
   /**
-   * Status of the payment. One of `PENDING`, `SUCCEEDED`, `FAILED`, or `CANCELED`.
+   * Total amount already returned to the customer as a decimal string.
    */
-  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED'
+  amountRefunded: string
+
+  /**
+   * Current payment lifecycle state.
+   */
+  status:
+    | 'PENDING'
+    | 'REQUIRES_ACTION'
+    | 'AUTHORIZED'
+    | 'PROCESSING'
+    | 'SUCCEEDED'
+    | 'FAILED'
+    | 'CANCELED'
+    | 'PARTIALLY_REFUNDED'
+    | 'REFUNDED'
+    | 'DISPUTED'
 
   /**
    * ID of the payment provider connection used for the payment, if any.
@@ -197,6 +234,20 @@ export interface BillingPayment {
       amountDue: string
       status: string
     }
+  }>
+
+  /**
+   * Refund evidence returned on payment detail reads. Payment lists may omit it.
+   */
+  refunds?: Array<{
+    object: 'refund'
+    id: string
+    number: string
+    amount: string
+    currency: string
+    reason: string | null
+    refundedAt: number
+    createdAt: number
   }>
 
   /**

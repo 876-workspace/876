@@ -12,14 +12,19 @@ import { isRetryableTransactionError } from '@/platform/prisma-errors'
 /** Cancels a manual payment after restoring every allocated invoice balance. */
 export async function deletePayment(
   tenantId: string,
-  paymentId: string
+  paymentId: string,
+  sourceAppId?: string
 ): ServiceResult<{ id: string }> {
   try {
     const now = nowUnixSeconds()
     await prisma.$transaction(
       async (tx) => {
         const payment = await tx.payment.findFirst({
-          where: { id: paymentId, tenantId },
+          where: {
+            id: paymentId,
+            tenantId,
+            ...(sourceAppId ? { sourceAppId } : {}),
+          },
           include: {
             invoiceAllocations: { where: { reversedAt: null } },
             refunds: { select: { id: true } },

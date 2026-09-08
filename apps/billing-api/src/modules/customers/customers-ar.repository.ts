@@ -1,4 +1,4 @@
-import type { InvoiceStatus, Prisma } from '@/db'
+import type { InvoiceStatus, PaymentStatus, Prisma } from '@/db'
 
 type TransactionClient = Prisma.TransactionClient
 const OPEN_INVOICE_STATUSES: InvoiceStatus[] = [
@@ -6,6 +6,10 @@ const OPEN_INVOICE_STATUSES: InvoiceStatus[] = [
   'SENT',
   'PARTIALLY_PAID',
   'OVERDUE',
+]
+const AVAILABLE_PAYMENT_STATUSES: PaymentStatus[] = [
+  'SUCCEEDED',
+  'PARTIALLY_REFUNDED',
 ]
 
 export async function recomputeCustomerAr(
@@ -20,7 +24,11 @@ export async function recomputeCustomerAr(
       _sum: { amountDue: true },
     }),
     tx.payment.aggregate({
-      where: { tenantId, customerId, status: 'SUCCEEDED' },
+      where: {
+        tenantId,
+        customerId,
+        status: { in: AVAILABLE_PAYMENT_STATUSES },
+      },
       _sum: { unappliedAmount: true },
     }),
     tx.creditNote.aggregate({

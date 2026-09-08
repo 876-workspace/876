@@ -1112,6 +1112,27 @@ export const v1OperationMetadata = {
     summary: 'Retrieve a shared finance payment',
     tags: ['Organization integrations'],
   },
+  'PATCH /integrations/organizations/{organizationId}/payments/{paymentId}': {
+    summary: 'Update an organization Billing payment',
+    tags: ['Payments'],
+  },
+  'DELETE /integrations/organizations/{organizationId}/payments/{paymentId}': {
+    summary: 'Cancel an organization Billing payment',
+    tags: ['Payments'],
+  },
+  'POST /integrations/organizations/{organizationId}/payments/{paymentId}/apply':
+    {
+      summary: 'Apply an organization Billing payment',
+      tags: ['Payments'],
+    },
+  'GET /integrations/organizations/{organizationId}/refunds': {
+    summary: 'List organization Billing refunds',
+    tags: ['Payments'],
+  },
+  'POST /integrations/organizations/{organizationId}/refunds': {
+    summary: 'Create an organization Billing refund',
+    tags: ['Payments'],
+  },
   'GET /integrations/organizations/{organizationId}/payment-modes': {
     summary: 'List shared payment methods',
     tags: ['Organization integrations'],
@@ -26053,6 +26074,694 @@ export const v1OperationContracts = {
               },
               required: ['data', 'error'],
               type: 'object',
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/payments/{paymentId}': {
+    tags: ['Payments'],
+    summary: 'Update an organization Billing payment',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'paymentId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              customerId: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 191,
+              },
+              paymentModeId: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 191,
+              },
+              depositAccountId: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 191,
+              },
+              amount: {
+                anyOf: [
+                  {
+                    type: 'integer',
+                    minimum: -9007199254740991,
+                    maximum: 9007199254740991,
+                  },
+                  {
+                    type: 'string',
+                    pattern: '^(0|[1-9]\\d*)$',
+                  },
+                ],
+              },
+              bankCharges: {
+                anyOf: [
+                  {
+                    type: 'integer',
+                    minimum: -9007199254740991,
+                    maximum: 9007199254740991,
+                  },
+                  {
+                    type: 'string',
+                    pattern: '^(0|[1-9]\\d*)$',
+                  },
+                ],
+              },
+              currency: {
+                type: 'string',
+                pattern: '^[A-Za-z]{3}$',
+              },
+              paymentDate: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+              referenceNumber: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 160,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              notes: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 2000,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              allocations: {
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    invoiceId: {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 191,
+                    },
+                    amount: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'string',
+                          pattern: '^(0|[1-9]\\d*)$',
+                        },
+                      ],
+                    },
+                  },
+                  required: ['invoiceId', 'amount'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: [
+              'customerId',
+              'paymentModeId',
+              'depositAccountId',
+              'amount',
+              'currency',
+              'paymentDate',
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Payment updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /integrations/organizations/{organizationId}/payments/{paymentId}': {
+    tags: ['Payments'],
+    summary: 'Cancel an organization Billing payment',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'paymentId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Payment canceled',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/payments/{paymentId}/apply':
+    {
+      tags: ['Payments'],
+      summary: 'Apply an organization Billing payment',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.payments.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'paymentId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                allocations: {
+                  minItems: 1,
+                  maxItems: 100,
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      invoiceId: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 191,
+                      },
+                      amount: {
+                        anyOf: [
+                          {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          {
+                            type: 'string',
+                            pattern: '^(0|[1-9]\\d*)$',
+                          },
+                        ],
+                      },
+                    },
+                    required: ['invoiceId', 'amount'],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ['allocations'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '201': {
+          description: 'Payment applied',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'payment',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/refunds': {
+    tags: ['Payments'],
+    summary: 'List organization Billing refunds',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Refund list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'refund',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/refunds': {
+    tags: ['Payments'],
+    summary: 'Create an organization Billing refund',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.payments.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Refund created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'refund',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

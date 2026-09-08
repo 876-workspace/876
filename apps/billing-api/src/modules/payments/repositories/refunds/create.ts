@@ -16,10 +16,13 @@ import { isRetryableTransactionError } from '@/platform/prisma-errors'
 /** Records a cash return to a customer drawn from a credit note or an overpaid payment. */
 export async function create(
   tenantId: string,
-  params: RefundCreateParams
+  params: RefundCreateParams,
+  sourceAppId?: string
 ): ServiceResult<{ id: string }> {
   if (!(await hasEnabledCurrency(tenantId, params.currency)))
     return err('Enable the refund currency before using it.', 422)
+  if (sourceAppId && params.creditNoteId)
+    return err('Credit-note refunds require tenant finance authority.', 403)
 
   const now = nowUnixSeconds()
   const number = await nextDocumentNumber(tenantId, 'REFUND', now)
@@ -34,6 +37,32 @@ export async function create(
         })
         if (!customer)
           throw new RefundMutationError('Active customer not found.', 404)
+
+        if (params.paymentModeId) {
+          const paymentMode = await tx.paymentMode.findFirst({
+            where: { id: params.paymentModeId, tenantId, isActive: true },
+            select: { id: true },
+          })
+          if (!paymentMode)
+            throw new RefundMutationError('Active payment mode not found.', 404)
+        }
+
+        if (params.depositAccountId) {
+          const depositAccount = await tx.bankAccount.findFirst({
+            where: { id: params.depositAccountId, tenantId, isActive: true },
+            select: { id: true, currency: true },
+          })
+          if (!depositAccount)
+            throw new RefundMutationError(
+              'Active refund account not found.',
+              404
+            )
+          if (depositAccount.currency !== params.currency)
+            throw new RefundMutationError(
+              'The refund account uses a different currency.',
+              422
+            )
+        }
 
         if (params.creditNoteId) {
           const creditNote = await tx.creditNote.findFirst({
@@ -79,18 +108,27 @@ export async function create(
           })
         } else {
           const payment = await tx.payment.findFirst({
-            where: { id: params.paymentId, tenantId },
+            where: {
+              id: params.paymentId,
+              tenantId,
+              ...(sourceAppId ? { sourceAppId } : {}),
+            },
             select: {
               customerId: true,
               currency: true,
               status: true,
+              amount: true,
+              amountRefunded: true,
               unappliedAmount: true,
             },
           })
           if (!payment) throw new RefundMutationError('Payment not found.', 404)
-          if (payment.status !== 'SUCCEEDED')
+          if (
+            payment.status !== 'SUCCEEDED' &&
+            payment.status !== 'PARTIALLY_REFUNDED'
+          )
             throw new RefundMutationError(
-              'Only a successful payment can be refunded.',
+              'Only a successful payment with refundable credit can be refunded.',
               409
             )
           if (payment.customerId !== params.customerId)
@@ -109,31 +147,19 @@ export async function create(
               422
             )
 
+          const amountRefunded = payment.amountRefunded + params.amount
           await tx.payment.update({
             where: { id: params.paymentId },
             data: {
               unappliedAmount: { decrement: params.amount },
+              amountRefunded: { increment: params.amount },
+              status:
+                amountRefunded === payment.amount
+                  ? 'REFUNDED'
+                  : 'PARTIALLY_REFUNDED',
               updatedAt: now,
             },
           })
-        }
-
-        if (params.paymentModeId) {
-          const paymentMode = await tx.paymentMode.findFirst({
-            where: { id: params.paymentModeId, tenantId },
-            select: { id: true },
-          })
-          if (!paymentMode)
-            throw new RefundMutationError('Payment mode not found.', 404)
-        }
-
-        if (params.depositAccountId) {
-          const depositAccount = await tx.bankAccount.findFirst({
-            where: { id: params.depositAccountId, tenantId },
-            select: { id: true },
-          })
-          if (!depositAccount)
-            throw new RefundMutationError('Deposit account not found.', 404)
         }
 
         await tx.refund.create({

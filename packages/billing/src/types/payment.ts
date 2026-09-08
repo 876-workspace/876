@@ -86,7 +86,7 @@ export interface PaymentApplyParams {
 /**
  * Parameters for replacing a received payment. Same shape as create.
  */
-export interface PaymentUpdateParams extends PaymentCreateParams {}
+export type PaymentUpdateParams = PaymentCreateParams
 
 /**
  * An allocation of a payment to a single invoice.
@@ -183,6 +183,11 @@ export interface Payment {
   unappliedAmount: string
 
   /**
+   * Total amount already returned to the customer as a decimal string.
+   */
+  amountRefunded: string
+
+  /**
    * Current payment lifecycle state.
    */
   status:
@@ -269,6 +274,20 @@ export interface Payment {
    * Invoice allocations applied to this payment.
    */
   invoiceAllocations: PaymentAllocation[]
+
+  /**
+   * Refund evidence returned on payment detail reads. Payment lists may omit it.
+   */
+  refunds?: Array<{
+    object: 'refund'
+    id: string
+    number: string
+    amount: string
+    currency: string
+    reason: string | null
+    refundedAt: number
+    createdAt: number
+  }>
 
   /**
    * Linked bank transaction, if one was created.

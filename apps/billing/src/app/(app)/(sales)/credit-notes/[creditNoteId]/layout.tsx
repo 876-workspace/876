@@ -6,6 +6,7 @@ import { resolveCreditNote } from '@/app/(app)/_lib/detail-data'
 import { CreditNoteActions } from './_components/credit-note-actions'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
+import { service } from '@/lib/service'
 
 export default async function CreditNoteDetailLayout({
   children,
@@ -18,9 +19,15 @@ export default async function CreditNoteDetailLayout({
   const context = await getWorkspaceContext()
   if (!context) return null
 
-  const creditNote = await resolveCreditNote(context.tenant.id, creditNoteId)
+  const [creditNote, currencies] = await Promise.all([
+    resolveCreditNote(context.tenant.id, creditNoteId),
+    service.currencies.list(context.tenant.id),
+  ])
   if (!creditNote) notFound()
 
+  const decimalPlaces =
+    currencies.find(({ currency }) => currency.code === creditNote.currency)
+      ?.currency.decimalPlaces ?? 2
   const base = `/credit-notes/${creditNote.id}`
 
   const statusVariant =
@@ -38,7 +45,7 @@ export default async function CreditNoteDetailLayout({
       backLabel="Credit Notes"
       eyebrow="Credit note"
       title={creditNote.number}
-      description={`${creditNote.customer.name} · ${formatMoney(String(creditNote.totalAmount), creditNote.currency)}`}
+      description={`${creditNote.customer.name} · ${formatMoney(String(creditNote.totalAmount), creditNote.currency, decimalPlaces)}`}
       status={
         creditNote.status.charAt(0) + creditNote.status.slice(1).toLowerCase()
       }
@@ -48,9 +55,8 @@ export default async function CreditNoteDetailLayout({
           creditNoteId={creditNote.id}
           status={creditNote.status}
           balanceAmount={String(creditNote.balanceAmount)}
-          currency={creditNote.currency}
-          customerId={creditNote.customerId}
           canWrite={context.permissions.includes('sales:write')}
+          canRefund={context.permissions.includes('payments:write')}
         />
       }
       tabs={[{ label: 'Overview', href: base, exact: true }]}

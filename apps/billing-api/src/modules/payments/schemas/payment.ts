@@ -159,6 +159,7 @@ export interface PaymentResource {
   number: string
   amount: string
   unappliedAmount: string
+  amountRefunded: string
   status:
     | 'PENDING'
     | 'REQUIRES_ACTION'
@@ -170,6 +171,8 @@ export interface PaymentResource {
     | 'PARTIALLY_REFUNDED'
     | 'REFUNDED'
     | 'DISPUTED'
+  providerConnectionId?: string | null
+  providerPaymentId?: string | null
   bankCharges: string
   currency: string
   paymentDate: number
@@ -192,6 +195,8 @@ export interface PaymentResource {
     object: 'payment_allocation'
     id: string
     amount: string
+    createdAt: number
+    updatedAt: number
     invoice: {
       object: 'invoice'
       id: string
@@ -200,6 +205,16 @@ export interface PaymentResource {
       amountDue: string
       status: string
     }
+  }>
+  refunds?: Array<{
+    object: 'refund'
+    id: string
+    number: string
+    amount: string
+    currency: string
+    reason: string | null
+    refundedAt: number
+    createdAt: number
   }>
   createdAt: number
   updatedAt: number

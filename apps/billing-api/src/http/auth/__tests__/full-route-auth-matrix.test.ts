@@ -48,8 +48,10 @@ describe('frozen v1 route authentication matrix', () => {
     // surfaces. 268 -> 280: quote lifecycle expiry, accepted-quote conversion,
     // and quote preference read/update were added to both tenant and
     // integration surfaces, plus the four integration quote decision commands.
-    expect(operations).toHaveLength(280)
-    expect(protectedPublicOperations()).toHaveLength(279)
+    // 280 -> 285: integration payment update/delete/apply and refund list/create
+    // were added as authenticated operations.
+    expect(operations).toHaveLength(285)
+    expect(protectedPublicOperations()).toHaveLength(284)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

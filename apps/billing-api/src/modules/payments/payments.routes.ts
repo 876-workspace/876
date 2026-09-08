@@ -186,7 +186,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
     request: { params: id('paymentId'), body: PaymentApplySchema },
     responses: {
       201: {
-        description: 'payment created',
+        description: 'Payment applied',
         schema: successEnvelopeSchema(resource('payment')),
       },
       ...clientErrors,
@@ -196,7 +196,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
   api.get({
     path: '/refunds',
     summary: 'List refunds',
-    security: { kind: 'tenant', permission: 'sales:read' },
+    security: read,
     responses: {
       200: {
         description: 'Successful Response',
@@ -209,7 +209,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
   api.post({
     path: '/refunds',
     summary: 'Create a refund',
-    security: { kind: 'tenant', permission: 'sales:write' },
+    security: write,
     request: { body: RefundCreateSchema },
     documentBody: false,
     responses: {
@@ -267,6 +267,78 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.integrationGet,
+  })
+  api.patch({
+    path: `${base}/:paymentId`,
+    summary: 'Update an organization Billing payment',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgPayment, body: PaymentUpdateSchema },
+    responses: {
+      200: {
+        description: 'Payment updated',
+        schema: successEnvelopeSchema(resource('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.integrationUpdate,
+  })
+  api.delete({
+    path: `${base}/:paymentId`,
+    summary: 'Cancel an organization Billing payment',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgPayment },
+    responses: {
+      200: {
+        description: 'Payment canceled',
+        schema: successEnvelopeSchema(deleted('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.integrationDel,
+  })
+  api.post({
+    path: `${base}/:paymentId/apply`,
+    summary: 'Apply an organization Billing payment',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: orgPayment, body: PaymentApplySchema },
+    responses: {
+      201: {
+        description: 'Payment applied',
+        schema: successEnvelopeSchema(resource('payment')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.integrationApply,
+  })
+  const refundsBase = '/integrations/organizations/:organizationId/refunds'
+  api.get({
+    path: refundsBase,
+    summary: 'List organization Billing refunds',
+    security: { kind: 'integration', scope: 'billing.payments.read' },
+    request: { params: org },
+    responses: {
+      200: {
+        description: 'Refund list',
+        schema: successEnvelopeSchema(list('refund')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.refundsIntegrationList,
+  })
+  api.post({
+    path: refundsBase,
+    summary: 'Create an organization Billing refund',
+    security: { kind: 'integration', scope: 'billing.payments.write' },
+    request: { params: org, body: RefundCreateSchema },
+    documentBody: false,
+    responses: {
+      200: {
+        description: 'Refund created',
+        schema: successEnvelopeSchema(resource('refund')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.refundsIntegrationCreate,
   })
   api.get({
     path: '/integrations/organizations/:organizationId/payment-modes',

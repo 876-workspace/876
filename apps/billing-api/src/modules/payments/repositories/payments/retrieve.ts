@@ -12,6 +12,18 @@ export function retrieve(
       paymentMode: true,
       depositAccount: true,
       bankTransaction: true,
+      refunds: {
+        select: {
+          id: true,
+          number: true,
+          amount: true,
+          currency: true,
+          reason: true,
+          refundedAt: true,
+          createdAt: true,
+        },
+        orderBy: [{ refundedAt: 'desc' }, { createdAt: 'desc' }],
+      },
       invoiceAllocations: {
         where: { reversedAt: null },
         include: { invoice: true },

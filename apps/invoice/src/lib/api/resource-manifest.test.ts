@@ -45,7 +45,7 @@ describe('Invoice proxied resource manifest', () => {
   })
 
   it('rejects an unlisted resource', () => {
-    expect(isProxiedResource('refunds')).toBe(false)
+    expect(isProxiedResource('subscriptions')).toBe(false)
   })
 
   it.each(['admin', 'internal', '..', ''])('rejects non-member %j', (value) => {

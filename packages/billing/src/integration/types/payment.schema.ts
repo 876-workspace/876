@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
-import type { BillingPayment, BillingPaymentList } from './payment'
+import type {
+  BillingPayment,
+  BillingPaymentCreated,
+  BillingPaymentDeleted,
+  BillingPaymentList,
+} from './payment'
 import { sourceSchema } from './customer.schema'
 import { BillingPaymentModeSchema } from './payment-mode.schema'
 
@@ -20,6 +25,26 @@ const paymentAllocationSchema = z.strictObject({
   }),
 })
 
+const paymentRefundSchema = z.strictObject({
+  object: z.literal('refund'),
+  id: z.string().min(1),
+  number: z.string(),
+  amount: z.string(),
+  currency: z.string().length(3),
+  reason: z.string().nullable(),
+  refundedAt: z.number().int(),
+  createdAt: z.number().int(),
+})
+
+export const BillingPaymentCreatedSchema = z.strictObject({
+  object: z.literal('payment'),
+  id: z.string().min(1),
+}) satisfies z.ZodType<BillingPaymentCreated>
+
+export const BillingPaymentDeletedSchema = BillingPaymentCreatedSchema.extend({
+  deleted: z.literal(true),
+}) satisfies z.ZodType<BillingPaymentDeleted>
+
 /**
  * The schema for a Billing payment resource.
  */
@@ -30,7 +55,19 @@ export const BillingPaymentSchema = z.strictObject({
   number: z.string(),
   amount: z.string(),
   unappliedAmount: z.string(),
-  status: z.enum(['PENDING', 'SUCCEEDED', 'FAILED', 'CANCELED']),
+  amountRefunded: z.string(),
+  status: z.enum([
+    'PENDING',
+    'REQUIRES_ACTION',
+    'AUTHORIZED',
+    'PROCESSING',
+    'SUCCEEDED',
+    'FAILED',
+    'CANCELED',
+    'PARTIALLY_REFUNDED',
+    'REFUNDED',
+    'DISPUTED',
+  ]),
   providerConnectionId: z.string().nullable(),
   providerPaymentId: z.string().nullable(),
   bankCharges: z.string(),
@@ -54,6 +91,7 @@ export const BillingPaymentSchema = z.strictObject({
     currency: z.string().length(3),
   }),
   invoiceAllocations: z.array(paymentAllocationSchema),
+  refunds: z.array(paymentRefundSchema).optional(),
   bankTransaction: z
     .strictObject({
       object: z.literal('bank_transaction'),

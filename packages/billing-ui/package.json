@@ -179,9 +179,17 @@
       "types": "./src/panels/tax-rate-settings-panel.tsx",
       "default": "./src/panels/tax-rate-settings-panel.tsx"
     },
+    "./payment-detail-card": {
+      "types": "./src/payment-detail-card.tsx",
+      "default": "./src/payment-detail-card.tsx"
+    },
     "./payment-received-form": {
       "types": "./src/payment-received-form.tsx",
       "default": "./src/payment-received-form.tsx"
+    },
+    "./refund-form": {
+      "types": "./src/refund-form.tsx",
+      "default": "./src/refund-form.tsx"
     },
     "./payments-table": {
       "types": "./src/payments-table.tsx",

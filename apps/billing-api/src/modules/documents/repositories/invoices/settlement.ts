@@ -65,7 +65,7 @@ export async function settleWithAvailableCredits(
       tenantId: invoice.tenantId,
       customerId: invoice.customerId,
       currency: invoice.currency,
-      status: 'SUCCEEDED',
+      status: { in: ['SUCCEEDED', 'PARTIALLY_REFUNDED'] },
       unappliedAmount: { gt: 0n },
     },
     orderBy: [{ paymentDate: 'asc' }, { id: 'asc' }],

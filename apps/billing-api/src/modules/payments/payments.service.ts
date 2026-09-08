@@ -15,6 +15,7 @@ import type {
 import type { RefundCreateParams } from './schemas/refund'
 import {
   paymentList,
+  serializeIntegrationPayment,
   serializePayment,
   serializePaymentMode,
   serializeRefund,
@@ -95,22 +96,39 @@ export const paymentsService = {
       deleted: true,
     }
   },
-  async listPayments(
+  async listPayments(tenantId: string, url = '/api/v1/payments') {
+    return paymentList(
+      'payment',
+      await payments.list(tenantId),
+      url,
+      serializePayment
+    )
+  },
+  async listIntegrationPayments(
     tenantId: string,
-    sourceAppId?: string,
-    url = '/api/v1/payments'
+    sourceAppId: string | undefined,
+    url: string
   ) {
     return paymentList(
       'payment',
       await payments.list(tenantId, sourceAppId),
       url,
-      serializePayment
+      serializeIntegrationPayment
     )
   },
-  async getPayment(tenantId: string, id: string, sourceAppId?: string) {
-    const row = await payments.retrieve(tenantId, id, sourceAppId)
+  async getPayment(tenantId: string, id: string) {
+    const row = await payments.retrieve(tenantId, id)
     if (!row) throw notFound('payment')
     return serializePayment(row)
+  },
+  async getIntegrationPayment(
+    tenantId: string,
+    id: string,
+    sourceAppId?: string
+  ) {
+    const row = await payments.retrieve(tenantId, id, sourceAppId)
+    if (!row) throw notFound('payment')
+    return serializeIntegrationPayment(row)
   },
   async createPayment(
     tenantId: string,
@@ -126,37 +144,67 @@ export const paymentsService = {
       replayed: result.replayed === true,
     }
   },
-  async updatePayment(tenantId: string, id: string, body: PaymentUpdateParams) {
+  async updatePayment(
+    tenantId: string,
+    id: string,
+    body: PaymentUpdateParams,
+    sourceAppId?: string
+  ) {
     return {
       object: 'payment',
-      ...(await unwrap(await payments.update(tenantId, id, body), 'payment')),
+      ...(await unwrap(
+        await payments.update(tenantId, id, body, sourceAppId),
+        'payment'
+      )),
     }
   },
-  async applyPayment(tenantId: string, id: string, body: PaymentApplyParams) {
+  async applyPayment(
+    tenantId: string,
+    id: string,
+    body: PaymentApplyParams,
+    sourceAppId?: string
+  ) {
     return {
       object: 'payment',
-      ...(await unwrap(await payments.apply(tenantId, id, body), 'payment')),
+      ...(await unwrap(
+        await payments.apply(tenantId, id, body, sourceAppId),
+        'payment'
+      )),
     }
   },
-  async deletePayment(tenantId: string, id: string) {
+  async deletePayment(tenantId: string, id: string, sourceAppId?: string) {
     return {
       object: 'payment',
-      ...(await unwrap(await payments.delete(tenantId, id), 'payment')),
+      ...(await unwrap(
+        await payments.delete(tenantId, id, sourceAppId),
+        'payment'
+      )),
       deleted: true,
     }
   },
-  async listRefunds(tenantId: string) {
+  async listRefunds(
+    tenantId: string,
+    sourceAppId?: string,
+    url = '/api/v1/refunds'
+  ) {
     return paymentList(
       'refund',
-      await refunds.list(tenantId),
-      '/api/v1/refunds',
+      await refunds.list(tenantId, sourceAppId),
+      url,
       serializeRefund
     )
   },
-  async createRefund(tenantId: string, body: RefundCreateParams) {
+  async createRefund(
+    tenantId: string,
+    body: RefundCreateParams,
+    sourceAppId?: string
+  ) {
     return {
       object: 'refund',
-      ...(await unwrap(await refunds.create(tenantId, body), 'refund')),
+      ...(await unwrap(
+        await refunds.create(tenantId, body, sourceAppId),
+        'refund'
+      )),
     }
   },
 }

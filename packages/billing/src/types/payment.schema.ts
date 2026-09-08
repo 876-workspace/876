@@ -41,6 +41,17 @@ const PaymentAllocationSchema = z.strictObject({
   updatedAt: z.number().int(),
 })
 
+const PaymentRefundSchema = z.strictObject({
+  object: z.literal('refund'),
+  id: z.string().min(1),
+  number: z.string(),
+  amount: z.string(),
+  currency: z.string(),
+  reason: z.string().nullable(),
+  refundedAt: z.number().int(),
+  createdAt: z.number().int(),
+})
+
 /**
  * The schema for a payment resource.
  */
@@ -50,6 +61,7 @@ export const PaymentSchema = z.strictObject({
   number: z.string(),
   amount: z.string(),
   unappliedAmount: z.string(),
+  amountRefunded: z.string(),
   status: z.enum([
     'PENDING',
     'REQUIRES_ACTION',
@@ -83,6 +95,7 @@ export const PaymentSchema = z.strictObject({
     currency: z.string(),
   }),
   invoiceAllocations: z.array(PaymentAllocationSchema),
+  refunds: z.array(PaymentRefundSchema).optional(),
   bankTransaction: BankTransactionSchema.nullable().optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
