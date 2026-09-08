@@ -15,7 +15,6 @@ describe('InvoiceLifecycleActions', () => {
     const user = userEvent.setup()
     render(
       <InvoiceLifecycleActions
-        invoiceId="inv_1"
         status="DRAFT"
         editHref="/invoices/inv_1/edit"
         canEdit
@@ -39,11 +38,10 @@ describe('InvoiceLifecycleActions', () => {
     // AFTER — testing-library performs cleanup.
   })
 
-  it('keeps send and write-off actions available for an overdue invoice', () => {
+  it('keeps mark-sent and write-off actions available for an overdue invoice', () => {
     // ARRANGE
     render(
       <InvoiceLifecycleActions
-        invoiceId="inv_1"
         status="OVERDUE"
         onSend={success}
         onVoid={async () => ({ error: null })}
@@ -52,7 +50,7 @@ describe('InvoiceLifecycleActions', () => {
     )
 
     // ACT
-    const send = screen.getByRole('button', { name: 'Send again' })
+    const send = screen.getByRole('button', { name: 'Mark sent' })
 
     // ASSERT
     expect(send).toBeVisible()
@@ -66,7 +64,6 @@ describe('InvoiceLifecycleActions', () => {
     // ARRANGE
     render(
       <InvoiceLifecycleActions
-        invoiceId="inv_1"
         status="OPEN"
         onVoid={async () => ({ error: null })}
       />
@@ -85,13 +82,7 @@ describe('InvoiceLifecycleActions', () => {
     // ARRANGE
     const writeOff = vi.fn(async () => ({ error: null }))
     const user = userEvent.setup()
-    render(
-      <InvoiceLifecycleActions
-        invoiceId="inv_1"
-        status="OPEN"
-        onWriteOff={writeOff}
-      />
-    )
+    render(<InvoiceLifecycleActions status="OPEN" onWriteOff={writeOff} />)
 
     // ACT
     await user.click(screen.getByRole('button', { name: 'Write off' }))
@@ -108,13 +99,7 @@ describe('InvoiceLifecycleActions', () => {
     // ARRANGE
     const writeOff = vi.fn(async () => ({ error: null }))
     const user = userEvent.setup()
-    render(
-      <InvoiceLifecycleActions
-        invoiceId="inv_1"
-        status="OPEN"
-        onWriteOff={writeOff}
-      />
-    )
+    render(<InvoiceLifecycleActions status="OPEN" onWriteOff={writeOff} />)
 
     // ACT
     await user.click(screen.getByRole('button', { name: 'Write off' }))
@@ -130,22 +115,16 @@ describe('InvoiceLifecycleActions', () => {
     // AFTER — testing-library performs cleanup.
   })
 
-  it('shows only print and send-again lifecycle actions for a paid invoice', () => {
+  it('shows only print and mark-sent lifecycle actions for a paid invoice', () => {
     // ARRANGE
-    render(
-      <InvoiceLifecycleActions
-        invoiceId="inv_1"
-        status="PAID"
-        onSend={success}
-      />
-    )
+    render(<InvoiceLifecycleActions status="PAID" onSend={success} />)
 
     // ACT
     const print = screen.getByRole('button', { name: 'Print' })
 
     // ASSERT
     expect(print).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Send again' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Mark sent' })).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Write off' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Void' })).not.toBeInTheDocument()
 
@@ -154,17 +133,15 @@ describe('InvoiceLifecycleActions', () => {
 
   it('exposes no collection lifecycle commands for void and uncollectible invoices', () => {
     // ARRANGE
-    const { rerender } = render(
-      <InvoiceLifecycleActions invoiceId="inv_1" status="VOID" />
-    )
+    const { rerender } = render(<InvoiceLifecycleActions status="VOID" />)
 
     // ACT
-    rerender(<InvoiceLifecycleActions invoiceId="inv_2" status="UNCOLLECTIBLE" />)
+    rerender(<InvoiceLifecycleActions status="UNCOLLECTIBLE" />)
 
     // ASSERT
     expect(screen.queryByRole('button', { name: 'Write off' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Void' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Send again' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mark sent' })).not.toBeInTheDocument()
 
     // AFTER — testing-library performs cleanup.
   })
