@@ -22,6 +22,7 @@ import type {
   QuoteStatus,
   QuoteUpdateParams,
 } from './schemas/quote'
+import type { QuotePreferenceUpdateParams } from './schemas/quote-preference'
 
 function tenant(req: Request) {
   const id = getPrincipal(req).tenantId
@@ -34,6 +35,13 @@ function param(req: Request, name: string) {
 function sourceApp(req: Request) {
   const principal = getPrincipal(req)
   return principal.platformAdmin ? undefined : (principal.appId ?? undefined)
+}
+function emptyCommand(req: Request, resourceId: string) {
+  const body = validBody<Record<string, never>>(req)
+  return {
+    body,
+    idempotency: optionalCommandIdempotency(req, { resourceId, body }),
+  }
 }
 export const documentsController = {
   async invoicesList(req: Request, res: Response) {
@@ -257,34 +265,83 @@ export const documentsController = {
     res.json(await service.deleteQuote(tenant(req), param(req, 'quoteId')))
   },
   async quotesSend(req: Request, res: Response) {
-    res.json(
-      await service.transitionQuote(tenant(req), param(req, 'quoteId'), 'send')
-    )
-  },
-  async quotesAccept(req: Request, res: Response) {
+    const quoteId = param(req, 'quoteId')
+    const command = emptyCommand(req, quoteId)
     res.json(
       await service.transitionQuote(
         tenant(req),
-        param(req, 'quoteId'),
-        'accept'
+        quoteId,
+        'send',
+        command.idempotency
+      )
+    )
+  },
+  async quotesAccept(req: Request, res: Response) {
+    const quoteId = param(req, 'quoteId')
+    const command = emptyCommand(req, quoteId)
+    res.json(
+      await service.transitionQuote(
+        tenant(req),
+        quoteId,
+        'accept',
+        command.idempotency
       )
     )
   },
   async quotesDecline(req: Request, res: Response) {
+    const quoteId = param(req, 'quoteId')
+    const command = emptyCommand(req, quoteId)
     res.json(
       await service.transitionQuote(
         tenant(req),
-        param(req, 'quoteId'),
-        'decline'
+        quoteId,
+        'decline',
+        command.idempotency
       )
     )
   },
   async quotesCancel(req: Request, res: Response) {
+    const quoteId = param(req, 'quoteId')
+    const command = emptyCommand(req, quoteId)
     res.json(
       await service.transitionQuote(
         tenant(req),
-        param(req, 'quoteId'),
-        'cancel'
+        quoteId,
+        'cancel',
+        command.idempotency
+      )
+    )
+  },
+  async quotesExpire(req: Request, res: Response) {
+    const quoteId = param(req, 'quoteId')
+    const command = emptyCommand(req, quoteId)
+    res.json(
+      await service.transitionQuote(
+        tenant(req),
+        quoteId,
+        'expire',
+        command.idempotency
+      )
+    )
+  },
+  async quotesConvertToInvoice(req: Request, res: Response) {
+    const result = await service.convertQuoteToInvoice(
+      tenant(req),
+      param(req, 'quoteId')
+    )
+    res.status(result.replayed ? 200 : 201).json({
+      object: result.object,
+      id: result.id,
+    })
+  },
+  async quotePreferencesGet(req: Request, res: Response) {
+    res.json(await service.getQuotePreferences(tenant(req)))
+  },
+  async quotePreferencesUpdate(req: Request, res: Response) {
+    res.json(
+      await service.updateQuotePreferences(
+        tenant(req),
+        validBody<QuotePreferenceUpdateParams>(req)
       )
     )
   },
