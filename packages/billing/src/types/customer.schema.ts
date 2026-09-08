@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
+import type { CustomerAccountProjection } from './customer-account'
 import type {
   Customer,
-  CustomerAccount,
   CustomerContact,
   CustomerContactCreated,
   CustomerContactList,
@@ -41,6 +41,7 @@ const CustomerLedgerEntrySchema = z.object({
   paymentId: z.string().nullable(),
   creditNoteId: z.string().nullable(),
   refundId: z.string().nullable(),
+  balance: z.string(),
 })
 
 /**
@@ -57,10 +58,13 @@ export const CustomerAccountSchema = z.object({
   lifetimeBilled: z.string(),
   lifetimePaid: z.string(),
   outstandingReceivable: z.string(),
+  overdueReceivable: z.string(),
   availableCredit: z.string(),
   netPosition: z.string(),
+  openingBalance: z.string(),
+  closingBalance: z.string(),
   statement: z.array(CustomerLedgerEntrySchema),
-}) satisfies z.ZodType<CustomerAccount>
+}) satisfies z.ZodType<CustomerAccountProjection>
 
 /**
  * The schema for a customer contact person.
