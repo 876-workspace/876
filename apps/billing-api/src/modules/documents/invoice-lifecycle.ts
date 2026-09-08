@@ -7,6 +7,12 @@ export const collectibleInvoiceStatuses = [
   'OVERDUE',
 ] as const satisfies readonly InvoiceStatus[]
 
+export const overdueCandidateInvoiceStatuses = [
+  'OPEN',
+  'SENT',
+  'PARTIALLY_PAID',
+] as const satisfies readonly InvoiceStatus[]
+
 const collectibleInvoiceStatusSet = new Set<InvoiceStatus>(
   collectibleInvoiceStatuses
 )
