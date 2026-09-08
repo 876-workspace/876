@@ -186,7 +186,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
     request: { params: id('paymentId'), body: PaymentApplySchema },
     responses: {
       201: {
-        description: 'payment created',
+        description: 'Payment applied',
         schema: successEnvelopeSchema(resource('payment')),
       },
       ...clientErrors,
@@ -280,7 +280,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       },
       ...clientErrors,
     },
-    handler: controller.update,
+    handler: controller.integrationUpdate,
   })
   api.delete({
     path: `${base}/:paymentId`,
@@ -294,7 +294,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       },
       ...clientErrors,
     },
-    handler: controller.del,
+    handler: controller.integrationDel,
   })
   api.post({
     path: `${base}/:paymentId/apply`,
@@ -308,7 +308,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       },
       ...clientErrors,
     },
-    handler: controller.apply,
+    handler: controller.integrationApply,
   })
   const refundsBase = '/integrations/organizations/:organizationId/refunds'
   api.get({
@@ -323,7 +323,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       },
       ...clientErrors,
     },
-    handler: controller.refundsList,
+    handler: controller.refundsIntegrationList,
   })
   api.post({
     path: refundsBase,
@@ -338,7 +338,7 @@ export function createPaymentsRouter(resolveGuards: GuardResolver) {
       },
       ...clientErrors,
     },
-    handler: controller.refundsCreate,
+    handler: controller.refundsIntegrationCreate,
   })
   api.get({
     path: '/integrations/organizations/:organizationId/payment-modes',
