@@ -8,42 +8,23 @@
 
 ## Outcome
 
-The existing 876 Billing invoice engine was hardened rather than replaced. The
-current durable eight-value `InvoiceStatus` contract remains intact, while the
-backend now has one canonical collectible-state projection used by payment
-allocations, credit-note applications, automatic credit settlement, and overdue
-materialization. Explicit send and full-balance write-off commands were added,
-void eligibility was tightened, the bounded Billing SDK and integration client
-were extended, and Billing/Invoice now render lifecycle actions through one
-shared `@876/billing-ui` component.
+The existing 876 Billing invoice engine was hardened rather than replaced. The durable eight-value `InvoiceStatus` contract remains intact, while lifecycle semantics are now centralized and explicit across payment allocation, credit-note application, automatic available-credit settlement, overdue materialization, lifecycle commands, bounded SDKs, and the Billing/Invoice UI surfaces.
 
-The important behavioral result is that communication, delinquency, and
-settlement no longer overwrite one another accidentally. A partially settled
-past-due invoice remains `OVERDUE`; recording another send updates `sentAt`
-without replacing that financial status; a write-off clears only the remaining
-receivable and records `WRITE_OFF` accounting evidence without pretending cash
-was received or reversing inventory.
+The core behavioral changes are:
 
-## Per-phase status and tests added
+- a partially settled invoice that is still past due remains `OVERDUE`;
+- payment and credit allocations use one compatibility-status projection instead of independent `PAID`/`PARTIALLY_PAID` ternaries;
+- sending is a communication command rather than a financial-state setter;
+- the first `sentAt` is preserved while every subsequent successful mark-sent command can emit a fresh `invoice.sent` event;
+- full remaining-balance write-off is a distinct accounting command that records `WRITE_OFF` evidence, clears AR, and does not pretend cash was received;
+- void is restricted to unsettled collectible invoices and remains the operation that reverses the posted sale's inventory movement;
+- Billing and Invoice render lifecycle actions through one `@876/billing-ui` owner instead of maintaining divergent action components.
 
-| Phase | Status | Literal `it()` declarations added | Notes |
-| --- | --- | ---: | --- |
-| 1 — Lifecycle foundation | Complete | 9 | New `invoice-lifecycle.test.ts`. Two `it.each` declarations expand the file to 15 runtime cases. |
-| 2 — Lifecycle command hardening | Complete | 6 shared with Phase 3 | Existing workflow suite grew from 5 to 11 declarations: three send cases, one void regression, two write-off cases. |
-| 3 — Settlement consistency | Complete | 0 additional beyond the 6 above | Payment/credit/auto-settlement paths use the same projection; workflow cases cover command invariants. |
-| 4 — SDK and shared UI parity | Complete with one deliberate deferral | 11 | Seven new shared Billing UI cases plus four Invoice same-origin client lifecycle-command cases. |
-| 5 — Documentation/review/handoff | Complete | 0 | Engine/accounting docs updated; diff reviewed; report written. |
+No Prisma enum, schema, or database migration was required.
 
-**Total new literal `it()` declarations: 26.** The lifecycle file's parameterized
-cases make the expected executed-case count higher than 26, but no test was run
-from this environment.
+## Lifecycle contract
 
-## Architecture decisions
-
-### Preserve the durable status contract
-
-No Prisma enum or stored-value migration was introduced. Existing public and
-persisted values remain:
+Persisted/API values remain:
 
 ```text
 DRAFT
@@ -56,13 +37,7 @@ UNCOLLECTIBLE
 VOID
 ```
 
-Changing those values would require a coordinated database/API/SDK/UI migration
-and was unnecessary for the lifecycle hardening goal.
-
-### Canonical collectible projection
-
-`apps/billing-api/src/modules/documents/invoice-lifecycle.ts` now owns the
-collectible status set and the flattened status projection:
+For an otherwise collectible invoice, the compatibility projection is:
 
 ```text
 amountDue = 0                       -> PAID
@@ -72,230 +47,249 @@ sentAt exists                      -> SENT
 otherwise                          -> OPEN
 ```
 
-This deliberately gives `OVERDUE` precedence over `PARTIALLY_PAID` while a
-positive balance remains.
+`VOID` and `UNCOLLECTIBLE` are explicit terminal command states and are not produced by the collectible projection.
 
-### Sending is communication
+This deliberately separates the concepts that the legacy-compatible enum flattens:
 
-The new send command is transactional and optionally idempotent. It records
-`sentAt` and an `invoice.sent` outbox event. `OPEN` becomes the legacy-compatible
-`SENT`; `PARTIALLY_PAID`, `OVERDUE`, and `PAID` retain their financial status.
-Draft, void, and uncollectible invoices are rejected.
+- financial state;
+- settlement state;
+- due state;
+- communication state.
 
-### Write-off is not payment and not void
+The detailed contract is documented in `apps/billing/docs/invoice-lifecycle.md`, `apps/billing/BILLING_ENGINE.md`, and `apps/billing/docs/accounting-model.md`.
 
-The write-off command writes off the **entire remaining balance** in this MVP.
-It:
+## Lifecycle commands
+
+### Finalize
+
+The existing finalization workflow remains the posting boundary. It retains the commercial data-plane behavior that had already landed on `main`: payment-term/salesperson resolution, receivable posting, Inventory consumption, customer ledger evidence, AR recomputation, idempotency, and `invoice.finalized` emission.
+
+Generic invoice PATCH remains limited to non-financial header fields; this run did not add any direct status/amount setter.
+
+### Mark sent
+
+New tenant and integration routes:
+
+```text
+POST /api/v1/invoices/:invoiceId/send
+POST /api/v1/integrations/organizations/:organizationId/invoices/:invoiceId/send
+```
+
+Behavior:
+
+- rejects `DRAFT`, `VOID`, and `UNCOLLECTIBLE`;
+- permits finalized collectible invoices and `PAID` invoices;
+- converts only plain `OPEN` to compatibility `SENT`;
+- preserves `PARTIALLY_PAID`, `OVERDUE`, and `PAID` status;
+- preserves the first `sentAt` rather than rewriting the original send milestone;
+- emits `invoice.sent` on each successful command;
+- supports command idempotency where the caller supplies idempotency context.
+
+The UI deliberately says **Mark sent**, not Email/Send again. No communications provider was fabricated by this work; the command records communication evidence only.
+
+### Write off
+
+New tenant and integration routes:
+
+```text
+POST /api/v1/invoices/:invoiceId/write-off
+POST /api/v1/integrations/organizations/:organizationId/invoices/:invoiceId/write-off
+```
+
+Body:
+
+```json
+{
+  "reason": "Collection exhausted"
+}
+```
+
+Behavior:
 
 - requires a non-empty audit reason;
 - requires a collectible invoice with `amountDue > 0`;
+- writes off the complete remaining balance in this MVP;
 - sets `amountDue` to zero;
 - increments `amountWrittenOff`;
-- moves status to `UNCOLLECTIBLE`;
-- records a `WRITE_OFF` ledger credit;
-- recomputes customer AR;
+- sets status to `UNCOLLECTIBLE`;
+- records a `WRITE_OFF` customer-ledger credit;
+- recomputes customer AR inside the transaction;
 - emits `invoice.written-off`;
-- does not restore Inventory, because the sale still happened.
+- preserves the sale and does **not** restore Inventory.
 
-No new write-off table or migration was necessary because the engine already had
-`amountWrittenOff`, `UNCOLLECTIBLE`, the `WRITE_OFF` ledger type, metadata, and
-outbox infrastructure.
+A new write-off table was intentionally not added because the existing engine already owns `amountWrittenOff`, the `UNCOLLECTIBLE` status, `WRITE_OFF` ledger entries, metadata, and outbox evidence.
 
-### Void remains an unsettled-invoice correction
+### Void
 
-Void continues to reverse the posted receivable and inventory sale movement, but
-it now explicitly rejects `UNCOLLECTIBLE` and other non-collectible states in
-addition to rejecting paid/allocated invoices. Active payment or credit-note
-allocations still block voiding.
+Void now explicitly rejects non-collectible terminal states, including `UNCOLLECTIBLE`, in addition to the pre-existing paid/allocation protections. It remains distinct from write-off:
 
-Because the flattened `OVERDUE` status can now represent a partially settled
-invoice, the shared UI does not infer that `OVERDUE` or `PARTIALLY_PAID` is safe
-to void. It presents Void only for `OPEN` and `SENT`. If the product later needs
-to void an unsettled overdue invoice, the correct next step is a server-provided
-capability/settlement summary rather than guessing from status alone.
+- void cancels an unsettled posted invoice, clears the receivable, writes `INVOICE_VOIDED`, recomputes AR, restores the sale's Inventory movement, and preserves invoice history;
+- write-off acknowledges that the sale occurred but the remaining receivable is no longer collectible, so stock is not restored.
 
-### Customer AR predicate remains locally duplicated
+Because `OVERDUE` can represent a partially settled invoice, flattened status alone cannot prove that an overdue invoice is safe to void. Shared UI therefore exposes Void only for `OPEN` and `SENT`; the backend remains authoritative.
 
-The Customers AR repository still carries its local four-status open-invoice
-predicate. Documents workflows already call Customers to recompute AR; making
-Customers import Documents would create a cross-module cycle prohibited by the
-backend rules. Documents' settlement/overdue code uses the canonical lifecycle
-module; the Customer AR list is documented as the deliberate boundary exception
-until dependency direction is redesigned.
+## Settlement consistency
 
-### Timeline UI deliberately deferred
+`apps/billing-api/src/modules/documents/invoice-lifecycle.ts` now owns:
 
-Outbox events now contain `invoice.sent` and `invoice.written-off`, but the
-outbox is not a user-facing invoice-history read API. No fake timeline was added
-to Billing or Invoice. A future timeline should be implemented only after the
-backend exposes a durable, authorized invoice-event read contract.
+- `collectibleInvoiceStatuses`;
+- `overdueCandidateInvoiceStatuses`;
+- `isCollectibleInvoiceStatus()`;
+- `projectCollectibleInvoiceStatus()`.
 
-## Files changed and why
+This owner is reused by:
 
-### Billing API — lifecycle owner
+- manual Payment allocation validation/status projection;
+- Credit Note application validation/status projection;
+- automatic application of unapplied payments/customer credits;
+- automatic application of open credit-note balances;
+- overdue materialization.
 
-- `apps/billing-api/src/modules/documents/invoice-lifecycle.ts` — canonical
-  collectible status sets and flattened status projection.
-- `apps/billing-api/src/modules/documents/invoice-lifecycle.test.ts` — lifecycle
-  invariants, including overdue-over-partial precedence.
-- `apps/billing-api/src/modules/documents/index.ts` — exposes lifecycle helpers
-  to other bounded Billing modules such as Payments.
+Cash, credit, and write-off evidence stay separate:
+
+```text
+remaining receivable =
+  totalAmount
+  - amountPaid
+  - amountCredited
+  - amountWrittenOff
+```
+
+Existing unapplied payment/customer-credit behavior is preserved. Existing reversals continue restoring the pre-allocation invoice status and paid timestamp captured by the allocation evidence.
+
+The Customers AR repository retains its local four-status collectible predicate intentionally. Documents already calls Customers to recompute AR; importing Documents back into Customers would create a prohibited cross-module cycle. This boundary exception is documented rather than hidden.
+
+## SDK and integration surface
+
+The bounded Billing client now exposes:
+
+```ts
+billing.invoices.finalize(...)
+billing.invoices.send(...)
+billing.invoices.void(...)
+billing.invoices.writeOff(...)
+```
+
+The integration Billing resource exposes matching `send()` and `writeOff()` commands under organization-scoped invoice routes. `InvoiceWriteOffParams` / `BillingInvoiceWriteOffParams` require the audit reason.
+
+Billing's browser client and Invoice's same-origin integration proxy also expose the lifecycle commands. Invoice continues routing through its own `/api/invoices/...` surface and does not bypass host transport/auth boundaries.
+
+## Shared UI
+
+`packages/billing-ui/src/invoice-lifecycle-actions.tsx` now owns the lifecycle action presentation used by both hosts:
+
+- Print;
+- Edit where host editability permits;
+- Finalize for drafts;
+- Mark sent for eligible finalized invoices;
+- Write off with required reason;
+- Void with optional reason, only when status safely implies no settlement (`OPEN`/`SENT`);
+- Delete for deletable drafts.
+
+Billing and Invoice action components are now thin host adapters that supply callbacks, navigation, and access decisions.
+
+A user-facing invoice timeline was deliberately not implemented. Outbox events are delivery infrastructure, not an authorized history/read API. A future timeline should start with a durable invoice-event read contract rather than exposing the outbox directly.
+
+## Test drafting summary
+
+No test was executed from GPT Web.
+
+New literal `it()` declarations drafted in this run:
+
+| Area | New literal declarations |
+| --- | ---: |
+| Invoice lifecycle helper | 9 |
+| Existing invoice workflow suite additions | 6 |
+| Shared Billing UI lifecycle suite | 7 |
+| Invoice same-origin lifecycle client additions | 4 |
+| Billing bounded SDK resource additions | 2 |
+| **Total** | **28** |
+
+The lifecycle helper contains two `it.each` declarations, so that file expands from 9 literal declarations to 15 expected runtime cases. This is a drafted-test count only; no tests were run here.
+
+## Important files changed
+
+### Billing API
+
+- `apps/billing-api/src/modules/documents/invoice-lifecycle.ts`
+- `apps/billing-api/src/modules/documents/invoice-lifecycle.test.ts`
+- `apps/billing-api/src/modules/documents/index.ts`
 - `apps/billing-api/src/modules/documents/repositories/invoices/mark-overdue.ts`
-  — consumes the canonical overdue-candidate status set.
-- `apps/billing-api/src/modules/documents/repositories/invoices/settlement.ts` —
-  automatic cash/credit settlement now projects status centrally.
-- `apps/billing-api/src/modules/payments/repositories/payments/shared.ts` — manual
-  payment allocations validate collectible invoices and project status centrally.
-- `apps/billing-api/src/modules/documents/repositories/credit-notes/shared.ts` —
-  credit applications use the same collectible predicate/projection.
+- `apps/billing-api/src/modules/documents/repositories/invoices/settlement.ts`
+- `apps/billing-api/src/modules/payments/repositories/payments/shared.ts`
+- `apps/billing-api/src/modules/documents/repositories/credit-notes/shared.ts`
+- `apps/billing-api/src/modules/documents/repositories/invoice-workflow.ts`
+- `apps/billing-api/src/modules/documents/workflows/send-invoice.ts`
+- `apps/billing-api/src/modules/documents/workflows/write-off-invoice.ts`
+- `apps/billing-api/src/modules/documents/workflows/void-invoice.ts`
+- `apps/billing-api/src/modules/documents/workflows/invoice-workflows.test.ts`
+- `apps/billing-api/src/modules/documents/schemas/invoice.ts`
+- `apps/billing-api/src/modules/documents/documents.service.ts`
+- `apps/billing-api/src/modules/documents/documents.controller.ts`
+- `apps/billing-api/src/modules/documents/documents.routes.ts`
+- `apps/billing-api/src/modules/outbox/outbox.service.ts`
 
-### Billing API — lifecycle commands
+### Billing SDK / integration
 
-- `apps/billing-api/src/modules/documents/repositories/invoice-workflow.ts` —
-  repository helpers for send/write-off and metadata-preserving void/write-off
-  updates.
-- `apps/billing-api/src/modules/documents/workflows/send-invoice.ts` —
-  transactional/idempotent communication command.
-- `apps/billing-api/src/modules/documents/workflows/write-off-invoice.ts` —
-  transactional/idempotent full remaining-balance write-off.
-- `apps/billing-api/src/modules/documents/workflows/void-invoice.ts` — hardened
-  collectible/settlement eligibility.
-- `apps/billing-api/src/modules/documents/workflows/index.ts` — exports new
-  workflows.
-- `apps/billing-api/src/modules/documents/workflows/invoice-workflows.test.ts` —
-  send, uncollectible-void, and write-off regression coverage.
-- `apps/billing-api/src/modules/documents/schemas/invoice.ts` — strict required
-  write-off reason contract.
-- `apps/billing-api/src/modules/documents/documents.service.ts` — bounded service
-  commands for send/write-off with integration ownership checks.
-- `apps/billing-api/src/modules/documents/documents.controller.ts` — thin tenant
-  and integration transport adapters with command idempotency context.
-- `apps/billing-api/src/modules/documents/documents.routes.ts` — session and
-  integration `send`/`write-off` routes with typed validation/OpenAPI contracts.
-- `apps/billing-api/src/modules/outbox/outbox.service.ts` — typed
-  `invoice.sent` and `invoice.written-off` event contracts.
+- `packages/billing/src/types/invoice.ts`
+- `packages/billing/src/types/index.ts`
+- `packages/billing/src/resources/invoices.ts`
+- `packages/billing/src/resources/__tests__/documents.test.ts`
+- `packages/billing/src/integration/types/invoice-write-off.ts`
+- `packages/billing/src/integration/types/index.ts`
+- `packages/billing/src/integration/resources/invoices.ts`
 
-### Bounded Billing SDK
+### Hosts and shared UI
 
-- `packages/billing/src/types/invoice.ts` — `InvoiceWriteOffParams` contract,
-  while preserving the existing editor-facing JSDoc.
-- `packages/billing/src/types/index.ts` — canonical export for write-off params.
-- `packages/billing/src/resources/invoices.ts` — session/tenant `send()` and
-  `writeOff()` resource commands.
-- `packages/billing/src/integration/types/invoice-write-off.ts` — integration
-  write-off input contract.
-- `packages/billing/src/integration/types/index.ts` — exposes integration input.
-- `packages/billing/src/integration/resources/invoices.ts` — integration
-  `send()` and `writeOff()` commands.
-
-### Billing host
-
-- `apps/billing/src/types/invoice.ts` — host write-off request type.
-- `apps/billing/src/lib/client/invoices.ts` — same-origin browser send/write-off
-  methods.
+- `packages/billing-ui/src/invoice-lifecycle-actions.tsx`
+- `packages/billing-ui/src/invoice-lifecycle-actions.test.tsx`
+- `packages/billing-ui/package.json`
+- `apps/billing/src/types/invoice.ts`
+- `apps/billing/src/lib/client/invoices.ts`
 - `apps/billing/src/app/(app)/(sales)/invoices/[invoiceId]/_components/invoice-actions.tsx`
-  — thin adapter over shared lifecycle presentation; supplies Billing callbacks
-  and conservative void eligibility.
-
-### Invoice host
-
-- `apps/invoice/src/lib/client/documents.ts` — same-origin finalize/send/void/
-  write-off commands with idempotency headers.
-- `apps/invoice/src/lib/client/documents.test.ts` — exact proxy path/body/header
-  coverage for four lifecycle commands.
+- `apps/invoice/src/lib/client/documents.ts`
+- `apps/invoice/src/lib/client/documents.test.ts`
 - `apps/invoice/src/app/(app)/invoices/[invoiceId]/_components/invoice-actions.tsx`
-  — thin adapter over the shared lifecycle presentation, retaining host access
-  gating and navigation behavior.
 
-### Shared Billing UI
+### Documentation / handoff
 
-- `packages/billing-ui/src/invoice-lifecycle-actions.tsx` — one presentation
-  implementation for Print/Edit/Finalize/Send/Write-off/Void/Delete, with host
-  callbacks and localized mutation errors.
-- `packages/billing-ui/src/invoice-lifecycle-actions.test.tsx` — draft,
-  overdue, open-void, write-off-reason, paid, and terminal-state presentation
-  coverage.
-- `packages/billing-ui/package.json` — public subpath export and test/runtime
-  package declarations needed by the new shared component.
+- `apps/billing/BILLING_ENGINE.md`
+- `apps/billing/docs/accounting-model.md`
+- `apps/billing/docs/invoice-lifecycle.md`
+- `plans/2026-09-07-invoice-lifecycle-hardening/plan.md`
+- this report
 
-### Documentation/tracker
+## Compatibility and diff review
 
-- `apps/billing/BILLING_ENGINE.md` — hardened lifecycle semantics and command
-  distinctions.
-- `apps/billing/docs/accounting-model.md` — AR/settlement/write-off model and
-  Customer-module boundary exception.
-- `plans/2026-09-07-invoice-lifecycle-hardening/plan.md` — durable tracker and
-  handoff state.
-- `plans/2026-09-07-invoice-lifecycle-hardening/reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md`
-  — this report.
+The final review specifically checked for the failure modes the repo rules call out:
 
-## Migration SQL
-
-None. No Prisma schema change, migration, generator, or live database operation
-was required or executed.
-
-## Compatibility review
-
-- Existing `InvoiceStatus` values were preserved.
-- Existing invoice create/update/finalize/void routes were not renamed.
-- Existing Billing/Invoice action behavior (print, draft edit, finalize, void,
-  delete) was preserved and moved behind shared presentation where appropriate.
-- `SENT` remains a compatibility status rather than being removed.
-- New send/write-off APIs are additive.
-- No compatibility alias or deprecated route was introduced.
-- The initially generated SDK type-file JSDoc churn was detected during diff
-  review and restored so the final type change is only the write-off contract.
-- A self-import in the initial write-off workflow draft was detected and fixed
-  to a relative Documents-internal lifecycle import.
-- Shared UI originally offered Void for every collectible status; review caught
-  that `OVERDUE` can be partially settled under the new projection, so both the
-  shared UI and host adapters were tightened to avoid presenting an action whose
-  legality cannot be proven from status alone.
+- no persisted `InvoiceStatus` values were renamed;
+- no database schema/migration was introduced;
+- no create/update/finalize/void route was renamed;
+- send/write-off routes are additive;
+- generic invoice updates remain non-financial;
+- accidental SDK JSDoc churn was restored so the type change is focused;
+- an initial Documents self-import in the write-off workflow was removed;
+- overdue/partial settlement precedence is centralized;
+- the overdue materializer consumes the canonical candidate list;
+- Customer AR's duplicated status list is documented as a dependency-cycle exception;
+- shared UI does not infer Void eligibility from ambiguous overdue/partial status;
+- repeated send commands preserve first `sentAt` while emitting fresh send evidence;
+- the UI does not claim a message provider sent or delivered anything;
+- no user-facing timeline was fabricated from the outbox.
 
 ## Deliberate gaps
 
-1. **No user-facing invoice timeline.** There is no appropriate read contract
-   yet; outbox events are delivery infrastructure, not a UI history API.
-2. **No server-provided lifecycle capabilities object.** The shared UI uses
-   conservative status presentation. A future invoice detail contract should
-   expose capabilities or settlement evidence if richer action eligibility is
-   needed.
-3. **No partial write-off.** This implementation writes off the complete
-   remaining receivable. Partial write-off needs a more explicit reversal and
-   evidence contract before being exposed.
-4. **Customer AR open-status predicate remains local** to avoid a Documents ↔
-   Customers module cycle.
-5. **No enum normalization/migration.** Uppercase legacy values remain durable
-   compatibility values.
-
-## Risks for the reviewer to check first
-
-1. Run Billing API typecheck/boundaries first: the lifecycle helper is consumed
-   across Documents, Payments, and Credit Notes and the repo enforces module
-   boundaries.
-2. Exercise payment and credit-note allocation against an already-overdue invoice
-   and verify the persisted status remains `OVERDUE` with the correct remaining
-   balance.
-3. Exercise send against OPEN, OVERDUE, PARTIALLY_PAID, PAID, DRAFT, VOID, and
-   UNCOLLECTIBLE to verify the compatibility behavior and event emission.
-4. Exercise write-off against OPEN/OVERDUE and verify AR cache, ledger entry,
-   `amountWrittenOff`, `amountDue`, and Inventory are all correct.
-5. Verify void still restores Inventory only for eligible unsettled invoices and
-   refuses allocations/write-offs.
-6. Run API contract generation/check to catch any missing operation metadata or
-   response-shape mismatch on the two additive routes.
-7. Run Billing UI tests/typecheck because the shared component relies on the
-   repository's Base UI `AlertDialogTrigger render={...}` pattern and Next peer
-   dependencies.
-8. Review integration idempotency expectations. The backend supports optional
-   command idempotency; the existing integration resource style did not expose
-   command-specific idempotency options for finalize/void, and this run preserved
-   that shape for send/write-off rather than creating an inconsistent new API.
+1. No user-facing invoice timeline until an authorized read contract exists.
+2. No server-provided lifecycle-capabilities object yet; UI is deliberately conservative.
+3. No partial write-off; current command writes off the full remaining receivable.
+4. Customer AR's collectible-status predicate remains local to avoid a Documents ↔ Customers module cycle.
+5. No enum normalization/migration.
+6. No email/SMS/WhatsApp delivery provider is wired by `send`; it records lifecycle communication evidence only.
 
 ## Verification not performed
 
-GPT Web has no shell, package manager, database, runtime, or test runner in this
-repo workflow. The following were **not executed**:
+GPT Web has no shell, package manager, database, runtime, or test runner in this repo workflow. The following were **not executed**:
 
 - Prettier;
 - ESLint;
@@ -305,10 +299,9 @@ repo workflow. The following were **not executed**:
 - Next/Express builds;
 - Prisma validate/generate/migrate;
 - database drift checks;
-- API contract checks;
-- live database migrations;
+- API contract checks/generation;
 - browser/manual testing;
-- CI workflow execution.
+- CI workflows.
 
 No statement in this report should be read as claiming those checks pass.
 
@@ -334,13 +327,13 @@ pnpm --filter @876/invoice-app typecheck
 pnpm --filter @876/invoice-app test
 ```
 
-If those checks expose generated API or formatting changes, the orchestrator
-should inspect and commit only intentional output, following the repo's no-churn
-rules.
+The orchestrator should use the actual package-script names if any workspace differs from these labels and commit only intentional formatter/generated-contract output.
 
-## PR / branch state
+## Branch state
 
-No pull request was opened. GPT Web operating rules prohibit opening or
-commenting on PRs. At the last pre-report comparison the branch was based exactly
-on `main@d0475b5` with no commits behind main; the orchestrator should re-check
-`main` before PR preparation because main may advance after this report.
+- Branch: `feature/invoice-lifecycle-hardening`.
+- Base used: `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`.
+- `main` was checked again during final review and was still at the same SHA, so this branch was not behind `main` at that check.
+- No PR was opened or modified.
+- No migration was executed or created.
+- Remaining work is runtime/toolchain verification in an environment with shell and database access.
