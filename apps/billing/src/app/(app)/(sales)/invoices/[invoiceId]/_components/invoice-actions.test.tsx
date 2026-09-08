@@ -33,6 +33,7 @@ function renderActions(status: Parameters<typeof InvoiceActions>[0]['status']) {
       invoiceId="inv_123"
       customerId="cus_123"
       status={status}
+      canRecordPayment
     />
   )
 }
