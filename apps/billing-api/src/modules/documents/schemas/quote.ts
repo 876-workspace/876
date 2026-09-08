@@ -43,20 +43,8 @@ export const QuoteUpdateSchema = z.strictObject({
   terms: optionalTextSchema,
 })
 
-/** Optional invoice fields supplied when converting an accepted quote. */
-export const QuoteConvertToInvoiceSchema = z.strictObject({
-  issueAt: unixTimestampSchema.optional(),
-  dueAt: unixTimestampSchema.optional(),
-  salespersonId: IdSchema.nullable().optional(),
-  notes: optionalTextSchema,
-  terms: optionalTextSchema,
-})
-
 export type QuoteUpdateParams = z.infer<typeof QuoteUpdateSchema>
 export type QuoteUpdateInput = z.input<typeof QuoteUpdateSchema>
-export type QuoteConvertToInvoiceParams = z.infer<
-  typeof QuoteConvertToInvoiceSchema
->
 
 export interface QuoteUpdated {
   object: 'quote'
