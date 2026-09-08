@@ -15,6 +15,7 @@ import type {
 import type { RefundCreateParams } from './schemas/refund'
 import {
   paymentList,
+  serializeIntegrationPayment,
   serializePayment,
   serializePaymentMode,
   serializeRefund,
@@ -95,22 +96,39 @@ export const paymentsService = {
       deleted: true,
     }
   },
-  async listPayments(
+  async listPayments(tenantId: string, url = '/api/v1/payments') {
+    return paymentList(
+      'payment',
+      await payments.list(tenantId),
+      url,
+      serializePayment
+    )
+  },
+  async listIntegrationPayments(
     tenantId: string,
-    sourceAppId?: string,
-    url = '/api/v1/payments'
+    sourceAppId: string | undefined,
+    url: string
   ) {
     return paymentList(
       'payment',
       await payments.list(tenantId, sourceAppId),
       url,
-      serializePayment
+      serializeIntegrationPayment
     )
   },
-  async getPayment(tenantId: string, id: string, sourceAppId?: string) {
-    const row = await payments.retrieve(tenantId, id, sourceAppId)
+  async getPayment(tenantId: string, id: string) {
+    const row = await payments.retrieve(tenantId, id)
     if (!row) throw notFound('payment')
     return serializePayment(row)
+  },
+  async getIntegrationPayment(
+    tenantId: string,
+    id: string,
+    sourceAppId?: string
+  ) {
+    const row = await payments.retrieve(tenantId, id, sourceAppId)
+    if (!row) throw notFound('payment')
+    return serializeIntegrationPayment(row)
   },
   async createPayment(
     tenantId: string,
