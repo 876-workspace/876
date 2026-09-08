@@ -14,6 +14,22 @@ const MY_WORK = {
   overdueTasks: [],
 }
 
+const TASK_LIST_PAGE = {
+  object: 'list' as const,
+  data: [],
+  has_more: false,
+  total_count: 0,
+  url: '/v1/organizations/org_1/task-lists',
+}
+
+const TASK_PAGE = {
+  object: 'list' as const,
+  data: [],
+  has_more: false,
+  total_count: 0,
+  url: '/v1/organizations/org_1/tasks',
+}
+
 const TASK = {
   object: 'task' as const,
   id: 'task/1',
@@ -56,6 +72,32 @@ describe('browserWork', () => {
       data: null,
       error: { code: 'work/session-forbidden', message: 'Forbidden.' },
     })
+  })
+
+  it('lists task lists through the host-owned route', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      Response.json({ data: TASK_LIST_PAGE, error: null }, { status: 200 })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await browserWork.taskLists.list()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/task-lists')
+    expect(result).toEqual({ data: TASK_LIST_PAGE, error: null })
+  })
+
+  it('lists assigned tasks with an encoded optional list filter', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      Response.json({ data: TASK_PAGE, error: null }, { status: 200 })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await browserWork.tasks.list({ listId: 'list/1' })
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/tasks?listId=list%2F1')
+    expect(result).toEqual({ data: TASK_PAGE, error: null })
   })
 
   it('marks a task done through the encoded host-owned task route', async () => {
