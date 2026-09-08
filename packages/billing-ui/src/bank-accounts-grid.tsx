@@ -1,9 +1,10 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import Link from 'next/link'
 import { Badge } from '@876/ui/badge'
 import { Building2, CircleStackIcon, CreditCard } from '@876/ui/icons'
+
+import { Link } from './link'
 
 /**
  * A deposit account as the finance plane serves it.

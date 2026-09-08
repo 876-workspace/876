@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import { Badge } from '@876/ui/badge'
+
+import { Link } from '../link'
 
 import { PanelError, PanelFrame, PanelRowsSkeleton } from './panel-frame'
 import type { PanelProps, PanelState } from './panel'
