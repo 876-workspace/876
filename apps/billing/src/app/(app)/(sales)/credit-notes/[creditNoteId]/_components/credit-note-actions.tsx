@@ -26,12 +26,14 @@ import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 
 import { client } from '@/lib/client'
+import { minorAmountInputStep, parseMinorAmountInput } from '@/lib/format'
 
 interface Props {
   creditNoteId: string
   status: string
   balanceAmount: string
   currency: string
+  decimalPlaces: number
   customerId: string
   canWrite: boolean
 }
@@ -41,6 +43,7 @@ export function CreditNoteActions({
   status,
   balanceAmount,
   currency,
+  decimalPlaces,
   customerId,
   canWrite,
 }: Props) {
@@ -73,12 +76,15 @@ export function CreditNoteActions({
       return
     }
 
-    const majorFloat = Number(applyAmount)
-    if (!Number.isFinite(majorFloat) || majorFloat <= 0) {
-      setApplyError('Amount must be a positive number.')
+    const minorUnits = parseMinorAmountInput(applyAmount, decimalPlaces)
+    if (!minorUnits) {
+      setApplyError('Enter a valid amount greater than zero.')
       return
     }
-    const minorUnits = Math.round(majorFloat * 100)
+    if (BigInt(minorUnits) > BigInt(balanceAmount)) {
+      setApplyError('Amount cannot exceed the remaining credit balance.')
+      return
+    }
 
     startTransition(async () => {
       const result = await client.creditNotes.apply(creditNoteId, {
@@ -99,12 +105,15 @@ export function CreditNoteActions({
     e.preventDefault()
     setRefundError(null)
 
-    const majorFloat = Number(refundAmount)
-    if (!Number.isFinite(majorFloat) || majorFloat <= 0) {
-      setRefundError('Amount must be a positive number.')
+    const minorUnits = parseMinorAmountInput(refundAmount, decimalPlaces)
+    if (!minorUnits) {
+      setRefundError('Enter a valid amount greater than zero.')
       return
     }
-    const minorUnits = Math.round(majorFloat * 100)
+    if (BigInt(minorUnits) > BigInt(balanceAmount)) {
+      setRefundError('Amount cannot exceed the remaining credit balance.')
+      return
+    }
 
     startTransition(async () => {
       const result = await client.refunds.create({
@@ -150,7 +159,7 @@ export function CreditNoteActions({
             Apply
           </Button>
 
-          {Number(balanceAmount) > 0 && (
+          {BigInt(balanceAmount) > 0n && (
             <Button
               variant="outline"
               onClick={() => setRefundOpen(true)}
@@ -192,12 +201,12 @@ export function CreditNoteActions({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="apply-amount">Amount</Label>
+              <Label htmlFor="apply-amount">Amount ({currency})</Label>
               <Input
                 id="apply-amount"
                 type="number"
-                min="0.01"
-                step="0.01"
+                min={minorAmountInputStep(decimalPlaces)}
+                step={minorAmountInputStep(decimalPlaces)}
                 value={applyAmount}
                 onChange={(e) => setApplyAmount(e.target.value)}
               />
@@ -233,12 +242,12 @@ export function CreditNoteActions({
           </DialogHeader>
           <form onSubmit={handleRefund} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="refund-amount">Amount</Label>
+              <Label htmlFor="refund-amount">Amount ({currency})</Label>
               <Input
                 id="refund-amount"
                 type="number"
-                min="0.01"
-                step="0.01"
+                min={minorAmountInputStep(decimalPlaces)}
+                step={minorAmountInputStep(decimalPlaces)}
                 value={refundAmount}
                 onChange={(e) => setRefundAmount(e.target.value)}
               />
