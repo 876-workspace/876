@@ -89,6 +89,8 @@ interface WidgetMetadataBase {
   defaultPanel: { width: number; height: number }
   supportedHosts: readonly WidgetHost[]
   implementedHosts: readonly WidgetHost[]
+  /** Host-app permissions that must be effective before the surface is shown. */
+  permissions?: Partial<Record<WidgetHost, readonly string[]>>
   administration: {
     canListContent: boolean
     canEditContent: boolean
@@ -171,6 +173,9 @@ export const workWidgetMetadata = {
   defaultPanel: { width: 520, height: 620 },
   supportedHosts: ['invoice', 'billing'],
   implementedHosts: ['invoice'],
+  permissions: {
+    invoice: ['my-work.view'],
+  },
   features: {
     platform: {
       parent: 'platform-widgets',
@@ -319,6 +324,21 @@ export function resolveEnabledWidgetIds(
         widget.surface === 'panel' &&
         isWidgetEnabled(widget, host, enabledFeatureSlugs)
     )
+    .map((widget) => widget.id)
+}
+
+export function resolveAccessibleWidgetIds(
+  host: WidgetHost,
+  enabledWidgetIds: readonly string[],
+  effectivePermissions: ReadonlySet<string>
+): WidgetId[] {
+  const enabled = new Set(enabledWidgetIds)
+  return widgetCatalog
+    .filter((widget) => {
+      if (widget.surface !== 'panel' || !enabled.has(widget.id)) return false
+      const required = widget.permissions?.[host] ?? []
+      return required.every((permission) => effectivePermissions.has(permission))
+    })
     .map((widget) => widget.id)
 }
 
