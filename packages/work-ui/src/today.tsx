@@ -21,7 +21,7 @@ function dayLabel(unixSeconds: number): string {
 }
 
 function timeLabel(item: WorkAgendaItem): string {
-  if (item.allDay) return 'All day'
+  if (item.allDay || item.at == null) return 'All day'
   return new Date(item.at * 1000).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit',
@@ -57,13 +57,14 @@ function CompleteTaskButton({
   if (!onCompleteTask || task.status === 'DONE' || task.status === 'CANCELLED')
     return null
 
+  const mutationPending = completingTaskId != null
   const completing = completingTaskId === task.id
   return (
     <button
       type="button"
-      disabled={completing}
+      disabled={mutationPending}
       onClick={() => void onCompleteTask(task)}
-      className="border-876-surface-border hover:bg-876-surface-hover focus-visible:ring-876-focus shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+      className="border-876-surface-border hover:bg-muted focus-visible:ring-ring shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
       aria-label={`Mark ${task.title} complete`}
     >
       {completing ? 'Saving…' : 'Done'}
@@ -106,7 +107,7 @@ function AgendaRow({
         <button
           type="button"
           onClick={() => onOpenItem(item)}
-          className="focus-visible:ring-876-focus min-w-0 flex-1 rounded-md text-left focus-visible:ring-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring min-w-0 flex-1 rounded-md text-left focus-visible:ring-2 focus-visible:outline-none"
         >
           {content}
         </button>
@@ -131,6 +132,10 @@ export function WorkToday({
   onCompleteTask,
   onOpenItem,
 }: WorkTodayProps) {
+  const activeTasks = work.tasks.filter(
+    (task) => task.status !== 'DONE' && task.status !== 'CANCELLED'
+  )
+
   return (
     <section className={cn('space-y-5 p-4', className)} aria-label="Today">
       <header>
@@ -187,11 +192,11 @@ export function WorkToday({
             Schedule
           </h2>
           <span className="text-muted-foreground text-xs tabular-nums">
-            {work.events.length + work.tasks.length + work.reminders.length}
+            {work.events.length + activeTasks.length + work.reminders.length}
           </span>
         </div>
         <WorkAgenda
-          tasks={work.tasks}
+          tasks={activeTasks}
           reminders={work.reminders}
           events={work.events}
           empty="Nothing scheduled for today."
