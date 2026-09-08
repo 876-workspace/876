@@ -10,7 +10,7 @@ import {
   type IconComponent,
 } from '@876/ui/icons'
 
-export const CRM_NAV_ICONS: Record<string, IconComponent> = {
+export const NAV_ICONS: Record<string, IconComponent> = {
   dashboard: BarChart3,
   requests: ClipboardList,
   customers: Users,
@@ -21,6 +21,6 @@ export const CRM_NAV_ICONS: Record<string, IconComponent> = {
   settings: Settings,
 }
 
-export function resolveCrmNavIcon(key: string): IconComponent {
-  return CRM_NAV_ICONS[key] ?? Settings
+export function resolveNavIcon(key: string): IconComponent {
+  return NAV_ICONS[key] ?? Settings
 }
