@@ -26,6 +26,7 @@ import { createDiscountsRouter } from '@/modules/discounts'
 import {
   createDocumentsRouter,
   createInternalDocumentsRouter,
+  createQuoteLifecycleRouter,
 } from '@/modules/documents'
 import {
   activeConnectionAuthorization,
@@ -75,6 +76,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createCustomersRouter(resolveGuards))
   root.use('/api/v1', createDiscountsRouter(resolveGuards))
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
+  root.use('/api/v1', createQuoteLifecycleRouter(resolveGuards))
   root.use('/api/v1', createTaxRouter(resolveGuards))
   root.use('/api/v1', createPaymentProvidersRouter(resolveGuards))
   root.use('/api/v1', createPaymentMethodsRouter(resolveGuards))
