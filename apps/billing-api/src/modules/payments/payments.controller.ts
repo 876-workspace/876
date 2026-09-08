@@ -111,6 +111,16 @@ export const paymentsController = {
       )
     )
   },
+  async integrationUpdate(req: Request, res: Response) {
+    res.json(
+      await service.updatePayment(
+        tenant(req),
+        param(req, 'paymentId'),
+        validBody<PaymentUpdateParams>(req),
+        sourceApp(req)
+      )
+    )
+  },
   async apply(req: Request, res: Response) {
     res
       .status(201)
@@ -122,11 +132,41 @@ export const paymentsController = {
         )
       )
   },
+  async integrationApply(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(
+        await service.applyPayment(
+          tenant(req),
+          param(req, 'paymentId'),
+          validBody<PaymentApplyParams>(req),
+          sourceApp(req)
+        )
+      )
+  },
   async del(req: Request, res: Response) {
     res.json(await service.deletePayment(tenant(req), param(req, 'paymentId')))
   },
+  async integrationDel(req: Request, res: Response) {
+    res.json(
+      await service.deletePayment(
+        tenant(req),
+        param(req, 'paymentId'),
+        sourceApp(req)
+      )
+    )
+  },
   async refundsList(req: Request, res: Response) {
     res.json(await service.listRefunds(tenant(req)))
+  },
+  async refundsIntegrationList(req: Request, res: Response) {
+    res.json(
+      await service.listRefunds(
+        tenant(req),
+        sourceApp(req),
+        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/refunds`
+      )
+    )
   },
   async refundsCreate(req: Request, res: Response) {
     res
@@ -135,6 +175,17 @@ export const paymentsController = {
         await service.createRefund(
           tenant(req),
           validBody<RefundCreateParams>(req)
+        )
+      )
+  },
+  async refundsIntegrationCreate(req: Request, res: Response) {
+    res
+      .status(200)
+      .json(
+        await service.createRefund(
+          tenant(req),
+          validBody<RefundCreateParams>(req),
+          sourceApp(req)
         )
       )
   },
