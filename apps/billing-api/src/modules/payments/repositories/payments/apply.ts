@@ -35,9 +35,12 @@ export async function apply(
           where: { id: paymentId, tenantId },
         })
         if (!payment) throw new PaymentMutationError('Payment not found.', 404)
-        if (payment.status !== 'SUCCEEDED')
+        if (
+          payment.status !== 'SUCCEEDED' &&
+          payment.status !== 'PARTIALLY_REFUNDED'
+        )
           throw new PaymentMutationError(
-            'Only a successful payment can be applied.',
+            'Only a successful payment with available credit can be applied.',
             409
           )
         if (total > payment.unappliedAmount)
