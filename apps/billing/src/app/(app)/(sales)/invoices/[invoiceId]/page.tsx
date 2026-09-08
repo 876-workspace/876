@@ -48,6 +48,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   if (!invoice) notFound()
 
   const canWrite = context.permissions.includes('sales:write')
+  const canRecordPayment = context.permissions.includes('payments:write')
   const address =
     invoiceAddressSnapshot(invoice.billingAddressSnapshot) ??
     invoice.customer.addresses[0]
@@ -80,6 +81,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
             invoiceId={invoice.id}
             customerId={invoice.customerId}
             status={invoice.status}
+            canRecordPayment={canRecordPayment}
           />
         ) : null}
       </header>
