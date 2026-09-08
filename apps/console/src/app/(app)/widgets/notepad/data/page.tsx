@@ -1,6 +1,10 @@
 import { widgets } from '@/lib/services/widgets'
 import { platform } from '@/lib/services/platform'
-import { WIDGET_HOST_APP_SLUGS, type WidgetHost } from '@876/widgets'
+import {
+  WIDGET_HOST_APP_SLUGS,
+  WIDGET_HOST_LABELS,
+  type WidgetHost,
+} from '@876/widgets'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -8,16 +12,8 @@ import { NotesSplit, type AdminNoteRow } from './_components/notes-split'
 
 export const metadata = { title: 'Data — Notepad' }
 
-const HOST_LABELS: Record<WidgetHost, string> = {
-  console: 'Console',
-  billing: '876 Billing',
-  couriers: '876 Couriers',
-  enterprise: '876 Enterprise',
-  '876': '876',
-}
-
 function isWidgetHost(value: string): value is WidgetHost {
-  return value in HOST_LABELS
+  return value in WIDGET_HOST_LABELS
 }
 
 type Props = {
@@ -81,7 +77,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
       ownerEmail: user?.email ?? null,
       ownerAvatar: user?.avatar ?? null,
       sourceApp: host
-        ? (apps.get(WIDGET_HOST_APP_SLUGS[host]) ?? HOST_LABELS[host])
+        ? (apps.get(WIDGET_HOST_APP_SLUGS[host]) ?? WIDGET_HOST_LABELS[host])
         : null,
     }
   })

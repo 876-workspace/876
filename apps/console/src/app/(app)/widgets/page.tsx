@@ -6,7 +6,7 @@ import {
   DataTableSkeleton,
   type DataTableSkeletonColumn,
 } from '@876/ui/data-table-skeleton'
-import { WIDGET_HOST_APP_SLUGS } from '@876/widgets'
+import { WIDGET_HOST_APP_SLUGS, WIDGET_HOST_LABELS } from '@876/widgets'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
@@ -25,14 +25,6 @@ const DISTRIBUTION_OPTIONS = [
   { value: 'shared', label: 'Shared widgets' },
   { value: 'host', label: 'App-only widgets' },
 ]
-
-const HOST_LABELS = {
-  console: 'Console',
-  billing: '876 Billing',
-  couriers: '876 Couriers',
-  enterprise: '876 Enterprise',
-  '876': '876',
-} as const
 
 const WIDGETS_SKELETON_COLUMNS = [
   { label: 'Widget', cell: 'avatar' },
@@ -112,11 +104,12 @@ async function WidgetsTableData({
       detailHref: getConsoleWidgetDetailHref(widget),
       visual: widget.visual,
       apps:
-        widget.supportedHosts.length === Object.keys(HOST_LABELS).length
+        widget.supportedHosts.length === Object.keys(WIDGET_HOST_LABELS).length
           ? 'all'
           : widget.supportedHosts.map(
               (host) =>
-                apps.get(WIDGET_HOST_APP_SLUGS[host])?.name ?? HOST_LABELS[host]
+                apps.get(WIDGET_HOST_APP_SLUGS[host])?.name ??
+                WIDGET_HOST_LABELS[host]
             ),
       feature: feature
         ? { id: feature.id, name: feature.name, enabled: feature.enabled }

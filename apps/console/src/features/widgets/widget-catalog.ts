@@ -19,6 +19,7 @@ export const liveLogsWidgetMetadata = {
   distribution: 'host',
   /** Reads core audit via $876 — not Widgets Postgres. */
   dataOwner: 'external',
+  surface: 'panel',
   ownership: 'workspace',
   defaultPanel: { width: 720, height: 520 },
   supportedHosts: ['console'],

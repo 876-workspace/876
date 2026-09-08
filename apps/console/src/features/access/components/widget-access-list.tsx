@@ -4,6 +4,7 @@ import type { AdminFeature } from '@876/platform/compat'
 import {
   getWidgetPlatformFeatureKeys,
   WIDGET_HOST_APP_SLUGS,
+  WIDGET_HOST_LABELS,
   type WidgetHost,
   type WidgetMetadata,
 } from '@876/widgets'
@@ -14,14 +15,6 @@ import {
   type AccessScope,
 } from './feature-access-board'
 import { loadGrants, toAccessFlag } from '../to-access-flag'
-
-const HOST_LABELS: Record<WidgetHost, string> = {
-  console: 'Console',
-  billing: '876 Billing',
-  couriers: '876 Couriers',
-  enterprise: '876 Enterprise',
-  '876': '876',
-}
 
 /**
  * Access grouped by the app it applies to. A shared widget carries a platform
@@ -65,7 +58,7 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
     const app = appsBySlug.get(WIDGET_HOST_APP_SLUGS[host as WidgetHost])
     scopeSpecs.push({
       key: host,
-      label: app?.name ?? HOST_LABELS[host as WidgetHost],
+      label: app?.name ?? WIDGET_HOST_LABELS[host as WidgetHost],
       logoUrl: app?.logo_url ?? null,
       parent: keys.parent,
       widgetKey: keys.widget,

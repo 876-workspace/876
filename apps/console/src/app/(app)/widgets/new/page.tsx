@@ -1,7 +1,11 @@
 import { platform } from '@/lib/services/platform'
 import { workspace } from '@/lib/services/workspace'
 import Link from 'next/link'
-import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
+import {
+  getWidgetPlatformFeatureKeys,
+  WIDGET_HOST_LABELS,
+  type WidgetHost,
+} from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
@@ -15,14 +19,6 @@ import {
 } from './_components/register-widget-flags-form'
 
 export const metadata = { title: 'Register widget flags' }
-
-const HOST_LABELS: Record<WidgetHost, string> = {
-  console: 'Console',
-  billing: '876 Billing',
-  couriers: '876 Couriers',
-  enterprise: '876 Enterprise',
-  '876': '876',
-}
 
 /**
  * A widget is a code artifact — it is declared in the `@876/widgets` catalog,
@@ -92,7 +88,7 @@ async function loadPendingWidgets(): Promise<PendingWidget[]> {
     for (const [host, keys] of Object.entries(widget.features.apps)) {
       if (!keys) continue
       scopes.push({
-        label: HOST_LABELS[host as WidgetHost],
+        label: WIDGET_HOST_LABELS[host as WidgetHost],
         parent: keys.parent,
         widget: keys.widget,
       })

@@ -7,6 +7,9 @@ import {
   isWidgetEnabled,
   isWidgetsDataOwner,
   notepadWidgetMetadata,
+  resolveEnabledWidgetIds,
+  WIDGET_HOST_APP_SLUGS,
+  WIDGET_HOST_LABELS,
   widgetCatalog,
 } from './catalog'
 
@@ -92,6 +95,113 @@ describe('shared widget catalog', () => {
           billingRequirements.filter((slug) => slug !== 'billing-widgets')
         )
       )
+    ).toBe(false)
+  })
+
+  it('maps invoice host to 876-invoice app slug', () => {
+    expect(WIDGET_HOST_APP_SLUGS.invoice).toBe('876-invoice')
+    expect(WIDGET_HOST_LABELS.invoice).toBe('876 Invoice')
+  })
+
+  it('resolves enabled Billing panel widgets in catalog order', () => {
+    const allBillingGates = [
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'platform-widgets-chat',
+      'billing-widgets',
+      'billing-widgets-notepad',
+      'billing-widgets-chat',
+    ]
+
+    expect(
+      resolveEnabledWidgetIds('billing', new Set(allBillingGates))
+    ).toEqual(['notepad'])
+  })
+
+  it('fails closed when group masters or child gates are missing', () => {
+    const allBillingGates = [
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'platform-widgets-chat',
+      'billing-widgets',
+      'billing-widgets-notepad',
+      'billing-widgets-chat',
+    ]
+
+    // Missing platform master
+    expect(
+      resolveEnabledWidgetIds(
+        'billing',
+        new Set(allBillingGates.filter((slug) => slug !== 'platform-widgets'))
+      )
+    ).toEqual([])
+
+    // Missing billing master
+    expect(
+      resolveEnabledWidgetIds(
+        'billing',
+        new Set(allBillingGates.filter((slug) => slug !== 'billing-widgets'))
+      )
+    ).toEqual([])
+
+    // Missing notepad child gate
+    expect(
+      resolveEnabledWidgetIds(
+        'billing',
+        new Set(
+          allBillingGates.filter((slug) => slug !== 'billing-widgets-notepad')
+        )
+      )
+    ).toEqual([])
+
+    // Missing chat child gate
+    expect(
+      resolveEnabledWidgetIds(
+        'billing',
+        new Set(
+          allBillingGates.filter((slug) => slug !== 'billing-widgets-chat')
+        )
+      )
+    ).toEqual(['notepad'])
+
+    // isWidgetEnabled fails closed on unsupported or unimplemented hosts
+    expect(
+      isWidgetEnabled(
+        notepadWidgetMetadata,
+        'enterprise',
+        new Set(allBillingGates)
+      )
+    ).toBe(false)
+    expect(
+      isWidgetEnabled(notepadWidgetMetadata, '876', new Set(allBillingGates))
+    ).toBe(false)
+    expect(
+      isWidgetEnabled(
+        notepadWidgetMetadata,
+        'invoice',
+        new Set(allBillingGates)
+      )
+    ).toBe(false)
+  })
+
+  it('returns empty list for invoice even when invoice-widgets and candidate gates are present', () => {
+    const candidateGates = [
+      'platform-widgets',
+      'platform-widgets-notepad',
+      'platform-widgets-chat',
+      'invoice-widgets',
+      'invoice-widgets-notepad',
+      'invoice-widgets-chat',
+    ]
+
+    expect(resolveEnabledWidgetIds('invoice', new Set(candidateGates))).toEqual(
+      []
+    )
+    expect(
+      isWidgetEnabled(notepadWidgetMetadata, 'invoice', new Set(candidateGates))
+    ).toBe(false)
+    expect(
+      isWidgetEnabled(chatWidgetMetadata, 'invoice', new Set(candidateGates))
     ).toBe(false)
   })
 })
