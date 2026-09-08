@@ -45,6 +45,7 @@ export interface InvoiceLifecycleActionResult {
 export interface InvoiceLifecycleActionsProps {
   status: InvoiceLifecycleStatus
   editHref?: string
+  recordPaymentHref?: string
   canEdit?: boolean
   canDelete?: boolean
   onFinalize?: () => Promise<InvoiceLifecycleActionResult>
@@ -73,6 +74,7 @@ function canVoidFromStatus(status: InvoiceLifecycleStatus) {
 export function InvoiceLifecycleActions({
   status,
   editHref,
+  recordPaymentHref,
   canEdit = false,
   canDelete = false,
   onFinalize,
@@ -119,6 +121,15 @@ export function InvoiceLifecycleActions({
         >
           <Pencil className="size-4" />
           Edit
+        </Link>
+      ) : null}
+
+      {collectible && recordPaymentHref ? (
+        <Link
+          href={recordPaymentHref}
+          className={cn(buttonVariants({ variant: 'info' }))}
+        >
+          Record payment
         </Link>
       ) : null}
 
