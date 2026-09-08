@@ -109,6 +109,13 @@ describe('Billing API v1 contract baseline', () => {
     '/integrations/organizations/{organizationId}/tax-authorities/{taxAuthorityId}',
     '/integrations/organizations/{organizationId}/tax-rates',
     '/integrations/organizations/{organizationId}/tax-rates/{taxRateId}',
+
+    // Invoice communication and write-off commands are Express-only lifecycle
+    // capabilities, exposed at both tenant and integration tiers.
+    '/invoices/{invoiceId}/send',
+    '/invoices/{invoiceId}/write-off',
+    '/integrations/organizations/{organizationId}/invoices/{invoiceId}/send',
+    '/integrations/organizations/{organizationId}/invoices/{invoiceId}/write-off',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {
