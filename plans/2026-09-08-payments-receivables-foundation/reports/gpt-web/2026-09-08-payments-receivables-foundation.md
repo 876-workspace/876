@@ -282,10 +282,8 @@ pnpm --filter @876/billing-ui typecheck
 pnpm --filter @876/billing-ui test
 
 pnpm --filter @876/billing-app typecheck
-pnpm --filter @876/invoice typecheck
+pnpm --filter @876/invoice-app typecheck
 ```
-
-If the Billing app workspace name differs from `@876/billing-app`, use the exact name in its `package.json`.
 
 ## Final branch review
 
