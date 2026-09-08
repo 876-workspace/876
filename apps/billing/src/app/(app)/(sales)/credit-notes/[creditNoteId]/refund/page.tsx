@@ -1,13 +1,5 @@
 import { notFound } from 'next/navigation'
 
-import {
-  Page,
-  PageBreadcrumb,
-  PageDescription,
-  PageHeader,
-  PageTitle,
-} from '@876/ui/page'
-
 import { resolveCreditNote } from '@/app/(app)/_lib/detail-data'
 import { RefundForm } from '@/features/payments/components/refund-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
@@ -34,19 +26,14 @@ export default async function RefundCreditNotePage({ params }: Props) {
       ?.currency.decimalPlaces ?? 2
 
   return (
-    <Page>
-      <PageBreadcrumb
-        href={`/credit-notes/${creditNote.id}`}
-        label={creditNote.number}
-        className="mb-4"
-      />
-      <PageHeader className="mb-8">
-        <PageTitle>Refund credit note</PageTitle>
-        <PageDescription>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold">Refund credit note</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
           Return available credit to the customer and record the funding account
           and refund method.
-        </PageDescription>
-      </PageHeader>
+        </p>
+      </div>
       <RefundForm
         customerId={creditNote.customerId}
         currency={creditNote.currency}
@@ -67,6 +54,6 @@ export default async function RefundCreditNotePage({ params }: Props) {
         sourceLabel={`${creditNote.number} · available credit note balance`}
         returnHref={`/credit-notes/${creditNote.id}`}
       />
-    </Page>
+    </div>
   )
 }
