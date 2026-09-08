@@ -13,8 +13,10 @@ export interface CustomerAccountStatementEntry extends CustomerLedgerEntry {
  * pre-Express account contract and add statement/overdue values required by the
  * shared receivables surfaces.
  */
-export interface CustomerAccountProjection
-  extends Omit<CustomerAccount, 'statement'> {
+export interface CustomerAccountProjection extends Omit<
+  CustomerAccount,
+  'statement'
+> {
   /** Outstanding receivable whose due date is before the projection time. */
   overdueReceivable: string
 

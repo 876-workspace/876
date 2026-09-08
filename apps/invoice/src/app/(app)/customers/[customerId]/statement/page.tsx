@@ -32,12 +32,18 @@ async function CustomerStatementData({
   const result = await billing.customers.account(customerId)
 
   if (result.error)
-    return <CustomerStatementPanel state={{ status: 'error', error: result.error }} />
+    return (
+      <CustomerStatementPanel
+        state={{ status: 'error', error: result.error }}
+      />
+    )
 
   const account = result.data
   const currency = account.currency ?? '—'
   const money = (amount: string) =>
-    account.currency ? formatMoney(amount, account.currency) : `${amount} minor units`
+    account.currency
+      ? formatMoney(amount, account.currency)
+      : `${amount} minor units`
 
   return (
     <CustomerStatementPanel
@@ -50,7 +56,8 @@ async function CustomerStatementData({
             id: entry.id,
             date: formatDate(entry.effectiveAt),
             description:
-              entry.description ?? entry.type.toLowerCase().replaceAll('_', ' '),
+              entry.description ??
+              entry.type.toLowerCase().replaceAll('_', ' '),
             amount: money(
               entry.direction === 'DEBIT'
                 ? entry.amount

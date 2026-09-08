@@ -54,7 +54,9 @@ async function CustomerReceivablesData({
   const account = result.data
   const currency = account.currency ?? '—'
   const money = (amount: string) =>
-    account.currency ? formatMoney(amount, account.currency) : `${amount} minor units`
+    account.currency
+      ? formatMoney(amount, account.currency)
+      : `${amount} minor units`
 
   return (
     <CustomerReceivablesPanel

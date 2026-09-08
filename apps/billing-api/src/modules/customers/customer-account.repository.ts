@@ -18,11 +18,7 @@ export function listCustomerAccountLedgerRows(
 ) {
   return prisma.customerLedgerEntry.findMany({
     where: { tenantId, customerId },
-    orderBy: [
-      { effectiveAt: 'desc' },
-      { createdAt: 'desc' },
-      { id: 'desc' },
-    ],
+    orderBy: [{ effectiveAt: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
     take: 100,
   })
 }

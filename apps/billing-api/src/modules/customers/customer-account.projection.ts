@@ -31,10 +31,7 @@ export type AccountLedgerSummary = {
   amount: bigint
 }
 
-function signedAmount(
-  direction: 'DEBIT' | 'CREDIT',
-  amount: bigint
-): bigint {
+function signedAmount(direction: 'DEBIT' | 'CREDIT', amount: bigint): bigint {
   return direction === 'DEBIT' ? amount : -amount
 }
 
