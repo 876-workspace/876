@@ -14,12 +14,18 @@ const MY_WORK = {
   overdueTasks: [],
 }
 
-describe('browserWork.myWork', () => {
+const TASK = {
+  object: 'task' as const,
+  id: 'task/1',
+  status: 'DONE' as const,
+}
+
+describe('browserWork', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
-  it('uses the host-owned product route with a bounded time range', async () => {
+  it('retrieves My Work through the host-owned bounded route', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       Response.json({ data: MY_WORK, error: null }, { status: 200 })
     )
@@ -50,5 +56,22 @@ describe('browserWork.myWork', () => {
       data: null,
       error: { code: 'work/session-forbidden', message: 'Forbidden.' },
     })
+  })
+
+  it('marks a task done through the encoded host-owned task route', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      Response.json({ data: TASK, error: null }, { status: 200 })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await browserWork.tasks.complete('task/1')
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/tasks/task%2F1')
+    expect(fetchMock.mock.calls[0]?.[1]).toEqual({
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'DONE' }),
+    })
+    expect(result).toEqual({ data: TASK, error: null })
   })
 })
