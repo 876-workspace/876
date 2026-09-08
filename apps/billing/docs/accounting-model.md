@@ -66,9 +66,43 @@ the original allocation; financial history is not deleted.
 
 - Payments represent actual cash received, recorded against a customer.
 - Payments are allocated to open invoices via `PaymentAllocation`.
-- The unallocated remainder of a payment (`Payment.unappliedAmount`) is held as customer credit (advance or overpayment).
+- The unallocated remainder of a payment (`Payment.unappliedAmount`) is held as
+  customer credit (advance or overpayment).
+- A successful received payment posts **one** `PAYMENT_RECEIVED` customer-ledger
+  credit for the full cash amount.
+- Applying that payment later does **not** post another customer-ledger credit.
+  Allocation only moves settlement between two existing projections:
+  `Invoice.amountDue` decreases and `Payment.unappliedAmount` decreases by the
+  same amount.
 - Corrections append reversal events and retain allocation history instead of
   deleting the financial evidence.
+
+### Cash receipt vs. allocation invariant
+
+Receiving money and deciding which invoice it settles are separate events. The
+customer's economic position changes when cash is received; applying the cash
+must not change that net position a second time.
+
+```text
+Before payment:
+  outstanding receivable 1,000
+  unused credit              0
+  net position            1,000
+
+Receive 1,000 unapplied:
+  outstanding receivable 1,000
+  unused credit           1,000
+  net position                0
+
+Allocate 1,000 to invoice:
+  outstanding receivable     0
+  unused credit              0
+  net position               0
+```
+
+This is why `PaymentAllocation` remains independent from `Payment`: one payment
+may settle several invoices, settle one invoice partially, or remain wholly or
+partly unapplied.
 
 ## 5. Credit Notes (No Cash)
 
@@ -93,6 +127,60 @@ instead of importing the Documents lifecycle module. Documents already invokes
 Customers to recompute AR; importing Documents back into Customers would create
 a cross-module cycle. The two lists must remain contract-tested against the same
 four durable collectible statuses until the dependency direction is redesigned.
+
+## 8. Customer account projection
+
+`customer_account` is a read model over Billing-owned financial facts. It is not
+a persisted account table and does not become a second source of truth.
+
+The projection exposes:
+
+- `lifetimeBilled`: finalized non-void invoice totals;
+- `lifetimePaid`: successful received cash net of refunds;
+- `outstandingReceivable`: the customer's current collectible invoice balance;
+- `overdueReceivable`: the portion of that collectible balance whose `dueAt` has
+  passed;
+- `availableCredit`: the current unused-cash/credit projection;
+- `netPosition`: `outstandingReceivable - availableCredit`;
+- the latest bounded slice of append-only customer-ledger activity.
+
+The API retains `unusedCredits` and `entries` compatibility aliases alongside
+`availableCredit` and `statement` while callers migrate to the canonical typed
+projection.
+
+## 9. Customer statements
+
+Statements are derived from `CustomerLedgerEntry`; hosts must not rebuild them
+by merging invoices and payments independently.
+
+Ledger direction determines the signed receivable movement:
+
+```text
+DEBIT  -> increases the customer balance
+CREDIT -> decreases the customer balance
+```
+
+The API returns the latest 100 ledger entries, then presents that window in
+chronological order. Because older history may exist outside the window, the
+statement also returns an `openingBalance` representing the balance immediately
+before the first displayed entry. Each displayed line carries its running
+`balance`, and `closingBalance` is the balance after the final displayed entry.
+
+That keeps a bounded statement arithmetically correct even when the account has
+more history than the response includes:
+
+```text
+opening balance
++ signed displayed entry 1
++ signed displayed entry 2
+...
+= closing balance
+```
+
+The source identifiers (`invoiceId`, `paymentId`, `creditNoteId`, `refundId`)
+remain on statement entries even when the first UI renders only date,
+description, amount, and running balance. They are the link back to auditable
+financial evidence.
 
 ## Flow Diagram
 
