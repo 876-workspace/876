@@ -18,7 +18,15 @@ function createTx(existingSlugs: string[] = []) {
     role: unknown[]
     member: unknown[]
     paymentMode: unknown[]
-  } = { tenant: [], tenantCurrency: [], role: [], member: [], paymentMode: [] }
+    invoicePreference: unknown[]
+  } = {
+    tenant: [],
+    tenantCurrency: [],
+    role: [],
+    member: [],
+    paymentMode: [],
+    invoicePreference: [],
+  }
   let byOrganization: TenantRow | null = null
 
   const tx = {
@@ -46,6 +54,12 @@ function createTx(existingSlugs: string[] = []) {
       create: vi.fn(async ({ data }: { data: unknown }) => {
         created.tenantCurrency.push(data)
         return data
+      }),
+    },
+    invoicePreference: {
+      upsert: vi.fn(async ({ create }: { create: unknown }) => {
+        created.invoicePreference.push(create)
+        return create
       }),
     },
     paymentMode: {
@@ -100,7 +114,7 @@ describe('provisionTenantWorkspace', () => {
       expect(result).toEqual({
         id: expect.stringMatching(/^ten_/),
         created: true,
-        provisioningVersion: 3,
+        provisioningVersion: 4,
       })
       expect(harness.created.tenant).toEqual([
         expect.objectContaining({
@@ -111,7 +125,7 @@ describe('provisionTenantWorkspace', () => {
           status: 'ACTIVE',
           defaultCurrency: 'JMD',
           defaultLanguage: 'en',
-          provisioningVersion: 3,
+          provisioningVersion: 4,
           provisionedAt: input.now,
         }),
       ])
@@ -120,6 +134,13 @@ describe('provisionTenantWorkspace', () => {
           currencyCode: 'JMD',
           isDefault: true,
           isEnabled: true,
+        }),
+      ])
+      expect(harness.created.invoicePreference).toEqual([
+        expect.objectContaining({
+          tenantId: expect.stringMatching(/^ten_/),
+          createdAt: input.now,
+          updatedAt: input.now,
         }),
       ])
       expect(harness.created.role).toEqual([
@@ -136,9 +157,21 @@ describe('provisionTenantWorkspace', () => {
         expect.objectContaining({ slug: 'staff', isSystem: true }),
       ])
       expect(harness.created.paymentMode).toEqual([
-        expect.objectContaining({ name: 'Cash', isSystem: true, isDefault: false }),
-        expect.objectContaining({ name: 'Credit Card', isSystem: true, isDefault: false }),
-        expect.objectContaining({ name: 'Bank Transfer', isSystem: true, isDefault: true }),
+        expect.objectContaining({
+          name: 'Cash',
+          isSystem: true,
+          isDefault: false,
+        }),
+        expect.objectContaining({
+          name: 'Credit Card',
+          isSystem: true,
+          isDefault: false,
+        }),
+        expect.objectContaining({
+          name: 'Bank Transfer',
+          isSystem: true,
+          isDefault: true,
+        }),
       ])
     })
 
@@ -264,10 +297,10 @@ describe('provisionTenantWorkspace', () => {
       const superAdmin = roles.find((r) => r.slug === 'super-admin')!
       const admin = roles.find((r) => r.slug === 'admin')!
       const staff = roles.find((r) => r.slug === 'staff')!
-      expect(superAdmin.permissions.length).toBeGreaterThan(admin.permissions.length)
-      expect(admin.permissions.length).toBeGreaterThan(
-        staff.permissions.length
+      expect(superAdmin.permissions.length).toBeGreaterThan(
+        admin.permissions.length
       )
+      expect(admin.permissions.length).toBeGreaterThan(staff.permissions.length)
     })
 
     it('admin permissions are super admin minus roles:write', async () => {
@@ -334,10 +367,10 @@ describe('provisionTenantWorkspace', () => {
       })
     })
 
-    it('returns provisioningVersion 3 for new workspace', async () => {
+    it('returns provisioningVersion 4 for new workspace', async () => {
       const harness = createTx()
       const result = await provisionTenantWorkspace(harness.tx as never, input)
-      expect(result.provisioningVersion).toBe(3)
+      expect(result.provisioningVersion).toBe(4)
     })
 
     it('creates tenant with now timestamps', async () => {
@@ -547,7 +580,7 @@ describe('provisionTenantWorkspace', () => {
   })
 
   describe('idempotency', () => {
-    it('returns the existing workspace without writing anything', async () => {
+    it('returns the existing workspace while repairing provisioning defaults', async () => {
       const harness = createTx()
       harness.setExistingForOrganization({
         id: 'ten_existing',
@@ -566,6 +599,13 @@ describe('provisionTenantWorkspace', () => {
       expect(harness.tx.tenantCurrency.create).not.toHaveBeenCalled()
       expect(harness.tx.role.create).not.toHaveBeenCalled()
       expect(harness.tx.member.create).not.toHaveBeenCalled()
+      expect(harness.created.invoicePreference).toEqual([
+        {
+          tenantId: 'ten_existing',
+          createdAt: input.now,
+          updatedAt: input.now,
+        },
+      ])
     })
 
     it('preserves existing provisioningVersion', async () => {

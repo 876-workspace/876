@@ -1,6 +1,8 @@
 /** @vitest-environment jsdom */
 
-import { render, screen } from '@testing-library/react'
+import '@testing-library/jest-dom/vitest'
+
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 const { mockGetInvoice, mockRedirect } = vi.hoisted(() => ({
@@ -34,10 +36,12 @@ describe('NewQuotePage', () => {
       items: { list: items },
     })
 
-    render(await NewQuotePage())
+    render(await NewQuotePage({ searchParams: Promise.resolve({}) }))
 
     expect(screen.getByRole('heading', { name: 'New Quote' })).not.toBeNull()
-    expect(await screen.findByRole('button', { name: 'Add quote' })).not.toBeNull()
+    expect(
+      await screen.findByRole('button', { name: 'Add quote' })
+    ).not.toBeNull()
     expect(screen.queryByRole('heading', { name: 'New Invoice' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Add invoice' })).toBeNull()
     // The customer picker is a server-backed typeahead now, so the page must
@@ -50,9 +54,48 @@ describe('NewQuotePage', () => {
   it('redirects to no-access when no Invoice facade is available', async () => {
     mockGetInvoice.mockResolvedValue(null)
 
-    await expect(NewQuotePage()).rejects.toThrow('REDIRECT:/no-access')
+    await expect(
+      NewQuotePage({ searchParams: Promise.resolve({}) })
+    ).rejects.toThrow('REDIRECT:/no-access')
 
     expect(mockRedirect).toHaveBeenCalledTimes(1)
     expect(mockRedirect).toHaveBeenCalledWith('/no-access')
+  })
+
+  it('preselects an active customer from the customerId query', async () => {
+    const retrieve = vi.fn().mockResolvedValue({
+      data: {
+        id: 'cus_123',
+        name: 'Alejandra Reyes',
+        companyName: null,
+        email: 'alejandra@example.test',
+        phone: null,
+        workPhone: null,
+        primaryContact: null,
+        status: 'ACTIVE',
+      },
+      error: null,
+    })
+    mockGetInvoice.mockResolvedValue({
+      customers: { retrieve },
+      items: {
+        list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }),
+      },
+    })
+
+    await act(async () => {
+      render(
+        await NewQuotePage({
+          searchParams: Promise.resolve({ customerId: 'cus_123' }),
+        })
+      )
+    })
+
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Customer' })).toHaveValue(
+        'Alejandra Reyes'
+      )
+    )
+    expect(retrieve).toHaveBeenCalledWith('cus_123')
   })
 })

@@ -25,7 +25,11 @@ export async function resolveInvoiceDefaults(
       },
     }),
   ])
-  if (!customer || !preference) return null
+  if (!customer) return null
+  if (!preference)
+    throw new Error(
+      `Invoice preferences missing for Billing tenant ${tenantId}.`
+    )
 
   const billingAddress =
     customer.addresses.find((address) => address.type === 'billing') ?? null

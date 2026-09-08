@@ -9,7 +9,7 @@ model Tenant {
   status              TenantStatus @default(ACTIVE)
   defaultCurrency     String       @default("JMD") @map("default_currency")
   defaultLanguage     String       @default("en") @map("default_language")
-  provisioningVersion Int          @default(3) @map("provisioning_version")
+  provisioningVersion Int          @default(4) @map("provisioning_version")
   provisionedAt       Int          @map("provisioned_at")
   createdAt           Int          @map("created_at")
   updatedAt           Int          @map("updated_at")
