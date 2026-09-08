@@ -183,6 +183,10 @@
       "types": "./src/payment-received-form.tsx",
       "default": "./src/payment-received-form.tsx"
     },
+    "./refund-form": {
+      "types": "./src/refund-form.tsx",
+      "default": "./src/refund-form.tsx"
+    },
     "./payments-table": {
       "types": "./src/payments-table.tsx",
       "default": "./src/payments-table.tsx"
