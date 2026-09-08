@@ -199,6 +199,18 @@ describe('document resources', () => {
     )
   })
 
+  it('records an invoice send with an empty body and returns the resource', async () => {
+    const data = { object: 'invoice' as const, id: 'inv_1' }
+    const fetch = response(data)
+    const result = await client(fetch).invoices.send('inv_1')
+
+    expect(result).toEqual({ data, error: null })
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/invoices/inv_1/send`,
+      expect.objectContaining({ method: 'POST', body: '{}' })
+    )
+  })
+
   it('voids an invoice with its exact body and returns the resource', async () => {
     const data = { object: 'invoice' as const, id: 'inv_1' }
     const fetch = response(data)
@@ -208,6 +220,19 @@ describe('document resources', () => {
     expect(result).toEqual({ data, error: null })
     expect(fetch).toHaveBeenCalledWith(
       `${BASE}/api/v1/invoices/inv_1/void`,
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(params) })
+    )
+  })
+
+  it('writes off an invoice with its exact body and returns the resource', async () => {
+    const data = { object: 'invoice' as const, id: 'inv_1' }
+    const fetch = response(data)
+    const params = { reason: 'Collection exhausted' }
+    const result = await client(fetch).invoices.writeOff('inv_1', params)
+
+    expect(result).toEqual({ data, error: null })
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/invoices/inv_1/write-off`,
       expect.objectContaining({ method: 'POST', body: JSON.stringify(params) })
     )
   })
