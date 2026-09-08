@@ -92,7 +92,7 @@ function itemsOf(
 }
 
 function timeLabel(item: WorkAgendaItem): string {
-  if (item.allDay) return 'All day'
+  if (item.allDay || item.at == null) return 'All day'
   return new Date(item.at * 1000).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
