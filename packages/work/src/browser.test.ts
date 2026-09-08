@@ -30,6 +30,14 @@ const TASK_PAGE = {
   url: '/v1/organizations/org_1/tasks',
 }
 
+const CALENDAR_PAGE = {
+  object: 'list' as const,
+  data: [],
+  has_more: false,
+  total_count: 0,
+  url: '/v1/organizations/org_1/calendars',
+}
+
 const TASK = {
   object: 'task' as const,
   id: 'task/1',
@@ -152,5 +160,15 @@ describe('browserWork', () => {
       method: 'PATCH',
       body: JSON.stringify({ action: 'cancel' }),
     })
+  })
+
+  it('lists visible calendars through the host-owned route', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success(CALENDAR_PAGE))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await browserWork.calendars.list()
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/calendars')
+    expect(result).toEqual({ data: CALENDAR_PAGE, error: null })
   })
 })
