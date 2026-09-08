@@ -26,11 +26,7 @@ vi.mock('./workflows', () => ({
 
 import { documentsService } from './documents.service'
 
-const convertedInvoice = {
-  customerId: 'cus_1',
-  quoteId: 'quo_1',
-  lines: undefined,
-}
+const convertedInvoice = { quoteId: 'quo_1' }
 
 describe('documentsService quote conversion', () => {
   beforeEach(() => {
