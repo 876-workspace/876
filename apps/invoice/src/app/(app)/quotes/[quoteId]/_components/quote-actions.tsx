@@ -69,13 +69,29 @@ export function QuoteActions({
       router.refresh()
     })
 
+  const convertToInvoice = () =>
+    startTransition(async () => {
+      setError(null)
+      const result = await client.documents.create({ quoteId })
+      if (result.error || !result.data) {
+        setError(result.error?.message ?? 'Failed to convert the quote.')
+        return
+      }
+      router.push(`/invoices/${result.data.id}`)
+      router.refresh()
+    })
+
   const primary =
     status === 'DRAFT' ? 'send' : status === 'SENT' ? 'accept' : null
 
   return (
     <>
       <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
-        {primary ? (
+        {status === 'ACCEPTED' ? (
+          <Button variant="info" disabled={pending} onClick={convertToInvoice}>
+            {pending ? 'Converting…' : 'Convert to invoice'}
+          </Button>
+        ) : primary ? (
           <Button variant="info" disabled={pending} onClick={() => run(primary)}>
             {pending ? 'Working…' : primary === 'send' ? 'Send' : 'Accept'}
           </Button>
@@ -98,6 +114,11 @@ export function QuoteActions({
                 Edit
               </DropdownMenuItem>
             ) : null}
+            {status === 'ACCEPTED' ? (
+              <DropdownMenuItem disabled={pending} onClick={convertToInvoice}>
+                Convert to invoice
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem
               disabled={status !== 'DRAFT' && status !== 'SENT'}
               title="Only draft or sent quotes can be canceled."
@@ -113,6 +134,11 @@ export function QuoteActions({
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
+        {error && confirmation === null ? (
+          <p role="alert" className="text-destructive basis-full text-right text-sm">
+            {error}
+          </p>
+        ) : null}
       </div>
       <AlertDialog
         open={confirmation !== null}
