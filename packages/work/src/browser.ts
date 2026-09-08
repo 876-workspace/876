@@ -3,6 +3,7 @@
 import { requestApiResult } from '@876/core/client'
 
 import type { WorkMyWork, WorkMyWorkFilter } from './my-work'
+import type { WorkTask } from './types'
 
 export type WorkBrowserMyWorkFilter = Pick<WorkMyWorkFilter, 'from' | 'to'>
 
@@ -18,6 +19,17 @@ export const browserWork = {
   myWork: {
     retrieve(filter: WorkBrowserMyWorkFilter) {
       return requestApiResult<WorkMyWork>(myWorkPath(filter))
+    },
+  },
+  tasks: {
+    complete(taskId: string) {
+      return requestApiResult<WorkTask>(
+        `/api/tasks/${encodeURIComponent(taskId)}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'DONE' }),
+        }
+      )
     },
   },
 } as const
