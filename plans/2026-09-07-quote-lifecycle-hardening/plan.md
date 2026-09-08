@@ -4,7 +4,7 @@
 **Branch:** `feature/quote-lifecycle-hardening`  
 **Original base:** `main@4f869314ff2b264d12bc5c07f1c9017392b55ad8`  
 **Synced main:** `main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20`  
-**Status:** COMPLETED — UNVERIFIED; SYNCED WITH MAIN
+**Status:** IMPLEMENTED, SYNCED WITH MAIN, AND LOCALLY REVIEWED — see the [verification and PR handoff](reports/2026-09-08-verification-and-pr.md) for fixes, checks, and release gates.
 
 ## Overview
 
@@ -189,6 +189,15 @@ No new persisted permission catalog was invented. Backend tenant routes continue
 - [x] Adapt `quote-lifecycle-actions.tsx` to use package-local `Link` rather than `next/link`.
 - [x] Preserve upstream `packages/billing-ui/package.json` exports and restore `./quote-lifecycle-actions` structurally.
 - [x] Confirm current compare reports the branch ahead of `main` and **0 behind**.
+
+### Phase 7 — Verification and hardening review
+
+- [x] Run full typechecks across `@876/billing-api`, `@876/billing`, `@876/billing-ui`, `@876/billing-app`, and `@876/invoice-app`.
+- [x] Run dependency boundary cruiser and contract verification (`boundaries` and `api:contract:check`).
+- [x] Run comprehensive test suite across Billing SDK, Billing UI, Billing API documents & workflows, and Invoice app.
+- [x] Validate Prisma schema definitions (`db:validate`).
+- [x] Run Billing API ESLint checks.
+- [x] Review and document verification in `reports/2026-09-08-verification-and-pr.md`.
 
 ## Schema / migration
 

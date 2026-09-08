@@ -73,6 +73,8 @@ These events are durable integration/audit evidence. They are not themselves a u
 
 Quote lifecycle commands use the Billing command-idempotency plane when an `Idempotency-Key` is supplied.
 
+Rejected quote transitions roll back their command claim, so a failed validation or concurrent state change does not leave the key permanently in progress.
+
 Terminal decisions are also semantically retry-safe:
 
 - accepting an already accepted quote succeeds as a replay;
@@ -103,6 +105,8 @@ Conversion rules:
 7. A concurrent duplicate conversion is resolved by re-reading the relation and returning the winning invoice.
 
 Conversion does **not** finalize, send, post, or collect the invoice. Invoice finalization remains the accounting boundary that creates receivables.
+
+Organization integration acceptance and conversion require `Idempotency-Key` and preserve the invoking app's attribution when creating an invoice, including automatic draft creation after acceptance. This keeps the invoice visible through that app's scoped invoice reads. The conversion payload hash includes the quote ID, so reusing a key for a different quote cannot replay the wrong invoice. Tenant commands remain unattributed and accept optional command keys.
 
 ## Accepted-quote conversion preference
 
