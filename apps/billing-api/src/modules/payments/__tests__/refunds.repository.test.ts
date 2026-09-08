@@ -82,6 +82,14 @@ function paymentParams(amount = 2_000n): RefundCreateParams {
   }
 }
 
+function manualPaymentParams(amount = 2_000n): RefundCreateParams {
+  return {
+    ...paymentParams(amount),
+    paymentModeId: 'mode_1',
+    depositAccountId: 'bank_1',
+  }
+}
+
 function creditNoteParams(amount = 2_000n): RefundCreateParams {
   return {
     customerId: CUSTOMER,
@@ -123,7 +131,7 @@ function buildPrisma(): MockPrisma {
       findFirst: vi.fn().mockResolvedValue({ id: 'mode_1' }),
     },
     bankAccount: {
-      findFirst: vi.fn().mockResolvedValue({ id: 'bank_1' }),
+      findFirst: vi.fn().mockResolvedValue({ id: 'bank_1', currency: 'JMD' }),
     },
     refund: {
       create: vi.fn().mockResolvedValue({ id: 'ref_1' }),
@@ -191,6 +199,30 @@ describe('refunds repository', () => {
     )
   })
 
+  it('allows another refund from a partially refunded payment', async () => {
+    mocks.mockPrismaRef.current!.payment.findFirst.mockResolvedValue({
+      customerId: CUSTOMER,
+      currency: 'JMD',
+      status: 'PARTIALLY_REFUNDED',
+      amount: 10_000n,
+      amountRefunded: 2_000n,
+      unappliedAmount: 3_000n,
+    })
+
+    const result = await createRefund(paymentParams(1_000n))
+
+    expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
+    expect(mocks.mockPrismaRef.current!.payment.update).toHaveBeenCalledWith({
+      where: { id: PAYMENT },
+      data: {
+        unappliedAmount: { decrement: 1_000n },
+        amountRefunded: { increment: 1_000n },
+        status: 'PARTIALLY_REFUNDED',
+        updatedAt: NOW,
+      },
+    })
+  })
+
   it('keeps a payment partially refunded when all available credit is returned but an allocation remains', async () => {
     const result = await createRefund(paymentParams(5_000n))
 
@@ -228,6 +260,53 @@ describe('refunds repository', () => {
         updatedAt: NOW,
       },
     })
+  })
+
+  it('validates active refund method and same-currency funding account', async () => {
+    const result = await createRefund(manualPaymentParams(1_000n))
+
+    expect(result).toEqual({ data: { id: 'ref_1' }, error: null })
+    expect(mocks.mockPrismaRef.current!.paymentMode.findFirst).toHaveBeenCalledWith({
+      where: { id: 'mode_1', tenantId: TENANT, isActive: true },
+      select: { id: true },
+    })
+    expect(mocks.mockPrismaRef.current!.bankAccount.findFirst).toHaveBeenCalledWith({
+      where: { id: 'bank_1', tenantId: TENANT, isActive: true },
+      select: { id: true, currency: true },
+    })
+  })
+
+  it('rejects an inactive refund method before changing source balances', async () => {
+    mocks.mockPrismaRef.current!.paymentMode.findFirst.mockResolvedValue(null)
+
+    const result = await createRefund(manualPaymentParams(1_000n))
+
+    expect(result).toEqual({
+      data: null,
+      error: 'Active payment mode not found.',
+      status: 404,
+    })
+    expect(mocks.mockPrismaRef.current!.payment.findFirst).not.toHaveBeenCalled()
+    expect(mocks.mockPrismaRef.current!.payment.update).not.toHaveBeenCalled()
+    expect(mocks.mockPrismaRef.current!.refund.create).not.toHaveBeenCalled()
+  })
+
+  it('rejects a funding account in a different currency before changing source balances', async () => {
+    mocks.mockPrismaRef.current!.bankAccount.findFirst.mockResolvedValue({
+      id: 'bank_1',
+      currency: 'USD',
+    })
+
+    const result = await createRefund(manualPaymentParams(1_000n))
+
+    expect(result).toEqual({
+      data: null,
+      error: 'The refund account uses a different currency.',
+      status: 422,
+    })
+    expect(mocks.mockPrismaRef.current!.payment.findFirst).not.toHaveBeenCalled()
+    expect(mocks.mockPrismaRef.current!.payment.update).not.toHaveBeenCalled()
+    expect(mocks.mockPrismaRef.current!.refund.create).not.toHaveBeenCalled()
   })
 
   it('rejects a payment refund above the unapplied balance without side effects', async () => {
