@@ -171,6 +171,10 @@
       "types": "./src/panels/tax-rate-settings-panel.tsx",
       "default": "./src/panels/tax-rate-settings-panel.tsx"
     },
+    "./payment-received-form": {
+      "types": "./src/payment-received-form.tsx",
+      "default": "./src/payment-received-form.tsx"
+    },
     "./payments-table": {
       "types": "./src/payments-table.tsx",
       "default": "./src/payments-table.tsx"
