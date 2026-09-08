@@ -1,7 +1,6 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
@@ -9,6 +8,7 @@ import { ResourceRowLink } from '@876/ui/resource-row-link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatItemStock } from './item-stock'
+import { Link } from './link'
 
 /**
  * A catalog item as the finance plane serves it. `defaultSellingAmount` accepts
@@ -25,10 +25,17 @@ export interface ItemRow {
   defaultSellingAmount: bigint | string | null
   defaultSellingCurrency: string | null
   isTaxable: boolean
-  trackStock: boolean
-  stockQuantity: number | null
-  lowStockThreshold: number | null
-  allowOutOfStock: boolean
+  /**
+   * Inventory state is optional because not every host reads it. Console's
+   * operator item read returns no stock fields, and a host that cannot see
+   * inventory must not assert `trackStock: false` — that renders as "not
+   * tracked", which is a claim about the item rather than about the caller.
+   * Absent inventory falls through to the not-tracked em dash instead.
+   */
+  trackStock?: boolean
+  stockQuantity?: number | null
+  lowStockThreshold?: number | null
+  allowOutOfStock?: boolean
   isActive: boolean
   priceCount?: number
 }

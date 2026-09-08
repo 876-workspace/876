@@ -198,7 +198,7 @@ Prior lifecycle work added **28 literal `it()` declarations**. This extension ad
 - Billing service accepted-quote conversion: 2 declarations;
 - Invoice same-origin Payments Received client: 1 declaration.
 
-**Current run total: 35 new literal `it()` declarations**, plus parameterized lifecycle cases. This is a drafted-test count only.
+**Current run total: 34 direct `it()` calls plus 2 `it.each()` declaration sites (36 declaration sites total)**. This is a drafted-test count only.
 
 ## Verification commands
 

@@ -1,6 +1,8 @@
 'use client'
 
+import { BillingUiLinkProvider } from '@876/billing-ui/link'
 import { ThemeProvider as BaseThemeProvider } from '@876/ui/theme'
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import type { AnalyticsGroup, AnalyticsUser } from '@876/analytics'
@@ -21,7 +23,9 @@ export function ThemeProvider({
   return (
     <AnalyticsProvider user={analyticsUser} groups={analyticsGroups}>
       <BaseThemeProvider forcedTheme={forcedTheme}>
-        {children}
+        <BillingUiLinkProvider component={Link}>
+          {children}
+        </BillingUiLinkProvider>
       </BaseThemeProvider>
     </AnalyticsProvider>
   )

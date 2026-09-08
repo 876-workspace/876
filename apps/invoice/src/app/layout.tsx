@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
 
+import { LinkProvider } from '@/components/providers/link-provider'
 import { PwaProvider } from '@/components/providers/pwa-provider'
 import { ThemeProvider } from '@876/ui/theme'
 import { ThemeScript } from '@876/ui/theme-script'
@@ -56,10 +57,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>
-          <PwaProvider>
-            <ServiceWorkerRegistration />
-            {children}
-          </PwaProvider>
+          <LinkProvider>
+            <PwaProvider>
+              <ServiceWorkerRegistration />
+              {children}
+            </PwaProvider>
+          </LinkProvider>
         </ThemeProvider>
         <Toaster />
       </body>

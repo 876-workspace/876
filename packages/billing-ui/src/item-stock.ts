@@ -1,14 +1,12 @@
 export type ItemStockStatus =
-  | 'not-tracked'
-  | 'in-stock'
-  | 'low-stock'
-  | 'out-of-stock'
+  'not-tracked' | 'in-stock' | 'low-stock' | 'out-of-stock'
 
 export interface ItemStockState {
   type: string
-  trackStock: boolean
-  stockQuantity: number | null
-  lowStockThreshold: number | null
+  /** Absent when the caller's read exposes no inventory state. */
+  trackStock?: boolean
+  stockQuantity?: number | null
+  lowStockThreshold?: number | null
 }
 
 /** Resolves presentation state from the live Item stock counter. */
@@ -19,6 +17,7 @@ export function getItemStockStatus(item: ItemStockState): ItemStockStatus {
   if (quantity <= 0) return 'out-of-stock'
   if (
     item.lowStockThreshold !== null &&
+    item.lowStockThreshold !== undefined &&
     quantity <= item.lowStockThreshold
   )
     return 'low-stock'
