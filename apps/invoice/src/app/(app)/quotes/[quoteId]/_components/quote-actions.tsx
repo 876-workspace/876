@@ -39,10 +39,14 @@ export function QuoteActions({
   quoteId,
   status,
   canWrite,
+  canDelete,
+  canConvert,
 }: {
   quoteId: string
   status: QuoteStatus
   canWrite: boolean
+  canDelete: boolean
+  canConvert: boolean
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -51,7 +55,7 @@ export function QuoteActions({
   )
   const [error, setError] = useState<string | null>(null)
 
-  if (!canWrite) return null
+  if (!canWrite && !canDelete && !canConvert) return null
 
   const run = (action: 'send' | 'accept' | 'decline' | 'cancel' | 'delete') =>
     startTransition(async () => {
@@ -81,13 +85,22 @@ export function QuoteActions({
       router.refresh()
     })
 
-  const primary =
-    status === 'DRAFT' ? 'send' : status === 'SENT' ? 'accept' : null
+  const primary = canWrite
+    ? status === 'DRAFT'
+      ? 'send'
+      : status === 'SENT'
+        ? 'accept'
+        : null
+    : null
+  const hasMenuActions =
+    (canWrite && (status === 'DRAFT' || status === 'SENT')) ||
+    (canConvert && status === 'ACCEPTED') ||
+    (canDelete && status === 'DRAFT')
 
   return (
     <>
       <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
-        {status === 'ACCEPTED' ? (
+        {status === 'ACCEPTED' && canConvert ? (
           <Button variant="info" disabled={pending} onClick={convertToInvoice}>
             {pending ? 'Converting…' : 'Convert to invoice'}
           </Button>
@@ -96,44 +109,47 @@ export function QuoteActions({
             {pending ? 'Working…' : primary === 'send' ? 'Send' : 'Accept'}
           </Button>
         ) : null}
-        {status === 'SENT' ? (
+        {canWrite && status === 'SENT' ? (
           <Button variant="outline" disabled={pending} onClick={() => run('decline')}>
             Decline
           </Button>
         ) : null}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
-            aria-label="More actions"
-          >
-            <MoreHorizontalIcon className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {status === 'DRAFT' ? (
-              <DropdownMenuItem render={<Link href={`/quotes/${quoteId}/edit`} />}>
-                Edit
-              </DropdownMenuItem>
-            ) : null}
-            {status === 'ACCEPTED' ? (
-              <DropdownMenuItem disabled={pending} onClick={convertToInvoice}>
-                Convert to invoice
-              </DropdownMenuItem>
-            ) : null}
-            <DropdownMenuItem
-              disabled={status !== 'DRAFT' && status !== 'SENT'}
-              title="Only draft or sent quotes can be canceled."
-              onClick={() => setConfirmation('cancel')}
+        {hasMenuActions ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+              aria-label="More actions"
             >
-              Cancel
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {status === 'DRAFT' ? (
-              <DropdownMenuItem variant="destructive" onClick={() => setConfirmation('delete')}>
-                Delete
-              </DropdownMenuItem>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <MoreHorizontalIcon className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {canWrite && status === 'DRAFT' ? (
+                <DropdownMenuItem render={<Link href={`/quotes/${quoteId}/edit`} />}>
+                  Edit
+                </DropdownMenuItem>
+              ) : null}
+              {canConvert && status === 'ACCEPTED' ? (
+                <DropdownMenuItem disabled={pending} onClick={convertToInvoice}>
+                  Convert to invoice
+                </DropdownMenuItem>
+              ) : null}
+              {canWrite && (status === 'DRAFT' || status === 'SENT') ? (
+                <DropdownMenuItem onClick={() => setConfirmation('cancel')}>
+                  Cancel
+                </DropdownMenuItem>
+              ) : null}
+              {canDelete && status === 'DRAFT' ? <DropdownMenuSeparator /> : null}
+              {canDelete && status === 'DRAFT' ? (
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setConfirmation('delete')}
+                >
+                  Delete
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
         {error && confirmation === null ? (
           <p role="alert" className="text-destructive basis-full text-right text-sm">
             {error}
