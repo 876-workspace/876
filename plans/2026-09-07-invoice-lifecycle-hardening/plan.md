@@ -85,11 +85,20 @@ Invoice lifecycle changes happen through finalization, payment/credit allocation
 
 ### Payments Received mirrors the mature accounting workflow
 
-The Zoho Books/Invoice workflow was used as a reference: payments can be recorded at customer level, distributed across outstanding invoices, partially allocated, or left unapplied as advance/customer credit. The 876 backend already supported that accounting model; this extension removed a UI restriction that incorrectly required at least one allocation and exposed the model consistently in Billing and Invoice.
+The current Zoho Books/Invoice workflow was used as a reference: payments can be recorded at customer level, distributed across outstanding invoices, partially allocated, or left unapplied as advance/customer credit. The 876 backend already supported that accounting model; this extension removed a UI restriction that incorrectly required at least one allocation and exposed the model consistently in Billing and Invoice.
 
 ### Accepted quote conversion
 
-Quote acceptance and conversion remain separate. `DRAFT → SENT → ACCEPTED` is the quote lifecycle; an accepted quote can then create one draft invoice. The Billing service now rejects `quoteId` invoice creation when the quote is not `ACCEPTED`, so API callers cannot bypass the host UI rule.
+Quote acceptance and conversion remain separate. `DRAFT → SENT → ACCEPTED` is the quote lifecycle; an accepted quote can then create one draft invoice. The Billing service rejects `quoteId` invoice creation when the quote is not `ACCEPTED`, so API callers cannot bypass the host UI rule. The existing one-to-one `convertedInvoice` relation remains duplicate-conversion evidence.
+
+### Permission boundaries
+
+Adjacent financial actions do not inherit authority from one another:
+
+- Billing: invoice lifecycle uses `sales:write`; Record Payment uses `payments:write`.
+- Invoice: Record Payment and `/payments/new` use `payments.create`.
+- Invoice quote mutation uses `quotes.edit`, draft deletion uses `quotes.delete`, and accepted quote conversion uses `invoices.create`.
+- Invoice suppresses Convert after `convertedInvoice` exists.
 
 ### Shared product UI
 
@@ -107,7 +116,7 @@ Outbox events are not a user-facing history API. No invoice timeline was fabrica
 
 | Tool | Report | Status |
 | --- | --- | --- |
-| GPT Web | `./reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md` | extension reconciliation pending final handoff |
+| GPT Web | `./reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md` | complete |
 
 ## Task checklist
 
@@ -147,27 +156,34 @@ Outbox events are not a user-facing history API. No invoice timeline was fabrica
 - [x] Made unused received money explicit as customer credit in the form summary/copy.
 - [x] Added invoice-prefill: customer, currency, remaining amount, and allocation default from `invoiceId`.
 - [x] Added `Record payment` to collectible invoice actions in both Billing and Invoice.
+- [x] Gated Billing Record Payment by `payments:write` rather than invoice mutation authority.
 - [x] Promoted Payments Received presentation into `@876/billing-ui/payment-received-form` instead of copying the form between hosts.
 - [x] Kept Billing and Invoice as thin host adapters for payment transport/navigation.
 - [x] Added an Invoice-host `/payments/new` route using the shared form and Billing-owned data.
-- [x] Added an Invoice same-origin Payments Received browser client.
+- [x] Gated Invoice payment entry by durable `payments.create` permission.
+- [x] Added an Invoice same-origin Payments Received browser client with idempotency.
 - [x] Kept payment creation customer-owned and allowed zero allocations.
 - [x] Exposed payment → invoice allocation links in Invoice payment detail; Billing already exposed those links.
 - [x] Added accepted-quote `Convert to invoice` actions in both Billing and Invoice.
 - [x] Hardened the Billing service so invoice creation from `quoteId` requires quote status `ACCEPTED`.
 - [x] Preserved the one-to-one `Quote.convertedInvoice` guard and draft invoice creation behavior.
 - [x] Kept accepted quote and converted invoice as separate records; no quote-status enum migration.
+- [x] Split Invoice quote permissions: `quotes.edit`, `quotes.delete`, `invoices.create`.
+- [x] Suppressed Convert after the quote already has a converted invoice.
 - [x] Added shared-form tests for invoice prefill and zero-allocation customer payments.
 - [x] Updated Billing/Invoice invoice-action tests for customer/invoice payment links.
+- [x] Added accepted-only quote-conversion service tests.
+- [x] Added Invoice same-origin payment-client coverage.
 - [x] Updated lifecycle documentation for quote conversion and Payments Received.
 
 ### Phase 5 — Documentation, compatibility review, and handoff
 
 - [x] Updated Billing engine/accounting/lifecycle documentation.
-- [x] Reviewed the branch for enum migrations, duplicate payment models, duplicated cross-host UI, and unsafe status inference.
+- [x] Reviewed the branch for enum migrations, duplicate payment models, duplicated cross-host UI, unsafe status inference, and permission leaks.
 - [x] Restored accidental SDK documentation churn and removed an initial self-import found earlier in the run.
 - [x] Reconciled first-send semantics and conservative Void presentation.
-- [ ] Refresh final GPT Web report with the Payments Received/quote-conversion extension.
+- [x] Restored no-op quote-schema churn to `main` exactly.
+- [x] Refreshed the GPT Web report with the Payments Received/quote-conversion extension.
 - [ ] Final compare against current `main` after the extension.
 
 ## Test drafting summary
@@ -178,9 +194,11 @@ Prior lifecycle work added **28 literal `it()` declarations**. This extension ad
 
 - shared Payments Received form: 2 declarations;
 - Billing invoice action payment-link coverage: 1 declaration;
-- Invoice invoice action payment-link coverage: 1 declaration.
+- Invoice invoice action payment-link coverage: 1 declaration;
+- Billing service accepted-quote conversion: 2 declarations;
+- Invoice same-origin Payments Received client: 1 declaration.
 
-**Current run total: 32 new literal `it()` declarations**, plus parameterized lifecycle cases. This is a drafted-test count only.
+**Current run total: 35 new literal `it()` declarations**, plus parameterized lifecycle cases. This is a drafted-test count only.
 
 ## Verification commands
 
@@ -218,10 +236,12 @@ Implementation state:
 - Unapplied received money remains customer credit.
 - Payment detail exposes allocated invoice relationships.
 - Only accepted quotes are convertible through the Billing service, and conversion produces one draft invoice tied by `quoteId` / `convertedInvoice`.
+- Conversion is hidden after an accepted quote is already linked to its invoice.
+- Finance actions use their own payment/quote/invoice permissions rather than sharing one broad UI authority.
 - Billing and Invoice share lifecycle/payment presentation through `@876/billing-ui`.
 - No database migration is required for either the lifecycle work or this extension.
 
-Remaining work is verification and final report/diff reconciliation only.
+Remaining work is verification and the final branch comparison only.
 
 ## PR preparation summary
 
@@ -231,5 +251,5 @@ Implementation is complete but unverified.
 - Branch: `feature/invoice-lifecycle-hardening`.
 - No PR was opened; GPT Web rules prohibit it.
 - No migration SQL exists for this run.
-- Before PR preparation, the orchestrator must re-sync/compare with current `main`, run the verification commands above, inspect generated/API-contract output, and fix only concrete failures without weakening the lifecycle/payment invariants.
+- Before PR preparation, the orchestrator must run the verification commands above, inspect generated/API-contract output, and fix only concrete failures without weakening the lifecycle/payment invariants.
 - Final report: `plans/2026-09-07-invoice-lifecycle-hardening/reports/gpt-web/2026-09-07-invoice-lifecycle-hardening.md`.
