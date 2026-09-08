@@ -3,7 +3,7 @@
 - **Run ID:** `2026-09-08-mobile-navigation-shell`
 - **Branch:** `fix/mobile-navigation-shell`
 - **Base:** `main` at `9a146456bc42f66af422fe87a0dd6d2c935cb678`
-- **Status:** `COMPLETED ✅` — code implementation complete; executable/browser verification handed off
+- **Status:** `VERIFIED ✅` — implementation and executable verification complete; browser acceptance remains manual
 
 ## Overview
 
@@ -81,9 +81,10 @@ None. This run was executed directly by GPT Web through the GitHub connector.
 
 ## Execution Reports
 
-| Delegate | Report | Status |
-| --- | --- | --- |
-| GPT Web | `./reports/gpt-web/2026-09-08-mobile-navigation-shell.md` | complete |
+| Delegate | Report                                                    | Status   |
+| -------- | --------------------------------------------------------- | -------- |
+| GPT Web  | `./reports/gpt-web/2026-09-08-mobile-navigation-shell.md` | complete |
+| Codex    | `./reports/orchestrator/2026-09-08-final-review.md`       | complete |
 
 ## Task Checklist
 
@@ -140,18 +141,22 @@ None. This run was executed directly by GPT Web through the GitHub connector.
 - [x] Remove route-state synchronization effect from the shared disclosure implementation.
 - [x] Confirm branch remains `behind_by: 0` relative to `main` at closeout.
 - [x] Write GPT Web implementation report.
+- [x] Run focused and complete test suites for every touched workspace.
+- [x] Run all touched workspace typechecks and file-scoped lint.
+- [x] Prevent the legacy shared sidebar from mounting a second mobile Sheet.
 - [x] Mark plan complete with verification handoff documented.
 
 ## Focused Test Cases Added
 
 - `@876/ui`: 6
-- Billing: 2
-- Invoice: 2
+- Billing: 3
+- Invoice: 3
 - CRM: 2
 - Console: 2
-- **Total:** 14 new `it()` cases
+- **Total:** 16 new `it()` cases
 
-These tests were written but **not executed by GPT Web**.
+GPT Web did not execute these tests. Codex executed the focused tests and all
+five complete touched-workspace suites during final review.
 
 ## Verification Commands
 
@@ -188,15 +193,15 @@ Also run the repository's normal formatter/lint/boundary checks and perform brow
 
 ## Multi-Session Continuity / Handoff
 
-Implementation is complete on `fix/mobile-navigation-shell`. The final GitHub comparison before documentation closeout showed the branch directly ahead of `main`, `behind_by: 0`, with merge base `9a146456bc42f66af422fe87a0dd6d2c935cb678`.
+Implementation and executable verification are complete on
+`fix/mobile-navigation-shell`. The final local review added an explicit
+`renderMobile={false}` boundary for the Billing and Invoice desktop sidebars;
+without it, their CSS-hidden wrappers could still portal the generic mobile
+Sheet when the global sidebar keyboard shortcut fired.
 
-Remaining work is verification only:
-
-1. Run the focused tests above.
-2. Run full test/typecheck for the five touched packages/apps.
-3. Run formatting/lint/boundary checks required by the local workflow.
-4. Browser-check Billing/Invoice docked desktop behavior and all four mobile drawers, especially Billing child disclosure and Console context back/re-entry.
-5. Fix any verification defect on this same branch; do not reintroduce app-specific drawer markup or make Billing/Invoice floating.
+Manual browser acceptance remains recommended for the breakpoint, touch, and
+dark-theme checks listed above. See the orchestrator report for executable
+results and repository-wide lint baseline failures outside this branch.
 
 ## PR Preparation Summary
 
@@ -206,4 +211,4 @@ Remaining work is verification only:
 - Final plan closeout follows that report commit.
 - No migrations.
 - No PR opened by GPT Web.
-- Executable verification remains to be supplied by the local/orchestrating agent before merge.
+- Executable verification is recorded in `./reports/orchestrator/2026-09-08-final-review.md`.
