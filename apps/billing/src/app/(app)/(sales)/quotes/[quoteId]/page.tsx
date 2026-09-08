@@ -26,11 +26,17 @@ export default async function QuoteDetailPage({ params }: Props) {
   const quote = await resolveQuote(context.tenant.id, quoteId)
   if (!quote) notFound()
 
+  const isExpired =
+    (quote.status === 'DRAFT' || quote.status === 'SENT') &&
+    quote.expiresAt !== null &&
+    quote.expiresAt <= Math.floor(Date.now() / 1000)
+
   return (
     <div className="space-y-6">
       <QuoteActions
         quoteId={quote.id}
         status={quote.status}
+        isExpired={isExpired}
         convertedInvoiceId={quote.convertedInvoice?.id ?? null}
         canWrite={hasPermission(context, 'sales:write')}
       />
@@ -57,7 +63,9 @@ export default async function QuoteDetailPage({ params }: Props) {
         <dl className="divide-876-surface-border divide-y">
           <DetailField label="Issued" value={formatDate(quote.issueAt)} />
           <DetailField label="Expires" value={formatDate(quote.expiresAt)} />
+          <DetailField label="Sent" value={formatDate(quote.sentAt)} />
           <DetailField label="Accepted" value={formatDate(quote.acceptedAt)} />
+          <DetailField label="Expired" value={formatDate(quote.expiredAt)} />
           <DetailField
             label="Converted invoice"
             value={quote.convertedInvoice?.number ?? 'Not converted'}
