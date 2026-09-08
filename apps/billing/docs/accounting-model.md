@@ -156,8 +156,9 @@ amountRefunded == amount -> REFUNDED
 otherwise                 -> PARTIALLY_REFUNDED
 ```
 
-  A payment can therefore be `PARTIALLY_REFUNDED` with zero unapplied cash when
-  some of the original receipt remains allocated to invoices.
+A payment can therefore be `PARTIALLY_REFUNDED` with zero unapplied cash when
+some of the original receipt remains allocated to invoices.
+
 - A credit-note-source refund reduces only the credit note's available balance;
   it does not change `Payment.amountRefunded`.
 - Every successful refund appends one `REFUND_ISSUED` **DEBIT** to the customer

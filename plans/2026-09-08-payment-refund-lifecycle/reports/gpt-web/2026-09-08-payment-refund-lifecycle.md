@@ -1,10 +1,10 @@
 # GPT Web Final Report — Payment, Credit, Refund, and Customer Account Lifecycle
 
-**Run ID:** `2026-09-08-payment-refund-lifecycle`  
-**Branch:** `feature/payment-refund-lifecycle`  
-**Base:** `main@c2a687efc458baf1d69a0dc6d42b3bc17fefbced`  
-**Implementation status:** COMPLETE for connector-side scope  
-**Runtime verification:** NOT RUN from GPT Web  
+**Run ID:** `2026-09-08-payment-refund-lifecycle`
+**Branch:** `feature/payment-refund-lifecycle`
+**Base:** `main@c2a687efc458baf1d69a0dc6d42b3bc17fefbced`
+**Implementation status:** COMPLETE for connector-side scope
+**Runtime verification:** NOT RUN from GPT Web
 **PR:** Not opened
 
 ## Executive summary
@@ -55,7 +55,7 @@ A payment refund can consume only `Payment.unappliedAmount`. The mutation:
 11. records `REFUND_ISSUED` as a customer-ledger `DEBIT`;
 12. recomputes customer AR/credit inside the transaction.
 
-A payment with allocations can therefore have all *remaining* unapplied credit refunded and still be `PARTIALLY_REFUNDED`. It reaches `REFUNDED` only when the complete received amount has been returned.
+A payment with allocations can therefore have all _remaining_ unapplied credit refunded and still be `PARTIALLY_REFUNDED`. It reaches `REFUNDED` only when the complete received amount has been returned.
 
 ### Credit-note refund
 
@@ -504,3 +504,38 @@ Connector-side implementation is complete. The work preserves the existing Billi
 The final remaining gate is local/orchestrator verification. Do not represent this branch as test-, build-, Prisma-, or contract-verified until the commands above have actually been run successfully.
 
 No PR was opened by GPT Web.
+
+## Local orchestrator review addendum
+
+The local review corrected the following issues before PR preparation:
+
+- regenerated the Billing v1 OpenAPI snapshot and compatibility manifest for
+  the five new integration operations;
+- updated stale auth-matrix, app-contract, proxy-manifest, and receivables test
+  fixtures found only by execution;
+- added the missing typed integration payment mutation and refund resources,
+  including strict response schemas and client tests;
+- changed Invoice's payment proxy to enforce `payments:read`/`payments:write`
+  before forwarding reads or mutations, with route-level regression coverage;
+- added assembled Express coverage proving integration payment/refund routes
+  propagate the authenticated app ID into source-scoped service calls;
+- consolidated exact money-input parsing/formatting behind one Billing UI helper;
+- kept inactive historical payment modes/accounts out of new refund submissions;
+- added local Suspense boundaries for the new live customer transaction reads;
+- removed an impossible `amountRefunded` serializer fallback so malformed rows
+  remain observable instead of silently becoming zero.
+
+Verification completed locally:
+
+- Billing API: 81 files / 733 tests passed; typecheck, lint, boundaries, build,
+  Prisma validation, and API contract checks passed.
+- Billing client: 34 files / 340 tests passed; typecheck passed.
+- Billing UI: 41 files / 406 tests passed; typecheck passed.
+- Billing app: 86 files / 862 tests passed; typecheck passed.
+- Invoice app: 57 files / 402 tests passed; typecheck passed.
+- Every branch-changed file passes Prettier and ESLint.
+
+The repository-wide `pnpm check` stops at `format:check` because 446 unrelated
+files on the current base are not formatted. The Billing database drift command
+completed and reported existing `BillingInterval`/index drift; this branch does
+not modify Prisma schema or migrations.

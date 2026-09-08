@@ -1,9 +1,9 @@
 # Implementation Plan: Payment, Credit, Refund, and Customer Account Lifecycle
 
-**Run ID:** `2026-09-08-payment-refund-lifecycle`  
-**Branch:** `feature/payment-refund-lifecycle`  
-**Base:** `main@c2a687efc458baf1d69a0dc6d42b3bc17fefbced`  
-**Status:** COMPLETED — connector-side implementation complete; local verification pending
+**Run ID:** `2026-09-08-payment-refund-lifecycle`
+**Branch:** `feature/payment-refund-lifecycle`
+**Base:** `main@c2a687efc458baf1d69a0dc6d42b3bc17fefbced`
+**Status:** COMPLETED — implementation reviewed and locally verified
 
 ## Overview
 
@@ -125,8 +125,8 @@ CustomerLedgerEntry -> account history
 
 ## Execution reports
 
-| Tool | Report | Status |
-| --- | --- | --- |
+| Tool    | Report                                                     | Status   |
+| ------- | ---------------------------------------------------------- | -------- |
 | GPT Web | `./reports/gpt-web/2026-09-08-payment-refund-lifecycle.md` | complete |
 
 ## Task checklist
@@ -183,9 +183,7 @@ CustomerLedgerEntry -> account history
 
 ## Verification status
 
-**Not executed from this GPT Web environment.** No formatter, linter, test, typecheck, build, Prisma command, database migration, database drift check, or API contract check is claimed as passing.
-
-Run locally/orchestrator-side:
+GPT Web did not execute these checks. The local orchestrator subsequently ran:
 
 ```bash
 pnpm --filter @876/billing-api typecheck
@@ -207,7 +205,13 @@ pnpm --filter @876/invoice-app typecheck
 pnpm --filter @876/invoice-app test
 ```
 
-No database schema file or migration was changed by this branch, but the Billing API database validation/drift commands should still be run as part of the normal handoff.
+All affected workspace typechecks and tests passed. Billing API lint, boundaries,
+build, Prisma validation, and API contract checks passed. The drift command ran
+successfully and reported pre-existing database index renames plus creation of
+`BillingInterval`; this branch does not change Prisma schema or migrations.
+
+The repository-wide `pnpm check` remains blocked at `format:check` by 446 files
+outside this branch. Every file changed by this branch passes Prettier and ESLint.
 
 ## Multi-session continuity / handoff
 
@@ -224,4 +228,5 @@ The local/orchestrator agent should preserve the accounting separation implement
 
 ## PR preparation summary
 
-Connector-side implementation and handoff documentation are complete. Runtime verification remains local/orchestrator responsibility. GPT Web did not open a pull request.
+Implementation, review corrections, and local verification are complete. GPT Web
+did not open a pull request.
