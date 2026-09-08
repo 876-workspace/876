@@ -47,6 +47,10 @@
       "types": "./src/invoice-lifecycle-actions.tsx",
       "default": "./src/invoice-lifecycle-actions.tsx"
     },
+    "./quote-lifecycle-actions": {
+      "types": "./src/quote-lifecycle-actions.tsx",
+      "default": "./src/quote-lifecycle-actions.tsx"
+    },
     "./invoices-table": {
       "types": "./src/invoices-table.tsx",
       "default": "./src/invoices-table.tsx"
