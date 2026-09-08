@@ -156,6 +156,40 @@ describe('app access seed catalog', () => {
     ).toEqual([])
   })
 
+  it('grants Invoice Work reads to staff and non-destructive writes to admin', () => {
+    const roles = app('876-invoice').roles
+    const admin = roles.find((role) => role.key === 'admin')
+    const staff = roles.find((role) => role.key === 'staff')
+
+    expect(staff?.permissions).toEqual(
+      expect.arrayContaining([
+        'tasks.view',
+        'reminders.view',
+        'events.view',
+        'calendars.view',
+        'my-work.view',
+      ])
+    )
+    expect(admin?.permissions).toEqual(
+      expect.arrayContaining([
+        'tasks.create',
+        'tasks.edit',
+        'reminders.create',
+        'reminders.edit',
+        'events.create',
+        'events.edit',
+        'calendars.create',
+        'calendars.edit',
+      ])
+    )
+    expect(
+      admin?.permissions.some(
+        (permission) =>
+          permission.startsWith('tasks.') && permission.endsWith('.delete')
+      )
+    ).toBe(false)
+  })
+
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
     '$appSlug super admin receives the complete declared catalog',
     (definition) => {
