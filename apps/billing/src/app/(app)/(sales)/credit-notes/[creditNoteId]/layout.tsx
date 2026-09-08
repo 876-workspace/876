@@ -57,8 +57,8 @@ export default async function CreditNoteDetailLayout({
           balanceAmount={String(creditNote.balanceAmount)}
           currency={creditNote.currency}
           decimalPlaces={decimalPlaces}
-          customerId={creditNote.customerId}
           canWrite={context.permissions.includes('sales:write')}
+          canRefund={context.permissions.includes('payments:write')}
         />
       }
       tabs={[{ label: 'Overview', href: base, exact: true }]}
