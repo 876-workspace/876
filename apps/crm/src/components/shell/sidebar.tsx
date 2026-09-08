@@ -2,7 +2,7 @@
 
 import type { NavGroupDefinition } from '@876/core/access'
 
-import { resolveCrmNavIcon } from './nav-icons'
+import { resolveNavIcon } from './nav-icons'
 import { NavLink } from './nav-link'
 
 export function Sidebar({ navigation }: { navigation: NavGroupDefinition[] }) {
@@ -25,7 +25,7 @@ export function Sidebar({ navigation }: { navigation: NavGroupDefinition[] }) {
                 key={item.title}
                 href={item.href}
                 title={item.title}
-                icon={resolveCrmNavIcon(item.icon)}
+                icon={resolveNavIcon(item.icon)}
                 colorClassName={item.colorClassName}
                 side="right"
               />
