@@ -86,6 +86,7 @@ export type {
   LateFeeRun,
   InvoiceFinalizeParams,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
   InvoiceCreated,
   InvoiceUpdateParams,
   DeletedInvoice,
@@ -368,7 +369,7 @@ export {
   CurrencyListSchema,
   CurrencyMutationSchema,
   CurrencySchema,
-} from './currency'
+} from './currency.schema'
 
 // Finance workspace roles
 export type {
