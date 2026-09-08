@@ -79,15 +79,16 @@ export function QuoteLifecycleActions({
   )
   const [error, setError] = useState<string | null>(null)
 
-  const mutable = !isExpired && (status === 'DRAFT' || status === 'SENT')
-  const canExpire = canWrite && isExpired && mutable
-  const canSend = canWrite && !isExpired && (status === 'DRAFT' || status === 'SENT')
-  const canAccept = canWrite && !isExpired && (status === 'DRAFT' || status === 'SENT')
-  const canDecline = canWrite && !isExpired && status === 'SENT'
-  const canCancel = canWrite && !isExpired && mutable
-  const canEdit = Boolean(editHref) && canWrite && !isExpired && status === 'DRAFT'
-  const canDeleteDraft = canDelete && !isExpired && status === 'DRAFT'
-  const canConvertAccepted = canConvert && !isExpired && status === 'ACCEPTED'
+  const decisionOpen = status === 'DRAFT' || status === 'SENT'
+  const mutable = decisionOpen && !isExpired
+  const canExpire = canWrite && decisionOpen && isExpired
+  const canSend = canWrite && mutable
+  const canAccept = canWrite && mutable
+  const canDecline = canWrite && mutable && status === 'SENT'
+  const canCancel = canWrite && mutable
+  const canEdit = Boolean(editHref) && canWrite && mutable && status === 'DRAFT'
+  const canDeleteDraft = canDelete && mutable && status === 'DRAFT'
+  const canConvertAccepted = canConvert && status === 'ACCEPTED'
 
   if (
     !convertedInvoiceHref &&
