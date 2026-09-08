@@ -28,13 +28,17 @@ describe('QuoteLifecycleActions', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }))
 
     expect(onAction).toHaveBeenCalledWith('send')
-    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
-      'href',
-      '/quotes/quo_1/edit'
-    )
+
+    // Draft editing lives in the overflow menu, so it only exists once opened.
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+    // Base UI's `render` merge keeps the menuitem role on the anchor, so the
+    // href is asserted on the menu item rather than on a bare link role.
+    expect(
+      await screen.findByRole('menuitem', { name: 'Edit' })
+    ).toHaveAttribute('href', '/quotes/quo_1/edit')
   })
 
-  it('shows accept and decline for a valid sent quote', async () => {
+  it('shows accept, decline, and resend for a valid sent quote', async () => {
     const onAction = vi.fn(success)
     const user = userEvent.setup()
 
@@ -52,8 +56,12 @@ describe('QuoteLifecycleActions', () => {
     await user.click(screen.getByRole('button', { name: 'Accept' }))
     await user.click(screen.getByRole('button', { name: 'Decline' }))
 
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Resend' }))
+
     expect(onAction).toHaveBeenNthCalledWith(1, 'accept')
     expect(onAction).toHaveBeenNthCalledWith(2, 'decline')
+    expect(onAction).toHaveBeenNthCalledWith(3, 'send')
   })
 
   it('replaces mutable actions with explicit expiry once the decision window closes', async () => {
@@ -72,8 +80,17 @@ describe('QuoteLifecycleActions', () => {
       />
     )
 
-    expect(screen.queryByRole('button', { name: 'Accept' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Decline' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Accept' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Decline' })
+    ).not.toBeInTheDocument()
+    // An expired quote has no menu actions at all, so editing is unreachable
+    // rather than merely hidden behind a closed menu.
+    expect(
+      screen.queryByRole('button', { name: 'More actions' })
+    ).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Mark expired' }))
@@ -118,6 +135,9 @@ describe('QuoteLifecycleActions', () => {
     )
     expect(
       screen.queryByRole('button', { name: 'Convert to invoice' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'More actions' })
     ).not.toBeInTheDocument()
   })
 

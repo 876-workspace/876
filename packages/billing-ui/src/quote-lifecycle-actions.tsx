@@ -26,21 +26,10 @@ import {
 import { MoreHorizontalIcon } from '@876/ui/icons'
 
 export type QuoteLifecycleStatus =
-  | 'DRAFT'
-  | 'SENT'
-  | 'ACCEPTED'
-  | 'DECLINED'
-  | 'EXPIRED'
-  | 'CANCELED'
+  'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
 
 export type QuoteLifecycleUiAction =
-  | 'send'
-  | 'accept'
-  | 'decline'
-  | 'cancel'
-  | 'expire'
-  | 'delete'
-  | 'convert'
+  'send' | 'accept' | 'decline' | 'cancel' | 'expire' | 'delete' | 'convert'
 
 export interface QuoteLifecycleActionResult {
   error?: string | null
@@ -86,6 +75,7 @@ export function QuoteLifecycleActions({
   const canSend = canWrite && mutable
   const canAccept = canWrite && mutable
   const canDecline = canWrite && mutable && status === 'SENT'
+  const canResend = canSend && status === 'SENT'
   const canCancel = canWrite && mutable
   const canEdit = Boolean(editHref) && canWrite && mutable && status === 'DRAFT'
   const canDeleteDraft = canDelete && mutable && status === 'DRAFT'
@@ -136,12 +126,7 @@ export function QuoteLifecycleActions({
             ? 'Accept'
             : null
 
-  const hasMenuActions =
-    canEdit ||
-    Boolean(convertedInvoiceHref) ||
-    (canConvertAccepted && !convertedInvoiceHref) ||
-    canCancel ||
-    canDeleteDraft
+  const hasMenuActions = canEdit || canResend || canCancel || canDeleteDraft
 
   return (
     <>
@@ -176,8 +161,12 @@ export function QuoteLifecycleActions({
         {hasMenuActions ? (
           <DropdownMenu>
             <DropdownMenuTrigger
-              className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+              className={buttonVariants({
+                variant: 'outline',
+                size: 'icon-sm',
+              })}
               aria-label="More actions"
+              disabled={pending}
             >
               <MoreHorizontalIcon className="size-4" />
             </DropdownMenuTrigger>
@@ -187,26 +176,29 @@ export function QuoteLifecycleActions({
                   Edit
                 </DropdownMenuItem>
               ) : null}
-              {convertedInvoiceHref ? (
-                <DropdownMenuItem render={<Link href={convertedInvoiceHref} />}>
-                  View invoice
-                </DropdownMenuItem>
-              ) : canConvertAccepted ? (
-                <DropdownMenuItem disabled={pending} onClick={() => run('convert')}>
-                  Convert to invoice
+              {canResend ? (
+                <DropdownMenuItem
+                  disabled={pending}
+                  onClick={() => run('send')}
+                >
+                  Resend
                 </DropdownMenuItem>
               ) : null}
               {canCancel ? (
-                <DropdownMenuItem onClick={() => setConfirmation('cancel')}>
+                <DropdownMenuItem
+                  disabled={pending}
+                  onClick={() => setConfirmation('cancel')}
+                >
                   Cancel
                 </DropdownMenuItem>
               ) : null}
-              {canDeleteDraft && (canEdit || canCancel || canConvertAccepted) ? (
+              {canDeleteDraft && (canEdit || canResend || canCancel) ? (
                 <DropdownMenuSeparator />
               ) : null}
               {canDeleteDraft ? (
                 <DropdownMenuItem
                   variant="destructive"
+                  disabled={pending}
                   onClick={() => setConfirmation('delete')}
                 >
                   Delete
@@ -217,7 +209,10 @@ export function QuoteLifecycleActions({
         ) : null}
 
         {error && confirmation === null ? (
-          <p role="alert" className="text-destructive basis-full text-right text-sm">
+          <p
+            role="alert"
+            className="text-destructive basis-full text-right text-sm"
+          >
             {error}
           </p>
         ) : null}
@@ -230,7 +225,9 @@ export function QuoteLifecycleActions({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmation === 'delete' ? 'Delete this quote?' : 'Cancel this quote?'}
+              {confirmation === 'delete'
+                ? 'Delete this quote?'
+                : 'Cancel this quote?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmation === 'delete'

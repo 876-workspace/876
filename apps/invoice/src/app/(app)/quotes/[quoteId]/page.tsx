@@ -86,8 +86,7 @@ export default async function QuoteDetailPage({ params }: Props) {
       : typeof quote.createdAt === 'number'
         ? quote.createdAt
         : null
-  const expiresAt =
-    typeof quote.expiresAt === 'number' ? quote.expiresAt : null
+  const expiresAt = typeof quote.expiresAt === 'number' ? quote.expiresAt : null
   const isExpired =
     (status === 'DRAFT' || status === 'SENT') &&
     expiresAt !== null &&
