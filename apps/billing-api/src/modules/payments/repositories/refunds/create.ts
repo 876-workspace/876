@@ -35,6 +35,29 @@ export async function create(
         if (!customer)
           throw new RefundMutationError('Active customer not found.', 404)
 
+        if (params.paymentModeId) {
+          const paymentMode = await tx.paymentMode.findFirst({
+            where: { id: params.paymentModeId, tenantId, isActive: true },
+            select: { id: true },
+          })
+          if (!paymentMode)
+            throw new RefundMutationError('Active payment mode not found.', 404)
+        }
+
+        if (params.depositAccountId) {
+          const depositAccount = await tx.bankAccount.findFirst({
+            where: { id: params.depositAccountId, tenantId, isActive: true },
+            select: { id: true, currency: true },
+          })
+          if (!depositAccount)
+            throw new RefundMutationError('Active refund account not found.', 404)
+          if (depositAccount.currency !== params.currency)
+            throw new RefundMutationError(
+              'The refund account uses a different currency.',
+              422
+            )
+        }
+
         if (params.creditNoteId) {
           const creditNote = await tx.creditNote.findFirst({
             where: { id: params.creditNoteId, tenantId },
@@ -127,29 +150,6 @@ export async function create(
               updatedAt: now,
             },
           })
-        }
-
-        if (params.paymentModeId) {
-          const paymentMode = await tx.paymentMode.findFirst({
-            where: { id: params.paymentModeId, tenantId, isActive: true },
-            select: { id: true },
-          })
-          if (!paymentMode)
-            throw new RefundMutationError('Active payment mode not found.', 404)
-        }
-
-        if (params.depositAccountId) {
-          const depositAccount = await tx.bankAccount.findFirst({
-            where: { id: params.depositAccountId, tenantId, isActive: true },
-            select: { id: true, currency: true },
-          })
-          if (!depositAccount)
-            throw new RefundMutationError('Active refund account not found.', 404)
-          if (depositAccount.currency !== params.currency)
-            throw new RefundMutationError(
-              'The refund account uses a different currency.',
-              422
-            )
         }
 
         await tx.refund.create({
