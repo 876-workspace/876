@@ -159,6 +159,7 @@ export interface PaymentResource {
   number: string
   amount: string
   unappliedAmount: string
+  amountRefunded: string
   status:
     | 'PENDING'
     | 'REQUIRES_ACTION'
