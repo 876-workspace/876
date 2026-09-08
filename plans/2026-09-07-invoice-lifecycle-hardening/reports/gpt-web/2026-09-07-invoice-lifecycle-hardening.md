@@ -1,28 +1,49 @@
-# GPT Web Report: Invoice Lifecycle Hardening
+# GPT Web Report: Invoice Lifecycle Hardening + Payments Received
 
 **Run ID:** `2026-09-07-invoice-lifecycle-hardening`  
 **Branch:** `feature/invoice-lifecycle-hardening`  
 **Base:** `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`  
 **Execution environment:** GitHub connector only  
-**Verification:** not executed; verification is the orchestrator's
+**Verification:** not executed; verification is the orchestrator's responsibility
 
 ## Outcome
 
-The existing 876 Billing invoice engine was hardened rather than replaced. The durable eight-value `InvoiceStatus` contract remains intact, while lifecycle semantics are now centralized and explicit across payment allocation, credit-note application, automatic available-credit settlement, overdue materialization, lifecycle commands, bounded SDKs, and the Billing/Invoice UI surfaces.
+This run hardened the existing 876 Billing invoice lifecycle and was then extended to complete the adjacent **Payments Received** and **accepted Quote → Invoice** workflows across 876 Billing and 876 Invoice.
 
-The core behavioral changes are:
+The existing Billing commercial data plane remains the owner. No second payment model, invoice store, or quote-conversion table was introduced.
 
-- a partially settled invoice that is still past due remains `OVERDUE`;
-- payment and credit allocations use one compatibility-status projection instead of independent `PAID`/`PARTIALLY_PAID` ternaries;
-- sending is a communication command rather than a financial-state setter;
-- the first `sentAt` is preserved while every subsequent successful mark-sent command can emit a fresh `invoice.sent` event;
-- full remaining-balance write-off is a distinct accounting command that records `WRITE_OFF` evidence, clears AR, and does not pretend cash was received;
-- void is restricted to unsettled collectible invoices and remains the operation that reverses the posted sale's inventory movement;
-- Billing and Invoice render lifecycle actions through one `@876/billing-ui` owner instead of maintaining divergent action components.
+The combined implementation now provides:
 
-No Prisma enum, schema, or database migration was required.
+- one canonical collectible invoice status projection;
+- overdue-preserving partial settlement;
+- explicit send and write-off invoice commands;
+- hardened void behavior;
+- customer-owned Payments Received with optional invoice allocations;
+- unused received cash retained as customer credit through `Payment.unappliedAmount`;
+- invoice → Record Payment entry with customer/invoice prefill;
+- payment → invoice allocation navigation;
+- a single shared Payments Received editor for Billing and Invoice;
+- accepted-only quote conversion through the Billing service boundary;
+- one-to-one quote conversion evidence through the existing `Quote.convertedInvoice` relation;
+- separate permission checks for invoice mutation, payment creation, quote mutation/deletion, and invoice creation from an accepted quote.
 
-## Lifecycle contract
+No Prisma enum, model, SQL migration, or database migration was required.
+
+## External product research used
+
+Current Zoho Books / Zoho Invoice behavior was reviewed before the extension.
+
+The relevant product pattern is:
+
+- a payment received belongs to a customer and can be associated with one or more invoices;
+- partial invoice payment is supported;
+- excess or unapplied customer money can remain available for later use rather than being forced onto the current invoice;
+- quote/estimate acceptance and invoice conversion are distinct workflow steps;
+- an accepted quote/estimate can subsequently be converted to an invoice.
+
+876 already had the accounting primitives needed for this model. The main implementation gap was presentation/workflow consistency rather than a missing financial schema.
+
+## Invoice lifecycle contract
 
 Persisted/API values remain:
 
@@ -47,263 +68,367 @@ sentAt exists                      -> SENT
 otherwise                          -> OPEN
 ```
 
-`VOID` and `UNCOLLECTIBLE` are explicit terminal command states and are not produced by the collectible projection.
+`VOID` and `UNCOLLECTIBLE` remain explicit command states.
 
-This deliberately separates the concepts that the legacy-compatible enum flattens:
-
-- financial state;
-- settlement state;
-- due state;
-- communication state.
-
-The detailed contract is documented in `apps/billing/docs/invoice-lifecycle.md`, `apps/billing/BILLING_ENGINE.md`, and `apps/billing/docs/accounting-model.md`.
+A past-due partially settled invoice therefore remains `OVERDUE`; payment evidence remains available through `amountPaid` and allocations instead of being lost in one overloaded status.
 
 ## Lifecycle commands
 
 ### Finalize
 
-The existing finalization workflow remains the posting boundary. It retains the commercial data-plane behavior that had already landed on `main`: payment-term/salesperson resolution, receivable posting, Inventory consumption, customer ledger evidence, AR recomputation, idempotency, and `invoice.finalized` emission.
-
-Generic invoice PATCH remains limited to non-financial header fields; this run did not add any direct status/amount setter.
+The existing finalization workflow remains the accounting posting boundary. It retains payment-term/salesperson resolution, receivable posting, Inventory consumption, customer ledger evidence, AR recomputation, idempotency, and `invoice.finalized` emission.
 
 ### Mark sent
 
-New tenant and integration routes:
-
-```text
-POST /api/v1/invoices/:invoiceId/send
-POST /api/v1/integrations/organizations/:organizationId/invoices/:invoiceId/send
-```
-
-Behavior:
-
-- rejects `DRAFT`, `VOID`, and `UNCOLLECTIBLE`;
-- permits finalized collectible invoices and `PAID` invoices;
-- converts only plain `OPEN` to compatibility `SENT`;
-- preserves `PARTIALLY_PAID`, `OVERDUE`, and `PAID` status;
-- preserves the first `sentAt` rather than rewriting the original send milestone;
-- emits `invoice.sent` on each successful command;
-- supports command idempotency where the caller supplies idempotency context.
-
-The UI deliberately says **Mark sent**, not Email/Send again. No communications provider was fabricated by this work; the command records communication evidence only.
+Additive tenant and integration commands record communication evidence. They preserve the first `sentAt`; only plain `OPEN` becomes compatibility `SENT`, while partial/overdue/paid financial state is preserved.
 
 ### Write off
 
-New tenant and integration routes:
-
-```text
-POST /api/v1/invoices/:invoiceId/write-off
-POST /api/v1/integrations/organizations/:organizationId/invoices/:invoiceId/write-off
-```
-
-Body:
-
-```json
-{
-  "reason": "Collection exhausted"
-}
-```
-
-Behavior:
-
-- requires a non-empty audit reason;
-- requires a collectible invoice with `amountDue > 0`;
-- writes off the complete remaining balance in this MVP;
-- sets `amountDue` to zero;
-- increments `amountWrittenOff`;
-- sets status to `UNCOLLECTIBLE`;
-- records a `WRITE_OFF` customer-ledger credit;
-- recomputes customer AR inside the transaction;
-- emits `invoice.written-off`;
-- preserves the sale and does **not** restore Inventory.
-
-A new write-off table was intentionally not added because the existing engine already owns `amountWrittenOff`, the `UNCOLLECTIBLE` status, `WRITE_OFF` ledger entries, metadata, and outbox evidence.
+The full remaining receivable can be explicitly written off with a required reason. The workflow increments `amountWrittenOff`, clears `amountDue`, sets `UNCOLLECTIBLE`, writes `WRITE_OFF` customer-ledger evidence, recomputes AR, and does not restore Inventory because the underlying sale still occurred.
 
 ### Void
 
-Void now explicitly rejects non-collectible terminal states, including `UNCOLLECTIBLE`, in addition to the pre-existing paid/allocation protections. It remains distinct from write-off:
+Void remains distinct from write-off. It is for an unsettled posted invoice and reverses the sale's stock movement. Settled, paid, written-off, or terminal invoices are rejected. Because flattened `OVERDUE` may now also be partially settled, host UI only presents Void when status alone is safely unambiguous (`OPEN`/`SENT`); backend evidence remains authoritative.
 
-- void cancels an unsettled posted invoice, clears the receivable, writes `INVOICE_VOIDED`, recomputes AR, restores the sale's Inventory movement, and preserves invoice history;
-- write-off acknowledges that the sale occurred but the remaining receivable is no longer collectible, so stock is not restored.
+## Payments Received
 
-Because `OVERDUE` can represent a partially settled invoice, flattened status alone cannot prove that an overdue invoice is safe to void. Shared UI therefore exposes Void only for `OPEN` and `SENT`; the backend remains authoritative.
+### Existing accounting model retained
 
-## Settlement consistency
-
-`apps/billing-api/src/modules/documents/invoice-lifecycle.ts` now owns:
-
-- `collectibleInvoiceStatuses`;
-- `overdueCandidateInvoiceStatuses`;
-- `isCollectibleInvoiceStatus()`;
-- `projectCollectibleInvoiceStatus()`.
-
-This owner is reused by:
-
-- manual Payment allocation validation/status projection;
-- Credit Note application validation/status projection;
-- automatic application of unapplied payments/customer credits;
-- automatic application of open credit-note balances;
-- overdue materialization.
-
-Cash, credit, and write-off evidence stay separate:
+The Billing engine already owned the correct underlying model:
 
 ```text
-remaining receivable =
-  totalAmount
-  - amountPaid
-  - amountCredited
-  - amountWrittenOff
+Customer
+  |
+  +-> Payment
+        |
+        +-> PaymentAllocation -> Invoice A
+        +-> PaymentAllocation -> Invoice B
+        +-> unappliedAmount    -> available customer credit
 ```
 
-Existing unapplied payment/customer-credit behavior is preserved. Existing reversals continue restoring the pre-allocation invoice status and paid timestamp captured by the allocation evidence.
+Important existing invariants were retained:
 
-The Customers AR repository retains its local four-status collectible predicate intentionally. Documents already calls Customers to recompute AR; importing Documents back into Customers would create a prohibited cross-module cycle. This boundary exception is documented rather than hidden.
+- `Payment.customerId` is required;
+- allocation invoices must belong to the same customer;
+- allocations must use the same currency as the payment;
+- allocation cannot exceed an invoice's remaining amount due;
+- payment creation can carry zero, one, or many allocations;
+- a payment can have an unapplied remainder;
+- customer AR/unused-credit projections are recomputed from financial evidence.
 
-## SDK and integration surface
+### UI mismatch corrected
 
-The bounded Billing client now exposes:
+Billing's existing New Payment form incorrectly required at least one invoice allocation even though the backend already supported an unallocated customer advance/payment.
 
-```ts
-billing.invoices.finalize(...)
-billing.invoices.send(...)
-billing.invoices.void(...)
-billing.invoices.writeOff(...)
+That restriction was removed.
+
+A Payment Received can now be saved with:
+
+```text
+amount received > 0
+allocations = []
+unappliedAmount = remaining payment value
 ```
 
-The integration Billing resource exposes matching `send()` and `writeOff()` commands under organization-scoped invoice routes. `InvoiceWriteOffParams` / `BillingInvoiceWriteOffParams` require the audit reason.
+The form makes that outcome explicit as **Unused / customer credit** rather than presenting it as an error.
 
-Billing's browser client and Invoice's same-origin integration proxy also expose the lifecycle commands. Invoice continues routing through its own `/api/invoices/...` surface and does not bypass host transport/auth boundaries.
+### Invoice-prefilled payment entry
 
-## Shared UI
+Collectible invoices now expose **Record payment**.
 
-`packages/billing-ui/src/invoice-lifecycle-actions.tsx` now owns the lifecycle action presentation used by both hosts:
+The action links into the same Payments Received workflow with:
+
+```text
+customerId
+invoiceId
+```
+
+The form then preselects:
+
+- the invoice customer;
+- invoice currency;
+- current `amountDue` as the received amount;
+- current `amountDue` as the default allocation to that invoice.
+
+The operator can change the amount or allocation and can distribute the payment across other outstanding invoices for the same customer/currency.
+
+No `markPaid()` shortcut was introduced. Saving still creates a Payment + PaymentAllocation evidence and lets the canonical settlement projection update invoice state.
+
+### Shared Billing / Invoice surface
+
+The full reusable editor now lives at:
+
+`packages/billing-ui/src/payment-received-form.tsx`
+
+It owns only presentation, input parsing, allocation editing, and validation. It imports no backend/service client.
+
+Billing's former large payment form is now a thin adapter that supplies Billing browser-client mutations and navigation.
+
+Invoice gained a separate thin adapter and `/payments/new` host route using the same `@876/billing-ui/payment-received-form` component.
+
+This follows the repository rule that the same finance screen rendered by two product hosts has one `@876/billing-ui` implementation.
+
+### Invoice host transport
+
+Invoice now has a same-origin Payments Received browser client:
+
+`apps/invoice/src/lib/client/payments.ts`
+
+Creation posts to:
+
+```text
+POST /api/payments
+```
+
+with an idempotency key. The existing Invoice resource proxy remains responsible for forwarding to the Billing boundary; the shared UI never receives service credentials or origins.
+
+### Payment detail relationships
+
+Billing already linked payment allocations back to invoice detail.
+
+Invoice payment detail now does the same: active invoice allocations render under **Applied to invoices**, showing invoice number, status, allocated amount, and a link to the invoice.
+
+The detail surface continues to show:
+
+- customer;
+- amount received;
+- deposit account;
+- payment mode;
+- allocated amount;
+- unapplied amount/customer credit;
+- reference;
+- notes.
+
+## Customer ownership
+
+Payments are explicitly customer-owned rather than invoice-owned.
+
+This distinction is important because it supports:
+
+- customer advances before an invoice exists;
+- one payment settling several invoices;
+- overpayments;
+- later application of unused credit;
+- refunds from unapplied cash;
+- customer statements that show cash independently from the invoices it eventually settles.
+
+Invoices merely receive settlement through `PaymentAllocation`.
+
+## Quote acceptance and conversion
+
+### Resulting workflow
+
+```text
+DRAFT
+  -> SENT
+      -> ACCEPTED
+          -> convert
+              -> Invoice(DRAFT)
+```
+
+Alternate quote outcomes remain `DECLINED`, `CANCELED`, and existing expiry behavior.
+
+### Accepted-only service boundary
+
+Before this extension, `invoices.create({ quoteId })` could reach the quote-copy repository even when the quote was not accepted.
+
+`documentsService.createInvoice()` now verifies the source quote first and rejects conversion unless:
+
+```text
+quote.status === ACCEPTED
+```
+
+The rejection is a 409 `invoice/invalid-state` with the client-safe message that the quote must be accepted before conversion.
+
+This matters because hiding Convert in the UI alone would not protect API or SDK callers.
+
+### Existing conversion implementation retained
+
+Conversion still uses the existing invoice-create path with only `quoteId` supplied.
+
+That repository already:
+
+- reads the source quote;
+- copies customer/document/line snapshot values;
+- creates an Invoice in `DRAFT`;
+- sets `billingReason = QUOTE`;
+- preserves the quote relation;
+- rejects a second conversion when `convertedInvoice` already exists.
+
+The quote remains `ACCEPTED`; conversion evidence is the one-to-one relation rather than a redundant new `INVOICED` status.
+
+The converted invoice still has no AR impact until it is finalized.
+
+### Host actions
+
+Both Billing and Invoice accepted-quote detail actions now offer **Convert to invoice** and navigate to the resulting invoice.
+
+Invoice additionally suppresses the conversion action when a `convertedInvoice` is already present, matching the one-to-one domain relationship instead of deliberately provoking a backend conflict.
+
+## Permission boundaries
+
+The extension review caught several places where adjacent finance actions could otherwise inherit the wrong authority.
+
+Billing invoice detail now separates:
+
+```text
+sales:write       -> invoice lifecycle actions
+payments:write    -> Record payment
+```
+
+Invoice uses its durable app permission catalog:
+
+```text
+payments.create   -> Record payment / /payments/new
+quotes.edit       -> quote transitions/edit/cancel
+quotes.delete     -> delete draft quote
+invoices.create   -> accepted quote -> invoice conversion
+```
+
+The Invoice quote action component can therefore expose conversion to a user who is allowed to create invoices without implicitly granting quote mutation/deletion, and vice versa.
+
+The existing broader invoice mutation check outside this extension was not redesigned wholesale.
+
+## Shared lifecycle UI
+
+`packages/billing-ui/src/invoice-lifecycle-actions.tsx` now owns:
 
 - Print;
-- Edit where host editability permits;
-- Finalize for drafts;
-- Mark sent for eligible finalized invoices;
-- Write off with required reason;
-- Void with optional reason, only when status safely implies no settlement (`OPEN`/`SENT`);
-- Delete for deletable drafts.
+- Edit;
+- Finalize;
+- Record payment;
+- Mark sent;
+- Write off;
+- Void;
+- Delete.
 
-Billing and Invoice action components are now thin host adapters that supply callbacks, navigation, and access decisions.
+Hosts supply hrefs/callbacks only when their caller has the appropriate authority.
 
-A user-facing invoice timeline was deliberately not implemented. Outbox events are delivery infrastructure, not an authorized history/read API. A future timeline should start with a durable invoice-event read contract rather than exposing the outbox directly.
+A user-facing invoice event timeline remains deliberately deferred. Outbox rows are infrastructure, not an authorized lifecycle-history read API.
 
-## Test drafting summary
+## Tests drafted
 
 No test was executed from GPT Web.
 
-New literal `it()` declarations drafted in this run:
+New literal `it()` declarations drafted across the complete run:
 
 | Area | New literal declarations |
 | --- | ---: |
 | Invoice lifecycle helper | 9 |
-| Existing invoice workflow suite additions | 6 |
-| Shared Billing UI lifecycle suite | 7 |
-| Invoice same-origin lifecycle client additions | 4 |
-| Billing bounded SDK resource additions | 2 |
-| **Total** | **28** |
+| Existing invoice workflow additions | 6 |
+| Billing bounded SDK lifecycle resources | 2 |
+| Shared invoice lifecycle UI | 7 |
+| Invoice lifecycle browser client | 4 |
+| Shared Payments Received form | 2 |
+| Billing invoice → payment action | 1 |
+| Invoice invoice → payment action | 1 |
+| Billing service quote conversion | 2 |
+| Invoice Payments Received browser client | 1 |
+| **Total** | **35** |
 
-The lifecycle helper contains two `it.each` declarations, so that file expands from 9 literal declarations to 15 expected runtime cases. This is a drafted-test count only; no tests were run here.
+The lifecycle helper also has parameterized `it.each` declarations, so runtime test cases exceed the literal declaration count. This is a drafted-test count only.
 
-## Important files changed
+New extension coverage specifically checks:
+
+- invoice payment prefill;
+- saving a customer Payment Received with `allocations: []`;
+- invoice Record Payment hrefs;
+- accepted-only quote conversion at the service boundary;
+- accepted quote reaching the existing invoice-create repository;
+- Invoice same-origin payment POST + idempotency.
+
+## Important extension files
 
 ### Billing API
 
-- `apps/billing-api/src/modules/documents/invoice-lifecycle.ts`
-- `apps/billing-api/src/modules/documents/invoice-lifecycle.test.ts`
-- `apps/billing-api/src/modules/documents/index.ts`
-- `apps/billing-api/src/modules/documents/repositories/invoices/mark-overdue.ts`
-- `apps/billing-api/src/modules/documents/repositories/invoices/settlement.ts`
-- `apps/billing-api/src/modules/payments/repositories/payments/shared.ts`
-- `apps/billing-api/src/modules/documents/repositories/credit-notes/shared.ts`
-- `apps/billing-api/src/modules/documents/repositories/invoice-workflow.ts`
-- `apps/billing-api/src/modules/documents/workflows/send-invoice.ts`
-- `apps/billing-api/src/modules/documents/workflows/write-off-invoice.ts`
-- `apps/billing-api/src/modules/documents/workflows/void-invoice.ts`
-- `apps/billing-api/src/modules/documents/workflows/invoice-workflows.test.ts`
-- `apps/billing-api/src/modules/documents/schemas/invoice.ts`
 - `apps/billing-api/src/modules/documents/documents.service.ts`
-- `apps/billing-api/src/modules/documents/documents.controller.ts`
-- `apps/billing-api/src/modules/documents/documents.routes.ts`
-- `apps/billing-api/src/modules/outbox/outbox.service.ts`
+- `apps/billing-api/src/modules/documents/documents.service.test.ts`
 
-### Billing SDK / integration
+### Shared finance UI
 
-- `packages/billing/src/types/invoice.ts`
-- `packages/billing/src/types/index.ts`
-- `packages/billing/src/resources/invoices.ts`
-- `packages/billing/src/resources/__tests__/documents.test.ts`
-- `packages/billing/src/integration/types/invoice-write-off.ts`
-- `packages/billing/src/integration/types/index.ts`
-- `packages/billing/src/integration/resources/invoices.ts`
-
-### Hosts and shared UI
-
+- `packages/billing-ui/src/payment-received-form.tsx`
+- `packages/billing-ui/src/payment-received-form.test.tsx`
 - `packages/billing-ui/src/invoice-lifecycle-actions.tsx`
-- `packages/billing-ui/src/invoice-lifecycle-actions.test.tsx`
 - `packages/billing-ui/package.json`
-- `apps/billing/src/types/invoice.ts`
-- `apps/billing/src/lib/client/invoices.ts`
+
+### Billing host
+
+- `apps/billing/src/features/payments/components/payment-form.tsx`
+- `apps/billing/src/app/(app)/(sales)/payments/new/page.tsx`
+- `apps/billing/src/app/(app)/(sales)/invoices/[invoiceId]/page.tsx`
 - `apps/billing/src/app/(app)/(sales)/invoices/[invoiceId]/_components/invoice-actions.tsx`
-- `apps/invoice/src/lib/client/documents.ts`
-- `apps/invoice/src/lib/client/documents.test.ts`
+- `apps/billing/src/app/(app)/(sales)/invoices/[invoiceId]/_components/invoice-actions.test.tsx`
+- `apps/billing/src/app/(app)/(sales)/quotes/[quoteId]/_components/quote-actions.tsx`
+
+### Invoice host
+
+- `apps/invoice/src/app/(app)/payments/new/page.tsx`
+- `apps/invoice/src/features/payments/components/payment-received-form.tsx`
+- `apps/invoice/src/lib/client/payments.ts`
+- `apps/invoice/src/lib/client/payments.test.ts`
+- `apps/invoice/src/lib/client/index.ts`
+- `apps/invoice/src/app/(app)/payments/[paymentId]/page.tsx`
+- `apps/invoice/src/app/(app)/invoices/[invoiceId]/page.tsx`
 - `apps/invoice/src/app/(app)/invoices/[invoiceId]/_components/invoice-actions.tsx`
+- `apps/invoice/src/app/(app)/invoices/[invoiceId]/_components/invoice-actions.test.tsx`
+- `apps/invoice/src/app/(app)/quotes/[quoteId]/page.tsx`
+- `apps/invoice/src/app/(app)/quotes/[quoteId]/_components/quote-actions.tsx`
 
-### Documentation / handoff
+### Documentation / tracker
 
-- `apps/billing/BILLING_ENGINE.md`
-- `apps/billing/docs/accounting-model.md`
 - `apps/billing/docs/invoice-lifecycle.md`
 - `plans/2026-09-07-invoice-lifecycle-hardening/plan.md`
 - this report
 
-## Compatibility and diff review
+## Compatibility / architecture review
 
-The final review specifically checked for the failure modes the repo rules call out:
+The extension was reviewed for the main failure modes relevant to the repository:
 
-- no persisted `InvoiceStatus` values were renamed;
-- no database schema/migration was introduced;
-- no create/update/finalize/void route was renamed;
-- send/write-off routes are additive;
-- generic invoice updates remain non-financial;
-- accidental SDK JSDoc churn was restored so the type change is focused;
-- an initial Documents self-import in the write-off workflow was removed;
-- overdue/partial settlement precedence is centralized;
-- the overdue materializer consumes the canonical candidate list;
-- Customer AR's duplicated status list is documented as a dependency-cycle exception;
-- shared UI does not infer Void eligibility from ambiguous overdue/partial status;
-- repeated send commands preserve first `sentAt` while emitting fresh send evidence;
-- the UI does not claim a message provider sent or delivered anything;
-- no user-facing timeline was fabricated from the outbox.
+- no second payment entity or invoice-payment shortcut introduced;
+- no `INVOICED` quote status added;
+- no persisted enum rename;
+- no schema or migration required;
+- quote conversion remains `invoices.create({ quoteId })` rather than introducing a competing route/model;
+- non-accepted quote conversion is rejected at the service boundary;
+- existing one-to-one `convertedInvoice` remains the duplicate-conversion guard;
+- Payments Received remains tied to customer first;
+- zero allocations are accepted and explicitly presented as customer credit;
+- shared product UI is implemented once rather than copied into Invoice;
+- host-specific access and transport remain outside `@876/billing-ui`;
+- invoice Record Payment permissions are independent from invoice-edit permissions;
+- quote edit/delete/convert permissions are independent in Invoice;
+- accidental no-op quote-schema churn created during implementation was restored to main exactly;
+- no outbox infrastructure was exposed as user-facing history.
 
 ## Deliberate gaps
 
-1. No user-facing invoice timeline until an authorized read contract exists.
-2. No server-provided lifecycle-capabilities object yet; UI is deliberately conservative.
-3. No partial write-off; current command writes off the full remaining receivable.
-4. Customer AR's collectible-status predicate remains local to avoid a Documents ↔ Customers module cycle.
+1. No user-facing invoice lifecycle timeline until an authorized read contract exists.
+2. No server-provided invoice capability object yet; UI remains conservative.
+3. No partial write-off; write-off clears the full remaining receivable.
+4. Customer AR's collectible-status list remains local to avoid a Documents ↔ Customers module cycle.
 5. No enum normalization/migration.
-6. No email/SMS/WhatsApp delivery provider is wired by `send`; it records lifecycle communication evidence only.
+6. Mark sent still records communication evidence only; it does not claim provider delivery.
+7. Invoice Payments Received currently implements creation; Billing retains its richer edit/delete payment workflow.
+8. The Invoice Payments Received form currently loads candidate customer/account/mode/currency/invoice data for the form rather than adding new server-side search/filter contracts in this run.
+9. Automatic quote acceptance → conversion preference was not introduced; acceptance and conversion remain explicit commands, which matches the default separation discussed in the plan.
 
 ## Verification not performed
 
-GPT Web has no shell, package manager, database, runtime, or test runner in this repo workflow. The following were **not executed**:
+GPT Web did **not** execute:
 
 - Prettier;
 - ESLint;
 - TypeScript typecheck;
 - Vitest;
-- dependency-cruiser boundaries;
-- Next/Express builds;
+- boundary/dependency checks;
+- Next.js or Express builds;
 - Prisma validate/generate/migrate;
 - database drift checks;
 - API contract checks/generation;
-- browser/manual testing;
+- browser/manual tests;
 - CI workflows.
 
-No statement in this report should be read as claiming those checks pass.
+No statement in this report claims those checks pass.
 
 ## Orchestrator verification commands
 
@@ -327,13 +452,12 @@ pnpm --filter @876/invoice-app typecheck
 pnpm --filter @876/invoice-app test
 ```
 
-The orchestrator should use the actual package-script names if any workspace differs from these labels and commit only intentional formatter/generated-contract output.
+Use the actual workspace/script names if a package differs. Commit only intentional formatter/generated-contract changes.
 
 ## Branch state
 
 - Branch: `feature/invoice-lifecycle-hardening`.
 - Base used: `main@d0475b5da880d84f483f42bdd2d9f46b3ff6e5ae`.
-- `main` was checked again during final review and was still at the same SHA, so this branch was not behind `main` at that check.
 - No PR was opened or modified.
-- No migration was executed or created.
-- Remaining work is runtime/toolchain verification in an environment with shell and database access.
+- No migration was created or executed.
+- Runtime/toolchain/database verification remains for an environment with shell access.
