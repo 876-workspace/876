@@ -90,9 +90,12 @@ export async function create(
             },
           })
           if (!payment) throw new RefundMutationError('Payment not found.', 404)
-          if (payment.status !== 'SUCCEEDED')
+          if (
+            payment.status !== 'SUCCEEDED' &&
+            payment.status !== 'PARTIALLY_REFUNDED'
+          )
             throw new RefundMutationError(
-              'Only a successful payment can be refunded.',
+              'Only a successful payment with refundable credit can be refunded.',
               409
             )
           if (payment.customerId !== params.customerId)
