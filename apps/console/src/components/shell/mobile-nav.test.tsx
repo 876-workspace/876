@@ -58,13 +58,14 @@ describe('Console MobileNav', () => {
     mocks.productMobileNav.mockClear()
   })
 
-  it('uses the shared drawer at the platform root without inline child expansion', () => {
+  it('uses the shared drawer at the titleless platform root without inline child expansion', () => {
     render(<MobileNav navigation={navigation} contexts={[]} />)
 
     expect(mocks.productMobileNav).toHaveBeenCalledTimes(1)
     expect(mocks.productMobileNav.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
-        title: 'Console',
+        title: '',
+        accessibleTitle: 'Console navigation',
         navigation,
         resolveIcon: resolveNavIcon,
         resolveIconColor: resolveNavIconColor,
@@ -100,7 +101,7 @@ describe('Console MobileNav', () => {
       title: string
       backAction?: unknown
     }
-    expect(rootProps.title).toBe('Console')
+    expect(rootProps.title).toBe('')
     expect(rootProps.backAction).toBeUndefined()
   })
 })
