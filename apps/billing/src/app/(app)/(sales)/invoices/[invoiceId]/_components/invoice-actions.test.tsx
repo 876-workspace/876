@@ -15,11 +15,27 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('@/lib/client', () => ({
   client: {
-    invoices: { delete: mocks.deleteInvoice, finalize: vi.fn(), void: vi.fn() },
+    invoices: {
+      delete: mocks.deleteInvoice,
+      finalize: vi.fn(),
+      send: vi.fn(),
+      void: vi.fn(),
+      writeOff: vi.fn(),
+    },
   },
 }))
 
 import { InvoiceActions } from './invoice-actions'
+
+function renderActions(status: Parameters<typeof InvoiceActions>[0]['status']) {
+  return render(
+    <InvoiceActions
+      invoiceId="inv_123"
+      customerId="cus_123"
+      status={status}
+    />
+  )
+}
 
 describe('InvoiceActions', () => {
   beforeEach(() => {
@@ -32,7 +48,7 @@ describe('InvoiceActions', () => {
 
   it('shows Edit and Delete for a draft', async () => {
     const user = userEvent.setup()
-    render(<InvoiceActions invoiceId="inv_123" status="DRAFT" />)
+    renderActions('DRAFT')
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
       '/invoices/inv_123/edit'
@@ -43,20 +59,29 @@ describe('InvoiceActions', () => {
     ).toBeVisible()
   })
 
+  it('links an open invoice to a customer-prefilled payment received form', () => {
+    renderActions('OPEN')
+    expect(screen.getByRole('link', { name: 'Record payment' })).toHaveAttribute(
+      'href',
+      '/payments/new?customerId=cus_123&invoiceId=inv_123'
+    )
+  })
+
   it('omits Delete for a sent invoice', () => {
-    render(<InvoiceActions invoiceId="inv_123" status="SENT" />)
+    renderActions('SENT')
     expect(screen.queryByLabelText('More actions')).not.toBeInTheDocument()
   })
 
   it('omits Edit and Delete for a paid invoice', () => {
-    render(<InvoiceActions invoiceId="inv_123" status="PAID" />)
+    renderActions('PAID')
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('More actions')).not.toBeInTheDocument()
   })
 
   it('deletes the exact invoice and returns to the list', async () => {
     const user = userEvent.setup()
-    render(<InvoiceActions invoiceId="inv_123" status="DRAFT" />)
+    renderActions('DRAFT')
     await user.click(screen.getByLabelText('More actions'))
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }))
     await user.click(screen.getByRole('button', { name: 'Delete' }))
@@ -72,7 +97,7 @@ describe('InvoiceActions', () => {
       error: { message: 'Cannot delete invoice' },
     })
     const user = userEvent.setup()
-    render(<InvoiceActions invoiceId="inv_123" status="DRAFT" />)
+    renderActions('DRAFT')
     await user.click(screen.getByLabelText('More actions'))
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }))
     await user.click(screen.getByRole('button', { name: 'Delete' }))
