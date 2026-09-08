@@ -61,6 +61,25 @@ export type BillingOutboxEvent =
       }
       occurredAt: number
     }
+  | {
+      type:
+        | 'quote.sent'
+        | 'quote.accepted'
+        | 'quote.declined'
+        | 'quote.canceled'
+        | 'quote.expired'
+      version: 1
+      resource: { type: 'quote'; id: string }
+      payload: {
+        quoteId: string
+        customerId: string
+        number: string
+        currency: string
+        status: string
+        occurredAt: number
+      }
+      occurredAt: number
+    }
 
 export function enqueueBillingEvent(
   tx: Prisma.TransactionClient,
