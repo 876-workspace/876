@@ -39,18 +39,24 @@ export default async function NewPaymentPage({ searchParams }: Props) {
     billing.currencies.list(),
     billing.invoices.list(),
   ])
-  const failure =
-    customers.error ??
-    accounts.error ??
-    modes.error ??
-    currencies.error ??
-    invoices.error
-  if (failure) {
+  if (
+    customers.error !== null ||
+    accounts.error !== null ||
+    modes.error !== null ||
+    currencies.error !== null ||
+    invoices.error !== null
+  ) {
+    const failure =
+      customers.error ??
+      accounts.error ??
+      modes.error ??
+      currencies.error ??
+      invoices.error
     return (
       <Page>
         <AppError
           error={{
-            code: failure.code,
+            code: failure?.code ?? 'billing/payment-form-unavailable',
             message: 'Payment entry data is unavailable right now.',
           }}
         />
