@@ -2,8 +2,9 @@
 
 **Run ID:** `2026-09-07-quote-lifecycle-hardening`  
 **Branch:** `feature/quote-lifecycle-hardening`  
-**Base:** `main@4f869314ff2b264d12bc5c07f1c9017392b55ad8`  
-**Status:** COMPLETED — UNVERIFIED; REBASE REQUIRED BEFORE LOCAL VERIFICATION
+**Original base:** `main@4f869314ff2b264d12bc5c07f1c9017392b55ad8`  
+**Synced main:** `main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20`  
+**Status:** COMPLETED — UNVERIFIED; SYNCED WITH MAIN
 
 ## Overview
 
@@ -24,6 +25,7 @@ Finish the quote lifecycle foundation on top of the invoice/payment work merged 
 11. Froze expired draft/sent quotes at the service boundary rather than relying only on UI visibility.
 12. Added focused API/domain/SDK/shared-UI tests as code. None were executed by GPT Web.
 13. Added `apps/billing/docs/quote-lifecycle.md` describing lifecycle, expiry, conversion, preferences, and accounting boundaries.
+14. Merged the latest `main` into this branch with a real two-parent merge commit and reconciled the newer host-aware Billing UI Link/provider architecture without dropping quote lifecycle work.
 
 ## Architectural invariants
 
@@ -179,6 +181,15 @@ No new persisted permission catalog was invented. Backend tenant routes continue
 - [x] Write final GPT Web report.
 - [x] Complete this implementation tracker.
 
+### Phase 6 — Latest-main synchronization
+
+- [x] Compare branch against current `main` and identify six upstream commits.
+- [x] Merge `main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20` with two parents in commit `707c742782f2b4670085cee393dd7c910bf3db8f`.
+- [x] Preserve upstream Billing/Console/Invoice host Link providers and `@876/billing-ui/link`.
+- [x] Adapt `quote-lifecycle-actions.tsx` to use package-local `Link` rather than `next/link`.
+- [x] Preserve upstream `packages/billing-ui/package.json` exports and restore `./quote-lifecycle-actions` structurally.
+- [x] Confirm current compare reports the branch ahead of `main` and **0 behind**.
+
 ## Schema / migration
 
 Added:
@@ -206,7 +217,7 @@ The migration adds quote lifecycle timestamps used by the command/event model. *
 - browser/manual testing
 - CI
 
-Suggested local verification after rebasing onto current `main`:
+Suggested local verification on the now-synced branch:
 
 ```bash
 pnpm --filter @876/billing-api typecheck
@@ -230,14 +241,30 @@ pnpm --filter @876/invoice-app test
 
 Use the repository's actual current script names if any package labels have changed.
 
-## Upstream drift / rebase handoff
+## Latest-main sync handoff
 
-The branch was cut from `main@4f869314ff2b264d12bc5c07f1c9017392b55ad8`. During the run, `main` advanced by six commits beyond that merge base. The newer upstream work primarily affects Billing/Invoice host link-provider composition and shared `@876/billing-ui` link usage.
+The branch was originally cut from `main@4f869314ff2b264d12bc5c07f1c9017392b55ad8`. During the run, `main` advanced by six commits to `fdb78ba8f89624901ce78910bb4ced15c3ed7e20`.
 
-There is overlap in `packages/billing-ui/package.json`, and upstream also touched `apps/invoice/src/app/layout.tsx` plus several existing Billing UI components. The quote lifecycle implementation does not intentionally replace that host-link architecture, so the local agent should rebase this branch onto current `main`, preserve the newer host link/provider work, and reconcile the package export additions rather than choosing one side wholesale.
+Those commits were merged into this branch in a real two-parent merge commit:
 
-Do not treat the branch as verified until that rebase and the verification matrix above complete successfully.
+```text
+707c742782f2b4670085cee393dd7c910bf3db8f
+```
+
+The newer host-aware Billing UI navigation architecture was preserved, including `@876/billing-ui/link`, Billing/Console host providers, and Invoice's `LinkProvider`. Quote lifecycle UI was then reconciled to that architecture in `22603ff59dc1ba7d8100228c044930dc9e8707b9`, and its package export was restored without replacing upstream exports in `7acd507227166de7a395ba1ec147b50ff237e0fc`.
+
+At the post-sync comparison checkpoint, GitHub reported:
+
+```text
+base: main@fdb78ba8f89624901ce78910bb4ced15c3ed7e20
+status: ahead
+ahead_by: 48
+behind_by: 0
+merge_base: fdb78ba8f89624901ce78910bb4ced15c3ed7e20
+```
+
+The branch no longer requires a rebase to acquire those main changes. It still requires the verification matrix above before any claim that the implementation passes or is deployment-ready.
 
 ## PR preparation summary
 
-Implementation and documentation are complete for this run, but the branch is **not PR-ready until rebased and verified locally**. No PR was opened by GPT Web.
+Implementation, documentation, and latest-main synchronization are complete for this run. The branch is **synced but unverified**. No PR was opened by GPT Web.
