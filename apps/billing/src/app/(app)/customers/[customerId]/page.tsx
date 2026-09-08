@@ -65,6 +65,9 @@ async function CustomerReceivablesData({
         data: {
           outstanding: money(account.outstandingReceivable),
           overdue: money(account.overdueReceivable),
+          availableCredit: money(account.availableCredit),
+          netPosition: money(account.netPosition),
+          billed: money(account.lifetimeBilled),
           paid: money(account.lifetimePaid),
           currency,
         },
