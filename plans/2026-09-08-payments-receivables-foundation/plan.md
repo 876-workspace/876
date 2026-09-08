@@ -184,10 +184,8 @@ pnpm --filter @876/billing test
 pnpm --filter @876/billing-ui typecheck
 pnpm --filter @876/billing-ui test
 pnpm --filter @876/billing-app typecheck
-pnpm --filter @876/invoice typecheck
+pnpm --filter @876/invoice-app typecheck
 ```
-
-Use the exact workspace package name from the relevant `package.json` if a filter differs.
 
 ## Completion definition
 
