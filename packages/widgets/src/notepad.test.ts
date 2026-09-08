@@ -11,12 +11,14 @@ import {
   WIDGET_HOST_APP_SLUGS,
   WIDGET_HOST_LABELS,
   widgetCatalog,
+  workWidgetMetadata,
 } from './catalog'
 
 describe('shared widget catalog', () => {
   it('exports portable widgets only', () => {
     expect(widgetCatalog.map((widget) => widget.id)).toEqual([
       'notepad',
+      'work',
       'chat',
     ])
     expect(widgetCatalog.map((widget) => widget.id)).not.toContain('live_logs')
@@ -26,6 +28,15 @@ describe('shared widget catalog', () => {
     expect(notepadWidgetMetadata.distribution).toBe('shared')
     expect(notepadWidgetMetadata.dataOwner).toBe('widgets')
     expect(isWidgetsDataOwner(notepadWidgetMetadata)).toBe(true)
+  })
+
+  it('marks Work as organization-owned external shared content', () => {
+    expect(workWidgetMetadata.distribution).toBe('shared')
+    expect(workWidgetMetadata.dataOwner).toBe('external')
+    expect(workWidgetMetadata.ownership).toBe('organization')
+    expect(workWidgetMetadata.surface).toBe('panel')
+    expect(workWidgetMetadata.defaultPanel.width).toBe(520)
+    expect(isWidgetsDataOwner(workWidgetMetadata)).toBe(false)
   })
 
   it('derives every host gate from the typed widget definition', () => {
@@ -103,6 +114,58 @@ describe('shared widget catalog', () => {
     expect(WIDGET_HOST_LABELS.invoice).toBe('876 Invoice')
   })
 
+  it('declares the four exact feature gates for Work in Invoice', () => {
+    expect(getWidgetFeatureSlugs(workWidgetMetadata)).toEqual([
+      'platform-widgets',
+      'platform-widgets-work',
+      'invoice-widgets',
+      'invoice-widgets-work',
+    ])
+    expect(getRequiredWidgetFeatureSlugs(workWidgetMetadata, 'invoice')).toEqual(
+      [
+        'platform-widgets',
+        'platform-widgets-work',
+        'invoice-widgets',
+        'invoice-widgets-work',
+      ]
+    )
+  })
+
+  it('resolves Work for Invoice only when every Work gate is enabled', () => {
+    const gates = [
+      'platform-widgets',
+      'platform-widgets-work',
+      'invoice-widgets',
+      'invoice-widgets-work',
+    ]
+
+    expect(resolveEnabledWidgetIds('invoice', new Set(gates))).toEqual(['work'])
+
+    for (const missing of gates) {
+      expect(
+        resolveEnabledWidgetIds(
+          'invoice',
+          new Set(gates.filter((slug) => slug !== missing))
+        )
+      ).toEqual([])
+    }
+  })
+
+  it('does not enable Work in Billing before that host is implemented', () => {
+    expect(
+      isWidgetEnabled(
+        workWidgetMetadata,
+        'billing',
+        new Set([
+          'platform-widgets',
+          'platform-widgets-work',
+          'billing-widgets',
+          'billing-widgets-work',
+        ])
+      )
+    ).toBe(false)
+  })
+
   it('resolves enabled Billing panel widgets in catalog order', () => {
     const allBillingGates = [
       'platform-widgets',
@@ -128,7 +191,6 @@ describe('shared widget catalog', () => {
       'billing-widgets-chat',
     ]
 
-    // Missing platform master
     expect(
       resolveEnabledWidgetIds(
         'billing',
@@ -136,7 +198,6 @@ describe('shared widget catalog', () => {
       )
     ).toEqual([])
 
-    // Missing billing master
     expect(
       resolveEnabledWidgetIds(
         'billing',
@@ -144,7 +205,6 @@ describe('shared widget catalog', () => {
       )
     ).toEqual([])
 
-    // Missing notepad child gate
     expect(
       resolveEnabledWidgetIds(
         'billing',
@@ -154,7 +214,6 @@ describe('shared widget catalog', () => {
       )
     ).toEqual([])
 
-    // Missing chat child gate
     expect(
       resolveEnabledWidgetIds(
         'billing',
@@ -164,7 +223,6 @@ describe('shared widget catalog', () => {
       )
     ).toEqual(['notepad'])
 
-    // isWidgetEnabled fails closed on unsupported or unimplemented hosts
     expect(
       isWidgetEnabled(
         notepadWidgetMetadata,
@@ -175,16 +233,9 @@ describe('shared widget catalog', () => {
     expect(
       isWidgetEnabled(notepadWidgetMetadata, '876', new Set(allBillingGates))
     ).toBe(false)
-    expect(
-      isWidgetEnabled(
-        notepadWidgetMetadata,
-        'invoice',
-        new Set(allBillingGates)
-      )
-    ).toBe(false)
   })
 
-  it('returns empty list for invoice even when invoice-widgets and candidate gates are present', () => {
+  it('keeps Notepad and Chat unavailable in Invoice', () => {
     const candidateGates = [
       'platform-widgets',
       'platform-widgets-notepad',
@@ -194,9 +245,6 @@ describe('shared widget catalog', () => {
       'invoice-widgets-chat',
     ]
 
-    expect(resolveEnabledWidgetIds('invoice', new Set(candidateGates))).toEqual(
-      []
-    )
     expect(
       isWidgetEnabled(notepadWidgetMetadata, 'invoice', new Set(candidateGates))
     ).toBe(false)
