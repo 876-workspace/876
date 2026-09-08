@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { GET } from './route'
+import { GET, POST } from './route'
 
 const mocks = vi.hoisted(() => ({
   requireWorkWidgetPermission: vi.fn(),
   getWork: vi.fn(),
   list: vi.fn(),
+  create: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/work-widget-access', () => ({
@@ -21,11 +22,26 @@ const PAGE = {
   url: '/v1/organizations/org_1/tasks',
 }
 
-function request(query = '') {
+const TASK = {
+  object: 'task' as const,
+  id: 'task_1',
+  title: 'Follow up',
+  status: 'OPEN' as const,
+}
+
+function getRequest(query = '') {
   return new Request(`http://invoice.test/api/tasks${query}`)
 }
 
-describe('GET /api/tasks', () => {
+function postRequest(body: unknown) {
+  return new Request('http://invoice.test/api/tasks', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+}
+
+describe('/api/tasks', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     mocks.requireWorkWidgetPermission.mockResolvedValue({
@@ -33,17 +49,20 @@ describe('GET /api/tasks', () => {
       orgId: 'org_1',
       userId: 'user_1',
     })
-    mocks.getWork.mockResolvedValue({ tasks: { list: mocks.list } })
+    mocks.getWork.mockResolvedValue({
+      tasks: { list: mocks.list, create: mocks.create },
+    })
     mocks.list.mockResolvedValue({ data: PAGE, error: null })
+    mocks.create.mockResolvedValue({ data: TASK, error: null })
   })
 
-  it('requires tasks.view before reading Work', async () => {
-    await GET(request())
+  it('requires tasks.view before reading Work tasks', async () => {
+    await GET(getRequest())
 
     expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith('tasks.view')
   })
 
-  it('returns access failures before creating a Work client', async () => {
+  it('returns read access failures before creating a Work client', async () => {
     mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
         { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
@@ -51,14 +70,14 @@ describe('GET /api/tasks', () => {
       ),
     })
 
-    const response = await GET(request())
+    const response = await GET(getRequest())
 
     expect(response.status).toBe(403)
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
   it('always scopes task reads to the acting user', async () => {
-    const response = await GET(request())
+    const response = await GET(getRequest())
     const payload = await response.json()
 
     expect(mocks.list).toHaveBeenCalledWith('org_1', {
@@ -70,7 +89,7 @@ describe('GET /api/tasks', () => {
   })
 
   it('accepts an optional canonical task-list filter', async () => {
-    await GET(request('?listId=list_1'))
+    await GET(getRequest('?listId=list_1'))
 
     expect(mocks.list).toHaveBeenCalledWith('org_1', {
       assigneeId: 'user_1',
@@ -80,7 +99,7 @@ describe('GET /api/tasks', () => {
   })
 
   it('rejects a blank task-list filter', async () => {
-    const response = await GET(request('?listId=%20%20'))
+    const response = await GET(getRequest('?listId=%20%20'))
     const payload = await response.json()
 
     expect(response.status).toBe(422)
@@ -88,13 +107,55 @@ describe('GET /api/tasks', () => {
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
-  it('sanitizes unknown upstream task-list failures', async () => {
+  it('requires tasks.create for task creation', async () => {
+    await POST(postRequest({ title: 'Follow up' }))
+
+    expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith('tasks.create')
+  })
+
+  it('stamps new tasks with the acting user as creator and assignee', async () => {
+    const response = await POST(
+      postRequest({
+        title: 'Follow up',
+        listId: 'list_1',
+        description: 'Call the customer',
+        importance: 'HIGH',
+        due: { at: 200, timeZone: 'America/New_York' },
+      })
+    )
+    const payload = await response.json()
+
+    expect(mocks.create).toHaveBeenCalledWith('org_1', {
+      title: 'Follow up',
+      listId: 'list_1',
+      description: 'Call the customer',
+      importance: 'HIGH',
+      dueAt: 200,
+      dueTimeZone: 'America/New_York',
+      assigneeId: 'user_1',
+      createdBy: 'user_1',
+    })
+    expect(payload).toEqual({ data: TASK, error: null })
+  })
+
+  it('rejects browser-owned identity fields during creation', async () => {
+    const response = await POST(
+      postRequest({ title: 'Follow up', assigneeId: 'user_2' })
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(422)
+    expect(payload.error.code).toBe('work/invalid-request')
+    expect(mocks.getWork).not.toHaveBeenCalled()
+  })
+
+  it('sanitizes unknown upstream failures', async () => {
     mocks.list.mockResolvedValue({
       data: null,
       error: { code: 'provider/raw-error', message: 'provider detail' },
     })
 
-    const response = await GET(request())
+    const response = await GET(getRequest())
     const payload = await response.json()
 
     expect(response.status).toBe(502)
