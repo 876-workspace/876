@@ -14,6 +14,7 @@ import type {
   InvoiceStatus,
   InvoiceUpdateParams,
   InvoiceVoidParams,
+  InvoiceWriteOffParams,
 } from './schemas/invoice'
 import type { InvoicePreferenceUpdateParams } from './schemas/invoice-preference'
 import type {
@@ -127,6 +128,30 @@ export const documentsController = {
       )
     )
   },
+  async invoicesSend(req: Request, res: Response) {
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<Record<string, never>>(req)
+    res.json(
+      await service.sendInvoice(
+        tenant(req),
+        invoiceId,
+        undefined,
+        optionalCommandIdempotency(req, { invoiceId, body })
+      )
+    )
+  },
+  async invoicesIntegrationSend(req: Request, res: Response) {
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<Record<string, never>>(req)
+    res.json(
+      await service.sendInvoice(
+        tenant(req),
+        invoiceId,
+        sourceApp(req),
+        optionalCommandIdempotency(req, { invoiceId, body })
+      )
+    )
+  },
   async invoicesVoid(req: Request, res: Response) {
     const invoiceId = param(req, 'invoiceId')
     const body = validBody<InvoiceVoidParams>(req)
@@ -145,6 +170,32 @@ export const documentsController = {
     const body = validBody<InvoiceVoidParams>(req)
     res.json(
       await service.voidInvoice(
+        tenant(req),
+        invoiceId,
+        body,
+        sourceApp(req),
+        optionalCommandIdempotency(req, { invoiceId, body })
+      )
+    )
+  },
+  async invoicesWriteOff(req: Request, res: Response) {
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<InvoiceWriteOffParams>(req)
+    res.json(
+      await service.writeOffInvoice(
+        tenant(req),
+        invoiceId,
+        body,
+        undefined,
+        optionalCommandIdempotency(req, { invoiceId, body })
+      )
+    )
+  },
+  async invoicesIntegrationWriteOff(req: Request, res: Response) {
+    const invoiceId = param(req, 'invoiceId')
+    const body = validBody<InvoiceWriteOffParams>(req)
+    res.json(
+      await service.writeOffInvoice(
         tenant(req),
         invoiceId,
         body,
