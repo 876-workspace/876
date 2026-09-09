@@ -120,8 +120,8 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] `pnpm check:service-bundle` passed in local review; production source unchanged afterward.
 - [x] Final GPT Web static branch review completed against current `main` comparison.
 - [x] Write `plans/2026-09-09-work-widget-phase-3/reports/gpt-web/2026-09-09-work-widget-phase-3.md`.
-- [ ] Phase 3 PR opened; complete GitHub review/CI gate before merge.
+- [x] Phase 3 PR opened as #522; complete GitHub review/CI gate before merge.
 
 ## Branch state / handoff
 
-The branch has been reconciled with Phase 2's merge commit on `main`. Current focused typechecks, unit/browser tests, and the Invoice production build pass. The repository-wide `pnpm check` remains blocked at its first step by 459 pre-existing formatting failures outside this Phase 3 diff; scoped lint also reports existing Invoice errors outside the changed Work files. GitHub CI and automated review remain the merge gate.
+The branch has been reconciled with Phase 2's merge commit on `main`. Current focused typechecks, unit/browser tests, and the Invoice production build pass. The repository-wide `pnpm check` remains blocked at its first step by 459 pre-existing formatting failures outside this Phase 3 diff; scoped lint also reports existing Invoice errors outside the changed Work files. PR #522 is mergeable. Its current GitHub Actions failures contain no steps or logs, so those jobs did not reach checkout or execute repository code; GitHub CI and automated review nevertheless remain the merge gate.
