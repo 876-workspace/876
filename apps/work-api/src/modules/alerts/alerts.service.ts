@@ -4,6 +4,9 @@ import type {
   UpdateWorkAlertInput,
   WorkAlert,
 } from '@876/work'
+
+import * as events from '../events/index.js'
+import * as tasks from '../tasks/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './alerts.repository.js'
 
@@ -37,6 +40,28 @@ async function requireTenant(organizationId: string) {
   if (tenant.status !== 'ACTIVE') return getError('work/tenant-inactive')
   return tenant
 }
+
+async function requireAlertResource(
+  organizationId: string,
+  input: Pick<CreateWorkAlertInput, 'taskId' | 'eventId'>
+) {
+  if (input.taskId) {
+    const task = await tasks.retrieve(organizationId, input.taskId)
+    if (isError(task)) return task
+    if (!task) return getError('work/task-not-found')
+    return task
+  }
+
+  if (input.eventId) {
+    const event = await events.retrieve(organizationId, input.eventId)
+    if (isError(event)) return event
+    if (!event) return getError('work/event-not-found')
+    return event
+  }
+
+  return getError('work/invalid-request')
+}
+
 export async function list(
   organizationId: string,
   filter: {
@@ -73,6 +98,10 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
+
+  const resource = await requireAlertResource(organizationId, input)
+  if (isError(resource)) return resource
+
   const row = await repository.create({
     tenantId: tenant.id,
     taskId: input.taskId ?? null,
