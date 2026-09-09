@@ -66,6 +66,32 @@ async function requireTenant(organizationId: string) {
   if (tenant.status !== 'ACTIVE') return getError('work/tenant-inactive')
   return tenant
 }
+function normalizedCreate(input: CreateWorkRecurrenceRuleInput) {
+  return {
+    frequency: input.frequency,
+    interval: input.interval ?? 1,
+    byDay: input.byDay ?? [],
+    byMonthDay: input.byMonthDay ?? [],
+    byMonth: input.byMonth ?? [],
+    count: input.count ?? null,
+    untilAt: input.untilAt ?? null,
+    weekStart: input.weekStart ?? null,
+  }
+}
+function fullUpdate(input: CreateWorkRecurrenceRuleInput): UpdateWorkRecurrenceRuleInput {
+  const normalized = normalizedCreate(input)
+  return {
+    frequency: normalized.frequency,
+    interval: normalized.interval,
+    byDay: normalized.byDay,
+    byMonthDay: normalized.byMonthDay,
+    byMonth: normalized.byMonth,
+    count: normalized.count,
+    untilAt: normalized.untilAt,
+    timeZone: input.timeZone,
+    weekStart: normalized.weekStart,
+  }
+}
 export async function list(organizationId: string) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
@@ -88,16 +114,7 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
-  const normalized = {
-    frequency: input.frequency,
-    interval: input.interval ?? 1,
-    byDay: input.byDay ?? [],
-    byMonthDay: input.byMonthDay ?? [],
-    byMonth: input.byMonth ?? [],
-    count: input.count ?? null,
-    untilAt: input.untilAt ?? null,
-    weekStart: input.weekStart ?? null,
-  }
+  const normalized = normalizedCreate(input)
   const row = await repository.create({
     tenantId: tenant.id,
     ...normalized,
@@ -155,4 +172,38 @@ export async function remove(organizationId: string, ruleId: string) {
   const current = await repository.retrieve(tenant.id, ruleId)
   if (!current) return null
   return repository.remove(ruleId)
+}
+
+export async function prepareForResource(
+  organizationId: string,
+  currentRuleId: string | null,
+  input: CreateWorkRecurrenceRuleInput
+) {
+  if (!currentRuleId) return create(organizationId, input)
+
+  const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
+  const usage = await repository.usage(tenant.id, currentRuleId)
+  if (!usage) return getError('work/recurrence-rule-not-found')
+  const references =
+    usage._count.tasks + usage._count.events + usage._count.reminders
+
+  if (references <= 1)
+    return update(organizationId, currentRuleId, fullUpdate(input))
+
+  return create(organizationId, input)
+}
+
+export async function cleanupDetached(
+  organizationId: string,
+  ruleId: string | null
+) {
+  if (!ruleId) return null
+  const tenant = await requireTenant(organizationId)
+  if (isError(tenant)) return tenant
+  const usage = await repository.usage(tenant.id, ruleId)
+  if (!usage) return null
+  const references =
+    usage._count.tasks + usage._count.events + usage._count.reminders
+  return references === 0 ? remove(organizationId, ruleId) : null
 }
