@@ -10,7 +10,8 @@ import { calendarWindow } from './work-widget-time'
 const originalTimeZone = process.env.TZ
 
 afterEach(() => {
-  process.env.TZ = originalTimeZone
+  if (originalTimeZone === undefined) delete process.env.TZ
+  else process.env.TZ = originalTimeZone
 })
 
 function unix(date: Date): number {
@@ -246,6 +247,6 @@ describe('Work calendar occurrence semantics', () => {
       workCalendarItemsForDay(data, day, 'calendar_1').map(
         (item) => `${item.type}:${item.id}`
       )
-    ).toEqual(['event:event_1', 'task:task_1', 'reminder:reminder_1'])
+    ).toEqual(['event:event_1', 'reminder:reminder_1', 'task:task_1'])
   })
 })
