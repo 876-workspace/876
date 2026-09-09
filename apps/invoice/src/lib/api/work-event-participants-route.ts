@@ -15,11 +15,22 @@ import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { getWork } from '@/lib/services/work'
 
-const createSchema = createWorkEventParticipantInputSchema.omit({
-  status: true,
-  delegatedTo: true,
-  delegatedFrom: true,
-})
+const participantFields = {
+  name: z.string().trim().max(240).optional().nullable(),
+  role: workParticipantRoleSchema.optional(),
+}
+const createSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('USER'),
+    participantId: z.string().trim().min(1),
+    ...participantFields,
+  }),
+  z.strictObject({
+    kind: z.literal('EMAIL'),
+    email: z.email(),
+    ...participantFields,
+  }),
+])
 
 const updateSchema = z
   .strictObject({
