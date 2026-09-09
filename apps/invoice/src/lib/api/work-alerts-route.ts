@@ -111,15 +111,16 @@ async function requireOwnedAlert(
   parent: AlertParent,
   alertId: string
 ) {
-  if (!alertId.trim()) return getError('work/invalid-request')
+  if (!alertId.trim())
+    return { data: null, error: getError('work/invalid-request') }
   const result = await access.work.alerts.retrieve(access.auth.orgId, alertId)
-  if (result.error) return result.error
+  if (result.error) return { data: null, error: result.error }
   if (
     result.data.userId !== access.auth.userId ||
     !alertMatchesParent(result.data, parent)
   )
-    return getError('work/not-found')
-  return result.data
+    return { data: null, error: getError('work/not-found') }
+  return { data: result.data, error: null }
 }
 
 export async function handleGetWorkAlerts(
@@ -174,7 +175,7 @@ export async function handlePatchWorkAlert(
   const access = await authorizeParent(parent, 'edit', invoiceId)
   if (access.response) return access.response
   const current = await requireOwnedAlert(access, parent, alertId)
-  if ('httpStatus' in current) return workErrorResponse(current)
+  if (current.error) return workErrorResponse(current.error)
 
   const parsed = updateSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success)
@@ -200,7 +201,7 @@ export async function handleDeleteWorkAlert(
   const access = await authorizeParent(parent, 'edit', invoiceId)
   if (access.response) return access.response
   const current = await requireOwnedAlert(access, parent, alertId)
-  if ('httpStatus' in current) return workErrorResponse(current)
+  if (current.error) return workErrorResponse(current.error)
 
   const result = await access.work.alerts.delete(access.auth.orgId, alertId)
   if (result.error) return workErrorResponse(result.error)
