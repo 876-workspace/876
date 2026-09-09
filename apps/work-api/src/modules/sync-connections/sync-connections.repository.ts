@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto'
+
 import { prisma } from '../../db/index.js'
 import type { Prisma } from '../../db/generated/prisma/client.js'
+
 type CreateParams = Omit<Prisma.WorkSyncConnectionUncheckedCreateInput, 'id'>
 type UpdateParams = Prisma.WorkSyncConnectionUncheckedUpdateInput
 type Filter = {
@@ -11,6 +13,7 @@ type Filter = {
   startingAfter?: string
   endingBefore?: string
 }
+
 export async function list(tenantId: string, filter: Filter) {
   const cursor = filter.startingAfter ?? filter.endingBefore
   const anchor = cursor ? await retrieve(tenantId, cursor) : null
@@ -31,16 +34,71 @@ export async function list(tenantId: string, filter: Filter) {
     take: filter.limit + 1,
   })
 }
+
+export const listActiveForSync = (limit = 50) =>
+  prisma.workSyncConnection.findMany({
+    where: {
+      status: 'ACTIVE',
+      credentialRef: { not: null },
+      mappings: { some: { resourceType: 'CALENDAR', parentMappingId: null } },
+    },
+    include: { tenant: true },
+    orderBy: [{ lastSyncedAt: 'asc' }, { id: 'asc' }],
+    take: limit,
+  })
+
 export const retrieve = (tenantId: string, id: string) =>
   prisma.workSyncConnection.findFirst({ where: { tenantId, id } })
+
 export const retrieveById = (id: string) =>
   prisma.workSyncConnection.findUnique({ where: { id } })
+
+export const retrieveWithTenantById = (id: string) =>
+  prisma.workSyncConnection.findUnique({
+    where: { id },
+    include: { tenant: true },
+  })
+
 export const create = (params: CreateParams) =>
   prisma.workSyncConnection.create({
     data: { id: `sync_${randomUUID().replaceAll('-', '')}`, ...params },
   })
+
 export const update = (id: string, params: UpdateParams) =>
   prisma.workSyncConnection.update({ where: { id }, data: params })
+
+export const setOauthState = (input: {
+  id: string
+  hash: string
+  expiresAt: Date
+}) =>
+  prisma.workSyncConnection.update({
+    where: { id: input.id },
+    data: {
+      oauthStateHash: input.hash,
+      oauthStateExpiresAt: input.expiresAt,
+    },
+  })
+
+export async function consumeOauthState(input: {
+  id: string
+  hash: string
+  now: Date
+}) {
+  const result = await prisma.workSyncConnection.updateMany({
+    where: {
+      id: input.id,
+      oauthStateHash: input.hash,
+      oauthStateExpiresAt: { gte: input.now },
+    },
+    data: {
+      oauthStateHash: null,
+      oauthStateExpiresAt: null,
+    },
+  })
+  return result.count === 1
+}
+
 export async function remove(id: string) {
   await prisma.$transaction(async (tx) => {
     await tx.workSyncCredential.deleteMany({ where: { connectionId: id } })

@@ -74,6 +74,14 @@ export const WORK_ERRORS = {
     message: 'You do not have permission to perform this Work action.',
     httpStatus: HttpStatus.FORBIDDEN,
   },
+  'work/sync-calendar-already-linked': {
+    message: 'That external calendar is already linked.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'work/sync-calendar-not-found': {
+    message: 'External calendar not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
   'work/sync-connection-not-found': {
     message: 'Sync connection not found.',
     httpStatus: HttpStatus.NOT_FOUND,
@@ -81,6 +89,30 @@ export const WORK_ERRORS = {
   'work/sync-mapping-not-found': {
     message: 'Sync mapping not found.',
     httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'work/sync-oauth-invalid-state': {
+    message: 'The calendar authorization request is invalid or expired.',
+    httpStatus: HttpStatus.BAD_REQUEST,
+  },
+  'work/sync-provider-authorization-required': {
+    message: 'The calendar provider authorization must be renewed.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'work/sync-provider-invalid-response': {
+    message: 'The calendar provider returned an invalid response.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'work/sync-provider-not-configured': {
+    message: 'The calendar provider is not configured.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
+  'work/sync-provider-rate-limited': {
+    message: 'The calendar provider is temporarily rate limited.',
+    httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+  },
+  'work/sync-provider-unavailable': {
+    message: 'The calendar provider is temporarily unavailable.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
   },
   'work/task-link-not-found': {
     message: 'Task link not found.',
