@@ -34,6 +34,8 @@ export type WorkTasksProps = {
   onCompleteTask?: (task: WorkTask) => void | Promise<void>
   onCancelTask?: (task: WorkTask) => void | Promise<void>
   hasMore?: boolean
+  loadingMore?: boolean
+  onLoadMore?: () => void | Promise<void>
   className?: string
 }
 
@@ -108,8 +110,7 @@ function TaskEditForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const form = event.currentTarget
-    const data = new FormData(form)
+    const data = new FormData(event.currentTarget)
     const title = String(data.get('title') ?? '').trim()
     if (!title) return
 
@@ -197,6 +198,8 @@ function TaskRow({
 }) {
   const due = dueLabel(task)
   const disabled = mutatingTaskId != null
+  const active = task.status !== 'DONE' && task.status !== 'CANCELLED'
+
   return (
     <div className="border-876-surface-border rounded-xl border p-3">
       <details>
@@ -238,7 +241,7 @@ function TaskRow({
         />
       </details>
 
-      {task.status !== 'DONE' && task.status !== 'CANCELLED' ? (
+      {active ? (
         <div className="mt-3 flex flex-wrap gap-2">
           <TaskActionButton
             task={task}
@@ -353,12 +356,16 @@ export function WorkTasks({
   onCompleteTask,
   onCancelTask,
   hasMore = false,
+  loadingMore = false,
+  onLoadMore,
   className,
 }: WorkTasksProps) {
   const activeTasks = tasks.filter(
     (task) => task.status !== 'DONE' && task.status !== 'CANCELLED'
   )
-  const completedTasks = tasks.filter((task) => task.status === 'DONE')
+  const closedTasks = tasks.filter(
+    (task) => task.status === 'DONE' || task.status === 'CANCELLED'
+  )
 
   return (
     <section className={cn('space-y-4 p-4', className)} aria-label="Tasks">
@@ -415,19 +422,24 @@ export function WorkTasks({
         )}
       />
 
-      {hasMore ? (
-        <p className="text-muted-foreground text-xs">
-          More tasks are available. Pagination will be added before broad rollout.
-        </p>
+      {hasMore && onLoadMore ? (
+        <button
+          type="button"
+          disabled={loadingMore}
+          onClick={() => void onLoadMore()}
+          className="border-876-surface-border hover:bg-muted focus-visible:ring-ring w-full rounded-lg border px-3 py-2 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+        >
+          {loadingMore ? 'Loading more…' : 'Load more'}
+        </button>
       ) : null}
 
-      {completedTasks.length > 0 ? (
+      {closedTasks.length > 0 ? (
         <details className="border-876-surface-border rounded-xl border p-3">
           <summary className="focus-visible:ring-ring cursor-pointer list-none rounded-md text-sm font-medium focus-visible:ring-2 focus-visible:outline-none">
-            Completed ({completedTasks.length})
+            Completed or cancelled ({closedTasks.length})
           </summary>
           <WorkTaskList
-            tasks={completedTasks}
+            tasks={closedTasks}
             className="mt-3"
             renderTask={(task) => <TaskRow task={task} />}
           />
