@@ -22,6 +22,33 @@ export function createRemindersRouter(resolveGuards: GuardResolver) {
     handler: controller.createReminder,
   })
   api.get({
+    path: '/:reminderId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.reminders.read',
+      sessionPermissions: ['reminders.view'],
+    },
+    handler: controller.retrieveReminderRecurrence,
+  })
+  api.patch({
+    path: '/:reminderId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.reminders.write',
+      sessionPermissions: ['reminders.edit'],
+    },
+    handler: controller.setReminderRecurrence,
+  })
+  api.delete({
+    path: '/:reminderId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.reminders.write',
+      sessionPermissions: ['reminders.edit'],
+    },
+    handler: controller.clearReminderRecurrence,
+  })
+  api.get({
     path: '/:reminderId',
     security: {
       kind: 'integration',
