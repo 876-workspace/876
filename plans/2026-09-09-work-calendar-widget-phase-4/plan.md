@@ -6,25 +6,25 @@ Planning/staging branch: `feat/work-widget-phase-4`
 
 Branch creation snapshot: `d911eb926563f7c7caf080d378289421050f24dd` from the then-current `feat/work-widget-phase-3` line.
 
-Status: `PLAN_READY; WAITING_FOR_LOCAL_PHASE4_BASELINE`
+Status: `PLAN_READY; PHASE3_BASELINE_VERIFIED; IMPLEMENTATION_NOT_STARTED`
 
 ## Coordination / implementation hold
 
 This branch is intentionally **planning-only for now**.
 
-The local orchestrator is still reconciling and/or changing the underlying Phase 3 Calendar/Tasks/Reminders widget implementation. GPT Web must not try to out-run, recreate, overwrite, rebase over, or otherwise replace that local work.
+The local orchestrator has finished reviewing the Phase 3 Calendar/Tasks/Reminders widget implementation. Phase 4 now inherits the verified Phase 3 head, but remains planning-only until the user explicitly starts the implementation run.
 
-When the user later points GPT Web back to `feat/work-widget-phase-4` for implementation:
+When the user later points Sonnet at `feat/work-widget-phase-4` for implementation:
 
 1. fetch the latest branch head first;
 2. review the local orchestrator's Phase 4 changes and any feedback/tracker updates;
 3. compare the actual branch against current `main` and the final Phase 3 baseline;
 4. preserve local commits and resolved behavior unless there is a concrete reviewed reason to change them;
-5. update this plan/tracker to reflect what the orchestrator already completed;
+5. update this plan/tracker to reflect what is actually implemented;
 6. implement only the remaining Phase 4 source work on top of that current branch;
 7. do not open or merge a PR unless explicitly requested.
 
-Until that handoff occurs, **no Phase 4 production source implementation is authorized from GPT Web on this branch.** Planning/documentation changes only.
+Until that handoff occurs, **no Phase 4 production source implementation is authorized on this branch.** Planning/documentation changes only.
 
 ---
 
@@ -53,7 +53,7 @@ name: '876 Calendar'
 description: 'Calendar, tasks, reminders, and your daily schedule powered by 876 Work.'
 ```
 
-The exact public name can still be changed later. The important rule is that UI/docs no longer imply the widget *is* the complete Work service.
+The exact public name can still be changed later. The important rule is that UI/docs no longer imply the widget _is_ the complete Work service.
 
 **Do not rename these in Phase 3 merely for product wording:**
 
@@ -104,19 +104,16 @@ Current Work contracts already contain two related compatibility shapes:
 1. `WorkContext` / legacy context projection:
 
 ```ts
-{ service, resource, id }
+{
+  ;(service, resource, id)
+}
 ```
 
 2. `WorkTaskLink` / canonical task link collection:
 
 ```ts
 {
-  service,
-  resource,
-  externalId,
-  label,
-  url,
-  isPrimary
+  ;(service, resource, externalId, label, url, isPrimary)
 }
 ```
 
@@ -125,13 +122,17 @@ Tasks expose both a legacy `context` projection and canonical `links[]`; Events 
 **Phase 3 must not invent another shape** such as:
 
 ```ts
-{ app, entity, entityId }
+{
+  ;(app, entity, entityId)
+}
 ```
 
 or
 
 ```ts
-{ product, resourceType, recordId }
+{
+  ;(product, resourceType, recordId)
+}
 ```
 
 Phase 4 will add a small adapter/convergence boundary around the existing models rather than proliferating concepts.
@@ -289,7 +290,7 @@ Do **not** pull these into Phase 3 merely to prepare:
 
 ## Phase 3 handoff acceptance for Phase 4
 
-Before GPT Web resumes Phase 4, the refreshed Phase 4 branch should ideally inherit a Phase 3 state where:
+Before Sonnet begins Phase 4, the refreshed Phase 4 branch must inherit a Phase 3 state where:
 
 1. the compact surface is no longer described as the entire Work service;
 2. internal `work` IDs/slugs remain stable unless a deliberate migration was already completed;
@@ -365,25 +366,25 @@ The widget is **not** the service and must not become the only way Work can be u
 
 # Domain responsibility matrix
 
-| Concern | Canonical owner | Notes |
-| --- | --- | --- |
-| Task/task list | Work | May be personal or linked to another resource |
-| Task assignment/delegation | Work | USER/TEAM, role/status lifecycle |
-| Reminder | Work | Standalone productivity primitive |
-| Event | Work | Calendar-owned event, optional opaque host context |
-| Calendar | Work | Shared metadata/ownership |
-| Calendar subscription | Work | Per-user visibility/role/preferences |
-| Recurrence | Work | Reusable Work recurrence rules |
-| Alerts/notification schedule | Work | Attached to Work task/event where modeled |
-| CRM request/ticket | CRM | Never mirrored wholesale into Work |
-| CRM request history/notes | CRM | Not Work records |
-| CRM categories/forms/routing | CRM | Not Work concepts |
-| Invoice/customer financial record | Billing/Finance | Work may link to it only |
-| Package/delivery | Couriers | Work may link to it only |
-| Chat thread/message | Chat/communications | Separate architecture boundary |
-| Widget state/navigation | Widgets/presentation | Ephemeral UI only, not Work persistence |
-| External calendar sync mappings | Work | Provider-neutral architecture |
-| Provider secrets/OAuth tokens | Approved secret broker/provider layer | Never ordinary widget/business rows |
+| Concern                           | Canonical owner                       | Notes                                              |
+| --------------------------------- | ------------------------------------- | -------------------------------------------------- |
+| Task/task list                    | Work                                  | May be personal or linked to another resource      |
+| Task assignment/delegation        | Work                                  | USER/TEAM, role/status lifecycle                   |
+| Reminder                          | Work                                  | Standalone productivity primitive                  |
+| Event                             | Work                                  | Calendar-owned event, optional opaque host context |
+| Calendar                          | Work                                  | Shared metadata/ownership                          |
+| Calendar subscription             | Work                                  | Per-user visibility/role/preferences               |
+| Recurrence                        | Work                                  | Reusable Work recurrence rules                     |
+| Alerts/notification schedule      | Work                                  | Attached to Work task/event where modeled          |
+| CRM request/ticket                | CRM                                   | Never mirrored wholesale into Work                 |
+| CRM request history/notes         | CRM                                   | Not Work records                                   |
+| CRM categories/forms/routing      | CRM                                   | Not Work concepts                                  |
+| Invoice/customer financial record | Billing/Finance                       | Work may link to it only                           |
+| Package/delivery                  | Couriers                              | Work may link to it only                           |
+| Chat thread/message               | Chat/communications                   | Separate architecture boundary                     |
+| Widget state/navigation           | Widgets/presentation                  | Ephemeral UI only, not Work persistence            |
+| External calendar sync mappings   | Work                                  | Provider-neutral architecture                      |
+| Provider secrets/OAuth tokens     | Approved secret broker/provider layer | Never ordinary widget/business rows                |
 
 ---
 

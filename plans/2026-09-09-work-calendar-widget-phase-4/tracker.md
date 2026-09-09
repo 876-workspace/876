@@ -4,25 +4,25 @@ Run ID: `2026-09-09-work-calendar-widget-phase-4`
 
 Branch: `feat/work-widget-phase-4`
 
-Snapshot base: `feat/work-widget-phase-3@d911eb926563f7c7caf080d378289421050f24dd`
+Snapshot base: `feat/work-widget-phase-3@0efd0d59f`
 
 Plan: `plans/2026-09-09-work-calendar-widget-phase-4/plan.md`
 
-Status: `PLANNING_COMPLETE; WAITING_FOR_LOCAL_ORCHESTRATOR_BASELINE`
+Status: `READY_FOR_SONNET_HANDOFF; IMPLEMENTATION_NOT_STARTED`
 
 ## Handoff rule
 
 This branch is currently a planning/staging branch only.
 
-The local orchestrator is expected to reconcile/land the current Phase 3 work and may then reshape or rebase this Phase 4 branch. GPT Web must not begin Phase 4 implementation until the user points back to the orchestrator-updated `feat/work-widget-phase-4` state.
+The local orchestrator has reconciled and reviewed Phase 3. This Phase 4 branch contains that verified baseline plus planning documents only. Sonnet must not begin Phase 4 implementation until the user explicitly starts the implementation run.
 
 When implementation resumes:
 
-1. pull/read the latest Phase 4 branch state first;
+1. pull/read the latest Phase 4 branch state and Sonnet brief first;
 2. preserve orchestrator changes as authoritative unless a concrete defect is found;
 3. compare the implementation against this plan rather than blindly replaying old commits;
 4. update this tracker only for work actually present on the refreshed branch;
-5. do not overwrite Phase 3 to recover Phase 4 planning changes.
+5. do not edit or overwrite the Phase 3 branch.
 
 ## Phase 3 readiness for the local orchestrator
 
@@ -30,19 +30,19 @@ These items are intentionally recorded now so Phase 3 can be made compatible bef
 
 ### Recommended to land in Phase 3 if time permits
 
-- [ ] Change **user-facing** widget vocabulary away from implying that the compact widget is the entire `876 Work` product. Working display recommendation: `876 Calendar` / Calendar-Schedule wording.
-- [ ] Keep internal widget ID `work`, `platform-widgets-work`, `invoice-widgets-work`, persisted preferences and feature keys stable unless a separate alias-safe migration is explicitly approved.
-- [ ] Update new comments/docs to say the Calendar widget is **powered by / consumes 876 Work** rather than saying the widget owns Work.
-- [ ] Preserve task `links[]`, `assignments[]`, legacy context projection, event/reminder context, task-list identity, calendar identity/subscription semantics, stable UIDs, recurrence IDs and IANA timezone fields at the Work contract boundary.
-- [ ] Keep `@876/work-ui` controlled/transport-free: no host imports, route parsing, fetch, service keys or persistence.
-- [ ] Keep browser Work traffic on host-owned same-origin routes; do not expose `WORK_API_URL`, Work `/v1` routes, app keys or `WORK_INTERNAL_KEY`.
-- [ ] Keep acting user/organization identity server-owned and canonical-schema validated after injection.
-- [ ] Keep My Work user-centric without introducing the assumption that all Work resources are permanently user-only.
-- [ ] Keep ephemeral calendar UI selection separate from canonical Work calendar subscription/visibility state.
-- [ ] Preserve Phase 3 stale-data, request-generation, load-more race and truthful-retry behavior.
+- [x] Change **user-facing** widget vocabulary away from implying that the compact widget is the entire `876 Work` product. The display name is now `876 Calendar`.
+- [x] Keep internal widget ID `work`, `platform-widgets-work`, `invoice-widgets-work`, persisted preferences and feature keys stable.
+- [x] Update new comments/docs to say the Calendar widget is **powered by / consumes 876 Work** rather than saying the widget owns Work.
+- [x] Preserve task `links[]`, `assignments[]`, legacy context projection, event/reminder context, task-list identity, calendar identity/subscription semantics, stable UIDs, recurrence IDs and IANA timezone fields at the Work contract boundary.
+- [x] Keep `@876/work-ui` controlled/transport-free: no host imports, route parsing, fetch, service keys or persistence.
+- [x] Keep browser Work traffic on host-owned same-origin routes; do not expose `WORK_API_URL`, Work `/v1` routes, app keys or `WORK_INTERNAL_KEY`.
+- [x] Keep acting user/organization identity server-owned and canonical-schema validated after injection.
+- [x] Keep My Work user-centric without introducing the assumption that all Work resources are permanently user-only.
+- [x] Keep ephemeral calendar UI selection separate from canonical Work calendar subscription/visibility state.
+- [x] Preserve Phase 3 stale-data, request-generation, load-more race and truthful-retry behavior.
 - [ ] If task/detail presentation is already being edited, optionally show safe linked-resource label/navigation metadata without treating it as authorization.
-- [ ] Keep Chat persistence/threads/messages outside Work.
-- [ ] Keep automatic business messaging/workflows outside Work; only human follow-up/action belongs naturally in Work.
+- [x] Keep Chat persistence/threads/messages outside Work.
+- [x] Keep automatic business messaging/workflows outside Work; only human follow-up/action belongs naturally in Work.
 
 ### Must NOT be pulled into Phase 3 just for readiness
 
@@ -59,18 +59,18 @@ These items are intentionally recorded now so Phase 3 can be made compatible bef
 - [x] No standalone Work app implementation.
 - [x] No task delete UX.
 
-### Phase 3 handoff checks GPT Web will review before implementing Phase 4
+### Phase 3 handoff checks Sonnet will preserve while implementing Phase 4
 
-- [ ] Compact widget terminology reflects its bounded Calendar/Tasks/Reminders surface rather than the entire Work service.
-- [ ] Internal IDs/slugs remain compatible or have a documented migration.
-- [ ] No duplicate context model was introduced.
-- [ ] `@876/work-ui` remains transport-free.
-- [ ] Host/browser transport remains same-origin.
-- [ ] Canonical Work schemas still validate transformed host mutations after authority injection.
-- [ ] Work task links/assignments and event/reminder contexts are still available.
-- [ ] Work calendar/subscription ownership remains canonical.
-- [ ] No CRM request registry/state was copied into Work.
-- [ ] Phase 3 race/stale/error guarantees remain intact.
+- [x] Compact widget terminology reflects its bounded Calendar/Tasks/Reminders surface rather than the entire Work service.
+- [x] Internal IDs/slugs remain compatible.
+- [x] No duplicate context model was introduced.
+- [x] `@876/work-ui` remains transport-free.
+- [x] Host/browser transport remains same-origin.
+- [x] Canonical Work schemas still validate transformed host mutations after authority injection.
+- [x] Work task links/assignments and event/reminder contexts are still available.
+- [x] Work calendar/subscription ownership remains canonical.
+- [x] No CRM request registry/state was copied into Work.
+- [x] Phase 3 race/stale/error guarantees remain intact.
 
 ## Architecture decisions — complete
 
@@ -191,10 +191,10 @@ These items are intentionally recorded now so Phase 3 can be made compatible bef
 
 ## Implementation / verification
 
-- [ ] WAITING: local orchestrator refreshes/rebases/updates the Phase 4 branch.
-- [ ] GPT Web re-reads the refreshed branch and compares it with this plan.
+- [x] Local orchestrator refreshed Phase 4 onto the reviewed Phase 3 head.
+- [ ] Sonnet reads the refreshed branch, plan, tracker, and implementation brief.
 - [ ] Source implementation begins only after that review.
 - [ ] Maintain per-phase source tracker while implementing.
-- [ ] Run local typecheck/tests/build/browser/CI through the shell-capable orchestrator; GPT Web does not claim unobserved execution.
-- [ ] Write final GPT Web report only after source implementation is actually complete.
-- [x] No PR opened or merged by GPT Web during planning.
+- [ ] Run local typecheck/tests/build/browser/CI through the shell-capable orchestrator; Sonnet must not claim unobserved execution.
+- [ ] Write a final Sonnet report only after source implementation is actually complete.
+- [x] No Phase 4 PR opened and no Phase 4 production source implementation started during preparation.
