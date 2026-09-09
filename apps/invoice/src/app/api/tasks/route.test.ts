@@ -76,13 +76,13 @@ describe('/api/tasks', () => {
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
-  it('always scopes task reads to the acting user', async () => {
+  it('always scopes task reads to the acting user with a bounded page size', async () => {
     const response = await GET(getRequest())
     const payload = await response.json()
 
     expect(mocks.list).toHaveBeenCalledWith('org_1', {
       assigneeId: 'user_1',
-      limit: 100,
+      limit: 25,
     })
     expect(response.status).toBe(200)
     expect(payload).toEqual({ data: PAGE, error: null })
@@ -94,16 +94,27 @@ describe('/api/tasks', () => {
     expect(mocks.list).toHaveBeenCalledWith('org_1', {
       assigneeId: 'user_1',
       listId: 'list_1',
-      limit: 100,
+      limit: 25,
     })
   })
 
-  it('rejects a blank task-list filter', async () => {
-    const response = await GET(getRequest('?listId=%20%20'))
-    const payload = await response.json()
+  it('forwards an item-id cursor for task load more', async () => {
+    await GET(getRequest('?listId=list_1&startingAfter=task_25'))
 
-    expect(response.status).toBe(422)
-    expect(payload.error.code).toBe('work/invalid-request')
+    expect(mocks.list).toHaveBeenCalledWith('org_1', {
+      assigneeId: 'user_1',
+      listId: 'list_1',
+      startingAfter: 'task_25',
+      limit: 25,
+    })
+  })
+
+  it('rejects blank list and cursor filters', async () => {
+    const listResponse = await GET(getRequest('?listId=%20%20'))
+    const cursorResponse = await GET(getRequest('?startingAfter=%20%20'))
+
+    expect(listResponse.status).toBe(422)
+    expect(cursorResponse.status).toBe(422)
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
@@ -113,7 +124,7 @@ describe('/api/tasks', () => {
     expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith('tasks.create')
   })
 
-  it('stamps new tasks with the acting user as creator and assignee', async () => {
+  it('stamps and forwards a canonical task create payload', async () => {
     const response = await POST(
       postRequest({
         title: 'Follow up',
