@@ -116,7 +116,9 @@ export function WorkWidgetTaskAdvanced({
       {error ? (
         <WorkWidgetErrorBanner
           message={error}
-          onAction={selectedTask ? () => void load(selectedTask.id) : undefined}
+          onAction={() => {
+            if (selectedTask) void load(selectedTask.id)
+          }}
         />
       ) : null}
 
