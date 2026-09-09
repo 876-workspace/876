@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkCalendar, WorkTaskList } from '@876/work'
+import type { WorkCalendar, WorkHostContext, WorkTaskList } from '@876/work'
 import { browserWork } from '@876/work/browser'
 import {
   WorkCreate,
@@ -15,9 +15,11 @@ import { WorkWidgetErrorBanner } from './work-widget-feedback'
 
 export function WorkWidgetCreateView({
   capabilities,
+  context,
   onCreated,
 }: {
   capabilities: WorkWidgetCapabilities
+  context?: WorkHostContext
   onCreated: () => void
 }) {
   const [taskLists, setTaskLists] = useState<WorkTaskList[]>([])
@@ -92,20 +94,20 @@ export function WorkWidgetCreateView({
 
   const createTask = useCallback(
     (input: WorkCreateTaskDraft) =>
-      runCreate(() => browserWork.tasks.create(input)),
-    [runCreate]
+      runCreate(() => browserWork.tasks.create(input, context)),
+    [context, runCreate]
   )
 
   const createEvent = useCallback(
     (input: WorkCreateEventDraft) =>
-      runCreate(() => browserWork.events.create(input)),
-    [runCreate]
+      runCreate(() => browserWork.events.create(input, context)),
+    [context, runCreate]
   )
 
   const createReminder = useCallback(
     (input: WorkCreateReminderDraft) =>
-      runCreate(() => browserWork.reminders.create(input)),
-    [runCreate]
+      runCreate(() => browserWork.reminders.create(input, context)),
+    [context, runCreate]
   )
 
   return (
