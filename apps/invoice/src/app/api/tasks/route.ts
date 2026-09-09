@@ -1,7 +1,10 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
-import { workTaskImportanceSchema } from '@876/work'
+import {
+  createWorkTaskInputSchema,
+  workTaskImportanceSchema,
+} from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
@@ -12,6 +15,7 @@ export const runtime = 'nodejs'
 
 const filterSchema = z.strictObject({
   listId: z.string().trim().min(1).optional(),
+  startingAfter: z.string().trim().min(1).optional(),
 })
 
 const dueSchema = z.strictObject({
@@ -34,6 +38,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   const parsed = filterSchema.safeParse({
     listId: url.searchParams.get('listId') ?? undefined,
+    startingAfter: url.searchParams.get('startingAfter') ?? undefined,
   })
   if (!parsed.success)
     return workErrorResponse(getError('work/invalid-request'))
@@ -42,7 +47,10 @@ export async function GET(request: Request) {
   const result = await work.tasks.list(auth.orgId, {
     assigneeId: auth.userId,
     ...(parsed.data.listId ? { listId: parsed.data.listId } : {}),
-    limit: 100,
+    ...(parsed.data.startingAfter
+      ? { startingAfter: parsed.data.startingAfter }
+      : {}),
+    limit: 25,
   })
   if (result.error) return workErrorResponse(result.error)
 
@@ -57,8 +65,7 @@ export async function POST(request: Request) {
   if (!parsed.success)
     return workErrorResponse(getError('work/invalid-request'))
 
-  const work = await getWork()
-  const result = await work.tasks.create(auth.orgId, {
+  const candidate = {
     title: parsed.data.title,
     ...(parsed.data.listId ? { listId: parsed.data.listId } : {}),
     ...(parsed.data.description !== undefined
@@ -73,7 +80,13 @@ export async function POST(request: Request) {
       : {}),
     assigneeId: auth.userId,
     createdBy: auth.userId,
-  })
+  }
+  const canonical = createWorkTaskInputSchema.safeParse(candidate)
+  if (!canonical.success)
+    return workErrorResponse(getError('work/invalid-request'))
+
+  const work = await getWork()
+  const result = await work.tasks.create(auth.orgId, canonical.data)
   if (result.error) return workErrorResponse(result.error)
 
   return apiSuccess(result.data)
