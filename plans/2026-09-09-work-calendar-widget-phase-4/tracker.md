@@ -24,6 +24,54 @@ When implementation resumes:
 4. update this tracker only for work actually present on the refreshed branch;
 5. do not overwrite Phase 3 to recover Phase 4 planning changes.
 
+## Phase 3 readiness for the local orchestrator
+
+These items are intentionally recorded now so Phase 3 can be made compatible before the Phase 4 implementation run. They are not permission to prematurely implement Phase 4 context behavior.
+
+### Recommended to land in Phase 3 if time permits
+
+- [ ] Change **user-facing** widget vocabulary away from implying that the compact widget is the entire `876 Work` product. Working display recommendation: `876 Calendar` / Calendar-Schedule wording.
+- [ ] Keep internal widget ID `work`, `platform-widgets-work`, `invoice-widgets-work`, persisted preferences and feature keys stable unless a separate alias-safe migration is explicitly approved.
+- [ ] Update new comments/docs to say the Calendar widget is **powered by / consumes 876 Work** rather than saying the widget owns Work.
+- [ ] Preserve task `links[]`, `assignments[]`, legacy context projection, event/reminder context, task-list identity, calendar identity/subscription semantics, stable UIDs, recurrence IDs and IANA timezone fields at the Work contract boundary.
+- [ ] Keep `@876/work-ui` controlled/transport-free: no host imports, route parsing, fetch, service keys or persistence.
+- [ ] Keep browser Work traffic on host-owned same-origin routes; do not expose `WORK_API_URL`, Work `/v1` routes, app keys or `WORK_INTERNAL_KEY`.
+- [ ] Keep acting user/organization identity server-owned and canonical-schema validated after injection.
+- [ ] Keep My Work user-centric without introducing the assumption that all Work resources are permanently user-only.
+- [ ] Keep ephemeral calendar UI selection separate from canonical Work calendar subscription/visibility state.
+- [ ] Preserve Phase 3 stale-data, request-generation, load-more race and truthful-retry behavior.
+- [ ] If task/detail presentation is already being edited, optionally show safe linked-resource label/navigation metadata without treating it as authorization.
+- [ ] Keep Chat persistence/threads/messages outside Work.
+- [ ] Keep automatic business messaging/workflows outside Work; only human follow-up/action belongs naturally in Work.
+
+### Must NOT be pulled into Phase 3 just for readiness
+
+- [x] No `My Work` / `This Invoice` / `This Request` context scope selector yet.
+- [x] No generic browser-supplied host resource context query.
+- [x] No Invoice/CRM/Couriers contextual adapters yet.
+- [x] No third context/link schema.
+- [x] No destructive context persistence migration.
+- [x] No recursive customer/invoice/request graph rollup.
+- [x] No shared-calendar ACL/admin implementation solely for readiness.
+- [x] No full assignment/delegation UI solely for readiness.
+- [x] No Google/Microsoft/CalDAV OAuth/sync implementation solely for readiness.
+- [x] No Chat migration.
+- [x] No standalone Work app implementation.
+- [x] No task delete UX.
+
+### Phase 3 handoff checks GPT Web will review before implementing Phase 4
+
+- [ ] Compact widget terminology reflects its bounded Calendar/Tasks/Reminders surface rather than the entire Work service.
+- [ ] Internal IDs/slugs remain compatible or have a documented migration.
+- [ ] No duplicate context model was introduced.
+- [ ] `@876/work-ui` remains transport-free.
+- [ ] Host/browser transport remains same-origin.
+- [ ] Canonical Work schemas still validate transformed host mutations after authority injection.
+- [ ] Work task links/assignments and event/reminder contexts are still available.
+- [ ] Work calendar/subscription ownership remains canonical.
+- [ ] No CRM request registry/state was copied into Work.
+- [ ] Phase 3 race/stale/error guarantees remain intact.
+
 ## Architecture decisions — complete
 
 - [x] 876 Work is the canonical productivity service, not the widget.
