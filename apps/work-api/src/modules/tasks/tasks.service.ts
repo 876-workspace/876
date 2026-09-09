@@ -9,6 +9,7 @@ import type {
   WorkTaskStatus,
 } from '@876/work'
 
+import * as recurrenceRules from '../recurrence-rules/index.js'
 import * as taskLists from '../task-lists/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './tasks.repository.js'
@@ -121,6 +122,15 @@ async function requireTenant(organizationId: string) {
   return tenant
 }
 
+async function requireRecurrenceRule(
+  organizationId: string,
+  recurrenceRuleId: string
+) {
+  const rule = await recurrenceRules.retrieve(organizationId, recurrenceRuleId)
+  if (isError(rule)) return rule
+  return rule ?? getError('work/recurrence-rule-not-found')
+}
+
 function contextColumns(context?: WorkContext | null) {
   if (!context)
     return { contextService: null, contextResource: null, contextId: null }
@@ -192,6 +202,14 @@ export async function create(
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
 
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
+
   const selectedList = input.listId
     ? await taskLists.retrieve(organizationId, input.listId)
     : await taskLists.ensureDefault(organizationId, input.createdBy)
@@ -254,6 +272,14 @@ export async function update(
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, taskId)
   if (!current) return null
+
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
 
   if (input.listId) {
     const list = await taskLists.retrieve(organizationId, input.listId)
