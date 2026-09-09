@@ -8,21 +8,15 @@ Snapshot base: `feat/work-widget-phase-3@0efd0d59f`
 
 Plan: `plans/2026-09-09-work-calendar-widget-phase-4/plan.md`
 
-Status: `READY_FOR_SONNET_HANDOFF; IMPLEMENTATION_NOT_STARTED`
+Status: `IMPLEMENTED; VERIFIED; READY_FOR_PR`
 
-## Handoff rule
+## Completion summary
 
-This branch is currently a planning/staging branch only.
-
-The local orchestrator has reconciled and reviewed Phase 3. This Phase 4 branch contains that verified baseline plus planning documents only. Sonnet must not begin Phase 4 implementation until the user explicitly starts the implementation run.
-
-When implementation resumes:
-
-1. pull/read the latest Phase 4 branch state and Sonnet brief first;
-2. preserve orchestrator changes as authoritative unless a concrete defect is found;
-3. compare the implementation against this plan rather than blindly replaying old commits;
-4. update this tracker only for work actually present on the refreshed branch;
-5. do not edit or overwrite the Phase 3 branch.
+Phase 4 implements the Invoice pilot over the reviewed Phase 3 baseline. The
+browser uses invoice-owned nested routes, the host reconstructs and authorizes
+the invoice context, Work requires all aggregate read permissions, and
+contextual task creation persists its primary link and assignee atomically.
+Customer, CRM, and Couriers expansion remains intentionally deferred.
 
 ## Phase 3 readiness for the local orchestrator
 
@@ -89,62 +83,62 @@ These items are intentionally recorded now so Phase 3 can be made compatible bef
 - [x] Google/Microsoft/CalDAV/iCalendar/JSCalendar compatibility remains a Work-service concern; provider OAuth/sync implementation is not required merely to complete Phase 4.
 - [x] Full assignment/delegation/team-work UX is not forced into the compact widget.
 
-## Phase 4A — identity and compatibility — planned
+## Phase 4A — identity and compatibility — complete
 
-- [ ] Choose final user-facing widget name; current recommendation: `876 Calendar`.
-- [ ] Audit current widget ID `work`, display name, platform feature slugs and host feature slugs.
-- [ ] Prefer keeping persisted internal IDs/slugs stable unless an alias-safe migration is justified.
-- [ ] Stop describing the compact widget as the entire Work product in new docs/code.
-- [ ] Preserve a future standalone Work app/product boundary.
+- [x] Use the user-facing widget name `876 Calendar`.
+- [x] Audit current widget ID `work`, display name, platform feature slugs and host feature slugs.
+- [x] Keep persisted internal IDs/slugs stable.
+- [x] Stop describing the compact widget as the entire Work product in new docs/code.
+- [x] Preserve a future standalone Work app/product boundary.
 
-## Phase 4B — canonical host context — planned
+## Phase 4B — canonical host context — complete
 
-- [ ] Define one optional host-resource reference adapter based on existing WorkContext / WorkTaskLink vocabulary.
-- [ ] Avoid introducing a third competing context model.
-- [ ] Prefer canonical semantics: `service`, `resource`, `externalId`, optional safe `label`/`url`.
-- [ ] Keep display metadata non-authoritative.
-- [ ] Do not inspect Invoice/CRM/Couriers URL structures inside `@876/widgets`.
-- [ ] Add contract/compatibility/adversarial tests.
+- [x] Define one optional host-resource reference adapter based on existing WorkContext / WorkTaskLink vocabulary.
+- [x] Avoid introducing a third competing context model.
+- [x] Use canonical semantics: `service`, `resource`, `externalId`, optional safe `label`/`url`.
+- [x] Keep display metadata non-authoritative.
+- [x] Do not inspect Invoice/CRM/Couriers URL structures inside `@876/widgets`.
+- [x] Add contract/compatibility/adversarial tests.
 
-## Phase 4C — host -> widget context pipeline — planned
+## Phase 4C — host -> widget context pipeline — complete
 
-- [ ] Host page resolves and authorizes its resource.
-- [ ] Host constructs the trusted Work resource reference.
-- [ ] Pass optional context through host shell -> `SharedWidgetDock` -> Calendar widget.
-- [ ] No-context pages remain fully supported.
-- [ ] Add a scope selector rather than creating resource-specific top-level widget tabs.
-- [ ] Preserve Today/Tasks/Calendar/Create navigation inside each scope.
-- [ ] Preserve Phase 3 stale-data/error/race protections.
+- [x] Host page resolves and authorizes its resource.
+- [x] Host constructs the trusted Work resource reference.
+- [x] Pass optional context through host shell -> `SharedWidgetDock` -> Calendar widget.
+- [x] No-context pages remain fully supported.
+- [x] Add a scope selector rather than creating resource-specific top-level widget tabs.
+- [x] Preserve Today/Tasks/Calendar/Create navigation inside each scope.
+- [x] Preserve Phase 3 stale-data/error/race protections.
 
-## Phase 4D — context-scoped reads — planned
+## Phase 4D — context-scoped reads — complete
 
-- [ ] Add Work reads for directly linked context resources.
-- [ ] `My Work` remains user-centric.
-- [ ] Context scope means visible Work directly linked to the active host resource, subject to authorization.
-- [ ] Do not require context work to be assigned to the current user.
-- [ ] Work never queries CRM/Billing/Couriers databases.
-- [ ] Do not recursively traverse host relationships (`This Customer` is direct customer-linked Work, not every invoice/request descendant).
-- [ ] Add host permission + Work permission AND-gate tests.
+- [x] Add Work reads for directly linked context resources.
+- [x] `My Work` remains user-centric.
+- [x] Context scope shows Work directly linked to the active host resource, subject to authorization.
+- [x] Do not require context work to be assigned to the current user.
+- [x] Work never queries CRM/Billing/Couriers databases.
+- [x] Do not recursively traverse host relationships.
+- [x] Add host permission + Work permission AND-gate tests.
 
-## Phase 4E — contextual create — planned
+## Phase 4E — contextual create — complete
 
-- [ ] Personal/no-context Task/Event/Reminder creation remains first-class.
-- [ ] Contextual creation attaches trusted active context where canonical Work contracts support it.
-- [ ] UI/browser never owns organization/user authority or authoritative host identity.
-- [ ] Host route injects acting-user + trusted context.
-- [ ] Validate transformed payloads with canonical `@876/work` schemas before calling Work.
-- [ ] Keep `@876/work-ui` transport-free and controlled.
+- [x] Personal/no-context Task/Event/Reminder creation remains first-class.
+- [x] Contextual creation attaches trusted active context where canonical Work contracts support it.
+- [x] UI/browser never owns organization/user authority or authoritative host identity.
+- [x] Host route injects acting-user + trusted context.
+- [x] Validate transformed payloads with canonical `@876/work` schemas before calling Work.
+- [x] Keep `@876/work-ui` transport-free and controlled.
 
-## Phase 4F — Invoice pilot — planned
+## Phase 4F — Invoice pilot — complete
 
-- [ ] Implement `This Invoice` first.
-- [ ] Construct context only after Invoice has loaded and authorized the invoice.
-- [ ] Show directly linked Work without copying invoice state into Work.
-- [ ] Support contextual create through same-origin bounded host routes.
-- [ ] Preserve ordinary My Work mode.
-- [ ] Add feature/permission/route/browser/component regressions.
+- [x] Implement `This Invoice` first.
+- [x] Construct context only after Invoice has loaded and authorized the invoice.
+- [x] Show directly linked Work without copying invoice state into Work.
+- [x] Support contextual create through same-origin bounded host routes.
+- [x] Preserve ordinary My Work mode.
+- [x] Add feature/permission/route/browser/component regressions.
 
-## Phase 4G — Customer and CRM contexts — planned
+## Phase 4G — Customer and CRM contexts — deferred
 
 - [ ] Add direct `This Customer` context where useful; no recursive business rollup inside Work.
 - [ ] Add CRM Request context using request ID plus safe number/label/link metadata only.
@@ -153,7 +147,7 @@ These items are intentionally recorded now so Phase 3 can be made compatible bef
 - [ ] Use canonical Work assignment data for responsible users/teams.
 - [ ] Keep automatic CRM messaging/business automation outside Work.
 
-## Phase 4H — Couriers and additional hosts — planned
+## Phase 4H — Couriers and additional hosts — deferred
 
 - [ ] Add package/delivery context only where product UX benefits.
 - [ ] Do not mark a host implemented before feature flags, permissions, runtime transport and failure isolation exist.
@@ -192,9 +186,9 @@ These items are intentionally recorded now so Phase 3 can be made compatible bef
 ## Implementation / verification
 
 - [x] Local orchestrator refreshed Phase 4 onto the reviewed Phase 3 head.
-- [ ] Sonnet reads the refreshed branch, plan, tracker, and implementation brief.
-- [ ] Source implementation begins only after that review.
-- [ ] Maintain per-phase source tracker while implementing.
-- [ ] Run local typecheck/tests/build/browser/CI through the shell-capable orchestrator; Sonnet must not claim unobserved execution.
-- [ ] Write a final Sonnet report only after source implementation is actually complete.
-- [x] No Phase 4 PR opened and no Phase 4 production source implementation started during preparation.
+- [x] Sonnet read the refreshed branch, plan, tracker, and implementation brief.
+- [x] Source implementation completed on the Phase 4 branch.
+- [x] Maintain per-phase source tracker while implementing.
+- [x] Run the Phase 4 typecheck, test, browser, build, and repository contract checks.
+- [x] Complete remediation and strict maintainability review.
+- [x] Record verification and the one unrelated repository-wide Invoice lint baseline in the closeout report.

@@ -6,25 +6,18 @@ Planning/staging branch: `feat/work-widget-phase-4`
 
 Branch creation snapshot: `d911eb926563f7c7caf080d378289421050f24dd` from the then-current `feat/work-widget-phase-3` line.
 
-Status: `PLAN_READY; PHASE3_BASELINE_VERIFIED; IMPLEMENTATION_NOT_STARTED`
+Status: `IMPLEMENTED; VERIFIED; READY_FOR_PR`
 
-## Coordination / implementation hold
+## Completed Remediation (Gemini / Antigravity + Codex closeout)
 
-This branch is intentionally **planning-only for now**.
+Phase 4 source implementation landed on `feat/work-widget-phase-4`. The hardening pass completed the following work:
 
-The local orchestrator has finished reviewing the Phase 3 Calendar/Tasks/Reminders widget implementation. Phase 4 now inherits the verified Phase 3 head, but remains planning-only until the user explicitly starts the implementation run.
-
-When the user later points Sonnet at `feat/work-widget-phase-4` for implementation:
-
-1. fetch the latest branch head first;
-2. review the local orchestrator's Phase 4 changes and any feedback/tracker updates;
-3. compare the actual branch against current `main` and the final Phase 3 baseline;
-4. preserve local commits and resolved behavior unless there is a concrete reviewed reason to change them;
-5. update this plan/tracker to reflect what is actually implemented;
-6. implement only the remaining Phase 4 source work on top of that current branch;
-7. do not open or merge a PR unless explicitly requested.
-
-Until that handoff occurs, **no Phase 4 production source implementation is authorized on this branch.** Planning/documentation changes only.
+1. Fix Invoice type error without casts or duplicate domain types.
+2. Implement explicit all-required authorization (`tasks.view`, `reminders.view`, `events.view`) for aggregate resource-work endpoint in Work API and Invoice BFF.
+3. Atomically persist contextual task link metadata (`label`, `url`, `isPrimary`) inside transactions.
+4. Bound and simplify aggregate collection with concurrency and explicit `MAX_RESOURCE_WORK_WINDOW_SECONDS` limit.
+5. Align Invoice host route shape with `app-api-routing.md` (`/api/invoices/:invoiceId/work`).
+6. Add missing behavioral test coverage across widgets, Invoice BFF, and Work API.
 
 ---
 
