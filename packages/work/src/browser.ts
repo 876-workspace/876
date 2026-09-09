@@ -7,7 +7,10 @@ import type { WorkSessionClient } from './session'
 import type { WorkTask, WorkTaskImportance } from './types'
 
 export type WorkBrowserMyWorkFilter = Pick<WorkMyWorkFilter, 'from' | 'to'>
-export type WorkBrowserTaskFilter = { listId?: string }
+export type WorkBrowserTaskFilter = {
+  listId?: string
+  startingAfter?: string
+}
 export type WorkBrowserTaskDue = { at: number; timeZone: string }
 export type WorkBrowserCreateTaskInput = {
   title: string
@@ -26,6 +29,7 @@ export type WorkBrowserUpdateTaskInput = {
 type WorkTaskListPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['taskLists']['list']>>['data']
 >
+
 type WorkTaskPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['tasks']['list']>>['data']
 >
@@ -45,6 +49,7 @@ function myWorkPath(filter: WorkBrowserMyWorkFilter): string {
 function tasksPath(filter: WorkBrowserTaskFilter): string {
   const params = new URLSearchParams()
   if (filter.listId) params.set('listId', filter.listId)
+  if (filter.startingAfter) params.set('startingAfter', filter.startingAfter)
   const query = params.toString()
   return `/api/tasks${query ? `?${query}` : ''}`
 }
