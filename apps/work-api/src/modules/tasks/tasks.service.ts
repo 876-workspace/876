@@ -131,6 +131,18 @@ function contextColumns(context?: WorkContext | null) {
   }
 }
 
+function contextFromPrimaryLink(
+  primaryLink: CreateWorkTaskInput['primaryLink']
+): WorkContext | undefined {
+  if (!primaryLink) return undefined
+
+  return {
+    service: primaryLink.service,
+    resource: primaryLink.resource,
+    id: primaryLink.externalId,
+  }
+}
+
 export async function list(
   organizationId: string,
   filter: ListTaskFilter = {}
@@ -191,43 +203,46 @@ export async function create(
     if (!parent) return getError('work/task-not-found')
   }
 
-  const row = await repository.create({
-    tenantId: tenant.id,
-    listId: selectedList.id,
-    parentTaskId: input.parentTaskId ?? null,
-    ...contextColumns(input.context),
-    title: input.title,
-    description: input.description ?? null,
-    status: input.status ?? 'OPEN',
-    importance: input.importance ?? 'NORMAL',
-    priorityId: input.priorityId ?? null,
-    assigneeId: input.assigneeId ?? null,
-    startAt: input.startAt == null ? null : fromUnixSeconds(input.startAt),
-    startTimeZone: input.startTimeZone ?? null,
-    dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt),
-    dueTimeZone: input.dueTimeZone ?? null,
-    estimatedDuration: input.estimatedDuration ?? null,
-    percentComplete:
-      input.percentComplete ?? (input.status === 'DONE' ? 100 : 0),
-    recurrenceRuleId: input.recurrenceRuleId ?? null,
-    completedAt: input.status === 'DONE' ? new Date() : null,
-    completedBy: null,
-    sortOrder: input.sortOrder ?? 0,
-    createdBy: input.createdBy,
-  })
-  if (input.context !== undefined)
-    await repository.syncPrimaryLink(row.id, input.context ?? null)
-  if (input.assigneeId !== undefined)
-    await repository.syncPrimaryAssignee(
-      row.id,
-      input.assigneeId ?? null,
-      input.createdBy
-    )
-
-  return serialize(
-    (await repository.retrieve(tenant.id, row.id))!,
-    organizationId
+  const primaryContext = contextFromPrimaryLink(input.primaryLink)
+  const row = await repository.create(
+    {
+      tenantId: tenant.id,
+      listId: selectedList.id,
+      parentTaskId: input.parentTaskId ?? null,
+      ...contextColumns(primaryContext ?? input.context),
+      title: input.title,
+      description: input.description ?? null,
+      status: input.status ?? 'OPEN',
+      importance: input.importance ?? 'NORMAL',
+      priorityId: input.priorityId ?? null,
+      assigneeId: input.assigneeId ?? null,
+      startAt: input.startAt == null ? null : fromUnixSeconds(input.startAt),
+      startTimeZone: input.startTimeZone ?? null,
+      dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt),
+      dueTimeZone: input.dueTimeZone ?? null,
+      estimatedDuration: input.estimatedDuration ?? null,
+      percentComplete:
+        input.percentComplete ?? (input.status === 'DONE' ? 100 : 0),
+      recurrenceRuleId: input.recurrenceRuleId ?? null,
+      completedAt: input.status === 'DONE' ? new Date() : null,
+      completedBy: null,
+      sortOrder: input.sortOrder ?? 0,
+      createdBy: input.createdBy,
+    },
+    {
+      ...(input.primaryLink ? { primaryLink: input.primaryLink } : {}),
+      ...(input.assigneeId
+        ? {
+            primaryAssignee: {
+              assigneeId: input.assigneeId,
+              assignedBy: input.createdBy,
+            },
+          }
+        : {}),
+    }
   )
+
+  return serialize(row, organizationId)
 }
 
 export async function update(

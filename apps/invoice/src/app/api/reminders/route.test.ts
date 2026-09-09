@@ -1,17 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { POST } from './route'
+import { POST as POST_INVOICE_REMINDER } from '../invoices/[invoiceId]/work/reminders/route'
 
 const mocks = vi.hoisted(() => ({
   requireWorkWidgetPermission: vi.fn(),
   getWork: vi.fn(),
   create: vi.fn(),
+  requireAuthorizedInvoiceWorkContext: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/work-widget-access', () => ({
   requireWorkWidgetPermission: mocks.requireWorkWidgetPermission,
 }))
 vi.mock('@/lib/services/work', () => ({ getWork: mocks.getWork }))
+vi.mock('@/lib/auth/work-widget-context', () => ({
+  requireAuthorizedInvoiceWorkContext:
+    mocks.requireAuthorizedInvoiceWorkContext,
+}))
 
 const REMINDER = {
   object: 'reminder' as const,
@@ -37,6 +43,16 @@ describe('POST /api/reminders', () => {
     })
     mocks.getWork.mockResolvedValue({ reminders: { create: mocks.create } })
     mocks.create.mockResolvedValue({ data: REMINDER, error: null })
+    mocks.requireAuthorizedInvoiceWorkContext.mockResolvedValue({
+      context: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_1',
+        label: 'INV-001',
+        url: '/invoices/inv_1',
+      },
+      response: null,
+    })
   })
 
   it('requires reminders.create before creating Work reminders', async () => {
@@ -90,6 +106,20 @@ describe('POST /api/reminders', () => {
       createdBy: 'user_1',
     })
     expect(payload).toEqual({ data: REMINDER, error: null })
+  })
+
+  it('creates a reminder against the invoice authorized by the route', async () => {
+    await POST_INVOICE_REMINDER(
+      request({ title: 'Call customer', remindAt: 200 }),
+      { params: Promise.resolve({ invoiceId: 'inv_1' }) }
+    )
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      'org_1',
+      expect.objectContaining({
+        context: { service: 'billing', resource: 'invoice', id: 'inv_1' },
+      })
+    )
   })
 
   it('rejects browser-owned user identity and malformed reminder data', async () => {

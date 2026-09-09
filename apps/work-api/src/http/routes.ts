@@ -16,6 +16,7 @@ import { createMyWorkRouter } from '../modules/my-work/index.js'
 import { createNotificationOutboxRouter } from '../modules/notification-outbox/index.js'
 import { createRecurrenceRulesRouter } from '../modules/recurrence-rules/index.js'
 import { createRemindersRouter } from '../modules/reminders/index.js'
+import { createResourceWorkRouter } from '../modules/resource-work/index.js'
 import { createSyncConnectionsRouter } from '../modules/sync-connections/index.js'
 import { createSyncMappingsRouter } from '../modules/sync-mappings/index.js'
 import { createTaskAssignmentsRouter } from '../modules/task-assignments/index.js'
@@ -86,6 +87,10 @@ export function buildRoutes() {
   router.use(
     '/v1/organizations/:organizationId/my-work',
     createMyWorkRouter(resolveGuards)
+  )
+  router.use(
+    '/v1/organizations/:organizationId/resource-work',
+    createResourceWorkRouter(resolveGuards)
   )
   router.use(
     '/v1/organizations/:organizationId/sync-connections/:connectionId/mappings',

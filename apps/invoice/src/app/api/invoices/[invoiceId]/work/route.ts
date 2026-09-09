@@ -1,0 +1,53 @@
+import 'server-only'
+
+import { apiSuccess, getError } from '@876/core'
+import { MAX_RESOURCE_WORK_WINDOW_SECONDS } from '@876/work'
+import { z } from 'zod'
+
+import { workErrorResponse } from '@/lib/api/work-response'
+import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
+import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
+import { getWork } from '@/lib/services/work'
+
+export const runtime = 'nodejs'
+
+type Context = { params: Promise<{ invoiceId: string }> }
+
+const filterSchema = z
+  .strictObject({
+    from: z.coerce.number().int().nonnegative(),
+    to: z.coerce.number().int().nonnegative(),
+  })
+  .refine(({ from, to }) => to > from)
+  .refine(({ from, to }) => to - from <= MAX_RESOURCE_WORK_WINDOW_SECONDS)
+
+export async function GET(request: Request, routeContext: Context) {
+  const auth = await requireWorkWidgetPermission([
+    'tasks.view',
+    'reminders.view',
+    'events.view',
+  ])
+  if (auth.response) return auth.response
+
+  const { invoiceId } = await routeContext.params
+  const host = await requireAuthorizedInvoiceWorkContext(invoiceId, auth)
+  if (host.response) return host.response
+  if (!host.context) return workErrorResponse(getError('work/invalid-request'))
+
+  const url = new URL(request.url)
+  const parsed = filterSchema.safeParse({
+    from: url.searchParams.get('from') ?? undefined,
+    to: url.searchParams.get('to') ?? undefined,
+  })
+  if (!parsed.success)
+    return workErrorResponse(getError('work/invalid-request'))
+
+  const work = await getWork()
+  const result = await work.resourceWork.retrieve(auth.orgId, {
+    ...parsed.data,
+    context: host.context,
+  })
+  if (result.error) return workErrorResponse(result.error)
+
+  return apiSuccess(result.data)
+}

@@ -1,17 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { POST } from './route'
+import { POST as POST_INVOICE_EVENT } from '../invoices/[invoiceId]/work/events/route'
 
 const mocks = vi.hoisted(() => ({
   requireWorkWidgetPermission: vi.fn(),
   getWork: vi.fn(),
   create: vi.fn(),
+  requireAuthorizedInvoiceWorkContext: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/work-widget-access', () => ({
   requireWorkWidgetPermission: mocks.requireWorkWidgetPermission,
 }))
 vi.mock('@/lib/services/work', () => ({ getWork: mocks.getWork }))
+vi.mock('@/lib/auth/work-widget-context', () => ({
+  requireAuthorizedInvoiceWorkContext:
+    mocks.requireAuthorizedInvoiceWorkContext,
+}))
 
 const EVENT = {
   object: 'event' as const,
@@ -37,6 +43,16 @@ describe('POST /api/events', () => {
     })
     mocks.getWork.mockResolvedValue({ events: { create: mocks.create } })
     mocks.create.mockResolvedValue({ data: EVENT, error: null })
+    mocks.requireAuthorizedInvoiceWorkContext.mockResolvedValue({
+      context: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_1',
+        label: 'INV-001',
+        url: '/invoices/inv_1',
+      },
+      response: null,
+    })
   })
 
   it('requires events.create before creating Work events', async () => {
@@ -121,6 +137,27 @@ describe('POST /api/events', () => {
       endDate: '2026-09-12',
       createdBy: 'user_1',
     })
+  })
+
+  it('creates an event against the invoice authorized by the route', async () => {
+    await POST_INVOICE_EVENT(
+      request({
+        title: 'Planning call',
+        calendarId: 'calendar_1',
+        allDay: false,
+        startAt: 100,
+        endAt: 200,
+        timeZone: 'America/New_York',
+      }),
+      { params: Promise.resolve({ invoiceId: 'inv_1' }) }
+    )
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      'org_1',
+      expect.objectContaining({
+        context: { service: 'billing', resource: 'invoice', id: 'inv_1' },
+      })
+    )
   })
 
   it('rejects browser-owned identity and invalid event ranges', async () => {

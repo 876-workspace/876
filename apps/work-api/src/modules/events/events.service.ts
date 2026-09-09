@@ -3,6 +3,7 @@ import type {
   CreateWorkEventInput,
   UpdateWorkEventInput,
   WorkContext,
+  WorkEventResource,
   WorkEventParticipant,
 } from '@876/work'
 import * as calendars from '../calendars/index.js'
@@ -32,7 +33,7 @@ function serializeParticipant(
     updatedAt: stamp(p.updatedAt)!,
   }
 }
-function serialize(row: Row, organizationId: string) {
+function serialize(row: Row, organizationId: string): WorkEventResource {
   const hasContext =
     row.contextService !== null &&
     row.contextResource !== null &&

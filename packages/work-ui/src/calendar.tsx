@@ -1,7 +1,7 @@
 import type {
+  WorkAgendaData,
   WorkCalendar,
   WorkEvent,
-  WorkMyWork,
   WorkReminder,
   WorkTask,
 } from '@876/work'
@@ -14,7 +14,7 @@ import { WorkCalendarList } from './calendar-list'
 export type WorkCalendarView = 'day' | 'week' | 'month'
 
 export type WorkCalendarSurfaceProps = {
-  work: WorkMyWork
+  work: WorkAgendaData
   calendars: readonly WorkCalendar[]
   view: WorkCalendarView
   anchorDate: Date
@@ -81,7 +81,7 @@ export function workReminderOccursOnDay(
 }
 
 export function workEventsForDay(
-  work: WorkMyWork,
+  work: WorkAgendaData,
   day: Date,
   activeCalendarId: string | null
 ): WorkEvent[] {
@@ -93,7 +93,7 @@ export function workEventsForDay(
 }
 
 export function workCalendarItemsForDay(
-  work: WorkMyWork,
+  work: WorkAgendaData,
   day: Date,
   activeCalendarId: string | null
 ): WorkCalendarItem[] {
@@ -154,7 +154,7 @@ function DayView({
   date,
   activeCalendarId,
 }: {
-  work: WorkMyWork
+  work: WorkAgendaData
   date: Date
   activeCalendarId: string | null
 }) {
@@ -189,7 +189,7 @@ function WeekView({
   activeCalendarId,
   onSelectDate,
 }: {
-  work: WorkMyWork
+  work: WorkAgendaData
   date: Date
   activeCalendarId: string | null
   onSelectDate: (date: Date) => void
@@ -258,7 +258,7 @@ function MonthView({
   activeCalendarId,
   onSelectDate,
 }: {
-  work: WorkMyWork
+  work: WorkAgendaData
   date: Date
   activeCalendarId: string | null
   onSelectDate: (date: Date) => void

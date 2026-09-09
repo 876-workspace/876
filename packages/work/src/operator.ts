@@ -7,6 +7,7 @@ import { createExportsResource } from './resources/exports'
 import { createMyWorkResource } from './resources/my-work'
 import { createRecurrenceRulesResource } from './resources/recurrence-rules'
 import { createRemindersResource } from './resources/reminders'
+import { createResourceWorkResource } from './resources/resource-work'
 import { createSyncConnectionsResource } from './resources/sync-connections'
 import { createSyncMappingsResource } from './resources/sync-mappings'
 import { createTaskAssignmentsResource } from './resources/task-assignments'
@@ -34,6 +35,7 @@ export function create876WorkOperatorClient(
     events: createEventsResource(runtime),
     eventParticipants: createEventParticipantsResource(runtime),
     myWork: createMyWorkResource(runtime),
+    resourceWork: createResourceWorkResource(runtime),
     syncConnections: createSyncConnectionsResource(runtime),
     syncMappings: createSyncMappingsResource(runtime),
     exports: createExportsResource(runtime),

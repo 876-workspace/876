@@ -251,6 +251,31 @@ export const workTaskSchema = z.object({
 })
 export type WorkTask = z.infer<typeof workTaskSchema>
 
+export const workResourceUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2048)
+  .refine(
+    (value) =>
+      (value.startsWith('/') && !value.startsWith('//')) ||
+      value.startsWith('https://') ||
+      value.startsWith('http://'),
+    { message: 'Use a relative application path or an HTTP(S) URL.' }
+  )
+
+export const createWorkTaskLinkInputSchema = z.strictObject({
+  service: idSchema,
+  resource: idSchema,
+  externalId: idSchema,
+  label: z.string().trim().max(240).optional().nullable(),
+  url: workResourceUrlSchema.optional().nullable(),
+  isPrimary: z.boolean().optional(),
+})
+export type CreateWorkTaskLinkInput = z.infer<
+  typeof createWorkTaskLinkInputSchema
+>
+
 function validateTimePair(
   value: {
     startAt?: number | null
@@ -287,6 +312,7 @@ function validateTimePair(
 export const createWorkTaskInputSchema = z
   .strictObject({
     context: workContextSchema.optional().nullable(),
+    primaryLink: createWorkTaskLinkInputSchema.optional(),
     listId: idSchema.optional(),
     parentTaskId: idSchema.optional().nullable(),
     title: titleSchema,
@@ -305,7 +331,28 @@ export const createWorkTaskInputSchema = z
     sortOrder: z.number().int().optional(),
     createdBy: idSchema,
   })
-  .superRefine(validateTimePair)
+  .superRefine((value, context) => {
+    validateTimePair(value, context)
+    if (value.primaryLink?.isPrimary === false)
+      context.addIssue({
+        code: 'custom',
+        path: ['primaryLink', 'isPrimary'],
+        message: 'A task primary link cannot set isPrimary to false.',
+      })
+    if (
+      value.context &&
+      value.primaryLink &&
+      (value.context.service !== value.primaryLink.service ||
+        value.context.resource !== value.primaryLink.resource ||
+        value.context.id !== value.primaryLink.externalId)
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['primaryLink'],
+        message:
+          'Task context and primary link must identify the same resource.',
+      })
+  })
 export type CreateWorkTaskInput = z.infer<typeof createWorkTaskInputSchema>
 
 export const updateWorkTaskInputSchema = z
@@ -356,18 +403,6 @@ export const updateWorkTaskListInputSchema = z
   })
 export type UpdateWorkTaskListInput = z.infer<
   typeof updateWorkTaskListInputSchema
->
-
-export const createWorkTaskLinkInputSchema = z.strictObject({
-  service: idSchema,
-  resource: idSchema,
-  externalId: idSchema,
-  label: z.string().trim().max(240).optional().nullable(),
-  url: z.url().optional().nullable(),
-  isPrimary: z.boolean().optional(),
-})
-export type CreateWorkTaskLinkInput = z.infer<
-  typeof createWorkTaskLinkInputSchema
 >
 
 export const createWorkTaskAssignmentInputSchema = z.strictObject({
@@ -733,6 +768,7 @@ export const workEventSchema = z.object({
 export type WorkEvent = z.infer<typeof workEventSchema>
 
 const eventBaseInputSchema = z.strictObject({
+  context: workContextSchema.optional().nullable(),
   calendarId: idSchema,
   title: titleSchema,
   description: longTextSchema.optional().nullable(),
@@ -771,6 +807,7 @@ export type CreateWorkEventInput = z.infer<typeof createWorkEventInputSchema>
 
 export const updateWorkEventInputSchema = z
   .strictObject({
+    context: workContextSchema.optional().nullable(),
     calendarId: idSchema.optional(),
     title: titleSchema.optional(),
     description: longTextSchema.optional().nullable(),

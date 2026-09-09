@@ -15,7 +15,10 @@ import {
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
 import type { WorkWidgetCapabilities } from '@876/widgets'
-import { SharedWidgetDock } from '@876/widgets/react'
+import {
+  SharedWidgetDock,
+  WorkWidgetContextProvider,
+} from '@876/widgets/react'
 
 import type { InvoiceFeatures } from '@/types/features'
 import { MobileNav } from './mobile-nav'
@@ -52,58 +55,60 @@ export async function InvoiceShell({
     : true
 
   return (
-    <AppShell defaultOpen={defaultSidebarOpen}>
-      <NavProgress />
-      <AppShellSidebarArea className="hidden md:contents">
-        <InvoiceSidebar orgName={orgName} navigation={navigation} />
-      </AppShellSidebarArea>
-      <AppShellContent>
-        <AppShellHeader>
-          <div className="md:hidden">
-            <MobileNav orgName={orgName} navigation={navigation} />
-          </div>
-          <div className="hidden md:block">
-            <SidebarTrigger />
-          </div>
+    <WorkWidgetContextProvider>
+      <AppShell defaultOpen={defaultSidebarOpen}>
+        <NavProgress />
+        <AppShellSidebarArea className="hidden md:contents">
+          <InvoiceSidebar orgName={orgName} navigation={navigation} />
+        </AppShellSidebarArea>
+        <AppShellContent>
+          <AppShellHeader>
+            <div className="md:hidden">
+              <MobileNav orgName={orgName} navigation={navigation} />
+            </div>
+            <div className="hidden md:block">
+              <SidebarTrigger />
+            </div>
 
-          <div className="hidden min-w-0 flex-1 items-center md:flex">
-            {features.uiFeatures.searchBar ? (
-              <TopbarSearch
-                navigation={navigation.flatMap((group) =>
-                  group.entries.map(({ title, href }) => ({ title, href }))
-                )}
-              />
-            ) : null}
-          </div>
-
-          <div className="ml-auto flex items-center gap-2">
-            <SupportWidget />
-            <div className="hidden items-center gap-1.5 md:flex">
-              {features.uiFeatures.orgSwitcher ? (
-                <OrgSwitcher current={currentOrg} orgs={orgs} />
+            <div className="hidden min-w-0 flex-1 items-center md:flex">
+              {features.uiFeatures.searchBar ? (
+                <TopbarSearch
+                  navigation={navigation.flatMap((group) =>
+                    group.entries.map(({ title, href }) => ({ title, href }))
+                  )}
+                />
               ) : null}
-              <TopbarActions
-                showGlobalAdd={features.uiFeatures.globalAdd}
-                showAppSwitcher={features.uiFeatures.appSwitcher}
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <SupportWidget />
+              <div className="hidden items-center gap-1.5 md:flex">
+                {features.uiFeatures.orgSwitcher ? (
+                  <OrgSwitcher current={currentOrg} orgs={orgs} />
+                ) : null}
+                <TopbarActions
+                  showGlobalAdd={features.uiFeatures.globalAdd}
+                  showAppSwitcher={features.uiFeatures.appSwitcher}
+                />
+              </div>
+              <UserMenu
+                user={user}
+                showThemeSwitcher={features.uiFeatures.themeSwitcher}
               />
             </div>
-            <UserMenu
-              user={user}
-              showThemeSwitcher={features.uiFeatures.themeSwitcher}
-            />
-          </div>
-        </AppShellHeader>
+          </AppShellHeader>
 
-        <AppShellBody>
-          <AppShellMain>{children}</AppShellMain>
-          {features.widgets.enabledWidgetIds.length > 0 ? (
-            <SharedWidgetDock
-              enabledWidgetIds={features.widgets.enabledWidgetIds}
-              workCapabilities={workCapabilities}
-            />
-          ) : null}
-        </AppShellBody>
-      </AppShellContent>
-    </AppShell>
+          <AppShellBody>
+            <AppShellMain>{children}</AppShellMain>
+            {features.widgets.enabledWidgetIds.length > 0 ? (
+              <SharedWidgetDock
+                enabledWidgetIds={features.widgets.enabledWidgetIds}
+                workCapabilities={workCapabilities}
+              />
+            ) : null}
+          </AppShellBody>
+        </AppShellContent>
+      </AppShell>
+    </WorkWidgetContextProvider>
   )
 }

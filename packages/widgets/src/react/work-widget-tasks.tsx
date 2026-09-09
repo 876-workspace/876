@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkTask, WorkTaskList } from '@876/work'
-import { browserWork } from '@876/work/browser'
+import type { WorkHostContext, WorkTask, WorkTaskList } from '@876/work'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 import {
   WorkTasks,
   type WorkTaskDraft,
@@ -23,8 +23,12 @@ function appendUniqueTasks(current: WorkTask[], incoming: readonly WorkTask[]) {
 
 export function WorkWidgetTasksView({
   capabilities,
+  context,
+  client = browserWork,
 }: {
   capabilities: WorkWidgetCapabilities
+  context?: WorkHostContext
+  client?: WorkBrowserClient
 }) {
   const [taskLists, setTaskLists] = useState<WorkTaskList[]>([])
   const [tasks, setTasks] = useState<WorkTask[]>([])
@@ -48,7 +52,7 @@ export function WorkWidgetTasksView({
 
   const loadTaskLists = useCallback(async () => {
     setEnrichmentMessage(null)
-    const result = await browserWork.taskLists.list()
+    const result = await client.taskLists.list()
     if (result.error || !result.data) {
       setEnrichmentMessage(
         result.error?.message ?? 'Task lists could not be loaded.'
@@ -56,32 +60,38 @@ export function WorkWidgetTasksView({
       return
     }
     setTaskLists(result.data.data)
-  }, [])
+  }, [client])
 
-  const loadTasks = useCallback(async (listId: string | null) => {
-    const generation = ++generationRef.current
-    loadMoreRef.current = false
-    setLoadingMore(false)
-    if (!loadedRef.current) setState('loading')
-    setErrorMessage(null)
+  const loadTasks = useCallback(
+    async (listId: string | null) => {
+      const generation = ++generationRef.current
+      loadMoreRef.current = false
+      setLoadingMore(false)
+      if (!loadedRef.current) setState('loading')
+      setErrorMessage(null)
 
-    const result = await browserWork.tasks.list(listId ? { listId } : {})
-    if (generation !== generationRef.current) return
+      const result = await client.tasks.list({
+        ...(context ? { context } : {}),
+        ...(listId ? { listId } : {}),
+      })
+      if (generation !== generationRef.current) return
 
-    if (result.error || !result.data) {
-      setState('error')
-      setErrorMessage(
-        result.error?.message ?? 'Tasks could not be loaded. Try again.'
-      )
-      return
-    }
+      if (result.error || !result.data) {
+        setState('error')
+        setErrorMessage(
+          result.error?.message ?? 'Tasks could not be loaded. Try again.'
+        )
+        return
+      }
 
-    setTasks(result.data.data)
-    setHasMore(result.data.has_more)
-    loadedRef.current = true
-    setLoaded(true)
-    setState('ready')
-  }, [])
+      setTasks(result.data.data)
+      setHasMore(result.data.has_more)
+      loadedRef.current = true
+      setLoaded(true)
+      setState('ready')
+    },
+    [client, context]
+  )
 
   useEffect(() => {
     void loadTaskLists()
@@ -106,7 +116,8 @@ export function WorkWidgetTasksView({
     setLoadingMore(true)
     setErrorMessage(null)
 
-    const result = await browserWork.tasks.list({
+    const result = await client.tasks.list({
+      ...(context ? { context } : {}),
       ...(activeListId ? { listId: activeListId } : {}),
       startingAfter: cursor,
     })
@@ -128,7 +139,7 @@ export function WorkWidgetTasksView({
     setState('ready')
     loadMoreRef.current = false
     setLoadingMore(false)
-  }, [activeListId, hasMore, tasks])
+  }, [activeListId, client, context, hasMore, tasks])
 
   const applyTaskResult = useCallback((updatedTask: WorkTask) => {
     setTasks((current) =>
@@ -139,7 +150,7 @@ export function WorkWidgetTasksView({
   const runTaskMutation = useCallback(
     async (
       task: WorkTask,
-      operation: () => ReturnType<typeof browserWork.tasks.complete>
+      operation: () => ReturnType<WorkBrowserClient['tasks']['complete']>
     ): Promise<boolean> => {
       if (mutationRef.current) return false
 
@@ -173,7 +184,7 @@ export function WorkWidgetTasksView({
       createRef.current = true
       setCreatingTask(true)
       setErrorMessage(null)
-      const result = await browserWork.tasks.create(input)
+      const result = await client.tasks.create(input, context)
 
       if (result.error || !result.data) {
         setState('error')
@@ -190,29 +201,29 @@ export function WorkWidgetTasksView({
       await loadTasks(activeListId)
       return true
     },
-    [activeListId, capabilities.canCreateTasks, loadTasks]
+    [activeListId, capabilities.canCreateTasks, client, context, loadTasks]
   )
 
   const updateTask = useCallback(
     (task: WorkTask, input: WorkTaskEdit) =>
-      runTaskMutation(task, () => browserWork.tasks.update(task.id, input)),
-    [runTaskMutation]
+      runTaskMutation(task, () => client.tasks.update(task.id, input, context)),
+    [client, context, runTaskMutation]
   )
 
   const completeTask = useCallback(
     (task: WorkTask) =>
-      runTaskMutation(task, () => browserWork.tasks.complete(task.id)).then(
+      runTaskMutation(task, () => client.tasks.complete(task.id, context)).then(
         () => undefined
       ),
-    [runTaskMutation]
+    [client, context, runTaskMutation]
   )
 
   const cancelTask = useCallback(
     (task: WorkTask) =>
-      runTaskMutation(task, () => browserWork.tasks.cancel(task.id)).then(
+      runTaskMutation(task, () => client.tasks.cancel(task.id, context)).then(
         () => undefined
       ),
-    [runTaskMutation]
+    [client, context, runTaskMutation]
   )
 
   if (state === 'loading' && !loaded)

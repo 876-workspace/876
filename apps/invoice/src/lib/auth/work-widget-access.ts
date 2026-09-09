@@ -9,7 +9,7 @@ import { requireApiPermission, type ApiContext } from './api-permission'
 
 /** Applies Invoice permission and Work-widget rollout gates to route handlers. */
 export async function requireWorkWidgetPermission(
-  permission: string
+  permission: string | readonly string[]
 ): Promise<ApiContext> {
   const auth = await requireApiPermission(permission)
   if (auth.response) return auth

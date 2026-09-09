@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import type { WorkHostContext } from '@876/work'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 
 import {
   EMPTY_WORK_WIDGET_CAPABILITIES,
@@ -8,6 +10,10 @@ import {
 } from '../work-capabilities'
 import { WorkWidgetCalendarView } from './work-widget-calendar'
 import { WorkWidgetCreateView } from './work-widget-create'
+import {
+  WorkWidgetScopeSelector,
+  type WorkWidgetScope,
+} from './work-widget-scope'
 import { WorkWidgetTasksView } from './work-widget-tasks'
 import { WorkWidgetTodayView } from './work-widget-today'
 
@@ -43,10 +49,15 @@ function WorkViewNav({
 
 export function WorkWidgetPanel({
   capabilities = EMPTY_WORK_WIDGET_CAPABILITIES,
+  context,
+  client = browserWork,
 }: {
   capabilities?: WorkWidgetCapabilities
+  context?: WorkHostContext
+  client?: WorkBrowserClient
 }) {
   const [view, setView] = useState<WorkView>('today')
+  const [scope, setScope] = useState<WorkWidgetScope>('my-work')
   const views = useMemo<readonly WorkView[]>(() => {
     const canCreate =
       capabilities.canCreateTasks ||
@@ -61,19 +72,48 @@ export function WorkWidgetPanel({
     capabilities.canCreateTasks,
   ])
   const activeView = views.includes(view) ? view : 'today'
+  const activeScope = context ? scope : 'my-work'
+  const activeContext = activeScope === 'context' ? context : undefined
+  const scopeKey = activeContext
+    ? `context:${activeContext.service}:${activeContext.resource}:${activeContext.externalId}`
+    : 'my-work'
 
   return (
     <div className="min-h-full">
+      {context ? (
+        <WorkWidgetScopeSelector
+          context={context}
+          scope={activeScope}
+          onChange={setScope}
+        />
+      ) : null}
       <WorkViewNav view={activeView} views={views} onChange={setView} />
       {activeView === 'today' ? (
-        <WorkWidgetTodayView capabilities={capabilities} />
+        <WorkWidgetTodayView
+          key={scopeKey}
+          capabilities={capabilities}
+          context={activeContext}
+          client={client}
+        />
       ) : activeView === 'tasks' ? (
-        <WorkWidgetTasksView capabilities={capabilities} />
+        <WorkWidgetTasksView
+          key={scopeKey}
+          capabilities={capabilities}
+          context={activeContext}
+          client={client}
+        />
       ) : activeView === 'calendar' ? (
-        <WorkWidgetCalendarView />
+        <WorkWidgetCalendarView
+          key={scopeKey}
+          context={activeContext}
+          client={client}
+        />
       ) : (
         <WorkWidgetCreateView
+          key={scopeKey}
           capabilities={capabilities}
+          context={activeContext}
+          client={client}
           onCreated={() => setView('today')}
         />
       )}
