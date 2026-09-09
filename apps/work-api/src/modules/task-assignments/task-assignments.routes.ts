@@ -30,6 +30,15 @@ export function createTaskAssignmentsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.updateAssignment,
   })
+  api.patch({
+    path: '/:assignmentId/response',
+    security: {
+      kind: 'integration',
+      scope: 'work.tasks.write',
+      sessionPermissions: ['tasks.respond'],
+    },
+    handler: controller.respondToAssignment,
+  })
   api.delete({
     path: '/:assignmentId',
     security: {
