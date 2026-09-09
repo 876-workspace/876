@@ -39,6 +39,7 @@ export function WorkWidgetTasksView({
   const [creatingTask, setCreatingTask] = useState(false)
 
   const generationRef = useRef(0)
+  const loadedRef = useRef(false)
   const mutationRef = useRef<string | null>(null)
   const createRef = useRef(false)
   const loadMoreRef = useRef(false)
@@ -57,7 +58,7 @@ export function WorkWidgetTasksView({
 
   const loadTasks = useCallback(async (listId: string | null) => {
     const generation = ++generationRef.current
-    if (!loaded) setState('loading')
+    if (!loadedRef.current) setState('loading')
     setErrorMessage(null)
 
     const result = await browserWork.tasks.list(listId ? { listId } : {})
@@ -73,9 +74,10 @@ export function WorkWidgetTasksView({
 
     setTasks(result.data.data)
     setHasMore(result.data.has_more)
+    loadedRef.current = true
     setLoaded(true)
     setState('ready')
-  }, [loaded])
+  }, [])
 
   useEffect(() => {
     void loadTaskLists()
