@@ -1,6 +1,7 @@
 import {
   createWorkEventParticipantInputSchema,
   updateWorkEventParticipantInputSchema,
+  workEventParticipantResponseInputSchema,
 } from '@876/work'
 import { z } from 'zod'
 export const eventParamsSchema = z.strictObject({
@@ -12,3 +13,5 @@ export const participantParamsSchema = eventParamsSchema.extend({
 })
 export const createParticipantBodySchema = createWorkEventParticipantInputSchema
 export const updateParticipantBodySchema = updateWorkEventParticipantInputSchema
+export const participantResponseBodySchema =
+  workEventParticipantResponseInputSchema
