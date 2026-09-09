@@ -57,7 +57,12 @@ export function WorkWidgetCreateView({
   }, [loadEnrichment])
 
   const runCreate = useCallback(
-    async <T,>(operation: () => Promise<{ data: T | null; error: { message: string } | null }>) => {
+    async <T,>(
+      operation: () => Promise<{
+        data: T | null
+        error: { message: string } | null
+      }>
+    ) => {
       if (createRef.current) return false
 
       createRef.current = true
@@ -105,13 +110,14 @@ export function WorkWidgetCreateView({
       {errorMessage ? (
         <WorkWidgetErrorBanner
           message={errorMessage}
-          onRetry={() => setErrorMessage(null)}
+          onAction={() => setErrorMessage(null)}
+          actionLabel="Dismiss"
         />
       ) : null}
       {enrichmentMessage ? (
         <WorkWidgetErrorBanner
           message={enrichmentMessage}
-          onRetry={() => void loadEnrichment()}
+          onAction={() => void loadEnrichment()}
         />
       ) : null}
       <WorkCreate
