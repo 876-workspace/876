@@ -35,7 +35,7 @@ export function createTasksRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.write',
-      sessionPermissions: ['tasks.edit', 'tasks.assign'],
+      sessionPermissions: ['tasks.edit'],
     },
     handler: controller.updateTask,
   })
