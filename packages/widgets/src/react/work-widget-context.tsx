@@ -9,28 +9,33 @@ import {
   type ReactNode,
 } from 'react'
 import type { WorkHostContext } from '@876/work'
+import {
+  browserWork,
+  createBrowserWork,
+  type WorkBrowserClient,
+} from '@876/work/browser'
 
-type WorkWidgetContextState = {
+type WorkWidgetHostBinding = {
   context: WorkHostContext | null
-  setContext: React.Dispatch<React.SetStateAction<WorkHostContext | null>>
+  client: WorkBrowserClient
+}
+
+type WorkWidgetContextState = WorkWidgetHostBinding & {
+  setBinding: React.Dispatch<React.SetStateAction<WorkWidgetHostBinding>>
 }
 
 const WorkWidgetContext = createContext<WorkWidgetContextState | null>(null)
 
-function sameContext(
-  left: WorkHostContext | null,
-  right: WorkHostContext
-): boolean {
-  return (
-    left?.service === right.service &&
-    left.resource === right.resource &&
-    left.externalId === right.externalId
-  )
-}
-
-export function WorkWidgetContextProvider({ children }: { children: ReactNode }) {
-  const [context, setContext] = useState<WorkHostContext | null>(null)
-  const value = useMemo(() => ({ context, setContext }), [context])
+export function WorkWidgetContextProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
+  const [binding, setBinding] = useState<WorkWidgetHostBinding>({
+    context: null,
+    client: browserWork,
+  })
+  const value = useMemo(() => ({ ...binding, setBinding }), [binding])
 
   return (
     <WorkWidgetContext.Provider value={value}>
@@ -45,25 +50,39 @@ export function WorkWidgetContextProvider({ children }: { children: ReactNode })
  */
 export function WorkWidgetContextSetter({
   context,
+  routeBase,
 }: {
   context: WorkHostContext
+  routeBase: string
 }) {
   const state = useContext(WorkWidgetContext)
+  const setBinding = state?.setBinding
+  const binding = useMemo(
+    () => ({
+      context,
+      client: createBrowserWork({ contextRouteBase: routeBase }),
+    }),
+    [context, routeBase]
+  )
 
   useEffect(() => {
-    if (!state) return
-    state.setContext(context)
+    if (!setBinding) return
+    setBinding(binding)
 
     return () => {
-      state.setContext((current) =>
-        sameContext(current, context) ? null : current
+      setBinding((current) =>
+        current === binding ? { context: null, client: browserWork } : current
       )
     }
-  }, [context, state])
+  }, [binding, setBinding])
 
   return null
 }
 
 export function useWorkWidgetHostContext(): WorkHostContext | null {
   return useContext(WorkWidgetContext)?.context ?? null
+}
+
+export function useWorkWidgetBrowserClient(): WorkBrowserClient {
+  return useContext(WorkWidgetContext)?.client ?? browserWork
 }

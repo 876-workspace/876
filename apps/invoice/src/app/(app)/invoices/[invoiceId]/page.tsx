@@ -78,7 +78,10 @@ export default async function InvoiceDetailPage({ params }: Props) {
 
   return (
     <>
-      <WorkWidgetContextSetter context={createInvoiceWorkContext(invoice)} />
+      <WorkWidgetContextSetter
+        context={createInvoiceWorkContext(invoice)}
+        routeBase={`/api/invoices/${encodeURIComponent(invoice.id)}/work`}
+      />
       <DetailCard aria-label={`Invoice details: ${number}`}>
         <DetailCardHeader
           icon={

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WorkAgendaData, WorkHostContext, WorkTask } from '@876/work'
-import { browserWork } from '@876/work/browser'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 import { WorkToday } from '@876/work-ui/today'
 
 import type { WorkWidgetCapabilities } from '../work-capabilities'
@@ -18,9 +18,11 @@ type LoadState = 'loading' | 'ready' | 'error'
 export function WorkWidgetTodayView({
   capabilities,
   context,
+  client = browserWork,
 }: {
   capabilities: WorkWidgetCapabilities
   context?: WorkHostContext
+  client?: WorkBrowserClient
 }) {
   const [work, setWork] = useState<WorkAgendaData | null>(null)
   const [state, setState] = useState<LoadState>('loading')
@@ -38,8 +40,8 @@ export function WorkWidgetTodayView({
 
     const window = currentDayWindow()
     const result = context
-      ? await browserWork.resourceWork.retrieve({ ...window, context })
-      : await browserWork.myWork.retrieve(window)
+      ? await client.resourceWork.retrieve(window)
+      : await client.myWork.retrieve(window)
     if (generation !== generationRef.current) return
 
     if (result.error || !result.data) {
@@ -53,7 +55,7 @@ export function WorkWidgetTodayView({
     workRef.current = result.data
     setWork(result.data)
     setState('ready')
-  }, [context])
+  }, [client, context])
 
   useEffect(() => {
     void load()
@@ -67,7 +69,7 @@ export function WorkWidgetTodayView({
       setMutatingTaskId(task.id)
       setErrorMessage(null)
 
-      const result = await browserWork.tasks.complete(task.id, context)
+      const result = await client.tasks.complete(task.id, context)
       if (result.error || !result.data) {
         setState('error')
         setErrorMessage(
@@ -102,7 +104,7 @@ export function WorkWidgetTodayView({
       setMutatingTaskId(null)
       await load()
     },
-    [capabilities.canEditTasks, context, load]
+    [capabilities.canEditTasks, client, context, load]
   )
 
   if (state === 'loading' && !work)

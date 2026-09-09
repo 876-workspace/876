@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WorkAgendaData, WorkCalendar, WorkHostContext } from '@876/work'
-import { browserWork } from '@876/work/browser'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 import {
   WorkCalendarSurface,
   type WorkCalendarView,
@@ -19,8 +19,10 @@ type LoadState = 'loading' | 'ready' | 'error'
 
 export function WorkWidgetCalendarView({
   context,
+  client = browserWork,
 }: {
   context?: WorkHostContext
+  client?: WorkBrowserClient
 }) {
   const [work, setWork] = useState<WorkAgendaData | null>(null)
   const [calendars, setCalendars] = useState<WorkCalendar[]>([])
@@ -38,7 +40,7 @@ export function WorkWidgetCalendarView({
 
   const loadCalendars = useCallback(async () => {
     setEnrichmentMessage(null)
-    const result = await browserWork.calendars.list()
+    const result = await client.calendars.list()
     if (result.error || !result.data) {
       setEnrichmentMessage(
         result.error?.message ?? 'Calendars could not be loaded.'
@@ -46,7 +48,7 @@ export function WorkWidgetCalendarView({
       return
     }
     setCalendars(result.data.data)
-  }, [])
+  }, [client])
 
   const loadRange = useCallback(
     async (nextView: WorkCalendarView, date: Date) => {
@@ -56,8 +58,8 @@ export function WorkWidgetCalendarView({
 
       const window = calendarWindow(nextView, date)
       const result = context
-        ? await browserWork.resourceWork.retrieve({ ...window, context })
-        : await browserWork.myWork.retrieve(window)
+        ? await client.resourceWork.retrieve(window)
+        : await client.myWork.retrieve(window)
       if (generation !== generationRef.current) return
 
       if (result.error || !result.data) {
@@ -72,7 +74,7 @@ export function WorkWidgetCalendarView({
       setWork(result.data)
       setState('ready')
     },
-    [context]
+    [client, context]
   )
 
   useEffect(() => {

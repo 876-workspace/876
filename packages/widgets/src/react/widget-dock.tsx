@@ -16,7 +16,10 @@ import {
 import { NotepadWidgetPanel } from './notepad-widget'
 import { NotepadIcon } from './notepad-icon'
 import { WorkWidgetPanel } from './work-widget'
-import { useWorkWidgetHostContext } from './work-widget-context'
+import {
+  useWorkWidgetBrowserClient,
+  useWorkWidgetHostContext,
+} from './work-widget-context'
 import { ChatRail } from './chat-rail'
 import { WidgetPopout } from './widget-popout'
 
@@ -26,6 +29,7 @@ interface SharedWidgetRenderer {
   renderPanel: (context: {
     workCapabilities: WorkWidgetCapabilities
     workContext: WorkHostContext | null
+    workClient: ReturnType<typeof useWorkWidgetBrowserClient>
   }) => ReactNode
 }
 
@@ -38,10 +42,11 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
   {
     metadata: workWidgetMetadata,
     icon: CalendarDaysIcon,
-    renderPanel: ({ workCapabilities, workContext }) => (
+    renderPanel: ({ workCapabilities, workContext, workClient }) => (
       <WorkWidgetPanel
         capabilities={workCapabilities}
         context={workContext ?? undefined}
+        client={workClient}
       />
     ),
   },
@@ -70,6 +75,7 @@ export function SharedWidgetDock({
   navbarHeight?: number
 }) {
   const inheritedWorkContext = useWorkWidgetHostContext()
+  const workClient = useWorkWidgetBrowserClient()
   const resolvedWorkContext = workContext ?? inheritedWorkContext
   const enabled = new Set(enabledWidgetIds)
   const renderers = sharedWidgetRenderers.filter(({ metadata }) =>
@@ -90,6 +96,7 @@ export function SharedWidgetDock({
             {renderPanel({
               workCapabilities,
               workContext: resolvedWorkContext,
+              workClient,
             })}
           </WidgetPopout.Content>
         ))}

@@ -18,7 +18,7 @@ function errorResponse(
 
 /** Authorizes an Invoice route handler without redirecting the browser. */
 export async function requireApiPermission(
-  permission: string
+  permission: string | readonly string[]
 ): Promise<ApiContext> {
   const context = await getInvoiceApiContext()
   if (!context) return { response: errorResponse('auth/no-session') }
@@ -27,7 +27,8 @@ export async function requireApiPermission(
   if (outcome.status === 'unavailable')
     return { response: errorResponse('error/unavailable') }
 
-  if (!canAccess(outcome.context, permission))
+  const permissions = typeof permission === 'string' ? [permission] : permission
+  if (!permissions.every((item) => canAccess(outcome.context, item)))
     return { response: errorResponse('auth/forbidden') }
 
   return { response: null, orgId: context.orgId, userId: context.userId }

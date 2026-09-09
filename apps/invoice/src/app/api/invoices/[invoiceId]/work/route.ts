@@ -1,32 +1,38 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
+import { MAX_RESOURCE_WORK_WINDOW_SECONDS } from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
-import { requireAuthorizedWorkWidgetContext } from '@/lib/auth/work-widget-context'
+import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { getWork } from '@/lib/services/work'
 
 export const runtime = 'nodejs'
 
-const MAX_WINDOW_SECONDS = 62 * 24 * 60 * 60
+type Context = { params: Promise<{ invoiceId: string }> }
+
 const filterSchema = z
   .strictObject({
     from: z.coerce.number().int().nonnegative(),
     to: z.coerce.number().int().nonnegative(),
   })
   .refine(({ from, to }) => to > from)
-  .refine(({ from, to }) => to - from <= MAX_WINDOW_SECONDS)
+  .refine(({ from, to }) => to - from <= MAX_RESOURCE_WORK_WINDOW_SECONDS)
 
-export async function GET(request: Request) {
-  const auth = await requireWorkWidgetPermission('my-work.view')
+export async function GET(request: Request, routeContext: Context) {
+  const auth = await requireWorkWidgetPermission([
+    'tasks.view',
+    'reminders.view',
+    'events.view',
+  ])
   if (auth.response) return auth.response
 
-  const host = await requireAuthorizedWorkWidgetContext(request, auth)
+  const { invoiceId } = await routeContext.params
+  const host = await requireAuthorizedInvoiceWorkContext(invoiceId, auth)
   if (host.response) return host.response
-  if (!host.context)
-    return workErrorResponse(getError('work/invalid-request'))
+  if (!host.context) return workErrorResponse(getError('work/invalid-request'))
 
   const url = new URL(request.url)
   const parsed = filterSchema.safeParse({

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { WorkHostContext } from '@876/work'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 
 import {
   EMPTY_WORK_WIDGET_CAPABILITIES,
@@ -49,9 +50,11 @@ function WorkViewNav({
 export function WorkWidgetPanel({
   capabilities = EMPTY_WORK_WIDGET_CAPABILITIES,
   context,
+  client = browserWork,
 }: {
   capabilities?: WorkWidgetCapabilities
   context?: WorkHostContext
+  client?: WorkBrowserClient
 }) {
   const [view, setView] = useState<WorkView>('today')
   const [scope, setScope] = useState<WorkWidgetScope>('my-work')
@@ -90,20 +93,27 @@ export function WorkWidgetPanel({
           key={scopeKey}
           capabilities={capabilities}
           context={activeContext}
+          client={client}
         />
       ) : activeView === 'tasks' ? (
         <WorkWidgetTasksView
           key={scopeKey}
           capabilities={capabilities}
           context={activeContext}
+          client={client}
         />
       ) : activeView === 'calendar' ? (
-        <WorkWidgetCalendarView key={scopeKey} context={activeContext} />
+        <WorkWidgetCalendarView
+          key={scopeKey}
+          context={activeContext}
+          client={client}
+        />
       ) : (
         <WorkWidgetCreateView
           key={scopeKey}
           capabilities={capabilities}
           context={activeContext}
+          client={client}
           onCreated={() => setView('today')}
         />
       )}
