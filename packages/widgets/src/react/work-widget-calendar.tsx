@@ -44,26 +44,31 @@ export function WorkWidgetCalendarView() {
     setCalendars(result.data.data)
   }, [])
 
-  const loadRange = useCallback(async (nextView: WorkCalendarView, date: Date) => {
-    const generation = ++generationRef.current
-    if (!workRef.current) setState('loading')
-    setErrorMessage(null)
+  const loadRange = useCallback(
+    async (nextView: WorkCalendarView, date: Date) => {
+      const generation = ++generationRef.current
+      if (!workRef.current) setState('loading')
+      setErrorMessage(null)
 
-    const result = await browserWork.myWork.retrieve(calendarWindow(nextView, date))
-    if (generation !== generationRef.current) return
-
-    if (result.error || !result.data) {
-      setState('error')
-      setErrorMessage(
-        result.error?.message ?? 'Calendar could not be loaded. Try again.'
+      const result = await browserWork.myWork.retrieve(
+        calendarWindow(nextView, date)
       )
-      return
-    }
+      if (generation !== generationRef.current) return
 
-    workRef.current = result.data
-    setWork(result.data)
-    setState('ready')
-  }, [])
+      if (result.error || !result.data) {
+        setState('error')
+        setErrorMessage(
+          result.error?.message ?? 'Calendar could not be loaded. Try again.'
+        )
+        return
+      }
+
+      workRef.current = result.data
+      setWork(result.data)
+      setState('ready')
+    },
+    []
+  )
 
   useEffect(() => {
     void loadCalendars()
