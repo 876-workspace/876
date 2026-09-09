@@ -1,10 +1,14 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
-import { createWorkEventResourceInputSchema } from '@876/work'
+import {
+  createWorkEventResourceInputSchema,
+  toWorkContext,
+} from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
+import { requireAuthorizedWorkWidgetContext } from '@/lib/auth/work-widget-context'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { getWork } from '@/lib/services/work'
 
@@ -47,12 +51,16 @@ export async function POST(request: Request) {
   const auth = await requireWorkWidgetPermission('events.create')
   if (auth.response) return auth.response
 
+  const host = await requireAuthorizedWorkWidgetContext(request, auth)
+  if (host.response) return host.response
+
   const parsed = createSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success)
     return workErrorResponse(getError('work/invalid-request'))
 
   const canonical = createWorkEventResourceInputSchema.safeParse({
     ...parsed.data,
+    ...(host.context ? { context: toWorkContext(host.context) } : {}),
     createdBy: auth.userId,
   })
   if (!canonical.success)
