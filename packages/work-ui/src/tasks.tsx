@@ -1,7 +1,8 @@
-import type {
-  WorkTask,
-  WorkTaskImportance,
-  WorkTaskList as WorkTaskListResource,
+import {
+  workTaskImportanceSchema,
+  type WorkTask,
+  type WorkTaskImportance,
+  type WorkTaskList as WorkTaskListResource,
 } from '@876/work'
 import type { FormEvent } from 'react'
 
@@ -112,12 +113,13 @@ function TaskEditForm({
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     const title = String(data.get('title') ?? '').trim()
-    if (!title) return
+    const importance = workTaskImportanceSchema.safeParse(data.get('importance'))
+    if (!title || !importance.success) return
 
     await onUpdateTask?.(task, {
       title,
       description: String(data.get('description') ?? '').trim() || null,
-      importance: String(data.get('importance')) as WorkTaskImportance,
+      importance: importance.data,
       due: dueFromForm(data.get('due')),
     })
   }
@@ -277,13 +279,14 @@ function CreateTaskForm({
     const form = event.currentTarget
     const data = new FormData(form)
     const title = String(data.get('title') ?? '').trim()
-    if (!title) return
+    const importance = workTaskImportanceSchema.safeParse(data.get('importance'))
+    if (!title || !importance.success) return
 
     const created = await onCreateTask?.({
       title,
       ...(activeListId ? { listId: activeListId } : {}),
       description: String(data.get('description') ?? '').trim() || null,
-      importance: String(data.get('importance')) as WorkTaskImportance,
+      importance: importance.data,
       due: dueFromForm(data.get('due')),
     })
     if (created) form.reset()
