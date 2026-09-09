@@ -330,12 +330,12 @@ export function WorkEventParticipants({
               Role
               <select
                 name="role"
-                defaultValue="ATTENDEE"
+                defaultValue="REQUIRED"
                 disabled={pending}
                 className="border-876-surface-border bg-background mt-1 w-full rounded-lg border px-2 py-2 text-sm"
               >
-                <option value="ORGANIZER">Organizer</option>
-                <option value="ATTENDEE">Attendee</option>
+                <option value="CHAIR">Chair</option>
+                <option value="REQUIRED">Required</option>
                 <option value="OPTIONAL">Optional</option>
               </select>
             </label>
