@@ -29,6 +29,30 @@ const include = {
   },
 } satisfies Prisma.WorkTaskInclude
 
+function contextWhere(filter: TaskFilter): Prisma.WorkTaskWhereInput {
+  if (!filter.contextService || !filter.contextResource || !filter.contextId)
+    return {}
+
+  return {
+    OR: [
+      {
+        contextService: filter.contextService,
+        contextResource: filter.contextResource,
+        contextId: filter.contextId,
+      },
+      {
+        links: {
+          some: {
+            service: filter.contextService,
+            resource: filter.contextResource,
+            externalId: filter.contextId,
+          },
+        },
+      },
+    ],
+  }
+}
+
 export async function list(tenantId: string, filter: TaskFilter) {
   const cursorId = filter.startingAfter ?? filter.endingBefore
   const anchor = cursorId ? await retrieve(tenantId, cursorId) : null
@@ -38,13 +62,7 @@ export async function list(tenantId: string, filter: TaskFilter) {
     where: {
       tenantId,
       deletedAt: null,
-      ...(filter.contextService
-        ? { contextService: filter.contextService }
-        : {}),
-      ...(filter.contextResource
-        ? { contextResource: filter.contextResource }
-        : {}),
-      ...(filter.contextId ? { contextId: filter.contextId } : {}),
+      ...contextWhere(filter),
       ...(filter.listId ? { listId: filter.listId } : {}),
       ...(filter.parentTaskId !== undefined
         ? { parentTaskId: filter.parentTaskId }
