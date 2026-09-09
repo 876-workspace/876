@@ -1,4 +1,6 @@
 export { createSyncConnectionsRouter } from './sync-connections.routes.js'
+export { createSyncOauthRouter } from './sync-oauth.routes.js'
+export { createSyncSchedulerRouter } from './sync-scheduler.routes.js'
 export {
   list,
   retrieve,
