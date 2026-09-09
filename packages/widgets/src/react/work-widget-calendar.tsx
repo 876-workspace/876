@@ -97,13 +97,13 @@ export function WorkWidgetCalendarView() {
       {state === 'error' ? (
         <WorkWidgetErrorBanner
           message={errorMessage}
-          onRetry={() => void loadRange(view, anchor)}
+          onAction={() => void loadRange(view, anchor)}
         />
       ) : null}
       {enrichmentMessage ? (
         <WorkWidgetErrorBanner
           message={enrichmentMessage}
-          onRetry={() => void loadCalendars()}
+          onAction={() => void loadCalendars()}
         />
       ) : null}
       <WorkCalendarSurface
