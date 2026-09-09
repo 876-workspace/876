@@ -2,9 +2,14 @@
 
 import { requestApiResult } from '@876/core/client'
 
+import type { WorkEventResource } from './event-contracts'
 import type { WorkMyWork, WorkMyWorkFilter } from './my-work'
 import type { WorkSessionClient } from './session'
-import type { WorkTask, WorkTaskImportance } from './types'
+import type {
+  WorkReminder,
+  WorkTask,
+  WorkTaskImportance,
+} from './types'
 
 export type WorkBrowserMyWorkFilter = Pick<WorkMyWorkFilter, 'from' | 'to'>
 export type WorkBrowserTaskFilter = {
@@ -24,6 +29,32 @@ export type WorkBrowserUpdateTaskInput = {
   description?: string | null
   importance?: WorkTaskImportance
   due?: WorkBrowserTaskDue | null
+}
+export type WorkBrowserCreateEventInput =
+  | {
+      title: string
+      calendarId: string
+      allDay: false
+      startAt: number
+      endAt: number
+      timeZone: string
+      description?: string | null
+      location?: string | null
+    }
+  | {
+      title: string
+      calendarId: string
+      allDay: true
+      startDate: string
+      endDate: string
+      description?: string | null
+      location?: string | null
+    }
+export type WorkBrowserCreateReminderInput = {
+  title: string
+  note?: string | null
+  remindAt: number
+  timeZone?: string | null
 }
 
 type WorkTaskListPage = NonNullable<
@@ -101,6 +132,22 @@ export const browserWork = {
   calendars: {
     list() {
       return requestApiResult<WorkCalendarPage>('/api/calendars')
+    },
+  },
+  events: {
+    create(input: WorkBrowserCreateEventInput) {
+      return requestApiResult<WorkEventResource>('/api/events', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      })
+    },
+  },
+  reminders: {
+    create(input: WorkBrowserCreateReminderInput) {
+      return requestApiResult<WorkReminder>('/api/reminders', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      })
     },
   },
 } as const
