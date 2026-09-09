@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { WorkMyWork } from '@876/work'
 
@@ -84,6 +84,18 @@ describe('WorkWidgetCalendarView range orchestration', () => {
       .getByRole('button', { name: monthTarget.toLocaleDateString() })
       .click()
     expect(myWorkCalls).toBe(1)
+
+    await userEvent.keyboard('{ArrowRight}')
+    await expect
+      .element(
+        page.getByRole('button', {
+          name: addDays(monthTarget, 1).toLocaleDateString(),
+        })
+      )
+      .toHaveAttribute('aria-pressed', 'true')
+    await page
+      .getByRole('button', { name: monthTarget.toLocaleDateString() })
+      .click()
 
     await page.getByRole('button', { name: /week/i }).click()
     await vi.waitFor(() => expect(myWorkCalls).toBe(2))

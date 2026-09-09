@@ -1,3 +1,4 @@
+import { useEffect, useRef, type KeyboardEvent } from 'react'
 import type {
   WorkAgendaData,
   WorkCalendar,
@@ -40,6 +41,45 @@ export function startOfLocalDay(date: Date): Date {
 
 export function addLocalDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
+}
+
+function keyboardDateDelta(key: string, day: Date): number | null {
+  if (key === 'ArrowLeft') return -1
+  if (key === 'ArrowRight') return 1
+  if (key === 'ArrowUp') return -7
+  if (key === 'ArrowDown') return 7
+  if (key === 'Home') return -day.getDay()
+  if (key === 'End') return 6 - day.getDay()
+  return null
+}
+
+function useCalendarKeyboard(
+  selectedDate: Date,
+  onSelectDate: (date: Date) => void
+) {
+  const buttons = useRef(new Map<string, HTMLButtonElement>())
+  const focusSelection = useRef(false)
+
+  useEffect(() => {
+    if (!focusSelection.current) return
+    focusSelection.current = false
+    buttons.current.get(workCalendarDateKey(selectedDate))?.focus()
+  }, [selectedDate])
+
+  return {
+    buttonRef(day: Date, element: HTMLButtonElement | null) {
+      const key = workCalendarDateKey(day)
+      if (element) buttons.current.set(key, element)
+      else buttons.current.delete(key)
+    },
+    onKeyDown(event: KeyboardEvent<HTMLButtonElement>, day: Date) {
+      const delta = keyboardDateDelta(event.key, day)
+      if (delta === null) return
+      event.preventDefault()
+      focusSelection.current = true
+      onSelectDate(addLocalDays(day, delta))
+    },
+  }
 }
 
 export function workCalendarDateKey(date: Date): string {
@@ -194,6 +234,7 @@ function WeekView({
   activeCalendarId: string | null
   onSelectDate: (date: Date) => void
 }) {
+  const keyboard = useCalendarKeyboard(date, onSelectDate)
   const start = addLocalDays(
     startOfLocalDay(date),
     -startOfLocalDay(date).getDay()
@@ -218,7 +259,11 @@ function WeekView({
           >
             <button
               type="button"
+              ref={(element) => keyboard.buttonRef(day, element)}
               onClick={() => onSelectDate(day)}
+              onKeyDown={(event) => keyboard.onKeyDown(event, day)}
+              aria-pressed={selected}
+              tabIndex={selected ? 0 : -1}
               className="focus-visible:ring-ring mb-2 flex w-full items-baseline justify-between rounded-md text-left focus-visible:ring-2 focus-visible:outline-none"
             >
               <span className="text-sm font-semibold">
@@ -263,6 +308,7 @@ function MonthView({
   activeCalendarId: string | null
   onSelectDate: (date: Date) => void
 }) {
+  const keyboard = useCalendarKeyboard(date, onSelectDate)
   const first = new Date(date.getFullYear(), date.getMonth(), 1)
   const gridStart = addLocalDays(first, -first.getDay())
   const days = Array.from({ length: 42 }, (_, index) =>
@@ -289,8 +335,11 @@ function MonthView({
             <button
               key={workCalendarDateKey(day)}
               type="button"
+              ref={(element) => keyboard.buttonRef(day, element)}
               onClick={() => onSelectDate(day)}
+              onKeyDown={(event) => keyboard.onKeyDown(event, day)}
               aria-pressed={selected}
+              tabIndex={selected ? 0 : -1}
               aria-label={day.toLocaleDateString()}
               className={cn(
                 'border-876-surface-border focus-visible:ring-ring min-h-12 rounded-lg border p-1 text-center focus-visible:ring-2 focus-visible:outline-none',
