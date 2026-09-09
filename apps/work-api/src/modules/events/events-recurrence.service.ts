@@ -6,7 +6,8 @@ import * as events from './events.service.js'
 
 export async function retrieve(organizationId: string, eventId: string) {
   const event = await events.retrieve(organizationId, eventId)
-  if (!event || isError(event)) return event
+  if (isError(event)) return event
+  if (!event) return getError('work/event-not-found')
   if (!event.recurrenceRuleId) return null
 
   const rule = await recurrenceRules.retrieve(
@@ -23,7 +24,8 @@ export async function set(
   input: CreateWorkRecurrenceRuleInput
 ) {
   const event = await events.retrieve(organizationId, eventId)
-  if (!event || isError(event)) return event
+  if (isError(event)) return event
+  if (!event) return getError('work/event-not-found')
 
   const previousRuleId = event.recurrenceRuleId
   const rule = await recurrenceRules.prepareForResource(
@@ -39,10 +41,15 @@ export async function set(
     })
     if (!updated || isError(updated)) {
       await recurrenceRules.cleanupDetached(organizationId, rule.id)
-      return updated
+      return updated ?? getError('work/event-not-found')
     }
-    if (previousRuleId)
-      await recurrenceRules.cleanupDetached(organizationId, previousRuleId)
+    if (previousRuleId) {
+      const cleanup = await recurrenceRules.cleanupDetached(
+        organizationId,
+        previousRuleId
+      )
+      if (isError(cleanup)) return cleanup
+    }
   }
 
   return rule
@@ -50,15 +57,21 @@ export async function set(
 
 export async function clear(organizationId: string, eventId: string) {
   const event = await events.retrieve(organizationId, eventId)
-  if (!event || isError(event)) return event
+  if (isError(event)) return event
+  if (!event) return getError('work/event-not-found')
   if (!event.recurrenceRuleId) return event
 
   const previousRuleId = event.recurrenceRuleId
   const updated = await events.update(organizationId, eventId, {
     recurrenceRuleId: null,
   })
-  if (!updated || isError(updated)) return updated
+  if (!updated || isError(updated))
+    return updated ?? getError('work/event-not-found')
 
-  await recurrenceRules.cleanupDetached(organizationId, previousRuleId)
+  const cleanup = await recurrenceRules.cleanupDetached(
+    organizationId,
+    previousRuleId
+  )
+  if (isError(cleanup)) return cleanup
   return updated
 }
