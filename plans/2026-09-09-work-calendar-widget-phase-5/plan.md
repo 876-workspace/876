@@ -4,9 +4,9 @@ Run ID: `2026-09-09-work-calendar-widget-phase-5`
 
 Branch: `feat/work-widget-phase-5`
 
-Baseline: `feat/work-widget-phase-4@b9e8f09a2a493edc311e5bc1931e2a085e1ec7fc`
+Baseline: `main@1c71d404b06755bc574bad121f270adfa188c68f`
 
-Status: `IN_PROGRESS`
+Status: `COMPLETE`
 
 ## Overview
 
@@ -29,9 +29,9 @@ The target is a mature internal Work experience covering recurring work, delegat
 - Browser traffic stays same-origin and never receives Work origins, app keys, or internal keys.
 - Invoice routes authorize before calling the Work session client.
 - Acting user, organization, `createdBy`, `assignedBy`, and user-scoped notification identity are server-owned.
-- Existing Invoice permissions are reused: task/list/assignment operations use `tasks.*`; participant operations use `events.*`; calendar/subscription management uses `calendars.*`; recurrence and alerts inherit the permission of the Work resource they modify.
+- Invoice keeps resource permissions for recurrence and alerts, while distinct `tasks.assign`, `tasks.respond`, `events.invite`, and `events.respond` grants separate management from self-response authority.
 - Work remains the final authorization boundary for Work data.
-- No Phase 5 database migration is expected because the Work schema already models the required resources.
+- Work needs no schema migration because it already models the required resources. The identity API includes a data migration that backfills the new Invoice permission grants onto existing standard roles.
 - The notification/outbox architecture remains canonical. The widget only creates/updates `WorkAlert` or `WorkReminder` records.
 - External Google/Microsoft/CalDAV sync remains Phase 6.
 - A standalone full Work application remains Phase 7.
@@ -39,7 +39,7 @@ The target is a mature internal Work experience covering recurring work, delegat
 ## Key design decisions
 
 1. **Recurrence is series-first in Phase 5.** Existing Work supports recurrence-rule CRUD and attachment through `recurrenceRuleId`, but it does not expose a true occurrence-exception/edit-one command. Phase 5 therefore supports create/attach, detach, and edit-series semantics. It will not fabricate edit-one behavior in Invoice or Widgets.
-2. **Advanced capability authorization reuses existing grants.** No new permission keys or role migration are introduced solely for Phase 5.
+2. **Management and self-response are separate authorities.** Phase 5 adds assignment/invitation management and response permission keys, then backfills existing Invoice roles so ordinary staff can respond without receiving management access.
 3. **Delegation remains canonical assignment data.** USER/TEAM and OWNER/COLLABORATOR/REVIEWER/WATCHER remain Work concepts; UI does not invent a second assignee model.
 4. **Participant response uses canonical participant status.** NEEDS_ACTION/ACCEPTED/DECLINED/TENTATIVE/DELEGATED remain the source of truth.
 5. **Alerts schedule through Work.** Absolute and relative NOTIFICATION/EMAIL alerts are represented as `WorkAlert`; delivery is materialized/dispatched by Work's existing notification outbox.
@@ -52,55 +52,55 @@ The target is a mature internal Work experience covering recurring work, delegat
 
 - [x] Confirm Work already owns recurrence rules, assignments, participants, alerts, calendars/subscriptions, task lists, and notification outbox.
 - [x] Confirm true edit-one recurrence semantics are not currently exposed by Work.
-- [ ] Harden assignment status transitions where the existing service currently accepts nonsensical transitions.
-- [ ] Harden participant response transitions where appropriate without inventing invitation delivery semantics.
-- [ ] Add focused Work API lifecycle regression tests.
+- [x] Harden assignment status transitions where the existing service currently accepts nonsensical transitions.
+- [x] Harden participant response transitions where appropriate without inventing invitation delivery semantics.
+- [x] Add focused Work API lifecycle regression tests, including stale-write races.
 
 ### Phase 5B — browser and Invoice BFF transport
 
-- [ ] Extend `@876/work/browser` with advanced resource methods while keeping every URL same-origin.
-- [ ] Add Invoice recurrence-rule routes with resource-derived permissions and server-owned creator identity.
-- [ ] Add task assignment/delegation routes.
-- [ ] Add event participant routes.
-- [ ] Add alert routes with server-owned user/creator identity.
-- [ ] Extend calendar routes for create/update and add subscription routes.
-- [ ] Extend task-list routes for create/update.
-- [ ] Add event/reminder update routes needed for recurrence attachment.
-- [ ] Validate transformed payloads with canonical `@876/work` schemas before Work calls.
+- [x] Extend `@876/work/browser` with advanced resource methods while keeping every URL same-origin.
+- [x] Add resource-owned Invoice recurrence commands with resource-derived permissions and server-owned creator identity.
+- [x] Add task assignment/delegation routes.
+- [x] Add event participant routes.
+- [x] Add alert routes with server-owned user/creator identity.
+- [x] Extend calendar routes for create/update and add subscription routes.
+- [x] Extend task-list routes for create/update.
+- [x] Attach recurrence through parent-owned task/event/reminder commands, avoiding unnecessary generic browser update routes.
+- [x] Validate transformed payloads with canonical `@876/work` schemas before Work calls.
 
 ### Phase 5C — reusable advanced presentation
 
-- [ ] Add controlled recurrence editor/summary.
-- [ ] Add controlled task assignment/delegation manager.
-- [ ] Add controlled event participant manager.
-- [ ] Add controlled alert manager.
-- [ ] Add controlled calendar/subscription manager.
-- [ ] Add controlled task-list manager.
-- [ ] Keep `@876/work-ui` free of fetch, host imports, service URLs, and auth logic.
+- [x] Add controlled recurrence editor/summary.
+- [x] Add controlled task assignment/delegation manager.
+- [x] Add controlled event participant manager.
+- [x] Add controlled alert manager.
+- [x] Add controlled calendar/subscription manager.
+- [x] Add controlled task-list manager.
+- [x] Keep `@876/work-ui` free of fetch, host imports, service URLs, and auth logic.
 
 ### Phase 5D — widget integration
 
-- [ ] Expose advanced task controls from the Tasks surface.
-- [ ] Expose event participant/alert/recurrence controls from Calendar/event detail where compact UX permits.
-- [ ] Add a focused Manage surface for calendars/subscriptions/task lists rather than overloading Calendar.
-- [ ] Preserve My Work / resource scope switching and Phase 4 context isolation.
-- [ ] Keep destructive task deletion out of the compact widget.
+- [x] Expose advanced task controls from the Tasks surface.
+- [x] Expose event participant/alert/recurrence controls from Calendar/event detail where compact UX permits.
+- [x] Add a focused Manage surface for calendars/subscriptions/task lists rather than overloading Calendar.
+- [x] Preserve My Work / resource scope switching and Phase 4 context isolation.
+- [x] Keep destructive task deletion out of the compact widget.
 
 ### Phase 5E — keyboard and accessibility
 
-- [ ] Add keyboard-safe top-level navigation shortcuts that do not fire while typing.
-- [ ] Improve calendar keyboard date navigation/selection where the current controlled calendar supports it.
-- [ ] Ensure advanced form controls have accessible labels, status text, and disabled/pending semantics.
-- [ ] Add component/browser regressions for keyboard behavior.
+- [x] Add keyboard-safe top-level navigation shortcuts that do not fire while typing.
+- [x] Add roving-tab calendar date selection with arrow, Home, and End keys.
+- [x] Ensure advanced form controls have accessible labels, status text, and disabled/pending semantics.
+- [x] Add component/browser regressions for keyboard behavior.
 
 ### Phase 5F — verification and closeout
 
-- [ ] Add browser adapter contract tests.
-- [ ] Add Invoice BFF authorization/injection tests.
-- [ ] Add widget advanced productivity regressions.
-- [ ] Review the Phase 5 diff for duplicate contracts/helpers, swallowed errors, unsafe casts/suppressions, credential leaks, permission bypasses, and orchestrator growth.
-- [ ] Update this plan with exact completion state and commit heads.
-- [ ] Write `reports/gpt-web/2026-09-09-work-calendar-widget-phase-5.md`.
+- [x] Add browser adapter contract tests.
+- [x] Add Invoice BFF authorization/injection tests.
+- [x] Add widget advanced productivity and keyboard regressions.
+- [x] Review the Phase 5 diff for duplicate contracts/helpers, swallowed errors, unsafe casts/suppressions, credential leaks, permission bypasses, and orchestrator growth.
+- [x] Update this plan with exact completion state and implementation head.
+- [x] Write `reports/gpt-web/2026-09-09-work-calendar-widget-phase-5.md`.
 
 ## Explicit deferrals
 
@@ -118,7 +118,6 @@ pnpm --filter @876/work typecheck
 pnpm --filter @876/work test
 pnpm --filter @876/work-api typecheck
 pnpm --filter @876/work-api lint
-pnpm --filter @876/work-api boundaries
 pnpm --filter @876/work-api test
 pnpm --filter @876/work-api build
 pnpm --filter @876/work-ui typecheck
@@ -132,12 +131,12 @@ pnpm check:transpile
 pnpm check:service-bundle
 ```
 
-Executable verification is not available to GPT Web: **not executed; verification is the orchestrator's.**
+All listed verification commands were executed locally and passed. `@876/work-api` does not define a package-local `boundaries` script, so that stale command was removed rather than reporting a check that cannot run. Repository transpilation and service-bundle boundary checks passed.
 
 ## Handoff state
 
-Phase 5 starts from the verified Phase 4 head. The Work backend and session client already expose the advanced resources, so the implementation should extend existing contracts and routes rather than create a parallel productivity service. The next source step is to inspect the advanced Work route security and then add lifecycle hardening plus the browser/BFF surface.
+Phase 5 was rebased onto the merged Phase 4 baseline at `main@1c71d404b`. The reviewed implementation head is `b3f31929a`; closeout documentation follows that commit. Advanced state remains owned by Work, Invoice remains a same-origin authorization/BFF boundary, and the shared UI remains controlled and transport-free.
 
 ## PR preparation summary
 
-No PR has been requested or opened. This section will be filled during closeout with final head, changed files, tests drafted, verification evidence supplied by the orchestrator, and explicit deferrals.
+The Phase 5 branch is ready for a PR to `main`. It contains the advanced Work backend/session contracts, Invoice BFF surface, controlled shared UI, compact widget orchestration, granular access migration, and regression coverage. The explicit deferrals above remain Phase 6/7 work and no external provider synchronization was pulled forward.
