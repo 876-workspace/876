@@ -17,6 +17,8 @@ export type WorkPushResult = {
 
 export type WorkSyncCredential = {
   accessToken?: string
+  refreshToken?: string
+  expiresAt?: number
   username?: string
   password?: string
 }
@@ -31,8 +33,9 @@ export interface WorkSyncCredentialResolver {
 }
 
 /**
- * Provider-neutral adapter contract. Phase 2 intentionally defines this seam
- * without implementing Google, Microsoft, or CalDAV network behavior.
+ * Provider-neutral adapter contract. Provider implementations stay behind this
+ * boundary so Work resources and widget consumers never learn provider HTTP
+ * details, tokens, or collection cursor formats.
  */
 export interface WorkSyncProviderAdapter {
   readonly provider: 'GOOGLE' | 'MICROSOFT' | 'CALDAV'

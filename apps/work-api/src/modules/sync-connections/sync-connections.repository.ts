@@ -33,6 +33,8 @@ export async function list(tenantId: string, filter: Filter) {
 }
 export const retrieve = (tenantId: string, id: string) =>
   prisma.workSyncConnection.findFirst({ where: { tenantId, id } })
+export const retrieveById = (id: string) =>
+  prisma.workSyncConnection.findUnique({ where: { id } })
 export const create = (params: CreateParams) =>
   prisma.workSyncConnection.create({
     data: { id: `sync_${randomUUID().replaceAll('-', '')}`, ...params },
@@ -40,9 +42,19 @@ export const create = (params: CreateParams) =>
 export const update = (id: string, params: UpdateParams) =>
   prisma.workSyncConnection.update({ where: { id }, data: params })
 export async function remove(id: string) {
-  await prisma.workSyncConnection.update({
-    where: { id },
-    data: { status: 'REVOKED' },
+  await prisma.$transaction(async (tx) => {
+    await tx.workSyncCredential.deleteMany({ where: { connectionId: id } })
+    await tx.workSyncConnection.update({
+      where: { id },
+      data: {
+        status: 'REVOKED',
+        credentialRef: null,
+        syncCursor: null,
+        oauthStateHash: null,
+        oauthStateExpiresAt: null,
+      },
+    })
   })
+
   return { object: 'sync_connection' as const, id, deleted: true as const }
 }

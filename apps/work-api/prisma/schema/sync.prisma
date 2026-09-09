@@ -20,40 +20,60 @@ enum WorkSyncResourceType {
 }
 
 model WorkSyncConnection {
-  id                 String                   @id
-  tenantId           String                   @map("tenant_id")
-  userId             String                   @map("user_id")
-  provider           WorkSyncProvider
-  status             WorkSyncConnectionStatus @default(ACTIVE)
-  credentialRef      String?                  @map("credential_ref")
-  remoteAccountId    String?                  @map("remote_account_id")
-  remoteAccountLabel String?                  @map("remote_account_label")
-  caldavUrl          String?                  @map("caldav_url")
-  syncCursor         String?                  @map("sync_cursor")
-  lastSyncedAt       DateTime?                @map("last_synced_at")
-  lastErrorCode      String?                  @map("last_error_code")
-  createdAt          DateTime                 @default(now()) @map("created_at")
-  updatedAt          DateTime                 @updatedAt @map("updated_at")
-  tenant             WorkTenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  mappings           WorkSyncMapping[]
+  id                  String                   @id
+  tenantId            String                   @map("tenant_id")
+  userId              String                   @map("user_id")
+  provider            WorkSyncProvider
+  status              WorkSyncConnectionStatus @default(ACTIVE)
+  credentialRef       String?                  @map("credential_ref")
+  remoteAccountId     String?                  @map("remote_account_id")
+  remoteAccountLabel  String?                  @map("remote_account_label")
+  caldavUrl           String?                  @map("caldav_url")
+  syncCursor          String?                  @map("sync_cursor")
+  lastSyncedAt        DateTime?                @map("last_synced_at")
+  lastErrorCode       String?                  @map("last_error_code")
+  oauthStateHash      String?                  @map("oauth_state_hash")
+  oauthStateExpiresAt DateTime?                @map("oauth_state_expires_at")
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  tenant              WorkTenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  credential          WorkSyncCredential?
+  mappings            WorkSyncMapping[]
 
   @@index([tenantId, userId, provider, status])
   @@map("work_sync_connections")
 }
 
+model WorkSyncCredential {
+  id            String             @id
+  connectionId  String             @unique @map("connection_id")
+  sealedSecret  String             @map("sealed_secret")
+  keyId         String?            @map("key_id")
+  vaultProvider String             @map("vault_provider")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  connection    WorkSyncConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@map("work_sync_credentials")
+}
+
 model WorkSyncMapping {
-  id           String               @id
-  connectionId String               @map("connection_id")
-  resourceType WorkSyncResourceType @map("resource_type")
-  localId      String               @map("local_id")
-  remoteId     String               @map("remote_id")
-  remoteEtag   String?              @map("remote_etag")
-  iCalUid      String?              @map("ical_uid")
-  contentHash  String?              @map("content_hash")
-  lastSyncedAt DateTime?            @map("last_synced_at")
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-  connection   WorkSyncConnection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  id              String               @id
+  connectionId    String               @map("connection_id")
+  resourceType    WorkSyncResourceType @map("resource_type")
+  localId         String               @map("local_id")
+  remoteId        String               @map("remote_id")
+  remoteEtag      String?              @map("remote_etag")
+  iCalUid         String?              @map("ical_uid")
+  contentHash     String?              @map("content_hash")
+  syncCursor      String?              @map("sync_cursor")
+  syncWindowStart DateTime?            @map("sync_window_start")
+  syncWindowEnd   DateTime?            @map("sync_window_end")
+  lastSyncedAt    DateTime?            @map("last_synced_at")
+  lastErrorCode   String?              @map("last_error_code")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  connection      WorkSyncConnection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 
   @@unique([connectionId, resourceType, localId])
   @@unique([connectionId, resourceType, remoteId])
