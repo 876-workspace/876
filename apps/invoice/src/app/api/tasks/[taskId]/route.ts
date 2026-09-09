@@ -1,10 +1,16 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
-import { updateWorkTaskInputSchema, workTaskImportanceSchema } from '@876/work'
+import {
+  updateWorkTaskInputSchema,
+  workTaskImportanceSchema,
+  type WorkHostContext,
+  type WorkTask,
+} from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
+import { requireAuthorizedWorkWidgetContext } from '@/lib/auth/work-widget-context'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { getWork } from '@/lib/services/work'
 
@@ -35,9 +41,27 @@ const actionSchema = z.union([
   editSchema,
 ])
 
+function taskMatchesContext(task: WorkTask, context: WorkHostContext): boolean {
+  const legacyMatch =
+    task.context?.service === context.service &&
+    task.context.resource === context.resource &&
+    task.context.id === context.externalId
+  if (legacyMatch) return true
+
+  return task.links.some(
+    (link) =>
+      link.service === context.service &&
+      link.resource === context.resource &&
+      link.externalId === context.externalId
+  )
+}
+
 export async function PATCH(request: Request, context: Context) {
   const auth = await requireWorkWidgetPermission('tasks.edit')
   if (auth.response) return auth.response
+
+  const host = await requireAuthorizedWorkWidgetContext(request, auth)
+  if (host.response) return host.response
 
   const parsed = actionSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success)
@@ -45,6 +69,14 @@ export async function PATCH(request: Request, context: Context) {
 
   const { taskId } = await context.params
   if (!taskId.trim()) return workErrorResponse(getError('work/invalid-request'))
+
+  const work = await getWork()
+  if (host.context) {
+    const current = await work.tasks.retrieve(auth.orgId, taskId)
+    if (current.error) return workErrorResponse(current.error)
+    if (!taskMatchesContext(current.data, host.context))
+      return workErrorResponse(getError('work/not-found'))
+  }
 
   const candidate =
     parsed.data.action === 'complete'
@@ -74,7 +106,6 @@ export async function PATCH(request: Request, context: Context) {
   if (!canonical.success)
     return workErrorResponse(getError('work/invalid-request'))
 
-  const work = await getWork()
   const result = await work.tasks.update(auth.orgId, taskId, canonical.data)
   if (result.error) return workErrorResponse(result.error)
 
