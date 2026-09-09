@@ -4,6 +4,7 @@ import { requestApiResult } from '@876/core/client'
 
 import type { WorkEventResource } from './event-contracts'
 import type { WorkMyWork, WorkMyWorkFilter } from './my-work'
+import type { WorkRecurrenceDraft } from './recurrence-contracts'
 import type {
   WorkEventParticipantResponseInput,
   WorkTaskAssignmentResponseInput,
@@ -12,16 +13,13 @@ import type { WorkResourceRef } from './resource-ref'
 import type { WorkResourceWork } from './resource-work'
 import type { WorkSessionClient } from './session'
 import type {
-  CreateWorkRecurrenceRuleInput,
   UpdateWorkAlertInput,
   UpdateWorkCalendarInput,
-  UpdateWorkRecurrenceRuleInput,
   UpdateWorkTaskListInput,
   WorkAlert,
   WorkAssignmentRole,
   WorkAssignmentTargetType,
   WorkCalendar,
-  WorkCalendarRole,
   WorkCalendarSubscription,
   WorkCalendarVisibility,
   WorkEventParticipant,
@@ -73,11 +71,6 @@ export type WorkBrowserCreateTaskAssignmentInput = {
 export type WorkBrowserUpdateTaskAssignmentInput = {
   role: WorkAssignmentRole
 }
-export type WorkBrowserCreateRecurrenceRuleInput = Omit<
-  CreateWorkRecurrenceRuleInput,
-  'createdBy'
->
-export type WorkBrowserUpdateRecurrenceRuleInput = UpdateWorkRecurrenceRuleInput
 export type WorkBrowserCreateEventInput =
   | {
       title: string
@@ -168,9 +161,6 @@ type WorkParticipantPage = NonNullable<
 type WorkAlertPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['alerts']['list']>>['data']
 >
-type WorkRecurrencePage = NonNullable<
-  Awaited<ReturnType<WorkSessionClient['recurrenceRules']['list']>>['data']
->
 type WorkSubscriptionPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['calendarSubscriptions']['list']>>['data']
 >
@@ -220,6 +210,10 @@ function resourceItemPath(
 
 function alertsPath(parentPath: string) {
   return `${parentPath}/alerts`
+}
+
+function recurrencePath(parentPath: string) {
+  return `${parentPath}/recurrence`
 }
 
 export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
@@ -318,6 +312,29 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           }
         )
       },
+      recurrence: {
+        retrieve(taskId: string, context?: WorkResourceRef) {
+          return requestApiResult<WorkRecurrenceRule | null>(
+            recurrencePath(contextualItemPath('tasks', taskId, context))
+          )
+        },
+        set(
+          taskId: string,
+          input: WorkRecurrenceDraft,
+          context?: WorkResourceRef
+        ) {
+          return requestApiResult<WorkRecurrenceRule>(
+            recurrencePath(contextualItemPath('tasks', taskId, context)),
+            { method: 'PATCH', body: JSON.stringify(input) }
+          )
+        },
+        clear(taskId: string, context?: WorkResourceRef) {
+          return requestApiResult<WorkTask>(
+            recurrencePath(contextualItemPath('tasks', taskId, context)),
+            { method: 'DELETE' }
+          )
+        },
+      },
     },
     taskAssignments: {
       list(taskId: string, context?: WorkResourceRef) {
@@ -364,29 +381,6 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
       ) {
         return requestApiResult<DeletedResource>(
           `${contextualItemPath('tasks', taskId, context)}/assignments/${encodeURIComponent(assignmentId)}`,
-          { method: 'DELETE' }
-        )
-      },
-    },
-    recurrenceRules: {
-      list() {
-        return requestApiResult<WorkRecurrencePage>('/api/recurrence-rules')
-      },
-      create(input: WorkBrowserCreateRecurrenceRuleInput) {
-        return requestApiResult<WorkRecurrenceRule>('/api/recurrence-rules', {
-          method: 'POST',
-          body: JSON.stringify(input),
-        })
-      },
-      update(ruleId: string, input: WorkBrowserUpdateRecurrenceRuleInput) {
-        return requestApiResult<WorkRecurrenceRule>(
-          `/api/recurrence-rules/${encodeURIComponent(ruleId)}`,
-          { method: 'PATCH', body: JSON.stringify(input) }
-        )
-      },
-      delete(ruleId: string) {
-        return requestApiResult<DeletedResource>(
-          `/api/recurrence-rules/${encodeURIComponent(ruleId)}`,
           { method: 'DELETE' }
         )
       },
@@ -460,6 +454,29 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           { method: 'PATCH', body: JSON.stringify(input) }
         )
       },
+      recurrence: {
+        retrieve(eventId: string, context?: WorkResourceRef) {
+          return requestApiResult<WorkRecurrenceRule | null>(
+            recurrencePath(contextualItemPath('events', eventId, context))
+          )
+        },
+        set(
+          eventId: string,
+          input: WorkRecurrenceDraft,
+          context?: WorkResourceRef
+        ) {
+          return requestApiResult<WorkRecurrenceRule>(
+            recurrencePath(contextualItemPath('events', eventId, context)),
+            { method: 'PATCH', body: JSON.stringify(input) }
+          )
+        },
+        clear(eventId: string, context?: WorkResourceRef) {
+          return requestApiResult<WorkEventResource>(
+            recurrencePath(contextualItemPath('events', eventId, context)),
+            { method: 'DELETE' }
+          )
+        },
+      },
     },
     eventParticipants: {
       list(eventId: string, context?: WorkResourceRef) {
@@ -519,6 +536,35 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           { method: 'PATCH', body: JSON.stringify(input) }
         )
       },
+      recurrence: {
+        retrieve(reminderId: string, context?: WorkResourceRef) {
+          return requestApiResult<WorkRecurrenceRule | null>(
+            recurrencePath(
+              contextualItemPath('reminders', reminderId, context)
+            )
+          )
+        },
+        set(
+          reminderId: string,
+          input: WorkRecurrenceDraft,
+          context?: WorkResourceRef
+        ) {
+          return requestApiResult<WorkRecurrenceRule>(
+            recurrencePath(
+              contextualItemPath('reminders', reminderId, context)
+            ),
+            { method: 'PATCH', body: JSON.stringify(input) }
+          )
+        },
+        clear(reminderId: string, context?: WorkResourceRef) {
+          return requestApiResult<WorkReminder>(
+            recurrencePath(
+              contextualItemPath('reminders', reminderId, context)
+            ),
+            { method: 'DELETE' }
+          )
+        },
+      },
     },
     alerts: {
       listForTask(taskId: string, context?: WorkResourceRef) {
@@ -536,6 +582,27 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           { method: 'POST', body: JSON.stringify(input) }
         )
       },
+      updateForTask(
+        taskId: string,
+        alertId: string,
+        input: UpdateWorkAlertInput,
+        context?: WorkResourceRef
+      ) {
+        return requestApiResult<WorkAlert>(
+          `${alertsPath(contextualItemPath('tasks', taskId, context))}/${encodeURIComponent(alertId)}`,
+          { method: 'PATCH', body: JSON.stringify(input) }
+        )
+      },
+      deleteForTask(
+        taskId: string,
+        alertId: string,
+        context?: WorkResourceRef
+      ) {
+        return requestApiResult<DeletedResource>(
+          `${alertsPath(contextualItemPath('tasks', taskId, context))}/${encodeURIComponent(alertId)}`,
+          { method: 'DELETE' }
+        )
+      },
       listForEvent(eventId: string, context?: WorkResourceRef) {
         return requestApiResult<WorkAlertPage>(
           alertsPath(contextualItemPath('events', eventId, context))
@@ -551,10 +618,25 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           { method: 'POST', body: JSON.stringify(input) }
         )
       },
-      update(alertId: string, input: UpdateWorkAlertInput) {
+      updateForEvent(
+        eventId: string,
+        alertId: string,
+        input: UpdateWorkAlertInput,
+        context?: WorkResourceRef
+      ) {
         return requestApiResult<WorkAlert>(
-          `/api/alerts/${encodeURIComponent(alertId)}`,
+          `${alertsPath(contextualItemPath('events', eventId, context))}/${encodeURIComponent(alertId)}`,
           { method: 'PATCH', body: JSON.stringify(input) }
+        )
+      },
+      deleteForEvent(
+        eventId: string,
+        alertId: string,
+        context?: WorkResourceRef
+      ) {
+        return requestApiResult<DeletedResource>(
+          `${alertsPath(contextualItemPath('events', eventId, context))}/${encodeURIComponent(alertId)}`,
+          { method: 'DELETE' }
         )
       },
     },
