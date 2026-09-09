@@ -6,7 +6,8 @@ import * as tasks from './tasks.service.js'
 
 export async function retrieve(organizationId: string, taskId: string) {
   const task = await tasks.retrieve(organizationId, taskId)
-  if (!task || isError(task)) return task
+  if (isError(task)) return task
+  if (!task) return getError('work/task-not-found')
   if (!task.recurrenceRuleId) return null
 
   const rule = await recurrenceRules.retrieve(
@@ -23,7 +24,8 @@ export async function set(
   input: CreateWorkRecurrenceRuleInput
 ) {
   const task = await tasks.retrieve(organizationId, taskId)
-  if (!task || isError(task)) return task
+  if (isError(task)) return task
+  if (!task) return getError('work/task-not-found')
 
   const previousRuleId = task.recurrenceRuleId
   const rule = await recurrenceRules.prepareForResource(
@@ -39,10 +41,15 @@ export async function set(
     })
     if (!updated || isError(updated)) {
       await recurrenceRules.cleanupDetached(organizationId, rule.id)
-      return updated
+      return updated ?? getError('work/task-not-found')
     }
-    if (previousRuleId)
-      await recurrenceRules.cleanupDetached(organizationId, previousRuleId)
+    if (previousRuleId) {
+      const cleanup = await recurrenceRules.cleanupDetached(
+        organizationId,
+        previousRuleId
+      )
+      if (isError(cleanup)) return cleanup
+    }
   }
 
   return rule
@@ -50,15 +57,21 @@ export async function set(
 
 export async function clear(organizationId: string, taskId: string) {
   const task = await tasks.retrieve(organizationId, taskId)
-  if (!task || isError(task)) return task
+  if (isError(task)) return task
+  if (!task) return getError('work/task-not-found')
   if (!task.recurrenceRuleId) return task
 
   const previousRuleId = task.recurrenceRuleId
   const updated = await tasks.update(organizationId, taskId, {
     recurrenceRuleId: null,
   })
-  if (!updated || isError(updated)) return updated
+  if (!updated || isError(updated))
+    return updated ?? getError('work/task-not-found')
 
-  await recurrenceRules.cleanupDetached(organizationId, previousRuleId)
+  const cleanup = await recurrenceRules.cleanupDetached(
+    organizationId,
+    previousRuleId
+  )
+  if (isError(cleanup)) return cleanup
   return updated
 }
