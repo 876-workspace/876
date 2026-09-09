@@ -12,10 +12,13 @@ import {
   DetailCardSection,
 } from '@876/ui/detail-card'
 import { CreditCardIcon } from '@876/ui/icons'
+import { WorkWidgetContextSetter } from '@876/widgets/react'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
-import { listInvoices } from '@/app/(app)/_lib/list-data'
+import { canAccess } from '@/lib/auth/access-context'
+import { requireAppPermission } from '@/lib/auth/guards'
+import { createInvoiceWorkContext } from '@/lib/auth/work-widget-context'
+import { getBilling } from '@/lib/services/billing'
 import { formatDate, formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
 
@@ -31,9 +34,13 @@ export const metadata = {
 
 export default async function InvoiceDetailPage({ params }: Props) {
   const { invoiceId } = await params
+  const access = await requireAppPermission('invoices.view')
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const result = await listInvoices(context.orgId)
+
+  const billing = await getBilling(context.orgId)
+  const result = await billing.invoices.retrieve(invoiceId)
+  if (result.error?.code === 'invoice/not-found') notFound()
   if (result.error) {
     return (
       <DetailCard aria-label="Invoice unavailable">
@@ -46,13 +53,9 @@ export default async function InvoiceDetailPage({ params }: Props) {
     )
   }
 
-  const invoice = result.data.data.find((row) => row.id === invoiceId)
-  if (!invoice) notFound()
-  const access = await resolveAccessContext(context.userId, context.orgId)
-  const canWrite =
-    access.status === 'ok' && canAccess(access.context, 'invoices.write')
-  const canRecordPayment =
-    access.status === 'ok' && canAccess(access.context, 'payments.create')
+  const invoice = result.data
+  const canWrite = canAccess(access, 'invoices.write')
+  const canRecordPayment = canAccess(access, 'payments.create')
 
   const customer =
     invoice.customer &&
@@ -74,53 +77,56 @@ export default async function InvoiceDetailPage({ params }: Props) {
         : null
 
   return (
-    <DetailCard aria-label={`Invoice details: ${number}`}>
-      <DetailCardHeader
-        icon={
-          <DetailCardIcon>
-            <CreditCardIcon className="size-5" />
-          </DetailCardIcon>
-        }
-        title={number}
-        meta={
-          <Badge variant={documentStatusVariant(status)}>
-            {status.toLowerCase().replace(/_/g, ' ')}
-          </Badge>
-        }
-        subtitle={customer}
-        closeHref="/invoices"
-        closeLabel="Close invoice details"
-      />
-      <div className="px-5 pt-5 sm:px-6 print:hidden">
-        <InvoiceActions
-          invoiceId={invoice.id}
-          customerId={customerId}
-          status={status}
-          canWrite={canWrite}
-          canRecordPayment={canRecordPayment}
+    <>
+      <WorkWidgetContextSetter context={createInvoiceWorkContext(invoice)} />
+      <DetailCard aria-label={`Invoice details: ${number}`}>
+        <DetailCardHeader
+          icon={
+            <DetailCardIcon>
+              <CreditCardIcon className="size-5" />
+            </DetailCardIcon>
+          }
+          title={number}
+          meta={
+            <Badge variant={documentStatusVariant(status)}>
+              {status.toLowerCase().replace(/_/g, ' ')}
+            </Badge>
+          }
+          subtitle={customer}
+          closeHref="/invoices"
+          closeLabel="Close invoice details"
         />
-      </div>
-      <DetailCardBody className="space-y-8">
-        <DetailCardHeadline
-          value={formatMoney(totalAmount, currency)}
-          caption="Invoice total"
-        />
-        <DetailCardSection title="Invoice">
-          <DetailCardFacts>
-            <DetailCardFact label="Customer" value={customer} />
-            <DetailCardFact label="Date" value={formatDate(date)} />
-            <DetailCardFact
-              label="Amount due"
-              value={formatMoney(amountDue, currency)}
-              mono
-            />
-            <DetailCardFact label="Currency" value={currency} mono />
-          </DetailCardFacts>
-        </DetailCardSection>
-      </DetailCardBody>
-      <DetailCardIdBar>
-        <span className="truncate">{invoice.id}</span>
-      </DetailCardIdBar>
-    </DetailCard>
+        <div className="px-5 pt-5 sm:px-6 print:hidden">
+          <InvoiceActions
+            invoiceId={invoice.id}
+            customerId={customerId}
+            status={status}
+            canWrite={canWrite}
+            canRecordPayment={canRecordPayment}
+          />
+        </div>
+        <DetailCardBody className="space-y-8">
+          <DetailCardHeadline
+            value={formatMoney(totalAmount, currency)}
+            caption="Invoice total"
+          />
+          <DetailCardSection title="Invoice">
+            <DetailCardFacts>
+              <DetailCardFact label="Customer" value={customer} />
+              <DetailCardFact label="Date" value={formatDate(date)} />
+              <DetailCardFact
+                label="Amount due"
+                value={formatMoney(amountDue, currency)}
+                mono
+              />
+              <DetailCardFact label="Currency" value={currency} mono />
+            </DetailCardFacts>
+          </DetailCardSection>
+        </DetailCardBody>
+        <DetailCardIdBar>
+          <span className="truncate">{invoice.id}</span>
+        </DetailCardIdBar>
+      </DetailCard>
+    </>
   )
 }
