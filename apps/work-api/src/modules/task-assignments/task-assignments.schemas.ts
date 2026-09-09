@@ -1,6 +1,7 @@
 import {
   createWorkTaskAssignmentInputSchema,
   updateWorkTaskAssignmentInputSchema,
+  workTaskAssignmentResponseInputSchema,
 } from '@876/work'
 import { z } from 'zod'
 
@@ -13,3 +14,5 @@ export const assignmentParamsSchema = taskParamsSchema.extend({
 })
 export const createAssignmentBodySchema = createWorkTaskAssignmentInputSchema
 export const updateAssignmentBodySchema = updateWorkTaskAssignmentInputSchema
+export const assignmentResponseBodySchema =
+  workTaskAssignmentResponseInputSchema
