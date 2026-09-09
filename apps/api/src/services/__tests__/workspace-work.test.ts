@@ -48,6 +48,7 @@ const DEFAULT_SCOPES = [
   'work.alerts.read',
   'work.alerts.write',
   'work.my-work.read',
+  'work.resource-work.read',
 ] as const
 
 function settings(overrides: { url?: string; internalKey?: string } = {}) {
