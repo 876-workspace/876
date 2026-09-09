@@ -54,7 +54,9 @@ export function WorkWidgetManageView({
       const result = await client.calendarSubscriptions.list(calendarId)
       if (generation !== subscriptionGenerationRef.current) return
       if (result.error || !result.data) {
-        setError(result.error?.message ?? 'Calendar preferences could not load.')
+        setError(
+          result.error?.message ?? 'Calendar preferences could not load.'
+        )
         setSubscription(null)
         return
       }
@@ -76,7 +78,9 @@ export function WorkWidgetManageView({
     void loadSubscription(activeCalendarId)
   }, [activeCalendarId, loadSubscription])
 
-  async function mutate(operation: () => Promise<{ error: { message: string } | null }>) {
+  async function mutate(
+    operation: () => Promise<{ error: { message: string } | null }>
+  ) {
     if (pending) return false
     setPending(true)
     setError(null)
@@ -97,7 +101,10 @@ export function WorkWidgetManageView({
   return (
     <>
       {error ? (
-        <WorkWidgetErrorBanner message={error} onAction={() => void loadBase()} />
+        <WorkWidgetErrorBanner
+          message={error}
+          onAction={() => void loadBase()}
+        />
       ) : null}
       <WorkManage
         taskLists={taskLists}
@@ -142,7 +149,10 @@ export function WorkWidgetManageView({
         }
         onUpdateSubscription={
           capabilities.canEditCalendars && activeCalendarId
-            ? (current: WorkCalendarSubscription, input: WorkSubscriptionEdit) =>
+            ? (
+                current: WorkCalendarSubscription,
+                input: WorkSubscriptionEdit
+              ) =>
                 mutate(() =>
                   client.calendarSubscriptions.update(
                     activeCalendarId,

@@ -78,7 +78,9 @@ function normalizedCreate(input: CreateWorkRecurrenceRuleInput) {
     weekStart: input.weekStart ?? null,
   }
 }
-function fullUpdate(input: CreateWorkRecurrenceRuleInput): UpdateWorkRecurrenceRuleInput {
+function fullUpdate(
+  input: CreateWorkRecurrenceRuleInput
+): UpdateWorkRecurrenceRuleInput {
   const normalized = normalizedCreate(input)
   return {
     frequency: normalized.frequency,

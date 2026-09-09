@@ -52,7 +52,10 @@ export async function handleGetTaskAssignments(
 ) {
   const access = await authorizeTask('tasks.view', taskId, invoiceId)
   if (access.response) return access.response
-  const result = await access.work.taskAssignments.list(access.auth.orgId, taskId)
+  const result = await access.work.taskAssignments.list(
+    access.auth.orgId,
+    taskId
+  )
   if (result.error) return workErrorResponse(result.error)
   return apiSuccess(result.data)
 }

@@ -142,7 +142,9 @@ export async function update(
   const nextTrigger = {
     triggerType: input.triggerType ?? current.triggerType,
     triggerAt:
-      input.triggerAt === undefined ? stamp(current.triggerAt) : input.triggerAt,
+      input.triggerAt === undefined
+        ? stamp(current.triggerAt)
+        : input.triggerAt,
     offsetSeconds:
       input.offsetSeconds === undefined
         ? current.offsetSeconds

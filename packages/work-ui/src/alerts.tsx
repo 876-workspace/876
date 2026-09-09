@@ -49,8 +49,7 @@ export function WorkAlerts({
     const form = event.currentTarget
     const data = new FormData(form)
     const triggerType = String(data.get('triggerType')) as
-      | 'ABSOLUTE'
-      | 'RELATIVE'
+      'ABSOLUTE' | 'RELATIVE'
     const action = String(data.get('action')) as 'NOTIFICATION' | 'EMAIL'
 
     let input: WorkAlertDraft
@@ -79,7 +78,10 @@ export function WorkAlerts({
 
   return (
     <section
-      className={cn('border-876-surface-border rounded-xl border p-3', className)}
+      className={cn(
+        'border-876-surface-border rounded-xl border p-3',
+        className
+      )}
       aria-label="Alerts"
     >
       <p className="text-sm font-medium">Alerts</p>

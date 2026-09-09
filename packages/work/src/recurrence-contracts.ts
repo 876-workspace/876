@@ -1,9 +1,6 @@
 import { z } from 'zod'
 
-import {
-  workRecurrenceFrequencySchema,
-  workWeekdaySchema,
-} from './types'
+import { workRecurrenceFrequencySchema, workWeekdaySchema } from './types'
 
 const timeZoneSchema = z.string().trim().min(1).max(120)
 

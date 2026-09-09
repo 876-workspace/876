@@ -50,7 +50,9 @@ export function WorkTaskAssignments({
     const form = event.currentTarget
     const data = new FormData(form)
     const assigneeId = String(data.get('assigneeId') ?? '').trim()
-    const targetType = String(data.get('targetType')) as WorkAssignmentTargetType
+    const targetType = String(
+      data.get('targetType')
+    ) as WorkAssignmentTargetType
     const role = String(data.get('role')) as WorkAssignmentRole
     if (!assigneeId || !['USER', 'TEAM'].includes(targetType)) return
     const created = await onAssign({ targetType, assigneeId, role })
@@ -59,7 +61,10 @@ export function WorkTaskAssignments({
 
   return (
     <section
-      className={cn('border-876-surface-border rounded-xl border p-3', className)}
+      className={cn(
+        'border-876-surface-border rounded-xl border p-3',
+        className
+      )}
       aria-label="Task assignments"
     >
       <p className="text-sm font-medium">Assignments</p>
@@ -246,7 +251,10 @@ export function WorkEventParticipants({
 
   return (
     <section
-      className={cn('border-876-surface-border rounded-xl border p-3', className)}
+      className={cn(
+        'border-876-surface-border rounded-xl border p-3',
+        className
+      )}
       aria-label="Event participants"
     >
       <p className="text-sm font-medium">Participants</p>

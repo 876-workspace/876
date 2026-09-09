@@ -43,7 +43,9 @@ describe('app access seed catalog', () => {
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
     '$appSlug system role keys use canonical kebab-case',
     (definition) => {
-      expect(definition.roles.every((role) => ROLE_KEY.test(role.key))).toBe(true)
+      expect(definition.roles.every((role) => ROLE_KEY.test(role.key))).toBe(
+        true
+      )
     }
   )
 
@@ -112,10 +114,14 @@ describe('app access seed catalog', () => {
   it('keeps Couriers staff read-only in Reports and Settings', () => {
     const staff = app('876-couriers').roles.find((role) => role.key === 'staff')
     expect(
-      staff?.permissions.filter((permission) => permission.startsWith('reports.'))
+      staff?.permissions.filter((permission) =>
+        permission.startsWith('reports.')
+      )
     ).toEqual(['reports.view'])
     expect(
-      staff?.permissions.filter((permission) => permission.startsWith('settings.'))
+      staff?.permissions.filter((permission) =>
+        permission.startsWith('settings.')
+      )
     ).toEqual(['settings.view'])
   })
 

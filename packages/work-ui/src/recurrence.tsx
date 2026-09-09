@@ -45,16 +45,18 @@ export function WorkRecurrenceEditor({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
-    const frequency = String(data.get('frequency')) as WorkRecurrenceDraft['frequency']
+    const frequency = String(
+      data.get('frequency')
+    ) as WorkRecurrenceDraft['frequency']
     const interval = numberValue(data.get('interval')) ?? 1
     const count = numberValue(data.get('count'))
     const untilText = String(data.get('untilAt') ?? '').trim()
     const untilDate = untilText ? new Date(untilText) : null
     if (count && untilDate) return
 
-    const byDay = data
-      .getAll('byDay')
-      .map(String) as NonNullable<WorkRecurrenceDraft['byDay']>
+    const byDay = data.getAll('byDay').map(String) as NonNullable<
+      WorkRecurrenceDraft['byDay']
+    >
     const monthDay = numberValue(data.get('byMonthDay'))
     const timeZone =
       String(data.get('timeZone') ?? '').trim() ||
@@ -79,7 +81,10 @@ export function WorkRecurrenceEditor({
 
   return (
     <section
-      className={cn('border-876-surface-border rounded-xl border p-3', className)}
+      className={cn(
+        'border-876-surface-border rounded-xl border p-3',
+        className
+      )}
       aria-label="Recurrence"
     >
       <div className="flex items-center justify-between gap-3">

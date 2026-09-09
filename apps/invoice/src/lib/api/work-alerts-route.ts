@@ -18,9 +18,7 @@ import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { getWork } from '@/lib/services/work'
 
-type AlertParent =
-  | { type: 'task'; id: string }
-  | { type: 'event'; id: string }
+type AlertParent = { type: 'task'; id: string } | { type: 'event'; id: string }
 
 const createSchema = z
   .strictObject({
@@ -82,7 +80,10 @@ async function authorizeParent(
   } else {
     const event = await work.events.retrieve(auth.orgId, parent.id)
     if (event.error) return { response: workErrorResponse(event.error) }
-    if (context?.context && !workEventMatchesContext(event.data, context.context))
+    if (
+      context?.context &&
+      !workEventMatchesContext(event.data, context.context)
+    )
       return { response: workErrorResponse(getError('work/not-found')) }
   }
 
@@ -90,9 +91,7 @@ async function authorizeParent(
 }
 
 function parentFilter(parent: AlertParent) {
-  return parent.type === 'task'
-    ? { taskId: parent.id }
-    : { eventId: parent.id }
+  return parent.type === 'task' ? { taskId: parent.id } : { eventId: parent.id }
 }
 
 function alertMatchesParent(

@@ -105,7 +105,12 @@ export function WorkWidgetPanel({
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
-      if (!event.altKey || event.ctrlKey || event.metaKey || isTypingTarget(event.target))
+      if (
+        !event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        isTypingTarget(event.target)
+      )
         return
       const index = Number(event.key) - 1
       const next = Number.isInteger(index) ? views[index] : undefined

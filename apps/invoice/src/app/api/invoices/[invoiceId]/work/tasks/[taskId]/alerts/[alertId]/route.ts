@@ -19,9 +19,5 @@ export async function PATCH(request: Request, routeContext: Context) {
 
 export async function DELETE(_request: Request, routeContext: Context) {
   const { invoiceId, taskId, alertId } = await routeContext.params
-  return handleDeleteWorkAlert(
-    { type: 'task', id: taskId },
-    alertId,
-    invoiceId
-  )
+  return handleDeleteWorkAlert({ type: 'task', id: taskId }, alertId, invoiceId)
 }

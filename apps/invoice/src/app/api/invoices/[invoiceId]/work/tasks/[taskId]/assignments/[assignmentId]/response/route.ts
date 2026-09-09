@@ -10,10 +10,5 @@ type Context = {
 
 export async function PATCH(request: Request, routeContext: Context) {
   const { invoiceId, taskId, assignmentId } = await routeContext.params
-  return handleRespondTaskAssignment(
-    request,
-    taskId,
-    assignmentId,
-    invoiceId
-  )
+  return handleRespondTaskAssignment(request, taskId, assignmentId, invoiceId)
 }

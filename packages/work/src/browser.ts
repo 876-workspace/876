@@ -156,7 +156,9 @@ type WorkAlertPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['alerts']['list']>>['data']
 >
 type WorkSubscriptionPage = NonNullable<
-  Awaited<ReturnType<WorkSessionClient['calendarSubscriptions']['list']>>['data']
+  Awaited<
+    ReturnType<WorkSessionClient['calendarSubscriptions']['list']>
+  >['data']
 >
 
 type DeletedResource = { object: string; id: string; deleted: true }
@@ -368,11 +370,7 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           { method: 'PATCH', body: JSON.stringify(input) }
         )
       },
-      delete(
-        taskId: string,
-        assignmentId: string,
-        context?: WorkResourceRef
-      ) {
+      delete(taskId: string, assignmentId: string, context?: WorkResourceRef) {
         return requestApiResult<DeletedResource>(
           `${contextualItemPath('tasks', taskId, context)}/assignments/${encodeURIComponent(assignmentId)}`,
           { method: 'DELETE' }
@@ -513,9 +511,7 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
       recurrence: {
         retrieve(reminderId: string, context?: WorkResourceRef) {
           return requestApiResult<WorkRecurrenceRule | null>(
-            recurrencePath(
-              contextualItemPath('reminders', reminderId, context)
-            )
+            recurrencePath(contextualItemPath('reminders', reminderId, context))
           )
         },
         set(

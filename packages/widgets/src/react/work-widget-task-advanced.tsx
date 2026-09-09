@@ -46,11 +46,12 @@ export function WorkWidgetTaskAdvanced({
       const generation = ++generationRef.current
       setLoading(true)
       setError(null)
-      const [assignmentResult, recurrenceResult, alertResult] = await Promise.all([
-        client.taskAssignments.list(taskId, context),
-        client.tasks.recurrence.retrieve(taskId, context),
-        client.alerts.listForTask(taskId, context),
-      ])
+      const [assignmentResult, recurrenceResult, alertResult] =
+        await Promise.all([
+          client.taskAssignments.list(taskId, context),
+          client.tasks.recurrence.retrieve(taskId, context),
+          client.alerts.listForTask(taskId, context),
+        ])
       if (generation !== generationRef.current) return
 
       const failure =
@@ -76,7 +77,9 @@ export function WorkWidgetTaskAdvanced({
     void load(selectedTaskId)
   }, [load, selectedTaskId])
 
-  async function mutate(operation: () => Promise<{ error: { message: string } | null }>) {
+  async function mutate(
+    operation: () => Promise<{ error: { message: string } | null }>
+  ) {
     if (!selectedTask || pending) return false
     setPending(true)
     setError(null)
@@ -92,7 +95,10 @@ export function WorkWidgetTaskAdvanced({
   }
 
   return (
-    <section className="border-876-surface-border mx-4 mb-4 space-y-3 rounded-xl border p-3" aria-label="Advanced task controls">
+    <section
+      className="border-876-surface-border mx-4 mb-4 space-y-3 rounded-xl border p-3"
+      aria-label="Advanced task controls"
+    >
       <div>
         <p className="text-sm font-semibold">Advanced task controls</p>
         <p className="text-muted-foreground mt-1 text-xs">
@@ -151,7 +157,11 @@ export function WorkWidgetTaskAdvanced({
               capabilities.canAssignTasks
                 ? (input: WorkTaskAssignmentDraft) =>
                     mutate(() =>
-                      client.taskAssignments.create(selectedTask.id, input, context)
+                      client.taskAssignments.create(
+                        selectedTask.id,
+                        input,
+                        context
+                      )
                     )
                 : undefined
             }
@@ -189,7 +199,11 @@ export function WorkWidgetTaskAdvanced({
               capabilities.canEditTasks
                 ? (input: WorkAlertDraft) =>
                     mutate(() =>
-                      client.alerts.createForTask(selectedTask.id, input, context)
+                      client.alerts.createForTask(
+                        selectedTask.id,
+                        input,
+                        context
+                      )
                     )
                 : undefined
             }

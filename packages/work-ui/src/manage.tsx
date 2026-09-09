@@ -196,7 +196,10 @@ export function WorkManage({
   }
 
   return (
-    <section className={cn('space-y-4 p-4', className)} aria-label="Manage Work">
+    <section
+      className={cn('space-y-4 p-4', className)}
+      aria-label="Manage Work"
+    >
       <header>
         <p className="text-base font-semibold">Manage</p>
         <p className="text-muted-foreground mt-1 text-xs">
@@ -308,7 +311,10 @@ export function WorkManage({
         ) : null}
 
         {subscription ? (
-          <form onSubmit={updateSubscription} className="space-y-2 rounded-lg border p-2">
+          <form
+            onSubmit={updateSubscription}
+            className="space-y-2 rounded-lg border p-2"
+          >
             <p className="text-xs font-medium">Your subscription</p>
             <label className="block text-xs">
               Color

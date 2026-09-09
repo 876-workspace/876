@@ -7,11 +7,7 @@ type Context = { params: Promise<{ taskId: string; alertId: string }> }
 
 export async function PATCH(request: Request, routeContext: Context) {
   const { taskId, alertId } = await routeContext.params
-  return handlePatchWorkAlert(
-    request,
-    { type: 'task', id: taskId },
-    alertId
-  )
+  return handlePatchWorkAlert(request, { type: 'task', id: taskId }, alertId)
 }
 
 export async function DELETE(_request: Request, routeContext: Context) {

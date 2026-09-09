@@ -13,12 +13,7 @@ type Context = {
 
 export async function PATCH(request: Request, routeContext: Context) {
   const { invoiceId, taskId, assignmentId } = await routeContext.params
-  return handlePatchTaskAssignment(
-    request,
-    taskId,
-    assignmentId,
-    invoiceId
-  )
+  return handlePatchTaskAssignment(request, taskId, assignmentId, invoiceId)
 }
 
 export async function DELETE(_request: Request, routeContext: Context) {

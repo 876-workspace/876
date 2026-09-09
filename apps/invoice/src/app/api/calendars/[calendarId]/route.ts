@@ -24,7 +24,11 @@ export async function PATCH(request: Request, routeContext: Context) {
     return workErrorResponse(getError('work/invalid-request'))
 
   const work = await getWork()
-  const result = await work.calendars.update(auth.orgId, calendarId, parsed.data)
+  const result = await work.calendars.update(
+    auth.orgId,
+    calendarId,
+    parsed.data
+  )
   if (result.error) return workErrorResponse(result.error)
   return apiSuccess(result.data)
 }
