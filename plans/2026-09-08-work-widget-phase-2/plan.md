@@ -6,7 +6,7 @@ Branch: `feat/work-widget-phase-2`
 
 Base: `main@03366b461010f00ca0fdccb305ea8c45740ce397`
 
-Status: `IN_PROGRESS`
+Status: `PHASE_2_READY_FOR_PR`
 
 ## End goal
 
@@ -122,7 +122,7 @@ mount the common widget dock without building Work-specific behavior yet.
 Acceptance: Invoice can participate in the shared widget runtime and existing
 widget behavior remains compatible.
 
-### Phase 2 — Work widget vertical slice in Invoice — `IN_PROGRESS`
+### Phase 2 — Work widget vertical slice in Invoice — `READY_FOR_PR`
 
 Goal: prove the complete authenticated path from a shared Work widget in Invoice
 to canonical Work `My Work` data, with rollout and authorization gates and no
@@ -154,14 +154,14 @@ Work persistence in Widgets.
 - [x] Fix the Work widget fetch lifecycle so a successful load cannot trigger a
       repeated request loop through a data-dependent callback.
 - [x] Update direct workspace dependencies in affected package manifests.
-- [ ] Synchronize `pnpm-lock.yaml` with the new direct workspace dependencies.
-- [ ] Re-review the full branch diff for duplicate contracts/helpers, hidden
+- [x] Synchronize `pnpm-lock.yaml` with the new direct workspace dependencies.
+- [x] Re-review the full branch diff for duplicate contracts/helpers, hidden
       authority, swallowed errors, unsafe casts/lint suppression, service
       namespace leakage, compatibility residue, and Phase 3 scope creep.
-- [ ] Write the GPT Web implementation report under this run's `reports/` path.
-- [ ] Record executable verification evidence. GitHub-only work must explicitly
-      state commands were not run rather than claiming green tests/builds.
-- [ ] Update this tracker's Phase 2 status and handoff state after closeout.
+- [x] Write the local review report under this run's `reports/` path.
+- [x] Record executable verification evidence without claiming that the Core
+      database migration has been applied.
+- [x] Update this tracker's Phase 2 status and handoff state after closeout.
 
 Acceptance: an enabled and authorized Invoice user can open `876 Work`, fetch
 real `My Work` through Invoice's same-origin route and Work's session tier, and
@@ -313,9 +313,10 @@ connector.
 
 ## Execution reports
 
-| Delegate | Report |
-| --- | --- |
-| GPT Web | Pending: `./reports/gpt-web/2026-09-08-work-widget-phase-2.md` |
+| Delegate | Report                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------ |
+| GPT Web  | Phase 2 implementation landed through `efbb9d432`; retained Phase 3 work is preserved on the remote source branch. |
+| Codex    | `./reports/codex/2026-09-09-phase-2-review.md`                                                                     |
 
 ## Verification and testing commands
 
@@ -379,24 +380,19 @@ and currently contains the Phase 2 Invoice vertical slice.
 
 ### Exact next steps
 
-1. Synchronize `pnpm-lock.yaml` for the new direct workspace dependencies without
-   rewriting unrelated lockfile content.
-2. Compare the complete branch against `main` again and inspect every changed
-   file for architectural/security/quality regressions.
-3. Update this tracker immediately if any review fix creates or completes a
-   checklist item.
-4. Write `reports/gpt-web/2026-09-08-work-widget-phase-2.md` with changed paths,
-   architectural rationale, known deployment requirements, and honest
-   verification status.
-5. Mark Phase 2 `COMPLETED` only when its implementation/checklist is closed;
-   executable local verification that cannot be run through the connector must
-   remain explicitly listed as pending handoff evidence rather than falsely
-   reported as passing.
-6. Continue into Phase 3 only after Phase 2 closeout remains internally coherent.
+1. Commit the focused local review fixes only after explicit user approval.
+2. Replace the mixed remote Phase 2 head with this clean Phase 2 history, push,
+   and open the Phase 2 PR against `main`.
+3. Verify mergeability, CI, top-level reviews, and every inline bot thread.
+4. Apply and verify the Core permission migration in the environment that owns
+   that database; source presence is not deployment evidence.
+5. After Phase 2 merges, create `feat/work-widget-phase-3` from updated `main`
+   and replay the retained Phase 3 implementation using
+   `briefs/gpt-web/2026-09-09-phase-3.md` as the correction brief.
 
 ## PR preparation summary
 
-No PR should be opened unless the user explicitly requests one.
-
-Current branch is ahead of `main` with the Phase 2 implementation. Final commit
-hashes and verification evidence will be recorded here after closeout.
+The user requested a clean Phase 2 PR and a separate Phase 3 branch after Phase
+2 merges. The remote source branch currently preserves both phases; it must not
+be used as the Phase 2 PR head until it is replaced with this reviewed Phase 2
+history. No Phase 3 implementation belongs in the Phase 2 diff.
