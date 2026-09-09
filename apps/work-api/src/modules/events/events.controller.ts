@@ -4,6 +4,8 @@ import {
   sendWorkList,
   sendWorkResult,
 } from '../../http/result.js'
+import { getPrincipal } from '../../http/auth/principal.js'
+import * as recurrence from './events-recurrence.service.js'
 import * as service from './events.service.js'
 import {
   createEventBodySchema,
@@ -11,8 +13,10 @@ import {
   eventParamsSchema,
   listEventsQuerySchema,
   organizationParamsSchema,
+  setEventRecurrenceBodySchema,
   updateEventBodySchema,
 } from './events.schemas.js'
+
 export async function listEvents(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const q = listEventsQuerySchema.parse(req.query)
@@ -38,12 +42,14 @@ export async function listEvents(req: Request, res: Response) {
     `/v1/organizations/${organizationId}/events`
   )
 }
+
 export async function retrieveEvent(req: Request, res: Response) {
   const { organizationId, eventId } = eventParamsSchema.parse(req.params)
   const result = await service.retrieve(organizationId, eventId)
   if (!result) return sendWorkError(res, 'work/event-not-found')
   return sendWorkResult(res, result)
 }
+
 export async function createEvent(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   return sendWorkResult(
@@ -52,6 +58,7 @@ export async function createEvent(req: Request, res: Response) {
     201
   )
 }
+
 export async function updateEvent(req: Request, res: Response) {
   const { organizationId, eventId } = eventParamsSchema.parse(req.params)
   const result = await service.update(
@@ -62,6 +69,35 @@ export async function updateEvent(req: Request, res: Response) {
   if (!result) return sendWorkError(res, 'work/event-not-found')
   return sendWorkResult(res, result)
 }
+
+export async function retrieveEventRecurrence(req: Request, res: Response) {
+  const { organizationId, eventId } = eventParamsSchema.parse(req.params)
+  const result = await recurrence.retrieve(organizationId, eventId)
+  if (!result) return sendWorkResult(res, null)
+  return sendWorkResult(res, result)
+}
+
+export async function setEventRecurrence(req: Request, res: Response) {
+  const { organizationId, eventId } = eventParamsSchema.parse(req.params)
+  const principal = getPrincipal(req)
+  if (principal.kind !== 'session' || !principal.userId)
+    return sendWorkError(res, 'work/session-forbidden')
+
+  const result = await recurrence.set(organizationId, eventId, {
+    ...setEventRecurrenceBodySchema.parse(req.body),
+    createdBy: principal.userId,
+  })
+  if (!result) return sendWorkError(res, 'work/event-not-found')
+  return sendWorkResult(res, result)
+}
+
+export async function clearEventRecurrence(req: Request, res: Response) {
+  const { organizationId, eventId } = eventParamsSchema.parse(req.params)
+  const result = await recurrence.clear(organizationId, eventId)
+  if (!result) return sendWorkError(res, 'work/event-not-found')
+  return sendWorkResult(res, result)
+}
+
 export async function deleteEvent(req: Request, res: Response) {
   const { organizationId, eventId } = eventParamsSchema.parse(req.params)
   const { deletedBy } = deleteEventBodySchema.parse(req.body)
