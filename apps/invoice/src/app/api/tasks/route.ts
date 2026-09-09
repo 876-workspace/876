@@ -1,10 +1,15 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
-import { createWorkTaskInputSchema, workTaskImportanceSchema } from '@876/work'
+import {
+  createWorkTaskInputSchema,
+  toWorkContext,
+  workTaskImportanceSchema,
+} from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
+import { requireAuthorizedWorkWidgetContext } from '@/lib/auth/work-widget-context'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { getWork } from '@/lib/services/work'
 
@@ -32,6 +37,9 @@ export async function GET(request: Request) {
   const auth = await requireWorkWidgetPermission('tasks.view')
   if (auth.response) return auth.response
 
+  const host = await requireAuthorizedWorkWidgetContext(request, auth)
+  if (host.response) return host.response
+
   const url = new URL(request.url)
   const parsed = filterSchema.safeParse({
     listId: url.searchParams.get('listId') ?? undefined,
@@ -42,7 +50,9 @@ export async function GET(request: Request) {
 
   const work = await getWork()
   const result = await work.tasks.list(auth.orgId, {
-    assigneeId: auth.userId,
+    ...(host.context
+      ? { context: toWorkContext(host.context) }
+      : { assigneeId: auth.userId }),
     ...(parsed.data.listId ? { listId: parsed.data.listId } : {}),
     ...(parsed.data.startingAfter
       ? { startingAfter: parsed.data.startingAfter }
@@ -58,12 +68,16 @@ export async function POST(request: Request) {
   const auth = await requireWorkWidgetPermission('tasks.create')
   if (auth.response) return auth.response
 
+  const host = await requireAuthorizedWorkWidgetContext(request, auth)
+  if (host.response) return host.response
+
   const parsed = createSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success)
     return workErrorResponse(getError('work/invalid-request'))
 
   const candidate = {
     title: parsed.data.title,
+    ...(host.context ? { context: toWorkContext(host.context) } : {}),
     ...(parsed.data.listId ? { listId: parsed.data.listId } : {}),
     ...(parsed.data.description !== undefined
       ? { description: parsed.data.description }
