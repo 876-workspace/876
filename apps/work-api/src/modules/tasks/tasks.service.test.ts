@@ -18,6 +18,9 @@ vi.mock('./tasks.repository.js', () => ({
   remove: vi.fn(),
 }))
 vi.mock('../task-lists/index.js', () => taskListRepository)
+vi.mock('../recurrence-rules/index.js', () => ({
+  retrieve: vi.fn(),
+}))
 
 import * as tenants from '../tenants/index.js'
 import * as repository from './tasks.repository.js'

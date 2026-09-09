@@ -20,9 +20,7 @@ import type { WorkWidgetCapabilities } from '../work-capabilities'
 import { WorkWidgetErrorBanner } from './work-widget-feedback'
 
 type Selection =
-  | { type: 'event'; id: string }
-  | { type: 'reminder'; id: string }
-  | null
+  { type: 'event'; id: string } | { type: 'reminder'; id: string } | null
 
 function parseSelection(value: string): Selection {
   if (!value) return null
@@ -99,7 +97,9 @@ export function WorkWidgetScheduleAdvanced({
     void load(selection)
   }, [load, selection])
 
-  async function mutate(operation: () => Promise<{ error: { message: string } | null }>) {
+  async function mutate(
+    operation: () => Promise<{ error: { message: string } | null }>
+  ) {
     if (!selection || pending) return false
     setPending(true)
     setError(null)
@@ -117,11 +117,15 @@ export function WorkWidgetScheduleAdvanced({
   const selectionValue = selection ? `${selection.type}:${selection.id}` : ''
 
   return (
-    <section className="border-876-surface-border mx-4 mb-4 space-y-3 rounded-xl border p-3" aria-label="Advanced schedule controls">
+    <section
+      className="border-876-surface-border mx-4 mb-4 space-y-3 rounded-xl border p-3"
+      aria-label="Advanced schedule controls"
+    >
       <div>
         <p className="text-sm font-semibold">Advanced schedule controls</p>
         <p className="text-muted-foreground mt-1 text-xs">
-          Manage recurrence, participants, responses, and alerts for scheduled Work.
+          Manage recurrence, participants, responses, and alerts for scheduled
+          Work.
         </p>
       </div>
       <select
@@ -149,7 +153,9 @@ export function WorkWidgetScheduleAdvanced({
       {error ? (
         <WorkWidgetErrorBanner
           message={error}
-          onAction={selection ? () => void load(selection) : undefined}
+          onAction={() => {
+            if (selection) void load(selection)
+          }}
         />
       ) : null}
 
@@ -163,7 +169,11 @@ export function WorkWidgetScheduleAdvanced({
               mutate(() =>
                 selection.type === 'event'
                   ? client.events.recurrence.set(selection.id, input, context)
-                  : client.reminders.recurrence.set(selection.id, input, context)
+                  : client.reminders.recurrence.set(
+                      selection.id,
+                      input,
+                      context
+                    )
               ).then(() => undefined)
             }
             onClear={
@@ -172,7 +182,10 @@ export function WorkWidgetScheduleAdvanced({
                     mutate(() =>
                       selection.type === 'event'
                         ? client.events.recurrence.clear(selection.id, context)
-                        : client.reminders.recurrence.clear(selection.id, context)
+                        : client.reminders.recurrence.clear(
+                            selection.id,
+                            context
+                          )
                     ).then(() => undefined)
                 : undefined
             }

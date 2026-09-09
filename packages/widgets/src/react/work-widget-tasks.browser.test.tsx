@@ -114,18 +114,21 @@ describe('WorkWidgetTasksView pagination races', () => {
       <WorkWidgetTasksView capabilities={EMPTY_WORK_WIDGET_CAPABILITIES} />
     )
 
-    await expect.element(page.getByText('Task A')).toBeVisible()
+    await expect
+      .element(page.getByRole('region', { name: 'Tasks' }).getByText('Task A'))
+      .toBeVisible()
     await page.getByRole('button', { name: 'Load more' }).click()
     await page.getByRole('button', { name: 'List B' }).click()
 
-    await expect.element(page.getByText('Task B')).toBeVisible()
+    const tasksRegion = page.getByRole('region', { name: 'Tasks' })
+    await expect.element(tasksRegion.getByText('Task B')).toBeVisible()
 
     resolveStalePage(success(pageResult([staleTask], false)))
 
     await expect
       .element(page.getByText('Stale page task'))
       .not.toBeInTheDocument()
-    await expect.element(page.getByText('Task B')).toBeVisible()
+    await expect.element(tasksRegion.getByText('Task B')).toBeVisible()
   })
 
   it('keeps a contextual task visible after creating and reloading it', async () => {
@@ -180,7 +183,11 @@ describe('WorkWidgetTasksView pagination races', () => {
     await page.getByPlaceholder('Task title').fill('Review INV-123')
     await page.getByRole('button', { name: 'Add task' }).click()
 
-    await expect.element(page.getByText('Review INV-123')).toBeVisible()
+    await expect
+      .element(
+        page.getByRole('region', { name: 'Tasks' }).getByText('Review INV-123')
+      )
+      .toBeVisible()
     expect(taskLoads).toBe(2)
     const post = fetchMock.mock.calls.find(
       ([, init]) => init?.method === 'POST'

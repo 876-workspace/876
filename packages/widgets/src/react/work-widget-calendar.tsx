@@ -8,7 +8,10 @@ import {
   type WorkCalendarView,
 } from '@876/work-ui/calendar'
 
-import type { WorkWidgetCapabilities } from '../work-capabilities'
+import {
+  EMPTY_WORK_WIDGET_CAPABILITIES,
+  type WorkWidgetCapabilities,
+} from '../work-capabilities'
 import { WidgetPanelSkeleton } from './widget-loading'
 import {
   WorkWidgetErrorBanner,
@@ -20,11 +23,11 @@ import { calendarWindow, moveCalendarAnchor } from './work-widget-time'
 type LoadState = 'loading' | 'ready' | 'error'
 
 export function WorkWidgetCalendarView({
-  capabilities,
+  capabilities = EMPTY_WORK_WIDGET_CAPABILITIES,
   context,
   client = browserWork,
 }: {
-  capabilities: WorkWidgetCapabilities
+  capabilities?: WorkWidgetCapabilities
   context?: WorkHostContext
   client?: WorkBrowserClient
 }) {
