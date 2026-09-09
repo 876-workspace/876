@@ -60,6 +60,7 @@ model WorkSyncCredential {
 model WorkSyncMapping {
   id              String               @id
   connectionId    String               @map("connection_id")
+  parentMappingId String?              @map("parent_mapping_id")
   resourceType    WorkSyncResourceType @map("resource_type")
   localId         String               @map("local_id")
   remoteId        String               @map("remote_id")
@@ -74,9 +75,13 @@ model WorkSyncMapping {
   createdAt       DateTime             @default(now()) @map("created_at")
   updatedAt       DateTime             @updatedAt @map("updated_at")
   connection      WorkSyncConnection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  parentMapping   WorkSyncMapping?      @relation("WorkSyncMappingChildren", fields: [parentMappingId], references: [id], onDelete: Cascade)
+  childMappings   WorkSyncMapping[]     @relation("WorkSyncMappingChildren")
 
-  @@unique([connectionId, resourceType, localId])
-  @@unique([connectionId, resourceType, remoteId])
+  @@index([connectionId, resourceType, localId])
+  @@index([connectionId, resourceType, remoteId])
+  @@index([parentMappingId, resourceType, localId])
+  @@index([parentMappingId, resourceType, remoteId])
   @@index([iCalUid])
   @@map("work_sync_mappings")
 }
