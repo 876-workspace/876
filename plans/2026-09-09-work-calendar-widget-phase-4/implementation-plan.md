@@ -8,7 +8,7 @@ Companion architecture plan: `plans/2026-09-09-work-calendar-widget-phase-4/plan
 
 Tracker: `plans/2026-09-09-work-calendar-widget-phase-4/tracker.md`
 
-Status: `IMPLEMENTATION_PLAN_READY; SOURCE_WORK_BLOCKED_PENDING_LOCAL_ORCHESTRATOR_BASELINE`
+Status: `IMPLEMENTATION_PLAN_READY; PHASE3_BASELINE_VERIFIED; SOURCE_WORK_NOT_STARTED`
 
 ## 1. Purpose
 
@@ -1204,7 +1204,7 @@ pnpm format:check
 
 Use actual repository commands, not this list blindly.
 
-If GPT Web cannot execute local verification, report exactly:
+If Sonnet cannot execute local verification, report exactly:
 
 > not executed; verification is the orchestrator's.
 
@@ -1305,14 +1305,14 @@ Phase 4 is source-complete when all of the following are true:
 20. Work failure cannot take down the host page.
 21. No Work credentials/service origin leak to the browser.
 22. Tests cover context spoofing, cross-org isolation, context switching races and failure isolation.
-23. Tracker and final GPT Web report accurately reflect what was implemented and what remains deferred.
+23. Tracker and final Sonnet report accurately reflect what was implemented and what remains deferred.
 
 ## 35. Final handoff report
 
 At implementation completion, write:
 
 ```text
-plans/2026-09-09-work-calendar-widget-phase-4/reports/gpt-web/2026-09-09-work-calendar-widget-phase-4.md
+plans/2026-09-09-work-calendar-widget-phase-4/reports/sonnet/2026-09-09-work-calendar-widget-phase-4.md
 ```
 
 The report must include:

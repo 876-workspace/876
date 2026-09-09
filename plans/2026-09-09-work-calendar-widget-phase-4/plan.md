@@ -30,7 +30,7 @@ Until that handoff occurs, **no Phase 4 production source implementation is auth
 
 # Immediate Phase 3 readiness directive
 
-This section exists so the local Phase 3 orchestrator can make compatible adjustments **before** GPT Web starts Phase 4. These are architectural readiness changes, not permission to pull Phase 4 context features backward into Phase 3.
+This section records the compatible adjustments completed by the local Phase 3 orchestrator **before** Sonnet starts Phase 4. These are architectural readiness changes, not permission to pull Phase 4 context features backward into Phase 3.
 
 ## Phase 3 changes that are safe and recommended now
 
@@ -1196,13 +1196,13 @@ Phase 4 is complete when:
 17. Host resource authorization and Work authorization are both enforced server-side.
 18. Phase 3 resilience protections survive scope/context switching.
 19. No Work record is persisted by Widgets.
-20. No PR is opened/merged by GPT Web unless explicitly requested.
+20. No Phase 4 PR is opened or merged unless explicitly requested.
 
 ---
 
-# Handoff to the Phase 3 local orchestrator
+# Completed Phase 3 readiness record
 
-If the local orchestrator has time before Phase 4 begins, prioritize these **in order**:
+The local orchestrator completed the Phase 3 readiness pass in this order:
 
 1. **Correct display vocabulary** so the compact widget is presented as Calendar/Schedule, not the complete Work service, while keeping internal ID/slugs stable.
 2. **Preserve contracts**: do not strip `links`, assignments, contexts, calendar/subscription semantics or UIDs from Work data.
@@ -1213,4 +1213,4 @@ If the local orchestrator has time before Phase 4 begins, prioritize these **in 
 7. **Preserve race/stale/error protections** already completed in Phase 3.
 8. Optionally expose safe linked-resource labels in task/detail presentation if already touching those components.
 
-When Phase 3/local work is done, update/carry this Phase 4 branch forward and point GPT Web to the latest `feat/work-widget-phase-4`. GPT Web will re-read the actual branch first, reconcile this plan with the orchestrator's implementation, and then proceed with the remaining Phase 4 source work.
+Phase 3/local readiness work is complete. When the user starts Phase 4, Sonnet must pull the latest `feat/work-widget-phase-4`, read the plan, implementation plan, tracker, and Sonnet brief, then implement only Phase 4 work on this branch.
