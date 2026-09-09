@@ -23,6 +23,10 @@
       "types": "./src/calendar.tsx",
       "default": "./src/calendar.tsx"
     },
+    "./create": {
+      "types": "./src/create.tsx",
+      "default": "./src/create.tsx"
+    },
     "./summary": {
       "types": "./src/summary.tsx",
       "default": "./src/summary.tsx"
