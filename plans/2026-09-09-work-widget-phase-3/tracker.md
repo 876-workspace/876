@@ -87,19 +87,21 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 
 ## Verification / closeout — `LOCAL ORCHESTRATOR REQUIRED`
 
-- [ ] Count literal new `it()` cases versus Phase 2 `main` baseline.
-- [ ] `@876/widgets` typecheck/tests/browser tests.
-- [ ] `@876/work` typecheck/tests.
-- [ ] `@876/work-ui` typecheck.
+- [x] Count literal test cases versus Phase 2 `main`: 67 added, 3 removed, net +64.
+- [x] `@876/widgets` typecheck and unit tests (149 tests).
+- [x] `@876/widgets` browser tests (3 tests).
+- [x] `@876/work` typecheck and tests (220 tests).
+- [x] `@876/work-ui` typecheck.
 - [ ] `@876/core` typecheck/tests where touched.
-- [ ] `@876/invoice-app` typecheck/tests/build.
-- [ ] Focused format/lint checks.
-- [ ] `pnpm check:transpile`.
-- [ ] `pnpm check:service-bundle`.
-- [ ] Full branch diff review against current `main`.
+- [x] `@876/invoice-app` typecheck and tests (455 tests).
+- [x] `@876/invoice-app` build.
+- [x] Focused format checks.
+- [x] `pnpm check:transpile`.
+- [x] `pnpm check:service-bundle`.
+- [x] Full branch diff review against current `main`.
 - [ ] Write `plans/2026-09-09-work-widget-phase-3/reports/gpt-web/2026-09-09-work-widget-phase-3.md`.
 - [ ] No PR unless explicitly requested.
 
 ## Current next action
 
-Perform a static adversarial review of all Phase 3 changes, close any source-level TypeScript/React/contract issues visible without execution, add the stale-refresh regression where practical, count test deltas against Phase 2 `main`, and write the final GPT Web report. Executable verification remains the local orchestrator's responsibility.
+Follow `directive.md`: add the stale Today, task pagination race, and calendar range/retry regressions; perform the final source-only audit; then write the GPT Web report. Leave the remaining executable verification to the local orchestrator.
