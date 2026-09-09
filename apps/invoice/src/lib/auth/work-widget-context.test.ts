@@ -1,3 +1,4 @@
+import { getError, toAppError } from '@876/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
@@ -64,15 +65,13 @@ describe('requireAuthorizedWorkWidgetContext', () => {
       request('?contextService=billing&contextResource=invoice'),
       AUTH
     )
+    const expected = getError('work/invalid-request')
 
     expect(result.context).toBeNull()
-    expect(result.response?.status).toBe(400)
+    expect(result.response?.status).toBe(expected.httpStatus)
     await expect(result.response?.json()).resolves.toEqual({
       data: null,
-      error: {
-        code: 'work/invalid-request',
-        message: 'The request is invalid.',
-      },
+      error: toAppError(expected),
     })
     expect(mocks.requireApiPermission).not.toHaveBeenCalled()
     expect(mocks.getBilling).not.toHaveBeenCalled()
@@ -87,7 +86,9 @@ describe('requireAuthorizedWorkWidgetContext', () => {
     )
 
     expect(result.context).toBeNull()
-    expect(result.response?.status).toBe(400)
+    expect(result.response?.status).toBe(
+      getError('work/invalid-request').httpStatus
+    )
     expect(mocks.requireApiPermission).not.toHaveBeenCalled()
     expect(mocks.getBilling).not.toHaveBeenCalled()
   })
@@ -127,7 +128,7 @@ describe('requireAuthorizedWorkWidgetContext', () => {
     )
 
     expect(result.context).toBeNull()
-    expect(result.response?.status).toBe(403)
+    expect(result.response?.status).toBe(getError('auth/forbidden').httpStatus)
     expect(mocks.getBilling).not.toHaveBeenCalled()
   })
 
@@ -147,7 +148,7 @@ describe('requireAuthorizedWorkWidgetContext', () => {
     expect(mocks.retrieveInvoice).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveInvoice).toHaveBeenCalledWith('inv_missing')
     expect(result.context).toBeNull()
-    expect(result.response?.status).toBe(404)
+    expect(result.response?.status).toBe(getError('work/not-found').httpStatus)
   })
 
   it('rebuilds trusted label and URL from exact Billing retrieval', async () => {
@@ -186,15 +187,13 @@ describe('requireAuthorizedWorkWidgetContext', () => {
       ),
       AUTH
     )
+    const expected = getError('error/unavailable')
 
     expect(result.context).toBeNull()
-    expect(result.response?.status).toBe(503)
+    expect(result.response?.status).toBe(expected.httpStatus)
     await expect(result.response?.json()).resolves.toEqual({
       data: null,
-      error: {
-        code: 'error/unavailable',
-        message: 'The service is temporarily unavailable. Please try again later.',
-      },
+      error: toAppError(expected),
     })
   })
 })
