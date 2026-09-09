@@ -45,6 +45,17 @@ function createAuthApp(): Express {
     kind: 'integration',
     scope: 'work.tasks.write',
   })
+  addRoute(app, '/session/:organizationId', {
+    kind: 'integration',
+    scope: 'work.tasks.read',
+    sessionPermissions: ['tasks.view'],
+  })
+  addRoute(app, '/all-permissions/:organizationId', {
+    kind: 'integration',
+    scope: 'work.resource-work.read',
+    sessionPermissions: ['tasks.view', 'reminders.view', 'events.view'],
+    sessionPermissionsMode: 'all',
+  })
   app.use(notFoundHandler)
   app.use(errorHandler)
   return app
@@ -237,5 +248,57 @@ describe('Work authentication guards', () => {
 
     expect(response.status).toBe(401)
     expect(Object.hasOwn(response.body.error, 'httpStatus')).toBe(false)
+  })
+
+  it('rejects session on all-permissions route when any required permission is missing', async () => {
+    vi.mocked(identity.appForApiKey).mockResolvedValue({
+      id: 'app_crm',
+      slug: 'crm',
+    })
+    vi.mocked(identity.sessionAccess).mockResolvedValue({
+      userId: 'user_1',
+      appId: 'app_crm',
+      appSlug: 'crm',
+      assigned: true,
+      entitled: true,
+      status: 'ACTIVE',
+      effectivePermissions: new Set(['tasks.view', 'reminders.view']),
+    })
+
+    const response = await request(createAuthApp())
+      .get('/all-permissions/org_1')
+      .set('x-876-api-key', 'crm-key')
+      .set('authorization', 'Bearer session_token')
+
+    expect(response.status).toBe(403)
+    expect(response.body.error.code).toBe('work/session-forbidden')
+  })
+
+  it('accepts session on all-permissions route when all required permissions are held', async () => {
+    vi.mocked(identity.appForApiKey).mockResolvedValue({
+      id: 'app_crm',
+      slug: 'crm',
+    })
+    vi.mocked(identity.sessionAccess).mockResolvedValue({
+      userId: 'user_1',
+      appId: 'app_crm',
+      appSlug: 'crm',
+      assigned: true,
+      entitled: true,
+      status: 'ACTIVE',
+      effectivePermissions: new Set([
+        'tasks.view',
+        'reminders.view',
+        'events.view',
+      ]),
+    })
+
+    const response = await request(createAuthApp())
+      .get('/all-permissions/org_1')
+      .set('x-876-api-key', 'crm-key')
+      .set('authorization', 'Bearer session_token')
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.kind).toBe('session')
   })
 })

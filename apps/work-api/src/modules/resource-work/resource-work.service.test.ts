@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { WorkEventResource, WorkReminder, WorkTask } from '@876/work'
 
 vi.mock('../events/index.js', () => ({ list: vi.fn() }))
 vi.mock('../reminders/index.js', () => ({ list: vi.fn() }))
@@ -18,54 +19,113 @@ const CONTEXT = {
 const FROM = 1_800_000_000
 const TO = FROM + 86_400
 
-function task(id: string, overrides: Record<string, unknown> = {}) {
+function task(id: string, overrides: Partial<WorkTask> = {}): WorkTask {
   return {
     object: 'task',
     id,
+    uid: `${id}@work.876`,
+    organizationId: ORG,
+    listId: 'list_1',
+    parentTaskId: null,
+    context: CONTEXT,
+    links: [],
+    title: id,
+    description: null,
     status: 'OPEN',
-    startAt: FROM + 100,
-    dueAt: FROM + 200,
+    importance: 'NORMAL',
+    priorityId: null,
     assigneeId: 'user_other',
+    assignments: [],
+    startAt: FROM + 100,
+    startTimeZone: null,
+    dueAt: FROM + 200,
+    dueTimeZone: null,
+    estimatedDuration: null,
+    percentComplete: 0,
+    recurrenceRuleId: null,
+    completedAt: null,
+    completedBy: null,
+    isOverdue: false,
+    sortOrder: 0,
+    createdBy: 'user_1',
+    createdAt: FROM,
+    updatedAt: FROM,
     ...overrides,
   }
 }
 
-function reminder(id: string, overrides: Record<string, unknown> = {}) {
+function reminder(
+  id: string,
+  overrides: Partial<WorkReminder> = {}
+): WorkReminder {
   return {
     object: 'reminder',
     id,
+    organizationId: ORG,
+    context: CONTEXT,
+    title: id,
+    note: null,
     status: 'SCHEDULED',
     remindAt: FROM + 300,
+    timeZone: null,
+    recurrenceRuleId: null,
     userId: 'user_other',
+    sentAt: null,
+    dismissedAt: null,
+    createdBy: 'user_1',
+    createdAt: FROM,
+    updatedAt: FROM,
     ...overrides,
   }
 }
 
-function event(id: string, overrides: Record<string, unknown> = {}) {
+function event(
+  id: string,
+  overrides: Partial<WorkEventResource> = {}
+): WorkEventResource {
   return {
     object: 'event',
     id,
+    uid: `${id}@work.876`,
+    organizationId: ORG,
     calendarId: 'cal_other',
+    context: CONTEXT,
+    title: id,
+    description: null,
+    location: null,
+    status: 'CONFIRMED',
+    busyStatus: 'BUSY',
     allDay: false,
     startAt: FROM + 400,
     endAt: FROM + 500,
+    timeZone: 'UTC',
     startDate: null,
+    endDate: null,
+    recurrenceRuleId: null,
+    recurrenceId: null,
+    participants: [],
+    createdBy: 'user_1',
+    createdAt: FROM,
+    updatedAt: FROM,
     ...overrides,
   }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(tasks.list).mockResolvedValue({ data: [], hasMore: false } as never)
+  vi.mocked(tasks.list).mockResolvedValue({ data: [], hasMore: false })
   vi.mocked(reminders.list).mockResolvedValue({
     data: [],
     hasMore: false,
-  } as never)
-  vi.mocked(events.list).mockResolvedValue({ data: [], hasMore: false } as never)
+  })
+  vi.mocked(events.list).mockResolvedValue({
+    data: [],
+    hasMore: false,
+  })
 })
 
 describe('Work resource-work service', () => {
-  it('queries every Work resource by the exact opaque context', async () => {
+  it('queries every Work resource concurrently by the exact opaque context', async () => {
     await service.retrieve(ORG, CONTEXT, FROM, TO)
 
     expect(tasks.list).toHaveBeenCalledWith(
@@ -78,7 +138,12 @@ describe('Work resource-work service', () => {
     )
     expect(events.list).toHaveBeenCalledWith(
       ORG,
-      expect.objectContaining({ context: CONTEXT, from: FROM, to: TO, limit: 100 })
+      expect.objectContaining({
+        context: CONTEXT,
+        from: FROM,
+        to: TO,
+        limit: 100,
+      })
     )
   })
 
@@ -86,7 +151,7 @@ describe('Work resource-work service', () => {
     vi.mocked(tasks.list).mockResolvedValue({
       data: [task('task_other')],
       hasMore: false,
-    } as never)
+    })
 
     const result = await service.retrieve(ORG, CONTEXT, FROM, TO)
 
@@ -94,9 +159,9 @@ describe('Work resource-work service', () => {
       ORG,
       expect.not.objectContaining({ assigneeId: expect.anything() })
     )
-    expect('tasks' in result ? result.tasks.map((item) => item.id) : []).toEqual([
-      'task_other',
-    ])
+    expect(
+      'tasks' in result ? result.tasks.map((item) => item.id) : []
+    ).toEqual(['task_other'])
   })
 
   it('returns only scheduled reminders inside the requested range', async () => {
@@ -107,13 +172,13 @@ describe('Work resource-work service', () => {
         reminder('outside', { remindAt: TO }),
       ],
       hasMore: false,
-    } as never)
+    })
 
     const result = await service.retrieve(ORG, CONTEXT, FROM, TO)
 
-    expect('reminders' in result ? result.reminders.map((item) => item.id) : []).toEqual([
-      'inside',
-    ])
+    expect(
+      'reminders' in result ? result.reminders.map((item) => item.id) : []
+    ).toEqual(['inside'])
   })
 
   it('returns overdue open tasks separately from the current range', async () => {
@@ -123,14 +188,12 @@ describe('Work resource-work service', () => {
         task('done', { startAt: null, dueAt: FROM - 1, status: 'DONE' }),
       ],
       hasMore: false,
-    } as never)
+    })
 
     const result = await service.retrieve(ORG, CONTEXT, FROM, TO)
 
     expect(
-      'overdueTasks' in result
-        ? result.overdueTasks.map((item) => item.id)
-        : []
+      'overdueTasks' in result ? result.overdueTasks.map((item) => item.id) : []
     ).toEqual(['overdue'])
   })
 
@@ -138,7 +201,7 @@ describe('Work resource-work service', () => {
     vi.mocked(events.list).mockResolvedValue({
       data: [event('event_1')],
       hasMore: false,
-    } as never)
+    })
 
     const result = await service.retrieve(ORG, CONTEXT, FROM, TO)
 
@@ -154,5 +217,18 @@ describe('Work resource-work service', () => {
     })
     expect(result).not.toHaveProperty('invoice')
     expect(result).not.toHaveProperty('customer')
+  })
+
+  it('fails with invalid-request instead of silent truncation when exceeding the page limit', async () => {
+    vi.mocked(tasks.list).mockResolvedValue({
+      data: [task('task_many')],
+      hasMore: true,
+    })
+
+    const result = await service.retrieve(ORG, CONTEXT, FROM, TO)
+
+    expect(result).toMatchObject({
+      code: 'work/invalid-request',
+    })
   })
 })

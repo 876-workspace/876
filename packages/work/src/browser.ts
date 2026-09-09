@@ -10,9 +10,7 @@ import type { WorkSessionClient } from './session'
 import type { WorkReminder, WorkTask, WorkTaskImportance } from './types'
 
 export type WorkBrowserMyWorkFilter = Pick<WorkMyWorkFilter, 'from' | 'to'>
-export type WorkBrowserResourceWorkFilter = WorkBrowserMyWorkFilter & {
-  context: WorkResourceRef
-}
+export type WorkBrowserResourceWorkFilter = WorkBrowserMyWorkFilter
 export type WorkBrowserTaskFilter = {
   context?: WorkResourceRef
   listId?: string
@@ -71,20 +69,6 @@ type WorkCalendarPage = NonNullable<
   Awaited<ReturnType<WorkSessionClient['calendars']['list']>>['data']
 >
 
-function appendContext(params: URLSearchParams, context?: WorkResourceRef) {
-  if (!context) return
-  params.set('contextService', context.service)
-  params.set('contextResource', context.resource)
-  params.set('contextId', context.externalId)
-}
-
-function withContext(path: string, context?: WorkResourceRef) {
-  if (!context) return path
-  const params = new URLSearchParams()
-  appendContext(params, context)
-  return `${path}?${params}`
-}
-
 function myWorkPath(filter: WorkBrowserMyWorkFilter): string {
   const params = new URLSearchParams({
     from: String(filter.from),
@@ -93,102 +77,153 @@ function myWorkPath(filter: WorkBrowserMyWorkFilter): string {
   return `/api/my-work?${params}`
 }
 
-function resourceWorkPath(filter: WorkBrowserResourceWorkFilter): string {
+function resourceWorkPath(
+  routeBase: string,
+  filter: WorkBrowserResourceWorkFilter
+): string {
   const params = new URLSearchParams({
     from: String(filter.from),
     to: String(filter.to),
   })
-  appendContext(params, filter.context)
-  return `/api/resource-work?${params}`
+  return `${routeBase}?${params}`
 }
 
-function tasksPath(filter: WorkBrowserTaskFilter): string {
+function tasksPath(
+  filter: WorkBrowserTaskFilter,
+  contextRouteBase?: string
+): string {
   const params = new URLSearchParams()
-  appendContext(params, filter.context)
   if (filter.listId) params.set('listId', filter.listId)
   if (filter.startingAfter) params.set('startingAfter', filter.startingAfter)
   const query = params.toString()
-  return `/api/tasks${query ? `?${query}` : ''}`
+  const root = filter.context ? `${contextRouteBase}/tasks` : '/api/tasks'
+  return `${root}${query ? `?${query}` : ''}`
 }
 
-function taskPath(taskId: string, context?: WorkResourceRef): string {
-  return withContext(`/api/tasks/${encodeURIComponent(taskId)}`, context)
+function taskPath(
+  taskId: string,
+  context: WorkResourceRef | undefined,
+  contextRouteBase?: string
+): string {
+  const root = context ? `${contextRouteBase}/tasks` : '/api/tasks'
+  return `${root}/${encodeURIComponent(taskId)}`
 }
 
-export const browserWork = {
-  myWork: {
-    retrieve(filter: WorkBrowserMyWorkFilter) {
-      return requestApiResult<WorkMyWork>(myWorkPath(filter))
+export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
+  const contextRouteBase = options.contextRouteBase?.replace(/\/$/, '')
+  const requireContextRoute = () => {
+    if (!contextRouteBase)
+      throw new Error('Contextual Work requires a host-owned route base.')
+    return contextRouteBase
+  }
+
+  return {
+    myWork: {
+      retrieve(filter: WorkBrowserMyWorkFilter) {
+        return requestApiResult<WorkMyWork>(myWorkPath(filter))
+      },
     },
-  },
-  resourceWork: {
-    retrieve(filter: WorkBrowserResourceWorkFilter) {
-      return requestApiResult<WorkResourceWork>(resourceWorkPath(filter))
+    resourceWork: {
+      retrieve(filter: WorkBrowserResourceWorkFilter) {
+        return requestApiResult<WorkResourceWork>(
+          resourceWorkPath(requireContextRoute(), filter)
+        )
+      },
     },
-  },
-  taskLists: {
-    list() {
-      return requestApiResult<WorkTaskListPage>('/api/task-lists')
+    taskLists: {
+      list() {
+        return requestApiResult<WorkTaskListPage>('/api/task-lists')
+      },
     },
-  },
-  tasks: {
-    list(filter: WorkBrowserTaskFilter = {}) {
-      return requestApiResult<WorkTaskPage>(tasksPath(filter))
-    },
-    create(input: WorkBrowserCreateTaskInput, context?: WorkResourceRef) {
-      return requestApiResult<WorkTask>(withContext('/api/tasks', context), {
-        method: 'POST',
-        body: JSON.stringify(input),
-      })
-    },
-    update(
-      taskId: string,
-      input: WorkBrowserUpdateTaskInput,
-      context?: WorkResourceRef
-    ) {
-      return requestApiResult<WorkTask>(taskPath(taskId, context), {
-        method: 'PATCH',
-        body: JSON.stringify({ action: 'update', ...input }),
-      })
-    },
-    complete(taskId: string, context?: WorkResourceRef) {
-      return requestApiResult<WorkTask>(taskPath(taskId, context), {
-        method: 'PATCH',
-        body: JSON.stringify({ action: 'complete' }),
-      })
-    },
-    cancel(taskId: string, context?: WorkResourceRef) {
-      return requestApiResult<WorkTask>(taskPath(taskId, context), {
-        method: 'PATCH',
-        body: JSON.stringify({ action: 'cancel' }),
-      })
-    },
-  },
-  calendars: {
-    list() {
-      return requestApiResult<WorkCalendarPage>('/api/calendars')
-    },
-  },
-  events: {
-    create(input: WorkBrowserCreateEventInput, context?: WorkResourceRef) {
-      return requestApiResult<WorkEventResource>(
-        withContext('/api/events', context),
-        {
+    tasks: {
+      list(filter: WorkBrowserTaskFilter = {}) {
+        return requestApiResult<WorkTaskPage>(
+          tasksPath(
+            filter,
+            filter.context ? requireContextRoute() : contextRouteBase
+          )
+        )
+      },
+      create(input: WorkBrowserCreateTaskInput, context?: WorkResourceRef) {
+        const path = context ? `${requireContextRoute()}/tasks` : '/api/tasks'
+        return requestApiResult<WorkTask>(path, {
           method: 'POST',
           body: JSON.stringify(input),
-        }
-      )
+        })
+      },
+      update(
+        taskId: string,
+        input: WorkBrowserUpdateTaskInput,
+        context?: WorkResourceRef
+      ) {
+        return requestApiResult<WorkTask>(
+          taskPath(
+            taskId,
+            context,
+            context ? requireContextRoute() : undefined
+          ),
+          {
+            method: 'PATCH',
+            body: JSON.stringify({ action: 'update', ...input }),
+          }
+        )
+      },
+      complete(taskId: string, context?: WorkResourceRef) {
+        return requestApiResult<WorkTask>(
+          taskPath(
+            taskId,
+            context,
+            context ? requireContextRoute() : undefined
+          ),
+          {
+            method: 'PATCH',
+            body: JSON.stringify({ action: 'complete' }),
+          }
+        )
+      },
+      cancel(taskId: string, context?: WorkResourceRef) {
+        return requestApiResult<WorkTask>(
+          taskPath(
+            taskId,
+            context,
+            context ? requireContextRoute() : undefined
+          ),
+          {
+            method: 'PATCH',
+            body: JSON.stringify({ action: 'cancel' }),
+          }
+        )
+      },
     },
-  },
-  reminders: {
-    create(input: WorkBrowserCreateReminderInput, context?: WorkResourceRef) {
-      return requestApiResult<WorkReminder>(
-        withContext('/api/reminders', context),
-        {
-          method: 'POST',
-          body: JSON.stringify(input),
-        }
-      )
+    calendars: {
+      list() {
+        return requestApiResult<WorkCalendarPage>('/api/calendars')
+      },
     },
-  },
-} as const
+    events: {
+      create(input: WorkBrowserCreateEventInput, context?: WorkResourceRef) {
+        return requestApiResult<WorkEventResource>(
+          context ? `${requireContextRoute()}/events` : '/api/events',
+          {
+            method: 'POST',
+            body: JSON.stringify(input),
+          }
+        )
+      },
+    },
+    reminders: {
+      create(input: WorkBrowserCreateReminderInput, context?: WorkResourceRef) {
+        return requestApiResult<WorkReminder>(
+          context ? `${requireContextRoute()}/reminders` : '/api/reminders',
+          {
+            method: 'POST',
+            body: JSON.stringify(input),
+          }
+        )
+      },
+    },
+  } as const
+}
+
+export type WorkBrowserClient = ReturnType<typeof createBrowserWork>
+export const browserWork = createBrowserWork()

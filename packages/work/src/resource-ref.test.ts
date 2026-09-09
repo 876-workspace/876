@@ -5,6 +5,7 @@ import {
   toWorkContext,
   workResourceRefSchema,
 } from './resource-ref'
+import { createWorkTaskInputSchema } from './types'
 
 describe('workResourceRefSchema', () => {
   it('parses an opaque resource reference with safe display metadata', () => {
@@ -116,5 +117,47 @@ describe('toCreateWorkTaskLinkInput', () => {
       externalId: 'cus_123',
       isPrimary: false,
     })
+  })
+})
+
+describe('createWorkTaskInputSchema primary links', () => {
+  const context = {
+    service: 'billing',
+    resource: 'invoice',
+    id: 'inv_123',
+  }
+
+  it('accepts a metadata-rich primary link for the same resource', () => {
+    const result = createWorkTaskInputSchema.safeParse({
+      context,
+      primaryLink: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_123',
+        label: 'INV-123',
+        url: '/invoices/inv_123',
+        isPrimary: true,
+      },
+      title: 'Review invoice',
+      createdBy: 'user_1',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects a primary link for a different resource', () => {
+    const result = createWorkTaskInputSchema.safeParse({
+      context,
+      primaryLink: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_other',
+        isPrimary: true,
+      },
+      title: 'Review invoice',
+      createdBy: 'user_1',
+    })
+
+    expect(result.success).toBe(false)
   })
 })

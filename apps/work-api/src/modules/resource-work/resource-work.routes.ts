@@ -8,7 +8,8 @@ export function createResourceWorkRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.resource-work.read',
-      sessionPermissions: ['my-work.view'],
+      sessionPermissions: ['tasks.view', 'reminders.view', 'events.view'],
+      sessionPermissionsMode: 'all',
     },
     handler: retrieveResourceWork,
   })

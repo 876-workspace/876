@@ -122,14 +122,22 @@ export function createGuardResolver(options: {
               throw new WorkHttpError('work/identity-unavailable')
             throw error
           }
+          if (!access) throw new WorkHttpError('work/session-forbidden')
+
+          const permissionsRequired = security.sessionPermissions ?? []
+          const allowed =
+            security.sessionPermissionsMode === 'all'
+              ? permissionsRequired.every((permission) =>
+                  access.effectivePermissions.has(permission)
+                )
+              : permissionsRequired.some((permission) =>
+                  access.effectivePermissions.has(permission)
+                )
           if (
-            !access ||
             !access.assigned ||
             !access.entitled ||
             access.status !== 'ACTIVE' ||
-            !security.sessionPermissions.some((permission) =>
-              access.effectivePermissions.has(permission)
-            )
+            !allowed
           )
             throw new WorkHttpError('work/session-forbidden')
           return {
