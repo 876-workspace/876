@@ -1,7 +1,10 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
-import { workTaskImportanceSchema } from '@876/work'
+import {
+  updateWorkTaskInputSchema,
+  workTaskImportanceSchema,
+} from '@876/work'
 import { z } from 'zod'
 
 import { workErrorResponse } from '@/lib/api/work-response'
@@ -46,7 +49,7 @@ export async function PATCH(request: Request, context: Context) {
   const { taskId } = await context.params
   if (!taskId.trim()) return workErrorResponse(getError('work/invalid-request'))
 
-  const input =
+  const candidate =
     parsed.data.action === 'complete'
       ? { status: 'DONE' as const, completedBy: auth.userId }
       : parsed.data.action === 'cancel'
@@ -70,9 +73,12 @@ export async function PATCH(request: Request, context: Context) {
                     dueTimeZone: parsed.data.due.timeZone,
                   }),
           }
+  const canonical = updateWorkTaskInputSchema.safeParse(candidate)
+  if (!canonical.success)
+    return workErrorResponse(getError('work/invalid-request'))
 
   const work = await getWork()
-  const result = await work.tasks.update(auth.orgId, taskId, input)
+  const result = await work.tasks.update(auth.orgId, taskId, canonical.data)
   if (result.error) return workErrorResponse(result.error)
 
   return apiSuccess(result.data)
