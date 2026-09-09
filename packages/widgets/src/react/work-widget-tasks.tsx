@@ -216,13 +216,13 @@ export function WorkWidgetTasksView({
       {state === 'error' ? (
         <WorkWidgetErrorBanner
           message={errorMessage}
-          onRetry={() => void loadTasks(activeListId)}
+          onAction={() => void loadTasks(activeListId)}
         />
       ) : null}
       {enrichmentMessage ? (
         <WorkWidgetErrorBanner
           message={enrichmentMessage}
-          onRetry={() => void loadTaskLists()}
+          onAction={() => void loadTaskLists()}
         />
       ) : null}
       <WorkTasks
