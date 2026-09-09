@@ -6,7 +6,7 @@ Branch: `feat/work-widget-phase-5`
 
 Baseline: `main@1c71d404b06755bc574bad121f270adfa188c68f`
 
-Reviewed implementation head: `b3f31929a`
+Reviewed implementation head: `6b30a97b0`
 
 ## Outcome
 
@@ -48,8 +48,12 @@ Passed locally:
 - `@876/invoice-app`: typecheck; 70 files / 481 tests; Next production build with all advanced API routes collected.
 - Repository shared-UI transpilation/Tailwind-source checks.
 - Repository service-bundle check for inlined `@876/*` dependencies.
+- All Phase 5 TypeScript, JavaScript, JSON, and Markdown files pass the repository Prettier check.
+- Repository app-structure check.
 
-`@876/work-api` has no package-local `boundaries` script. The invalid plan command was removed; the repository service-bundle and shared-package boundary checks above were executed successfully.
+`@876/work-api` has no package-local `boundaries` script. The invalid plan command was removed; the repository service-bundle check above was executed successfully.
+
+The aggregate repository gates are not clean on the Phase 4 `main` baseline. The root format check reports 454 files outside this phase, root boundaries reports existing undeclared-dependency/package-escape violations across unrelated workspaces, and root lint stops on existing CRM and Invoice errors. Phase 5's affected files and supported package-local checks pass; these unrelated baseline failures were not expanded into this phase.
 
 ## Deferred
 
