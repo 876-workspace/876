@@ -44,7 +44,10 @@ describe('GET /api/calendars', () => {
   it('returns access failures before creating a Work client', async () => {
     mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
-        { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
+        {
+          data: null,
+          error: { code: 'auth/forbidden', message: 'Forbidden.' },
+        },
         { status: 403 }
       ),
     })

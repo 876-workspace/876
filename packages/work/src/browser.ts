@@ -5,11 +5,7 @@ import { requestApiResult } from '@876/core/client'
 import type { WorkEventResource } from './event-contracts'
 import type { WorkMyWork, WorkMyWorkFilter } from './my-work'
 import type { WorkSessionClient } from './session'
-import type {
-  WorkReminder,
-  WorkTask,
-  WorkTaskImportance,
-} from './types'
+import type { WorkReminder, WorkTask, WorkTaskImportance } from './types'
 
 export type WorkBrowserMyWorkFilter = Pick<WorkMyWorkFilter, 'from' | 'to'>
 export type WorkBrowserTaskFilter = {

@@ -90,7 +90,7 @@ function TaskActionButton({
       type="button"
       disabled={pending}
       onClick={() => void onAction(task)}
-      className="border-876-surface-border hover:bg-muted focus-visible:ring-ring rounded-full border px-2.5 py-1 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+      className="border-876-surface-border hover:bg-muted focus-visible:ring-ring rounded-full border px-2.5 py-1 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
     >
       {current ? 'Saving…' : actionLabel}
     </button>
@@ -113,7 +113,9 @@ function TaskEditForm({
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     const title = String(data.get('title') ?? '').trim()
-    const importance = workTaskImportanceSchema.safeParse(data.get('importance'))
+    const importance = workTaskImportanceSchema.safeParse(
+      data.get('importance')
+    )
     if (!title || !importance.success) return
 
     await onUpdateTask?.(task, {
@@ -177,7 +179,7 @@ function TaskEditForm({
       <button
         type="submit"
         disabled={disabled}
-        className="bg-primary text-primary-foreground focus-visible:ring-ring rounded-lg px-3 py-2 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+        className="bg-primary text-primary-foreground focus-visible:ring-ring rounded-lg px-3 py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
       >
         Save changes
       </button>
@@ -279,7 +281,9 @@ function CreateTaskForm({
     const form = event.currentTarget
     const data = new FormData(form)
     const title = String(data.get('title') ?? '').trim()
-    const importance = workTaskImportanceSchema.safeParse(data.get('importance'))
+    const importance = workTaskImportanceSchema.safeParse(
+      data.get('importance')
+    )
     if (!title || !importance.success) return
 
     const created = await onCreateTask?.({
@@ -338,7 +342,7 @@ function CreateTaskForm({
         <button
           type="submit"
           disabled={creatingTask}
-          className="bg-primary text-primary-foreground focus-visible:ring-ring rounded-lg px-3 py-2 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-primary text-primary-foreground focus-visible:ring-ring rounded-lg px-3 py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
         >
           {creatingTask ? 'Adding…' : 'Add task'}
         </button>
@@ -430,7 +434,7 @@ export function WorkTasks({
           type="button"
           disabled={loadingMore}
           onClick={() => void onLoadMore()}
-          className="border-876-surface-border hover:bg-muted focus-visible:ring-ring w-full rounded-lg border px-3 py-2 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+          className="border-876-surface-border hover:bg-muted focus-visible:ring-ring w-full rounded-lg border px-3 py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
         >
           {loadingMore ? 'Loading more…' : 'Load more'}
         </button>

@@ -51,13 +51,18 @@ describe('POST /api/events', () => {
       })
     )
 
-    expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith('events.create')
+    expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith(
+      'events.create'
+    )
   })
 
   it('returns authorization failures before creating a Work client', async () => {
     mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
-        { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
+        {
+          data: null,
+          error: { code: 'auth/forbidden', message: 'Forbidden.' },
+        },
         { status: 403 }
       ),
     })

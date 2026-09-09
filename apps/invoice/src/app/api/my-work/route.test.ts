@@ -113,7 +113,10 @@ describe('GET /api/my-work', () => {
   it('maps unknown upstream failures to the registered invalid-response error', async () => {
     mocks.retrieve.mockResolvedValue({
       data: null,
-      error: { code: 'unexpected/service-error', message: 'raw provider detail' },
+      error: {
+        code: 'unexpected/service-error',
+        message: 'raw provider detail',
+      },
     })
 
     const response = await GET(request())

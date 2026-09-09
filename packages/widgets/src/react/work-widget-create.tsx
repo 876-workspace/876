@@ -24,7 +24,9 @@ export function WorkWidgetCreateView({
   const [calendars, setCalendars] = useState<WorkCalendar[]>([])
   const [creating, setCreating] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [enrichmentMessage, setEnrichmentMessage] = useState<string | null>(null)
+  const [enrichmentMessage, setEnrichmentMessage] = useState<string | null>(
+    null
+  )
   const createRef = useRef(false)
 
   const loadEnrichment = useCallback(async () => {
@@ -72,7 +74,8 @@ export function WorkWidgetCreateView({
 
       if (result.error || !result.data) {
         setErrorMessage(
-          result.error?.message ?? 'The Work item could not be created. Try again.'
+          result.error?.message ??
+            'The Work item could not be created. Try again.'
         )
         createRef.current = false
         setCreating(false)

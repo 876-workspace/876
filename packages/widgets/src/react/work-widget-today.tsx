@@ -7,7 +7,10 @@ import { WorkToday } from '@876/work-ui/today'
 
 import type { WorkWidgetCapabilities } from '../work-capabilities'
 import { WidgetPanelSkeleton } from './widget-loading'
-import { WorkWidgetErrorBanner, WorkWidgetInitialError } from './work-widget-feedback'
+import {
+  WorkWidgetErrorBanner,
+  WorkWidgetInitialError,
+} from './work-widget-feedback'
 import { currentDayWindow } from './work-widget-time'
 
 type LoadState = 'loading' | 'ready' | 'error'
@@ -122,9 +125,7 @@ export function WorkWidgetTodayView({
       <WorkToday
         work={work}
         completingTaskId={mutatingTaskId}
-        onCompleteTask={
-          capabilities.canEditTasks ? completeTask : undefined
-        }
+        onCompleteTask={capabilities.canEditTasks ? completeTask : undefined}
       />
     </>
   )
