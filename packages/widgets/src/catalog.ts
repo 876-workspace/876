@@ -161,9 +161,9 @@ export const notepadWidgetMetadata = {
 export const workWidgetMetadata = {
   object: 'widget',
   id: 'work',
-  name: '876 Work',
+  name: '876 Calendar',
   description:
-    'Your calendar events, tasks, reminders, and schedule across the 876 productivity plane.',
+    'Calendar events, tasks, reminders, and your daily schedule, powered by 876 Work.',
   version: '1.0.0',
   visual: { kind: 'icon', icon: 'work' },
   distribution: 'shared',
