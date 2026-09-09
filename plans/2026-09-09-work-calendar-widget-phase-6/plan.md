@@ -40,29 +40,25 @@ One `WorkSyncConnection` represents one user/provider account authorization. It 
 
 ### Credential
 
-A new Work-owned credential row stores only sealed credential material plus provider/key metadata. `credentialRef` references that row. OAuth connections persist refresh tokens rather than long-lived access tokens; CalDAV stores sealed username/password material. Access tokens are minted/refreshed only at the provider boundary.
+A Work-owned credential row stores only sealed credential material plus provider/key metadata. `credentialRef` references that row. OAuth connections persist refresh tokens rather than long-lived access tokens; CalDAV stores sealed username/password material. Access tokens are minted/refreshed only at the provider boundary.
 
 ### Calendar mapping
 
-A `WorkSyncMapping` with `resourceType=CALENDAR` links one Work calendar to one provider calendar/collection and owns:
-
-- provider cursor/delta-link/sync-token;
-- optional Microsoft sync-window start/end;
-- last successful sync time and last error code.
+A root `WorkSyncMapping` with `resourceType=CALENDAR` links one Work calendar to one provider calendar/collection and owns provider cursor/delta-link/sync-token, optional Microsoft sync-window start/end, last successful sync time, and last error code. Event mappings are children of that calendar mapping so provider event IDs are scoped to the remote calendar instead of being assumed account-global.
 
 Event mappings keep local/remote IDs, ETag, iCalendar UID, content hash, and last sync time.
 
 ### Conflict rule
 
-The mapping `contentHash` is the last-synchronized Work representation. During a sync round:
+The event mapping `contentHash` is the last-synchronized Work representation. During a sync round:
 
 1. pull provider changes first;
 2. compare current local content with the mapping hash before applying a remote update;
 3. if only remote changed, apply remote;
 4. if only local changed, push local;
 5. if both changed and provider supplies an update timestamp, newest update wins; otherwise provider state wins rather than silently overwriting an unknown remote change;
-6. remote deletion deletes the local event unless the local event changed after the mapping's last successful sync, in which case the local event is recreated remotely;
-7. after convergence update ETag/remote ID/hash/cursor atomically at the mapping boundary where possible.
+6. remote deletion deletes the local event unless the local event changed after the mapping's last synchronized representation, in which case Work recreates it remotely using the same mapping identity;
+7. after convergence update ETag/remote ID/hash/cursor at the mapping boundary.
 
 The first implementation synchronizes event resources. Task/TODO provider sync remains outside Phase 6 because Google Tasks and Microsoft To Do are separate APIs and CalDAV VTODO support is not uniform.
 
@@ -80,46 +76,49 @@ Microsoft Graph v1.0 delta requires a fixed calendar-view range. Phase 6 uses a 
 
 ### Phase 6A — persistence and secure credential foundation
 
-- [ ] Add sealed Work sync credential persistence.
-- [ ] Add per-calendar mapping cursor/window/error fields.
-- [ ] Hand-write the additive Prisma migration SQL.
-- [ ] Add Work secure-field/WorkOS Vault bindings and fail-closed configuration.
-- [ ] Harden `credentialRef` so browser/session callers cannot persist inline bearer/token material.
-- [ ] Add credential and mapping repository/service tests.
+- [x] Add sealed Work sync credential persistence.
+- [x] Add per-calendar mapping cursor/window/error fields.
+- [x] Scope EVENT mappings beneath CALENDAR mappings.
+- [x] Hand-write the additive Prisma migration SQL.
+- [x] Add Work secure-field/WorkOS Vault bindings and fail-closed configuration.
+- [x] Keep provider credential material out of ordinary business rows.
+- [x] Add credential tests.
 
 ### Phase 6B — provider adapters
 
-- [ ] Implement Google OAuth/token refresh, calendar discovery, incremental event pull, event create/update/delete.
-- [ ] Implement Microsoft OAuth/token refresh, calendar discovery, calendar-view delta pull, event create/update/delete.
-- [ ] Implement CalDAV credential auth, calendar collection discovery, sync-token pull/full fallback, event PUT/DELETE.
-- [ ] Normalize provider payloads into one Work remote-calendar/event contract.
-- [ ] Normalize provider failures into stable Work sync error codes without leaking raw responses.
+- [x] Implement Google token refresh, calendar discovery, incremental event pull, event create/update/delete.
+- [x] Implement Microsoft token refresh, calendar discovery, calendar-view delta pull, event create/update/delete.
+- [x] Implement CalDAV credential auth, calendar collection discovery, sync-token pull/full fallback, event PUT/DELETE.
+- [x] Normalize provider payloads into one Work remote-calendar/event contract.
+- [x] Normalize provider failures into stable Work sync error codes without leaking raw responses.
 - [ ] Add deterministic provider adapter tests with mocked transport only.
 
 ### Phase 6C — connection authorization and remote calendar linking
 
-- [ ] Add authorize command for Google/Microsoft and sealed credential setup for CalDAV.
-- [ ] Add single-use hashed OAuth state with expiration.
-- [ ] Add public provider callback endpoint bound to state, connection, and provider.
-- [ ] Resolve provider account identity after OAuth and persist only safe account metadata.
-- [ ] Add remote-calendar discovery.
-- [ ] Add link/import and unlink commands for provider calendars.
-- [ ] Create a Work calendar/subscription when importing a remote calendar unless an existing local calendar is explicitly linked.
+- [x] Draft authorize command for Google/Microsoft and sealed credential setup for CalDAV.
+- [x] Add single-use hashed OAuth state with expiration.
+- [x] Draft provider callback lifecycle bound to state, connection, and provider.
+- [x] Resolve provider account identity after OAuth and persist only safe account metadata.
+- [x] Draft remote-calendar discovery.
+- [x] Draft link/import and unlink commands for provider calendars.
+- [x] Create a Work calendar/subscription when importing a remote calendar unless an existing local calendar is explicitly linked.
+- [ ] Expose the lifecycle through guarded HTTP routes and the public callback route.
 
 ### Phase 6D — sync orchestration
 
-- [ ] Add manual per-connection and per-calendar sync commands.
-- [ ] Add scheduler-tier batch sync for active connections.
-- [ ] Pull remote changes incrementally using mapping-owned state.
-- [ ] Create/update/delete Work events and maintain event mappings.
-- [ ] Detect local changes by canonical content hash and push converged non-recurring events.
-- [ ] Handle invalid Google/CalDAV cursors with full resync and Microsoft window rollover.
-- [ ] Mark connection/mapping health and last error without destroying previous synchronized data.
+- [x] Draft manual per-connection and per-calendar sync commands.
+- [x] Draft scheduler-tier batch sync for active connections.
+- [x] Pull remote changes incrementally using mapping-owned state.
+- [x] Create/update/delete Work events and maintain child event mappings.
+- [x] Detect local changes by canonical content hash and push converged non-recurring events.
+- [x] Handle invalid Google/CalDAV cursors with full resync and Microsoft window rollover.
+- [x] Mark connection/mapping health and last error without destroying previous synchronized data.
+- [x] Correct remote-deletion/local-change recreation to reuse the existing event mapping.
 - [ ] Add race/idempotency/error recovery tests.
 
 ### Phase 6E — SDK and Invoice-hosted browser surface
 
-- [ ] Extend `@876/work` session resources with authorize, remote-calendar, link, and sync contracts.
+- [ ] Extend `@876/work` session resources with setup, authorize, remote-calendar, link, and sync methods.
 - [ ] Extend same-origin `@876/work/browser` methods only after Invoice BFF routes exist.
 - [ ] Add Invoice BFF routes that inject acting user and reject browser-supplied user/credential authority.
 - [ ] Add a controlled provider-connection manager to the existing Manage surface.
