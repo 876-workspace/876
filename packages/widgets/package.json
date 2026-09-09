@@ -43,6 +43,8 @@
     "@876/core": "workspace:*",
     "@876/editor": "workspace:*",
     "@876/ui": "workspace:*",
+    "@876/work": "workspace:*",
+    "@876/work-ui": "workspace:*",
     "motion": "13.1.0",
     "server-only": "0.0.1",
     "zod": "4.4.3"

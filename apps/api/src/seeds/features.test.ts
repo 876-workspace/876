@@ -49,11 +49,12 @@ describe('feature seed catalog', () => {
     expect(new Set(aliases).size).toBe(aliases.length)
   })
 
-  it('seeds the five Invoice shell flags enabled without invented legacy aliases and the disabled widget master', () => {
+  it('seeds Invoice shell flags plus explicit Work widget gates', () => {
     const invoiceSeeds = FEATURE_SEEDS_BY_APP['876-invoice'] ?? []
 
     expect(invoiceSeeds.map((seed) => seed.slug)).toEqual([
       'invoice-widgets',
+      'invoice-widgets-work',
       'invoice-theme-switcher',
       'invoice-global-add',
       'invoice-app-switcher',
@@ -61,25 +62,40 @@ describe('feature seed catalog', () => {
       'invoice-org-switcher',
     ])
 
-    const widgetMaster = invoiceSeeds.find(
-      (seed) => seed.slug === 'invoice-widgets'
-    )
+    const widgetMaster = seedFor('876-invoice', 'invoice-widgets')
     expect(widgetMaster).toMatchObject({
       slug: 'invoice-widgets',
       name: 'Widgets',
       description: 'Master switch for the Invoice widget rail.',
       tags: ['widget'],
     })
-    expect(widgetMaster?.defaultEnabled).toBeUndefined()
+
+    expect(seedFor('876-invoice', 'invoice-widgets-work')).toMatchObject({
+      parentSlug: 'invoice-widgets',
+      defaultEnabled: false,
+      tags: ['widget'],
+    })
 
     const shellFlags = invoiceSeeds.filter(
-      (seed) => seed.slug !== 'invoice-widgets'
+      (seed) => !seed.slug.startsWith('invoice-widgets')
     )
     expect(shellFlags).toHaveLength(5)
     expect(shellFlags.every((seed) => seed.defaultEnabled === true)).toBe(true)
     expect(invoiceSeeds.every((seed) => seed.legacySlugs === undefined)).toBe(
       true
     )
+  })
+
+  it('seeds the platform Work child disabled for opt-in rollout', () => {
+    expect(
+      PLATFORM_FEATURE_SEEDS.find(
+        (seed) => seed.slug === 'platform-widgets-work'
+      )
+    ).toMatchObject({
+      parentSlug: 'platform-widgets',
+      defaultEnabled: false,
+      tags: ['widget'],
+    })
   })
 
   // The Estimate document type was merged into Quote, so its flag is gone.

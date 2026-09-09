@@ -8,10 +8,12 @@ export {
   isWidgetEnabled,
   isWidgetsDataOwner,
   notepadWidgetMetadata,
+  resolveAccessibleWidgetIds,
   resolveEnabledWidgetIds,
   WIDGET_HOST_APP_SLUGS,
   WIDGET_HOST_LABELS,
   widgetCatalog,
+  workWidgetMetadata,
 } from './catalog'
 export type {
   WidgetDataOwner,

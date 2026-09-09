@@ -72,20 +72,46 @@ describe('getFeatures', () => {
     expect(mocks.captureMessage).not.toHaveBeenCalled()
   })
 
-  it('includes invoice-widgets in featureKeys while enabled widget list remains empty', async () => {
+  it('enables Work only when all platform and Invoice widget gates are present', async () => {
     mocks.evaluate.mockResolvedValue({
       data: {
-        data: [{ slug: 'invoice-widgets' }, { slug: 'invoice-theme-switcher' }],
+        data: [
+          { slug: 'platform-widgets' },
+          { slug: 'platform-widgets-work' },
+          { slug: 'invoice-widgets' },
+          { slug: 'invoice-widgets-work' },
+        ],
+      },
+      error: null,
+    })
+
+    const result = await getFeatures({
+      userId: 'user_invoice_work',
+      organizationId: 'org_invoice_work',
+    })
+
+    expect(result.featureKeys).toEqual([
+      'invoice-widgets',
+      'invoice-widgets-work',
+    ])
+    expect(result.widgets).toEqual({ enabledWidgetIds: ['work'] })
+  })
+
+  it('keeps Work disabled when any required gate is missing', async () => {
+    mocks.evaluate.mockResolvedValue({
+      data: {
+        data: [
+          { slug: 'platform-widgets' },
+          { slug: 'platform-widgets-work' },
+          { slug: 'invoice-widgets' },
+        ],
       },
       error: null,
     })
 
     const result = await getFeatures({ userId: 'user_invoice_widgets' })
 
-    expect(result.featureKeys).toEqual([
-      'invoice-theme-switcher',
-      'invoice-widgets',
-    ])
+    expect(result.featureKeys).toEqual(['invoice-widgets'])
     expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 

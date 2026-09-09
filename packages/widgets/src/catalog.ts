@@ -66,7 +66,7 @@ export type WidgetDataOwner = 'widgets' | 'external'
 export type WidgetSurface = 'panel' | 'secondary-rail'
 
 export type WidgetVisual =
-  | { kind: 'icon'; icon: 'notepad' | 'terminal' | 'chat' }
+  | { kind: 'icon'; icon: 'notepad' | 'work' | 'terminal' | 'chat' }
   | { kind: 'image'; src: string; alt: string }
 
 export interface WidgetFeatureKeys {
@@ -89,6 +89,8 @@ interface WidgetMetadataBase {
   defaultPanel: { width: number; height: number }
   supportedHosts: readonly WidgetHost[]
   implementedHosts: readonly WidgetHost[]
+  /** Host-app permissions that must be effective before the surface is shown. */
+  permissions?: Partial<Record<WidgetHost, readonly string[]>>
   administration: {
     canListContent: boolean
     canEditContent: boolean
@@ -156,6 +158,43 @@ export const notepadWidgetMetadata = {
   },
 } as const satisfies WidgetMetadata
 
+export const workWidgetMetadata = {
+  object: 'widget',
+  id: 'work',
+  name: '876 Work',
+  description:
+    'Your calendar events, tasks, reminders, and schedule across the 876 productivity plane.',
+  version: '1.0.0',
+  visual: { kind: 'icon', icon: 'work' },
+  distribution: 'shared',
+  dataOwner: 'external',
+  surface: 'panel',
+  ownership: 'organization',
+  defaultPanel: { width: 520, height: 620 },
+  supportedHosts: ['invoice', 'billing'],
+  implementedHosts: ['invoice'],
+  permissions: {
+    invoice: ['my-work.view'],
+  },
+  features: {
+    platform: {
+      parent: 'platform-widgets',
+      widget: 'platform-widgets-work',
+    },
+    apps: {
+      invoice: {
+        parent: 'invoice-widgets',
+        widget: 'invoice-widgets-work',
+      },
+    },
+  },
+  administration: {
+    canListContent: false,
+    canEditContent: false,
+    canDeleteContent: false,
+  },
+} as const satisfies WidgetMetadata
+
 export const chatWidgetMetadata = {
   object: 'widget',
   id: 'chat',
@@ -200,6 +239,7 @@ export const chatWidgetMetadata = {
 
 export const widgetCatalog = [
   notepadWidgetMetadata,
+  workWidgetMetadata,
   chatWidgetMetadata,
 ] as const
 
@@ -284,6 +324,24 @@ export function resolveEnabledWidgetIds(
         widget.surface === 'panel' &&
         isWidgetEnabled(widget, host, enabledFeatureSlugs)
     )
+    .map((widget) => widget.id)
+}
+
+export function resolveAccessibleWidgetIds(
+  host: WidgetHost,
+  enabledWidgetIds: readonly string[],
+  effectivePermissions: ReadonlySet<string>
+): WidgetId[] {
+  const enabled = new Set(enabledWidgetIds)
+  return widgetCatalog
+    .filter((widget) => {
+      if (widget.surface !== 'panel' || !enabled.has(widget.id)) return false
+      const metadata: WidgetMetadata = widget
+      const required = metadata.permissions?.[host] ?? []
+      return required.every((permission) =>
+        effectivePermissions.has(permission)
+      )
+    })
     .map((widget) => widget.id)
 }
 

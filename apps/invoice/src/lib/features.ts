@@ -19,6 +19,7 @@ const INVOICE_GLOBAL_ADD_SLUG = 'invoice-global-add'
 const INVOICE_APP_SWITCHER_SLUG = 'invoice-app-switcher'
 const INVOICE_ORG_SWITCHER_SLUG = 'invoice-org-switcher'
 const INVOICE_WIDGETS_SLUG = 'invoice-widgets'
+const INVOICE_WIDGETS_WORK_SLUG = 'invoice-widgets-work'
 
 const INVOICE_FEATURE_SLUGS = [
   INVOICE_SEARCH_BAR_SLUG,
@@ -27,6 +28,7 @@ const INVOICE_FEATURE_SLUGS = [
   INVOICE_APP_SWITCHER_SLUG,
   INVOICE_ORG_SWITCHER_SLUG,
   INVOICE_WIDGETS_SLUG,
+  INVOICE_WIDGETS_WORK_SLUG,
 ] as const
 
 const DEFAULT_UI_FEATURES: InvoiceUiFeatures = {

@@ -17,6 +17,7 @@ const {
       appSwitcher: false,
       orgSwitcher: false,
     },
+    widgets: { enabledWidgetIds: [] },
   })),
   mockGetAuthSession: vi.fn(),
   mockGetInvoiceContextResult: vi.fn(),

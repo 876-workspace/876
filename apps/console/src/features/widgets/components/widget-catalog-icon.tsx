@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import type { WidgetVisual } from '@876/widgets'
 import { NotepadIcon } from '@876/widgets/react'
-import { Sparkles, Terminal } from '@876/ui/icons'
+import { CalendarDaysIcon, Sparkles, Terminal } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
 
 export function WidgetCatalogIcon({
@@ -25,6 +25,8 @@ export function WidgetCatalogIcon({
       />
     ) : visual.icon === 'notepad' ? (
       <NotepadIcon className={cn('size-5', iconClassName)} />
+    ) : visual.icon === 'work' ? (
+      <CalendarDaysIcon className={cn('size-5', iconClassName)} />
     ) : visual.icon === 'chat' ? (
       <Sparkles className={cn('size-5', iconClassName)} />
     ) : (
