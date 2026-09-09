@@ -92,19 +92,19 @@ function TaskCreateForm({
     const form = event.currentTarget
     const data = new FormData(form)
     const title = formText(data, 'title')
-    const importance = workTaskImportanceSchema.safeParse(data.get('importance'))
+    const importance = workTaskImportanceSchema.safeParse(
+      data.get('importance')
+    )
     if (!title || !importance.success) return
 
     const dueAt = timestampFromLocal(data.get('due'))
+    const listId = formText(data, 'listId')
     const created = await onCreateTask({
       title,
-      ...(formText(data, 'listId') ? { listId: formText(data, 'listId')! } : {}),
+      ...(listId ? { listId } : {}),
       description: formText(data, 'description'),
       importance: importance.data,
-      due:
-        dueAt == null
-          ? null
-          : { at: dueAt, timeZone: browserTimeZone() },
+      due: dueAt == null ? null : { at: dueAt, timeZone: browserTimeZone() },
     })
     if (created) form.reset()
   }
@@ -423,7 +423,7 @@ function CreateSubmitButton({
     <button
       type="submit"
       disabled={creating}
-      className="bg-primary text-primary-foreground focus-visible:ring-ring rounded-lg px-3 py-2 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+      className="bg-primary text-primary-foreground focus-visible:ring-ring rounded-lg px-3 py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
     >
       {creating ? 'Creating…' : label}
     </button>
@@ -462,7 +462,10 @@ export function WorkCreate({
     )
 
   return (
-    <section className={cn('space-y-4 p-4', className)} aria-label="Create Work">
+    <section
+      className={cn('space-y-4 p-4', className)}
+      aria-label="Create Work"
+    >
       <header>
         <p className="text-base font-semibold">Create</p>
         <p className="text-muted-foreground mt-1 text-xs">
@@ -477,7 +480,7 @@ export function WorkCreate({
             aria-pressed={activeMode === item}
             disabled={creating}
             onClick={() => setMode(item)}
-            className="border-876-surface-border aria-pressed:bg-muted focus-visible:ring-ring rounded-full border px-3 py-1.5 text-xs font-medium capitalize disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+            className="border-876-surface-border aria-pressed:bg-muted focus-visible:ring-ring rounded-full border px-3 py-1.5 text-xs font-medium capitalize focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
           >
             {item}
           </button>
