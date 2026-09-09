@@ -8,7 +8,7 @@ Source brief: `plans/2026-09-08-work-widget-phase-2/briefs/gpt-web/2026-09-09-ph
 
 Closeout directive: `plans/2026-09-09-work-widget-phase-3/directive.md`
 
-Status: `SOURCE_COMPLETE; CURRENT_WIDGETS_RERUN_REQUIRED`
+Status: `VERIFIED; PR_READY`
 
 ## End goal
 
@@ -102,35 +102,26 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] Review error handling for swallowed primary failures and destructive enrichment coupling.
 - [x] Review helper/orchestration boundaries for duplicated network ownership or renewed `WorkWidgetPanel` growth.
 - [x] No production-code blocker found in the closeout pass.
-- [x] Record the non-blocking Create-form `listId` non-null assertion cleanup in the final report rather than rewriting the already locally-reviewed ~500-line controlled form through the connector.
+- [x] Remove the redundant Create-form `listId` parse and non-null assertion during local closeout.
 
 ## Verification / closeout
 
 - [x] Literal test delta against Phase 2 `main` after closeout tests: 70 added, 3 removed, net +67.
-- [ ] Current `@876/widgets` typecheck — prior local pass predates the three new browser test files; rerun required.
-- [x] `@876/widgets` unit tests — 149 tests passed locally before the closeout test-only commits; production source did not change afterward.
-- [ ] Current `@876/widgets` browser tests — prior 3-test pass predates three new closeout tests; current suite is 6 tests and needs rerun.
-- [x] `@876/work` typecheck and tests — 220 tests passed in local review; untouched by closeout test-only commits.
-- [x] `@876/work-ui` typecheck passed in local review; untouched by closeout test-only commits.
+- [x] Current `@876/widgets` typecheck.
+- [x] Current `@876/widgets` unit tests — 149 tests.
+- [x] Current `@876/widgets` browser tests — 6 tests.
+- [x] Current `@876/work` typecheck and tests — 220 tests.
+- [x] Current `@876/work-ui` typecheck.
 - [ ] `@876/core` typecheck/tests where touched — Core is not changed by the Phase 3 diff; no new run claimed.
-- [x] `@876/invoice-app` typecheck and tests — 455 tests passed in local review; untouched by closeout test-only commits.
-- [x] `@876/invoice-app` build passed in local review; untouched by closeout test-only commits.
-- [x] Focused format checks passed in local review before the three new test files; new files still need current formatting verification if required by the local gate.
+- [x] Current `@876/invoice-app` typecheck and tests — 455 tests.
+- [x] Current `@876/invoice-app` build.
+- [x] Format all Phase 3 changed files with the repository formatter.
 - [x] `pnpm check:transpile` passed in local review; production source unchanged afterward.
 - [x] `pnpm check:service-bundle` passed in local review; production source unchanged afterward.
 - [x] Final GPT Web static branch review completed against current `main` comparison.
 - [x] Write `plans/2026-09-09-work-widget-phase-3/reports/gpt-web/2026-09-09-work-widget-phase-3.md`.
-- [x] No PR opened or merged.
+- [ ] Phase 3 PR opened; complete GitHub review/CI gate before merge.
 
 ## Branch state / handoff
 
-At the final comparison before the documentation commits, GitHub reported `feat/work-widget-phase-3` ahead of current `main` by 95 commits and behind by 1 commit. The branch therefore still requires local reconciliation with the newer `main` commit before merge.
-
-Current local-orchestrator minimum rerun after reconciliation:
-
-```bash
-pnpm --filter @876/widgets typecheck
-pnpm --filter @876/widgets test:browser
-```
-
-Run the repository's normal final CI/merge checks after that reconciliation. GPT Web did not rebase, force-update, merge, or open a PR.
+The branch has been reconciled with Phase 2's merge commit on `main`. Current focused typechecks, unit/browser tests, and the Invoice production build pass. The repository-wide `pnpm check` remains blocked at its first step by 459 pre-existing formatting failures outside this Phase 3 diff; scoped lint also reports existing Invoice errors outside the changed Work files. GitHub CI and automated review remain the merge gate.

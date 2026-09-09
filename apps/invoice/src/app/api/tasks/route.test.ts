@@ -65,7 +65,10 @@ describe('/api/tasks', () => {
   it('returns read access failures before creating a Work client', async () => {
     mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
-        { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
+        {
+          data: null,
+          error: { code: 'auth/forbidden', message: 'Forbidden.' },
+        },
         { status: 403 }
       ),
     })
@@ -121,7 +124,9 @@ describe('/api/tasks', () => {
   it('requires tasks.create for task creation', async () => {
     await POST(postRequest({ title: 'Follow up' }))
 
-    expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith('tasks.create')
+    expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith(
+      'tasks.create'
+    )
   })
 
   it('stamps and forwards a canonical task create payload', async () => {

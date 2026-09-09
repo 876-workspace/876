@@ -31,7 +31,10 @@ describe('shared widget catalog', () => {
     expect(isWidgetsDataOwner(notepadWidgetMetadata)).toBe(true)
   })
 
-  it('marks Work as organization-owned external shared content', () => {
+  it('presents Calendar as organization-owned Work-backed content', () => {
+    expect(workWidgetMetadata.id).toBe('work')
+    expect(workWidgetMetadata.name).toBe('876 Calendar')
+    expect(workWidgetMetadata.description).toContain('powered by 876 Work')
     expect(workWidgetMetadata.distribution).toBe('shared')
     expect(workWidgetMetadata.dataOwner).toBe('external')
     expect(workWidgetMetadata.ownership).toBe('organization')
@@ -122,14 +125,14 @@ describe('shared widget catalog', () => {
       'invoice-widgets',
       'invoice-widgets-work',
     ])
-    expect(getRequiredWidgetFeatureSlugs(workWidgetMetadata, 'invoice')).toEqual(
-      [
-        'platform-widgets',
-        'platform-widgets-work',
-        'invoice-widgets',
-        'invoice-widgets-work',
-      ]
-    )
+    expect(
+      getRequiredWidgetFeatureSlugs(workWidgetMetadata, 'invoice')
+    ).toEqual([
+      'platform-widgets',
+      'platform-widgets-work',
+      'invoice-widgets',
+      'invoice-widgets-work',
+    ])
   })
 
   it('declares My Work permission as the Invoice surface access gate', () => {
@@ -161,21 +164,13 @@ describe('shared widget catalog', () => {
       []
     )
     expect(
-      resolveAccessibleWidgetIds(
-        'invoice',
-        ['work'],
-        new Set(['my-work.view'])
-      )
+      resolveAccessibleWidgetIds('invoice', ['work'], new Set(['my-work.view']))
     ).toEqual(['work'])
   })
 
   it('keeps widgets without permission requirements accessible', () => {
     expect(
-      resolveAccessibleWidgetIds(
-        'billing',
-        ['notepad'],
-        new Set<string>()
-      )
+      resolveAccessibleWidgetIds('billing', ['notepad'], new Set<string>())
     ).toEqual(['notepad'])
   })
 

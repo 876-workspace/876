@@ -121,7 +121,9 @@ describe('WorkWidgetTasksView pagination races', () => {
 
     resolveStalePage(success(pageResult([staleTask], false)))
 
-    await expect.element(page.getByText('Stale page task')).not.toBeInTheDocument()
+    await expect
+      .element(page.getByText('Stale page task'))
+      .not.toBeInTheDocument()
     await expect.element(page.getByText('Task B')).toBeVisible()
   })
 })

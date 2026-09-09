@@ -52,7 +52,10 @@ describe('WorkWidgetCalendarView range orchestration', () => {
           return Response.json(
             {
               data: null,
-              error: { code: 'work/unavailable', message: 'Calendar refresh failed.' },
+              error: {
+                code: 'work/unavailable',
+                message: 'Calendar refresh failed.',
+              },
             },
             { status: 503 }
           )
@@ -72,7 +75,9 @@ describe('WorkWidgetCalendarView range orchestration', () => {
 
     render(<WorkWidgetCalendarView />)
 
-    await expect.element(page.getByRole('button', { name: 'Next' })).toBeVisible()
+    await expect
+      .element(page.getByRole('button', { name: 'Next' }))
+      .toBeVisible()
     await vi.waitFor(() => expect(myWorkCalls).toBe(1))
 
     await page
@@ -84,22 +89,17 @@ describe('WorkWidgetCalendarView range orchestration', () => {
     await vi.waitFor(() => expect(myWorkCalls).toBe(2))
 
     const weekStart = addDays(monthTarget, -monthTarget.getDay())
-    const weekTarget = addDays(
-      weekStart,
-      monthTarget.getDay() === 0 ? 1 : 0
-    )
-    const weekTargetName = `${weekTarget.toLocaleDateString([], {
-      weekday: 'long',
-    })} ${weekTarget.toLocaleDateString([], {
-      month: 'short',
-      day: 'numeric',
-    })}`
-
-    await page.getByRole('button', { name: weekTargetName }).click()
+    const weekTarget = addDays(weekStart, monthTarget.getDay() === 0 ? 1 : 0)
+    await page
+      .getByRole('region', { name: weekTarget.toLocaleDateString() })
+      .getByRole('button')
+      .click()
     expect(myWorkCalls).toBe(2)
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect.element(page.getByText('Calendar refresh failed.')).toBeVisible()
+    await expect
+      .element(page.getByText('Calendar refresh failed.'))
+      .toBeVisible()
     expect(myWorkCalls).toBe(3)
 
     await page.getByRole('button', { name: 'Try again' }).click()

@@ -194,8 +194,13 @@ function WeekView({
   activeCalendarId: string | null
   onSelectDate: (date: Date) => void
 }) {
-  const start = addLocalDays(startOfLocalDay(date), -startOfLocalDay(date).getDay())
-  const days = Array.from({ length: 7 }, (_, index) => addLocalDays(start, index))
+  const start = addLocalDays(
+    startOfLocalDay(date),
+    -startOfLocalDay(date).getDay()
+  )
+  const days = Array.from({ length: 7 }, (_, index) =>
+    addLocalDays(start, index)
+  )
 
   return (
     <div className="space-y-2 p-3">
@@ -228,7 +233,10 @@ function WeekView({
             ) : (
               <div className="space-y-1.5">
                 {items.map((item) => (
-                  <div key={`${item.type}:${item.id}`} className="bg-muted rounded-md p-2">
+                  <div
+                    key={`${item.type}:${item.id}`}
+                    className="bg-muted rounded-md p-2"
+                  >
                     <p className="text-[10px] font-medium uppercase">
                       {itemKind(item)} · {itemTime(item)}
                     </p>
@@ -275,7 +283,8 @@ function MonthView({
         {days.map((day) => {
           const items = workCalendarItemsForDay(work, day, activeCalendarId)
           const inMonth = day.getMonth() === date.getMonth()
-          const selected = workCalendarDateKey(day) === workCalendarDateKey(date)
+          const selected =
+            workCalendarDateKey(day) === workCalendarDateKey(date)
           return (
             <button
               key={workCalendarDateKey(day)}

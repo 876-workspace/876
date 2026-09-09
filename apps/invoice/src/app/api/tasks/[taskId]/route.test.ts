@@ -72,7 +72,10 @@ describe('PATCH /api/tasks/[taskId]', () => {
   it('returns the Work widget access response before reading Work', async () => {
     mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
-        { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
+        {
+          data: null,
+          error: { code: 'auth/forbidden', message: 'Forbidden.' },
+        },
         { status: 403 }
       ),
     })
@@ -175,7 +178,10 @@ describe('PATCH /api/tasks/[taskId]', () => {
   it('sanitizes unknown upstream task failures', async () => {
     mocks.update.mockResolvedValue({
       data: null,
-      error: { code: 'provider/raw-error', message: 'sensitive provider detail' },
+      error: {
+        code: 'provider/raw-error',
+        message: 'sensitive provider detail',
+      },
     })
 
     const response = await PATCH(request(), context())

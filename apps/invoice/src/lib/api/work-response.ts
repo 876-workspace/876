@@ -1,11 +1,6 @@
 import 'server-only'
 
-import {
-  apiError,
-  getError,
-  isErrorCode,
-  type AppError,
-} from '@876/core'
+import { apiError, getError, isErrorCode, type AppError } from '@876/core'
 
 /** Keeps Work service details out of Invoice's browser-facing API envelope. */
 export function workErrorResponse(error: AppError): Response {

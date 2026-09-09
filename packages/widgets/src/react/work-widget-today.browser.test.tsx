@@ -76,7 +76,7 @@ function myWork(reminderValue: WorkReminder): WorkMyWork {
     userId: 'user_1',
     from: now - 60,
     to: now + 60 * 60,
-    tasks: [TASK],
+    tasks: [{ ...TASK, dueAt: now }],
     reminders: [reminderValue],
     events: [],
     overdueTasks: [],
@@ -97,27 +97,29 @@ describe('WorkWidgetTodayView refresh resilience', () => {
     const initialWork = myWork(reminder('reminder_1', 'Daily standup'))
     const refreshedWork = myWork(reminder('reminder_2', 'Fresh reminder'))
 
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input)
-      if (url.startsWith('/api/my-work?')) {
-        myWorkCalls += 1
-        if (myWorkCalls === 1) return success(initialWork)
-        if (myWorkCalls === 2)
-          return Response.json(
-            {
-              data: null,
-              error: { code: 'work/unavailable', message: 'Refresh failed.' },
-            },
-            { status: 503 }
-          )
-        return success(refreshedWork)
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        if (url.startsWith('/api/my-work?')) {
+          myWorkCalls += 1
+          if (myWorkCalls === 1) return success(initialWork)
+          if (myWorkCalls === 2)
+            return Response.json(
+              {
+                data: null,
+                error: { code: 'work/unavailable', message: 'Refresh failed.' },
+              },
+              { status: 503 }
+            )
+          return success(refreshedWork)
+        }
+
+        if (url === '/api/tasks/task_1' && init?.method === 'PATCH')
+          return success(DONE_TASK)
+
+        throw new Error(`Unexpected request: ${url}`)
       }
-
-      if (url === '/api/tasks/task_1' && init?.method === 'PATCH')
-        return success(DONE_TASK)
-
-      throw new Error(`Unexpected request: ${url}`)
-    })
+    )
     vi.stubGlobal('fetch', fetchMock)
 
     render(
@@ -140,7 +142,9 @@ describe('WorkWidgetTodayView refresh resilience', () => {
     await page.getByRole('button', { name: 'Try again' }).click()
 
     await expect.element(page.getByText('Fresh reminder')).toBeVisible()
-    await expect.element(page.getByText('Refresh failed.')).not.toBeInTheDocument()
+    await expect
+      .element(page.getByText('Refresh failed.'))
+      .not.toBeInTheDocument()
     expect(myWorkCalls).toBe(3)
   })
 })

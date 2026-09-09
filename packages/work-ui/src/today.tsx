@@ -95,7 +95,7 @@ function CompleteTaskButton({
       type="button"
       disabled={mutationPending}
       onClick={() => void onCompleteTask(task)}
-      className="border-876-surface-border hover:bg-muted focus-visible:ring-ring shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium disabled:cursor-wait disabled:opacity-60 focus-visible:ring-2 focus-visible:outline-none"
+      className="border-876-surface-border hover:bg-muted focus-visible:ring-ring shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
       aria-label={`Mark ${task.title} complete`}
     >
       {completing ? 'Saving…' : 'Done'}

@@ -56,7 +56,10 @@ describe('POST /api/reminders', () => {
   it('returns authorization failures before creating a Work client', async () => {
     mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
-        { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
+        {
+          data: null,
+          error: { code: 'auth/forbidden', message: 'Forbidden.' },
+        },
         { status: 403 }
       ),
     })
@@ -97,9 +100,7 @@ describe('POST /api/reminders', () => {
         userId: 'user_2',
       })
     )
-    const invalidResponse = await POST(
-      request({ title: '', remindAt: -1 })
-    )
+    const invalidResponse = await POST(request({ title: '', remindAt: -1 }))
 
     expect(identityResponse.status).toBe(422)
     expect(invalidResponse.status).toBe(422)
