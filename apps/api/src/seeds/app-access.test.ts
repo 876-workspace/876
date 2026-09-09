@@ -156,7 +156,7 @@ describe('app access seed catalog', () => {
     ).toEqual([])
   })
 
-  it('grants Invoice Work reads to staff and advanced writes to admin', () => {
+  it('separates Invoice Work management from self-response capabilities', () => {
     const roles = app('876-invoice').roles
     const admin = roles.find((role) => role.key === 'admin')
     const staff = roles.find((role) => role.key === 'staff')
@@ -164,8 +164,10 @@ describe('app access seed catalog', () => {
     expect(staff?.permissions).toEqual(
       expect.arrayContaining([
         'tasks.view',
+        'tasks.respond',
         'reminders.view',
         'events.view',
+        'events.respond',
         'calendars.view',
         'my-work.view',
       ])
@@ -178,11 +180,13 @@ describe('app access seed catalog', () => {
         'tasks.create',
         'tasks.edit',
         'tasks.assign',
+        'tasks.respond',
         'reminders.create',
         'reminders.edit',
         'events.create',
         'events.edit',
         'events.invite',
+        'events.respond',
         'calendars.create',
         'calendars.edit',
       ])
@@ -208,16 +212,20 @@ describe('app access seed catalog', () => {
   )
 
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
-    '$appSlug admin cannot delete and staff is read-only',
+    '$appSlug admin cannot delete and staff cannot manage resources',
     (definition) => {
       const admin = definition.roles.find((role) => role.key === 'admin')
       const staff = definition.roles.find((role) => role.key === 'staff')
       expect(admin?.permissions.some((key) => key.endsWith('.delete'))).toBe(
         false
       )
-      expect(staff?.permissions.every((key) => key.endsWith('.view'))).toBe(
-        true
-      )
+      expect(
+        staff?.permissions.some((key) =>
+          ['create', 'edit', 'delete', 'assign', 'invite'].some((action) =>
+            key.endsWith(`.${action}`)
+          )
+        )
+      ).toBe(false)
     }
   )
 
