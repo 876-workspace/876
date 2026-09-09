@@ -156,7 +156,7 @@ describe('app access seed catalog', () => {
     ).toEqual([])
   })
 
-  it('grants Invoice Work reads to staff and non-destructive writes to admin', () => {
+  it('grants Invoice Work reads to staff and advanced writes to admin', () => {
     const roles = app('876-invoice').roles
     const admin = roles.find((role) => role.key === 'admin')
     const staff = roles.find((role) => role.key === 'staff')
@@ -170,14 +170,19 @@ describe('app access seed catalog', () => {
         'my-work.view',
       ])
     )
+    expect(staff?.permissions).not.toEqual(
+      expect.arrayContaining(['tasks.assign', 'events.invite'])
+    )
     expect(admin?.permissions).toEqual(
       expect.arrayContaining([
         'tasks.create',
         'tasks.edit',
+        'tasks.assign',
         'reminders.create',
         'reminders.edit',
         'events.create',
         'events.edit',
+        'events.invite',
         'calendars.create',
         'calendars.edit',
       ])
