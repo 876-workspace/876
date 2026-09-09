@@ -29,6 +29,15 @@ export function createEventParticipantsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.updateParticipant,
   })
+  api.patch({
+    path: '/:participantId/response',
+    security: {
+      kind: 'integration',
+      scope: 'work.events.write',
+      sessionPermissions: ['events.respond'],
+    },
+    handler: controller.respondToParticipant,
+  })
   api.delete({
     path: '/:participantId',
     security: {
