@@ -1,11 +1,11 @@
-import type { WorkMyWork, WorkTask } from '@876/work'
+import type { WorkAgendaData, WorkTask } from '@876/work'
 
 import { cn } from '@876/core/utils'
 
 import { WorkAgenda, type WorkAgendaItem } from './agenda'
 
 export type WorkTodayProps = {
-  work: WorkMyWork
+  work: WorkAgendaData
   className?: string
   completingTaskId?: string | null
   onCompleteTask?: (task: WorkTask) => void | Promise<void>
