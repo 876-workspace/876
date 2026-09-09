@@ -39,55 +39,66 @@ function compareItems(left: WorkAgendaItem, right: WorkAgendaItem): number {
   return left.id.localeCompare(right.id)
 }
 
+function taskItems(tasks: readonly WorkTask[]): WorkAgendaItem[] {
+  const items: WorkAgendaItem[] = []
+  for (const task of tasks) {
+    const at = task.startAt ?? task.dueAt
+    if (at == null) continue
+    items.push({
+      type: 'task',
+      id: task.id,
+      at,
+      allDay: false,
+      value: task,
+    })
+  }
+  return items
+}
+
+function reminderItems(reminders: readonly WorkReminder[]): WorkAgendaItem[] {
+  return reminders.map((reminder) => ({
+    type: 'reminder',
+    id: reminder.id,
+    at: reminder.remindAt,
+    allDay: false,
+    value: reminder,
+  }))
+}
+
+function eventItems(events: readonly WorkEvent[]): WorkAgendaItem[] {
+  const items: WorkAgendaItem[] = []
+  for (const event of events) {
+    if (event.allDay && event.startDate) {
+      items.push({
+        type: 'event',
+        id: event.id,
+        at: null,
+        allDay: true,
+        value: event,
+      })
+      continue
+    }
+    if (event.startAt == null) continue
+    items.push({
+      type: 'event',
+      id: event.id,
+      at: event.startAt,
+      allDay: false,
+      value: event,
+    })
+  }
+  return items
+}
+
 function itemsOf(
   tasks: readonly WorkTask[],
   reminders: readonly WorkReminder[],
   events: readonly WorkEvent[]
 ): WorkAgendaItem[] {
   return [
-    ...tasks.flatMap((task) => {
-      const at = task.startAt ?? task.dueAt
-      return at == null
-        ? []
-        : [
-            {
-              type: 'task' as const,
-              id: task.id,
-              at,
-              allDay: false as const,
-              value: task,
-            },
-          ]
-    }),
-    ...reminders.map((reminder) => ({
-      type: 'reminder' as const,
-      id: reminder.id,
-      at: reminder.remindAt,
-      allDay: false as const,
-      value: reminder,
-    })),
-    ...events.flatMap((event) => {
-      if (event.allDay && event.startDate)
-        return [
-          {
-            type: 'event' as const,
-            id: event.id,
-            at: null,
-            allDay: true as const,
-            value: event,
-          },
-        ]
-      if (event.startAt == null) return []
-      return [
-        {
-          type: 'event' as const,
-          id: event.id,
-          at: event.startAt,
-          allDay: false as const,
-          value: event,
-        },
-      ]
-    }),
+    ...taskItems(tasks),
+    ...reminderItems(reminders),
+    ...eventItems(events),
   ].sort(compareItems)
 }
 
