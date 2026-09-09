@@ -1,14 +1,10 @@
 import 'server-only'
 
 import { apiSuccess, getError } from '@876/core'
-import {
-  updateWorkTaskInputSchema,
-  workTaskImportanceSchema,
-  type WorkHostContext,
-  type WorkTask,
-} from '@876/work'
+import { updateWorkTaskInputSchema, workTaskImportanceSchema } from '@876/work'
 import { z } from 'zod'
 
+import { workTaskMatchesContext } from '@/lib/api/work-context-match'
 import { workErrorResponse } from '@/lib/api/work-response'
 import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
@@ -28,6 +24,7 @@ const editSchema = z
     description: z.string().max(10_000).optional().nullable(),
     importance: workTaskImportanceSchema.optional(),
     due: dueSchema.optional().nullable(),
+    recurrenceRuleId: z.string().trim().min(1).optional().nullable(),
   })
   .refine((value) => Object.keys(value).some((key) => key !== 'action'), {
     message: 'Provide at least one field to update.',
@@ -38,21 +35,6 @@ const actionSchema = z.union([
   z.strictObject({ action: z.literal('cancel') }),
   editSchema,
 ])
-
-function taskMatchesContext(task: WorkTask, context: WorkHostContext): boolean {
-  const legacyMatch =
-    task.context?.service === context.service &&
-    task.context.resource === context.resource &&
-    task.context.id === context.externalId
-  if (legacyMatch) return true
-
-  return task.links.some(
-    (link) =>
-      link.service === context.service &&
-      link.resource === context.resource &&
-      link.externalId === context.externalId
-  )
-}
 
 export async function handlePatchWorkTask(
   request: Request,
@@ -77,7 +59,7 @@ export async function handlePatchWorkTask(
   if (context?.context) {
     const current = await work.tasks.retrieve(auth.orgId, taskId)
     if (current.error) return workErrorResponse(current.error)
-    if (!taskMatchesContext(current.data, context.context))
+    if (!workTaskMatchesContext(current.data, context.context))
       return workErrorResponse(getError('work/not-found'))
   }
 
@@ -104,6 +86,9 @@ export async function handlePatchWorkTask(
                     dueAt: parsed.data.due.at,
                     dueTimeZone: parsed.data.due.timeZone,
                   }),
+            ...(parsed.data.recurrenceRuleId === undefined
+              ? {}
+              : { recurrenceRuleId: parsed.data.recurrenceRuleId }),
           }
   const canonical = updateWorkTaskInputSchema.safeParse(candidate)
   if (!canonical.success)
