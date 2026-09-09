@@ -79,7 +79,9 @@ describe('Work task capability presentation', () => {
   it('shows non-destructive task controls when edit callbacks are supplied', async () => {
     render(<EditableTasks />)
 
-    await expect.element(page.getByText('Add task')).toBeVisible()
+    await expect
+      .element(page.getByText('Add task', { exact: true }).first())
+      .toBeVisible()
     await expect
       .element(page.getByRole('button', { name: 'Done' }))
       .toBeVisible()
