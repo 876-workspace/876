@@ -21,11 +21,12 @@ export type WorkCalendarSurfaceProps = {
   activeCalendarId: string | null
   onChangeView: (view: WorkCalendarView) => void
   onNavigate: (direction: 'previous' | 'today' | 'next') => void
+  onSelectDate: (date: Date) => void
   onSelectCalendar: (calendarId: string | null) => void
   className?: string
 }
 
-type CalendarItem = {
+export type WorkCalendarItem = {
   id: string
   type: 'event' | 'task' | 'reminder'
   title: string
@@ -33,15 +34,15 @@ type CalendarItem = {
   allDay: boolean
 }
 
-function startOfDay(date: Date): Date {
+export function startOfLocalDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-function addDays(date: Date, days: number): Date {
+export function addLocalDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
 }
 
-function dateKey(date: Date): string {
+export function workCalendarDateKey(date: Date): string {
   const year = String(date.getFullYear()).padStart(4, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -49,61 +50,66 @@ function dateKey(date: Date): string {
 }
 
 function timestampDateKey(value: number): string {
-  return dateKey(new Date(value * 1000))
+  return workCalendarDateKey(new Date(value * 1000))
 }
 
-function eventOccursOnDay(event: WorkEvent, day: Date): boolean {
-  const key = dateKey(day)
+export function workEventOccursOnDay(event: WorkEvent, day: Date): boolean {
+  const key = workCalendarDateKey(day)
   if (event.allDay && event.startDate && event.endDate)
     return key >= event.startDate && key < event.endDate
   if (event.startAt == null || event.endAt == null) return false
 
-  const from = Math.floor(startOfDay(day).getTime() / 1000)
-  const to = Math.floor(addDays(day, 1).getTime() / 1000)
+  const from = Math.floor(startOfLocalDay(day).getTime() / 1000)
+  const to = Math.floor(addLocalDays(day, 1).getTime() / 1000)
   return event.startAt < to && event.endAt > from
 }
 
-function taskOccursOnDay(task: WorkTask, day: Date): boolean {
+export function workTaskOccursOnDay(task: WorkTask, day: Date): boolean {
   if (task.status === 'DONE' || task.status === 'CANCELLED') return false
   const at = task.startAt ?? task.dueAt
-  return at != null && timestampDateKey(at) === dateKey(day)
+  return at != null && timestampDateKey(at) === workCalendarDateKey(day)
 }
 
-function reminderOccursOnDay(reminder: WorkReminder, day: Date): boolean {
+export function workReminderOccursOnDay(
+  reminder: WorkReminder,
+  day: Date
+): boolean {
   return (
     reminder.status === 'SCHEDULED' &&
-    timestampDateKey(reminder.remindAt) === dateKey(day)
+    timestampDateKey(reminder.remindAt) === workCalendarDateKey(day)
   )
 }
 
-function filteredEvents(
+export function workEventsForDay(
   work: WorkMyWork,
   day: Date,
   activeCalendarId: string | null
-) {
+): WorkEvent[] {
   return work.events.filter(
     (event) =>
       (!activeCalendarId || event.calendarId === activeCalendarId) &&
-      eventOccursOnDay(event, day)
+      workEventOccursOnDay(event, day)
   )
 }
 
-function itemsForDay(
+export function workCalendarItemsForDay(
   work: WorkMyWork,
   day: Date,
   activeCalendarId: string | null
-): CalendarItem[] {
-  const events: CalendarItem[] = filteredEvents(work, day, activeCalendarId).map(
-    (event) => ({
-      id: event.id,
-      type: 'event',
-      title: event.title,
-      at: event.allDay ? null : event.startAt,
-      allDay: event.allDay,
-    })
-  )
-  const tasks: CalendarItem[] = work.tasks
-    .filter((task) => taskOccursOnDay(task, day))
+): WorkCalendarItem[] {
+  const events: WorkCalendarItem[] = workEventsForDay(
+    work,
+    day,
+    activeCalendarId
+  ).map((event) => ({
+    id: event.id,
+    type: 'event',
+    title: event.title,
+    at: event.allDay ? null : event.startAt,
+    allDay: event.allDay,
+  }))
+  const tasks: WorkCalendarItem[] = work.tasks
+    .filter((task) => workTaskOccursOnDay(task, day))
     .map((task) => ({
       id: task.id,
       type: 'task',
@@ -111,8 +117,8 @@ function itemsForDay(
       at: task.startAt ?? task.dueAt,
       allDay: false,
     }))
-  const reminders: CalendarItem[] = work.reminders
-    .filter((reminder) => reminderOccursOnDay(reminder, day))
+  const reminders: WorkCalendarItem[] = work.reminders
+    .filter((reminder) => workReminderOccursOnDay(reminder, day))
     .map((reminder) => ({
       id: reminder.id,
       type: 'reminder',
@@ -129,7 +135,7 @@ function itemsForDay(
   })
 }
 
-function itemTime(item: CalendarItem): string {
+function itemTime(item: WorkCalendarItem): string {
   if (item.allDay || item.at == null) return 'All day'
   return new Date(item.at * 1000).toLocaleTimeString([], {
     hour: 'numeric',
@@ -137,7 +143,7 @@ function itemTime(item: CalendarItem): string {
   })
 }
 
-function itemKind(item: CalendarItem): string {
+function itemKind(item: WorkCalendarItem): string {
   if (item.type === 'event') return 'Event'
   if (item.type === 'task') return 'Task'
   return 'Reminder'
@@ -152,11 +158,11 @@ function DayView({
   date: Date
   activeCalendarId: string | null
 }) {
-  const tasks = work.tasks.filter((task) => taskOccursOnDay(task, date))
+  const tasks = work.tasks.filter((task) => workTaskOccursOnDay(task, date))
   const reminders = work.reminders.filter((reminder) =>
-    reminderOccursOnDay(reminder, date)
+    workReminderOccursOnDay(reminder, date)
   )
-  const events = filteredEvents(work, date, activeCalendarId)
+  const events = workEventsForDay(work, date, activeCalendarId)
 
   return (
     <div className="p-4">
@@ -181,49 +187,59 @@ function WeekView({
   work,
   date,
   activeCalendarId,
+  onSelectDate,
 }: {
   work: WorkMyWork
   date: Date
   activeCalendarId: string | null
+  onSelectDate: (date: Date) => void
 }) {
-  const start = addDays(startOfDay(date), -startOfDay(date).getDay())
-  const days = Array.from({ length: 7 }, (_, index) => addDays(start, index))
+  const start = addLocalDays(startOfLocalDay(date), -startOfLocalDay(date).getDay())
+  const days = Array.from({ length: 7 }, (_, index) => addLocalDays(start, index))
 
   return (
-    <div className="overflow-x-auto p-3">
-      <div className="grid min-w-[720px] grid-cols-7 gap-2">
-        {days.map((day) => {
-          const items = itemsForDay(work, day, activeCalendarId)
-          return (
-            <section
-              key={dateKey(day)}
-              className="border-876-surface-border min-h-44 rounded-xl border p-2"
-              aria-label={day.toLocaleDateString()}
+    <div className="space-y-2 p-3">
+      {days.map((day) => {
+        const items = workCalendarItemsForDay(work, day, activeCalendarId)
+        const selected = workCalendarDateKey(day) === workCalendarDateKey(date)
+        return (
+          <section
+            key={workCalendarDateKey(day)}
+            className={cn(
+              'border-876-surface-border rounded-xl border p-3',
+              selected && 'bg-muted/40'
+            )}
+            aria-label={day.toLocaleDateString()}
+          >
+            <button
+              type="button"
+              onClick={() => onSelectDate(day)}
+              className="focus-visible:ring-ring mb-2 flex w-full items-baseline justify-between rounded-md text-left focus-visible:ring-2 focus-visible:outline-none"
             >
-              <div className="mb-2">
-                <p className="text-muted-foreground text-[11px] font-medium uppercase">
-                  {day.toLocaleDateString([], { weekday: 'short' })}
-                </p>
-                <p className="text-sm font-semibold">{day.getDate()}</p>
-              </div>
+              <span className="text-sm font-semibold">
+                {day.toLocaleDateString([], { weekday: 'long' })}
+              </span>
+              <span className="text-muted-foreground text-xs">
+                {day.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+              </span>
+            </button>
+            {items.length === 0 ? (
+              <p className="text-muted-foreground text-xs">Free</p>
+            ) : (
               <div className="space-y-1.5">
-                {items.length === 0 ? (
-                  <p className="text-muted-foreground text-xs">Free</p>
-                ) : (
-                  items.map((item) => (
-                    <div key={`${item.type}:${item.id}`} className="bg-muted rounded-md p-1.5">
-                      <p className="text-[10px] font-medium uppercase">
-                        {itemKind(item)} · {itemTime(item)}
-                      </p>
-                      <p className="mt-0.5 line-clamp-2 text-xs">{item.title}</p>
-                    </div>
-                  ))
-                )}
+                {items.map((item) => (
+                  <div key={`${item.type}:${item.id}`} className="bg-muted rounded-md p-2">
+                    <p className="text-[10px] font-medium uppercase">
+                      {itemKind(item)} · {itemTime(item)}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs">{item.title}</p>
+                  </div>
+                ))}
               </div>
-            </section>
-          )
-        })}
-      </div>
+            )}
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -232,62 +248,59 @@ function MonthView({
   work,
   date,
   activeCalendarId,
+  onSelectDate,
 }: {
   work: WorkMyWork
   date: Date
   activeCalendarId: string | null
+  onSelectDate: (date: Date) => void
 }) {
   const first = new Date(date.getFullYear(), date.getMonth(), 1)
-  const gridStart = addDays(first, -first.getDay())
-  const days = Array.from({ length: 42 }, (_, index) => addDays(gridStart, index))
+  const gridStart = addLocalDays(first, -first.getDay())
+  const days = Array.from({ length: 42 }, (_, index) =>
+    addLocalDays(gridStart, index)
+  )
 
   return (
-    <div className="overflow-x-auto p-3">
-      <div className="grid min-w-[560px] grid-cols-7 gap-px overflow-hidden rounded-xl border">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className="bg-muted px-2 py-1.5 text-center text-[11px] font-medium">
+    <div className="p-3">
+      <div className="grid grid-cols-7 gap-1" aria-label="Month calendar">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+          <div
+            key={`${day}:${index}`}
+            className="text-muted-foreground py-1 text-center text-[10px] font-medium"
+          >
             {day}
           </div>
         ))}
         {days.map((day) => {
-          const items = itemsForDay(work, day, activeCalendarId)
+          const items = workCalendarItemsForDay(work, day, activeCalendarId)
           const inMonth = day.getMonth() === date.getMonth()
+          const selected = workCalendarDateKey(day) === workCalendarDateKey(date)
           return (
-            <section
-              key={dateKey(day)}
-              className={cn('min-h-20 p-1.5', !inMonth && 'bg-muted/30')}
+            <button
+              key={workCalendarDateKey(day)}
+              type="button"
+              onClick={() => onSelectDate(day)}
+              aria-pressed={selected}
               aria-label={day.toLocaleDateString()}
+              className={cn(
+                'border-876-surface-border focus-visible:ring-ring min-h-12 rounded-lg border p-1 text-center focus-visible:ring-2 focus-visible:outline-none',
+                selected && 'bg-muted',
+                !inMonth && 'text-muted-foreground opacity-60'
+              )}
             >
-              <p
-                className={cn(
-                  'mb-1 text-xs font-medium',
-                  !inMonth && 'text-muted-foreground'
-                )}
-              >
-                {day.getDate()}
-              </p>
-              <div className="space-y-1">
-                {items.slice(0, 3).map((item) => (
-                  <div key={`${item.type}:${item.id}`} className="bg-muted rounded px-1 py-0.5">
-                    <p className="truncate text-[10px]">
-                      {item.type === 'event'
-                        ? ''
-                        : item.type === 'task'
-                          ? 'Task · '
-                          : 'Reminder · '}
-                      {item.title}
-                    </p>
-                  </div>
-                ))}
-                {items.length > 3 ? (
-                  <p className="text-muted-foreground text-[10px]">
-                    +{items.length - 3} more
-                  </p>
-                ) : null}
-              </div>
-            </section>
+              <span className="block text-xs font-medium">{day.getDate()}</span>
+              {items.length > 0 ? (
+                <span className="text-muted-foreground mt-0.5 block text-[9px] tabular-nums">
+                  {items.length} {items.length === 1 ? 'item' : 'items'}
+                </span>
+              ) : null}
+            </button>
           )
         })}
+      </div>
+      <div className="border-876-surface-border mt-3 border-t">
+        <DayView work={work} date={date} activeCalendarId={activeCalendarId} />
       </div>
     </div>
   )
@@ -301,6 +314,7 @@ export function WorkCalendarSurface({
   activeCalendarId,
   onChangeView,
   onNavigate,
+  onSelectDate,
   onSelectCalendar,
   className,
 }: WorkCalendarSurfaceProps) {
@@ -368,11 +382,25 @@ export function WorkCalendarSurface({
       </details>
 
       {view === 'day' ? (
-        <DayView work={work} date={anchorDate} activeCalendarId={activeCalendarId} />
+        <DayView
+          work={work}
+          date={anchorDate}
+          activeCalendarId={activeCalendarId}
+        />
       ) : view === 'week' ? (
-        <WeekView work={work} date={anchorDate} activeCalendarId={activeCalendarId} />
+        <WeekView
+          work={work}
+          date={anchorDate}
+          activeCalendarId={activeCalendarId}
+          onSelectDate={onSelectDate}
+        />
       ) : (
-        <MonthView work={work} date={anchorDate} activeCalendarId={activeCalendarId} />
+        <MonthView
+          work={work}
+          date={anchorDate}
+          activeCalendarId={activeCalendarId}
+          onSelectDate={onSelectDate}
+        />
       )}
     </section>
   )
