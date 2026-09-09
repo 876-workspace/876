@@ -1,6 +1,9 @@
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { resolveNavigation } from '@876/core/access'
-import { resolveAccessibleWidgetIds } from '@876/widgets'
+import {
+  resolveAccessibleWidgetIds,
+  resolveWorkWidgetCapabilities,
+} from '@876/widgets'
 import { AppError } from '@876/ui/app-error'
 import { redirect } from 'next/navigation'
 
@@ -54,6 +57,7 @@ export default async function AppLayout({
       ),
     },
   }
+  const workCapabilities = resolveWorkWidgetCapabilities(effectivePermissions)
 
   const user = isSignedSession(session) ? session.user : null
   const email = user?.email ?? ''
@@ -85,6 +89,7 @@ export default async function AppLayout({
       currentOrg={currentOrg}
       orgs={orgs}
       features={shellFeatures}
+      workCapabilities={workCapabilities}
       navigation={
         access.status === 'ok'
           ? resolveNavigation(navConfig, access.context)
