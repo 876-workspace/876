@@ -18,42 +18,46 @@ Status: `IN_PROGRESS`
 
 ## 6A — persistence / credentials
 
-- [ ] Schema and migration.
-- [ ] Secure-field binding.
-- [ ] Credential repository/resolver.
-- [ ] Mapping-level cursor state.
-- [ ] Tests.
+- [x] Schema and migration.
+- [x] Secure-field binding.
+- [x] Credential repository/resolver.
+- [x] Mapping-level cursor state.
+- [x] Scope event mappings beneath calendar mappings so remote IDs are calendar-local.
+- [x] Credential sealing tests added.
 
 ## 6B — providers
 
-- [ ] Google OAuth + Calendar adapter.
-- [ ] Microsoft OAuth + Graph Calendar adapter.
-- [ ] CalDAV discovery + synchronization adapter.
-- [ ] Shared normalized provider contracts/errors.
-- [ ] Tests.
+- [x] Google OAuth/token refresh + Calendar adapter drafted.
+- [x] Microsoft OAuth/token refresh + Graph Calendar adapter drafted.
+- [x] CalDAV discovery + synchronization adapter drafted.
+- [x] Shared normalized provider contracts/errors drafted.
+- [ ] Deterministic provider adapter tests with mocked transport.
 
 ## 6C — authorization / linking
 
-- [ ] OAuth authorize/state/callback.
-- [ ] CalDAV credential setup.
-- [ ] Account metadata resolution.
-- [ ] Remote calendar discovery.
-- [ ] Calendar link/import/unlink.
-- [ ] Tests.
+- [x] OAuth authorize/state/callback service lifecycle drafted.
+- [x] CalDAV credential setup drafted.
+- [x] Account metadata resolution drafted.
+- [x] Remote-calendar discovery drafted.
+- [x] Calendar link/import/unlink service lifecycle drafted.
+- [ ] HTTP routes/controllers and callback surface.
+- [ ] Ownership/authority regressions.
 
 ## 6D — synchronization
 
-- [ ] Manual sync.
-- [ ] Scheduler batch sync.
-- [ ] Remote → Work convergence.
-- [ ] Work → provider convergence for supported event shapes.
-- [ ] Cursor invalidation/window rollover.
-- [ ] Health/error state.
-- [ ] Tests.
+- [x] Manual connection/calendar sync service drafted.
+- [x] Scheduler batch sync service drafted.
+- [x] Remote → Work convergence drafted.
+- [x] Work → provider convergence for supported non-recurring event shapes drafted.
+- [x] Google/CalDAV cursor invalidation fallback and Microsoft window rollover drafted.
+- [x] Health/error state updates drafted.
+- [x] Fix remote-deletion/local-change recreation to reuse the existing event mapping.
+- [x] Replace exact sync lookup batch scan with tenant-aware direct lookup.
+- [ ] Sync orchestration regression tests.
 
 ## 6E — browser/widget pilot
 
-- [ ] `@876/work` session contract.
+- [ ] `@876/work` session resource methods.
 - [ ] Invoice BFF.
 - [ ] Browser adapter.
 - [ ] Controlled Work UI.
@@ -73,3 +77,4 @@ Status: `IN_PROGRESS`
 - No PR is authorized by the user in this run.
 - Raw provider tokens/passwords must never enter browser responses, ordinary Work resource serializers, logs, or `credentialRef`.
 - Existing connection `syncCursor` is compatibility state; Phase 6 active cursors are per calendar mapping.
+- Provider adapters and sync services are now source-present, but Phase 6 is not callable end-to-end until HTTP/SDK/BFF wiring and tests land.
