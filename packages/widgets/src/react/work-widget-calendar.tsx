@@ -8,19 +8,23 @@ import {
   type WorkCalendarView,
 } from '@876/work-ui/calendar'
 
+import type { WorkWidgetCapabilities } from '../work-capabilities'
 import { WidgetPanelSkeleton } from './widget-loading'
 import {
   WorkWidgetErrorBanner,
   WorkWidgetInitialError,
 } from './work-widget-feedback'
+import { WorkWidgetScheduleAdvanced } from './work-widget-schedule-advanced'
 import { calendarWindow, moveCalendarAnchor } from './work-widget-time'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
 export function WorkWidgetCalendarView({
+  capabilities,
   context,
   client = browserWork,
 }: {
+  capabilities: WorkWidgetCapabilities
   context?: WorkHostContext
   client?: WorkBrowserClient
 }) {
@@ -133,6 +137,12 @@ export function WorkWidgetCalendarView({
         onNavigate={navigate}
         onSelectDate={setAnchor}
         onSelectCalendar={setActiveCalendarId}
+      />
+      <WorkWidgetScheduleAdvanced
+        work={work}
+        capabilities={capabilities}
+        context={context}
+        client={client}
       />
     </>
   )
