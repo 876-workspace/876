@@ -40,6 +40,12 @@ const WORK_CAPABILITY_SCOPES: Readonly<
   'work.sync': ['work.sync.read', 'work.sync.write'],
 }
 
+const RESOURCE_WORK_REQUIRED_SCOPES = [
+  'work.tasks.read',
+  'work.reminders.read',
+  'work.events.read',
+] as const satisfies readonly WorkIntegrationScope[]
+
 export type PersistedProvisioningPolicy = {
   selection: PersistedProvisioningSelection
   policy: ProvisioningSetupPolicy
@@ -91,12 +97,17 @@ export function enabledWorkCapabilityScopes(
     for (const scope of WORK_CAPABILITY_SCOPES[entry.target_key] ?? [])
       scopes.add(scope)
   }
+
+  if (RESOURCE_WORK_REQUIRED_SCOPES.every((scope) => scopes.has(scope)))
+    scopes.add('work.resource-work.read')
+
   return scopes
 }
 
 /**
  * A setup may narrow an app's Work access, never expand the app's declared
- * integration grant. CRM is the only Work-consuming product today.
+ * integration grant. CRM remains the only provisioned Work service consumer;
+ * Invoice's widget uses the signed-in session tier instead of a service grant.
  */
 export function workScopesForProvisionedApp(
   appSlug: string,
@@ -180,151 +191,6 @@ export async function requirePersistedProvisioningPolicy(
 export async function persistInitialProvisioningSelection(params: {
   organizationId: string
   selection: ProvisioningSetupSelection
-  defaults: ProvisioningWorkspaceDefaults
-  selectedAt: number
-}): Promise<PersistedProvisioningSelection> {
-  if (
-    params.selection.match_type === 'persisted' ||
-    params.selection.match_type === 'backfill'
-  ) {
-    throw new Error(
-      'Initial provisioning selection must originate from policy or fallback resolution.'
-    )
-  }
-
-  await repository.persistOrganizationProvisioningSelection({
-    organizationId: params.organizationId,
-    setupKey: params.selection.setup_key,
-    selectionType: params.selection.match_type,
-    matchGroupKey: params.selection.match_group_key,
-    matchPriority: params.selection.match_priority,
-    matchedFields: params.selection.matched_fields,
-    selectedAt: BigInt(params.selectedAt),
-    currencyCode: params.defaults.currency_code,
-    language: params.defaults.language,
-  })
-
-  const persisted = await retrievePersistedProvisioningPolicy(
-    params.organizationId
-  )
-  if (!persisted) {
-    throw new AppHttpError({
-      code: 'provisioning/setup-selection-persist-failed',
-      message: 'The organization provisioning setup could not be persisted.',
-      httpStatus: 500,
-    })
-  }
-  return persisted.selection
+}) {
+  await repository.persistProvisioningSelection(params)
 }
-
-/**
- * Resolve and persist the initial setup for a freshly-created organization.
- * Concurrent callers converge on the first successfully persisted selection.
- */
-export async function resolveAndPersistInitialProvisioningPolicy(
-  organizationId: string,
-  selectedAt: number
-): Promise<InitialProvisioningPolicy> {
-  const row =
-    await repository.findOrganizationProvisioningSelection(organizationId)
-  if (!row) {
-    throw new AppHttpError({
-      code: 'organization/not-found',
-      message: 'No organization exists with the provided identifier.',
-      httpStatus: 404,
-    })
-  }
-
-  if (row.provisioningSetupKey) {
-    const persisted = await requirePersistedProvisioningPolicy(organizationId)
-    const defaults = await retrieveProvisioningWorkspaceDefaults(
-      persisted.selection.setup_key
-    )
-    return { ...persisted, defaults }
-  }
-
-  const resolved = await resolveInitialProvisioningSelection(
-    organizationSelectionContext(row)
-  )
-  await persistInitialProvisioningSelection({
-    organizationId,
-    selection: resolved.selection,
-    defaults: resolved.defaults,
-    selectedAt,
-  })
-
-  const persisted = await requirePersistedProvisioningPolicy(organizationId)
-  const defaults = await retrieveProvisioningWorkspaceDefaults(
-    persisted.selection.setup_key
-  )
-  return { ...persisted, defaults }
-}
-
-/**
- * Resolve only organizations created by the current bootstrap operation.
- *
- * An older organization with no persisted setup is deliberately returned as
- * `null`; it must go through the explicit Phase 2 backfill instead of being
- * silently routed under today's policy.
- */
-export async function resolveFreshProvisioningPolicy(
-  organizationId: string,
-  creationTimestamp: number
-): Promise<InitialProvisioningPolicy | null> {
-  const row =
-    await repository.findOrganizationProvisioningSelection(organizationId)
-  if (!row) {
-    throw new AppHttpError({
-      code: 'organization/not-found',
-      message: 'No organization exists with the provided identifier.',
-      httpStatus: 404,
-    })
-  }
-
-  if (row.provisioningSetupKey) {
-    const persisted = await requirePersistedProvisioningPolicy(organizationId)
-    const defaults = await retrieveProvisioningWorkspaceDefaults(
-      persisted.selection.setup_key
-    )
-    return { ...persisted, defaults }
-  }
-
-  if (Number(row.createdAt) !== creationTimestamp) return null
-  return resolveAndPersistInitialProvisioningPolicy(
-    organizationId,
-    creationTimestamp
-  )
-}
-
-export async function persistBackfillProvisioningSelection(params: {
-  organizationId: string
-  selection: ProvisioningSetupSelection
-  selectedAt: number
-}): Promise<boolean> {
-  return repository.persistOrganizationProvisioningSelection({
-    organizationId: params.organizationId,
-    setupKey: params.selection.setup_key,
-    selectionType: 'backfill',
-    matchGroupKey: params.selection.match_group_key,
-    matchPriority: params.selection.match_priority,
-    matchedFields: params.selection.matched_fields,
-    selectedAt: BigInt(params.selectedAt),
-  })
-}
-
-export function organizationSelectionContext(row: {
-  countryCode: string | null
-  region?: { code: string; countryCode: string } | null
-}): ProvisioningSelectionContext {
-  const country = row.countryCode ?? row.region?.countryCode ?? null
-  return {
-    country: country?.toUpperCase() ?? null,
-    subdivision:
-      row.region && country
-        ? `${country.toUpperCase()}-${row.region.code.toUpperCase()}`
-        : null,
-    jurisdiction: null,
-  }
-}
-
-export { repository as provisioningPolicyRepository }
