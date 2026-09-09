@@ -110,10 +110,11 @@ describe('browserWork', () => {
     await browserWork.tasks.create({ title: 'Follow up', listId: 'list_1' })
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/tasks')
-    expect(fetchMock.mock.calls[0]?.[1]).toEqual({
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
       method: 'POST',
       body: JSON.stringify({ title: 'Follow up', listId: 'list_1' }),
     })
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
   })
 
   it('updates editable task fields through an explicit update action', async () => {
@@ -126,7 +127,7 @@ describe('browserWork', () => {
     })
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/tasks/task%2F1')
-    expect(fetchMock.mock.calls[0]?.[1]).toEqual({
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
       method: 'PATCH',
       body: JSON.stringify({
         action: 'update',
@@ -134,6 +135,7 @@ describe('browserWork', () => {
         importance: 'HIGH',
       }),
     })
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
   })
 
   it('marks a task done through an explicit completion action', async () => {
@@ -143,10 +145,11 @@ describe('browserWork', () => {
     const result = await browserWork.tasks.complete('task/1')
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/tasks/task%2F1')
-    expect(fetchMock.mock.calls[0]?.[1]).toEqual({
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
       method: 'PATCH',
       body: JSON.stringify({ action: 'complete' }),
     })
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
     expect(result).toEqual({ data: TASK, error: null })
   })
 
@@ -156,10 +159,11 @@ describe('browserWork', () => {
 
     await browserWork.tasks.cancel('task/1')
 
-    expect(fetchMock.mock.calls[0]?.[1]).toEqual({
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
       method: 'PATCH',
       body: JSON.stringify({ action: 'cancel' }),
     })
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
   })
 
   it('lists visible calendars through the host-owned route', async () => {
