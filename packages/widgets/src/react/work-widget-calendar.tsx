@@ -62,24 +62,17 @@ export function WorkWidgetCalendarView() {
 
   useEffect(() => {
     void loadCalendars()
-    void loadRange('month', anchor)
-  }, [anchor, loadCalendars, loadRange])
+  }, [loadCalendars])
 
-  const changeView = useCallback(
-    (nextView: WorkCalendarView) => {
-      setView(nextView)
-      void loadRange(nextView, anchor)
-    },
-    [anchor, loadRange]
-  )
+  useEffect(() => {
+    void loadRange(view, anchor)
+  }, [anchor, loadRange, view])
 
   const navigate = useCallback(
     (direction: 'previous' | 'today' | 'next') => {
-      const nextAnchor = moveCalendarAnchor(view, anchor, direction)
-      setAnchor(nextAnchor)
-      void loadRange(view, nextAnchor)
+      setAnchor((current) => moveCalendarAnchor(view, current, direction))
     },
-    [anchor, loadRange, view]
+    [view]
   )
 
   if (state === 'loading' && !work)
@@ -116,7 +109,7 @@ export function WorkWidgetCalendarView() {
         view={view}
         anchorDate={anchor}
         activeCalendarId={activeCalendarId}
-        onChangeView={changeView}
+        onChangeView={setView}
         onNavigate={navigate}
         onSelectCalendar={setActiveCalendarId}
       />
