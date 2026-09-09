@@ -48,6 +48,12 @@ function success(data: unknown) {
   return Response.json({ data, error: null }, { status: 200 })
 }
 
+function expectJsonHeaders(value: unknown) {
+  expect(value).toBeInstanceOf(Headers)
+  if (!(value instanceof Headers)) throw new Error('Expected Headers instance.')
+  expect(value.get('content-type')).toBe('application/json')
+}
+
 describe('browserWork', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -103,6 +109,20 @@ describe('browserWork', () => {
     expect(result).toEqual({ data: TASK_PAGE, error: null })
   })
 
+  it('encodes task list and item cursor filters together', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success(TASK_PAGE))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await browserWork.tasks.list({
+      listId: 'list/1',
+      startingAfter: 'task/25',
+    })
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      '/api/tasks?listId=list%2F1&startingAfter=task%2F25'
+    )
+  })
+
   it('creates a task through the host-owned collection route', async () => {
     const fetchMock = vi.fn().mockResolvedValue(success(TASK))
     vi.stubGlobal('fetch', fetchMock)
@@ -114,7 +134,7 @@ describe('browserWork', () => {
       method: 'POST',
       body: JSON.stringify({ title: 'Follow up', listId: 'list_1' }),
     })
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
+    expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
   })
 
   it('updates editable task fields through an explicit update action', async () => {
@@ -135,7 +155,7 @@ describe('browserWork', () => {
         importance: 'HIGH',
       }),
     })
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
+    expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
   })
 
   it('marks a task done through an explicit completion action', async () => {
@@ -149,7 +169,7 @@ describe('browserWork', () => {
       method: 'PATCH',
       body: JSON.stringify({ action: 'complete' }),
     })
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
+    expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
     expect(result).toEqual({ data: TASK, error: null })
   })
 
@@ -163,7 +183,7 @@ describe('browserWork', () => {
       method: 'PATCH',
       body: JSON.stringify({ action: 'cancel' }),
     })
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual(expect.any(Headers))
+    expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
   })
 
   it('lists visible calendars through the host-owned route', async () => {
