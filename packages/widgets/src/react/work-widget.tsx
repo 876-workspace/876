@@ -9,13 +9,13 @@ import { WidgetPanelSkeleton } from './widget-loading'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-function currentDayWindow(now = new Date()) {
+export function currentDayWindow(now = new Date()) {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
 
   return {
     from: Math.floor(start.getTime() / 1000),
-    to: Math.floor(end.getTime() / 1000) - 1,
+    to: Math.floor(end.getTime() / 1000),
   }
 }
 
@@ -25,7 +25,6 @@ export function WorkWidgetPanel() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const workRef = useRef<WorkMyWork | null>(null)
   const generationRef = useRef(0)
-  workRef.current = work
 
   const load = useCallback(async () => {
     const generation = ++generationRef.current

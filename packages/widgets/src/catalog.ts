@@ -336,8 +336,11 @@ export function resolveAccessibleWidgetIds(
   return widgetCatalog
     .filter((widget) => {
       if (widget.surface !== 'panel' || !enabled.has(widget.id)) return false
-      const required = widget.permissions?.[host] ?? []
-      return required.every((permission) => effectivePermissions.has(permission))
+      const metadata: WidgetMetadata = widget
+      const required = metadata.permissions?.[host] ?? []
+      return required.every((permission) =>
+        effectivePermissions.has(permission)
+      )
     })
     .map((widget) => widget.id)
 }
