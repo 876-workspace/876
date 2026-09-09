@@ -43,6 +43,8 @@ const TASK = {
   id: 'task/1',
   status: 'DONE' as const,
 }
+const EVENT = { object: 'event' as const, id: 'event/1' }
+const REMINDER = { object: 'reminder' as const, id: 'reminder/1' }
 
 function success(data: unknown) {
   return Response.json({ data, error: null }, { status: 200 })
@@ -194,5 +196,48 @@ describe('browserWork', () => {
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/calendars')
     expect(result).toEqual({ data: CALENDAR_PAGE, error: null })
+  })
+
+  it('creates events through the host-owned route', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success(EVENT))
+    vi.stubGlobal('fetch', fetchMock)
+    const input = {
+      title: 'Planning call',
+      calendarId: 'calendar_1',
+      allDay: false as const,
+      startAt: 100,
+      endAt: 200,
+      timeZone: 'America/New_York',
+    }
+
+    const result = await browserWork.events.create(input)
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/events')
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+    expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
+    expect(result).toEqual({ data: EVENT, error: null })
+  })
+
+  it('creates reminders through the host-owned route', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success(REMINDER))
+    vi.stubGlobal('fetch', fetchMock)
+    const input = {
+      title: 'Call customer',
+      remindAt: 200,
+      timeZone: 'America/New_York',
+    }
+
+    const result = await browserWork.reminders.create(input)
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/reminders')
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+    expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
+    expect(result).toEqual({ data: REMINDER, error: null })
   })
 })
