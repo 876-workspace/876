@@ -23,69 +23,74 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - Do not grow the monolithic `WorkWidgetPanel`; split orchestration by view.
 - Do not mark executable verification complete unless observed by a shell-capable/local orchestrator.
 
-## Stabilization — `IN_PROGRESS`
+## Stabilization — `SOURCE COMPLETE; EXECUTABLE VERIFICATION OPEN`
 
-- [ ] Reconcile branch against focused Phase 2 baseline and preserve Phase 2 fixes.
-- [ ] Replace agenda `flatMap` union inference with explicitly typed agenda arrays.
-- [ ] Update browser mutation tests for canonical `requestApiResult` Headers behavior.
-- [ ] Validate host task create/update payloads with canonical Work schemas after acting-user fields are injected.
-- [ ] Keep stale successful data mounted during refresh failures.
-- [ ] Treat task-list/calendar-list failures as secondary enrichment where possible.
-- [ ] Prevent rapid duplicate task mutations with an immediate request-state guard.
-- [ ] Split `WorkWidgetPanel` into focused Today/Tasks/Calendar orchestration components.
+- [x] Reconcile the recovered Phase 3 files with the focused Phase 2 fixes and preserve the exclusive Today range/current widget-catalog behavior.
+- [x] Replace agenda `flatMap` union inference with explicitly typed agenda arrays.
+- [x] Update browser mutation tests for canonical `requestApiResult` Headers behavior.
+- [x] Validate host task create/update payloads with canonical Work schemas after acting-user fields are injected.
+- [x] Keep stale successful primary data mounted during refresh failures.
+- [x] Treat task-list/calendar-list failures as secondary enrichment where possible.
+- [x] Prevent rapid duplicate task/create/load-more mutations with immediate ref-backed request-state guards.
+- [x] Split `WorkWidgetPanel` into focused Today/Tasks/Calendar/Create orchestration components.
 
-## Phase 3A — Today / agenda
+## Phase 3A — Today / agenda — `SOURCE COMPLETE`
 
 - [x] Unified Today agenda over tasks, reminders, events, and overdue work recovered from prework.
 - [x] Reuse `WorkAgenda` rather than duplicate aggregation.
 - [x] All-day/timed item rendering and overdue grouping recovered.
 - [x] Task completion path recovered with server-owned `completedBy`.
-- [ ] Add accessible detail opening for event/task/reminder items.
-- [ ] Add/adjust regression tests for exclusive day boundaries and refresh-error stale-data behavior.
+- [x] Accessible task/event/reminder detail opening via native disclosure rows.
+- [x] Preserve the focused Phase 2 exclusive local-day boundary regression.
+- [ ] Add browser/component coverage proving stale Today data remains mounted after a refresh failure.
 
-## Phase 3B — Tasks / todos
+## Phase 3B — Tasks / todos — `SOURCE COMPLETE`
 
 - [x] Task-list read route recovered.
 - [x] Task list/create/update/complete/cancel routes recovered.
 - [x] Initial task list navigation/detail/create/edit/complete/cancel UI recovered.
-- [ ] Make Task controls capability-aware for Staff/Admin/Super Admin.
-- [ ] Add explicit server-denial coverage alongside control-visibility coverage.
-- [ ] Implement real cursor-based load more.
-- [ ] Remove placeholder pagination messaging.
-- [ ] Make task-list enrichment failure non-fatal when task data succeeds.
-- [ ] Add task delete only if Phase 3 scope/permission model requires it after stabilization.
-- [ ] Keep Todo as UX vocabulary only; persistence remains `WorkTask`.
+- [x] Make Task controls capability-aware from Invoice effective permissions.
+- [x] Cover Staff/Admin/Super Admin capability resolution and browser-backed read-only/editor control visibility.
+- [x] Preserve explicit server-side authorization-denial coverage independent of hidden controls.
+- [x] Implement real item-ID cursor-based load more.
+- [x] Remove placeholder pagination messaging.
+- [x] Make task-list enrichment failure non-fatal when task data succeeds.
+- [x] Validate task form importance through the canonical Work schema instead of a form-value cast.
+- [x] Deliberately keep task delete unexposed in Phase 3; destructive capability remains modeled for a future explicit UX requirement.
+- [x] Keep Todo as UX vocabulary only; persistence remains `WorkTask`.
 
-## Phase 3C — Calendar
+## Phase 3C — Calendar — `COMPACT SOURCE COMPLETE; LARGE LAYOUT DEFERRED`
 
 - [x] Calendar read route and browser adapter recovered.
 - [x] Initial day/week/month surfaces recovered.
-- [ ] Add pure tests for day/week/month windows and exclusive range ends.
-- [ ] Add DST transition tests.
-- [ ] Add timed cross-midnight event tests.
-- [ ] Add all-day `[startDate, endDate)` semantics tests.
-- [ ] Add selected-calendar filtering tests.
-- [ ] Ensure selected calendar filters events only, never tasks/reminders.
-- [ ] Make calendar-list enrichment failure non-fatal when My Work succeeds.
-- [ ] Replace horizontal-overflow-only responsiveness with compact month + selected-day behavior around 520px.
-- [ ] Add medium layout behavior.
-- [ ] Add large/pop-out layout only after compact/medium correctness is stable.
+- [x] Add pure tests for day/week/month windows and exclusive range ends.
+- [x] Add spring/fall DST transition tests using local calendar arithmetic.
+- [x] Add timed cross-midnight event tests.
+- [x] Add all-day `[startDate, endDate)` semantics tests.
+- [x] Add selected-calendar filtering tests.
+- [x] Ensure selected calendar filters events only, never tasks/reminders.
+- [x] Make calendar-list enrichment failure non-fatal when My Work succeeds.
+- [x] Replace 560/720px minimum-width horizontal-scroll grids with a compact 520px-first month grid and stacked week view.
+- [x] Add selected-day agenda behavior to compact month view.
+- [x] Keep the same compact layout usable at medium widths without requiring viewport-breakpoint assumptions inside the widget panel.
+- [ ] Add a dedicated large/pop-out mini-calendar/sidebar layout; deferred until a distinct large Work pop-out surface is introduced.
 
-## Phase 3D — Unified create
+## Phase 3D — Unified create — `SOURCE COMPLETE`
 
-- [ ] Add one Create entry point with Event / Task / Reminder modes.
-- [ ] Add Event create route/browser flow using canonical Work validation.
-- [ ] Add Task create mode using the stabilized task route.
-- [ ] Add Reminder create route/browser flow using canonical Work validation.
-- [ ] Support core fields from existing contracts without inventing parallel models.
-- [ ] Gate create modes by effective permissions and preserve server authorization.
+- [x] Add one capability-aware Create entry point with Event / Task / Reminder modes.
+- [x] Add Event create route/browser flow using canonical `createWorkEventResourceInputSchema` validation after acting-user injection.
+- [x] Add Task create mode using the stabilized task route.
+- [x] Add Reminder create route/browser flow using canonical `createWorkReminderInputSchema` validation after acting-user injection.
+- [x] Support core title/calendar/date-time/all-day/location/description, task list/due/importance, and reminder time/note fields from existing contracts without parallel models.
+- [x] Gate create modes from effective permissions while preserving server authorization for every mutation.
+- [x] Keep task-list/calendar-list data as optional create-form enrichment rather than browser authorization state.
 
-## Verification / closeout
+## Verification / closeout — `LOCAL ORCHESTRATOR REQUIRED`
 
 - [ ] Count literal new `it()` cases versus Phase 2 `main` baseline.
-- [ ] `@876/widgets` typecheck/tests.
+- [ ] `@876/widgets` typecheck/tests/browser tests.
 - [ ] `@876/work` typecheck/tests.
-- [ ] `@876/work-ui` typecheck/tests.
+- [ ] `@876/work-ui` typecheck.
 - [ ] `@876/core` typecheck/tests where touched.
 - [ ] `@876/invoice-app` typecheck/tests/build.
 - [ ] Focused format/lint checks.
@@ -97,4 +102,4 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 
 ## Current next action
 
-Stabilize the recovered code before expanding Phase 3D: typed agenda construction, transport-test alignment, capability-aware controls, canonical mutation validation, cursor pagination, enrichment resilience, calendar correctness, and orchestration split.
+Perform a static adversarial review of all Phase 3 changes, close any source-level TypeScript/React/contract issues visible without execution, add the stale-refresh regression where practical, count test deltas against Phase 2 `main`, and write the final GPT Web report. Executable verification remains the local orchestrator's responsibility.
