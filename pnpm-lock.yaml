@@ -1331,6 +1331,9 @@ importers:
       '@876/widgets':
         specifier: workspace:*
         version: link:../../packages/widgets
+      '@876/work':
+        specifier: workspace:*
+        version: link:../../packages/work
       '@876/workspace':
         specifier: workspace:*
         version: link:../../packages/workspace
@@ -2476,6 +2479,12 @@ importers:
       '@876/ui':
         specifier: workspace:*
         version: link:../ui
+      '@876/work':
+        specifier: workspace:*
+        version: link:../work
+      '@876/work-ui':
+        specifier: workspace:*
+        version: link:../work-ui
       motion:
         specifier: 13.1.0
         version: 13.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
