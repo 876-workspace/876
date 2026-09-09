@@ -12,6 +12,7 @@ import {
 import type { WorkWidgetCapabilities } from '../work-capabilities'
 import { WidgetPanelSkeleton } from './widget-loading'
 import { WorkWidgetErrorBanner } from './work-widget-feedback'
+import { WorkWidgetTaskAdvanced } from './work-widget-task-advanced'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
@@ -257,6 +258,12 @@ export function WorkWidgetTasksView({
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={loadMore}
+      />
+      <WorkWidgetTaskAdvanced
+        tasks={tasks}
+        capabilities={capabilities}
+        context={context}
+        client={client}
       />
     </>
   )
