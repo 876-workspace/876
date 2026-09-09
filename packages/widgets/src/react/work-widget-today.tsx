@@ -116,7 +116,7 @@ export function WorkWidgetTodayView({
       {state === 'error' ? (
         <WorkWidgetErrorBanner
           message={errorMessage}
-          onRetry={() => void load()}
+          onAction={() => void load()}
         />
       ) : null}
       <WorkToday
