@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkCalendar, WorkMyWork } from '@876/work'
+import type { WorkAgendaData, WorkCalendar, WorkHostContext } from '@876/work'
 import { browserWork } from '@876/work/browser'
 import {
   WorkCalendarSurface,
@@ -17,8 +17,12 @@ import { calendarWindow, moveCalendarAnchor } from './work-widget-time'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-export function WorkWidgetCalendarView() {
-  const [work, setWork] = useState<WorkMyWork | null>(null)
+export function WorkWidgetCalendarView({
+  context,
+}: {
+  context?: WorkHostContext
+}) {
+  const [work, setWork] = useState<WorkAgendaData | null>(null)
   const [calendars, setCalendars] = useState<WorkCalendar[]>([])
   const [state, setState] = useState<LoadState>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -29,7 +33,7 @@ export function WorkWidgetCalendarView() {
   const [anchor, setAnchor] = useState(() => new Date())
   const [activeCalendarId, setActiveCalendarId] = useState<string | null>(null)
 
-  const workRef = useRef<WorkMyWork | null>(null)
+  const workRef = useRef<WorkAgendaData | null>(null)
   const generationRef = useRef(0)
 
   const loadCalendars = useCallback(async () => {
@@ -50,9 +54,10 @@ export function WorkWidgetCalendarView() {
       if (!workRef.current) setState('loading')
       setErrorMessage(null)
 
-      const result = await browserWork.myWork.retrieve(
-        calendarWindow(nextView, date)
-      )
+      const window = calendarWindow(nextView, date)
+      const result = context
+        ? await browserWork.resourceWork.retrieve({ ...window, context })
+        : await browserWork.myWork.retrieve(window)
       if (generation !== generationRef.current) return
 
       if (result.error || !result.data) {
@@ -67,7 +72,7 @@ export function WorkWidgetCalendarView() {
       setWork(result.data)
       setState('ready')
     },
-    []
+    [context]
   )
 
   useEffect(() => {
