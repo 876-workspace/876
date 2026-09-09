@@ -2,11 +2,29 @@
 
 Run ID: `2026-09-09-work-calendar-widget-phase-4`
 
-Planning branch: `feat/work-widget-phase-3`
+Planning/staging branch: `feat/work-widget-phase-4`
 
-Implementation branch: to be cut from the Phase 3 landing commit after Phase 3 is merged/reconciled.
+Branch creation snapshot: `d911eb926563f7c7caf080d378289421050f24dd` from the then-current `feat/work-widget-phase-3` line.
 
-Status: `ARCHITECTURE_REFINED; IMPLEMENTATION_NOT_STARTED`
+Status: `PLAN_READY; WAITING_FOR_LOCAL_PHASE4_BASELINE`
+
+## Coordination / implementation hold
+
+This branch is intentionally **planning-only for now**.
+
+The local orchestrator is still reconciling and/or changing the underlying Work widget implementation. GPT Web must not try to out-run, recreate, overwrite, rebase over, or otherwise replace that local work.
+
+When the user later points GPT Web back to `feat/work-widget-phase-4` for implementation:
+
+1. fetch the latest branch head first;
+2. review the local orchestrator's Phase 4 changes and any feedback/tracker updates;
+3. compare the actual branch against current `main` and the final Phase 3 baseline;
+4. preserve local commits and resolved behavior unless there is a concrete reviewed reason to change them;
+5. update this plan/tracker to reflect what the orchestrator already completed;
+6. implement only the remaining Phase 4 source work on top of that current branch;
+7. do not open or merge a PR unless explicitly requested.
+
+Until that handoff occurs, **no Phase 4 production source implementation is authorized from GPT Web on this branch.** Planning/documentation changes only.
 
 ## Executive decision
 
