@@ -1,5 +1,6 @@
 import { createApiRouter, type GuardResolver } from '../../http/api-router.js'
 import * as controller from './events.controller.js'
+
 export function createEventsRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter(resolveGuards)
   api.get({
@@ -19,6 +20,33 @@ export function createEventsRouter(resolveGuards: GuardResolver) {
       sessionPermissions: ['events.create'],
     },
     handler: controller.createEvent,
+  })
+  api.get({
+    path: '/:eventId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.events.read',
+      sessionPermissions: ['events.view'],
+    },
+    handler: controller.retrieveEventRecurrence,
+  })
+  api.patch({
+    path: '/:eventId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.events.write',
+      sessionPermissions: ['events.edit'],
+    },
+    handler: controller.setEventRecurrence,
+  })
+  api.delete({
+    path: '/:eventId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.events.write',
+      sessionPermissions: ['events.edit'],
+    },
+    handler: controller.clearEventRecurrence,
   })
   api.get({
     path: '/:eventId',
