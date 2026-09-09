@@ -111,6 +111,7 @@ export function WorkWidgetCalendarView() {
         activeCalendarId={activeCalendarId}
         onChangeView={setView}
         onNavigate={navigate}
+        onSelectDate={setAnchor}
         onSelectCalendar={setActiveCalendarId}
       />
     </>
