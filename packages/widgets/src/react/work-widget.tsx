@@ -1,93 +1,82 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkMyWork } from '@876/work'
-import { browserWork } from '@876/work/browser'
-import { WorkSummary } from '@876/work-ui/summary'
+import { useMemo, useState } from 'react'
 
-import { WidgetPanelSkeleton } from './widget-loading'
+import {
+  EMPTY_WORK_WIDGET_CAPABILITIES,
+  type WorkWidgetCapabilities,
+} from '../work-capabilities'
+import { WorkWidgetCalendarView } from './work-widget-calendar'
+import { WorkWidgetCreateView } from './work-widget-create'
+import { WorkWidgetTasksView } from './work-widget-tasks'
+import { WorkWidgetTodayView } from './work-widget-today'
 
-type LoadState = 'loading' | 'ready' | 'error'
+export { currentDayWindow } from './work-widget-time'
 
-export function currentDayWindow(now = new Date()) {
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+type WorkView = 'today' | 'tasks' | 'calendar' | 'create'
 
-  return {
-    from: Math.floor(start.getTime() / 1000),
-    to: Math.floor(end.getTime() / 1000),
-  }
+function WorkViewNav({
+  view,
+  views,
+  onChange,
+}: {
+  view: WorkView
+  views: readonly WorkView[]
+  onChange: (view: WorkView) => void
+}) {
+  return (
+    <div className="border-876-surface-border flex gap-1 overflow-x-auto border-b px-3 py-2">
+      {views.map((item) => (
+        <button
+          key={item}
+          type="button"
+          aria-pressed={view === item}
+          onClick={() => onChange(item)}
+          className="aria-pressed:bg-muted focus-visible:ring-ring shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium capitalize focus-visible:ring-2 focus-visible:outline-none"
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  )
 }
 
-export function WorkWidgetPanel() {
-  const [work, setWork] = useState<WorkMyWork | null>(null)
-  const [state, setState] = useState<LoadState>('loading')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const workRef = useRef<WorkMyWork | null>(null)
-  const generationRef = useRef(0)
-
-  const load = useCallback(async () => {
-    const generation = ++generationRef.current
-    if (!workRef.current) setState('loading')
-    setErrorMessage(null)
-
-    const result = await browserWork.myWork.retrieve(currentDayWindow())
-    if (generation !== generationRef.current) return
-
-    if (result.error || !result.data) {
-      setState('error')
-      setErrorMessage(
-        result.error?.message ?? 'Work could not be loaded. Try again.'
-      )
-      return
-    }
-
-    workRef.current = result.data
-    setWork(result.data)
-    setState('ready')
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
-
-  if (state === 'loading' && !work)
-    return <WidgetPanelSkeleton label="Loading Work" />
-
-  if (state === 'error' && !work)
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-        <p className="text-sm font-medium">Unable to load Work</p>
-        <p className="text-muted-foreground mt-1 max-w-72 text-xs leading-5">
-          {errorMessage}
-        </p>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="border-876-surface-border bg-876-surface mt-4 rounded-lg border px-3 py-2 text-xs font-medium shadow-xs"
-        >
-          Try again
-        </button>
-      </div>
-    )
-
-  if (!work) return <WidgetPanelSkeleton label="Loading Work" />
+export function WorkWidgetPanel({
+  capabilities = EMPTY_WORK_WIDGET_CAPABILITIES,
+}: {
+  capabilities?: WorkWidgetCapabilities
+}) {
+  const [view, setView] = useState<WorkView>('today')
+  const views = useMemo<readonly WorkView[]>(() => {
+    const canCreate =
+      capabilities.canCreateTasks ||
+      capabilities.canCreateEvents ||
+      capabilities.canCreateReminders
+    return canCreate
+      ? ['today', 'tasks', 'calendar', 'create']
+      : ['today', 'tasks', 'calendar']
+  }, [
+    capabilities.canCreateEvents,
+    capabilities.canCreateReminders,
+    capabilities.canCreateTasks,
+  ])
+  const activeView = views.includes(view) ? view : 'today'
 
   return (
     <div className="min-h-full">
-      {state === 'error' ? (
-        <div className="border-b border-amber-500/25 bg-amber-500/10 px-4 py-2 text-xs">
-          {errorMessage}
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="ml-2 font-medium underline underline-offset-2"
-          >
-            Try again
-          </button>
-        </div>
-      ) : null}
-      <WorkSummary work={work} />
+      <WorkViewNav view={activeView} views={views} onChange={setView} />
+      {activeView === 'today' ? (
+        <WorkWidgetTodayView capabilities={capabilities} />
+      ) : activeView === 'tasks' ? (
+        <WorkWidgetTasksView capabilities={capabilities} />
+      ) : activeView === 'calendar' ? (
+        <WorkWidgetCalendarView />
+      ) : (
+        <WorkWidgetCreateView
+          capabilities={capabilities}
+          onCreated={() => setView('today')}
+        />
+      )}
     </div>
   )
 }

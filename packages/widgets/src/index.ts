@@ -25,6 +25,11 @@ export type {
   WidgetSurface,
   WidgetVisual,
 } from './catalog'
+export {
+  EMPTY_WORK_WIDGET_CAPABILITIES,
+  resolveWorkWidgetCapabilities,
+} from './work-capabilities'
+export type { WorkWidgetCapabilities } from './work-capabilities'
 export type {
   DeletedNote,
   NoteColor,

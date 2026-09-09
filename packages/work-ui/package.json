@@ -19,9 +19,25 @@
       "types": "./src/calendar-list.tsx",
       "default": "./src/calendar-list.tsx"
     },
+    "./calendar": {
+      "types": "./src/calendar.tsx",
+      "default": "./src/calendar.tsx"
+    },
+    "./create": {
+      "types": "./src/create.tsx",
+      "default": "./src/create.tsx"
+    },
     "./summary": {
       "types": "./src/summary.tsx",
       "default": "./src/summary.tsx"
+    },
+    "./today": {
+      "types": "./src/today.tsx",
+      "default": "./src/today.tsx"
+    },
+    "./tasks": {
+      "types": "./src/tasks.tsx",
+      "default": "./src/tasks.tsx"
     }
   },
   "scripts": {

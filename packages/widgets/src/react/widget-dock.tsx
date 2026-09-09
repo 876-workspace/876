@@ -1,8 +1,12 @@
 'use client'
 
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { CalendarDaysIcon } from '@876/ui/icons'
 
+import {
+  EMPTY_WORK_WIDGET_CAPABILITIES,
+  type WorkWidgetCapabilities,
+} from '../work-capabilities'
 import {
   notepadWidgetMetadata,
   workWidgetMetadata,
@@ -17,19 +21,23 @@ import { WidgetPopout } from './widget-popout'
 interface SharedWidgetRenderer {
   metadata: WidgetMetadata
   icon: ComponentType<{ className?: string }>
-  panel: ComponentType
+  renderPanel: (context: {
+    workCapabilities: WorkWidgetCapabilities
+  }) => ReactNode
 }
 
 const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
   {
     metadata: notepadWidgetMetadata,
     icon: NotepadIcon,
-    panel: NotepadWidgetPanel,
+    renderPanel: () => <NotepadWidgetPanel />,
   },
   {
     metadata: workWidgetMetadata,
     icon: CalendarDaysIcon,
-    panel: WorkWidgetPanel,
+    renderPanel: ({ workCapabilities }) => (
+      <WorkWidgetPanel capabilities={workCapabilities} />
+    ),
   },
 ]
 
@@ -43,10 +51,12 @@ const sharedWidgetPanelWidths: Partial<Record<string, number>> =
 
 export function SharedWidgetDock({
   enabledWidgetIds,
+  workCapabilities = EMPTY_WORK_WIDGET_CAPABILITIES,
   chatEnabled = false,
   navbarHeight = 56,
 }: {
   enabledWidgetIds: readonly string[]
+  workCapabilities?: WorkWidgetCapabilities
   /** Renders the 876 Chat rail card below the widget triggers. */
   chatEnabled?: boolean
   navbarHeight?: number
@@ -60,14 +70,14 @@ export function SharedWidgetDock({
   return (
     <WidgetPopout.Root side="right" navbarHeight={navbarHeight}>
       <WidgetPopout.Panel widthByItem={sharedWidgetPanelWidths}>
-        {renderers.map(({ metadata, icon: Icon, panel: Panel }) => (
+        {renderers.map(({ metadata, icon: Icon, renderPanel }) => (
           <WidgetPopout.Content
             key={metadata.id}
             id={metadata.id}
             title={metadata.name}
             icon={<Icon />}
           >
-            <Panel />
+            {renderPanel({ workCapabilities })}
           </WidgetPopout.Content>
         ))}
       </WidgetPopout.Panel>

@@ -3,16 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GET } from './route'
 
 const mocks = vi.hoisted(() => ({
-  requirePermission: vi.fn(),
-  getFeatures: vi.fn(),
+  requireWorkWidgetPermission: vi.fn(),
   getWork: vi.fn(),
   retrieve: vi.fn(),
 }))
 
-vi.mock('@/lib/auth/api-permission', () => ({
-  requireApiPermission: mocks.requirePermission,
+vi.mock('@/lib/auth/work-widget-access', () => ({
+  requireWorkWidgetPermission: mocks.requireWorkWidgetPermission,
 }))
-vi.mock('@/lib/features', () => ({ getFeatures: mocks.getFeatures }))
 vi.mock('@/lib/services/work', () => ({ getWork: mocks.getWork }))
 
 const MY_WORK = {
@@ -34,15 +32,10 @@ function request(query = 'from=100&to=200') {
 describe('GET /api/my-work', () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    mocks.requirePermission.mockResolvedValue({
+    mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: null,
       orgId: 'org_1',
       userId: 'user_1',
-    })
-    mocks.getFeatures.mockResolvedValue({
-      featureKeys: ['invoice-widgets', 'invoice-widgets-work'],
-      uiFeatures: {},
-      widgets: { enabledWidgetIds: ['work'] },
     })
     mocks.getWork.mockResolvedValue({
       myWork: { retrieve: mocks.retrieve },
@@ -50,8 +43,8 @@ describe('GET /api/my-work', () => {
     mocks.retrieve.mockResolvedValue({ data: MY_WORK, error: null })
   })
 
-  it('returns the authorization response before reading features or Work', async () => {
-    mocks.requirePermission.mockResolvedValue({
+  it('returns the Work widget access response before reading Work', async () => {
+    mocks.requireWorkWidgetPermission.mockResolvedValue({
       response: Response.json(
         { data: null, error: { code: 'auth/no-session', message: 'Sign in.' } },
         { status: 401 }
@@ -61,29 +54,15 @@ describe('GET /api/my-work', () => {
     const response = await GET(request())
 
     expect(response.status).toBe(401)
-    expect(mocks.getFeatures).not.toHaveBeenCalled()
     expect(mocks.getWork).not.toHaveBeenCalled()
   })
 
   it('requires the exact My Work permission', async () => {
     await GET(request())
 
-    expect(mocks.requirePermission).toHaveBeenCalledWith('my-work.view')
-  })
-
-  it('fails closed when the Work widget feature is disabled', async () => {
-    mocks.getFeatures.mockResolvedValue({
-      featureKeys: [],
-      uiFeatures: {},
-      widgets: { enabledWidgetIds: [] },
-    })
-
-    const response = await GET(request())
-    const payload = await response.json()
-
-    expect(response.status).toBe(404)
-    expect(payload.error.code).toBe('work/not-found')
-    expect(mocks.getWork).not.toHaveBeenCalled()
+    expect(mocks.requireWorkWidgetPermission).toHaveBeenCalledWith(
+      'my-work.view'
+    )
   })
 
   it('rejects a missing or malformed time range', async () => {
@@ -134,7 +113,10 @@ describe('GET /api/my-work', () => {
   it('maps unknown upstream failures to the registered invalid-response error', async () => {
     mocks.retrieve.mockResolvedValue({
       data: null,
-      error: { code: 'unexpected/service-error', message: 'raw provider detail' },
+      error: {
+        code: 'unexpected/service-error',
+        message: 'raw provider detail',
+      },
     })
 
     const response = await GET(request())

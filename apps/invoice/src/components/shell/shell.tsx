@@ -14,6 +14,7 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import type { WorkWidgetCapabilities } from '@876/widgets'
 import { SharedWidgetDock } from '@876/widgets/react'
 
 import type { InvoiceFeatures } from '@/types/features'
@@ -32,6 +33,7 @@ export async function InvoiceShell({
   currentOrg,
   orgs,
   features,
+  workCapabilities,
   navigation,
 }: {
   children: ReactNode
@@ -40,6 +42,7 @@ export async function InvoiceShell({
   currentOrg: OrgSwitcherOrg
   orgs: OrgSwitcherOrg[]
   features: InvoiceFeatures
+  workCapabilities: WorkWidgetCapabilities
   navigation: NavGroupDefinition[]
 }) {
   const cookieStore = await cookies()
@@ -96,6 +99,7 @@ export async function InvoiceShell({
           {features.widgets.enabledWidgetIds.length > 0 ? (
             <SharedWidgetDock
               enabledWidgetIds={features.widgets.enabledWidgetIds}
+              workCapabilities={workCapabilities}
             />
           ) : null}
         </AppShellBody>
