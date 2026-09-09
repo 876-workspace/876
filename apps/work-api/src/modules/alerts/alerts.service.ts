@@ -62,6 +62,16 @@ async function requireAlertResource(
   return getError('work/invalid-request')
 }
 
+function validTriggerShape(value: {
+  triggerType: 'ABSOLUTE' | 'RELATIVE'
+  triggerAt: number | null
+  offsetSeconds: number | null
+}) {
+  return value.triggerType === 'ABSOLUTE'
+    ? value.triggerAt !== null && value.offsetSeconds === null
+    : value.triggerAt === null && value.offsetSeconds !== null
+}
+
 export async function list(
   organizationId: string,
   filter: {
@@ -128,6 +138,18 @@ export async function update(
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, alertId)
   if (!current) return null
+
+  const nextTrigger = {
+    triggerType: input.triggerType ?? current.triggerType,
+    triggerAt:
+      input.triggerAt === undefined ? stamp(current.triggerAt) : input.triggerAt,
+    offsetSeconds:
+      input.offsetSeconds === undefined
+        ? current.offsetSeconds
+        : input.offsetSeconds,
+  }
+  if (!validTriggerShape(nextTrigger)) return getError('work/invalid-request')
+
   const nextStatus = input.status ?? current.status
   const row = await repository.update(alertId, {
     ...(input.triggerType === undefined
