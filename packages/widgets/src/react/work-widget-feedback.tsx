@@ -2,10 +2,12 @@
 
 export function WorkWidgetErrorBanner({
   message,
-  onRetry,
+  onAction,
+  actionLabel = 'Try again',
 }: {
   message: string | null
-  onRetry: () => void
+  onAction: () => void
+  actionLabel?: string
 }) {
   if (!message) return null
   return (
@@ -13,10 +15,10 @@ export function WorkWidgetErrorBanner({
       {message}
       <button
         type="button"
-        onClick={onRetry}
+        onClick={onAction}
         className="ml-2 font-medium underline underline-offset-2"
       >
-        Try again
+        {actionLabel}
       </button>
     </div>
   )
