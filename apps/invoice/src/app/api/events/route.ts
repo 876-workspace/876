@@ -17,7 +17,7 @@ const commonShape = {
   location: z.string().trim().max(1000).optional().nullable(),
 }
 
-const createSchema = z.discriminatedUnion('allDay', [
+const createSchema = z.union([
   z
     .strictObject({
       ...commonShape,
