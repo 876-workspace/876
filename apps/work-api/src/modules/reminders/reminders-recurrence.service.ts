@@ -6,7 +6,8 @@ import * as reminders from './reminders.service.js'
 
 export async function retrieve(organizationId: string, reminderId: string) {
   const reminder = await reminders.retrieve(organizationId, reminderId)
-  if (!reminder || isError(reminder)) return reminder
+  if (isError(reminder)) return reminder
+  if (!reminder) return getError('work/reminder-not-found')
   if (!reminder.recurrenceRuleId) return null
 
   const rule = await recurrenceRules.retrieve(
@@ -23,7 +24,8 @@ export async function set(
   input: CreateWorkRecurrenceRuleInput
 ) {
   const reminder = await reminders.retrieve(organizationId, reminderId)
-  if (!reminder || isError(reminder)) return reminder
+  if (isError(reminder)) return reminder
+  if (!reminder) return getError('work/reminder-not-found')
 
   const previousRuleId = reminder.recurrenceRuleId
   const rule = await recurrenceRules.prepareForResource(
@@ -39,10 +41,15 @@ export async function set(
     })
     if (!updated || isError(updated)) {
       await recurrenceRules.cleanupDetached(organizationId, rule.id)
-      return updated
+      return updated ?? getError('work/reminder-not-found')
     }
-    if (previousRuleId)
-      await recurrenceRules.cleanupDetached(organizationId, previousRuleId)
+    if (previousRuleId) {
+      const cleanup = await recurrenceRules.cleanupDetached(
+        organizationId,
+        previousRuleId
+      )
+      if (isError(cleanup)) return cleanup
+    }
   }
 
   return rule
@@ -50,15 +57,21 @@ export async function set(
 
 export async function clear(organizationId: string, reminderId: string) {
   const reminder = await reminders.retrieve(organizationId, reminderId)
-  if (!reminder || isError(reminder)) return reminder
+  if (isError(reminder)) return reminder
+  if (!reminder) return getError('work/reminder-not-found')
   if (!reminder.recurrenceRuleId) return reminder
 
   const previousRuleId = reminder.recurrenceRuleId
   const updated = await reminders.update(organizationId, reminderId, {
     recurrenceRuleId: null,
   })
-  if (!updated || isError(updated)) return updated
+  if (!updated || isError(updated))
+    return updated ?? getError('work/reminder-not-found')
 
-  await recurrenceRules.cleanupDetached(organizationId, previousRuleId)
+  const cleanup = await recurrenceRules.cleanupDetached(
+    organizationId,
+    previousRuleId
+  )
+  if (isError(cleanup)) return cleanup
   return updated
 }
