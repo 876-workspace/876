@@ -9,7 +9,10 @@ import {
 } from '@876/work-ui/calendar'
 
 import { WidgetPanelSkeleton } from './widget-loading'
-import { WorkWidgetErrorBanner, WorkWidgetInitialError } from './work-widget-feedback'
+import {
+  WorkWidgetErrorBanner,
+  WorkWidgetInitialError,
+} from './work-widget-feedback'
 import { calendarWindow, moveCalendarAnchor } from './work-widget-time'
 
 type LoadState = 'loading' | 'ready' | 'error'
@@ -19,7 +22,9 @@ export function WorkWidgetCalendarView() {
   const [calendars, setCalendars] = useState<WorkCalendar[]>([])
   const [state, setState] = useState<LoadState>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [enrichmentMessage, setEnrichmentMessage] = useState<string | null>(null)
+  const [enrichmentMessage, setEnrichmentMessage] = useState<string | null>(
+    null
+  )
   const [view, setView] = useState<WorkCalendarView>('month')
   const [anchor, setAnchor] = useState(() => new Date())
   const [activeCalendarId, setActiveCalendarId] = useState<string | null>(null)

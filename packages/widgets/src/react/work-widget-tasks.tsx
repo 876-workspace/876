@@ -32,7 +32,9 @@ export function WorkWidgetTasksView({
   const [state, setState] = useState<LoadState>('loading')
   const [loaded, setLoaded] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [enrichmentMessage, setEnrichmentMessage] = useState<string | null>(null)
+  const [enrichmentMessage, setEnrichmentMessage] = useState<string | null>(
+    null
+  )
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [mutatingTaskId, setMutatingTaskId] = useState<string | null>(null)
@@ -58,6 +60,8 @@ export function WorkWidgetTasksView({
 
   const loadTasks = useCallback(async (listId: string | null) => {
     const generation = ++generationRef.current
+    loadMoreRef.current = false
+    setLoadingMore(false)
     if (!loadedRef.current) setState('loading')
     setErrorMessage(null)
 
@@ -98,6 +102,7 @@ export function WorkWidgetTasksView({
     if (!cursor) return
 
     loadMoreRef.current = true
+    const generation = generationRef.current
     setLoadingMore(true)
     setErrorMessage(null)
 
@@ -105,6 +110,8 @@ export function WorkWidgetTasksView({
       ...(activeListId ? { listId: activeListId } : {}),
       startingAfter: cursor,
     })
+
+    if (generation !== generationRef.current) return
 
     if (result.error || !result.data) {
       setState('error')

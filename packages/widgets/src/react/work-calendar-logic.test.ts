@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import type { WorkEvent, WorkMyWork, WorkReminder, WorkTask } from '@876/work'
+import type { WorkMyWork, WorkReminder, WorkTask } from '@876/work'
 import {
   workCalendarItemsForDay,
   workEventOccursOnDay,
@@ -8,6 +8,7 @@ import {
 import { calendarWindow } from './work-widget-time'
 
 const originalTimeZone = process.env.TZ
+type WorkMyWorkEvent = WorkMyWork['events'][number]
 
 afterEach(() => {
   if (originalTimeZone === undefined) delete process.env.TZ
@@ -78,13 +79,14 @@ function timedEvent(
   calendarId: string,
   startAt: number,
   endAt: number
-): WorkEvent {
+): WorkMyWorkEvent {
   return {
     object: 'event',
     id,
     uid: `${id}-uid`,
     organizationId: 'org_1',
     calendarId,
+    context: null,
     title: id,
     description: null,
     location: null,
@@ -110,13 +112,14 @@ function allDayEvent(
   calendarId: string,
   startDate: string,
   endDate: string
-): WorkEvent {
+): WorkMyWorkEvent {
   return {
     object: 'event',
     id,
     uid: `${id}-uid`,
     organizationId: 'org_1',
     calendarId,
+    context: null,
     title: id,
     description: null,
     location: null,
@@ -143,7 +146,7 @@ function work(
   values: {
     tasks?: WorkTask[]
     reminders?: WorkReminder[]
-    events?: WorkEvent[]
+    events?: WorkMyWorkEvent[]
   } = {}
 ): WorkMyWork {
   return {
