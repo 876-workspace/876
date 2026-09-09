@@ -65,6 +65,9 @@ export function WorkWidgetCalendarView() {
   }, [loadCalendars])
 
   useEffect(() => {
+    const desired = calendarWindow(view, anchor)
+    const current = workRef.current
+    if (current?.from === desired.from && current.to === desired.to) return
     void loadRange(view, anchor)
   }, [anchor, loadRange, view])
 
