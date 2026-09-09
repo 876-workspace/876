@@ -2,6 +2,7 @@
 // behind the explicit `@876/work/operator` server-only subpath.
 export * from './types'
 export * from './resource-ref'
+export * from './resource-work'
 export * from './event-contracts'
 export * from './my-work'
 export * from './integration-scopes'
