@@ -93,9 +93,6 @@ export type WorkBrowserCreateEventInput =
       location?: string | null
       recurrenceRuleId?: string | null
     }
-export type WorkBrowserUpdateEventInput = {
-  recurrenceRuleId?: string | null
-}
 export type WorkBrowserCreateEventParticipantInput =
   | {
       kind: Extract<WorkParticipantKind, 'USER'>
@@ -114,9 +111,6 @@ export type WorkBrowserCreateReminderInput = {
   note?: string | null
   remindAt: number
   timeZone?: string | null
-  recurrenceRuleId?: string | null
-}
-export type WorkBrowserUpdateReminderInput = {
   recurrenceRuleId?: string | null
 }
 export type WorkBrowserCreateAlertInput = {
@@ -444,16 +438,6 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
           }
         )
       },
-      update(
-        eventId: string,
-        input: WorkBrowserUpdateEventInput,
-        context?: WorkResourceRef
-      ) {
-        return requestApiResult<WorkEventResource>(
-          contextualItemPath('events', eventId, context),
-          { method: 'PATCH', body: JSON.stringify(input) }
-        )
-      },
       recurrence: {
         retrieve(eventId: string, context?: WorkResourceRef) {
           return requestApiResult<WorkRecurrenceRule | null>(
@@ -524,16 +508,6 @@ export function createBrowserWork(options: { contextRouteBase?: string } = {}) {
             method: 'POST',
             body: JSON.stringify(input),
           }
-        )
-      },
-      update(
-        reminderId: string,
-        input: WorkBrowserUpdateReminderInput,
-        context?: WorkResourceRef
-      ) {
-        return requestApiResult<WorkReminder>(
-          contextualItemPath('reminders', reminderId, context),
-          { method: 'PATCH', body: JSON.stringify(input) }
         )
       },
       recurrence: {
