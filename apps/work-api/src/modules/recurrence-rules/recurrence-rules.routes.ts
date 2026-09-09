@@ -8,7 +8,7 @@ export function createRecurrenceRulesRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.read',
-      sessionPermissions: ['tasks.view', 'events.view'],
+      sessionPermissions: ['tasks.view', 'events.view', 'reminders.view'],
     },
     handler: controller.listRules,
   })
@@ -17,7 +17,7 @@ export function createRecurrenceRulesRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.write',
-      sessionPermissions: ['tasks.edit', 'events.edit'],
+      sessionPermissions: ['tasks.edit', 'events.edit', 'reminders.edit'],
     },
     handler: controller.createRule,
   })
@@ -26,7 +26,7 @@ export function createRecurrenceRulesRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.read',
-      sessionPermissions: ['tasks.view', 'events.view'],
+      sessionPermissions: ['tasks.view', 'events.view', 'reminders.view'],
     },
     handler: controller.retrieveRule,
   })
@@ -35,7 +35,7 @@ export function createRecurrenceRulesRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.write',
-      sessionPermissions: ['tasks.edit', 'events.edit'],
+      sessionPermissions: ['tasks.edit', 'events.edit', 'reminders.edit'],
     },
     handler: controller.updateRule,
   })
@@ -44,7 +44,7 @@ export function createRecurrenceRulesRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.write',
-      sessionPermissions: ['tasks.edit', 'events.edit'],
+      sessionPermissions: ['tasks.edit', 'events.edit', 'reminders.edit'],
     },
     handler: controller.deleteRule,
   })
