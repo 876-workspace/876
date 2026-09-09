@@ -1,6 +1,7 @@
 import {
   createWorkReminderInputSchema,
   updateWorkReminderInputSchema,
+  workRecurrenceDraftSchema,
   workReminderStatusSchema,
 } from '@876/work'
 import { z } from 'zod'
@@ -41,6 +42,7 @@ export const listRemindersQuerySchema = z
   })
 export const createReminderBodySchema = createWorkReminderInputSchema
 export const updateReminderBodySchema = updateWorkReminderInputSchema
+export const setReminderRecurrenceBodySchema = workRecurrenceDraftSchema
 export const deleteReminderBodySchema = z.strictObject({
   deletedBy: z.string().trim().min(1),
 })
