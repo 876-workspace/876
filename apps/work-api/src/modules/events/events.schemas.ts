@@ -2,6 +2,7 @@ import {
   createWorkEventResourceInputSchema,
   updateWorkEventResourceInputSchema,
   workEventStatusSchema,
+  workRecurrenceDraftSchema,
 } from '@876/work'
 import { z } from 'zod'
 
@@ -50,6 +51,7 @@ export const listEventsQuerySchema = z
 
 export const createEventBodySchema = createWorkEventResourceInputSchema
 export const updateEventBodySchema = updateWorkEventResourceInputSchema
+export const setEventRecurrenceBodySchema = workRecurrenceDraftSchema
 export const deleteEventBodySchema = z.strictObject({
   deletedBy: z.string().trim().min(1),
 })

@@ -4,6 +4,8 @@ import {
   sendWorkList,
   sendWorkResult,
 } from '../../http/result.js'
+import { getPrincipal } from '../../http/auth/principal.js'
+import * as recurrence from './reminders-recurrence.service.js'
 import * as service from './reminders.service.js'
 import {
   createReminderBodySchema,
@@ -11,6 +13,7 @@ import {
   listRemindersQuerySchema,
   organizationParamsSchema,
   reminderParamsSchema,
+  setReminderRecurrenceBodySchema,
   updateReminderBodySchema,
 } from './reminders.schemas.js'
 
@@ -38,12 +41,14 @@ export async function listReminders(req: Request, res: Response) {
     `/v1/organizations/${organizationId}/reminders`
   )
 }
+
 export async function retrieveReminder(req: Request, res: Response) {
   const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
   const result = await service.retrieve(organizationId, reminderId)
   if (!result) return sendWorkError(res, 'work/reminder-not-found')
   return sendWorkResult(res, result)
 }
+
 export async function createReminder(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   return sendWorkResult(
@@ -55,6 +60,7 @@ export async function createReminder(req: Request, res: Response) {
     201
   )
 }
+
 export async function updateReminder(req: Request, res: Response) {
   const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
   const result = await service.update(
@@ -65,6 +71,35 @@ export async function updateReminder(req: Request, res: Response) {
   if (!result) return sendWorkError(res, 'work/reminder-not-found')
   return sendWorkResult(res, result)
 }
+
+export async function retrieveReminderRecurrence(req: Request, res: Response) {
+  const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
+  const result = await recurrence.retrieve(organizationId, reminderId)
+  if (!result) return sendWorkResult(res, null)
+  return sendWorkResult(res, result)
+}
+
+export async function setReminderRecurrence(req: Request, res: Response) {
+  const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
+  const principal = getPrincipal(req)
+  if (principal.kind !== 'session' || !principal.userId)
+    return sendWorkError(res, 'work/session-forbidden')
+
+  const result = await recurrence.set(organizationId, reminderId, {
+    ...setReminderRecurrenceBodySchema.parse(req.body),
+    createdBy: principal.userId,
+  })
+  if (!result) return sendWorkError(res, 'work/reminder-not-found')
+  return sendWorkResult(res, result)
+}
+
+export async function clearReminderRecurrence(req: Request, res: Response) {
+  const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
+  const result = await recurrence.clear(organizationId, reminderId)
+  if (!result) return sendWorkError(res, 'work/reminder-not-found')
+  return sendWorkResult(res, result)
+}
+
 export async function deleteReminder(req: Request, res: Response) {
   const { organizationId, reminderId } = reminderParamsSchema.parse(req.params)
   const { deletedBy } = deleteReminderBodySchema.parse(req.body)

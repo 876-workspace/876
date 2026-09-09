@@ -7,8 +7,10 @@ import {
   type UpdateWorkEventResourceInput,
   type WorkEventResourceListFilter,
 } from '../event-contracts'
+import type { WorkRecurrenceDraft } from '../recurrence-contracts'
 import { workRequest } from '../request'
 import type { WorkRuntime } from '../runtime'
+import { workRecurrenceRuleSchema } from '../types'
 
 function root(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/events`
@@ -32,6 +34,10 @@ function listPath(organizationId: string, filter: WorkEventResourceListFilter) {
   return `${root(organizationId)}${query ? `?${query}` : ''}`
 }
 
+function itemPath(organizationId: string, eventId: string) {
+  return `${root(organizationId)}/${encodeURIComponent(eventId)}`
+}
+
 export function createEventsResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkEventResourceListFilter = {}) {
@@ -44,10 +50,7 @@ export function createEventsResource(runtime: WorkRuntime) {
     retrieve(organizationId: string, eventId: string) {
       return workRequest(
         runtime,
-        {
-          method: 'GET',
-          path: `${root(organizationId)}/${encodeURIComponent(eventId)}`,
-        },
+        { method: 'GET', path: itemPath(organizationId, eventId) },
         workEventResourceSchema
       )
     },
@@ -67,18 +70,51 @@ export function createEventsResource(runtime: WorkRuntime) {
         runtime,
         {
           method: 'PATCH',
-          path: `${root(organizationId)}/${encodeURIComponent(eventId)}`,
+          path: itemPath(organizationId, eventId),
           body: input,
         },
         workEventResourceSchema
       )
+    },
+    recurrence: {
+      retrieve(organizationId: string, eventId: string) {
+        return workRequest(
+          runtime,
+          {
+            method: 'GET',
+            path: `${itemPath(organizationId, eventId)}/recurrence`,
+          },
+          workRecurrenceRuleSchema.nullable()
+        )
+      },
+      set(organizationId: string, eventId: string, input: WorkRecurrenceDraft) {
+        return workRequest(
+          runtime,
+          {
+            method: 'PATCH',
+            path: `${itemPath(organizationId, eventId)}/recurrence`,
+            body: input,
+          },
+          workRecurrenceRuleSchema
+        )
+      },
+      clear(organizationId: string, eventId: string) {
+        return workRequest(
+          runtime,
+          {
+            method: 'DELETE',
+            path: `${itemPath(organizationId, eventId)}/recurrence`,
+          },
+          workEventResourceSchema
+        )
+      },
     },
     delete(organizationId: string, eventId: string, deletedBy: string) {
       return workRequest(
         runtime,
         {
           method: 'DELETE',
-          path: `${root(organizationId)}/${encodeURIComponent(eventId)}`,
+          path: itemPath(organizationId, eventId),
           body: { deletedBy },
         },
         z.object({

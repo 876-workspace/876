@@ -16,6 +16,27 @@ export const create = (params: CreateParams) =>
   })
 export const update = (id: string, params: UpdateParams) =>
   prisma.workEventParticipant.update({ where: { id }, data: params })
+export async function respond(
+  eventId: string,
+  id: string,
+  userId: string,
+  expectedStatus:
+    'NEEDS_ACTION' | 'ACCEPTED' | 'DECLINED' | 'TENTATIVE' | 'DELEGATED',
+  params: UpdateParams
+) {
+  const result = await prisma.workEventParticipant.updateMany({
+    where: {
+      id,
+      eventId,
+      kind: 'USER',
+      participantId: userId,
+      status: expectedStatus,
+    },
+    data: params,
+  })
+  if (result.count !== 1) return null
+  return prisma.workEventParticipant.findUniqueOrThrow({ where: { id } })
+}
 export async function remove(id: string) {
   await prisma.workEventParticipant.delete({ where: { id } })
   return { object: 'event_participant' as const, id, deleted: true as const }

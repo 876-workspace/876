@@ -133,6 +133,30 @@ describe('createTaskAssignmentsResource', () => {
     expect(result.data?.status).toBe('ACCEPTED')
   })
 
+  it('sends assignee responses to the dedicated response endpoint', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: createAssignmentFixture({ status: 'DECLINED' }),
+          error: null,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } }
+      )
+    )
+
+    await taskAssignments.respond('org/kingston', 'task/kin', 'assign/kin', {
+      status: 'DECLINED',
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://work.example.test/v1/organizations/org%2Fkingston/tasks/task%2Fkin/assignments/assign%2Fkin/response',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'DECLINED' }),
+      })
+    )
+  })
+
   it('deletes task assignment via DELETE', async () => {
     fetchMock.mockResolvedValue(
       new Response(

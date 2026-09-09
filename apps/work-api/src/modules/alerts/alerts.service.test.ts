@@ -7,6 +7,12 @@ import {
 vi.mock('../tenants/index.js', () => ({
   retrieveByOrganization: vi.fn(),
 }))
+vi.mock('../tasks/index.js', () => ({
+  retrieve: vi.fn().mockResolvedValue({ id: 'task_montego_1' }),
+}))
+vi.mock('../events/index.js', () => ({
+  retrieve: vi.fn().mockResolvedValue({ id: 'event_1' }),
+}))
 vi.mock('./alerts.repository.js', () => ({
   list: vi.fn(),
   retrieve: vi.fn(),

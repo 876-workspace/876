@@ -168,4 +168,47 @@ describe('browserWork context transport', () => {
     ).toThrow('Contextual Work requires a host-owned route base.')
     expect(fetchMock).not.toHaveBeenCalled()
   })
+
+  it('keeps advanced contextual operations on the host-owned route', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success({ object: 'resource' }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await invoiceWork.taskAssignments.respond(
+      'task/1',
+      'assign/1',
+      {
+        status: 'DECLINED',
+      },
+      INVOICE_CONTEXT
+    )
+    await invoiceWork.eventParticipants.create(
+      'event/1',
+      {
+        kind: 'USER',
+        participantId: 'user_1',
+      },
+      INVOICE_CONTEXT
+    )
+    await invoiceWork.alerts.createForEvent(
+      'event/1',
+      {
+        triggerType: 'ABSOLUTE',
+        triggerAt: 200,
+      },
+      INVOICE_CONTEXT
+    )
+    await invoiceWork.reminders.recurrence.clear('reminder/1', INVOICE_CONTEXT)
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/api/invoices/inv%2F123/work/tasks/task%2F1/assignments/assign%2F1/response',
+      '/api/invoices/inv%2F123/work/events/event%2F1/participants',
+      '/api/invoices/inv%2F123/work/events/event%2F1/alerts',
+      '/api/invoices/inv%2F123/work/reminders/reminder%2F1/recurrence',
+    ])
+    for (const [, options] of fetchMock.mock.calls) {
+      expect(String(options?.body)).not.toContain('inv/123')
+      expect(String(options?.body)).not.toContain('userId')
+      expect(String(options?.body)).not.toContain('createdBy')
+    }
+  })
 })

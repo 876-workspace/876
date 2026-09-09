@@ -1,8 +1,9 @@
-import { isError } from '@876/core'
+import { getError, isError } from '@876/core'
 import type {
   CreateWorkTaskAssignmentInput,
   UpdateWorkTaskAssignmentInput,
   WorkTaskAssignment,
+  WorkTaskAssignmentResponseStatus,
 } from '@876/work'
 
 import * as tasks from '../tasks/index.js'
@@ -34,6 +35,16 @@ async function requireTask(organizationId: string, taskId: string) {
   const task = await tasks.retrieve(organizationId, taskId)
   if (isError(task)) return task
   return task
+}
+
+function canSelfRespond(
+  current: WorkTaskAssignment['status'],
+  next: WorkTaskAssignmentResponseStatus
+) {
+  if (current === next) return true
+  if (current === 'PENDING') return next === 'ACCEPTED' || next === 'DECLINED'
+  if (current === 'ACCEPTED') return next === 'COMPLETED'
+  return false
 }
 
 export async function list(organizationId: string, taskId: string) {
@@ -99,6 +110,43 @@ export async function update(
       nextStatus === 'COMPLETED' ? (current.completedAt ?? new Date()) : null,
   })
   return serialize(row)
+}
+
+/**
+ * Applies the assignee-owned response lifecycle without granting assignment
+ * management. Team-target assignments require a team-aware authorization layer
+ * and therefore cannot be self-responded to through this user-only operation.
+ */
+export async function respond(
+  organizationId: string,
+  taskId: string,
+  assignmentId: string,
+  userId: string,
+  status: WorkTaskAssignmentResponseStatus
+) {
+  const task = await requireTask(organizationId, taskId)
+  if (!task || isError(task)) return task
+  const current = await repository.retrieve(taskId, assignmentId)
+  if (!current) return null
+  if (current.targetType !== 'USER' || current.assigneeId !== userId)
+    return getError('work/session-forbidden')
+  if (!canSelfRespond(current.status, status))
+    return getError('work/invalid-request')
+  if (current.status === status) return serialize(current)
+
+  const updated = await repository.respond(
+    taskId,
+    assignmentId,
+    userId,
+    current.status,
+    {
+      status,
+      respondedAt: current.respondedAt ?? new Date(),
+      completedAt:
+        status === 'COMPLETED' ? (current.completedAt ?? new Date()) : null,
+    }
+  )
+  return updated ? serialize(updated) : getError('work/invalid-request')
 }
 
 export async function remove(

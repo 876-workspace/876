@@ -26,6 +26,29 @@ export const update = (assignmentId: string, params: UpdateParams) =>
     data: params,
   })
 
+export async function respond(
+  taskId: string,
+  assignmentId: string,
+  userId: string,
+  expectedStatus: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED',
+  params: UpdateParams
+) {
+  const result = await prisma.workTaskAssignment.updateMany({
+    where: {
+      id: assignmentId,
+      taskId,
+      targetType: 'USER',
+      assigneeId: userId,
+      status: expectedStatus,
+    },
+    data: params,
+  })
+  if (result.count !== 1) return null
+  return prisma.workTaskAssignment.findUniqueOrThrow({
+    where: { id: assignmentId },
+  })
+}
+
 export async function remove(taskId: string, assignmentId: string) {
   const current = await retrieve(taskId, assignmentId)
   if (!current) return null

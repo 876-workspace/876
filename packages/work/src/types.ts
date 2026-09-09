@@ -96,6 +96,9 @@ export const workAlertStatusSchema = z.enum([
 ])
 
 export const workCalendarVisibilitySchema = z.enum(['PRIVATE', 'ORGANIZATION'])
+export type WorkCalendarVisibility = z.infer<
+  typeof workCalendarVisibilitySchema
+>
 export const workCalendarRoleSchema = z.enum(['OWNER', 'EDITOR', 'VIEWER'])
 export const workEventStatusSchema = z.enum([
   'CONFIRMED',
@@ -104,11 +107,13 @@ export const workEventStatusSchema = z.enum([
 ])
 export const workEventBusyStatusSchema = z.enum(['BUSY', 'FREE'])
 export const workParticipantKindSchema = z.enum(['USER', 'EMAIL'])
+export type WorkParticipantKind = z.infer<typeof workParticipantKindSchema>
 export const workParticipantRoleSchema = z.enum([
   'CHAIR',
   'REQUIRED',
   'OPTIONAL',
 ])
+export type WorkParticipantRole = z.infer<typeof workParticipantRoleSchema>
 export const workParticipantStatusSchema = z.enum([
   'NEEDS_ACTION',
   'ACCEPTED',

@@ -32,7 +32,7 @@ function errorResult(
 }
 
 export function createInvoiceWorkContext(
-  invoice: Pick<Invoice, 'id' | 'number'>
+  invoice: Pick<Invoice, 'object' | 'id'> & { number?: unknown }
 ): WorkHostContext {
   const rawNumber = invoice.number
   const label =

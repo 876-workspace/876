@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { WorkHostContext } from '@876/work'
 import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 
@@ -10,6 +10,7 @@ import {
 } from '../work-capabilities'
 import { WorkWidgetCalendarView } from './work-widget-calendar'
 import { WorkWidgetCreateView } from './work-widget-create'
+import { WorkWidgetManageView } from './work-widget-manage'
 import {
   WorkWidgetScopeSelector,
   type WorkWidgetScope,
@@ -19,7 +20,7 @@ import { WorkWidgetTodayView } from './work-widget-today'
 
 export { currentDayWindow } from './work-widget-time'
 
-type WorkView = 'today' | 'tasks' | 'calendar' | 'create'
+type WorkView = 'today' | 'tasks' | 'calendar' | 'create' | 'manage'
 
 function WorkViewNav({
   view,
@@ -32,11 +33,13 @@ function WorkViewNav({
 }) {
   return (
     <div className="border-876-surface-border flex gap-1 overflow-x-auto border-b px-3 py-2">
-      {views.map((item) => (
+      {views.map((item, index) => (
         <button
           key={item}
           type="button"
           aria-pressed={view === item}
+          aria-keyshortcuts={`Alt+${index + 1}`}
+          title={`${item} (Alt+${index + 1})`}
           onClick={() => onChange(item)}
           className="aria-pressed:bg-muted focus-visible:ring-ring shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium capitalize focus-visible:ring-2 focus-visible:outline-none"
         >
@@ -44,6 +47,16 @@ function WorkViewNav({
         </button>
       ))}
     </div>
+  )
+}
+
+function isTypingTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  return (
+    target.isContentEditable ||
+    target.tagName === 'INPUT' ||
+    target.tagName === 'TEXTAREA' ||
+    target.tagName === 'SELECT'
   )
 }
 
@@ -63,13 +76,25 @@ export function WorkWidgetPanel({
       capabilities.canCreateTasks ||
       capabilities.canCreateEvents ||
       capabilities.canCreateReminders
-    return canCreate
-      ? ['today', 'tasks', 'calendar', 'create']
-      : ['today', 'tasks', 'calendar']
+    const canManage =
+      capabilities.canCreateTasks ||
+      capabilities.canEditTasks ||
+      capabilities.canCreateCalendars ||
+      capabilities.canEditCalendars
+    return [
+      'today',
+      'tasks',
+      'calendar',
+      ...(canCreate ? (['create'] as const) : []),
+      ...(canManage ? (['manage'] as const) : []),
+    ]
   }, [
+    capabilities.canCreateCalendars,
     capabilities.canCreateEvents,
     capabilities.canCreateReminders,
     capabilities.canCreateTasks,
+    capabilities.canEditCalendars,
+    capabilities.canEditTasks,
   ])
   const activeView = views.includes(view) ? view : 'today'
   const activeScope = context ? scope : 'my-work'
@@ -77,6 +102,25 @@ export function WorkWidgetPanel({
   const scopeKey = activeContext
     ? `context:${activeContext.service}:${activeContext.resource}:${activeContext.externalId}`
     : 'my-work'
+
+  useEffect(() => {
+    function keydown(event: KeyboardEvent) {
+      if (
+        !event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        isTypingTarget(event.target)
+      )
+        return
+      const index = Number(event.key) - 1
+      const next = Number.isInteger(index) ? views[index] : undefined
+      if (!next) return
+      event.preventDefault()
+      setView(next)
+    }
+    window.addEventListener('keydown', keydown)
+    return () => window.removeEventListener('keydown', keydown)
+  }, [views])
 
   return (
     <div className="min-h-full">
@@ -105,10 +149,11 @@ export function WorkWidgetPanel({
       ) : activeView === 'calendar' ? (
         <WorkWidgetCalendarView
           key={scopeKey}
+          capabilities={capabilities}
           context={activeContext}
           client={client}
         />
-      ) : (
+      ) : activeView === 'create' ? (
         <WorkWidgetCreateView
           key={scopeKey}
           capabilities={capabilities}
@@ -116,6 +161,8 @@ export function WorkWidgetPanel({
           client={client}
           onCreated={() => setView('today')}
         />
+      ) : (
+        <WorkWidgetManageView capabilities={capabilities} client={client} />
       )}
     </div>
   )

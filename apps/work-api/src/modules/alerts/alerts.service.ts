@@ -4,6 +4,9 @@ import type {
   UpdateWorkAlertInput,
   WorkAlert,
 } from '@876/work'
+
+import * as events from '../events/index.js'
+import * as tasks from '../tasks/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './alerts.repository.js'
 
@@ -37,6 +40,38 @@ async function requireTenant(organizationId: string) {
   if (tenant.status !== 'ACTIVE') return getError('work/tenant-inactive')
   return tenant
 }
+
+async function requireAlertResource(
+  organizationId: string,
+  input: Pick<CreateWorkAlertInput, 'taskId' | 'eventId'>
+) {
+  if (input.taskId) {
+    const task = await tasks.retrieve(organizationId, input.taskId)
+    if (isError(task)) return task
+    if (!task) return getError('work/task-not-found')
+    return task
+  }
+
+  if (input.eventId) {
+    const event = await events.retrieve(organizationId, input.eventId)
+    if (isError(event)) return event
+    if (!event) return getError('work/event-not-found')
+    return event
+  }
+
+  return getError('work/invalid-request')
+}
+
+function validTriggerShape(value: {
+  triggerType: 'ABSOLUTE' | 'RELATIVE'
+  triggerAt: number | null
+  offsetSeconds: number | null
+}) {
+  return value.triggerType === 'ABSOLUTE'
+    ? value.triggerAt !== null && value.offsetSeconds === null
+    : value.triggerAt === null && value.offsetSeconds !== null
+}
+
 export async function list(
   organizationId: string,
   filter: {
@@ -73,6 +108,10 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
+
+  const resource = await requireAlertResource(organizationId, input)
+  if (isError(resource)) return resource
+
   const row = await repository.create({
     tenantId: tenant.id,
     taskId: input.taskId ?? null,
@@ -99,6 +138,20 @@ export async function update(
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, alertId)
   if (!current) return null
+
+  const nextTrigger = {
+    triggerType: input.triggerType ?? current.triggerType,
+    triggerAt:
+      input.triggerAt === undefined
+        ? stamp(current.triggerAt)
+        : input.triggerAt,
+    offsetSeconds:
+      input.offsetSeconds === undefined
+        ? current.offsetSeconds
+        : input.offsetSeconds,
+  }
+  if (!validTriggerShape(nextTrigger)) return getError('work/invalid-request')
+
   const nextStatus = input.status ?? current.status
   const row = await repository.update(alertId, {
     ...(input.triggerType === undefined

@@ -7,6 +7,7 @@ import type {
   WorkReminderStatus,
 } from '@876/work'
 
+import * as recurrenceRules from '../recurrence-rules/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './reminders.repository.js'
 
@@ -64,6 +65,14 @@ async function requireTenant(organizationId: string) {
   if (tenant.status !== 'ACTIVE') return getError('work/tenant-inactive')
   return tenant
 }
+async function requireRecurrenceRule(
+  organizationId: string,
+  recurrenceRuleId: string
+) {
+  const rule = await recurrenceRules.retrieve(organizationId, recurrenceRuleId)
+  if (isError(rule)) return rule
+  return rule ?? getError('work/recurrence-rule-not-found')
+}
 function contextColumns(context?: WorkContext | null) {
   if (!context)
     return { contextService: null, contextResource: null, contextId: null }
@@ -114,6 +123,13 @@ export async function create(
 ) {
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
   const row = await repository.create({
     tenantId: tenant.id,
     ...contextColumns(input.context),
@@ -162,6 +178,13 @@ export async function update(
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, reminderId)
   if (!current) return null
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
   const row = await repository.update(reminderId, {
     ...lifecycleStamp(current, input.status),
     ...(input.context === undefined ? {} : contextColumns(input.context)),

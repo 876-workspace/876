@@ -5,12 +5,15 @@ import {
   sendWorkList,
   sendWorkResult,
 } from '../../http/result.js'
+import { getPrincipal } from '../../http/auth/principal.js'
+import * as recurrence from './tasks-recurrence.service.js'
 import * as service from './tasks.service.js'
 import {
   createTaskBodySchema,
   deleteTaskBodySchema,
   listTasksQuerySchema,
   organizationParamsSchema,
+  setTaskRecurrenceBodySchema,
   taskParamsSchema,
   updateTaskBodySchema,
 } from './tasks.schemas.js'
@@ -47,6 +50,7 @@ export async function retrieveTask(req: Request, res: Response) {
   if (!result) return sendWorkError(res, 'work/task-not-found')
   return sendWorkResult(res, result)
 }
+
 export async function createTask(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   return sendWorkResult(
@@ -55,6 +59,7 @@ export async function createTask(req: Request, res: Response) {
     201
   )
 }
+
 export async function updateTask(req: Request, res: Response) {
   const { organizationId, taskId } = taskParamsSchema.parse(req.params)
   const result = await service.update(
@@ -65,6 +70,35 @@ export async function updateTask(req: Request, res: Response) {
   if (!result) return sendWorkError(res, 'work/task-not-found')
   return sendWorkResult(res, result)
 }
+
+export async function retrieveTaskRecurrence(req: Request, res: Response) {
+  const { organizationId, taskId } = taskParamsSchema.parse(req.params)
+  const result = await recurrence.retrieve(organizationId, taskId)
+  if (!result) return sendWorkResult(res, null)
+  return sendWorkResult(res, result)
+}
+
+export async function setTaskRecurrence(req: Request, res: Response) {
+  const { organizationId, taskId } = taskParamsSchema.parse(req.params)
+  const principal = getPrincipal(req)
+  if (principal.kind !== 'session' || !principal.userId)
+    return sendWorkError(res, 'work/session-forbidden')
+
+  const result = await recurrence.set(organizationId, taskId, {
+    ...setTaskRecurrenceBodySchema.parse(req.body),
+    createdBy: principal.userId,
+  })
+  if (!result) return sendWorkError(res, 'work/task-not-found')
+  return sendWorkResult(res, result)
+}
+
+export async function clearTaskRecurrence(req: Request, res: Response) {
+  const { organizationId, taskId } = taskParamsSchema.parse(req.params)
+  const result = await recurrence.clear(organizationId, taskId)
+  if (!result) return sendWorkError(res, 'work/task-not-found')
+  return sendWorkResult(res, result)
+}
+
 export async function deleteTask(req: Request, res: Response) {
   const { organizationId, taskId } = taskParamsSchema.parse(req.params)
   const { deletedBy } = deleteTaskBodySchema.parse(req.body)
