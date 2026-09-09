@@ -44,7 +44,11 @@ export type WorkManageProps = {
   onCreateCalendar?: (input: WorkCalendarDraft) => boolean | Promise<boolean>
   onUpdateCalendar?: (
     calendar: WorkCalendar,
-    input: { name: string; description?: string | null; visibility: WorkCalendarVisibility }
+    input: {
+      name: string
+      description?: string | null
+      visibility: WorkCalendarVisibility
+    }
   ) => void | Promise<void>
   onUpdateSubscription?: (
     subscription: WorkCalendarSubscription,
@@ -242,7 +246,10 @@ export function WorkManage({
         ) : null}
       </section>
 
-      <section className="space-y-2 border-t pt-4" aria-labelledby="work-calendars-heading">
+      <section
+        className="space-y-2 border-t pt-4"
+        aria-labelledby="work-calendars-heading"
+      >
         <p id="work-calendars-heading" className="text-sm font-medium">
           Calendars
         </p>
@@ -287,7 +294,6 @@ export function WorkManage({
             >
               <option value="PRIVATE">Private</option>
               <option value="ORGANIZATION">Organization</option>
-              <option value="PUBLIC">Public</option>
             </select>
             {canManageCalendars && onUpdateCalendar ? (
               <button
@@ -349,7 +355,10 @@ export function WorkManage({
             <summary className="cursor-pointer text-xs font-medium">
               Create calendar
             </summary>
-            <form onSubmit={createCalendar} className="mt-2 space-y-2 border-t pt-2">
+            <form
+              onSubmit={createCalendar}
+              className="mt-2 space-y-2 border-t pt-2"
+            >
               <input
                 name="name"
                 required
@@ -365,7 +374,9 @@ export function WorkManage({
               />
               <input
                 name="timeZone"
-                defaultValue={Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'}
+                defaultValue={
+                  Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+                }
                 required
                 disabled={pending}
                 aria-label="Calendar time zone"
@@ -380,7 +391,6 @@ export function WorkManage({
               >
                 <option value="PRIVATE">Private</option>
                 <option value="ORGANIZATION">Organization</option>
-                <option value="PUBLIC">Public</option>
               </select>
               <button
                 type="submit"
