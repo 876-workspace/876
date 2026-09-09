@@ -6,7 +6,9 @@ Branch: `feat/work-widget-phase-3`
 
 Source brief: `plans/2026-09-08-work-widget-phase-2/briefs/gpt-web/2026-09-09-phase-3.md`
 
-Status: `IN_PROGRESS`
+Closeout directive: `plans/2026-09-09-work-widget-phase-3/directive.md`
+
+Status: `SOURCE_COMPLETE; CURRENT_WIDGETS_RERUN_REQUIRED`
 
 ## End goal
 
@@ -20,10 +22,11 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - Server authorization remains mandatory even when controls are hidden by capability-aware UI.
 - Host payloads may be narrower than Work contracts, but transformed payloads must validate with canonical `@876/work` schemas before calling Work.
 - Expected failures remain `{ data, error }` values and stay contained to the Work surface.
-- Do not grow the monolithic `WorkWidgetPanel`; split orchestration by view.
+- Keep view orchestration split rather than regrowing a monolithic `WorkWidgetPanel`.
+- Do not expose task deletion or invent a large/pop-out layout in Phase 3.
 - Do not mark executable verification complete unless observed by a shell-capable/local orchestrator.
 
-## Stabilization — `SOURCE COMPLETE; EXECUTABLE VERIFICATION OPEN`
+## Stabilization — `SOURCE COMPLETE`
 
 - [x] Reconcile the recovered Phase 3 files with the focused Phase 2 fixes and preserve the exclusive Today range/current widget-catalog behavior.
 - [x] Replace agenda `flatMap` union inference with explicitly typed agenda arrays.
@@ -33,6 +36,7 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] Treat task-list/calendar-list failures as secondary enrichment where possible.
 - [x] Prevent rapid duplicate task/create/load-more mutations with immediate ref-backed request-state guards.
 - [x] Split `WorkWidgetPanel` into focused Today/Tasks/Calendar/Create orchestration components.
+- [x] Preserve local-review fixes for contextual event fixtures and stale pagination instead of recreating them.
 
 ## Phase 3A — Today / agenda — `SOURCE COMPLETE`
 
@@ -42,7 +46,8 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] Task completion path recovered with server-owned `completedBy`.
 - [x] Accessible task/event/reminder detail opening via native disclosure rows.
 - [x] Preserve the focused Phase 2 exclusive local-day boundary regression.
-- [ ] Add browser/component coverage proving stale Today data remains mounted after a refresh failure.
+- [x] Add browser/component coverage proving stale successful Today data remains mounted after a later refresh failure.
+- [x] Exercise the Today error-banner retry path and prove successful retry clears the error/replaces stale data.
 
 ## Phase 3B — Tasks / todos — `SOURCE COMPLETE`
 
@@ -56,6 +61,8 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] Remove placeholder pagination messaging.
 - [x] Make task-list enrichment failure non-fatal when task data succeeds.
 - [x] Validate task form importance through the canonical Work schema instead of a form-value cast.
+- [x] Preserve the local generation guard that invalidates an in-flight load-more page when the selected list changes.
+- [x] Add browser orchestration coverage proving a stale List A page is not appended after switching to List B.
 - [x] Deliberately keep task delete unexposed in Phase 3; destructive capability remains modeled for a future explicit UX requirement.
 - [x] Keep Todo as UX vocabulary only; persistence remains `WorkTask`.
 
@@ -73,7 +80,9 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] Replace 560/720px minimum-width horizontal-scroll grids with a compact 520px-first month grid and stacked week view.
 - [x] Add selected-day agenda behavior to compact month view.
 - [x] Keep the same compact layout usable at medium widths without requiring viewport-breakpoint assumptions inside the widget panel.
-- [ ] Add a dedicated large/pop-out mini-calendar/sidebar layout; deferred until a distinct large Work pop-out surface is introduced.
+- [x] Preserve range reuse when selecting another date inside an already-loaded Month/Week range.
+- [x] Add browser orchestration coverage proving Month/Week date selection does not refetch the same range while the explicit error action does retry a failed range.
+- [ ] Dedicated large/pop-out mini-calendar/sidebar layout — intentionally deferred until a distinct large Work surface exists.
 
 ## Phase 3D — Unified create — `SOURCE COMPLETE`
 
@@ -85,23 +94,43 @@ Turn the Phase 2 Invoice Work vertical slice into a production-quality compact p
 - [x] Gate create modes from effective permissions while preserving server authorization for every mutation.
 - [x] Keep task-list/calendar-list data as optional create-form enrichment rather than browser authorization state.
 
-## Verification / closeout — `LOCAL ORCHESTRATOR REQUIRED`
+## Final static audit — `COMPLETE`
 
-- [x] Count literal test cases versus Phase 2 `main`: 67 added, 3 removed, net +64.
-- [x] `@876/widgets` typecheck and unit tests (149 tests).
-- [x] `@876/widgets` browser tests (3 tests).
-- [x] `@876/work` typecheck and tests (220 tests).
-- [x] `@876/work-ui` typecheck.
-- [ ] `@876/core` typecheck/tests where touched.
-- [x] `@876/invoice-app` typecheck and tests (455 tests).
-- [x] `@876/invoice-app` build.
-- [x] Focused format checks.
-- [x] `pnpm check:transpile`.
-- [x] `pnpm check:service-bundle`.
-- [x] Full branch diff review against current `main`.
-- [ ] Write `plans/2026-09-09-work-widget-phase-3/reports/gpt-web/2026-09-09-work-widget-phase-3.md`.
-- [ ] No PR unless explicitly requested.
+- [x] Review the complete `main...HEAD` changed-file surface for permission leaks.
+- [x] Review browser routes/adapters for Work service topology or credential leakage.
+- [x] Review transformed Task/Event/Reminder host payloads for canonical post-injection validation.
+- [x] Review error handling for swallowed primary failures and destructive enrichment coupling.
+- [x] Review helper/orchestration boundaries for duplicated network ownership or renewed `WorkWidgetPanel` growth.
+- [x] No production-code blocker found in the closeout pass.
+- [x] Record the non-blocking Create-form `listId` non-null assertion cleanup in the final report rather than rewriting the already locally-reviewed ~500-line controlled form through the connector.
 
-## Current next action
+## Verification / closeout
 
-Follow `directive.md`: add the stale Today, task pagination race, and calendar range/retry regressions; perform the final source-only audit; then write the GPT Web report. Leave the remaining executable verification to the local orchestrator.
+- [x] Literal test delta against Phase 2 `main` after closeout tests: 70 added, 3 removed, net +67.
+- [ ] Current `@876/widgets` typecheck — prior local pass predates the three new browser test files; rerun required.
+- [x] `@876/widgets` unit tests — 149 tests passed locally before the closeout test-only commits; production source did not change afterward.
+- [ ] Current `@876/widgets` browser tests — prior 3-test pass predates three new closeout tests; current suite is 6 tests and needs rerun.
+- [x] `@876/work` typecheck and tests — 220 tests passed in local review; untouched by closeout test-only commits.
+- [x] `@876/work-ui` typecheck passed in local review; untouched by closeout test-only commits.
+- [ ] `@876/core` typecheck/tests where touched — Core is not changed by the Phase 3 diff; no new run claimed.
+- [x] `@876/invoice-app` typecheck and tests — 455 tests passed in local review; untouched by closeout test-only commits.
+- [x] `@876/invoice-app` build passed in local review; untouched by closeout test-only commits.
+- [x] Focused format checks passed in local review before the three new test files; new files still need current formatting verification if required by the local gate.
+- [x] `pnpm check:transpile` passed in local review; production source unchanged afterward.
+- [x] `pnpm check:service-bundle` passed in local review; production source unchanged afterward.
+- [x] Final GPT Web static branch review completed against current `main` comparison.
+- [x] Write `plans/2026-09-09-work-widget-phase-3/reports/gpt-web/2026-09-09-work-widget-phase-3.md`.
+- [x] No PR opened or merged.
+
+## Branch state / handoff
+
+At the final comparison before the documentation commits, GitHub reported `feat/work-widget-phase-3` ahead of current `main` by 95 commits and behind by 1 commit. The branch therefore still requires local reconciliation with the newer `main` commit before merge.
+
+Current local-orchestrator minimum rerun after reconciliation:
+
+```bash
+pnpm --filter @876/widgets typecheck
+pnpm --filter @876/widgets test:browser
+```
+
+Run the repository's normal final CI/merge checks after that reconciliation. GPT Web did not rebase, force-update, merge, or open a PR.
