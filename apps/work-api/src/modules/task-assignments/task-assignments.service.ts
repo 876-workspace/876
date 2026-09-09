@@ -134,14 +134,19 @@ export async function respond(
     return getError('work/invalid-request')
   if (current.status === status) return serialize(current)
 
-  return serialize(
-    await repository.update(assignmentId, {
+  const updated = await repository.respond(
+    taskId,
+    assignmentId,
+    userId,
+    current.status,
+    {
       status,
       respondedAt: current.respondedAt ?? new Date(),
       completedAt:
         status === 'COMPLETED' ? (current.completedAt ?? new Date()) : null,
-    })
+    }
   )
+  return updated ? serialize(updated) : getError('work/invalid-request')
 }
 
 export async function remove(

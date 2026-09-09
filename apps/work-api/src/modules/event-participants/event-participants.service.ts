@@ -107,12 +107,17 @@ export async function respond(
     return getError('work/session-forbidden')
   if (current.status === 'DELEGATED') return getError('work/invalid-request')
   if (current.status === status) return serialize(current)
-  return serialize(
-    await repository.update(id, {
+  const updated = await repository.respond(
+    eventId,
+    id,
+    userId,
+    current.status,
+    {
       status,
       respondedAt: new Date(),
-    })
+    }
   )
+  return updated ? serialize(updated) : getError('work/invalid-request')
 }
 
 export async function remove(org: string, eventId: string, id: string) {
