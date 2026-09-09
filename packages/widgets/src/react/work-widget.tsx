@@ -71,6 +71,9 @@ export function WorkWidgetPanel({
   const activeView = views.includes(view) ? view : 'today'
   const activeScope = context ? scope : 'my-work'
   const activeContext = activeScope === 'context' ? context : undefined
+  const scopeKey = activeContext
+    ? `context:${activeContext.service}:${activeContext.resource}:${activeContext.externalId}`
+    : 'my-work'
 
   return (
     <div className="min-h-full">
@@ -84,18 +87,21 @@ export function WorkWidgetPanel({
       <WorkViewNav view={activeView} views={views} onChange={setView} />
       {activeView === 'today' ? (
         <WorkWidgetTodayView
+          key={scopeKey}
           capabilities={capabilities}
           context={activeContext}
         />
       ) : activeView === 'tasks' ? (
         <WorkWidgetTasksView
+          key={scopeKey}
           capabilities={capabilities}
           context={activeContext}
         />
       ) : activeView === 'calendar' ? (
-        <WorkWidgetCalendarView context={activeContext} />
+        <WorkWidgetCalendarView key={scopeKey} context={activeContext} />
       ) : (
         <WorkWidgetCreateView
+          key={scopeKey}
           capabilities={capabilities}
           context={activeContext}
           onCreated={() => setView('today')}
