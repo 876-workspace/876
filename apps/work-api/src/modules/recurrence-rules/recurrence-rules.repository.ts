@@ -13,6 +13,19 @@ export const list = (tenantId: string) =>
   })
 export const retrieve = (tenantId: string, ruleId: string) =>
   prisma.workRecurrenceRule.findFirst({ where: { tenantId, id: ruleId } })
+export const usage = (tenantId: string, ruleId: string) =>
+  prisma.workRecurrenceRule.findFirst({
+    where: { tenantId, id: ruleId },
+    select: {
+      _count: {
+        select: {
+          tasks: true,
+          reminders: true,
+          events: true,
+        },
+      },
+    },
+  })
 export const create = (params: CreateParams) =>
   prisma.workRecurrenceRule.create({
     data: { id: `rrule_${randomUUID().replaceAll('-', '')}`, ...params },
