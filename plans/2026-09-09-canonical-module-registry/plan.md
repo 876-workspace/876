@@ -2,8 +2,8 @@
 
 **Run ID:** `2026-09-09-canonical-module-registry`  
 **Branch:** `feat/canonical-module-registry`  
-**Base:** `feat/work-widget-phase-3`  
-**Status:** IN_PROGRESS
+**Base:** `main` (synchronized through `6e2a02ace`)
+**Status:** COMPLETED
 
 ## Overview
 
@@ -121,7 +121,8 @@ None. This run is being implemented directly through the GitHub connector.
 
 ## Execution Reports
 
-- Final report: `./reports/gpt-web/2026-09-09-canonical-module-registry.md` (to be written at completion)
+- The GPT Web final report referenced by the original run was not present locally or on the remote branch.
+- Orchestrator verification: `./reports/orchestrator/2026-09-10-verification-and-console-integration.md`
 
 ## Phase Checklist
 
@@ -130,69 +131,69 @@ None. This run is being implemented directly through the GitHub connector.
 - [x] Read `CLAUDE.md` on the base branch.
 - [x] Read `.agents/rules/gpt-web-operating-rules.md`.
 - [x] Read required reuse, naming, types, code-style, testing, error-handling, module-settings, access-control, API-backend, feature-flags, git, execution-autonomy, and tracker rules.
-- [ ] Inventory exact current owners and tests on `feat/canonical-module-registry`.
+- [x] Inventory exact current owners and tests on `feat/canonical-module-registry`.
 
 ### Phase 1 — Canonical registry
 
-- [ ] Add reusable registry contract/helpers under `@876/core`.
-- [ ] Add shared Finance identity definitions.
-- [ ] Add Invoice and Billing app registries.
-- [ ] Add registry invariants/tests.
+- [x] Add reusable registry contract/helpers under `@876/core`.
+- [x] Add shared Finance identity definitions.
+- [x] Add Invoice and Billing app registries.
+- [x] Add registry invariants/tests.
 
 ### Phase 2 — Settings projection
 
-- [ ] Refactor `packages/billing/src/settings-catalog.ts` to derive identity from the canonical registry.
-- [ ] Preserve existing exported settings catalog contracts.
-- [ ] Update anti-drift tests so labels/descriptions cannot diverge.
+- [x] Refactor `packages/billing/src/settings-catalog.ts` to derive identity from the canonical registry.
+- [x] Preserve existing exported settings catalog contracts.
+- [x] Update anti-drift tests so labels/descriptions cannot diverge.
 
 ### Phase 3 — Access projection
 
-- [ ] Reuse canonical identity metadata in Billing/Invoice app-access permission catalogs where module semantics match exactly.
-- [ ] Leave system/permission-only groups explicit.
-- [ ] Preserve all durable permission keys.
-- [ ] Update access catalog tests.
+- [x] Reuse canonical identity metadata in Billing/Invoice app-access permission catalogs where module semantics match exactly.
+- [x] Leave system/permission-only groups explicit.
+- [x] Preserve all durable permission keys.
+- [x] Update access catalog tests.
 
 ### Phase 4 — Core commercial materialization
 
-- [ ] Replace duplicated Billing-only module identity seed declarations with registry-driven application-module definitions where safe.
-- [ ] Materialize Invoice commercial modules.
-- [ ] Keep default plan composition as a separate key-based map.
-- [ ] Preserve operator-removed plan grants on later seed runs.
-- [ ] Add/update seed tests.
+- [x] Replace duplicated Billing-only module identity seed declarations with registry-driven application-module definitions where safe.
+- [x] Materialize Invoice commercial modules.
+- [x] Keep default plan composition as a separate key-based map.
+- [x] Preserve operator-removed plan grants on later seed runs.
+- [x] Add/update seed tests.
 
 ### Phase 5 — Invoice plan entitlement fix
 
-- [ ] Ensure `876-invoice-free` can receive its explicit initial module grants.
-- [ ] Ensure all Invoice modules are returned by Console's existing module-list path after seed materialization.
-- [ ] Preserve product same-app active-module validation.
+- [x] Ensure `876-invoice-free` can receive its explicit initial module grants.
+- [x] Ensure all Invoice modules are returned by Console's module-list path after seed materialization.
+- [x] Preserve product same-app active-module validation.
 
 ### Phase 6 — Registry ownership enforcement
 
-- [ ] Determine whether first-party registry-managed identity can be safely enforced in the existing API/Console contract without schema churn.
-- [ ] Implement safe enforcement if possible; otherwise document the deferred UI/API distinction and retain anti-drift protections.
+- [x] Determine whether first-party registry-managed identity can be safely enforced in the existing API/Console contract without schema churn.
+- [x] Lock registry-managed identity in Console and retain seed/test anti-drift protections. API-level identity locking is deferred because the current schema does not mark registry ownership.
 
 ### Phase 7 — Billing legacy audit
 
-- [ ] Inventory `sales` and `documents` commercial-module consumers.
-- [ ] Add canonical Billing identities without destructive legacy rewrites where safe.
-- [ ] Document exact follow-up migration if one-to-many semantics prevent safe completion now.
+- [x] Inventory `sales` and `documents` commercial-module consumers.
+- [x] Add canonical Billing identities without destructive legacy rewrites where safe.
+- [x] Document the follow-up migration boundary in ADR-016.
 
 ### Phase 8 — Documentation and rule update
 
-- [ ] Add ADR-016.
-- [ ] Update ADR-006 with a short superseding/reference note if necessary.
-- [ ] Update mirrored `module-settings.md` rule only if needed, byte-identically.
+- [x] Add ADR-016.
+- [x] Update ADR-006 with a short reference note.
+- [x] Update mirrored `module-settings.md` rules byte-identically.
 
 ### Phase 9 — Final review and handoff
 
-- [ ] Review changed code for duplicate registries, compatibility residue, swallowed errors, unsafe casts, and scope creep.
-- [ ] Re-read branch state to anticipate integration changes from Work Phase 3.
-- [ ] Write final GPT-web report with exact test counts and unverified items.
-- [ ] Mark this plan COMPLETED or record any genuine external blocker.
+- [x] Review changed code for duplicate registries, compatibility residue, swallowed errors, unsafe casts, and scope creep.
+- [x] Synchronize the branch with current `main` and resolve Work widget compatibility.
+- [x] Write the orchestrator report with exact test counts and unverified items.
+- [x] Mark this plan COMPLETED.
 
 ## Verification Commands
 
-Not executable from GPT Web; orchestrator must run after pulling the branch:
+Executed by the orchestrator after pulling and synchronizing the branch:
 
 ```bash
 pnpm --filter @876/core typecheck
@@ -223,4 +224,4 @@ The branch is intentionally based on `feat/work-widget-phase-3`, which the user 
 
 ## PR Preparation Summary
 
-Not ready. Implementation is in progress. Tests/typecheck/build are not executed; verification is the orchestrator's.
+Ready for review. Scoped typechecks, builds, lint, structure checks, and 5,440 tests pass. The repository-wide `pnpm check` remains blocked by a pre-existing formatting backlog, and the API boundary checker reports 18 pre-existing dependency cycles. Database seed and browser verification remain rollout steps because no live database or deployment was authorized.

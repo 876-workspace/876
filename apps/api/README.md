@@ -32,7 +32,7 @@ pnpm --filter @876/api test        # vitest + supertest
 pnpm --filter @876/api lint
 pnpm --filter @876/api boundaries  # dependency-cruiser; a violation is an error
 pnpm --filter @876/api db:deploy   # prisma migrate deploy
-pnpm --filter @876/api seed        # feature/geo/plan/provisioning/bootstrap seeds
+pnpm --filter @876/api seed        # explicit platform catalog/bootstrap seeds
 ```
 
 ## Schema and seeds
@@ -45,6 +45,28 @@ does not, so:
   `pnpm --filter @876/api db:deploy`;
 - seeds are an explicit CLI (`pnpm --filter @876/api seed`), composed in
   `src/seeds/index.ts` and reachable from nothing under `src/application.ts`.
+
+Invoice plan options come from persisted `application_modules`, materialized
+from `@876/core/modules`. Deploying code alone does not initialize these rows.
+For a bootstrapped environment, with its feature catalog already initialized,
+run the explicit seed workflow against the intended database:
+
+```bash
+pnpm --filter @876/api seed --only=defaultPrices,plans
+```
+
+Default products/prices run before module grants. A fresh Invoice catalog gets
+eight module options; an existing `876-invoice-free` product initially gets
+`invoices`, `quotes`, `payments`, `items`, and `customers`. Existing operator
+pricing is preserved; if the free product is absent because a custom price
+already exists, no free-plan grants are invented. The new module and its initial
+grants are written atomically. Rerunning the seed repairs registry labels but
+preserves module status, flag associations, ordering, and removed plan grants.
+The `plans` seed also retains its existing Billing assignment backfill, so it
+should be run as an environment maintenance operation, not on sign-in.
+
+Provisioning profiles/manifests remain operator-managed database configuration;
+the catalog seed does not recreate or overwrite them.
 
 Never run `prisma migrate dev` against a database carrying the `billing_*` or
 `storage_*` tables — they belong to other services under Alembic, and drift

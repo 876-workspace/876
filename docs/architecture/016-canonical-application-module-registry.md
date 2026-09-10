@@ -66,24 +66,20 @@ The initial shared Finance identity is:
 - `sales-receipts`
 - `time-tracking`
 - `customers`
-- `crm`
 
 876 Billing additionally declares:
 
 - `subscriptions`
 - `banking`
-- `credit-notes`
 - `purchases`
 - `payroll`
-- `price-lists`
-- `discounts`
 
 Invoice reuses the same shared definition objects Billing consumes; it does not
 copy their labels/descriptions into another catalog.
 
-`crm` has canonical identity because the settings surface already references it,
-but it is not materialized into the commercial entitlement plane until the
-CRM-inside-finance product contract is implemented.
+Settings-only identities (`crm`, `credit-notes`, `price-lists`, and `discounts`)
+remain declared in `packages/billing/src/settings-catalog.ts`. They do not need
+a cross-plane registry entry until another architectural plane consumes them.
 
 ### Settings remain a projection
 
@@ -131,6 +127,9 @@ For registry-backed rows:
 `plan_modules` remains Console/operator-controlled plan composition. A default
 plan grant is added only when the module relationship is first bootstrapped;
 later seed runs must not restore a grant an operator intentionally removed.
+Creation uses one nested database write for the new module and its initial
+grants. A failed grant therefore cannot leave behind a module that a retry
+mistakes for an operator-edited record.
 
 Canonical identity does not by itself make a module commercially selectable.
 A module belongs in the commercial projection only when a plan grant to that
