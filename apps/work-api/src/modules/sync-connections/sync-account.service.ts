@@ -8,7 +8,6 @@ import type {
   WorkSyncConnectionSetupInput,
 } from '@876/work'
 
-import * as calendars from '../calendars/index.js'
 import * as syncMappings from '../sync-mappings/index.js'
 import {
   buildOauthAuthorizeUrl,
@@ -16,6 +15,7 @@ import {
   retrieveRemoteAccount,
   type WorkOauthProvider,
 } from '../../providers/sync/index.js'
+import * as linkRepository from './sync-calendar-link.repository.js'
 import { providerError } from './sync-provider-errors.js'
 import { providerForConnection } from './sync-provider.js'
 import * as credentials from './sync-credentials.js'
@@ -222,6 +222,7 @@ function serializeLink(
     id: string
     localId: string
     remoteId: string
+    syncDirection: 'BIDIRECTIONAL' | 'PULL_ONLY'
     syncWindowStart: Date | null
     syncWindowEnd: Date | null
     lastSyncedAt: Date | null
@@ -239,6 +240,7 @@ function serializeLink(
     calendarId: mapping.localId,
     remoteCalendarId: mapping.remoteId,
     remoteCalendarName,
+    syncDirection: mapping.syncDirection,
     syncWindowStart: stamp(mapping.syncWindowStart),
     syncWindowEnd: stamp(mapping.syncWindowEnd),
     lastSyncedAt: stamp(mapping.lastSyncedAt),
@@ -292,8 +294,11 @@ export async function linkCalendar(
   const syncConnection = syncProviderConnection(connection)
   if (!syncConnection) return getError('work/invalid-request')
 
-  if (await syncMappings.findCalendarByRemote(connectionId, input.remoteCalendarId))
-    return getError('work/sync-calendar-already-linked')
+  const alreadyLinked = await syncMappings.findCalendarByRemote(
+    connectionId,
+    input.remoteCalendarId
+  )
+  if (alreadyLinked) return serializeLink(syncConnection, alreadyLinked)
 
   const remote = await remoteCalendars(organizationId, connectionId, userId)
   if (isError(remote)) return remote
@@ -302,32 +307,26 @@ export async function linkCalendar(
   )
   if (!selected) return getError('work/sync-calendar-not-found')
 
-  let calendarId = input.localCalendarId
-  if (calendarId) {
-    const existing = await calendars.retrieve(organizationId, calendarId)
-    if (!existing || isError(existing)) return getError('work/calendar-not-found')
-    if (await syncMappings.findCalendarByLocal(connectionId, calendarId))
-      return getError('work/sync-calendar-already-linked')
-  } else {
-    const created = await calendars.create(organizationId, {
-      ownerUserId: userId,
-      name: selected.name,
-      description: selected.description,
-      timeZone: selected.timeZone ?? 'UTC',
-      visibility: 'PRIVATE',
-      createdBy: userId,
-    })
-    if (isError(created)) return created
-    calendarId = created.id
-  }
+  const raw = await repository.retrieveById(connection.id)
+  if (!raw) return getError('work/sync-connection-not-found')
 
-  const mapping = await syncMappings.createState({
-    connectionId,
-    resourceType: 'CALENDAR',
-    localId: calendarId,
-    remoteId: selected.remoteId,
+  const linked = await linkRepository.link({
+    tenantId: raw.tenantId,
+    connectionId: connection.id,
+    userId,
+    localCalendarId: input.localCalendarId,
+    remoteCalendarId: selected.remoteId,
+    name: selected.name,
+    description: selected.description,
+    timeZone: selected.timeZone ?? 'UTC',
+    syncDirection: selected.readOnly ? 'PULL_ONLY' : 'BIDIRECTIONAL',
   })
-  return serializeLink(syncConnection, mapping, selected.name)
+  if (linked.kind === 'calendar-not-found')
+    return getError('work/calendar-not-found')
+  if (linked.kind === 'calendar-already-linked')
+    return getError('work/sync-calendar-already-linked')
+
+  return serializeLink(syncConnection, linked.mapping, selected.name)
 }
 
 export async function unlinkCalendar(
