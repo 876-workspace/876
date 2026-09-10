@@ -1,5 +1,7 @@
-import { FINANCE_MODULES } from '@876/core/modules'
-import type { AppModuleDefinition } from '@876/core/types/modules'
+import {
+  FINANCE_MODULES,
+  type AppModuleDefinition,
+} from '@876/core/modules'
 import {
   defineModuleCatalog,
   type PreferenceDefinition,
