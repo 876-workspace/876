@@ -50,8 +50,14 @@ function ItemAuditSkeleton() {
       <section className="876-card p-5">
         <h2 className="876-section-title mb-4">Audit trail</h2>
         <dl className="divide-876-surface-border divide-y">
-          <DetailField label="Created at" value={<Skeleton className="h-4 w-28" />} />
-          <DetailField label="Updated at" value={<Skeleton className="h-4 w-28" />} />
+          <DetailField
+            label="Created at"
+            value={<Skeleton className="h-4 w-28" />}
+          />
+          <DetailField
+            label="Updated at"
+            value={<Skeleton className="h-4 w-28" />}
+          />
         </dl>
       </section>
     </div>

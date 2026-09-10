@@ -6,7 +6,9 @@ const source = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
 describe('Billing item transaction loading', () => {
   it('keeps the top-level transactions page synchronous', () => {
     expect(source).toContain('export default function ItemTransactionsPage')
-    expect(source).not.toContain('export default async function ItemTransactionsPage')
+    expect(source).not.toContain(
+      'export default async function ItemTransactionsPage'
+    )
   })
 
   it('renders a placeholder-shaped fallback while item validation resolves', () => {

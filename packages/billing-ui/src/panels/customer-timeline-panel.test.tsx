@@ -65,8 +65,8 @@ describe('CustomerTimelinePanel', () => {
   })
 
   it('contains no hard-coded route href', () => {
-    expect(readFileSync('src/panels/customer-timeline-panel.tsx', 'utf8')).not.toMatch(
-      /href=|\/customers\//
-    )
+    expect(
+      readFileSync('src/panels/customer-timeline-panel.tsx', 'utf8')
+    ).not.toMatch(/href=|\/customers\//)
   })
 })

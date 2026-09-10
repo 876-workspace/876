@@ -130,8 +130,14 @@ function ItemOverviewSkeleton() {
 
       <DetailCardSection title="Stock">
         <DetailCardFacts>
-          <DetailCardFact label="Quantity" value={<Skeleton className="h-4 w-16" />} />
-          <DetailCardFact label="Status" value={<Skeleton className="h-4 w-20" />} />
+          <DetailCardFact
+            label="Quantity"
+            value={<Skeleton className="h-4 w-16" />}
+          />
+          <DetailCardFact
+            label="Status"
+            value={<Skeleton className="h-4 w-20" />}
+          />
           <DetailCardFact
             label="Low stock threshold"
             value={<Skeleton className="h-4 w-16" />}
@@ -145,9 +151,19 @@ function ItemOverviewSkeleton() {
 
       <DetailCardSection title="Item">
         <DetailCardFacts>
-          <DetailCardFact label="Type" value={<Skeleton className="h-4 w-20" />} />
-          <DetailCardFact label="SKU" value={<Skeleton className="h-4 w-24" />} mono />
-          <DetailCardFact label="Unit" value={<Skeleton className="h-4 w-16" />} />
+          <DetailCardFact
+            label="Type"
+            value={<Skeleton className="h-4 w-20" />}
+          />
+          <DetailCardFact
+            label="SKU"
+            value={<Skeleton className="h-4 w-24" />}
+            mono
+          />
+          <DetailCardFact
+            label="Unit"
+            value={<Skeleton className="h-4 w-16" />}
+          />
         </DetailCardFacts>
       </DetailCardSection>
 
@@ -158,7 +174,10 @@ function ItemOverviewSkeleton() {
             value={<Skeleton className="h-4 w-14" />}
             mono
           />
-          <DetailCardFact label="Tax" value={<Skeleton className="h-4 w-20" />} />
+          <DetailCardFact
+            label="Tax"
+            value={<Skeleton className="h-4 w-20" />}
+          />
           <DetailCardFact
             label="Tax code"
             value={<Skeleton className="h-4 w-24" />}

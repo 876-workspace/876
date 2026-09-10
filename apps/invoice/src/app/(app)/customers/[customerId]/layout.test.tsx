@@ -18,7 +18,10 @@ describe('Invoice customer detail layout', () => {
   })
   it('gives every placeholder tab visible content and a leaf loading skeleton', () => {
     for (const tab of ['requests', 'mails', 'activity']) {
-      const page = readFileSync(new URL(`./${tab}/page.tsx`, import.meta.url), 'utf8')
+      const page = readFileSync(
+        new URL(`./${tab}/page.tsx`, import.meta.url),
+        'utf8'
+      )
       const loading = readFileSync(
         new URL(`./${tab}/loading.tsx`, import.meta.url),
         'utf8'

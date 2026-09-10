@@ -29,8 +29,8 @@ export function CustomerTimelinePanel({
             {state.data.map((entry) => (
               <li key={entry.id} className="border-l pl-4">
                 <p className="text-sm">
-                  <span className="font-medium">{entry.actor}</span> {entry.verb}{' '}
-                  {entry.target}
+                  <span className="font-medium">{entry.actor}</span>{' '}
+                  {entry.verb} {entry.target}
                 </p>
                 <time className="text-muted-foreground mt-1 block text-xs">
                   {entry.timestamp}
