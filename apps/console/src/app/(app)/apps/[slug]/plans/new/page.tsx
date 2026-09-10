@@ -1,11 +1,11 @@
-import { workspace } from '@/lib/services/workspace'
+import { listAppModules } from '@/lib/console/modules'
+import { getError, toAppError } from '@876/core/errors'
+import { listConsoleApps } from '@/lib/apps-catalog'
+import type { CreatePlanSetup } from '@/types/plans'
 import type { Metadata } from 'next'
 
 import { resolveApp } from '../../_data'
-import {
-  CreatePlanForm,
-  type CreatePlanSetup,
-} from './_components/create-plan-form'
+import { CreatePlanForm } from './_components/create-plan-form'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -32,21 +32,16 @@ export default async function NewPlanPage({ params }: Props) {
 }
 
 async function loadPlanSetup(slug: string): Promise<CreatePlanSetup> {
-  const app = await resolveApp(slug)
-  if (!app) throw new Error('App not found.')
+  const { apps, error } = await listConsoleApps()
+  if (error) return { data: null, error }
+  const app = apps?.find((candidate) => candidate.slug === slug)
+  if (!app) return { data: null, error: toAppError(getError('app/not-found')) }
 
-  const result = await workspace.modules.list(app.id)
-  if (result.error) throw new Error(result.error.message)
+  const result = await listAppModules(app.id, false)
+  if (result.error) return { data: null, error: result.error }
 
   return {
-    appId: app.id,
-    modules: (result.data?.data ?? []).map((module) => ({
-      id: module.id,
-      key: module.key,
-      name: module.name,
-      description: module.description,
-      featureSlug: module.feature_slug,
-      status: module.status,
-    })),
+    data: { appId: app.id, modules: result.data.data },
+    error: null,
   }
 }

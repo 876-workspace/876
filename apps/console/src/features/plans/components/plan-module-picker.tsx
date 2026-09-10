@@ -77,14 +77,14 @@ export function PlanModulePicker({
                   </span>
                 )}
                 <span className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  {module.featureSlug && (
+                  {module.feature_slug && (
                     <Badge variant="outline">rollout flag</Badge>
                   )}
                   {archived && <Badge variant="warning">Archived</Badge>}
                 </span>
-                {module.featureSlug && (
+                {module.feature_slug && (
                   <span className="text-muted-foreground block font-mono text-[11px]">
-                    Operational gate: {module.featureSlug}
+                    Operational gate: {module.feature_slug}
                   </span>
                 )}
               </span>

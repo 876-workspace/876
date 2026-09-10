@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import type { AdminApplicationModule } from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
@@ -21,8 +22,12 @@ import { Pencil, Plus, Trash } from '@876/ui/icons'
 import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
-export type ModuleFeatureOption = { id: string; name: string; slug: string }
-export type ModulesContext = { appId: string; canManage: boolean }
+import type {
+  ModuleFeatureOption,
+  ModulesContext,
+  ModulesResult,
+  ModuleFeaturesResult,
+} from '@/types/modules'
 
 type Draft = {
   key: string
@@ -46,8 +51,8 @@ export function ModulesManager({
   features,
 }: {
   context: ModulesContext | Promise<ModulesContext>
-  modules: AdminApplicationModule[] | Promise<AdminApplicationModule[]>
-  features: ModuleFeatureOption[] | Promise<ModuleFeatureOption[]>
+  modules: ModulesResult | Promise<ModulesResult>
+  features: ModuleFeaturesResult | Promise<ModuleFeaturesResult>
 }) {
   const contextState = useAsyncValue(context)
   const modulesState = useAsyncValue(modules)
@@ -62,8 +67,18 @@ export function ModulesManager({
 
   const appId = contextState.value?.appId ?? null
   const canManage = contextState.value?.canManage ?? false
-  const resolvedModules = localModules ?? modulesState.value ?? []
-  const resolvedFeatures = featuresState.value ?? []
+  const registryManaged = contextState.value?.registryManaged ?? false
+  const registryModuleKeys = contextState.value?.registryModuleKeys ?? []
+  const resolvedModules = localModules ?? modulesState.value?.data ?? []
+  const resolvedFeatures = featuresState.value?.data ?? []
+  const modulesError = modulesState.value?.error
+  const featuresError = featuresState.value?.error
+  const optionsUnavailable =
+    [contextState, modulesState, featuresState].some(
+      (state) => state.pending || state.error
+    ) || Boolean(modulesError || featuresError)
+  const identityLocked =
+    editingId !== 'new' && registryModuleKeys.includes(draft.key)
 
   function edit(module: AdminApplicationModule) {
     setEditingId(module.id)
@@ -81,12 +96,13 @@ export function ModulesManager({
       !appId ||
       !editingId ||
       !draft.name.trim() ||
-      modulesState.pending ||
+      optionsUnavailable ||
       (editingId === 'new' && !draft.key.trim())
     )
       return
 
     const targetId = editingId
+    const registryIdentity = registryModuleKeys.includes(draft.key)
     setMessage(null)
     startTransition(async () => {
       const position = Number.parseInt(draft.position || '0', 10)
@@ -100,18 +116,26 @@ export function ModulesManager({
               feature_id: draft.featureId || null,
               position: Number.isFinite(position) ? position : 0,
             })
-          : await client.modules.update(targetId, {
-              name: draft.name.trim(),
-              description: draft.description.trim() || null,
-              feature_id: draft.featureId || null,
-              position: Number.isFinite(position) ? position : 0,
-            })
+          : await client.modules.update(
+              targetId,
+              registryIdentity
+                ? {
+                    feature_id: draft.featureId || null,
+                    position: Number.isFinite(position) ? position : 0,
+                  }
+                : {
+                    name: draft.name.trim(),
+                    description: draft.description.trim() || null,
+                    feature_id: draft.featureId || null,
+                    position: Number.isFinite(position) ? position : 0,
+                  }
+            )
       if (result.error || !result.data) {
         setMessage(result.error?.message ?? 'Failed to save module.')
         return
       }
       setLocalModules((current) => {
-        const base = current ?? modulesState.value ?? []
+        const base = current ?? modulesState.value?.data ?? []
         const exists = base.some((item) => item.id === result.data!.id)
         return exists
           ? base.map((item) =>
@@ -138,7 +162,9 @@ export function ModulesManager({
           </p>
           <h1 className="876-page-title mt-1">Modules</h1>
         </div>
-        {canManage ? (
+        {canManage && registryManaged ? (
+          <Badge variant="secondary">Registry managed</Badge>
+        ) : canManage ? (
           <Button
             size="sm"
             onClick={() => {
@@ -155,6 +181,14 @@ export function ModulesManager({
 
       {contextState.error ? (
         <InlineError message={contextState.error.message} />
+      ) : null}
+      {modulesError ? (
+        <AppError
+          title="Modules could not be loaded"
+          error={modulesError}
+          variant="banner"
+          showCode
+        />
       ) : null}
 
       {modulesState.pending ? (
@@ -221,7 +255,7 @@ export function ModulesManager({
                               if (!result.error)
                                 setLocalModules((current) => {
                                   const base =
-                                    current ?? modulesState.value ?? []
+                                    current ?? modulesState.value?.data ?? []
                                   return base.map((item) =>
                                     item.id === module.id
                                       ? { ...item, status: 'archived' }
@@ -248,7 +282,11 @@ export function ModulesManager({
           draft={draft}
           features={resolvedFeatures}
           featuresPending={featuresState.pending}
-          featuresError={featuresState.error?.message ?? null}
+          featuresError={
+            featuresError?.message ??
+            (featuresState.error ? 'Rollout flags could not be loaded.' : null)
+          }
+          identityLocked={identityLocked}
           isNew={editingId === 'new'}
           onChange={setDraft}
         />
@@ -259,12 +297,7 @@ export function ModulesManager({
             Cancel
           </Button>
           <Button
-            disabled={
-              isPending ||
-              contextState.pending ||
-              modulesState.pending ||
-              !appId
-            }
+            disabled={isPending || optionsUnavailable || !appId}
             onClick={save}
           >
             Save module
@@ -283,6 +316,7 @@ function ModuleForm({
   features,
   featuresPending,
   featuresError,
+  identityLocked,
   isNew,
   onChange,
 }: {
@@ -290,6 +324,7 @@ function ModuleForm({
   features: ModuleFeatureOption[]
   featuresPending: boolean
   featuresError: string | null
+  identityLocked: boolean
   isNew: boolean
   onChange: (draft: Draft) => void
 }) {
@@ -299,7 +334,7 @@ function ModuleForm({
         <Label htmlFor="module-key">Stable key</Label>
         <Input
           id="module-key"
-          disabled={!isNew}
+          disabled={!isNew || identityLocked}
           value={draft.key}
           onChange={(e) => onChange({ ...draft, key: e.target.value })}
           placeholder="delivery"
@@ -309,6 +344,7 @@ function ModuleForm({
         <Label htmlFor="module-name">Name</Label>
         <Input
           id="module-name"
+          disabled={identityLocked}
           value={draft.name}
           onChange={(e) => onChange({ ...draft, name: e.target.value })}
         />
@@ -317,9 +353,16 @@ function ModuleForm({
         <Label htmlFor="module-description">Description</Label>
         <Input
           id="module-description"
+          disabled={identityLocked}
           value={draft.description}
           onChange={(e) => onChange({ ...draft, description: e.target.value })}
         />
+        {identityLocked ? (
+          <p className="text-muted-foreground text-xs">
+            Stable key, name, and description come from the application module
+            registry. Rollout and ordering remain operator-managed.
+          </p>
+        ) : null}
       </div>
       <div className="space-y-2">
         <Label htmlFor="module-feature">Operational rollout flag</Label>

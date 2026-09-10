@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { FINANCE_MODULES } from '../modules'
 import {
   appPermissionCatalogs,
   billingPermissionCatalog,
@@ -76,6 +77,8 @@ const INVOICE_KEYS = [
   'events.create',
   'events.delete',
   'events.edit',
+  'events.invite',
+  'events.respond',
   'events.view',
   'invoices.create',
   'invoices.delete',
@@ -103,9 +106,11 @@ const INVOICE_KEYS = [
   'reports.view',
   'settings.edit',
   'settings.view',
+  'tasks.assign',
   'tasks.create',
   'tasks.delete',
   'tasks.edit',
+  'tasks.respond',
   'tasks.view',
 ]
 
@@ -145,6 +150,29 @@ describe('billingPermissionCatalog', () => {
       'payment-methods',
       'settings',
     ])
+  })
+
+  it('reuses canonical labels for matching finance modules', () => {
+    const labels = new Map(
+      billingPermissionCatalog.modules.map((module) => [
+        module.key,
+        module.label,
+      ])
+    )
+
+    expect({
+      customers: labels.get('customers'),
+      subscriptions: labels.get('subscriptions'),
+      purchases: labels.get('purchases'),
+      banking: labels.get('banking'),
+      payments: labels.get('payments'),
+    }).toEqual({
+      customers: FINANCE_MODULES.customers.label,
+      subscriptions: FINANCE_MODULES.subscriptions.label,
+      purchases: FINANCE_MODULES.purchases.label,
+      banking: FINANCE_MODULES.banking.label,
+      payments: FINANCE_MODULES.payments.label,
+    })
   })
 
   it('marks exactly the delete actions dangerous', () => {
@@ -195,6 +223,29 @@ describe('invoicePermissionCatalog', () => {
     ])
   })
 
+  it('reuses canonical labels for every matching finance module', () => {
+    const labels = new Map(
+      invoicePermissionCatalog.modules.map((module) => [
+        module.key,
+        module.label,
+      ])
+    )
+
+    expect({
+      customers: labels.get('customers'),
+      items: labels.get('items'),
+      invoices: labels.get('invoices'),
+      quotes: labels.get('quotes'),
+      payments: labels.get('payments'),
+    }).toEqual({
+      customers: FINANCE_MODULES.customers.label,
+      items: FINANCE_MODULES.items.label,
+      invoices: FINANCE_MODULES.invoices.label,
+      quotes: FINANCE_MODULES.quotes.label,
+      payments: FINANCE_MODULES.payments.label,
+    })
+  })
+
   it('gives invoices and quotes an export action', () => {
     const exportable = invoicePermissionCatalog.permissions
       .filter((permission) => permission.action === 'export')
@@ -221,15 +272,19 @@ describe('invoicePermissionCatalog', () => {
       'events.create',
       'events.delete',
       'events.edit',
+      'events.invite',
+      'events.respond',
       'events.view',
       'my-work.view',
       'reminders.create',
       'reminders.delete',
       'reminders.edit',
       'reminders.view',
+      'tasks.assign',
       'tasks.create',
       'tasks.delete',
       'tasks.edit',
+      'tasks.respond',
       'tasks.view',
     ])
   })

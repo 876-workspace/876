@@ -19,9 +19,9 @@ import { getLogger } from '@/platform/logger'
 import { seedAppAccess } from './app-access'
 import { seedBootstrap } from './bootstrap'
 import { seedDefaultAppPrices } from './default-prices'
+import { seedAllFeatures } from './features'
 import { seedGeoCatalog } from './geo'
 import { seedInternalPlans } from './internal-plan'
-import { seedAllFeatures } from './features'
 import { seedPlans } from './plans'
 
 const log = getLogger('seeds:index')
@@ -83,6 +83,19 @@ export async function runSeeds(
     log.info({ summary: summary.features }, 'seeds.features.completed')
   }
 
+  // Default products must exist before first-time module grants are evaluated.
+  // Plan seeding deliberately never restores an operator-removed grant, so
+  // creating a product after its modules would make its initial grants
+  // impossible to distinguish from a deliberate later removal.
+  if (shouldRun('defaultPrices')) {
+    log.info('seeds.default_prices.started')
+    summary.defaultPrices = await seedDefaultAppPrices()
+    log.info(
+      { summary: summary.defaultPrices },
+      'seeds.default_prices.completed'
+    )
+  }
+
   if (shouldRun('plans')) {
     log.info('seeds.plans.started')
     summary.plans = await seedPlans()
@@ -95,15 +108,6 @@ export async function runSeeds(
     log.info('seeds.internal_plan.started')
     summary.internalPlan = await seedInternalPlans()
     log.info({ summary: summary.internalPlan }, 'seeds.internal_plan.completed')
-  }
-
-  if (shouldRun('defaultPrices')) {
-    log.info('seeds.default_prices.started')
-    summary.defaultPrices = await seedDefaultAppPrices()
-    log.info(
-      { summary: summary.defaultPrices },
-      'seeds.default_prices.completed'
-    )
   }
 
   return summary

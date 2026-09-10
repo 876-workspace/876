@@ -60,6 +60,36 @@ describe('getConsoleFeatures', () => {
     expect(mocks.featuresEvaluate).toHaveBeenCalledTimes(1)
   })
 
+  it('evaluates Console flags when its app is on a later catalog page', async () => {
+    mocks.appsList
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ id: 'app_billing', slug: '876-billing' }],
+          has_more: true,
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ id: 'app_console', slug: 'console' }],
+          has_more: false,
+        },
+        error: null,
+      })
+    const result = await getConsoleFeatures({ userId: 'user_123', widgets: [] })
+    expect(result).toEqual(disabledResult)
+    expect(mocks.appsList).toHaveBeenCalledTimes(2)
+    expect(mocks.appsList).toHaveBeenLastCalledWith({
+      limit: 100,
+      clientType: 'public',
+      startingAfter: 'app_billing',
+    })
+    expect(mocks.featuresEvaluate).toHaveBeenCalledWith({
+      appId: 'app_console',
+      userId: 'user_123',
+    })
+  })
+
   it.each([
     ['an app-list error', { data: null, error: { message: 'Unavailable.' } }],
     ['missing app-list data', { data: null, error: null }],
@@ -75,6 +105,7 @@ describe('getConsoleFeatures', () => {
     expect(mocks.appsList).toHaveBeenCalledWith({
       limit: 100,
       clientType: 'public',
+      startingAfter: undefined,
     })
     expect(mocks.featuresEvaluate).not.toHaveBeenCalled()
   })

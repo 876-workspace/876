@@ -1,3 +1,4 @@
+import { FINANCE_MODULES } from '../modules'
 import { defineAppPermissionCatalog } from './index'
 import type { AppPermission, AppPermissionCatalog } from './types'
 
@@ -47,6 +48,13 @@ function crud(
   extra: readonly string[] = []
 ): ModuleDraft {
   return { key, label, actions: [...CRUD, ...extra] }
+}
+
+function crudModule(
+  definition: { key: string; label: string },
+  extra: readonly string[] = []
+): ModuleDraft {
+  return crud(definition.key, definition.label, extra)
 }
 
 function titleCase(value: string): string {
@@ -220,17 +228,17 @@ export const billingPermissionCatalog: AppPermissionCatalog =
     app: '876-billing',
     modules: modules([
       { key: 'dashboard', label: 'Dashboard', actions: ['view'] },
-      crud('customers', 'Customers'),
+      crudModule(FINANCE_MODULES.customers),
       crud('catalog', 'Catalog'),
       crud('sales', 'Sales'),
-      crud('subscriptions', 'Subscriptions'),
+      crudModule(FINANCE_MODULES.subscriptions),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       crud('currencies', 'Currencies'),
       crud('taxes', 'Taxes'),
       crud('vendors', 'Vendors'),
-      crud('purchases', 'Purchases'),
-      crud('banking', 'Banking'),
-      crud('payments', 'Payments'),
+      crudModule(FINANCE_MODULES.purchases),
+      crudModule(FINANCE_MODULES.banking),
+      crudModule(FINANCE_MODULES.payments),
       // Handling a stored instrument is a different sensitivity from recording a
       // receipt: a bookkeeper can reconcile payments without being able to
       // attach or detach a customer's card. Billing's own plane separates these
@@ -245,11 +253,11 @@ export const invoicePermissionCatalog: AppPermissionCatalog =
     app: '876-invoice',
     modules: modules([
       { key: 'dashboard', label: 'Dashboard', actions: ['view'] },
-      crud('customers', 'Customers'),
-      crud('items', 'Items'),
-      crud('invoices', 'Invoices', ['export']),
-      crud('quotes', 'Quotes', ['export']),
-      crud('payments', 'Payments'),
+      crudModule(FINANCE_MODULES.customers),
+      crudModule(FINANCE_MODULES.items),
+      crudModule(FINANCE_MODULES.invoices, ['export']),
+      crudModule(FINANCE_MODULES.quotes, ['export']),
+      crudModule(FINANCE_MODULES.payments),
       crud('tasks', 'Tasks', ['assign', 'respond']),
       crud('reminders', 'Reminders'),
       crud('events', 'Events', ['invite', 'respond']),

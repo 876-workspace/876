@@ -4,37 +4,20 @@ import 'server-only'
 import { cache } from 'react'
 import type { AdminApp } from '@876/platform/compat'
 import type { AppError } from '@876/core/types/errors'
+import { collectCatalogPages } from '@/lib/console/catalog-pages'
 
 /**
  * The first-party app catalog, fetched once per request.
  *
- * Two unrelated callers needed this same list on a single render — the shell's
- * feature-flag resolution, to find the Console app and evaluate against its id,
- * and the app detail routes, to resolve a slug — and both issued a byte-identical
- * `apps.list({ limit: 100, clientType: 'public' })`. Two round trips for one
- * answer, on every app page.
- *
- * No kind filter: the list spans internal, platform and product apps, because
- * filtering to `internal` is what once made /apps/876-couriers 404.
- *
- * The failure is returned, not collapsed to null: callers log it, and a bare
- * null produced `errorCode: null, errorMessage: null` outage lines that named
- * the failing call and nothing about why it failed.
+ * The shell's feature evaluation and app detail routes share the complete
+ * catalog, including every page and every first-party app kind. Failures remain
+ * distinguishable from an app that does not exist.
  */
 export const listConsoleApps = cache(
   async (): Promise<{ apps: AdminApp[] | null; error: AppError | null }> => {
-    const { data, error } = await platform.apps.list({
-      limit: 100,
-      clientType: 'public',
-    })
-    if (error || !data)
-      return {
-        apps: null,
-        error: error ?? {
-          code: 'admin/empty-response',
-          message: 'apps.list returned no data and no error.',
-        },
-      }
-    return { apps: data.data, error: null }
+    const { data, error } = await collectCatalogPages((startingAfter) =>
+      platform.apps.list({ limit: 100, clientType: 'public', startingAfter })
+    )
+    return { apps: data, error }
   }
 )

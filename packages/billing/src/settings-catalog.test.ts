@@ -1,3 +1,4 @@
+import { FINANCE_MODULES } from '@876/core/modules'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -81,6 +82,21 @@ describe('finance module catalogs', () => {
       }).toEqual({
         label: invoiceModule.label,
         description: invoiceModule.description,
+      })
+    }
+  })
+
+  it('projects every shared finance identity into Billing settings', () => {
+    for (const identity of Object.values(FINANCE_MODULES)) {
+      const settings = BILLING_MODULE_CATALOG.find(
+        (candidate) => candidate.key === identity.key
+      )
+      expect({
+        label: settings?.label,
+        description: settings?.description,
+      }).toEqual({
+        label: identity.label,
+        description: identity.description,
       })
     }
   })

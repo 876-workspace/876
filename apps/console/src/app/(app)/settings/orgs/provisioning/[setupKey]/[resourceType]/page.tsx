@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { notFound, redirect } from 'next/navigation'
+import { AppError } from '@876/ui/app-error'
 
 import { workspace } from '@/lib/services/workspace'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
@@ -8,7 +9,10 @@ import {
   toFinanceLanguageOptions,
 } from '@/features/provisioning/finance-provisioning-utils'
 import { ProvisioningResourceTypeSkeleton } from '@/features/provisioning/components/provisioning-page-skeleton'
-import { getProvisioningCatalog } from '../_data'
+import {
+  getProvisioningCatalog,
+  getProvisioningReferenceData,
+} from '@/lib/console/provisioning'
 
 export const metadata = { title: 'Provisioning setup' }
 
@@ -35,23 +39,29 @@ async function ProvisioningResourceTypeData({ params }: Props) {
     redirect(`/settings/orgs/provisioning/${encodeURIComponent(setupKey)}`)
   }
 
-  const [catalogResult, manifestResult, currenciesResult, languagesResult] =
-    await Promise.all([
-      getProvisioningCatalog(setupKey),
-      workspace.provisioning.retrieve('finance', setupKey),
-      workspace.geo.listCurrencies(),
-      workspace.geo.listLanguages(),
-    ])
-  if (catalogResult.error || !catalogResult.data) notFound()
-  if (manifestResult.error || !manifestResult.data) notFound()
-  if (currenciesResult.error || !currenciesResult.data) notFound()
-  if (languagesResult.error || !languagesResult.data) notFound()
+  const [
+    catalogResult,
+    manifestResult,
+    { currencies: currenciesResult, languages: languagesResult },
+  ] = await Promise.all([
+    getProvisioningCatalog('finance', setupKey),
+    workspace.provisioning.retrieve('finance', setupKey),
+    getProvisioningReferenceData(),
+  ])
+  if (manifestResult.error?.code === 'provisioning/manifest-not-found')
+    notFound()
+  if (catalogResult.error)
+    return <AppError error={catalogResult.error} variant="banner" showCode />
+  if (manifestResult.error)
+    return <AppError error={manifestResult.error} variant="banner" showCode />
+  if (currenciesResult.error)
+    return <AppError error={currenciesResult.error} variant="banner" showCode />
+  if (languagesResult.error)
+    return <AppError error={languagesResult.error} variant="banner" showCode />
 
   // Validate that the resourceType segment maps to a known catalog type.
   const typeExists = catalogResult.data.resource_types.some(
-    (def) =>
-      (def.resource_type || (def as { resourceType?: string }).resourceType) ===
-      resourceType
+    (def) => def.resource_type === resourceType
   )
   if (!typeExists) notFound()
 

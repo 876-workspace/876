@@ -63,6 +63,10 @@
       "types": "./src/lib/id/index.ts",
       "default": "./src/lib/id/index.ts"
     },
+    "./modules": {
+      "types": "./src/modules.ts",
+      "default": "./src/modules.ts"
+    },
     "./money": {
       "types": "./src/lib/money/document-totals.ts",
       "default": "./src/lib/money/document-totals.ts"

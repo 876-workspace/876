@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { FINANCE_MODULES } from '../modules'
 import {
   FINANCE_PERMISSION_MODULES,
   FINANCE_PERMISSION_VALUES,
@@ -17,6 +18,26 @@ describe('financePermissionSurface', () => {
   it('returns the full catalog for Billing', () => {
     expect(billing.app).toBe('billing')
     expect(billing.editable).toEqual([...FINANCE_PERMISSION_VALUES])
+  })
+
+  it('reuses canonical identity for exact finance-module matches', () => {
+    const labels = new Map(
+      FINANCE_PERMISSION_MODULES.map((module) => [module.key, module.label])
+    )
+
+    expect({
+      customers: labels.get('customers'),
+      payments: labels.get('payments'),
+      subscriptions: labels.get('subscriptions'),
+      purchases: labels.get('purchases'),
+      banking: labels.get('banking'),
+    }).toEqual({
+      customers: FINANCE_MODULES.customers.label,
+      payments: FINANCE_MODULES.payments.label,
+      subscriptions: FINANCE_MODULES.subscriptions.label,
+      purchases: FINANCE_MODULES.purchases.label,
+      banking: FINANCE_MODULES.banking.label,
+    })
   })
 
   it('omits Billing-only modules from the Invoice surface', () => {

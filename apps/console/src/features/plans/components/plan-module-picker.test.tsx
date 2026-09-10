@@ -18,7 +18,7 @@ it('selects durable modules independently of their rollout flag', async () => {
           key: 'sales',
           name: 'Sales',
           description: 'Sales documents',
-          featureSlug: 'billing_sales',
+          feature_slug: 'billing-sales',
           status: 'active',
         },
       ]}
@@ -30,5 +30,5 @@ it('selects durable modules independently of their rollout flag', async () => {
   await userEvent.click(screen.getByRole('checkbox', { name: /Sales/ }))
 
   expect(onChange).toHaveBeenCalledWith(['mod_sales'])
-  expect(screen.getByText('Operational gate: billing_sales')).toBeVisible()
+  expect(screen.getByText('Operational gate: billing-sales')).toBeVisible()
 })

@@ -7,6 +7,8 @@ export type ApplicationModuleRow = {
   id: string
   appId: string
   key: string
+  name: string
+  description: string | null
   featureId: string | null
 }
 export type PlanModuleRow = { id: string; productId: string; moduleId: string }
@@ -36,7 +38,14 @@ export async function findApplicationModule(
 ): Promise<ApplicationModuleRow | null> {
   const row = await prisma.applicationModule.findFirst({
     where: { appId, key },
-    select: { id: true, appId: true, key: true, featureId: true },
+    select: {
+      id: true,
+      appId: true,
+      key: true,
+      name: true,
+      description: true,
+      featureId: true,
+    },
   })
   return row
 }
@@ -52,6 +61,7 @@ export async function createApplicationModule(params: {
   position: number
   createdAt: bigint
   updatedAt: bigint
+  initialGrants: { id: string; productId: string }[]
 }): Promise<ApplicationModuleRow> {
   const row = await prisma.applicationModule.create({
     data: {
@@ -65,10 +75,38 @@ export async function createApplicationModule(params: {
       position: params.position,
       createdAt: params.createdAt,
       updatedAt: params.updatedAt,
+      planModules: {
+        create: params.initialGrants.map((grant) => ({
+          ...grant,
+          createdAt: params.createdAt,
+          updatedAt: params.updatedAt,
+        })),
+      },
     },
-    select: { id: true, appId: true, key: true, featureId: true },
+    select: {
+      id: true,
+      appId: true,
+      key: true,
+      name: true,
+      description: true,
+      featureId: true,
+    },
   })
   return row
+}
+
+export async function updateApplicationModuleIdentity(
+  moduleId: string,
+  params: { name: string; description: string; updatedAt: bigint }
+): Promise<void> {
+  await prisma.applicationModule.update({
+    where: { id: moduleId },
+    data: {
+      name: params.name,
+      description: params.description,
+      updatedAt: params.updatedAt,
+    },
+  })
 }
 
 export async function findPlanModule(

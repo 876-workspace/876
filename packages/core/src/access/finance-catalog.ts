@@ -1,3 +1,5 @@
+import { FINANCE_MODULES } from '../modules'
+
 /**
  * The 876 finance permission catalog — the single owner of the permission keys
  * `apps/billing-api` enforces on every tenant route.
@@ -48,6 +50,13 @@ function readWrite(key: string, label: string): FinancePermissionModule {
   }
 }
 
+function readWriteModule(definition: {
+  key: string
+  label: string
+}): FinancePermissionModule {
+  return readWrite(definition.key, definition.label)
+}
+
 function readOnly(key: string, label: string): FinancePermissionModule {
   return { key, label, permissions: [{ key: `${key}:read`, label: 'View' }] }
 }
@@ -66,10 +75,10 @@ export const FINANCE_PERMISSION_MODULES: readonly FinancePermissionModule[] = [
     permissions: [{ key: 'billing:access', label: 'Access' }],
   },
   readOnly('dashboard', 'Dashboard'),
-  readWrite('customers', 'Customers'),
+  readWriteModule(FINANCE_MODULES.customers),
   readWrite('catalog', 'Items & catalog'),
   readWrite('sales', 'Sales documents'),
-  readWrite('payments', 'Payments'),
+  readWriteModule(FINANCE_MODULES.payments),
   // Handling a stored instrument is a different sensitivity from recording a
   // receipt: a bookkeeper can reconcile payments without being able to attach
   // or detach a customer's card.
@@ -80,10 +89,10 @@ export const FINANCE_PERMISSION_MODULES: readonly FinancePermissionModule[] = [
   readOnly('settings', 'Settings'),
   readWrite('members', 'Members'),
   readWrite('roles', 'Roles'),
-  readWrite('subscriptions', 'Subscriptions'),
+  readWriteModule(FINANCE_MODULES.subscriptions),
   readWrite('vendors', 'Vendors'),
-  readWrite('purchases', 'Purchases'),
-  readWrite('banking', 'Banking'),
+  readWriteModule(FINANCE_MODULES.purchases),
+  readWriteModule(FINANCE_MODULES.banking),
 ] as const
 
 /**

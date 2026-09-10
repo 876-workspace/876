@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Accepted; module identity ownership and first-party registry management are
+refined by [ADR-016](./016-canonical-application-module-registry.md). The key
+spellings and Console CRUD language below describe the original decision and are
+retained as historical context; current 876-owned symbolic keys follow the
+platform kebab-case naming contract.
 
 ## Context
 

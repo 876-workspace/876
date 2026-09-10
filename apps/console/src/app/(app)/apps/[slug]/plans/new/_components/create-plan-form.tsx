@@ -7,16 +7,13 @@ import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Skeleton } from '@876/ui/skeleton'
+import { AppError } from '@876/ui/app-error'
+import type { AppError as AppErrorValue } from '@876/core/types/errors'
 
 import { PlanModulePicker } from '@/features/plans/components/plan-module-picker'
 import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
-import type { PlanModuleOption } from '@/types/plans'
-
-export type CreatePlanSetup = {
-  appId: string
-  modules: PlanModuleOption[]
-}
+import type { CreatePlanSetup } from '@/types/plans'
 
 type Props = {
   appSlug: string
@@ -26,9 +23,11 @@ type Props = {
 export function CreatePlanForm({ appSlug, setup }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<AppErrorValue | null>(null)
   const [step, setStep] = useState<'details' | 'modules'>('details')
   const setupState = useAsyncValue(setup)
+  const setupData = setupState.value?.data
+  const setupError = setupState.value?.error
 
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
@@ -39,10 +38,10 @@ export function CreatePlanForm({ appSlug, setup }: Props) {
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([])
 
   function handleSubmit() {
-    if (!name.trim() || !slug.trim() || !setupState.value) return
+    if (!name.trim() || !slug.trim() || !setupData) return
     setError(null)
     const unitAmount = Math.round(Number(priceDollars || '0') * 100)
-    const { appId } = setupState.value
+    const { appId } = setupData
 
     startTransition(async () => {
       const { data, error } = await client.products.create({
@@ -56,8 +55,8 @@ export function CreatePlanForm({ appSlug, setup }: Props) {
           billing_interval: billingInterval === 'none' ? null : billingInterval,
         },
       })
-      if (error || !data) {
-        setError(error?.message ?? 'Failed to create plan.')
+      if (error) {
+        setError(error)
         return
       }
       router.push(`/apps/${appSlug}/plans/${data.slug}`)
@@ -194,22 +193,27 @@ export function CreatePlanForm({ appSlug, setup }: Props) {
                 <Skeleton key={index} className="h-10 w-full" />
               ))}
             </div>
+          ) : setupError ? (
+            <AppError
+              title="Modules could not be loaded"
+              error={setupError}
+              variant="inline"
+              showCode
+            />
           ) : setupState.error ? (
             <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
-              {setupState.error.message}
+              Modules could not be loaded. Refresh the page to try again.
             </div>
           ) : (
             <PlanModulePicker
-              modules={setupState.value?.modules ?? []}
+              modules={setupData?.modules ?? []}
               selectedModuleIds={selectedModuleIds}
               onSelectedModuleIdsChange={setSelectedModuleIds}
               disabled={isPending}
             />
           )}
 
-          {error && (
-            <p className="text-destructive text-[0.8125rem]">{error}</p>
-          )}
+          {error && <AppError error={error} variant="inline" showCode />}
         </section>
       )}
 
@@ -236,7 +240,7 @@ export function CreatePlanForm({ appSlug, setup }: Props) {
         ) : (
           <Button
             onClick={handleSubmit}
-            disabled={isPending || setupState.pending || !setupState.value}
+            disabled={isPending || setupState.pending || !setupData}
           >
             {isPending ? 'Creating…' : 'Create plan'}
           </Button>
