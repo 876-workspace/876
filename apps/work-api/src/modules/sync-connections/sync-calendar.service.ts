@@ -3,10 +3,9 @@ import type { WorkEventResource } from '@876/work'
 
 import * as events from '../events/index.js'
 import * as syncMappings from '../sync-mappings/index.js'
-import {
-  WorkSyncProviderError,
-  type WorkRemoteEvent,
-  type WorkSyncProviderAdapter,
+import type {
+  WorkRemoteEvent,
+  WorkSyncProviderAdapter,
 } from '../../providers/sync/index.js'
 import { remoteEventSchema } from '../../providers/sync/remote-event.js'
 import {
@@ -14,11 +13,8 @@ import {
   shouldRecreateRemoteDeletion,
   syncEventHash,
 } from './sync-convergence.js'
+import { pullProviderCalendar } from './sync-pull.js'
 import { providerError } from './sync-provider-errors.js'
-
-const nowSeconds = () => Math.floor(Date.now() / 1000)
-const stamp = (value: Date | null) =>
-  value ? Math.floor(value.getTime() / 1000) : null
 
 type CalendarMapping = Awaited<
   ReturnType<typeof syncMappings.listCalendarStates>
@@ -218,40 +214,6 @@ function removeMapping(
   indexes.byRemote.delete(mapping.remoteId)
 }
 
-async function pullRemote(input: {
-  providerName: string
-  provider: WorkSyncProviderAdapter
-  mapping: CalendarMapping
-}) {
-  const now = nowSeconds()
-  const rolloverMicrosoftWindow =
-    input.providerName === 'MICROSOFT' &&
-    input.mapping.syncWindowEnd &&
-    Math.floor(input.mapping.syncWindowEnd.getTime() / 1000) <
-      now + 90 * 24 * 60 * 60
-  const pullInput = {
-    remoteCalendarId: input.mapping.remoteId,
-    cursor: rolloverMicrosoftWindow ? null : input.mapping.syncCursor,
-    windowStart: rolloverMicrosoftWindow
-      ? null
-      : stamp(input.mapping.syncWindowStart),
-    windowEnd: rolloverMicrosoftWindow
-      ? null
-      : stamp(input.mapping.syncWindowEnd),
-  }
-
-  try {
-    return await input.provider.pull(pullInput)
-  } catch (error) {
-    if (
-      error instanceof WorkSyncProviderError &&
-      error.code === 'provider-cursor-invalid'
-    )
-      return input.provider.pull({ ...pullInput, cursor: null })
-    throw error
-  }
-}
-
 export async function syncCalendar(input: {
   organizationId: string
   userId: string
@@ -271,7 +233,11 @@ export async function syncCalendar(input: {
 
   let pulled
   try {
-    pulled = await pullRemote(input)
+    pulled = await pullProviderCalendar({
+      providerName: input.providerName,
+      provider: input.provider,
+      mapping: input.mapping,
+    })
   } catch (error) {
     return providerError(error) ?? getError('work/internal')
   }
