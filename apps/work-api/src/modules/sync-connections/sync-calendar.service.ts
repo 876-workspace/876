@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto'
-
 import { getError, isError } from '@876/core'
 import type { WorkEventResource } from '@876/work'
 
@@ -11,6 +9,11 @@ import {
   type WorkSyncProviderAdapter,
 } from '../../providers/sync/index.js'
 import { remoteEventSchema } from '../../providers/sync/remote-event.js'
+import {
+  resolveSyncConflict,
+  shouldRecreateRemoteDeletion,
+  syncEventHash,
+} from './sync-convergence.js'
 import { providerError } from './sync-provider-errors.js'
 
 const nowSeconds = () => Math.floor(Date.now() / 1000)
@@ -30,38 +33,6 @@ export type SyncCounts = {
   updated: number
   deleted: number
   pushed: number
-}
-
-function canonicalEvent(value: {
-  title: string
-  description?: string | null
-  location?: string | null
-  status: string
-  busyStatus: string
-  allDay: boolean
-  startAt?: number | null
-  endAt?: number | null
-  timeZone?: string | null
-  startDate?: string | null
-  endDate?: string | null
-}) {
-  return JSON.stringify({
-    title: value.title,
-    description: value.description ?? null,
-    location: value.location ?? null,
-    status: value.status,
-    busyStatus: value.busyStatus,
-    allDay: value.allDay,
-    startAt: value.allDay ? null : (value.startAt ?? null),
-    endAt: value.allDay ? null : (value.endAt ?? null),
-    timeZone: value.allDay ? null : (value.timeZone ?? null),
-    startDate: value.allDay ? (value.startDate ?? null) : null,
-    endDate: value.allDay ? (value.endDate ?? null) : null,
-  })
-}
-
-function eventHash(value: Parameters<typeof canonicalEvent>[0]) {
-  return createHash('sha256').update(canonicalEvent(value)).digest('hex')
 }
 
 function remoteFromLocal(
@@ -178,7 +149,7 @@ async function pushLocal(input: {
     etag: input.recreate ? null : input.mapping?.remoteEtag,
     payload,
   })
-  const hash = eventHash(input.event)
+  const hash = syncEventHash(input.event)
   const mapping = input.mapping
     ? await syncMappings.updateState(input.mapping.id, {
         remoteId: result.remoteId,
@@ -331,7 +302,13 @@ export async function syncCalendar(input: {
         continue
       }
 
-      if (!pullOnly && eventHash(localEvent) !== mapping.contentHash) {
+      if (
+        shouldRecreateRemoteDeletion({
+          pullOnly,
+          localHash: syncEventHash(localEvent),
+          syncedHash: mapping.contentHash,
+        })
+      ) {
         try {
           const saved = await pushLocal({
             provider: input.provider,
@@ -360,7 +337,7 @@ export async function syncCalendar(input: {
       continue
     }
 
-    const remoteHash = eventHash(remote)
+    const remoteHash = syncEventHash(remote)
     if (!mapping) {
       const created = await createLocalEvent(
         input.organizationId,
@@ -378,7 +355,7 @@ export async function syncCalendar(input: {
         remoteId: remote.remoteId,
         remoteEtag: remote.etag ?? null,
         iCalUid: remote.iCalUid ?? null,
-        contentHash: eventHash(created),
+        contentHash: syncEventHash(created),
         lastSyncedAt: new Date(),
       })
       replaceMapping(mappingIndexes, null, saved)
@@ -402,7 +379,7 @@ export async function syncCalendar(input: {
         localId: created.id,
         remoteEtag: remote.etag ?? null,
         iCalUid: remote.iCalUid ?? mapping.iCalUid,
-        contentHash: eventHash(created),
+        contentHash: syncEventHash(created),
         lastSyncedAt: new Date(),
         lastErrorCode: null,
       })
@@ -411,10 +388,16 @@ export async function syncCalendar(input: {
       continue
     }
 
-    const localHash = eventHash(localEvent)
-    const localChanged = localHash !== mapping.contentHash
-    const remoteChanged = remoteHash !== mapping.contentHash
-    if (!localChanged && !remoteChanged) {
+    const action = resolveSyncConflict({
+      pullOnly,
+      localHash: syncEventHash(localEvent),
+      remoteHash,
+      syncedHash: mapping.contentHash,
+      localUpdatedAt: localEvent.updatedAt,
+      remoteUpdatedAt: remote.updatedAt,
+    })
+
+    if (action === 'UNCHANGED') {
       const saved = await syncMappings.updateState(mapping.id, {
         remoteEtag: remote.etag ?? mapping.remoteEtag,
         lastSyncedAt: new Date(),
@@ -424,13 +407,7 @@ export async function syncCalendar(input: {
       continue
     }
 
-    const localWins =
-      !pullOnly &&
-      localChanged &&
-      remoteChanged &&
-      remote.updatedAt != null &&
-      localEvent.updatedAt >= remote.updatedAt
-    if (!pullOnly && ((localChanged && !remoteChanged) || localWins)) {
+    if (action === 'PUSH_LOCAL') {
       try {
         const saved = await pushLocal({
           provider: input.provider,
@@ -446,7 +423,6 @@ export async function syncCalendar(input: {
       continue
     }
 
-    if (!remoteChanged) continue
     const updated = await updateLocalEvent(
       input.organizationId,
       localEvent.id,
@@ -458,7 +434,7 @@ export async function syncCalendar(input: {
     const saved = await syncMappings.updateState(mapping.id, {
       remoteEtag: remote.etag ?? mapping.remoteEtag,
       iCalUid: remote.iCalUid ?? mapping.iCalUid,
-      contentHash: eventHash(updated),
+      contentHash: syncEventHash(updated),
       lastSyncedAt: new Date(),
       lastErrorCode: null,
     })
@@ -473,7 +449,7 @@ export async function syncCalendar(input: {
       if (event.recurrenceRuleId) continue
       const mapping = mappingIndexes.byLocal.get(event.id)
       if (mapping && handledMappings.has(mapping.id)) continue
-      if (mapping && eventHash(event) === mapping.contentHash) continue
+      if (mapping && syncEventHash(event) === mapping.contentHash) continue
       try {
         const saved = await pushLocal({
           provider: input.provider,
