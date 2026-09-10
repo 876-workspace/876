@@ -52,8 +52,12 @@ describe('WorkWidgetManageView calendar sync', () => {
 
     render(<WorkWidgetManageView capabilities={CAPABILITIES} />)
 
-    await expect.element(page.getByText('Task lists')).toBeVisible()
-    await expect.element(page.getByText('Calendars')).toBeVisible()
+    await expect
+      .element(page.getByText('Task lists', { exact: true }))
+      .toBeVisible()
+    await expect
+      .element(page.getByText('Calendars', { exact: true }))
+      .toBeVisible()
     await expect
       .element(page.getByText('Calendar connections are unavailable.'))
       .toBeVisible()
@@ -130,7 +134,9 @@ describe('WorkWidgetManageView calendar sync', () => {
     render(<WorkWidgetManageView capabilities={CAPABILITIES} />)
 
     await expect
-      .element(page.getByRole('combobox', { name: 'External calendar connection' }))
+      .element(
+        page.getByRole('combobox', { name: 'External calendar connection' })
+      )
       .toBeVisible()
     await page
       .getByRole('combobox', { name: 'External calendar connection' })
@@ -145,7 +151,8 @@ describe('WorkWidgetManageView calendar sync', () => {
       const url = String(input)
       if (url === '/api/task-lists') return success(emptyList(url))
       if (url === '/api/calendars') return success(emptyList(url))
-      if (url === '/api/calendar-sync/connections') return success(emptyList(url))
+      if (url === '/api/calendar-sync/connections')
+        return success(emptyList(url))
       throw new Error(`Unexpected request: ${url}`)
     })
     vi.stubGlobal('fetch', fetchMock)
@@ -164,7 +171,11 @@ describe('WorkWidgetManageView calendar sync', () => {
     await expect
       .element(page.getByRole('button', { name: 'Connect Google' }))
       .not.toBeInTheDocument()
-    await expect.element(page.getByText('Connect CalDAV')).not.toBeInTheDocument()
-    await expect.element(page.getByText('Create calendar')).toBeVisible()
+    await expect
+      .element(page.getByText('Connect CalDAV'))
+      .not.toBeInTheDocument()
+    await expect
+      .element(page.getByText('Create calendar', { exact: true }).first())
+      .toBeVisible()
   })
 })
