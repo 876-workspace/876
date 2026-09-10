@@ -11,10 +11,10 @@ type ModuleSettings = {
   preferences: readonly PreferenceDefinition[]
 }
 
-function withSettings<const TSettings extends ModuleSettings>(
-  definition: AppModuleDefinition,
-  settings: TSettings
-) {
+function withSettings<
+  const TDefinition extends AppModuleDefinition,
+  const TSettings extends ModuleSettings,
+>(definition: TDefinition, settings: TSettings): TDefinition & TSettings {
   return { ...definition, ...settings }
 }
 
