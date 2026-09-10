@@ -19,28 +19,37 @@ enum WorkSyncResourceType {
   EVENT
 }
 
+enum WorkSyncDirection {
+  BIDIRECTIONAL
+  PULL_ONLY
+}
+
 model WorkSyncConnection {
-  id                  String                   @id
-  tenantId            String                   @map("tenant_id")
-  userId              String                   @map("user_id")
-  provider            WorkSyncProvider
-  status              WorkSyncConnectionStatus @default(ACTIVE)
-  credentialRef       String?                  @map("credential_ref")
-  remoteAccountId     String?                  @map("remote_account_id")
-  remoteAccountLabel  String?                  @map("remote_account_label")
-  caldavUrl           String?                  @map("caldav_url")
-  syncCursor          String?                  @map("sync_cursor")
-  lastSyncedAt        DateTime?                @map("last_synced_at")
-  lastErrorCode       String?                  @map("last_error_code")
-  oauthStateHash      String?                  @map("oauth_state_hash")
-  oauthStateExpiresAt DateTime?                @map("oauth_state_expires_at")
-  createdAt           DateTime                 @default(now()) @map("created_at")
-  updatedAt           DateTime                 @updatedAt @map("updated_at")
-  tenant              WorkTenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  credential          WorkSyncCredential?
-  mappings            WorkSyncMapping[]
+  id                   String                   @id
+  tenantId             String                   @map("tenant_id")
+  userId               String                   @map("user_id")
+  provider             WorkSyncProvider
+  status               WorkSyncConnectionStatus @default(ACTIVE)
+  credentialRef        String?                  @map("credential_ref")
+  remoteAccountId      String?                  @map("remote_account_id")
+  remoteAccountLabel   String?                  @map("remote_account_label")
+  caldavUrl            String?                  @map("caldav_url")
+  syncCursor           String?                  @map("sync_cursor")
+  lastSyncedAt         DateTime?                @map("last_synced_at")
+  lastErrorCode        String?                  @map("last_error_code")
+  oauthStateHash       String?                  @map("oauth_state_hash")
+  oauthStateExpiresAt  DateTime?                @map("oauth_state_expires_at")
+  syncLeaseToken       String?                  @map("sync_lease_token")
+  syncLeaseExpiresAt   DateTime?                @map("sync_lease_expires_at")
+  syncLeaseHeartbeatAt DateTime?                @map("sync_lease_heartbeat_at")
+  createdAt            DateTime                 @default(now()) @map("created_at")
+  updatedAt            DateTime                 @updatedAt @map("updated_at")
+  tenant               WorkTenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  credential           WorkSyncCredential?
+  mappings             WorkSyncMapping[]
 
   @@index([tenantId, userId, provider, status])
+  @@index([status, syncLeaseExpiresAt])
   @@map("work_sync_connections")
 }
 
@@ -62,6 +71,7 @@ model WorkSyncMapping {
   connectionId    String               @map("connection_id")
   parentMappingId String?              @map("parent_mapping_id")
   resourceType    WorkSyncResourceType @map("resource_type")
+  syncDirection   WorkSyncDirection    @default(BIDIRECTIONAL) @map("sync_direction")
   localId         String               @map("local_id")
   remoteId        String               @map("remote_id")
   remoteEtag      String?              @map("remote_etag")
