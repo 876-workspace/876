@@ -53,6 +53,18 @@ const BILLING_FEATURE_SLUGS: Readonly<Record<string, string>> = {
   payroll: 'billing-payroll',
 }
 
+/**
+ * Keep the positions of the pre-registry Billing modules stable on a fresh
+ * database. Existing environments already retain operator positions because
+ * identity synchronization never writes `position`.
+ */
+const BILLING_MODULE_POSITIONS: Readonly<Record<string, number>> = {
+  subscriptions: 20,
+  purchases: 30,
+  banking: 40,
+  payroll: 60,
+}
+
 type PlatformModuleDef = {
   appSlug: string
   key: string
@@ -68,6 +80,7 @@ function registryModuleDefinitions(params: {
   appSlug: string
   keys: readonly string[]
   positionBase: number
+  positions?: Readonly<Record<string, number>>
   featureSlugs?: Readonly<Record<string, string>>
   includedPlanSlugs?: (key: string) => readonly string[]
 }): PlatformModuleDef[] {
@@ -84,7 +97,7 @@ function registryModuleDefinitions(params: {
       name: definition.label,
       description: definition.description,
       featureSlug: params.featureSlugs?.[key] ?? null,
-      position: params.positionBase + index * 10,
+      position: params.positions?.[key] ?? params.positionBase + index * 10,
       includedPlanSlugs: params.includedPlanSlugs?.(key) ?? [],
       syncIdentity: true,
     }
@@ -103,6 +116,7 @@ const CANONICAL_FINANCE_MODULES = [
     appSlug: BILLING_MODULE_REGISTRY.app,
     keys: BILLING_COMMERCIAL_MODULE_KEYS,
     positionBase: 100,
+    positions: BILLING_MODULE_POSITIONS,
     featureSlugs: BILLING_FEATURE_SLUGS,
   }),
 ]
