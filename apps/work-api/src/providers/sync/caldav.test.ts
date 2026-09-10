@@ -14,7 +14,8 @@ function xmlResponse(body: string, status = 207) {
 }
 
 function transportFrom(responses: Response[]) {
-  return vi.fn(async (..._args: Parameters<typeof caldavRequest>) => {
+  return vi.fn(async (...args: Parameters<typeof caldavRequest>) => {
+    void args
     const response = responses.shift()
     if (!response) throw new Error('Unexpected CalDAV transport call.')
     return response
@@ -106,7 +107,9 @@ describe('CaldavCalendarAdapter', () => {
   })
 
   it('rejects cross-origin calendar-home discovery before sending credentials there', async () => {
-    const transport = transportFrom([discovery('https://evil.example.net/dav/')])
+    const transport = transportFrom([
+      discovery('https://evil.example.net/dav/'),
+    ])
     const adapter = new CaldavCalendarAdapter(CREDENTIAL, BASE_URL, transport)
 
     await expect(adapter.calendars()).rejects.toMatchObject({

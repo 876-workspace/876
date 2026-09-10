@@ -5,15 +5,14 @@ import { isIP } from 'node:net'
 import { WorkSyncProviderError } from './provider.js'
 
 const REQUEST_TIMEOUT_MS = 30_000
+const MAX_RESPONSE_BYTES = 10 * 1024 * 1024
 
 type DnsAddress = {
   address: string
   family: number
 }
 
-type DnsResolver = (
-  hostname: string
-) => Promise<DnsAddress[]>
+type DnsResolver = (hostname: string) => Promise<DnsAddress[]>
 
 type CaldavRequestInit = {
   method?: string
@@ -204,21 +203,29 @@ export function requireSafeCaldavUrl(value: string, allowedOrigin?: string) {
   if (url.protocol !== 'https:')
     return providerUrlError('The CalDAV server URL must use HTTPS.')
   if (url.username || url.password)
-    return providerUrlError('The CalDAV server URL must not contain credentials.')
+    return providerUrlError(
+      'The CalDAV server URL must not contain credentials.'
+    )
 
   const hostname = normalizeHostname(url.hostname)
   if (hostname === 'localhost' || hostname.endsWith('.localhost'))
-    return providerUrlError('The CalDAV server URL is not an allowed destination.')
+    return providerUrlError(
+      'The CalDAV server URL is not an allowed destination.'
+    )
 
   if (allowedOrigin && url.origin !== allowedOrigin)
     return providerUrlError('The CalDAV server returned an unexpected origin.')
 
   const allowedOrigins = configuredAllowedOrigins()
   if (allowedOrigins && !allowedOrigins.has(url.origin))
-    return providerUrlError('The CalDAV server origin is not allowed by policy.')
+    return providerUrlError(
+      'The CalDAV server origin is not allowed by policy.'
+    )
 
   if (isIP(hostname) && !isSafeCaldavAddress(hostname))
-    return providerUrlError('The CalDAV server URL is not an allowed destination.')
+    return providerUrlError(
+      'The CalDAV server URL is not an allowed destination.'
+    )
 
   return url
 }
@@ -231,7 +238,9 @@ export async function resolveSafeCaldavTarget(
   const literalFamily = isIP(hostname)
   if (literalFamily) {
     if (!isSafeCaldavAddress(hostname))
-      return providerUrlError('The CalDAV server URL is not an allowed destination.')
+      return providerUrlError(
+        'The CalDAV server URL is not an allowed destination.'
+      )
 
     return {
       address: hostname,
@@ -268,7 +277,9 @@ export async function resolveSafeCaldavTarget(
         !isSafeCaldavAddress(entry.address)
     )
   )
-    return providerUrlError('The CalDAV server resolved to an unsafe destination.')
+    return providerUrlError(
+      'The CalDAV server resolved to an unsafe destination.'
+    )
 
   const target = normalized[0]!
   return {
@@ -305,19 +316,34 @@ function nodeHttpsRequest(
       },
       (response) => {
         const chunks: Buffer[] = []
-        response.on('data', (chunk: Buffer | string) =>
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-        )
+        let responseBytes = 0
+        response.on('data', (chunk: Buffer | string) => {
+          const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+          responseBytes += buffer.byteLength
+          if (responseBytes > MAX_RESPONSE_BYTES) {
+            response.destroy(
+              new WorkSyncProviderError(
+                'provider-invalid-response',
+                'The CalDAV server response exceeded the allowed size.'
+              )
+            )
+            return
+          }
+          chunks.push(buffer)
+        })
+        response.on('error', reject)
         response.on('end', () => {
           const responseHeaders = new Headers()
           for (const [key, value] of Object.entries(response.headers)) {
             if (Array.isArray(value))
               for (const item of value) responseHeaders.append(key, item)
-            else if (value !== undefined) responseHeaders.set(key, String(value))
+            else if (value !== undefined)
+              responseHeaders.set(key, String(value))
           }
 
           const status = response.statusCode ?? 502
-          const body = status === 204 || status === 205 ? null : Buffer.concat(chunks)
+          const body =
+            status === 204 || status === 205 ? null : Buffer.concat(chunks)
           resolve(
             new Response(body, {
               status,

@@ -1,5 +1,22 @@
 import { WorkSyncProviderError } from './provider.js'
 
+const PROVIDER_TIMEOUT_MS = 30_000
+
+export async function providerResponse(
+  input: string | URL,
+  init: RequestInit = {},
+  unavailableMessage = 'The calendar provider could not be reached.'
+): Promise<Response> {
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: init.signal ?? AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+    })
+  } catch {
+    throw new WorkSyncProviderError('provider-unavailable', unavailableMessage)
+  }
+}
+
 export function retryAfterSeconds(response: Response): number | null {
   const raw = response.headers.get('retry-after')
   if (!raw) return null
@@ -16,15 +33,7 @@ export async function providerFetch(
   input: string | URL,
   init: RequestInit = {}
 ): Promise<Response> {
-  let response: Response
-  try {
-    response = await fetch(input, init)
-  } catch (error) {
-    throw new WorkSyncProviderError(
-      'provider-unavailable',
-      'The calendar provider could not be reached.'
-    )
-  }
+  const response = await providerResponse(input, init)
 
   if (response.ok) return response
 
@@ -66,7 +75,7 @@ export async function providerJson<T>(
   const response = await providerFetch(input, init)
   try {
     return (await response.json()) as T
-  } catch (error) {
+  } catch {
     throw new WorkSyncProviderError(
       'provider-invalid-response',
       'The calendar provider returned invalid JSON.'
@@ -78,7 +87,7 @@ export function requireHttpsProviderUrl(value: string, allowedOrigin?: string) {
   let url: URL
   try {
     url = new URL(value)
-  } catch (error) {
+  } catch {
     throw new WorkSyncProviderError(
       'provider-invalid-response',
       'The calendar provider returned an invalid URL.'

@@ -1,4 +1,4 @@
-import { providerJson } from './http.js'
+import { providerJson, providerResponse } from './http.js'
 import { WorkSyncProviderError } from './provider.js'
 
 export type WorkOauthProvider = 'GOOGLE' | 'MICROSOFT'
@@ -53,7 +53,10 @@ function microsoftConfig() {
   return { clientId, clientSecret, redirectUri, tenant }
 }
 
-export function buildOauthAuthorizeUrl(provider: WorkOauthProvider, state: string) {
+export function buildOauthAuthorizeUrl(
+  provider: WorkOauthProvider,
+  state: string
+) {
   if (provider === 'GOOGLE') {
     const config = googleConfig()
     const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
@@ -86,19 +89,15 @@ export function buildOauthAuthorizeUrl(provider: WorkOauthProvider, state: strin
 }
 
 async function tokenRequest(url: string, body: URLSearchParams) {
-  let response: Response
-  try {
-    response = await fetch(url, {
+  const response = await providerResponse(
+    url,
+    {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body,
-    })
-  } catch (error) {
-    throw new WorkSyncProviderError(
-      'provider-unavailable',
-      'The calendar provider OAuth service could not be reached.'
-    )
-  }
+    },
+    'The calendar provider OAuth service could not be reached.'
+  )
 
   if (!response.ok)
     throw new WorkSyncProviderError(
@@ -114,7 +113,7 @@ async function tokenRequest(url: string, body: URLSearchParams) {
       refresh_token?: string
       expires_in?: number
     }
-  } catch (error) {
+  } catch {
     throw new WorkSyncProviderError(
       'provider-invalid-response',
       'The calendar provider OAuth service returned invalid JSON.'
@@ -203,9 +202,12 @@ export async function retrieveRemoteAccount(
     displayName?: string
     mail?: string
     userPrincipalName?: string
-  }>('https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName', {
-    headers: { authorization: `Bearer ${accessToken}` },
-  })
+  }>(
+    'https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName',
+    {
+      headers: { authorization: `Bearer ${accessToken}` },
+    }
+  )
   if (!account.id)
     throw new WorkSyncProviderError(
       'provider-invalid-response',

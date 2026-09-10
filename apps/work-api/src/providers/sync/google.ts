@@ -8,7 +8,7 @@ import {
   type WorkSyncCredential,
   type WorkSyncProviderAdapter,
 } from './provider.js'
-import { providerFetch, providerJson } from './http.js'
+import { providerFetch, providerJson, providerResponse } from './http.js'
 
 const GOOGLE_API = 'https://www.googleapis.com/calendar/v3'
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
@@ -153,7 +153,8 @@ export class GoogleCalendarAdapter implements WorkSyncProviderAdapter {
 
   async #accessToken() {
     const now = Math.floor(Date.now() / 1000)
-    if (this.#token && this.#token.expiresAt > now + 60) return this.#token.value
+    if (this.#token && this.#token.expiresAt > now + 60)
+      return this.#token.value
     if (
       this.#credential.accessToken &&
       (!this.#credential.expiresAt || this.#credential.expiresAt > now + 60)
@@ -168,9 +169,9 @@ export class GoogleCalendarAdapter implements WorkSyncProviderAdapter {
       )
 
     const { clientId, clientSecret } = config()
-    let response: Response
-    try {
-      response = await fetch(GOOGLE_TOKEN_URL, {
+    const response = await providerResponse(
+      GOOGLE_TOKEN_URL,
+      {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -179,13 +180,9 @@ export class GoogleCalendarAdapter implements WorkSyncProviderAdapter {
           refresh_token: refreshToken,
           grant_type: 'refresh_token',
         }),
-      })
-    } catch (error) {
-      throw new WorkSyncProviderError(
-        'provider-unavailable',
-        'Google OAuth could not be reached.'
-      )
-    }
+      },
+      'Google OAuth could not be reached.'
+    )
 
     if (!response.ok)
       throw new WorkSyncProviderError(
@@ -198,7 +195,7 @@ export class GoogleCalendarAdapter implements WorkSyncProviderAdapter {
     let token: GoogleTokenResponse
     try {
       token = (await response.json()) as GoogleTokenResponse
-    } catch (error) {
+    } catch {
       throw new WorkSyncProviderError(
         'provider-invalid-response',
         'Google OAuth returned invalid JSON.'
@@ -247,7 +244,8 @@ export class GoogleCalendarAdapter implements WorkSyncProviderAdapter {
           timeZone: item.timeZone ?? null,
           color: item.backgroundColor ?? null,
           readOnly:
-            item.accessRole === 'reader' || item.accessRole === 'freeBusyReader',
+            item.accessRole === 'reader' ||
+            item.accessRole === 'freeBusyReader',
         })
       }
       pageToken = page.nextPageToken
@@ -331,7 +329,7 @@ export class GoogleCalendarAdapter implements WorkSyncProviderAdapter {
     let saved: GoogleEvent
     try {
       saved = (await response.json()) as GoogleEvent
-    } catch (error) {
+    } catch {
       throw new WorkSyncProviderError(
         'provider-invalid-response',
         'Google Calendar returned invalid event JSON.'

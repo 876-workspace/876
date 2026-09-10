@@ -7,9 +7,11 @@ function localTag(name: string) {
 
 export function xmlBlocks(xml: string, name: string) {
   const tag = localTag(name)
-  return [...xml.matchAll(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}\\s*>`, 'gi'))].map(
-    (match) => match[1] ?? ''
-  )
+  return [
+    ...xml.matchAll(
+      new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}\\s*>`, 'gi')
+    ),
+  ].map((match) => match[1] ?? '')
 }
 
 export function hasXmlTag(xml: string, name: string) {
@@ -94,9 +96,7 @@ function dateOnly(value: string) {
 }
 
 function zonedEpoch(value: string, timeZone: string | undefined) {
-  const match = value.match(
-    /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/
-  )
+  const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/)
   if (!match) return null
   const parts = match.slice(1, 7).map(Number)
   const utc = Date.UTC(
@@ -139,7 +139,7 @@ function zonedEpoch(value: string, timeZone: string | undefined) {
       guess -= represented - utc
     }
     return Math.floor(guess / 1000)
-  } catch (error) {
+  } catch {
     return Math.floor(utc / 1000)
   }
 }
@@ -169,7 +169,8 @@ export function parseCalendarEvent(input: {
     (start ? /^\d{8}$/.test(start.value) : false)
   const status = first(properties, 'STATUS')?.value.toUpperCase()
   const transparency = first(properties, 'TRANSP')?.value.toUpperCase()
-  const modified = first(properties, 'LAST-MODIFIED') ?? first(properties, 'DTSTAMP')
+  const modified =
+    first(properties, 'LAST-MODIFIED') ?? first(properties, 'DTSTAMP')
   const event: WorkRemoteEvent = {
     remoteId: input.remoteId,
     etag: input.etag ?? null,
@@ -245,7 +246,8 @@ export function serializeCalendarEvent(event: WorkRemoteEvent) {
 
   if (validated.description)
     lines.push(`DESCRIPTION:${escapeIcs(validated.description)}`)
-  if (validated.location) lines.push(`LOCATION:${escapeIcs(validated.location)}`)
+  if (validated.location)
+    lines.push(`LOCATION:${escapeIcs(validated.location)}`)
   lines.push(`STATUS:${validated.status}`)
   lines.push(
     `TRANSP:${validated.busyStatus === 'FREE' ? 'TRANSPARENT' : 'OPAQUE'}`

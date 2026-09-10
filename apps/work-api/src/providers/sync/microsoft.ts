@@ -1,4 +1,9 @@
-import { providerFetch, providerJson, requireHttpsProviderUrl } from './http.js'
+import {
+  providerFetch,
+  providerJson,
+  providerResponse,
+  requireHttpsProviderUrl,
+} from './http.js'
 import {
   WorkSyncProviderError,
   type WorkPullInput,
@@ -164,7 +169,8 @@ export class MicrosoftCalendarAdapter implements WorkSyncProviderAdapter {
 
   async #accessToken() {
     const now = Math.floor(Date.now() / 1000)
-    if (this.#token && this.#token.expiresAt > now + 60) return this.#token.value
+    if (this.#token && this.#token.expiresAt > now + 60)
+      return this.#token.value
     if (
       this.#credential.accessToken &&
       (!this.#credential.expiresAt || this.#credential.expiresAt > now + 60)
@@ -179,28 +185,21 @@ export class MicrosoftCalendarAdapter implements WorkSyncProviderAdapter {
       )
 
     const { clientId, clientSecret, tenant } = config()
-    let response: Response
-    try {
-      response = await fetch(
-        `https://login.microsoftonline.com/${encodeURIComponent(tenant)}/oauth2/v2.0/token`,
-        {
-          method: 'POST',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: clientId,
-            client_secret: clientSecret,
-            refresh_token: refreshToken,
-            grant_type: 'refresh_token',
-            scope: 'offline_access openid profile email Calendars.ReadWrite',
-          }),
-        }
-      )
-    } catch (error) {
-      throw new WorkSyncProviderError(
-        'provider-unavailable',
-        'Microsoft OAuth could not be reached.'
-      )
-    }
+    const response = await providerResponse(
+      `https://login.microsoftonline.com/${encodeURIComponent(tenant)}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: refreshToken,
+          grant_type: 'refresh_token',
+          scope: 'offline_access openid profile email Calendars.ReadWrite',
+        }),
+      },
+      'Microsoft OAuth could not be reached.'
+    )
 
     if (!response.ok)
       throw new WorkSyncProviderError(
@@ -213,7 +212,7 @@ export class MicrosoftCalendarAdapter implements WorkSyncProviderAdapter {
     let token: MicrosoftTokenResponse
     try {
       token = (await response.json()) as MicrosoftTokenResponse
-    } catch (error) {
+    } catch {
       throw new WorkSyncProviderError(
         'provider-invalid-response',
         'Microsoft OAuth returned invalid JSON.'
@@ -247,9 +246,12 @@ export class MicrosoftCalendarAdapter implements WorkSyncProviderAdapter {
     let url: string | null = `${GRAPH_API}/me/calendars?$top=200`
 
     while (url) {
-      const page = await providerJson<GraphCalendarPage>(url, {
-        headers: await this.#headers(),
-      })
+      const page: GraphCalendarPage = await providerJson<GraphCalendarPage>(
+        url,
+        {
+          headers: await this.#headers(),
+        }
+      )
       for (const item of page.value ?? []) {
         if (!item.id) continue
         calendars.push({
@@ -273,10 +275,12 @@ export class MicrosoftCalendarAdapter implements WorkSyncProviderAdapter {
     const windowEnd = input.windowEnd ?? now + 3 * 365 * 24 * 60 * 60
     let url = input.cursor
       ? graphLink(input.cursor)
-      : `${GRAPH_API}/me/calendars/${encodeURIComponent(input.remoteCalendarId)}/calendarView/delta?${new URLSearchParams({
-          startDateTime: new Date(windowStart * 1000).toISOString(),
-          endDateTime: new Date(windowEnd * 1000).toISOString(),
-        })}`
+      : `${GRAPH_API}/me/calendars/${encodeURIComponent(input.remoteCalendarId)}/calendarView/delta?${new URLSearchParams(
+          {
+            startDateTime: new Date(windowStart * 1000).toISOString(),
+            endDateTime: new Date(windowEnd * 1000).toISOString(),
+          }
+        )}`
     const changes: WorkPullResult['changes'] = []
     let deltaLink: string | null = null
 
@@ -351,7 +355,7 @@ export class MicrosoftCalendarAdapter implements WorkSyncProviderAdapter {
     let saved: GraphEvent
     try {
       saved = (await response.json()) as GraphEvent
-    } catch (error) {
+    } catch {
       throw new WorkSyncProviderError(
         'provider-invalid-response',
         'Microsoft Graph returned invalid event JSON.'

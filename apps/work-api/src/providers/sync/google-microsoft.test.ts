@@ -22,9 +22,7 @@ describe('GoogleCalendarAdapter', () => {
       .fn()
       .mockResolvedValueOnce(
         json({
-          items: [
-            { id: 'reader', summary: 'Read only', accessRole: 'reader' },
-          ],
+          items: [{ id: 'reader', summary: 'Read only', accessRole: 'reader' }],
           nextPageToken: 'page-2',
         })
       )
@@ -42,6 +40,9 @@ describe('GoogleCalendarAdapter', () => {
       expect.objectContaining({ remoteId: 'reader', readOnly: true }),
       expect.objectContaining({ remoteId: 'owner', readOnly: false }),
     ])
+    expect(fetchMock.mock.calls[0]?.[1]).toEqual(
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
     expect(String(fetchMock.mock.calls[1]?.[0])).toContain('pageToken=page-2')
   })
 
@@ -80,7 +81,10 @@ describe('GoogleCalendarAdapter', () => {
   })
 
   it('normalizes HTTP 410 as an invalid provider cursor', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 410 })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('', { status: 410 }))
+    )
     const adapter = new GoogleCalendarAdapter(CREDENTIAL)
 
     await expect(

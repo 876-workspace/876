@@ -134,7 +134,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
     const response = await this.#request(url, init, { cursor })
     try {
       return await response.text()
-    } catch (error) {
+    } catch {
       throw new WorkSyncProviderError(
         'provider-invalid-response',
         'The CalDAV server returned an unreadable response.'
@@ -278,7 +278,8 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
       })
     }
 
-    const cursor = xmlText(xml, 'sync-token') ?? (await this.#syncToken(calendar))
+    const cursor =
+      xmlText(xml, 'sync-token') ?? (await this.#syncToken(calendar))
     if (input.cursor && !cursor)
       throw new WorkSyncProviderError(
         'provider-invalid-response',
