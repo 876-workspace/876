@@ -43,6 +43,42 @@ or organizations are opaque IDs without cross-database foreign keys.
 `@876/settings` owns shared types/validation/resolution logic only. It does not
 own app persistence.
 
+## Canonical module identity
+
+When the same functional module is referenced by more than one architectural
+plane, stable identity is declared once in `@876/core/modules` and projected into
+the plane that needs it.
+
+The canonical identity owns only:
+
+- application membership;
+- durable module `key`;
+- human `label`;
+- human `description`.
+
+Concern-specific data remains with its existing owner:
+
+- a settings catalog adds `optional`, `enabledByDefault`, and preferences;
+- Core `application_modules` materializes the commercial subset used by plans;
+- permission catalogs add actions and reuse canonical identity only when the
+  permission grouping has the same semantics;
+- feature flags remain rollout/kill switches;
+- provisioning remains a separate platform contract.
+
+Repeating the canonical **key as a reference** is expected. Re-declaring the
+same module label/description in another catalog is not. Do not create a second
+module taxonomy merely because a permission group, settings surface, and plan
+need different extra fields.
+
+A product-local module that exists in only one plane may remain in that product's
+catalog. Promote its identity to `@876/core/modules` when a second real plane
+needs the same stable concept; do not pre-build registry entries for hypothetical
+future use.
+
+Canonical identity does not move organization module state/preferences into Core
+and does not make every permission/navigation group commercially sellable.
+Semantic equality is required before two planes share an identity.
+
 ## Canonical identifier contract
 
 Module keys, preference keys, and 876-owned reference namespaces are lowercase
@@ -146,15 +182,19 @@ mandatory platform state generally belongs in provisioning instead.
 ## Applying this to a new app
 
 1. Depend on `@876/settings`.
-2. Declare a canonical kebab-case module catalog aligned with the permission
-   catalog and add an anti-drift test.
-3. Add tenant-scoped module-state and typed preference override tables.
-4. Keep physical SQL names mapped through Prisma while application fields are
+2. Declare a canonical kebab-case settings module catalog. If the same module
+   identity is consumed by another real plane, reuse or add its
+   `@876/core/modules` identity instead of copying labels/descriptions.
+3. Align settings keys with permission-catalog module keys where the semantics
+   match and add anti-drift tests.
+4. Add tenant-scoped module-state and typed preference override tables.
+5. Keep physical SQL names mapped through Prisma while application fields are
    camelCase.
-5. Expose module/preference resources through the app's normal service/SDK
+6. Expose module/preference resources through the app's normal service/SDK
    boundary.
-6. Declare RSC-safe settings navigation and readiness requirements.
-7. Add migration tests whenever a durable key changes.
+7. Declare RSC-safe settings navigation and readiness requirements.
+8. Add migration tests whenever a durable key changes.
 
-Reference implementation: the Couriers module/preferences implementation and its
-platform-naming migrations.
+Reference implementations: the Couriers module/preferences implementation for
+app-local state and the Billing/Invoice canonical Finance registry for a module
+identity projected across settings, access, and commercial entitlement planes.
