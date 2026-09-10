@@ -1,19 +1,30 @@
-import { defineModuleCatalog } from '@876/settings'
+import { FINANCE_MODULES } from '@876/core/modules'
+import type { AppModuleDefinition } from '@876/core/types/modules'
+import {
+  defineModuleCatalog,
+  type PreferenceDefinition,
+} from '@876/settings'
+
+type ModuleSettings = {
+  optional: boolean
+  enabledByDefault: boolean
+  preferences: readonly PreferenceDefinition[]
+}
+
+function withSettings<const TSettings extends ModuleSettings>(
+  definition: AppModuleDefinition,
+  settings: TSettings
+) {
+  return { ...definition, ...settings }
+}
 
 const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
-  {
-    key: 'invoices',
-    label: 'Invoices',
-    description: 'Create, issue, and manage customer invoices.',
+  withSettings(FINANCE_MODULES.invoices, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'quotes',
-    label: 'Quotes',
-    description:
-      'Prepare customer quotes before converting approved work into invoices.',
+  }),
+  withSettings(FINANCE_MODULES.quotes, {
     optional: true,
     enabledByDefault: true,
     preferences: [
@@ -32,27 +43,18 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
         ],
       },
     ],
-  },
-  {
-    key: 'payments',
-    label: 'Payments',
-    description: 'Record and reconcile customer payments against receivables.',
+  }),
+  withSettings(FINANCE_MODULES.payments, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'expenses',
-    label: 'Expenses',
-    description: 'Track business expenses and supporting transaction details.',
+  }),
+  withSettings(FINANCE_MODULES.expenses, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'items',
-    label: 'Items',
-    description: 'Manage the products and services used on finance documents.',
+  }),
+  withSettings(FINANCE_MODULES.items, {
     optional: true,
     enabledByDefault: true,
     preferences: [
@@ -64,104 +66,65 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
         hint: 'Allow goods to have multiple sellable versions such as size or color.',
       },
     ],
-  },
-  {
-    key: 'sales-receipts',
-    label: 'Sales receipts',
-    description:
-      'Record paid sales where payment is collected at the time of sale.',
+  }),
+  withSettings(FINANCE_MODULES.salesReceipts, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'time-tracking',
-    label: 'Time tracking',
-    description: 'Track billable and non-billable time for customer work.',
+  }),
+  withSettings(FINANCE_MODULES.timeTracking, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'customers',
-    label: 'Customers',
-    description:
-      'Manage customer billing identities and finance relationships.',
+  }),
+  withSettings(FINANCE_MODULES.customers, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'crm',
-    label: 'CRM',
-    description:
-      'Enable the future organization-owned CRM workspace inside finance apps.',
+  }),
+  withSettings(FINANCE_MODULES.crm, {
     optional: true,
     enabledByDefault: false,
     preferences: [],
-  },
+  }),
 ])
 
 const BILLING_ONLY_MODULE_CATALOG = defineModuleCatalog([
-  {
-    key: 'subscriptions',
-    label: 'Subscriptions',
-    description:
-      'Manage recurring customer billing and subscription lifecycles.',
+  withSettings(FINANCE_MODULES.subscriptions, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'banking',
-    label: 'Banking',
-    description: 'Track bank accounts and reconcile financial activity.',
+  }),
+  withSettings(FINANCE_MODULES.banking, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'credit-notes',
-    label: 'Credit notes',
-    description:
-      'Issue credits that reduce customer balances or invoice amounts.',
+  }),
+  withSettings(FINANCE_MODULES.creditNotes, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'purchases',
-    label: 'Purchases',
-    description: 'Track vendor purchases and business spending.',
+  }),
+  withSettings(FINANCE_MODULES.purchases, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'payroll',
-    label: 'Payroll',
-    description: 'Manage payroll-related financial activity.',
+  }),
+  withSettings(FINANCE_MODULES.payroll, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'price-lists',
-    label: 'Price lists',
-    description:
-      'Maintain alternate item pricing for customer and sales contexts.',
+  }),
+  withSettings(FINANCE_MODULES.priceLists, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    key: 'discounts',
-    label: 'Discounts',
-    description: 'Configure discounts used across sales and recurring billing.',
+  }),
+  withSettings(FINANCE_MODULES.discounts, {
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
+  }),
 ])
 
 export const INVOICE_MODULE_CATALOG = SHARED_FINANCE_MODULE_CATALOG
