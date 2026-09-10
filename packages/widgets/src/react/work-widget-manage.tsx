@@ -216,17 +216,36 @@ export function WorkWidgetManageView({
     return true
   }
 
-  function openAuthorization(url: string) {
-    window.open(url, 'work-calendar-authorization', 'noopener,noreferrer')
+  function openPendingAuthorizationWindow() {
+    const popup = window.open(
+      'about:blank',
+      'work-calendar-authorization',
+      'popup'
+    )
+    if (popup) {
+      popup.opener = null
+      popup.document.title = 'Connect calendar'
+    }
+    return popup
+  }
+
+  function navigateAuthorization(popup: Window | null, url: string) {
+    if (popup && !popup.closed) {
+      popup.location.replace(url)
+      return
+    }
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   async function connectOAuth(provider: 'GOOGLE' | 'MICROSOFT') {
     if (syncPending) return false
+    const popup = openPendingAuthorizationWindow()
     setSyncPending(true)
     setSyncError(null)
 
     const setup = await syncClient.connections.setup({ provider })
     if (setup.error || !setup.data) {
+      popup?.close()
       setSyncError(setup.error?.message ?? 'Calendar connection could not start.')
       setSyncPending(false)
       return false
@@ -236,6 +255,7 @@ export function WorkWidgetManageView({
     await loadConnections(false)
     const authorization = await syncClient.connections.authorize(setup.data.id)
     if (authorization.error || !authorization.data) {
+      popup?.close()
       setSyncError(
         authorization.error?.message ?? 'Calendar authorization could not start.'
       )
@@ -247,7 +267,7 @@ export function WorkWidgetManageView({
       connectionId: setup.data.id,
       startedAt: Date.now(),
     }
-    openAuthorization(authorization.data.authorizeUrl)
+    navigateAuthorization(popup, authorization.data.authorizeUrl)
     setSyncPending(false)
     return true
   }
@@ -274,10 +294,12 @@ export function WorkWidgetManageView({
 
   async function authorizeConnection(connection: WorkSyncConnectionSummary) {
     if (syncPending || connection.provider === 'CALDAV') return
+    const popup = openPendingAuthorizationWindow()
     setSyncPending(true)
     setSyncError(null)
     const result = await syncClient.connections.authorize(connection.id)
     if (result.error || !result.data) {
+      popup?.close()
       setSyncError(
         result.error?.message ?? 'Calendar authorization could not start.'
       )
@@ -289,7 +311,7 @@ export function WorkWidgetManageView({
       connectionId: connection.id,
       startedAt: Date.now(),
     }
-    openAuthorization(result.data.authorizeUrl)
+    navigateAuthorization(popup, result.data.authorizeUrl)
     setSyncPending(false)
   }
 
