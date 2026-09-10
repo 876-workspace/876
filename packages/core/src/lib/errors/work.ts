@@ -74,6 +74,10 @@ export const WORK_ERRORS = {
     message: 'You do not have permission to perform this Work action.',
     httpStatus: HttpStatus.FORBIDDEN,
   },
+  'work/sync-already-running': {
+    message: 'This calendar connection is already synchronizing.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'work/sync-calendar-already-linked': {
     message: 'That external calendar is already linked.',
     httpStatus: HttpStatus.CONFLICT,
