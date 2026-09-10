@@ -26,7 +26,8 @@ vi.mock('../sync-mappings/index.js', () => ({
   retrieveState: mocks.retrieveState,
   removeState: mocks.removeState,
 }))
-vi.mock('../../providers/sync/index.js', () => ({
+vi.mock('../../providers/sync/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../providers/sync/index.js')>()),
   buildOauthAuthorizeUrl: mocks.buildOauthAuthorizeUrl,
   exchangeOauthCode: mocks.exchangeOauthCode,
   retrieveRemoteAccount: mocks.retrieveRemoteAccount,
