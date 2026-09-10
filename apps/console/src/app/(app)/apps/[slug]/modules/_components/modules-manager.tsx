@@ -26,6 +26,7 @@ export type ModulesContext = {
   appId: string
   canManage: boolean
   registryManaged: boolean
+  registryModuleKeys: string[]
 }
 
 type Draft = {
@@ -67,8 +68,11 @@ export function ModulesManager({
   const appId = contextState.value?.appId ?? null
   const canManage = contextState.value?.canManage ?? false
   const registryManaged = contextState.value?.registryManaged ?? false
+  const registryModuleKeys = contextState.value?.registryModuleKeys ?? []
   const resolvedModules = localModules ?? modulesState.value ?? []
   const resolvedFeatures = featuresState.value ?? []
+  const identityLocked =
+    editingId !== 'new' && registryModuleKeys.includes(draft.key)
 
   function edit(module: AdminApplicationModule) {
     setEditingId(module.id)
@@ -92,6 +96,7 @@ export function ModulesManager({
       return
 
     const targetId = editingId
+    const registryIdentity = registryModuleKeys.includes(draft.key)
     setMessage(null)
     startTransition(async () => {
       const position = Number.parseInt(draft.position || '0', 10)
@@ -107,7 +112,7 @@ export function ModulesManager({
             })
           : await client.modules.update(
               targetId,
-              registryManaged
+              registryIdentity
                 ? {
                     feature_id: draft.featureId || null,
                     position: Number.isFinite(position) ? position : 0,
@@ -264,7 +269,7 @@ export function ModulesManager({
           features={resolvedFeatures}
           featuresPending={featuresState.pending}
           featuresError={featuresState.error?.message ?? null}
-          identityLocked={registryManaged && editingId !== 'new'}
+          identityLocked={identityLocked}
           isNew={editingId === 'new'}
           onChange={setDraft}
         />
