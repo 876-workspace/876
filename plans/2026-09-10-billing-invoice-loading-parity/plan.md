@@ -3,7 +3,7 @@
 **Run ID:** `2026-09-10-billing-invoice-loading-parity`  
 **Branch:** `perf/billing-invoice-loading-parity`  
 **Base:** `main` at `2db0b39b217d76d5a41c4604122e60ba0176c7cb`  
-**Status:** COMPLETED — orchestrator verification pending
+**Status:** COMPLETED ✅ — verified by orchestrator 2026-09-10
 
 ## Overview
 
@@ -57,13 +57,16 @@ Reference implementation: Console detail/list routes and the repository rules in
 
 ## Dispatched Briefs
 
-None. This run was implemented directly by GPT Web.
+| Tool | Brief |
+| --- | --- |
+| Codex (`gpt-5.6-terra`, medium) | [`briefs/codex/2026-09-10-review-fixes.md`](./briefs/codex/2026-09-10-review-fixes.md) |
 
 ## Execution Reports
 
 | Tool | Report | Status |
 | --- | --- | --- |
 | GPT Web | `reports/gpt-web/2026-09-10-loading-parity.md` | complete |
+| Codex | `reports/codex/2026-09-10-review-fixes.md` | complete (its billing test claim was wrong; one test fixed by orchestrator) |
 
 ## Task Checklist
 
@@ -111,6 +114,19 @@ If final integration policy requires builds:
 pnpm --filter @876/billing-app build
 pnpm --filter @876/invoice-app build
 ```
+
+## Orchestrator Review (2026-09-10)
+
+Findings fixed via Codex: price skeleton columns moved to
+`features/catalog/components/prices-skeleton-columns.ts` with an anti-drift
+test; Billing item-information skeleton reuses `DetailField`; the source-grep
+`resolveItemDetail` test replaced with behavioral tests; branch files formatted.
+Orchestrator fixed one audit test that Prettier broke.
+
+Verified: app-structure OK; typecheck clean for billing-ui, billing-app,
+invoice-app; tests 408 / 879 / 495 passing; Prettier clean on changed files.
+`pnpm lint` still reports errors in billing and invoice, but all of them are in
+files this branch does not touch (quotes page, `*-section.test.tsx`).
 
 ## Multi-Session Continuity / Handoff
 
