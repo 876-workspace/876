@@ -35,9 +35,14 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('Projects Sidebar', () => {
-  it('defaults to the compact icon rail', () => {
+  it('defaults to the shared compact icon rail', () => {
     render(<Sidebar navigation={navigation} />)
 
+    const rail = screen.getByRole('navigation', { name: 'Projects navigation' })
+
+    expect(rail).toHaveAttribute('data-slot', 'floating-nav-rail')
+    expect(rail).toHaveAttribute('data-state', 'collapsed')
+    expect(rail).toHaveClass('w-[3.75rem]')
     expect(
       screen.getByRole('button', { name: 'Expand sidebar' })
     ).toHaveAttribute('aria-expanded', 'false')
