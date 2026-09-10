@@ -11,7 +11,7 @@ import {
 import { CircleStackIcon, WrenchScrewdriverIcon } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { getInvoice } from '@/lib/invoice'
+import { resolveItemDetail } from '@/app/(app)/_lib/detail-data'
 import { ItemActions } from './_components/item-actions'
 
 export default async function ItemDetailLayout({
@@ -41,10 +41,10 @@ export default async function ItemDetailLayout({
 }
 
 async function ItemHeaderData({ itemId }: { itemId: string }) {
-  const invoice = await getInvoice()
-  if (!invoice) redirect('/no-access')
+  const detail = await resolveItemDetail(itemId)
+  if (!detail) redirect('/no-access')
 
-  const result = await invoice.items.retrieve(itemId)
+  const { invoice, result } = detail
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
     return null
@@ -82,13 +82,17 @@ async function ItemHeaderData({ itemId }: { itemId: string }) {
 
 function ItemHeaderSkeleton() {
   return (
-    <div className="flex items-center gap-3 border-b p-6">
-      <Skeleton className="size-12 rounded-full" />
-      <div className="min-w-0 flex-1 space-y-2">
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-4 w-24" />
-      </div>
-      <Skeleton className="h-8 w-28 rounded-md" />
-    </div>
+    <DetailCardHeader
+      icon={
+        <DetailCardIcon>
+          <Skeleton className="size-5 rounded" />
+        </DetailCardIcon>
+      }
+      title={<Skeleton className="h-6 w-40" />}
+      subtitle={<Skeleton className="h-4 w-24" />}
+      actions={<Skeleton className="h-8 w-28 rounded-md" />}
+      closeHref="/items"
+      closeLabel="Close item details"
+    />
   )
 }
