@@ -1,236 +1,323 @@
-# Console shell — the contextual sidebar
+# Console shell — contextual navigation in the standard sidebar
 
-Console's sidebar is a **stack of navigation contexts**, not one rail with
-optional panels. The platform root is one context; a drill-down section is
-another; a product and an organization's workspace will be others. Exactly one
-level is mounted at a time, so the card's height always matches what is showing.
+Console's desktop navigation uses the standard full-height `@876/ui/sidebar`
+application shell. What is special about Console is **not** its sidebar chrome;
+it is the navigation model inside that chrome.
 
-This exists because Console is becoming several applications in one: entering a
-product should feel like entering that product, with a way back up. See
-`plans/2026-09-03-console-workspace-and-sidebar/plan.md` for the whole design.
+Console navigation is a stack of contexts. The platform root is one context; a
+drill-down section is another; product records and organization workspaces can
+add deeper contexts. Exactly one context owns the sidebar contents at a time.
+Entering a workspace therefore **replaces the contents of the existing sidebar**
+rather than mounting a second sidebar beside it.
 
-## Files
+The compact content-sized floating card that Console used previously is still a
+supported 876 design mechanism, but it is now owned by
+`@876/ui/floating-nav-rail`. Projects is its first active app consumer. The
+shared shadcn `Sidebar variant="floating"` remains a different, full-height
+floating/inset treatment.
 
-| File                     | Owns                                                        |
-| ------------------------ | ----------------------------------------------------------- |
-| `sidebar-context.ts`     | The context model and every resolver. No Console knowledge. |
-| `nav-config.ts`          | Console's platform registry — the root context's entries.   |
-| `nav-contexts.ts`        | Console's separately declared contexts.                     |
-| `sidebar.tsx`            | The desktop rail.                                           |
-| `mobile-nav.tsx`         | The same stack as a sheet.                                  |
-| `sidebar-motion.ts`      | The spring, and the `linear()` easing generated from it.    |
-| `sidebar-preferences.ts` | The expand/collapse preference.                             |
-| `sidebar-slots.ts`       | Non-navigation rail content, declared as data.              |
+See `plans/2026-09-03-console-workspace-and-sidebar/plan.md` for the contextual
+navigation design and `plans/2026-09-10-console-standard-sidebar/plan.md` for
+the presentation split.
+
+## Ownership
+
+| Concern | Owner |
+| --- | --- |
+| Standard full-height desktop sidebar | `@876/ui/sidebar` |
+| Compact content-sized floating navigation card | `@876/ui/floating-nav-rail` |
+| Console context model and resolvers | `sidebar-context.ts` |
+| Console root navigation registry | `nav-config.ts` |
+| Console standalone contexts | `nav-contexts.ts` |
+| Console contextual desktop renderer | `sidebar.tsx` |
+| Console mobile contextual renderer | `mobile-nav.tsx` |
+| Access/navigation/slot resolution | `server-sidebar.tsx` / `server-mobile-nav.tsx` |
+| Route-specific desktop composition | `app/(app)/@sidebar/**` |
+| Route-specific mobile composition | `app/(app)/@mobilenav/**` |
+| Non-navigation sidebar content declarations | `sidebar-slots.ts` |
+| Desktop expanded/collapsed state | `SidebarProvider` in `@876/ui/sidebar` |
+
+Console no longer owns a separate sidebar spring or localStorage expansion
+store. `AppShell` provides the shared `SidebarProvider`; `Shell` seeds its
+`defaultOpen` value from the standard `sidebar_state` cookie; and the desktop
+`SidebarTrigger` controls presentation width. First visit defaults to expanded.
+
+## Shell geometry
+
+The desktop sidebar is a sibling of `AppShellContent`, not a child of the page
+body:
+
+```tsx
+<AppShell defaultOpen={defaultSidebarOpen}>
+  <AppShellSidebarArea>{sidebar}</AppShellSidebarArea>
+  <AppShellContent>
+    <AppShellHeader>
+      <SidebarTrigger />
+      {/* search / actions / user menu */}
+    </AppShellHeader>
+    <AppShellBody>
+      <AppShellMain>{children}</AppShellMain>
+      {widgetRail}
+    </AppShellBody>
+  </AppShellContent>
+</AppShell>
+```
+
+That is the standard 876 workspace-app shell shape. `Sidebar variant="sidebar"`
+provides the persistent left edge and reserves the corresponding content gap.
+Collapsing it changes the width to the shared icon width; it does not change the
+active Console navigation context.
+
+On mobile, the desktop sidebar does not render. `@mobilenav` supplies the
+context-aware sheet in the topbar instead.
 
 ## Declaring a context
 
-Two ways, and the difference matters.
+There are two static declaration forms and one route-supplied form.
 
-**As children of a platform entry** (`nav-config.ts`) — the ordinary case. The
-entry keeps its own href and tint, and its children become the context's
-entries:
+### Children of a platform entry
+
+This is the ordinary section case. The entry keeps its own href and tint while
+its children become the section context's entries:
 
 ```ts
 {
-  key: 'projects', title: 'Projects', href: '/projects', icon: 'projects',
+  key: 'projects',
+  title: 'Projects',
+  href: '/projects',
+  icon: 'projects',
   requires: { permission: 'console:projects' },
-  children: [ /* … */ ],
+  children: [/* … */],
 }
 ```
 
-**As a standalone declaration** (`nav-contexts.ts`) — when the context needs to
-exist before its navigation does, or when it is not a child of the platform
-tree at all:
+### Standalone declarations
+
+Use `nav-contexts.ts` when a context must exist independently of resolved child
+navigation, including an empty context:
 
 ```ts
 {
-  key: 'storage', kind: 'product', title: 'Storage', href: '/storage',
-  icon: 'storage', parentKey: PLATFORM_CONTEXT_KEY, groups: [],
+  key: 'storage',
+  kind: 'product',
+  title: 'Storage',
+  href: '/storage',
+  icon: 'storage',
+  parentKey: PLATFORM_CONTEXT_KEY,
+  groups: [],
 }
 ```
 
-**An empty context is a supported state.** `resolveNavigation` drops an entry
-whose declared children all resolve away — right for a group inside a context,
-wrong for a context itself — which is exactly why a standalone declaration
-exists. Storage is the standing proof: the rail swaps and the back control
-works before that product has a single screen. Do not delete it as cleanup.
+An empty context is intentional and supported. `resolveNavigation` can remove an
+entry whose children all resolve away, which is correct for navigation inside a
+context but would incorrectly erase the context itself. Storage is the standing
+proof: entering it replaces the root navigation and still provides a way back
+before Storage has any child screens.
 
-**From a route segment, through the `@sidebar` slot** — when the context needs
-data only that segment has. `/apps/[slug]` knows the app's `app_kind`, and the
-shell above it does not; an RSC layout cannot read the pathname without making
-the whole shell dynamic, and a client provider written to by a nested layout
-would flash the platform rail before the product rail arrived. So the segment
-renders its own sidebar into a parallel slot:
+### Route-supplied contexts
 
-```
+Use the `@sidebar` and `@mobilenav` parallel routes when a context needs data
+owned by a route segment. `/apps/[slug]`, for example, knows the app record and
+its `app_kind`; the root shell does not. A workspace route likewise knows the
+organization and selected product workspace.
+
+```text
 src/app/(app)/
-  layout.tsx                                  receives `sidebar`, passes to Shell
+  layout.tsx
   @sidebar/
-    default.tsx                               every unmatched route
-    apps/[slug]/page.tsx                       the product rail at the record
-    apps/[slug]/[...section]/page.tsx          and below it
-    workspace/[orgSlug]/[...section]/page.tsx  one org's product workspace
-  @mobilenav/                                the same tree, for the sheet
+    default.tsx
+    apps/[slug]/page.tsx
+    apps/[slug]/[...section]/page.tsx
+    workspace/[orgSlug]/[...section]/page.tsx
+  @mobilenav/
     default.tsx
     apps/[slug]/page.tsx
     apps/[slug]/[...section]/page.tsx
     workspace/[orgSlug]/[...section]/page.tsx
 ```
 
-**`@mobilenav` is a second slot, not a duplicate.** `MobileNav` renders in the
-header, above the body where `@sidebar` renders, so it cannot read the sidebar's
-node — and hard-coding the platform contexts there is what left a phone showing
-the platform rail while the desktop rail showed the product. The two slots stay
-in step because each segment's contexts are resolved **once**, by a shared
-function the two slot pages both call: `resolveWorkspaceContexts` in
-`features/orgs/` and `resolveAppContexts` beside the app record's `_data`. Add a
-context to one slot and not the other and the rail and the sheet will disagree;
-add it to the shared resolver and both get it.
+Desktop and mobile stay aligned because both slot trees call the same
+route-level context resolver. App-record slots use `resolveAppContexts`; org
+workspace slots use `resolveWorkspaceContexts`. Add route-specific context to
+the shared resolver, not independently to one renderer.
 
-`resolveAppContexts` lives under `app/` rather than `features/` because it reads
-the app record's route loader, and `features/` may not import route code.
+`resolveAppContexts` remains under the route subtree because it uses the app
+record loader; `features/` must not import route code.
 
-**Catch-alls here are required, never optional.** Next.js refuses a route tree
-where a concrete route and an optional catch-all share a node — "You cannot
-define a route with the same specificity as a optional catch-all route" — and
-both `/apps/[slug]` and `/workspace/[orgSlug]` are real pages. It surfaces only
-when the dev server boots: `typecheck` and `next typegen` both pass, so this is
-a case where running the app is the only check that works. The apps slot pairs a
-base `page.tsx` with a required `[...section]`; the workspace slot needs no base
-page, because `/workspace/<org>` is the launcher index and should keep the
-platform rail.
+## Workspace behavior
 
-The workspace slot is why a workspace has no rail of its own. It is a top-level
-route, so entering it swaps _this_ rail to that product's navigation rather than
-opening a second one inside the page — one rendering of the navigation, not two
-free to drift. Its first segment is the workspace key; `/workspace/<org>` alone
-is the launcher index and contributes no context, because it belongs to no one
-product.
+`/workspace/<org>` is the workspace launcher. It belongs to no single product,
+so it keeps the platform context.
 
-A workspace context sets `subtitle` to the organization's name. It names two
-things — one product, for one organization — and once the workspace left the
-organization record, the rail became the only chrome saying which organization.
-An app record names one thing and leaves `subtitle` unset.
+A route below the launcher, such as a product workspace route, contributes the
+appropriate workspace/product context. The existing sidebar then renders that
+context:
 
-Section icons resolve through `NAV_ICONS` like every other entry, so the
-workspace keys are declared there and `workspace-icon.tsx` keeps only the accent
-colours its cards use. `resolveNavIcon` falls back to a generic square, so a key
-missing from that registry degrades silently — `workspace-icon.test.tsx` is what
-catches it.
+```text
+platform sidebar
+      ↓ enter product
+product context in same sidebar
+      ↓ enter org workspace
+workspace context in same sidebar
+```
 
-`ServerSidebar` resolves the access context, navigation, and slots, so a slot
-page only supplies the extra contexts its segment owns. The optional catch-all
-is what keeps the rail in place below the record — `/apps/876-crm/plans/pro`
-must not drop back to the platform rail.
+Do not implement this as:
 
-`groups` is kept rather than a flat entry list so a context renders the
-registry's own dividers; the platform rail's three groups are the reason.
+```text
+platform sidebar + product sidebar
+```
+
+or:
+
+```text
+workspace page containing its own secondary app sidebar
+```
+
+There must be one source of navigation truth for the active context.
+
+A workspace context may set `subtitle` to the organization name because the
+sidebar is the chrome that identifies both the product and the organization.
+An app record that names only one thing leaves `subtitle` unset.
+
+## Parallel-route requirements
+
+The concrete app record route and its descendants use a base `page.tsx` plus a
+required `[...section]` route. The workspace slot also uses a required
+`[...section]` because `/workspace/[orgSlug]` is a real launcher page. Do not
+replace these with an optional catch-all that conflicts with the concrete route.
+
+The catch-all is what keeps route-specific navigation active below the record;
+for example, `/apps/876-crm/plans/pro` must not fall back to platform navigation.
 
 ## Resolution
 
-**The open context is derived from the pathname, never from click state.** A
-deep link, a refresh, and the browser's back button all land on the right level
-with nothing to keep in sync.
+The open context is derived from the pathname rather than stored click state.
+A deep link, refresh, browser back, and browser forward therefore resolve the
+same navigation level without synchronizing a second navigation state machine.
 
-- `resolveSidebarContextStack(pathname, navigation, declared)` — the stack, root
-  first, deepest last. A context claims a path by its own href or any entry's.
-  Claiming contexts order by href length, which is depth for prefix-nested
-  paths; one whose declared parent is not on the stack is dropped rather than
-  grafted onto the root.
-- `resolveSidebarBackContext(stack, key)` — one level up. This is what the back
-  control names, so a workspace beneath a product says "Back to CRM", not "Back
-  to Console".
-- `entryOpensContext(entry, contexts)` — asked of the entry's **href**, not its
-  children, because a standalone context has no children to read. Getting this
-  wrong leaves an entry-less context unable to reopen after a back-out.
-- `resolveActiveEntryKey(pathname, context)` — longest match wins, so a context
-  index and a record page are both attributed correctly.
+- `resolveSidebarContextStack(pathname, navigation, declared)` returns the stack
+  root-first and deepest-last. Claiming contexts order by href length, and a
+  context whose declared parent is not already on the stack is dropped rather
+  than silently grafted elsewhere.
+- `resolveSidebarBackContext(stack, key)` returns one level up. A workspace
+  beneath CRM can therefore say "Back to CRM" rather than always returning to
+  the platform root.
+- `entryOpensContext(entry, contexts)` matches by the entry href rather than by
+  `children`, because a separately declared context can be empty.
+- `resolveActiveEntryKey(pathname, context)` uses the longest matching href so a
+  record page belongs to the correct navigation entry instead of its shorter
+  index prefix.
 
-The single piece of local state is the deliberate back-out, held as the
-dismissed context's key **and** the path it was dismissed from, so navigating
-anywhere reinstates the derived level with no effect needed to clear it.
+The one local navigation state in the desktop renderer is a deliberate
+**back-out**. Pressing the contextual back control displays the parent context
+without navigating away. It stores the dismissed context key together with the
+current pathname, so any actual navigation reinstates the route-derived context.
 
-## Back and expand are two controls
+## Back versus collapse
 
-Back pops one level. Expand reveals labels at whatever level is open. Folding
-them into one button makes neither discoverable.
+These remain deliberately separate operations:
 
-The rail is **collapsed by default at every level** — entering a context swaps
-the rail's contents, it does not widen it. Labels arrive only when asked for.
-The preference is global, not per context, and persists under the versioned key
-`876_console_sidebar_expanded:v1` through `useSyncExternalStore`, with every
-read and write wrapped so a browser that blocks site data still renders.
+- **Back** changes which navigation context is being displayed.
+- **Collapse** changes only the width/presentation of the standard sidebar.
 
-## Spring motion
+The contextual back control lives in the sidebar header when a parent exists.
+The collapse control is the shared `SidebarTrigger` in the desktop topbar. Do
+not combine them into one control.
 
-`sidebar-motion.ts` samples a real spring — stiffness, damping, mass — into a
-CSS `linear()` easing. That indirection is what lets a spring drive a _height_:
-the height is content-derived via `interpolate-size: allow-keywords`, so it
-cannot be driven by a JS loop without measuring first, and a declarative timing
-function keeps `prefers-reduced-motion` in CSS where it belongs.
+## Desktop identity
 
-Tune amplitude in `SIDEBAR_SPRING` — lower `damping` for more bounce. At
-320/24/1 the damping ratio is ~0.67 and the rail overshoots ~6%. The endpoints
-are pinned to exactly 0 and 1, because a spring never fully settles and a final
-stop of 0.9969 would leave the rail fractionally short and then snap.
+At the platform root, the sidebar header owns the Console logo/name. In a deeper
+context that header is replaced by the contextual back control plus the current
+context title/subtitle. This matches the full-height sidebar geometry: the app
+identity belongs at the top of the left navigation surface, while the content
+topbar begins with the standard collapse trigger.
 
-**`SIDEBAR_SPRING_SETTLE_MS` and the transition duration in `sidebar.tsx` must
-stay equal.** The stops describe that whole window; a shorter transition
-truncates the settle, a longer one stretches the overshoot.
+The mobile topbar keeps its compact Console identity beside the mobile
+navigation sheet trigger because the desktop sidebar is absent there.
 
 ## Slots
 
-A slot is non-navigation rail content — a card, a standalone button, an
-announcement, a live indicator. Declared as plain data beside the navigation it
-sits with:
+A sidebar slot is non-navigation content such as an announcement, standalone
+action, live indicator, or future card. Declarations remain plain data:
 
 ```ts
 { key, region, title, icon, componentKey, requires? }
 ```
 
-Regions render top to bottom: `top`, `above-nav`, `below-nav`, `footer`.
-`componentKey` is resolved by the client shell exactly as an icon key is, so
-declarations stay RSC-serializable. `title` and `icon` are what the collapsed
-rail shows — a slot that can only render expanded has nothing to show for most
-of its life.
+Regions retain their order:
 
-Slots are gated by `navRequirementPasses` from `@876/core/access`, the same
-predicate as nav entries, so a slot cannot become the one place on the rail
-where a permission is not checked.
+1. `top`
+2. `above-nav`
+3. navigation groups
+4. `below-nav`
+5. `footer`
 
-`sidebarSlotDefinitions` is deliberately empty: the mechanism ships before the
-first card.
+In the standard renderer, `top` lives in `SidebarHeader`, `above-nav` and
+`below-nav` live in `SidebarContent`, and `footer` lives in `SidebarFooter`.
+Slot permission filtering remains in `resolveSidebarSlots` and uses the same
+navigation requirement predicate as ordinary nav entries.
 
-## Extraction
+`sidebarSlotDefinitions` is currently empty. Keep the mechanism; do not invent a
+slot merely to exercise it.
 
-These primitives are written to leave. Nothing in `sidebar-context.ts`,
-`sidebar-motion.ts`, `sidebar-preferences.ts`, or `sidebar-slots.ts` imports a
-Console route, a Console permission, or `@/lib/services/*` — Console's specifics
-arrive as data through `navConfig`, `navContexts`, and props.
+## Shared floating navigation rail
 
-**Do not extract to a package yet.** Per `.claude/rules/app-structure.md` a
-component moves to `packages/ui` when a _second app_ needs it, and Console is
-the first. When Couriers or Billing adopts this, the move is mechanical.
+The old compact Console presentation has been promoted because Projects was
+already carrying the same geometry and spring implementation.
 
-Naming follows the same rule: kebab-case files, PascalCase exports, and no
-`Console` prefix inside Console — the path already says `apps/console`.
+`@876/ui/floating-nav-rail` owns only reusable presentation:
 
-## Known gap: dynamic contexts on mobile
+- compact 3.75rem collapsed width;
+- `w-56` expanded width;
+- content-sized rounded card surface;
+- shell gutter placement;
+- shared spring easing and reduced-motion transition behavior;
+- a presentation-only toggle that calls the consumer's state setter.
 
-`MobileNav` renders in the header, above the `@sidebar` slot, so it still
-receives only the statically declared `navContexts`. A section context and
-Storage work there; a per-app product context does not, and mobile shows the
-platform rail inside an app record.
+It does **not** own:
 
-Closing it means a second slot (`@mobilenav`) rendering the sheet with the same
-resolved contexts. Do that when the first dynamic context has to reach mobile —
-the workspace rail in Phase 3 is the likely forcing move.
+- route matching;
+- navigation data;
+- permissions;
+- app identity;
+- workspace semantics;
+- expansion persistence.
+
+Projects currently owns its app-scoped localStorage preference while consuming
+the shared rail. A future app can choose a different state policy without
+changing the primitive.
+
+Do not confuse this primitive with `Sidebar variant="floating"`; the latter is
+the shadcn full-height floating sidebar treatment.
+
+## Extraction boundary
+
+The contextual stack stays Console-local for now. Although much of
+`sidebar-context.ts` is generic, Console is still the only app using this exact
+platform → section → product → workspace stack. Per the reuse-first rule, do not
+promote the resolver merely because it could theoretically be shared.
+
+If a second app adopts the same navigation-context behavior, first remove the
+remaining Console-specific path-matching dependency, then promote the behavior
+to its correct cross-app owner. Until then, the shared boundary is presentation
+only.
 
 ## Verification
 
+GPT-Web cannot execute these commands. Run them from the local orchestrator:
+
 ```bash
+pnpm --filter @876/ui typecheck
+pnpm --filter @876/ui test
 pnpm --filter @876/console typecheck
 pnpm --filter @876/console lint
 pnpm --filter @876/console test
+pnpm --filter @876/projects-app typecheck
+pnpm --filter @876/projects-app lint
+pnpm --filter @876/projects-app test
 node scripts/check-app-structure.mjs
 ```
+
+Manual browser checks should cover root Console, section contexts, app-record
+contexts, organization product workspaces, collapse persistence, mobile context
+parity, and Projects' compact floating rail.
