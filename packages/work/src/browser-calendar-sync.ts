@@ -118,3 +118,5 @@ export function createBrowserWorkCalendarSync(
 export type WorkBrowserCalendarSyncClient = ReturnType<
   typeof createBrowserWorkCalendarSync
 >
+
+export const browserWorkCalendarSync = createBrowserWorkCalendarSync()
