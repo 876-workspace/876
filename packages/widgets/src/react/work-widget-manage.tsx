@@ -339,6 +339,7 @@ export function WorkWidgetManageView({
 
   const canManageCalendars =
     capabilities.canCreateCalendars || capabilities.canEditCalendars
+  const canManageCalendarSync = capabilities.canEditCalendars
 
   return (
     <>
@@ -416,13 +417,13 @@ export function WorkWidgetManageView({
         calendarLinks={calendarLinks}
         pending={syncPending}
         loadingRemoteCalendars={syncLoadingDetails}
-        canManage={canManageCalendars}
+        canManage={canManageCalendarSync}
         onSelectConnection={setActiveConnectionId}
-        onConnectOAuth={canManageCalendars ? connectOAuth : undefined}
-        onConnectCaldav={canManageCalendars ? connectCaldav : undefined}
-        onAuthorize={canManageCalendars ? authorizeConnection : undefined}
+        onConnectOAuth={canManageCalendarSync ? connectOAuth : undefined}
+        onConnectCaldav={canManageCalendarSync ? connectCaldav : undefined}
+        onAuthorize={canManageCalendarSync ? authorizeConnection : undefined}
         onLinkCalendar={
-          canManageCalendars
+          canManageCalendarSync
             ? (connection, remoteCalendar) =>
                 runSyncCommand(
                   () =>
@@ -434,7 +435,7 @@ export function WorkWidgetManageView({
             : undefined
         }
         onUnlinkCalendar={
-          canManageCalendars
+          canManageCalendarSync
             ? (link) =>
                 runSyncCommand(
                   () =>
@@ -447,7 +448,7 @@ export function WorkWidgetManageView({
             : undefined
         }
         onSyncConnection={
-          canManageCalendars
+          canManageCalendarSync
             ? (connection) =>
                 runSyncCommand(
                   () => syncClient.connections.sync(connection.id),
@@ -456,7 +457,7 @@ export function WorkWidgetManageView({
             : undefined
         }
         onSyncCalendar={
-          canManageCalendars
+          canManageCalendarSync
             ? (link) =>
                 runSyncCommand(
                   () =>
@@ -469,7 +470,7 @@ export function WorkWidgetManageView({
             : undefined
         }
         onDisconnect={
-          canManageCalendars
+          canManageCalendarSync
             ? (connection) =>
                 runSyncCommand(
                   () => syncClient.connections.delete(connection.id),
