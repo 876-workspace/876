@@ -71,7 +71,8 @@ async function ItemOverviewData({ params }: Props) {
             lowStockThreshold={item.lowStockThreshold}
             allowOutOfStock={item.allowOutOfStock}
             action={
-              item.trackStock && context.permissions.includes('catalog:write') ? (
+              item.trackStock &&
+              context.permissions.includes('catalog:write') ? (
                 <Link
                   href={`/items/${item.id}/stock`}
                   className={buttonVariants({ variant: 'outline', size: 'sm' })}
@@ -165,8 +166,8 @@ function ItemOverviewSkeleton() {
         <div className="border-876-surface-border border-b px-5 py-4">
           <h2 className="876-section-title text-balance">Item workspace</h2>
           <p className="text-muted-foreground mt-1 max-w-2xl text-sm text-pretty">
-            Use prices for future sales terms and transactions to understand where
-            this item affects customer documents.
+            Use prices for future sales terms and transactions to understand
+            where this item affects customer documents.
           </p>
         </div>
         <div className="divide-876-surface-border divide-y">
@@ -187,15 +188,11 @@ function ItemOverviewSkeleton() {
         <dl className="divide-876-surface-border divide-y">
           {['Type', 'SKU', 'Unit', 'Tax', 'Tax code', 'Updated', 'Item ID'].map(
             (label) => (
-              <div
+              <DetailField
                 key={label}
-                className="flex items-center justify-between gap-4 py-3"
-              >
-                <dt className="text-muted-foreground text-sm">{label}</dt>
-                <dd>
-                  <Skeleton className="h-4 w-28" />
-                </dd>
-              </div>
+                label={label}
+                value={<Skeleton className="h-4 w-28" />}
+              />
             )
           )}
         </dl>
