@@ -294,6 +294,7 @@ describe('Sidebar', () => {
       const user = userEvent.setup()
       renderSidebar('/projects')
 
+      await user.click(screen.getByRole('link', { name: 'Overview' }))
       await user.keyboard('{Escape}')
 
       expect(screen.getByRole('link', { name: 'Storage' })).toBeInTheDocument()
