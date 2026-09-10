@@ -1,7 +1,8 @@
-import { workspace } from '@/lib/services/workspace'
-import { notFound } from 'next/navigation'
+import { getAppModuleRegistry } from '@876/core/modules'
 import type { AdminApplicationModule } from '@876/platform/compat'
+import { notFound } from 'next/navigation'
 
+import { workspace } from '@/lib/services/workspace'
 import { resolveApp } from '../_data'
 import {
   ModulesManager,
@@ -26,7 +27,11 @@ async function loadModulesContext(slug: string): Promise<ModulesContext> {
   const app = await resolveApp(slug)
   if (!app || !['product', 'platform'].includes(app.app_kind)) notFound()
 
-  return { appId: app.id, canManage: app.app_kind === 'product' }
+  return {
+    appId: app.id,
+    canManage: app.app_kind === 'product',
+    registryManaged: getAppModuleRegistry(app.slug) !== undefined,
+  }
 }
 
 async function loadModules(
