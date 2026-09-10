@@ -11,6 +11,9 @@ export type WorkExternalSyncProvider = z.infer<
   typeof workExternalSyncProviderSchema
 >
 
+export const workSyncDirectionSchema = z.enum(['BIDIRECTIONAL', 'PULL_ONLY'])
+export type WorkSyncDirection = z.infer<typeof workSyncDirectionSchema>
+
 export const workSyncConnectionSetupInputSchema = z.discriminatedUnion(
   'provider',
   [
@@ -98,6 +101,7 @@ export const workSyncCalendarLinkSchema = z.object({
   calendarId: z.string(),
   remoteCalendarId: z.string(),
   remoteCalendarName: z.string().nullable(),
+  syncDirection: workSyncDirectionSchema,
   syncWindowStart: unixSchema.nullable(),
   syncWindowEnd: unixSchema.nullable(),
   lastSyncedAt: unixSchema.nullable(),
