@@ -160,6 +160,7 @@ export const createState = (input: {
   connectionId: string
   parentMappingId?: string | null
   resourceType: 'CALENDAR' | 'EVENT'
+  syncDirection?: 'BIDIRECTIONAL' | 'PULL_ONLY'
   localId: string
   remoteId: string
   remoteEtag?: string | null
@@ -175,6 +176,7 @@ export const createState = (input: {
     connectionId: input.connectionId,
     parentMappingId: input.parentMappingId ?? null,
     resourceType: input.resourceType,
+    syncDirection: input.syncDirection ?? 'BIDIRECTIONAL',
     localId: input.localId,
     remoteId: input.remoteId,
     remoteEtag: input.remoteEtag ?? null,
