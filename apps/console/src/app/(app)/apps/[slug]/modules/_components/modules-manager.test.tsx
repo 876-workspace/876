@@ -30,15 +30,30 @@ const MODULE: AdminApplicationModule = {
   updated_at: 1_700_000_000,
 }
 
-function renderManager(registryManaged: boolean) {
+const LEGACY_MODULE: AdminApplicationModule = {
+  ...MODULE,
+  id: 'mod_sales',
+  app_id: 'app_billing',
+  key: 'sales',
+  name: 'Sales',
+  description: 'Quotes, estimates, invoices, payments, and credit notes.',
+  feature_id: 'feature_sales',
+  feature_slug: 'billing-sales',
+}
+
+function renderManager(
+  registryManaged: boolean,
+  module: AdminApplicationModule = MODULE
+) {
   return render(
     <ModulesManager
       context={{
-        appId: 'app_invoice',
+        appId: module.app_id,
         canManage: true,
         registryManaged,
+        registryModuleKeys: registryManaged ? ['invoices'] : [],
       }}
-      modules={[MODULE]}
+      modules={[module]}
       features={[]}
     />
   )
@@ -99,6 +114,22 @@ describe('ModulesManager registry ownership', () => {
       position: 10,
     })
     expect(moduleClient.create).not.toHaveBeenCalled()
+  })
+
+  it('keeps transitional non-registry module identity editable', async () => {
+    // ARRANGE
+    const user = userEvent.setup()
+    renderManager(true, LEGACY_MODULE)
+
+    // ACT
+    await user.click(screen.getByRole('button', { name: 'Edit Sales' }))
+
+    // ASSERT
+    expect(screen.getByLabelText('Name')).not.toBeDisabled()
+    expect(screen.getByLabelText('Description')).not.toBeDisabled()
+    expect(
+      screen.queryByText(/come from the application module registry/i)
+    ).not.toBeInTheDocument()
   })
 
   it('retains manual creation for product apps without a canonical registry', () => {
