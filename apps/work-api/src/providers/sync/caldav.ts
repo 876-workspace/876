@@ -23,7 +23,8 @@ const DAV_HEADERS = {
   accept: 'application/xml, text/xml',
 }
 
-type CaldavRequestInit = Parameters<typeof caldavRequest>[1]
+type CaldavRequest = typeof caldavRequest
+type CaldavRequestInit = Parameters<CaldavRequest>[1]
 
 function compactUtc(value: number) {
   return new Date(value * 1000)
@@ -32,12 +33,29 @@ function compactUtc(value: number) {
     .replace(/\.\d{3}Z$/, 'Z')
 }
 
+function calendarReadOnly(response: string) {
+  const privileges = xmlBlocks(response, 'current-user-privilege-set')[0]
+  if (privileges === undefined) return false
+
+  const hasAggregateWrite = hasXmlTag(privileges, 'write')
+  const hasGranularWrite =
+    hasXmlTag(privileges, 'write-content') &&
+    hasXmlTag(privileges, 'bind') &&
+    hasXmlTag(privileges, 'unbind')
+  return !hasAggregateWrite && !hasGranularWrite
+}
+
 export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
   readonly provider = 'CALDAV' as const
   readonly #credential: WorkSyncCredential
   readonly #base: URL
+  readonly #transport: CaldavRequest
 
-  constructor(credential: WorkSyncCredential, caldavUrl: string | null | undefined) {
+  constructor(
+    credential: WorkSyncCredential,
+    caldavUrl: string | null | undefined,
+    transport: CaldavRequest = caldavRequest
+  ) {
     if (!caldavUrl)
       throw new WorkSyncProviderError(
         'provider-not-configured',
@@ -45,6 +63,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
       )
     this.#base = requireSafeCaldavUrl(caldavUrl)
     this.#credential = credential
+    this.#transport = transport
   }
 
   #authorization() {
@@ -68,7 +87,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
   ) {
     let response: Response
     try {
-      response = await caldavRequest(url, init, this.#authorization())
+      response = await this.#transport(url, init, this.#authorization())
     } catch (error) {
       if (error instanceof WorkSyncProviderError) throw error
       throw new WorkSyncProviderError(
@@ -164,7 +183,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
       headers: { ...DAV_HEADERS, Depth: '1' },
       body: `<?xml version="1.0" encoding="utf-8"?>
 <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:a="http://apple.com/ns/ical/">
-  <d:prop><d:resourcetype/><d:displayname/><d:sync-token/><a:calendar-color/></d:prop>
+  <d:prop><d:resourcetype/><d:displayname/><d:sync-token/><d:current-user-privilege-set/><a:calendar-color/></d:prop>
 </d:propfind>`,
     })
 
@@ -181,7 +200,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
         description: null,
         timeZone: null,
         color: xmlText(response, 'calendar-color'),
-        readOnly: false,
+        readOnly: calendarReadOnly(response),
       })
     }
     return result
