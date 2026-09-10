@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from './tooltip'
@@ -46,8 +45,7 @@ describe('FloatingNavRail', () => {
     ).toHaveClass('pl-[var(--876-shell-gutter)]')
   })
 
-  it('notifies the consumer when its presentation toggle is pressed', async () => {
-    const user = userEvent.setup()
+  it('notifies the consumer when its presentation toggle is pressed', () => {
     const onExpandedChange = vi.fn()
 
     render(
@@ -59,7 +57,7 @@ describe('FloatingNavRail', () => {
       </TooltipProvider>
     )
 
-    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }))
 
     expect(onExpandedChange).toHaveBeenCalledTimes(1)
     expect(onExpandedChange).toHaveBeenCalledWith(true)
