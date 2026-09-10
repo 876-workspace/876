@@ -3,50 +3,50 @@
 Run ID: `2026-09-10-console-standard-sidebar`
 Branch: `feature/console-standard-sidebar`
 Base: `main` at `ffda1a220706e989646d19a10dd119c296348b58`
-Status: `IN_PROGRESS`
+Status: `COMPLETED ✅`
 
 ## Overview
 
-Restore 876 Console to the standard left-mounted `@876/ui/sidebar` shell while preserving the newer contextual-navigation architecture that swaps the entire navigation context for sections, app records, and organization workspaces.
+Restore 876 Console to the standard left-mounted `@876/ui/sidebar` shell while preserving the newer contextual-navigation architecture that swaps the entire navigation context for sections, app records, products, and organization workspaces.
 
-The current compact floating card must not be deleted. It will be promoted into an official cross-app `@876/ui` primitive and consumed by Projects, which already carries a near-duplicate implementation. Console will then stop using the floating presentation and return to the same standard shell geometry used by Billing and other workspace-style apps.
+The compact floating card was explicitly not to be deleted. This run promotes its reusable presentation into the official `@876/ui/floating-nav-rail` mechanism and migrates 876 Projects, which already carried a near-duplicate implementation, onto that shared primitive. Console then returns to the same standard full-height sidebar mechanism used by the other docked workspace-style applications.
 
-The implementation deliberately separates two concerns that are currently coupled in Console:
+The implementation separates two concerns that had become coupled in Console:
 
-1. **Navigation behavior** — pathname-derived context stack, active-item resolution, back navigation, dynamic route-supplied contexts, permissions, and sidebar slots.
-2. **Presentation** — standard full-height sidebar versus compact floating navigation card.
+1. **Navigation behavior** — pathname-derived context stack, active-item resolution, contextual back navigation, route-supplied contexts, permissions, and sidebar slots.
+2. **Presentation** — the standard full-height sidebar versus the compact floating navigation card.
 
-Console continues to own the first concern. `@876/ui` owns the reusable presentations.
+Console continues to own the first concern. `@876/ui` owns the reusable presentation mechanisms.
 
-## Objectives
+## Objectives and completion
 
-1. Make the compact floating navigation card an official reusable UI primitive instead of a Console-specific implementation.
-2. Remove the duplicated floating-card geometry and spring implementation from Projects by moving it onto the shared primitive.
-3. Render Console desktop navigation with `@876/ui/sidebar` using `variant="sidebar"` and `collapsible="icon"`.
-4. Move Console's desktop sidebar back outside `AppShellContent`, so it occupies the conventional persistent left edge rather than the content body.
-5. Restore the shared `SidebarProvider` / `SidebarTrigger` state model and the standard `sidebar_state` cookie for Console.
-6. Keep platform → section → product → workspace context replacement unchanged.
-7. Keep `@sidebar` and `@mobilenav` parallel routes unchanged as the route-to-shell composition mechanism.
-8. Preserve permission-filtered navigation and non-navigation sidebar slots.
-9. Update tests so navigation behavior remains covered while floating-specific geometry assertions move to the shared UI primitive.
-10. Document the new ownership boundary clearly for future shell work.
+1. [x] Make the compact floating navigation card an official reusable UI primitive instead of a Console-specific implementation.
+2. [x] Remove duplicated floating-card geometry and spring implementation from Projects.
+3. [x] Render Console desktop navigation with `@876/ui/sidebar` using `variant="sidebar"` and `collapsible="icon"`.
+4. [x] Move Console's desktop sidebar back outside `AppShellContent`, restoring the conventional persistent left edge.
+5. [x] Restore shared `SidebarProvider` / `SidebarTrigger` state and the normal `sidebar_state` cookie for Console.
+6. [x] Keep platform → section → product → workspace context replacement unchanged.
+7. [x] Keep `@sidebar` and `@mobilenav` parallel routes as the route-to-shell composition mechanism.
+8. [x] Preserve permission-filtered navigation and sidebar slots.
+9. [x] Move floating-specific tests to the shared UI owner and rewrite Console tests around standard sidebar behavior.
+10. [x] Rewrite the Console shell documentation around the new ownership boundary.
 
-## Non-goals
+## Non-goals honored
 
-- Do not redesign Console navigation information architecture.
-- Do not change permissions, roles, guards, or access requirements.
-- Do not remove the contextual sidebar stack.
-- Do not collapse `@sidebar` and `@mobilenav` into a client provider.
-- Do not add another sidebar state store.
-- Do not replace the existing shadcn-derived `@876/ui/sidebar` implementation.
-- Do not change Billing, Invoice, Couriers, or Enterprise shell presentation unless required to keep shared UI contracts compatible.
-- Do not create a second `variant="floating"` meaning on `@876/ui/sidebar`; the compact floating card gets a distinct component name.
-- Do not add dependencies.
-- Do not open a pull request.
+- No navigation information-architecture redesign.
+- No permission, role, guard, or access-contract change.
+- No removal of the contextual sidebar stack.
+- No replacement of route-derived context with click state.
+- No collapse of `@sidebar` and `@mobilenav` into a client provider.
+- No new sidebar state store.
+- No fork or replacement of the existing shadcn-derived `@876/ui/sidebar` implementation.
+- No dependency addition.
+- No Billing, Invoice, Couriers, or Enterprise behavior change.
+- No pull request.
 
 ## Rules and references read before implementation
 
-Binding repository guidance read for this run:
+Binding/relevant repository guidance reviewed for the run:
 
 - `CLAUDE.md`
 - `.agents/rules/gpt-web-operating-rules.md`
@@ -67,70 +67,69 @@ Binding repository guidance read for this run:
 - `.agents/rules/app-structure.md` / canonical `.claude/rules/app-structure.md`
 - `.agents/rules/app-layout.md` / canonical `.claude/rules/app-layout.md`
 
-The user explicitly authorized creation of this new branch. That authorization supersedes the standing GPT-Web branch-creation prohibition for this run only; all other GPT-Web constraints remain binding.
+The user explicitly authorized creation of a new branch for this run. That explicit instruction was used only to override the GPT-Web standing branch-creation prohibition; all other GPT-Web constraints remained binding.
 
-## Verified current-state findings
+## Verified starting architecture
 
-### Shared sidebar primitive already exists
+### Shared standard sidebar
 
-`packages/ui/src/components/sidebar.tsx` already owns the standard shadcn-derived sidebar contract:
+`packages/ui/src/components/sidebar.tsx` already owned the standard shadcn-derived sidebar contract:
 
-- `variant="sidebar" | "floating" | "inset"`
-- `collapsible="offcanvas" | "icon" | "none"`
-- `SidebarProvider`
-- `SidebarTrigger`
-- mobile-sheet support
-- `sidebar_state` cookie persistence
-- icon-width behavior
+- `variant="sidebar" | "floating" | "inset"`;
+- `collapsible="offcanvas" | "icon" | "none"`;
+- `SidebarProvider`;
+- `SidebarTrigger`;
+- mobile sheet support;
+- `sidebar_state` cookie persistence;
+- standard icon-width behavior.
 
 This remains the default application-shell sidebar mechanism.
 
-### Console's current floating rail is a separate implementation
+### Console compact floating rail
 
-`apps/console/src/components/shell/sidebar.tsx` currently owns a compact, content-height card with:
+Before this run, `apps/console/src/components/shell/sidebar.tsx` mixed two responsibilities:
 
-- 3.75rem collapsed rail width
-- `w-56` expanded width
-- rounded bordered card chrome
-- backdrop blur/shadow treatment
-- custom spring-generated width/height transition
-- custom localStorage-backed expansion preference
-- contextual back control and route-derived context switching
+- contextual navigation behavior; and
+- a compact content-height floating card with custom widths, custom spring motion, and a localStorage expansion preference.
 
-Only the presentation/state pieces should leave Console. The context-resolution behavior remains Console-owned.
+Only the presentation/state-specific pieces were removed from Console ownership.
 
-### Projects duplicates the compact floating presentation
+### Projects duplication
 
-`apps/projects/src/components/shell/sidebar.tsx` duplicates the same rail width, panel width, floating card chrome, spring timing, and expansion preference pattern. This provides the second real consumer required by the reuse-first rule and justifies promotion into `@876/ui`.
+`apps/projects/src/components/shell/sidebar.tsx` carried the same 3.75rem collapsed width, `w-56` expanded width, rounded floating card chrome, sampled spring, and app-level expansion preference pattern. That second real consumer justified promotion of the visual mechanism into `packages/ui` under the reuse-first rule.
 
-### Console already resolves dynamic navigation correctly
+### Context routing already worked
 
-`ServerSidebar`, the `@sidebar` parallel route, and `sidebar-context.ts` already preserve the desired workspace behavior:
+Console already had the desired workspace behavior through:
 
-- root Console navigation is one context;
-- section/product/workspace routes replace that context;
-- open context derives from pathname;
-- browser refresh/deep-link/back behavior does not depend on click state;
-- dynamic route data reaches desktop and mobile through parallel slots;
-- workspace routes use `resolveWorkspaceContexts()` rather than mounting a second sidebar.
+- `sidebar-context.ts`;
+- `ServerSidebar`;
+- `@sidebar/**`;
+- `@mobilenav/**`;
+- `resolveAppContexts()`;
+- `resolveWorkspaceContexts()`.
 
-Those mechanics are retained.
+Those mechanisms remain responsible for deciding *what* the sidebar shows. The refactor changes *how desktop navigation is presented*.
 
-## Architecture after this change
+## Final architecture
 
 ```text
 packages/ui/
   src/components/sidebar.tsx
     └── standard application sidebar
-        ├── variant="sidebar"       ← Console default
-        ├── variant="floating"      ← shadcn full-height floating treatment
+        ├── variant="sidebar"       ← Console
+        ├── variant="floating"      ← existing full-height shadcn treatment
         └── variant="inset"
 
   src/components/floating-nav-rail.tsx
     └── compact content-sized floating card presentation
-        ├── collapse/expand geometry
-        ├── shared spring timing
-        └── presentation-only state contract
+        ├── 3.75rem collapsed geometry
+        ├── w-56 expanded geometry
+        ├── rounded card chrome
+        └── presentation-only toggle
+
+  src/components/floating-nav-rail-motion.ts
+    └── shared sampled spring easing
 
 apps/console/src/components/shell/
   sidebar.tsx
@@ -147,119 +146,121 @@ apps/console/src/components/shell/
 
 apps/projects/src/components/shell/sidebar.tsx
   └── consumes FloatingNavRail
+      └── keeps Projects-owned persistence policy
 ```
 
-## Key design decisions
+## Architectural decisions
 
 ### D1 — Keep the two floating concepts distinct
 
-The existing `Sidebar variant="floating"` means a full-height inset shadcn sidebar. The compact Console/Projects card is materially different. It will be named `FloatingNavRail` rather than overloading the existing variant with a second meaning.
+`Sidebar variant="floating"` already means the full-height shadcn floating/inset presentation. The compact content-sized Console/Projects card is materially different and is now named `FloatingNavRail`. No existing sidebar variant was overloaded with a second meaning.
 
 ### D2 — Shared floating primitive is presentation-only
 
-`FloatingNavRail` must not import Next.js, Console navigation contracts, route paths, permission types, or product data. It accepts ordinary React children and presentation state.
+`FloatingNavRail` does not import Next.js, access contracts, Console contexts, product data, or app state. It accepts React children and presentation state. Apps remain responsible for navigation, identity, access, and persistence.
 
-### D3 — Console uses the standard shared state mechanism
+### D3 — Projects keeps its own persistence policy
 
-Console will stop using its custom `sidebar-preferences.ts` localStorage store for width state. The standard `SidebarProvider` already owns open/collapsed state and persists `sidebar_state` in a cookie. Console should use that mechanism like Billing does.
+Projects retains `876_projects_sidebar_expanded:v1` and its `useSyncExternalStore` mechanism so the visual extraction does not silently alter its UX. Only geometry, card chrome, toggle presentation, and spring moved to `@876/ui`.
 
-Default on first visit: expanded (`true`). Subsequent visits honor the shared cookie.
+### D4 — Console uses shared sidebar state
 
-### D4 — Back and collapse remain separate actions
+Console no longer has a custom localStorage expansion system. `AppShell` provides `SidebarProvider`; `Shell` reads the normal `sidebar_state` cookie to seed `defaultOpen`; `SidebarTrigger` changes only the physical sidebar width.
 
-Contextual "Back to Console/product" changes the navigation context. `SidebarTrigger` changes only the physical sidebar width. They remain separate operations.
+First visit defaults to expanded.
 
-### D5 — Context replacement survives the visual migration
+### D5 — Context Back and sidebar Collapse are separate
 
-Entering `/projects`, `/apps/[slug]`, or `/workspace/[orgSlug]/...` must continue replacing the contents of the same sidebar. No nested/secondary sidebar will be introduced.
+Back changes which navigation context is displayed without navigating away. Collapse changes only the standard sidebar width. The refactor retains that semantic separation.
 
-### D6 — Preserve route-derived context state
+### D6 — Context replacement remains route-derived
 
-The current pathname-derived stack is retained. The renderer may keep the deliberate local "back-out" state that allows the operator to view a parent context without navigating away, but width state moves to `SidebarProvider`.
+Entering `/projects`, `/apps/[slug]`, or a product workspace still replaces the contents of the same sidebar. No secondary workspace sidebar was introduced.
 
-### D7 — Preserve sidebar slots
+The open context continues to derive from the pathname, so deep links, refresh, browser back, and browser forward do not depend on a client click-state state machine.
 
-`top`, `above-nav`, `below-nav`, and `footer` regions remain supported. The standard-sidebar renderer will map them to the appropriate `SidebarHeader`, `SidebarContent`, and `SidebarFooter` structure without changing permission resolution.
+### D7 — Root identity belongs in the docked sidebar header
 
-### D8 — Do not extract the contextual stack yet
+The full-height desktop sidebar now owns the Console logo/name at the platform root. Deeper contexts replace that header with the contextual Back control and context title/subtitle. The desktop topbar begins with the standard `SidebarTrigger`.
 
-Although `sidebar-context.ts` is mostly presentation-independent, Console is still its primary sophisticated consumer and it currently depends on Console's path matching. Promotion to `@876/core` or `@876/ui` is deferred until another app genuinely needs the same contextual stack behavior.
+Mobile keeps its compact Console identity in the topbar because the desktop sidebar is absent there.
 
-## Detailed phases
+### D8 — Preserve sidebar slots
 
-### Phase 1 — Shared floating navigation rail
+`top`, `above-nav`, `below-nav`, and `footer` remain supported. They map onto `SidebarHeader`, `SidebarContent`, and `SidebarFooter` without changing access filtering in `resolveSidebarSlots`.
 
-Add `packages/ui/src/components/floating-nav-rail.tsx`.
+### D9 — Do not extract the contextual stack yet
 
-Responsibilities:
+`sidebar-context.ts` remains Console-local. There is still no second app consuming this exact platform → section → product → workspace stack, so promotion would be speculative rather than reuse-driven.
 
-- render desktop compact floating navigation chrome;
-- own collapsed and expanded width classes;
-- own content-size interpolation classes;
-- own the shared spring timing function;
-- own reduced-motion-safe transition classes;
-- accept `expanded`, `children`, `aria-label`, and ordinary className/HTML nav props where appropriate;
-- expose a small shared toggle control only if doing so removes real duplication from Projects without coupling to storage/state policy.
+## Implementation phases
 
-Do not copy navigation rendering into this component.
+### Phase 1 — Shared floating navigation rail — COMPLETE
 
-Add colocated tests proving:
+Added:
 
-- collapsed width is applied;
-- expanded width is applied;
-- navigation children remain mounted across states;
-- caller-provided accessible label is applied;
-- the component contains no Next/Console dependency by construction.
+- `packages/ui/src/components/floating-nav-rail.tsx`
+- `packages/ui/src/components/floating-nav-rail-motion.ts`
+- `packages/ui/src/components/floating-nav-rail.test.tsx`
+- `packages/ui/src/components/floating-nav-rail-motion.test.ts`
 
-### Phase 2 — Projects migration
+The rail owns compact geometry, chrome, spring easing, and a presentation-only toggle. State storage is deliberately not part of the primitive.
 
-Refactor `apps/projects/src/components/shell/sidebar.tsx` to consume `FloatingNavRail`.
+A test-review pass caught an initial use of `@testing-library/user-event` in `packages/ui`, which does not declare that dependency. The test was corrected to use the package's existing React Testing Library `fireEvent` support; no dependency was added.
 
-Preserve:
+### Phase 2 — Projects migration — COMPLETE
 
-- existing Projects navigation entries;
-- current collapsed-by-default preference behavior;
-- tooltip behavior;
-- expand/collapse semantics;
-- Projects-specific icon/color resolution.
+Updated:
 
-Remove duplicated Projects spring/geometry code only after its replacement exists in `@876/ui`.
+- `apps/projects/src/components/shell/sidebar.tsx`
+- `apps/projects/src/components/shell/sidebar.test.tsx`
+- `apps/projects/src/components/shell/sidebar-preferences.ts`
 
-If `sidebar-motion.ts` becomes unused, delete it with its test after checking all references.
+Removed:
 
-Do not force Projects onto the standard sidebar; Projects remains the first active consumer of the compact floating design.
+- `apps/projects/src/components/shell/sidebar-motion.ts`
 
-### Phase 3 — Console standard sidebar renderer
+Projects' navigation and local persistence behavior remain app-owned. Its test suite now pins the shared `data-slot="floating-nav-rail"` integration.
 
-Refactor `apps/console/src/components/shell/sidebar.tsx` to compose the existing shared sidebar primitives:
+### Phase 3 — Console standard contextual renderer — COMPLETE
 
-- alias imported `Sidebar` as `SidebarRoot` per app-structure naming rules;
-- `variant="sidebar"`;
-- `collapsible="icon"`;
-- `renderMobile={false}`;
-- use `SidebarHeader`, `SidebarContent`, `SidebarFooter`, `SidebarGroup`, `SidebarMenu`, `SidebarMenuItem`, and `SidebarMenuButton` where their contracts fit;
-- use `useSidebar()` only for presentation state if required by custom context header/entry rendering.
+`apps/console/src/components/shell/sidebar.tsx` now composes:
 
-Retain:
+```tsx
+<SidebarRoot
+  variant="sidebar"
+  collapsible="icon"
+  renderMobile={false}
+/>
+```
+
+Preserved behavior:
 
 - `resolveSidebarContextStack()`;
 - `resolveSidebarBackContext()`;
 - `resolveActiveEntryKey()`;
 - `entryOpensContext()`;
-- deliberate back-out state;
-- context title/subtitle;
-- context icon/tint behavior;
+- deliberate route-scoped back-out state;
+- longest-match active state;
+- empty contexts;
+- context titles/subtitles;
+- icon/tint behavior;
 - slot regions;
-- active-path behavior.
+- Escape-to-parent behavior when focus is inside the sidebar.
 
-Remove floating-specific card geometry, custom width classes, spring styling, and Console width preference reads/writes.
+Removed from this renderer:
 
-### Phase 4 — Console shell geometry and standard trigger
+- floating card geometry;
+- custom spring imports;
+- custom localStorage width state;
+- internal expand/collapse button.
 
-Refactor `apps/console/src/components/shell/shell.tsx` so desktop sidebar placement matches the standard `AppShell` shape:
+### Phase 4 — Console shell placement/state — COMPLETE
+
+`apps/console/src/components/shell/shell.tsx` now renders:
 
 ```tsx
-<AppShell ...>
+<AppShell defaultOpen={defaultSidebarOpen}>
   <AppShellSidebarArea>{sidebar}</AppShellSidebarArea>
   <AppShellContent>
     <AppShellHeader>
@@ -274,125 +275,118 @@ Refactor `apps/console/src/components/shell/shell.tsx` so desktop sidebar placem
 </AppShell>
 ```
 
-Read `sidebar_state` from `cookies()` and pass `defaultOpen` into `AppShell`, matching the established Billing implementation.
+The access-context read and cookie read are composed with `Promise.all` so the new cookie requirement does not introduce an avoidable sequential shell waterfall.
 
-No live data request is added. No route-level loading behavior changes.
+### Phase 5 — Obsolete Console floating state/motion cleanup — COMPLETE
 
-### Phase 5 — Remove obsolete Console floating state/motion code
+Removed after runtime references were eliminated:
 
-After all references are migrated:
-
-- delete `apps/console/src/components/shell/sidebar-motion.ts` and its test if unused;
-- delete `apps/console/src/components/shell/sidebar-preferences.ts` and its test if unused.
-
-Do not delete any contextual-navigation resolver, route slot, or slot declaration.
-
-### Phase 6 — Test migration and regression coverage
-
-Update Console sidebar tests to assert behavior rather than old floating geometry.
-
-Keep coverage for:
-
-- root context entries;
-- active route;
-- context replacement;
-- nested route ownership;
-- longest active match;
-- empty context;
-- parent/back labels;
-- deliberate back-out;
-- reopening contexts;
-- Escape back behavior;
-- icon colors;
-- slots;
-- expanded and collapsed standard sidebar presentation.
-
-Remove/move tests that specifically assert:
-
-- `w-[3.75rem]` on Console's nav card;
-- `w-56` on Console's nav card;
-- floating card gutter geometry;
-- custom spring/localStorage width behavior.
-
-Add/adjust shell tests for:
-
-- `SidebarTrigger` in desktop header;
-- sidebar rendered through `AppShellSidebarArea`;
-- first-visit default expanded state;
-- cookie-derived collapsed state where practical at the existing test boundary.
-
-### Phase 7 — Documentation and final review
-
-Update `apps/console/src/components/shell/README.md` to distinguish:
-
-- Console-owned context resolution;
-- shared standard sidebar presentation;
-- shared floating nav rail presentation;
-- route-slot composition;
-- rule that workspaces replace sidebar contents rather than mount a second sidebar.
-
-Perform a static diff review for:
-
-- duplicate floating geometry still present in Console/Projects;
-- unused motion/preferences imports;
-- parallel sidebar implementations;
-- compatibility aliases/shims;
-- `as any`, `@ts-ignore`, `@ts-expect-error`, or eslint suppression;
-- accidental access/navigation changes;
-- unrelated formatting churn.
-
-Write the required GPT-Web report under `reports/gpt-web/` and mark the plan/tracker complete only after implementation review.
-
-## Expected file scope
-
-### Add
-
-- `packages/ui/src/components/floating-nav-rail.tsx`
-- `packages/ui/src/components/floating-nav-rail.test.tsx`
-- `plans/2026-09-10-console-standard-sidebar/plan.md`
-- `plans/2026-09-10-console-standard-sidebar/tracker.md`
-- `plans/2026-09-10-console-standard-sidebar/reports/gpt-web/2026-09-10-console-standard-sidebar.md`
-
-### Modify
-
-- `apps/projects/src/components/shell/sidebar.tsx`
-- `apps/console/src/components/shell/sidebar.tsx`
-- `apps/console/src/components/shell/sidebar.test.tsx`
-- `apps/console/src/components/shell/shell.tsx`
-- relevant Console shell test(s) if they exist and the behavior is testable without inventing infrastructure
-- `apps/console/src/components/shell/README.md`
-
-### Candidate deletes after reference verification
-
-- `apps/projects/src/components/shell/sidebar-motion.ts`
-- `apps/projects/src/components/shell/sidebar-motion.test.ts`
 - `apps/console/src/components/shell/sidebar-motion.ts`
 - `apps/console/src/components/shell/sidebar-motion.test.ts`
 - `apps/console/src/components/shell/sidebar-preferences.ts`
 - `apps/console/src/components/shell/sidebar-preferences.test.ts`
 
-The actual delete list is reference-driven; no file is removed merely because this plan predicts it.
+The spring behavior was preserved under the shared UI owner rather than discarded.
 
-## Invariants / acceptance criteria
+### Phase 6 — Regression tests — COMPLETE IN SOURCE
 
-1. Console desktop uses the standard full-height left sidebar.
-2. Console first visit renders expanded unless a prior shared sidebar cookie says otherwise.
-3. `SidebarTrigger` controls Console width through the shared provider.
-4. Console no longer imports or executes its custom floating spring/preference code.
-5. Root Console navigation remains permission-filtered and equivalent to current behavior.
-6. Entering a section replaces the sidebar contents with that context.
-7. Entering an app record replaces the sidebar contents with its app/product context.
-8. Entering an organization product workspace replaces the same sidebar with workspace navigation.
-9. Context back control still returns one context level without being conflated with collapse.
-10. Browser refresh/deep links still derive the correct context from pathname.
-11. Mobile continues using the synchronized `@mobilenav` route slot.
-12. The compact floating rail remains available under `@876/ui/floating-nav-rail` and has at least one real app consumer.
-13. No third copy of the floating card exists.
-14. No new dependency or compatibility shim is introduced.
+Relevant test source now contains:
 
-## Verification commands for the local orchestrator
+- 8 shared floating spring cases;
+- 4 shared floating rail cases;
+- 27 Console contextual/standard sidebar cases;
+- 7 Projects sidebar cases.
 
-GPT-Web cannot execute these commands. Verification is the orchestrator's responsibility.
+Console tests now use the actual shared `SidebarProvider` and `SidebarTrigger`. Floating-specific width/spring assertions no longer live under Console.
+
+No dedicated server `shell.test.tsx` was invented solely for this run because this app has no existing shell-test harness; shell placement and cookie wiring were inspected statically and remain part of the local browser/typecheck verification gate.
+
+### Phase 7 — Documentation/static review/report — COMPLETE
+
+Rewrote `apps/console/src/components/shell/README.md` to document:
+
+- standard docked sidebar ownership;
+- compact floating rail ownership;
+- route-derived context behavior;
+- workspace replacement semantics;
+- parallel desktop/mobile route slots;
+- Back versus Collapse;
+- slot mapping;
+- cookie persistence;
+- current extraction boundary.
+
+Final report:
+
+`./reports/gpt-web/2026-09-10-console-standard-sidebar.md`
+
+## Files changed
+
+### Added
+
+- `packages/ui/src/components/floating-nav-rail.tsx`
+- `packages/ui/src/components/floating-nav-rail-motion.ts`
+- `packages/ui/src/components/floating-nav-rail.test.tsx`
+- `packages/ui/src/components/floating-nav-rail-motion.test.ts`
+- `plans/2026-09-10-console-standard-sidebar/plan.md`
+- `plans/2026-09-10-console-standard-sidebar/tracker.md`
+- `plans/2026-09-10-console-standard-sidebar/reports/gpt-web/2026-09-10-console-standard-sidebar.md`
+
+### Modified
+
+- `apps/console/src/components/shell/sidebar.tsx`
+- `apps/console/src/components/shell/sidebar.test.tsx`
+- `apps/console/src/components/shell/shell.tsx`
+- `apps/console/src/components/shell/README.md`
+- `apps/projects/src/components/shell/sidebar.tsx`
+- `apps/projects/src/components/shell/sidebar.test.tsx`
+- `apps/projects/src/components/shell/sidebar-preferences.ts`
+
+### Removed
+
+- `apps/projects/src/components/shell/sidebar-motion.ts`
+- `apps/console/src/components/shell/sidebar-motion.ts`
+- `apps/console/src/components/shell/sidebar-motion.test.ts`
+- `apps/console/src/components/shell/sidebar-preferences.ts`
+- `apps/console/src/components/shell/sidebar-preferences.test.ts`
+
+GitHub's compare endpoint may display some add/remove pairs as renames because of source similarity; the architectural outcome above reflects the intentional ownership move.
+
+## Acceptance criteria
+
+- [x] Console desktop source uses the standard full-height left sidebar.
+- [x] Console source defaults first visit to expanded when no sidebar cookie exists.
+- [x] Shared `SidebarTrigger` controls Console width through `SidebarProvider`.
+- [x] Console no longer imports or executes its custom floating spring/preference code.
+- [x] Root Console navigation remains context/access driven.
+- [x] Section routes replace the sidebar contents with their context.
+- [x] App-record routes retain route-supplied app/product contexts.
+- [x] Organization product workspaces retain route-supplied workspace contexts.
+- [x] Context Back remains distinct from Collapse.
+- [x] Mobile route slots remain intact.
+- [x] Compact floating rail remains available as `@876/ui/floating-nav-rail`.
+- [x] Projects is a real consumer of the shared compact rail.
+- [x] No new dependency or compatibility shim was introduced.
+- [x] No permission/nav registry/data-loading change is in the branch diff.
+- [!] Executable type/lint/test/build/browser acceptance remains the local orchestrator's merge gate because GPT-Web cannot run the repository.
+
+## Static review evidence
+
+The branch was compared against `main` after implementation. The diff was confined to:
+
+- Console shell/sidebar/docs/tests;
+- Projects floating-sidebar consumption/tests/comment cleanup;
+- new shared floating-rail UI files;
+- plan/tracker/report artifacts.
+
+No package manifest changed. No access, navigation registry, route slot, or data-loading file changed.
+
+Changed source was reviewed for accidental state duplication, compatibility shims, suppressions, and unrelated scope. No `as any`, `@ts-ignore`, `@ts-expect-error`, or eslint suppression was intentionally introduced by this run.
+
+`main` was re-read near completion and remained at the original base SHA `ffda1a220706e989646d19a10dd119c296348b58`, so there was no upstream drift to reconcile during the implementation pass.
+
+## Verification commands
+
+GPT-Web did not execute these commands and does not claim they pass. The local orchestrator must run:
 
 ```bash
 pnpm --filter @876/ui typecheck
@@ -402,10 +396,9 @@ pnpm --filter @876/console typecheck
 pnpm --filter @876/console lint
 pnpm --filter @876/console test
 
-# Resolve the actual package name from apps/projects/package.json if different.
-pnpm --filter @876/projects typecheck
-pnpm --filter @876/projects lint
-pnpm --filter @876/projects test
+pnpm --filter @876/projects-app typecheck
+pnpm --filter @876/projects-app lint
+pnpm --filter @876/projects-app test
 
 node scripts/check-app-structure.mjs
 ```
@@ -413,81 +406,125 @@ node scripts/check-app-structure.mjs
 Recommended manual checks:
 
 ```text
-Console /users                 → standard root sidebar
-Console /projects              → standard sidebar, Projects context
-Console /projects/issues       → Issues active
-Console /storage               → empty context still shows back control
-Console /apps/<slug>           → app context
-Console /workspace/<org>/<x>   → workspace/product context
-Collapse + navigate            → sidebar remains collapsed via shared cookie
-Reload                          → persisted shared sidebar state restored
-Mobile equivalents             → synchronized @mobilenav context
-Projects                       → compact floating nav rail unchanged visually
+/users
+  → standard full-height Console root sidebar
+  → expanded on clean first visit
+
+collapse + reload
+  → icon mode
+  → normal sidebar_state cookie restores state
+
+/projects
+  → same physical standard sidebar
+  → Projects context replaces root entries
+
+/projects/issues
+  → Issues active through longest match
+
+/storage
+  → empty context remains valid
+  → Back to Console remains available
+
+/apps/<slug> and descendants
+  → app/product context remains active
+
+/workspace/<orgSlug>/<product-section>
+  → workspace/product navigation replaces the same sidebar
+  → no secondary sidebar
+
+mobile equivalents
+  → @mobilenav context stays synchronized
+
+876 Projects
+  → compact FloatingNavRail retained
+  → local expansion persistence retained
 ```
 
-## Risk register
+## Implementation commits
 
-### R1 — Contextual renderer depends on old expansion flag
+Planning/start:
 
-Current Console entry/header rendering conditionally includes labels based on its custom expansion state. Migration must switch those conditions to the standard sidebar state or rely on `SidebarMenuButton`'s built-in collapsed CSS. Missing one branch could leave invisible/duplicated labels.
+- `406e91b79b4d3e54e32165c1b7797c5113ff1486` — initial detailed plan
+- `44260518720c70cd8e287e026182bd7941d319e8` — initial tracker
 
-### R2 — Back-out state versus route-derived context
+Shared UI:
 
-Back is intentionally local and non-navigating. Replacing the renderer must not accidentally convert it into route navigation or remove the ability to reopen the derived context.
+- `21999c6499a2cd3e6556632a01696029641972ba` — shared floating rail spring
+- `ed77939be67233e5f4fcc0871cd01efe190518f5` — shared floating rail primitive
+- `824e2235c312c157fa0281f2f7265f4e29b1583d` — spring contract tests
+- `07b6a12dbba431c44525e15bcf986004bdc0f0af` — floating rail presentation tests
+- `774f7b2a52057bc6652ec2f24326bac9af35cf9a` — remove accidental undeclared UI test dependency
 
-### R3 — Header/topbar geometry
+Projects:
 
-Moving the sidebar outside `AppShellContent` changes where the topbar begins. This is desired, but Console-specific logo/header spacing may need small adaptation so the trigger becomes the leftmost desktop header control cleanly.
+- `271c52341a7720f20ac64e18066f23c6c0ca7942` — consume shared floating rail
+- `8f7db9a0dfd5959ee648de5152fbc8ec4cfe0b7b` — remove duplicated Projects spring
+- `3dc9679963495c2891322038f7525b43ae2f92f9` — correct Projects preference ownership comment
+- `24a05ae581d783e41421517cfe377a7d245648e2` — pin Projects shared-rail integration test
 
-### R4 — Slot mapping
+Console:
 
-The old floating renderer accepted four slot regions inside one nav card. The standard sidebar has semantic header/content/footer regions. Mapping must preserve ordering and permission behavior.
+- `2547c7c9a3ec5bb5866509aade432273f4c49c66` — standard contextual sidebar renderer
+- `c35fcd9877999b10c376cfd3077200df5fc01a85` — docked shell placement/shared state
+- `e3167b6df9ef71005ebe3a0c4df797bad1c96d5b` — remove local spring
+- `793f626a8c3485a2faacd9ceebb792126ba63e7c` — remove local spring test
+- `7e2c7205251e639ba959710e69e4d4a3ddaed738` — remove custom sidebar state store
+- `dbcff10b3e20b7bb613222b57cfc401fb4ee9a80` — remove obsolete preference tests
+- `289dbb54bbf2d5bd7d492881a5d2202c181584a3` — contextual standard-sidebar test rewrite
+- `cbb1205b699c1324a0fc905e3e88e630a17d53b6` — correct Escape focus regression test
+- `a6cc3ba731519d2d6c5c41a5a2f92aea301e5f80` — rewrite Console shell documentation
 
-### R5 — Projects extraction could accidentally absorb product behavior
+Final run artifacts:
 
-Only card presentation and spring/geometry may move to `@876/ui`. Projects icon resolution, entries, and preference-storage policy should remain app-owned unless an existing shared state mechanism already covers the exact behavior.
-
-### R6 — Connector-only verification
-
-No tests, formatter, lint, typecheck, build, or runtime check can be executed from GPT-Web. All code changes require local orchestrator verification before merge.
+- `b93cdfdd729eefc7263e84a4d02f1152e0b7c4f5` — GPT-Web implementation report
+- `0e169665b85cfd3571d785f53f31835d5f65176f` — completed tracker
 
 ## Dispatched briefs
 
-None. This run is being implemented directly through GPT-Web; no sub-agent/CLI is available or needed for the current scoped refactor.
+None. This scoped refactor was implemented directly through GPT-Web; no sub-agent or CLI execution was used.
 
 ## Execution reports
 
 | Tool | Report | Status |
 | --- | --- | --- |
-| GPT-Web | `./reports/gpt-web/2026-09-10-console-standard-sidebar.md` | Pending |
-
-## Phase checklist
-
-- [x] Read root and GPT-Web rules.
-- [x] Verify `main` head and create authorized feature branch.
-- [x] Verify current shared sidebar, Console rail, Projects rail, and workspace context architecture.
-- [ ] Add shared `FloatingNavRail` primitive and tests.
-- [ ] Migrate Projects to shared floating rail and remove verified duplication.
-- [ ] Convert Console contextual renderer to standard `@876/ui/sidebar`.
-- [ ] Move Console sidebar outside `AppShellContent` and restore standard trigger/cookie state.
-- [ ] Remove verified-unused Console floating motion/preferences files.
-- [ ] Update Console regression tests.
-- [ ] Update Console shell documentation.
-- [ ] Static diff/reuse/dead-code review.
-- [ ] Write final GPT-Web report.
-- [ ] Mark tracker and plan `COMPLETED` with commit evidence.
+| GPT-Web | `./reports/gpt-web/2026-09-10-console-standard-sidebar.md` | Complete |
 
 ## Multi-session continuity / handoff state
 
-Current state at plan creation:
+Implementation is complete on `feature/console-standard-sidebar`.
 
-- Branch exists from current `main` SHA `ffda1a220706e989646d19a10dd119c296348b58`.
-- No application code has been modified yet.
-- Rules and current implementations have been inspected.
-- First implementation action is Phase 1: create the shared floating navigation rail from the duplicated Console/Projects presentation, then migrate Projects before altering Console.
+A local agent taking over should **not** re-derive or redesign the sidebar architecture. It should:
 
-If another agent resumes this run, it should read this file and `tracker.md`, inspect the current branch head, and continue from the first unchecked phase rather than re-deriving the architecture.
+1. read this plan, `tracker.md`, and the final GPT-Web report;
+2. check out `feature/console-standard-sidebar`;
+3. run the exact verification commands above;
+4. manually inspect the listed desktop/mobile routes;
+5. fix only concrete verification defects while retaining the five invariants below;
+6. prepare a PR only if separately authorized by the user/workflow.
+
+Invariant set for any follow-up fix:
+
+1. Console uses standard `@876/ui/sidebar` desktop presentation.
+2. Context switching stays pathname/route derived.
+3. Workspaces replace the existing sidebar contents rather than mounting a second sidebar.
+4. Projects consumes the shared compact `FloatingNavRail`.
+5. The compact rail stays presentation-only and app persistence stays app-owned.
 
 ## PR preparation summary
 
-Pending implementation. No PR may be opened from this GPT-Web run.
+### Change summary
+
+- restored Console's standard docked shadcn-style sidebar;
+- preserved Console contextual navigation and workspace replacement behavior;
+- made compact floating navigation an official shared `@876/ui` primitive;
+- migrated Projects to the shared floating primitive;
+- removed duplicated Console/Projects floating spring/state implementation where obsolete;
+- rewrote tests and shell documentation to match the new ownership boundary.
+
+### Verification evidence
+
+Static GitHub diff review only. Executable verification was not available to GPT-Web and is explicitly pending local execution.
+
+### PR state
+
+No PR was opened. The user authorized a branch and implementation, not a pull request.
