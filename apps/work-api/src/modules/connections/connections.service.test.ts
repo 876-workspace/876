@@ -21,6 +21,7 @@ const CRM_WORK_SCOPES = [
   'work.alerts.read',
   'work.alerts.write',
   'work.my-work.read',
+  'work.resource-work.read',
 ]
 
 describe('ensureCrmConnection', () => {

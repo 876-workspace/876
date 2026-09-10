@@ -1,6 +1,7 @@
 'use client'
 
 import type { ComponentType, ReactNode } from 'react'
+import type { WorkHostContext } from '@876/work'
 import { CalendarDaysIcon } from '@876/ui/icons'
 
 import {
@@ -15,6 +16,10 @@ import {
 import { NotepadWidgetPanel } from './notepad-widget'
 import { NotepadIcon } from './notepad-icon'
 import { WorkWidgetPanel } from './work-widget'
+import {
+  useWorkWidgetBrowserClient,
+  useWorkWidgetHostContext,
+} from './work-widget-context'
 import { ChatRail } from './chat-rail'
 import { WidgetPopout } from './widget-popout'
 
@@ -23,6 +28,8 @@ interface SharedWidgetRenderer {
   icon: ComponentType<{ className?: string }>
   renderPanel: (context: {
     workCapabilities: WorkWidgetCapabilities
+    workContext: WorkHostContext | null
+    workClient: ReturnType<typeof useWorkWidgetBrowserClient>
   }) => ReactNode
 }
 
@@ -35,8 +42,12 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
   {
     metadata: workWidgetMetadata,
     icon: CalendarDaysIcon,
-    renderPanel: ({ workCapabilities }) => (
-      <WorkWidgetPanel capabilities={workCapabilities} />
+    renderPanel: ({ workCapabilities, workContext, workClient }) => (
+      <WorkWidgetPanel
+        capabilities={workCapabilities}
+        context={workContext ?? undefined}
+        client={workClient}
+      />
     ),
   },
 ]
@@ -52,15 +63,20 @@ const sharedWidgetPanelWidths: Partial<Record<string, number>> =
 export function SharedWidgetDock({
   enabledWidgetIds,
   workCapabilities = EMPTY_WORK_WIDGET_CAPABILITIES,
+  workContext,
   chatEnabled = false,
   navbarHeight = 56,
 }: {
   enabledWidgetIds: readonly string[]
   workCapabilities?: WorkWidgetCapabilities
+  workContext?: WorkHostContext
   /** Renders the 876 Chat rail card below the widget triggers. */
   chatEnabled?: boolean
   navbarHeight?: number
 }) {
+  const inheritedWorkContext = useWorkWidgetHostContext()
+  const workClient = useWorkWidgetBrowserClient()
+  const resolvedWorkContext = workContext ?? inheritedWorkContext
   const enabled = new Set(enabledWidgetIds)
   const renderers = sharedWidgetRenderers.filter(({ metadata }) =>
     enabled.has(metadata.id)
@@ -77,7 +93,11 @@ export function SharedWidgetDock({
             title={metadata.name}
             icon={<Icon />}
           >
-            {renderPanel({ workCapabilities })}
+            {renderPanel({
+              workCapabilities,
+              workContext: resolvedWorkContext,
+              workClient,
+            })}
           </WidgetPopout.Content>
         ))}
       </WidgetPopout.Panel>

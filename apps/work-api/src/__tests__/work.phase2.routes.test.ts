@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => ({
     retrieve: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    respond: vi.fn(),
     remove: vi.fn(),
   },
   calendars: {
@@ -52,6 +53,7 @@ const mocks = vi.hoisted(() => ({
     retrieve: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    respond: vi.fn(),
     remove: vi.fn(),
   },
   alerts: {
@@ -1315,6 +1317,73 @@ describe('Work Phase 2 routes', () => {
       expect.objectContaining({ object: 'task_assignment', status: 'ACCEPTED' })
     )
     expect(response.body.error).toBeNull()
+  })
+
+  it('lets a session assignee respond through the dedicated route', async () => {
+    mocks.identity.sessionAccess.mockResolvedValue({
+      assigned: true,
+      entitled: true,
+      status: 'ACTIVE',
+      effectivePermissions: new Set(['tasks.respond']),
+      userId: 'user_1',
+    })
+    mocks.taskAssignments.retrieve.mockResolvedValue({
+      id: 'assign_1',
+      taskId: 'task_1',
+      targetType: 'USER',
+      assigneeId: 'user_1',
+      role: 'OWNER',
+      status: 'PENDING',
+      assignedBy: 'user_2',
+      assignedAt: new Date(),
+      respondedAt: null,
+      completedAt: null,
+      delegatedFromAssignmentId: null,
+    })
+    mocks.taskAssignments.respond.mockResolvedValue({
+      id: 'assign_1',
+      taskId: 'task_1',
+      targetType: 'USER',
+      assigneeId: 'user_1',
+      role: 'OWNER',
+      status: 'ACCEPTED',
+      assignedBy: 'user_2',
+      assignedAt: new Date(),
+      respondedAt: new Date(),
+      completedAt: null,
+      delegatedFromAssignmentId: null,
+    })
+
+    const response = await request(createApp())
+      .patch(
+        '/v1/organizations/org_1/tasks/task_1/assignments/assign_1/response'
+      )
+      .set('x-876-api-key', 'app_key_crm')
+      .set('authorization', 'Bearer user-token')
+      .send({ status: 'ACCEPTED' })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.status).toBe('ACCEPTED')
+    expect(mocks.taskAssignments.respond).toHaveBeenCalledWith(
+      'task_1',
+      'assign_1',
+      'user_1',
+      'PENDING',
+      expect.objectContaining({ status: 'ACCEPTED' })
+    )
+  })
+
+  it('rejects integration principals on self-response routes', async () => {
+    const response = await request(createApp())
+      .patch(
+        '/v1/organizations/org_1/events/event_1/participants/part_1/response'
+      )
+      .set('x-876-api-key', 'app_key_crm')
+      .send({ status: 'ACCEPTED' })
+
+    expect(response.status).toBe(403)
+    expect(response.body.error.code).toBe('work/session-forbidden')
+    expect(mocks.participants.respond).not.toHaveBeenCalled()
   })
 
   it('rejects connection without scope before tenant check with 403', async () => {

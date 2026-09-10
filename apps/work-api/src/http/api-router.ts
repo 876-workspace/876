@@ -11,6 +11,7 @@ export type WorkSecurity =
       kind: 'integration'
       scope: string
       sessionPermissions?: readonly string[]
+      sessionPermissionsMode?: 'any' | 'all'
     }
 export type GuardResolver = (security: WorkSecurity) => RequestHandler[]
 type RouteSpec = {

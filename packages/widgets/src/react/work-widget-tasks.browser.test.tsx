@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { WorkTask, WorkTaskList } from '@876/work'
+import { createBrowserWork } from '@876/work/browser'
 
 import { EMPTY_WORK_WIDGET_CAPABILITIES } from '../work-capabilities'
 import { WorkWidgetTasksView } from './work-widget-tasks'
@@ -113,17 +114,85 @@ describe('WorkWidgetTasksView pagination races', () => {
       <WorkWidgetTasksView capabilities={EMPTY_WORK_WIDGET_CAPABILITIES} />
     )
 
-    await expect.element(page.getByText('Task A')).toBeVisible()
+    await expect
+      .element(page.getByRole('region', { name: 'Tasks' }).getByText('Task A'))
+      .toBeVisible()
     await page.getByRole('button', { name: 'Load more' }).click()
     await page.getByRole('button', { name: 'List B' }).click()
 
-    await expect.element(page.getByText('Task B')).toBeVisible()
+    const tasksRegion = page.getByRole('region', { name: 'Tasks' })
+    await expect.element(tasksRegion.getByText('Task B')).toBeVisible()
 
     resolveStalePage(success(pageResult([staleTask], false)))
 
     await expect
       .element(page.getByText('Stale page task'))
       .not.toBeInTheDocument()
-    await expect.element(page.getByText('Task B')).toBeVisible()
+    await expect.element(tasksRegion.getByText('Task B')).toBeVisible()
+  })
+
+  it('keeps a contextual task visible after creating and reloading it', async () => {
+    const createdTask = task('task_created', 'Review INV-123', 'list_1')
+    let taskLoads = 0
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      if (url === '/api/task-lists')
+        return Promise.resolve(
+          success({
+            object: 'list',
+            data: [],
+            has_more: false,
+            total_count: 0,
+            url: '/v1/organizations/org_1/task-lists',
+          })
+        )
+      if (url === '/api/invoices/inv_123/work/tasks' && init?.method === 'POST')
+        return Promise.resolve(success(createdTask))
+      if (url === '/api/invoices/inv_123/work/tasks') {
+        taskLoads += 1
+        return Promise.resolve(
+          success(pageResult(taskLoads === 1 ? [] : [createdTask], false))
+        )
+      }
+
+      return Promise.reject(new Error(`Unexpected request: ${url}`))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <WorkWidgetTasksView
+        capabilities={{
+          ...EMPTY_WORK_WIDGET_CAPABILITIES,
+          canCreateTasks: true,
+        }}
+        client={createBrowserWork({
+          contextRouteBase: '/api/invoices/inv_123/work',
+        })}
+        context={{
+          service: 'billing',
+          resource: 'invoice',
+          externalId: 'inv_123',
+        }}
+      />
+    )
+
+    await expect
+      .element(page.getByText('No active tasks in this list.'))
+      .toBeVisible()
+    await page.getByText('Add task', { exact: true }).first().click()
+    await page.getByPlaceholder('Task title').fill('Review INV-123')
+    await page.getByRole('button', { name: 'Add task' }).click()
+
+    await expect
+      .element(
+        page.getByRole('region', { name: 'Tasks' }).getByText('Review INV-123')
+      )
+      .toBeVisible()
+    expect(taskLoads).toBe(2)
+    const post = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'POST'
+    )
+    expect(post?.[0]).toBe('/api/invoices/inv_123/work/tasks')
+    expect(String(post?.[1]?.body)).not.toContain('inv_123')
   })
 })

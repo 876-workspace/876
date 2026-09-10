@@ -16,7 +16,12 @@ import { createMyWorkRouter } from '../modules/my-work/index.js'
 import { createNotificationOutboxRouter } from '../modules/notification-outbox/index.js'
 import { createRecurrenceRulesRouter } from '../modules/recurrence-rules/index.js'
 import { createRemindersRouter } from '../modules/reminders/index.js'
-import { createSyncConnectionsRouter } from '../modules/sync-connections/index.js'
+import { createResourceWorkRouter } from '../modules/resource-work/index.js'
+import {
+  createSyncConnectionsRouter,
+  createSyncOauthRouter,
+  createSyncSchedulerRouter,
+} from '../modules/sync-connections/index.js'
 import { createSyncMappingsRouter } from '../modules/sync-mappings/index.js'
 import { createTaskAssignmentsRouter } from '../modules/task-assignments/index.js'
 import { createTaskLinksRouter } from '../modules/task-links/index.js'
@@ -37,6 +42,10 @@ export function buildRoutes() {
     repository,
     identity: new HttpIdentityGateway(),
   })
+
+  // OAuth provider callbacks are intentionally public. The single-use hashed
+  // state binds the callback to the exact Work connection and provider.
+  router.use('/v1/sync/oauth', createSyncOauthRouter())
 
   router.use('/v1/tenants', createTenantsRouter(resolveGuards))
   router.use(
@@ -88,6 +97,10 @@ export function buildRoutes() {
     createMyWorkRouter(resolveGuards)
   )
   router.use(
+    '/v1/organizations/:organizationId/resource-work',
+    createResourceWorkRouter(resolveGuards)
+  )
+  router.use(
     '/v1/organizations/:organizationId/sync-connections/:connectionId/mappings',
     createSyncMappingsRouter(resolveGuards)
   )
@@ -103,5 +116,6 @@ export function buildRoutes() {
     '/v1/internal/notifications',
     createNotificationOutboxRouter(resolveGuards)
   )
+  router.use('/v1/internal/sync', createSyncSchedulerRouter(resolveGuards))
   return router
 }

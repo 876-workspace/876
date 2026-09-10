@@ -4,8 +4,10 @@ import type {
   UpdateWorkEventInput,
   WorkContext,
   WorkEventParticipant,
+  WorkEventResource,
 } from '@876/work'
 import * as calendars from '../calendars/index.js'
+import * as recurrenceRules from '../recurrence-rules/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './events.repository.js'
 type Row = Awaited<ReturnType<typeof repository.list>>[number]
@@ -32,7 +34,7 @@ function serializeParticipant(
     updatedAt: stamp(p.updatedAt)!,
   }
 }
-function serialize(row: Row, organizationId: string) {
+function serialize(row: Row, organizationId: string): WorkEventResource {
   const hasContext =
     row.contextService !== null &&
     row.contextResource !== null &&
@@ -74,6 +76,14 @@ async function requireTenant(organizationId: string) {
   if (!tenant) return getError('work/tenant-not-found')
   if (tenant.status !== 'ACTIVE') return getError('work/tenant-inactive')
   return tenant
+}
+async function requireRecurrenceRule(
+  organizationId: string,
+  recurrenceRuleId: string
+) {
+  const rule = await recurrenceRules.retrieve(organizationId, recurrenceRuleId)
+  if (isError(rule)) return rule
+  return rule ?? getError('work/recurrence-rule-not-found')
 }
 function contextColumns(context?: WorkContext | null) {
   if (!context)
@@ -138,6 +148,13 @@ export async function create(
   if (isError(tenant)) return tenant
   const calendar = await calendars.retrieve(organizationId, input.calendarId)
   if (!calendar || isError(calendar)) return getError('work/calendar-not-found')
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
   const timed = input.allDay === false
   const row = await repository.create({
     tenantId: tenant.id,
@@ -172,6 +189,13 @@ export async function update(
     const calendar = await calendars.retrieve(organizationId, input.calendarId)
     if (!calendar || isError(calendar))
       return getError('work/calendar-not-found')
+  }
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
   }
   const nextAllDay = input.allDay ?? current.startDate !== null
   const params: Record<string, unknown> = {

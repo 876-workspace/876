@@ -12,6 +12,7 @@ vi.mock('./event-participants.repository.js', () => ({
   retrieve: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  respond: vi.fn(),
   remove: vi.fn(),
 }))
 
@@ -45,6 +46,7 @@ beforeEach(() => {
   vi.mocked(events.retrieve).mockResolvedValue(event as never)
   vi.mocked(repository.list).mockResolvedValue([])
   vi.mocked(repository.retrieve).mockResolvedValue(null)
+  vi.mocked(repository.respond).mockResolvedValue(null)
 })
 
 describe('Work event-participants service', () => {
@@ -408,6 +410,80 @@ describe('Work event-participants service', () => {
     expect(result).toEqual(err)
     expect(repository.retrieve).not.toHaveBeenCalled()
     expect(repository.update).not.toHaveBeenCalled()
+  })
+
+  it('lets the exact USER participant RSVP atomically', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+    vi.mocked(repository.respond).mockResolvedValue(
+      row({ status: 'TENTATIVE', respondedAt: new Date() }) as never
+    )
+
+    const result = await service.respond(
+      'org_kingston_1',
+      event.id,
+      'part_1',
+      'user_mandeville_1',
+      'TENTATIVE'
+    )
+
+    expect(result).toEqual(expect.objectContaining({ status: 'TENTATIVE' }))
+    expect(repository.respond).toHaveBeenCalledWith(
+      event.id,
+      'part_1',
+      'user_mandeville_1',
+      'NEEDS_ACTION',
+      expect.objectContaining({
+        status: 'TENTATIVE',
+        respondedAt: expect.any(Date),
+      })
+    )
+  })
+
+  it('rejects RSVP by another user without writing', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+
+    const result = await service.respond(
+      'org_kingston_1',
+      event.id,
+      'part_1',
+      'user_other',
+      'ACCEPTED'
+    )
+
+    expect(result).toMatchObject({ code: 'work/session-forbidden' })
+    expect(repository.respond).not.toHaveBeenCalled()
+  })
+
+  it('rejects a response after delegation', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'DELEGATED' }) as never
+    )
+
+    const result = await service.respond(
+      'org_kingston_1',
+      event.id,
+      'part_1',
+      'user_mandeville_1',
+      'ACCEPTED'
+    )
+
+    expect(result).toMatchObject({ code: 'work/invalid-request' })
+    expect(repository.respond).not.toHaveBeenCalled()
+  })
+
+  it('treats a raced RSVP as an invalid transition', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+    vi.mocked(repository.respond).mockResolvedValue(null)
+
+    const result = await service.respond(
+      'org_kingston_1',
+      event.id,
+      'part_1',
+      'user_mandeville_1',
+      'ACCEPTED'
+    )
+
+    expect(result).toMatchObject({ code: 'work/invalid-request' })
   })
 
   it('remove returns event tenant error and never removes when event in another tenant', async () => {

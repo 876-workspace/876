@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { workRequest } from '../request'
 import type { WorkRuntime } from '../runtime'
+import type { WorkTaskAssignmentResponseInput } from '../response-contracts'
 import {
   workTaskAssignmentListSchema,
   workTaskAssignmentSchema,
@@ -44,6 +45,22 @@ export function createTaskAssignmentsResource(runtime: WorkRuntime) {
         {
           method: 'PATCH',
           path: `${root(organizationId, taskId)}/${encodeURIComponent(assignmentId)}`,
+          body: input,
+        },
+        workTaskAssignmentSchema
+      )
+    },
+    respond(
+      organizationId: string,
+      taskId: string,
+      assignmentId: string,
+      input: WorkTaskAssignmentResponseInput
+    ) {
+      return workRequest(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `${root(organizationId, taskId)}/${encodeURIComponent(assignmentId)}/response`,
           body: input,
         },
         workTaskAssignmentSchema

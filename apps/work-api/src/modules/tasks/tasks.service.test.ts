@@ -18,6 +18,9 @@ vi.mock('./tasks.repository.js', () => ({
   remove: vi.fn(),
 }))
 vi.mock('../task-lists/index.js', () => taskListRepository)
+vi.mock('../recurrence-rules/index.js', () => ({
+  retrieve: vi.fn(),
+}))
 
 import * as tenants from '../tenants/index.js'
 import * as repository from './tasks.repository.js'
@@ -118,8 +121,76 @@ describe('Work tasks service', () => {
         contextResource: 'request',
         contextId: 'req_1',
         priorityId: 'crm_pri_1',
-      })
+      }),
+      {}
     )
+  })
+
+  it('creates the legacy context and metadata-rich primary link atomically', async () => {
+    const linkedRow = row({
+      contextService: 'billing',
+      contextResource: 'invoice',
+      contextId: 'inv_1',
+      links: [
+        {
+          id: 'tasklink_1',
+          taskId: 'task_1',
+          service: 'billing',
+          resource: 'invoice',
+          externalId: 'inv_1',
+          label: 'INV-001',
+          url: '/invoices/inv_1',
+          isPrimary: true,
+          createdAt: new Date(1000),
+        },
+      ],
+    })
+    vi.mocked(repository.create).mockResolvedValue(linkedRow)
+
+    const result = await service.create('org_1', {
+      title: 'Follow up',
+      createdBy: 'user_1',
+      primaryLink: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_1',
+        label: 'INV-001',
+        url: '/invoices/inv_1',
+        isPrimary: true,
+      },
+    })
+
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contextService: 'billing',
+        contextResource: 'invoice',
+        contextId: 'inv_1',
+      }),
+      {
+        primaryLink: {
+          service: 'billing',
+          resource: 'invoice',
+          externalId: 'inv_1',
+          label: 'INV-001',
+          url: '/invoices/inv_1',
+          isPrimary: true,
+        },
+      }
+    )
+    expect(result).toMatchObject({
+      context: { service: 'billing', resource: 'invoice', id: 'inv_1' },
+      links: [
+        {
+          service: 'billing',
+          resource: 'invoice',
+          externalId: 'inv_1',
+          label: 'INV-001',
+          url: '/invoices/inv_1',
+          isPrimary: true,
+        },
+      ],
+    })
+    expect(repository.syncPrimaryLink).not.toHaveBeenCalled()
   })
 
   it('allows general tasks with no source context', async () => {

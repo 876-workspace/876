@@ -1,6 +1,7 @@
 import {
   createWorkTaskInputSchema,
   updateWorkTaskInputSchema,
+  workRecurrenceDraftSchema,
   workTaskStatusSchema,
 } from '@876/work'
 import { z } from 'zod'
@@ -48,6 +49,7 @@ export const listTasksQuerySchema = z
   })
 export const createTaskBodySchema = createWorkTaskInputSchema
 export const updateTaskBodySchema = updateWorkTaskInputSchema
+export const setTaskRecurrenceBodySchema = workRecurrenceDraftSchema
 export const deleteTaskBodySchema = z.strictObject({
   deletedBy: z.string().trim().min(1),
 })

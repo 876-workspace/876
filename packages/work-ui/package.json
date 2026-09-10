@@ -15,6 +15,10 @@
       "types": "./src/agenda.tsx",
       "default": "./src/agenda.tsx"
     },
+    "./alerts": {
+      "types": "./src/alerts.tsx",
+      "default": "./src/alerts.tsx"
+    },
     "./calendar-list": {
       "types": "./src/calendar-list.tsx",
       "default": "./src/calendar-list.tsx"
@@ -23,9 +27,25 @@
       "types": "./src/calendar.tsx",
       "default": "./src/calendar.tsx"
     },
+    "./calendar-sync": {
+      "types": "./src/calendar-sync.tsx",
+      "default": "./src/calendar-sync.tsx"
+    },
+    "./collaboration": {
+      "types": "./src/collaboration.tsx",
+      "default": "./src/collaboration.tsx"
+    },
     "./create": {
       "types": "./src/create.tsx",
       "default": "./src/create.tsx"
+    },
+    "./manage": {
+      "types": "./src/manage.tsx",
+      "default": "./src/manage.tsx"
+    },
+    "./recurrence": {
+      "types": "./src/recurrence.tsx",
+      "default": "./src/recurrence.tsx"
     },
     "./summary": {
       "types": "./src/summary.tsx",

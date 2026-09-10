@@ -22,6 +22,33 @@ export function createTasksRouter(resolveGuards: GuardResolver) {
     handler: controller.createTask,
   })
   api.get({
+    path: '/:taskId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.tasks.read',
+      sessionPermissions: ['tasks.view'],
+    },
+    handler: controller.retrieveTaskRecurrence,
+  })
+  api.patch({
+    path: '/:taskId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.tasks.write',
+      sessionPermissions: ['tasks.edit'],
+    },
+    handler: controller.setTaskRecurrence,
+  })
+  api.delete({
+    path: '/:taskId/recurrence',
+    security: {
+      kind: 'integration',
+      scope: 'work.tasks.write',
+      sessionPermissions: ['tasks.edit'],
+    },
+    handler: controller.clearTaskRecurrence,
+  })
+  api.get({
     path: '/:taskId',
     security: {
       kind: 'integration',
@@ -35,7 +62,7 @@ export function createTasksRouter(resolveGuards: GuardResolver) {
     security: {
       kind: 'integration',
       scope: 'work.tasks.write',
-      sessionPermissions: ['tasks.edit', 'tasks.assign'],
+      sessionPermissions: ['tasks.edit'],
     },
     handler: controller.updateTask,
   })

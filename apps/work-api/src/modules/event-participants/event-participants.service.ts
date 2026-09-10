@@ -1,8 +1,9 @@
-import { isError } from '@876/core'
+import { getError, isError } from '@876/core'
 import type {
   CreateWorkEventParticipantInput,
   UpdateWorkEventParticipantInput,
   WorkEventParticipant,
+  WorkEventParticipantResponseStatus,
 } from '@876/work'
 import * as events from '../events/index.js'
 import * as repository from './event-participants.repository.js'
@@ -89,6 +90,36 @@ export async function update(
   })
   return serialize(row)
 }
+
+/** RSVP-like response for the exact signed-in USER participant. */
+export async function respond(
+  org: string,
+  eventId: string,
+  id: string,
+  userId: string,
+  status: WorkEventParticipantResponseStatus
+) {
+  const event = await requireEvent(org, eventId)
+  if (!event || isError(event)) return event
+  const current = await repository.retrieve(eventId, id)
+  if (!current) return null
+  if (current.kind !== 'USER' || current.participantId !== userId)
+    return getError('work/session-forbidden')
+  if (current.status === 'DELEGATED') return getError('work/invalid-request')
+  if (current.status === status) return serialize(current)
+  const updated = await repository.respond(
+    eventId,
+    id,
+    userId,
+    current.status,
+    {
+      status,
+      respondedAt: new Date(),
+    }
+  )
+  return updated ? serialize(updated) : getError('work/invalid-request')
+}
+
 export async function remove(org: string, eventId: string, id: string) {
   const event = await requireEvent(org, eventId)
   if (!event || isError(event)) return event

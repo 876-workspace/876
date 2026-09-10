@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { prisma } from '../../db/index.js'
+import type { CreateWorkTaskLinkInput } from '@876/work'
 import type { Prisma } from '../../db/generated/prisma/client.js'
 
 type CreateTaskParams = Omit<Prisma.WorkTaskUncheckedCreateInput, 'id' | 'uid'>
@@ -29,6 +30,30 @@ const include = {
   },
 } satisfies Prisma.WorkTaskInclude
 
+function contextWhere(filter: TaskFilter): Prisma.WorkTaskWhereInput {
+  if (!filter.contextService || !filter.contextResource || !filter.contextId)
+    return {}
+
+  return {
+    OR: [
+      {
+        contextService: filter.contextService,
+        contextResource: filter.contextResource,
+        contextId: filter.contextId,
+      },
+      {
+        links: {
+          some: {
+            service: filter.contextService,
+            resource: filter.contextResource,
+            externalId: filter.contextId,
+          },
+        },
+      },
+    ],
+  }
+}
+
 export async function list(tenantId: string, filter: TaskFilter) {
   const cursorId = filter.startingAfter ?? filter.endingBefore
   const anchor = cursorId ? await retrieve(tenantId, cursorId) : null
@@ -38,13 +63,7 @@ export async function list(tenantId: string, filter: TaskFilter) {
     where: {
       tenantId,
       deletedAt: null,
-      ...(filter.contextService
-        ? { contextService: filter.contextService }
-        : {}),
-      ...(filter.contextResource
-        ? { contextResource: filter.contextResource }
-        : {}),
-      ...(filter.contextId ? { contextId: filter.contextId } : {}),
+      ...contextWhere(filter),
       ...(filter.listId ? { listId: filter.listId } : {}),
       ...(filter.parentTaskId !== undefined
         ? { parentTaskId: filter.parentTaskId }
@@ -108,12 +127,49 @@ function tasksBefore(anchor: {
   }
 }
 
-export async function create(params: CreateTaskParams) {
+export async function create(
+  params: CreateTaskParams,
+  relations: {
+    primaryLink?: CreateWorkTaskLinkInput
+    primaryAssignee?: { assigneeId: string; assignedBy: string }
+  } = {}
+) {
+  const { primaryLink, primaryAssignee } = relations
+
   return prisma.workTask.create({
     data: {
       ...params,
       id: `task_${randomUUID().replaceAll('-', '')}`,
       uid: `task_${randomUUID().replaceAll('-', '')}@work.876`,
+      ...(primaryLink
+        ? {
+            links: {
+              create: {
+                id: `tasklink_${randomUUID().replaceAll('-', '')}`,
+                service: primaryLink.service,
+                resource: primaryLink.resource,
+                externalId: primaryLink.externalId,
+                label: primaryLink.label ?? null,
+                url: primaryLink.url ?? null,
+                isPrimary: true,
+              },
+            },
+          }
+        : {}),
+      ...(primaryAssignee
+        ? {
+            assignments: {
+              create: {
+                id: `assign_${randomUUID().replaceAll('-', '')}`,
+                targetType: 'USER',
+                assigneeId: primaryAssignee.assigneeId,
+                role: 'OWNER',
+                status: 'PENDING',
+                assignedBy: primaryAssignee.assignedBy,
+              },
+            },
+          }
+        : {}),
     },
     include,
   })

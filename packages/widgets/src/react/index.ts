@@ -1,6 +1,11 @@
 export { NotepadIcon } from './notepad-icon'
 export { NotepadWidget, NotepadWidgetPanel } from './notepad-widget'
 export { WorkWidgetPanel } from './work-widget'
+export {
+  WorkWidgetContextProvider,
+  WorkWidgetContextSetter,
+  useWorkWidgetHostContext,
+} from './work-widget-context'
 export { SharedWidgetDock } from './widget-dock'
 export { WidgetPanelSkeleton } from './widget-loading'
 export { WidgetAuthBoundary, WidgetBackendProvider } from './widget-provider'

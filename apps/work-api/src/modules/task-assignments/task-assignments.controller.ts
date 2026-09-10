@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 
+import { getPrincipal } from '../../http/auth/principal.js'
 import {
   sendWorkError,
   sendWorkList,
@@ -8,6 +9,7 @@ import {
 import * as service from './task-assignments.service.js'
 import {
   assignmentParamsSchema,
+  assignmentResponseBodySchema,
   createAssignmentBodySchema,
   taskParamsSchema,
   updateAssignmentBodySchema,
@@ -42,6 +44,24 @@ export async function updateAssignment(req: Request, res: Response) {
     taskId,
     assignmentId,
     updateAssignmentBodySchema.parse(req.body)
+  )
+  if (!result) return sendWorkError(res, 'work/assignment-not-found')
+  return sendWorkResult(res, result)
+}
+export async function respondToAssignment(req: Request, res: Response) {
+  const { organizationId, taskId, assignmentId } = assignmentParamsSchema.parse(
+    req.params
+  )
+  const principal = getPrincipal(req)
+  if (principal.kind !== 'session' || !principal.userId)
+    return sendWorkError(res, 'work/session-forbidden')
+  const { status } = assignmentResponseBodySchema.parse(req.body)
+  const result = await service.respond(
+    organizationId,
+    taskId,
+    assignmentId,
+    principal.userId,
+    status
   )
   if (!result) return sendWorkError(res, 'work/assignment-not-found')
   return sendWorkResult(res, result)

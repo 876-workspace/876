@@ -7,7 +7,7 @@ import {
 } from './integration-scopes'
 
 describe('Work integration scopes', () => {
-  it('publishes the Phase 2 productivity-plane scope vocabulary', () => {
+  it('publishes the productivity-plane scope vocabulary', () => {
     expect(WORK_INTEGRATION_SCOPES).toEqual([
       'work.tasks.read',
       'work.tasks.write',
@@ -20,13 +20,14 @@ describe('Work integration scopes', () => {
       'work.alerts.read',
       'work.alerts.write',
       'work.my-work.read',
+      'work.resource-work.read',
       'work.sync.read',
       'work.sync.write',
     ])
   })
 
   it('recognizes a published scope and rejects an unknown one', () => {
-    expect(isWorkIntegrationScope('work.events.read')).toBe(true)
+    expect(isWorkIntegrationScope('work.resource-work.read')).toBe(true)
     expect(isWorkIntegrationScope('work.everything')).toBe(false)
   })
 
@@ -40,8 +41,9 @@ describe('Work integration scopes', () => {
     )
   })
 
-  it('does not grant CRM the provider synchronization scopes', () => {
+  it('allows CRM to read direct resource Work without provider sync', () => {
     const granted = new Set<string>(WORK_CRM_INTEGRATION_SCOPES)
+    expect(granted.has('work.resource-work.read')).toBe(true)
     expect(granted.has('work.sync.read')).toBe(false)
     expect(granted.has('work.sync.write')).toBe(false)
   })

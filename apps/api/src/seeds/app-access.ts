@@ -110,6 +110,24 @@ function standardRoles(permissions: AppPermissionSeed[]): AppRoleSeed[] {
   ]
 }
 
+function invoiceRoles(permissions: AppPermissionSeed[]): AppRoleSeed[] {
+  const responsePermissions = keysFor(
+    permissions,
+    (permission) =>
+      permission.key === 'tasks.respond' || permission.key === 'events.respond'
+  )
+  return standardRoles(permissions).map((role) =>
+    role.key === 'staff'
+      ? {
+          ...role,
+          description:
+            'Read-only Invoice access plus responses to assigned Work and event invitations.',
+          permissions: [...role.permissions, ...responsePermissions],
+        }
+      : role
+  )
+}
+
 export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
   {
     appSlug: '876-couriers',
@@ -134,7 +152,7 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
   {
     appSlug: '876-invoice',
     permissions: invoicePermissions,
-    roles: standardRoles(invoicePermissions),
+    roles: invoiceRoles(invoicePermissions),
   },
 ] as const
 

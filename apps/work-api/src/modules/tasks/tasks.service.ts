@@ -9,6 +9,7 @@ import type {
   WorkTaskStatus,
 } from '@876/work'
 
+import * as recurrenceRules from '../recurrence-rules/index.js'
 import * as taskLists from '../task-lists/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './tasks.repository.js'
@@ -121,6 +122,15 @@ async function requireTenant(organizationId: string) {
   return tenant
 }
 
+async function requireRecurrenceRule(
+  organizationId: string,
+  recurrenceRuleId: string
+) {
+  const rule = await recurrenceRules.retrieve(organizationId, recurrenceRuleId)
+  if (isError(rule)) return rule
+  return rule ?? getError('work/recurrence-rule-not-found')
+}
+
 function contextColumns(context?: WorkContext | null) {
   if (!context)
     return { contextService: null, contextResource: null, contextId: null }
@@ -128,6 +138,18 @@ function contextColumns(context?: WorkContext | null) {
     contextService: context.service,
     contextResource: context.resource,
     contextId: context.id,
+  }
+}
+
+function contextFromPrimaryLink(
+  primaryLink: CreateWorkTaskInput['primaryLink']
+): WorkContext | undefined {
+  if (!primaryLink) return undefined
+
+  return {
+    service: primaryLink.service,
+    resource: primaryLink.resource,
+    id: primaryLink.externalId,
   }
 }
 
@@ -180,6 +202,14 @@ export async function create(
   const tenant = await requireTenant(organizationId)
   if (isError(tenant)) return tenant
 
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
+
   const selectedList = input.listId
     ? await taskLists.retrieve(organizationId, input.listId)
     : await taskLists.ensureDefault(organizationId, input.createdBy)
@@ -191,43 +221,46 @@ export async function create(
     if (!parent) return getError('work/task-not-found')
   }
 
-  const row = await repository.create({
-    tenantId: tenant.id,
-    listId: selectedList.id,
-    parentTaskId: input.parentTaskId ?? null,
-    ...contextColumns(input.context),
-    title: input.title,
-    description: input.description ?? null,
-    status: input.status ?? 'OPEN',
-    importance: input.importance ?? 'NORMAL',
-    priorityId: input.priorityId ?? null,
-    assigneeId: input.assigneeId ?? null,
-    startAt: input.startAt == null ? null : fromUnixSeconds(input.startAt),
-    startTimeZone: input.startTimeZone ?? null,
-    dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt),
-    dueTimeZone: input.dueTimeZone ?? null,
-    estimatedDuration: input.estimatedDuration ?? null,
-    percentComplete:
-      input.percentComplete ?? (input.status === 'DONE' ? 100 : 0),
-    recurrenceRuleId: input.recurrenceRuleId ?? null,
-    completedAt: input.status === 'DONE' ? new Date() : null,
-    completedBy: null,
-    sortOrder: input.sortOrder ?? 0,
-    createdBy: input.createdBy,
-  })
-  if (input.context !== undefined)
-    await repository.syncPrimaryLink(row.id, input.context ?? null)
-  if (input.assigneeId !== undefined)
-    await repository.syncPrimaryAssignee(
-      row.id,
-      input.assigneeId ?? null,
-      input.createdBy
-    )
-
-  return serialize(
-    (await repository.retrieve(tenant.id, row.id))!,
-    organizationId
+  const primaryContext = contextFromPrimaryLink(input.primaryLink)
+  const row = await repository.create(
+    {
+      tenantId: tenant.id,
+      listId: selectedList.id,
+      parentTaskId: input.parentTaskId ?? null,
+      ...contextColumns(primaryContext ?? input.context),
+      title: input.title,
+      description: input.description ?? null,
+      status: input.status ?? 'OPEN',
+      importance: input.importance ?? 'NORMAL',
+      priorityId: input.priorityId ?? null,
+      assigneeId: input.assigneeId ?? null,
+      startAt: input.startAt == null ? null : fromUnixSeconds(input.startAt),
+      startTimeZone: input.startTimeZone ?? null,
+      dueAt: input.dueAt == null ? null : fromUnixSeconds(input.dueAt),
+      dueTimeZone: input.dueTimeZone ?? null,
+      estimatedDuration: input.estimatedDuration ?? null,
+      percentComplete:
+        input.percentComplete ?? (input.status === 'DONE' ? 100 : 0),
+      recurrenceRuleId: input.recurrenceRuleId ?? null,
+      completedAt: input.status === 'DONE' ? new Date() : null,
+      completedBy: null,
+      sortOrder: input.sortOrder ?? 0,
+      createdBy: input.createdBy,
+    },
+    {
+      ...(input.primaryLink ? { primaryLink: input.primaryLink } : {}),
+      ...(input.assigneeId
+        ? {
+            primaryAssignee: {
+              assigneeId: input.assigneeId,
+              assignedBy: input.createdBy,
+            },
+          }
+        : {}),
+    }
   )
+
+  return serialize(row, organizationId)
 }
 
 export async function update(
@@ -239,6 +272,14 @@ export async function update(
   if (isError(tenant)) return tenant
   const current = await repository.retrieve(tenant.id, taskId)
   if (!current) return null
+
+  if (input.recurrenceRuleId) {
+    const recurrence = await requireRecurrenceRule(
+      organizationId,
+      input.recurrenceRuleId
+    )
+    if (isError(recurrence)) return recurrence
+  }
 
   if (input.listId) {
     const list = await taskLists.retrieve(organizationId, input.listId)

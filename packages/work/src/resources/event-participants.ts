@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { workRequest } from '../request'
 import type { WorkRuntime } from '../runtime'
+import type { WorkEventParticipantResponseInput } from '../response-contracts'
 import {
   workEventParticipantListSchema,
   workEventParticipantSchema,
@@ -44,6 +45,22 @@ export function createEventParticipantsResource(runtime: WorkRuntime) {
         {
           method: 'PATCH',
           path: `${root(organizationId, eventId)}/${encodeURIComponent(participantId)}`,
+          body: input,
+        },
+        workEventParticipantSchema
+      )
+    },
+    respond(
+      organizationId: string,
+      eventId: string,
+      participantId: string,
+      input: WorkEventParticipantResponseInput
+    ) {
+      return workRequest(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `${root(organizationId, eventId)}/${encodeURIComponent(participantId)}/response`,
           body: input,
         },
         workEventParticipantSchema

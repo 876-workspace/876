@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../tenants/index.js', () => ({
   retrieveByOrganization: vi.fn(),
 }))
+vi.mock('../recurrence-rules/index.js', () => ({
+  retrieve: vi.fn(),
+}))
 vi.mock('./reminders.repository.js', () => ({
   list: vi.fn(),
   retrieve: vi.fn(),

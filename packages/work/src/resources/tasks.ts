@@ -1,8 +1,10 @@
 import { z } from 'zod'
 
+import type { WorkRecurrenceDraft } from '../recurrence-contracts'
 import { workRequest } from '../request'
 import type { WorkRuntime } from '../runtime'
 import {
+  workRecurrenceRuleSchema,
   workTaskListSchema,
   workTaskSchema,
   type CreateWorkTaskInput,
@@ -34,6 +36,10 @@ function listPath(organizationId: string, filter: WorkTaskListFilter) {
   return `${root(organizationId)}${query ? `?${query}` : ''}`
 }
 
+function itemPath(organizationId: string, taskId: string) {
+  return `${root(organizationId)}/${encodeURIComponent(taskId)}`
+}
+
 export function createTasksResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkTaskListFilter = {}) {
@@ -46,10 +52,7 @@ export function createTasksResource(runtime: WorkRuntime) {
     retrieve(organizationId: string, taskId: string) {
       return workRequest(
         runtime,
-        {
-          method: 'GET',
-          path: `${root(organizationId)}/${encodeURIComponent(taskId)}`,
-        },
+        { method: 'GET', path: itemPath(organizationId, taskId) },
         workTaskSchema
       )
     },
@@ -65,18 +68,51 @@ export function createTasksResource(runtime: WorkRuntime) {
         runtime,
         {
           method: 'PATCH',
-          path: `${root(organizationId)}/${encodeURIComponent(taskId)}`,
+          path: itemPath(organizationId, taskId),
           body: input,
         },
         workTaskSchema
       )
+    },
+    recurrence: {
+      retrieve(organizationId: string, taskId: string) {
+        return workRequest(
+          runtime,
+          {
+            method: 'GET',
+            path: `${itemPath(organizationId, taskId)}/recurrence`,
+          },
+          workRecurrenceRuleSchema.nullable()
+        )
+      },
+      set(organizationId: string, taskId: string, input: WorkRecurrenceDraft) {
+        return workRequest(
+          runtime,
+          {
+            method: 'PATCH',
+            path: `${itemPath(organizationId, taskId)}/recurrence`,
+            body: input,
+          },
+          workRecurrenceRuleSchema
+        )
+      },
+      clear(organizationId: string, taskId: string) {
+        return workRequest(
+          runtime,
+          {
+            method: 'DELETE',
+            path: `${itemPath(organizationId, taskId)}/recurrence`,
+          },
+          workTaskSchema
+        )
+      },
     },
     delete(organizationId: string, taskId: string, deletedBy: string) {
       return workRequest(
         runtime,
         {
           method: 'DELETE',
-          path: `${root(organizationId)}/${encodeURIComponent(taskId)}`,
+          path: itemPath(organizationId, taskId),
           body: { deletedBy },
         },
         z.object({

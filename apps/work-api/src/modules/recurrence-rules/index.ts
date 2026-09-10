@@ -5,4 +5,6 @@ export {
   create,
   update,
   remove,
+  prepareForResource,
+  cleanupDetached,
 } from './recurrence-rules.service.js'

@@ -3,6 +3,17 @@ import { z } from 'zod'
 import { workRequest } from '../request'
 import type { WorkRuntime } from '../runtime'
 import {
+  linkWorkRemoteCalendarInputSchema,
+  workRemoteCalendarListSchema,
+  workSyncAuthorizationSchema,
+  workSyncCalendarLinkListSchema,
+  workSyncCalendarLinkSchema,
+  workSyncConnectionSetupInputSchema,
+  workSyncRunSchema,
+  type LinkWorkRemoteCalendarInput,
+  type WorkSyncConnectionSetupInput,
+} from '../sync-contracts'
+import {
   workSyncConnectionListSchema,
   workSyncConnectionSchema,
   type CreateWorkSyncConnectionInput,
@@ -12,6 +23,10 @@ import {
 
 function root(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/sync-connections`
+}
+
+function connectionPath(organizationId: string, connectionId: string) {
+  return `${root(organizationId)}/${encodeURIComponent(connectionId)}`
 }
 
 function listPath(
@@ -29,6 +44,12 @@ function listPath(
   return `${root(organizationId)}${query ? `?${query}` : ''}`
 }
 
+const deletedMappingSchema = z.object({
+  object: z.literal('sync_mapping'),
+  id: z.string(),
+  deleted: z.literal(true),
+})
+
 export function createSyncConnectionsResource(runtime: WorkRuntime) {
   return {
     list(organizationId: string, filter: WorkSyncConnectionListFilter = {}) {
@@ -41,13 +62,11 @@ export function createSyncConnectionsResource(runtime: WorkRuntime) {
     retrieve(organizationId: string, connectionId: string) {
       return workRequest(
         runtime,
-        {
-          method: 'GET',
-          path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`,
-        },
+        { method: 'GET', path: connectionPath(organizationId, connectionId) },
         workSyncConnectionSchema
       )
     },
+    /** Integration-tier primitive. Session callers should use setup(). */
     create(organizationId: string, input: CreateWorkSyncConnectionInput) {
       return workRequest(
         runtime,
@@ -55,6 +74,7 @@ export function createSyncConnectionsResource(runtime: WorkRuntime) {
         workSyncConnectionSchema
       )
     },
+    /** Integration-tier primitive. */
     update(
       organizationId: string,
       connectionId: string,
@@ -64,7 +84,7 @@ export function createSyncConnectionsResource(runtime: WorkRuntime) {
         runtime,
         {
           method: 'PATCH',
-          path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`,
+          path: connectionPath(organizationId, connectionId),
           body: input,
         },
         workSyncConnectionSchema
@@ -75,13 +95,109 @@ export function createSyncConnectionsResource(runtime: WorkRuntime) {
         runtime,
         {
           method: 'DELETE',
-          path: `${root(organizationId)}/${encodeURIComponent(connectionId)}`,
+          path: connectionPath(organizationId, connectionId),
         },
         z.object({
           object: z.literal('sync_connection'),
           id: z.string(),
           deleted: z.literal(true),
         })
+      )
+    },
+    setup(organizationId: string, input: WorkSyncConnectionSetupInput) {
+      return workRequest(
+        runtime,
+        {
+          method: 'POST',
+          path: `${root(organizationId)}/setup`,
+          body: workSyncConnectionSetupInputSchema.parse(input),
+        },
+        workSyncConnectionSchema
+      )
+    },
+    authorize(organizationId: string, connectionId: string) {
+      return workRequest(
+        runtime,
+        {
+          method: 'POST',
+          path: `${connectionPath(organizationId, connectionId)}/authorize`,
+        },
+        workSyncAuthorizationSchema
+      )
+    },
+    remoteCalendars(organizationId: string, connectionId: string) {
+      return workRequest(
+        runtime,
+        {
+          method: 'GET',
+          path: `${connectionPath(organizationId, connectionId)}/remote-calendars`,
+        },
+        workRemoteCalendarListSchema
+      )
+    },
+    calendarLinks: {
+      list(organizationId: string, connectionId: string) {
+        return workRequest(
+          runtime,
+          {
+            method: 'GET',
+            path: `${connectionPath(organizationId, connectionId)}/calendar-links`,
+          },
+          workSyncCalendarLinkListSchema
+        )
+      },
+      create(
+        organizationId: string,
+        connectionId: string,
+        input: LinkWorkRemoteCalendarInput
+      ) {
+        return workRequest(
+          runtime,
+          {
+            method: 'POST',
+            path: `${connectionPath(organizationId, connectionId)}/calendar-links`,
+            body: linkWorkRemoteCalendarInputSchema.parse(input),
+          },
+          workSyncCalendarLinkSchema
+        )
+      },
+      delete(
+        organizationId: string,
+        connectionId: string,
+        mappingId: string
+      ) {
+        return workRequest(
+          runtime,
+          {
+            method: 'DELETE',
+            path: `${connectionPath(organizationId, connectionId)}/calendar-links/${encodeURIComponent(mappingId)}`,
+          },
+          deletedMappingSchema
+        )
+      },
+      sync(
+        organizationId: string,
+        connectionId: string,
+        mappingId: string
+      ) {
+        return workRequest(
+          runtime,
+          {
+            method: 'POST',
+            path: `${connectionPath(organizationId, connectionId)}/calendar-links/${encodeURIComponent(mappingId)}/sync`,
+          },
+          workSyncRunSchema
+        )
+      },
+    },
+    sync(organizationId: string, connectionId: string) {
+      return workRequest(
+        runtime,
+        {
+          method: 'POST',
+          path: `${connectionPath(organizationId, connectionId)}/sync`,
+        },
+        workSyncRunSchema
       )
     },
   }

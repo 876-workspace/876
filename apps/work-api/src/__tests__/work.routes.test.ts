@@ -262,6 +262,7 @@ describe('Work API routes', () => {
         'work.alerts.read',
         'work.alerts.write',
         'work.my-work.read',
+        'work.resource-work.read',
       ]
     )
   })

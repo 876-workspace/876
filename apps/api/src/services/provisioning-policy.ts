@@ -40,6 +40,12 @@ const WORK_CAPABILITY_SCOPES: Readonly<
   'work.sync': ['work.sync.read', 'work.sync.write'],
 }
 
+const RESOURCE_WORK_REQUIRED_SCOPES = [
+  'work.tasks.read',
+  'work.reminders.read',
+  'work.events.read',
+] as const satisfies readonly WorkIntegrationScope[]
+
 export type PersistedProvisioningPolicy = {
   selection: PersistedProvisioningSelection
   policy: ProvisioningSetupPolicy
@@ -91,12 +97,17 @@ export function enabledWorkCapabilityScopes(
     for (const scope of WORK_CAPABILITY_SCOPES[entry.target_key] ?? [])
       scopes.add(scope)
   }
+
+  if (RESOURCE_WORK_REQUIRED_SCOPES.every((scope) => scopes.has(scope)))
+    scopes.add('work.resource-work.read')
+
   return scopes
 }
 
 /**
  * A setup may narrow an app's Work access, never expand the app's declared
- * integration grant. CRM is the only Work-consuming product today.
+ * integration grant. CRM remains the only provisioned Work service consumer;
+ * Invoice's widget uses the signed-in session tier instead of a service grant.
  */
 export function workScopesForProvisionedApp(
   appSlug: string,

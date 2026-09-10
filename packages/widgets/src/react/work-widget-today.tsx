@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkMyWork, WorkTask } from '@876/work'
-import { browserWork } from '@876/work/browser'
+import type { WorkAgendaData, WorkHostContext, WorkTask } from '@876/work'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 import { WorkToday } from '@876/work-ui/today'
 
 import type { WorkWidgetCapabilities } from '../work-capabilities'
@@ -17,15 +17,19 @@ type LoadState = 'loading' | 'ready' | 'error'
 
 export function WorkWidgetTodayView({
   capabilities,
+  context,
+  client = browserWork,
 }: {
   capabilities: WorkWidgetCapabilities
+  context?: WorkHostContext
+  client?: WorkBrowserClient
 }) {
-  const [work, setWork] = useState<WorkMyWork | null>(null)
+  const [work, setWork] = useState<WorkAgendaData | null>(null)
   const [state, setState] = useState<LoadState>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [mutatingTaskId, setMutatingTaskId] = useState<string | null>(null)
 
-  const workRef = useRef<WorkMyWork | null>(null)
+  const workRef = useRef<WorkAgendaData | null>(null)
   const generationRef = useRef(0)
   const mutationRef = useRef<string | null>(null)
 
@@ -34,7 +38,10 @@ export function WorkWidgetTodayView({
     if (!workRef.current) setState('loading')
     setErrorMessage(null)
 
-    const result = await browserWork.myWork.retrieve(currentDayWindow())
+    const window = currentDayWindow()
+    const result = context
+      ? await client.resourceWork.retrieve(window)
+      : await client.myWork.retrieve(window)
     if (generation !== generationRef.current) return
 
     if (result.error || !result.data) {
@@ -48,7 +55,7 @@ export function WorkWidgetTodayView({
     workRef.current = result.data
     setWork(result.data)
     setState('ready')
-  }, [])
+  }, [client, context])
 
   useEffect(() => {
     void load()
@@ -62,7 +69,7 @@ export function WorkWidgetTodayView({
       setMutatingTaskId(task.id)
       setErrorMessage(null)
 
-      const result = await browserWork.tasks.complete(task.id)
+      const result = await client.tasks.complete(task.id, context)
       if (result.error || !result.data) {
         setState('error')
         setErrorMessage(
@@ -97,7 +104,7 @@ export function WorkWidgetTodayView({
       setMutatingTaskId(null)
       await load()
     },
-    [capabilities.canEditTasks, load]
+    [capabilities.canEditTasks, client, context, load]
   )
 
   if (state === 'loading' && !work)

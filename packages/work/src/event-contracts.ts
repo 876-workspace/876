@@ -23,18 +23,12 @@ export const workEventResourceSchema = workEventSchema.extend({
 })
 export type WorkEventResource = z.infer<typeof workEventResourceSchema>
 
-export const createWorkEventResourceInputSchema =
-  createWorkEventInputSchema.and(
-    z.object({ context: workContextSchema.optional().nullable() })
-  )
+export const createWorkEventResourceInputSchema = createWorkEventInputSchema
 export type CreateWorkEventResourceInput = z.infer<
   typeof createWorkEventResourceInputSchema
 >
 
-export const updateWorkEventResourceInputSchema =
-  updateWorkEventInputSchema.and(
-    z.object({ context: workContextSchema.optional().nullable() })
-  )
+export const updateWorkEventResourceInputSchema = updateWorkEventInputSchema
 export type UpdateWorkEventResourceInput = z.infer<
   typeof updateWorkEventResourceInputSchema
 >

@@ -1,18 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { GET, POST } from './route'
+import { POST as POST_INVOICE_TASK } from '../invoices/[invoiceId]/work/tasks/route'
 
 const mocks = vi.hoisted(() => ({
   requireWorkWidgetPermission: vi.fn(),
   getWork: vi.fn(),
   list: vi.fn(),
   create: vi.fn(),
+  requireAuthorizedInvoiceWorkContext: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/work-widget-access', () => ({
   requireWorkWidgetPermission: mocks.requireWorkWidgetPermission,
 }))
 vi.mock('@/lib/services/work', () => ({ getWork: mocks.getWork }))
+vi.mock('@/lib/auth/work-widget-context', () => ({
+  requireAuthorizedInvoiceWorkContext:
+    mocks.requireAuthorizedInvoiceWorkContext,
+}))
 
 const PAGE = {
   object: 'list' as const,
@@ -54,6 +60,16 @@ describe('/api/tasks', () => {
     })
     mocks.list.mockResolvedValue({ data: PAGE, error: null })
     mocks.create.mockResolvedValue({ data: TASK, error: null })
+    mocks.requireAuthorizedInvoiceWorkContext.mockResolvedValue({
+      context: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_1',
+        label: 'INV-001',
+        url: '/invoices/inv_1',
+      },
+      response: null,
+    })
   })
 
   it('requires tasks.view before reading Work tasks', async () => {
@@ -152,6 +168,33 @@ describe('/api/tasks', () => {
       createdBy: 'user_1',
     })
     expect(payload).toEqual({ data: TASK, error: null })
+  })
+
+  it('creates an invoice task with its trusted legacy context and canonical link', async () => {
+    const response = await POST_INVOICE_TASK(
+      postRequest({ title: 'Follow up' }),
+      { params: Promise.resolve({ invoiceId: 'inv_1' }) }
+    )
+
+    expect(mocks.requireAuthorizedInvoiceWorkContext).toHaveBeenCalledWith(
+      'inv_1',
+      { response: null, orgId: 'org_1', userId: 'user_1' }
+    )
+    expect(mocks.create).toHaveBeenCalledWith('org_1', {
+      title: 'Follow up',
+      context: { service: 'billing', resource: 'invoice', id: 'inv_1' },
+      primaryLink: {
+        service: 'billing',
+        resource: 'invoice',
+        externalId: 'inv_1',
+        label: 'INV-001',
+        url: '/invoices/inv_1',
+        isPrimary: true,
+      },
+      assigneeId: 'user_1',
+      createdBy: 'user_1',
+    })
+    expect(response.status).toBe(200)
   })
 
   it('rejects browser-owned identity fields during creation', async () => {

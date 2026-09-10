@@ -129,6 +129,30 @@ describe('createEventParticipantsResource', () => {
     expect(result.error).toBeNull()
   })
 
+  it('sends RSVP changes to the dedicated response endpoint', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: createParticipantFixture({ status: 'TENTATIVE' }),
+          error: null,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } }
+      )
+    )
+
+    await participants.respond('org/kingston', 'event/kin', 'part/kin', {
+      status: 'TENTATIVE',
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://work.example.test/v1/organizations/org%2Fkingston/events/event%2Fkin/participants/part%2Fkin/response',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'TENTATIVE' }),
+      })
+    )
+  })
+
   it('deletes an event participant via DELETE', async () => {
     fetchMock.mockResolvedValue(
       new Response(

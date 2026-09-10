@@ -13,6 +13,7 @@ vi.mock('./task-assignments.repository.js', () => ({
   retrieve: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  respond: vi.fn(),
   remove: vi.fn(),
 }))
 
@@ -50,6 +51,7 @@ beforeEach(() => {
   vi.mocked(tasks.update).mockResolvedValue(task as never)
   vi.mocked(repository.list).mockResolvedValue([])
   vi.mocked(repository.retrieve).mockResolvedValue(null)
+  vi.mocked(repository.respond).mockResolvedValue(null)
 })
 
 describe('Work task-assignments service', () => {
@@ -475,6 +477,81 @@ describe('Work task-assignments service', () => {
     expect(result).toEqual(err)
     expect(repository.retrieve).not.toHaveBeenCalled()
     expect(repository.update).not.toHaveBeenCalled()
+  })
+
+  it('lets the exact USER assignee accept a pending assignment atomically', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+    vi.mocked(repository.respond).mockResolvedValue(
+      row({ status: 'ACCEPTED', respondedAt: new Date() }) as never
+    )
+
+    const result = await service.respond(
+      'org_kingston_1',
+      task.id,
+      'assign_1',
+      'user_mandeville_1',
+      'ACCEPTED'
+    )
+
+    expect(result).toEqual(expect.objectContaining({ status: 'ACCEPTED' }))
+    expect(repository.respond).toHaveBeenCalledWith(
+      task.id,
+      'assign_1',
+      'user_mandeville_1',
+      'PENDING',
+      expect.objectContaining({
+        status: 'ACCEPTED',
+        respondedAt: expect.any(Date),
+        completedAt: null,
+      })
+    )
+  })
+
+  it('rejects self-response by another user without writing', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+
+    const result = await service.respond(
+      'org_kingston_1',
+      task.id,
+      'assign_1',
+      'user_other',
+      'ACCEPTED'
+    )
+
+    expect(result).toMatchObject({ code: 'work/session-forbidden' })
+    expect(repository.respond).not.toHaveBeenCalled()
+  })
+
+  it('rejects nonsensical self-response transitions', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ status: 'DECLINED' }) as never
+    )
+
+    const result = await service.respond(
+      'org_kingston_1',
+      task.id,
+      'assign_1',
+      'user_mandeville_1',
+      'COMPLETED'
+    )
+
+    expect(result).toMatchObject({ code: 'work/invalid-request' })
+    expect(repository.respond).not.toHaveBeenCalled()
+  })
+
+  it('treats a raced self-response as an invalid transition', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(row() as never)
+    vi.mocked(repository.respond).mockResolvedValue(null)
+
+    const result = await service.respond(
+      'org_kingston_1',
+      task.id,
+      'assign_1',
+      'user_mandeville_1',
+      'ACCEPTED'
+    )
+
+    expect(result).toMatchObject({ code: 'work/invalid-request' })
   })
 
   it('remove returns null when the task does not exist and never removes', async () => {

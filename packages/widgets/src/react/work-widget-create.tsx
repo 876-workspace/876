@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WorkCalendar, WorkTaskList } from '@876/work'
-import { browserWork } from '@876/work/browser'
+import type { WorkCalendar, WorkHostContext, WorkTaskList } from '@876/work'
+import { browserWork, type WorkBrowserClient } from '@876/work/browser'
 import {
   WorkCreate,
   type WorkCreateEventDraft,
@@ -15,9 +15,13 @@ import { WorkWidgetErrorBanner } from './work-widget-feedback'
 
 export function WorkWidgetCreateView({
   capabilities,
+  context,
+  client = browserWork,
   onCreated,
 }: {
   capabilities: WorkWidgetCapabilities
+  context?: WorkHostContext
+  client?: WorkBrowserClient
   onCreated: () => void
 }) {
   const [taskLists, setTaskLists] = useState<WorkTaskList[]>([])
@@ -32,8 +36,8 @@ export function WorkWidgetCreateView({
   const loadEnrichment = useCallback(async () => {
     setEnrichmentMessage(null)
     const [taskListsResult, calendarsResult] = await Promise.all([
-      capabilities.canCreateTasks ? browserWork.taskLists.list() : null,
-      capabilities.canCreateEvents ? browserWork.calendars.list() : null,
+      capabilities.canCreateTasks ? client.taskLists.list() : null,
+      capabilities.canCreateEvents ? client.calendars.list() : null,
     ])
 
     const messages: string[] = []
@@ -52,7 +56,7 @@ export function WorkWidgetCreateView({
         )
     }
     setEnrichmentMessage(messages.length > 0 ? messages.join(' ') : null)
-  }, [capabilities.canCreateEvents, capabilities.canCreateTasks])
+  }, [capabilities.canCreateEvents, capabilities.canCreateTasks, client])
 
   useEffect(() => {
     void loadEnrichment()
@@ -92,20 +96,20 @@ export function WorkWidgetCreateView({
 
   const createTask = useCallback(
     (input: WorkCreateTaskDraft) =>
-      runCreate(() => browserWork.tasks.create(input)),
-    [runCreate]
+      runCreate(() => client.tasks.create(input, context)),
+    [client, context, runCreate]
   )
 
   const createEvent = useCallback(
     (input: WorkCreateEventDraft) =>
-      runCreate(() => browserWork.events.create(input)),
-    [runCreate]
+      runCreate(() => client.events.create(input, context)),
+    [client, context, runCreate]
   )
 
   const createReminder = useCallback(
     (input: WorkCreateReminderDraft) =>
-      runCreate(() => browserWork.reminders.create(input)),
-    [runCreate]
+      runCreate(() => client.reminders.create(input, context)),
+    [client, context, runCreate]
   )
 
   return (

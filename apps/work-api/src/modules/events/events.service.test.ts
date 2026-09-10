@@ -10,6 +10,9 @@ vi.mock('../tenants/index.js', () => ({
 vi.mock('../calendars/index.js', () => ({
   retrieve: vi.fn(),
 }))
+vi.mock('../recurrence-rules/index.js', () => ({
+  retrieve: vi.fn(),
+}))
 vi.mock('./events.repository.js', () => ({
   list: vi.fn(),
   retrieve: vi.fn(),

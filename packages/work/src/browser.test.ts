@@ -240,4 +240,64 @@ describe('browserWork', () => {
     expectJsonHeaders(fetchMock.mock.calls[0]?.[1]?.headers)
     expect(result).toEqual({ data: REMINDER, error: null })
   })
+
+  it('uses nested same-origin routes for advanced task operations', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success({ object: 'resource' }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await browserWork.taskAssignments.create('task/1', {
+      targetType: 'USER',
+      assigneeId: 'user_1',
+      role: 'REVIEWER',
+    })
+    await browserWork.taskAssignments.respond('task/1', 'assign/1', {
+      status: 'ACCEPTED',
+    })
+    await browserWork.tasks.recurrence.set('task/1', {
+      frequency: 'WEEKLY',
+      timeZone: 'America/Jamaica',
+    })
+    await browserWork.alerts.createForTask('task/1', {
+      triggerType: 'RELATIVE',
+      offsetSeconds: -900,
+    })
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/api/tasks/task%2F1/assignments',
+      '/api/tasks/task%2F1/assignments/assign%2F1/response',
+      '/api/tasks/task%2F1/recurrence',
+      '/api/tasks/task%2F1/alerts',
+    ])
+    for (const [, options] of fetchMock.mock.calls) {
+      expect(options).toMatchObject({ method: expect.any(String) })
+      expectJsonHeaders(options?.headers)
+    }
+  })
+
+  it('uses nested same-origin routes for calendar collaboration', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(success({ object: 'resource' }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await browserWork.eventParticipants.create('event/1', {
+      kind: 'EMAIL',
+      email: 'guest@example.test',
+    })
+    await browserWork.eventParticipants.respond('event/1', 'part/1', {
+      status: 'TENTATIVE',
+    })
+    await browserWork.calendarSubscriptions.create('cal/1', {
+      isVisible: true,
+      defaultReminderMinutes: [15],
+    })
+    await browserWork.calendarSubscriptions.update('cal/1', 'sub/1', {
+      color: '#123456',
+    })
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/api/events/event%2F1/participants',
+      '/api/events/event%2F1/participants/part%2F1/response',
+      '/api/calendars/cal%2F1/subscriptions',
+      '/api/calendars/cal%2F1/subscriptions/sub%2F1',
+    ])
+  })
 })
