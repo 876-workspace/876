@@ -6,7 +6,8 @@ import {
   xmlBlocks,
   xmlText,
 } from './caldav-codec.js'
-import { requireHttpsProviderUrl, retryAfterSeconds } from './http.js'
+import { caldavRequest, requireSafeCaldavUrl } from './caldav-network.js'
+import { retryAfterSeconds } from './http.js'
 import {
   WorkSyncProviderError,
   type WorkPullInput,
@@ -21,6 +22,8 @@ const DAV_HEADERS = {
   'content-type': 'application/xml; charset=utf-8',
   accept: 'application/xml, text/xml',
 }
+
+type CaldavRequestInit = Parameters<typeof caldavRequest>[1]
 
 function compactUtc(value: number) {
   return new Date(value * 1000)
@@ -40,7 +43,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
         'provider-not-configured',
         'A CalDAV server URL is required.'
       )
-    this.#base = requireHttpsProviderUrl(caldavUrl)
+    this.#base = requireSafeCaldavUrl(caldavUrl)
     this.#credential = credential
   }
 
@@ -55,24 +58,19 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
 
   #url(value: string) {
     const resolved = new URL(value, this.#base)
-    return requireHttpsProviderUrl(resolved.toString(), this.#base.origin)
+    return requireSafeCaldavUrl(resolved.toString(), this.#base.origin)
   }
 
   async #request(
     url: URL,
-    init: RequestInit,
+    init: CaldavRequestInit,
     options: { cursor?: boolean; allowNotFound?: boolean } = {}
   ) {
     let response: Response
     try {
-      response = await fetch(url, {
-        ...init,
-        headers: {
-          authorization: this.#authorization(),
-          ...init.headers,
-        },
-      })
+      response = await caldavRequest(url, init, this.#authorization())
     } catch (error) {
+      if (error instanceof WorkSyncProviderError) throw error
       throw new WorkSyncProviderError(
         'provider-unavailable',
         'The CalDAV server could not be reached.'
@@ -113,7 +111,7 @@ export class CaldavCalendarAdapter implements WorkSyncProviderAdapter {
     )
   }
 
-  async #xml(url: URL, init: RequestInit, cursor = false) {
+  async #xml(url: URL, init: CaldavRequestInit, cursor = false) {
     const response = await this.#request(url, init, { cursor })
     try {
       return await response.text()
