@@ -4,9 +4,9 @@ Branch: `feat/work-widget-phase-6`
 
 Baseline tree: `58599a9fc2e112e47ee5d5972177403469b46b53`
 
-Status: `SOURCE_COMPLETE; READY_FOR_ORCHESTRATOR_VERIFICATION; LOCKFILE_REFRESH_REQUIRED`
+Status: `COMPLETE; LOCALLY_VERIFIED; PR_READY`
 
-**New-session entry point:** read [`review-handoff.md`](./review-handoff.md) for the original local-review findings, then this tracker and the [final GPT Web report](./reports/gpt-web/2026-09-09-work-calendar-widget-phase-6.md) for their resolved source state and the remaining verification gate.
+**New-session entry point:** read [`review-handoff.md`](./review-handoff.md) for the original local-review findings, then this tracker and the [final GPT Web report](./reports/gpt-web/2026-09-09-work-calendar-widget-phase-6.md) for their resolution and final verification results.
 
 ## Baseline review
 
@@ -87,8 +87,8 @@ Status: `SOURCE_COMPLETE; READY_FOR_ORCHESTRATOR_VERIFICATION; LOCKFILE_REFRESH_
 
 The original review findings remain documented in [`review-handoff.md`](./review-handoff.md). Their current status is:
 
-- [ ] **Blocker — lockfile:** **source manifest fixed; mechanical lockfile refresh still required.** The Work API manifest restores `@types/express`, `@types/supertest`, and `tsup`, and correctly declares `@workos-inc/node@10.10.0`. `pnpm-lock.yaml` still needs `pnpm install --lockfile-only` so `apps/work-api.dependencies` records that dependency. The GitHub-only connector cannot safely patch the multi-thousand-line lockfile from truncated content.
-- [x] **Blocker — TypeScript source:** Microsoft paginated calendar/delta responses now use explicit `GraphCalendarPage`/`GraphDeltaPage` types and validated continuation links, removing the reviewed TS7022 inference path. **Local typecheck still required.**
+- [x] **Blocker — lockfile:** regenerated locally; the only change adds `@workos-inc/node@10.10.0` to the Work API importer, and `pnpm install --frozen-lockfile` passes.
+- [x] **Blocker — TypeScript source:** Microsoft paginated calendar/delta responses now use explicit `GraphCalendarPage`/`GraphDeltaPage` types and validated continuation links, removing the reviewed TS7022 inference path; the final Work API typecheck passes.
 - [x] **Blocker — SSRF:** CalDAV now requires HTTPS, rejects unsafe/private/reserved destinations, validates every DNS answer, pins TLS to the validated IP, preserves Host/SNI, forbids automatic redirects, keeps discovery same-origin, and supports exact-origin allowlisting.
 - [x] **High — concurrency:** DB-backed connection lease/CAS with heartbeat and token-bound release covers manual, per-calendar, and scheduler sync.
 - [x] **High — read-only calendars:** normalized remote `readOnly` becomes `PULL_ONLY`; provider writes/recreates are disabled and local drift is repaired from provider state.
@@ -108,23 +108,21 @@ These numbers are historical only. They do not verify the final branch after the
 
 ## 6F — closeout
 
-- [ ] Resolve every local-review blocker: all source/security/high findings are resolved; only mechanical `pnpm-lock.yaml` regeneration remains.
+- [x] Resolve every local-review blocker and complete local verification.
 - [x] Diff/adversarial review completed for secret leakage, outbound URL policy, OAuth state ownership, cursor ownership, read-only writes, swallowed provider failures, host/service boundaries, and browser permissions.
-- [x] Focused final Phase 6 test-case count: **80 `it()` cases in source**.
+- [x] Focused final Phase 6 test-case count: **82 `it()` cases in source**.
 - [x] Final report written at `reports/gpt-web/2026-09-09-work-calendar-widget-phase-6.md` under this plan directory.
 - [x] Orchestrator verification handoff documented with exact commands and migration requirements.
 
-## Remaining orchestrator actions
+## Remaining deployment actions
 
-1. Run `pnpm install --lockfile-only` and review the diff. Expected Phase 6-specific importer change: `apps/work-api.dependencies['@workos-inc/node']` at `10.10.0`; reject unrelated dependency churn.
-2. Run all package/app typecheck, lint, test, browser-test, build, service-bundle, and transpile commands from `plan.md`.
-3. Apply/validate `20260909230000_work_external_calendar_sync` and `20260910003000_work_sync_hardening`, then run the Phase 6 sync-schema invariant check.
-4. Only after those pass, test real Google/Microsoft OAuth and approved CalDAV origins with deployment secrets/configuration.
+1. Apply/validate `20260909230000_work_external_calendar_sync` and `20260910003000_work_sync_hardening` against the deployment database.
+2. Test real Google/Microsoft OAuth and approved CalDAV origins with deployment secrets/configuration.
 
 ## Notes
 
 - GPT Web did **not** execute pnpm install, typecheck, lint, tests, browser tests, builds, Prisma generation, migrations, schema checks, or real provider authorization.
-- No PR is authorized or opened in this run.
+- The final pull request is authorized after local verification and branch synchronization with `main`.
 - Raw provider tokens/passwords must never enter browser responses, ordinary Work resource serializers, logs, or `credentialRef`.
 - Existing connection `syncCursor` is compatibility state; active Phase 6 provider cursors live on root CALENDAR mappings.
-- Phase 6 is **source-complete**. It becomes verified/merge-ready only after the lockfile refresh and orchestrator verification gate pass.
+- Phase 6 is source-complete, locally verified, and ready for pull-request review.

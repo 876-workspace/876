@@ -4,9 +4,9 @@ Run ID: `2026-09-09-work-calendar-widget-phase-6`
 
 Branch: `feat/work-widget-phase-6`
 
-Status: **SOURCE COMPLETE — READY FOR ORCHESTRATOR VERIFICATION**
+Status: **COMPLETE — LOCALLY VERIFIED — PR READY**
 
-One mechanical repository step remains outside this GitHub-only seat: regenerate `pnpm-lock.yaml` with `pnpm install --lockfile-only` so the `apps/work-api` importer records the new existing-workspace dependency `@workos-inc/node@10.10.0`. The Work API package manifest has been restored to its previous dev-tool contract. No executable verification is claimed in this report.
+The local orchestrator regenerated and verified `pnpm-lock.yaml`, completed the executable verification suite, and fixed the final compile, browser-test, timeout, response-bound, lease-heartbeat, and lint findings described below.
 
 ## What Phase 6 delivers
 
@@ -94,23 +94,23 @@ OAuth state is generated server-side, stores only a SHA-256 hash of the random n
 
 ## Focused Phase 6 regression inventory
 
-Phase 6 now contains **80 focused `it()` cases in source** across the new/hardened surfaces. These cases were counted from the test source; they were **not executed by GPT Web**.
+Phase 6 now contains **82 focused `it()` cases in source** across the new/hardened surfaces, including two final lease-heartbeat failure regressions.
 
-| Area | File | `it()` cases |
-| --- | --- | ---: |
-| OAuth/account/link ownership | `sync-account.service.test.ts` | 7 |
-| Conflict/idempotency/read-only decisions | `sync-convergence.test.ts` | 9 |
-| Credential sealing/resolution | `sync-credentials.test.ts` | 5 |
-| DB lease/concurrent runner behavior | `sync-lease.service.test.ts` | 5 |
-| Cursor recovery/window rollover | `sync-pull.test.ts` | 4 |
-| Connection/calendar orchestration | `sync-run.service.test.ts` | 5 |
-| CalDAV outbound network policy | `caldav-network.test.ts` | 15 |
-| CalDAV adapter behavior | `caldav.test.ts` | 7 |
-| Google/Microsoft provider adapters | `google-microsoft.test.ts` | 6 |
-| Browser calendar-sync client | `browser-calendar-sync.test.ts` | 8 |
-| Invoice connection BFF authority/projection | `connections/route.test.ts` | 6 |
-| Widget Manage provider integration | `work-widget-manage.browser.test.tsx` | 3 |
-| **Total** |  | **80** |
+| Area                                        | File                                  | `it()` cases |
+| ------------------------------------------- | ------------------------------------- | -----------: |
+| OAuth/account/link ownership                | `sync-account.service.test.ts`        |            7 |
+| Conflict/idempotency/read-only decisions    | `sync-convergence.test.ts`            |            9 |
+| Credential sealing/resolution               | `sync-credentials.test.ts`            |            5 |
+| DB lease/concurrent runner behavior         | `sync-lease.service.test.ts`          |            7 |
+| Cursor recovery/window rollover             | `sync-pull.test.ts`                   |            4 |
+| Connection/calendar orchestration           | `sync-run.service.test.ts`            |            5 |
+| CalDAV outbound network policy              | `caldav-network.test.ts`              |           15 |
+| CalDAV adapter behavior                     | `caldav.test.ts`                      |            7 |
+| Google/Microsoft provider adapters          | `google-microsoft.test.ts`            |            6 |
+| Browser calendar-sync client                | `browser-calendar-sync.test.ts`       |            8 |
+| Invoice connection BFF authority/projection | `connections/route.test.ts`           |            6 |
+| Widget Manage provider integration          | `work-widget-manage.browser.test.tsx` |            3 |
+| **Total**                                   |                                       |       **82** |
 
 Coverage specifically includes provider pagination, stale cursors, Microsoft delta links, CalDAV unsafe-address/DNS policy, read-only mappings, OAuth replay/expiry, cross-user ownership rejection, connection leases, multi-calendar isolation, provider/local conflict decisions, remote deletion recreation rules, browser authority rejection, safe connection projection, provider failure isolation, and calendar-sync permission gating.
 
@@ -127,17 +127,9 @@ The closeout diff was reviewed for the plan's required failure classes:
 - **Read-only write leakage:** `PULL_ONLY` disables provider push/remove/recreate paths and repairs local drift from remote state.
 - **Permission drift:** provider mutation UI is aligned to the same `calendars.edit` permission enforced by Invoice routes.
 
-## Remaining orchestrator gate
+## Local verification
 
-The source implementation and documentation are complete. Before merge/deployment, the local orchestrator must perform the mechanical lockfile refresh and execute verification. Start with:
-
-```bash
-pnpm install --lockfile-only
-```
-
-Review that lockfile change carefully: the expected Phase 6-specific importer change is `apps/work-api.dependencies['@workos-inc/node'] = 10.10.0`; avoid accepting unrelated dependency churn.
-
-Then run:
+The lockfile refresh added only the expected Work API importer entry for `@workos-inc/node@10.10.0`, and frozen installation passed. The orchestrator then ran:
 
 ```bash
 pnpm --filter @876/work typecheck
@@ -157,7 +149,18 @@ pnpm check:service-bundle
 pnpm check:transpile
 ```
 
-Database-capable verification must deploy/apply the Phase 6 migrations and confirm the sync-schema invariants before any real Google/Microsoft authorization or CalDAV credential is used:
+Results:
+
+- `@876/work`: typecheck and 251 tests passed.
+- `@876/work-api`: typecheck; lint with two pre-existing warnings and no errors; 635 tests; production build passed.
+- `@876/work-ui`: typecheck passed.
+- `@876/widgets`: typecheck, 150 unit tests, and 15 Chromium browser tests passed.
+- `@876/invoice-app`: typecheck, 487 tests, and Next production build passed.
+- Repository frozen install, service-bundle, shared-UI transpilation, and Tailwind-source checks passed.
+
+The final review also added 30-second outbound timeouts for Google, Microsoft, and OAuth HTTP requests; a 10 MiB buffered-response limit for CalDAV; observable lease-heartbeat failure handling; and regression fixes for strict browser selectors and TypeScript inference.
+
+Database-capable deployment verification must still apply the Phase 6 migrations before any real Google/Microsoft authorization or CalDAV credential is used:
 
 - `20260909230000_work_external_calendar_sync`
 - `20260910003000_work_sync_hardening`
@@ -166,6 +169,4 @@ Provider environment configuration must also be reviewed before live use, includ
 
 ## Verification truth
 
-GPT Web did **not** run pnpm install, typecheck, lint, unit/browser tests, builds, Prisma generation, migrations, database invariant checks, or real provider authorization. The previously supplied local review snapshot remains historical evidence only; it does not validate the final branch state after these fixes.
-
-No pull request was opened or merged in this run.
+The local commands above verify the final source tree. No production database migration or live provider authorization was performed; those require deployment credentials and approved provider configuration.

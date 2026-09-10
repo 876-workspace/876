@@ -6,7 +6,7 @@ Branch: `feat/work-widget-phase-6`
 
 Baseline tree: `main@a147d957d520037f66e3f7ea0004ea36813ebe01` / Phase 5 validated tree `58599a9fc2e112e47ee5d5972177403469b46b53`
 
-Status: `SOURCE_COMPLETE; READY_FOR_ORCHESTRATOR_VERIFICATION; LOCKFILE_REFRESH_REQUIRED`
+Status: `COMPLETE; LOCALLY_VERIFIED; PR_READY`
 
 ## Goal
 
@@ -136,7 +136,7 @@ Microsoft Graph v1.0 delta requires a fixed calendar-view range. Phase 6 uses a 
 
 ### Phase 6F — closeout
 
-- [x] Add package/API/browser/widget regression tests and count focused Phase 6 `it()` cases: **80 source cases**.
+- [x] Add package/API/browser/widget regression tests and count focused Phase 6 `it()` cases: **82 source cases**.
 - [x] Review the diff for provider secret leakage, unsafe URL handling, duplicate OAuth/state helpers, swallowed failures, stale connection cursors, and host/provider ownership leaks.
 - [x] Update this plan/tracker to exact source completion state.
 - [x] Write `plans/2026-09-09-work-calendar-widget-phase-6/reports/gpt-web/2026-09-09-work-calendar-widget-phase-6.md`.
@@ -151,19 +151,16 @@ Microsoft Graph v1.0 delta requires a fixed calendar-view range. Phase 6 uses a 
 - Generic credential management outside Work sync connections.
 - Widget-local provider SDKs, provider secrets, cursors, or sync persistence.
 
-## Required orchestrator verification gate
+## Orchestrator verification
 
-The Phase 6 source implementation is complete, but it is **not verified or merge-ready yet**. This GPT Web seat cannot run the repository toolchain and cannot safely replace the multi-thousand-line lockfile through the GitHub connector.
-
-First regenerate the lockfile:
+The lockfile was regenerated and accepted by frozen installation:
 
 ```bash
-pnpm install --lockfile-only
+pnpm install --lockfile-only --no-frozen-lockfile
+pnpm install --frozen-lockfile
 ```
 
-Expected Phase 6-specific lockfile change: the `apps/work-api` importer gains `@workos-inc/node` with specifier/version `10.10.0`. The Work API manifest already restores the existing `@types/express`, `@types/supertest`, and `tsup` dev-tool contract. Review and reject unrelated lockfile churn.
-
-Then run:
+The only lockfile change is the expected `apps/work-api` importer entry for `@workos-inc/node@10.10.0`. The following checks passed locally:
 
 ```bash
 pnpm --filter @876/work typecheck
@@ -183,6 +180,4 @@ pnpm check:service-bundle
 pnpm check:transpile
 ```
 
-Database-capable verification must also apply the new migrations and run a Phase 6 sync-schema invariant check before any real provider authorization is attempted.
-
-GPT Web did **not** execute these commands, migrations, or real provider calls. Verification is the orchestrator's next gate; see the final report for the exact implementation and review findings.
+The final local review additionally bounded Google/Microsoft/OAuth requests to 30 seconds, bounded buffered CalDAV responses to 10 MiB, made lease heartbeat loss observable, removed Phase 6 lint warnings, and corrected strict browser-test selectors. Database migrations and real provider authorization remain deployment-environment checks and were not run against production credentials.
