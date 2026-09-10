@@ -6,6 +6,8 @@ Baseline tree: `58599a9fc2e112e47ee5d5972177403469b46b53`
 
 Status: `IN_PROGRESS; LOCAL_REVIEW_BLOCKERS_BEING_RESOLVED`
 
+**New-session entry point:** read [`review-handoff.md`](./review-handoff.md) first. It contains the local orchestrator's blocker/high/medium findings, the verified test snapshot, security requirements, remaining Phase 6 product work, test matrix, and the completion gate. Then read `plan.md` and this tracker before changing source.
+
 ## Baseline review
 
 - [x] Confirm Phase 6 branch is tree-identical to the validated Phase 5 merge baseline.
@@ -73,7 +75,7 @@ Status: `IN_PROGRESS; LOCAL_REVIEW_BLOCKERS_BEING_RESOLVED`
 
 ## Local AI review — 2026-09-09
 
-The local orchestrator reviewed the Phase 6 branch after pulling the implementation and reported the following acceptance blockers. These are binding closeout items for this run:
+The local orchestrator reviewed the Phase 6 branch after pulling the implementation and reported the following acceptance blockers. These are binding closeout items for this run. Full detail and required regressions are in [`review-handoff.md`](./review-handoff.md).
 
 - [ ] **Blocker — lockfile:** restore the Work API package manifest to the existing dev-tool contract and update `pnpm-lock.yaml` for the new WorkOS Vault dependency so frozen installs succeed.
 - [ ] **Blocker — TypeScript:** fix the Microsoft paginated calendar response inference (`TS7022`).
