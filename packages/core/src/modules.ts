@@ -157,9 +157,17 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
 
 /**
  * Modules that may be materialized into Core's commercial entitlement plane.
- * `crm` remains settings-only until the CRM-inside-finance product contract is
- * implemented; its canonical identity still lives above so settings do not
- * invent a second definition.
+ *
+ * Invoice currently has no competing aggregate commercial taxonomy, so its
+ * implemented functional modules can be sold directly. `crm` remains
+ * settings-only until that product contract is implemented.
+ *
+ * Billing is intentionally narrower: only canonical definitions that exactly
+ * match its existing effective commercial gates are materialized here. Sales
+ * and documents remain explicit legacy aggregates in the plan seed; granular
+ * Billing identities such as `invoices`, `quotes`, `payments`, `credit-notes`
+ * and `price-lists` must not appear as selectable plan grants until runtime
+ * entitlement enforcement is wired to those exact keys.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',
@@ -173,14 +181,10 @@ export const INVOICE_COMMERCIAL_MODULE_KEYS = [
 ] as const
 
 export const BILLING_COMMERCIAL_MODULE_KEYS = [
-  ...INVOICE_COMMERCIAL_MODULE_KEYS,
   'subscriptions',
-  'banking',
-  'credit-notes',
   'purchases',
+  'banking',
   'payroll',
-  'price-lists',
-  'discounts',
 ] as const
 
 export const APP_MODULE_REGISTRIES = {
