@@ -27,6 +27,32 @@ export type WorkSyncConnectionSetupInput = z.infer<
   typeof workSyncConnectionSetupInputSchema
 >
 
+/** Browser-safe projection. Credential refs, provider account ids and cursors are intentionally absent. */
+export const workSyncConnectionSummarySchema = z.object({
+  object: z.literal('sync_connection_summary'),
+  id: z.string(),
+  provider: workExternalSyncProviderSchema,
+  status: z.enum(['ACTIVE', 'PAUSED', 'REVOKED', 'ERROR']),
+  authorized: z.boolean(),
+  remoteAccountLabel: z.string().nullable(),
+  caldavUrl: z.string().nullable(),
+  lastSyncedAt: unixSchema.nullable(),
+  lastErrorCode: z.string().nullable(),
+  createdAt: unixSchema,
+  updatedAt: unixSchema,
+})
+export type WorkSyncConnectionSummary = z.infer<
+  typeof workSyncConnectionSummarySchema
+>
+
+export const workSyncConnectionSummaryListSchema = z.object({
+  object: z.literal('list'),
+  data: z.array(workSyncConnectionSummarySchema),
+  has_more: z.boolean(),
+  total_count: z.number().int().nullable(),
+  url: z.string(),
+})
+
 export const workSyncAuthorizationSchema = z.object({
   object: z.literal('sync_authorization'),
   connectionId: z.string(),
