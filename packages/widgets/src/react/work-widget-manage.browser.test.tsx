@@ -139,4 +139,32 @@ describe('WorkWidgetManageView calendar sync', () => {
     await expect.element(page.getByText('Shared calendar')).toBeVisible()
     await expect.element(page.getByText('Linked · read only')).toBeVisible()
   })
+
+  it('does not expose provider mutation controls to calendar-create-only users', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url === '/api/task-lists') return success(emptyList(url))
+      if (url === '/api/calendars') return success(emptyList(url))
+      if (url === '/api/calendar-sync/connections') return success(emptyList(url))
+      throw new Error(`Unexpected request: ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <WorkWidgetManageView
+        capabilities={{
+          ...EMPTY_WORK_WIDGET_CAPABILITIES,
+          canCreateCalendars: true,
+          canEditCalendars: false,
+        }}
+      />
+    )
+
+    await expect.element(page.getByText('Connected calendars')).toBeVisible()
+    await expect
+      .element(page.getByRole('button', { name: 'Connect Google' }))
+      .not.toBeInTheDocument()
+    await expect.element(page.getByText('Connect CalDAV')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Create calendar')).toBeVisible()
+  })
 })
