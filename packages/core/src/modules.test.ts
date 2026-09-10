@@ -109,6 +109,17 @@ describe('canonical application module registry', () => {
     expect(result).toEqual({ invoiceHasCrm: false, billingHasCrm: false })
   })
 
+  it('exposes only Billing keys with existing effective commercial semantics', () => {
+    // ARRANGE
+    const expected = ['subscriptions', 'purchases', 'banking', 'payroll']
+
+    // ACT
+    const keys = [...BILLING_COMMERCIAL_MODULE_KEYS]
+
+    // ASSERT
+    expect(keys).toEqual(expected)
+  })
+
   it('resolves registered apps and modules without fallback definitions', () => {
     // ARRANGE
     const expectedModule = FINANCE_MODULES.invoices
