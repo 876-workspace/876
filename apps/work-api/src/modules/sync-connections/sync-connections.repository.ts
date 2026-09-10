@@ -14,6 +14,13 @@ type Filter = {
   endingBefore?: string
 }
 
+type SyncLeaseInput = {
+  id: string
+  token: string
+  now: Date
+  expiresAt: Date
+}
+
 export async function list(tenantId: string, filter: Filter) {
   const cursor = filter.startingAfter ?? filter.endingBefore
   const anchor = cursor ? await retrieve(tenantId, cursor) : null
@@ -67,6 +74,48 @@ export const create = (params: CreateParams) =>
 export const update = (id: string, params: UpdateParams) =>
   prisma.workSyncConnection.update({ where: { id }, data: params })
 
+export async function acquireSyncLease(input: SyncLeaseInput) {
+  const result = await prisma.workSyncConnection.updateMany({
+    where: {
+      id: input.id,
+      OR: [
+        { syncLeaseToken: null },
+        { syncLeaseExpiresAt: null },
+        { syncLeaseExpiresAt: { lte: input.now } },
+      ],
+    },
+    data: {
+      syncLeaseToken: input.token,
+      syncLeaseExpiresAt: input.expiresAt,
+      syncLeaseHeartbeatAt: input.now,
+    },
+  })
+  return result.count === 1
+}
+
+export async function heartbeatSyncLease(input: SyncLeaseInput) {
+  const result = await prisma.workSyncConnection.updateMany({
+    where: { id: input.id, syncLeaseToken: input.token },
+    data: {
+      syncLeaseExpiresAt: input.expiresAt,
+      syncLeaseHeartbeatAt: input.now,
+    },
+  })
+  return result.count === 1
+}
+
+export async function releaseSyncLease(id: string, token: string) {
+  const result = await prisma.workSyncConnection.updateMany({
+    where: { id, syncLeaseToken: token },
+    data: {
+      syncLeaseToken: null,
+      syncLeaseExpiresAt: null,
+      syncLeaseHeartbeatAt: null,
+    },
+  })
+  return result.count === 1
+}
+
 export const setOauthState = (input: {
   id: string
   hash: string
@@ -110,6 +159,9 @@ export async function remove(id: string) {
         syncCursor: null,
         oauthStateHash: null,
         oauthStateExpiresAt: null,
+        syncLeaseToken: null,
+        syncLeaseExpiresAt: null,
+        syncLeaseHeartbeatAt: null,
       },
     })
   })
