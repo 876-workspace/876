@@ -28,7 +28,9 @@ vi.mock('./plans.repository', () => repository)
 vi.mock('@/platform/ids', () => ({
   generateId: vi.fn((entityType: string) => `${entityType}_generated`),
 }))
-vi.mock('@/platform/timestamps', () => ({ nowUnixSeconds: vi.fn(() => 1_700_000_000) }))
+vi.mock('@/platform/timestamps', () => ({
+  nowUnixSeconds: vi.fn(() => 1_700_000_000),
+}))
 vi.mock('@/platform/logger', () => ({
   getLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }))
@@ -105,9 +107,9 @@ describe('canonical plan module seed definitions', () => {
         canonicalDescription: definition.description,
       }))
     )
-    expect(invoiceDefinitions.some((definition) => definition.key === 'crm')).toBe(
-      false
-    )
+    expect(
+      invoiceDefinitions.some((definition) => definition.key === 'crm')
+    ).toBe(false)
   })
 
   it('keeps Billing sales and documents as explicit legacy modules', () => {
@@ -129,6 +131,32 @@ describe('canonical plan module seed definitions', () => {
       { key: 'sales', featureSlug: 'billing-sales' },
       { key: 'documents', featureSlug: 'billing-documents' },
     ])
+  })
+
+  it('preserves established Billing positions for existing canonical modules', () => {
+    // ARRANGE
+    const billingDefinitions = new Map(
+      PLATFORM_MODULES.filter(
+        (definition) =>
+          definition.appSlug === '876-billing' && definition.syncIdentity
+      ).map((definition) => [definition.key, definition.position])
+    )
+
+    // ACT
+    const positions = {
+      subscriptions: billingDefinitions.get('subscriptions'),
+      purchases: billingDefinitions.get('purchases'),
+      banking: billingDefinitions.get('banking'),
+      payroll: billingDefinitions.get('payroll'),
+    }
+
+    // ASSERT
+    expect(positions).toEqual({
+      subscriptions: 20,
+      purchases: 30,
+      banking: 40,
+      payroll: 60,
+    })
   })
 
   it('creates Invoice modules and grants only the initial free-plan subset', async () => {
