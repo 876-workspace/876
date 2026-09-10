@@ -31,6 +31,7 @@ export default async function CustomerDetailLayout({
     { label: 'Statement', href: `${base}/statement` },
     { label: 'Activity', href: `${base}/activity` },
   ]
+
   return (
     <DetailCard aria-label="Customer">
       <Suspense fallback={<CustomerHeaderSkeleton />}>
@@ -41,16 +42,20 @@ export default async function CustomerDetailLayout({
     </DetailCard>
   )
 }
+
 async function CustomerHeaderData({ customerId }: { customerId: string }) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
+
   const billing = await getBilling(context.orgId)
   const result = await billing.customers.retrieve(customerId)
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
     return null
   }
+
   const customer = result.data
+
   return (
     <DetailCardHeader
       icon={<CustomerAvatar name={customer.name} size="lg" />}
@@ -67,14 +72,15 @@ async function CustomerHeaderData({ customerId }: { customerId: string }) {
     />
   )
 }
+
 function CustomerHeaderSkeleton() {
   return (
-    <div className="flex items-center gap-3 border-b p-6">
-      <Skeleton className="size-12 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-4 w-24" />
-      </div>
-    </div>
+    <DetailCardHeader
+      icon={<Skeleton className="size-14 rounded-full sm:size-16" />}
+      title={<Skeleton className="h-6 w-44" />}
+      actions={<Skeleton className="h-8 w-32 rounded-md" />}
+      closeHref="/customers"
+      closeLabel="Close customer details"
+    />
   )
 }
