@@ -419,8 +419,10 @@
    So once the shell is wide enough for two columns, the columns themselves
    carry the white surface and the list column's right hairline is the only
    separator. The pane objects inside them drop their own chrome — nothing is
-   nested, so nothing has a false edge. Below that width the panes stack and
-   each is a card again, which is correct there.
+   nested, so nothing has a false edge. Closed, the full-width table is the
+   same sheet the open panes are: its card drops the same chrome, so opening
+   a record never swaps rounded corners for square ones. Below that width the
+   panes stack and each is a card again, which is correct there.
 
    This lives here rather than on the components because thirty-odd sections
    compose the shell and none of them should have to opt in. It is gated on
@@ -430,12 +432,32 @@
   [data-slot='list-detail-shell'][data-bleed='true'][data-state='open']
     [data-slot='list-pane'],
   [data-slot='list-detail-shell'][data-bleed='true'][data-state='open']
-    [data-slot='detail-card'] {
+    [data-slot='detail-card'],
+  [data-slot='list-detail-shell'][data-bleed='true'][data-state='closed']
+    [data-slot='list-detail-list-column']
+    [class~='876-card'] {
     border: 0;
     border-radius: 0;
     background-color: transparent;
     background-image: none;
     box-shadow: none;
+  }
+
+  /* The table header's corner radii only exist to meet its card's corners.
+     On the square sheet there are no corners to meet. */
+  [data-slot='list-detail-shell'][data-bleed='true'][data-state='closed']
+    [data-slot='list-detail-list-column']
+    [class~='876-header-row']
+    tr:first-child
+    th:first-child {
+    border-top-left-radius: 0;
+  }
+  [data-slot='list-detail-shell'][data-bleed='true'][data-state='closed']
+    [data-slot='list-detail-list-column']
+    [class~='876-header-row']
+    tr:first-child
+    th:last-child {
+    border-top-right-radius: 0;
   }
 
   /* When split view is open, the list column already carries the sticky

@@ -9,8 +9,9 @@ const mocks = vi.hoisted(() => {
   process.env.BILLING_API_876_KEY = '876_app_secret_test'
 
   return {
+    establishedSessionUserId: vi.fn(),
     fetchApiBridge: vi.fn(),
-    hasEstablishedSession: vi.fn(),
+    isAccountUsable: vi.fn(),
   }
 })
 
@@ -22,7 +23,11 @@ vi.mock('@876/core/fetch/bridge', async () => {
 })
 
 vi.mock('@876/core/auth/callback-session', () => ({
-  hasEstablishedSession: mocks.hasEstablishedSession,
+  establishedSessionUserId: mocks.establishedSessionUserId,
+}))
+
+vi.mock('@/lib/auth/account-validity', () => ({
+  isAccountUsable: mocks.isAccountUsable,
 }))
 
 const ORIGIN = 'https://876-billing.vercel.app'
@@ -53,7 +58,8 @@ function exchangeHeaders(): Headers {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.hasEstablishedSession.mockResolvedValue(false)
+  mocks.establishedSessionUserId.mockResolvedValue(null)
+  mocks.isAccountUsable.mockResolvedValue(true)
   mocks.fetchApiBridge.mockResolvedValue(sessionResponse())
 })
 
@@ -71,6 +77,7 @@ describe('social sign-in callback', () => {
       expect(mocks.fetchApiBridge).toHaveBeenCalledTimes(1)
       expect(mocks.fetchApiBridge.mock.calls[0][0]).toBe('/auth/callback')
       expect(exchangeHeaders().get('X-876-API-Key')).toBe('876_app_secret_test')
+      expect(exchangeHeaders().get('X-876-Realm')).toBe('enterprise')
     })
 
     it('posts the authorization code as JSON', async () => {
@@ -131,12 +138,22 @@ describe('social sign-in callback', () => {
     })
 
     it('continues into the app when a session is already established', async () => {
-      mocks.hasEstablishedSession.mockResolvedValue(true)
+      mocks.establishedSessionUserId.mockResolvedValue('user_1')
 
       const response = await GET(createRequest(''))
 
       expect(response.headers.get('location')).toBe(`${ORIGIN}/`)
       expect(mocks.fetchApiBridge).not.toHaveBeenCalled()
+    })
+
+    it('exchanges a fresh code when the signed session belongs to a deleted account', async () => {
+      mocks.establishedSessionUserId.mockResolvedValue('user_deleted')
+      mocks.isAccountUsable.mockResolvedValue(false)
+
+      await GET(createRequest('?code=01JQ2ZK9'))
+
+      expect(mocks.isAccountUsable).toHaveBeenCalledWith('user_deleted')
+      expect(mocks.fetchApiBridge).toHaveBeenCalledTimes(1)
     })
   })
 })

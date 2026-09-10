@@ -396,10 +396,13 @@ describe('ListDetailShell bleed', () => {
     }
   }
 
-  it('marks itself bleeding only while a record is open', () => {
+  it('marks itself bleeding with and without a record open', () => {
+    // The closed table is the same sheet as the open panes, so the bleed
+    // holds in both states — that is what keeps a rounded card from swapping
+    // in for the square panes on close.
     expect(renderBleeding(true).shell.dataset.bleed).toBe('true')
     cleanup()
-    expect(renderBleeding(false).shell.dataset.bleed).toBeUndefined()
+    expect(renderBleeding(false).shell.dataset.bleed).toBe('true')
   })
 
   it('leaves the panes touching, separated by the list column hairline', () => {
@@ -433,6 +436,39 @@ describe('ListDetailShell bleed', () => {
     expect(toolbarContainer.className).not.toContain(
       '@3xl/list-detail:bg-876-canvas'
     )
+  })
+
+  it('paints the closed toolbar the same surface and inset, without pinning it', () => {
+    renderBleeding(false)
+
+    const toolbarContainer = screen.getByTestId('toolbar').parentElement!
+    expect(toolbarContainer.className).toContain(
+      '@3xl/list-detail:bg-876-surface'
+    )
+    expect(toolbarContainer.className).toContain('@3xl/list-detail:px-4')
+    expect(toolbarContainer.className).toContain('@3xl/list-detail:pt-4')
+    // Closed, the sheet scrolls with the page, so the toolbar scrolls away
+    // with it instead of sticking.
+    expect(toolbarContainer.className).not.toContain('@3xl/list-detail:sticky')
+  })
+
+  it('carries the closed sheet edge to edge without drawing a split separator', () => {
+    const { grid, listColumn } = renderBleeding(false)
+
+    // The stacked rhythm survives below the breakpoint; at two columns the
+    // sheet touches the frame on three sides and keeps only its bottom
+    // breathing room, where the white ends and the canvas resumes.
+    expect(grid.className).toContain('px-[var(--876-shell-gutter)]')
+    expect(grid.className).toContain('pt-5')
+    expect(grid.className).toContain('pb-8')
+    expect(grid.className).toContain('@3xl/list-detail:px-0')
+    expect(grid.className).toContain('@3xl/list-detail:pt-0')
+    expect(grid.className).not.toContain('@3xl/list-detail:p-0')
+
+    expect(listColumn.className).toContain('@3xl/list-detail:bg-876-surface')
+    // The right hairline separates two panes; on the full-width sheet it
+    // would draw a line down the viewport edge.
+    expect(listColumn.className).not.toContain('@3xl/list-detail:border-r')
   })
 
   it('keeps the gutter and the canvas toolbar when the host keeps its padding', () => {

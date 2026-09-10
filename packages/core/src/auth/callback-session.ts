@@ -44,9 +44,16 @@ export function sessionCookieName(): string {
 export async function hasEstablishedSession(request: {
   cookies: { get: (name: string) => { value: string } | undefined }
 }): Promise<boolean> {
+  return (await establishedSessionUserId(request)) !== null
+}
+
+/** The local platform user carried by a valid, signed callback session. */
+export async function establishedSessionUserId(request: {
+  cookies: { get: (name: string) => { value: string } | undefined }
+}): Promise<string | null> {
   const cookie = request.cookies.get(sessionCookieName())
-  if (!cookie?.value) return false
+  if (!cookie?.value) return null
 
   const session = await verifySession876(cookie.value)
-  return Boolean(session?.userId)
+  return session?.userId || null
 }

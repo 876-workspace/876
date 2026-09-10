@@ -1,13 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { AUTH_CALLBACK_ERROR_PARAM } from '@876/core/auth/callback-error'
-import { hasEstablishedSession } from '@876/core/auth/callback-session'
+import { establishedSessionUserId } from '@876/core/auth/callback-session'
 import {
   AUTH_RETURN_TO_COOKIE,
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 import { appendSetCookies, fetchApiBridge } from '@876/core/fetch/bridge'
 
+import { isAccountUsable } from '@/lib/auth/account-validity'
 import { requestUrl } from '@/lib/auth/request-origin'
 
 export const runtime = 'nodejs'
@@ -51,10 +52,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const code = request.nextUrl.searchParams.get('code')
 
-  // A repeat request carries the cookie the first one set. Both the missing
-  // code and the spent code land here, and in both cases the user is already
-  // signed in — sending them to /login would sign them back out.
-  if (await hasEstablishedSession(request))
+  // A repeat request carries the cookie the first one set. Confirm the local
+  // account still exists before skipping the exchange: an old signed cookie
+  // must not prevent a fresh provider login from replacing a deleted session.
+  const establishedUserId = await establishedSessionUserId(request)
+  if (establishedUserId && (await isAccountUsable(establishedUserId)))
     return continueIntoApp(request, returnTo)
 
   if (!code) return redirectToLogin(request, 'auth/missing-code', returnTo)
@@ -65,6 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-876-Realm': 'enterprise',
         ...(API_KEY ? { 'X-876-API-Key': API_KEY } : {}),
       },
       body: JSON.stringify({

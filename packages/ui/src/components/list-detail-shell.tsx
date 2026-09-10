@@ -91,15 +91,17 @@ export type ListDetailShellProps = {
   listWidth?: ListDetailListWidth
   /**
    * The host has given up its page padding for this shell, so the shell owns
-   * its own insets.
+   * its own insets — in both states, not just with a record open.
    *
-   * Set it and, once there is room for two columns, the panes go edge to edge:
-   * the columns carry the white surface, the list column's right hairline is
-   * the only separator, and the pane objects inside drop their own card chrome
-   * (see the split-view block in `876.css`). A card inside a scrolling pane
-   * always ends in a clipped edge that reads as "the content stops here"; with
-   * no card there is no such edge, and each pane scrolls to the real bottom of
-   * the frame.
+   * Set it and the list reads as one white sheet at every width it owns: open,
+   * once there is room for two columns, the panes go edge to edge (the columns
+   * carry the white surface, the list column's right hairline is the only
+   * separator, and the pane objects inside drop their own card chrome); closed,
+   * the full-width table does the same, so opening a record never swaps a
+   * rounded card for square panes (see the split-view block in `876.css`). A
+   * card inside a scrolling pane always ends in a clipped edge that reads as
+   * "the content stops here"; with no card there is no such edge, and each
+   * pane scrolls to the real bottom of the frame.
    *
    * Leave it unset when the host keeps its padding — the shell then renders
    * the older gutter-and-cards layout, which is still correct there.
@@ -139,9 +141,11 @@ export function ListDetailShell({
   bleed = false,
   className,
 }: ListDetailShellProps) {
-  // Bleeding only means anything with two columns beside each other; stacked,
-  // the panes are cards on the canvas exactly as before.
-  const bleeding = open && bleed
+  // Bleeding is a property of the host, not of the open state: the closed
+  // table is the same sheet as the open panes, so it carries the same white
+  // surface and drops the same card chrome. Stacked below the two-column
+  // breakpoint, the panes are cards on the canvas exactly as before.
+  const bleeding = bleed
 
   return (
     // The container query is measured on this wrapper, and the grid that reads
@@ -174,9 +178,13 @@ export function ListDetailShell({
           '@3xl/list-detail:duration-300 @3xl/list-detail:ease-out',
           // A bleeding host has zeroed the page padding, which is right for
           // the split but wrong for the stack below it — the shell puts the
-          // page's own rhythm back until the columns separate.
+          // page's own rhythm back until the columns separate. Closed, the
+          // sheet keeps its bottom breathing room at every width: the white
+          // ends where the rows end, and the canvas below is the margin.
           bleeding &&
-            'px-[var(--876-shell-gutter)] pt-5 pb-8 @3xl/list-detail:p-0',
+            (open
+              ? 'px-[var(--876-shell-gutter)] pt-5 pb-8 @3xl/list-detail:p-0'
+              : 'px-[var(--876-shell-gutter)] pt-5 pb-8 @3xl/list-detail:px-0 @3xl/list-detail:pt-0'),
           open
             ? cn(
                 LIST_WIDTHS[listWidth],
@@ -191,10 +199,12 @@ export function ListDetailShell({
         )}
       >
         {/*
-         * Each pane owns its own scroll and keeps its own position, which is
-         * the whole point of the pattern: moving through a record must not
-         * scroll the rows away, and moving through the rows must not disturb
-         * the record. The toolbar stays pinned at the top of the rows.
+         * Open, each pane owns its own scroll and keeps its own position,
+         * which is the whole point of the pattern: moving through a record
+         * must not scroll the rows away, and moving through the rows must not
+         * disturb the record. The toolbar stays pinned at the top of the rows.
+         * Closed, the sheet scrolls with the page and the toolbar scrolls
+         * away with it.
          */}
         <div
           data-slot="list-detail-list-column"
@@ -202,8 +212,13 @@ export function ListDetailShell({
             '@3xl/list-detail:col-start-1 @3xl/list-detail:row-start-1 @3xl/list-detail:flex @3xl/list-detail:min-h-0 @3xl/list-detail:min-w-0 @3xl/list-detail:flex-col',
             open &&
               '876-scroll-none @3xl/list-detail:h-full @3xl/list-detail:overflow-y-auto',
-            bleeding &&
-              '@3xl/list-detail:bg-876-surface @3xl/list-detail:border-876-surface-border @3xl/list-detail:border-r'
+            bleeding && '@3xl/list-detail:bg-876-surface',
+            // The right hairline is the split's only separator — it belongs
+            // to the two-column state, never to the full-width sheet, where
+            // it would draw a line down the viewport edge.
+            open &&
+              bleeding &&
+              '@3xl/list-detail:border-876-surface-border @3xl/list-detail:border-r'
           )}
         >
           {/*
@@ -218,14 +233,14 @@ export function ListDetailShell({
               '@3xl/list-detail:shrink-0',
               open &&
                 '@3xl/list-detail:sticky @3xl/list-detail:top-0 @3xl/list-detail:z-10 @3xl/list-detail:pb-2',
-              open &&
-                (bleeding
-                  ? // The chrome sits *on* the pane now, so it is painted the
-                    // pane's white and inset to the same 1rem as the rows
-                    // below it — the toolbar already carries its own bottom
-                    // margin, so the block adds none.
-                    '@3xl/list-detail:bg-876-surface @3xl/list-detail:px-4 @3xl/list-detail:pt-4 @3xl/list-detail:pb-0'
-                  : '@3xl/list-detail:bg-876-canvas')
+              bleeding
+                ? // The chrome sits *on* the sheet now, so it is painted the
+                  // sheet's white and inset to the same 1rem as the rows
+                  // below it — in both states, so opening a record never
+                  // shifts the toolbar. The toolbar already carries its own
+                  // bottom margin, so the block adds none.
+                  '@3xl/list-detail:bg-876-surface @3xl/list-detail:px-4 @3xl/list-detail:pt-4 @3xl/list-detail:pb-0'
+                : open && '@3xl/list-detail:bg-876-canvas'
             )}
           >
             {toolbar}

@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { hasEstablishedSession, sessionCookieName } from './callback-session'
+import {
+  establishedSessionUserId,
+  hasEstablishedSession,
+  sessionCookieName,
+} from './callback-session'
 
 const SECRET = 'test-session-cookie-secret-at-least-32-chars'
 
@@ -131,5 +135,19 @@ describe('hasEstablishedSession', () => {
     await expect(
       hasEstablishedSession(requestWith({ '876-session': cookie }))
     ).resolves.toBe(false)
+  })
+})
+
+describe('establishedSessionUserId', () => {
+  it('returns the local user ID from a validly sealed cookie', async () => {
+    const cookie = await seal({ userId: 'user_1', exp: futureExpiry() })
+
+    await expect(
+      establishedSessionUserId(requestWith({ '876-session': cookie }))
+    ).resolves.toBe('user_1')
+  })
+
+  it('returns null when no valid session is established', async () => {
+    await expect(establishedSessionUserId(requestWith({}))).resolves.toBeNull()
   })
 })

@@ -79,12 +79,16 @@ function ListDetailSection({
   // section's page measure either.
   if (takeover) return children
 
-  // Open, the page gives up its padding and the shell takes it over: stacked
-  // it puts the same rhythm back, and split it runs the panes edge to edge so
-  // neither ends in a card border a reader could mistake for the end of the
-  // content. Closed, this is an ordinary page with a table on it.
+  // The page gives up its padding in both states and the shell takes it over:
+  // stacked it puts the same rhythm back, and from the two-column breakpoint
+  // up the sheet runs edge to edge — the closed table and the open panes are
+  // one white surface, so opening a record never swaps a rounded card for
+  // square panes. A card border a reader could mistake for the end of the
+  // content appears in neither state.
   return (
-    <Page className={cn(open ? 'h-full min-h-0 p-0' : 'min-h-full', className)}>
+    <Page
+      className={cn(open ? 'h-full min-h-0' : 'min-h-full', 'p-0', className)}
+    >
       <ListDetailShell
         open={open}
         toolbar={toolbar}

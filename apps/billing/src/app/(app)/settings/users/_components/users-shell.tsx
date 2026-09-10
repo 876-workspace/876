@@ -18,7 +18,7 @@ export function UsersShell({
   const { open } = useListDetailRoute()
   const status = useSearchParams().get('status') ?? 'all'
   return (
-    <Page className={open ? 'h-full min-h-0 p-0' : 'min-h-full'}>
+    <Page className={open ? 'h-full min-h-0 p-0' : 'min-h-full p-0'}>
       <ListDetailShell
         open={open}
         toolbar={
