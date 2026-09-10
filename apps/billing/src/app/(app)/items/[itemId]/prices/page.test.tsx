@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
+import { PRICES_SKELETON_COLUMNS } from '@/features/catalog/components/prices-skeleton-columns'
+
 const source = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
 
 describe('Billing item prices loading', () => {
@@ -10,9 +12,13 @@ describe('Billing item prices loading', () => {
   })
 
   it('uses a real table skeleton while prices resolve', () => {
-    expect(source).toContain('<DataTableSkeleton columns={priceSkeletonColumns} rows={5} />')
-    expect(source).toContain("{ label: 'Catalog target' }")
-    expect(source).toContain("{ label: 'Status', cell: 'badge' }")
+    expect(source).toContain(
+      '<DataTableSkeleton columns={PRICES_SKELETON_COLUMNS} rows={5} />'
+    )
+    expect(source).toContain(
+      "import { PRICES_SKELETON_COLUMNS } from '@/features/catalog/components/prices-skeleton-columns'"
+    )
+    expect(PRICES_SKELETON_COLUMNS).toHaveLength(6)
   })
 
   it('starts item validation and the prices list together', () => {

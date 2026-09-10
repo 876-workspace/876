@@ -1,23 +1,12 @@
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import {
-  DataTableSkeleton,
-  type DataTableSkeletonColumn,
-} from '@876/ui/data-table-skeleton'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
+import { PRICES_SKELETON_COLUMNS } from '@/features/catalog/components/prices-skeleton-columns'
 import { PricesTable } from '@/features/catalog/components/prices-table'
 import { resolveItem } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
-
-const priceSkeletonColumns: DataTableSkeletonColumn[] = [
-  { label: 'Catalog target' },
-  { label: 'Amount' },
-  { label: 'Cadence' },
-  { label: 'Model' },
-  { label: 'Status', cell: 'badge' },
-  { label: 'Actions', srOnly: true, width: '3rem' },
-]
 
 export default function ItemPricesPage({
   params,
@@ -26,7 +15,9 @@ export default function ItemPricesPage({
 }) {
   return (
     <Suspense
-      fallback={<DataTableSkeleton columns={priceSkeletonColumns} rows={5} />}
+      fallback={
+        <DataTableSkeleton columns={PRICES_SKELETON_COLUMNS} rows={5} />
+      }
     >
       <ItemPricesData params={params} />
     </Suspense>
