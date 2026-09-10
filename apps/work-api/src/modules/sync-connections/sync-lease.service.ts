@@ -49,13 +49,28 @@ export async function runWithLease<T>(
   const lease = await acquire(connectionId)
   if (!lease) return { acquired: false }
 
+  let heartbeatFailure: unknown = null
+  let heartbeatInFlight: Promise<void> | null = null
   const timer = setInterval(() => {
-    void heartbeat(lease)
+    if (heartbeatInFlight || heartbeatFailure) return
+    heartbeatInFlight = heartbeat(lease)
+      .then((renewed) => {
+        if (!renewed) heartbeatFailure = new Error('Work sync lease was lost.')
+      })
+      .catch((error: unknown) => {
+        heartbeatFailure = error
+      })
+      .finally(() => {
+        heartbeatInFlight = null
+      })
   }, HEARTBEAT_MS)
   timer.unref()
 
   try {
-    return { acquired: true, result: await work() }
+    const result = await work()
+    if (heartbeatInFlight) await heartbeatInFlight
+    if (heartbeatFailure) throw heartbeatFailure
+    return { acquired: true, result }
   } finally {
     clearInterval(timer)
     await release(lease)

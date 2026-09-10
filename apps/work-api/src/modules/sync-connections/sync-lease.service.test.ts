@@ -60,7 +60,7 @@ describe('sync lease', () => {
     acquireSyncLease.mockResolvedValue(true)
     heartbeatSyncLease.mockResolvedValue(true)
     releaseSyncLease.mockResolvedValue(true)
-    let finish: (() => void) | null = null
+    let finish!: () => void
     const work = new Promise<void>((resolve) => {
       finish = resolve
     })
@@ -76,14 +76,50 @@ describe('sync lease', () => {
       expiresAt: expect.any(Date),
     })
 
-    finish?.()
+    finish()
     await running
+  })
+
+  it('fails the run observably when the database lease is lost', async () => {
+    vi.useFakeTimers()
+    acquireSyncLease.mockResolvedValue(true)
+    heartbeatSyncLease.mockResolvedValue(false)
+    releaseSyncLease.mockResolvedValue(false)
+    let finish!: () => void
+    const work = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+
+    const running = runWithLease('connection_1', () => work)
+    await vi.advanceTimersByTimeAsync(30_000)
+    finish()
+
+    await expect(running).rejects.toThrow('Work sync lease was lost.')
+    expect(releaseSyncLease).toHaveBeenCalledOnce()
+  })
+
+  it('surfaces heartbeat storage failures without an unhandled rejection', async () => {
+    vi.useFakeTimers()
+    acquireSyncLease.mockResolvedValue(true)
+    heartbeatSyncLease.mockRejectedValue(new Error('database unavailable'))
+    releaseSyncLease.mockResolvedValue(true)
+    let finish!: () => void
+    const work = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+
+    const running = runWithLease('connection_1', () => work)
+    await vi.advanceTimersByTimeAsync(30_000)
+    finish()
+
+    await expect(running).rejects.toThrow('database unavailable')
+    expect(releaseSyncLease).toHaveBeenCalledOnce()
   })
 
   it('serializes two instance attempts for the same connection through the repository CAS', async () => {
     acquireSyncLease.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
     releaseSyncLease.mockResolvedValue(true)
-    let finishFirst: (() => void) | null = null
+    let finishFirst!: () => void
     const firstWork = vi.fn(
       () =>
         new Promise<string>((resolve) => {
@@ -99,7 +135,7 @@ describe('sync lease', () => {
     expect(secondWork).not.toHaveBeenCalled()
     expect(firstWork).toHaveBeenCalledOnce()
 
-    finishFirst?.()
+    finishFirst()
     await expect(first).resolves.toEqual({
       acquired: true,
       result: 'first-done',
