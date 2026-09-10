@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { FINANCE_MODULES } from '../modules'
 import {
   appPermissionCatalogs,
   billingPermissionCatalog,
@@ -147,6 +148,26 @@ describe('billingPermissionCatalog', () => {
     ])
   })
 
+  it('reuses canonical labels for matching finance modules', () => {
+    const labels = new Map(
+      billingPermissionCatalog.modules.map((module) => [module.key, module.label])
+    )
+
+    expect({
+      customers: labels.get('customers'),
+      subscriptions: labels.get('subscriptions'),
+      purchases: labels.get('purchases'),
+      banking: labels.get('banking'),
+      payments: labels.get('payments'),
+    }).toEqual({
+      customers: FINANCE_MODULES.customers.label,
+      subscriptions: FINANCE_MODULES.subscriptions.label,
+      purchases: FINANCE_MODULES.purchases.label,
+      banking: FINANCE_MODULES.banking.label,
+      payments: FINANCE_MODULES.payments.label,
+    })
+  })
+
   it('marks exactly the delete actions dangerous', () => {
     const dangerous = billingPermissionCatalog.permissions
       .filter((permission) => permission.isDangerous)
@@ -193,6 +214,26 @@ describe('invoicePermissionCatalog', () => {
       'reports',
       'settings',
     ])
+  })
+
+  it('reuses canonical labels for every matching finance module', () => {
+    const labels = new Map(
+      invoicePermissionCatalog.modules.map((module) => [module.key, module.label])
+    )
+
+    expect({
+      customers: labels.get('customers'),
+      items: labels.get('items'),
+      invoices: labels.get('invoices'),
+      quotes: labels.get('quotes'),
+      payments: labels.get('payments'),
+    }).toEqual({
+      customers: FINANCE_MODULES.customers.label,
+      items: FINANCE_MODULES.items.label,
+      invoices: FINANCE_MODULES.invoices.label,
+      quotes: FINANCE_MODULES.quotes.label,
+      payments: FINANCE_MODULES.payments.label,
+    })
   })
 
   it('gives invoices and quotes an export action', () => {
