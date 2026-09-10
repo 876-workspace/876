@@ -12,11 +12,9 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
   createApplicationModule,
-  createPlanModule,
   findAppBySlug,
   findApplicationModule,
   findOwnerOrganizationId,
-  findPlanModule,
   findPriceForProduct,
   findProductBySlug,
   getSubscription,
@@ -172,12 +170,17 @@ export type PlanSeedSummary = {
 
 export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
   const now = BigInt(nowUnixSeconds())
-  const appsBySlug = new Map((await listApps()).map((app) => [app.slug, app]))
+  const [apps, features, products] = await Promise.all([
+    listApps(),
+    listFeatures(),
+    listProducts(),
+  ])
+  const appsBySlug = new Map(apps.map((app) => [app.slug, app]))
   const featuresBySlug = new Map(
-    (await listFeatures()).map((feature) => [feature.slug, feature])
+    features.map((feature) => [feature.slug, feature])
   )
   const productsBySlug = new Map(
-    (await listProducts()).map((product) => [product.slug, product])
+    products.map((product) => [product.slug, product])
   )
 
   let modulesCreated = 0
@@ -187,14 +190,23 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
     const app = appsBySlug.get(definition.appSlug)
     if (!app) continue
 
-    let applicationModule = await findApplicationModule(app.id, definition.key)
+    const applicationModule = await findApplicationModule(
+      app.id,
+      definition.key
+    )
     const feature = definition.featureSlug
       ? (featuresBySlug.get(definition.featureSlug) ?? null)
       : null
-    const created = applicationModule === null
-
     if (!applicationModule) {
-      applicationModule = await createApplicationModule({
+      const initialGrants = definition.includedPlanSlugs.flatMap((slug) => {
+        const product = productsBySlug.get(slug)
+        return product
+          ? [{ id: generateId('planModule'), productId: product.id }]
+          : []
+      })
+      // A failed grant must roll back its new module, so a retry can still
+      // distinguish bootstrap from an operator's later grant removal.
+      await createApplicationModule({
         id: generateId('applicationModule'),
         appId: app.id,
         key: definition.key,
@@ -205,8 +217,10 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
         position: definition.position,
         createdAt: now,
         updatedAt: now,
+        initialGrants,
       })
       modulesCreated += 1
+      planModulesCreated += initialGrants.length
     } else if (
       definition.syncIdentity &&
       (applicationModule.name !== definition.name ||
@@ -217,24 +231,6 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
         description: definition.description,
         updatedAt: now,
       })
-    }
-
-    // Only seed plan grants on creation — preserves operator-removed grants.
-    const planSlugs = created ? definition.includedPlanSlugs : []
-    for (const planSlug of planSlugs) {
-      const product = productsBySlug.get(planSlug)
-      if (!product) continue
-      const existing = await findPlanModule(product.id, applicationModule.id)
-      if (!existing) {
-        await createPlanModule({
-          id: generateId('planModule'),
-          productId: product.id,
-          moduleId: applicationModule.id,
-          createdAt: now,
-          updatedAt: now,
-        })
-        planModulesCreated += 1
-      }
     }
   }
 

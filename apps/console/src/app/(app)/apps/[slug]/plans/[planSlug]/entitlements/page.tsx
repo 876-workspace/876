@@ -1,4 +1,4 @@
-import { workspace } from '@/lib/services/workspace'
+import { listAppModules } from '@/lib/console/modules'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -70,29 +70,23 @@ async function PlanEntitlementsData({
 
   const [product, modulesResult] = await Promise.all([
     resolveProduct(app.id, planSlug),
-    workspace.modules.list(app.id, { includeArchived: true }),
+    listAppModules(app.id, true),
   ])
   if (!product) notFound()
 
   // The filter narrows the view only. Selection is seeded from the full
   // module_ids list, so a module hidden by the filter keeps its checked
   // state — saving never silently drops it.
-  const modules = (modulesResult.data?.data ?? [])
-    .filter((module) => !status || module.status === status)
-    .map((module) => ({
-      id: module.id,
-      key: module.key,
-      name: module.name,
-      description: module.description,
-      featureSlug: module.feature_slug,
-      status: module.status,
-    }))
+  const modules = (modulesResult.data?.data ?? []).filter(
+    (module) => !status || module.status === status
+  )
 
   return (
     <EntitlementsTable
       productId={product.id}
       initialModuleIds={product.module_ids}
       modules={modules}
+      loadError={modulesResult.error}
       status={status ?? 'all'}
       statusOptions={MODULE_STATUS_OPTIONS}
     />

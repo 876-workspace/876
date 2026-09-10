@@ -32,9 +32,9 @@ const OPERATOR_UNIVERSE_KEYS = new Set([
 ])
 
 const EXPECTED_ROLE_COUNTS = {
-  staff: 70,
-  admin: 234,
-  'super-admin': 246,
+  staff: 75,
+  admin: 255,
+  'super-admin': 267,
 } as const
 
 describe('Console permission catalog', () => {

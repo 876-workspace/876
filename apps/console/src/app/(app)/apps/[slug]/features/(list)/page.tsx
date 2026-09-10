@@ -1,4 +1,5 @@
 import { workspace } from '@/lib/services/workspace'
+import { listAppModules } from '@/lib/console/modules'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -71,7 +72,7 @@ async function FeaturesTableData({
       endingBefore: query ? undefined : before,
     }),
     app.app_kind === 'product'
-      ? workspace.modules.list(app.id, { includeArchived: false })
+      ? listAppModules(app.id, false)
       : Promise.resolve({ data: null, error: null }),
   ])
 

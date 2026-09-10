@@ -61,6 +61,7 @@ export async function createApplicationModule(params: {
   position: number
   createdAt: bigint
   updatedAt: bigint
+  initialGrants: { id: string; productId: string }[]
 }): Promise<ApplicationModuleRow> {
   const row = await prisma.applicationModule.create({
     data: {
@@ -74,6 +75,13 @@ export async function createApplicationModule(params: {
       position: params.position,
       createdAt: params.createdAt,
       updatedAt: params.updatedAt,
+      planModules: {
+        create: params.initialGrants.map((grant) => ({
+          ...grant,
+          createdAt: params.createdAt,
+          updatedAt: params.updatedAt,
+        })),
+      },
     },
     select: {
       id: true,

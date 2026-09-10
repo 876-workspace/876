@@ -1,7 +1,4 @@
-import type {
-  AppModuleDefinition,
-  AppModuleRegistry,
-} from './types/modules'
+import type { AppModuleDefinition, AppModuleRegistry } from './types/modules'
 
 export type {
   AppModuleDefinition,
@@ -17,18 +14,18 @@ export function defineAppModuleRegistry<
 >(input: { app: TApp; modules: TModules }): AppModuleRegistry<TApp, TModules> {
   const keys = new Set<string>()
 
-  for (const module of input.modules) {
-    if (!KEY_PATTERN.test(module.key))
-      throw new Error(`Invalid module key: ${module.key}`)
-    if (keys.has(module.key))
-      throw new Error(`Duplicate module key: ${module.key}`)
-    if (!module.label.trim())
-      throw new Error(`Module ${module.key} must have a label`)
-    if (!module.description.trim())
-      throw new Error(`Module ${module.key} must have a description`)
+  for (const definition of input.modules) {
+    if (!KEY_PATTERN.test(definition.key))
+      throw new Error(`Invalid module key: ${definition.key}`)
+    if (keys.has(definition.key))
+      throw new Error(`Duplicate module key: ${definition.key}`)
+    if (!definition.label.trim())
+      throw new Error(`Module ${definition.key} must have a label`)
+    if (!definition.description.trim())
+      throw new Error(`Module ${definition.key} must have a description`)
 
-    keys.add(module.key)
-    Object.freeze(module)
+    keys.add(definition.key)
+    Object.freeze(definition)
   }
 
   Object.freeze(input.modules)
@@ -175,7 +172,7 @@ export type RegisteredModuleApp = keyof typeof APP_MODULE_REGISTRIES
 export function getAppModuleRegistry(
   app: string
 ): AppModuleRegistry | undefined {
-  if (!(app in APP_MODULE_REGISTRIES)) return undefined
+  if (!Object.hasOwn(APP_MODULE_REGISTRIES, app)) return undefined
   return APP_MODULE_REGISTRIES[app as RegisteredModuleApp]
 }
 

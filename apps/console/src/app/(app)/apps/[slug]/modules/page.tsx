@@ -1,14 +1,14 @@
 import { getAppModuleRegistry } from '@876/core/modules'
-import type { AdminApplicationModule } from '@876/platform/compat'
 import { notFound } from 'next/navigation'
 
-import { workspace } from '@/lib/services/workspace'
+import { listAppModules, listModuleFeatures } from '@/lib/console/modules'
 import { resolveApp } from '../_data'
-import {
-  ModulesManager,
-  type ModuleFeatureOption,
-  type ModulesContext,
-} from './_components/modules-manager'
+import { ModulesManager } from './_components/modules-manager'
+import type {
+  ModulesContext,
+  ModulesResult,
+  ModuleFeaturesResult,
+} from '@/types/modules'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -39,29 +39,17 @@ async function loadModulesContext(slug: string): Promise<ModulesContext> {
 
 async function loadModules(
   context: Promise<ModulesContext>
-): Promise<AdminApplicationModule[]> {
+): Promise<ModulesResult> {
   const { appId } = await context
-  const result = await workspace.modules.list(appId, { includeArchived: true })
-  if (result.error) throw new Error(result.error.message)
-  return result.data?.data ?? []
+  const result = await listAppModules(appId, true)
+  if (result.error) return { data: null, error: result.error }
+  return { data: result.data.data, error: null }
 }
 
 async function loadModuleFeatures(
   context: Promise<ModulesContext>
-): Promise<ModuleFeatureOption[]> {
+): Promise<ModuleFeaturesResult> {
   const { appId, canManage } = await context
-  if (!canManage) return []
-
-  const result = await workspace.features.list({
-    appId,
-    rootOnly: true,
-    limit: 100,
-  })
-  if (result.error) throw new Error(result.error.message)
-
-  return (result.data?.data ?? []).map((feature) => ({
-    id: feature.id,
-    name: feature.name,
-    slug: feature.slug,
-  }))
+  if (!canManage) return { data: [], error: null }
+  return listModuleFeatures(appId)
 }

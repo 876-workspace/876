@@ -7,11 +7,9 @@ import {
 
 const repository = vi.hoisted(() => ({
   createApplicationModule: vi.fn(),
-  createPlanModule: vi.fn(),
   findAppBySlug: vi.fn(),
   findApplicationModule: vi.fn(),
   findOwnerOrganizationId: vi.fn(),
-  findPlanModule: vi.fn(),
   findPriceForProduct: vi.fn(),
   findProductBySlug: vi.fn(),
   getSubscription: vi.fn(),
@@ -66,8 +64,6 @@ describe('canonical plan module seed definitions', () => {
     repository.listFeatures.mockResolvedValue([])
     repository.listProducts.mockResolvedValue([])
     repository.findApplicationModule.mockResolvedValue(null)
-    repository.findPlanModule.mockResolvedValue(null)
-    repository.createPlanModule.mockResolvedValue(undefined)
     repository.updateApplicationModuleIdentity.mockResolvedValue(undefined)
     repository.createApplicationModule.mockImplementation(
       (params: Parameters<typeof createdModule>[0]) =>
@@ -186,11 +182,18 @@ describe('canonical plan module seed definitions', () => {
         ([params]) => (params as { key: string }).key
       )
     ).toEqual(INVOICE_COMMERCIAL_MODULE_KEYS)
-    expect(repository.createPlanModule).toHaveBeenCalledTimes(
-      INVOICE_FREE_PLAN_MODULE_KEYS.length
-    )
-    expect(repository.findPlanModule).toHaveBeenCalledTimes(
-      INVOICE_FREE_PLAN_MODULE_KEYS.length
+    expect(
+      repository.createApplicationModule.mock.calls.map(([params]) => ({
+        key: params.key,
+        grants: params.initialGrants,
+      }))
+    ).toEqual(
+      INVOICE_COMMERCIAL_MODULE_KEYS.map((key) => ({
+        key,
+        grants: new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS).has(key)
+          ? [{ id: 'planModule_generated', productId: 'product_invoice_free' }]
+          : [],
+      }))
     )
   })
 
@@ -230,8 +233,7 @@ describe('canonical plan module seed definitions', () => {
       billingAssignments: 0,
       ownerProvisioned: false,
     })
-    expect(repository.findPlanModule).not.toHaveBeenCalled()
-    expect(repository.createPlanModule).not.toHaveBeenCalled()
+    expect(repository.createApplicationModule).not.toHaveBeenCalled()
   })
 
   it('repairs stale registry-owned labels and descriptions without changing grants', async () => {
@@ -259,7 +261,7 @@ describe('canonical plan module seed definitions', () => {
     expect(repository.updateApplicationModuleIdentity).toHaveBeenCalledTimes(
       INVOICE_COMMERCIAL_MODULE_KEYS.length
     )
-    expect(repository.createPlanModule).not.toHaveBeenCalled()
+    expect(repository.createApplicationModule).not.toHaveBeenCalled()
     expect(repository.updateApplicationModuleIdentity).toHaveBeenCalledWith(
       'mod_invoices',
       {

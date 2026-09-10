@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { toast } from 'sonner'
+import { AppError } from '@876/ui/app-error'
+import type { AppError as AppErrorValue } from '@876/core/types/errors'
 
 import {
   StatusFilterHeading,
@@ -20,6 +22,7 @@ type Props = {
   initialModuleIds: string[]
   status: string
   statusOptions: StatusFilterOption[]
+  loadError: AppErrorValue | null
 }
 
 export function EntitlementsTable({
@@ -28,18 +31,23 @@ export function EntitlementsTable({
   initialModuleIds,
   status,
   statusOptions,
+  loadError,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [selectedModuleIds, setSelectedModuleIds] = useState(initialModuleIds)
+  const [saveError, setSaveError] = useState<AppErrorValue | null>(null)
+  const error = loadError ?? saveError
 
   function save() {
+    if (loadError) return
+    setSaveError(null)
     startTransition(async () => {
       const { data, error } = await client.products.replaceModules(productId, {
         module_ids: selectedModuleIds,
       })
-      if (error || !data) {
-        toast.error(error?.message ?? 'Failed to update plan modules.')
+      if (error) {
+        setSaveError(error)
         return
       }
 
@@ -74,19 +82,33 @@ export function EntitlementsTable({
             size="sm"
             variant={changed ? 'info' : 'outline'}
             onClick={save}
-            disabled={isPending || !changed}
+            disabled={isPending || !changed || Boolean(loadError)}
           >
             {isPending ? 'Saving…' : 'Save'}
           </Button>
         </div>
       </div>
 
-      <PlanModulePicker
-        modules={modules}
-        selectedModuleIds={selectedModuleIds}
-        onSelectedModuleIdsChange={setSelectedModuleIds}
-        disabled={isPending}
-      />
+      {error ? (
+        <AppError
+          title={
+            loadError
+              ? 'Modules could not be loaded'
+              : 'Modules could not be saved'
+          }
+          error={error}
+          variant="inline"
+          showCode
+        />
+      ) : null}
+      {!loadError && (
+        <PlanModulePicker
+          modules={modules}
+          selectedModuleIds={selectedModuleIds}
+          onSelectedModuleIdsChange={setSelectedModuleIds}
+          disabled={isPending}
+        />
+      )}
     </div>
   )
 }

@@ -1,32 +1,15 @@
-import {
-  FINANCE_MODULES,
-  type AppModuleDefinition,
-} from '@876/core/modules'
-import {
-  defineModuleCatalog,
-  type PreferenceDefinition,
-} from '@876/settings'
-
-type ModuleSettings = {
-  optional: boolean
-  enabledByDefault: boolean
-  preferences: readonly PreferenceDefinition[]
-}
-
-function withSettings<
-  const TDefinition extends AppModuleDefinition,
-  const TSettings extends ModuleSettings,
->(definition: TDefinition, settings: TSettings): TDefinition & TSettings {
-  return { ...definition, ...settings }
-}
+import { FINANCE_MODULES } from '@876/core/modules'
+import { defineModuleCatalog } from '@876/settings'
 
 const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
-  withSettings(FINANCE_MODULES.invoices, {
+  {
+    ...FINANCE_MODULES.invoices,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.quotes, {
+  },
+  {
+    ...FINANCE_MODULES.quotes,
     optional: true,
     enabledByDefault: true,
     preferences: [
@@ -45,18 +28,21 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
         ],
       },
     ],
-  }),
-  withSettings(FINANCE_MODULES.payments, {
+  },
+  {
+    ...FINANCE_MODULES.payments,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.expenses, {
+  },
+  {
+    ...FINANCE_MODULES.expenses,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.items, {
+  },
+  {
+    ...FINANCE_MODULES.items,
     optional: true,
     enabledByDefault: true,
     preferences: [
@@ -68,65 +54,87 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
         hint: 'Allow goods to have multiple sellable versions such as size or color.',
       },
     ],
-  }),
-  withSettings(FINANCE_MODULES.salesReceipts, {
+  },
+  {
+    ...FINANCE_MODULES.salesReceipts,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.timeTracking, {
+  },
+  {
+    ...FINANCE_MODULES.timeTracking,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.customers, {
+  },
+  {
+    ...FINANCE_MODULES.customers,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.crm, {
+  },
+  {
+    key: 'crm',
+    label: 'CRM',
+    description:
+      'Enable the future organization-owned CRM workspace inside finance apps.',
     optional: true,
     enabledByDefault: false,
     preferences: [],
-  }),
+  },
 ])
 
 const BILLING_ONLY_MODULE_CATALOG = defineModuleCatalog([
-  withSettings(FINANCE_MODULES.subscriptions, {
+  {
+    ...FINANCE_MODULES.subscriptions,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.banking, {
+  },
+  {
+    ...FINANCE_MODULES.banking,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.creditNotes, {
+  },
+  {
+    key: 'credit-notes',
+    label: 'Credit notes',
+    description:
+      'Issue credits that reduce customer balances or invoice amounts.',
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.purchases, {
+  },
+  {
+    ...FINANCE_MODULES.purchases,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.payroll, {
+  },
+  {
+    ...FINANCE_MODULES.payroll,
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.priceLists, {
+  },
+  {
+    key: 'price-lists',
+    label: 'Price lists',
+    description:
+      'Maintain alternate item pricing for customer and sales contexts.',
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
-  withSettings(FINANCE_MODULES.discounts, {
+  },
+  {
+    key: 'discounts',
+    label: 'Discounts',
+    description: 'Configure discounts used across sales and recurring billing.',
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  }),
+  },
 ])
 
 export const INVOICE_MODULE_CATALOG = SHARED_FINANCE_MODULE_CATALOG

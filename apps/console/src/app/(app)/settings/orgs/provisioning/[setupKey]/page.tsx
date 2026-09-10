@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { AppError } from '@876/ui/app-error'
 
 import { workspace } from '@/lib/services/workspace'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
@@ -8,7 +9,11 @@ import {
   toFinanceLanguageOptions,
 } from '@/features/provisioning/finance-provisioning-utils'
 import { WorkspaceTabSkeleton } from '@/features/provisioning/components/provisioning-page-skeleton'
-import { getProvisioningCatalog, getProvisioningSetup } from './_data'
+import {
+  getProvisioningCatalog,
+  getProvisioningReferenceData,
+} from '@/lib/console/provisioning'
+import { getProvisioningSetup } from './_data'
 
 export const metadata = { title: 'Provisioning setup' }
 
@@ -33,20 +38,24 @@ async function ProvisioningSetupIndexData({ params }: Props) {
     catalogResult,
     manifestResult,
     setupResult,
-    currenciesResult,
-    languagesResult,
+    { currencies: currenciesResult, languages: languagesResult },
   ] = await Promise.all([
-    getProvisioningCatalog(setupKey),
+    getProvisioningCatalog('finance', setupKey),
     workspace.provisioning.retrieve('finance', setupKey),
     getProvisioningSetup(setupKey),
-    workspace.geo.listCurrencies(),
-    workspace.geo.listLanguages(),
+    getProvisioningReferenceData(),
   ])
-  if (catalogResult.error || !catalogResult.data) notFound()
-  if (manifestResult.error || !manifestResult.data) notFound()
-  if (setupResult.error || !setupResult.data) notFound()
-  if (currenciesResult.error || !currenciesResult.data) notFound()
-  if (languagesResult.error || !languagesResult.data) notFound()
+  if (setupResult.error?.code === 'provisioning/setup-not-found') notFound()
+  if (catalogResult.error)
+    return <AppError error={catalogResult.error} variant="banner" showCode />
+  if (manifestResult.error)
+    return <AppError error={manifestResult.error} variant="banner" showCode />
+  if (setupResult.error)
+    return <AppError error={setupResult.error} variant="banner" showCode />
+  if (currenciesResult.error)
+    return <AppError error={currenciesResult.error} variant="banner" showCode />
+  if (languagesResult.error)
+    return <AppError error={languagesResult.error} variant="banner" showCode />
 
   return (
     <FinanceProvisioningEditor

@@ -154,7 +154,10 @@ describe('billingPermissionCatalog', () => {
 
   it('reuses canonical labels for matching finance modules', () => {
     const labels = new Map(
-      billingPermissionCatalog.modules.map((module) => [module.key, module.label])
+      billingPermissionCatalog.modules.map((module) => [
+        module.key,
+        module.label,
+      ])
     )
 
     expect({
@@ -222,7 +225,10 @@ describe('invoicePermissionCatalog', () => {
 
   it('reuses canonical labels for every matching finance module', () => {
     const labels = new Map(
-      invoicePermissionCatalog.modules.map((module) => [module.key, module.label])
+      invoicePermissionCatalog.modules.map((module) => [
+        module.key,
+        module.label,
+      ])
     )
 
     expect({

@@ -6,7 +6,8 @@ export interface AppModuleDefinition {
 
 export interface AppModuleRegistry<
   TApp extends string = string,
-  TModules extends readonly AppModuleDefinition[] = readonly AppModuleDefinition[],
+  TModules extends readonly AppModuleDefinition[] =
+    readonly AppModuleDefinition[],
 > {
   readonly app: TApp
   readonly modules: TModules

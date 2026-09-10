@@ -26,7 +26,6 @@ describe('canonical application module registry', () => {
       'sales-receipts',
       'time-tracking',
       'customers',
-      'crm',
     ]
 
     // ACT
@@ -126,11 +125,11 @@ describe('canonical application module registry', () => {
 
     // ACT
     const registry = getAppModuleRegistry('876-invoice')
-    const module = findAppModule('876-invoice', 'invoices')
+    const definition = findAppModule('876-invoice', 'invoices')
 
     // ASSERT
     expect(registry).toBe(INVOICE_MODULE_REGISTRY)
-    expect(module).toBe(expectedModule)
+    expect(definition).toBe(expectedModule)
   })
 
   it('returns undefined for unknown apps and module keys', () => {
@@ -139,12 +138,20 @@ describe('canonical application module registry', () => {
 
     // ACT
     const registry = getAppModuleRegistry(app)
-    const module = findAppModule('876-invoice', 'unknown')
+    const definition = findAppModule('876-invoice', 'unknown')
 
     // ASSERT
     expect(registry).toBeUndefined()
-    expect(module).toBeUndefined()
+    expect(definition).toBeUndefined()
   })
+
+  it.each(['__proto__', 'constructor', 'toString'])(
+    'treats %s as an unknown app',
+    (app) => {
+      expect(getAppModuleRegistry(app)).toBeUndefined()
+      expect(findAppModule(app, 'invoices')).toBeUndefined()
+    }
+  )
 
   it('rejects duplicate module keys', () => {
     // ARRANGE

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import type { AdminApplicationModule } from '@876/platform/compat'
 import { Badge } from '@876/ui/badge'
+import { AppError } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
@@ -21,13 +22,12 @@ import { Pencil, Plus, Trash } from '@876/ui/icons'
 import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
-export type ModuleFeatureOption = { id: string; name: string; slug: string }
-export type ModulesContext = {
-  appId: string
-  canManage: boolean
-  registryManaged: boolean
-  registryModuleKeys: string[]
-}
+import type {
+  ModuleFeatureOption,
+  ModulesContext,
+  ModulesResult,
+  ModuleFeaturesResult,
+} from '@/types/modules'
 
 type Draft = {
   key: string
@@ -51,8 +51,8 @@ export function ModulesManager({
   features,
 }: {
   context: ModulesContext | Promise<ModulesContext>
-  modules: AdminApplicationModule[] | Promise<AdminApplicationModule[]>
-  features: ModuleFeatureOption[] | Promise<ModuleFeatureOption[]>
+  modules: ModulesResult | Promise<ModulesResult>
+  features: ModuleFeaturesResult | Promise<ModuleFeaturesResult>
 }) {
   const contextState = useAsyncValue(context)
   const modulesState = useAsyncValue(modules)
@@ -69,8 +69,14 @@ export function ModulesManager({
   const canManage = contextState.value?.canManage ?? false
   const registryManaged = contextState.value?.registryManaged ?? false
   const registryModuleKeys = contextState.value?.registryModuleKeys ?? []
-  const resolvedModules = localModules ?? modulesState.value ?? []
-  const resolvedFeatures = featuresState.value ?? []
+  const resolvedModules = localModules ?? modulesState.value?.data ?? []
+  const resolvedFeatures = featuresState.value?.data ?? []
+  const modulesError = modulesState.value?.error
+  const featuresError = featuresState.value?.error
+  const optionsUnavailable =
+    [contextState, modulesState, featuresState].some(
+      (state) => state.pending || state.error
+    ) || Boolean(modulesError || featuresError)
   const identityLocked =
     editingId !== 'new' && registryModuleKeys.includes(draft.key)
 
@@ -90,7 +96,7 @@ export function ModulesManager({
       !appId ||
       !editingId ||
       !draft.name.trim() ||
-      modulesState.pending ||
+      optionsUnavailable ||
       (editingId === 'new' && !draft.key.trim())
     )
       return
@@ -129,7 +135,7 @@ export function ModulesManager({
         return
       }
       setLocalModules((current) => {
-        const base = current ?? modulesState.value ?? []
+        const base = current ?? modulesState.value?.data ?? []
         const exists = base.some((item) => item.id === result.data!.id)
         return exists
           ? base.map((item) =>
@@ -175,6 +181,14 @@ export function ModulesManager({
 
       {contextState.error ? (
         <InlineError message={contextState.error.message} />
+      ) : null}
+      {modulesError ? (
+        <AppError
+          title="Modules could not be loaded"
+          error={modulesError}
+          variant="banner"
+          showCode
+        />
       ) : null}
 
       {modulesState.pending ? (
@@ -241,7 +255,7 @@ export function ModulesManager({
                               if (!result.error)
                                 setLocalModules((current) => {
                                   const base =
-                                    current ?? modulesState.value ?? []
+                                    current ?? modulesState.value?.data ?? []
                                   return base.map((item) =>
                                     item.id === module.id
                                       ? { ...item, status: 'archived' }
@@ -268,7 +282,10 @@ export function ModulesManager({
           draft={draft}
           features={resolvedFeatures}
           featuresPending={featuresState.pending}
-          featuresError={featuresState.error?.message ?? null}
+          featuresError={
+            featuresError?.message ??
+            (featuresState.error ? 'Rollout flags could not be loaded.' : null)
+          }
           identityLocked={identityLocked}
           isNew={editingId === 'new'}
           onChange={setDraft}
@@ -280,12 +297,7 @@ export function ModulesManager({
             Cancel
           </Button>
           <Button
-            disabled={
-              isPending ||
-              contextState.pending ||
-              modulesState.pending ||
-              !appId
-            }
+            disabled={isPending || optionsUnavailable || !appId}
             onClick={save}
           >
             Save module

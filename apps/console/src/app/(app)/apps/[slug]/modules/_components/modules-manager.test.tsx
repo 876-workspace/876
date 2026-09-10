@@ -53,8 +53,8 @@ function renderManager(
         registryManaged,
         registryModuleKeys: registryManaged ? ['invoices'] : [],
       }}
-      modules={[module]}
-      features={[]}
+      modules={{ data: [module], error: null }}
+      features={{ data: [], error: null }}
     />
   )
 }
@@ -76,7 +76,9 @@ describe('ModulesManager registry ownership', () => {
 
     // ASSERT
     expect(screen.getByText('Registry managed')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Add' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Add' })
+    ).not.toBeInTheDocument()
   })
 
   it('keeps canonical key, name and description read-only while editing', async () => {
@@ -139,5 +141,31 @@ describe('ModulesManager registry ownership', () => {
     // ASSERT
     expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()
     expect(screen.queryByText('Registry managed')).not.toBeInTheDocument()
+  })
+
+  it('blocks saving when rollout options fail so an existing association cannot be cleared', async () => {
+    const user = userEvent.setup()
+    render(
+      <ModulesManager
+        context={{
+          appId: LEGACY_MODULE.app_id,
+          canManage: true,
+          registryManaged: true,
+          registryModuleKeys: ['subscriptions'],
+        }}
+        modules={{ data: [LEGACY_MODULE], error: null }}
+        features={{
+          data: null,
+          error: {
+            code: 'api/unavailable',
+            message: 'Rollout flags unavailable.',
+          },
+        }}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Edit Sales' }))
+    expect(screen.getByText('Rollout flags unavailable.')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Save module' })).toBeDisabled()
+    expect(moduleClient.update).not.toHaveBeenCalled()
   })
 })

@@ -2,6 +2,7 @@ import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { Skeleton } from '@876/ui/skeleton'
+import { AppError } from '@876/ui/app-error'
 
 import { getProvisioningSetup } from './_data'
 import { SetupCardFrame } from './_components/setup-card-frame'
@@ -42,7 +43,9 @@ export default async function ProvisioningSetupLayout({
 
 async function SetupTitle({ setupKey }: { setupKey: string }) {
   const result = await getProvisioningSetup(setupKey)
-  if (result.error || !result.data) notFound()
+  if (result.error?.code === 'provisioning/setup-not-found') notFound()
+  if (result.error)
+    return <AppError error={result.error} variant="inline" showCode />
 
   const setup = result.data
 

@@ -86,17 +86,17 @@ describe('finance module catalogs', () => {
     }
   })
 
-  it('derives every label and description from canonical finance identity', () => {
-    const canonical = new Map(
-      Object.values(FINANCE_MODULES).map((module) => [module.key, module] as const)
-    )
-
-    for (const module of BILLING_MODULE_CATALOG) {
-      const identity = canonical.get(module.key)
-
-      expect({ label: module.label, description: module.description }).toEqual({
-        label: identity?.label,
-        description: identity?.description,
+  it('projects every shared finance identity into Billing settings', () => {
+    for (const identity of Object.values(FINANCE_MODULES)) {
+      const settings = BILLING_MODULE_CATALOG.find(
+        (candidate) => candidate.key === identity.key
+      )
+      expect({
+        label: settings?.label,
+        description: settings?.description,
+      }).toEqual({
+        label: identity.label,
+        description: identity.description,
       })
     }
   })
