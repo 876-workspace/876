@@ -152,13 +152,22 @@ describe('canonical application module registry', () => {
     ).toThrow('Duplicate module key: invoices')
   })
 
-  it('rejects invalid keys and incomplete identity metadata', () => {
+  it('rejects invalid module keys', () => {
     // ARRANGE
     const invalidKey = {
       key: 'sales_receipts',
       label: 'Sales receipts',
       description: 'Invalid identifier.',
     }
+
+    // ACT / ASSERT
+    expect(() =>
+      defineAppModuleRegistry({ app: '876-test', modules: [invalidKey] })
+    ).toThrow('Invalid module key: sales_receipts')
+  })
+
+  it('rejects incomplete module identity metadata', () => {
+    // ARRANGE
     const missingDescription = {
       key: 'valid-key',
       label: 'Valid label',
@@ -166,9 +175,6 @@ describe('canonical application module registry', () => {
     }
 
     // ACT / ASSERT
-    expect(() =>
-      defineAppModuleRegistry({ app: '876-test', modules: [invalidKey] })
-    ).toThrow('Invalid module key: sales_receipts')
     expect(() =>
       defineAppModuleRegistry({
         app: '876-test',
