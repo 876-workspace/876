@@ -12,7 +12,9 @@ describe('Billing item audit loading', () => {
   it('preserves audit labels in the fallback while values load', () => {
     expect(source).toContain('fallback={<ItemAuditSkeleton />}')
     expect(source).toContain('aria-label="Loading item audit trail"')
-    expect(source).toContain('label="Created at" value={<Skeleton')
-    expect(source).toContain('label="Updated at" value={<Skeleton')
+    const skeleton = source.slice(source.indexOf('function ItemAuditSkeleton'))
+
+    expect(skeleton).toMatch(/label="Created at"\s+value=\{<Skeleton/)
+    expect(skeleton).toMatch(/label="Updated at"\s+value=\{<Skeleton/)
   })
 })
