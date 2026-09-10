@@ -14,14 +14,6 @@ type LinkInput = {
   syncDirection: 'BIDIRECTIONAL' | 'PULL_ONLY'
 }
 
-type LinkResult =
-  | {
-      kind: 'linked'
-      mapping: Awaited<ReturnType<typeof retrieveRemoteMapping>>
-    }
-  | { kind: 'calendar-not-found' }
-  | { kind: 'calendar-already-linked' }
-
 const retrieveRemoteMapping = (connectionId: string, remoteId: string) =>
   prisma.workSyncMapping.findFirst({
     where: {
@@ -31,6 +23,15 @@ const retrieveRemoteMapping = (connectionId: string, remoteId: string) =>
       remoteId,
     },
   })
+
+type CalendarMapping = NonNullable<
+  Awaited<ReturnType<typeof retrieveRemoteMapping>>
+>
+
+type LinkResult =
+  | { kind: 'linked'; mapping: CalendarMapping }
+  | { kind: 'calendar-not-found' }
+  | { kind: 'calendar-already-linked' }
 
 const retrieveLocalMapping = (connectionId: string, localId: string) =>
   prisma.workSyncMapping.findFirst({
