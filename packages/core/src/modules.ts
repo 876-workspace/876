@@ -3,6 +3,12 @@ import type {
   AppModuleRegistry,
 } from './types/modules'
 
+export type {
+  AppModuleDefinition,
+  AppModuleKey,
+  AppModuleRegistry,
+} from './types/modules'
+
 const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 export function defineAppModuleRegistry<
