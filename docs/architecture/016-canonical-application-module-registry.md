@@ -117,8 +117,8 @@ This ADR does not rename permission data.
 ### Commercial rows are a materialized projection
 
 Core `application_modules` remains the runtime/persisted representation used by
-commercial plan entitlements. The plan seed materializes the commercial subset
-of each canonical registry into those rows.
+commercial plan entitlements. The plan seed materializes only the subset of a
+canonical app registry whose keys already have real commercial semantics.
 
 For registry-backed rows:
 
@@ -131,6 +131,10 @@ For registry-backed rows:
 `plan_modules` remains Console/operator-controlled plan composition. A default
 plan grant is added only when the module relationship is first bootstrapped;
 later seed runs must not restore a grant an operator intentionally removed.
+
+Canonical identity does not by itself make a module commercially selectable.
+A module belongs in the commercial projection only when a plan grant to that
+exact key has an effective entitlement meaning at runtime.
 
 ### Invoice commercial materialization
 
@@ -160,6 +164,32 @@ The full seed creates default app products/prices before first-time module grant
 This ordering is required because module seeding deliberately refuses to
 re-grant removed plan entitlements on later runs.
 
+### Billing commercial materialization remains intentionally coarse
+
+Billing's canonical registry is broader than its current commercial projection.
+Registry adoption must not make a plan option selectable merely because settings
+or permissions use the same word.
+
+During this adoption, only canonical Billing keys that exactly match existing
+commercial gates are materialized from the new registry:
+
+- `subscriptions`
+- `purchases`
+- `banking`
+- `payroll`
+
+The existing aggregate commercial modules remain alongside them:
+
+- `sales` → `billing-sales`;
+- `documents` → `billing-documents`.
+
+Granular Billing identities such as `invoices`, `quotes`, `payments`,
+`customers`, `items`, `credit-notes`, `price-lists`, `discounts`, and the other
+shared Finance settings modules are **not** materialized as Billing plan options
+yet. Doing so would create inert or misleading entitlements: Console could sell
+a key that Billing's runtime still authorizes through a different aggregate
+feature/module gate.
+
 ### Billing legacy aggregate modules remain transitional
 
 Do not rename or delete Billing `sales` or `documents` as part of registry
@@ -176,10 +206,10 @@ They remain explicit transitional commercial modules because:
 Removing either row before a coordinated feature/entitlement migration could
 turn a globally enabled feature dark or broaden access incorrectly.
 
-A future migration must be additive first: create canonical target module grants,
-prove equivalent effective entitlement for every affected plan/subscription,
-move or redesign the feature-gate relationship, and archive the legacy aggregate
-only after every environment is verified.
+A future migration must be additive first: define the effective granular
+entitlement semantics, create target module grants, prove equivalent access for
+every affected plan/subscription, move or redesign the feature-gate relationship,
+and archive the legacy aggregate only after every environment is verified.
 
 ### Console ownership
 
@@ -212,7 +242,9 @@ not as a one-off incompatible throw.
   projecting it into settings/access/commercial planes.
 - Not every permission group or navigation group is a module; semantic equality
   is required before identity is reused.
-- Not every canonical settings module must be commercially sellable.
+- Not every canonical settings module is commercially sellable.
+- A commercial projection is intentionally allowed to be narrower than its app
+  registry while runtime entitlement semantics catch up.
 - Legacy aggregate Billing gates remain visible technical debt with a defined
   migration condition rather than hidden compatibility aliases.
 
@@ -235,6 +267,13 @@ construction.
 Rejected. Settings is a shared mechanism package and organization module state is
 product-owned. Core commercial materialization and access packages must not
 depend on a product-settings declaration to learn what a first-party module is.
+
+### Materialize every Billing registry key immediately
+
+Rejected. Billing's runtime still gates several capabilities through aggregate
+commercial modules and feature masters. A selectable plan grant with no matching
+runtime entitlement effect is worse than leaving that module out of the
+commercial projection until enforcement exists.
 
 ### Rename Billing `sales` directly to `invoices`
 
