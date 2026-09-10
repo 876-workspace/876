@@ -1,3 +1,4 @@
+import { FINANCE_MODULES } from '@876/core/modules'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -81,6 +82,21 @@ describe('finance module catalogs', () => {
       }).toEqual({
         label: invoiceModule.label,
         description: invoiceModule.description,
+      })
+    }
+  })
+
+  it('derives every label and description from canonical finance identity', () => {
+    const canonical = new Map(
+      Object.values(FINANCE_MODULES).map((module) => [module.key, module] as const)
+    )
+
+    for (const module of BILLING_MODULE_CATALOG) {
+      const identity = canonical.get(module.key)
+
+      expect({ label: module.label, description: module.description }).toEqual({
+        label: identity?.label,
+        description: identity?.description,
       })
     }
   })
