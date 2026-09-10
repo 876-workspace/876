@@ -36,11 +36,11 @@ export function defineAppModuleRegistry<
 }
 
 /**
- * Canonical finance module identity.
+ * Finance module identity shared by two or more real architectural planes.
  *
- * Settings, permissions, commercial entitlements, navigation and feature flags
- * project from these definitions when their semantics match. They do not copy
- * labels or descriptions into a second module taxonomy.
+ * Settings-only definitions remain at their product owner until another real
+ * plane needs the same stable identity. Do not grow this object for speculative
+ * future reuse.
  */
 export const FINANCE_MODULES = {
   invoices: {
@@ -86,12 +86,6 @@ export const FINANCE_MODULES = {
     description:
       'Manage customer billing identities and finance relationships.',
   },
-  crm: {
-    key: 'crm',
-    label: 'CRM',
-    description:
-      'Enable the future organization-owned CRM workspace inside finance apps.',
-  },
   subscriptions: {
     key: 'subscriptions',
     label: 'Subscriptions',
@@ -103,12 +97,6 @@ export const FINANCE_MODULES = {
     label: 'Banking',
     description: 'Track bank accounts and reconcile financial activity.',
   },
-  creditNotes: {
-    key: 'credit-notes',
-    label: 'Credit notes',
-    description:
-      'Issue credits that reduce customer balances or invoice amounts.',
-  },
   purchases: {
     key: 'purchases',
     label: 'Purchases',
@@ -118,17 +106,6 @@ export const FINANCE_MODULES = {
     key: 'payroll',
     label: 'Payroll',
     description: 'Manage payroll-related financial activity.',
-  },
-  priceLists: {
-    key: 'price-lists',
-    label: 'Price lists',
-    description:
-      'Maintain alternate item pricing for customer and sales contexts.',
-  },
-  discounts: {
-    key: 'discounts',
-    label: 'Discounts',
-    description: 'Configure discounts used across sales and recurring billing.',
   },
 } as const satisfies Record<string, AppModuleDefinition>
 
@@ -143,7 +120,6 @@ export const INVOICE_MODULE_REGISTRY = defineAppModuleRegistry({
     FINANCE_MODULES.salesReceipts,
     FINANCE_MODULES.timeTracking,
     FINANCE_MODULES.customers,
-    FINANCE_MODULES.crm,
   ],
 })
 
@@ -153,11 +129,8 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
     ...INVOICE_MODULE_REGISTRY.modules,
     FINANCE_MODULES.subscriptions,
     FINANCE_MODULES.banking,
-    FINANCE_MODULES.creditNotes,
     FINANCE_MODULES.purchases,
     FINANCE_MODULES.payroll,
-    FINANCE_MODULES.priceLists,
-    FINANCE_MODULES.discounts,
   ],
 })
 
@@ -165,15 +138,14 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
  * Modules that may be materialized into Core's commercial entitlement plane.
  *
  * Invoice currently has no competing aggregate commercial taxonomy, so its
- * implemented functional modules can be sold directly. `crm` remains
- * settings-only until that product contract is implemented.
+ * implemented registry modules can be sold directly.
  *
  * Billing is intentionally narrower: only canonical definitions that exactly
  * match its existing effective commercial gates are materialized here. Sales
  * and documents remain explicit legacy aggregates in the plan seed; granular
- * Billing identities such as `invoices`, `quotes`, `payments`, `credit-notes`
- * and `price-lists` must not appear as selectable plan grants until runtime
- * entitlement enforcement is wired to those exact keys.
+ * Billing identities such as `invoices`, `quotes`, `payments`, and `customers`
+ * must not appear as selectable Billing plan grants until runtime entitlement
+ * enforcement is wired to those exact keys.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',
