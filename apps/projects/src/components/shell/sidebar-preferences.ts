@@ -1,6 +1,6 @@
 'use client'
 
-/** Matches Console's storage/subscription mechanism with app-scoped storage. */
+/** Projects keeps compact-rail expansion app-scoped and collapsed by default. */
 export const SIDEBAR_EXPANDED_STORAGE_KEY = '876_projects_sidebar_expanded:v1'
 
 const listeners = new Set<() => void>()

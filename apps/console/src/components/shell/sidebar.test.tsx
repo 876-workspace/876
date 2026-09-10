@@ -2,10 +2,9 @@
 
 import '@testing-library/jest-dom/vitest'
 
+import { SidebarProvider, SidebarTrigger } from '@876/ui/sidebar'
 import { TooltipProvider } from '@876/ui/tooltip'
-import { AppShellBody, AppShellMain } from '@876/ui/app-shell'
-import { Page } from '@876/ui/page'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -19,17 +18,29 @@ import { Sidebar } from '@/components/shell/sidebar'
 import { sidebarContexts } from '@/components/shell/sidebar-context'
 import type { SidebarSlot } from '@/components/shell/sidebar-slots'
 
-function renderSidebar(pathname: string, slots: SidebarSlot[] = []) {
+function renderSidebar(
+  pathname: string,
+  slots: SidebarSlot[] = [],
+  defaultOpen = true
+) {
   usePathname.mockReturnValue(pathname)
+
   return render(
     <TooltipProvider>
-      <Sidebar navigation={navConfig} contexts={navContexts} slots={slots} />
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <SidebarTrigger />
+        <Sidebar navigation={navConfig} contexts={navContexts} slots={slots} />
+      </SidebarProvider>
     </TooltipProvider>
   )
 }
 
+function navigation() {
+  return screen.getByRole('navigation', { name: 'Console navigation' })
+}
+
 function linkNames(): string[] {
-  return screen
+  return within(navigation())
     .queryAllByRole('link')
     .map((link) => link.getAttribute('aria-label') ?? link.textContent ?? '')
 }
@@ -38,58 +49,75 @@ function backControl(name: string) {
   return screen.getByRole('button', { name })
 }
 
-function inFlowGaps(gutter: number) {
-  return {
-    windowToCard: gutter,
-    cardToContent: gutter,
-    contentToWindow: gutter,
-  }
+function sidebarRoot() {
+  return document.querySelector<HTMLElement>(
+    '[data-slot="sidebar"][data-variant="sidebar"]'
+  )
 }
 
 describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    localStorage.clear()
+  })
+
+  describe('the standard sidebar shell', () => {
+    it('uses the docked sidebar variant with icon collapse support', () => {
+      renderSidebar('/users')
+
+      const sidebar = sidebarRoot()
+      const gap = document.querySelector<HTMLElement>('[data-slot="sidebar-gap"]')
+
+      expect(sidebar).toHaveAttribute('data-variant', 'sidebar')
+      expect(sidebar).toHaveAttribute('data-state', 'expanded')
+      expect(gap).toHaveClass('group-data-[collapsible=icon]:w-(--sidebar-width-icon)')
+      expect(gap?.className).not.toContain(
+        'w-[calc(var(--sidebar-width)-var(--876-shell-gutter))]'
+      )
+    })
+
+    it('renders the Console identity in the root sidebar header', () => {
+      renderSidebar('/users')
+
+      expect(screen.getByRole('link', { name: 'Console home' })).toHaveAttribute(
+        'href',
+        '/'
+      )
+      expect(screen.getByRole('link', { name: 'Console home' })).toHaveTextContent(
+        'Console'
+      )
+    })
+
+    it('renders expanded entry labels by default', () => {
+      renderSidebar('/users')
+
+      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent(
+        'Users'
+      )
+    })
+
+    it('renders icon-only entries when the shared provider starts collapsed', () => {
+      renderSidebar('/users', [], false)
+
+      expect(sidebarRoot()).toHaveAttribute('data-state', 'collapsed')
+      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent('')
+    })
+
+    it('lets the shared sidebar trigger change presentation state', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/users')
+
+      await user.click(screen.getByRole('button', { name: 'Toggle Sidebar' }))
+
+      expect(sidebarRoot()).toHaveAttribute('data-state', 'collapsed')
+      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent('')
+    })
   })
 
   describe('the platform context', () => {
-    it('resolves a plain Page beside the rail to one gutter on every side', () => {
-      usePathname.mockReturnValue('/users')
-      render(
-        <TooltipProvider>
-          <AppShellBody>
-            <Sidebar navigation={navConfig} contexts={navContexts} />
-            <AppShellMain>
-              <Page>Content</Page>
-            </AppShellMain>
-          </AppShellBody>
-        </TooltipProvider>
-      )
-
-      const rail = screen.getByRole('navigation', {
-        name: 'Console navigation',
-      }).parentElement
-      const page = document.querySelector<HTMLElement>('[data-slot="page"]')
-
-      expect(rail).toHaveClass('pl-[var(--876-shell-gutter)]')
-      expect(rail?.className).not.toContain('pr-[var(--876-shell-gutter)]')
-      expect(page).toHaveClass('px-[var(--876-shell-gutter)]')
-
-      for (const gutter of [16, 24, 32]) {
-        expect(inFlowGaps(gutter)).toEqual({
-          windowToCard: gutter,
-          cardToContent: gutter,
-          contentToWindow: gutter,
-        })
-      }
-    })
-
     it('renders every top-level entry on a path no context claims', () => {
       renderSidebar('/users')
 
-      expect(
-        screen.getByRole('navigation', { name: 'Console navigation' })
-      ).toBeVisible()
+      expect(navigation()).toBeVisible()
       expect(linkNames()).toEqual([
         'Dashboards',
         'Users',
@@ -117,26 +145,25 @@ describe('Sidebar', () => {
       )
     })
 
-    it('offers no back control at the root', () => {
+    it('offers no context back control at the root', () => {
       renderSidebar('/users')
 
       expect(screen.queryByRole('button', { name: /^Back to/ })).toBeNull()
     })
 
-    it('keeps Settings a plain rail link that navigates straight through', () => {
+    it('keeps Settings a plain link that does not replace the context', () => {
       renderSidebar('/settings')
 
       expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
         'href',
         '/settings'
       )
-      // A context would have replaced the rail; Settings must not.
       expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
     })
   })
 
   describe('an open context', () => {
-    it('replaces the rail with the context items on a context route', () => {
+    it('replaces root navigation with the context items', () => {
       renderSidebar('/projects')
 
       expect(linkNames()).toEqual([
@@ -147,17 +174,6 @@ describe('Sidebar', () => {
         'Labels',
       ])
       expect(screen.queryByRole('link', { name: 'Storage' })).toBeNull()
-    })
-
-    it('stays collapsed rather than widening to show labels', () => {
-      renderSidebar('/projects')
-
-      // Collapsed means icons plus tooltips: the label is the accessible name,
-      // never rendered text beside the icon.
-      expect(screen.getByRole('link', { name: 'Issues' })).toHaveTextContent('')
-      expect(
-        screen.getByRole('button', { name: 'Expand sidebar' })
-      ).toBeVisible()
     })
 
     it('opens from a nested route inside the context', () => {
@@ -196,6 +212,15 @@ describe('Sidebar', () => {
       expect(backControl('Back to Console')).toBeVisible()
     })
 
+    it('keeps back separate from the shared collapse trigger', () => {
+      renderSidebar('/projects')
+
+      expect(backControl('Back to Console')).toBeVisible()
+      expect(
+        screen.getByRole('button', { name: 'Toggle Sidebar' })
+      ).toBeVisible()
+    })
+
     it('gives every registered context a non-empty back-control name', () => {
       const contexts = sidebarContexts(navConfig, navContexts)
 
@@ -215,7 +240,7 @@ describe('Sidebar', () => {
   })
 
   describe('a context with nothing in it yet', () => {
-    it('swaps the rail for Storage even though it has no entries', () => {
+    it('swaps navigation for Storage even though it has no entries', () => {
       renderSidebar('/storage')
 
       expect(linkNames()).toEqual([])
@@ -230,7 +255,7 @@ describe('Sidebar', () => {
   })
 
   describe('returning to the previous context', () => {
-    it('restores the parent when back is pressed, without navigating', async () => {
+    it('restores the parent when back is pressed without navigating', async () => {
       const user = userEvent.setup()
       renderSidebar('/projects/issues')
 
@@ -238,14 +263,13 @@ describe('Sidebar', () => {
 
       expect(screen.getByRole('link', { name: 'Storage' })).toBeInTheDocument()
       expect(screen.queryByRole('link', { name: 'Board' })).toBeNull()
-      // The rail entry still points at the context the operator stands in.
       expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute(
         'aria-current',
         'page'
       )
     })
 
-    it('reopens the context when its rail entry is followed again', async () => {
+    it('reopens the context when its root entry is followed again', async () => {
       const user = userEvent.setup()
       renderSidebar('/projects/issues')
 
@@ -255,19 +279,18 @@ describe('Sidebar', () => {
       expect(screen.getByRole('link', { name: 'Board' })).toBeInTheDocument()
     })
 
-    it('reopens an entry-less context, which has no children to read', async () => {
+    it('reopens an entry-less context that has no children to inspect', async () => {
       const user = userEvent.setup()
       renderSidebar('/storage')
 
       await user.click(backControl('Back to Console'))
-      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
-
       await user.click(screen.getByRole('link', { name: 'Storage' }))
+
       expect(screen.queryByRole('link', { name: 'Users' })).toBeNull()
       expect(backControl('Back to Console')).toBeVisible()
     })
 
-    it('returns to the parent on Escape', async () => {
+    it('returns to the parent context on Escape', async () => {
       const user = userEvent.setup()
       renderSidebar('/projects')
 
@@ -275,148 +298,17 @@ describe('Sidebar', () => {
       await user.keyboard('{Escape}')
 
       expect(screen.getByRole('link', { name: 'Storage' })).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Board' })).toBeNull()
     })
   })
 
-  describe('expanding to show labels', () => {
-    it('keeps the panel aligned to the window without adding a right gutter', async () => {
-      const user = userEvent.setup()
+  describe('entry presentation', () => {
+    it('never bolds an expanded entry label, active or not', () => {
       renderSidebar('/users')
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-
-      const panel = screen.getByRole('navigation', {
-        name: 'Console navigation',
-      }).parentElement
-
-      expect(panel).toHaveClass('pl-[var(--876-shell-gutter)]')
-      expect(panel?.className).not.toContain('pr-[var(--876-shell-gutter)]')
-    })
-
-    it('is collapsed until the operator asks otherwise', () => {
-      renderSidebar('/users')
-
-      expect(
-        screen.getByRole('button', { name: 'Expand sidebar' })
-      ).toHaveAttribute('aria-expanded', 'false')
-    })
-
-    it('reveals the entry titles beside their icons', async () => {
-      const user = userEvent.setup()
-      renderSidebar('/users')
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-
-      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent(
-        'Users'
-      )
-      expect(
-        screen.getByRole('button', { name: 'Collapse sidebar' })
-      ).toHaveAttribute('aria-expanded', 'true')
-    })
-
-    it('persists the choice so it survives the next navigation', async () => {
-      const user = userEvent.setup()
-      const view = renderSidebar('/users')
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-      view.unmount()
-      renderSidebar('/projects')
-
-      expect(screen.getByRole('link', { name: 'Issues' })).toHaveTextContent(
-        'Issues'
-      )
-    })
-
-    it('collapses again on a second press', async () => {
-      const user = userEvent.setup()
-      renderSidebar('/users')
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-      await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
-
-      expect(screen.getByRole('link', { name: 'Users' })).toHaveTextContent('')
-    })
-
-    it('is a separate control from back, at every level', async () => {
-      const user = userEvent.setup()
-      renderSidebar('/projects')
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-
-      expect(backControl('Back to Console')).toBeVisible()
-      expect(
-        screen.getByRole('button', { name: 'Collapse sidebar' })
-      ).toBeVisible()
-    })
-
-    // Regression: the card's own width class stayed at the rail width on the
-    // platform context even after expanding, so the label span rendered into
-    // the DOM (passing a text-content assertion) while `overflow-hidden`
-    // clipped it out of view. Assert the card itself actually widens, not
-    // just that the label text exists somewhere in the tree.
-    it('widens the card itself when expanded, including on the platform context', async () => {
-      const user = userEvent.setup()
-      renderSidebar('/users')
-
-      const nav = screen.getByRole('navigation', { name: 'Console navigation' })
-      expect(nav.className).toMatch(/(?:^|\s)w-\[3\.75rem\](?:\s|$)/)
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-
-      expect(nav.className).toMatch(/(?:^|\s)w-56(?:\s|$)/)
-      expect(nav.className).not.toMatch(/(?:^|\s)w-\[3\.75rem\](?:\s|$)/)
-    })
-
-    it('never bolds an expanded entry label, active or not', async () => {
-      const user = userEvent.setup()
-      renderSidebar('/users')
-
-      await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
 
       const usersLink = screen.getByRole('link', { name: 'Users' })
+
       expect(usersLink.className).not.toMatch(/font-(?:medium|semibold|bold)/)
-    })
-  })
-
-  describe('slots', () => {
-    const slot: SidebarSlot = {
-      key: 'announcement',
-      region: 'footer',
-      title: 'What is new',
-      icon: 'reports',
-      componentKey: 'not-registered',
-    }
-
-    it('renders nothing for a component key the shell does not know', () => {
-      renderSidebar('/users', [slot])
-
-      expect(screen.queryByText('What is new')).toBeNull()
-    })
-
-    it('leaves the navigation intact when a slot cannot render', () => {
-      renderSidebar('/users', [slot])
-
-      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
-    })
-  })
-
-  describe('orchestrator icon refresh', () => {
-    it('never rotates the expand control icon, collapsed or expanded', async () => {
-      const user = userEvent.setup()
-      renderSidebar('/users')
-
-      const expand = screen.getByRole('button', { name: 'Expand sidebar' })
-      expect(expand.querySelector('svg')?.className.baseVal ?? '').not.toMatch(
-        /rotate-180/
-      )
-
-      await user.click(expand)
-
-      const collapse = screen.getByRole('button', { name: 'Collapse sidebar' })
-      expect(
-        collapse.querySelector('svg')?.className.baseVal ?? ''
-      ).not.toMatch(/rotate-180/)
     })
 
     it('colors a context entry from its icon when the entry declares none', () => {
@@ -435,6 +327,28 @@ describe('Sidebar', () => {
       const icon = users.querySelector('svg')
 
       expect(icon?.className.baseVal ?? '').toMatch(/text-amber-500/)
+    })
+  })
+
+  describe('slots', () => {
+    const slot: SidebarSlot = {
+      key: 'announcement',
+      region: 'footer',
+      title: 'What is new',
+      icon: 'reports',
+      componentKey: 'not-registered',
+    }
+
+    it('renders nothing for a component key the shell does not know', () => {
+      renderSidebar('/users', [slot])
+
+      expect(screen.queryByText('What is new')).toBeNull()
+    })
+
+    it('leaves navigation intact when a slot cannot render', () => {
+      renderSidebar('/users', [slot])
+
+      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
     })
   })
 })
