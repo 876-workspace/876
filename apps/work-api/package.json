@@ -17,6 +17,7 @@
     "verify:crm": "node scripts/verify-crm-work.mjs",
     "verify:phase2": "node scripts/verify-phase2.mjs",
     "notifications:run": "tsx src/workers/notifications.ts",
+    "sync:run": "tsx src/workers/sync.ts",
     "test": "vitest run",
     "lint": "eslint src",
     "generate": "node scripts/prisma-generate.mjs"
@@ -26,6 +27,7 @@
     "@876/work": "workspace:*",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
+    "@workos-inc/node": "10.10.0",
     "compression": "1.8.1",
     "cors": "2.8.6",
     "express": "5.2.1",

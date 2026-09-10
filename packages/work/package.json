@@ -12,8 +12,8 @@
       "default": "./src/index.ts"
     },
     "./browser": {
-      "types": "./src/browser.ts",
-      "default": "./src/browser.ts"
+      "types": "./src/browser-entry.ts",
+      "default": "./src/browser-entry.ts"
     },
     "./operator": {
       "types": "./src/operator.ts",

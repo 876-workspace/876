@@ -27,6 +27,10 @@
       "types": "./src/calendar.tsx",
       "default": "./src/calendar.tsx"
     },
+    "./calendar-sync": {
+      "types": "./src/calendar-sync.tsx",
+      "default": "./src/calendar-sync.tsx"
+    },
     "./collaboration": {
       "types": "./src/collaboration.tsx",
       "default": "./src/collaboration.tsx"
