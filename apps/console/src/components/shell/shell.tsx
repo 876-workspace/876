@@ -5,10 +5,13 @@ import {
   AppShellContent,
   AppShellHeader,
   AppShellMain,
+  AppShellSidebarArea,
 } from '@876/ui/app-shell'
 import { Logo } from '@876/ui/logo'
 import { NavProgress } from '@876/ui/nav-progress'
+import { SidebarTrigger } from '@876/ui/sidebar'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import type { ReactNode } from 'react'
 
 import { navConfig } from '@/components/shell/nav-config'
@@ -43,18 +46,14 @@ export async function Shell({
 }: {
   children: ReactNode
   /**
-   * The left rail, composed by the caller from the `@sidebar` parallel route
-   * slot. It arrives as a node rather than being rendered here because a route
-   * segment contributes its own context with data only that segment has — an
-   * app record knows its `app_kind`; the shell above it does not.
+   * The desktop navigation composed by the `@sidebar` parallel route. A route
+   * segment can contribute context that only that segment knows, while the
+   * shell remains responsible only for standard sidebar placement.
    */
   sidebar: ReactNode
   /**
-   * The mobile navigation sheet, composed by the caller from the `@mobilenav`
-   * parallel route slot. It is a separate slot from `sidebar` because it
-   * renders in the header, above the body — it cannot read the sidebar's node,
-   * and hard-coding the platform contexts here is what left a phone showing the
-   * platform rail inside an app record.
+   * The mobile navigation sheet, composed independently by `@mobilenav` so it
+   * receives the same route-owned contexts as the desktop sidebar.
    */
   mobileNav: ReactNode
   /**
@@ -73,13 +72,20 @@ export async function Shell({
     chat: boolean
   }
 }) {
-  const context = await resolveAccessContext(userId)
+  const [context, cookieStore] = await Promise.all([
+    resolveAccessContext(userId),
+    cookies(),
+  ])
   const navigation = context ? resolveNavigation(navConfig, context) : []
   const settings = context ? resolveSettingsOptions(context) : []
+  const sidebarCookie = cookieStore.get('sidebar_state')
+  const defaultSidebarOpen = sidebarCookie
+    ? sidebarCookie.value === 'true'
+    : true
   const searchItems = [
     // Children are searchable too, titled by their section, so “Labels” and
     // “Forms” are reachable from the command bar without first knowing which
-    // rail icon hides them.
+    // sidebar context contains them.
     ...navigation.flatMap((group) =>
       group.entries.flatMap((item) => [
         { group: 'Navigation', title: item.title, href: item.href },
@@ -100,8 +106,12 @@ export async function Shell({
   ]
 
   return (
-    <AppShell defaultOpen={false}>
+    <AppShell defaultOpen={defaultSidebarOpen}>
       <NavProgress />
+
+      <AppShellSidebarArea className="hidden md:contents">
+        {sidebar}
+      </AppShellSidebarArea>
 
       <AppShellContent>
         <AppShellHeader>
@@ -116,18 +126,9 @@ export async function Shell({
             </Link>
           </div>
 
-          <Link
-            href="/"
-            aria-label="Console home"
-            className="focus-visible:ring-sidebar-ring hidden items-center gap-2.5 rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden md:flex"
-          >
-            <span className="border-border/60 bg-muted/20 flex size-8 shrink-0 items-center justify-center rounded-lg border shadow-2xs">
-              <Logo className="text-foreground text-[0.8125rem] leading-none" />
-            </span>
-            <span className="text-foreground text-sm font-semibold tracking-tight">
-              Console
-            </span>
-          </Link>
+          <div className="hidden md:block">
+            <SidebarTrigger />
+          </div>
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">
             {uiFeatures.searchBar && <TopbarSearch items={searchItems} />}
@@ -147,8 +148,7 @@ export async function Shell({
           </div>
         </AppShellHeader>
 
-        <AppShellBody className="flex-col md:flex-row">
-          {sidebar}
+        <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
           {widgetRail}
         </AppShellBody>
