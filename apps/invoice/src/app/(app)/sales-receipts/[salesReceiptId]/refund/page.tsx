@@ -1,12 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { AppError } from '@876/ui/app-error'
-import {
-  Page,
-  PageBreadcrumb,
-  PageDescription,
-  PageHeader,
-  PageTitle,
-} from '@876/ui/page'
+import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
@@ -35,20 +29,20 @@ export default async function RefundSalesReceiptPage({ params }: Props) {
   ])
 
   if (receiptResult.error?.code === 'sales-receipt/not-found') notFound()
-  const failure =
-    receiptResult.error ?? accounts.error ?? modes.error ?? currencies.error
-  if (failure) {
-    return (
-      <Page>
-        <AppError
-          error={{
-            code: failure.code,
-            message: 'Sales receipt refund data is unavailable right now.',
-          }}
-        />
-      </Page>
-    )
-  }
+  const unavailable = (code: string) => (
+    <Page>
+      <AppError
+        error={{
+          code,
+          message: 'Sales receipt refund data is unavailable right now.',
+        }}
+      />
+    </Page>
+  )
+  if (receiptResult.error) return unavailable(receiptResult.error.code)
+  if (accounts.error) return unavailable(accounts.error.code)
+  if (modes.error) return unavailable(modes.error.code)
+  if (currencies.error) return unavailable(currencies.error.code)
 
   const receipt = receiptResult.data
   if (receipt.status !== 'PAID' || BigInt(receipt.refundableAmount) <= 0n)
@@ -68,10 +62,6 @@ export default async function RefundSalesReceiptPage({ params }: Props) {
       />
       <PageHeader className="mb-8">
         <PageTitle>Refund sales receipt</PageTitle>
-        <PageDescription>
-          Correct part or all of the immediate sale with a credit note and
-          record the cash returned to the customer in one operation.
-        </PageDescription>
       </PageHeader>
 
       <InvoiceSalesReceiptRefundForm

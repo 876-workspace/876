@@ -1,11 +1,5 @@
 import { AppError } from '@876/ui/app-error'
-import {
-  Page,
-  PageBreadcrumb,
-  PageDescription,
-  PageHeader,
-  PageTitle,
-} from '@876/ui/page'
+import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { getBilling } from '@/lib/services/billing'
@@ -27,30 +21,28 @@ export default async function NewSalesReceiptPage() {
       billing.items.searchVariants({ active: true, limit: 100 }),
     ])
 
-  const failure =
-    customers.error ??
-    accounts.error ??
-    modes.error ??
-    currencies.error ??
-    items.error ??
-    variants.error
-  if (failure) {
-    return (
-      <Page>
-        <AppError
-          error={{
-            code: failure.code,
-            message: 'Sales receipt entry data is unavailable right now.',
-          }}
-        />
-      </Page>
-    )
-  }
+  const unavailable = (code: string) => (
+    <Page>
+      <AppError
+        error={{
+          code,
+          message: 'Sales receipt entry data is unavailable right now.',
+        }}
+      />
+    </Page>
+  )
+  if (customers.error) return unavailable(customers.error.code)
+  if (accounts.error) return unavailable(accounts.error.code)
+  if (modes.error) return unavailable(modes.error.code)
+  if (currencies.error) return unavailable(currencies.error.code)
+  if (items.error) return unavailable(items.error.code)
+  if (variants.error) return unavailable(variants.error.code)
 
   const currencyRows = currencies.data.data.filter((row) => row.isEnabled)
   const defaultCurrency =
-    currencyRows.find((row) => row.currency.code === context.tenant.defaultCurrency)
-      ?.currency.code ??
+    currencyRows.find(
+      (row) => row.currency.code === context.tenant.defaultCurrency
+    )?.currency.code ??
     currencyRows.find((row) => row.isDefault)?.currency.code ??
     currencyRows[0]?.currency.code ??
     context.tenant.defaultCurrency
@@ -64,11 +56,6 @@ export default async function NewSalesReceiptPage() {
       />
       <PageHeader className="mb-8">
         <PageTitle>New sales receipt</PageTitle>
-        <PageDescription>
-          Record an immediate paid sale. Saving creates the sale, settled
-          payment, bank evidence, and inventory movement together without
-          creating accounts receivable.
-        </PageDescription>
       </PageHeader>
 
       <BillingSalesReceiptCreateForm
