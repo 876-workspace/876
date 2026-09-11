@@ -31,6 +31,14 @@ export type AccountLedgerSummary = {
   amount: bigint
 }
 
+export type CustomerAccountExtras = {
+  lifetimeSales: string
+  lifetimeCredits: string
+  lastSaleAt: number | null
+  activeSubscriptionCount: number
+  subscriptionMrr: Array<{ currency: string; mrr: string; arr: string }>
+}
+
 function signedAmount(direction: 'DEBIT' | 'CREDIT', amount: bigint): bigint {
   return direction === 'DEBIT' ? amount : -amount
 }
@@ -74,7 +82,8 @@ export function buildCustomerAccountProjection(
   customer: AccountCustomer,
   entriesNewestFirst: AccountLedgerEntry[],
   summaries: AccountLedgerSummary[],
-  overdueReceivable: bigint
+  overdueReceivable: bigint,
+  extras?: CustomerAccountExtras
 ) {
   const closingBalance = summaries.reduce(
     (total, row) => total + signedAmount(row.direction, row.amount),
@@ -108,6 +117,11 @@ export function buildCustomerAccountProjection(
     currency: customer.defaultCurrency,
     lifetimeBilled: lifetimeBilled.toString(),
     lifetimePaid: lifetimePaid.toString(),
+    lifetimeSales: extras?.lifetimeSales ?? '0',
+    lifetimeCredits: extras?.lifetimeCredits ?? '0',
+    lastSaleAt: extras?.lastSaleAt ?? null,
+    activeSubscriptionCount: extras?.activeSubscriptionCount ?? 0,
+    subscriptionMrr: extras?.subscriptionMrr ?? [],
     outstandingReceivable: outstandingReceivable.toString(),
     overdueReceivable: overdueReceivable.toString(),
     availableCredit: availableCredit.toString(),

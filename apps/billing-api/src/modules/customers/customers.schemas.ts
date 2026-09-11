@@ -323,6 +323,17 @@ export const customerAccountSchema = z.object({
   currency: z.string().nullable(),
   lifetimeBilled: z.string(),
   lifetimePaid: z.string(),
+  lifetimeSales: z.string(),
+  lifetimeCredits: z.string(),
+  lastSaleAt: z.number().int().nullable(),
+  activeSubscriptionCount: z.number().int(),
+  subscriptionMrr: z.array(
+    z.strictObject({
+      currency: z.string(),
+      mrr: z.string(),
+      arr: z.string(),
+    })
+  ),
   outstandingReceivable: z.string(),
   overdueReceivable: z.string(),
   availableCredit: z.string(),

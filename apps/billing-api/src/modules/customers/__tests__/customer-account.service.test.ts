@@ -111,4 +111,32 @@ describe('buildCustomerAccountProjection', () => {
     expect(result.lifetimePaid).toBe('300')
     expect(result.closingBalance).toBe('700')
   })
+
+  it('defaults sales, credit, and subscription extras when omitted', () => {
+    const result = buildCustomerAccountProjection(customer, [], [], 0n)
+
+    expect(result.lifetimeSales).toBe('0')
+    expect(result.lifetimeCredits).toBe('0')
+    expect(result.lastSaleAt).toBeNull()
+    expect(result.activeSubscriptionCount).toBe(0)
+    expect(result.subscriptionMrr).toEqual([])
+  })
+
+  it('carries lifetime sales, credits, and subscription extras', () => {
+    const result = buildCustomerAccountProjection(customer, [], [], 0n, {
+      lifetimeSales: '15000',
+      lifetimeCredits: '2000',
+      lastSaleAt: 1_787_000_000,
+      activeSubscriptionCount: 2,
+      subscriptionMrr: [{ currency: 'JMD', mrr: '10000', arr: '120000' }],
+    })
+
+    expect(result.lifetimeSales).toBe('15000')
+    expect(result.lifetimeCredits).toBe('2000')
+    expect(result.lastSaleAt).toBe(1_787_000_000)
+    expect(result.activeSubscriptionCount).toBe(2)
+    expect(result.subscriptionMrr).toEqual([
+      { currency: 'JMD', mrr: '10000', arr: '120000' },
+    ])
+  })
 })

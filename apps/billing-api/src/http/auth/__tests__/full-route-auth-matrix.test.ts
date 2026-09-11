@@ -51,9 +51,13 @@ describe('frozen v1 route authentication matrix', () => {
     // 280 -> 285: integration payment update/delete/apply and refund list/create
     // were added as authenticated operations. 285 -> 297: Sales Receipt list,
     // create, retrieve, refund, void, and quote conversion were added to both
-    // tenant and integration surfaces.
-    expect(operations).toHaveLength(297)
-    expect(protectedPublicOperations()).toHaveLength(296)
+    // tenant and integration surfaces. 297 -> 315: Recurring Invoice profile
+    // operations were added across the tenant and integration surfaces.
+    // 315 -> 333: reporting projections (sales/cash/aging/item/customer/
+    // subscription summaries, item detail, and report preferences) were added
+    // to both tenant and integration surfaces.
+    expect(operations).toHaveLength(333)
+    expect(protectedPublicOperations()).toHaveLength(332)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

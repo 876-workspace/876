@@ -27,6 +27,7 @@ import { createInternalDocumentsRouter } from '@/modules/documents/documents.int
 import { createDocumentsRouter } from '@/modules/documents/documents.routes'
 import { createQuoteLifecycleRouter } from '@/modules/documents/quote-lifecycle.routes'
 import { createSalesReceiptsRouter } from '@/modules/documents/sales-receipts.routes'
+import { createRecurringInvoicesRouter } from '@/modules/documents/recurring-invoices.routes'
 import {
   activeConnectionAuthorization,
   createFinanceConnectionsRouter,
@@ -37,7 +38,7 @@ import { createPaymentProvidersRouter } from '@/modules/payment-providers'
 import { createPaymentIntentsRouter } from '@/modules/payment-intents'
 import { createPaymentMethodsRouter } from '@/modules/payment-methods'
 import { createPaymentsRouter } from '@/modules/payments/payments.routes'
-import { createInternalReportingRouter } from '@/modules/reporting'
+import { createInternalReportingRouter, createReportingRouter } from '@/modules/reporting'
 import { createSubscriptionsRouter } from '@/modules/subscriptions'
 import {
   createIntegrationOrganizationRouter,
@@ -77,11 +78,13 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
   root.use('/api/v1', createQuoteLifecycleRouter(resolveGuards))
   root.use('/api/v1', createSalesReceiptsRouter(resolveGuards))
+  root.use('/api/v1', createRecurringInvoicesRouter(resolveGuards))
   root.use('/api/v1', createTaxRouter(resolveGuards))
   root.use('/api/v1', createPaymentProvidersRouter(resolveGuards))
   root.use('/api/v1', createPaymentMethodsRouter(resolveGuards))
   root.use('/api/v1', createPaymentIntentsRouter(resolveGuards))
   root.use('/api/v1', createPaymentsRouter(resolveGuards))
+  root.use('/api/v1', createReportingRouter(resolveGuards))
   root.use('/api/v1', createVendorsRouter(resolveGuards))
   root.use('/api/v1', createSubscriptionsRouter(resolveGuards))
   root.use('/api/v1', createBillingEngineRouter(resolveGuards))
