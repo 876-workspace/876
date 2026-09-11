@@ -7,15 +7,14 @@ import type { AdminOrganization } from '@876/platform/compat'
 import { OrgsList } from './orgs-list'
 
 const mocks = vi.hoisted(() => ({
-  segments: [] as string[],
+  pathname: '/orgs',
   searchParams: new URLSearchParams(),
 }))
 
 vi.mock('next/navigation', () => ({
-  useSelectedLayoutSegments: () => mocks.segments,
   useSearchParams: () => mocks.searchParams,
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
-  usePathname: () => '/orgs',
+  usePathname: () => mocks.pathname,
 }))
 
 vi.mock('./org-table', () => ({
@@ -62,7 +61,7 @@ const orgs: AdminOrganization[] = [
 describe('OrgsList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.segments = []
+    mocks.pathname = '/orgs'
     mocks.searchParams = new URLSearchParams()
   })
 
@@ -84,7 +83,7 @@ describe('OrgsList', () => {
   })
 
   it('renders the condensed pane with a selected row when one is open', () => {
-    mocks.segments = ['acme']
+    mocks.pathname = '/orgs/acme'
     render(
       <OrgsList
         orgs={orgs}
@@ -105,8 +104,25 @@ describe('OrgsList', () => {
     ).not.toHaveAttribute('aria-current')
   })
 
+  it('omits the status badge from condensed rows', () => {
+    mocks.pathname = '/orgs/acme'
+    render(
+      <OrgsList
+        orgs={orgs}
+        subscriptionsMap={{}}
+        isSearching={false}
+        hasMore={false}
+        firstId={null}
+        lastId={null}
+      />
+    )
+
+    expect(screen.queryByText('active')).toBeNull()
+    expect(screen.queryByText('archived')).toBeNull()
+  })
+
   it('preserves the list query in pane links', () => {
-    mocks.segments = ['acme']
+    mocks.pathname = '/orgs/acme'
     mocks.searchParams = new URLSearchParams('status=all')
     render(
       <OrgsList

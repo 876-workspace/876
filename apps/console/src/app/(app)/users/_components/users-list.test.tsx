@@ -7,15 +7,14 @@ import type { AdminUser } from '@876/platform/compat'
 import { UsersList } from './users-list'
 
 const mocks = vi.hoisted(() => ({
-  segments: [] as string[],
+  pathname: '/users',
   searchParams: new URLSearchParams(),
 }))
 
 vi.mock('next/navigation', () => ({
-  useSelectedLayoutSegments: () => mocks.segments,
   useSearchParams: () => mocks.searchParams,
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
-  usePathname: () => '/users',
+  usePathname: () => mocks.pathname,
 }))
 
 vi.mock('./users-table', () => ({
@@ -68,7 +67,7 @@ const users: AdminUser[] = [
 describe('UsersList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.segments = []
+    mocks.pathname = '/users'
     mocks.searchParams = new URLSearchParams()
   })
 
@@ -91,7 +90,7 @@ describe('UsersList', () => {
   })
 
   it('renders the condensed pane with a selected row when a user is open', () => {
-    mocks.segments = ['alejandra']
+    mocks.pathname = '/users/alejandra'
     render(
       <UsersList
         users={users}
@@ -114,7 +113,7 @@ describe('UsersList', () => {
   })
 
   it('preserves the list query in pane links', () => {
-    mocks.segments = ['alejandra']
+    mocks.pathname = '/users/alejandra'
     mocks.searchParams = new URLSearchParams('status=all')
     render(
       <UsersList
