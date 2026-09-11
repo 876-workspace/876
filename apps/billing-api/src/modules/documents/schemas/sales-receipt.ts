@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
-import { IdSchema, optionalShortTextSchema, optionalTextSchema, unixTimestampSchema } from './common'
+import {
+  IdSchema,
+  optionalShortTextSchema,
+  optionalTextSchema,
+  unixTimestampSchema,
+} from './common'
 import { currencyCodeSchema, minorAmountSchema } from './currency'
 import { DocumentLineCreateSchema } from './document-line'
 import { TaxBehaviorSchema } from './invoice-preference'
@@ -97,10 +102,33 @@ export const SalesReceiptVoidSchema = z.strictObject({
 
 export type SalesReceiptVoidParams = z.infer<typeof SalesReceiptVoidSchema>
 
-export const SalesReceiptRefundSchema = z.strictObject({
-  amount: positiveMinorAmountSchema,
-  reason: z.string().trim().min(1).max(500).nullable().optional(),
+export const SalesReceiptReturnLineSchema = z.strictObject({
+  salesReceiptLineId: IdSchema,
+  quantity: z.number().int().positive().max(1_000_000),
 })
+
+export const SalesReceiptRefundSchema = z
+  .strictObject({
+    amount: positiveMinorAmountSchema,
+    reason: z.string().trim().min(1).max(500).nullable().optional(),
+    notes: optionalTextSchema,
+    refundedAt: unixTimestampSchema.optional(),
+    paymentModeId: IdSchema.nullable().optional(),
+    depositAccountId: IdSchema.nullable().optional(),
+    returnLines: z.array(SalesReceiptReturnLineSchema).max(100).default([]),
+  })
+  .superRefine((value, context) => {
+    const ids = new Set<string>()
+    for (const [index, line] of value.returnLines.entries()) {
+      if (ids.has(line.salesReceiptLineId))
+        context.addIssue({
+          code: 'custom',
+          message: 'Each Sales Receipt line can be returned only once per request.',
+          path: ['returnLines', index, 'salesReceiptLineId'],
+        })
+      ids.add(line.salesReceiptLineId)
+    }
+  })
 
 export type SalesReceiptRefundParams = z.infer<typeof SalesReceiptRefundSchema>
 
