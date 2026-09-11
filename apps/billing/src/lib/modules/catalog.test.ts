@@ -51,7 +51,17 @@ describe('BILLING_MODULE_KEYS', () => {
       'payroll',
       'price-lists',
       'discounts',
+      'reports',
     ])
+  })
+
+  it('keeps reports mandatory and enabled by default', () => {
+    expect(
+      BILLING_MODULE_CATALOG.find((module) => module.key === 'reports')
+    ).toMatchObject({
+      optional: false,
+      enabledByDefault: true,
+    })
   })
 
   it('keeps the embedded CRM seam optional and disabled by default', () => {
