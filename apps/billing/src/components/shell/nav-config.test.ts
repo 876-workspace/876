@@ -79,8 +79,30 @@ describe('resolveBillingNavigation', () => {
       children: sales?.children?.map((child) => child.title),
     }).toEqual({
       href: '/invoices',
-      children: ['Invoices', 'Credit Notes'],
+      children: [
+        'Invoices',
+        'Recurring Invoices',
+        'Sales Receipts',
+        'Credit Notes',
+      ],
     })
+  })
+
+  it('gates Recurring Invoices and Sales Receipts on the invoices feature', () => {
+    const withoutFeature = resolvedEntry(['sales:read'], ['billing-sales'], 'sales')
+    const withFeature = resolvedEntry(
+      ['sales:read'],
+      ['billing-sales', 'billing-sales-invoices'],
+      'sales'
+    )
+
+    expect(withoutFeature).toBeUndefined()
+    expect(withFeature?.children?.map((child) => child.title)).toContain(
+      'Recurring Invoices'
+    )
+    expect(withFeature?.children?.map((child) => child.title)).toContain(
+      'Sales Receipts'
+    )
   })
 
   it('does not leak Sales children when the master feature is disabled', () => {

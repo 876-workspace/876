@@ -74,6 +74,29 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
     preferences: [],
   },
   {
+    ...FINANCE_MODULES.reports,
+    optional: false,
+    enabledByDefault: true,
+    preferences: [
+      {
+        key: 'timezone',
+        label: 'Reporting timezone',
+        type: 'string',
+        default: 'America/Jamaica',
+        hint: 'IANA timezone used to bucket sales, cash, and receivables reports.',
+      },
+      {
+        key: 'fiscal-year-start-month',
+        label: 'Fiscal year start month',
+        type: 'integer',
+        default: 1,
+        min: 1,
+        max: 12,
+        hint: 'Calendar month (1–12) the fiscal year starts in.',
+      },
+    ],
+  },
+  {
     key: 'crm',
     label: 'CRM',
     description:
@@ -134,29 +157,6 @@ const BILLING_ONLY_MODULE_CATALOG = defineModuleCatalog([
     optional: true,
     enabledByDefault: true,
     preferences: [],
-  },
-  {
-    ...FINANCE_MODULES.reports,
-    optional: false,
-    enabledByDefault: true,
-    preferences: [
-      {
-        key: 'timezone',
-        label: 'Reporting timezone',
-        type: 'string',
-        default: 'America/Jamaica',
-        hint: 'IANA timezone used to bucket sales, cash, and receivables reports.',
-      },
-      {
-        key: 'fiscal-year-start-month',
-        label: 'Fiscal year start month',
-        type: 'integer',
-        default: 1,
-        min: 1,
-        max: 12,
-        hint: 'Calendar month (1–12) the fiscal year starts in.',
-      },
-    ],
   },
 ])
 

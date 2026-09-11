@@ -17,6 +17,7 @@ const SHARED_KEYS = [
   'sales-receipts',
   'time-tracking',
   'customers',
+  'reports',
   'crm',
 ] as const
 
@@ -28,7 +29,6 @@ const BILLING_ONLY_KEYS = [
   'payroll',
   'price-lists',
   'discounts',
-  'reports',
 ] as const
 
 describe('finance module catalogs', () => {

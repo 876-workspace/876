@@ -43,6 +43,7 @@ describe('BILLING_MODULE_KEYS', () => {
       'sales-receipts',
       'time-tracking',
       'customers',
+      'reports',
       'crm',
       'subscriptions',
       'banking',
@@ -51,7 +52,6 @@ describe('BILLING_MODULE_KEYS', () => {
       'payroll',
       'price-lists',
       'discounts',
-      'reports',
     ])
   })
 
