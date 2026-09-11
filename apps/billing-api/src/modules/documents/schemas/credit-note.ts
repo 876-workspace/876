@@ -31,16 +31,27 @@ export const CreditNoteLineSchema = z.strictObject({
   discountAmount: minorAmountSchema.optional(),
 })
 
-export const CreditNoteCreateSchema = z.strictObject({
-  customerId: IdSchema,
-  currency: currencyCodeSchema,
-  invoiceId: IdSchema.nullable().optional(),
-  reason: optionalShortTextSchema,
-  notes: optionalTextSchema,
-  terms: optionalTextSchema,
-  issueAt: unixTimestampSchema.optional(),
-  lines: z.array(CreditNoteLineSchema).min(1).max(200),
-})
+export const CreditNoteCreateSchema = z
+  .strictObject({
+    customerId: IdSchema,
+    currency: currencyCodeSchema,
+    invoiceId: IdSchema.nullable().optional(),
+    salesReceiptId: IdSchema.nullable().optional(),
+    reason: optionalShortTextSchema,
+    notes: optionalTextSchema,
+    terms: optionalTextSchema,
+    issueAt: unixTimestampSchema.optional(),
+    lines: z.array(CreditNoteLineSchema).min(1).max(200),
+  })
+  .superRefine((value, context) => {
+    if (value.invoiceId && value.salesReceiptId)
+      context.addIssue({
+        code: 'custom',
+        message:
+          'A credit note can reference either an invoice or a Sales Receipt, not both.',
+        path: ['salesReceiptId'],
+      })
+  })
 
 export type CreditNoteCreateParams = z.infer<typeof CreditNoteCreateSchema>
 export type CreditNoteCreateInput = z.input<typeof CreditNoteCreateSchema>
