@@ -65,6 +65,11 @@ export interface SalesReceiptListParams {
 export type SalesReceipt = {
   object: 'sales_receipt'
   id: string
+  number: string
+  status: SalesReceiptStatus
+  currency: string
+  totalAmount: string
+  receiptAt: number
 } & Record<string, unknown>
 
 export type SalesReceiptList = List<SalesReceipt>
