@@ -17,6 +17,7 @@ import { createPaymentModesResource } from './resources/payment-modes'
 import { createPaymentMethodsResource } from './resources/payment-methods'
 import { createPaymentIntentsResource } from './resources/payment-intents'
 import { createQuotesResource } from './resources/quotes'
+import { createSalesReceiptsResource } from './resources/sales-receipts'
 import { createMembersResource } from './resources/members'
 import { createPaymentsResource } from './resources/payments'
 import { createRolesResource } from './resources/roles'
@@ -55,6 +56,7 @@ export function create876Client(options: ClientOptions = {}) {
     products: catalog.products,
     quotes: createQuotesResource(runtime),
     roles: createRolesResource(runtime),
+    salesReceipts: createSalesReceiptsResource(runtime),
     salespeople: createSalespeopleResource(runtime),
     subscriptions: createSubscriptionsResource(runtime),
     taxAuthorities: createTaxAuthoritiesResource(runtime),
