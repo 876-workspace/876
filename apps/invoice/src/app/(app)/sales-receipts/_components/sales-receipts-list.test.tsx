@@ -64,9 +64,9 @@ describe('SalesReceiptsList', () => {
     ).toBeNull()
   })
 
-  it('narrows the pane to the draft receipts when the status filter is draft', () => {
+  it('narrows the pane to the void receipts when the status filter is void', () => {
     navigationTestState.segments = ['rcp_2kL9mN4q']
-    navigationTestState.searchParams = new URLSearchParams('status=draft')
+    navigationTestState.searchParams = new URLSearchParams('status=void')
 
     render(
       <SalesReceiptsList
@@ -75,7 +75,7 @@ describe('SalesReceiptsList', () => {
           createReceipt({
             id: 'rcp_7pQ2rS5t',
             number: 'SR-1002',
-            status: 'DRAFT',
+            status: 'VOID',
           }),
         ]}
       />
