@@ -3,9 +3,10 @@
 - **Run ID:** `2026-09-11-commercial-engine-account-ledger`
 - **Branch:** `feat/commercial-engine-account-ledger` (cut from `main` @ `b649f9175`)
 - **Status:** IN_PROGRESS
-- **Delegate:** Codex (`gpt-5.6-terra`, high), one phase at a time — every phase
-  touches `apps/billing-api` schema/route registration, so phases run
-  sequentially, never in parallel.
+- **Delegates:** Codex (`gpt-5.6-terra`, high) for Phases 1–2 until its usage
+  limit (reset 20:12); then opencode running `muse-spark-1.3-contributor-free`
+  (user's choice), which — unlike the Muse CLI — can execute commands here.
+  Runs are parallelised only across non-overlapping file scopes.
 
 ## Overview
 
@@ -112,7 +113,11 @@ sound.
 | 1     | codex    | [briefs/codex/2026-09-11-phase-1-engine-correctness.md](./briefs/codex/2026-09-11-phase-1-engine-correctness.md) |
 | 1b    | codex    | [briefs/codex/2026-09-11-phase-1b-review-fixes.md](./briefs/codex/2026-09-11-phase-1b-review-fixes.md) |
 | 2     | codex    | [briefs/codex/2026-09-11-phase-2-recurring-invoices.md](./briefs/codex/2026-09-11-phase-2-recurring-invoices.md) |
-| 3     | codex    | [briefs/codex/2026-09-11-phase-3-reporting.md](./briefs/codex/2026-09-11-phase-3-reporting.md) |
+| 2b    | codex → orchestrator | [briefs/codex/2026-09-11-phase-2b-recurring-review-fixes.md](./briefs/codex/2026-09-11-phase-2b-recurring-review-fixes.md) (Codex hit its usage limit; the orchestrator applied the fixes) |
+| 2c    | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-2c-recurring-tests.md](./briefs/opencode/2026-09-11-phase-2c-recurring-tests.md) |
+| 3     | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-3-reporting.md](./briefs/opencode/2026-09-11-phase-3-reporting.md) |
+| 4a    | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-4a-recurring-invoices-ui.md](./briefs/opencode/2026-09-11-phase-4a-recurring-invoices-ui.md) |
+| 4b    | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-4b-reporting-ui.md](./briefs/opencode/2026-09-11-phase-4b-reporting-ui.md) |
 
 ## Execution reports
 
@@ -129,10 +134,31 @@ sound.
     raised the cron drain limit (100 → 5,000, time budget is the bound),
     folded the duplicated overdue query, and deleted the dead per-tenant
     schedule processor. billing-api: 795 tests, lint/boundaries/contract green.
-- [ ] **Phase 2 — Recurring invoices: data plane** (M1 backend + SDK)
+- [x] **Phase 2 — Recurring invoices: data plane** (M1 backend + SDK)
+  - Codex built schema/migration/routes/SDK but wrote 0 of 25 generation,
+    command and sweep tests. Orchestrator review found: `intervalCount`
+    ignored when advancing; pause/resume back-billed skipped periods; month-end
+    drift on resume; draft runs lost the payment term; generated invoices
+    tagged `MANUAL` instead of `RECURRING_INVOICE`; the sweep re-claimed a
+    failing profile until its time budget ran out and recorded nothing on a
+    thrown error; serializer in the repository; ad-hoc thrown errors. All fixed
+    by the orchestrator (2b); error codes registered in `@876/core`.
 - [ ] **Phase 3 — Reporting data plane** (M2 backend + SDK + `reports` settings)
+- [x] **Phase 2c — recurring tests** (Muse: 64 tests; orchestrator mutation-checked the frequency and sweep-exclusion fixes — both caught) · **Phase 3 — reporting** (now also subscriptions: revenue by source, new/canceled/churn, MRR, per-customer) 
 - [ ] **Phase 4 — Host UI** (recurring invoices, reports pages, dashboard, customer & item overview panels — Billing + Invoice)
-- [ ] Docs: `apps/billing/docs/accounting-model.md`, `apps/billing-api/README.md` scheduling section
+- [x] Docs: `apps/billing/docs/accounting-model.md` §1a generated invoices, `apps/billing-api/README.md` scheduled sweep
+- [x] Docs: reporting definitions (Phase 3, accounting-model §11)
+- Phase 3 orchestrator review: preference PATCH moved from `reports:read` to
+  `sales:write` (+ negative test); lifetime sales restricted to the account
+  currency instead of summing currencies; recurring-invoice FK names aligned
+  (schema ↔ migration drift = 0).
+- **Real-database verification (orchestrator):** all 46 migrations applied on
+  Postgres 17 via PGlite + `pglite-socket`; `prisma migrate diff` shows no
+  drift for this branch; the reporting service ran against seeded edge cases
+  (23:30 Sep 30 Jamaica sale → Sep 30 bucket; 00:30 Oct 1 excluded;
+  draft/void/opening-balance excluded; uncollectible counted; USD separate;
+  aging buckets; void-receipt cash excluded) — every figure matched a hand
+  calculation.
 
 ## Verification commands
 
@@ -152,7 +178,7 @@ node scripts/check-app-structure.mjs
 
 ## Handoff state
 
-Phase 1 committed. Phase 2 (recurring invoices) running in Codex.
+Phases 1–3 committed. Phase 4a (recurring invoices UI) running on opencode/Muse; Phase 4b (reporting UI) starts when 4a lands (shared billing-ui package exports).
 
 ## Deployment notes (not code)
 

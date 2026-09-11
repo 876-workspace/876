@@ -5,6 +5,17 @@ Run: `plans/2026-09-11-commercial-engine-account-ledger/` · Branch:
 branches). **Do not commit.** No AI attribution. Phases 1–2 (engine
 correctness, recurring invoices) are on the branch already.
 
+**Concurrency:** the orchestrator is concurrently editing the Recurring
+Invoices files (`apps/billing-api/src/modules/documents/recurring-invoices.*`,
+`documents/repositories/recurring-invoices.repository.ts`,
+`documents/schemas/recurring-invoice.ts`, `documents/__tests__/recurring-*`,
+`billing-engine/**`). Do not touch them. Other uncommitted changes in the tree
+are Phase 2 work — keep them. Also, a Phase 4a run (recurring invoices UI) may be editing
+`packages/billing-ui`, `apps/billing`, `apps/invoice` and
+`packages/billing/src/navigation.ts` at the same time. Do not touch those
+paths; in `packages/billing` touch only resources/schemas/settings-catalog and
+their tests.
+
 ## Read first (binding)
 
 `CLAUDE.md`, `.agents/rules/ai-code-quality.md`, `express-api.md`,
@@ -107,6 +118,33 @@ Rules:
 - Add the indexes above in a hand-written migration
   `prisma/migrations/20260911160000_reporting_indexes/migration.sql` (verify
   with `prisma migrate diff`).
+
+### 2b. Subscription reporting (user request: "and subscriptions")
+
+- `sales-summary` buckets split invoice sales by **source** using
+  `Invoice.billingReason`: `subscription` (`SUBSCRIPTION_CREATE|CYCLE|UPDATE`),
+  `recurring-invoice` (`RECURRING_INVOICE`), `one-off` (everything else,
+  excluding `OPENING_BALANCE` which is not a sale — say so in the doc), plus
+  `salesReceipts`. The totals stay the same; this is a breakdown.
+- `GET /reports/subscription-summary` (range + `groupBy`, optional
+  `customerId`) → `subscription-summary`, per currency:
+  - `current`: active / trialing / paused counts, MRR and ARR (same annualising
+    rule as the dashboard — **one** implementation, shared by both);
+  - per bucket: `new` (subscriptions whose `startAt ?? createdAt` falls in the
+    bucket), `canceled` (`canceledAt`), `ended` (`endedAt`), `paused`
+    (`pausedAt`), and `subscriptionRevenue` (net sales from subscription-source
+    invoices in the bucket);
+  - `churnRate` for the whole range as a decimal **string** =
+    canceled-in-range ÷ active-at-range-start (null when the denominator is 0).
+    Active-at-range-start is derived from lifecycle timestamps
+    (`startAt ?? createdAt` < from and not canceled/ended before from). Document
+    that historical MRR is **not** reconstructed (only current MRR) — no
+    subscription-history snapshots exist yet.
+- Customer projection: add `activeSubscriptionCount` and current MRR per
+  currency for that customer (reuse the same MRR function).
+- Tests: ≥ 8 more (source split incl. recurring-invoice and opening-balance
+  exclusion; new/canceled/ended bucketing; churn with zero denominator; paused
+  counted; MRR shared with dashboard; customer filter).
 
 ### 3. Dashboard projection rewrite
 
