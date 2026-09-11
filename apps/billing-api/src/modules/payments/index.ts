@@ -3,4 +3,7 @@ export {
   recordSettledPayment,
   type SettledPaymentParams,
 } from './settled-payment'
-export { reverseSettledPayment } from './settled-payment-reversal'
+export {
+  reverseSettledPayment,
+  SettledPaymentReversalError,
+} from './settled-payment-reversal'
