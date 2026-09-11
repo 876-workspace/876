@@ -27,12 +27,14 @@ export const salesReceipts = {
   refund(salesReceiptId: string, params: SalesReceiptRefundParams) {
     return request<SalesReceipt>(`${resourcePath(salesReceiptId)}/refund`, {
       method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey() },
       body: JSON.stringify(params),
     })
   },
   void(salesReceiptId: string, params: SalesReceiptVoidParams = {}) {
     return request<SalesReceipt>(`${resourcePath(salesReceiptId)}/void`, {
       method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey() },
       body: JSON.stringify(params),
     })
   },
