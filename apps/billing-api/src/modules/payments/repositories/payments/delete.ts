@@ -9,7 +9,7 @@ import { recomputeCustomerAr } from '@/modules/customers'
 import { PaymentMutationError, reversePaymentAllocations } from './shared'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 
-/** Cancels a manual payment after restoring every allocated invoice balance. */
+/** Cancels an ordinary manual payment after restoring every allocation. */
 export async function deletePayment(
   tenantId: string,
   paymentId: string,
@@ -23,6 +23,7 @@ export async function deletePayment(
           where: {
             id: paymentId,
             tenantId,
+            salesReceipt: { is: null },
             ...(sourceAppId ? { sourceAppId } : {}),
           },
           include: {
