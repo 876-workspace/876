@@ -45,6 +45,7 @@ export interface DocumentUpdateParams {
   orderNumber?: string | null
   referenceNumber?: string | null
   subject?: string | null
+  lines?: DocumentLineCreateParams[]
 }
 
 interface DocumentCreated {
