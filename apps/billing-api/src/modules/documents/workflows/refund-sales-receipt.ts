@@ -32,12 +32,6 @@ class SalesReceiptRefundError extends Error {
   }
 }
 
-export interface SalesReceiptRefundResult {
-  id: string
-  creditNoteId: string
-  refundId: string
-}
-
 /**
  * Corrects Sales Receipt value with a Credit Note and returns cash with a
  * Refund. Optional stock quantities are restored in the same transaction.
@@ -47,7 +41,7 @@ export async function refundSalesReceiptWorkflow(
   salesReceiptId: string,
   params: SalesReceiptRefundParams,
   idempotency?: IdempotencyContext
-): ServiceResult<SalesReceiptRefundResult> {
+): ServiceResult<{ id: string }> {
   const now = nowUnixSeconds()
 
   try {
@@ -63,37 +57,7 @@ export async function refundSalesReceiptWorkflow(
           now,
         })
         if (claim.error !== null) return claim
-        if (claim.data.state === 'replayed') {
-          const replay = await tx.salesReceipt.findFirst({
-            where: { id: salesReceiptId, tenantId },
-            include: {
-              creditNotes: {
-                where: { status: { not: 'VOID' } },
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-                include: {
-                  refunds: {
-                    orderBy: { createdAt: 'desc' },
-                    take: 1,
-                    select: { id: true },
-                  },
-                },
-              },
-            },
-          })
-          const creditNote = replay?.creditNotes[0]
-          const refund = creditNote?.refunds[0]
-          if (!creditNote || !refund)
-            throw new SalesReceiptRefundError(
-              'The replayed Sales Receipt refund evidence could not be resolved.',
-              409
-            )
-          return ok({
-            id: salesReceiptId,
-            creditNoteId: creditNote.id,
-            refundId: refund.id,
-          })
-        }
+        if (claim.data.state === 'replayed') return ok({ id: salesReceiptId })
         claimId = claim.data.claimId
       }
 
@@ -233,7 +197,7 @@ export async function refundSalesReceiptWorkflow(
       })
 
       if (claimId) await completeCommand(tx, tenantId, claimId, now)
-      return ok({ id: receipt.id, creditNoteId, refundId })
+      return ok({ id: receipt.id })
     })
   } catch (error) {
     if (error instanceof SalesReceiptRefundError)
