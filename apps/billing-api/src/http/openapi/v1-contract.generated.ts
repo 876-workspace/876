@@ -922,6 +922,73 @@ export const v1OperationMetadata = {
     summary: 'Update organization quote preferences',
     tags: ['Quotes'],
   },
+  'GET /sales-receipts': {
+    operationId: 'billing-billing_get_sales_receipts',
+    summary: 'List Sales Receipts',
+    tags: ['Sales Receipts'],
+  },
+  'POST /sales-receipts': {
+    operationId: 'billing-billing_post_sales_receipts',
+    summary: 'Create a Sales Receipt',
+    tags: ['Sales Receipts'],
+  },
+  'GET /sales-receipts/{salesReceiptId}': {
+    operationId: 'billing-billing_get_sales_receipts_salesReceiptId',
+    summary: 'Retrieve a Sales Receipt',
+    tags: ['Sales Receipts'],
+  },
+  'POST /sales-receipts/{salesReceiptId}/refund': {
+    operationId: 'billing-billing_post_sales_receipts_salesReceiptId_refund',
+    summary: 'Refund a Sales Receipt',
+    tags: ['Sales Receipts'],
+  },
+  'POST /sales-receipts/{salesReceiptId}/void': {
+    operationId: 'billing-billing_post_sales_receipts_salesReceiptId_void',
+    summary: 'Void a Sales Receipt',
+    tags: ['Sales Receipts'],
+  },
+  'POST /quotes/{quoteId}/convert-to-sales-receipt': {
+    operationId: 'billing-billing_post_quotes_quoteId_convert_to_sales_receipt',
+    summary: 'Convert an accepted quote to a Sales Receipt',
+    tags: ['Sales Receipts'],
+  },
+  'GET /integrations/organizations/{organizationId}/sales-receipts': {
+    operationId: 'billing-integration_get_sales_receipts',
+    summary: 'List organization Sales Receipts',
+    tags: ['Sales Receipts'],
+  },
+  'POST /integrations/organizations/{organizationId}/sales-receipts': {
+    operationId: 'billing-integration_post_sales_receipts',
+    summary: 'Create an organization Sales Receipt',
+    tags: ['Sales Receipts'],
+  },
+  'GET /integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}':
+    {
+      operationId: 'billing-integration_get_sales_receipts_salesReceiptId',
+      summary: 'Retrieve an organization Sales Receipt',
+      tags: ['Sales Receipts'],
+    },
+  'POST /integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/refund':
+    {
+      operationId:
+        'billing-integration_post_sales_receipts_salesReceiptId_refund',
+      summary: 'Refund an organization Sales Receipt',
+      tags: ['Sales Receipts'],
+    },
+  'POST /integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/void':
+    {
+      operationId:
+        'billing-integration_post_sales_receipts_salesReceiptId_void',
+      summary: 'Void an organization Sales Receipt',
+      tags: ['Sales Receipts'],
+    },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-sales-receipt':
+    {
+      operationId:
+        'billing-integration_post_quotes_quoteId_convert_to_sales_receipt',
+      summary: 'Convert an organization quote to a Sales Receipt',
+      tags: ['Sales Receipts'],
+    },
   'GET /tax-authorities': {
     summary: 'List tax authorities',
     tags: ['Taxes'],
@@ -20888,6 +20955,1255 @@ export const v1OperationContracts = {
       },
     },
   },
+  'GET /sales-receipts': {
+    tags: ['Sales Receipts'],
+    summary: 'List Sales Receipts',
+    operationId: 'billing-billing_get_sales_receipts',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: ['PAID', 'VOID'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Sales Receipt list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'sales_receipt',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /sales-receipts': {
+    tags: ['Sales Receipts'],
+    summary: 'Create a Sales Receipt',
+    operationId: 'billing-billing_post_sales_receipts',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Sales Receipt created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /sales-receipts/{salesReceiptId}': {
+    tags: ['Sales Receipts'],
+    summary: 'Retrieve a Sales Receipt',
+    operationId: 'billing-billing_get_sales_receipts_salesReceiptId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'salesReceiptId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Sales Receipt',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /sales-receipts/{salesReceiptId}/refund': {
+    tags: ['Sales Receipts'],
+    summary: 'Refund a Sales Receipt',
+    operationId: 'billing-billing_post_sales_receipts_salesReceiptId_refund',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'salesReceiptId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Sales Receipt refunded',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /sales-receipts/{salesReceiptId}/void': {
+    tags: ['Sales Receipts'],
+    summary: 'Void a Sales Receipt',
+    operationId: 'billing-billing_post_sales_receipts_salesReceiptId_void',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'salesReceiptId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Sales Receipt voided',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /quotes/{quoteId}/convert-to-sales-receipt': {
+    tags: ['Sales Receipts'],
+    summary: 'Convert an accepted quote to a Sales Receipt',
+    operationId: 'billing-billing_post_quotes_quoteId_convert_to_sales_receipt',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'quoteId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Sales Receipt created from quote',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/sales-receipts': {
+    tags: ['Sales Receipts'],
+    summary: 'List organization Sales Receipts',
+    operationId: 'billing-integration_get_sales_receipts',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.sales-receipts.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: ['PAID', 'VOID'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Sales Receipt list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'sales_receipt',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/sales-receipts': {
+    tags: ['Sales Receipts'],
+    summary: 'Create an organization Sales Receipt',
+    operationId: 'billing-integration_post_sales_receipts',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.sales-receipts.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Idempotent Sales Receipt replay',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '201': {
+        description: 'Sales Receipt created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales_receipt',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}':
+    {
+      tags: ['Sales Receipts'],
+      summary: 'Retrieve an organization Sales Receipt',
+      operationId: 'billing-integration_get_sales_receipts_salesReceiptId',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.sales-receipts.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'salesReceiptId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Sales Receipt',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'sales_receipt',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/refund':
+    {
+      tags: ['Sales Receipts'],
+      summary: 'Refund an organization Sales Receipt',
+      operationId:
+        'billing-integration_post_sales_receipts_salesReceiptId_refund',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.sales-receipts.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'salesReceiptId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '201': {
+          description: 'Sales Receipt refunded',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'sales_receipt',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/void':
+    {
+      tags: ['Sales Receipts'],
+      summary: 'Void an organization Sales Receipt',
+      operationId:
+        'billing-integration_post_sales_receipts_salesReceiptId_void',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.sales-receipts.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'salesReceiptId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '201': {
+          description: 'Sales Receipt voided',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'sales_receipt',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-sales-receipt':
+    {
+      tags: ['Sales Receipts'],
+      summary: 'Convert an organization quote to a Sales Receipt',
+      operationId:
+        'billing-integration_post_quotes_quoteId_convert_to_sales_receipt',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.sales-receipts.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'quoteId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Idempotent Sales Receipt replay',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'sales_receipt',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '201': {
+          description: 'Sales Receipt created from quote',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'sales_receipt',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
   'GET /tax-authorities': {
     security: [
       {

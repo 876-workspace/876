@@ -49,9 +49,11 @@ describe('frozen v1 route authentication matrix', () => {
     // and quote preference read/update were added to both tenant and
     // integration surfaces, plus the four integration quote decision commands.
     // 280 -> 285: integration payment update/delete/apply and refund list/create
-    // were added as authenticated operations.
-    expect(operations).toHaveLength(285)
-    expect(protectedPublicOperations()).toHaveLength(284)
+    // were added as authenticated operations. 285 -> 297: Sales Receipt list,
+    // create, retrieve, refund, void, and quote conversion were added to both
+    // tenant and integration surfaces.
+    expect(operations).toHaveLength(297)
+    expect(protectedPublicOperations()).toHaveLength(296)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })
