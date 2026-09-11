@@ -4,7 +4,11 @@ import {
   documentStatusVariant,
   INVOICE_STATUS_OPTIONS,
   INVOICE_STATUS_VALUES,
+  isRecurringInvoiceStatus,
+  RECURRING_INVOICE_STATUS_OPTIONS,
+  recurringInvoiceStatusVariant,
   resolveInvoiceStatus,
+  resolveRecurringInvoiceStatus,
 } from './document-status'
 
 describe('documentStatusVariant', () => {
@@ -128,5 +132,35 @@ describe('invoice status filter options and resolver', () => {
       expect(typeof option.headingLabel).toBe('string')
       expect(option.headingLabel.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('recurring invoice status variant and filter', () => {
+  it('keeps green for active only', () => {
+    expect(recurringInvoiceStatusVariant('active')).toBe('success')
+    expect(recurringInvoiceStatusVariant('paused')).not.toBe('success')
+    expect(recurringInvoiceStatusVariant('stopped')).not.toBe('success')
+    expect(recurringInvoiceStatusVariant('expired')).not.toBe('success')
+  })
+
+  it('maps paused, stopped, and expired to distinct badges', () => {
+    expect(recurringInvoiceStatusVariant('paused')).toBe('secondary')
+    expect(recurringInvoiceStatusVariant('stopped')).toBe('destructive')
+    expect(recurringInvoiceStatusVariant('expired')).toBe('warning')
+  })
+
+  it('lists all, active, paused, stopped, and expired in order', () => {
+    expect(RECURRING_INVOICE_STATUS_OPTIONS.map((option) => option.value)).toEqual(
+      ['all', 'active', 'paused', 'stopped', 'expired']
+    )
+  })
+
+  it('narrows known statuses and falls back to all', () => {
+    expect(isRecurringInvoiceStatus('paused')).toBe(true)
+    expect(isRecurringInvoiceStatus('void')).toBe(false)
+    expect(resolveRecurringInvoiceStatus('stopped')).toBe('stopped')
+    expect(resolveRecurringInvoiceStatus('bogus')).toBe('all')
+    expect(resolveRecurringInvoiceStatus(null)).toBe('all')
+    expect(resolveRecurringInvoiceStatus(undefined)).toBe('all')
   })
 })
