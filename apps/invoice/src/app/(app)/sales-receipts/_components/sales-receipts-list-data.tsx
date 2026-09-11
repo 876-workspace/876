@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { redirect } from 'next/navigation'
 import { ReceiptText } from '@876/ui/icons'
 import {
@@ -9,7 +10,8 @@ import {
 } from '@876/ui/empty'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { listInvoices } from '@/app/(app)/_lib/list-data'
+import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
+import { getBilling } from '@/lib/services/billing'
 import { SalesReceiptsList } from './sales-receipts-list'
 
 function SalesReceiptsEmptyState() {
@@ -31,36 +33,53 @@ function SalesReceiptsEmptyState() {
 export async function SalesReceiptsListData() {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  // Sales Receipts share the invoice family — reuse invoices endpoint until dedicated resource exists.
-  const result = (await listInvoices(context.orgId).catch(
-    () => ({ data: null, error: { code: 'unreachable' } }) as const
-  )) as unknown as { data: { data: unknown[] } | null; error: unknown | null }
 
-  const receipts =
-    result.error || !result.data || result.data.data.length === 0
-      ? []
-      : (result.data.data as Record<string, unknown>[])
-          .slice(0, 5)
-          .map((receipt) => ({
-            id: String(receipt.id),
-            number: String(receipt.number ?? receipt.id),
-            customer: {
-              name: String(
-                (receipt.customer as Record<string, unknown>)?.name ??
-                  receipt.customerName ??
-                  '—'
-              ),
-            },
-            totalAmount: (receipt.totalAmount as string) ?? '0',
-            currency: String(receipt.currency ?? 'JMD'),
-            status: String(receipt.status ?? 'PAID'),
-            date:
-              typeof receipt.createdAt === 'number'
-                ? receipt.createdAt
-                : typeof receipt.date === 'number'
-                  ? receipt.date
-                  : null,
-          }))
+  const billing = await getBilling(context.orgId)
+  const result = await billing.salesReceipts.list()
+  if (result.error) {
+    redirectIfSignedOut(result.error.code, '/sales-receipts')
+    Sentry.captureMessage('Invoice sales receipts list failed', {
+      level: 'error',
+      tags: { category: 'billing_client' },
+      extra: {
+        call: 'salesReceipts.list',
+        errorCode: result.error.code,
+        organizationId: context.orgId,
+      },
+    })
+    return (
+      <div className="rounded-lg border border-dashed p-10 text-center">
+        <p className="text-sm font-medium">
+          Sales receipts are unavailable right now
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {result.error.message}
+        </p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">
+          {result.error.code}
+        </p>
+      </div>
+    )
+  }
+
+  const receipts = result.data.data.map((receipt) => ({
+    id: receipt.id,
+    number: receipt.number,
+    customer: {
+      name:
+        receipt.customer &&
+        typeof receipt.customer === 'object' &&
+        'name' in receipt.customer
+          ? String(receipt.customer.name ?? '—')
+          : typeof receipt.customerName === 'string'
+            ? receipt.customerName
+            : '—',
+    },
+    totalAmount: receipt.totalAmount,
+    currency: receipt.currency,
+    status: receipt.status,
+    receiptAt: receipt.receiptAt,
+  }))
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">

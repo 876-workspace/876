@@ -25,6 +25,13 @@ export interface InventoryRestore {
   occurredAt: number
 }
 
+/** Restores explicit quantities from a prior sale without reversing the full sale. */
+export interface InventoryReturn {
+  reference: ResourceReference
+  lines: readonly InventoryLine[]
+  occurredAt: number
+}
+
 export type InventoryResult<T> =
   | { data: T; error: null }
   | {

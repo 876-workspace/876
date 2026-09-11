@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 
+import { CustomerSalesReceiptsAccordion } from '@876/billing-ui/customer-sales-receipts-accordion'
 import {
   CustomerTransactionsAccordions,
   CustomerTransactionsAccordionsSkeleton,
@@ -31,12 +32,19 @@ async function CustomerTransactionsData({
   if (!context) return null
 
   const billing = await getBilling(context.orgId)
-  const [accountResult, currenciesResult] = await Promise.all([
-    billing.customers.account(customerId),
-    billing.currencies.list(),
-  ])
-  if (accountResult.error || currenciesResult.error) {
-    const failure = accountResult.error ?? currenciesResult.error
+  const [accountResult, currenciesResult, salesReceiptsResult] =
+    await Promise.all([
+      billing.customers.account(customerId),
+      billing.currencies.list(),
+      billing.salesReceipts.list({ customerId }),
+    ])
+  if (
+    accountResult.error ||
+    currenciesResult.error ||
+    salesReceiptsResult.error
+  ) {
+    const failure =
+      accountResult.error ?? currenciesResult.error ?? salesReceiptsResult.error
     return (
       <AppError
         error={{
@@ -61,12 +69,26 @@ async function CustomerTransactionsData({
       return []
     })
   )
+  const salesReceipts = salesReceiptsResult.data.data
+  const hrefBySalesReceiptId = Object.fromEntries(
+    salesReceipts.map((receipt) => [
+      receipt.id,
+      `/sales-receipts/${receipt.id}`,
+    ])
+  )
 
   return (
-    <CustomerTransactionsAccordions
-      entries={entries}
-      currencyDecimals={currencyDecimals}
-      hrefByEntryId={hrefByEntryId}
-    />
+    <div className="space-y-3">
+      <CustomerSalesReceiptsAccordion
+        receipts={salesReceipts}
+        currencyDecimals={currencyDecimals}
+        hrefBySalesReceiptId={hrefBySalesReceiptId}
+      />
+      <CustomerTransactionsAccordions
+        entries={entries}
+        currencyDecimals={currencyDecimals}
+        hrefByEntryId={hrefByEntryId}
+      />
+    </div>
   )
 }

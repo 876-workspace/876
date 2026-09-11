@@ -13,10 +13,12 @@ import {
 } from '@876/ui/detail-card'
 import { ReceiptText } from '@876/ui/icons'
 
+import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { listInvoices } from '@/app/(app)/_lib/list-data'
 import { formatDate, formatMoney } from '@/lib/format'
+import { getBilling } from '@/lib/services/billing'
 import { documentStatusVariant } from '@/lib/status'
+import { InvoiceSalesReceiptLifecycleActions } from '../_components/sales-receipt-lifecycle-actions'
 
 type Props = { params: Promise<{ salesReceiptId: string }> }
 
@@ -29,8 +31,14 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
   const { salesReceiptId } = await params
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const result = await listInvoices(context.orgId)
+
+  const billing = await getBilling(context.orgId)
+  const [result, access] = await Promise.all([
+    billing.salesReceipts.retrieve(salesReceiptId),
+    resolveAccessContext(context.userId, context.orgId),
+  ])
   if (result.error) {
+    if (result.error.code === 'sales-receipt/not-found') notFound()
     return (
       <DetailCard aria-label="Sales receipt unavailable">
         <DetailCardBody>
@@ -42,54 +50,76 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
     )
   }
 
-  const receipt = result.data.data.find((row) => row.id === salesReceiptId)
-  if (!receipt) notFound()
-
+  const receipt = result.data
   const customer =
     receipt.customer &&
     typeof receipt.customer === 'object' &&
     'name' in receipt.customer
       ? String(receipt.customer.name ?? '—')
-      : String(receipt.customerName ?? '—')
-  const number = String(receipt.number ?? receipt.id)
-  const totalAmount = String(receipt.totalAmount ?? '0')
-  const currency = String(receipt.currency ?? 'JMD')
-  const status = String(receipt.status ?? 'PAID')
-  const date =
-    typeof receipt.createdAt === 'number'
-      ? receipt.createdAt
-      : typeof receipt.date === 'number'
-        ? receipt.date
-        : null
+      : typeof receipt.customerName === 'string'
+        ? receipt.customerName
+        : '—'
+  const canWrite =
+    access.status === 'ok' && canAccess(access.context, 'invoices.edit')
+  const canRefund =
+    canWrite &&
+    receipt.status === 'PAID' &&
+    BigInt(receipt.refundableAmount) > 0n
+  const canVoid =
+    canWrite &&
+    receipt.status === 'PAID' &&
+    BigInt(receipt.creditedAmount) === 0n
 
   return (
-    <DetailCard aria-label={`Sales receipt details: ${number}`}>
+    <DetailCard aria-label={`Sales receipt details: ${receipt.number}`}>
       <DetailCardHeader
         icon={
           <DetailCardIcon>
             <ReceiptText className="size-5" />
           </DetailCardIcon>
         }
-        title={number}
+        title={receipt.number}
         meta={
-          <Badge variant={documentStatusVariant(status)}>
-            {status.toLowerCase().replace(/_/g, ' ')}
+          <Badge variant={documentStatusVariant(receipt.status)}>
+            {receipt.status.toLowerCase()}
           </Badge>
         }
         subtitle={customer}
+        actions={
+          <InvoiceSalesReceiptLifecycleActions
+            salesReceiptId={receipt.id}
+            canRefund={canRefund}
+            canVoid={canVoid}
+          />
+        }
         closeHref="/sales-receipts"
         closeLabel="Close sales receipt details"
       />
       <DetailCardBody className="space-y-8">
         <DetailCardHeadline
-          value={formatMoney(totalAmount, currency)}
+          value={formatMoney(receipt.totalAmount, receipt.currency)}
           caption="Sales receipt total"
         />
         <DetailCardSection title="Sales receipt">
           <DetailCardFacts>
             <DetailCardFact label="Customer" value={customer} />
-            <DetailCardFact label="Date" value={formatDate(date)} />
-            <DetailCardFact label="Currency" value={currency} mono />
+            <DetailCardFact
+              label="Receipt date"
+              value={formatDate(receipt.receiptAt)}
+            />
+            <DetailCardFact label="Currency" value={receipt.currency} mono />
+            <DetailCardFact
+              label="Credited"
+              value={formatMoney(receipt.creditedAmount, receipt.currency)}
+            />
+            <DetailCardFact
+              label="Cash refunded"
+              value={formatMoney(receipt.refundedAmount, receipt.currency)}
+            />
+            <DetailCardFact
+              label="Refund state"
+              value={receipt.refundStatus.toLowerCase().replaceAll('_', ' ')}
+            />
           </DetailCardFacts>
         </DetailCardSection>
       </DetailCardBody>

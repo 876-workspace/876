@@ -6,15 +6,14 @@ import type { CreditNoteCreateParams } from '../../schemas/credit-note'
 import type { ServiceResult } from '../../schemas/api'
 
 import { nextDocumentNumber } from '../../document-numbers.repository'
-import { recordLedgerEntry } from '@/modules/ledger'
 import { err, ok } from '../result'
 import { hasEnabledCurrency } from '@/modules/currencies'
-import { recomputeCustomerAr } from '@/modules/customers'
+import { recordCreditNote } from './record'
 import { computeTotals, CreditNoteMutationError } from './shared'
 
 /**
  * Issues a credit note (status OPEN) with its full total available as customer
- * credit. Applying that credit to invoices is a separate step (`apply`).
+ * credit. Applying or refunding that credit is a separate step.
  */
 export async function create(
   tenantId: string,
@@ -65,64 +64,50 @@ export async function create(
           )
       }
 
-      await tx.creditNote.create({
-        data: {
-          id: creditNoteId,
-          tenantId,
-          customerId: params.customerId,
-          invoiceId: params.invoiceId ?? null,
-          number,
-          status: 'OPEN',
-          currency: params.currency,
-          reason: params.reason ?? null,
-          subtotalAmount: totals.subtotalAmount,
-          taxAmount: totals.taxAmount,
-          totalAmount: totals.totalAmount,
-          balanceAmount: totals.totalAmount,
-          notes:
-            params.notes === undefined
-              ? (preference?.customerNote ?? null)
-              : params.notes,
-          terms:
-            params.terms === undefined
-              ? (preference?.termsAndConditions ?? null)
-              : params.terms,
-          issueAt: params.issueAt ?? now,
-          createdAt: now,
-          updatedAt: now,
-          lines: {
-            create: totals.lines.map((line) => ({
-              id: generateId('CreditNoteLine'),
-              itemId: line.itemId,
-              priceId: line.priceId,
-              description: line.description,
-              quantity: line.quantity,
-              unitAmount: line.unitAmount,
-              taxAmount: line.taxAmount,
-              discountAmount: line.discountAmount,
-              totalAmount: line.totalAmount,
-              createdAt: now,
-              updatedAt: now,
-            })),
-          },
-        },
-      })
+      if (params.salesReceiptId) {
+        const salesReceipt = await tx.salesReceipt.findFirst({
+          where: { id: params.salesReceiptId, tenantId },
+          select: { customerId: true, currency: true, status: true },
+        })
+        if (!salesReceipt)
+          throw new CreditNoteMutationError('Sales Receipt not found.', 404)
+        if (salesReceipt.status !== 'PAID')
+          throw new CreditNoteMutationError(
+            'Only a paid Sales Receipt can be credited.',
+            409
+          )
+        if (salesReceipt.customerId !== params.customerId)
+          throw new CreditNoteMutationError(
+            'The Sales Receipt belongs to a different customer.',
+            422
+          )
+        if (salesReceipt.currency !== params.currency)
+          throw new CreditNoteMutationError(
+            'The Sales Receipt uses a different currency.',
+            422
+          )
+      }
 
-      await recordLedgerEntry(tx, {
-        tenantId,
+      await recordCreditNote(tx, tenantId, {
+        id: creditNoteId,
         customerId: params.customerId,
-        creditNoteId,
-        type: 'CREDIT_NOTE_ISSUED',
-        direction: 'CREDIT',
-        amount: totals.totalAmount,
+        invoiceId: params.invoiceId,
+        salesReceiptId: params.salesReceiptId,
+        number,
         currency: params.currency,
-        description: `Credit note ${number} issued`,
-        idempotencyKey: `credit-note:${creditNoteId}:issued`,
-        effectiveAt: params.issueAt ?? now,
-        createdAt: now,
+        reason: params.reason,
+        totals,
+        notes:
+          params.notes === undefined
+            ? (preference?.customerNote ?? null)
+            : params.notes,
+        terms:
+          params.terms === undefined
+            ? (preference?.termsAndConditions ?? null)
+            : params.terms,
+        issueAt: params.issueAt ?? now,
+        now,
       })
-
-      await recomputeCustomerAr(tx, tenantId, params.customerId, now)
     })
 
     return ok({ id: creditNoteId })

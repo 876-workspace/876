@@ -7,6 +7,7 @@ import {
   QuoteSchema,
 } from '../schemas'
 import { QuotePreferenceSchema } from '../types/quote-preference.schema'
+import { SalesReceiptSchema } from '../types/sales-receipt.schema'
 import type {
   DeletedQuote,
   Invoice,
@@ -21,6 +22,10 @@ import type {
   QuotePreference,
   QuotePreferenceUpdateParams,
 } from '../types/quote-preference'
+import type {
+  SalesReceipt,
+  SalesReceiptQuoteConversionParams,
+} from '../types/sales-receipt'
 
 function resourcePath(quoteId: string) {
   return `/api/v1/quotes/${encodeURIComponent(quoteId)}`
@@ -154,6 +159,23 @@ export function createQuotesResource(runtime: Runtime) {
           signal: options?.signal,
         },
         InvoiceSchema
+      )
+    },
+
+    convertToSalesReceipt(
+      quoteId: string,
+      params: SalesReceiptQuoteConversionParams,
+      options?: RequestOptions
+    ) {
+      return Request<SalesReceipt>(
+        runtime,
+        {
+          method: 'POST',
+          path: lifecyclePath(quoteId, 'convert-to-sales-receipt'),
+          body: params,
+          signal: options?.signal,
+        },
+        SalesReceiptSchema
       )
     },
 

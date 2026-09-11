@@ -46,6 +46,7 @@ model Payment {
   providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_provider_connection_fkey")
   paymentIntent      PaymentIntent?             @relation(fields: [tenantId, paymentIntentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_intent_fkey")
   paymentMethod      PaymentMethod?             @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_method_fkey")
+  salesReceipt       SalesReceipt?
   invoiceAllocations PaymentAllocation[]
   refunds            Refund[]
   bankTransaction    BankTransaction?

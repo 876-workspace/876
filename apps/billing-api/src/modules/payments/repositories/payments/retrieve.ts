@@ -6,7 +6,12 @@ export function retrieve(
   sourceAppId?: string
 ) {
   return prisma.payment.findFirst({
-    where: { id: paymentId, tenantId, ...(sourceAppId ? { sourceAppId } : {}) },
+    where: {
+      id: paymentId,
+      tenantId,
+      salesReceipt: { is: null },
+      ...(sourceAppId ? { sourceAppId } : {}),
+    },
     include: {
       customer: { select: { id: true, name: true } },
       paymentMode: true,

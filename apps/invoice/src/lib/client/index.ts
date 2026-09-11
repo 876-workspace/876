@@ -10,6 +10,7 @@ import { support } from './support'
 import { paymentModes } from './payment-modes'
 import { payments } from './payments'
 import { refunds } from './refunds'
+import { salesReceipts } from './sales-receipts'
 import { currencies } from './currencies'
 import { taxAuthorities, taxRates } from './taxes'
 
@@ -26,6 +27,7 @@ export const client = {
   paymentModes,
   payments,
   refunds,
+  salesReceipts,
   currencies,
   taxAuthorities,
   taxRates,
@@ -43,5 +45,6 @@ export { invites } from './invites'
 export { support } from './support'
 export { payments } from './payments'
 export { refunds } from './refunds'
+export { salesReceipts } from './sales-receipts'
 export { currencies } from './currencies'
 export type { ClientResult } from '@/types/api'

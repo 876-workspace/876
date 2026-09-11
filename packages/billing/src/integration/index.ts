@@ -5,3 +5,4 @@ export {
   type BillingIntegrationClient,
 } from './client'
 export type * from './types'
+export type * from './types/sales-receipt'

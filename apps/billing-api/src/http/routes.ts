@@ -23,11 +23,10 @@ import {
   createInternalCustomersRouter,
 } from '@/modules/customers'
 import { createDiscountsRouter } from '@/modules/discounts'
-import {
-  createDocumentsRouter,
-  createInternalDocumentsRouter,
-  createQuoteLifecycleRouter,
-} from '@/modules/documents'
+import { createInternalDocumentsRouter } from '@/modules/documents/documents.internal-routes'
+import { createDocumentsRouter } from '@/modules/documents/documents.routes'
+import { createQuoteLifecycleRouter } from '@/modules/documents/quote-lifecycle.routes'
+import { createSalesReceiptsRouter } from '@/modules/documents/sales-receipts.routes'
 import {
   activeConnectionAuthorization,
   createFinanceConnectionsRouter,
@@ -37,7 +36,7 @@ import { createHealthRouter } from '@/modules/health'
 import { createPaymentProvidersRouter } from '@/modules/payment-providers'
 import { createPaymentIntentsRouter } from '@/modules/payment-intents'
 import { createPaymentMethodsRouter } from '@/modules/payment-methods'
-import { createPaymentsRouter } from '@/modules/payments'
+import { createPaymentsRouter } from '@/modules/payments/payments.routes'
 import { createInternalReportingRouter } from '@/modules/reporting'
 import { createSubscriptionsRouter } from '@/modules/subscriptions'
 import {
@@ -77,6 +76,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createDiscountsRouter(resolveGuards))
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
   root.use('/api/v1', createQuoteLifecycleRouter(resolveGuards))
+  root.use('/api/v1', createSalesReceiptsRouter(resolveGuards))
   root.use('/api/v1', createTaxRouter(resolveGuards))
   root.use('/api/v1', createPaymentProvidersRouter(resolveGuards))
   root.use('/api/v1', createPaymentMethodsRouter(resolveGuards))

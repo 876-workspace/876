@@ -41,8 +41,11 @@ describe('nextDocumentNumber', () => {
   })
 
   it('maps document types to correct prefixes', async () => {
-    const cases: Array<[string, string]> = [
+    const cases: Array<
+      [Parameters<typeof nextDocumentNumber>[1], string]
+    > = [
       ['QUOTE', 'Q-000001'],
+      ['SALES_RECEIPT', 'SR-000001'],
       ['CREDIT_NOTE', 'CN-000001'],
       ['REFUND', 'REF-000001'],
     ]
@@ -52,12 +55,7 @@ describe('nextDocumentNumber', () => {
           upsert: vi.fn().mockResolvedValue({ nextNumber: 2 }),
         },
       } as unknown as SequenceStub
-      const result = await nextDocumentNumber(
-        'ten_1',
-        type as Parameters<typeof nextDocumentNumber>[1],
-        1000,
-        fake
-      )
+      const result = await nextDocumentNumber('ten_1', type, 1000, fake)
       expect(result).toBe(expected)
     }
   })

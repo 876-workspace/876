@@ -142,6 +142,7 @@ enum IntervalUnit {
 enum DocumentType {
   QUOTE
   INVOICE
+  SALES_RECEIPT
   ESTIMATE
   PAYMENT
   CREDIT_NOTE
@@ -172,6 +173,13 @@ enum InvoiceStatus {
   VOID
 
   @@map("BillingInvoiceStatus")
+}
+
+enum SalesReceiptStatus {
+  PAID
+  VOID
+
+  @@map("BillingSalesReceiptStatus")
 }
 
 enum InvoiceBillingReason {

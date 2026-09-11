@@ -23,6 +23,10 @@
       "types": "./src/customer-contact-form.tsx",
       "default": "./src/customer-contact-form.tsx"
     },
+    "./customer-sales-receipts-accordion": {
+      "types": "./src/customer-sales-receipts-accordion.tsx",
+      "default": "./src/customer-sales-receipts-accordion.tsx"
+    },
     "./customer-transactions-accordions": {
       "types": "./src/customer-transactions-accordions.tsx",
       "default": "./src/customer-transactions-accordions.tsx"
@@ -42,6 +46,10 @@
     "./document/document-line-items-editor": {
       "types": "./src/document/document-line-items-editor.tsx",
       "default": "./src/document/document-line-items-editor.tsx"
+    },
+    "./document/document-line-payload": {
+      "types": "./src/document/document-line-payload.ts",
+      "default": "./src/document/document-line-payload.ts"
     },
     "./invoice-lifecycle-actions": {
       "types": "./src/invoice-lifecycle-actions.tsx",
@@ -194,6 +202,18 @@
     "./payments-table": {
       "types": "./src/payments-table.tsx",
       "default": "./src/payments-table.tsx"
+    },
+    "./sales-receipt-create-form": {
+      "types": "./src/sales-receipt-create-form.tsx",
+      "default": "./src/sales-receipt-create-form.tsx"
+    },
+    "./sales-receipt-lifecycle-actions": {
+      "types": "./src/sales-receipt-lifecycle-actions.tsx",
+      "default": "./src/sales-receipt-lifecycle-actions.tsx"
+    },
+    "./sales-receipts-list": {
+      "types": "./src/sales-receipts-list.tsx",
+      "default": "./src/sales-receipts-list.tsx"
     }
   },
   "scripts": {
