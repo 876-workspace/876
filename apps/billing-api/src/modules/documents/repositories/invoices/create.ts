@@ -2,6 +2,7 @@ import { calculateDocumentTotals } from '@876/core/money'
 import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { prisma } from '@/db/client'
+import type { Prisma } from '@/db'
 import { generateId } from '@/platform/ids'
 import type { InvoiceCreateParams } from '../../schemas/invoice'
 import type { ServiceResult } from '../../schemas/api'
@@ -24,7 +25,11 @@ import { lockQuoteConversion } from '../quotes/conversion'
 export async function create(
   tenantId: string,
   params: InvoiceCreateParams,
-  attribution?: IntegrationAttribution
+  attribution?: IntegrationAttribution,
+  internal?: {
+    recurringInvoiceId?: string
+    transaction?: Prisma.TransactionClient
+  }
 ): ServiceResult<AttributedCreateResult> {
   const replay = attribution
     ? resolveIdempotencyReplay(
@@ -42,7 +47,7 @@ export async function create(
         params,
         attribution
       )
-    return await createManualInvoice(tenantId, params, attribution)
+    return await createManualInvoice(tenantId, params, attribution, internal)
   } catch (error) {
     if (isUniqueConstraintError(error) && params.quoteId) {
       const converted = await prisma.invoice.findFirst({
@@ -179,7 +184,11 @@ async function createFromQuote(
 async function createManualInvoice(
   tenantId: string,
   params: InvoiceCreateParams,
-  attribution?: IntegrationAttribution
+  attribution?: IntegrationAttribution,
+  internal?: {
+    recurringInvoiceId?: string
+    transaction?: Prisma.TransactionClient
+  }
 ): ServiceResult<AttributedCreateResult> {
   if (!params.customerId || !params.lines)
     return err('A manual invoice needs a customer and at least one line.', 422)
@@ -248,8 +257,8 @@ async function createManualInvoice(
   const totalAmount = totals.data.totalAmount
 
   const now = nowUnixSeconds()
-  const number = await nextDocumentNumber(tenantId, 'INVOICE', now)
-  const invoice = await prisma.$transaction(async (tx) => {
+  const createInvoice = async (tx: Prisma.TransactionClient) => {
+    const number = await nextDocumentNumber(tenantId, 'INVOICE', now, tx)
     return tx.invoice.create({
       data: {
         id: generateId('Invoice'),
@@ -257,6 +266,7 @@ async function createManualInvoice(
         ...attributionData(attribution),
         customerId: defaults.customer.id,
         subscriptionId: subscription?.id ?? null,
+        recurringInvoiceId: internal?.recurringInvoiceId ?? null,
         ...(preparedDocument.priceList
           ? {
               priceListId: preparedDocument.priceList.id,
@@ -266,7 +276,9 @@ async function createManualInvoice(
         salespersonId: salesperson?.id ?? null,
         number,
         status: 'DRAFT',
-        billingReason: 'MANUAL',
+        billingReason: internal?.recurringInvoiceId
+          ? 'RECURRING_INVOICE'
+          : 'MANUAL',
         currency,
         ...invoiceSnapshotData(defaults, params),
         issueAt: params.issueAt ?? now,
@@ -293,7 +305,10 @@ async function createManualInvoice(
         },
       },
     })
-  })
+  }
+  const invoice = internal?.transaction
+    ? await createInvoice(internal.transaction)
+    : await prisma.$transaction(createInvoice)
 
   return ok({ id: invoice.id })
 }

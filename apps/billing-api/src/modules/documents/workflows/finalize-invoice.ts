@@ -161,6 +161,42 @@ export async function applyInvoiceFinalizeEffects(
   return ok(null)
 }
 
+/** Shared transaction-scoped finalization used by manual and scheduled invoices. */
+export async function finalizeInvoiceInTransaction(
+  tx: Prisma.TransactionClient,
+  tenantId: string,
+  invoiceId: string,
+  params: InvoiceFinalizeParams,
+  now: number
+): Promise<ServiceResult<{ id: string }>> {
+  const invoice = await findInvoiceForFinalize(tx, tenantId, invoiceId)
+  if (!invoice) return err('Invoice not found.', 404)
+  if (invoice.status !== 'DRAFT')
+    return err('Only a draft invoice can be finalized.', 409)
+
+  const paymentTermId = params.paymentTermId ?? invoice.paymentTermId
+  const salespersonId =
+    params.salespersonId ??
+    invoice.salespersonId ??
+    invoice.customer.salespersonId
+  const [paymentTerm, salesperson] = await Promise.all([
+    findPaymentTerm(tx, tenantId, paymentTermId),
+    findSalesperson(tx, tenantId, salespersonId),
+  ])
+  if (paymentTermId && !paymentTerm) return err('Payment term not found.', 404)
+  if (salespersonId && !salesperson) return err('Salesperson not found.', 404)
+
+  const effects = await applyInvoiceFinalizeEffects(tx, tenantId, {
+    invoice,
+    paymentTerm,
+    salesperson,
+    autoApplyCredits: params.autoApplyCredits,
+    now,
+  })
+  if (effects.error !== null) return effects
+  return ok({ id: invoice.id })
+}
+
 /**
  * Application workflow for the Invoice -> financial/inventory side effects.
  * Persistence stays in owning repositories; cross-domain effects use public
@@ -191,36 +227,14 @@ export async function finalizeInvoiceWorkflow(
         claimId = claim.data.claimId
       }
 
-      const invoice = await findInvoiceForFinalize(tx, tenantId, invoiceId)
-      if (!invoice) throw new InvoiceFinalizeError('Invoice not found.', 404)
-      if (invoice.status !== 'DRAFT')
-        throw new InvoiceFinalizeError(
-          'Only a draft invoice can be finalized.',
-          409
-        )
-
-      const paymentTermId = params.paymentTermId ?? invoice.paymentTermId
-      const salespersonId =
-        params.salespersonId ??
-        invoice.salespersonId ??
-        invoice.customer.salespersonId
-      const [paymentTerm, salesperson] = await Promise.all([
-        findPaymentTerm(tx, tenantId, paymentTermId),
-        findSalesperson(tx, tenantId, salespersonId),
-      ])
-      if (paymentTermId && !paymentTerm)
-        throw new InvoiceFinalizeError('Payment term not found.', 404)
-      if (salespersonId && !salesperson)
-        throw new InvoiceFinalizeError('Salesperson not found.', 404)
-
-      const effects = await applyInvoiceFinalizeEffects(tx, tenantId, {
-        invoice,
-        paymentTerm,
-        salesperson,
-        autoApplyCredits: params.autoApplyCredits,
-        now,
-      })
-      if (effects.error !== null) return effects
+      const finalized = await finalizeInvoiceInTransaction(
+        tx,
+        tenantId,
+        invoiceId,
+        params,
+        now
+      )
+      if (finalized.error !== null) return finalized
 
       if (claimId) await completeCommand(tx, tenantId, claimId, now)
       return null

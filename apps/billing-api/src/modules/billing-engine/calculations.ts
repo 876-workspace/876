@@ -1,4 +1,6 @@
 export { calculateCatalogAmount } from '@/commerce/calculations'
+import { addInterval } from '@876/core/timestamps'
+export { addInterval }
 
 export type IntervalUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
 export type RenewalPricingPolicy =
@@ -111,36 +113,6 @@ export function adjustRenewalAmount(
     : amount > adjustment
       ? amount - adjustment
       : 0n
-}
-
-export function addInterval(
-  startsAt: number,
-  unit: IntervalUnit,
-  count: number
-): number {
-  if (!Number.isInteger(count) || count <= 0)
-    throw new Error('Interval count must be positive.')
-  if (unit === 'DAY') return startsAt + count * 86_400
-  if (unit === 'WEEK') return startsAt + count * 7 * 86_400
-
-  const source = new Date(startsAt * 1000)
-  const months = unit === 'MONTH' ? count : count * 12
-  const monthIndex = source.getUTCMonth() + months
-  const year = source.getUTCFullYear() + Math.floor(monthIndex / 12)
-  const month = ((monthIndex % 12) + 12) % 12
-  const finalDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
-  const day = Math.min(source.getUTCDate(), finalDay)
-  return Math.floor(
-    Date.UTC(
-      year,
-      month,
-      day,
-      source.getUTCHours(),
-      source.getUTCMinutes(),
-      source.getUTCSeconds(),
-      source.getUTCMilliseconds()
-    ) / 1000
-  )
 }
 
 export function prorateInitialStub(options: {

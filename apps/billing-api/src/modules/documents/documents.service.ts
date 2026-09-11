@@ -44,7 +44,7 @@ import {
 
 const log = getLogger('documents')
 
-async function unwrap<T>(
+export async function unwrap<T>(
   result: Awaited<ServiceResult<T>>,
   kind: string
 ): Promise<T> {
@@ -168,11 +168,12 @@ export const documentsService = {
     tenantId: string,
     status?: InvoiceStatus,
     sourceAppId?: string,
-    url = '/api/v1/invoices'
+    url = '/api/v1/invoices',
+    recurringInvoiceId?: string
   ) {
     return documentList(
       'invoice',
-      await invoices.list(tenantId, status, sourceAppId),
+      await invoices.list(tenantId, status, sourceAppId, recurringInvoiceId),
       url
     )
   },

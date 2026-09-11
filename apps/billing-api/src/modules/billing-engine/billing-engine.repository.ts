@@ -1,4 +1,8 @@
-import { markOverdueAcrossActiveTenants } from '@/modules/documents'
+import {
+  generateDueRecurringInvoice,
+  markOverdueAcrossActiveTenants,
+  recordRecurringInvoiceFailure,
+} from '@/modules/documents'
 import { prisma } from '@/db/client'
 import { Prisma } from '@/db/generated/prisma/client'
 import { generateId } from '@/platform/ids'
@@ -16,9 +20,17 @@ type DueSubscription = {
   advance: boolean
 }
 
+type DueRecurringInvoice = { id: string; tenantId: string }
+
 export type BillingEngineRun = Omit<BillingSweepResult, 'object'> & {
   id: string
   object: 'billing_engine_run'
+  recurringInvoices: {
+    processed: number
+    succeeded: number
+    failed: number
+    skipped: number
+  }
 }
 
 /**
@@ -43,9 +55,10 @@ export async function runBillingSweep(
     skipped: 0,
     hasMore: false,
     invoiceIds: [],
+    recurringInvoices: { processed: 0, succeeded: 0, failed: 0, skipped: 0 },
   }
-
   const startedAt = Date.now()
+
   while (summary.processed < limit && Date.now() - startedAt < timeBudgetMs) {
     let claimed: DueSubscription | null = null
     try {
@@ -117,6 +130,70 @@ export async function runBillingSweep(
       summary.processed += 1
       summary.failed += 1
       await recordBillingFailure(failed.tenantId, failed.id, asOf, error)
+    }
+  }
+
+  // A profile whose run failed keeps its nextRunAt, so without this list the
+  // loop would re-claim it until the time budget ran out.
+  const handledRecurring: string[] = []
+  while (summary.processed < limit && Date.now() - startedAt < timeBudgetMs) {
+    let claimed: DueRecurringInvoice | null = null
+    try {
+      const result = await prisma.$transaction(
+        async (tx) => {
+          const rows = await tx.$queryRaw<DueRecurringInvoice[]>(Prisma.sql`
+          SELECT r.id, r.tenant_id AS "tenantId"
+          FROM billing_recurring_invoices AS r
+          INNER JOIN billing_tenants AS t ON t.id = r.tenant_id
+          WHERE t.status = 'ACTIVE' AND r.deleted_at IS NULL
+            AND r.status = 'ACTIVE' AND r.next_run_at IS NOT NULL
+            AND r.next_run_at <= ${asOf}
+            ${
+              handledRecurring.length === 0
+                ? Prisma.empty
+                : Prisma.sql`AND r.id NOT IN (${Prisma.join(handledRecurring)})`
+            }
+          ORDER BY r.next_run_at, r.id LIMIT 1 FOR UPDATE OF r SKIP LOCKED
+        `)
+          const row = rows[0]
+          if (!row) return null
+          claimed = row
+          return generateDueRecurringInvoice(row.tenantId, row.id, asOf, {
+            transaction: tx,
+          })
+        },
+        { isolationLevel: 'Serializable' }
+      )
+      const processed = claimed as DueRecurringInvoice | null
+      if (!processed) break
+      handledRecurring.push(processed.id)
+      summary.processed += 1
+      summary.recurringInvoices.processed += 1
+      if (result?.status === 'succeeded') {
+        summary.succeeded += 1
+        summary.recurringInvoices.succeeded += 1
+        if (result.invoiceId) summary.invoiceIds.push(result.invoiceId)
+      } else if (result?.status === 'failed') {
+        summary.failed += 1
+        summary.recurringInvoices.failed += 1
+      } else {
+        summary.skipped += 1
+        summary.recurringInvoices.skipped += 1
+      }
+    } catch (error) {
+      const failed = claimed as DueRecurringInvoice | null
+      if (!failed) throw error
+      handledRecurring.push(failed.id)
+      summary.processed += 1
+      summary.failed += 1
+      summary.recurringInvoices.processed += 1
+      summary.recurringInvoices.failed += 1
+      await recordRecurringInvoiceFailure(
+        failed.tenantId,
+        failed.id,
+        asOf,
+        error
+      )
     }
   }
 
