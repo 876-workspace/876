@@ -34,6 +34,7 @@ model Price {
   subscriptionCharges        SubscriptionCharge[]
   quoteLines                 QuoteLine[]
   invoiceLines               InvoiceLine[]
+  salesReceiptLines          SalesReceiptLine[]
   creditNoteLines            CreditNoteLine[]
   priceListEntries           PriceListEntry[]
 
