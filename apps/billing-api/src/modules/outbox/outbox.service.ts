@@ -62,6 +62,52 @@ export type BillingOutboxEvent =
       occurredAt: number
     }
   | {
+      type: 'sales-receipt.created'
+      version: 1
+      resource: { type: 'sales-receipt'; id: string }
+      payload: {
+        salesReceiptId: string
+        customerId: string
+        paymentId: string
+        number: string
+        currency: string
+        totalAmount: string
+        receiptAt: number
+      }
+      occurredAt: number
+    }
+  | {
+      type: 'sales-receipt.voided'
+      version: 1
+      resource: { type: 'sales-receipt'; id: string }
+      payload: {
+        salesReceiptId: string
+        customerId: string
+        paymentId: string
+        number: string
+        currency: string
+        amountReversed: string
+        voidedAt: number
+      }
+      occurredAt: number
+    }
+  | {
+      type: 'sales-receipt.refunded'
+      version: 1
+      resource: { type: 'sales-receipt'; id: string }
+      payload: {
+        salesReceiptId: string
+        customerId: string
+        creditNoteId: string
+        refundId: string
+        currency: string
+        amount: string
+        returnedLineCount: number
+        refundedAt: number
+      }
+      occurredAt: number
+    }
+  | {
       type:
         | 'quote.sent'
         | 'quote.accepted'
