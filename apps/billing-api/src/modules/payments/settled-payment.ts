@@ -2,6 +2,7 @@ import type { Prisma } from '@/db'
 import { generateId } from '@/platform/ids'
 
 import type { PaymentCreateParams } from './schemas/payment'
+import type { IntegrationAttribution } from './repositories/integrations/attribution'
 import {
   loadPaymentTargets,
   writePaymentEvidence,
@@ -31,7 +32,8 @@ export async function recordSettledPayment(
   tx: Prisma.TransactionClient,
   tenantId: string,
   params: SettledPaymentParams,
-  now: number
+  now: number,
+  attribution?: IntegrationAttribution
 ): Promise<{ id: string }> {
   const targets = await loadPaymentTargets(tx, tenantId, {
     ...params,
@@ -56,7 +58,8 @@ export async function recordSettledPayment(
       referenceNumber: params.referenceNumber,
       notes: params.notes,
     },
-    now
+    now,
+    attribution
   )
 
   return { id: paymentId }
