@@ -26,6 +26,13 @@ type Props = {
   options: StatusFilterOption[]
   /** URL query param name. Defaults to `status`. */
   paramKey?: string
+  /**
+   * Path the filter links navigate to. Defaults to the current pathname. A
+   * list/detail section whose list is a parallel-route slot passes its list
+   * path, so changing the filter with a record open returns to the list and
+   * re-renders it instead of leaving it stale beside the card.
+   */
+  basePath?: string
 }
 
 /**
@@ -45,8 +52,10 @@ export function StatusFilterHeading({
   value,
   options,
   paramKey = 'status',
+  basePath,
 }: Props) {
-  const pathname = usePathname()
+  const currentPathname = usePathname()
+  const pathname = basePath ?? currentPathname
   const searchParams = useSearchParams()
 
   function hrefFor(optionValue: string) {
