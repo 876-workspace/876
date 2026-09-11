@@ -14,6 +14,11 @@ import type {
 } from './schemas/sales-receipt'
 import { salesReceiptsService as service } from './sales-receipts.service'
 
+type SalesReceiptListQuery = {
+  status?: SalesReceiptStatus
+  customerId?: string
+}
+
 function tenant(req: Request) {
   const id = getPrincipal(req).tenantId
   if (!id) throw new Error('Document guard did not resolve a tenant.')
@@ -31,10 +36,14 @@ function sourceApp(req: Request) {
 
 export const salesReceiptsController = {
   async list(req: Request, res: Response) {
+    const query = validQuery<SalesReceiptListQuery>(req)
     res.json(
       await service.list(
         tenant(req),
-        validQuery<{ status?: SalesReceiptStatus }>(req).status
+        query.status,
+        undefined,
+        '/api/v1/sales-receipts',
+        query.customerId
       )
     )
   },
@@ -93,12 +102,14 @@ export const salesReceiptsController = {
   },
 
   async integrationList(req: Request, res: Response) {
+    const query = validQuery<SalesReceiptListQuery>(req)
     res.json(
       await service.list(
         tenant(req),
-        validQuery<{ status?: SalesReceiptStatus }>(req).status,
+        query.status,
         sourceApp(req),
-        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/sales-receipts`
+        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/sales-receipts`,
+        query.customerId
       )
     )
   },
