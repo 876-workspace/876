@@ -8,6 +8,8 @@ model CreditNote {
   customerId     String           @map("customer_id")
   /// Optional invoice this credit note was raised against.
   invoiceId      String?          @map("invoice_id")
+  /// Optional immediate sale this credit note was raised against.
+  salesReceiptId String?          @map("sales_receipt_id")
   number         String
   status         CreditNoteStatus @default(DRAFT)
   currency       String
@@ -25,9 +27,10 @@ model CreditNote {
   createdAt      Int              @map("created_at")
   updatedAt      Int              @map("updated_at")
 
-  tenant        Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_credit_notes_tenant_id_fkey")
-  customer      Customer               @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_credit_notes_customer_fkey")
-  invoice       Invoice?               @relation("InvoiceCreditNotes", fields: [invoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_credit_notes_invoice_fkey")
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_credit_notes_tenant_id_fkey")
+  customer      Customer      @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_credit_notes_customer_fkey")
+  invoice       Invoice?      @relation("InvoiceCreditNotes", fields: [invoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_credit_notes_invoice_fkey")
+  salesReceipt  SalesReceipt? @relation("SalesReceiptCreditNotes", fields: [salesReceiptId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_credit_notes_sales_receipt_fkey")
   lines         CreditNoteLine[]
   allocations   CreditNoteAllocation[]
   refunds       Refund[]
@@ -38,5 +41,6 @@ model CreditNote {
   @@index([tenantId, status], map: "billing_credit_notes_tenant_id_status_idx")
   @@index([customerId], map: "billing_credit_notes_customer_id_idx")
   @@index([invoiceId], map: "billing_credit_notes_invoice_id_idx")
+  @@index([salesReceiptId], map: "billing_credit_notes_sales_receipt_id_idx")
   @@map("billing_credit_notes")
 }
