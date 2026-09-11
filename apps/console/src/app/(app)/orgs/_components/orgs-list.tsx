@@ -18,11 +18,9 @@ import {
 } from '@876/ui/list-pane'
 import { usePathDetailSegments } from '@876/ui/list-detail-shell'
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
-import { cn } from '@876/core/utils'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { statusBadgeClass } from '@/lib/format'
 import { OrgTable } from './org-table'
 
 type Props = {
@@ -117,16 +115,6 @@ export function OrgsList({
                       </span>
                     }
                     subtitle={org.primary_email ?? org.slug}
-                    trailing={
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
-                          statusBadgeClass(org.status)
-                        )}
-                      >
-                        {org.status}
-                      </span>
-                    }
                   />
                 )
               })
