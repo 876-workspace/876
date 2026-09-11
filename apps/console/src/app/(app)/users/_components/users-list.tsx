@@ -17,7 +17,7 @@ import {
   ListPaneEmpty,
   ListPaneItem,
 } from '@876/ui/list-pane'
-import { useDetailSegments } from '@876/ui/list-detail-shell'
+import { usePathDetailSegments } from '@876/ui/list-detail-shell'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
@@ -55,7 +55,9 @@ export function UsersList({
   lastId,
   filterApplied,
 }: Props) {
-  const segments = useDetailSegments()
+  // Rendered inside the `@list` slot, where layout segments describe the slot
+  // rather than the open record, so selection comes from the pathname.
+  const segments = usePathDetailSegments('/users')
   const searchParams = useSearchParams()
   const query = searchParams.toString()
   const selectedId = segments[0] ?? null
