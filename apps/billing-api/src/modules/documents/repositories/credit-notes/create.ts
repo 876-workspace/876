@@ -6,10 +6,9 @@ import type { CreditNoteCreateParams } from '../../schemas/credit-note'
 import type { ServiceResult } from '../../schemas/api'
 
 import { nextDocumentNumber } from '../../document-numbers.repository'
-import { recordLedgerEntry } from '@/modules/ledger'
 import { err, ok } from '../result'
 import { hasEnabledCurrency } from '@/modules/currencies'
-import { recomputeCustomerAr } from '@/modules/customers'
+import { recordCreditNote } from './record'
 import { computeTotals, CreditNoteMutationError } from './shared'
 
 /**
@@ -89,65 +88,26 @@ export async function create(
           )
       }
 
-      await tx.creditNote.create({
-        data: {
-          id: creditNoteId,
-          tenantId,
-          customerId: params.customerId,
-          invoiceId: params.invoiceId ?? null,
-          salesReceiptId: params.salesReceiptId ?? null,
-          number,
-          status: 'OPEN',
-          currency: params.currency,
-          reason: params.reason ?? null,
-          subtotalAmount: totals.subtotalAmount,
-          taxAmount: totals.taxAmount,
-          totalAmount: totals.totalAmount,
-          balanceAmount: totals.totalAmount,
-          notes:
-            params.notes === undefined
-              ? (preference?.customerNote ?? null)
-              : params.notes,
-          terms:
-            params.terms === undefined
-              ? (preference?.termsAndConditions ?? null)
-              : params.terms,
-          issueAt: params.issueAt ?? now,
-          createdAt: now,
-          updatedAt: now,
-          lines: {
-            create: totals.lines.map((line) => ({
-              id: generateId('CreditNoteLine'),
-              itemId: line.itemId,
-              priceId: line.priceId,
-              description: line.description,
-              quantity: line.quantity,
-              unitAmount: line.unitAmount,
-              taxAmount: line.taxAmount,
-              discountAmount: line.discountAmount,
-              totalAmount: line.totalAmount,
-              createdAt: now,
-              updatedAt: now,
-            })),
-          },
-        },
-      })
-
-      await recordLedgerEntry(tx, {
-        tenantId,
+      await recordCreditNote(tx, tenantId, {
+        id: creditNoteId,
         customerId: params.customerId,
-        creditNoteId,
-        type: 'CREDIT_NOTE_ISSUED',
-        direction: 'CREDIT',
-        amount: totals.totalAmount,
+        invoiceId: params.invoiceId,
+        salesReceiptId: params.salesReceiptId,
+        number,
         currency: params.currency,
-        description: `Credit note ${number} issued`,
-        idempotencyKey: `credit-note:${creditNoteId}:issued`,
-        effectiveAt: params.issueAt ?? now,
-        createdAt: now,
+        reason: params.reason,
+        totals,
+        notes:
+          params.notes === undefined
+            ? (preference?.customerNote ?? null)
+            : params.notes,
+        terms:
+          params.terms === undefined
+            ? (preference?.termsAndConditions ?? null)
+            : params.terms,
+        issueAt: params.issueAt ?? now,
+        now,
       })
-
-      await recomputeCustomerAr(tx, tenantId, params.customerId, now)
     })
 
     return ok({ id: creditNoteId })
