@@ -46,6 +46,7 @@ model Payment {
   providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_provider_connection_fkey")
   paymentIntent      PaymentIntent?             @relation(fields: [tenantId, paymentIntentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_intent_fkey")
   paymentMethod      PaymentMethod?             @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_method_fkey")
+  salesReceipt       SalesReceipt?
   invoiceAllocations PaymentAllocation[]
   refunds            Refund[]
   bankTransaction    BankTransaction?
@@ -62,7 +63,7 @@ model Payment {
   @@index([tenantId, customerId, paymentDate], map: "billing_payments_tenant_customer_date_idx")
   @@index([tenantId, depositAccountId], map: "billing_payments_tenant_deposit_account_idx")
   @@index([customerId], map: "billing_payments_customer_id_idx")
-  @@index([depositAccountId], map: "billing_payments_deposit_account_id_idx")
+  @@index([depositAccountId], map: "billing_payments_deposit_account_idx")
   @@index([paymentModeId], map: "billing_payments_payment_mode_id_idx")
   @@index([tenantId, paymentIntentId], map: "billing_payments_tenant_intent_idx")
   @@index([tenantId, paymentMethodId], map: "billing_payments_tenant_method_idx")
