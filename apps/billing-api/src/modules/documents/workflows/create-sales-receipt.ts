@@ -116,7 +116,8 @@ export async function createSalesReceiptWorkflow(
           referenceNumber: params.paymentReferenceNumber,
           notes: params.notes,
         },
-        now
+        now,
+        attribution
       )
 
       await createSalesReceiptRow(tx, {
