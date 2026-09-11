@@ -35,8 +35,12 @@ describe('sales receipts client', () => {
         id: 'sr_1',
         number: 'SR-000001',
         status: 'PAID',
+        refundStatus: 'NONE',
         currency: 'JMD',
         totalAmount: '10000',
+        creditedAmount: '0',
+        refundedAmount: '0',
+        refundableAmount: '10000',
         receiptAt: 1_788_652_800,
       },
       error: null,
@@ -55,7 +59,7 @@ describe('sales receipts client', () => {
     })
   })
 
-  it('refunds through the encoded Sales Receipt route', async () => {
+  it('refunds through the encoded Sales Receipt route with command idempotency', async () => {
     const params = { amount: '2500', reason: 'Returned item' }
     await salesReceipts.refund('sr/1', params)
 
@@ -63,17 +67,23 @@ describe('sales receipts client', () => {
       '/api/sales-receipts/sr%2F1/refund',
       {
         method: 'POST',
+        headers: expect.objectContaining({
+          'Idempotency-Key': expect.any(String),
+        }),
         body: JSON.stringify(params),
       }
     )
   })
 
-  it('voids through the encoded Sales Receipt route', async () => {
+  it('voids through the encoded Sales Receipt route with command idempotency', async () => {
     const params = { reason: 'Entered in error' }
     await salesReceipts.void('sr/1', params)
 
     expect(mocks.request).toHaveBeenCalledWith('/api/sales-receipts/sr%2F1/void', {
       method: 'POST',
+      headers: expect.objectContaining({
+        'Idempotency-Key': expect.any(String),
+      }),
       body: JSON.stringify(params),
     })
   })
