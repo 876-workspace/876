@@ -13,6 +13,10 @@ interface Props {
   params: Promise<{ quoteId: string }>
 }
 
+function currentTimeSeconds(): number {
+  return Math.floor(Date.now() / 1000)
+}
+
 export const metadata: Metadata = {
   title: 'Quote details',
   description: 'Quote totals, customer, and line items.',
@@ -29,7 +33,7 @@ export default async function QuoteDetailPage({ params }: Props) {
   const isExpired =
     (quote.status === 'DRAFT' || quote.status === 'SENT') &&
     quote.expiresAt !== null &&
-    quote.expiresAt <= Math.floor(Date.now() / 1000)
+    quote.expiresAt <= currentTimeSeconds()
 
   return (
     <div className="space-y-6">
