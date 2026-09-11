@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
+import { buttonVariants } from '@876/ui/button'
 import {
   DetailCard,
   DetailCardBody,
@@ -13,6 +15,7 @@ import {
 } from '@876/ui/detail-card'
 import { ReceiptText } from '@876/ui/icons'
 
+import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
@@ -31,7 +34,10 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
   if (!context) redirect('/no-access')
 
   const billing = await getBilling(context.orgId)
-  const result = await billing.salesReceipts.retrieve(salesReceiptId)
+  const [result, access] = await Promise.all([
+    billing.salesReceipts.retrieve(salesReceiptId),
+    resolveAccessContext(context.userId, context.orgId),
+  ])
   if (result.error) {
     if (result.error.code === 'sales-receipt/not-found') notFound()
     return (
@@ -54,6 +60,11 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
       : typeof receipt.customerName === 'string'
         ? receipt.customerName
         : '—'
+  const canRefund =
+    receipt.status === 'PAID' &&
+    BigInt(receipt.refundableAmount) > 0n &&
+    access.status === 'ok' &&
+    canAccess(access.context, 'invoices.edit')
 
   return (
     <DetailCard aria-label={`Sales receipt details: ${receipt.number}`}>
@@ -70,6 +81,16 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
           </Badge>
         }
         subtitle={customer}
+        actions={
+          canRefund ? (
+            <Link
+              href={`/sales-receipts/${receipt.id}/refund`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              Refund
+            </Link>
+          ) : undefined
+        }
         closeHref="/sales-receipts"
         closeLabel="Close sales receipt details"
       />
@@ -86,6 +107,18 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
               value={formatDate(receipt.receiptAt)}
             />
             <DetailCardFact label="Currency" value={receipt.currency} mono />
+            <DetailCardFact
+              label="Credited"
+              value={formatMoney(receipt.creditedAmount, receipt.currency)}
+            />
+            <DetailCardFact
+              label="Cash refunded"
+              value={formatMoney(receipt.refundedAmount, receipt.currency)}
+            />
+            <DetailCardFact
+              label="Refund state"
+              value={receipt.refundStatus.toLowerCase().replaceAll('_', ' ')}
+            />
           </DetailCardFacts>
         </DetailCardSection>
       </DetailCardBody>
