@@ -11,7 +11,7 @@ import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { appColor } from '@/lib/app-color'
 import { formatDate } from '@/lib/format'
 
-function initialsOf(user: {
+export function initialsOf(user: {
   first_name: string
   last_name: string
   email: string

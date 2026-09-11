@@ -3,8 +3,16 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
+import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
+import { Badge } from '@876/ui/badge'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { Users } from '@876/ui/icons'
+import {
+  ListPane,
+  ListPaneBody,
+  ListPaneEmpty,
+  ListPaneItem,
+} from '@876/ui/list-pane'
 import {
   Table,
   TableBody,
@@ -14,9 +22,11 @@ import {
   TableRow,
 } from '@876/ui/table'
 
+import { useTeamMemberLinks } from '../_lib/use-team-member-links'
 import {
-  CondensedTeamMemberRow,
+  ROLE_LABELS,
   TeamMemberTableRow,
+  initialsOf,
   type TeamMemberRow,
 } from './team-member-row'
 
@@ -69,29 +79,21 @@ export function TeamList({ members }: Props) {
     )
 
   return (
-    <div className="876-card flex min-w-0 flex-col overflow-hidden">
-      <div className="min-w-0 flex-1">
-        <Table className="table-fixed">
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
-                  No users match this view
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((member) => (
-                <CondensedTeamMemberRow
-                  key={member.id}
-                  user={member}
-                  selected={member.id === selectedId}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    <ListPane>
+      <ListPaneBody>
+        {rows.length === 0 ? (
+          <ListPaneEmpty>No users match this view</ListPaneEmpty>
+        ) : (
+          rows.map((member) => (
+            <CondensedMemberPaneItem
+              key={member.id}
+              member={member}
+              selected={member.id === selectedId}
+            />
+          ))
+        )}
+      </ListPaneBody>
+    </ListPane>
   )
 }
 
@@ -118,5 +120,45 @@ function TeamTableHeader() {
         <TableHead className="px-5 py-3.5">Role</TableHead>
       </TableRow>
     </TableHeader>
+  )
+}
+
+function CondensedMemberPaneItem({
+  member,
+  selected,
+}: {
+  member: TeamMemberRow
+  selected: boolean
+}) {
+  const linkTo = useTeamMemberLinks()
+  const displayName = member.resolved
+    ? [member.firstName, member.lastName].filter(Boolean).join(' ') ||
+      member.email
+    : 'Unresolved account'
+  const subtitle = member.position || ROLE_LABELS[member.role] || member.role
+
+  return (
+    <ListPaneItem
+      href={linkTo(`/settings/users/${encodeURIComponent(member.id)}`)}
+      selected={selected}
+      label={`View team member ${displayName}`}
+      leading={
+        <Avatar className="size-7">
+          {member.avatar && <AvatarImage src={member.avatar} alt="" />}
+          <AvatarFallback className="text-[0.5625rem]">
+            {initialsOf(member)}
+          </AvatarFallback>
+        </Avatar>
+      }
+      title={displayName}
+      subtitle={subtitle}
+      trailing={
+        member.status && member.status !== 'active' ? (
+          <Badge variant="secondary" className="capitalize">
+            {member.status}
+          </Badge>
+        ) : null
+      }
+    />
   )
 }

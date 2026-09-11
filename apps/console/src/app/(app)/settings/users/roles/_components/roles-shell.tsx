@@ -2,8 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ListDetailShell, useListDetailRoute } from '@876/ui/list-detail-shell'
-import { Page } from '@876/ui/page'
+import { ListDetailSection } from '@876/ui/list-detail-section'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
@@ -30,39 +29,41 @@ type Props = {
   children: ReactNode
 }
 
+/**
+ * Routes that own the whole content area instead of opening beside the list —
+ * the create form.
+ */
+const TAKEOVER_SEGMENTS = ['new'] as const
+
 /** The persistent frame for every `/settings/users/roles` route. */
 export function RolesShell({ list, children }: Props) {
-  // Create opens in the card slot like every other role route, so this shell
-  // has no takeover routes at all.
-  const { open } = useListDetailRoute()
   const searchParams = useSearchParams()
 
   const type = searchParams.get(ROLE_TYPE_PARAM) ?? 'all'
 
   return (
-    <Page className={open ? 'h-full min-h-0' : 'min-h-full'}>
-      <ListDetailShell
-        open={open}
-        toolbar={
-          <ResourceToolbar
-            title="Roles"
-            titleFilter={
-              <StatusFilterHeading
-                label="Roles"
-                value={type}
-                options={ROLE_TYPE_OPTIONS}
-                paramKey={ROLE_TYPE_PARAM}
-              />
-            }
-            primaryLabel="Add"
-            primaryHref="/settings/users/roles/new"
-            primaryVariant="info"
-            refresh
-          />
-        }
-        list={list}
-        detail={children}
-      />
-    </Page>
+    <ListDetailSection
+      toolbar={
+        <ResourceToolbar
+          title="Roles"
+          titleFilter={
+            <StatusFilterHeading
+              label="Roles"
+              value={type}
+              options={ROLE_TYPE_OPTIONS}
+              paramKey={ROLE_TYPE_PARAM}
+            />
+          }
+          primaryLabel="Add"
+          primaryHref="/settings/users/roles/new"
+          primaryVariant="info"
+          refresh
+        />
+      }
+      list={list}
+      takeoverSegments={TAKEOVER_SEGMENTS}
+    >
+      {children}
+    </ListDetailSection>
   )
 }
