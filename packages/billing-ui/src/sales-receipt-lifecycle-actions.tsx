@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { Button, buttonVariants } from '@876/ui/button'
+
+import { Link } from './link'
 
 export interface SalesReceiptLifecycleActionResult {
   error: string | null
@@ -42,7 +43,10 @@ export function SalesReceiptLifecycleActions({
   return (
     <div className="flex flex-wrap items-center justify-end gap-1.5">
       {error ? (
-        <span className="text-destructive max-w-56 text-right text-xs" role="alert">
+        <span
+          className="text-destructive max-w-56 text-right text-xs"
+          role="alert"
+        >
           {error}
         </span>
       ) : null}
