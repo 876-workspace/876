@@ -11,11 +11,11 @@ import { Textarea } from '@876/ui/textarea'
 
 import {
   DocumentLineItemsEditor,
-  resolveLineDiscount,
   type DocumentItemOption,
   type DocumentLineDraft,
   type DocumentTotalsSnapshot,
 } from './document/document-line-items-editor'
+import { prepareDocumentLine } from './document/document-line-payload'
 import {
   formatMinorAmountInput,
   minorAmountInputStep,
@@ -28,13 +28,11 @@ export interface SalesReceiptCreateOption {
   label: string
 }
 
-export interface SalesReceiptCreateAccountOption
-  extends SalesReceiptCreateOption {
+export interface SalesReceiptCreateAccountOption extends SalesReceiptCreateOption {
   currency: string
 }
 
-export interface SalesReceiptCreateCurrencyOption
-  extends SalesReceiptCreateOption {
+export interface SalesReceiptCreateCurrencyOption extends SalesReceiptCreateOption {
   decimalPlaces: number
 }
 
@@ -194,7 +192,9 @@ export function SalesReceiptCreateForm({
       return
     }
 
-    const preparedLines = lines.map((line) => prepareLine(line, decimalPlaces))
+    const preparedLines = lines.map((line) =>
+      prepareDocumentLine(line, decimalPlaces)
+    )
     if (preparedLines.some((line) => line === null)) {
       setError(
         'Every line needs an item or description, a positive quantity, and valid amounts.'
@@ -350,11 +350,16 @@ export function SalesReceiptCreateForm({
             </NativeSelect>
           </Field>
 
-          <Field label="Payment reference" htmlFor="sales-receipt-payment-reference">
+          <Field
+            label="Payment reference"
+            htmlFor="sales-receipt-payment-reference"
+          >
             <Input
               id="sales-receipt-payment-reference"
               value={paymentReferenceNumber}
-              onChange={(event) => setPaymentReferenceNumber(event.target.value)}
+              onChange={(event) =>
+                setPaymentReferenceNumber(event.target.value)
+              }
             />
           </Field>
 
@@ -425,48 +430,6 @@ export function SalesReceiptCreateForm({
       </div>
     </form>
   )
-}
-
-function prepareLine(line: DocumentLineDraft, decimalPlaces: number) {
-  const quantity = Number(line.quantity)
-  const unitAmount = parseMinorAmountInput(line.unitAmount, decimalPlaces)
-  const taxAmount = parseMinorAmountInput(
-    line.taxAmount ?? '0',
-    decimalPlaces,
-    true
-  )
-
-  if (
-    !Number.isInteger(quantity) ||
-    quantity < 1 ||
-    unitAmount === null ||
-    taxAmount === null ||
-    (!line.itemId && !line.description.trim())
-  )
-    return null
-
-  const subtotalAmount = BigInt(unitAmount) * BigInt(quantity)
-  const discountAmount =
-    line.discountType === 'PERCENTAGE'
-      ? resolveLineDiscount(line, subtotalAmount, decimalPlaces).toString()
-      : parseMinorAmountInput(
-          line.discountAmount ?? '0',
-          decimalPlaces,
-          true
-        )
-  if (discountAmount === null || BigInt(discountAmount) > subtotalAmount)
-    return null
-
-  return {
-    itemId: line.itemId ?? null,
-    variantId: line.variantId ?? null,
-    priceId: line.priceId ?? null,
-    description: line.description.trim() || null,
-    quantity,
-    unitAmount,
-    taxAmount,
-    discountAmount,
-  }
 }
 
 function currencyDecimals(

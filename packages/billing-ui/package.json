@@ -47,6 +47,10 @@
       "types": "./src/document/document-line-items-editor.tsx",
       "default": "./src/document/document-line-items-editor.tsx"
     },
+    "./document/document-line-payload": {
+      "types": "./src/document/document-line-payload.ts",
+      "default": "./src/document/document-line-payload.ts"
+    },
     "./invoice-lifecycle-actions": {
       "types": "./src/invoice-lifecycle-actions.tsx",
       "default": "./src/invoice-lifecycle-actions.tsx"

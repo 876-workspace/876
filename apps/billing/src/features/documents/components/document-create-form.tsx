@@ -17,6 +17,7 @@ import {
   type DocumentLineDraft,
   type DocumentTotalsSnapshot,
 } from '@876/billing-ui/document/document-line-items-editor'
+import { prepareDocumentLine } from '@876/billing-ui/document/document-line-payload'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
@@ -25,10 +26,7 @@ import { AsyncCombobox, type AsyncComboboxOption } from '@876/ui/async-combobox'
 import { Textarea } from '@876/ui/textarea'
 import { cn } from '@876/ui/lib/utils'
 
-import {
-  emptyDocumentLine,
-  prepareDocumentLine,
-} from '../document-create-model'
+import { emptyDocumentLine } from '../document-create-model'
 import { client } from '@/lib/client'
 import {
   formatMinorAmountInput,
