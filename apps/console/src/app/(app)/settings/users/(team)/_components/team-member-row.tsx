@@ -1,14 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { TableCell, TableRow } from '@876/ui/table'
 
 import { useTeamMemberLinks } from '../_lib/use-team-member-links'
 
-const ROLE_LABELS: Record<string, string> = {
+export const ROLE_LABELS: Record<string, string> = {
   staff: 'Staff',
   admin: 'Admin',
   owner: 'Owner',
@@ -32,7 +31,7 @@ export type TeamMemberRow = {
   resolved: boolean
 }
 
-function initialsOf(user: TeamMemberRow): string {
+export function initialsOf(user: TeamMemberRow): string {
   return (
     [user.firstName?.[0], user.lastName?.[0]]
       .filter(Boolean)
@@ -92,71 +91,6 @@ export function TeamMemberTableRow({ user }: { user: TeamMemberRow }) {
       </TableCell>
       <TableCell className="px-5 py-4">
         <Badge variant="outline">{ROLE_LABELS[user.role] ?? user.role}</Badge>
-      </TableCell>
-    </TableRow>
-  )
-}
-
-export function CondensedTeamMemberRow({
-  user,
-  selected,
-}: {
-  user: TeamMemberRow
-  selected?: boolean
-}) {
-  const linkTo = useTeamMemberLinks()
-  const displayName = user.resolved
-    ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
-    : 'Unresolved account'
-
-  const subtitle = user.position || ROLE_LABELS[user.role] || user.role
-
-  return (
-    <TableRow
-      data-state={selected ? 'selected' : undefined}
-      className={cn('transition-colors', selected && 'bg-muted/70 font-medium')}
-    >
-      <TableCell className="relative py-3 pr-3 pl-4">
-        <RowLink
-          href={linkTo(`/settings/users/${encodeURIComponent(user.id)}`)}
-          label={`View team member ${displayName}`}
-        />
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Avatar className="size-7 shrink-0 rounded-full after:rounded-full">
-            {user.avatar && (
-              <AvatarImage src={user.avatar} alt="" className="rounded-full" />
-            )}
-            <AvatarFallback className="rounded-full text-[0.5625rem]">
-              {initialsOf(user)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 truncate">
-              <p className="text-foreground truncate text-[0.8125rem] font-medium">
-                {displayName}
-              </p>
-              {user.affiliation === 'external' ? (
-                <Badge
-                  variant="outline"
-                  className="h-4 px-1 py-0 text-[0.625rem]"
-                >
-                  External
-                </Badge>
-              ) : null}
-            </div>
-            <p className="text-muted-foreground truncate text-[0.6875rem]">
-              {subtitle}
-            </p>
-          </div>
-          {user.status && user.status !== 'active' ? (
-            <Badge
-              variant="secondary"
-              className="h-4 px-1 py-0 text-[0.625rem] capitalize"
-            >
-              {user.status}
-            </Badge>
-          ) : null}
-        </div>
       </TableCell>
     </TableRow>
   )
