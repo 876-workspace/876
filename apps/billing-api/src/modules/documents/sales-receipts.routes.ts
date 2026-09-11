@@ -4,11 +4,16 @@ import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import { errorEnvelopeSchema, successEnvelopeSchema } from '@/http/envelope'
 
 import { salesReceiptsController as controller } from './sales-receipts.controller'
-import { SalesReceiptCreateSchema } from './schemas/sales-receipt'
+import {
+  SalesReceiptCreateSchema,
+  SalesReceiptVoidSchema,
+} from './schemas/sales-receipt'
 
 const id = z.strictObject({ salesReceiptId: z.string().min(1) })
 const status = z.enum(['PAID', 'VOID'])
-const resource = z.object({ object: z.literal('sales_receipt'), id: z.string() }).passthrough()
+const resource = z
+  .object({ object: z.literal('sales_receipt'), id: z.string() })
+  .passthrough()
 const list = z.strictObject({
   object: z.literal('list'),
   data: z.array(resource),
@@ -72,6 +77,23 @@ export function createSalesReceiptsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.get,
+  })
+
+  api.post({
+    path: '/sales-receipts/:salesReceiptId/void',
+    summary: 'Void a Sales Receipt',
+    operationId: 'billing-billing_post_sales_receipts_salesReceiptId_void',
+    security: write,
+    request: { params: id, body: SalesReceiptVoidSchema },
+    documentBody: false,
+    responses: {
+      201: {
+        description: 'Sales Receipt voided',
+        schema: successEnvelopeSchema(resource),
+      },
+      ...clientErrors,
+    },
+    handler: controller.void,
   })
 
   return api.router
