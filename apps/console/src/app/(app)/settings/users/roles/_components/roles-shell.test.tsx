@@ -67,15 +67,13 @@ describe('RolesShell', () => {
     )
   })
 
-  it('opens the create route in the card slot rather than taking over', () => {
+  it('takes over the whole content area on the create route', () => {
     mocks.segments = ['new']
     renderShell()
 
-    expect(screen.getByText('Roles list')).toBeInTheDocument()
+    expect(screen.queryByText('Roles list')).toBeNull()
     expect(screen.getByText('Role card')).toBeInTheDocument()
-    expect(
-      document.querySelector('[data-slot="list-detail-shell"]')
-    ).toHaveAttribute('data-state', 'open')
+    expect(document.querySelector('[data-slot="list-detail-shell"]')).toBeNull()
   })
 
   it('stays closed on the index route wrapped in a route group', () => {

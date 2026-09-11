@@ -3,8 +3,8 @@ import { NewRoleCard } from './_components/new-role-card'
 export const metadata = { title: 'New Role - Roles' }
 
 /**
- * Create opens in the card slot, in the same place the role it creates will
- * appear — so the list stays visible beside it and the URL is shareable.
+ * Create owns the whole content area — the toolbar and list stand down while
+ * the form is open, and the sidebar stays on Roles.
  */
 export default function NewRolePage() {
   return <NewRoleCard />

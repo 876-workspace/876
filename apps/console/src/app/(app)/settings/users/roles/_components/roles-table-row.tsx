@@ -88,31 +88,6 @@ export function RolesTableRow({ role }: { role: RoleView }) {
   )
 }
 
-export function CondensedRolesTableRow({
-  role,
-  selected,
-}: {
-  role: RoleView
-  selected: boolean
-}) {
-  return (
-    <TableRow
-      data-state={selected ? 'selected' : undefined}
-      className={cn('transition-colors', selected && 'bg-muted/70 font-medium')}
-    >
-      <TableCell className="relative px-4 py-3">
-        <RoleLink role={role} />
-        <div className="min-w-0">
-          <RoleBadge role={role} className="text-xs" />
-          <p className="text-muted-foreground mt-1 truncate font-mono text-[0.6875rem]">
-            {role.name}
-          </p>
-        </div>
-      </TableCell>
-    </TableRow>
-  )
-}
-
 function RoleLink({ role }: { role: RoleView }) {
   return (
     <Link

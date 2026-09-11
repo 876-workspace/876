@@ -3,6 +3,13 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
+import { Badge } from '@876/ui/badge'
+import {
+  ListPane,
+  ListPaneBody,
+  ListPaneEmpty,
+  ListPaneItem,
+} from '@876/ui/list-pane'
 import {
   Table,
   TableBody,
@@ -14,7 +21,7 @@ import {
 import type { RoleView } from '@/types/role'
 
 import { ROLE_TYPE_PARAM } from './roles-shell'
-import { CondensedRolesTableRow, RolesTableRow } from './roles-table-row'
+import { RolesTableRow } from './roles-table-row'
 
 export function RolesList({ roles }: { roles: RoleView[] }) {
   const segments = useDetailSegments()
@@ -55,27 +62,36 @@ export function RolesList({ roles }: { roles: RoleView[] }) {
   }
 
   return (
-    <div className="876-card overflow-hidden">
-      <Table className="table-fixed">
-        <TableBody>
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell className="text-muted-foreground px-4 py-8 text-center text-xs">
-                No roles match this view
-              </TableCell>
-            </TableRow>
-          ) : (
-            rows.map((role) => (
-              <CondensedRolesTableRow
+    <ListPane>
+      <ListPaneBody>
+        {rows.length === 0 ? (
+          <ListPaneEmpty>No roles match this view</ListPaneEmpty>
+        ) : (
+          rows.map((role) => {
+            const query = searchParams.toString()
+            const href = query
+              ? `/settings/users/roles/${encodeURIComponent(role.name)}?${query}`
+              : `/settings/users/roles/${encodeURIComponent(role.name)}`
+
+            return (
+              <ListPaneItem
                 key={role.name}
-                role={role}
+                href={href}
                 selected={role.name === selectedName}
+                label={`View ${role.displayName} role`}
+                title={role.displayName}
+                subtitle={role.name}
+                trailing={
+                  <Badge variant={role.isSystem ? 'outline' : 'secondary'}>
+                    {role.isSystem ? 'System' : 'Custom'}
+                  </Badge>
+                }
               />
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            )
+          })
+        )}
+      </ListPaneBody>
+    </ListPane>
   )
 }
 

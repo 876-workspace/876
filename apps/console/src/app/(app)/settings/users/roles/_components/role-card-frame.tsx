@@ -1,11 +1,14 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
-import { Button } from '@876/ui/button'
-import { XIcon } from '@876/ui/icons'
-import { cn } from '@876/core/utils'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+  DetailCardIdBar,
+} from '@876/ui/detail-card'
 import type { RoleView } from '@/types/role'
 
 export function RoleCardFrame({
@@ -15,50 +18,27 @@ export function RoleCardFrame({
   role: RoleView
   children: ReactNode
 }) {
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const query = searchParams.toString()
+  const closeHref = query
+    ? `/settings/users/roles?${query}`
+    : '/settings/users/roles'
 
   return (
-    <section
-      aria-label={`Role details: ${role.displayName}`}
-      className={cn(
-        '876-card flex min-w-0 flex-col',
-        'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300 motion-safe:ease-out'
-      )}
-    >
-      <header className="border-876-surface-border flex shrink-0 items-start gap-4 border-b px-6 py-5 sticky top-0 z-10 bg-[var(--876-surface)] rounded-t-[calc(var(--radius-xl)-1px)]">
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-foreground truncate text-lg font-semibold tracking-tight sm:text-xl">
-              {role.displayName}
-            </h2>
-            <Badge variant={role.isSystem ? 'outline' : 'secondary'}>
-              {role.isSystem ? 'System' : 'Custom'}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground truncate font-mono text-xs">
-            {role.name}
-          </p>
-        </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => router.push('/settings/users/roles')}
-          aria-label="Close role details"
-          className="text-muted-foreground hover:text-foreground shrink-0"
-        >
-          <XIcon className="size-4" />
-        </Button>
-      </header>
-
-      <div className="min-w-0 flex-1 p-6">
-        {children}
-      </div>
-
-      <footer className="border-876-surface-border bg-muted/30 text-muted-foreground shrink-0 border-t px-6 py-2.5 font-mono text-xs">
-        {role.name}
-      </footer>
-    </section>
+    <DetailCard aria-label={`Role details: ${role.displayName}`}>
+      <DetailCardHeader
+        title={role.displayName}
+        subtitle={role.name}
+        meta={
+          <Badge variant={role.isSystem ? 'outline' : 'secondary'}>
+            {role.isSystem ? 'System' : 'Custom'}
+          </Badge>
+        }
+        closeHref={closeHref}
+        closeLabel="Close role details"
+      />
+      <DetailCardBody>{children}</DetailCardBody>
+      <DetailCardIdBar>{role.name}</DetailCardIdBar>
+    </DetailCard>
   )
 }
