@@ -7,11 +7,14 @@ import { salesReceipts } from './repositories/sales-receipts'
 import type { ServiceResult } from './schemas/api'
 import type {
   SalesReceiptCreateParams,
+  SalesReceiptQuoteConversionParams,
+  SalesReceiptRefundParams,
   SalesReceiptStatus,
   SalesReceiptVoidParams,
 } from './schemas/sales-receipt'
 import {
   createSalesReceiptWorkflow,
+  refundSalesReceiptWorkflow,
   voidSalesReceiptWorkflow,
 } from './workflows'
 
@@ -78,6 +81,39 @@ export const salesReceiptsService = {
     return {
       resource: { object: 'sales_receipt' as const, id: result.id },
       replayed: result.replayed === true,
+    }
+  },
+
+  async convertQuote(
+    tenantId: string,
+    quoteId: string,
+    body: SalesReceiptQuoteConversionParams,
+    attribution?: IntegrationAttribution | null
+  ) {
+    return this.create(
+      tenantId,
+      {
+        quoteId,
+        ...body,
+        discountAmount: 0n,
+      },
+      attribution
+    )
+  },
+
+  async refund(
+    tenantId: string,
+    id: string,
+    body: SalesReceiptRefundParams,
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
+  ) {
+    if (sourceAppId) await ownedSalesReceipt(tenantId, id, sourceAppId)
+    return {
+      object: 'sales_receipt' as const,
+      ...(await unwrapSalesReceipt(
+        await refundSalesReceiptWorkflow(tenantId, id, body, idempotency)
+      )),
     }
   },
 
