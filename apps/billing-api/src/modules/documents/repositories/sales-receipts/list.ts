@@ -5,13 +5,15 @@ import { prisma } from '@/db/client'
 export function list(
   tenantId: string,
   status?: SalesReceiptStatus,
-  sourceAppId?: string
+  sourceAppId?: string,
+  customerId?: string
 ) {
   return prisma.salesReceipt.findMany({
     where: {
       tenantId,
       ...(status ? { status } : {}),
       ...(sourceAppId ? { sourceAppId } : {}),
+      ...(customerId ? { customerId } : {}),
     },
     include: {
       customer: true,
