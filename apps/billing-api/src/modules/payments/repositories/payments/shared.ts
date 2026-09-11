@@ -3,7 +3,7 @@ import { prisma } from '@/db/client'
 import {
   isCollectibleInvoiceStatus,
   projectCollectibleInvoiceStatus,
-} from '@/modules/documents'
+} from '@/platform/invoice-lifecycle'
 import { generateId } from '@/platform/ids'
 import type { PaymentCreateParams } from '../../schemas/payment'
 import {
