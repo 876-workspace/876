@@ -49,6 +49,17 @@ async function ownedSalesReceipt(
   })
 }
 
+async function serializedSalesReceipt(
+  tenantId: string,
+  id: string,
+  sourceAppId?: string
+) {
+  return serializeDocument(
+    'sales_receipt',
+    await ownedSalesReceipt(tenantId, id, sourceAppId)
+  )
+}
+
 async function createSalesReceipt(
   tenantId: string,
   body: SalesReceiptCreateParams,
@@ -58,7 +69,11 @@ async function createSalesReceipt(
     await createSalesReceiptWorkflow(tenantId, body, attribution ?? undefined)
   )
   return {
-    resource: { object: 'sales_receipt' as const, id: result.id },
+    resource: await serializedSalesReceipt(
+      tenantId,
+      result.id,
+      attribution?.sourceAppId
+    ),
     replayed: result.replayed === true,
   }
 }
@@ -78,12 +93,7 @@ export const salesReceiptsService = {
     )
   },
 
-  async get(tenantId: string, id: string, sourceAppId?: string) {
-    return serializeDocument(
-      'sales_receipt',
-      await ownedSalesReceipt(tenantId, id, sourceAppId)
-    )
-  },
+  get: serializedSalesReceipt,
 
   create: createSalesReceipt,
 
@@ -112,12 +122,10 @@ export const salesReceiptsService = {
     idempotency?: IdempotencyContext
   ) {
     if (sourceAppId) await ownedSalesReceipt(tenantId, id, sourceAppId)
-    return {
-      object: 'sales_receipt' as const,
-      ...(await unwrapSalesReceipt(
-        await refundSalesReceiptWorkflow(tenantId, id, body, idempotency)
-      )),
-    }
+    const result = await unwrapSalesReceipt(
+      await refundSalesReceiptWorkflow(tenantId, id, body, idempotency)
+    )
+    return serializedSalesReceipt(tenantId, result.id, sourceAppId)
   },
 
   async void(
@@ -128,11 +136,9 @@ export const salesReceiptsService = {
     idempotency?: IdempotencyContext
   ) {
     if (sourceAppId) await ownedSalesReceipt(tenantId, id, sourceAppId)
-    return {
-      object: 'sales_receipt' as const,
-      ...(await unwrapSalesReceipt(
-        await voidSalesReceiptWorkflow(tenantId, id, body, idempotency)
-      )),
-    }
+    const result = await unwrapSalesReceipt(
+      await voidSalesReceiptWorkflow(tenantId, id, body, idempotency)
+    )
+    return serializedSalesReceipt(tenantId, result.id, sourceAppId)
   },
 }
