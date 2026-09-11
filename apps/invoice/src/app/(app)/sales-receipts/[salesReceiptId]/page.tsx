@@ -1,7 +1,5 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
-import { buttonVariants } from '@876/ui/button'
 import {
   DetailCard,
   DetailCardBody,
@@ -20,6 +18,7 @@ import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
 import { documentStatusVariant } from '@/lib/status'
+import { InvoiceSalesReceiptLifecycleActions } from '../_components/sales-receipt-lifecycle-actions'
 
 type Props = { params: Promise<{ salesReceiptId: string }> }
 
@@ -60,11 +59,16 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
       : typeof receipt.customerName === 'string'
         ? receipt.customerName
         : '—'
+  const canWrite =
+    access.status === 'ok' && canAccess(access.context, 'invoices.edit')
   const canRefund =
+    canWrite &&
     receipt.status === 'PAID' &&
-    BigInt(receipt.refundableAmount) > 0n &&
-    access.status === 'ok' &&
-    canAccess(access.context, 'invoices.edit')
+    BigInt(receipt.refundableAmount) > 0n
+  const canVoid =
+    canWrite &&
+    receipt.status === 'PAID' &&
+    BigInt(receipt.creditedAmount) === 0n
 
   return (
     <DetailCard aria-label={`Sales receipt details: ${receipt.number}`}>
@@ -82,14 +86,11 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
         }
         subtitle={customer}
         actions={
-          canRefund ? (
-            <Link
-              href={`/sales-receipts/${receipt.id}/refund`}
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            >
-              Refund
-            </Link>
-          ) : undefined
+          <InvoiceSalesReceiptLifecycleActions
+            salesReceiptId={receipt.id}
+            canRefund={canRefund}
+            canVoid={canVoid}
+          />
         }
         closeHref="/sales-receipts"
         closeLabel="Close sales receipt details"
