@@ -191,8 +191,26 @@ enum InvoiceBillingReason {
   SUBSCRIPTION_UPDATE
   OPENING_BALANCE
   LATE_FEE
+  RECURRING_INVOICE
 
   @@map("BillingInvoiceBillingReason")
+}
+
+enum RecurringInvoiceStatus {
+  ACTIVE
+  PAUSED
+  STOPPED
+  EXPIRED
+
+  @@map("BillingRecurringInvoiceStatus")
+}
+
+enum RecurringInvoiceGenerationMode {
+  DRAFT
+  FINALIZE
+  FINALIZE_AND_SEND
+
+  @@map("BillingRecurringInvoiceGenerationMode")
 }
 
 enum TaxBehavior {

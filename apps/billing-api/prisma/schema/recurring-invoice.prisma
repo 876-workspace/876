@@ -1,0 +1,94 @@
+/// A tenant-scoped template that produces ordinary canonical invoices on a cadence.
+model RecurringInvoice {
+  id             String                         @id
+  tenantId       String                         @map("tenant_id")
+  profileName    String                         @map("profile_name")
+  customerId     String                         @map("customer_id")
+  currency       String
+  status         RecurringInvoiceStatus         @default(ACTIVE)
+  intervalUnit   IntervalUnit                   @map("interval_unit")
+  intervalCount  Int                            @map("interval_count")
+  startAt        Int                            @map("start_at")
+  endAt          Int?                           @map("end_at")
+  maxCycles      Int?                           @map("max_cycles")
+  nextRunAt      Int?                           @map("next_run_at")
+  lastRunAt      Int?                           @map("last_run_at")
+  generatedCount Int                            @default(0) @map("generated_count")
+  generationMode RecurringInvoiceGenerationMode @map("generation_mode")
+  paymentTermId  String?                        @map("payment_term_id")
+  salespersonId  String?                        @map("salesperson_id")
+  priceListId    String?                        @map("price_list_id")
+  taxBehavior    TaxBehavior                    @default(EXCLUSIVE) @map("tax_behavior")
+  notes          String?
+  terms          String?
+  subtotalAmount BigInt                         @default(0) @map("subtotal_amount")
+  discountAmount BigInt                         @default(0) @map("discount_amount")
+  taxAmount      BigInt                         @default(0) @map("tax_amount")
+  totalAmount    BigInt                         @default(0) @map("total_amount")
+  deletedAt      Int?                           @map("deleted_at")
+  deletedBy      String?                        @map("deleted_by")
+  deletionReason String?                        @map("deletion_reason")
+  createdAt      Int                            @map("created_at")
+  updatedAt      Int                            @map("updated_at")
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_recurring_invoices_tenant_id_fkey")
+  customer    Customer               @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_recurring_invoices_customer_fkey")
+  paymentTerm PaymentTerm?           @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_recurring_invoices_payment_term_id_fkey")
+  salesperson Salesperson?           @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_recurring_invoices_salesperson_id_fkey")
+  priceList   PriceList?             @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_recurring_invoices_price_list_id_fkey")
+  lines       RecurringInvoiceLine[]
+  runs        RecurringInvoiceRun[]
+  invoices    Invoice[]
+
+  @@unique([tenantId, id], map: "billing_recurring_invoices_tenant_id_id_key")
+  @@index([status, nextRunAt], map: "billing_recurring_invoices_status_next_run_at_idx")
+  @@index([tenantId, customerId], map: "billing_recurring_invoices_tenant_id_customer_id_idx")
+  @@map("billing_recurring_invoices")
+}
+
+model RecurringInvoiceLine {
+  id                 String  @id
+  recurringInvoiceId String  @map("recurring_invoice_id")
+  itemId             String? @map("item_id")
+  variantId          String? @map("variant_id")
+  priceId            String? @map("price_id")
+  description        String?
+  quantity           Int     @default(1)
+  unitAmount         BigInt? @map("unit_amount")
+  taxAmount          BigInt  @default(0) @map("tax_amount")
+  discountAmount     BigInt  @default(0) @map("discount_amount")
+  position           Int     @default(0)
+  createdAt          Int     @map("created_at")
+  updatedAt          Int     @map("updated_at")
+
+  recurringInvoice RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_recurring_invoice_lines_recurring_invoice_id_fkey")
+
+  @@unique([recurringInvoiceId, position], map: "billing_recurring_invoice_lines_profile_position_key")
+  @@index([recurringInvoiceId], map: "billing_recurring_invoice_lines_profile_id_idx")
+  @@map("billing_recurring_invoice_lines")
+}
+
+model RecurringInvoiceRun {
+  id                 String           @id
+  tenantId           String           @map("tenant_id")
+  recurringInvoiceId String           @map("recurring_invoice_id")
+  scheduledFor       Int              @map("scheduled_for")
+  status             BillingRunStatus @default(PROCESSING)
+  attemptCount       Int              @default(1) @map("attempt_count")
+  errorCode          String?          @map("error_code")
+  errorMessage       String?          @map("error_message")
+  invoiceId          String?          @map("invoice_id")
+  startedAt          Int              @map("started_at")
+  completedAt        Int?             @map("completed_at")
+  createdAt          Int              @map("created_at")
+  updatedAt          Int              @map("updated_at")
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_recurring_invoice_runs_tenant_id_fkey")
+  recurringInvoice RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_recurring_invoice_runs_profile_id_fkey")
+  invoice          Invoice?         @relation(fields: [invoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_recurring_invoice_runs_invoice_id_fkey")
+
+  @@unique([recurringInvoiceId, scheduledFor], map: "billing_recurring_invoice_runs_profile_schedule_key")
+  @@index([tenantId, status, scheduledFor], map: "billing_recurring_invoice_runs_tenant_status_schedule_idx")
+  @@index([invoiceId], map: "billing_recurring_invoice_runs_invoice_id_idx")
+  @@map("billing_recurring_invoice_runs")
+}

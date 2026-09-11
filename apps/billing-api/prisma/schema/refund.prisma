@@ -31,6 +31,7 @@ model Refund {
   @@unique([tenantId, id], map: "billing_refunds_tenant_id_id_key")
   @@unique([tenantId, number], name: "billing_refunds_tenant_id_number_key", map: "billing_refunds_tenant_id_number_key")
   @@index([tenantId, customerId], map: "billing_refunds_tenant_customer_idx")
+  @@index([tenantId, refundedAt], map: "billing_refunds_tenant_id_refunded_at_idx")
   @@index([tenantId, creditNoteId], map: "billing_refunds_tenant_credit_note_idx")
   @@index([tenantId, paymentId], map: "billing_refunds_tenant_payment_idx")
   @@index([creditNoteId], map: "billing_refunds_credit_note_id_idx")
