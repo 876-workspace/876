@@ -1,50 +1,10 @@
-import { platform } from '@/lib/services/platform'
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import type { AdminApp } from '@876/platform/compat'
+export const metadata = { title: 'Plans' }
 
-import { resolveApp } from '../../_data'
-import { PlansTable } from '../_components/plans-table'
-import { Suspense } from 'react'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { PLANS_SKELETON_COLUMNS } from '../_components/plans-skeleton-columns'
-
-type Props = { params: Promise<{ slug: string }> }
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const app = await resolveApp(slug)
-  if (!app) return { title: 'Plans' }
-  return { title: `${app.name} • Plans - Apps` }
-}
-
-export default async function AppPlansPage({ params }: Props) {
-  const { slug } = await params
-
-  return (
-    <div className="space-y-5">
-      <div className="mb-2">
-        <h2 className="876-page-title">Plans</h2>
-      </div>
-      <Suspense
-        fallback={<DataTableSkeleton columns={PLANS_SKELETON_COLUMNS} />}
-      >
-        <AppPlansShell slug={slug} />
-      </Suspense>
-    </div>
-  )
-}
-
-async function AppPlansShell({ slug }: { slug: string }) {
-  const app = await resolveApp(slug)
-  if (!app || app.app_kind !== 'product') notFound()
-
-  return <PlansTableData app={app} />
-}
-
-async function PlansTableData({ app }: { app: AdminApp }) {
-  const { data } = await platform.products.list({ appId: app.id })
-  const products = data?.data ?? []
-
-  return <PlansTable data={products} appId={app.id} appSlug={app.slug} />
+/**
+ * The list-only state. The toolbar, search, and the plans list live in the
+ * layout, so this route renders nothing of its own — it simply leaves the
+ * card slot empty, which is what collapses the second grid column.
+ */
+export default function AppPlansPage() {
+  return null
 }

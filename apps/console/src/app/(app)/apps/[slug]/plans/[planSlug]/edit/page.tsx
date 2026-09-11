@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveApp, resolveProduct } from '../../../_data'
 import { EditPlanForm } from './_components/edit-plan-form'
@@ -22,20 +21,7 @@ export default async function EditPlanPage({ params }: Props) {
   const product = await resolveProduct(app.id, planSlug)
   if (!product) notFound()
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <div>
-        <PageBreadcrumb
-          href={`/apps/${slug}/plans/${planSlug}`}
-          label={product.name}
-          className="mb-2 -ml-2.5"
-        />
-        <h1 className="876-page-title">
-          Edit <span className="text-muted-foreground">{product.name}</span>
-        </h1>
-      </div>
-
-      <EditPlanForm product={product} appSlug={app.slug} />
-    </div>
-  )
+  // Renders in the plan card's body beside the list; the card header already
+  // names the plan and its close button is the way back.
+  return <EditPlanForm product={product} appSlug={app.slug} />
 }

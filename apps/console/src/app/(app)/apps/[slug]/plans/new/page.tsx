@@ -21,13 +21,8 @@ export default async function NewPlanPage({ params }: Props) {
   const setup = loadPlanSetup(slug)
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="876-page-title">New Plan</h1>
-      </div>
-
-      <CreatePlanForm appSlug={slug} setup={setup} />
-    </div>
+    // The form owns the card chrome: its header carries the step indicator.
+    <CreatePlanForm appSlug={slug} setup={setup} />
   )
 }
 
