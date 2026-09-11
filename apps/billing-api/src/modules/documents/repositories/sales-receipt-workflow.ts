@@ -1,5 +1,6 @@
 import type { Prisma } from '@/db'
 import { prisma } from '@/db/client'
+import { generateId } from '@/platform/ids'
 import type { CommercialLineSnapshot } from '@/types/commercial-line'
 
 export function runSalesReceiptTransaction<T>(
@@ -163,7 +164,7 @@ export async function createSalesReceiptRow(
       updatedAt: params.now,
       lines: {
         create: params.lines.map((line, position) => ({
-          id: `${params.id}_line_${position + 1}`,
+          id: generateId('SalesReceiptLine'),
           ...line,
           position,
           createdAt: params.now,
