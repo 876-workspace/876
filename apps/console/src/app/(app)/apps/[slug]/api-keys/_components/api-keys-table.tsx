@@ -299,7 +299,7 @@ export function ApiKeysTable({
         {toolbarAction}
       </div>
 
-      <div className="876-card overflow-hidden">
+      <div className="876-card -mx-4 overflow-hidden rounded-none border-x-0 sm:-mx-6 lg:-mx-8">
         <DataTable
           columns={columns}
           data={filtered}

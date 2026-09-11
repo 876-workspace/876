@@ -25,11 +25,11 @@ export const PROFILE_STATUS_OPTIONS: StatusFilterOption[] = [
 const TAKEOVER_SEGMENTS = ['runs'] as const
 
 /**
- * The split view lives below the Console top bar, app identity header, tabs,
- * and page padding. Give it a definite viewport so the list and detail card
- * remain equal-height siblings and own their scrolling instead of growing the
- * outer page. The minimum keeps the cards usable on short screens while
- * allowing the Console page scroller to take over.
+ * The split view lives below the Console top bar. Give it a definite viewport
+ * so the list and detail card remain equal-height siblings and own their
+ * scrolling instead of growing the outer page. The minimum keeps the cards
+ * usable on short screens while allowing the Console page scroller to take
+ * over.
  */
 const PROVISIONING_CONTENT_HEIGHT = 'h-[calc(100svh-14rem)] min-h-[32rem]'
 
@@ -55,6 +55,7 @@ export function AppProvisioningShell({ slug, appId, list, children }: Props) {
     <div className={cn(open ? PROVISIONING_CONTENT_HEIGHT : 'min-h-full')}>
       <ListDetailShell
         open={open}
+        bleed
         toolbar={
           <ResourceToolbar
             title="Provisioning"

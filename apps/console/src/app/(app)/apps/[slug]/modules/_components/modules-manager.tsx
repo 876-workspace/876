@@ -192,11 +192,11 @@ export function ModulesManager({
       ) : null}
 
       {modulesState.pending ? (
-        <Skeleton className="h-64 w-full rounded-lg" />
+        <Skeleton className="-mx-4 h-64 w-auto rounded-none sm:-mx-6 lg:-mx-8" />
       ) : modulesState.error ? (
         <InlineError message={modulesState.error.message} />
       ) : (
-        <div className="876-card overflow-hidden">
+        <div className="876-card -mx-4 overflow-hidden rounded-none border-x-0 sm:-mx-6 lg:-mx-8">
           <Table>
             <TableHeader>
               <TableRow>

@@ -21,19 +21,23 @@ export default async function AppProvisioningLayout({
   if (!app) notFound()
 
   return (
-    <AppProvisioningShell
-      slug={slug}
-      appId={app.id}
-      list={
-        <Suspense
-          fallback={<DataTableSkeleton columns={PROFILES_SKELETON_COLUMNS} />}
-        >
-          <AppProfilesListData appId={app.id} slug={slug} />
-        </Suspense>
-      }
-    >
-      {children}
-    </AppProvisioningShell>
+    // Cancels the app record's page gutter so the shell owns its own insets
+    // (billing bleed parity).
+    <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
+      <AppProvisioningShell
+        slug={slug}
+        appId={app.id}
+        list={
+          <Suspense
+            fallback={<DataTableSkeleton columns={PROFILES_SKELETON_COLUMNS} />}
+          >
+            <AppProfilesListData appId={app.id} slug={slug} />
+          </Suspense>
+        }
+      >
+        {children}
+      </AppProvisioningShell>
+    </div>
   )
 }
 

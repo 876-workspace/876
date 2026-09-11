@@ -87,7 +87,7 @@ async function AppWidgetsData({
   )
 
   return (
-    <div className="876-card divide-876-surface-border divide-y overflow-hidden">
+    <div className="876-card divide-876-surface-border -mx-4 divide-y overflow-hidden rounded-none border-x-0 sm:-mx-6 lg:-mx-8">
       {widgets.map((widget) => {
         const keys = host ? getWidgetAppFeatureKeys(widget, host) : undefined
         if (!keys) return null
@@ -142,7 +142,7 @@ async function AppWidgetsData({
 
 function AppWidgetsFallback() {
   return (
-    <div className="876-card divide-876-surface-border divide-y overflow-hidden">
+    <div className="876-card divide-876-surface-border -mx-4 divide-y overflow-hidden rounded-none border-x-0 sm:-mx-6 lg:-mx-8">
       {Array.from({ length: 3 }, (_, index) => (
         <div key={index} className="flex items-center gap-4 p-5">
           <Skeleton className="size-10 rounded-lg" />
