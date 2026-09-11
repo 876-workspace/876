@@ -1,17 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
-import {
-  DetailCard,
-  DetailCardBody,
-  DetailCardFact,
-  DetailCardFacts,
-  DetailCardHeader,
-  DetailCardHeadline,
-  DetailCardIcon,
-  DetailCardIdBar,
-  DetailCardSection,
-} from '@876/ui/detail-card'
-import { CreditCardIcon } from '@876/ui/icons'
+import { DetailCard, DetailCardBody } from '@876/ui/detail-card'
+import { InvoiceDocumentPanel } from '@876/billing-ui/panels/invoice-document-panel'
+import { invoiceDocumentData } from '@876/billing-ui/document/invoice-document-data'
+import Link from 'next/link'
 import { WorkWidgetContextSetter } from '@876/widgets/react'
 
 import { getInvoiceContext } from '@/lib/auth/context'
@@ -24,7 +16,6 @@ import { documentStatusVariant } from '@/lib/status'
 
 import { InvoiceActions } from './_components/invoice-actions'
 import { InvoiceOriginLink } from './_components/invoice-origin-link'
-import type { InvoiceStatus } from './_lib/invoice-editability'
 
 type Props = { params: Promise<{ invoiceId: string }> }
 
@@ -58,29 +49,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const canWrite = canAccess(access, 'invoices.write')
   const canRecordPayment = canAccess(access, 'payments.create')
 
-  const customer =
-    invoice.customer &&
-    typeof invoice.customer === 'object' &&
-    'name' in invoice.customer
-      ? String(invoice.customer.name ?? '—')
-      : String(invoice.customerName ?? '—')
-  const customerId = String(invoice.customerId ?? '')
-  const number = String(invoice.number ?? invoice.id)
-  const totalAmount = String(invoice.totalAmount ?? '0')
-  const amountDue = String(invoice.amountDue ?? invoice.totalAmount ?? '0')
-  const currency = String(invoice.currency ?? 'JMD')
-  const status = String(invoice.status ?? 'DRAFT') as InvoiceStatus
-  const date =
-    typeof invoice.issueAt === 'number'
-      ? invoice.issueAt
-      : typeof invoice.createdAt === 'number'
-        ? invoice.createdAt
-        : null
-  const record = invoice as unknown as Record<string, unknown>
-  const recurringInvoiceId =
-    typeof record.recurringInvoiceId === 'string'
-      ? record.recurringInvoiceId
-      : null
+  const { number, customerId, status, recurringInvoiceId } = invoice
   let originProfileName: string | null = null
   if (recurringInvoiceId) {
     const origin = await billing.recurringInvoices.retrieve(recurringInvoiceId)
@@ -97,24 +66,17 @@ export default async function InvoiceDetailPage({ params }: Props) {
         context={createInvoiceWorkContext(invoice)}
         routeBase={`/api/invoices/${encodeURIComponent(invoice.id)}/work`}
       />
-      <DetailCard aria-label={`Invoice details: ${number}`}>
-        <DetailCardHeader
-          icon={
-            <DetailCardIcon>
-              <CreditCardIcon className="size-5" />
-            </DetailCardIcon>
-          }
-          title={number}
-          meta={
+      <DetailCard
+        aria-label={`Invoice details: ${number}`}
+        className="min-h-0 print:h-auto print:overflow-visible print:border-0 print:shadow-none"
+      >
+        <header className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-6 print:hidden">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold">{number}</h1>
             <Badge variant={documentStatusVariant(status)}>
-              {status.toLowerCase().replace(/_/g, ' ')}
+              {status.toLowerCase().replaceAll('_', ' ')}
             </Badge>
-          }
-          subtitle={customer}
-          closeHref="/invoices"
-          closeLabel="Close invoice details"
-        />
-        <div className="px-5 pt-5 sm:px-6 print:hidden">
+          </div>
           <InvoiceActions
             invoiceId={invoice.id}
             customerId={customerId}
@@ -122,36 +84,42 @@ export default async function InvoiceDetailPage({ params }: Props) {
             canWrite={canWrite}
             canRecordPayment={canRecordPayment}
           />
-        </div>
-        <DetailCardBody className="space-y-8">
-          <DetailCardHeadline
-            value={formatMoney(totalAmount, currency)}
-            caption="Invoice total"
+        </header>
+        <DetailCardBody className="min-h-0 p-0 sm:p-0 print:overflow-visible print:p-0">
+          <InvoiceDocumentPanel
+            {...invoiceDocumentData(invoice, formatDate, formatMoney)}
+            seller={{ name: context.orgName, countryLabel: '' }}
+            footer={
+              <>
+                <p>
+                  {invoice.billingReason === 'MANUAL'
+                    ? 'Manual invoice'
+                    : invoice.billingReason.toLowerCase().replaceAll('_', ' ')}
+                  {invoice.subscriptionId
+                    ? ` · Subscription ${invoice.subscriptionId}`
+                    : ''}
+                </p>
+                {invoice.lateFeeAssessment ? (
+                  <p className="mt-1">
+                    Late fee for{' '}
+                    <Link
+                      href={`/invoices/${invoice.lateFeeAssessment.sourceInvoice.id}`}
+                      className="underline underline-offset-2"
+                    >
+                      {invoice.lateFeeAssessment.sourceInvoice.number}
+                    </Link>
+                  </p>
+                ) : null}
+                {recurringInvoiceId && originProfileName ? (
+                  <InvoiceOriginLink
+                    profileId={recurringInvoiceId}
+                    profileName={originProfileName}
+                  />
+                ) : null}
+              </>
+            }
           />
-          <DetailCardSection title="Invoice">
-            <DetailCardFacts>
-              <DetailCardFact label="Customer" value={customer} />
-              <DetailCardFact label="Date" value={formatDate(date)} />
-              <DetailCardFact
-                label="Amount due"
-                value={formatMoney(amountDue, currency)}
-                mono
-              />
-              <DetailCardFact label="Currency" value={currency} mono />
-            </DetailCardFacts>
-            {recurringInvoiceId && originProfileName ? (
-              <div className="mt-4">
-                <InvoiceOriginLink
-                  profileId={recurringInvoiceId}
-                  profileName={originProfileName}
-                />
-              </div>
-            ) : null}
-          </DetailCardSection>
         </DetailCardBody>
-        <DetailCardIdBar>
-          <span className="truncate">{invoice.id}</span>
-        </DetailCardIdBar>
       </DetailCard>
     </>
   )
