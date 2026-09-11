@@ -104,6 +104,23 @@ describe('OrgsList', () => {
     ).not.toHaveAttribute('aria-current')
   })
 
+  it('omits the status badge from condensed rows', () => {
+    mocks.pathname = '/orgs/acme'
+    render(
+      <OrgsList
+        orgs={orgs}
+        subscriptionsMap={{}}
+        isSearching={false}
+        hasMore={false}
+        firstId={null}
+        lastId={null}
+      />
+    )
+
+    expect(screen.queryByText('active')).toBeNull()
+    expect(screen.queryByText('archived')).toBeNull()
+  })
+
   it('preserves the list query in pane links', () => {
     mocks.pathname = '/orgs/acme'
     mocks.searchParams = new URLSearchParams('status=all')
