@@ -1,3 +1,5 @@
+'use client'
+
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
