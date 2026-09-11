@@ -17,9 +17,10 @@ model TaxRate {
   createdAt      Int     @map("created_at")
   updatedAt      Int     @map("updated_at")
 
-  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_tax_rates_tenant_id_fkey")
-  taxAuthority TaxAuthority  @relation(fields: [tenantId, taxAuthorityId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_tax_rates_tenant_id_tax_authority_id_fkey")
-  invoiceLines InvoiceLine[]
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_tax_rates_tenant_id_fkey")
+  taxAuthority      TaxAuthority       @relation(fields: [tenantId, taxAuthorityId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_tax_rates_tenant_id_tax_authority_id_fkey")
+  invoiceLines      InvoiceLine[]
+  salesReceiptLines SalesReceiptLine[]
 
   @@index([tenantId, isActive, startsAt], map: "billing_tax_rates_tenant_id_active_starts_at_idx")
   @@index([taxAuthorityId], map: "billing_tax_rates_tax_authority_id_idx")
