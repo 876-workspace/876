@@ -8,14 +8,14 @@ the orchestrator verified from the diff.
 
 ## Findings and resolution
 
-| # | Finding | Severity | Resolution |
-| - | ------- | -------- | ---------- |
-| 1 | `/users` and `/orgs` fetched one 50-row window and filtered `?q`/`?status` client-side; cursor pagination removed. Records past row 50 were unfindable. | High | Codex: `@list` parallel slots (`users/@list/[[...segments]]/page.tsx`, `orgs/@list/...` + `default.tsx`) receive `searchParams`, so `*ListData` again calls `search`/`list` with `status` and `startingAfter`/`endingBefore`. The layout renders the slot as the section's `list`. |
-| 2 | Enrichment failures (`listAppsByUsers`, org subscriptions batch) silently became empty maps. | Medium | Codex: compact `AppError` banner beside the list. |
-| 3 | `DeletedNotice` rendered as a sibling above the `h-full` `DetailCard`. | Medium | Codex: moved inside `DetailCardBody`. |
-| 4 | Codex applied a `100svh` height override (`lib/layout/console-list-detail.ts`) to all five sections. | Medium | Orchestrator: removed. These routes render inside `AppShellMain` (`min-h-0 flex-1 overflow-y-auto` in an `h-svh` frame), so the section's default `h-full min-h-0` already resolves (§5a height table). |
-| 5 | Codex reformatted two unrelated `orgs/[slug]/subscriptions` files. | Low | Orchestrator: reverted (git.md, no incidental churn). |
-| 6 | Two list tests still asserted client-side search against a non-empty row set. | Low | Orchestrator: updated to pass an empty server result with `isSearching`, and assert the query appears in the empty state. |
+| #   | Finding                                                                                                                                                 | Severity | Resolution                                                                                                                                                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `/users` and `/orgs` fetched one 50-row window and filtered `?q`/`?status` client-side; cursor pagination removed. Records past row 50 were unfindable. | High     | Codex: `@list` parallel slots (`users/@list/{page,[...segments]/page,default}.tsx` and the orgs equivalent) receive `searchParams`, so `*ListData` again calls `search`/`list` with `status` and `startingAfter`/`endingBefore`. The layout renders the slot as the section's `list`. |
+| 2   | Enrichment failures (`listAppsByUsers`, org subscriptions batch) silently became empty maps.                                                            | Medium   | Codex: compact `AppError` banner beside the list.                                                                                                                                                                                                                                     |
+| 3   | `DeletedNotice` rendered as a sibling above the `h-full` `DetailCard`.                                                                                  | Medium   | Codex: moved inside `DetailCardBody`.                                                                                                                                                                                                                                                 |
+| 4   | Codex applied a `100svh` height override (`lib/layout/console-list-detail.ts`) to all five sections.                                                    | Medium   | Orchestrator: removed. These routes render inside `AppShellMain` (`min-h-0 flex-1 overflow-y-auto` in an `h-svh` frame), so the section's default `h-full min-h-0` already resolves (§5a height table).                                                                               |
+| 5   | Codex reformatted two unrelated `orgs/[slug]/subscriptions` files.                                                                                      | Low      | Orchestrator: reverted (git.md, no incidental churn).                                                                                                                                                                                                                                 |
+| 6   | Two list tests still asserted client-side search against a non-empty row set.                                                                           | Low      | Orchestrator: updated to pass an empty server result with `isSearching`, and assert the query appears in the empty state.                                                                                                                                                             |
 
 Trade-off: the `@list` slot re-renders on every navigation under `/users` and
 `/orgs`, so opening a record refetches the current list page. The list stays
@@ -36,3 +36,16 @@ per open, in exchange for correct server search and pagination.
 - Not checked in a browser: the grid animation, slot behaviour on hard load of a
   detail URL, and the narrow-viewport layout. Walk the manual checklist in `plan.md`
   before merging.
+
+## Follow-up after merge (PR #530)
+
+`next dev` refused to start: `You cannot define a route with the same
+specificity as a optional catch-all route ("/orgs" and "/orgs[[...segments]]")`.
+A slot adds no URL segment, so `@list/[[...segments]]` collided with the
+`(list)/page.tsx` index. Neither `tsc` nor vitest builds Next's route table, so
+the verification above could not catch it. Fixed by splitting the slot into
+`@list/page.tsx` (the index) plus a required `@list/[...segments]/page.tsx`.
+This was verified by booting `next dev` and requesting `/users`, `/orgs`, a
+detail URL for each, and `/widgets`. All five return a 307 redirect to sign-in,
+and the route table builds. **A route-structure change needs `next dev` or
+`next build` as part of its verification.**
