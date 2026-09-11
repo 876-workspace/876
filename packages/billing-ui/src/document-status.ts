@@ -10,9 +10,8 @@ export type DocumentStatusVariant =
 
 /**
  * Badge variant for a sales-document status (invoice, quote, estimate, credit
- * note). One mapping for all of them, so the same word never renders in two
- * different colours across the invoicing section — or across two apps, which
- * is why it lives here rather than in each host.
+ * note, sales receipt). One mapping for all of them, so the same word never
+ * renders in two different colours across finance apps.
  */
 export function documentStatusVariant(status: string): DocumentStatusVariant {
   switch (status.toUpperCase()) {
@@ -47,6 +46,22 @@ export interface DocumentStatusOption {
   value: string
   label: string
   headingLabel: string
+}
+
+export const SALES_RECEIPT_STATUS_OPTIONS: DocumentStatusOption[] = [
+  { value: 'all', label: 'All', headingLabel: 'All Sales Receipts' },
+  { value: 'paid', label: 'Paid', headingLabel: 'Paid Sales Receipts' },
+  { value: 'void', label: 'Void', headingLabel: 'Void Sales Receipts' },
+]
+
+const SALES_RECEIPT_STATUS_VALUES = SALES_RECEIPT_STATUS_OPTIONS.filter(
+  (option) => option.value !== 'all'
+).map((option) => option.value)
+
+export function resolveSalesReceiptStatus(
+  value: string | null | undefined
+): string {
+  return value && SALES_RECEIPT_STATUS_VALUES.includes(value) ? value : 'all'
 }
 
 /**
