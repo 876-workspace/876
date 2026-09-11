@@ -7,7 +7,6 @@ import type { PaymentCreateParams } from '../../schemas/payment'
 
 import { nextDocumentNumber } from '@/modules/documents'
 import {
-  attributionData,
   type AttributedCreateResult,
   type IntegrationAttribution,
   resolveIdempotencyReplay,
@@ -20,6 +19,7 @@ import {
   applyPaymentAllocations,
   loadPaymentTargets,
   PaymentMutationError,
+  writePaymentEvidence,
 } from './shared'
 import {
   isRetryableTransactionError,
@@ -61,27 +61,26 @@ export async function create(
       async (tx) => {
         const targets = await loadPaymentTargets(tx, tenantId, params)
 
-        await tx.payment.create({
-          data: {
-            id: paymentId,
-            tenantId,
-            ...attributionData(attribution),
+        await writePaymentEvidence(
+          tx,
+          tenantId,
+          {
+            paymentId,
+            number,
             customerId: params.customerId,
             paymentModeId: params.paymentModeId,
             depositAccountId: targets.account.id,
-            number,
-            status: 'SUCCEEDED',
             amount: params.amount,
             unappliedAmount,
             bankCharges: params.bankCharges,
             currency: params.currency,
             paymentDate: params.paymentDate,
-            referenceNumber: params.referenceNumber ?? null,
-            notes: params.notes ?? null,
-            createdAt: now,
-            updatedAt: now,
+            referenceNumber: params.referenceNumber,
+            notes: params.notes,
           },
-        })
+          now,
+          attribution
+        )
 
         await recordLedgerEntry(tx, {
           tenantId,
@@ -108,23 +107,6 @@ export async function create(
         )
 
         await recomputeCustomerAr(tx, tenantId, params.customerId, now)
-
-        await tx.bankTransaction.create({
-          data: {
-            id: generateId('BankTransaction'),
-            tenantId,
-            accountId: targets.account.id,
-            paymentId,
-            type: 'CREDIT',
-            amount: params.amount - params.bankCharges,
-            date: params.paymentDate,
-            description: `Payment ${number}`,
-            status: 'MATCHED',
-            reference: params.referenceNumber ?? number,
-            createdAt: now,
-            updatedAt: now,
-          },
-        })
       },
       { isolationLevel: 'Serializable' }
     )
