@@ -166,6 +166,32 @@ export const BILLING_ERRORS = {
     message: 'This quote cannot be changed from its current status.',
     httpStatus: HttpStatus.CONFLICT,
   },
+  'billing/recurring-invoice-currency-disabled': {
+    message: 'Enable the recurring invoice currency before using it.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/recurring-invoice-customer-not-found': {
+    message: 'The selected customer was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'billing/recurring-invoice-delete-not-allowed': {
+    message:
+      'A Recurring Invoice that has generated invoices cannot be deleted. Stop it instead.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/recurring-invoice-invalid-lines': {
+    message: 'The Recurring Invoice lines are invalid.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/recurring-invoice-invalid-state': {
+    message:
+      'This Recurring Invoice cannot be changed from its current status.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/recurring-invoice-not-found': {
+    message: 'Recurring Invoice not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
   'billing/workspace-not-found': {
     message: 'The Billing workspace was not found.',
     httpStatus: HttpStatus.NOT_FOUND,
