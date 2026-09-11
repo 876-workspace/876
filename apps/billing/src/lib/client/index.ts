@@ -24,6 +24,7 @@ import { products } from './products'
 import { quotes } from './quotes'
 import { refunds } from './refunds'
 import { roles } from './roles'
+import { salesReceipts } from './sales-receipts'
 import { subscriptions } from './subscriptions'
 import { salespeople } from './salespeople'
 import { discounts } from './discounts'
@@ -57,6 +58,7 @@ export const client = {
   quotes,
   refunds,
   roles,
+  salesReceipts,
   salespeople,
   subscriptions,
   support,
