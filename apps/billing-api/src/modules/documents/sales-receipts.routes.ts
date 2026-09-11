@@ -18,6 +18,10 @@ const org = z.strictObject({ organizationId: z.string().min(1) })
 const orgReceipt = org.extend({ salesReceiptId: z.string().min(1) })
 const orgQuote = org.extend({ quoteId: z.string().min(1) })
 const status = z.enum(['PAID', 'VOID'])
+const listQuery = z.strictObject({
+  status: status.optional(),
+  customerId: z.string().min(1).optional(),
+})
 const resource = z
   .object({ object: z.literal('sales_receipt'), id: z.string() })
   .passthrough()
@@ -50,7 +54,7 @@ export function createSalesReceiptsRouter(resolveGuards: GuardResolver) {
     summary: 'List Sales Receipts',
     operationId: 'billing-billing_get_sales_receipts',
     security: read,
-    request: { query: z.strictObject({ status: status.optional() }) },
+    request: { query: listQuery },
     responses: {
       200: {
         description: 'Sales Receipt list',
@@ -152,10 +156,7 @@ export function createSalesReceiptsRouter(resolveGuards: GuardResolver) {
     summary: 'List organization Sales Receipts',
     operationId: 'billing-integration_get_sales_receipts',
     security: integrationRead,
-    request: {
-      params: org,
-      query: z.strictObject({ status: status.optional() }),
-    },
+    request: { params: org, query: listQuery },
     responses: {
       200: {
         description: 'Sales Receipt list',
