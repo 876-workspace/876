@@ -29,7 +29,7 @@ export function UsersTable({
   const columns = makeUserColumns(enrollmentsMap)
 
   return (
-    <div className="876-card">
+    <div className="876-card overflow-hidden">
       <DataTable
         columns={columns}
         data={data}
