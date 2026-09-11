@@ -14,7 +14,7 @@ import { computeTotals, CreditNoteMutationError } from './shared'
 
 /**
  * Issues a credit note (status OPEN) with its full total available as customer
- * credit. Applying that credit to invoices is a separate step (`apply`).
+ * credit. Applying or refunding that credit is a separate step.
  */
 export async function create(
   tenantId: string,
@@ -65,12 +65,37 @@ export async function create(
           )
       }
 
+      if (params.salesReceiptId) {
+        const salesReceipt = await tx.salesReceipt.findFirst({
+          where: { id: params.salesReceiptId, tenantId },
+          select: { customerId: true, currency: true, status: true },
+        })
+        if (!salesReceipt)
+          throw new CreditNoteMutationError('Sales Receipt not found.', 404)
+        if (salesReceipt.status !== 'PAID')
+          throw new CreditNoteMutationError(
+            'Only a paid Sales Receipt can be credited.',
+            409
+          )
+        if (salesReceipt.customerId !== params.customerId)
+          throw new CreditNoteMutationError(
+            'The Sales Receipt belongs to a different customer.',
+            422
+          )
+        if (salesReceipt.currency !== params.currency)
+          throw new CreditNoteMutationError(
+            'The Sales Receipt uses a different currency.',
+            422
+          )
+      }
+
       await tx.creditNote.create({
         data: {
           id: creditNoteId,
           tenantId,
           customerId: params.customerId,
           invoiceId: params.invoiceId ?? null,
+          salesReceiptId: params.salesReceiptId ?? null,
           number,
           status: 'OPEN',
           currency: params.currency,
