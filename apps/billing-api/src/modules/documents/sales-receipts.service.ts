@@ -49,16 +49,31 @@ async function ownedSalesReceipt(
   })
 }
 
+async function createSalesReceipt(
+  tenantId: string,
+  body: SalesReceiptCreateParams,
+  attribution?: IntegrationAttribution | null
+) {
+  const result = await unwrapSalesReceipt(
+    await createSalesReceiptWorkflow(tenantId, body, attribution ?? undefined)
+  )
+  return {
+    resource: { object: 'sales_receipt' as const, id: result.id },
+    replayed: result.replayed === true,
+  }
+}
+
 export const salesReceiptsService = {
   async list(
     tenantId: string,
     status?: SalesReceiptStatus,
     sourceAppId?: string,
-    url = '/api/v1/sales-receipts'
+    url = '/api/v1/sales-receipts',
+    customerId?: string
   ) {
     return documentList(
       'sales_receipt',
-      await salesReceipts.list(tenantId, status, sourceAppId),
+      await salesReceipts.list(tenantId, status, sourceAppId, customerId),
       url
     )
   },
@@ -70,19 +85,7 @@ export const salesReceiptsService = {
     )
   },
 
-  async create(
-    tenantId: string,
-    body: SalesReceiptCreateParams,
-    attribution?: IntegrationAttribution | null
-  ) {
-    const result = await unwrapSalesReceipt(
-      await createSalesReceiptWorkflow(tenantId, body, attribution ?? undefined)
-    )
-    return {
-      resource: { object: 'sales_receipt' as const, id: result.id },
-      replayed: result.replayed === true,
-    }
-  },
+  create: createSalesReceipt,
 
   async convertQuote(
     tenantId: string,
@@ -90,7 +93,7 @@ export const salesReceiptsService = {
     body: SalesReceiptQuoteConversionParams,
     attribution?: IntegrationAttribution | null
   ) {
-    return this.create(
+    return createSalesReceipt(
       tenantId,
       {
         quoteId,
