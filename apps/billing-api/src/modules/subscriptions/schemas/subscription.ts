@@ -218,7 +218,7 @@ export const BillingSweepSchema = z.strictObject({
   limit: z.number().int().min(1).max(100).default(25),
 })
 
-export type BillingSweepParams = z.infer<typeof BillingSweepSchema>
+export type BillingSweepParams = z.input<typeof BillingSweepSchema>
 
 export interface BillingSweepResult {
   object: 'billing_run_summary'
@@ -227,6 +227,7 @@ export interface BillingSweepResult {
   succeeded: number
   failed: number
   skipped: number
+  hasMore: boolean
   invoiceIds: string[]
 }
 
