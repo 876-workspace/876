@@ -42,6 +42,7 @@ model Tenant {
   priceListEntries                PriceListEntry[]
   quotes                          Quote[]
   invoices                        Invoice[]
+  salesReceipts                   SalesReceipt[]
   creditNotes                     CreditNote[]
   creditNoteAllocations           CreditNoteAllocation[]
   refunds                         Refund[]
