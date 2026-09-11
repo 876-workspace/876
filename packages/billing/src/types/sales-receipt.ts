@@ -4,6 +4,11 @@ import type { TaxBehavior } from './enums'
 
 export type SalesReceiptStatus = 'PAID' | 'VOID'
 
+export interface SalesReceiptLineCreateParams extends DocumentLineCreateParams {
+  /** Variant selected for this line when the Item is variant-mode. */
+  variantId?: string | null
+}
+
 export interface SalesReceiptCreateParams {
   quoteId?: string | null
   customerId?: string | null
@@ -16,7 +21,7 @@ export interface SalesReceiptCreateParams {
   discountAmount?: MinorAmount
   notes?: string | null
   terms?: string | null
-  lines?: DocumentLineCreateParams[]
+  lines?: SalesReceiptLineCreateParams[]
   paymentModeId: string
   depositAccountId: string
   paymentDate?: number
