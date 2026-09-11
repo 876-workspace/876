@@ -18,6 +18,7 @@ import { err, ok } from '../result'
 import { hasEnabledCurrency } from '@/modules/currencies'
 import { resolveInvoiceDefaults } from './defaults'
 import { isUniqueConstraintError } from '@/platform/prisma-errors'
+import { lockQuoteConversion } from '../quotes/conversion'
 
 /** Creates a draft invoice manually or by copying a quote snapshot. */
 export async function create(
@@ -91,15 +92,13 @@ async function createFromQuote(
   const [quote, salesperson] = await Promise.all([
     prisma.quote.findFirst({
       where: { id: quoteId, tenantId },
-      include: { lines: true, convertedInvoice: { select: { id: true } } },
+      include: { lines: true },
     }),
     resolveSalesperson(tenantId, params.salespersonId),
   ])
   if (!quote) return err('The selected quote was not found.', 404)
   if (params.salespersonId && !salesperson)
     return err('The selected salesperson was not found.', 404)
-  if (quote.convertedInvoice)
-    return err('This quote already has an invoice.', 409)
   if (quote.status === 'CANCELED' || quote.status === 'DECLINED')
     return err('This quote cannot be converted to an invoice.', 422)
 
@@ -108,8 +107,25 @@ async function createFromQuote(
 
   const now = nowUnixSeconds()
   const number = await nextDocumentNumber(tenantId, 'INVOICE', now)
-  const invoice = await prisma.$transaction(async (tx) => {
-    return tx.invoice.create({
+  return prisma.$transaction(async (tx) => {
+    const conversion = await lockQuoteConversion(
+      tx,
+      tenantId,
+      quoteId,
+      'invoice'
+    )
+    if (conversion.kind === 'not_found')
+      return err('The selected quote was not found.', 404)
+    if (conversion.kind === 'conflict') return err(conversion.message, 409)
+    if (conversion.kind === 'replayed')
+      return ok({ id: conversion.resourceId, replayed: true })
+    if (
+      conversion.quote.status === 'CANCELED' ||
+      conversion.quote.status === 'DECLINED'
+    )
+      return err('This quote cannot be converted to an invoice.', 422)
+
+    const invoice = await tx.invoice.create({
       data: {
         id: generateId('Invoice'),
         tenantId,
@@ -155,9 +171,9 @@ async function createFromQuote(
         },
       },
     })
-  })
 
-  return ok({ id: invoice.id })
+    return ok({ id: invoice.id })
+  })
 }
 
 async function createManualInvoice(

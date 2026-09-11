@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   salespersonFindFirst: vi.fn(),
   invoiceFindFirst: vi.fn(),
   invoiceCreate: vi.fn(),
+  queryRaw: vi.fn(),
   transaction: vi.fn(),
   defaults: vi.fn(),
   nextDocumentNumber: vi.fn(),
@@ -42,6 +43,7 @@ function quote() {
     notes: null,
     terms: null,
     lines: [],
+    status: 'ACCEPTED',
     convertedInvoice: null,
   }
 }
@@ -64,12 +66,20 @@ describe('invoice creation from a quote', () => {
     mocks.salespersonFindFirst.mockResolvedValue(null)
     mocks.defaults.mockResolvedValue(invoiceDefaults())
     mocks.nextDocumentNumber.mockResolvedValue('INV-000001')
+    mocks.queryRaw.mockResolvedValue([{ id: quoteId }])
     mocks.transaction.mockImplementation(
       async (
         callback: (tx: {
           invoice: { create: typeof mocks.invoiceCreate }
+          quote: { findFirst: typeof mocks.quoteFindFirst }
+          $queryRaw: typeof mocks.queryRaw
         }) => unknown
-      ) => callback({ invoice: { create: mocks.invoiceCreate } })
+      ) =>
+        callback({
+          invoice: { create: mocks.invoiceCreate },
+          quote: { findFirst: mocks.quoteFindFirst },
+          $queryRaw: mocks.queryRaw,
+        })
     )
   })
 

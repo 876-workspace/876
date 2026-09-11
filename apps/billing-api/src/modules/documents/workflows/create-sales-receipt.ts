@@ -1,5 +1,6 @@
 import { calculateDocumentTotals } from '@876/core/money'
 import { nowUnixSeconds } from '@876/core/timestamps'
+import type { Prisma } from '@/db'
 
 import { hasEnabledCurrency } from '@/modules/currencies'
 import { consume as consumeInventory } from '@/modules/inventory'
@@ -27,6 +28,7 @@ import {
   resolveSalesReceiptDefaults,
   runSalesReceiptTransaction,
 } from '../repositories/sales-receipt-workflow'
+import { lockQuoteConversion } from '../repositories/quotes/conversion'
 import type { ServiceResult } from '../schemas/api'
 import type { SalesReceiptCreateParams } from '../schemas/sales-receipt'
 
@@ -51,8 +53,8 @@ type PreparedSalesReceipt = {
   taxBehavior: 'EXCLUSIVE' | 'INCLUSIVE'
   customerName: string
   customerEmail: string | null
-  billingAddressSnapshot: Record<string, unknown> | null
-  shippingAddressSnapshot: Record<string, unknown> | null
+  billingAddressSnapshot: Prisma.InputJsonValue | null
+  shippingAddressSnapshot: Prisma.InputJsonValue | null
   subtotalAmount: bigint
   taxAmount: bigint
   discountAmount: bigint
@@ -95,96 +97,125 @@ export async function createSalesReceiptWorkflow(
     const receiptAt = params.receiptAt ?? now
     const paymentDate = params.paymentDate ?? receiptAt
 
-    await runSalesReceiptTransaction(async (tx) => {
-      const [number, paymentNumber] = await Promise.all([
-        nextDocumentNumber(tenantId, 'SALES_RECEIPT', now, tx),
-        nextDocumentNumber(tenantId, 'PAYMENT', now, tx),
-      ])
+    const replayedSalesReceiptId = await runSalesReceiptTransaction(
+      async (tx) => {
+        if (prepared.quoteId) {
+          const conversion = await lockQuoteConversion(
+            tx,
+            tenantId,
+            prepared.quoteId,
+            'sales-receipt'
+          )
+          if (conversion.kind === 'not_found')
+            throw new SalesReceiptCreateError(
+              'The selected quote was not found.',
+              404
+            )
+          if (conversion.kind === 'conflict')
+            throw new SalesReceiptCreateError(conversion.message, 409)
+          if (conversion.kind === 'replayed') return conversion.resourceId
+          if (conversion.quote.status !== 'ACCEPTED')
+            throw new SalesReceiptCreateError(
+              'Accept the quote before converting it to a Sales Receipt.',
+              409
+            )
+        }
 
-      const payment = await recordSettledPayment(
-        tx,
-        tenantId,
-        {
-          number: paymentNumber,
+        const [number, paymentNumber] = await Promise.all([
+          nextDocumentNumber(tenantId, 'SALES_RECEIPT', now, tx),
+          nextDocumentNumber(tenantId, 'PAYMENT', now, tx),
+        ])
+
+        const payment = await recordSettledPayment(
+          tx,
+          tenantId,
+          {
+            number: paymentNumber,
+            customerId: prepared.customerId,
+            paymentModeId: params.paymentModeId,
+            depositAccountId: params.depositAccountId,
+            amount: prepared.totalAmount,
+            bankCharges: params.bankCharges,
+            currency: prepared.currency,
+            paymentDate,
+            referenceNumber: params.paymentReferenceNumber,
+            notes: params.notes,
+          },
+          now,
+          attribution
+        )
+
+        await createSalesReceiptRow(tx, {
+          id: salesReceiptId,
+          tenantId,
           customerId: prepared.customerId,
-          paymentModeId: params.paymentModeId,
-          depositAccountId: params.depositAccountId,
-          amount: prepared.totalAmount,
-          bankCharges: params.bankCharges,
-          currency: prepared.currency,
-          paymentDate,
-          referenceNumber: params.paymentReferenceNumber,
-          notes: params.notes,
-        },
-        now,
-        attribution
-      )
-
-      await createSalesReceiptRow(tx, {
-        id: salesReceiptId,
-        tenantId,
-        customerId: prepared.customerId,
-        quoteId: prepared.quoteId,
-        paymentId: payment.id,
-        salespersonId: prepared.salespersonId,
-        salespersonName: prepared.salespersonName,
-        priceListId: prepared.priceListId,
-        priceListName: prepared.priceListName,
-        number,
-        currency: prepared.currency,
-        referenceNumber: params.referenceNumber,
-        taxBehavior: prepared.taxBehavior,
-        customerName: prepared.customerName,
-        customerEmail: prepared.customerEmail,
-        billingAddressSnapshot: prepared.billingAddressSnapshot,
-        shippingAddressSnapshot: prepared.shippingAddressSnapshot,
-        receiptAt,
-        subtotalAmount: prepared.subtotalAmount,
-        taxAmount: prepared.taxAmount,
-        discountAmount: prepared.discountAmount,
-        totalAmount: prepared.totalAmount,
-        notes: prepared.notes,
-        terms: prepared.terms,
-        sourceAppId: attribution?.sourceAppId,
-        sourceExternalReference: attribution?.sourceExternalReference,
-        sourceIdempotencyKey: attribution?.sourceIdempotencyKey,
-        sourcePayloadHash: attribution?.sourcePayloadHash,
-        lines: prepared.lines,
-        now,
-      })
-
-      const stock = await consumeInventory(tx, tenantId, {
-        reference: { type: 'sales-receipt', id: salesReceiptId },
-        reason: 'sale',
-        lines: prepared.lines.flatMap((line) => {
-          const target = line.variantId
-            ? ({ type: 'variant', id: line.variantId } as const)
-            : line.itemId
-              ? ({ type: 'item', id: line.itemId } as const)
-              : null
-          return target ? [{ target, quantity: line.quantity }] : []
-        }),
-        occurredAt: receiptAt,
-      })
-      if (stock.error !== null)
-        throw new SalesReceiptCreateError(stock.error, stock.status ?? 422)
-
-      await enqueueBillingEvent(tx, tenantId, {
-        type: 'sales-receipt.created',
-        version: 1,
-        resource: { type: 'sales-receipt', id: salesReceiptId },
-        payload: {
-          salesReceiptId,
-          customerId: prepared.customerId,
+          quoteId: prepared.quoteId,
           paymentId: payment.id,
+          salespersonId: prepared.salespersonId,
+          salespersonName: prepared.salespersonName,
+          priceListId: prepared.priceListId,
+          priceListName: prepared.priceListName,
           number,
           currency: prepared.currency,
-          totalAmount: prepared.totalAmount.toString(),
+          referenceNumber: params.referenceNumber,
+          taxBehavior: prepared.taxBehavior,
+          customerName: prepared.customerName,
+          customerEmail: prepared.customerEmail,
+          billingAddressSnapshot: prepared.billingAddressSnapshot,
+          shippingAddressSnapshot: prepared.shippingAddressSnapshot,
           receiptAt,
-        },
-        occurredAt: now,
-      })
-    })
+          subtotalAmount: prepared.subtotalAmount,
+          taxAmount: prepared.taxAmount,
+          discountAmount: prepared.discountAmount,
+          totalAmount: prepared.totalAmount,
+          notes: prepared.notes,
+          terms: prepared.terms,
+          sourceAppId: attribution?.sourceAppId,
+          sourceExternalReference: attribution?.sourceExternalReference,
+          sourceIdempotencyKey: attribution?.sourceIdempotencyKey,
+          sourcePayloadHash: attribution?.sourcePayloadHash,
+          lines: prepared.lines,
+          now,
+        })
+
+        const stock = await consumeInventory(tx, tenantId, {
+          reference: { type: 'sales-receipt', id: salesReceiptId },
+          reason: 'sale',
+          lines: prepared.lines.flatMap((line) => {
+            const target = line.variantId
+              ? ({ type: 'variant', id: line.variantId } as const)
+              : line.itemId
+                ? ({ type: 'item', id: line.itemId } as const)
+                : null
+            return target ? [{ target, quantity: line.quantity }] : []
+          }),
+          occurredAt: receiptAt,
+        })
+        if (stock.error !== null)
+          throw new SalesReceiptCreateError(stock.error, stock.status ?? 422)
+
+        await enqueueBillingEvent(tx, tenantId, {
+          type: 'sales-receipt.created',
+          version: 1,
+          resource: { type: 'sales-receipt', id: salesReceiptId },
+          payload: {
+            salesReceiptId,
+            customerId: prepared.customerId,
+            paymentId: payment.id,
+            number,
+            currency: prepared.currency,
+            totalAmount: prepared.totalAmount.toString(),
+            receiptAt,
+          },
+          occurredAt: now,
+        })
+
+        return null
+      }
+    )
+
+    if (replayedSalesReceiptId)
+      return ok({ id: replayedSalesReceiptId, replayed: true })
 
     return ok({ id: salesReceiptId })
   } catch (error) {
@@ -207,7 +238,10 @@ export async function createSalesReceiptWorkflow(
         attribution
       )
       if (replayAfterConflict) return replayAfterConflict
-      return err('A Sales Receipt with these unique details already exists.', 409)
+      return err(
+        'A Sales Receipt with these unique details already exists.',
+        409
+      )
     }
 
     if (isRetryableTransactionError(error))
@@ -237,7 +271,10 @@ async function prepareManual(
     params.salespersonId
   )
   if (!defaults)
-    throw new SalesReceiptCreateError('The selected customer was not found.', 404)
+    throw new SalesReceiptCreateError(
+      'The selected customer was not found.',
+      404
+    )
   if (params.salespersonId && !defaults.salesperson)
     throw new SalesReceiptCreateError(
       'The selected salesperson was not found.',
@@ -307,12 +344,6 @@ async function prepareFromQuote(
       'Accept the quote before converting it to a Sales Receipt.',
       409
     )
-  if (quote.convertedSalesReceipt)
-    throw new SalesReceiptCreateError(
-      'This quote already has a Sales Receipt.',
-      409
-    )
-
   const defaults = await resolveSalesReceiptDefaults(
     tenantId,
     quote.customerId,
