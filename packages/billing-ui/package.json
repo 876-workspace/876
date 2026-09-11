@@ -203,6 +203,10 @@
       "types": "./src/sales-receipt-create-form.tsx",
       "default": "./src/sales-receipt-create-form.tsx"
     },
+    "./sales-receipt-lifecycle-actions": {
+      "types": "./src/sales-receipt-lifecycle-actions.tsx",
+      "default": "./src/sales-receipt-lifecycle-actions.tsx"
+    },
     "./sales-receipts-list": {
       "types": "./src/sales-receipts-list.tsx",
       "default": "./src/sales-receipts-list.tsx"
